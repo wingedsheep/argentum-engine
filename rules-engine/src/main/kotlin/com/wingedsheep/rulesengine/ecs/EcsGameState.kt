@@ -3,7 +3,9 @@ package com.wingedsheep.rulesengine.ecs
 import com.wingedsheep.rulesengine.ability.PendingTrigger
 import com.wingedsheep.rulesengine.ability.StackedTrigger
 import com.wingedsheep.rulesengine.combat.CombatState
+import com.wingedsheep.rulesengine.core.Color
 import com.wingedsheep.rulesengine.ecs.components.*
+import com.wingedsheep.rulesengine.player.ManaPool
 import com.wingedsheep.rulesengine.game.Phase
 import com.wingedsheep.rulesengine.game.Step
 import com.wingedsheep.rulesengine.game.TurnState
@@ -405,6 +407,167 @@ data class EcsGameState(
      */
     fun getGraveyard(playerId: EntityId): List<EntityId> =
         getZone(ZoneId.graveyard(playerId))
+
+    // ==========================================================================
+    // Player State Accessors
+    // ==========================================================================
+
+    /**
+     * Get a player's current life total.
+     * Returns 0 if player doesn't exist or has no life component.
+     */
+    fun getLife(playerId: EntityId): Int =
+        getComponent<LifeComponent>(playerId)?.life ?: 0
+
+    /**
+     * Get a player's mana pool.
+     * Returns empty pool if player doesn't exist or has no mana component.
+     */
+    fun getManaPool(playerId: EntityId): ManaPool =
+        getComponent<ManaPoolComponent>(playerId)?.pool ?: ManaPool.EMPTY
+
+    /**
+     * Get a player's poison counter count.
+     * Returns 0 if player doesn't exist or has no poison component.
+     */
+    fun getPoisonCounters(playerId: EntityId): Int =
+        getComponent<PoisonComponent>(playerId)?.counters ?: 0
+
+    /**
+     * Get the number of lands a player has played this turn.
+     * Returns 0 if player doesn't exist or has no lands-played component.
+     */
+    fun getLandsPlayed(playerId: EntityId): Int =
+        getComponent<LandsPlayedComponent>(playerId)?.count ?: 0
+
+    /**
+     * Check if a player can play a land this turn.
+     * Returns false if player doesn't exist.
+     */
+    fun canPlayLand(playerId: EntityId): Boolean =
+        getComponent<LandsPlayedComponent>(playerId)?.canPlayLand ?: false
+
+    /**
+     * Check if a player has lost the game.
+     */
+    fun hasLost(playerId: EntityId): Boolean =
+        hasComponent<LostGameComponent>(playerId)
+
+    /**
+     * Check if a player has won the game.
+     */
+    fun hasWon(playerId: EntityId): Boolean =
+        hasComponent<WonGameComponent>(playerId)
+
+    /**
+     * Check if a player is still alive (hasn't lost).
+     */
+    fun isAlive(playerId: EntityId): Boolean =
+        hasEntity(playerId) && !hasLost(playerId)
+
+    /**
+     * Get a player's name.
+     * Returns empty string if player doesn't exist.
+     */
+    fun getPlayerName(playerId: EntityId): String =
+        getComponent<PlayerComponent>(playerId)?.name ?: ""
+
+    // ==========================================================================
+    // Player State Mutators
+    // ==========================================================================
+
+    /**
+     * Gain life for a player.
+     * Returns unchanged state if player doesn't exist.
+     */
+    fun gainLife(playerId: EntityId, amount: Int): EcsGameState {
+        val life = getComponent<LifeComponent>(playerId) ?: return this
+        return updateEntity(playerId) { it.with(life.gainLife(amount)) }
+    }
+
+    /**
+     * Lose life for a player.
+     * Returns unchanged state if player doesn't exist.
+     */
+    fun loseLife(playerId: EntityId, amount: Int): EcsGameState {
+        val life = getComponent<LifeComponent>(playerId) ?: return this
+        return updateEntity(playerId) { it.with(life.loseLife(amount)) }
+    }
+
+    /**
+     * Set a player's life to a specific value.
+     * Returns unchanged state if player doesn't exist.
+     */
+    fun setLife(playerId: EntityId, amount: Int): EcsGameState {
+        val life = getComponent<LifeComponent>(playerId) ?: return this
+        return updateEntity(playerId) { it.with(life.setLife(amount)) }
+    }
+
+    /**
+     * Add mana to a player's mana pool.
+     * Returns unchanged state if player doesn't exist.
+     */
+    fun addMana(playerId: EntityId, color: Color, amount: Int = 1): EcsGameState {
+        val manaPool = getComponent<ManaPoolComponent>(playerId) ?: return this
+        return updateEntity(playerId) { it.with(manaPool.add(color, amount)) }
+    }
+
+    /**
+     * Add colorless mana to a player's mana pool.
+     * Returns unchanged state if player doesn't exist.
+     */
+    fun addColorlessMana(playerId: EntityId, amount: Int = 1): EcsGameState {
+        val manaPool = getComponent<ManaPoolComponent>(playerId) ?: return this
+        return updateEntity(playerId) { it.with(manaPool.addColorless(amount)) }
+    }
+
+    /**
+     * Empty a player's mana pool.
+     * Returns unchanged state if player doesn't exist.
+     */
+    fun emptyManaPool(playerId: EntityId): EcsGameState {
+        val manaPool = getComponent<ManaPoolComponent>(playerId) ?: return this
+        return updateEntity(playerId) { it.with(manaPool.empty()) }
+    }
+
+    /**
+     * Add poison counters to a player.
+     * Returns unchanged state if player doesn't exist.
+     */
+    fun addPoisonCounters(playerId: EntityId, amount: Int): EcsGameState {
+        val poison = getComponent<PoisonComponent>(playerId) ?: return this
+        return updateEntity(playerId) { it.with(poison.add(amount)) }
+    }
+
+    /**
+     * Record that a player played a land this turn.
+     * Returns unchanged state if player doesn't exist.
+     */
+    fun recordLandPlayed(playerId: EntityId): EcsGameState {
+        val lands = getComponent<LandsPlayedComponent>(playerId) ?: return this
+        return updateEntity(playerId) { it.with(lands.playLand()) }
+    }
+
+    /**
+     * Reset lands played count (called at start of turn).
+     * Returns unchanged state if player doesn't exist.
+     */
+    fun resetLandsPlayed(playerId: EntityId): EcsGameState {
+        val lands = getComponent<LandsPlayedComponent>(playerId) ?: return this
+        return updateEntity(playerId) { it.with(lands.reset()) }
+    }
+
+    /**
+     * Mark a player as having lost the game.
+     */
+    fun markPlayerLost(playerId: EntityId, reason: String): EcsGameState =
+        addComponent(playerId, LostGameComponent(reason))
+
+    /**
+     * Mark a player as having won the game.
+     */
+    fun markPlayerWon(playerId: EntityId): EcsGameState =
+        addComponent(playerId, WonGameComponent)
 
     companion object {
         /**

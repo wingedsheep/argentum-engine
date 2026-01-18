@@ -2,6 +2,7 @@ package com.wingedsheep.rulesengine.targeting
 
 import com.wingedsheep.rulesengine.ability.ChosenTarget
 import com.wingedsheep.rulesengine.core.CardId
+import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.player.PlayerId
 import kotlinx.serialization.Serializable
 
@@ -12,9 +13,29 @@ import kotlinx.serialization.Serializable
 sealed interface Target {
     /**
      * A player as a target.
+     *
+     * Uses EntityId for ECS compatibility. The playerId property provides
+     * backward compatibility with the old PlayerId-based system.
      */
     @Serializable
-    data class PlayerTarget(val playerId: PlayerId) : Target
+    data class PlayerTarget(val entityId: EntityId) : Target {
+        /**
+         * Get the PlayerId for backward compatibility with old system.
+         */
+        val playerId: PlayerId get() = entityId.toPlayerId()
+
+        companion object {
+            /**
+             * Create from PlayerId (backward compatibility).
+             */
+            @Deprecated(
+                "Use PlayerTarget(EntityId) instead",
+                ReplaceWith("PlayerTarget(EntityId.fromPlayerId(playerId))")
+            )
+            fun fromPlayerId(playerId: PlayerId): PlayerTarget =
+                PlayerTarget(EntityId.fromPlayerId(playerId))
+        }
+    }
 
     /**
      * A card (on battlefield, stack, graveyard, etc.) as a target.
@@ -23,8 +44,25 @@ sealed interface Target {
     data class CardTarget(val cardId: CardId) : Target
 
     companion object {
-        fun player(playerId: PlayerId): Target = PlayerTarget(playerId)
-        fun player(playerId: String): Target = PlayerTarget(PlayerId.of(playerId))
+        /**
+         * Create a player target from an EntityId (preferred).
+         */
+        fun player(entityId: EntityId): Target = PlayerTarget(entityId)
+
+        /**
+         * Create a player target from a PlayerId (backward compatibility).
+         */
+        @Deprecated(
+            "Use player(EntityId) instead",
+            ReplaceWith("player(EntityId.fromPlayerId(playerId))")
+        )
+        fun player(playerId: PlayerId): Target = PlayerTarget(EntityId.fromPlayerId(playerId))
+
+        /**
+         * Create a player target from a string ID.
+         */
+        fun player(playerId: String): Target = PlayerTarget(EntityId.of(playerId))
+
         fun card(cardId: CardId): Target = CardTarget(cardId)
         fun card(cardId: String): Target = CardTarget(CardId(cardId))
     }
@@ -34,7 +72,7 @@ sealed interface Target {
  * Convert a Target to a ChosenTarget (for compatibility with existing effect system).
  */
 fun Target.toChosenTarget(): ChosenTarget = when (this) {
-    is Target.PlayerTarget -> ChosenTarget.PlayerTarget(playerId)
+    is Target.PlayerTarget -> ChosenTarget.PlayerTarget(entityId)
     is Target.CardTarget -> ChosenTarget.CardTarget(cardId)
 }
 
@@ -42,7 +80,7 @@ fun Target.toChosenTarget(): ChosenTarget = when (this) {
  * Convert a ChosenTarget to a Target.
  */
 fun ChosenTarget.toTarget(): Target = when (this) {
-    is ChosenTarget.PlayerTarget -> Target.PlayerTarget(playerId)
+    is ChosenTarget.PlayerTarget -> Target.PlayerTarget(entityId)
     is ChosenTarget.CardTarget -> Target.CardTarget(cardId)
 }
 

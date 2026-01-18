@@ -4,6 +4,29 @@ import com.wingedsheep.rulesengine.core.Color
 import com.wingedsheep.rulesengine.zone.Zone
 import kotlinx.serialization.Serializable
 
+/**
+ * Legacy player representation.
+ *
+ * @deprecated Use ECS components instead:
+ * - PlayerComponent for identity
+ * - LifeComponent for life total
+ * - ManaPoolComponent for mana
+ * - PoisonComponent for poison counters
+ * - LandsPlayedComponent for land tracking
+ * - LostGameComponent/WonGameComponent for game end state
+ *
+ * Player zones are stored in EcsGameState:
+ * - state.getLibrary(playerId)
+ * - state.getHand(playerId)
+ * - state.getGraveyard(playerId)
+ *
+ * @see com.wingedsheep.rulesengine.ecs.EcsGameState
+ * @see com.wingedsheep.rulesengine.ecs.components.PlayerComponent
+ */
+@Deprecated(
+    message = "Use ECS components (PlayerComponent, LifeComponent, etc.) and EcsGameState instead",
+    replaceWith = ReplaceWith("EcsGameState.newGame(listOf(playerId to name))")
+)
 @Serializable
 data class Player(
     val id: PlayerId,

@@ -2,6 +2,7 @@ package com.wingedsheep.rulesengine.targeting
 
 import com.wingedsheep.rulesengine.card.CardInstance
 import com.wingedsheep.rulesengine.core.CardId
+import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.game.GameState
 import com.wingedsheep.rulesengine.player.PlayerId
 
@@ -131,7 +132,7 @@ object TargetValidator {
 
         // Check players
         for ((playerId, _) in state.players) {
-            val target = Target.PlayerTarget(playerId)
+            val target = Target.PlayerTarget(EntityId.fromPlayerId(playerId))
             if (requirement.isValidTarget(target, state, sourceControllerId, sourceId)) {
                 legalTargets.add(target)
             }
@@ -177,7 +178,7 @@ object TargetValidator {
     ): Boolean {
         // Check players first (usually faster)
         for ((playerId, _) in state.players) {
-            val target = Target.PlayerTarget(playerId)
+            val target = Target.PlayerTarget(EntityId.fromPlayerId(playerId))
             if (requirement.isValidTarget(target, state, sourceControllerId, sourceId)) {
                 return true
             }

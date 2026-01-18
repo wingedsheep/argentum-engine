@@ -1,6 +1,7 @@
 package com.wingedsheep.rulesengine.ability
 
 import com.wingedsheep.rulesengine.core.CardId
+import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.player.PlayerId
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -186,8 +187,9 @@ class TriggeredAbilityTest : FunSpec({
 
     context("ChosenTarget") {
         test("PlayerTarget stores player ID") {
-            val target = ChosenTarget.PlayerTarget(PlayerId.of("player2"))
+            val target = ChosenTarget.PlayerTarget(EntityId.of("player2"))
             target.playerId.value shouldBe "player2"
+            target.entityId.value shouldBe "player2"
         }
 
         test("CardTarget stores card ID") {

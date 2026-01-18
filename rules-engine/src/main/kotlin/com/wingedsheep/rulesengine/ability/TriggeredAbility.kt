@@ -1,6 +1,7 @@
 package com.wingedsheep.rulesengine.ability
 
 import com.wingedsheep.rulesengine.core.CardId
+import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.player.PlayerId
 import kotlinx.serialization.Serializable
 
@@ -144,8 +145,31 @@ data class StackedTrigger(
  */
 @Serializable
 sealed interface ChosenTarget {
+    /**
+     * A player as a chosen target.
+     *
+     * Uses EntityId for ECS compatibility. The playerId property provides
+     * backward compatibility with the old PlayerId-based system.
+     */
     @Serializable
-    data class PlayerTarget(val playerId: PlayerId) : ChosenTarget
+    data class PlayerTarget(val entityId: EntityId) : ChosenTarget {
+        /**
+         * Get the PlayerId for backward compatibility with old system.
+         */
+        val playerId: PlayerId get() = entityId.toPlayerId()
+
+        companion object {
+            /**
+             * Create from PlayerId (backward compatibility).
+             */
+            @Deprecated(
+                "Use PlayerTarget(EntityId) instead",
+                ReplaceWith("PlayerTarget(EntityId.fromPlayerId(playerId))")
+            )
+            fun fromPlayerId(playerId: PlayerId): PlayerTarget =
+                PlayerTarget(EntityId.fromPlayerId(playerId))
+        }
+    }
 
     @Serializable
     data class CardTarget(val cardId: CardId) : ChosenTarget
