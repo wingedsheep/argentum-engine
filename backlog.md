@@ -398,7 +398,7 @@ Generate scripts for all cards in the Portal set using LLM assistance:
 ## Phase 14: Integration Testing
 
 ### 14.1 Full Game Simulations
-- [ ] Test complete game from start to finish (look at `example-game-portal.json` and `example-game-2-portal.json`)
+- [ ] Test complete game from start to finish (look at `example-game-portal.json` and `example-game-2-portal.json` and `example-game-3-portal.json`)
 - [ ] Test various board states
 - [ ] Test combat scenarios
 - [ ] Test spell interactions
