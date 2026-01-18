@@ -216,21 +216,21 @@ Portal is an ideal starting set because it's simplified: limited keywords and st
 ## Phase 7: Triggered Abilities
 
 ### 7.1 Trigger System
-- [ ] `Trigger` sealed class (OnEnterBattlefield, OnDeath, OnDraw, etc.)
-- [ ] `TriggeredAbility` - condition + effect
-- [ ] Trigger detection during state transitions
-- [ ] Write tests for trigger detection
+- [x] `Trigger` sealed class (OnEnterBattlefield, OnDeath, OnDraw, etc.)
+- [x] `TriggeredAbility` - condition + effect
+- [x] Trigger detection during state transitions
+- [x] Write tests for trigger detection
 
 ### 7.2 Common Triggers (Portal)
-- [ ] "When this creature enters the battlefield..."
-- [ ] "When this creature dies..."
-- [ ] "At the beginning of your upkeep..."
-- [ ] Write tests for each trigger type
+- [x] "When this creature enters the battlefield..."
+- [x] "When this creature dies..."
+- [x] "At the beginning of your upkeep..."
+- [x] Write tests for each trigger type
 
 ### 7.3 Trigger Resolution
-- [ ] Triggers go on the stack
-- [ ] APNAP order (Active Player, Non-Active Player)
-- [ ] Write tests for trigger stacking
+- [x] Triggers go on the stack
+- [x] APNAP order (Active Player, Non-Active Player)
+- [x] Write tests for trigger stacking
 
 ---
 
@@ -398,7 +398,7 @@ Generate scripts for all cards in the Portal set using LLM assistance:
 ## Phase 14: Integration Testing
 
 ### 14.1 Full Game Simulations
-- [ ] Test complete game from start to finish
+- [ ] Test complete game from start to finish (look at `example-game-portal.json` and `example-game-2-portal.json`)
 - [ ] Test various board states
 - [ ] Test combat scenarios
 - [ ] Test spell interactions

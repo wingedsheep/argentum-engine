@@ -1,0 +1,164 @@
+package com.wingedsheep.rulesengine.ability
+
+import com.wingedsheep.rulesengine.card.CardDefinition
+
+/**
+ * Registry that maps card definitions to their abilities.
+ * This serves as the central repository for card scripting.
+ */
+class AbilityRegistry {
+    private val triggeredAbilities = mutableMapOf<String, List<TriggeredAbility>>()
+    private val activatedAbilities = mutableMapOf<String, List<ActivatedAbility>>()
+    private val staticAbilities = mutableMapOf<String, List<StaticAbility>>()
+
+    /**
+     * Register triggered abilities for a card (by name).
+     */
+    fun registerTriggeredAbilities(cardName: String, abilities: List<TriggeredAbility>) {
+        triggeredAbilities[cardName] = abilities
+    }
+
+    /**
+     * Register a single triggered ability for a card.
+     */
+    fun registerTriggeredAbility(cardName: String, ability: TriggeredAbility) {
+        val existing = triggeredAbilities[cardName] ?: emptyList()
+        triggeredAbilities[cardName] = existing + ability
+    }
+
+    /**
+     * Get triggered abilities for a card definition.
+     */
+    fun getTriggeredAbilities(definition: CardDefinition): List<TriggeredAbility> {
+        return triggeredAbilities[definition.name] ?: emptyList()
+    }
+
+    /**
+     * Register activated abilities for a card.
+     */
+    fun registerActivatedAbilities(cardName: String, abilities: List<ActivatedAbility>) {
+        activatedAbilities[cardName] = abilities
+    }
+
+    /**
+     * Get activated abilities for a card definition.
+     */
+    fun getActivatedAbilities(definition: CardDefinition): List<ActivatedAbility> {
+        return activatedAbilities[definition.name] ?: emptyList()
+    }
+
+    /**
+     * Register static abilities for a card.
+     */
+    fun registerStaticAbilities(cardName: String, abilities: List<StaticAbility>) {
+        staticAbilities[cardName] = abilities
+    }
+
+    /**
+     * Get static abilities for a card definition.
+     */
+    fun getStaticAbilities(definition: CardDefinition): List<StaticAbility> {
+        return staticAbilities[definition.name] ?: emptyList()
+    }
+
+    /**
+     * Check if a card has any abilities registered.
+     */
+    fun hasAbilities(cardName: String): Boolean {
+        return triggeredAbilities.containsKey(cardName) ||
+                activatedAbilities.containsKey(cardName) ||
+                staticAbilities.containsKey(cardName)
+    }
+
+    /**
+     * Clear all registered abilities.
+     */
+    fun clear() {
+        triggeredAbilities.clear()
+        activatedAbilities.clear()
+        staticAbilities.clear()
+    }
+
+    companion object {
+        /**
+         * Create a registry with abilities for common Portal cards.
+         */
+        fun createPortalRegistry(): AbilityRegistry {
+            val registry = AbilityRegistry()
+            // Abilities would be registered here for Portal cards
+            // This will be populated in Phase 13 (Portal Set Implementation)
+            return registry
+        }
+    }
+}
+
+/**
+ * Placeholder for activated abilities (tap abilities, etc.)
+ * Full implementation in a future phase.
+ */
+data class ActivatedAbility(
+    val id: AbilityId,
+    val cost: AbilityCost,
+    val effect: Effect,
+    val timingRestriction: TimingRestriction = TimingRestriction.INSTANT
+)
+
+/**
+ * Cost to activate an ability.
+ */
+sealed interface AbilityCost {
+    data object Tap : AbilityCost
+    data class Mana(val white: Int = 0, val blue: Int = 0, val black: Int = 0, val red: Int = 0, val green: Int = 0, val generic: Int = 0) : AbilityCost
+    data class Composite(val costs: List<AbilityCost>) : AbilityCost
+    data class PayLife(val amount: Int) : AbilityCost
+    data class Sacrifice(val filter: String) : AbilityCost
+    data class Discard(val count: Int) : AbilityCost
+}
+
+/**
+ * Timing restriction for activated abilities.
+ */
+enum class TimingRestriction {
+    INSTANT,    // Can activate any time you have priority
+    SORCERY,    // Only during main phase, empty stack
+    ATTACK,     // Only during declare attackers
+    BLOCK       // Only during declare blockers
+}
+
+/**
+ * Placeholder for static abilities (continuous effects).
+ * Full implementation in a future phase.
+ */
+data class StaticAbility(
+    val id: AbilityId,
+    val effect: StaticEffect
+)
+
+/**
+ * Continuous effects from static abilities.
+ */
+sealed interface StaticEffect {
+    /** Grants a keyword to creatures matching a filter */
+    data class GrantKeyword(
+        val keyword: com.wingedsheep.rulesengine.core.Keyword,
+        val filter: String = "self"
+    ) : StaticEffect
+
+    /** Modifies power/toughness of creatures matching a filter */
+    data class ModifyStats(
+        val powerMod: Int,
+        val toughnessMod: Int,
+        val filter: String = "self"
+    ) : StaticEffect
+
+    /** Prevents damage from a source or to a target */
+    data class PreventDamage(
+        val filter: String
+    ) : StaticEffect
+
+    /** Makes something cost more or less */
+    data class CostModification(
+        val adjustment: Int,
+        val filter: String
+    ) : StaticEffect
+}

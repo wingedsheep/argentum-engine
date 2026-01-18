@@ -125,6 +125,10 @@ object ActionExecutor {
             is ResolveCombatDamage -> executeResolveCombatDamage(state, action, events)
             is EndCombat -> executeEndCombat(state, action, events)
             is CheckStateBasedActions -> executeCheckStateBasedActions(state, action, events)
+
+            // Triggered abilities
+            is PutTriggerOnStack -> executePutTriggerOnStack(state, action, events)
+            is ResolveTriggeredAbility -> executeResolveTriggeredAbility(state, action, events)
         }
 
         return newState to events
@@ -914,5 +918,50 @@ object ActionExecutor {
         }
 
         return currentState
+    }
+
+    // =============================================================================
+    // Triggered Ability Actions
+    // =============================================================================
+
+    private fun executePutTriggerOnStack(state: GameState, action: PutTriggerOnStack, events: MutableList<GameEvent>): GameState {
+        // Find the pending trigger by ID
+        val pendingTrigger = state.pendingTriggers.find { it.ability.id.value == action.triggerId }
+            ?: throw IllegalStateException("Trigger not found: ${action.triggerId}")
+
+        // Create a stacked trigger from the pending trigger
+        val stackedTrigger = com.wingedsheep.rulesengine.ability.StackedTrigger(
+            pendingTrigger = pendingTrigger,
+            chosenTargets = emptyList() // Targets would be chosen by player decision system
+        )
+
+        // Remove from pending and add to stack
+        val newPendingTriggers = state.pendingTriggers.filter { it.ability.id.value != action.triggerId }
+
+        return state
+            .copy(pendingTriggers = newPendingTriggers)
+            .putTriggerOnStack(stackedTrigger)
+    }
+
+    private fun executeResolveTriggeredAbility(state: GameState, action: ResolveTriggeredAbility, events: MutableList<GameEvent>): GameState {
+        // Get the top trigger from the stack
+        val (stackedTrigger, stateWithoutTrigger) = state.removeTopTriggerFromStack()
+            ?: throw IllegalStateException("No triggered abilities on stack")
+
+        if (stackedTrigger == null) {
+            throw IllegalStateException("No triggered abilities on stack")
+        }
+
+        // Execute the effect
+        val effect = stackedTrigger.pendingTrigger.ability.effect
+
+        return com.wingedsheep.rulesengine.ability.EffectExecutor.execute(
+            state = stateWithoutTrigger,
+            effect = effect,
+            controllerId = stackedTrigger.controllerId,
+            sourceId = stackedTrigger.sourceId,
+            targets = stackedTrigger.chosenTargets,
+            events = events
+        ).updateTurnState { it.resetPriorityToActivePlayer() }
     }
 }

@@ -1,0 +1,235 @@
+package com.wingedsheep.rulesengine.ability
+
+import com.wingedsheep.rulesengine.core.CardId
+import com.wingedsheep.rulesengine.player.PlayerId
+import kotlinx.serialization.Serializable
+
+/**
+ * Sealed hierarchy of trigger conditions.
+ * Triggers define WHEN an ability fires.
+ */
+@Serializable
+sealed interface Trigger {
+    /** Human-readable description of the trigger condition */
+    val description: String
+}
+
+// =============================================================================
+// Zone Change Triggers
+// =============================================================================
+
+/**
+ * Triggers when a permanent enters the battlefield.
+ * "When [this creature] enters the battlefield..."
+ */
+@Serializable
+data class OnEnterBattlefield(
+    val selfOnly: Boolean = true
+) : Trigger {
+    override val description: String = if (selfOnly) {
+        "When this enters the battlefield"
+    } else {
+        "Whenever a permanent enters the battlefield"
+    }
+}
+
+/**
+ * Triggers when a permanent leaves the battlefield.
+ * "When [this creature] leaves the battlefield..."
+ */
+@Serializable
+data class OnLeavesBattlefield(
+    val selfOnly: Boolean = true
+) : Trigger {
+    override val description: String = if (selfOnly) {
+        "When this leaves the battlefield"
+    } else {
+        "Whenever a permanent leaves the battlefield"
+    }
+}
+
+/**
+ * Triggers when a creature dies (goes to graveyard from battlefield).
+ * "When [this creature] dies..."
+ */
+@Serializable
+data class OnDeath(
+    val selfOnly: Boolean = true
+) : Trigger {
+    override val description: String = if (selfOnly) {
+        "When this creature dies"
+    } else {
+        "Whenever a creature dies"
+    }
+}
+
+// =============================================================================
+// Card Drawing Triggers
+// =============================================================================
+
+/**
+ * Triggers when a player draws a card.
+ * "Whenever you draw a card..." or "Whenever a player draws a card..."
+ */
+@Serializable
+data class OnDraw(
+    val controllerOnly: Boolean = true
+) : Trigger {
+    override val description: String = if (controllerOnly) {
+        "Whenever you draw a card"
+    } else {
+        "Whenever a player draws a card"
+    }
+}
+
+// =============================================================================
+// Combat Triggers
+// =============================================================================
+
+/**
+ * Triggers when this creature attacks.
+ * "Whenever [this creature] attacks..."
+ */
+@Serializable
+data class OnAttack(
+    val selfOnly: Boolean = true
+) : Trigger {
+    override val description: String = if (selfOnly) {
+        "Whenever this creature attacks"
+    } else {
+        "Whenever a creature attacks"
+    }
+}
+
+/**
+ * Triggers when this creature blocks or becomes blocked.
+ * "Whenever [this creature] blocks..."
+ */
+@Serializable
+data class OnBlock(
+    val selfOnly: Boolean = true
+) : Trigger {
+    override val description: String = if (selfOnly) {
+        "Whenever this creature blocks"
+    } else {
+        "Whenever a creature blocks"
+    }
+}
+
+/**
+ * Triggers when this creature deals damage.
+ * "Whenever [this creature] deals damage..."
+ */
+@Serializable
+data class OnDealsDamage(
+    val selfOnly: Boolean = true,
+    val combatOnly: Boolean = false,
+    val toPlayerOnly: Boolean = false
+) : Trigger {
+    override val description: String = buildString {
+        append(if (selfOnly) "Whenever this creature deals " else "Whenever a creature deals ")
+        if (combatOnly) append("combat ")
+        append("damage")
+        if (toPlayerOnly) append(" to a player")
+    }
+}
+
+// =============================================================================
+// Phase/Step Triggers
+// =============================================================================
+
+/**
+ * Triggers at the beginning of upkeep.
+ * "At the beginning of your upkeep..." or "At the beginning of each upkeep..."
+ */
+@Serializable
+data class OnUpkeep(
+    val controllerOnly: Boolean = true
+) : Trigger {
+    override val description: String = if (controllerOnly) {
+        "At the beginning of your upkeep"
+    } else {
+        "At the beginning of each upkeep"
+    }
+}
+
+/**
+ * Triggers at the beginning of the end step.
+ * "At the beginning of your end step..."
+ */
+@Serializable
+data class OnEndStep(
+    val controllerOnly: Boolean = true
+) : Trigger {
+    override val description: String = if (controllerOnly) {
+        "At the beginning of your end step"
+    } else {
+        "At the beginning of each end step"
+    }
+}
+
+/**
+ * Triggers at the beginning of combat.
+ * "At the beginning of combat on your turn..."
+ */
+@Serializable
+data class OnBeginCombat(
+    val controllerOnly: Boolean = true
+) : Trigger {
+    override val description: String = if (controllerOnly) {
+        "At the beginning of combat on your turn"
+    } else {
+        "At the beginning of each combat"
+    }
+}
+
+// =============================================================================
+// Damage Triggers
+// =============================================================================
+
+/**
+ * Triggers when this creature is dealt damage.
+ * "Whenever [this creature] is dealt damage..."
+ */
+@Serializable
+data class OnDamageReceived(
+    val selfOnly: Boolean = true
+) : Trigger {
+    override val description: String = if (selfOnly) {
+        "Whenever this creature is dealt damage"
+    } else {
+        "Whenever a creature is dealt damage"
+    }
+}
+
+// =============================================================================
+// Spell Triggers
+// =============================================================================
+
+/**
+ * Triggers when a spell is cast.
+ * "Whenever you cast a spell..." or "Whenever a player casts a spell..."
+ */
+@Serializable
+data class OnSpellCast(
+    val controllerOnly: Boolean = true,
+    val spellType: SpellTypeFilter = SpellTypeFilter.ANY
+) : Trigger {
+    override val description: String = buildString {
+        append(if (controllerOnly) "Whenever you cast " else "Whenever a player casts ")
+        append(when (spellType) {
+            SpellTypeFilter.ANY -> "a spell"
+            SpellTypeFilter.CREATURE -> "a creature spell"
+            SpellTypeFilter.NONCREATURE -> "a noncreature spell"
+            SpellTypeFilter.INSTANT_OR_SORCERY -> "an instant or sorcery spell"
+        })
+    }
+}
+
+@Serializable
+enum class SpellTypeFilter {
+    ANY,
+    CREATURE,
+    NONCREATURE,
+    INSTANT_OR_SORCERY
+}

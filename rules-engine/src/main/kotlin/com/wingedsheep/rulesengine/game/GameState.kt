@@ -1,5 +1,7 @@
 package com.wingedsheep.rulesengine.game
 
+import com.wingedsheep.rulesengine.ability.PendingTrigger
+import com.wingedsheep.rulesengine.ability.StackedTrigger
 import com.wingedsheep.rulesengine.card.CardInstance
 import com.wingedsheep.rulesengine.combat.CombatState
 import com.wingedsheep.rulesengine.core.CardId
@@ -18,7 +20,9 @@ data class GameState(
     val turnState: TurnState,
     val combat: CombatState? = null,
     val isGameOver: Boolean = false,
-    val winner: PlayerId? = null
+    val winner: PlayerId? = null,
+    val pendingTriggers: List<PendingTrigger> = emptyList(),
+    val triggersOnStack: List<StackedTrigger> = emptyList()
 ) {
     init {
         require(players.isNotEmpty()) { "Game must have at least one player" }
@@ -155,6 +159,28 @@ data class GameState(
 
     fun endGame(winner: PlayerId?): GameState =
         copy(isGameOver = true, winner = winner)
+
+    // Trigger helpers
+    fun addPendingTriggers(triggers: List<PendingTrigger>): GameState =
+        copy(pendingTriggers = pendingTriggers + triggers)
+
+    fun clearPendingTriggers(): GameState =
+        copy(pendingTriggers = emptyList())
+
+    fun putTriggerOnStack(trigger: StackedTrigger): GameState =
+        copy(triggersOnStack = triggersOnStack + trigger)
+
+    fun removeTopTriggerFromStack(): Pair<StackedTrigger?, GameState> {
+        if (triggersOnStack.isEmpty()) return null to this
+        val top = triggersOnStack.last()
+        return top to copy(triggersOnStack = triggersOnStack.dropLast(1))
+    }
+
+    val hasTriggersOnStack: Boolean
+        get() = triggersOnStack.isNotEmpty()
+
+    val hasPendingTriggers: Boolean
+        get() = pendingTriggers.isNotEmpty()
 
     companion object {
         fun newGame(players: List<Player>): GameState {

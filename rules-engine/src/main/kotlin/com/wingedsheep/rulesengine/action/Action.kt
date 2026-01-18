@@ -457,3 +457,25 @@ data class CheckStateBasedActions(
 ) : Action {
     override val description: String = "Check state-based actions"
 }
+
+// =============================================================================
+// Triggered Ability Actions
+// =============================================================================
+
+@Serializable
+data class PutTriggerOnStack(
+    val triggerId: String,
+    val sourceCardId: CardId,
+    val sourceName: String,
+    val controllerId: PlayerId,
+    val triggerDescription: String
+) : Action {
+    override val description: String = "Triggered ability: $triggerDescription"
+}
+
+@Serializable
+data class ResolveTriggeredAbility(
+    val triggerId: String
+) : Action {
+    override val description: String = "Resolve triggered ability"
+}
