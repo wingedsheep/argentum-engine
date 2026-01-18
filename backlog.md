@@ -97,35 +97,35 @@ Portal is an ideal starting set because it's simplified: limited keywords and st
 ## Phase 4: Casting and Resolution
 
 ### 4.1 Mana Payment
-- [ ] `CanPayCost` - check if player can pay a mana cost
-- [ ] `PayManaCost` - deduct mana from pool
-- [ ] Handle generic mana payment (player choice)
-- [ ] Write tests for cost payment
+- [x] `CanPayCost` - check if player can pay a mana cost
+- [x] `PayManaCost` - deduct mana from pool
+- [x] Handle generic mana payment (player choice)
+- [x] Write tests for cost payment
 
 ### 4.2 Casting Spells
-- [ ] `CastSpell` action
-- [ ] Timing restrictions:
+- [x] `CastSpell` action
+- [x] Timing restrictions:
   - Sorcery speed (main phase, empty stack, active player has priority)
   - Instant speed (any time player has priority)
   - Flash (permanents that can be cast at instant speed)
-- [ ] Put spell on stack
+- [x] Put spell on stack
 - [ ] Targeting (for spells that target)
-- [ ] Write tests for casting
+- [x] Write tests for casting
 
 ### 4.3 Stack and Resolution
-- [ ] `Stack` implementation (LIFO)
-- [ ] `ResolveTopOfStack` action
-- [ ] Permanent resolution (enters battlefield)
-- [ ] Sorcery/Instant resolution (effect then graveyard)
-- [ ] Write tests for stack operations
+- [x] `Stack` implementation (LIFO)
+- [x] `ResolveTopOfStack` action
+- [x] Permanent resolution (enters battlefield)
+- [x] Sorcery/Instant resolution (effect then graveyard)
+- [x] Write tests for stack operations
 
 ### 4.4 Priority System
-- [ ] `Priority` - tracks who can act
-- [ ] `PassPriority` action
-- [ ] Round of priority passing leads to resolution
-- [ ] Active player receives priority after each spell/ability resolves
-- [ ] Responding to spells/abilities (instant-speed interaction)
-- [ ] Write tests for priority
+- [x] `Priority` - tracks who can act
+- [x] `PassPriority` action
+- [x] Round of priority passing leads to resolution
+- [x] Active player receives priority after each spell/ability resolves
+- [x] Responding to spells/abilities (instant-speed interaction)
+- [x] Write tests for priority
 
 ---
 

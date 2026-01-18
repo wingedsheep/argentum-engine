@@ -25,6 +25,9 @@ data class ManaCost(val symbols: List<ManaSymbol>) {
             .filterIsInstance<ManaSymbol.Generic>()
             .sumOf { it.amount }
 
+    val colorlessAmount: Int
+        get() = symbols.count { it is ManaSymbol.Colorless }
+
     val hasX: Boolean
         get() = symbols.any { it is ManaSymbol.X }
 

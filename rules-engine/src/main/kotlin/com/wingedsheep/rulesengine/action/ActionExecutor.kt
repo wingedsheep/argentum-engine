@@ -1,6 +1,9 @@
 package com.wingedsheep.rulesengine.action
 
 import com.wingedsheep.rulesengine.card.CardInstance
+import com.wingedsheep.rulesengine.casting.ManaPaymentValidator
+import com.wingedsheep.rulesengine.casting.SpellTimingValidator
+import com.wingedsheep.rulesengine.core.Color
 import com.wingedsheep.rulesengine.game.GameState
 import com.wingedsheep.rulesengine.player.PlayerId
 import com.wingedsheep.rulesengine.zone.ZoneType
@@ -102,6 +105,13 @@ object ActionExecutor {
             // Game flow
             is EndGame -> executeEndGame(state, action, events)
             is PlayerLoses -> executePlayerLoses(state, action, events)
+
+            // Casting and stack
+            is CastSpell -> executeCastSpell(state, action, events)
+            is PayManaCost -> executePayManaCost(state, action, events)
+            is ResolveTopOfStack -> executeResolveTopOfStack(state, action, events)
+            is PassPriority -> executePassPriority(state, action, events)
+            is CounterSpell -> executeCounterSpell(state, action, events)
         }
 
         return newState to events
@@ -558,5 +568,136 @@ object ActionExecutor {
             }
             ZoneType.COMMAND -> state // Command zone not fully implemented
         }
+    }
+
+    // =============================================================================
+    // Casting and Stack Actions
+    // =============================================================================
+
+    private fun executeCastSpell(state: GameState, action: CastSpell, events: MutableList<GameEvent>): GameState {
+        val player = state.getPlayer(action.playerId)
+        val card = player.hand.getCard(action.cardId)
+            ?: throw IllegalStateException("Card not in hand")
+
+        // Validate timing
+        val timingResult = SpellTimingValidator.canCast(state, card, action.playerId)
+        if (timingResult is SpellTimingValidator.TimingResult.Invalid) {
+            throw IllegalStateException(timingResult.reason)
+        }
+
+        // Validate mana payment
+        val paymentResult = ManaPaymentValidator.canPay(state, card, action.playerId)
+        if (paymentResult is ManaPaymentValidator.PaymentResult.Invalid) {
+            throw IllegalStateException(paymentResult.reason)
+        }
+
+        // Pay the mana cost
+        val cost = card.definition.manaCost
+        var updatedPool = player.manaPool
+
+        // Spend colored mana
+        for (color in Color.entries) {
+            val needed = cost.colorCount[color] ?: 0
+            if (needed > 0) {
+                updatedPool = updatedPool.spend(color, needed)
+            }
+        }
+
+        // Spend colorless mana
+        val colorlessNeeded = cost.colorlessAmount
+        if (colorlessNeeded > 0) {
+            updatedPool = updatedPool.spendColorless(colorlessNeeded)
+        }
+
+        // Spend generic mana
+        val genericNeeded = cost.genericAmount
+        if (genericNeeded > 0) {
+            updatedPool = updatedPool.spendGeneric(genericNeeded)
+        }
+
+        events.add(GameEvent.CardMoved(card.id.value, card.name, ZoneType.HAND.name, ZoneType.STACK.name))
+
+        // Move card from hand to stack and update mana pool
+        return state
+            .updatePlayer(action.playerId) { p ->
+                p.copy(
+                    hand = p.hand.remove(action.cardId),
+                    manaPool = updatedPool
+                )
+            }
+            .updateStack { it.addToTop(card) }
+    }
+
+    private fun executePayManaCost(state: GameState, action: PayManaCost, events: MutableList<GameEvent>): GameState {
+        val player = state.getPlayer(action.playerId)
+        var updatedPool = player.manaPool
+
+        // Spend colored mana
+        if (action.white > 0) updatedPool = updatedPool.spend(Color.WHITE, action.white)
+        if (action.blue > 0) updatedPool = updatedPool.spend(Color.BLUE, action.blue)
+        if (action.black > 0) updatedPool = updatedPool.spend(Color.BLACK, action.black)
+        if (action.red > 0) updatedPool = updatedPool.spend(Color.RED, action.red)
+        if (action.green > 0) updatedPool = updatedPool.spend(Color.GREEN, action.green)
+        if (action.colorless > 0) updatedPool = updatedPool.spendColorless(action.colorless)
+        if (action.generic > 0) updatedPool = updatedPool.spendGeneric(action.generic)
+
+        return state.updatePlayer(action.playerId) { it.copy(manaPool = updatedPool) }
+    }
+
+    private fun executeResolveTopOfStack(state: GameState, action: ResolveTopOfStack, events: MutableList<GameEvent>): GameState {
+        if (state.stack.isEmpty) {
+            throw IllegalStateException("Stack is empty")
+        }
+
+        val (cardOrNull, newStack) = state.stack.removeTop()
+        val card = cardOrNull ?: throw IllegalStateException("Failed to remove card from stack")
+
+        val ownerId = PlayerId.of(card.ownerId)
+
+        // Determine what happens when the spell resolves
+        return if (card.definition.isPermanent) {
+            // Permanent spells go to the battlefield
+            events.add(GameEvent.CardMoved(card.id.value, card.name, ZoneType.STACK.name, ZoneType.BATTLEFIELD.name))
+
+            val cardOnBattlefield = card.copy(
+                controllerId = card.ownerId,
+                summoningSickness = card.isCreature
+            )
+
+            state
+                .updateStack { newStack }
+                .updateBattlefield { it.addToTop(cardOnBattlefield) }
+                .updateTurnState { it.resetPriorityToActivePlayer() }
+        } else {
+            // Non-permanent spells (instants, sorceries) go to graveyard
+            events.add(GameEvent.CardMoved(card.id.value, card.name, ZoneType.STACK.name, ZoneType.GRAVEYARD.name))
+
+            state
+                .updateStack { newStack }
+                .updatePlayer(ownerId) { p -> p.updateGraveyard { it.addToTop(card) } }
+                .updateTurnState { it.resetPriorityToActivePlayer() }
+        }
+    }
+
+    private fun executePassPriority(state: GameState, action: PassPriority, events: MutableList<GameEvent>): GameState {
+        // Verify the player actually has priority
+        if (state.turnState.priorityPlayer != action.playerId) {
+            throw IllegalStateException("${action.playerId.value} does not have priority")
+        }
+
+        return state.passPriority()
+    }
+
+    private fun executeCounterSpell(state: GameState, action: CounterSpell, events: MutableList<GameEvent>): GameState {
+        val card = state.stack.getCard(action.cardId)
+            ?: throw IllegalStateException("Card not on stack")
+
+        val ownerId = PlayerId.of(card.ownerId)
+
+        events.add(GameEvent.CardMoved(card.id.value, card.name, ZoneType.STACK.name, ZoneType.GRAVEYARD.name))
+
+        return state
+            .updateStack { it.remove(action.cardId) }
+            .updatePlayer(ownerId) { p -> p.updateGraveyard { it.addToTop(card) } }
     }
 }

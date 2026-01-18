@@ -352,3 +352,50 @@ data class PlayerLoses(
 ) : Action {
     override val description: String = "${playerId.value} loses the game: $reason"
 }
+
+// =============================================================================
+// Casting and Stack Actions
+// =============================================================================
+
+@Serializable
+data class CastSpell(
+    val cardId: CardId,
+    val playerId: PlayerId
+) : Action {
+    override val description: String = "${playerId.value} casts a spell"
+}
+
+@Serializable
+data class PayManaCost(
+    val playerId: PlayerId,
+    val white: Int = 0,
+    val blue: Int = 0,
+    val black: Int = 0,
+    val red: Int = 0,
+    val green: Int = 0,
+    val colorless: Int = 0,
+    val generic: Int = 0
+) : Action {
+    override val description: String = "${playerId.value} pays mana"
+}
+
+@Serializable
+data class ResolveTopOfStack(
+    val playerId: PlayerId? = null
+) : Action {
+    override val description: String = "Resolve top of stack"
+}
+
+@Serializable
+data class PassPriority(
+    val playerId: PlayerId
+) : Action {
+    override val description: String = "${playerId.value} passes priority"
+}
+
+@Serializable
+data class CounterSpell(
+    val cardId: CardId
+) : Action {
+    override val description: String = "Counter spell"
+}

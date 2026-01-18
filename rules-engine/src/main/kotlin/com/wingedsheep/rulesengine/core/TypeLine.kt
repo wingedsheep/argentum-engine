@@ -65,6 +65,9 @@ data class TypeLine(
         fun sorcery(): TypeLine =
             TypeLine(cardTypes = setOf(CardType.SORCERY))
 
+        fun instant(): TypeLine =
+            TypeLine(cardTypes = setOf(CardType.INSTANT))
+
         fun basicLand(subtype: Subtype): TypeLine =
             TypeLine(
                 supertypes = setOf(Supertype.BASIC),

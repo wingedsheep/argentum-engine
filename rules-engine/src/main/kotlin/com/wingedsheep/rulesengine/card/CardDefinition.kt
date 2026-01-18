@@ -92,6 +92,17 @@ data class CardDefinition(
             oracleText = oracleText
         )
 
+        fun instant(
+            name: String,
+            manaCost: ManaCost,
+            oracleText: String
+        ): CardDefinition = CardDefinition(
+            name = name,
+            manaCost = manaCost,
+            typeLine = TypeLine.instant(),
+            oracleText = oracleText
+        )
+
         fun basicLand(
             name: String,
             subtype: Subtype
