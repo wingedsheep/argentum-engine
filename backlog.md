@@ -1,0 +1,401 @@
+# Rules Engine Backlog
+
+This backlog outlines the steps to build the MTG rules engine, starting with the Portal set as a demonstration.
+
+Portal is an ideal starting set because it's simplified: no instants, limited keywords, and straightforward mechanics.
+
+---
+
+## Phase 1: Foundation - Core Domain Models
+
+### 1.1 Create the `rules-engine` module
+- [ ] Add new Gradle module `rules-engine` with Kotlin 2.2 setup
+- [ ] Configure testing framework (JUnit 5 + Kotest assertions)
+- [ ] Set up module dependencies
+
+### 1.2 Card Identity and Basic Types
+- [ ] `CardId` - unique identifier for each card instance (value class)
+- [ ] `Color` enum (White, Blue, Black, Red, Green, Colorless)
+- [ ] `ManaSymbol` sealed class hierarchy ({W}, {U}, {B}, {R}, {G}, {C}, {X}, generic {1}, {2}, etc.)
+- [ ] `ManaCost` - collection of mana symbols with CMC calculation
+- [ ] `CardType` enum (Creature, Sorcery, Land, Enchantment, Artifact)
+- [ ] `Supertype` enum (Basic, Legendary)
+- [ ] `Subtype` - creature types (Dragon, Goblin, etc.), land types (Plains, Island, etc.)
+- [ ] Write unit tests for mana cost parsing and CMC calculation
+
+### 1.3 Card Definition Model
+- [ ] `CardDefinition` - the template/blueprint for a card (name, cost, types, text, P/T)
+- [ ] `CardInstance` - a specific instance of a card in the game (has CardId, references CardDefinition)
+- [ ] `CreatureStats` - power/toughness (base values and current values)
+- [ ] Write tests for card creation and stat tracking
+
+### 1.4 Game Zones
+- [ ] `Zone` sealed class (Library, Hand, Battlefield, Graveyard, Exile, Stack, Command)
+- [ ] `ZoneType` enum for zone identification
+- [ ] `ZonedCard` - card instance with its current zone
+- [ ] Zone transition tracking (for "when enters/leaves" triggers)
+- [ ] Write tests for zone operations
+
+---
+
+## Phase 2: Game State Management
+
+### 2.1 Player Model
+- [ ] `PlayerId` - unique player identifier
+- [ ] `Player` - life total, mana pool, poison counters
+- [ ] `ManaPool` - tracks available mana by color
+- [ ] Write tests for life/mana operations
+
+### 2.2 Game State
+- [ ] `GameState` - immutable snapshot of entire game
+  - Players and their zones (hand, library, graveyard)
+  - Battlefield (shared zone)
+  - Stack
+  - Exile
+  - Turn number, active player, priority holder
+  - Phase/step tracking
+- [ ] Implement copy/update mechanics for state transitions
+- [ ] Write tests for state immutability
+
+### 2.3 Turn Structure
+- [ ] `Phase` enum (Beginning, PrecombatMain, Combat, PostcombatMain, Ending)
+- [ ] `Step` enum (Untap, Upkeep, Draw, BeginCombat, DeclareAttackers, DeclareBlockers, CombatDamage, EndCombat, End, Cleanup)
+- [ ] `TurnManager` - handles phase/step progression
+- [ ] Write tests for turn progression
+
+---
+
+## Phase 3: Core Game Actions
+
+### 3.1 Basic Actions
+- [ ] `Action` sealed class hierarchy for all game actions
+- [ ] `DrawCard` action
+- [ ] `ShuffleLibrary` action
+- [ ] `GainLife` / `LoseLife` actions
+- [ ] `AddMana` / `SpendMana` actions
+- [ ] Write tests for each action
+
+### 3.2 Card Movement
+- [ ] `MoveCard` action (generic zone-to-zone movement)
+- [ ] Library → Hand (draw)
+- [ ] Hand → Stack (cast)
+- [ ] Stack → Battlefield (resolve permanent)
+- [ ] Stack → Graveyard (resolve sorcery)
+- [ ] Battlefield → Graveyard (destroy/sacrifice)
+- [ ] Any → Exile
+- [ ] Write tests for zone transitions
+
+### 3.3 Tapping
+- [ ] `TapStatus` on permanents
+- [ ] `Tap` / `Untap` actions
+- [ ] "Tap for mana" for lands
+- [ ] "Tap to attack" for creatures
+- [ ] Write tests for tap mechanics
+
+---
+
+## Phase 4: Casting and Resolution
+
+### 4.1 Mana Payment
+- [ ] `CanPayCost` - check if player can pay a mana cost
+- [ ] `PayManaCost` - deduct mana from pool
+- [ ] Handle generic mana payment (player choice)
+- [ ] Write tests for cost payment
+
+### 4.2 Casting Spells
+- [ ] `CastSpell` action
+- [ ] Timing restrictions (sorcery speed for Portal - main phase, empty stack)
+- [ ] Put spell on stack
+- [ ] Targeting (for spells that target)
+- [ ] Write tests for casting
+
+### 4.3 Stack and Resolution
+- [ ] `Stack` implementation (LIFO)
+- [ ] `ResolveTopOfStack` action
+- [ ] Permanent resolution (enters battlefield)
+- [ ] Sorcery resolution (effect then graveyard)
+- [ ] Write tests for stack operations
+
+### 4.4 Priority System
+- [ ] `Priority` - tracks who can act
+- [ ] `PassPriority` action
+- [ ] Round of priority passing leads to resolution
+- [ ] Note: Portal has no instants, so priority is simplified
+- [ ] Write tests for priority
+
+---
+
+## Phase 5: Combat System
+
+### 5.1 Combat Setup
+- [ ] `DeclareAttacker` action
+- [ ] Attacker requirements (untapped, no summoning sickness unless haste)
+- [ ] Tap attackers
+- [ ] Write tests for attack declaration
+
+### 5.2 Blocking
+- [ ] `DeclareBlocker` action
+- [ ] Blocker requirements (untapped creature)
+- [ ] Multiple blockers on one attacker (damage assignment order)
+- [ ] Flying restriction (can only be blocked by fliers/reach)
+- [ ] Write tests for blocking
+
+### 5.3 Combat Damage
+- [ ] `AssignCombatDamage` action
+- [ ] Simultaneous damage (first strike is not in Portal)
+- [ ] Trample damage assignment
+- [ ] Lethal damage calculation
+- [ ] Damage to players (unblocked attackers)
+- [ ] Write tests for damage calculation
+
+### 5.4 Creature Death
+- [ ] State-based action: creature with lethal damage dies
+- [ ] Move to graveyard
+- [ ] Write tests for creature death
+
+---
+
+## Phase 6: Keywords and Abilities (Portal Subset)
+
+### 6.1 Keyword Abilities
+- [ ] `Keyword` enum (Flying, Trample, Haste, Vigilance, First Strike)
+- [ ] `HasKeyword` check on creatures
+- [ ] Write tests for keyword detection
+
+### 6.2 Flying
+- [ ] Implement flying evasion in blocking rules
+- [ ] "Can only be blocked by creatures with flying or reach"
+- [ ] Write tests for flying
+
+### 6.3 Trample
+- [ ] Implement trample damage assignment
+- [ ] Excess damage goes to defending player
+- [ ] Write tests for trample
+
+### 6.4 Haste
+- [ ] Remove summoning sickness check for creatures with haste
+- [ ] Write tests for haste
+
+### 6.5 Vigilance
+- [ ] Attacking doesn't cause tap for vigilant creatures
+- [ ] Write tests for vigilance
+
+---
+
+## Phase 7: Triggered Abilities
+
+### 7.1 Trigger System
+- [ ] `Trigger` sealed class (OnEnterBattlefield, OnDeath, OnDraw, etc.)
+- [ ] `TriggeredAbility` - condition + effect
+- [ ] Trigger detection during state transitions
+- [ ] Write tests for trigger detection
+
+### 7.2 Common Triggers (Portal)
+- [ ] "When this creature enters the battlefield..."
+- [ ] "When this creature dies..."
+- [ ] "At the beginning of your upkeep..."
+- [ ] Write tests for each trigger type
+
+### 7.3 Trigger Resolution
+- [ ] Triggers go on the stack
+- [ ] APNAP order (Active Player, Non-Active Player)
+- [ ] Write tests for trigger stacking
+
+---
+
+## Phase 8: Targeting System
+
+### 8.1 Target Definition
+- [ ] `TargetRequirement` - what can be targeted (creature, player, etc.)
+- [ ] `Target` - selected target(s)
+- [ ] Legal target validation
+- [ ] Write tests for target validation
+
+### 8.2 Target Selection
+- [ ] Player choice for targets
+- [ ] "Target creature", "Target player", "Target creature or player"
+- [ ] "Any target" handling
+- [ ] Write tests for target selection
+
+### 8.3 Target Validation on Resolution
+- [ ] Check targets still legal when spell/ability resolves
+- [ ] Fizzle if all targets illegal
+- [ ] Write tests for fizzling
+
+---
+
+## Phase 9: Game Flow
+
+### 9.1 Game Setup
+- [ ] `StartGame` - initialize game state
+- [ ] Set starting life totals (20)
+- [ ] Determine starting player (coin flip / die roll)
+- [ ] Shuffle libraries
+- [ ] Draw opening hands (7 cards)
+- [ ] Write tests for game setup
+
+### 9.2 Mulligan
+- [ ] `Mulligan` action (London mulligan: draw 7, put X on bottom)
+- [ ] Mulligan decision per player
+- [ ] Write tests for mulligan
+
+### 9.3 Win/Lose Conditions
+- [ ] State-based action: player at 0 or less life loses
+- [ ] State-based action: player draws from empty library loses
+- [ ] State-based action: player with 10+ poison loses (not in Portal)
+- [ ] Declare winner when one player remains
+- [ ] Write tests for win conditions
+
+### 9.4 State-Based Actions
+- [ ] `CheckStateBasedActions` - runs between every action
+- [ ] Creature with 0 or less toughness dies
+- [ ] Creature with lethal damage marked dies
+- [ ] Player with 0 or less life loses
+- [ ] Legendary rule (not common in Portal, but include)
+- [ ] Write tests for SBAs
+
+---
+
+## Phase 10: Player Interaction Interface
+
+### 10.1 Decision Interface
+- [ ] `PlayerDecision` sealed class (choose target, choose attacker, etc.)
+- [ ] `PlayerInterface` - abstraction for player input
+- [ ] Synchronous decision model (request → response)
+- [ ] Write tests with mock player
+
+### 10.2 Choice Types
+- [ ] Choose targets
+- [ ] Choose attackers/blockers
+- [ ] Choose mana payment
+- [ ] Yes/no decisions
+- [ ] Choose order (damage assignment)
+- [ ] Choose cards (mulligan bottom)
+- [ ] Write tests for each choice type
+
+---
+
+## Phase 11: Card Script System
+
+### 11.1 Effect DSL
+- [ ] `Effect` sealed class hierarchy
+- [ ] `DealDamage(target, amount)`
+- [ ] `DrawCards(player, count)`
+- [ ] `GainLife(player, amount)`
+- [ ] `DestroyTarget(target)`
+- [ ] `CreateToken(definition, controller)`
+- [ ] Write tests for each effect
+
+### 11.2 Card Scripting
+- [ ] `CardScript` - defines a card's behavior
+- [ ] Link `CardDefinition` to its script
+- [ ] Script for static abilities (keywords)
+- [ ] Script for triggered abilities
+- [ ] Script for spell effects
+- [ ] Write tests for scripted cards
+
+### 11.3 Condition System
+- [ ] `Condition` sealed class
+- [ ] "If you control...", "If your life total is..."
+- [ ] Conditional effects
+- [ ] Write tests for conditions
+
+---
+
+## Phase 12: Portal Set Implementation
+
+Look at `scryfall-portal.json` in the project root for a complete set of cards.
+
+### 12.1 Set Infrastructure
+- [ ] `Set` - metadata (name, code, release date)
+- [ ] `CardCatalog` - registry of all card definitions
+- [ ] Set-based card loading
+- [ ] Write tests for set loading
+
+### 12.2 Scryfall Data Import
+- [ ] JSON parser for Scryfall card data
+- [ ] Map Scryfall fields to `CardDefinition`
+- [ ] Parse mana costs from string format
+- [ ] Parse type lines
+- [ ] Extract keywords from oracle text
+- [ ] Write tests for JSON parsing
+
+### 12.3 Portal Card Scripts
+- [ ] Basic lands (Plains, Island, Swamp, Mountain, Forest)
+- [ ] Vanilla creatures (no abilities)
+- [ ] French vanilla creatures (keywords only)
+- [ ] Simple sorceries (deal damage, gain life, draw cards)
+- [ ] Creatures with ETB triggers
+- [ ] Creatures with death triggers
+- [ ] Write tests for each card category
+
+### 12.4 Sample Portal Cards to Implement
+- [ ] **Lands**: Basic lands
+- [ ] **Vanilla**: Infantry Veteran, Raging Goblin
+- [ ] **Flying**: Cloud Pirates, Serpent Warrior
+- [ ] **ETB**: Hand of Death (destroy creature)
+- [ ] **Sorcery**: Lava Axe (5 damage to player)
+- [ ] **Sorcery**: Volcanic Hammer (3 damage to any target)
+- [ ] **Sorcery**: Divination (draw 2 cards)
+- [ ] **Life gain**: Angel's Feather triggers
+- [ ] Write integration tests for each card
+
+---
+
+## Phase 13: Integration Testing
+
+### 13.1 Full Game Simulations
+- [ ] Test complete game from start to finish
+- [ ] Test various board states
+- [ ] Test combat scenarios
+- [ ] Test spell interactions
+
+### 13.2 Scenario Tests
+- [ ] "Player A attacks with flier, Player B cannot block"
+- [ ] "Player casts Lava Axe, opponent goes to 15 life"
+- [ ] "Creature dies, death trigger fires"
+- [ ] "Player draws from empty library, loses game"
+
+### 13.3 Regression Test Suite
+- [ ] Catalog of known edge cases
+- [ ] Automated game replay tests
+- [ ] Golden file testing for deterministic scenarios
+
+---
+
+## Phase 14: Engine API
+
+### 14.1 Public API Design
+- [ ] `GameEngine` - main entry point
+- [ ] `createGame(players, decks)` → `GameState`
+- [ ] `executeAction(state, action)` → `GameState`
+- [ ] `getAvailableActions(state)` → `List<Action>`
+- [ ] `isGameOver(state)` → `Boolean`
+- [ ] Write API documentation
+
+### 14.2 Event System
+- [ ] `GameEvent` sealed class (CardDrawn, DamageDelt, CreatureDied, etc.)
+- [ ] Event emission during state transitions
+- [ ] Observer pattern for UI integration
+- [ ] Write tests for event emission
+
+---
+
+## Notes
+
+### Design Principles
+- **Immutable state**: All state transitions create new state objects
+- **Pure functions**: Actions are deterministic given same state and inputs
+- **Separation of concerns**: Card definitions vs. game rules vs. player interface
+- **Testability**: Every component can be tested in isolation
+- **Extensibility**: New sets add new cards, not new core rules (mostly)
+
+### Out of Scope (for now)
+- Instants and flash (Portal doesn't have them)
+- Enchantments (limited in Portal)
+- Artifacts (limited in Portal)
+- Planeswalkers (not in Portal)
+- Multiplayer
+- Sideboard
+- Best-of-3 match structure
+- Deck construction rules (minimum 60 cards, 4-of limit)
