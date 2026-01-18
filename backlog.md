@@ -41,56 +41,56 @@ Portal is an ideal starting set because it's simplified: limited keywords and st
 ## Phase 2: Game State Management
 
 ### 2.1 Player Model
-- [ ] `PlayerId` - unique player identifier
-- [ ] `Player` - life total, mana pool, poison counters
-- [ ] `ManaPool` - tracks available mana by color
-- [ ] Write tests for life/mana operations
+- [x] `PlayerId` - unique player identifier
+- [x] `Player` - life total, mana pool, poison counters
+- [x] `ManaPool` - tracks available mana by color
+- [x] Write tests for life/mana operations
 
 ### 2.2 Game State
-- [ ] `GameState` - immutable snapshot of entire game
+- [x] `GameState` - immutable snapshot of entire game
   - Players and their zones (hand, library, graveyard)
   - Battlefield (shared zone)
   - Stack
   - Exile
   - Turn number, active player, priority holder
   - Phase/step tracking
-- [ ] Implement copy/update mechanics for state transitions
-- [ ] Write tests for state immutability
+- [x] Implement copy/update mechanics for state transitions
+- [x] Write tests for state immutability
 
 ### 2.3 Turn Structure
-- [ ] `Phase` enum (Beginning, PrecombatMain, Combat, PostcombatMain, Ending)
-- [ ] `Step` enum (Untap, Upkeep, Draw, BeginCombat, DeclareAttackers, DeclareBlockers, CombatDamage, EndCombat, End, Cleanup)
-- [ ] `TurnManager` - handles phase/step progression
-- [ ] Write tests for turn progression
+- [x] `Phase` enum (Beginning, PrecombatMain, Combat, PostcombatMain, Ending)
+- [x] `Step` enum (Untap, Upkeep, Draw, BeginCombat, DeclareAttackers, DeclareBlockers, CombatDamage, EndCombat, End, Cleanup)
+- [x] `TurnState` - handles phase/step progression and priority
+- [x] Write tests for turn progression
 
 ---
 
 ## Phase 3: Core Game Actions
 
 ### 3.1 Basic Actions
-- [ ] `Action` sealed class hierarchy for all game actions
-- [ ] `DrawCard` action
-- [ ] `ShuffleLibrary` action
-- [ ] `GainLife` / `LoseLife` actions
-- [ ] `AddMana` / `SpendMana` actions
-- [ ] Write tests for each action
+- [x] `Action` sealed class hierarchy for all game actions
+- [x] `DrawCard` action
+- [x] `ShuffleLibrary` action
+- [x] `GainLife` / `LoseLife` actions
+- [x] `AddMana` / `SpendMana` actions
+- [x] Write tests for each action
 
 ### 3.2 Card Movement
-- [ ] `MoveCard` action (generic zone-to-zone movement)
-- [ ] Library → Hand (draw)
-- [ ] Hand → Stack (cast)
-- [ ] Stack → Battlefield (resolve permanent)
-- [ ] Stack → Graveyard (resolve sorcery)
-- [ ] Battlefield → Graveyard (destroy/sacrifice)
-- [ ] Any → Exile
-- [ ] Write tests for zone transitions
+- [x] `MoveCard` action (generic zone-to-zone movement)
+- [x] Library → Hand (draw)
+- [x] Hand → Stack (cast)
+- [x] Stack → Battlefield (resolve permanent)
+- [x] Stack → Graveyard (resolve sorcery)
+- [x] Battlefield → Graveyard (destroy/sacrifice)
+- [x] Any → Exile
+- [x] Write tests for zone transitions
 
 ### 3.3 Tapping
-- [ ] `TapStatus` on permanents
-- [ ] `Tap` / `Untap` actions
-- [ ] "Tap for mana" for lands
-- [ ] "Tap to attack" for creatures
-- [ ] Write tests for tap mechanics
+- [x] `TapStatus` on permanents
+- [x] `Tap` / `Untap` actions
+- [x] "Tap for mana" for lands
+- [x] "Tap to attack" for creatures
+- [x] Write tests for tap mechanics
 
 ---
 
