@@ -109,7 +109,7 @@ Portal is an ideal starting set because it's simplified: limited keywords and st
   - Instant speed (any time player has priority)
   - Flash (permanents that can be cast at instant speed)
 - [x] Put spell on stack
-- [ ] Targeting (for spells that target)
+- [x] Targeting (for spells that target)
 - [x] Write tests for casting
 
 ### 4.3 Stack and Resolution
@@ -258,21 +258,21 @@ Portal is an ideal starting set because it's simplified: limited keywords and st
 ## Phase 9: Targeting System
 
 ### 9.1 Target Definition
-- [ ] `TargetRequirement` - what can be targeted (creature, player, etc.)
-- [ ] `Target` - selected target(s)
-- [ ] Legal target validation
-- [ ] Write tests for target validation
+- [x] `TargetRequirement` - what can be targeted (creature, player, etc.)
+- [x] `Target` - selected target(s)
+- [x] Legal target validation
+- [x] Write tests for target validation
 
 ### 9.2 Target Selection
-- [ ] Player choice for targets
-- [ ] "Target creature", "Target player", "Target creature or player"
-- [ ] "Any target" handling
-- [ ] Write tests for target selection
+- [x] Player choice for targets
+- [x] "Target creature", "Target player", "Target creature or player"
+- [x] "Any target" handling
+- [x] Write tests for target selection
 
 ### 9.3 Target Validation on Resolution
-- [ ] Check targets still legal when spell/ability resolves
-- [ ] Fizzle if all targets illegal
-- [ ] Write tests for fizzling
+- [x] Check targets still legal when spell/ability resolves
+- [x] Fizzle if all targets illegal
+- [x] Write tests for fizzling
 
 ---
 
