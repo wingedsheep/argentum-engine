@@ -104,6 +104,7 @@ class AbilityRegistry {
  * Placeholder for activated abilities (tap abilities, etc.)
  * Full implementation in a future phase.
  */
+@kotlinx.serialization.Serializable
 data class ActivatedAbility(
     val id: AbilityId,
     val cost: AbilityCost,
@@ -114,18 +115,26 @@ data class ActivatedAbility(
 /**
  * Cost to activate an ability.
  */
+@kotlinx.serialization.Serializable
 sealed interface AbilityCost {
+    @kotlinx.serialization.Serializable
     data object Tap : AbilityCost
+    @kotlinx.serialization.Serializable
     data class Mana(val white: Int = 0, val blue: Int = 0, val black: Int = 0, val red: Int = 0, val green: Int = 0, val generic: Int = 0) : AbilityCost
+    @kotlinx.serialization.Serializable
     data class Composite(val costs: List<AbilityCost>) : AbilityCost
+    @kotlinx.serialization.Serializable
     data class PayLife(val amount: Int) : AbilityCost
+    @kotlinx.serialization.Serializable
     data class Sacrifice(val filter: String) : AbilityCost
+    @kotlinx.serialization.Serializable
     data class Discard(val count: Int) : AbilityCost
 }
 
 /**
  * Timing restriction for activated abilities.
  */
+@kotlinx.serialization.Serializable
 enum class TimingRestriction {
     INSTANT,    // Can activate any time you have priority
     SORCERY,    // Only during main phase, empty stack

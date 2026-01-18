@@ -330,68 +330,48 @@ Portal is an ideal starting set because it's simplified: limited keywords and st
 ## Phase 12: Card Script System
 
 ### 12.1 Effect DSL
-- [ ] `Effect` sealed class hierarchy
-- [ ] `DealDamage(target, amount)`
-- [ ] `DrawCards(player, count)`
-- [ ] `GainLife(player, amount)`
-- [ ] `DestroyTarget(target)`
-- [ ] `CreateToken(definition, controller)`
-- [ ] Write tests for each effect
+- [x] `Effect` sealed class hierarchy
+- [x] `DealDamage(target, amount)`
+- [x] `DrawCards(player, count)`
+- [x] `GainLife(player, amount)`
+- [x] `DestroyTarget(target)`
+- [x] `CreateToken(definition, controller)`
+- [x] Write tests for each effect
 
 ### 12.2 Card Scripting
-- [ ] `CardScript` - defines a card's behavior
-- [ ] Link `CardDefinition` to its script
-- [ ] Script for static abilities (keywords)
-- [ ] Script for triggered abilities
-- [ ] Script for spell effects
-- [ ] Write tests for scripted cards
+- [x] `CardScript` - defines a card's behavior
+- [x] Link `CardDefinition` to its script
+- [x] Script for static abilities (keywords)
+- [x] Script for triggered abilities
+- [x] Script for spell effects
+- [x] Write tests for scripted cards
 
 ### 12.3 Condition System
-- [ ] `Condition` sealed class
-- [ ] "If you control...", "If your life total is..."
-- [ ] Conditional effects
-- [ ] Write tests for conditions
+- [x] `Condition` sealed class
+- [x] "If you control...", "If your life total is..."
+- [x] Conditional effects
+- [x] Write tests for conditions
 
 ---
 
 ## Phase 13: Portal Set Implementation
 
-The complete Portal set is available in `scryfall-portal.json` in the project root.
+### 13.1 Set Module Structure
+- [ ] Create `sets/portal` module as a self-contained set package
+- [ ] Define `PortalSet` object that registers all cards
+- [ ] `CardRegistry` interface for sets to implement
+- [ ] Sets are loaded via service discovery or explicit registration
 
-**Approach**: Card scripts will be generated using an LLM (Claude) that produces Kotlin code or DSL scripts for each card based on the Scryfall data. This avoids building a complex automated parser for oracle text, while still achieving complete set coverage.
+### 13.2 Card Implementation
+- [ ] Implement all 222 cards from `scryfall-portal.json`
+- [ ] Each card is a Kotlin object implementing `CardScript`
+- [ ] Use LLM to generate initial implementations from Scryfall data
+- [ ] Validate all cards load and instantiate correctly
 
-### 13.1 Set Infrastructure
-- [ ] `Set` - metadata (name, code, release date)
-- [ ] `CardCatalog` - registry of all card definitions
-- [ ] Set-based card loading
-- [ ] Write tests for set loading
-
-### 13.2 Scryfall Data Import
-- [ ] JSON parser for Scryfall card data
-- [ ] Map Scryfall fields to `CardDefinition`
-- [ ] Parse mana costs from string format
-- [ ] Parse type lines
-- [ ] Extract keywords from oracle text
-- [ ] Write tests for JSON parsing
-
-### 13.3 Complete Portal Set Scripts
-Generate scripts for all cards in the Portal set using LLM assistance:
-- [ ] Basic lands (Plains, Island, Swamp, Mountain, Forest)
-- [ ] Vanilla creatures (no abilities)
-- [ ] French vanilla creatures (keywords only)
-- [ ] Sorceries (damage, life gain, card draw, destruction, etc.)
-- [ ] Creatures with ETB triggers
-- [ ] Creatures with death triggers
-- [ ] Creatures with activated abilities
-- [ ] Enchantments (if any in Portal)
-- [ ] Write integration tests for each card
-
-### 13.4 Card Script Generation Workflow
-- [ ] Export card list from scryfall-portal.json
-- [ ] Group cards by complexity (vanilla, keywords-only, abilities)
-- [ ] Generate scripts per card using LLM
-- [ ] Review and test each generated script
-- [ ] Full set validation (all cards load and have valid scripts)
+### 13.3 Card Scenario Tests
+- [ ] Write focused tests verifying individual card scripts work correctly
+- [ ] Test card-to-card interactions (e.g., creature with ETB trigger, combat with keywords)
+- [ ] Cover edge cases for cards with complex abilities
 
 ---
 

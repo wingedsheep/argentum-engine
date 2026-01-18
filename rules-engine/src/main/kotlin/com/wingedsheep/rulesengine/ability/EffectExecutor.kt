@@ -46,6 +46,7 @@ object EffectExecutor {
             is AddColorlessManaEffect -> executeAddColorlessMana(state, effect, controllerId, events)
             is CreateTokenEffect -> executeCreateToken(state, effect, controllerId, events)
             is CompositeEffect -> executeComposite(state, effect, controllerId, sourceId, targets, events)
+            is ConditionalEffect -> executeConditional(state, effect, controllerId, sourceId, targets, events)
         }
     }
 
@@ -364,6 +365,23 @@ object EffectExecutor {
             currentState = execute(currentState, subEffect, controllerId, sourceId, targets, events)
         }
         return currentState
+    }
+
+    private fun executeConditional(
+        state: GameState,
+        effect: ConditionalEffect,
+        controllerId: PlayerId,
+        sourceId: CardId,
+        targets: List<ChosenTarget>,
+        events: MutableList<GameEvent>
+    ): GameState {
+        return if (effect.condition.isMet(state, controllerId, sourceId)) {
+            execute(state, effect.effect, controllerId, sourceId, targets, events)
+        } else if (effect.elseEffect != null) {
+            execute(state, effect.elseEffect, controllerId, sourceId, targets, events)
+        } else {
+            state
+        }
     }
 
     // =============================================================================
