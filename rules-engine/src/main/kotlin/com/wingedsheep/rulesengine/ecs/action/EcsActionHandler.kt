@@ -823,7 +823,8 @@ class EcsActionHandler {
                 val toughness = cardComponent.definition.creatureStats?.baseToughness ?: 0
                 // Note: This doesn't account for modifiers - in practice, use StateProjector
 
-                if (damage >= toughness && toughness > 0) {
+                // Creature dies if: toughness is 0 or less, OR damage >= toughness (with toughness > 0)
+                if (toughness <= 0 || damage >= toughness) {
                     val graveyardZone = ZoneId.graveyard(cardComponent.ownerId)
                     events.add(EcsActionEvent.CreatureDied(entityId, cardComponent.definition.name, cardComponent.ownerId))
 

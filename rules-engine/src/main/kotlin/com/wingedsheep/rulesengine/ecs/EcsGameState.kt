@@ -16,15 +16,14 @@ import kotlinx.serialization.Serializable
  * All game objects are entities with components attached.
  * Zones contain entity IDs rather than full objects.
  *
- * This is the new game state model that runs alongside the existing GameState
- * during migration. Use [StateConverter] to convert between the two formats.
- *
- * Key differences from old GameState:
+ * Key features:
  * - Entities are stored in a flat map by ID
  * - Components define entity properties (no fixed class schema)
  * - Zones store entity IDs, not card objects
  * - Players are entities too (with PlayerComponent)
  * - Dynamic component attachment for runtime extensibility
+ *
+ * Use [EcsGameEngine] for game orchestration (setup, action execution, etc.)
  */
 @Serializable
 data class EcsGameState(
