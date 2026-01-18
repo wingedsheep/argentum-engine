@@ -2,7 +2,7 @@
 
 This backlog outlines the steps to build the MTG rules engine, starting with the Portal set as a demonstration.
 
-Portal is an ideal starting set because it's simplified: no instants, limited keywords, and straightforward mechanics.
+Portal is an ideal starting set because it's simplified: limited keywords and straightforward mechanics. While Portal itself doesn't contain instants, the engine supports the full rules including instants, flash, enchantments, and artifacts for future set expansion.
 
 ---
 
@@ -104,7 +104,10 @@ Portal is an ideal starting set because it's simplified: no instants, limited ke
 
 ### 4.2 Casting Spells
 - [ ] `CastSpell` action
-- [ ] Timing restrictions (sorcery speed for Portal - main phase, empty stack)
+- [ ] Timing restrictions:
+  - Sorcery speed (main phase, empty stack, active player has priority)
+  - Instant speed (any time player has priority)
+  - Flash (permanents that can be cast at instant speed)
 - [ ] Put spell on stack
 - [ ] Targeting (for spells that target)
 - [ ] Write tests for casting
@@ -113,14 +116,15 @@ Portal is an ideal starting set because it's simplified: no instants, limited ke
 - [ ] `Stack` implementation (LIFO)
 - [ ] `ResolveTopOfStack` action
 - [ ] Permanent resolution (enters battlefield)
-- [ ] Sorcery resolution (effect then graveyard)
+- [ ] Sorcery/Instant resolution (effect then graveyard)
 - [ ] Write tests for stack operations
 
 ### 4.4 Priority System
 - [ ] `Priority` - tracks who can act
 - [ ] `PassPriority` action
 - [ ] Round of priority passing leads to resolution
-- [ ] Note: Portal has no instants, so priority is simplified
+- [ ] Active player receives priority after each spell/ability resolves
+- [ ] Responding to spells/abilities (instant-speed interaction)
 - [ ] Write tests for priority
 
 ---
@@ -158,8 +162,8 @@ Portal is an ideal starting set because it's simplified: no instants, limited ke
 ## Phase 6: Keywords and Abilities (Portal Subset)
 
 ### 6.1 Keyword Abilities
-- [ ] `Keyword` enum (Flying, Trample, Haste, Vigilance, First Strike)
-- [ ] `HasKeyword` check on creatures
+- [ ] `Keyword` enum (Flying, Trample, Haste, Vigilance, First Strike, Flash, Lifelink, Deathtouch, Reach, Defender)
+- [ ] `HasKeyword` check on permanents
 - [ ] Write tests for keyword detection
 
 ### 6.2 Flying
@@ -179,6 +183,31 @@ Portal is an ideal starting set because it's simplified: no instants, limited ke
 ### 6.5 Vigilance
 - [ ] Attacking doesn't cause tap for vigilant creatures
 - [ ] Write tests for vigilance
+
+### 6.6 Flash
+- [ ] Permanents with flash can be cast at instant speed
+- [ ] Write tests for flash
+
+### 6.7 First Strike
+- [ ] First strike damage step before regular damage
+- [ ] Double strike deals damage in both steps
+- [ ] Write tests for first strike
+
+### 6.8 Lifelink
+- [ ] Damage dealt by creature with lifelink causes controller to gain life
+- [ ] Write tests for lifelink
+
+### 6.9 Deathtouch
+- [ ] Any amount of damage from deathtouch source is lethal
+- [ ] Write tests for deathtouch
+
+### 6.10 Reach
+- [ ] Creatures with reach can block fliers
+- [ ] Write tests for reach
+
+### 6.11 Defender
+- [ ] Creatures with defender cannot attack
+- [ ] Write tests for defender
 
 ---
 
@@ -203,30 +232,51 @@ Portal is an ideal starting set because it's simplified: no instants, limited ke
 
 ---
 
-## Phase 8: Targeting System
+## Phase 8: Enchantments and Artifacts
 
-### 8.1 Target Definition
+### 8.1 Enchantments
+- [ ] Non-Aura enchantments (global effects)
+- [ ] Aura enchantments (attached to permanents/players)
+- [ ] Aura targeting on cast
+- [ ] Aura attachment rules (falls off if target invalid)
+- [ ] Static abilities from enchantments
+- [ ] Write tests for enchantments
+
+### 8.2 Artifacts
+- [ ] Artifact permanents
+- [ ] Artifact creatures
+- [ ] Equipment (attach to creatures)
+- [ ] Equip cost and timing (sorcery speed)
+- [ ] Equipment falls off when creature leaves
+- [ ] Activated abilities on artifacts
+- [ ] Write tests for artifacts
+
+---
+
+## Phase 9: Targeting System
+
+### 9.1 Target Definition
 - [ ] `TargetRequirement` - what can be targeted (creature, player, etc.)
 - [ ] `Target` - selected target(s)
 - [ ] Legal target validation
 - [ ] Write tests for target validation
 
-### 8.2 Target Selection
+### 9.2 Target Selection
 - [ ] Player choice for targets
 - [ ] "Target creature", "Target player", "Target creature or player"
 - [ ] "Any target" handling
 - [ ] Write tests for target selection
 
-### 8.3 Target Validation on Resolution
+### 9.3 Target Validation on Resolution
 - [ ] Check targets still legal when spell/ability resolves
 - [ ] Fizzle if all targets illegal
 - [ ] Write tests for fizzling
 
 ---
 
-## Phase 9: Game Flow
+## Phase 10: Game Flow
 
-### 9.1 Game Setup
+### 10.1 Game Setup
 - [ ] `StartGame` - initialize game state
 - [ ] Set starting life totals (20)
 - [ ] Determine starting player (coin flip / die roll)
@@ -234,19 +284,19 @@ Portal is an ideal starting set because it's simplified: no instants, limited ke
 - [ ] Draw opening hands (7 cards)
 - [ ] Write tests for game setup
 
-### 9.2 Mulligan
+### 10.2 Mulligan
 - [ ] `Mulligan` action (London mulligan: draw 7, put X on bottom)
 - [ ] Mulligan decision per player
 - [ ] Write tests for mulligan
 
-### 9.3 Win/Lose Conditions
+### 10.3 Win/Lose Conditions
 - [ ] State-based action: player at 0 or less life loses
 - [ ] State-based action: player draws from empty library loses
 - [ ] State-based action: player with 10+ poison loses (not in Portal)
 - [ ] Declare winner when one player remains
 - [ ] Write tests for win conditions
 
-### 9.4 State-Based Actions
+### 10.4 State-Based Actions
 - [ ] `CheckStateBasedActions` - runs between every action
 - [ ] Creature with 0 or less toughness dies
 - [ ] Creature with lethal damage marked dies
@@ -256,15 +306,15 @@ Portal is an ideal starting set because it's simplified: no instants, limited ke
 
 ---
 
-## Phase 10: Player Interaction Interface
+## Phase 11: Player Interaction Interface
 
-### 10.1 Decision Interface
+### 11.1 Decision Interface
 - [ ] `PlayerDecision` sealed class (choose target, choose attacker, etc.)
 - [ ] `PlayerInterface` - abstraction for player input
 - [ ] Synchronous decision model (request → response)
 - [ ] Write tests with mock player
 
-### 10.2 Choice Types
+### 11.2 Choice Types
 - [ ] Choose targets
 - [ ] Choose attackers/blockers
 - [ ] Choose mana payment
@@ -275,9 +325,9 @@ Portal is an ideal starting set because it's simplified: no instants, limited ke
 
 ---
 
-## Phase 11: Card Script System
+## Phase 12: Card Script System
 
-### 11.1 Effect DSL
+### 12.1 Effect DSL
 - [ ] `Effect` sealed class hierarchy
 - [ ] `DealDamage(target, amount)`
 - [ ] `DrawCards(player, count)`
@@ -286,7 +336,7 @@ Portal is an ideal starting set because it's simplified: no instants, limited ke
 - [ ] `CreateToken(definition, controller)`
 - [ ] Write tests for each effect
 
-### 11.2 Card Scripting
+### 12.2 Card Scripting
 - [ ] `CardScript` - defines a card's behavior
 - [ ] Link `CardDefinition` to its script
 - [ ] Script for static abilities (keywords)
@@ -294,7 +344,7 @@ Portal is an ideal starting set because it's simplified: no instants, limited ke
 - [ ] Script for spell effects
 - [ ] Write tests for scripted cards
 
-### 11.3 Condition System
+### 12.3 Condition System
 - [ ] `Condition` sealed class
 - [ ] "If you control...", "If your life total is..."
 - [ ] Conditional effects
@@ -302,17 +352,19 @@ Portal is an ideal starting set because it's simplified: no instants, limited ke
 
 ---
 
-## Phase 12: Portal Set Implementation
+## Phase 13: Portal Set Implementation
 
-Look at `scryfall-portal.json` in the project root for a complete set of cards.
+The complete Portal set is available in `scryfall-portal.json` in the project root.
 
-### 12.1 Set Infrastructure
+**Approach**: Card scripts will be generated using an LLM (Claude) that produces Kotlin code or DSL scripts for each card based on the Scryfall data. This avoids building a complex automated parser for oracle text, while still achieving complete set coverage.
+
+### 13.1 Set Infrastructure
 - [ ] `Set` - metadata (name, code, release date)
 - [ ] `CardCatalog` - registry of all card definitions
 - [ ] Set-based card loading
 - [ ] Write tests for set loading
 
-### 12.2 Scryfall Data Import
+### 13.2 Scryfall Data Import
 - [ ] JSON parser for Scryfall card data
 - [ ] Map Scryfall fields to `CardDefinition`
 - [ ] Parse mana costs from string format
@@ -320,52 +372,51 @@ Look at `scryfall-portal.json` in the project root for a complete set of cards.
 - [ ] Extract keywords from oracle text
 - [ ] Write tests for JSON parsing
 
-### 12.3 Portal Card Scripts
+### 13.3 Complete Portal Set Scripts
+Generate scripts for all cards in the Portal set using LLM assistance:
 - [ ] Basic lands (Plains, Island, Swamp, Mountain, Forest)
 - [ ] Vanilla creatures (no abilities)
 - [ ] French vanilla creatures (keywords only)
-- [ ] Simple sorceries (deal damage, gain life, draw cards)
+- [ ] Sorceries (damage, life gain, card draw, destruction, etc.)
 - [ ] Creatures with ETB triggers
 - [ ] Creatures with death triggers
-- [ ] Write tests for each card category
-
-### 12.4 Sample Portal Cards to Implement
-- [ ] **Lands**: Basic lands
-- [ ] **Vanilla**: Infantry Veteran, Raging Goblin
-- [ ] **Flying**: Cloud Pirates, Serpent Warrior
-- [ ] **ETB**: Hand of Death (destroy creature)
-- [ ] **Sorcery**: Lava Axe (5 damage to player)
-- [ ] **Sorcery**: Volcanic Hammer (3 damage to any target)
-- [ ] **Sorcery**: Divination (draw 2 cards)
-- [ ] **Life gain**: Angel's Feather triggers
+- [ ] Creatures with activated abilities
+- [ ] Enchantments (if any in Portal)
 - [ ] Write integration tests for each card
+
+### 13.4 Card Script Generation Workflow
+- [ ] Export card list from scryfall-portal.json
+- [ ] Group cards by complexity (vanilla, keywords-only, abilities)
+- [ ] Generate scripts per card using LLM
+- [ ] Review and test each generated script
+- [ ] Full set validation (all cards load and have valid scripts)
 
 ---
 
-## Phase 13: Integration Testing
+## Phase 14: Integration Testing
 
-### 13.1 Full Game Simulations
+### 14.1 Full Game Simulations
 - [ ] Test complete game from start to finish
 - [ ] Test various board states
 - [ ] Test combat scenarios
 - [ ] Test spell interactions
 
-### 13.2 Scenario Tests
+### 14.2 Scenario Tests
 - [ ] "Player A attacks with flier, Player B cannot block"
 - [ ] "Player casts Lava Axe, opponent goes to 15 life"
 - [ ] "Creature dies, death trigger fires"
 - [ ] "Player draws from empty library, loses game"
 
-### 13.3 Regression Test Suite
+### 14.3 Regression Test Suite
 - [ ] Catalog of known edge cases
 - [ ] Automated game replay tests
 - [ ] Golden file testing for deterministic scenarios
 
 ---
 
-## Phase 14: Engine API
+## Phase 15: Engine API
 
-### 14.1 Public API Design
+### 15.1 Public API Design
 - [ ] `GameEngine` - main entry point
 - [ ] `createGame(players, decks)` → `GameState`
 - [ ] `executeAction(state, action)` → `GameState`
@@ -373,7 +424,7 @@ Look at `scryfall-portal.json` in the project root for a complete set of cards.
 - [ ] `isGameOver(state)` → `Boolean`
 - [ ] Write API documentation
 
-### 14.2 Event System
+### 15.2 Event System
 - [ ] `GameEvent` sealed class (CardDrawn, DamageDelt, CreatureDied, etc.)
 - [ ] Event emission during state transitions
 - [ ] Observer pattern for UI integration
@@ -391,11 +442,8 @@ Look at `scryfall-portal.json` in the project root for a complete set of cards.
 - **Extensibility**: New sets add new cards, not new core rules (mostly)
 
 ### Out of Scope (for now)
-- Instants and flash (Portal doesn't have them)
-- Enchantments (limited in Portal)
-- Artifacts (limited in Portal)
 - Planeswalkers (not in Portal)
-- Multiplayer
+- Multiplayer (more than 2 players)
 - Sideboard
 - Best-of-3 match structure
-- Deck construction rules (minimum 60 cards, 4-of limit)
+- Deck construction validation (minimum 60 cards, 4-of limit)
