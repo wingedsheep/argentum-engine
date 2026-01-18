@@ -279,32 +279,32 @@ Portal is an ideal starting set because it's simplified: limited keywords and st
 ## Phase 10: Game Flow
 
 ### 10.1 Game Setup
-- [ ] `StartGame` - initialize game state
-- [ ] Set starting life totals (20)
-- [ ] Determine starting player (coin flip / die roll)
-- [ ] Shuffle libraries
-- [ ] Draw opening hands (7 cards)
-- [ ] Write tests for game setup
+- [x] `StartGame` - initialize game state
+- [x] Set starting life totals (20)
+- [x] Determine starting player (coin flip / die roll)
+- [x] Shuffle libraries
+- [x] Draw opening hands (7 cards)
+- [x] Write tests for game setup
 
 ### 10.2 Mulligan
-- [ ] `Mulligan` action (London mulligan: draw 7, put X on bottom)
-- [ ] Mulligan decision per player
-- [ ] Write tests for mulligan
+- [x] `Mulligan` action (London mulligan: draw 7, put X on bottom)
+- [x] Mulligan decision per player
+- [x] Write tests for mulligan
 
 ### 10.3 Win/Lose Conditions
-- [ ] State-based action: player at 0 or less life loses
-- [ ] State-based action: player draws from empty library loses
-- [ ] State-based action: player with 10+ poison loses (not in Portal)
-- [ ] Declare winner when one player remains
-- [ ] Write tests for win conditions
+- [x] State-based action: player at 0 or less life loses
+- [x] State-based action: player draws from empty library loses
+- [x] State-based action: player with 10+ poison loses (not in Portal)
+- [x] Declare winner when one player remains
+- [x] Write tests for win conditions
 
 ### 10.4 State-Based Actions
-- [ ] `CheckStateBasedActions` - runs between every action
-- [ ] Creature with 0 or less toughness dies
-- [ ] Creature with lethal damage marked dies
-- [ ] Player with 0 or less life loses
-- [ ] Legendary rule (not common in Portal, but include)
-- [ ] Write tests for SBAs
+- [x] `CheckStateBasedActions` - runs between every action
+- [x] Creature with 0 or less toughness dies
+- [x] Creature with lethal damage marked dies
+- [x] Player with 0 or less life loses
+- [x] Legendary rule (not common in Portal, but include)
+- [x] Write tests for SBAs
 
 ---
 

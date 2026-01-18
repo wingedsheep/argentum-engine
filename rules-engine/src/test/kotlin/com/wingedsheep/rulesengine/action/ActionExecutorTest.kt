@@ -233,14 +233,16 @@ class ActionExecutorTest : FunSpec({
             result.events shouldHaveSize 2
         }
 
-        test("DrawCard from empty library draws nothing") {
+        test("DrawCard from empty library causes player to lose") {
             val state = GameState.newGame(createPlayer1(), createPlayer2())
             val action = DrawCard(player1Id, 1)
 
             val result = ActionExecutor.execute(state, action) as ActionResult.Success
 
             result.state.getPlayer(player1Id).handSize shouldBe 0
-            result.events shouldHaveSize 0
+            result.state.getPlayer(player1Id).hasLost shouldBe true
+            result.events.any { it is GameEvent.TriedToDrawFromEmptyLibrary } shouldBe true
+            result.events.any { it is GameEvent.PlayerLost } shouldBe true
         }
 
         test("DrawSpecificCard draws specific card from library") {

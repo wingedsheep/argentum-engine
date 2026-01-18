@@ -208,6 +208,14 @@ object ActionExecutor {
                         hand = p.hand.addToTop(card)
                     )
                 }
+            } else {
+                // Drawing from an empty library causes the player to lose
+                // This is tracked via an event - the actual loss is handled by state-based actions
+                events.add(GameEvent.TriedToDrawFromEmptyLibrary(action.playerId.value))
+                currentState = currentState.updatePlayer(action.playerId) { p ->
+                    p.copy(hasLost = true)
+                }
+                events.add(GameEvent.PlayerLost(action.playerId.value, "Attempted to draw from an empty library"))
             }
         }
         return currentState
@@ -906,6 +914,30 @@ object ActionExecutor {
                 if (player.poisonCounters >= 10 && !player.hasLost) {
                     events.add(GameEvent.PlayerLost(playerId.value, "10 or more poison counters"))
                     currentState = currentState.updatePlayer(playerId) { it.markAsLost() }
+                    actionsPerformed = true
+                }
+            }
+
+            // Legendary rule: if a player controls two or more legendary permanents with the same name,
+            // they must choose one to keep and put the rest into the graveyard
+            // (For now, automatically keep the first one encountered)
+            val legendaryPermanents = currentState.battlefield.cards
+                .filter { it.definition.typeLine.supertypes.contains(com.wingedsheep.rulesengine.core.Supertype.LEGENDARY) }
+                .groupBy { it.controllerId to it.name }
+                .filter { it.value.size > 1 }
+
+            for ((_, permanents) in legendaryPermanents) {
+                // Keep the first one, put the rest into the graveyard
+                val toSacrifice = permanents.drop(1)
+
+                for (permanent in toSacrifice) {
+                    val ownerId = PlayerId.of(permanent.ownerId)
+                    events.add(GameEvent.LegendaryRuleApplied(permanent.id.value, permanent.name, permanent.controllerId))
+                    events.add(GameEvent.CardMoved(permanent.id.value, permanent.name, ZoneType.BATTLEFIELD.name, ZoneType.GRAVEYARD.name))
+
+                    currentState = currentState
+                        .updateBattlefield { it.remove(permanent.id) }
+                        .updatePlayer(ownerId) { p -> p.updateGraveyard { it.addToTop(permanent) } }
                     actionsPerformed = true
                 }
             }

@@ -59,6 +59,8 @@ data class Zone(
 
     fun shuffle(random: java.util.Random): Zone = copy(cards = cards.shuffled(random))
 
+    fun shuffle(random: kotlin.random.Random): Zone = copy(cards = cards.shuffled(random))
+
     fun filter(predicate: (CardInstance) -> Boolean): List<CardInstance> = cards.filter(predicate)
 
     fun findAll(predicate: (CardInstance) -> Boolean): List<CardInstance> = cards.filter(predicate)

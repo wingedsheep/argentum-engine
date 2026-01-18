@@ -106,4 +106,16 @@ sealed interface GameEvent {
     data class GameEnded(
         val winnerId: String?
     ) : GameEvent
+
+    @Serializable
+    data class TriedToDrawFromEmptyLibrary(
+        val playerId: String
+    ) : GameEvent
+
+    @Serializable
+    data class LegendaryRuleApplied(
+        val cardId: String,
+        val cardName: String,
+        val playerId: String
+    ) : GameEvent
 }
