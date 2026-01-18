@@ -129,6 +129,12 @@ object ActionExecutor {
             // Triggered abilities
             is PutTriggerOnStack -> executePutTriggerOnStack(state, action, events)
             is ResolveTriggeredAbility -> executeResolveTriggeredAbility(state, action, events)
+
+            // Attachment actions
+            is AttachCard -> executeAttachCard(state, action, events)
+            is DetachCard -> executeDetachCard(state, action, events)
+            is Equip -> executeEquip(state, action, events)
+            is Unattach -> executeUnattach(state, action, events)
         }
 
         return newState to events
@@ -963,5 +969,147 @@ object ActionExecutor {
             targets = stackedTrigger.chosenTargets,
             events = events
         ).updateTurnState { it.resetPriorityToActivePlayer() }
+    }
+
+    // =============================================================================
+    // Attachment Actions
+    // =============================================================================
+
+    private fun executeAttachCard(state: GameState, action: AttachCard, events: MutableList<GameEvent>): GameState {
+        val attachment = state.battlefield.getCard(action.attachmentId)
+            ?: throw IllegalStateException("Attachment not found on battlefield")
+
+        val target = state.battlefield.getCard(action.targetId)
+            ?: throw IllegalStateException("Target permanent not found on battlefield")
+
+        // Validate attachment rules
+        if (attachment.isAura) {
+            // Auras can attach to various permanents depending on their "Enchant X" ability
+            // For now, we allow attaching to any permanent
+        } else if (attachment.isEquipment) {
+            // Equipment can only attach to creatures you control
+            if (!target.isCreature) {
+                throw IllegalStateException("Equipment can only be attached to creatures")
+            }
+            if (target.controllerId != attachment.controllerId) {
+                throw IllegalStateException("Equipment can only be attached to creatures you control")
+            }
+        }
+
+        // If already attached to something, detach first
+        val stateAfterDetach = if (attachment.isAttached) {
+            state.updateBattlefield { zone ->
+                zone.updateCard(action.attachmentId) { it.detach() }
+            }
+        } else {
+            state
+        }
+
+        events.add(GameEvent.CardMoved(
+            cardId = action.attachmentId.value,
+            cardName = attachment.name,
+            fromZone = ZoneType.BATTLEFIELD.name,
+            toZone = ZoneType.BATTLEFIELD.name  // Stays on battlefield but now attached
+        ))
+
+        return stateAfterDetach.updateBattlefield { zone ->
+            zone.updateCard(action.attachmentId) { it.attachTo(action.targetId) }
+        }
+    }
+
+    private fun executeDetachCard(state: GameState, action: DetachCard, events: MutableList<GameEvent>): GameState {
+        val attachment = state.battlefield.getCard(action.attachmentId)
+            ?: throw IllegalStateException("Attachment not found on battlefield")
+
+        if (!attachment.isAttached) {
+            throw IllegalStateException("Card is not attached to anything")
+        }
+
+        events.add(GameEvent.CardMoved(
+            cardId = action.attachmentId.value,
+            cardName = attachment.name,
+            fromZone = ZoneType.BATTLEFIELD.name,
+            toZone = ZoneType.BATTLEFIELD.name  // Stays on battlefield but now detached
+        ))
+
+        return state.updateBattlefield { zone ->
+            zone.updateCard(action.attachmentId) { it.detach() }
+        }
+    }
+
+    private fun executeEquip(state: GameState, action: Equip, events: MutableList<GameEvent>): GameState {
+        val equipment = state.battlefield.getCard(action.equipmentId)
+            ?: throw IllegalStateException("Equipment not found on battlefield")
+
+        if (!equipment.isEquipment) {
+            throw IllegalStateException("Card is not equipment")
+        }
+
+        if (equipment.controllerId != action.controllerId.value) {
+            throw IllegalStateException("You don't control this equipment")
+        }
+
+        val target = state.battlefield.getCard(action.targetCreatureId)
+            ?: throw IllegalStateException("Target creature not found on battlefield")
+
+        if (!target.isCreature) {
+            throw IllegalStateException("Target is not a creature")
+        }
+
+        if (target.controllerId != action.controllerId.value) {
+            throw IllegalStateException("You can only equip creatures you control")
+        }
+
+        // Check timing - Equip is sorcery speed
+        if (!state.isMainPhase || !state.stackIsEmpty) {
+            throw IllegalStateException("Equip can only be activated at sorcery speed")
+        }
+
+        if (state.turnState.activePlayer != action.controllerId) {
+            throw IllegalStateException("You can only equip during your turn")
+        }
+
+        // Equip cost would be paid through PayManaCost action
+        // This action just performs the attachment
+
+        // If already attached to something, detach first
+        val stateAfterDetach = if (equipment.isAttached) {
+            state.updateBattlefield { zone ->
+                zone.updateCard(action.equipmentId) { it.detach() }
+            }
+        } else {
+            state
+        }
+
+        events.add(GameEvent.CardMoved(
+            cardId = action.equipmentId.value,
+            cardName = equipment.name,
+            fromZone = ZoneType.BATTLEFIELD.name,
+            toZone = ZoneType.BATTLEFIELD.name  // Stays on battlefield but now equipped
+        ))
+
+        return stateAfterDetach.updateBattlefield { zone ->
+            zone.updateCard(action.equipmentId) { it.attachTo(action.targetCreatureId) }
+        }
+    }
+
+    private fun executeUnattach(state: GameState, action: Unattach, events: MutableList<GameEvent>): GameState {
+        val attachment = state.battlefield.getCard(action.attachmentId)
+            ?: throw IllegalStateException("Attachment not found on battlefield")
+
+        if (!attachment.isAttached) {
+            return state  // Already detached, nothing to do
+        }
+
+        events.add(GameEvent.CardMoved(
+            cardId = action.attachmentId.value,
+            cardName = attachment.name,
+            fromZone = ZoneType.BATTLEFIELD.name,
+            toZone = ZoneType.BATTLEFIELD.name  // Stays on battlefield but now detached
+        ))
+
+        return state.updateBattlefield { zone ->
+            zone.updateCard(action.attachmentId) { it.detach() }
+        }
     }
 }

@@ -34,6 +34,12 @@ value class Subtype(val value: String) {
         val MOUNTAIN = Subtype("Mountain")
         val FOREST = Subtype("Forest")
 
+        // Enchantment subtypes
+        val AURA = Subtype("Aura")
+
+        // Artifact subtypes
+        val EQUIPMENT = Subtype("Equipment")
+
         fun of(value: String): Subtype = Subtype(value)
     }
 }

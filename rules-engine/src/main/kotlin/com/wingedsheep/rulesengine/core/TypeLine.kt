@@ -16,6 +16,10 @@ data class TypeLine(
     val isArtifact: Boolean get() = CardType.ARTIFACT in cardTypes
     val isPermanent: Boolean get() = cardTypes.any { it.isPermanent }
 
+    val isAura: Boolean get() = isEnchantment && hasSubtype(Subtype.AURA)
+    val isEquipment: Boolean get() = isArtifact && hasSubtype(Subtype.EQUIPMENT)
+    val isArtifactCreature: Boolean get() = isArtifact && isCreature
+
     val isBasicLand: Boolean get() = isLand && Supertype.BASIC in supertypes
     val isLegendary: Boolean get() = Supertype.LEGENDARY in supertypes
 
@@ -74,5 +78,20 @@ data class TypeLine(
                 cardTypes = setOf(CardType.LAND),
                 subtypes = setOf(subtype)
             )
+
+        fun enchantment(subtypes: Set<Subtype> = emptySet()): TypeLine =
+            TypeLine(cardTypes = setOf(CardType.ENCHANTMENT), subtypes = subtypes)
+
+        fun aura(): TypeLine =
+            TypeLine(cardTypes = setOf(CardType.ENCHANTMENT), subtypes = setOf(Subtype.AURA))
+
+        fun artifact(subtypes: Set<Subtype> = emptySet()): TypeLine =
+            TypeLine(cardTypes = setOf(CardType.ARTIFACT), subtypes = subtypes)
+
+        fun equipment(): TypeLine =
+            TypeLine(cardTypes = setOf(CardType.ARTIFACT), subtypes = setOf(Subtype.EQUIPMENT))
+
+        fun artifactCreature(subtypes: Set<Subtype> = emptySet()): TypeLine =
+            TypeLine(cardTypes = setOf(CardType.ARTIFACT, CardType.CREATURE), subtypes = subtypes)
     }
 }

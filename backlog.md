@@ -237,21 +237,21 @@ Portal is an ideal starting set because it's simplified: limited keywords and st
 ## Phase 8: Enchantments and Artifacts
 
 ### 8.1 Enchantments
-- [ ] Non-Aura enchantments (global effects)
-- [ ] Aura enchantments (attached to permanents/players)
-- [ ] Aura targeting on cast
-- [ ] Aura attachment rules (falls off if target invalid)
-- [ ] Static abilities from enchantments
-- [ ] Write tests for enchantments
+- [x] Non-Aura enchantments (global effects)
+- [x] Aura enchantments (attached to permanents/players)
+- [x] Aura targeting on cast
+- [x] Aura attachment rules (falls off if target invalid)
+- [x] Static abilities from enchantments
+- [x] Write tests for enchantments
 
 ### 8.2 Artifacts
-- [ ] Artifact permanents
-- [ ] Artifact creatures
-- [ ] Equipment (attach to creatures)
-- [ ] Equip cost and timing (sorcery speed)
-- [ ] Equipment falls off when creature leaves
-- [ ] Activated abilities on artifacts
-- [ ] Write tests for artifacts
+- [x] Artifact permanents
+- [x] Artifact creatures
+- [x] Equipment (attach to creatures)
+- [x] Equip cost and timing (sorcery speed)
+- [x] Equipment falls off when creature leaves
+- [x] Activated abilities on artifacts
+- [x] Write tests for artifacts
 
 ---
 

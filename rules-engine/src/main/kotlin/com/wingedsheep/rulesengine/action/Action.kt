@@ -479,3 +479,39 @@ data class ResolveTriggeredAbility(
 ) : Action {
     override val description: String = "Resolve triggered ability"
 }
+
+// =============================================================================
+// Attachment Actions (Auras and Equipment)
+// =============================================================================
+
+@Serializable
+data class AttachCard(
+    val attachmentId: CardId,
+    val targetId: CardId,
+    val controllerId: PlayerId
+) : Action {
+    override val description: String = "Attach card to permanent"
+}
+
+@Serializable
+data class DetachCard(
+    val attachmentId: CardId
+) : Action {
+    override val description: String = "Detach card from permanent"
+}
+
+@Serializable
+data class Equip(
+    val equipmentId: CardId,
+    val targetCreatureId: CardId,
+    val controllerId: PlayerId
+) : Action {
+    override val description: String = "${controllerId.value} equips a creature"
+}
+
+@Serializable
+data class Unattach(
+    val attachmentId: CardId
+) : Action {
+    override val description: String = "Unattach from permanent"
+}

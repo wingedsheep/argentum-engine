@@ -55,6 +55,14 @@ class AbilityRegistry {
     }
 
     /**
+     * Register a single static ability for a card.
+     */
+    fun registerStaticAbility(cardName: String, ability: StaticAbility) {
+        val existing = staticAbilities[cardName] ?: emptyList()
+        staticAbilities[cardName] = existing + ability
+    }
+
+    /**
      * Get static abilities for a card definition.
      */
     fun getStaticAbilities(definition: CardDefinition): List<StaticAbility> {
@@ -125,40 +133,4 @@ enum class TimingRestriction {
     BLOCK       // Only during declare blockers
 }
 
-/**
- * Placeholder for static abilities (continuous effects).
- * Full implementation in a future phase.
- */
-data class StaticAbility(
-    val id: AbilityId,
-    val effect: StaticEffect
-)
-
-/**
- * Continuous effects from static abilities.
- */
-sealed interface StaticEffect {
-    /** Grants a keyword to creatures matching a filter */
-    data class GrantKeyword(
-        val keyword: com.wingedsheep.rulesengine.core.Keyword,
-        val filter: String = "self"
-    ) : StaticEffect
-
-    /** Modifies power/toughness of creatures matching a filter */
-    data class ModifyStats(
-        val powerMod: Int,
-        val toughnessMod: Int,
-        val filter: String = "self"
-    ) : StaticEffect
-
-    /** Prevents damage from a source or to a target */
-    data class PreventDamage(
-        val filter: String
-    ) : StaticEffect
-
-    /** Makes something cost more or less */
-    data class CostModification(
-        val adjustment: Int,
-        val filter: String
-    ) : StaticEffect
-}
+// StaticAbility is defined in StaticAbility.kt as a sealed interface

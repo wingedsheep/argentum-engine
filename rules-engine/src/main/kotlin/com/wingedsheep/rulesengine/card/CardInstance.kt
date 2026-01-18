@@ -2,6 +2,7 @@ package com.wingedsheep.rulesengine.card
 
 import com.wingedsheep.rulesengine.core.CardId
 import com.wingedsheep.rulesengine.core.Keyword
+import com.wingedsheep.rulesengine.core.ManaCost
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -17,7 +18,9 @@ data class CardInstance(
     val powerModifier: Int = 0,
     val toughnessModifier: Int = 0,
     val additionalKeywords: Set<Keyword> = emptySet(),
-    val removedKeywords: Set<Keyword> = emptySet()
+    val removedKeywords: Set<Keyword> = emptySet(),
+    val attachedTo: CardId? = null,
+    val equipCost: ManaCost? = null  // Override equip cost if different from definition
 ) {
     val name: String get() = definition.name
 
@@ -33,6 +36,11 @@ data class CardInstance(
     val isCreature: Boolean get() = definition.isCreature
     val isLand: Boolean get() = definition.isLand
     val isPermanent: Boolean get() = definition.isPermanent
+    val isEnchantment: Boolean get() = definition.typeLine.isEnchantment
+    val isArtifact: Boolean get() = definition.typeLine.isArtifact
+    val isAura: Boolean get() = definition.typeLine.isAura
+    val isEquipment: Boolean get() = definition.typeLine.isEquipment
+    val isAttached: Boolean get() = attachedTo != null
 
     val keywords: Set<Keyword>
         get() = (definition.keywords + additionalKeywords) - removedKeywords
@@ -92,6 +100,12 @@ data class CardInstance(
 
     fun changeController(newControllerId: String): CardInstance =
         copy(controllerId = newControllerId)
+
+    fun attachTo(targetId: CardId): CardInstance =
+        copy(attachedTo = targetId)
+
+    fun detach(): CardInstance =
+        copy(attachedTo = null)
 
     companion object {
         fun create(definition: CardDefinition, ownerId: String): CardInstance =

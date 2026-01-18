@@ -11,6 +11,7 @@ data class CardDefinition(
     val oracleText: String = "",
     val creatureStats: CreatureStats? = null,
     val keywords: Set<Keyword> = emptySet(),
+    val equipCost: ManaCost? = null,  // For Equipment cards
     val oracleId: String? = null,
     val setCode: String? = null
 ) {
@@ -36,6 +37,10 @@ data class CardDefinition(
     val isLand: Boolean get() = typeLine.isLand
     val isSorcery: Boolean get() = typeLine.isSorcery
     val isInstant: Boolean get() = typeLine.isInstant
+    val isEnchantment: Boolean get() = typeLine.isEnchantment
+    val isArtifact: Boolean get() = typeLine.isArtifact
+    val isAura: Boolean get() = typeLine.isAura
+    val isEquipment: Boolean get() = typeLine.isEquipment
     val isPermanent: Boolean get() = typeLine.isPermanent
 
     fun hasKeyword(keyword: Keyword): Boolean = keyword in keywords
@@ -110,6 +115,96 @@ data class CardDefinition(
             name = name,
             manaCost = ManaCost.ZERO,
             typeLine = TypeLine.basicLand(subtype)
+        )
+
+        fun enchantment(
+            name: String,
+            manaCost: ManaCost,
+            oracleText: String = "",
+            subtypes: Set<Subtype> = emptySet(),
+            supertypes: Set<Supertype> = emptySet()
+        ): CardDefinition = CardDefinition(
+            name = name,
+            manaCost = manaCost,
+            typeLine = TypeLine(
+                supertypes = supertypes,
+                cardTypes = setOf(CardType.ENCHANTMENT),
+                subtypes = subtypes
+            ),
+            oracleText = oracleText
+        )
+
+        fun aura(
+            name: String,
+            manaCost: ManaCost,
+            oracleText: String = "",
+            supertypes: Set<Supertype> = emptySet()
+        ): CardDefinition = CardDefinition(
+            name = name,
+            manaCost = manaCost,
+            typeLine = TypeLine(
+                supertypes = supertypes,
+                cardTypes = setOf(CardType.ENCHANTMENT),
+                subtypes = setOf(Subtype.AURA)
+            ),
+            oracleText = oracleText
+        )
+
+        fun artifact(
+            name: String,
+            manaCost: ManaCost,
+            oracleText: String = "",
+            subtypes: Set<Subtype> = emptySet(),
+            supertypes: Set<Supertype> = emptySet()
+        ): CardDefinition = CardDefinition(
+            name = name,
+            manaCost = manaCost,
+            typeLine = TypeLine(
+                supertypes = supertypes,
+                cardTypes = setOf(CardType.ARTIFACT),
+                subtypes = subtypes
+            ),
+            oracleText = oracleText
+        )
+
+        fun equipment(
+            name: String,
+            manaCost: ManaCost,
+            equipCost: ManaCost,
+            oracleText: String = "",
+            supertypes: Set<Supertype> = emptySet()
+        ): CardDefinition = CardDefinition(
+            name = name,
+            manaCost = manaCost,
+            typeLine = TypeLine(
+                supertypes = supertypes,
+                cardTypes = setOf(CardType.ARTIFACT),
+                subtypes = setOf(Subtype.EQUIPMENT)
+            ),
+            oracleText = oracleText,
+            equipCost = equipCost
+        )
+
+        fun artifactCreature(
+            name: String,
+            manaCost: ManaCost,
+            subtypes: Set<Subtype>,
+            power: Int,
+            toughness: Int,
+            oracleText: String = "",
+            keywords: Set<Keyword> = emptySet(),
+            supertypes: Set<Supertype> = emptySet()
+        ): CardDefinition = CardDefinition(
+            name = name,
+            manaCost = manaCost,
+            typeLine = TypeLine(
+                supertypes = supertypes,
+                cardTypes = setOf(CardType.ARTIFACT, CardType.CREATURE),
+                subtypes = subtypes
+            ),
+            oracleText = oracleText,
+            creatureStats = CreatureStats(power, toughness),
+            keywords = keywords
         )
     }
 }
