@@ -4,6 +4,7 @@ import com.wingedsheep.rulesengine.card.CardInstance
 import com.wingedsheep.rulesengine.core.CardId
 import com.wingedsheep.rulesengine.core.Color
 import com.wingedsheep.rulesengine.core.Keyword
+import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.game.GameState
 import com.wingedsheep.rulesengine.player.PlayerId
 import kotlinx.serialization.Serializable
@@ -130,7 +131,8 @@ sealed interface CreatureTargetFilter {
         override val description: String = "attacking"
         override fun matches(creature: CardInstance, sourceControllerId: PlayerId, state: GameState): Boolean {
             val combat = state.combat ?: return false
-            return combat.attackers.containsKey(creature.id)
+            val entityId = EntityId.of(creature.id.value)
+            return combat.attackers.containsKey(entityId)
         }
     }
 
@@ -139,7 +141,8 @@ sealed interface CreatureTargetFilter {
         override val description: String = "blocking"
         override fun matches(creature: CardInstance, sourceControllerId: PlayerId, state: GameState): Boolean {
             val combat = state.combat ?: return false
-            return combat.blockers.containsKey(creature.id)
+            val entityId = EntityId.of(creature.id.value)
+            return combat.blockers.containsKey(entityId)
         }
     }
 

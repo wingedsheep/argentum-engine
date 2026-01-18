@@ -1,6 +1,6 @@
 package com.wingedsheep.rulesengine.game
 
-import com.wingedsheep.rulesengine.player.PlayerId
+import com.wingedsheep.rulesengine.ecs.EntityId
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.booleans.shouldBeTrue
@@ -9,8 +9,8 @@ import io.kotest.assertions.throwables.shouldThrow
 
 class TurnStateTest : FunSpec({
 
-    val player1 = PlayerId.of("player1")
-    val player2 = PlayerId.of("player2")
+    val player1 = EntityId.of("player1")
+    val player2 = EntityId.of("player2")
     val playerOrder = listOf(player1, player2)
 
     context("creation") {
@@ -39,7 +39,7 @@ class TurnStateTest : FunSpec({
         }
 
         test("throws when starting player not in order") {
-            val player3 = PlayerId.of("player3")
+            val player3 = EntityId.of("player3")
             shouldThrow<IllegalArgumentException> {
                 TurnState.newGame(playerOrder, player3)
             }

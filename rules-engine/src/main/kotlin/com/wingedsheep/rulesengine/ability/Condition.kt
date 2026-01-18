@@ -286,6 +286,7 @@ data object SourceIsAttacking : Condition {
 
     override fun isMet(state: GameState, controllerId: PlayerId, sourceId: CardId?): Boolean {
         if (sourceId == null) return false
+        @Suppress("DEPRECATION")
         return state.combat?.isAttacking(sourceId) == true
     }
 }
@@ -299,6 +300,7 @@ data object SourceIsBlocking : Condition {
 
     override fun isMet(state: GameState, controllerId: PlayerId, sourceId: CardId?): Boolean {
         if (sourceId == null) return false
+        @Suppress("DEPRECATION")
         return state.combat?.isBlocking(sourceId) == true
     }
 }
@@ -343,7 +345,8 @@ data object IsYourTurn : Condition {
     override val description: String = "if it's your turn"
 
     override fun isMet(state: GameState, controllerId: PlayerId, sourceId: CardId?): Boolean {
-        return state.turnState.activePlayer == controllerId
+        @Suppress("DEPRECATION")
+        return state.turnState.isActivePlayer(controllerId)
     }
 }
 
@@ -355,7 +358,8 @@ data object IsNotYourTurn : Condition {
     override val description: String = "if it's not your turn"
 
     override fun isMet(state: GameState, controllerId: PlayerId, sourceId: CardId?): Boolean {
-        return state.turnState.activePlayer != controllerId
+        @Suppress("DEPRECATION")
+        return !state.turnState.isActivePlayer(controllerId)
     }
 }
 

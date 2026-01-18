@@ -51,6 +51,14 @@ class StateProjector(
         val container = state.getEntity(entityId) ?: return null
         val cardComponent = container.get<CardComponent>() ?: return null
 
+        // Get counters
+        val countersComponent = container.get<CountersComponent>()
+        val counters = countersComponent?.counters ?: emptyMap()
+
+        // Get attachment info
+        val attachedTo = container.get<AttachedToComponent>()?.targetId
+        val attachments = computeAttachments(entityId)
+
         // Create base view
         val controllerComponent = container.get<ControllerComponent>()
         val baseView = GameObjectView.fromDefinition(
@@ -60,18 +68,30 @@ class StateProjector(
             controllerId = controllerComponent?.controllerId ?: cardComponent.ownerId,
             isTapped = container.has<TappedComponent>(),
             hasSummoningSickness = container.has<SummoningSicknessComponent>(),
-            damage = container.get<DamageComponent>()?.amount ?: 0
+            damage = container.get<DamageComponent>()?.amount ?: 0,
+            counters = counters,
+            attachedTo = attachedTo,
+            attachments = attachments
         )
 
         // Apply modifiers in layer order
         val projected = applyModifiers(entityId, baseView)
 
-        // Apply counters (Layer 7d)
+        // Apply counters (Layer 7d) - this modifies P/T based on +1/+1 and -1/-1 counters
         val withCounters = applyCounters(entityId, projected, container)
 
         // Cache and return
         viewCache[entityId] = withCounters
         return withCounters
+    }
+
+    /**
+     * Compute what entities are attached to this entity (reverse lookup).
+     */
+    private fun computeAttachments(entityId: EntityId): List<EntityId> {
+        return state.getBattlefield().filter { id ->
+            state.getComponent<AttachedToComponent>(id)?.targetId == entityId
+        }
     }
 
     /**

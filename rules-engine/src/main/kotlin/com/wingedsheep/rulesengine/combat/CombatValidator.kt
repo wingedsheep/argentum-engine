@@ -3,6 +3,7 @@ package com.wingedsheep.rulesengine.combat
 import com.wingedsheep.rulesengine.card.CardInstance
 import com.wingedsheep.rulesengine.core.CardId
 import com.wingedsheep.rulesengine.core.Keyword
+import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.game.GameState
 import com.wingedsheep.rulesengine.game.Step
 import com.wingedsheep.rulesengine.player.PlayerId
@@ -27,7 +28,8 @@ object CombatValidator {
         }
 
         // Must be active player
-        if (state.turnState.activePlayer != playerId) {
+        @Suppress("DEPRECATION")
+        if (!state.turnState.isActivePlayer(playerId)) {
             return ValidationResult.Invalid("Only the active player can declare attackers")
         }
 
@@ -61,6 +63,7 @@ object CombatValidator {
         }
 
         // Must not already be attacking
+        @Suppress("DEPRECATION")
         if (state.combat?.isAttacking(cardId) == true) {
             return ValidationResult.Invalid("Creature is already attacking")
         }
@@ -83,7 +86,8 @@ object CombatValidator {
         }
 
         // Must be defending player
-        if (state.combat?.defendingPlayer != playerId) {
+        @Suppress("DEPRECATION")
+        if (state.combat?.isDefendingPlayer(playerId) != true) {
             return ValidationResult.Invalid("Only the defending player can declare blockers")
         }
 
@@ -111,6 +115,7 @@ object CombatValidator {
         }
 
         // Attacker must be attacking
+        @Suppress("DEPRECATION")
         if (state.combat?.isAttacking(attackerId) != true) {
             return ValidationResult.Invalid("Target creature is not attacking")
         }
@@ -123,8 +128,10 @@ object CombatValidator {
         }
 
         // Must not already be blocking this attacker
+        @Suppress("DEPRECATION")
         val currentBlockers = state.combat?.getBlockersFor(attackerId) ?: emptyList()
-        if (blockerId in currentBlockers) {
+        val blockerEntityId = EntityId.of(blockerId.value)
+        if (blockerEntityId in currentBlockers) {
             return ValidationResult.Invalid("Creature is already blocking this attacker")
         }
 
@@ -150,29 +157,36 @@ object CombatValidator {
         val combat = state.combat
             ?: return CombatDamageResult.Invalid("Not in combat")
 
-        val blockerIds = combat.getBlockersFor(attackerId)
+        // Convert attackerId to EntityId for CombatState lookups
+        val attackerEntityId = EntityId.of(attackerId.value)
 
-        if (blockerIds.isEmpty()) {
+        @Suppress("DEPRECATION")
+        val blockerEntityIds = combat.getBlockersFor(attackerId)
+
+        if (blockerEntityIds.isEmpty()) {
             // Unblocked - all damage to defending player
             return CombatDamageResult.UnblockedDamage(attackerPower)
         }
 
-        // Blocked - assign damage to blockers
-        val blockers = blockerIds.mapNotNull { state.battlefield.getCard(it) }
+        // Blocked - assign damage to blockers (convert EntityId to CardId for Zone lookup)
+        val blockers = blockerEntityIds.mapNotNull { entityId ->
+            state.battlefield.getCard(CardId(entityId.value))
+        }
         val hasTrample = attacker.hasKeyword(Keyword.TRAMPLE)
         val hasDeathtouch = attacker.hasKeyword(Keyword.DEATHTOUCH)
 
         // Get damage assignment order (or default to blocker order)
-        val orderedBlockerIds = combat.damageAssignmentOrder[attackerId] ?: blockerIds
+        val orderedBlockerEntityIds = combat.damageAssignmentOrder[attackerEntityId] ?: blockerEntityIds
 
         val damageAssignment = mutableMapOf<CardId, Int>()
         var remainingDamage = attackerPower
 
-        for ((index, blockerId) in orderedBlockerIds.withIndex()) {
-            val blocker = state.battlefield.getCard(blockerId) ?: continue
+        for ((index, blockerEntityId) in orderedBlockerEntityIds.withIndex()) {
+            val blockerCardId = CardId(blockerEntityId.value)
+            val blocker = state.battlefield.getCard(blockerCardId) ?: continue
             val blockerToughness = blocker.currentToughness ?: 0
             val existingDamage = blocker.damageMarked
-            val isLastBlocker = index == orderedBlockerIds.size - 1
+            val isLastBlocker = index == orderedBlockerEntityIds.size - 1
 
             // Calculate lethal damage (1 with deathtouch, otherwise remaining toughness)
             val lethalDamage = if (hasDeathtouch) 1 else (blockerToughness - existingDamage).coerceAtLeast(0)
@@ -185,7 +199,7 @@ object CombatValidator {
                 minOf(remainingDamage, lethalDamage)
             }
 
-            damageAssignment[blockerId] = damageToAssign
+            damageAssignment[blockerCardId] = damageToAssign
             remainingDamage -= damageToAssign
 
             if (remainingDamage <= 0) break

@@ -270,7 +270,7 @@ class EcsTriggerDetectorTest : FunSpec({
             val state2 = state1.addCreature(darkConfidant, player2Id).second
             // Set active player via turnState
             val state = state2.copy(
-                turnState = state2.turnState.copy(activePlayer = PlayerId("player1"))
+                turnState = state2.turnState.copy(activePlayer = player1Id)
             )
 
             val event = EcsGameEvent.UpkeepBegan(activePlayerId = player1Id)

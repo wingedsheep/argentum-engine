@@ -174,7 +174,8 @@ class ConditionTest : FunSpec({
 
         test("SourceIsAttacking is met when source is attacking") {
             val bear = CardInstance.create(bearDef, player1Id.value)
-            val combat = CombatState.create(player1Id, player2Id).addAttacker(bear.id)
+            @Suppress("DEPRECATION")
+            val combat = CombatState.fromPlayerIds(player1Id, player2Id).addAttacker(bear.id)
             val state = GameState.newGame(createPlayer1(), createPlayer2())
                 .copy(
                     battlefield = Zone.battlefield(listOf(bear)),

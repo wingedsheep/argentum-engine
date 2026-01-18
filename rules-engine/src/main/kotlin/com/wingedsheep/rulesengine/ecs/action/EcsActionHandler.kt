@@ -678,14 +678,14 @@ class EcsActionHandler {
         val cardName = container.get<CardComponent>()?.definition?.name ?: "Unknown"
         events.add(EcsActionEvent.AttackerDeclared(action.creatureId, cardName))
 
-        val newCombat = combat.addAttacker(com.wingedsheep.rulesengine.core.CardId(action.creatureId.value))
+        val newCombat = combat.addAttacker(action.creatureId)
 
         // Tap the attacker (unless has vigilance - would need keyword check)
         return state
             .copy(combat = newCombat)
             .updateEntity(action.creatureId) { c ->
                 c.with(TappedComponent)
-                    .with(AttackingComponent(EntityId.fromPlayerId(combat.defendingPlayer)))
+                    .with(AttackingComponent(combat.defendingPlayer))
             }
     }
 
@@ -704,10 +704,7 @@ class EcsActionHandler {
         val cardName = container.get<CardComponent>()?.definition?.name ?: "Unknown"
         events.add(EcsActionEvent.BlockerDeclared(action.blockerId, action.attackerId, cardName))
 
-        val newCombat = combat.addBlocker(
-            com.wingedsheep.rulesengine.core.CardId(action.blockerId.value),
-            com.wingedsheep.rulesengine.core.CardId(action.attackerId.value)
-        )
+        val newCombat = combat.addBlocker(action.blockerId, action.attackerId)
 
         return state
             .copy(combat = newCombat)

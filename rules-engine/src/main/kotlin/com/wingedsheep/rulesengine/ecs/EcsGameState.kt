@@ -310,10 +310,10 @@ data class EcsGameState(
     // ==========================================================================
 
     val activePlayerId: EntityId
-        get() = EntityId.fromPlayerId(turnState.activePlayer)
+        get() = turnState.activePlayer
 
     val priorityPlayerId: EntityId
-        get() = EntityId.fromPlayerId(turnState.priorityPlayer)
+        get() = turnState.priorityPlayer
 
     val currentPhase: Phase get() = turnState.phase
 
@@ -334,7 +334,7 @@ data class EcsGameState(
         return copy(
             combat = CombatState.create(
                 turnState.activePlayer,
-                defendingPlayerId.toPlayerId()
+                defendingPlayerId
             )
         )
     }
@@ -603,8 +603,8 @@ data class EcsGameState(
             zones[ZoneId.STACK] = emptyList()
             zones[ZoneId.EXILE] = emptyList()
 
-            // Create turn state using PlayerId (for compatibility with existing system)
-            val playerOrder = players.map { PlayerId.of(it.first.value) }
+            // Create turn state with EntityId player order
+            val playerOrder = players.map { it.first }
 
             return EcsGameState(
                 entities = entities,

@@ -23,7 +23,8 @@ object SpellTimingValidator {
      */
     fun canCast(state: GameState, card: CardInstance, playerId: PlayerId): TimingResult {
         // Player must have priority
-        if (state.turnState.priorityPlayer != playerId) {
+        @Suppress("DEPRECATION")
+        if (!state.turnState.isPriorityPlayer(playerId)) {
             return TimingResult.Invalid("You don't have priority")
         }
 
@@ -57,7 +58,8 @@ object SpellTimingValidator {
      */
     private fun canCastSorcerySpeed(state: GameState, playerId: PlayerId): TimingResult {
         // Must be active player
-        if (state.turnState.activePlayer != playerId) {
+        @Suppress("DEPRECATION")
+        if (!state.turnState.isActivePlayer(playerId)) {
             return TimingResult.Invalid("Only the active player can cast sorcery-speed spells")
         }
 

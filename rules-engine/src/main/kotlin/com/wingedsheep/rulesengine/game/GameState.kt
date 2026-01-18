@@ -5,6 +5,7 @@ import com.wingedsheep.rulesengine.ability.StackedTrigger
 import com.wingedsheep.rulesengine.card.CardInstance
 import com.wingedsheep.rulesengine.combat.CombatState
 import com.wingedsheep.rulesengine.core.CardId
+import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.player.Player
 import com.wingedsheep.rulesengine.player.PlayerId
 import com.wingedsheep.rulesengine.zone.Zone
@@ -26,17 +27,18 @@ data class GameState(
 ) {
     init {
         require(players.isNotEmpty()) { "Game must have at least one player" }
-        require(players.keys.toSet() == turnState.playerOrder.toSet()) {
+        val playerEntityIds = players.keys.map { EntityId.fromPlayerId(it) }.toSet()
+        require(playerEntityIds == turnState.playerOrder.toSet()) {
             "All players must be in turn order"
         }
     }
 
     val activePlayer: Player
-        get() = players[turnState.activePlayer]
+        get() = players[turnState.activePlayer.toPlayerId()]
             ?: error("Active player not found: ${turnState.activePlayer}")
 
     val priorityPlayer: Player
-        get() = players[turnState.priorityPlayer]
+        get() = players[turnState.priorityPlayer.toPlayerId()]
             ?: error("Priority player not found: ${turnState.priorityPlayer}")
 
     val currentPhase: Phase
@@ -63,10 +65,10 @@ data class GameState(
     }
 
     fun updateActivePlayer(transform: (Player) -> Player): GameState =
-        updatePlayer(turnState.activePlayer, transform)
+        updatePlayer(turnState.activePlayer.toPlayerId(), transform)
 
     fun updatePriorityPlayer(transform: (Player) -> Player): GameState =
-        updatePlayer(turnState.priorityPlayer, transform)
+        updatePlayer(turnState.priorityPlayer.toPlayerId(), transform)
 
     fun updateAllPlayers(transform: (Player) -> Player): GameState =
         copy(players = players.mapValues { (_, player) -> transform(player) })
@@ -144,7 +146,7 @@ data class GameState(
         get() = combat != null && currentPhase == Phase.COMBAT
 
     val defendingPlayer: PlayerId?
-        get() = combat?.defendingPlayer
+        get() = combat?.defendingPlayer?.toPlayerId()
 
     fun updateCombat(transform: (CombatState) -> CombatState): GameState {
         val currentCombat = combat ?: return this
@@ -152,7 +154,10 @@ data class GameState(
     }
 
     fun startCombat(defendingPlayer: PlayerId): GameState {
-        return copy(combat = CombatState.create(turnState.activePlayer, defendingPlayer))
+        return copy(combat = CombatState.create(
+            turnState.activePlayer,
+            EntityId.fromPlayerId(defendingPlayer)
+        ))
     }
 
     fun endCombat(): GameState = copy(combat = null)
@@ -188,7 +193,7 @@ data class GameState(
             require(players.size >= 2) { "Game requires at least 2 players" }
 
             val playerMap = players.associateBy { it.id }
-            val playerOrder = players.map { it.id }
+            val playerOrder = players.map { EntityId.fromPlayerId(it.id) }
 
             return GameState(
                 players = playerMap,
