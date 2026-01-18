@@ -16,6 +16,7 @@ enum class Step(val phase: Phase, val displayName: String) {
     BEGIN_COMBAT(Phase.COMBAT, "Beginning of Combat Step"),
     DECLARE_ATTACKERS(Phase.COMBAT, "Declare Attackers Step"),
     DECLARE_BLOCKERS(Phase.COMBAT, "Declare Blockers Step"),
+    FIRST_STRIKE_COMBAT_DAMAGE(Phase.COMBAT, "First Strike Combat Damage Step"),
     COMBAT_DAMAGE(Phase.COMBAT, "Combat Damage Step"),
     END_COMBAT(Phase.COMBAT, "End of Combat Step"),
 
@@ -42,7 +43,8 @@ enum class Step(val phase: Phase, val displayName: String) {
         PRECOMBAT_MAIN -> BEGIN_COMBAT
         BEGIN_COMBAT -> DECLARE_ATTACKERS
         DECLARE_ATTACKERS -> DECLARE_BLOCKERS
-        DECLARE_BLOCKERS -> COMBAT_DAMAGE
+        DECLARE_BLOCKERS -> FIRST_STRIKE_COMBAT_DAMAGE
+        FIRST_STRIKE_COMBAT_DAMAGE -> COMBAT_DAMAGE
         COMBAT_DAMAGE -> END_COMBAT
         END_COMBAT -> POSTCOMBAT_MAIN
         POSTCOMBAT_MAIN -> END

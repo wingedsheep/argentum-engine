@@ -420,6 +420,71 @@ object ActionExecutor {
         }
     }
 
+    /**
+     * Helper function to handle lifelink.
+     * When a creature with lifelink deals damage, its controller gains that much life.
+     */
+    private fun handleLifelink(
+        state: GameState,
+        source: CardInstance,
+        damageDealt: Int,
+        events: MutableList<GameEvent>
+    ): GameState {
+        if (damageDealt <= 0 || !source.hasKeyword(Keyword.LIFELINK)) {
+            return state
+        }
+
+        val controllerId = PlayerId.of(source.controllerId)
+        val currentLife = state.getPlayer(controllerId).life
+        events.add(GameEvent.LifeChanged(controllerId.value, currentLife, currentLife + damageDealt, damageDealt))
+        return state.updatePlayer(controllerId) { it.gainLife(damageDealt) }
+    }
+
+    /**
+     * Helper function to process blocker damage to attacker.
+     * Handles first strike/double strike timing and lifelink.
+     */
+    private fun processBlockerDamage(
+        state: GameState,
+        combat: com.wingedsheep.rulesengine.combat.CombatState,
+        attackerId: com.wingedsheep.rulesengine.core.CardId,
+        isFirstStrikeDamageStep: Boolean,
+        isRegularDamageStep: Boolean,
+        events: MutableList<GameEvent>
+    ): GameState {
+        var currentState = state
+        val blockerIds = combat.getBlockersFor(attackerId)
+
+        for (blockerId in blockerIds) {
+            val blocker = currentState.battlefield.getCard(blockerId) ?: continue
+
+            // Check if blocker deals damage in this step
+            val blockerHasFirstStrike = blocker.hasKeyword(Keyword.FIRST_STRIKE)
+            val blockerHasDoubleStrike = blocker.hasKeyword(Keyword.DOUBLE_STRIKE)
+
+            val blockerDealsDamageThisStep = when {
+                isFirstStrikeDamageStep -> blockerHasFirstStrike || blockerHasDoubleStrike
+                isRegularDamageStep -> !blockerHasFirstStrike || blockerHasDoubleStrike
+                else -> true
+            }
+
+            if (!blockerDealsDamageThisStep) continue
+
+            val blockerPower = blocker.currentPower ?: 0
+            if (blockerPower > 0) {
+                events.add(GameEvent.DamageDealt(blockerId.value, attackerId.value, blockerPower, false))
+                currentState = currentState.updateBattlefield { zone ->
+                    zone.updateCard(attackerId) { it.dealDamage(blockerPower) }
+                }
+
+                // Handle lifelink for blocker
+                currentState = handleLifelink(currentState, blocker, blockerPower, events)
+            }
+        }
+
+        return currentState
+    }
+
     private fun executeMarkDamageOnCreature(state: GameState, action: MarkDamageOnCreature): GameState {
         return state.updateBattlefield { zone ->
             zone.updateCard(action.cardId) { it.dealDamage(action.amount) }
@@ -786,6 +851,10 @@ object ActionExecutor {
 
         var currentState = state
 
+        // Determine which damage step we're in
+        val isFirstStrikeDamageStep = state.currentStep == Step.FIRST_STRIKE_COMBAT_DAMAGE
+        val isRegularDamageStep = state.currentStep == Step.COMBAT_DAMAGE
+
         // If specific attacker is specified, only resolve that one
         val attackerIds = if (action.attackerId != null) {
             listOf(action.attackerId)
@@ -795,59 +864,80 @@ object ActionExecutor {
 
         for (attackerId in attackerIds) {
             val attacker = currentState.battlefield.getCard(attackerId) ?: continue
+
+            // Check if this attacker deals damage in this step
+            val hasFirstStrike = attacker.hasKeyword(Keyword.FIRST_STRIKE)
+            val hasDoubleStrike = attacker.hasKeyword(Keyword.DOUBLE_STRIKE)
+
+            val attackerDealsDamageThisStep = when {
+                isFirstStrikeDamageStep -> hasFirstStrike || hasDoubleStrike
+                isRegularDamageStep -> !hasFirstStrike || hasDoubleStrike
+                else -> true // If step not specified, deal damage (for backwards compatibility)
+            }
+
             val damageResult = CombatValidator.calculateCombatDamage(currentState, attackerId)
 
             when (damageResult) {
                 is CombatDamageResult.UnblockedDamage -> {
-                    // Deal damage to defending player
-                    events.add(GameEvent.DamageDealt(attackerId.value, combat.defendingPlayer.value, damageResult.damage, true))
-                    events.add(GameEvent.LifeChanged(
-                        combat.defendingPlayer.value,
-                        currentState.getPlayer(combat.defendingPlayer).life,
-                        currentState.getPlayer(combat.defendingPlayer).life - damageResult.damage,
-                        -damageResult.damage
-                    ))
-                    currentState = currentState.updatePlayer(combat.defendingPlayer) { it.dealDamage(damageResult.damage) }
-                }
-                is CombatDamageResult.BlockedDamage -> {
-                    // Deal damage to blockers
-                    for ((blockerId, damage) in damageResult.damageToBlockers) {
-                        if (damage > 0) {
-                            val blocker = currentState.battlefield.getCard(blockerId) ?: continue
-                            events.add(GameEvent.DamageDealt(attackerId.value, blockerId.value, damage, false))
-                            currentState = currentState.updateBattlefield { zone ->
-                                zone.updateCard(blockerId) { it.dealDamage(damage) }
-                            }
-                        }
-                    }
-
-                    // Trample damage goes to player
-                    if (damageResult.trampleDamage > 0) {
-                        events.add(GameEvent.DamageDealt(attackerId.value, combat.defendingPlayer.value, damageResult.trampleDamage, true))
+                    if (attackerDealsDamageThisStep) {
+                        // Deal damage to defending player
+                        val damage = damageResult.damage
+                        events.add(GameEvent.DamageDealt(attackerId.value, combat.defendingPlayer.value, damage, true))
                         events.add(GameEvent.LifeChanged(
                             combat.defendingPlayer.value,
                             currentState.getPlayer(combat.defendingPlayer).life,
-                            currentState.getPlayer(combat.defendingPlayer).life - damageResult.trampleDamage,
-                            -damageResult.trampleDamage
+                            currentState.getPlayer(combat.defendingPlayer).life - damage,
+                            -damage
                         ))
-                        currentState = currentState.updatePlayer(combat.defendingPlayer) { it.dealDamage(damageResult.trampleDamage) }
-                    }
+                        currentState = currentState.updatePlayer(combat.defendingPlayer) { it.dealDamage(damage) }
 
-                    // Blockers deal damage back to attacker
-                    val blockerIds = combat.getBlockersFor(attackerId)
-                    for (blockerId in blockerIds) {
-                        val blocker = currentState.battlefield.getCard(blockerId) ?: continue
-                        val blockerPower = blocker.currentPower ?: 0
-                        if (blockerPower > 0) {
-                            events.add(GameEvent.DamageDealt(blockerId.value, attackerId.value, blockerPower, false))
-                            currentState = currentState.updateBattlefield { zone ->
-                                zone.updateCard(attackerId) { it.dealDamage(blockerPower) }
-                            }
-                        }
+                        // Handle lifelink
+                        currentState = handleLifelink(currentState, attacker, damage, events)
                     }
                 }
+                is CombatDamageResult.BlockedDamage -> {
+                    var totalDamageDealtByAttacker = 0
+
+                    // Deal damage to blockers (only if attacker deals damage this step)
+                    if (attackerDealsDamageThisStep) {
+                        for ((blockerId, damage) in damageResult.damageToBlockers) {
+                            if (damage > 0) {
+                                val blocker = currentState.battlefield.getCard(blockerId) ?: continue
+                                events.add(GameEvent.DamageDealt(attackerId.value, blockerId.value, damage, false))
+                                currentState = currentState.updateBattlefield { zone ->
+                                    zone.updateCard(blockerId) { it.dealDamage(damage) }
+                                }
+                                totalDamageDealtByAttacker += damage
+                            }
+                        }
+
+                        // Trample damage goes to player
+                        if (damageResult.trampleDamage > 0) {
+                            events.add(GameEvent.DamageDealt(attackerId.value, combat.defendingPlayer.value, damageResult.trampleDamage, true))
+                            events.add(GameEvent.LifeChanged(
+                                combat.defendingPlayer.value,
+                                currentState.getPlayer(combat.defendingPlayer).life,
+                                currentState.getPlayer(combat.defendingPlayer).life - damageResult.trampleDamage,
+                                -damageResult.trampleDamage
+                            ))
+                            currentState = currentState.updatePlayer(combat.defendingPlayer) { it.dealDamage(damageResult.trampleDamage) }
+                            totalDamageDealtByAttacker += damageResult.trampleDamage
+                        }
+
+                        // Handle lifelink for all damage dealt by attacker
+                        currentState = handleLifelink(currentState, attacker, totalDamageDealtByAttacker, events)
+                    }
+
+                    // Blockers deal damage back to attacker (independently of whether attacker dealt damage)
+                    currentState = processBlockerDamage(
+                        currentState, combat, attackerId, isFirstStrikeDamageStep, isRegularDamageStep, events
+                    )
+                }
                 is CombatDamageResult.NoDamage -> {
-                    // No damage to deal
+                    // No damage from attacker, but blockers might still deal damage
+                    currentState = processBlockerDamage(
+                        currentState, combat, attackerId, isFirstStrikeDamageStep, isRegularDamageStep, events
+                    )
                 }
                 is CombatDamageResult.Invalid -> {
                     // Skip invalid damage results

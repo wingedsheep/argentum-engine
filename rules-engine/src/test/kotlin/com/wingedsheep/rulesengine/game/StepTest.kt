@@ -24,6 +24,7 @@ class StepTest : FunSpec({
             Step.BEGIN_COMBAT.phase shouldBe Phase.COMBAT
             Step.DECLARE_ATTACKERS.phase shouldBe Phase.COMBAT
             Step.DECLARE_BLOCKERS.phase shouldBe Phase.COMBAT
+            Step.FIRST_STRIKE_COMBAT_DAMAGE.phase shouldBe Phase.COMBAT
             Step.COMBAT_DAMAGE.phase shouldBe Phase.COMBAT
             Step.END_COMBAT.phase shouldBe Phase.COMBAT
         }
@@ -86,7 +87,8 @@ class StepTest : FunSpec({
             Step.PRECOMBAT_MAIN.next() shouldBe Step.BEGIN_COMBAT
             Step.BEGIN_COMBAT.next() shouldBe Step.DECLARE_ATTACKERS
             Step.DECLARE_ATTACKERS.next() shouldBe Step.DECLARE_BLOCKERS
-            Step.DECLARE_BLOCKERS.next() shouldBe Step.COMBAT_DAMAGE
+            Step.DECLARE_BLOCKERS.next() shouldBe Step.FIRST_STRIKE_COMBAT_DAMAGE
+            Step.FIRST_STRIKE_COMBAT_DAMAGE.next() shouldBe Step.COMBAT_DAMAGE
             Step.COMBAT_DAMAGE.next() shouldBe Step.END_COMBAT
             Step.END_COMBAT.next() shouldBe Step.POSTCOMBAT_MAIN
             Step.POSTCOMBAT_MAIN.next() shouldBe Step.END
@@ -105,7 +107,7 @@ class StepTest : FunSpec({
         test("returns steps for combat phase") {
             Step.stepsInPhase(Phase.COMBAT) shouldContainExactly listOf(
                 Step.BEGIN_COMBAT, Step.DECLARE_ATTACKERS, Step.DECLARE_BLOCKERS,
-                Step.COMBAT_DAMAGE, Step.END_COMBAT
+                Step.FIRST_STRIKE_COMBAT_DAMAGE, Step.COMBAT_DAMAGE, Step.END_COMBAT
             )
         }
 

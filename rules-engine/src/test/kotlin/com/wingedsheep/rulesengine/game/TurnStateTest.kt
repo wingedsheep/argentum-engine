@@ -65,8 +65,8 @@ class TurnStateTest : FunSpec({
         test("wraps to next turn after cleanup") {
             var state = TurnState.newGame(playerOrder)
 
-            // Advance through entire turn
-            repeat(12) {
+            // Advance through entire turn (13 steps including first strike damage step)
+            repeat(13) {
                 state = state.advanceStep()
             }
 

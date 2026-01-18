@@ -191,13 +191,13 @@ Portal is an ideal starting set because it's simplified: limited keywords and st
 - [x] Write tests for flash
 
 ### 6.7 First Strike
-- [ ] First strike damage step before regular damage
-- [ ] Double strike deals damage in both steps
-- [ ] Write tests for first strike
+- [x] First strike damage step before regular damage
+- [x] Double strike deals damage in both steps
+- [x] Write tests for first strike
 
 ### 6.8 Lifelink
-- [ ] Damage dealt by creature with lifelink causes controller to gain life
-- [ ] Write tests for lifelink
+- [x] Damage dealt by creature with lifelink causes controller to gain life
+- [x] Write tests for lifelink
 
 ### 6.9 Deathtouch
 - [x] Any amount of damage from deathtouch source is lethal
