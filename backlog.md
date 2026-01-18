@@ -9,32 +9,32 @@ Portal is an ideal starting set because it's simplified: limited keywords and st
 ## Phase 1: Foundation - Core Domain Models
 
 ### 1.1 Create the `rules-engine` module
-- [ ] Add new Gradle module `rules-engine` with Kotlin 2.2 setup
-- [ ] Configure testing framework (JUnit 5 + Kotest assertions)
-- [ ] Set up module dependencies
+- [x] Add new Gradle module `rules-engine` with Kotlin 2.2 setup
+- [x] Configure testing framework (JUnit 5 + Kotest assertions)
+- [x] Set up module dependencies
 
 ### 1.2 Card Identity and Basic Types
-- [ ] `CardId` - unique identifier for each card instance (value class)
-- [ ] `Color` enum (White, Blue, Black, Red, Green, Colorless)
-- [ ] `ManaSymbol` sealed class hierarchy ({W}, {U}, {B}, {R}, {G}, {C}, {X}, generic {1}, {2}, etc.)
-- [ ] `ManaCost` - collection of mana symbols with CMC calculation
-- [ ] `CardType` enum (Creature, Sorcery, Land, Enchantment, Artifact)
-- [ ] `Supertype` enum (Basic, Legendary)
-- [ ] `Subtype` - creature types (Dragon, Goblin, etc.), land types (Plains, Island, etc.)
-- [ ] Write unit tests for mana cost parsing and CMC calculation
+- [x] `CardId` - unique identifier for each card instance (value class)
+- [x] `Color` enum (White, Blue, Black, Red, Green, Colorless)
+- [x] `ManaSymbol` sealed class hierarchy ({W}, {U}, {B}, {R}, {G}, {C}, {X}, generic {1}, {2}, etc.)
+- [x] `ManaCost` - collection of mana symbols with CMC calculation
+- [x] `CardType` enum (Creature, Sorcery, Land, Enchantment, Artifact)
+- [x] `Supertype` enum (Basic, Legendary)
+- [x] `Subtype` - creature types (Dragon, Goblin, etc.), land types (Plains, Island, etc.)
+- [x] Write unit tests for mana cost parsing and CMC calculation
 
 ### 1.3 Card Definition Model
-- [ ] `CardDefinition` - the template/blueprint for a card (name, cost, types, text, P/T)
-- [ ] `CardInstance` - a specific instance of a card in the game (has CardId, references CardDefinition)
-- [ ] `CreatureStats` - power/toughness (base values and current values)
-- [ ] Write tests for card creation and stat tracking
+- [x] `CardDefinition` - the template/blueprint for a card (name, cost, types, text, P/T)
+- [x] `CardInstance` - a specific instance of a card in the game (has CardId, references CardDefinition)
+- [x] `CreatureStats` - power/toughness (base values and current values)
+- [x] Write tests for card creation and stat tracking
 
 ### 1.4 Game Zones
-- [ ] `Zone` sealed class (Library, Hand, Battlefield, Graveyard, Exile, Stack, Command)
-- [ ] `ZoneType` enum for zone identification
-- [ ] `ZonedCard` - card instance with its current zone
-- [ ] Zone transition tracking (for "when enters/leaves" triggers)
-- [ ] Write tests for zone operations
+- [x] `Zone` sealed class (Library, Hand, Battlefield, Graveyard, Exile, Stack, Command)
+- [x] `ZoneType` enum for zone identification
+- [x] `ZonedCard` - card instance with its current zone
+- [x] Zone transition tracking (for "when enters/leaves" triggers)
+- [x] Write tests for zone operations
 
 ---
 

@@ -1,0 +1,3280 @@
+[
+  {
+    "name": "Alabaster Dragon",
+    "mana_cost": "{4}{W}{W}",
+    "cmc": 6.0,
+    "type_line": "Creature — Dragon",
+    "oracle_text": "Flying\nWhen this creature dies, shuffle it into its owner's library.",
+    "power": "4",
+    "toughness": "4",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [
+      "Flying"
+    ],
+    "oracle_id": "2392a41a-59d3-4749-be94-4d9df0af9c4c"
+  },
+  {
+    "name": "Alluring Scent",
+    "mana_cost": "{1}{G}{G}",
+    "cmc": 3.0,
+    "type_line": "Sorcery",
+    "oracle_text": "All creatures able to block target creature this turn do so.",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [],
+    "oracle_id": "ad218276-a44b-4a61-8e42-26a27929bbbb"
+  },
+  {
+    "name": "Anaconda",
+    "mana_cost": "{3}{G}",
+    "cmc": 4.0,
+    "type_line": "Creature — Snake",
+    "oracle_text": "Swampwalk (This creature can't be blocked as long as defending player controls a Swamp.)",
+    "power": "3",
+    "toughness": "3",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [
+      "Landwalk",
+      "Swampwalk"
+    ],
+    "oracle_id": "3eff03f1-2c5f-4c59-b465-a8c4cd05e1ba"
+  },
+  {
+    "name": "Ancestral Memories",
+    "mana_cost": "{2}{U}{U}{U}",
+    "cmc": 5.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Look at the top seven cards of your library. Put two of them into your hand and the rest into your graveyard.",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [],
+    "oracle_id": "95a2802a-2621-40c3-84f8-51e8aad7b6f0"
+  },
+  {
+    "name": "Angelic Blessing",
+    "mana_cost": "{2}{W}",
+    "cmc": 3.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Target creature gets +3/+3 and gains flying until end of turn. (It can't be blocked except by creatures with flying or reach.)",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [],
+    "oracle_id": "d3758fca-0522-4b5a-a1cc-3b2b3ab299ba"
+  },
+  {
+    "name": "Archangel",
+    "mana_cost": "{5}{W}{W}",
+    "cmc": 7.0,
+    "type_line": "Creature — Angel",
+    "oracle_text": "Flying, vigilance",
+    "power": "5",
+    "toughness": "5",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [
+      "Flying",
+      "Vigilance"
+    ],
+    "oracle_id": "9971697b-2acc-4bc2-a44e-074d03a51df7"
+  },
+  {
+    "name": "Ardent Militia",
+    "mana_cost": "{4}{W}",
+    "cmc": 5.0,
+    "type_line": "Creature — Human Soldier",
+    "oracle_text": "Vigilance",
+    "power": "2",
+    "toughness": "5",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [
+      "Vigilance"
+    ],
+    "oracle_id": "23625877-b6db-480c-8885-a62b7d0457df"
+  },
+  {
+    "name": "Armageddon",
+    "mana_cost": "{3}{W}",
+    "cmc": 4.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Destroy all lands.",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [],
+    "oracle_id": "c9ed8b01-959a-47d6-891e-0abbdccf6e4f"
+  },
+  {
+    "name": "Armored Pegasus",
+    "mana_cost": "{1}{W}",
+    "cmc": 2.0,
+    "type_line": "Creature — Pegasus",
+    "oracle_text": "Flying",
+    "power": "1",
+    "toughness": "2",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [
+      "Flying"
+    ],
+    "oracle_id": "f097a059-5505-4c3c-b879-7853ab6972ed"
+  },
+  {
+    "name": "Arrogant Vampire",
+    "mana_cost": "{3}{B}{B}",
+    "cmc": 5.0,
+    "type_line": "Creature — Vampire",
+    "oracle_text": "Flying",
+    "power": "4",
+    "toughness": "3",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [
+      "Flying"
+    ],
+    "oracle_id": "5edfe083-391b-41ae-ac4d-d648042cfa5e"
+  },
+  {
+    "name": "Assassin's Blade",
+    "mana_cost": "{1}{B}",
+    "cmc": 2.0,
+    "type_line": "Instant",
+    "oracle_text": "Cast this spell only during the declare attackers step and only if you've been attacked this step.\nDestroy target nonblack attacking creature.",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [],
+    "oracle_id": "76da2150-34b9-4483-99df-131e1c5468d5"
+  },
+  {
+    "name": "Balance of Power",
+    "mana_cost": "{3}{U}{U}",
+    "cmc": 5.0,
+    "type_line": "Sorcery",
+    "oracle_text": "If target opponent has more cards in hand than you, draw cards equal to the difference.",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [],
+    "oracle_id": "c57ee68e-6832-4d4c-b710-fc03a2c10a9c"
+  },
+  {
+    "name": "Baleful Stare",
+    "mana_cost": "{2}{U}",
+    "cmc": 3.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Target opponent reveals their hand. You draw a card for each Mountain and red card in it.",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [],
+    "oracle_id": "4135131d-4653-4767-ad1d-68c9bf393c3a"
+  },
+  {
+    "name": "Bee Sting",
+    "mana_cost": "{3}{G}",
+    "cmc": 4.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Bee Sting deals 2 damage to any target.",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [],
+    "oracle_id": "f637d525-2f29-488a-9269-8e5aa377fbb7"
+  },
+  {
+    "name": "Blaze",
+    "mana_cost": "{X}{R}",
+    "cmc": 1.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Blaze deals X damage to any target.",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [],
+    "oracle_id": "0596920f-9946-42f4-a03b-24aab67f9f1b"
+  },
+  {
+    "name": "Blessed Reversal",
+    "mana_cost": "{1}{W}",
+    "cmc": 2.0,
+    "type_line": "Instant",
+    "oracle_text": "You gain 3 life for each creature attacking you.",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [],
+    "oracle_id": "70e0b676-61a2-4dcf-8f61-d9281467ed43"
+  },
+  {
+    "name": "Blinding Light",
+    "mana_cost": "{2}{W}",
+    "cmc": 3.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Tap all nonwhite creatures.",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [],
+    "oracle_id": "6b315dc3-c330-4b30-b6ad-4da12ccf6ca3"
+  },
+  {
+    "name": "Bog Imp",
+    "mana_cost": "{1}{B}",
+    "cmc": 2.0,
+    "type_line": "Creature — Imp",
+    "oracle_text": "Flying (This creature can't be blocked except by creatures with flying or reach.)",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [
+      "Flying"
+    ],
+    "oracle_id": "45b94e3c-a905-435b-aee5-bec9239fd24c"
+  },
+  {
+    "name": "Bog Raiders",
+    "mana_cost": "{2}{B}",
+    "cmc": 3.0,
+    "type_line": "Creature — Zombie",
+    "oracle_text": "Swampwalk (This creature can't be blocked as long as defending player controls a Swamp.)",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [
+      "Landwalk",
+      "Swampwalk"
+    ],
+    "oracle_id": "60824fae-20ed-4122-82c9-e99a1b679c54"
+  },
+  {
+    "name": "Bog Wraith",
+    "mana_cost": "{3}{B}",
+    "cmc": 4.0,
+    "type_line": "Creature — Wraith",
+    "oracle_text": "Swampwalk (This creature can't be blocked as long as defending player controls a Swamp.)",
+    "power": "3",
+    "toughness": "3",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [
+      "Landwalk",
+      "Swampwalk"
+    ],
+    "oracle_id": "508248d1-09a4-4e41-a4c9-286618e5061e"
+  },
+  {
+    "name": "Boiling Seas",
+    "mana_cost": "{3}{R}",
+    "cmc": 4.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Destroy all Islands.",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [],
+    "oracle_id": "7421b711-81a4-4042-b024-f55bf9ff203f"
+  },
+  {
+    "name": "Border Guard",
+    "mana_cost": "{2}{W}",
+    "cmc": 3.0,
+    "type_line": "Creature — Human Soldier",
+    "oracle_text": "",
+    "power": "1",
+    "toughness": "4",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [],
+    "oracle_id": "1ef5003c-f540-4cdc-913f-7d5280ad9f62"
+  },
+  {
+    "name": "Breath of Life",
+    "mana_cost": "{3}{W}",
+    "cmc": 4.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Return target creature card from your graveyard to the battlefield.",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [],
+    "oracle_id": "30d9e200-b944-43ff-89b8-a550a788ae03"
+  },
+  {
+    "name": "Bull Hippo",
+    "mana_cost": "{3}{G}",
+    "cmc": 4.0,
+    "type_line": "Creature — Hippo",
+    "oracle_text": "Islandwalk (This creature can't be blocked as long as defending player controls an Island.)",
+    "power": "3",
+    "toughness": "3",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [
+      "Landwalk",
+      "Islandwalk"
+    ],
+    "oracle_id": "4d62a448-b6a5-43b1-a281-9e9361a5524a"
+  },
+  {
+    "name": "Burning Cloak",
+    "mana_cost": "{R}",
+    "cmc": 1.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Target creature gets +2/+0 until end of turn. Burning Cloak deals 2 damage to that creature.",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [],
+    "oracle_id": "4527c622-cebe-41eb-9178-4895cccffe99"
+  },
+  {
+    "name": "Capricious Sorcerer",
+    "mana_cost": "{2}{U}",
+    "cmc": 3.0,
+    "type_line": "Creature — Human Wizard Sorcerer",
+    "oracle_text": "{T}: This creature deals 1 damage to any target. Activate only during your turn, before attackers are declared.",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [],
+    "oracle_id": "09fe624f-c66a-46e4-a9af-7e3c3ca1a4e3"
+  },
+  {
+    "name": "Charging Bandits",
+    "mana_cost": "{4}{B}",
+    "cmc": 5.0,
+    "type_line": "Creature — Human Rogue",
+    "oracle_text": "Whenever this creature attacks, it gets +2/+0 until end of turn.",
+    "power": "3",
+    "toughness": "3",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [],
+    "oracle_id": "0c67133b-be15-47d7-8cf6-79987a42044d"
+  },
+  {
+    "name": "Charging Paladin",
+    "mana_cost": "{2}{W}",
+    "cmc": 3.0,
+    "type_line": "Creature — Human Knight",
+    "oracle_text": "Whenever this creature attacks, it gets +0/+3 until end of turn.",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [],
+    "oracle_id": "6cccf44e-c05e-4239-b643-54b559c98552"
+  },
+  {
+    "name": "Charging Rhino",
+    "mana_cost": "{3}{G}{G}",
+    "cmc": 5.0,
+    "type_line": "Creature — Rhino",
+    "oracle_text": "This creature can't be blocked by more than one creature.",
+    "power": "4",
+    "toughness": "4",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [],
+    "oracle_id": "26966ecb-15d3-47e5-ab63-e38510c87ecc"
+  },
+  {
+    "name": "Cloak of Feathers",
+    "mana_cost": "{U}",
+    "cmc": 1.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Target creature gains flying until end of turn.\nDraw a card.",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [],
+    "oracle_id": "cb4baf53-51ed-468b-a468-5d7d45a6dc26"
+  },
+  {
+    "name": "Cloud Dragon",
+    "mana_cost": "{5}{U}",
+    "cmc": 6.0,
+    "type_line": "Creature — Illusion Dragon",
+    "oracle_text": "Flying\nThis creature can block only creatures with flying.",
+    "power": "5",
+    "toughness": "4",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [
+      "Flying"
+    ],
+    "oracle_id": "3c46f309-69ae-43b1-adf6-bdb26599c1f4"
+  },
+  {
+    "name": "Cloud Pirates",
+    "mana_cost": "{U}",
+    "cmc": 1.0,
+    "type_line": "Creature — Human Pirate",
+    "oracle_text": "Flying\nThis creature can block only creatures with flying.",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [
+      "Flying"
+    ],
+    "oracle_id": "d334aa85-3470-4f5d-9cbc-b88bf991a5af"
+  },
+  {
+    "name": "Cloud Spirit",
+    "mana_cost": "{2}{U}",
+    "cmc": 3.0,
+    "type_line": "Creature — Spirit",
+    "oracle_text": "Flying\nThis creature can block only creatures with flying.",
+    "power": "3",
+    "toughness": "1",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [
+      "Flying"
+    ],
+    "oracle_id": "9e1a6481-f460-4551-96e8-30b289f2cb92"
+  },
+  {
+    "name": "Command of Unsummoning",
+    "mana_cost": "{2}{U}",
+    "cmc": 3.0,
+    "type_line": "Instant",
+    "oracle_text": "Cast this spell only during the declare attackers step and only if you've been attacked this step.\nReturn one or two target attacking creatures to their owner's hand.",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [],
+    "oracle_id": "fd57dfa5-f29d-4b79-8748-c34a73efb7f0"
+  },
+  {
+    "name": "Coral Eel",
+    "mana_cost": "{1}{U}",
+    "cmc": 2.0,
+    "type_line": "Creature — Fish",
+    "oracle_text": "",
+    "power": "2",
+    "toughness": "1",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [],
+    "oracle_id": "10706fd1-7847-4316-be8d-59b56143ce45"
+  },
+  {
+    "name": "Craven Giant",
+    "mana_cost": "{2}{R}",
+    "cmc": 3.0,
+    "type_line": "Creature — Giant",
+    "oracle_text": "This creature can't block.",
+    "power": "4",
+    "toughness": "1",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [],
+    "oracle_id": "3ebd9c8d-c840-4c2e-ace6-352a68d1c20f"
+  },
+  {
+    "name": "Craven Knight",
+    "mana_cost": "{1}{B}",
+    "cmc": 2.0,
+    "type_line": "Creature — Human Knight",
+    "oracle_text": "This creature can't block.",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [],
+    "oracle_id": "27d138af-7c5d-4c7e-a310-63d5b03f039d"
+  },
+  {
+    "name": "Cruel Bargain",
+    "mana_cost": "{B}{B}{B}",
+    "cmc": 3.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Draw four cards. You lose half your life, rounded up.",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [],
+    "oracle_id": "dcf105c1-d37b-4e92-a420-9872a2187764"
+  },
+  {
+    "name": "Cruel Fate",
+    "mana_cost": "{4}{U}",
+    "cmc": 5.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Look at the top five cards of target opponent's library. Put one of those cards into that player's graveyard and the rest on top of their library in any order.",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [],
+    "oracle_id": "e199e183-e857-4dc7-87f4-36b32c4dac96"
+  },
+  {
+    "name": "Cruel Tutor",
+    "mana_cost": "{2}{B}",
+    "cmc": 3.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Search your library for a card, then shuffle and put that card on top. You lose 2 life.",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [],
+    "oracle_id": "d9353eb6-c7e7-4d85-a0c2-32b1d091881a"
+  },
+  {
+    "name": "Deep-Sea Serpent",
+    "mana_cost": "{4}{U}{U}",
+    "cmc": 6.0,
+    "type_line": "Creature — Serpent",
+    "oracle_text": "This creature can't attack unless defending player controls an Island.",
+    "power": "5",
+    "toughness": "5",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [],
+    "oracle_id": "7fbb98cc-585c-4184-97f5-9b3d3ebdb1e5"
+  },
+  {
+    "name": "Deep Wood",
+    "mana_cost": "{1}{G}",
+    "cmc": 2.0,
+    "type_line": "Instant",
+    "oracle_text": "Cast this spell only during the declare attackers step and only if you've been attacked this step.\nPrevent all damage that would be dealt to you this turn by attacking creatures.",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [],
+    "oracle_id": "3f01f627-9fbd-470b-8001-974784ccf421"
+  },
+  {
+    "name": "Defiant Stand",
+    "mana_cost": "{1}{W}",
+    "cmc": 2.0,
+    "type_line": "Instant",
+    "oracle_text": "Cast this spell only during the declare attackers step and only if you've been attacked this step.\nTarget creature gets +1/+3 until end of turn. Untap that creature.",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [],
+    "oracle_id": "05e61628-cdae-4664-b866-be438fb3a6ba"
+  },
+  {
+    "name": "Déjà Vu",
+    "mana_cost": "{2}{U}",
+    "cmc": 3.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Return target sorcery card from your graveyard to your hand.",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [],
+    "oracle_id": "7408b9c5-7266-4627-be4e-b691cf5c622c"
+  },
+  {
+    "name": "Desert Drake",
+    "mana_cost": "{3}{R}",
+    "cmc": 4.0,
+    "type_line": "Creature — Drake",
+    "oracle_text": "Flying",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [
+      "Flying"
+    ],
+    "oracle_id": "ce8f4eb4-08b8-404b-9147-1e28c1b14a65"
+  },
+  {
+    "name": "Devastation",
+    "mana_cost": "{5}{R}{R}",
+    "cmc": 7.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Destroy all creatures and lands.",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [],
+    "oracle_id": "052838cb-dcf0-46f5-82b1-c3ed863b42b7"
+  },
+  {
+    "name": "Devoted Hero",
+    "mana_cost": "{W}",
+    "cmc": 1.0,
+    "type_line": "Creature — Elf Soldier",
+    "oracle_text": "",
+    "power": "1",
+    "toughness": "2",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [],
+    "oracle_id": "fff6f2d0-22b5-41d0-99dc-bc817c3bd166"
+  },
+  {
+    "name": "Djinn of the Lamp",
+    "mana_cost": "{5}{U}{U}",
+    "cmc": 7.0,
+    "type_line": "Creature — Djinn",
+    "oracle_text": "Flying",
+    "power": "5",
+    "toughness": "6",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [
+      "Flying"
+    ],
+    "oracle_id": "72b42c63-fe4d-4823-9692-30fb5bab384a"
+  },
+  {
+    "name": "Dread Charge",
+    "mana_cost": "{3}{B}",
+    "cmc": 4.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Black creatures you control can't be blocked this turn except by black creatures.",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [],
+    "oracle_id": "6b7933b3-821a-4d64-9a10-af8a69fa008e"
+  },
+  {
+    "name": "Dread Reaper",
+    "mana_cost": "{3}{B}{B}{B}",
+    "cmc": 6.0,
+    "type_line": "Creature — Horror",
+    "oracle_text": "Flying\nWhen this creature enters, you lose 5 life.",
+    "power": "6",
+    "toughness": "5",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [
+      "Flying"
+    ],
+    "oracle_id": "bd73ab86-0ac9-4ce0-be41-f4ad257e74f6"
+  },
+  {
+    "name": "Dry Spell",
+    "mana_cost": "{1}{B}",
+    "cmc": 2.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Dry Spell deals 1 damage to each creature and each player.",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [],
+    "oracle_id": "980a9957-6b52-45c6-b847-f84974d5a653"
+  },
+  {
+    "name": "Earthquake",
+    "mana_cost": "{X}{R}",
+    "cmc": 1.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Earthquake deals X damage to each creature without flying and each player.",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [],
+    "oracle_id": "9a40614b-50a3-422c-849e-53c8b7d3d204"
+  },
+  {
+    "name": "Ebon Dragon",
+    "mana_cost": "{5}{B}{B}",
+    "cmc": 7.0,
+    "type_line": "Creature — Dragon",
+    "oracle_text": "Flying\nWhen this creature enters, you may have target opponent discard a card.",
+    "power": "5",
+    "toughness": "4",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [
+      "Flying"
+    ],
+    "oracle_id": "12e4d2bd-83e9-4120-a2e8-0645c0ed2387"
+  },
+  {
+    "name": "Elite Cat Warrior",
+    "mana_cost": "{2}{G}",
+    "cmc": 3.0,
+    "type_line": "Creature — Cat Warrior",
+    "oracle_text": "Forestwalk (This creature can't be blocked as long as defending player controls a Forest.)",
+    "power": "2",
+    "toughness": "3",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [
+      "Landwalk",
+      "Forestwalk"
+    ],
+    "oracle_id": "9297e50f-f8a5-4793-b64d-a119404f94ce"
+  },
+  {
+    "name": "Elven Cache",
+    "mana_cost": "{2}{G}{G}",
+    "cmc": 4.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Return target card from your graveyard to your hand.",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [],
+    "oracle_id": "8a922366-ee2a-4ddb-a904-683dcf4f191a"
+  },
+  {
+    "name": "Elvish Ranger",
+    "mana_cost": "{2}{G}",
+    "cmc": 3.0,
+    "type_line": "Creature — Elf Ranger",
+    "oracle_text": "",
+    "power": "4",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [],
+    "oracle_id": "092f2c34-1f75-4998-b219-2cf1ca73656d"
+  },
+  {
+    "name": "Endless Cockroaches",
+    "mana_cost": "{1}{B}{B}",
+    "cmc": 3.0,
+    "type_line": "Creature — Insect",
+    "oracle_text": "When this creature dies, return it to its owner's hand.",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [],
+    "oracle_id": "9f31dbb1-c350-46f8-bd1d-9f23a073d2f1"
+  },
+  {
+    "name": "Exhaustion",
+    "mana_cost": "{2}{U}",
+    "cmc": 3.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Creatures and lands target opponent controls don't untap during their next untap step.",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [],
+    "oracle_id": "0e7b9caf-8285-4386-98bc-9a809827f447"
+  },
+  {
+    "name": "False Peace",
+    "mana_cost": "{W}",
+    "cmc": 1.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Target player skips all combat phases of their next turn.",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [],
+    "oracle_id": "7962db58-dbd9-4b94-8a21-a1625da4c384"
+  },
+  {
+    "name": "Feral Shadow",
+    "mana_cost": "{2}{B}",
+    "cmc": 3.0,
+    "type_line": "Creature — Nightstalker",
+    "oracle_text": "Flying",
+    "power": "2",
+    "toughness": "1",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [
+      "Flying"
+    ],
+    "oracle_id": "cf26dcb4-e181-4ba5-bc03-b56f57032b85"
+  },
+  {
+    "name": "Final Strike",
+    "mana_cost": "{2}{B}{B}",
+    "cmc": 4.0,
+    "type_line": "Sorcery",
+    "oracle_text": "As an additional cost to cast this spell, sacrifice a creature.\nFinal Strike deals damage to target opponent or planeswalker equal to the sacrificed creature's power.",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [],
+    "oracle_id": "4d98aea2-b4ff-4903-ba28-a53fbfaad6b1"
+  },
+  {
+    "name": "Fire Dragon",
+    "mana_cost": "{6}{R}{R}{R}",
+    "cmc": 9.0,
+    "type_line": "Creature — Dragon",
+    "oracle_text": "Flying\nWhen this creature enters, it deals damage to target creature equal to the number of Mountains you control.",
+    "power": "6",
+    "toughness": "6",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [
+      "Flying"
+    ],
+    "oracle_id": "349d8ef9-e07a-416f-a5b1-2c2be6bb322d"
+  },
+  {
+    "name": "Fire Imp",
+    "mana_cost": "{2}{R}",
+    "cmc": 3.0,
+    "type_line": "Creature — Imp",
+    "oracle_text": "When this creature enters, it deals 2 damage to target creature.",
+    "power": "2",
+    "toughness": "1",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [],
+    "oracle_id": "5bd806e7-3f9b-4bb4-9708-f87a578f531e"
+  },
+  {
+    "name": "Fire Snake",
+    "mana_cost": "{4}{R}",
+    "cmc": 5.0,
+    "type_line": "Creature — Snake",
+    "oracle_text": "When this creature dies, destroy target land.",
+    "power": "3",
+    "toughness": "1",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [],
+    "oracle_id": "e96542ed-1931-4da1-9d9e-d10878c4ae6b"
+  },
+  {
+    "name": "Fire Tempest",
+    "mana_cost": "{5}{R}{R}",
+    "cmc": 7.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Fire Tempest deals 6 damage to each creature and each player.",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [],
+    "oracle_id": "ede6a352-52de-4ae0-816f-50140033dedf"
+  },
+  {
+    "name": "Flashfires",
+    "mana_cost": "{3}{R}",
+    "cmc": 4.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Destroy all Plains.",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [],
+    "oracle_id": "c281f436-8c77-48f7-b31c-d40cd7f9ed6a"
+  },
+  {
+    "name": "Fleet-Footed Monk",
+    "mana_cost": "{1}{W}",
+    "cmc": 2.0,
+    "type_line": "Creature — Human Monk",
+    "oracle_text": "This creature can't be blocked by creatures with power 2 or greater.",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [],
+    "oracle_id": "a6a26261-1915-4699-a2e9-cca43b39a3eb"
+  },
+  {
+    "name": "Flux",
+    "mana_cost": "{2}{U}",
+    "cmc": 3.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Each player discards any number of cards, then draws that many cards.\nDraw a card.",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [],
+    "oracle_id": "b8cff5f1-6871-49d2-89a7-24870308aadb"
+  },
+  {
+    "name": "Foot Soldiers",
+    "mana_cost": "{3}{W}",
+    "cmc": 4.0,
+    "type_line": "Creature — Human Soldier",
+    "oracle_text": "",
+    "power": "2",
+    "toughness": "4",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [],
+    "oracle_id": "a768ba13-4d1c-4dce-a4a6-86a39c069c3f"
+  },
+  {
+    "name": "Forest",
+    "mana_cost": "",
+    "cmc": 0.0,
+    "type_line": "Basic Land — Forest",
+    "oracle_text": "({T}: Add {G}.)",
+    "colors": [],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [],
+    "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6"
+  },
+  {
+    "name": "Forked Lightning",
+    "mana_cost": "{3}{R}",
+    "cmc": 4.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Forked Lightning deals 4 damage divided as you choose among one, two, or three target creatures.",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [],
+    "oracle_id": "66107cfd-4bdb-4266-a650-940743555ea4"
+  },
+  {
+    "name": "Fruition",
+    "mana_cost": "{G}",
+    "cmc": 1.0,
+    "type_line": "Sorcery",
+    "oracle_text": "You gain 1 life for each Forest on the battlefield.",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [],
+    "oracle_id": "5f3ef680-90f4-487f-b44b-db25e29e57ce"
+  },
+  {
+    "name": "Giant Octopus",
+    "mana_cost": "{3}{U}",
+    "cmc": 4.0,
+    "type_line": "Creature — Octopus",
+    "oracle_text": "",
+    "power": "3",
+    "toughness": "3",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [],
+    "oracle_id": "c181d2a4-5959-4409-9bd3-ecedf8ec9516"
+  },
+  {
+    "name": "Giant Spider",
+    "mana_cost": "{3}{G}",
+    "cmc": 4.0,
+    "type_line": "Creature — Spider",
+    "oracle_text": "Reach (This creature can block creatures with flying.)",
+    "power": "2",
+    "toughness": "4",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [
+      "Reach"
+    ],
+    "oracle_id": "e740ce2f-2134-473c-afa1-1b6d2d1e38ef"
+  },
+  {
+    "name": "Gift of Estates",
+    "mana_cost": "{1}{W}",
+    "cmc": 2.0,
+    "type_line": "Sorcery",
+    "oracle_text": "If an opponent controls more lands than you, search your library for up to three Plains cards, reveal them, put them into your hand, then shuffle.",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [],
+    "oracle_id": "1bd70be6-752c-4ecb-a3e8-2bacec4b94fc"
+  },
+  {
+    "name": "Goblin Bully",
+    "mana_cost": "{1}{R}",
+    "cmc": 2.0,
+    "type_line": "Creature — Goblin",
+    "oracle_text": "",
+    "power": "2",
+    "toughness": "1",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [],
+    "oracle_id": "56c5afdc-6777-45c7-8e2c-3cadecb95c5a"
+  },
+  {
+    "name": "Gorilla Warrior",
+    "mana_cost": "{2}{G}",
+    "cmc": 3.0,
+    "type_line": "Creature — Ape Warrior",
+    "oracle_text": "",
+    "power": "3",
+    "toughness": "2",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [],
+    "oracle_id": "c0e6ae0f-6cf7-48ca-acb8-73d4c38b9005"
+  },
+  {
+    "name": "Gravedigger",
+    "mana_cost": "{3}{B}",
+    "cmc": 4.0,
+    "type_line": "Creature — Zombie",
+    "oracle_text": "When this creature enters, you may return target creature card from your graveyard to your hand.",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [],
+    "oracle_id": "1a2030cc-d7ee-4059-b2d7-fb95ea8e267b"
+  },
+  {
+    "name": "Grizzly Bears",
+    "mana_cost": "{1}{G}",
+    "cmc": 2.0,
+    "type_line": "Creature — Bear",
+    "oracle_text": "",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [],
+    "oracle_id": "14c8f55d-d177-4c25-a931-ebeb9e6062a0"
+  },
+  {
+    "name": "Hand of Death",
+    "mana_cost": "{2}{B}",
+    "cmc": 3.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Destroy target nonblack creature.",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [],
+    "oracle_id": "dc45b2e3-272b-479b-8e3b-36eead606a3a"
+  },
+  {
+    "name": "Harsh Justice",
+    "mana_cost": "{2}{W}",
+    "cmc": 3.0,
+    "type_line": "Instant",
+    "oracle_text": "Cast this spell only during the declare attackers step and only if you've been attacked this step.\nThis turn, whenever an attacking creature deals combat damage to you, it deals that much damage to its controller.",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [],
+    "oracle_id": "fe4bee2c-f03f-44a4-94a4-55a06bcd0ad8"
+  },
+  {
+    "name": "Highland Giant",
+    "mana_cost": "{2}{R}{R}",
+    "cmc": 4.0,
+    "type_line": "Creature — Giant",
+    "oracle_text": "",
+    "power": "3",
+    "toughness": "4",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [],
+    "oracle_id": "2f3878b8-61af-4276-b7ab-11b70e44eb62"
+  },
+  {
+    "name": "Hill Giant",
+    "mana_cost": "{3}{R}",
+    "cmc": 4.0,
+    "type_line": "Creature — Giant",
+    "oracle_text": "",
+    "power": "3",
+    "toughness": "3",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [],
+    "oracle_id": "342199e0-15b6-4824-83da-25caef2592b3"
+  },
+  {
+    "name": "Horned Turtle",
+    "mana_cost": "{2}{U}",
+    "cmc": 3.0,
+    "type_line": "Creature — Turtle",
+    "oracle_text": "",
+    "power": "1",
+    "toughness": "4",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [],
+    "oracle_id": "7a4ae76b-6241-4fa8-b239-5ec941a0e7df"
+  },
+  {
+    "name": "Howling Fury",
+    "mana_cost": "{2}{B}",
+    "cmc": 3.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Target creature gets +4/+0 until end of turn.",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [],
+    "oracle_id": "eda60752-d225-4fd0-9f0f-9b99e321b8fa"
+  },
+  {
+    "name": "Hulking Cyclops",
+    "mana_cost": "{3}{R}{R}",
+    "cmc": 5.0,
+    "type_line": "Creature — Cyclops",
+    "oracle_text": "This creature can't block.",
+    "power": "5",
+    "toughness": "5",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [],
+    "oracle_id": "04936918-7ef3-42fa-b0cd-87d18cb69d2c"
+  },
+  {
+    "name": "Hulking Goblin",
+    "mana_cost": "{1}{R}",
+    "cmc": 2.0,
+    "type_line": "Creature — Goblin",
+    "oracle_text": "This creature can't block.",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [],
+    "oracle_id": "1451b623-8214-4d81-9436-62dbe8b79539"
+  },
+  {
+    "name": "Hurricane",
+    "mana_cost": "{X}{G}",
+    "cmc": 1.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Hurricane deals X damage to each creature with flying and each player.",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [],
+    "oracle_id": "9c021685-4017-49c7-9f58-2ae0243361a0"
+  },
+  {
+    "name": "Ingenious Thief",
+    "mana_cost": "{1}{U}",
+    "cmc": 2.0,
+    "type_line": "Creature — Human Rogue",
+    "oracle_text": "Flying\nWhen this creature enters, look at target player's hand.",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [
+      "Flying"
+    ],
+    "oracle_id": "73ea2949-5812-478d-8f09-00743ce4d40f"
+  },
+  {
+    "name": "Island",
+    "mana_cost": "",
+    "cmc": 0.0,
+    "type_line": "Basic Land — Island",
+    "oracle_text": "({T}: Add {U}.)",
+    "colors": [],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [],
+    "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373"
+  },
+  {
+    "name": "Jungle Lion",
+    "mana_cost": "{G}",
+    "cmc": 1.0,
+    "type_line": "Creature — Cat",
+    "oracle_text": "This creature can't block.",
+    "power": "2",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [],
+    "oracle_id": "45b42694-9ee8-44f3-9de3-aa2c0f1b6a13"
+  },
+  {
+    "name": "Keen-Eyed Archers",
+    "mana_cost": "{2}{W}",
+    "cmc": 3.0,
+    "type_line": "Creature — Elf Archer",
+    "oracle_text": "Reach (This creature can block creatures with flying.)",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [
+      "Reach"
+    ],
+    "oracle_id": "0ace32d6-7261-447c-9ee2-e03febaab91b"
+  },
+  {
+    "name": "King's Assassin",
+    "mana_cost": "{1}{B}{B}",
+    "cmc": 3.0,
+    "type_line": "Creature — Human Assassin",
+    "oracle_text": "{T}: Destroy target tapped creature. Activate only during your turn, before attackers are declared.",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [],
+    "oracle_id": "4e3f89e2-2be6-4b96-b81c-007b6840af82"
+  },
+  {
+    "name": "Knight Errant",
+    "mana_cost": "{1}{W}",
+    "cmc": 2.0,
+    "type_line": "Creature — Human Knight",
+    "oracle_text": "",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [],
+    "oracle_id": "920cc1a7-ac6b-44c0-ade7-347f05bba0f2"
+  },
+  {
+    "name": "Last Chance",
+    "mana_cost": "{R}{R}",
+    "cmc": 2.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Take an extra turn after this one. At the beginning of that turn's end step, you lose the game.",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [],
+    "oracle_id": "360039a5-1cbd-4ee3-8f94-21b5348e106a"
+  },
+  {
+    "name": "Lava Axe",
+    "mana_cost": "{4}{R}",
+    "cmc": 5.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Lava Axe deals 5 damage to target player or planeswalker.",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [],
+    "oracle_id": "387b6b07-a283-412d-94c3-f7f1dc76e858"
+  },
+  {
+    "name": "Lava Flow",
+    "mana_cost": "{3}{R}{R}",
+    "cmc": 5.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Destroy target creature or land.",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [],
+    "oracle_id": "91c0a76e-3992-437f-b85a-97b0b4adbb84"
+  },
+  {
+    "name": "Lizard Warrior",
+    "mana_cost": "{3}{R}",
+    "cmc": 4.0,
+    "type_line": "Creature — Lizard Warrior",
+    "oracle_text": "",
+    "power": "4",
+    "toughness": "2",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [],
+    "oracle_id": "123337af-f976-4956-949f-c650da812113"
+  },
+  {
+    "name": "Man-o'-War",
+    "mana_cost": "{2}{U}",
+    "cmc": 3.0,
+    "type_line": "Creature — Jellyfish",
+    "oracle_text": "When this creature enters, return target creature to its owner's hand.",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [],
+    "oracle_id": "67a3541c-8408-40c8-b44f-90035b860f57"
+  },
+  {
+    "name": "Mercenary Knight",
+    "mana_cost": "{2}{B}",
+    "cmc": 3.0,
+    "type_line": "Creature — Human Mercenary Knight",
+    "oracle_text": "When this creature enters, sacrifice it unless you discard a creature card.",
+    "power": "4",
+    "toughness": "4",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [],
+    "oracle_id": "ed5429bb-233a-4528-bf7d-df5f6b192b1c"
+  },
+  {
+    "name": "Merfolk of the Pearl Trident",
+    "mana_cost": "{U}",
+    "cmc": 1.0,
+    "type_line": "Creature — Merfolk",
+    "oracle_text": "",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [],
+    "oracle_id": "218d9277-c179-4de3-9c7f-79b5a6d4fa38"
+  },
+  {
+    "name": "Mind Knives",
+    "mana_cost": "{1}{B}",
+    "cmc": 2.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Target opponent discards a card at random.",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [],
+    "oracle_id": "f9be5566-c3df-44cc-9de4-29510c8c245f"
+  },
+  {
+    "name": "Mind Rot",
+    "mana_cost": "{2}{B}",
+    "cmc": 3.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Target player discards two cards.",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [],
+    "oracle_id": "ad44cf74-b717-48fb-9fa2-77512024d76a"
+  },
+  {
+    "name": "Minotaur Warrior",
+    "mana_cost": "{2}{R}",
+    "cmc": 3.0,
+    "type_line": "Creature — Minotaur Warrior",
+    "oracle_text": "",
+    "power": "2",
+    "toughness": "3",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [],
+    "oracle_id": "53fb9a9b-1f5d-48c9-88c0-0864c187f15e"
+  },
+  {
+    "name": "Mobilize",
+    "mana_cost": "{G}",
+    "cmc": 1.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Untap all creatures you control.",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [],
+    "oracle_id": "7416c8db-ec33-4d92-866c-b7fdc69c8b41"
+  },
+  {
+    "name": "Monstrous Growth",
+    "mana_cost": "{1}{G}",
+    "cmc": 2.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Target creature gets +4/+4 until end of turn.",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [],
+    "oracle_id": "35a05836-38d7-45c7-ac9a-996a682c2129"
+  },
+  {
+    "name": "Moon Sprite",
+    "mana_cost": "{1}{G}",
+    "cmc": 2.0,
+    "type_line": "Creature — Faerie",
+    "oracle_text": "Flying",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [
+      "Flying"
+    ],
+    "oracle_id": "1e41136b-afa7-45ee-8d04-d0c7514b5387"
+  },
+  {
+    "name": "Mountain",
+    "mana_cost": "",
+    "cmc": 0.0,
+    "type_line": "Basic Land — Mountain",
+    "oracle_text": "({T}: Add {R}.)",
+    "colors": [],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [],
+    "oracle_id": "a3fb7228-e76b-4e96-a40e-20b5fed75685"
+  },
+  {
+    "name": "Mountain Goat",
+    "mana_cost": "{R}",
+    "cmc": 1.0,
+    "type_line": "Creature — Goat",
+    "oracle_text": "Mountainwalk (This creature can't be blocked as long as defending player controls a Mountain.)",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [
+      "Landwalk",
+      "Mountainwalk"
+    ],
+    "oracle_id": "031cd561-d9b1-4a0e-bc38-bc09e80563c3"
+  },
+  {
+    "name": "Muck Rats",
+    "mana_cost": "{B}",
+    "cmc": 1.0,
+    "type_line": "Creature — Rat",
+    "oracle_text": "",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [],
+    "oracle_id": "bca13a12-6723-4a5e-8f1b-21646a8b3e7e"
+  },
+  {
+    "name": "Mystic Denial",
+    "mana_cost": "{1}{U}{U}",
+    "cmc": 3.0,
+    "type_line": "Instant",
+    "oracle_text": "Counter target creature or sorcery spell.",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [],
+    "oracle_id": "d2bd23a6-4f77-4d6e-bf8f-339cb7a4184d"
+  },
+  {
+    "name": "Natural Order",
+    "mana_cost": "{2}{G}{G}",
+    "cmc": 4.0,
+    "type_line": "Sorcery",
+    "oracle_text": "As an additional cost to cast this spell, sacrifice a green creature.\nSearch your library for a green creature card, put it onto the battlefield, then shuffle.",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [],
+    "oracle_id": "8c1fe337-375a-4add-93b6-0ac39ed72b4f"
+  },
+  {
+    "name": "Natural Spring",
+    "mana_cost": "{3}{G}{G}",
+    "cmc": 5.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Target player gains 8 life.",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [],
+    "oracle_id": "f7571a2e-aaf3-4148-ab76-2a2e35273c70"
+  },
+  {
+    "name": "Nature's Cloak",
+    "mana_cost": "{2}{G}",
+    "cmc": 3.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Green creatures you control gain forestwalk until end of turn. (They can't be blocked as long as defending player controls a Forest.)",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [],
+    "oracle_id": "bb493c95-5f6d-405b-aac6-c56fe6b6f42f"
+  },
+  {
+    "name": "Nature's Lore",
+    "mana_cost": "{1}{G}",
+    "cmc": 2.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Search your library for a Forest card, put that card onto the battlefield, then shuffle.",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [],
+    "oracle_id": "78826359-fe63-44ad-adc4-a17ffcd710e4"
+  },
+  {
+    "name": "Nature's Ruin",
+    "mana_cost": "{2}{B}",
+    "cmc": 3.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Destroy all green creatures.",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [],
+    "oracle_id": "d119ca9a-ee82-42c2-81e6-684205ca5183"
+  },
+  {
+    "name": "Needle Storm",
+    "mana_cost": "{2}{G}",
+    "cmc": 3.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Needle Storm deals 4 damage to each creature with flying.",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [],
+    "oracle_id": "1f513d1e-03ca-4e0f-af48-6490d71d5c41"
+  },
+  {
+    "name": "Noxious Toad",
+    "mana_cost": "{2}{B}",
+    "cmc": 3.0,
+    "type_line": "Creature — Frog",
+    "oracle_text": "When this creature dies, each opponent discards a card.",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [],
+    "oracle_id": "2fdc484e-b3c3-4f4e-99a1-26a1134aa1cd"
+  },
+  {
+    "name": "Omen",
+    "mana_cost": "{1}{U}",
+    "cmc": 2.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Look at the top three cards of your library, then put them back in any order. You may shuffle.\nDraw a card.",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [],
+    "oracle_id": "9b8c44a0-82ef-4beb-a762-c2a2a21380f3"
+  },
+  {
+    "name": "Owl Familiar",
+    "mana_cost": "{1}{U}",
+    "cmc": 2.0,
+    "type_line": "Creature — Bird",
+    "oracle_text": "Flying\nWhen this creature enters, draw a card, then discard a card.",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [
+      "Flying"
+    ],
+    "oracle_id": "099a5835-da6c-4e03-ad3e-aeb448897fed"
+  },
+  {
+    "name": "Panther Warriors",
+    "mana_cost": "{4}{G}",
+    "cmc": 5.0,
+    "type_line": "Creature — Cat Warrior",
+    "oracle_text": "",
+    "power": "6",
+    "toughness": "3",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [],
+    "oracle_id": "ef7788af-8edc-46df-a5b6-895c734ea423"
+  },
+  {
+    "name": "Path of Peace",
+    "mana_cost": "{3}{W}",
+    "cmc": 4.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Destroy target creature. Its owner gains 4 life.",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [],
+    "oracle_id": "b7593cf8-4dcb-473b-a2ef-180fffe66738"
+  },
+  {
+    "name": "Personal Tutor",
+    "mana_cost": "{U}",
+    "cmc": 1.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Search your library for a sorcery card, reveal it, then shuffle and put that card on top.",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [],
+    "oracle_id": "90f54959-2c9b-4b8a-84c9-d6893eb43553"
+  },
+  {
+    "name": "Phantom Warrior",
+    "mana_cost": "{1}{U}{U}",
+    "cmc": 3.0,
+    "type_line": "Creature — Illusion Warrior",
+    "oracle_text": "This creature can't be blocked.",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [],
+    "oracle_id": "23745133-e5e2-4ce3-b94a-73d0d3d8a013"
+  },
+  {
+    "name": "Pillaging Horde",
+    "mana_cost": "{2}{R}{R}",
+    "cmc": 4.0,
+    "type_line": "Creature — Human Barbarian",
+    "oracle_text": "When this creature enters, sacrifice it unless you discard a card at random.",
+    "power": "5",
+    "toughness": "5",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [],
+    "oracle_id": "ad07cb55-cc4f-40be-b16a-bd3d3ca94249"
+  },
+  {
+    "name": "Plains",
+    "mana_cost": "",
+    "cmc": 0.0,
+    "type_line": "Basic Land — Plains",
+    "oracle_text": "({T}: Add {W}.)",
+    "colors": [],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [],
+    "oracle_id": "bc71ebf6-2056-41f7-be35-b2e5c34afa99"
+  },
+  {
+    "name": "Plant Elemental",
+    "mana_cost": "{1}{G}",
+    "cmc": 2.0,
+    "type_line": "Creature — Plant Elemental",
+    "oracle_text": "When this creature enters, sacrifice it unless you sacrifice a Forest.",
+    "power": "3",
+    "toughness": "4",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [],
+    "oracle_id": "e822bf3d-3a29-4a02-9ae8-e2830ce70f15"
+  },
+  {
+    "name": "Primeval Force",
+    "mana_cost": "{2}{G}{G}{G}",
+    "cmc": 5.0,
+    "type_line": "Creature — Elemental",
+    "oracle_text": "When this creature enters, sacrifice it unless you sacrifice three Forests.",
+    "power": "8",
+    "toughness": "8",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [],
+    "oracle_id": "f4170db0-3adf-4744-b0ec-e889c713bb93"
+  },
+  {
+    "name": "Prosperity",
+    "mana_cost": "{X}{U}",
+    "cmc": 1.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Each player draws X cards.",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [],
+    "oracle_id": "c586312d-d04a-4bfb-bbb2-b41186ca178e"
+  },
+  {
+    "name": "Pyroclasm",
+    "mana_cost": "{1}{R}",
+    "cmc": 2.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Pyroclasm deals 2 damage to each creature.",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [],
+    "oracle_id": "e4bcd4ea-e7cd-4471-8f3b-18bb51d3d70c"
+  },
+  {
+    "name": "Python",
+    "mana_cost": "{1}{B}{B}",
+    "cmc": 3.0,
+    "type_line": "Creature — Snake",
+    "oracle_text": "",
+    "power": "3",
+    "toughness": "2",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [],
+    "oracle_id": "d8a0c3ff-7042-4b52-a216-15e170c8094f"
+  },
+  {
+    "name": "Raging Cougar",
+    "mana_cost": "{2}{R}",
+    "cmc": 3.0,
+    "type_line": "Creature — Cat",
+    "oracle_text": "Haste",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [
+      "Haste"
+    ],
+    "oracle_id": "695ebb35-55fd-4ed1-8cbe-e3fc1223115b"
+  },
+  {
+    "name": "Raging Goblin",
+    "mana_cost": "{R}",
+    "cmc": 1.0,
+    "type_line": "Creature — Goblin Berserker",
+    "oracle_text": "Haste (This creature can attack and {T} as soon as it comes under your control.)",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [
+      "Haste"
+    ],
+    "oracle_id": "30997b43-fc13-41d3-8064-1ccc2cb6fd2b"
+  },
+  {
+    "name": "Raging Minotaur",
+    "mana_cost": "{2}{R}{R}",
+    "cmc": 4.0,
+    "type_line": "Creature — Minotaur Berserker",
+    "oracle_text": "Haste",
+    "power": "3",
+    "toughness": "3",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [
+      "Haste"
+    ],
+    "oracle_id": "4cfd04b3-57bd-4860-8b47-57a0fd0a23fa"
+  },
+  {
+    "name": "Rain of Salt",
+    "mana_cost": "{4}{R}{R}",
+    "cmc": 6.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Destroy two target lands.",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [],
+    "oracle_id": "1219e330-01ac-405a-b75a-dd4298598167"
+  },
+  {
+    "name": "Rain of Tears",
+    "mana_cost": "{1}{B}{B}",
+    "cmc": 3.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Destroy target land.",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [],
+    "oracle_id": "72cecab3-519e-4a23-9623-b423a5c5a251"
+  },
+  {
+    "name": "Raise Dead",
+    "mana_cost": "{B}",
+    "cmc": 1.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Return target creature card from your graveyard to your hand.",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [],
+    "oracle_id": "cbc9c731-181a-4f00-a7b0-eb7e56eac2ea"
+  },
+  {
+    "name": "Redwood Treefolk",
+    "mana_cost": "{4}{G}",
+    "cmc": 5.0,
+    "type_line": "Creature — Treefolk",
+    "oracle_text": "",
+    "power": "3",
+    "toughness": "6",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [],
+    "oracle_id": "2cdebbc2-2e0b-4d26-bb7f-4736f0318ca7"
+  },
+  {
+    "name": "Regal Unicorn",
+    "mana_cost": "{2}{W}",
+    "cmc": 3.0,
+    "type_line": "Creature — Unicorn",
+    "oracle_text": "",
+    "power": "2",
+    "toughness": "3",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [],
+    "oracle_id": "2b856a43-ca6b-4f08-b610-9794ee6d7fcf"
+  },
+  {
+    "name": "Renewing Dawn",
+    "mana_cost": "{1}{W}",
+    "cmc": 2.0,
+    "type_line": "Sorcery",
+    "oracle_text": "You gain 2 life for each Mountain target opponent controls.",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [],
+    "oracle_id": "54ea46ea-7c83-44a9-85b0-eff9745c6ffa"
+  },
+  {
+    "name": "Rowan Treefolk",
+    "mana_cost": "{3}{G}",
+    "cmc": 4.0,
+    "type_line": "Creature — Treefolk",
+    "oracle_text": "",
+    "power": "3",
+    "toughness": "4",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [],
+    "oracle_id": "ae37dd07-2926-4801-b89d-3ffad9f0f575"
+  },
+  {
+    "name": "Sacred Knight",
+    "mana_cost": "{3}{W}",
+    "cmc": 4.0,
+    "type_line": "Creature — Human Knight",
+    "oracle_text": "This creature can't be blocked by black and/or red creatures.",
+    "power": "3",
+    "toughness": "2",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [],
+    "oracle_id": "fe8f5cc0-5849-437f-8d1f-cb191f2fc638"
+  },
+  {
+    "name": "Sacred Nectar",
+    "mana_cost": "{1}{W}",
+    "cmc": 2.0,
+    "type_line": "Sorcery",
+    "oracle_text": "You gain 4 life.",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [],
+    "oracle_id": "30870ee5-6ad7-48a9-983e-d3b018f2344f"
+  },
+  {
+    "name": "Scorching Spear",
+    "mana_cost": "{R}",
+    "cmc": 1.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Scorching Spear deals 1 damage to any target.",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [],
+    "oracle_id": "9342fbb8-ab35-4895-946d-951ba6a2b067"
+  },
+  {
+    "name": "Scorching Winds",
+    "mana_cost": "{R}",
+    "cmc": 1.0,
+    "type_line": "Instant",
+    "oracle_text": "Cast this spell only during the declare attackers step and only if you've been attacked this step.\nScorching Winds deals 1 damage to each attacking creature.",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [],
+    "oracle_id": "db025c94-1182-412e-9665-b5ae89d26616"
+  },
+  {
+    "name": "Seasoned Marshal",
+    "mana_cost": "{2}{W}{W}",
+    "cmc": 4.0,
+    "type_line": "Creature — Human Soldier",
+    "oracle_text": "Whenever this creature attacks, you may tap target creature.",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [],
+    "oracle_id": "0c7239bf-dc8a-4d79-867e-7a4225568c49"
+  },
+  {
+    "name": "Serpent Assassin",
+    "mana_cost": "{3}{B}{B}",
+    "cmc": 5.0,
+    "type_line": "Creature — Snake Assassin",
+    "oracle_text": "When this creature enters, you may destroy target nonblack creature.",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [],
+    "oracle_id": "3bc7d3a7-ddb4-4eaa-882e-404d8f2926fb"
+  },
+  {
+    "name": "Serpent Warrior",
+    "mana_cost": "{2}{B}",
+    "cmc": 3.0,
+    "type_line": "Creature — Snake Warrior",
+    "oracle_text": "When this creature enters, you lose 3 life.",
+    "power": "3",
+    "toughness": "3",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [],
+    "oracle_id": "fe249f27-db6c-4826-836e-a04efb1a3eaa"
+  },
+  {
+    "name": "Skeletal Crocodile",
+    "mana_cost": "{3}{B}",
+    "cmc": 4.0,
+    "type_line": "Creature — Crocodile Skeleton",
+    "oracle_text": "",
+    "power": "5",
+    "toughness": "1",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [],
+    "oracle_id": "90f9440a-0bf8-46eb-9cfa-16fb88a217d8"
+  },
+  {
+    "name": "Skeletal Snake",
+    "mana_cost": "{1}{B}",
+    "cmc": 2.0,
+    "type_line": "Creature — Snake Skeleton",
+    "oracle_text": "",
+    "power": "2",
+    "toughness": "1",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [],
+    "oracle_id": "7af786a0-0851-4f87-ad0d-36b40527700c"
+  },
+  {
+    "name": "Snapping Drake",
+    "mana_cost": "{3}{U}",
+    "cmc": 4.0,
+    "type_line": "Creature — Drake",
+    "oracle_text": "Flying (This creature can't be blocked except by creatures with flying or reach.)",
+    "power": "3",
+    "toughness": "2",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [
+      "Flying"
+    ],
+    "oracle_id": "e15060c3-3773-4548-8747-ff59dcf2b519"
+  },
+  {
+    "name": "Sorcerous Sight",
+    "mana_cost": "{U}",
+    "cmc": 1.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Look at target opponent's hand.\nDraw a card.",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [],
+    "oracle_id": "20370c3b-231f-4d9d-8b6e-f1eb25fa4b5d"
+  },
+  {
+    "name": "Soul Shred",
+    "mana_cost": "{3}{B}{B}",
+    "cmc": 5.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Soul Shred deals 3 damage to target nonblack creature. You gain 3 life.",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [],
+    "oracle_id": "2894ef5e-738b-4ece-b143-6662d9453295"
+  },
+  {
+    "name": "Spined Wurm",
+    "mana_cost": "{4}{G}",
+    "cmc": 5.0,
+    "type_line": "Creature — Wurm",
+    "oracle_text": "",
+    "power": "5",
+    "toughness": "4",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [],
+    "oracle_id": "05425f2f-7228-4bf5-8fe1-6fe99107e8e0"
+  },
+  {
+    "name": "Spiritual Guardian",
+    "mana_cost": "{3}{W}{W}",
+    "cmc": 5.0,
+    "type_line": "Creature — Spirit",
+    "oracle_text": "When this creature enters, you gain 4 life.",
+    "power": "3",
+    "toughness": "4",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [],
+    "oracle_id": "d03860b4-c663-4230-9200-6b89fa849ae7"
+  },
+  {
+    "name": "Spitting Earth",
+    "mana_cost": "{1}{R}",
+    "cmc": 2.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Spitting Earth deals damage to target creature equal to the number of Mountains you control.",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [],
+    "oracle_id": "0c3bf4e1-d91e-4dd3-a800-e40971222c71"
+  },
+  {
+    "name": "Spotted Griffin",
+    "mana_cost": "{3}{W}",
+    "cmc": 4.0,
+    "type_line": "Creature — Griffin",
+    "oracle_text": "Flying",
+    "power": "2",
+    "toughness": "3",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [
+      "Flying"
+    ],
+    "oracle_id": "4916773d-5ccb-48ff-8aa3-09771ae88e81"
+  },
+  {
+    "name": "Stalking Tiger",
+    "mana_cost": "{3}{G}",
+    "cmc": 4.0,
+    "type_line": "Creature — Cat",
+    "oracle_text": "This creature can't be blocked by more than one creature.",
+    "power": "3",
+    "toughness": "3",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [],
+    "oracle_id": "e6af1429-276f-41a8-88d0-062661dc0cd4"
+  },
+  {
+    "name": "Starlight",
+    "mana_cost": "{1}{W}",
+    "cmc": 2.0,
+    "type_line": "Sorcery",
+    "oracle_text": "You gain 3 life for each black creature target opponent controls.",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [],
+    "oracle_id": "6237896e-f033-41b2-9943-670f1becb582"
+  },
+  {
+    "name": "Starlit Angel",
+    "mana_cost": "{3}{W}{W}",
+    "cmc": 5.0,
+    "type_line": "Creature — Angel",
+    "oracle_text": "Flying",
+    "power": "3",
+    "toughness": "4",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [
+      "Flying"
+    ],
+    "oracle_id": "e66e3450-bddb-46ac-bc7e-c7732e258374"
+  },
+  {
+    "name": "Steadfastness",
+    "mana_cost": "{1}{W}",
+    "cmc": 2.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Creatures you control get +0/+3 until end of turn.",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [],
+    "oracle_id": "8f8dfc24-f466-4607-8991-acbcbb415db3"
+  },
+  {
+    "name": "Stern Marshal",
+    "mana_cost": "{2}{W}",
+    "cmc": 3.0,
+    "type_line": "Creature — Human Soldier",
+    "oracle_text": "{T}: Target creature gets +2/+2 until end of turn. Activate only during your turn, before attackers are declared.",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [],
+    "oracle_id": "00602959-e9a1-4706-a1cb-70156a6fc713"
+  },
+  {
+    "name": "Stone Rain",
+    "mana_cost": "{2}{R}",
+    "cmc": 3.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Destroy target land.",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [],
+    "oracle_id": "6e880df6-fc00-43d2-a9c8-f575f40b78c6"
+  },
+  {
+    "name": "Storm Crow",
+    "mana_cost": "{1}{U}",
+    "cmc": 2.0,
+    "type_line": "Creature — Bird",
+    "oracle_text": "Flying (This creature can't be blocked except by creatures with flying or reach.)",
+    "power": "1",
+    "toughness": "2",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [
+      "Flying"
+    ],
+    "oracle_id": "000d5588-5a4c-434e-988d-396632ade42c"
+  },
+  {
+    "name": "Summer Bloom",
+    "mana_cost": "{1}{G}",
+    "cmc": 2.0,
+    "type_line": "Sorcery",
+    "oracle_text": "You may play up to three additional lands this turn.",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [],
+    "oracle_id": "e5df4597-1647-4ac2-bdb3-a517598d1431"
+  },
+  {
+    "name": "Swamp",
+    "mana_cost": "",
+    "cmc": 0.0,
+    "type_line": "Basic Land — Swamp",
+    "oracle_text": "({T}: Add {B}.)",
+    "colors": [],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [],
+    "oracle_id": "56719f6a-1a6c-4c0a-8d21-18f7d7350b68"
+  },
+  {
+    "name": "Sylvan Tutor",
+    "mana_cost": "{G}",
+    "cmc": 1.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Search your library for a creature card, reveal it, then shuffle and put that card on top.",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [],
+    "oracle_id": "935e0cac-51ee-4cb7-a209-f085e0f099ed"
+  },
+  {
+    "name": "Symbol of Unsummoning",
+    "mana_cost": "{2}{U}",
+    "cmc": 3.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Return target creature to its owner's hand.\nDraw a card.",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [],
+    "oracle_id": "c44f1a81-269b-4f05-8ff2-e7ce19a93937"
+  },
+  {
+    "name": "Taunt",
+    "mana_cost": "{U}",
+    "cmc": 1.0,
+    "type_line": "Sorcery",
+    "oracle_text": "During target player's next turn, creatures that player controls attack you if able.",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [],
+    "oracle_id": "24cf7fad-233b-49fd-b2a1-a29e3e30041c"
+  },
+  {
+    "name": "Temporary Truce",
+    "mana_cost": "{1}{W}",
+    "cmc": 2.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Each player may draw up to two cards. For each card less than two a player draws this way, that player gains 2 life.",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [],
+    "oracle_id": "ffe6371c-d137-4062-8c6e-6e9794ab25bc"
+  },
+  {
+    "name": "Theft of Dreams",
+    "mana_cost": "{2}{U}",
+    "cmc": 3.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Draw a card for each tapped creature target opponent controls.",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [],
+    "oracle_id": "008011e2-7b82-4962-af6e-be627112f37f"
+  },
+  {
+    "name": "Thing from the Deep",
+    "mana_cost": "{6}{U}{U}{U}",
+    "cmc": 9.0,
+    "type_line": "Creature — Leviathan",
+    "oracle_text": "Whenever this creature attacks, sacrifice it unless you sacrifice an Island.",
+    "power": "9",
+    "toughness": "9",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [],
+    "oracle_id": "9542bd7f-bb99-4b59-a4e3-b88ed9f798bf"
+  },
+  {
+    "name": "Thundering Wurm",
+    "mana_cost": "{2}{G}",
+    "cmc": 3.0,
+    "type_line": "Creature — Wurm",
+    "oracle_text": "When this creature enters, sacrifice it unless you discard a land card.",
+    "power": "4",
+    "toughness": "4",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [],
+    "oracle_id": "cdab50a8-1e02-4ba5-8c09-e2837e7652f7"
+  },
+  {
+    "name": "Thundermare",
+    "mana_cost": "{5}{R}",
+    "cmc": 6.0,
+    "type_line": "Creature — Elemental Horse",
+    "oracle_text": "Haste (This creature can attack and {T} as soon as it comes under your control.)\nWhen this creature enters, tap all other creatures.",
+    "power": "5",
+    "toughness": "5",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [
+      "Haste"
+    ],
+    "oracle_id": "58fa33fd-02a4-4ec9-9226-82594cfec363"
+  },
+  {
+    "name": "Tidal Surge",
+    "mana_cost": "{1}{U}",
+    "cmc": 2.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Tap up to three target creatures without flying.",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [],
+    "oracle_id": "be738992-77fe-498d-b219-e5da4ce5bf07"
+  },
+  {
+    "name": "Time Ebb",
+    "mana_cost": "{2}{U}",
+    "cmc": 3.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Put target creature on top of its owner's library.",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [],
+    "oracle_id": "30cc8f7b-3c28-40f5-8f8f-157e8212280b"
+  },
+  {
+    "name": "Touch of Brilliance",
+    "mana_cost": "{3}{U}",
+    "cmc": 4.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Draw two cards.",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [],
+    "oracle_id": "6365aba1-78d3-416c-89cd-9449578eedbf"
+  },
+  {
+    "name": "Treetop Defense",
+    "mana_cost": "{1}{G}",
+    "cmc": 2.0,
+    "type_line": "Instant",
+    "oracle_text": "Cast this spell only during the declare attackers step and only if you've been attacked this step.\nCreatures you control gain reach until end of turn. (They can block creatures with flying.)",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [],
+    "oracle_id": "f215d0f9-a53e-431a-a70d-9dc4e3caa41e"
+  },
+  {
+    "name": "Undying Beast",
+    "mana_cost": "{3}{B}",
+    "cmc": 4.0,
+    "type_line": "Creature — Beast",
+    "oracle_text": "When this creature dies, put it on top of its owner's library.",
+    "power": "3",
+    "toughness": "2",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [],
+    "oracle_id": "5ae03181-a436-4bad-be3a-6c9f6c0ed4d6"
+  },
+  {
+    "name": "Untamed Wilds",
+    "mana_cost": "{2}{G}",
+    "cmc": 3.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Search your library for a basic land card, put that card onto the battlefield, then shuffle.",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [],
+    "oracle_id": "b3b4c21d-f8d7-455f-be46-d5eb909d54df"
+  },
+  {
+    "name": "Valorous Charge",
+    "mana_cost": "{1}{W}{W}",
+    "cmc": 3.0,
+    "type_line": "Sorcery",
+    "oracle_text": "White creatures get +2/+0 until end of turn.",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [],
+    "oracle_id": "1f51fea2-ce19-44ef-a330-65cc0fafcd64"
+  },
+  {
+    "name": "Vampiric Feast",
+    "mana_cost": "{5}{B}{B}",
+    "cmc": 7.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Vampiric Feast deals 4 damage to any target and you gain 4 life.",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [],
+    "oracle_id": "1980ca2e-a415-4de1-ac30-7055507e82a2"
+  },
+  {
+    "name": "Vampiric Touch",
+    "mana_cost": "{2}{B}",
+    "cmc": 3.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Vampiric Touch deals 2 damage to target opponent or planeswalker and you gain 2 life.",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [],
+    "oracle_id": "b701378f-681b-4840-bd11-1a97c2a675f2"
+  },
+  {
+    "name": "Venerable Monk",
+    "mana_cost": "{2}{W}",
+    "cmc": 3.0,
+    "type_line": "Creature — Human Monk Cleric",
+    "oracle_text": "When this creature enters, you gain 2 life.",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [],
+    "oracle_id": "5c5cfa6d-857f-44a9-80f7-46f016ef71e4"
+  },
+  {
+    "name": "Vengeance",
+    "mana_cost": "{3}{W}",
+    "cmc": 4.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Destroy target tapped creature.",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [],
+    "oracle_id": "1d001145-5d14-43a9-bf3b-3ce5c20b2a46"
+  },
+  {
+    "name": "Virtue's Ruin",
+    "mana_cost": "{2}{B}",
+    "cmc": 3.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Destroy all white creatures.",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [],
+    "oracle_id": "fc070e97-73ac-4028-9432-ff2012f2e778"
+  },
+  {
+    "name": "Volcanic Dragon",
+    "mana_cost": "{4}{R}{R}",
+    "cmc": 6.0,
+    "type_line": "Creature — Dragon",
+    "oracle_text": "Flying, haste",
+    "power": "4",
+    "toughness": "4",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [
+      "Flying",
+      "Haste"
+    ],
+    "oracle_id": "994db177-03f5-43dd-bf7b-2994e8d430d3"
+  },
+  {
+    "name": "Volcanic Hammer",
+    "mana_cost": "{1}{R}",
+    "cmc": 2.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Volcanic Hammer deals 3 damage to any target.",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [],
+    "oracle_id": "98fa5a06-0553-40fd-999c-bc31c9b3f4db"
+  },
+  {
+    "name": "Wall of Granite",
+    "mana_cost": "{2}{R}",
+    "cmc": 3.0,
+    "type_line": "Creature — Wall",
+    "oracle_text": "Defender (This creature can't attack.)",
+    "power": "0",
+    "toughness": "7",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [
+      "Defender"
+    ],
+    "oracle_id": "8445094f-008b-491a-977c-e8582d5ab72c"
+  },
+  {
+    "name": "Wall of Swords",
+    "mana_cost": "{3}{W}",
+    "cmc": 4.0,
+    "type_line": "Creature — Wall",
+    "oracle_text": "Defender (This creature can't attack.)\nFlying",
+    "power": "3",
+    "toughness": "5",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [
+      "Flying",
+      "Defender"
+    ],
+    "oracle_id": "eb098958-50d3-4476-ba74-382033703ff9"
+  },
+  {
+    "name": "Warrior's Charge",
+    "mana_cost": "{2}{W}",
+    "cmc": 3.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Creatures you control get +1/+1 until end of turn.",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [],
+    "oracle_id": "5cf28c04-76af-4eb8-9969-366dc8e04690"
+  },
+  {
+    "name": "Whiptail Wurm",
+    "mana_cost": "{6}{G}",
+    "cmc": 7.0,
+    "type_line": "Creature — Wurm",
+    "oracle_text": "",
+    "power": "8",
+    "toughness": "5",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [],
+    "oracle_id": "50fa6a63-e031-47cb-8fd5-a6c235203722"
+  },
+  {
+    "name": "Wicked Pact",
+    "mana_cost": "{1}{B}{B}",
+    "cmc": 3.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Destroy two target nonblack creatures. You lose 5 life.",
+    "colors": [
+      "B"
+    ],
+    "color_identity": [
+      "B"
+    ],
+    "keywords": [],
+    "oracle_id": "39e21a5a-b278-478a-854c-17695c0f6246"
+  },
+  {
+    "name": "Willow Dryad",
+    "mana_cost": "{G}",
+    "cmc": 1.0,
+    "type_line": "Creature — Dryad",
+    "oracle_text": "Forestwalk (This creature can't be blocked as long as defending player controls a Forest.)",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [
+      "Landwalk",
+      "Forestwalk"
+    ],
+    "oracle_id": "19d5eb29-2d35-44e7-afa1-3ba8d812ed41"
+  },
+  {
+    "name": "Wind Drake",
+    "mana_cost": "{2}{U}",
+    "cmc": 3.0,
+    "type_line": "Creature — Drake",
+    "oracle_text": "Flying",
+    "power": "2",
+    "toughness": "2",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [
+      "Flying"
+    ],
+    "oracle_id": "d6ffdaf0-ac08-4de9-bbce-2eab2f86bcca"
+  },
+  {
+    "name": "Winds of Change",
+    "mana_cost": "{R}",
+    "cmc": 1.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Each player shuffles the cards from their hand into their library, then draws that many cards.",
+    "colors": [
+      "R"
+    ],
+    "color_identity": [
+      "R"
+    ],
+    "keywords": [],
+    "oracle_id": "f525cf10-e24c-4c46-9a13-6f8579d09d50"
+  },
+  {
+    "name": "Winter's Grasp",
+    "mana_cost": "{1}{G}{G}",
+    "cmc": 3.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Destroy target land.",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [],
+    "oracle_id": "e9b8679d-52a9-4f0f-9365-f3e4b7a69805"
+  },
+  {
+    "name": "Withering Gaze",
+    "mana_cost": "{2}{U}",
+    "cmc": 3.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Target opponent reveals their hand. You draw a card for each Forest and green card in it.",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [],
+    "oracle_id": "9225016d-adfd-43c6-99cd-d41a7e0d35d6"
+  },
+  {
+    "name": "Wood Elves",
+    "mana_cost": "{2}{G}",
+    "cmc": 3.0,
+    "type_line": "Creature — Elf Scout",
+    "oracle_text": "When this creature enters, search your library for a Forest card, put that card onto the battlefield, then shuffle.",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "color_identity": [
+      "G"
+    ],
+    "keywords": [],
+    "oracle_id": "8973bd99-20f8-4867-90ef-50392147ee1b"
+  },
+  {
+    "name": "Wrath of God",
+    "mana_cost": "{2}{W}{W}",
+    "cmc": 4.0,
+    "type_line": "Sorcery",
+    "oracle_text": "Destroy all creatures. They can't be regenerated.",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [],
+    "oracle_id": "34515b16-c9a4-4f98-8c77-416a7a523407"
+  }
+]

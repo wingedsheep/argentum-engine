@@ -1,23 +1,83 @@
-# argentum-engine
+# Argentum Engine
 
-This project uses [Gradle](https://gradle.org/).
-To build and run the application, use the *Gradle* tool window by clicking the Gradle icon in the right-hand toolbar,
-or run it directly from the terminal:
+*Before the oil. Before the corruption. There was only perfection.*
 
-* Run `./gradlew run` to build and run the application.
-* Run `./gradlew build` to only build the application.
-* Run `./gradlew check` to run all checks, including tests.
-* Run `./gradlew clean` to clean all build outputs.
+A Magic: The Gathering rules engine and online play platform.
 
-Note the usage of the Gradle Wrapper (`./gradlew`).
-This is the suggested way to use Gradle in production projects.
+---
 
-[Learn more about the Gradle Wrapper](https://docs.gradle.org/current/userguide/gradle_wrapper.html).
+## Overview
 
-[Learn more about Gradle tasks](https://docs.gradle.org/current/userguide/command_line_interface.html#common_tasks).
+Argentum Engine is a modular MTG implementation consisting of:
 
-This project follows the suggested multi-module setup and consists of the `app` and `utils` subprojects.
-The shared build logic was extracted to a convention plugin located in `buildSrc`.
+- **Rules Engine** — A deterministic Kotlin library implementing MTG comprehensive rules
+- **Game Server** — Spring Boot backend for online multiplayer
+- **Web Client** — Browser-based UI
 
-This project uses a version catalog (see `gradle/libs.versions.toml`) to declare and version dependencies
-and both a build cache and a configuration cache (see `gradle.properties`).
+## Tech Stack
+
+- Kotlin 2.2
+- Spring Boot 4.x
+- WebGL (frontend)
+- Keycloak (OAuth/authentication)
+
+## Architecture
+
+```
+argentum/
+├── rules-engine/               # Core rules, zones, actions, keywords
+├── sets/
+│   └── portal/                 # First supported set
+│       └── card-scripts/       # Per-card ability scripts
+├── server/                     # Game server & matchmaking
+└── client/                     # Web frontend
+```
+
+## Rules Engine
+
+The rules engine is a standalone library with no server dependencies. It models the complete game state immutably and
+exposes a pure functional API:
+
+### Features
+
+- Full turn structure (phases, steps, priority)
+- Stack and spell resolution
+- Combat (attackers, blockers, damage assignment)
+- Triggered and activated abilities
+- Keywords (flying, trample, deathtouch, etc.)
+- State-based actions
+- Targeting and legality checks
+
+### Card Scripts
+
+Cards are defined as scripts that compose core abilities:
+
+## Gameplay Platform
+
+### Server
+
+- OAuth login via Keycloak (Google account)
+- Create games with invite links
+- Deck builder from available cards
+- Booster draft with friends
+
+### Client
+
+- WebGL-based card rendering
+- Real-time game state sync
+- Card images
+
+## Roadmap
+
+1. **Phase 1** — Core rules engine with Portal set
+2. **Phase 2** — Server infrastructure and matchmaking
+3. **Phase 3** — Web client MVP
+4. **Phase 4** — Draft mode
+5. **Phase 5** — Additional sets
+
+## Why "Argentum"?
+
+Argentum was a plane of mathematical perfection, created by the planeswalker Karn. Every angle intentional, every law
+absolute. It was governed by rules so elegant they seemed inevitable.
+
+That's what a rules engine should be.
