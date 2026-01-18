@@ -1,5 +1,7 @@
 # Argentum Engine
 
+<img src="argentum-engine-white.jpeg" alt="Argentum Engine" width="400px">
+
 *Before the oil. Before the corruption. There was only perfection.*
 
 A Magic: The Gathering rules engine and online play platform.
