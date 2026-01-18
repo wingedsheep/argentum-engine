@@ -311,19 +311,19 @@ Portal is an ideal starting set because it's simplified: limited keywords and st
 ## Phase 11: Player Interaction Interface
 
 ### 11.1 Decision Interface
-- [ ] `PlayerDecision` sealed class (choose target, choose attacker, etc.)
-- [ ] `PlayerInterface` - abstraction for player input
-- [ ] Synchronous decision model (request → response)
-- [ ] Write tests with mock player
+- [x] `PlayerDecision` sealed class (choose target, choose attacker, etc.)
+- [x] `PlayerInterface` - abstraction for player input
+- [x] Synchronous decision model (request → response)
+- [x] Write tests with mock player
 
 ### 11.2 Choice Types
-- [ ] Choose targets
-- [ ] Choose attackers/blockers
-- [ ] Choose mana payment
-- [ ] Yes/no decisions
-- [ ] Choose order (damage assignment)
-- [ ] Choose cards (mulligan bottom)
-- [ ] Write tests for each choice type
+- [x] Choose targets
+- [x] Choose attackers/blockers
+- [x] Choose mana payment
+- [x] Yes/no decisions
+- [x] Choose order (damage assignment)
+- [x] Choose cards (mulligan bottom)
+- [x] Write tests for each choice type
 
 ---
 
