@@ -1,0 +1,394 @@
+{
+  "match_metadata": {
+    "date": "2026-01-18",
+    "format": "Portal Constructed",
+    "location": "Urborg, Dominaria",
+    "players": {
+      "player_1": "Ajani (Toolbox)",
+      "player_2": "Liliana (Suicide)"
+    },
+    "winner": "Ajani (Toolbox)"
+  },
+  "decks": {
+    "Ajani (Toolbox)": {
+      "name": "Recruiter's Toolbox",
+      "archetype": "Abzan Control/Ramp",
+      "decklist": [
+        { "count": 4, "name": "Nature's Lore", "data": { "mana_cost": "{1}{G}", "cmc": 2.0, "type_line": "Sorcery", "oracle_text": "Search your library for a Forest card, put that card onto the battlefield, then shuffle." } },
+        { "count": 4, "name": "Wood Elves", "data": { "mana_cost": "{2}{G}", "cmc": 3.0, "type_line": "Creature — Elf Scout", "oracle_text": "When this creature enters, search your library for a Forest card, put that card onto the battlefield, then shuffle.", "power": "1", "toughness": "1" } },
+        { "count": 4, "name": "Wall of Swords", "data": { "mana_cost": "{3}{W}", "cmc": 4.0, "type_line": "Creature — Wall", "oracle_text": "Defender (This creature can't attack.)\nFlying", "power": "3", "toughness": "5" } },
+        { "count": 3, "name": "Natural Order", "data": { "mana_cost": "{2}{G}{G}", "cmc": 4.0, "type_line": "Sorcery", "oracle_text": "As an additional cost to cast this spell, sacrifice a green creature.\nSearch your library for a green creature card, put it onto the battlefield, then shuffle." } },
+        { "count": 3, "name": "Wrath of God", "data": { "mana_cost": "{2}{W}{W}", "cmc": 4.0, "type_line": "Sorcery", "oracle_text": "Destroy all creatures. They can't be regenerated." } },
+        { "count": 2, "name": "Primeval Force", "data": { "mana_cost": "{2}{G}{G}{G}", "cmc": 5.0, "type_line": "Creature — Elemental", "oracle_text": "When this creature enters, sacrifice it unless you sacrifice three Forests.", "power": "8", "toughness": "8" } },
+        { "count": 2, "name": "Archangel", "data": { "mana_cost": "{5}{W}{W}", "cmc": 7.0, "type_line": "Creature — Angel", "oracle_text": "Flying, vigilance", "power": "5", "toughness": "5" } },
+        { "count": 2, "name": "Ebon Dragon", "data": { "mana_cost": "{5}{B}{B}", "cmc": 7.0, "type_line": "Creature — Dragon", "oracle_text": "Flying\nWhen this creature enters, you may have target opponent discard a card.", "power": "5", "toughness": "4" } },
+        { "count": 3, "name": "Breath of Life", "data": { "mana_cost": "{3}{W}", "cmc": 4.0, "type_line": "Sorcery", "oracle_text": "Return target creature card from your graveyard to the battlefield." } },
+        { "count": 2, "name": "Armageddon", "data": { "mana_cost": "{3}{W}", "cmc": 4.0, "type_line": "Sorcery", "oracle_text": "Destroy all lands." } },
+        { "count": 2, "name": "Sylvan Tutor", "data": { "mana_cost": "{G}", "cmc": 1.0, "type_line": "Sorcery", "oracle_text": "Search your library for a creature card, reveal it, then shuffle and put that card on top." } },
+        { "count": 2, "name": "Cruel Tutor", "data": { "mana_cost": "{2}{B}", "cmc": 3.0, "type_line": "Sorcery", "oracle_text": "Search your library for a card, then shuffle and put that card on top. You lose 2 life." } },
+        { "count": 1, "name": "Hand of Death", "data": { "mana_cost": "{2}{B}", "cmc": 3.0, "type_line": "Sorcery", "oracle_text": "Destroy target nonblack creature." } },
+        { "count": 2, "name": "Untamed Wilds", "data": { "mana_cost": "{2}{G}", "cmc": 3.0, "type_line": "Sorcery", "oracle_text": "Search your library for a basic land card, put that card onto the battlefield, then shuffle." } },
+        { "count": 10, "name": "Forest", "data": { "mana_cost": "", "cmc": 0.0, "type_line": "Basic Land — Forest", "oracle_text": "({T}: Add {G}.)" } },
+        { "count": 8, "name": "Plains", "data": { "mana_cost": "", "cmc": 0.0, "type_line": "Basic Land — Plains", "oracle_text": "({T}: Add {W}.)" } },
+        { "count": 6, "name": "Swamp", "data": { "mana_cost": "", "cmc": 0.0, "type_line": "Basic Land — Swamp", "oracle_text": "({T}: Add {B}.)" } }
+      ]
+    },
+    "Liliana (Suicide)": {
+      "name": "Suicide Charge",
+      "archetype": "Mono-Black Aggro",
+      "decklist": [
+        { "count": 4, "name": "Serpent Warrior", "data": { "mana_cost": "{2}{B}", "cmc": 3.0, "type_line": "Creature — Snake Warrior", "oracle_text": "When this creature enters, you lose 3 life.", "power": "3", "toughness": "3" } },
+        { "count": 4, "name": "Mercenary Knight", "data": { "mana_cost": "{2}{B}", "cmc": 3.0, "type_line": "Creature — Human Mercenary Knight", "oracle_text": "When this creature enters, sacrifice it unless you discard a creature card.", "power": "4", "toughness": "4" } },
+        { "count": 4, "name": "Feral Shadow", "data": { "mana_cost": "{2}{B}", "cmc": 3.0, "type_line": "Creature — Nightstalker", "oracle_text": "Flying", "power": "2", "toughness": "1" } },
+        { "count": 4, "name": "Gravedigger", "data": { "mana_cost": "{3}{B}", "cmc": 4.0, "type_line": "Creature — Zombie", "oracle_text": "When this creature enters, you may return target creature card from your graveyard to your hand.", "power": "2", "toughness": "2" } },
+        { "count": 3, "name": "Bog Wraith", "data": { "mana_cost": "{3}{B}", "cmc": 4.0, "type_line": "Creature — Wraith", "oracle_text": "Swampwalk", "power": "3", "toughness": "3" } },
+        { "count": 2, "name": "Ebon Dragon", "data": { "mana_cost": "{5}{B}{B}", "cmc": 7.0, "type_line": "Creature — Dragon", "oracle_text": "Flying\nWhen this creature enters, you may have target opponent discard a card.", "power": "5", "toughness": "4" } },
+        { "count": 4, "name": "Hand of Death", "data": { "mana_cost": "{2}{B}", "cmc": 3.0, "type_line": "Sorcery", "oracle_text": "Destroy target nonblack creature." } },
+        { "count": 3, "name": "Dread Charge", "data": { "mana_cost": "{3}{B}", "cmc": 4.0, "type_line": "Sorcery", "oracle_text": "Black creatures you control can't be blocked this turn except by black creatures." } },
+        { "count": 2, "name": "Soul Shred", "data": { "mana_cost": "{3}{B}{B}", "cmc": 5.0, "type_line": "Sorcery", "oracle_text": "Soul Shred deals 3 damage to target nonblack creature. You gain 3 life." } },
+        { "count": 2, "name": "Wicked Pact", "data": { "mana_cost": "{1}{B}{B}", "cmc": 3.0, "type_line": "Sorcery", "oracle_text": "Destroy two target nonblack creatures. You lose 5 life." } },
+        { "count": 2, "name": "Cruel Tutor", "data": { "mana_cost": "{2}{B}", "cmc": 3.0, "type_line": "Sorcery", "oracle_text": "Search your library for a card, then shuffle and put that card on top. You lose 2 life." } },
+        { "count": 26, "name": "Swamp", "data": { "mana_cost": "", "cmc": 0.0, "type_line": "Basic Land — Swamp", "oracle_text": "({T}: Add {B}.)" } }
+      ]
+    }
+  },
+  "simulation": {
+    "setup": {
+      "ajani_hand": ["Forest", "Plains", "Swamp", "Sylvan Tutor", "Nature's Lore", "Wall of Swords", "Natural Order"],
+      "liliana_hand": ["Swamp", "Swamp", "Swamp", "Serpent Warrior", "Feral Shadow", "Mercenary Knight", "Dread Charge"],
+      "starting_life": { "Ajani": 20, "Liliana": 20 }
+    },
+    "game_log": [
+      {
+        "turn": 1,
+        "active_player": "Liliana",
+        "phase_log": [
+          "Draw Phase: Skips draw (First player).",
+          "Main Phase: Plays Swamp (1).",
+          "End Phase: Passes."
+        ],
+        "state_snapshot": { "liliana_lands": 1 }
+      },
+      {
+        "turn": 1,
+        "active_player": "Ajani",
+        "phase_log": [
+          "Draw Phase: Draws Wood Elves.",
+          "Main Phase: Plays Forest (1).",
+          "Main Phase: Casts Sylvan Tutor {G}. Searches for Primeval Force. Puts on top of library."
+        ],
+        "state_snapshot": { "ajani_lands": 1, "ajani_topdeck": "Primeval Force" }
+      },
+      {
+        "turn": 2,
+        "active_player": "Liliana",
+        "phase_log": [
+          "Draw Phase: Draws Hand of Death.",
+          "Main Phase: Plays Swamp (2).",
+          "End Phase: Cannot cast 3 CMC creatures. Passes."
+        ],
+        "state_snapshot": { "liliana_lands": 2 }
+      },
+      {
+        "turn": 2,
+        "active_player": "Ajani",
+        "phase_log": [
+          "Draw Phase: Draws Primeval Force.",
+          "Main Phase: Plays Plains (1).",
+          "Main Phase: Casts Nature's Lore {1}{G}. Searches for Forest, puts into play."
+        ],
+        "state_snapshot": { "ajani_lands": 3 }
+      },
+      {
+        "turn": 3,
+        "active_player": "Liliana",
+        "phase_log": [
+          "Draw Phase: Draws Swamp.",
+          "Main Phase: Plays Swamp (3).",
+          "Main Phase: Casts Serpent Warrior {2}{B}. Trigger: Lose 3 life."
+        ],
+        "life_totals": { "Ajani": 20, "Liliana": 17 },
+        "state_snapshot": { "liliana_creatures": ["Serpent Warrior (3/3)"] }
+      },
+      {
+        "turn": 3,
+        "active_player": "Ajani",
+        "phase_log": [
+          "Draw Phase: Draws Wrath of God.",
+          "Main Phase: Plays Swamp (1).",
+          "Main Phase: Casts Wood Elves {2}{G}. Enters battlefield. Searches for Forest. Puts into play."
+        ],
+        "state_snapshot": { "ajani_lands": 5, "ajani_creatures": ["Wood Elves (1/1)"] }
+      },
+      {
+        "turn": 4,
+        "active_player": "Liliana",
+        "phase_log": [
+          "Draw Phase: Draws Gravedigger.",
+          "Main Phase: Plays Swamp (4).",
+          "Combat Phase: Serpent Warrior attacks.",
+          "Block: Ajani blocks with Wood Elves.",
+          "Damage: Wood Elves dies. Serpent Warrior survives.",
+          "Main Phase 2: Casts Mercenary Knight {2}{B}. Trigger: Discards Feral Shadow to keep it."
+        ],
+        "state_snapshot": { "liliana_creatures": ["Serpent Warrior (3/3)", "Mercenary Knight (4/4)"] }
+      },
+      {
+        "turn": 4,
+        "active_player": "Ajani",
+        "phase_log": [
+          "Draw Phase: Draws Armageddon.",
+          "Main Phase: Plays Forest (3).",
+          "Main Phase: Casts Wall of Swords {3}{W}."
+        ],
+        "state_snapshot": { "ajani_creatures": ["Wall of Swords (3/5, Flying, Defender)"] }
+      },
+      {
+        "turn": 5,
+        "active_player": "Liliana",
+        "phase_log": [
+          "Draw Phase: Draws Soul Shred.",
+          "Main Phase: Casts Dread Charge {3}{B}. Black creatures can only be blocked by black creatures.",
+          "Combat Phase: Serpent Warrior and Mercenary Knight attack.",
+          "Block: Wall of Swords is White. Cannot block.",
+          "Damage: Ajani takes 7 damage."
+        ],
+        "life_totals": { "Ajani": 13, "Liliana": 17 }
+      },
+      {
+        "turn": 5,
+        "active_player": "Ajani",
+        "phase_log": [
+          "Draw Phase: Draws Breath of Life.",
+          "Main Phase: Casts Wrath of God {2}{W}{W}. All creatures destroyed (Wall, Warrior, Knight).",
+          "Main Phase: Casts Breath of Life {3}{W}. Targets Wall of Swords in graveyard. Returns to battlefield."
+        ],
+        "state_snapshot": { "ajani_creatures": ["Wall of Swords"], "board_state": "Reset" }
+      },
+      {
+        "turn": 6,
+        "active_player": "Liliana",
+        "phase_log": [
+          "Draw Phase: Draws Bog Wraith.",
+          "Main Phase: Plays Swamp (5).",
+          "Main Phase: Casts Gravedigger {3}{B}. Returns Mercenary Knight from graveyard to hand."
+        ],
+        "state_snapshot": { "liliana_creatures": ["Gravedigger (2/2)"], "liliana_hand_add": ["Mercenary Knight"] }
+      },
+      {
+        "turn": 6,
+        "active_player": "Ajani",
+        "phase_log": [
+          "Draw Phase: Draws Plains.",
+          "Main Phase: Plays Plains (2).",
+          "Main Phase: Casts Natural Order {2}{G}{G}. Sacrifices Wall of Swords.",
+          "Action: Searches for Primeval Force. Puts onto battlefield.",
+          "Trigger: Primeval Force enters. Sacrifices 3 Forests (has exactly 3).",
+          "Combat Phase: Force cannot attack (summoning sickness)."
+        ],
+        "state_snapshot": { "ajani_creatures": ["Primeval Force (8/8)"], "ajani_lands_count": 4 }
+      },
+      {
+        "turn": 7,
+        "active_player": "Liliana",
+        "phase_log": [
+          "Draw Phase: Draws Wicked Pact.",
+          "Main Phase: Casts Mercenary Knight {2}{B}. Discards Bog Wraith.",
+          "Combat Phase: No attacks (cannot get past 8/8)."
+        ],
+        "state_snapshot": { "liliana_creatures": ["Gravedigger", "Mercenary Knight"] }
+      },
+      {
+        "turn": 7,
+        "active_player": "Ajani",
+        "phase_log": [
+          "Draw Phase: Draws Forest.",
+          "Main Phase: Plays Forest (1).",
+          "Combat Phase: Primeval Force attacks.",
+          "Block: Liliana chump blocks with Gravedigger.",
+          "Damage: Gravedigger dies.",
+          "Main Phase 2: Casts Armageddon {3}{W}. All lands destroyed."
+        ],
+        "state_snapshot": { "ajani_lands": 0, "liliana_lands": 0 }
+      },
+      {
+        "turn": 8,
+        "active_player": "Liliana",
+        "phase_log": [
+          "Draw Phase: Draws Swamp.",
+          "Main Phase: Plays Swamp (1).",
+          "Action: Hand contains Wicked Pact, Soul Shred, Hand of Death. Soul Shred (5 mana) uncastable. Hand of Death target is Primeval Force (Green) but needs 3 mana. Wicked Pact targets 2 creatures (Opponent has 1, Liliana has 1). Valid targets.",
+          "Cast: Wicked Pact {1}{B}{B}. Target Mercenary Knight and Primeval Force.",
+          "Cost: Liliana loses 5 life.",
+          "Resolution: Both creatures destroyed."
+        ],
+        "life_totals": { "Ajani": 13, "Liliana": 12 },
+        "state_snapshot": { "board_state": "Empty" }
+      },
+      {
+        "turn": 8,
+        "active_player": "Ajani",
+        "phase_log": [
+          "Draw Phase: Draws Archangel.",
+          "Main Phase: Plays no land.",
+          "End Phase: Discards Archangel (Hand size)."
+        ]
+      },
+      {
+        "turn": 9,
+        "active_player": "Liliana",
+        "phase_log": [
+          "Draw Phase: Draws Ebon Dragon.",
+          "Main Phase: Plays no land. Passes."
+        ]
+      },
+      {
+        "turn": 9,
+        "active_player": "Ajani",
+        "phase_log": [
+          "Draw Phase: Draws Breath of Life.",
+          "Main Phase: Plays no land. Passes."
+        ]
+      },
+      {
+        "turn": 10,
+        "active_player": "Liliana",
+        "phase_log": [
+          "Draw Phase: Draws Swamp.",
+          "Main Phase: Plays Swamp (2)."
+        ]
+      },
+      {
+        "turn": 10,
+        "active_player": "Ajani",
+        "phase_log": [
+          "Draw Phase: Draws Forest.",
+          "Main Phase: Plays Forest (1)."
+        ]
+      },
+      {
+        "turn": 11,
+        "active_player": "Liliana",
+        "phase_log": [
+          "Draw Phase: Draws Serpent Warrior.",
+          "Main Phase: Plays no land.",
+          "Main Phase: Casts Serpent Warrior {2}{B}. Lose 3 life."
+        ],
+        "life_totals": { "Ajani": 13, "Liliana": 9 },
+        "state_snapshot": { "liliana_creatures": ["Serpent Warrior (3/3)"] }
+      },
+      {
+        "turn": 11,
+        "active_player": "Ajani",
+        "phase_log": [
+          "Draw Phase: Draws Plains.",
+          "Main Phase: Plays Plains (1).",
+          "Action: Casts Breath of Life {3}{W} (floating 1 from last turn? No, mana empties).",
+          "Correction: Has 1 Forest, 1 Plains. Cannot cast Breath of Life (4 CMC).",
+          "Passes."
+        ]
+      },
+      {
+        "turn": 12,
+        "active_player": "Liliana",
+        "phase_log": [
+          "Draw Phase: Draws Swamp.",
+          "Main Phase: Plays Swamp (3).",
+          "Combat Phase: Serpent Warrior attacks.",
+          "Damage: Ajani takes 3 damage."
+        ],
+        "life_totals": { "Ajani": 10, "Liliana": 9 }
+      },
+      {
+        "turn": 12,
+        "active_player": "Ajani",
+        "phase_log": [
+          "Draw Phase: Draws Plains.",
+          "Main Phase: Plays Plains (2).",
+          "Main Phase: Casts Breath of Life {3}{W}. Targets Primeval Force? No, requires Forest sac. Targets Archangel (discarded Turn 8).",
+          "Resolution: Archangel enters battlefield."
+        ],
+        "state_snapshot": { "ajani_creatures": ["Archangel (5/5, Flying, Vigilance)"] }
+      },
+      {
+        "turn": 13,
+        "active_player": "Liliana",
+        "phase_log": [
+          "Draw Phase: Draws Hand of Death.",
+          "Main Phase: Casts Hand of Death {2}{B} targeting Archangel.",
+          "Resolution: Archangel is Nonblack. Destroyed.",
+          "Combat Phase: Serpent Warrior attacks.",
+          "Damage: Ajani takes 3 damage."
+        ],
+        "life_totals": { "Ajani": 7, "Liliana": 9 },
+        "state_snapshot": { "ajani_graveyard_add": ["Archangel"] }
+      },
+      {
+        "turn": 13,
+        "active_player": "Ajani",
+        "phase_log": [
+          "Draw Phase: Draws Untamed Wilds.",
+          "Main Phase: Casts Untamed Wilds {2}{G}. Searches for Swamp. Puts into play."
+        ]
+      },
+      {
+        "turn": 14,
+        "active_player": "Liliana",
+        "phase_log": [
+          "Draw Phase: Draws Mercenary Knight.",
+          "Combat Phase: Serpent Warrior attacks.",
+          "Damage: Ajani takes 3 damage.",
+          "Main Phase 2: Casts Mercenary Knight {2}{B}. No cards in hand to discard. Sacrifice trigger.",
+          "Resolution: Mercenary Knight is sacrificed."
+        ],
+        "life_totals": { "Ajani": 4, "Liliana": 9 }
+      },
+      {
+        "turn": 14,
+        "active_player": "Ajani",
+        "phase_log": [
+          "Draw Phase: Draws Ebon Dragon.",
+          "Main Phase: Plays no land.",
+          "Action: 5 Lands available. Casts Primeval Force (In hand since Turn 2).",
+          "Cost: {2}{G}{G}{G}. Trigger: Sacrifice 3 Forests.",
+          "Check: Ajani has 2 Forests, 2 Plains, 1 Swamp. Cannot pay sacrifice cost. Primeval Force sacrificed immediately.",
+          "Result: Ajani has no board."
+        ]
+      },
+      {
+        "turn": 15,
+        "active_player": "Liliana",
+        "phase_log": [
+          "Draw Phase: Draws Dread Charge.",
+          "Combat Phase: Serpent Warrior attacks.",
+          "Damage: Ajani takes 3 damage."
+        ],
+        "life_totals": { "Ajani": 1, "Liliana": 9 }
+      },
+      {
+        "turn": 15,
+        "active_player": "Ajani",
+        "phase_log": [
+          "Draw Phase: Draws Forest.",
+          "Main Phase: Plays Forest (3).",
+          "Action: Casts Breath of Life {3}{W} (from Graveyard? No, it's a Sorcery, he drew another? No, deck count says 3).",
+          "Check: Graveyard has Archangel. Casts Breath of Life targeting Archangel.",
+          "Resolution: Archangel enters battlefield (5/5 Vigilance/Flyer)."
+        ]
+      },
+      {
+        "turn": 16,
+        "active_player": "Liliana",
+        "phase_log": [
+          "Draw Phase: Draws Swamp.",
+          "Main Phase: Casts Dread Charge {3}{B}. Black creatures unblockable except by Black creatures.",
+          "Combat Phase: Serpent Warrior attacks.",
+          "Block: Archangel is White. Cannot block.",
+          "Damage: Ajani takes 3 damage."
+        ],
+        "life_totals": { "Ajani": -2, "Liliana": 9 },
+        "result": "Game Over - Liliana Wins"
+      }
+    ]
+  }
+}

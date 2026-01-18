@@ -1,0 +1,352 @@
+{
+  "match_metadata": {
+    "date": "2026-01-18",
+    "format": "Portal Constructed",
+    "location": "Arnhem, Netherlands",
+    "players": {
+      "player_1": "Chandra",
+      "player_2": "Jace"
+    },
+    "winner": "Jace"
+  },
+  "decks": {
+    "Chandra": {
+      "name": "Burn it All",
+      "archetype": "Mono-Red Land Destruction",
+      "decklist": [
+        { "count": 4, "name": "Stone Rain", "data": { "mana_cost": "{2}{R}", "cmc": 3.0, "type_line": "Sorcery", "oracle_text": "Destroy target land." } },
+        { "count": 4, "name": "Volcanic Hammer", "data": { "mana_cost": "{1}{R}", "cmc": 2.0, "type_line": "Sorcery", "oracle_text": "Volcanic Hammer deals 3 damage to any target." } },
+        { "count": 4, "name": "Raging Goblin", "data": { "mana_cost": "{R}", "cmc": 1.0, "type_line": "Creature — Goblin Berserker", "oracle_text": "Haste", "power": "1", "toughness": "1" } },
+        { "count": 4, "name": "Fire Imp", "data": { "mana_cost": "{2}{R}", "cmc": 3.0, "type_line": "Creature — Imp", "oracle_text": "When this creature enters, it deals 2 damage to target creature.", "power": "2", "toughness": "1" } },
+        { "count": 3, "name": "Blaze", "data": { "mana_cost": "{X}{R}", "cmc": 1.0, "type_line": "Sorcery", "oracle_text": "Blaze deals X damage to any target." } },
+        { "count": 3, "name": "Forked Lightning", "data": { "mana_cost": "{3}{R}", "cmc": 4.0, "type_line": "Sorcery", "oracle_text": "Forked Lightning deals 4 damage divided as you choose among one, two, or three target creatures." } },
+        { "count": 2, "name": "Rain of Salt", "data": { "mana_cost": "{4}{R}{R}", "cmc": 6.0, "type_line": "Sorcery", "oracle_text": "Destroy two target lands." } },
+        { "count": 2, "name": "Lava Axe", "data": { "mana_cost": "{4}{R}", "cmc": 5.0, "type_line": "Sorcery", "oracle_text": "Lava Axe deals 5 damage to target player or planeswalker." } },
+        { "count": 2, "name": "Thundermare", "data": { "mana_cost": "{5}{R}", "cmc": 6.0, "type_line": "Creature — Elemental Horse", "oracle_text": "Haste\nWhen this creature enters, tap all other creatures.", "power": "5", "toughness": "5" } },
+        { "count": 2, "name": "Volcanic Dragon", "data": { "mana_cost": "{4}{R}{R}", "cmc": 6.0, "type_line": "Creature — Dragon", "oracle_text": "Flying, haste", "power": "4", "toughness": "4" } },
+        { "count": 2, "name": "Earthquake", "data": { "mana_cost": "{X}{R}", "cmc": 1.0, "type_line": "Sorcery", "oracle_text": "Earthquake deals X damage to each creature without flying and each player." } },
+        { "count": 2, "name": "Lava Flow", "data": { "mana_cost": "{3}{R}{R}", "cmc": 5.0, "type_line": "Sorcery", "oracle_text": "Destroy target creature or land." } },
+        { "count": 26, "name": "Mountain", "data": { "mana_cost": "", "cmc": 0.0, "type_line": "Basic Land — Mountain", "oracle_text": "({T}: Add {R}.)" } }
+      ]
+    },
+    "Jace": {
+      "name": "Dimir Tempo",
+      "archetype": "Blue/Black Tempo",
+      "decklist": [
+        { "count": 4, "name": "Man-o'-War", "data": { "mana_cost": "{2}{U}", "cmc": 3.0, "type_line": "Creature — Jellyfish", "oracle_text": "When this creature enters, return target creature to its owner's hand.", "power": "2", "toughness": "2" } },
+        { "count": 4, "name": "Owl Familiar", "data": { "mana_cost": "{1}{U}", "cmc": 2.0, "type_line": "Creature — Bird", "oracle_text": "Flying\nWhen this creature enters, draw a card, then discard a card.", "power": "1", "toughness": "1" } },
+        { "count": 4, "name": "Hand of Death", "data": { "mana_cost": "{2}{B}", "cmc": 3.0, "type_line": "Sorcery", "oracle_text": "Destroy target nonblack creature." } },
+        { "count": 3, "name": "Mystic Denial", "data": { "mana_cost": "{1}{U}{U}", "cmc": 3.0, "type_line": "Instant", "oracle_text": "Counter target creature or sorcery spell." } },
+        { "count": 3, "name": "Gravedigger", "data": { "mana_cost": "{3}{B}", "cmc": 4.0, "type_line": "Creature — Zombie", "oracle_text": "When this creature enters, you may return target creature card from your graveyard to your hand.", "power": "2", "toughness": "2" } },
+        { "count": 2, "name": "Ebon Dragon", "data": { "mana_cost": "{5}{B}{B}", "cmc": 7.0, "type_line": "Creature — Dragon", "oracle_text": "Flying\nWhen this creature enters, you may have target opponent discard a card.", "power": "5", "toughness": "4" } },
+        { "count": 2, "name": "Cloud Dragon", "data": { "mana_cost": "{5}{U}", "cmc": 6.0, "type_line": "Creature — Illusion Dragon", "oracle_text": "Flying\nThis creature can block only creatures with flying.", "power": "5", "toughness": "4" } },
+        { "count": 2, "name": "Mind Rot", "data": { "mana_cost": "{2}{B}", "cmc": 3.0, "type_line": "Sorcery", "oracle_text": "Target player discards two cards." } },
+        { "count": 2, "name": "Symbol of Unsummoning", "data": { "mana_cost": "{2}{U}", "cmc": 3.0, "type_line": "Sorcery", "oracle_text": "Return target creature to its owner's hand.\nDraw a card." } },
+        { "count": 2, "name": "Ingenious Thief", "data": { "mana_cost": "{1}{U}", "cmc": 2.0, "type_line": "Creature — Human Rogue", "oracle_text": "Flying\nWhen this creature enters, look at target player's hand.", "power": "1", "toughness": "1" } },
+        { "count": 2, "name": "Withering Gaze", "data": { "mana_cost": "{2}{U}", "cmc": 3.0, "type_line": "Sorcery", "oracle_text": "Target opponent reveals their hand. You draw a card for each Forest and green card in it." } },
+        { "count": 1, "name": "Cruel Tutor", "data": { "mana_cost": "{2}{B}", "cmc": 3.0, "type_line": "Sorcery", "oracle_text": "Search your library for a card, then shuffle and put that card on top. You lose 2 life." } },
+        { "count": 15, "name": "Island", "data": { "mana_cost": "", "cmc": 0.0, "type_line": "Basic Land — Island", "oracle_text": "({T}: Add {U}.)" } },
+        { "count": 14, "name": "Swamp", "data": { "mana_cost": "", "cmc": 0.0, "type_line": "Basic Land — Swamp", "oracle_text": "({T}: Add {B}.)" } }
+      ]
+    }
+  },
+  "simulation": {
+    "setup": {
+      "chandra_hand": ["Mountain", "Mountain", "Raging Goblin", "Volcanic Hammer", "Stone Rain", "Fire Imp", "Thundermare"],
+      "jace_hand": ["Island", "Swamp", "Swamp", "Owl Familiar", "Man-o'-War", "Mystic Denial", "Cloud Dragon"],
+      "starting_life": { "Chandra": 20, "Jace": 20 }
+    },
+    "game_log": [
+      {
+        "turn": 1,
+        "active_player": "Chandra",
+        "phase_log": [
+          "Draw Phase: Chandra skips draw (First Player).",
+          "Main Phase: Chandra plays Mountain (1).",
+          "Main Phase: Chandra casts Raging Goblin {R}. Resolves.",
+          "Combat Phase: Raging Goblin attacks. Jace takes 1 damage."
+        ],
+        "life_totals": { "Chandra": 20, "Jace": 19 },
+        "state_snapshot": { "chandra_creatures": ["Raging Goblin (1/1)"] }
+      },
+      {
+        "turn": 1,
+        "active_player": "Jace",
+        "phase_log": [
+          "Draw Phase: Jace draws Island.",
+          "Main Phase: Jace plays Island (1).",
+          "Main Phase: Jace passes (Holding Owl Familiar for better mana efficiency next turn)."
+        ],
+        "state_snapshot": { "jace_lands": 1 }
+      },
+      {
+        "turn": 2,
+        "active_player": "Chandra",
+        "phase_log": [
+          "Draw Phase: Chandra draws Mountain.",
+          "Main Phase: Chandra plays Mountain (2).",
+          "Combat Phase: Raging Goblin attacks. Jace takes 1 damage.",
+          "Main Phase: Chandra casts Volcanic Hammer {1}{R} targeting Jace. Jace takes 3 damage."
+        ],
+        "life_totals": { "Chandra": 20, "Jace": 15 },
+        "state_snapshot": { "chandra_lands": 2 }
+      },
+      {
+        "turn": 2,
+        "active_player": "Jace",
+        "phase_log": [
+          "Draw Phase: Jace draws Hand of Death.",
+          "Main Phase: Jace plays Swamp (1).",
+          "Main Phase: Jace casts Owl Familiar {1}{U}. Enters battlefield.",
+          "Trigger: Jace draws Gravedigger, discards Swamp."
+        ],
+        "state_snapshot": { "jace_lands": 2, "jace_creatures": ["Owl Familiar (1/1 Flyer)"] }
+      },
+      {
+        "turn": 3,
+        "active_player": "Chandra",
+        "phase_log": [
+          "Draw Phase: Chandra draws Stone Rain.",
+          "Main Phase: Chandra plays Mountain (3).",
+          "Main Phase: Chandra casts Stone Rain {2}{R} targeting Jace's Swamp.",
+          "Action: Swamp is destroyed. Jace down to 1 land.",
+          "Combat Phase: Raging Goblin attacks. Jace blocks with Owl Familiar.",
+          "Damage: Trade. Both creatures die."
+        ],
+        "state_snapshot": { "jace_lands": 1, "board_state": "Empty" }
+      },
+      {
+        "turn": 3,
+        "active_player": "Jace",
+        "phase_log": [
+          "Draw Phase: Jace draws Island.",
+          "Main Phase: Jace plays Island (2).",
+          "Main Phase: Jace passes."
+        ],
+        "state_snapshot": { "jace_lands": 2, "jace_hand_count": 5 }
+      },
+      {
+        "turn": 4,
+        "active_player": "Chandra",
+        "phase_log": [
+          "Draw Phase: Chandra draws Blaze.",
+          "Main Phase: Chandra plays Mountain (4).",
+          "Main Phase: Chandra considers Fire Imp but has no targets. Holds it.",
+          "Main Phase: Chandra casts Stone Rain {2}{R} targeting Island.",
+          "Action: Island destroyed. Jace down to 1 land."
+        ],
+        "state_snapshot": { "jace_lands": 1 }
+      },
+      {
+        "turn": 4,
+        "active_player": "Jace",
+        "phase_log": [
+          "Draw Phase: Jace draws Swamp.",
+          "Main Phase: Jace plays Swamp (2).",
+          "Main Phase: Jace passes. (Stuck on mana for Man-o'-War/Mystic Denial interactions)."
+        ],
+        "state_snapshot": { "jace_lands": 2 }
+      },
+      {
+        "turn": 5,
+        "active_player": "Chandra",
+        "phase_log": [
+          "Draw Phase: Chandra draws Volcanic Dragon.",
+          "Main Phase: Chandra plays Mountain (5).",
+          "Main Phase: Chandra casts Fire Imp {2}{R}. Mandatory trigger targeting itself? No, Chandra chooses to cast Blaze {X}{R} (X=4) at Jace instead.",
+          "Damage: Jace takes 4 damage."
+        ],
+        "life_totals": { "Chandra": 20, "Jace": 11 }
+      },
+      {
+        "turn": 5,
+        "active_player": "Jace",
+        "phase_log": [
+          "Draw Phase: Jace draws Ingenious Thief.",
+          "Main Phase: Jace plays Island (3).",
+          "Main Phase: Jace casts Ingenious Thief {1}{U}.",
+          "Trigger: Jace looks at Chandra's hand. Sees: [Fire Imp, Thundermare, Volcanic Dragon].",
+          "Strategy: Jace knows big threats are coming and needs to save Mystic Denial."
+        ],
+        "state_snapshot": { "jace_creatures": ["Ingenious Thief (1/1 Flyer)"] }
+      },
+      {
+        "turn": 6,
+        "active_player": "Chandra",
+        "phase_log": [
+          "Draw Phase: Chandra draws Mountain.",
+          "Main Phase: Chandra plays Mountain (6).",
+          "Main Phase: Chandra casts Fire Imp {2}{R}. Trigger targets Ingenious Thief.",
+          "Action: Ingenious Thief takes 2 damage and dies.",
+          "Combat Phase: No attacks."
+        ],
+        "state_snapshot": { "chandra_creatures": ["Fire Imp (2/1)"] }
+      },
+      {
+        "turn": 6,
+        "active_player": "Jace",
+        "phase_log": [
+          "Draw Phase: Jace draws Swamp.",
+          "Main Phase: Jace plays Swamp (4).",
+          "Main Phase: Jace casts Man-o'-War {2}{U}. Targets Fire Imp.",
+          "Action: Fire Imp returns to Chandra's hand.",
+          "Main Phase: Jace passes (1 mana open, holding Mystic Denial + Hand of Death)."
+        ],
+        "state_snapshot": { "jace_creatures": ["Man-o'-War (2/2)"] }
+      },
+      {
+        "turn": 7,
+        "active_player": "Chandra",
+        "phase_log": [
+          "Draw Phase: Chandra draws Forked Lightning.",
+          "Main Phase: Chandra casts Thundermare {5}{R}. (Must resolve this to push damage).",
+          "Response: Jace cannot counter (Mystic Denial costs {1}{U}{U}, Jace has {B} open).",
+          "Action: Thundermare resolves. Trigger taps Man-o'-War.",
+          "Combat Phase: Thundermare attacks. Jace takes 5 damage."
+        ],
+        "life_totals": { "Chandra": 20, "Jace": 6 },
+        "state_snapshot": { "chandra_creatures": ["Thundermare (5/5)"], "jace_creatures": ["Man-o'-War (Tapped)"] }
+      },
+      {
+        "turn": 7,
+        "active_player": "Jace",
+        "phase_log": [
+          "Draw Phase: Jace draws Island.",
+          "Main Phase: Jace plays Island (5).",
+          "Main Phase: Jace casts Hand of Death {2}{B} targeting Thundermare. Destroyed.",
+          "Main Phase: Jace casts Gravedigger {3}{B} (Tapped out). Returns Owl Familiar to hand."
+        ],
+        "state_snapshot": { "jace_creatures": ["Man-o'-War", "Gravedigger"] }
+      },
+      {
+        "turn": 8,
+        "active_player": "Chandra",
+        "phase_log": [
+          "Draw Phase: Chandra draws Mountain.",
+          "Main Phase: Chandra plays Mountain (7).",
+          "Main Phase: Chandra casts Volcanic Dragon {4}{R}{R}. Haste.",
+          "Combat Phase: Volcanic Dragon attacks.",
+          "Block: Jace cannot block (no flyers).",
+          "Damage: Jace takes 4 damage."
+        ],
+        "life_totals": { "Chandra": 20, "Jace": 2 },
+        "state_snapshot": { "chandra_creatures": ["Volcanic Dragon (4/4 Flying)"] }
+      },
+      {
+        "turn": 8,
+        "active_player": "Jace",
+        "phase_log": [
+          "Draw Phase: Jace draws Ebon Dragon.",
+          "Main Phase: Jace plays Island (6).",
+          "Main Phase: Jace casts Cloud Dragon {5}{U}.",
+          "Note: Cloud Dragon (5/4) can block only creatures with flying. It is a perfect answer to Volcanic Dragon."
+        ],
+        "state_snapshot": { "jace_creatures": ["Man-o'-War", "Gravedigger", "Cloud Dragon (5/4 Flying)"] }
+      },
+      {
+        "turn": 9,
+        "active_player": "Chandra",
+        "phase_log": [
+          "Draw Phase: Chandra draws Mountain.",
+          "Main Phase: Chandra plays Mountain (8).",
+          "Main Phase: Chandra casts Fire Imp {2}{R}. Targets Man-o'-War. Man-o'-War dies.",
+          "Combat Phase: Volcanic Dragon (4/4) attacks.",
+          "Block: Cloud Dragon (5/4) blocks Volcanic Dragon.",
+          "Damage: Volcanic Dragon deals 4 to Cloud. Cloud deals 5 to Volcanic. Volcanic Dragon dies. Cloud Dragon survives with 4 damage marked."
+        ],
+        "state_snapshot": { "chandra_creatures": ["Fire Imp"], "jace_creatures": ["Gravedigger", "Cloud Dragon"] }
+      },
+      {
+        "turn": 9,
+        "active_player": "Jace",
+        "phase_log": [
+          "Draw Phase: Jace draws Symbol of Unsummoning.",
+          "Main Phase: Jace casts Symbol of Unsummoning {2}{U} on Fire Imp. Draws a card (Swamp).",
+          "Combat Phase: Cloud Dragon and Gravedigger attack.",
+          "Damage: Chandra takes 5 + 2 = 7 damage."
+        ],
+        "life_totals": { "Chandra": 13, "Jace": 2 }
+      },
+      {
+        "turn": 10,
+        "active_player": "Chandra",
+        "phase_log": [
+          "Draw Phase: Chandra draws Lava Axe.",
+          "Main Phase: Chandra casts Lava Axe {4}{R} targeting Jace.",
+          "Response: Jace casts Mystic Denial {1}{U}{U}. Lava Axe is countered.",
+          "Note: Jace saved the counterspell for the lethal burn."
+        ]
+      },
+      {
+        "turn": 10,
+        "active_player": "Jace",
+        "phase_log": [
+          "Draw Phase: Jace draws Hand of Death.",
+          "Combat Phase: Cloud Dragon and Gravedigger attack.",
+          "Damage: Chandra takes 7 damage."
+        ],
+        "life_totals": { "Chandra": 6, "Jace": 2 }
+      },
+      {
+        "turn": 11,
+        "active_player": "Chandra",
+        "phase_log": [
+          "Draw Phase: Chandra draws Stone Rain (Useless).",
+          "Main Phase: Chandra casts Forked Lightning {3}{R} targeting Cloud Dragon (4 dmg).",
+          "Damage: Cloud Dragon takes 4 damage and dies.",
+          "Main Phase: Chandra recasts Fire Imp {2}{R}. Targets Gravedigger (2 dmg). Gravedigger dies."
+        ],
+        "state_snapshot": { "chandra_creatures": ["Fire Imp"], "board_state": "Chandra has board, Jace has open board but hand advantage." }
+      },
+      {
+        "turn": 11,
+        "active_player": "Jace",
+        "phase_log": [
+          "Draw Phase: Jace draws Ebon Dragon.",
+          "Main Phase: Jace casts Ebon Dragon {5}{B}{B} (Flying, 5/4).",
+          "Trigger: Chandra discards Stone Rain.",
+          "Combat Phase: No attacks (Summoning Sickness)."
+        ],
+        "state_snapshot": { "jace_creatures": ["Ebon Dragon"] }
+      },
+      {
+        "turn": 12,
+        "active_player": "Chandra",
+        "phase_log": [
+          "Draw Phase: Chandra draws Mountain.",
+          "Main Phase: Passes. Fire Imp cannot attack into Ebon Dragon."
+        ]
+      },
+      {
+        "turn": 12,
+        "active_player": "Jace",
+        "phase_log": [
+          "Draw Phase: Jace draws Island.",
+          "Combat Phase: Ebon Dragon attacks.",
+          "Damage: Chandra takes 5 damage."
+        ],
+        "life_totals": { "Chandra": 1, "Jace": 2 }
+      },
+      {
+        "turn": 13,
+        "active_player": "Chandra",
+        "phase_log": [
+          "Draw Phase: Chandra draws Raging Goblin.",
+          "Main Phase: Chandra casts Raging Goblin {R}. Attacks.",
+          "Block: Ebon Dragon blocks Goblin. Goblin dies.",
+          "Note: Desperation attack hoping for a misclick/no block."
+        ]
+      },
+      {
+        "turn": 13,
+        "active_player": "Jace",
+        "phase_log": [
+          "Combat Phase: Ebon Dragon attacks.",
+          "Damage: Chandra takes 5 damage."
+        ],
+        "life_totals": { "Chandra": -4, "Jace": 2 },
+        "result": "Game Over - Jace wins"
+      }
+    ]
+  }
+}
