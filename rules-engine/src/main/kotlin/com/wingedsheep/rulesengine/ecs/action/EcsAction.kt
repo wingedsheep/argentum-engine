@@ -305,6 +305,49 @@ data class EcsEndCombat(
     override val description: String = "End combat"
 }
 
+/**
+ * Order blockers for damage assignment.
+ *
+ * The attacking player chooses the order in which damage will be assigned
+ * to creatures blocking a single attacker.
+ */
+@Serializable
+data class EcsOrderBlockers(
+    val attackerId: EntityId,
+    val orderedBlockerIds: List<EntityId>,
+    val playerId: EntityId
+) : EcsAction {
+    override val description: String = "Order blockers for damage assignment"
+}
+
+/**
+ * Resolve combat damage for a damage step.
+ *
+ * This calculates and applies all combat damage for either:
+ * - The first strike damage step (first strike + double strike creatures)
+ * - The regular damage step (all other creatures + double strike again)
+ *
+ * @param step The damage step to resolve (FIRST_STRIKE or REGULAR)
+ * @param preventionEffectIds Optional list of entity IDs that are sources of
+ *        active damage prevention effects (like Fog)
+ */
+@Serializable
+data class EcsResolveCombatDamage(
+    val step: CombatDamageStep,
+    val preventionEffectIds: List<EntityId> = emptyList()
+) : EcsAction {
+    override val description: String = "Resolve ${step.displayName} combat damage"
+}
+
+/**
+ * Identifies which combat damage step is being resolved.
+ */
+@Serializable
+enum class CombatDamageStep(val displayName: String) {
+    FIRST_STRIKE("first strike"),
+    REGULAR("regular")
+}
+
 // =============================================================================
 // Game Flow Actions
 // =============================================================================
@@ -329,6 +372,49 @@ data class EcsPlayerLoses(
     val reason: String
 ) : EcsAction {
     override val description: String = "Player loses: $reason"
+}
+
+// =============================================================================
+// Stack Resolution Actions
+// =============================================================================
+
+/**
+ * Resolve the top item on the stack.
+ *
+ * This handles:
+ * - Permanent spells: Move to battlefield
+ * - Non-permanent spells: Execute effects, move to graveyard
+ * - Triggered/activated abilities: Execute effects
+ *
+ * Also validates targets on resolution and fizzles if all targets are invalid.
+ */
+@Serializable
+data class EcsResolveTopOfStack(
+    val placeholder: Unit = Unit
+) : EcsAction {
+    override val description: String = "Resolve top of stack"
+}
+
+/**
+ * Cast a spell from hand (or another zone).
+ *
+ * This moves the card to the stack and adds SpellOnStackComponent.
+ * Mana payment and target selection should be handled before this action.
+ *
+ * @param cardId The card being cast
+ * @param casterId The player casting the spell
+ * @param targets The chosen targets for the spell
+ * @param xValue The value of X if applicable
+ */
+@Serializable
+data class EcsCastSpell(
+    val cardId: EntityId,
+    val casterId: EntityId,
+    val fromZone: com.wingedsheep.rulesengine.ecs.ZoneId,
+    val targets: List<com.wingedsheep.rulesengine.ecs.event.EcsChosenTarget> = emptyList(),
+    val xValue: Int? = null
+) : EcsAction {
+    override val description: String = "Cast spell"
 }
 
 // =============================================================================

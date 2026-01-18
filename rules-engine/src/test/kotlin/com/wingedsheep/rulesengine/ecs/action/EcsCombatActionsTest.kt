@@ -171,7 +171,7 @@ class EcsCombatActionsTest : FunSpec({
 
             // Add attacker to combat
             state = state2.updateEntity(attackerId) {
-                it.with(AttackingComponent(player2Id))
+                it.with(AttackingComponent.attackingPlayer(player2Id))
             }
 
             val action = EcsDeclareBlocker(blockerId, attackerId, player2Id)
@@ -189,7 +189,7 @@ class EcsCombatActionsTest : FunSpec({
 
             // Tap the blocker
             state = state2.updateEntity(blockerId) { it.with(TappedComponent) }
-            state = state.updateEntity(attackerId) { it.with(AttackingComponent(player2Id)) }
+            state = state.updateEntity(attackerId) { it.with(AttackingComponent.attackingPlayer(player2Id)) }
 
             val action = EcsDeclareBlocker(blockerId, attackerId, player2Id)
             val result = handler.execute(state, action)
@@ -202,7 +202,7 @@ class EcsCombatActionsTest : FunSpec({
         test("clears combat state") {
             var state = createGameInDeclareBlockersStep()
             val (attackerId, state1) = state.addCreatureToBattlefield(bearDef, player1Id, hasSummoningSickness = false)
-            state = state1.updateEntity(attackerId) { it.with(AttackingComponent(player2Id)) }
+            state = state1.updateEntity(attackerId) { it.with(AttackingComponent.attackingPlayer(player2Id)) }
 
             state.combat.shouldNotBeNull()
 
@@ -217,7 +217,7 @@ class EcsCombatActionsTest : FunSpec({
         test("removes AttackingComponent from attackers") {
             var state = createGameInDeclareBlockersStep()
             val (attackerId, state1) = state.addCreatureToBattlefield(bearDef, player1Id, hasSummoningSickness = false)
-            state = state1.updateEntity(attackerId) { it.with(AttackingComponent(player2Id)) }
+            state = state1.updateEntity(attackerId) { it.with(AttackingComponent.attackingPlayer(player2Id)) }
 
             val action = EcsEndCombat(player1Id)
             val result = handler.execute(state, action)
@@ -232,7 +232,7 @@ class EcsCombatActionsTest : FunSpec({
             val (attackerId, state1) = state.addCreatureToBattlefield(bearDef, player1Id, hasSummoningSickness = false)
             val (blockerId, state2) = state1.addCreatureToBattlefield(bearDef, player2Id, hasSummoningSickness = false)
             state = state2
-                .updateEntity(attackerId) { it.with(AttackingComponent(player2Id)) }
+                .updateEntity(attackerId) { it.with(AttackingComponent.attackingPlayer(player2Id)) }
                 .updateEntity(blockerId) { it.with(BlockingComponent(attackerId)) }
 
             val action = EcsEndCombat(player1Id)
@@ -248,7 +248,7 @@ class EcsCombatActionsTest : FunSpec({
         test("unblocked attacker deals damage to defending player") {
             var state = createGameInDeclareBlockersStep()
             val (attackerId, state1) = state.addCreatureToBattlefield(bearDef, player1Id, hasSummoningSickness = false)
-            state = state1.updateEntity(attackerId) { it.with(AttackingComponent(player2Id)) }
+            state = state1.updateEntity(attackerId) { it.with(AttackingComponent.attackingPlayer(player2Id)) }
 
             val initialLife = state.getComponent<LifeComponent>(player2Id)!!.life
 
@@ -265,7 +265,7 @@ class EcsCombatActionsTest : FunSpec({
             val (attackerId, state1) = state.addCreatureToBattlefield(giantDef, player1Id, hasSummoningSickness = false) // 3/3
             val (blockerId, state2) = state1.addCreatureToBattlefield(bearDef, player2Id, hasSummoningSickness = false) // 2/2
             state = state2
-                .updateEntity(attackerId) { it.with(AttackingComponent(player2Id)) }
+                .updateEntity(attackerId) { it.with(AttackingComponent.attackingPlayer(player2Id)) }
                 .updateEntity(blockerId) { it.with(BlockingComponent(attackerId)) }
 
             // Simulate combat damage
@@ -281,7 +281,7 @@ class EcsCombatActionsTest : FunSpec({
             val (attackerId, state1) = state.addCreatureToBattlefield(bearDef, player1Id, hasSummoningSickness = false) // 2/2
             val (blockerId, state2) = state1.addCreatureToBattlefield(giantDef, player2Id, hasSummoningSickness = false) // 3/3
             state = state2
-                .updateEntity(attackerId) { it.with(AttackingComponent(player2Id)) }
+                .updateEntity(attackerId) { it.with(AttackingComponent.attackingPlayer(player2Id)) }
                 .updateEntity(blockerId) { it.with(BlockingComponent(attackerId)) }
 
             // Simulate combat damage

@@ -382,6 +382,36 @@ object EcsGameEventConverter {
                 EcsGameEvent.GameEnded(event.winnerId)
             )
 
+            // DamageDealt (unified) maps to the appropriate damage event
+            is EcsActionEvent.DamageDealt -> {
+                if (event.isCombatDamage) {
+                    // Combat damage - could expand to track both player and creature damage
+                    listOf(EcsGameEvent.DamageDealtToCreature(event.sourceId, event.targetId, event.amount))
+                } else {
+                    listOf(EcsGameEvent.DamageDealtToCreature(event.sourceId, event.targetId, event.amount))
+                }
+            }
+
+            // Stack resolution events
+            is EcsActionEvent.SpellCast -> listOf(
+                EcsGameEvent.SpellCast(
+                    spellId = event.entityId,
+                    spellName = event.name,
+                    casterId = event.casterId,
+                    isCreatureSpell = false,  // Would need CardComponent to determine
+                    isInstantOrSorcery = false // Would need CardComponent to determine
+                )
+            )
+
+            is EcsActionEvent.PermanentEnteredBattlefield -> listOf(
+                EcsGameEvent.EnteredBattlefield(
+                    entityId = event.entityId,
+                    cardName = event.name,
+                    controllerId = event.controllerId,
+                    fromZone = ZoneId.STACK
+                )
+            )
+
             // Events that don't directly map to trigger-relevant game events
             is EcsActionEvent.ManaAdded,
             is EcsActionEvent.DrawFailed,
@@ -389,7 +419,12 @@ object EcsGameEventConverter {
             is EcsActionEvent.PermanentDestroyed,
             is EcsActionEvent.LandPlayed,
             is EcsActionEvent.Attached,
-            is EcsActionEvent.Detached -> emptyList()
+            is EcsActionEvent.Detached,
+            is EcsActionEvent.BlockersOrdered,
+            is EcsActionEvent.SpellResolved,
+            is EcsActionEvent.SpellFizzled,
+            is EcsActionEvent.AbilityResolved,
+            is EcsActionEvent.AbilityFizzled -> emptyList()
         }
     }
 
