@@ -3,8 +3,12 @@ package com.wingedsheep.rulesengine.action
 import com.wingedsheep.rulesengine.card.CardInstance
 import com.wingedsheep.rulesengine.casting.ManaPaymentValidator
 import com.wingedsheep.rulesengine.casting.SpellTimingValidator
+import com.wingedsheep.rulesengine.combat.CombatDamageResult
+import com.wingedsheep.rulesengine.combat.CombatValidator
 import com.wingedsheep.rulesengine.core.Color
+import com.wingedsheep.rulesengine.core.Keyword
 import com.wingedsheep.rulesengine.game.GameState
+import com.wingedsheep.rulesengine.game.Step
 import com.wingedsheep.rulesengine.player.PlayerId
 import com.wingedsheep.rulesengine.zone.ZoneType
 
@@ -112,6 +116,15 @@ object ActionExecutor {
             is ResolveTopOfStack -> executeResolveTopOfStack(state, action, events)
             is PassPriority -> executePassPriority(state, action, events)
             is CounterSpell -> executeCounterSpell(state, action, events)
+
+            // Combat
+            is BeginCombat -> executeBeginCombat(state, action, events)
+            is DeclareAttacker -> executeDeclareAttacker(state, action, events)
+            is DeclareBlocker -> executeDeclareBlocker(state, action, events)
+            is SetDamageAssignmentOrder -> executeSetDamageAssignmentOrder(state, action)
+            is ResolveCombatDamage -> executeResolveCombatDamage(state, action, events)
+            is EndCombat -> executeEndCombat(state, action, events)
+            is CheckStateBasedActions -> executeCheckStateBasedActions(state, action, events)
         }
 
         return newState to events
@@ -699,5 +712,207 @@ object ActionExecutor {
         return state
             .updateStack { it.remove(action.cardId) }
             .updatePlayer(ownerId) { p -> p.updateGraveyard { it.addToTop(card) } }
+    }
+
+    // =============================================================================
+    // Combat Actions
+    // =============================================================================
+
+    private fun executeBeginCombat(state: GameState, action: BeginCombat, events: MutableList<GameEvent>): GameState {
+        if (state.combat != null) {
+            throw IllegalStateException("Already in combat")
+        }
+
+        return state.startCombat(action.defendingPlayer)
+    }
+
+    private fun executeDeclareAttacker(state: GameState, action: DeclareAttacker, events: MutableList<GameEvent>): GameState {
+        val validationResult = CombatValidator.canDeclareAttacker(state, action.cardId, action.playerId)
+        if (validationResult is CombatValidator.ValidationResult.Invalid) {
+            throw IllegalStateException(validationResult.reason)
+        }
+
+        val creature = state.battlefield.getCard(action.cardId)!!
+
+        // Tap the attacker (unless has vigilance)
+        val shouldTap = !creature.hasKeyword(Keyword.VIGILANCE)
+
+        var newState = state.updateCombat { it.addAttacker(action.cardId) }
+
+        if (shouldTap) {
+            events.add(GameEvent.CardTapped(creature.id.value, creature.name))
+            newState = newState.updateBattlefield { zone ->
+                zone.updateCard(action.cardId) { it.tap() }
+            }
+        }
+
+        return newState
+    }
+
+    private fun executeDeclareBlocker(state: GameState, action: DeclareBlocker, events: MutableList<GameEvent>): GameState {
+        val validationResult = CombatValidator.canDeclareBlocker(state, action.blockerId, action.attackerId, action.playerId)
+        if (validationResult is CombatValidator.ValidationResult.Invalid) {
+            throw IllegalStateException(validationResult.reason)
+        }
+
+        return state.updateCombat { it.addBlocker(action.blockerId, action.attackerId) }
+    }
+
+    private fun executeSetDamageAssignmentOrder(state: GameState, action: SetDamageAssignmentOrder): GameState {
+        return state.updateCombat { it.setDamageAssignmentOrder(action.attackerId, action.blockerOrder) }
+    }
+
+    private fun executeResolveCombatDamage(state: GameState, action: ResolveCombatDamage, events: MutableList<GameEvent>): GameState {
+        val combat = state.combat
+            ?: throw IllegalStateException("Not in combat")
+
+        var currentState = state
+
+        // If specific attacker is specified, only resolve that one
+        val attackerIds = if (action.attackerId != null) {
+            listOf(action.attackerId)
+        } else {
+            combat.attackerIds.toList()
+        }
+
+        for (attackerId in attackerIds) {
+            val attacker = currentState.battlefield.getCard(attackerId) ?: continue
+            val damageResult = CombatValidator.calculateCombatDamage(currentState, attackerId)
+
+            when (damageResult) {
+                is CombatDamageResult.UnblockedDamage -> {
+                    // Deal damage to defending player
+                    events.add(GameEvent.DamageDealt(attackerId.value, combat.defendingPlayer.value, damageResult.damage, true))
+                    events.add(GameEvent.LifeChanged(
+                        combat.defendingPlayer.value,
+                        currentState.getPlayer(combat.defendingPlayer).life,
+                        currentState.getPlayer(combat.defendingPlayer).life - damageResult.damage,
+                        -damageResult.damage
+                    ))
+                    currentState = currentState.updatePlayer(combat.defendingPlayer) { it.dealDamage(damageResult.damage) }
+                }
+                is CombatDamageResult.BlockedDamage -> {
+                    // Deal damage to blockers
+                    for ((blockerId, damage) in damageResult.damageToBlockers) {
+                        if (damage > 0) {
+                            val blocker = currentState.battlefield.getCard(blockerId) ?: continue
+                            events.add(GameEvent.DamageDealt(attackerId.value, blockerId.value, damage, false))
+                            currentState = currentState.updateBattlefield { zone ->
+                                zone.updateCard(blockerId) { it.dealDamage(damage) }
+                            }
+                        }
+                    }
+
+                    // Trample damage goes to player
+                    if (damageResult.trampleDamage > 0) {
+                        events.add(GameEvent.DamageDealt(attackerId.value, combat.defendingPlayer.value, damageResult.trampleDamage, true))
+                        events.add(GameEvent.LifeChanged(
+                            combat.defendingPlayer.value,
+                            currentState.getPlayer(combat.defendingPlayer).life,
+                            currentState.getPlayer(combat.defendingPlayer).life - damageResult.trampleDamage,
+                            -damageResult.trampleDamage
+                        ))
+                        currentState = currentState.updatePlayer(combat.defendingPlayer) { it.dealDamage(damageResult.trampleDamage) }
+                    }
+
+                    // Blockers deal damage back to attacker
+                    val blockerIds = combat.getBlockersFor(attackerId)
+                    for (blockerId in blockerIds) {
+                        val blocker = currentState.battlefield.getCard(blockerId) ?: continue
+                        val blockerPower = blocker.currentPower ?: 0
+                        if (blockerPower > 0) {
+                            events.add(GameEvent.DamageDealt(blockerId.value, attackerId.value, blockerPower, false))
+                            currentState = currentState.updateBattlefield { zone ->
+                                zone.updateCard(attackerId) { it.dealDamage(blockerPower) }
+                            }
+                        }
+                    }
+                }
+                is CombatDamageResult.NoDamage -> {
+                    // No damage to deal
+                }
+                is CombatDamageResult.Invalid -> {
+                    // Skip invalid damage results
+                }
+            }
+        }
+
+        return currentState
+    }
+
+    private fun executeEndCombat(state: GameState, action: EndCombat, events: MutableList<GameEvent>): GameState {
+        return state.endCombat()
+    }
+
+    private fun executeCheckStateBasedActions(state: GameState, action: CheckStateBasedActions, events: MutableList<GameEvent>): GameState {
+        var currentState = state
+        var actionsPerformed: Boolean
+
+        // Keep checking until no more state-based actions are performed
+        do {
+            actionsPerformed = false
+
+            // Check for creatures with lethal damage
+            val creaturesWithLethalDamage = currentState.battlefield.cards
+                .filter { it.isCreature && CombatValidator.hasLethalDamage(it) }
+
+            for (creature in creaturesWithLethalDamage) {
+                val ownerId = PlayerId.of(creature.ownerId)
+                events.add(GameEvent.CreatureDied(creature.id.value, creature.name, creature.ownerId))
+                events.add(GameEvent.CardMoved(creature.id.value, creature.name, ZoneType.BATTLEFIELD.name, ZoneType.GRAVEYARD.name))
+
+                currentState = currentState
+                    .updateBattlefield { it.remove(creature.id) }
+                    .updatePlayer(ownerId) { p -> p.updateGraveyard { it.addToTop(creature.clearDamage()) } }
+                actionsPerformed = true
+            }
+
+            // Check for creatures with 0 or less toughness
+            val creaturesWithZeroToughness = currentState.battlefield.cards
+                .filter { it.isCreature && (it.currentToughness ?: 0) <= 0 }
+
+            for (creature in creaturesWithZeroToughness) {
+                val ownerId = PlayerId.of(creature.ownerId)
+                events.add(GameEvent.CreatureDied(creature.id.value, creature.name, creature.ownerId))
+                events.add(GameEvent.CardMoved(creature.id.value, creature.name, ZoneType.BATTLEFIELD.name, ZoneType.GRAVEYARD.name))
+
+                currentState = currentState
+                    .updateBattlefield { it.remove(creature.id) }
+                    .updatePlayer(ownerId) { p -> p.updateGraveyard { it.addToTop(creature) } }
+                actionsPerformed = true
+            }
+
+            // Check for players with 0 or less life
+            for ((playerId, player) in currentState.players) {
+                if (player.life <= 0 && !player.hasLost) {
+                    events.add(GameEvent.PlayerLost(playerId.value, "Life total reached 0"))
+                    currentState = currentState.updatePlayer(playerId) { it.markAsLost() }
+                    actionsPerformed = true
+                }
+            }
+
+            // Check for players with 10+ poison counters
+            for ((playerId, player) in currentState.players) {
+                if (player.poisonCounters >= 10 && !player.hasLost) {
+                    events.add(GameEvent.PlayerLost(playerId.value, "10 or more poison counters"))
+                    currentState = currentState.updatePlayer(playerId) { it.markAsLost() }
+                    actionsPerformed = true
+                }
+            }
+
+        } while (actionsPerformed)
+
+        // Check if game should end (only one player remaining)
+        val activePlayers = currentState.players.filter { !it.value.hasLost }
+        if (activePlayers.size == 1) {
+            val winner = activePlayers.keys.first()
+            events.add(GameEvent.GameEnded(winner.value))
+            currentState = currentState.endGame(winner)
+        } else if (activePlayers.isEmpty()) {
+            events.add(GameEvent.GameEnded(null))
+            currentState = currentState.endGame(null)
+        }
+
+        return currentState
     }
 }

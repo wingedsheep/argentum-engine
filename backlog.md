@@ -132,61 +132,63 @@ Portal is an ideal starting set because it's simplified: limited keywords and st
 ## Phase 5: Combat System
 
 ### 5.1 Combat Setup
-- [ ] `DeclareAttacker` action
-- [ ] Attacker requirements (untapped, no summoning sickness unless haste)
-- [ ] Tap attackers
-- [ ] Write tests for attack declaration
+- [x] `DeclareAttacker` action
+- [x] Attacker requirements (untapped, no summoning sickness unless haste)
+- [x] Tap attackers (vigilance creatures don't tap)
+- [x] Write tests for attack declaration
 
 ### 5.2 Blocking
-- [ ] `DeclareBlocker` action
-- [ ] Blocker requirements (untapped creature)
-- [ ] Multiple blockers on one attacker (damage assignment order)
-- [ ] Flying restriction (can only be blocked by fliers/reach)
-- [ ] Write tests for blocking
+- [x] `DeclareBlocker` action
+- [x] Blocker requirements (untapped creature)
+- [x] Multiple blockers on one attacker (damage assignment order)
+- [x] Flying restriction (can only be blocked by fliers/reach)
+- [x] Write tests for blocking
 
 ### 5.3 Combat Damage
-- [ ] `AssignCombatDamage` action
-- [ ] Simultaneous damage (first strike is not in Portal)
-- [ ] Trample damage assignment
-- [ ] Lethal damage calculation
-- [ ] Damage to players (unblocked attackers)
-- [ ] Write tests for damage calculation
+- [x] `ResolveCombatDamage` action
+- [x] Simultaneous damage (first strike is not in Portal)
+- [x] Trample damage assignment
+- [x] Lethal damage calculation (including deathtouch)
+- [x] Damage to players (unblocked attackers)
+- [x] Write tests for damage calculation
 
 ### 5.4 Creature Death
-- [ ] State-based action: creature with lethal damage dies
-- [ ] Move to graveyard
-- [ ] Write tests for creature death
+- [x] State-based action: creature with lethal damage dies
+- [x] State-based action: creature with 0 or less toughness dies
+- [x] Move to graveyard
+- [x] Player loses at 0 life / 10+ poison
+- [x] Write tests for creature death and state-based actions
 
 ---
 
 ## Phase 6: Keywords and Abilities (Portal Subset)
 
 ### 6.1 Keyword Abilities
-- [ ] `Keyword` enum (Flying, Trample, Haste, Vigilance, First Strike, Flash, Lifelink, Deathtouch, Reach, Defender)
-- [ ] `HasKeyword` check on permanents
-- [ ] Write tests for keyword detection
+- [x] `Keyword` enum (Flying, Trample, Haste, Vigilance, First Strike, Flash, Lifelink, Deathtouch, Reach, Defender)
+- [x] `HasKeyword` check on permanents
+- [x] Write tests for keyword detection
 
 ### 6.2 Flying
-- [ ] Implement flying evasion in blocking rules
-- [ ] "Can only be blocked by creatures with flying or reach"
-- [ ] Write tests for flying
+- [x] Implement flying evasion in blocking rules
+- [x] "Can only be blocked by creatures with flying or reach"
+- [x] Write tests for flying
 
 ### 6.3 Trample
-- [ ] Implement trample damage assignment
-- [ ] Excess damage goes to defending player
-- [ ] Write tests for trample
+- [x] Implement trample damage assignment
+- [x] Excess damage goes to defending player
+- [x] Write tests for trample
 
 ### 6.4 Haste
-- [ ] Remove summoning sickness check for creatures with haste
-- [ ] Write tests for haste
+- [x] Remove summoning sickness check for creatures with haste
+- [x] Write tests for haste
 
 ### 6.5 Vigilance
-- [ ] Attacking doesn't cause tap for vigilant creatures
-- [ ] Write tests for vigilance
+- [x] Attacking doesn't cause tap for vigilant creatures
+- [x] Write tests for vigilance
 
 ### 6.6 Flash
-- [ ] Permanents with flash can be cast at instant speed
-- [ ] Write tests for flash
+- [x] Permanents with flash can be cast at instant speed
+- [x] Write tests for flash
 
 ### 6.7 First Strike
 - [ ] First strike damage step before regular damage
@@ -198,16 +200,16 @@ Portal is an ideal starting set because it's simplified: limited keywords and st
 - [ ] Write tests for lifelink
 
 ### 6.9 Deathtouch
-- [ ] Any amount of damage from deathtouch source is lethal
-- [ ] Write tests for deathtouch
+- [x] Any amount of damage from deathtouch source is lethal
+- [x] Write tests for deathtouch
 
 ### 6.10 Reach
-- [ ] Creatures with reach can block fliers
-- [ ] Write tests for reach
+- [x] Creatures with reach can block fliers
+- [x] Write tests for reach
 
 ### 6.11 Defender
-- [ ] Creatures with defender cannot attack
-- [ ] Write tests for defender
+- [x] Creatures with defender cannot attack
+- [x] Write tests for defender
 
 ---
 

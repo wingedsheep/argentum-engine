@@ -1,6 +1,7 @@
 package com.wingedsheep.rulesengine.game
 
 import com.wingedsheep.rulesengine.card.CardInstance
+import com.wingedsheep.rulesengine.combat.CombatState
 import com.wingedsheep.rulesengine.core.CardId
 import com.wingedsheep.rulesengine.player.Player
 import com.wingedsheep.rulesengine.player.PlayerId
@@ -15,6 +16,7 @@ data class GameState(
     val stack: Zone,
     val exile: Zone,
     val turnState: TurnState,
+    val combat: CombatState? = null,
     val isGameOver: Boolean = false,
     val winner: PlayerId? = null
 ) {
@@ -132,6 +134,24 @@ data class GameState(
 
     fun getPermanentsControlledBy(playerId: PlayerId): List<CardInstance> =
         battlefield.cards.filter { it.controllerId == playerId.value }
+
+    // Combat helpers
+    val isInCombat: Boolean
+        get() = combat != null && currentPhase == Phase.COMBAT
+
+    val defendingPlayer: PlayerId?
+        get() = combat?.defendingPlayer
+
+    fun updateCombat(transform: (CombatState) -> CombatState): GameState {
+        val currentCombat = combat ?: return this
+        return copy(combat = transform(currentCombat))
+    }
+
+    fun startCombat(defendingPlayer: PlayerId): GameState {
+        return copy(combat = CombatState.create(turnState.activePlayer, defendingPlayer))
+    }
+
+    fun endCombat(): GameState = copy(combat = null)
 
     fun endGame(winner: PlayerId?): GameState =
         copy(isGameOver = true, winner = winner)

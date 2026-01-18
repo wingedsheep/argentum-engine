@@ -399,3 +399,61 @@ data class CounterSpell(
 ) : Action {
     override val description: String = "Counter spell"
 }
+
+// =============================================================================
+// Combat Actions
+// =============================================================================
+
+@Serializable
+data class BeginCombat(
+    val attackingPlayer: PlayerId,
+    val defendingPlayer: PlayerId
+) : Action {
+    override val description: String = "${attackingPlayer.value} enters combat against ${defendingPlayer.value}"
+}
+
+@Serializable
+data class DeclareAttacker(
+    val cardId: CardId,
+    val playerId: PlayerId
+) : Action {
+    override val description: String = "${playerId.value} declares an attacker"
+}
+
+@Serializable
+data class DeclareBlocker(
+    val blockerId: CardId,
+    val attackerId: CardId,
+    val playerId: PlayerId
+) : Action {
+    override val description: String = "${playerId.value} declares a blocker"
+}
+
+@Serializable
+data class SetDamageAssignmentOrder(
+    val attackerId: CardId,
+    val blockerOrder: List<CardId>
+) : Action {
+    override val description: String = "Set damage assignment order for attacker"
+}
+
+@Serializable
+data class ResolveCombatDamage(
+    val attackerId: CardId? = null
+) : Action {
+    override val description: String = "Resolve combat damage"
+}
+
+@Serializable
+data class EndCombat(
+    val playerId: PlayerId
+) : Action {
+    override val description: String = "End combat"
+}
+
+@Serializable
+data class CheckStateBasedActions(
+    val placeholder: Unit = Unit
+) : Action {
+    override val description: String = "Check state-based actions"
+}

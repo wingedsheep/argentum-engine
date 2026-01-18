@@ -1,0 +1,280 @@
+{
+"match_metadata": {
+"date": "2026-01-18",
+"format": "Portal Constructed",
+"location": "Arnhem, Netherlands",
+"players": {
+"player_1": "Garruk",
+"player_2": "Elspeth"
+},
+"winner": "Elspeth"
+},
+"decks": {
+"Garruk": {
+"name": "Natural Order Stompy",
+"archetype": "Mono-Green Aggro/Combo",
+"decklist": [
+{ "count": 4, "name": "Jungle Lion", "data": { "mana_cost": "{G}", "cmc": 1.0, "type_line": "Creature — Cat", "power": "2", "toughness": "1", "oracle_text": "This creature can't block." } },
+{ "count": 4, "name": "Grizzly Bears", "data": { "mana_cost": "{1}{G}", "cmc": 2.0, "type_line": "Creature — Bear", "power": "2", "toughness": "2", "oracle_text": "" } },
+{ "count": 4, "name": "Wood Elves", "data": { "mana_cost": "{2}{G}", "cmc": 3.0, "type_line": "Creature — Elf Scout", "power": "1", "toughness": "1", "oracle_text": "When this creature enters, search your library for a Forest card, put that card onto the battlefield, then shuffle." } },
+{ "count": 3, "name": "Elvish Ranger", "data": { "mana_cost": "{2}{G}", "cmc": 3.0, "type_line": "Creature — Elf Ranger", "power": "4", "toughness": "1", "oracle_text": "" } },
+{ "count": 3, "name": "Primeval Force", "data": { "mana_cost": "{2}{G}{G}{G}", "cmc": 5.0, "type_line": "Creature — Elemental", "power": "8", "toughness": "8", "oracle_text": "When this creature enters, sacrifice it unless you sacrifice three Forests." } },
+{ "count": 3, "name": "Charging Rhino", "data": { "mana_cost": "{3}{G}{G}", "cmc": 5.0, "type_line": "Creature — Rhino", "power": "4", "toughness": "4", "oracle_text": "This creature can't be blocked by more than one creature." } },
+{ "count": 3, "name": "Whiptail Wurm", "data": { "mana_cost": "{6}{G}", "cmc": 7.0, "type_line": "Creature — Wurm", "power": "8", "toughness": "5", "oracle_text": "" } },
+{ "count": 4, "name": "Natural Order", "data": { "mana_cost": "{2}{G}{G}", "cmc": 4.0, "type_line": "Sorcery", "oracle_text": "As an additional cost to cast this spell, sacrifice a green creature.\nSearch your library for a green creature card, put it onto the battlefield, then shuffle." } },
+{ "count": 4, "name": "Nature's Lore", "data": { "mana_cost": "{1}{G}", "cmc": 2.0, "type_line": "Sorcery", "oracle_text": "Search your library for a Forest card, put that card onto the battlefield, then shuffle." } },
+{ "count": 2, "name": "Monstrous Growth", "data": { "mana_cost": "{1}{G}", "cmc": 2.0, "type_line": "Sorcery", "oracle_text": "Target creature gets +4/+4 until end of turn." } },
+{ "count": 2, "name": "Sylvan Tutor", "data": { "mana_cost": "{G}", "cmc": 1.0, "type_line": "Sorcery", "oracle_text": "Search your library for a creature card, reveal it, then shuffle and put that card on top." } },
+{ "count": 24, "name": "Forest", "data": { "mana_cost": "", "cmc": 0.0, "type_line": "Basic Land — Forest", "oracle_text": "({T}: Add {G}.)" } }
+]
+},
+"Elspeth": {
+"name": "Wrath of Armageddon",
+"archetype": "Mono-White Control",
+"decklist": [
+{ "count": 4, "name": "Wall of Swords", "data": { "mana_cost": "{3}{W}", "cmc": 4.0, "type_line": "Creature — Wall", "power": "3", "toughness": "5", "oracle_text": "Defender (This creature can't attack.)\nFlying" } },
+{ "count": 4, "name": "Spiritual Guardian", "data": { "mana_cost": "{3}{W}{W}", "cmc": 5.0, "type_line": "Creature — Spirit", "power": "3", "toughness": "4", "oracle_text": "When this creature enters, you gain 4 life." } },
+{ "count": 3, "name": "Border Guard", "data": { "mana_cost": "{2}{W}", "cmc": 3.0, "type_line": "Creature — Human Soldier", "power": "1", "toughness": "4", "oracle_text": "" } },
+{ "count": 3, "name": "Archangel", "data": { "mana_cost": "{5}{W}{W}", "cmc": 7.0, "type_line": "Creature — Angel", "power": "5", "toughness": "5", "oracle_text": "Flying, vigilance" } },
+{ "count": 2, "name": "Alabaster Dragon", "data": { "mana_cost": "{4}{W}{W}", "cmc": 6.0, "type_line": "Creature — Dragon", "power": "4", "toughness": "4", "oracle_text": "Flying\nWhen this creature dies, shuffle it into its owner's library." } },
+{ "count": 4, "name": "Wrath of God", "data": { "mana_cost": "{2}{W}{W}", "cmc": 4.0, "type_line": "Sorcery", "oracle_text": "Destroy all creatures. They can't be regenerated." } },
+{ "count": 4, "name": "Armageddon", "data": { "mana_cost": "{3}{W}", "cmc": 4.0, "type_line": "Sorcery", "oracle_text": "Destroy all lands." } },
+{ "count": 3, "name": "Breath of Life", "data": { "mana_cost": "{3}{W}", "cmc": 4.0, "type_line": "Sorcery", "oracle_text": "Return target creature card from your graveyard to the battlefield." } },
+{ "count": 3, "name": "Path of Peace", "data": { "mana_cost": "{3}{W}", "cmc": 4.0, "type_line": "Sorcery", "oracle_text": "Destroy target creature. Its owner gains 4 life." } },
+{ "count": 3, "name": "Gift of Estates", "data": { "mana_cost": "{1}{W}", "cmc": 2.0, "type_line": "Sorcery", "oracle_text": "If an opponent controls more lands than you, search your library for up to three Plains cards, reveal them, put them into your hand, then shuffle." } },
+{ "count": 3, "name": "Vengeance", "data": { "mana_cost": "{3}{W}", "cmc": 4.0, "type_line": "Sorcery", "oracle_text": "Destroy target tapped creature." } },
+{ "count": 24, "name": "Plains", "data": { "mana_cost": "", "cmc": 0.0, "type_line": "Basic Land — Plains", "oracle_text": "({T}: Add {W}.)" } }
+]
+}
+},
+"simulation": {
+"setup": {
+"garruk_hand": ["Forest", "Forest", "Jungle Lion", "Grizzly Bears", "Nature's Lore", "Natural Order", "Primeval Force"],
+"elspeth_hand": ["Plains", "Plains", "Plains", "Wall of Swords", "Gift of Estates", "Wrath of God", "Vengeance"],
+"starting_life": { "Garruk": 20, "Elspeth": 20 }
+},
+"game_log": [
+{
+"turn": 1,
+"active_player": "Garruk",
+"phase_log": [
+"Draw Phase: Garruk skips draw (First Player rule). Hand size: 7.",
+"Main Phase: Garruk plays Forest (1).",
+"Main Phase: Garruk casts Jungle Lion {G}.",
+"End Phase: Garruk passes."
+],
+"state_snapshot": { "garruk_lands": 1, "garruk_creatures": ["Jungle Lion (2/1)"] }
+},
+{
+"turn": 1,
+"active_player": "Elspeth",
+"phase_log": [
+"Draw Phase: Elspeth draws Path of Peace. Hand size: 8.",
+"Main Phase: Elspeth plays Plains (1).",
+"End Phase: Elspeth passes."
+],
+"state_snapshot": { "elspeth_lands": 1 }
+},
+{
+"turn": 2,
+"active_player": "Garruk",
+"phase_log": [
+"Draw Phase: Garruk draws Forest.",
+"Main Phase: Garruk plays Forest (2).",
+"Combat Phase: Jungle Lion attacks. Elspeth takes 2 damage.",
+"Main Phase: Garruk casts Nature's Lore {1}{G}. Searches library for Forest. Puts into play."
+],
+"life_totals": { "Garruk": 20, "Elspeth": 18 },
+"state_snapshot": { "garruk_lands": 3 }
+},
+{
+"turn": 2,
+"active_player": "Elspeth",
+"phase_log": [
+"Draw Phase: Elspeth draws Spiritual Guardian.",
+"Main Phase: Elspeth plays Plains (2).",
+"Main Phase: Elspeth casts Gift of Estates {1}{W} (Garruk has 3 lands, Elspeth has 2).",
+"Action: Elspeth searches for 3 Plains. Hand size: 9.",
+"Cleanup Phase: Elspeth discards 2 Plains to hand size 7."
+],
+"state_snapshot": { "elspeth_lands": 2 }
+},
+{
+"turn": 3,
+"active_player": "Garruk",
+"phase_log": [
+"Draw Phase: Garruk draws Forest.",
+"Main Phase: Garruk plays Forest (4).",
+"Combat Phase: Jungle Lion attacks. Elspeth takes 2 damage.",
+"Main Phase: Garruk casts Wood Elves {2}{G}. Enters battlefield. Searches for Forest. Puts into play."
+],
+"life_totals": { "Garruk": 20, "Elspeth": 16 },
+"state_snapshot": { "garruk_lands": 5, "garruk_creatures": ["Jungle Lion", "Wood Elves"] }
+},
+{
+"turn": 3,
+"active_player": "Elspeth",
+"phase_log": [
+"Draw Phase: Elspeth draws Plains.",
+"Main Phase: Elspeth plays Plains (3).",
+"Main Phase: Elspeth casts Border Guard {2}{W} (1/4)."
+],
+"state_snapshot": { "elspeth_lands": 3, "elspeth_creatures": ["Border Guard"] }
+},
+{
+"turn": 4,
+"active_player": "Garruk",
+"phase_log": [
+"Draw Phase: Garruk draws Monstrous Growth.",
+"Main Phase: Garruk plays Forest (6).",
+"Main Phase: Garruk casts Natural Order {2}{G}{G}. Sacrifices Wood Elves as cost.",
+"Action: Searches library for Primeval Force. Puts onto battlefield.",
+"Trigger: Primeval Force enters. Garruk sacrifices 3 Forests to keep it.",
+"Combat Phase: Jungle Lion attacks. Elspeth blocks with Border Guard.",
+"Damage: Lion deals 2 to Guard. Guard deals 1 to Lion. Jungle Lion dies."
+],
+"state_snapshot": { "garruk_lands": 3, "garruk_creatures": ["Primeval Force (8/8)"], "elspeth_creatures": ["Border Guard (1/4)"] }
+},
+{
+"turn": 4,
+"active_player": "Elspeth",
+"phase_log": [
+"Draw Phase: Elspeth draws Archangel.",
+"Main Phase: Elspeth plays Plains (4).",
+"Main Phase: Elspeth casts Wrath of God {2}{W}{W}.",
+"Action: All creatures destroyed (Primeval Force, Border Guard)."
+],
+"state_snapshot": { "board_state": "Empty" }
+},
+{
+"turn": 5,
+"active_player": "Garruk",
+"phase_log": [
+"Draw Phase: Garruk draws Grizzly Bears.",
+"Main Phase: Garruk plays Forest (4).",
+"Main Phase: Garruk casts Grizzly Bears {1}{G}."
+],
+"state_snapshot": { "garruk_creatures": ["Grizzly Bears (2/2)"] }
+},
+{
+"turn": 5,
+"active_player": "Elspeth",
+"phase_log": [
+"Draw Phase: Elspeth draws Armageddon.",
+"Main Phase: Elspeth plays Plains (5).",
+"Main Phase: Elspeth casts Spiritual Guardian {3}{W}{W}. Gains 4 life."
+],
+"life_totals": { "Garruk": 20, "Elspeth": 20 },
+"state_snapshot": { "elspeth_creatures": ["Spiritual Guardian (3/4)"] }
+},
+{
+"turn": 6,
+"active_player": "Garruk",
+"phase_log": [
+"Draw Phase: Garruk draws Sylvan Tutor.",
+"Main Phase: Garruk plays Forest (5).",
+"Main Phase: Garruk casts Sylvan Tutor {G}. Searches for Charging Rhino. Puts on top of library.",
+"Combat Phase: No attacks (2/2 cannot attack into 3/4)."
+]
+},
+{
+"turn": 6,
+"active_player": "Elspeth",
+"phase_log": [
+"Draw Phase: Elspeth draws Plains.",
+"Main Phase: Elspeth plays Plains (6).",
+"Main Phase: Elspeth casts Wall of Swords {3}{W} (3/5 Flyer).",
+"Combat Phase: Spiritual Guardian attacks. Garruk takes 3 damage."
+],
+"life_totals": { "Garruk": 17, "Elspeth": 20 }
+},
+{
+"turn": 7,
+"active_player": "Garruk",
+"phase_log": [
+"Draw Phase: Garruk draws Charging Rhino.",
+"Main Phase: Garruk casts Charging Rhino {3}{G}{G}."
+],
+"state_snapshot": { "garruk_creatures": ["Grizzly Bears", "Charging Rhino (4/4)"] }
+},
+{
+"turn": 7,
+"active_player": "Elspeth",
+"phase_log": [
+"Draw Phase: Elspeth draws Breath of Life.",
+"Main Phase: Elspeth plays Plains (7).",
+"Main Phase: Elspeth casts Archangel {5}{W}{W}.",
+"Combat Phase: Spiritual Guardian attacks. Garruk blocks with Grizzly Bears.",
+"Damage: Bears deal 2 to Guardian. Guardian deals 3 to Bears. Grizzly Bears die."
+],
+"state_snapshot": { "elspeth_creatures": ["Spiritual Guardian", "Wall of Swords", "Archangel"] }
+},
+{
+"turn": 8,
+"active_player": "Garruk",
+"phase_log": [
+"Draw Phase: Garruk draws Whiptail Wurm.",
+"Main Phase: Garruk plays Forest (6).",
+"Main Phase: Garruk casts Monstrous Growth {1}{G} on Charging Rhino (Becomes 8/8).",
+"Combat Phase: Charging Rhino attacks. Rhino cannot be blocked by more than 1 creature.",
+"Block: Elspeth blocks with Wall of Swords (3/5) to save other creatures.",
+"Damage: Rhino deals 8 to Wall (dies). Wall deals 3 to Rhino."
+],
+"state_snapshot": { "elspeth_graveyard_add": ["Wall of Swords"] }
+},
+{
+"turn": 8,
+"active_player": "Elspeth",
+"phase_log": [
+"Draw Phase: Elspeth draws Vengeance.",
+"Main Phase: Elspeth plays Plains (8).",
+"Main Phase: Elspeth casts Vengeance {3}{W} targeting tapped Charging Rhino. Rhino destroyed.",
+"Combat Phase: Archangel (5/5) and Spiritual Guardian (3/4) attack. Unblocked.",
+"Damage: Garruk takes 8 damage.",
+"Main Phase 2: Elspeth casts Armageddon {3}{W}. Destroy all lands."
+],
+"life_totals": { "Garruk": 9, "Elspeth": 20 },
+"state_snapshot": { "garruk_lands": 0, "elspeth_lands": 0 }
+},
+{
+"turn": 9,
+"active_player": "Garruk",
+"phase_log": [
+"Draw Phase: Garruk draws Natural Order.",
+"Main Phase: 0 Lands. Passes."
+]
+},
+{
+"turn": 9,
+"active_player": "Elspeth",
+"phase_log": [
+"Draw Phase: Elspeth draws Plains.",
+"Main Phase: Elspeth plays Plains (1).",
+"Combat Phase: Archangel and Spiritual Guardian attack.",
+"Damage: Garruk takes 8 damage."
+],
+"life_totals": { "Garruk": 1, "Elspeth": 20 }
+},
+{
+"turn": 10,
+"active_player": "Garruk",
+"phase_log": [
+"Draw Phase: Garruk draws Forest.",
+"Main Phase: Garruk plays Forest (1).",
+"Action: Cannot cast Natural Order (CMC 4) or Whiptail Wurm (CMC 7). Passes."
+]
+},
+{
+"turn": 10,
+"active_player": "Elspeth",
+"phase_log": [
+"Draw Phase: Elspeth draws Gift of Estates.",
+"Combat Phase: Archangel attacks.",
+"Damage: Garruk takes 5 damage."
+],
+"life_totals": { "Garruk": -4, "Elspeth": 20 },
+"result": "Game Over"
+}
+]
+}
+}
