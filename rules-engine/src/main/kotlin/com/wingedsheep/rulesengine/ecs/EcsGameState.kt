@@ -279,6 +279,100 @@ data class EcsGameState(
         return copy(zones = zones + (zoneId to currentContents.shuffled()))
     }
 
+    /**
+     * Shuffle a zone's contents with a specific random source.
+     */
+    fun shuffleZone(zoneId: ZoneId, random: kotlin.random.Random): EcsGameState {
+        val currentContents = zones[zoneId] ?: return this
+        return copy(zones = zones + (zoneId to currentContents.shuffled(random)))
+    }
+
+    /**
+     * Add multiple entities to a zone.
+     */
+    fun addEntitiesToZone(entityIds: List<EntityId>, zoneId: ZoneId): EcsGameState {
+        val currentContents = zones[zoneId] ?: emptyList()
+        return copy(zones = zones + (zoneId to currentContents + entityIds))
+    }
+
+    /**
+     * Get the size of a zone.
+     */
+    fun getZoneSize(zoneId: ZoneId): Int = getZone(zoneId).size
+
+    /**
+     * Check if a zone is empty.
+     */
+    fun isZoneEmpty(zoneId: ZoneId): Boolean = getZone(zoneId).isEmpty()
+
+    /**
+     * Check if a zone is not empty.
+     */
+    fun isZoneNotEmpty(zoneId: ZoneId): Boolean = getZone(zoneId).isNotEmpty()
+
+    /**
+     * Get the top entity of a zone (last in list, like top of library).
+     * Returns null if zone is empty.
+     */
+    fun getTopOfZone(zoneId: ZoneId): EntityId? = getZone(zoneId).lastOrNull()
+
+    /**
+     * Get the bottom entity of a zone (first in list).
+     * Returns null if zone is empty.
+     */
+    fun getBottomOfZone(zoneId: ZoneId): EntityId? = getZone(zoneId).firstOrNull()
+
+    /**
+     * Remove and return the top entity from a zone.
+     * Returns null and unchanged state if zone is empty.
+     */
+    fun removeTopFromZone(zoneId: ZoneId): Pair<EntityId?, EcsGameState> {
+        val contents = getZone(zoneId)
+        return if (contents.isNotEmpty()) {
+            contents.last() to copy(zones = zones + (zoneId to contents.dropLast(1)))
+        } else {
+            null to this
+        }
+    }
+
+    /**
+     * Remove and return the bottom entity from a zone.
+     * Returns null and unchanged state if zone is empty.
+     */
+    fun removeBottomFromZone(zoneId: ZoneId): Pair<EntityId?, EcsGameState> {
+        val contents = getZone(zoneId)
+        return if (contents.isNotEmpty()) {
+            contents.first() to copy(zones = zones + (zoneId to contents.drop(1)))
+        } else {
+            null to this
+        }
+    }
+
+    /**
+     * Remove the top N entities from a zone.
+     * Returns the removed entities and updated state.
+     */
+    fun removeTopNFromZone(zoneId: ZoneId, count: Int): Pair<List<EntityId>, EcsGameState> {
+        val contents = getZone(zoneId)
+        val toRemove = contents.takeLast(count)
+        val remaining = contents.dropLast(count)
+        return toRemove to copy(zones = zones + (zoneId to remaining))
+    }
+
+    /**
+     * Filter entities in a zone by a predicate on their components.
+     */
+    fun filterZone(zoneId: ZoneId, predicate: (EntityId, ComponentContainer) -> Boolean): List<EntityId> =
+        getZone(zoneId).filter { entityId ->
+            entities[entityId]?.let { predicate(entityId, it) } ?: false
+        }
+
+    /**
+     * Get all entities in a zone that have a specific component.
+     */
+    inline fun <reified T : Component> filterZoneByComponent(zoneId: ZoneId): List<EntityId> =
+        getZone(zoneId).filter { hasComponent<T>(it) }
+
     // ==========================================================================
     // Global Flags
     // ==========================================================================
@@ -407,6 +501,236 @@ data class EcsGameState(
      */
     fun getGraveyard(playerId: EntityId): List<EntityId> =
         getZone(ZoneId.graveyard(playerId))
+
+    // ==========================================================================
+    // Library Operations
+    // ==========================================================================
+
+    /**
+     * Get the size of a player's library.
+     */
+    fun getLibrarySize(playerId: EntityId): Int =
+        getZoneSize(ZoneId.library(playerId))
+
+    /**
+     * Check if a player's library is empty.
+     */
+    fun isLibraryEmpty(playerId: EntityId): Boolean =
+        isZoneEmpty(ZoneId.library(playerId))
+
+    /**
+     * Get the top card of a player's library.
+     * Returns null if library is empty.
+     */
+    fun getTopOfLibrary(playerId: EntityId): EntityId? =
+        getTopOfZone(ZoneId.library(playerId))
+
+    /**
+     * Add a card to the top of a player's library.
+     */
+    fun addToTopOfLibrary(playerId: EntityId, entityId: EntityId): EcsGameState =
+        addToZone(entityId, ZoneId.library(playerId))
+
+    /**
+     * Add a card to the bottom of a player's library.
+     */
+    fun addToBottomOfLibrary(playerId: EntityId, entityId: EntityId): EcsGameState =
+        addToZoneBottom(entityId, ZoneId.library(playerId))
+
+    /**
+     * Draw from a player's library (remove top card).
+     * Returns the drawn entity and updated state.
+     */
+    fun drawFromLibrary(playerId: EntityId): Pair<EntityId?, EcsGameState> =
+        removeTopFromZone(ZoneId.library(playerId))
+
+    /**
+     * Draw multiple cards from a player's library.
+     * Returns the drawn entities and updated state.
+     */
+    fun drawCardsFromLibrary(playerId: EntityId, count: Int): Pair<List<EntityId>, EcsGameState> =
+        removeTopNFromZone(ZoneId.library(playerId), count)
+
+    /**
+     * Shuffle a player's library.
+     */
+    fun shuffleLibrary(playerId: EntityId): EcsGameState =
+        shuffleZone(ZoneId.library(playerId))
+
+    /**
+     * Shuffle a player's library with a specific random source.
+     */
+    fun shuffleLibrary(playerId: EntityId, random: kotlin.random.Random): EcsGameState =
+        shuffleZone(ZoneId.library(playerId), random)
+
+    // ==========================================================================
+    // Hand Operations
+    // ==========================================================================
+
+    /**
+     * Get the size of a player's hand.
+     */
+    fun getHandSize(playerId: EntityId): Int =
+        getZoneSize(ZoneId.hand(playerId))
+
+    /**
+     * Check if a player's hand is empty.
+     */
+    fun isHandEmpty(playerId: EntityId): Boolean =
+        isZoneEmpty(ZoneId.hand(playerId))
+
+    /**
+     * Add a card to a player's hand.
+     */
+    fun addToHand(playerId: EntityId, entityId: EntityId): EcsGameState =
+        addToZone(entityId, ZoneId.hand(playerId))
+
+    /**
+     * Remove a card from a player's hand.
+     */
+    fun removeFromHand(playerId: EntityId, entityId: EntityId): EcsGameState =
+        removeFromZone(entityId, ZoneId.hand(playerId))
+
+    /**
+     * Draw a card (remove from library and add to hand).
+     * Returns the drawn entity and updated state, or null if library is empty.
+     */
+    fun drawCard(playerId: EntityId): Pair<EntityId?, EcsGameState> {
+        val (drawn, newState) = drawFromLibrary(playerId)
+        return if (drawn != null) {
+            drawn to newState.addToHand(playerId, drawn)
+        } else {
+            null to this
+        }
+    }
+
+    /**
+     * Draw multiple cards.
+     * Returns the drawn entities and updated state.
+     */
+    fun drawCards(playerId: EntityId, count: Int): Pair<List<EntityId>, EcsGameState> {
+        var state = this
+        val drawn = mutableListOf<EntityId>()
+        repeat(count) {
+            val (card, newState) = state.drawCard(playerId)
+            if (card != null) {
+                drawn.add(card)
+                state = newState
+            }
+        }
+        return drawn to state
+    }
+
+    // ==========================================================================
+    // Graveyard Operations
+    // ==========================================================================
+
+    /**
+     * Get the size of a player's graveyard.
+     */
+    fun getGraveyardSize(playerId: EntityId): Int =
+        getZoneSize(ZoneId.graveyard(playerId))
+
+    /**
+     * Check if a player's graveyard is empty.
+     */
+    fun isGraveyardEmpty(playerId: EntityId): Boolean =
+        isZoneEmpty(ZoneId.graveyard(playerId))
+
+    /**
+     * Get the top card of a player's graveyard (most recently added).
+     * Returns null if graveyard is empty.
+     */
+    fun getTopOfGraveyard(playerId: EntityId): EntityId? =
+        getTopOfZone(ZoneId.graveyard(playerId))
+
+    /**
+     * Add a card to a player's graveyard.
+     */
+    fun addToGraveyard(playerId: EntityId, entityId: EntityId): EcsGameState =
+        addToZone(entityId, ZoneId.graveyard(playerId))
+
+    /**
+     * Remove a card from a player's graveyard.
+     */
+    fun removeFromGraveyard(playerId: EntityId, entityId: EntityId): EcsGameState =
+        removeFromZone(entityId, ZoneId.graveyard(playerId))
+
+    // ==========================================================================
+    // Battlefield Operations
+    // ==========================================================================
+
+    /**
+     * Get all entities on the battlefield as a list.
+     */
+    fun getBattlefieldSize(): Int = getZoneSize(ZoneId.BATTLEFIELD)
+
+    /**
+     * Check if the battlefield is empty.
+     */
+    fun isBattlefieldEmpty(): Boolean = isZoneEmpty(ZoneId.BATTLEFIELD)
+
+    /**
+     * Add an entity to the battlefield.
+     */
+    fun addToBattlefield(entityId: EntityId): EcsGameState =
+        addToZone(entityId, ZoneId.BATTLEFIELD)
+
+    /**
+     * Remove an entity from the battlefield.
+     */
+    fun removeFromBattlefield(entityId: EntityId): EcsGameState =
+        removeFromZone(entityId, ZoneId.BATTLEFIELD)
+
+    /**
+     * Check if an entity is on the battlefield.
+     */
+    fun isOnBattlefield(entityId: EntityId): Boolean =
+        isInZone(entityId, ZoneId.BATTLEFIELD)
+
+    // ==========================================================================
+    // Stack Operations
+    // ==========================================================================
+
+    /**
+     * Get the top of the stack (most recently added spell/ability).
+     * Returns null if stack is empty.
+     */
+    fun getTopOfStack(): EntityId? = getTopOfZone(ZoneId.STACK)
+
+    /**
+     * Add an entity to the stack (cast a spell).
+     */
+    fun addToStack(entityId: EntityId): EcsGameState =
+        addToZone(entityId, ZoneId.STACK)
+
+    /**
+     * Remove and return the top spell/ability from the stack (resolve).
+     */
+    fun popFromStack(): Pair<EntityId?, EcsGameState> =
+        removeTopFromZone(ZoneId.STACK)
+
+    // ==========================================================================
+    // Exile Operations
+    // ==========================================================================
+
+    /**
+     * Add an entity to exile.
+     */
+    fun addToExile(entityId: EntityId): EcsGameState =
+        addToZone(entityId, ZoneId.EXILE)
+
+    /**
+     * Remove an entity from exile.
+     */
+    fun removeFromExile(entityId: EntityId): EcsGameState =
+        removeFromZone(entityId, ZoneId.EXILE)
+
+    /**
+     * Check if an entity is in exile.
+     */
+    fun isInExile(entityId: EntityId): Boolean =
+        isInZone(entityId, ZoneId.EXILE)
 
     // ==========================================================================
     // Player State Accessors
