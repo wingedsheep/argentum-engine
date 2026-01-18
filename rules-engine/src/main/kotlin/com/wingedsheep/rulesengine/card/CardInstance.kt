@@ -5,6 +5,29 @@ import com.wingedsheep.rulesengine.core.Keyword
 import com.wingedsheep.rulesengine.core.ManaCost
 import kotlinx.serialization.Serializable
 
+/**
+ * Legacy card instance representation.
+ *
+ * @deprecated Use ECS components instead:
+ * - CardComponent for card definition and identity
+ * - ControllerComponent for controller tracking
+ * - TappedComponent for tap state
+ * - SummoningSicknessComponent for summoning sickness
+ * - CountersComponent for counters
+ * - DamageComponent for damage marked
+ * - AttachedToComponent for attachment tracking
+ *
+ * For read queries, use StateProjector to get GameObjectView which provides
+ * the calculated state after all continuous effects are applied.
+ *
+ * @see com.wingedsheep.rulesengine.ecs.EcsGameState
+ * @see com.wingedsheep.rulesengine.ecs.layers.GameObjectView
+ * @see com.wingedsheep.rulesengine.ecs.layers.StateProjector
+ */
+@Deprecated(
+    message = "Use ECS components (CardComponent, CountersComponent, etc.) and StateProjector/GameObjectView instead",
+    replaceWith = ReplaceWith("GameObjectView", "com.wingedsheep.rulesengine.ecs.layers.GameObjectView")
+)
 @Serializable
 data class CardInstance(
     val id: CardId,

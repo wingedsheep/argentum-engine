@@ -4,6 +4,26 @@ import com.wingedsheep.rulesengine.card.CardInstance
 import com.wingedsheep.rulesengine.core.CardId
 import kotlinx.serialization.Serializable
 
+/**
+ * Legacy zone representation storing CardInstance objects.
+ *
+ * @deprecated Use EcsGameState zone methods instead:
+ * - state.getZone(zoneId) for zone contents as EntityId list
+ * - state.getLibrary(playerId), state.getHand(playerId), state.getGraveyard(playerId)
+ * - state.getBattlefield(), state.getStack(), state.getExile()
+ * - state.addToZone(), state.removeFromZone(), state.moveEntity()
+ * - state.drawCard(), state.shuffleLibrary(), etc.
+ *
+ * Zones in ECS store EntityId references, not CardInstance objects.
+ * Card data is stored in entity components.
+ *
+ * @see com.wingedsheep.rulesengine.ecs.EcsGameState
+ * @see com.wingedsheep.rulesengine.ecs.ZoneId
+ */
+@Deprecated(
+    message = "Use EcsGameState zone methods instead",
+    replaceWith = ReplaceWith("EcsGameState.getZone(zoneId)", "com.wingedsheep.rulesengine.ecs.EcsGameState")
+)
 @Serializable
 data class Zone(
     val type: ZoneType,

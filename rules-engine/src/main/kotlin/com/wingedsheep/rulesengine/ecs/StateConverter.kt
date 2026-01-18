@@ -29,7 +29,15 @@ import com.wingedsheep.rulesengine.zone.ZoneType
  * // Convert back for legacy systems
  * val oldState = StateConverter.fromEcs(ecsState)
  * ```
+ *
+ * @deprecated This converter exists only for backward compatibility during migration.
+ * New code should use EcsGameState directly without conversion.
+ * Once all legacy code is migrated, this converter will be removed.
  */
+@Deprecated(
+    message = "Use EcsGameState directly without conversion. This is only for legacy compatibility.",
+    level = DeprecationLevel.WARNING
+)
 object StateConverter {
 
     // ==========================================================================

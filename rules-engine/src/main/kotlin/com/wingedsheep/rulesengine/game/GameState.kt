@@ -12,6 +12,27 @@ import com.wingedsheep.rulesengine.zone.Zone
 import com.wingedsheep.rulesengine.zone.ZoneType
 import kotlinx.serialization.Serializable
 
+/**
+ * Legacy game state representation.
+ *
+ * @deprecated Use EcsGameState instead:
+ * - Entities stored as components, not CardInstance objects
+ * - Zones store EntityId references, not Zone objects
+ * - Players are entities with PlayerComponent
+ * - All game state accessible through EcsGameState methods
+ *
+ * Migration:
+ * - EcsGameState.newGame() to create new games
+ * - EcsActionHandler for action execution
+ * - StateProjector for read queries with layer effects
+ *
+ * @see com.wingedsheep.rulesengine.ecs.EcsGameState
+ * @see com.wingedsheep.rulesengine.ecs.EcsGameEngine
+ */
+@Deprecated(
+    message = "Use EcsGameState instead",
+    replaceWith = ReplaceWith("EcsGameState", "com.wingedsheep.rulesengine.ecs.EcsGameState")
+)
 @Serializable
 data class GameState(
     val players: Map<PlayerId, Player>,
