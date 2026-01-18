@@ -268,6 +268,91 @@ data class CompositeEffect(
 }
 
 // =============================================================================
+// Library Effects
+// =============================================================================
+
+/**
+ * Shuffle a card into its owner's library.
+ * "Shuffle this card into its owner's library"
+ */
+@Serializable
+data class ShuffleIntoLibraryEffect(
+    val target: EffectTarget
+) : Effect {
+    override val description: String = "Shuffle ${target.description} into its owner's library"
+}
+
+/**
+ * Look at the top N cards and choose some to keep.
+ * "Look at the top N cards of your library. Put X of them into your hand and the rest into your graveyard."
+ */
+@Serializable
+data class LookAtTopCardsEffect(
+    val count: Int,
+    val keepCount: Int,
+    val restToGraveyard: Boolean = true
+) : Effect {
+    override val description: String = buildString {
+        append("Look at the top $count cards of your library. ")
+        append("Put $keepCount of them into your hand and the rest into your ")
+        append(if (restToGraveyard) "graveyard" else "library in any order")
+    }
+}
+
+// =============================================================================
+// Combat Effects
+// =============================================================================
+
+/**
+ * All creatures that can block target creature must do so.
+ * "All creatures able to block target creature this turn do so."
+ */
+@Serializable
+data class MustBeBlockedEffect(
+    val target: EffectTarget
+) : Effect {
+    override val description: String = "All creatures able to block ${target.description} this turn do so"
+}
+
+// =============================================================================
+// Keyword Grant Effects
+// =============================================================================
+
+/**
+ * Grant a keyword to a target until end of turn.
+ * "Target creature gains flying until end of turn."
+ */
+@Serializable
+data class GrantKeywordUntilEndOfTurnEffect(
+    val keyword: Keyword,
+    val target: EffectTarget
+) : Effect {
+    override val description: String = "${target.description} gains ${keyword.displayName.lowercase()} until end of turn"
+}
+
+// =============================================================================
+// Mass Destruction Effects
+// =============================================================================
+
+/**
+ * Destroy all lands.
+ * "Destroy all lands."
+ */
+@Serializable
+data object DestroyAllLandsEffect : Effect {
+    override val description: String = "Destroy all lands"
+}
+
+/**
+ * Destroy all creatures.
+ * "Destroy all creatures."
+ */
+@Serializable
+data object DestroyAllCreaturesEffect : Effect {
+    override val description: String = "Destroy all creatures"
+}
+
+// =============================================================================
 // Effect Targets
 // =============================================================================
 

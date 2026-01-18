@@ -20,7 +20,9 @@ data class CardInstance(
     val additionalKeywords: Set<Keyword> = emptySet(),
     val removedKeywords: Set<Keyword> = emptySet(),
     val attachedTo: CardId? = null,
-    val equipCost: ManaCost? = null  // Override equip cost if different from definition
+    val equipCost: ManaCost? = null,  // Override equip cost if different from definition
+    val temporaryKeywords: Set<Keyword> = emptySet(),  // Keywords granted until end of turn
+    val mustBeBlocked: Boolean = false  // Flag for "must be blocked" effects
 ) {
     val name: String get() = definition.name
 
@@ -43,7 +45,7 @@ data class CardInstance(
     val isAttached: Boolean get() = attachedTo != null
 
     val keywords: Set<Keyword>
-        get() = (definition.keywords + additionalKeywords) - removedKeywords
+        get() = (definition.keywords + additionalKeywords + temporaryKeywords) - removedKeywords
 
     val hasLethalDamage: Boolean
         get() = effectiveToughness?.let { it <= 0 } ?: false
@@ -106,6 +108,18 @@ data class CardInstance(
 
     fun detach(): CardInstance =
         copy(attachedTo = null)
+
+    fun addTemporaryKeyword(keyword: Keyword): CardInstance =
+        copy(temporaryKeywords = temporaryKeywords + keyword)
+
+    fun withMustBeBlocked(value: Boolean): CardInstance =
+        copy(mustBeBlocked = value)
+
+    /**
+     * Clear all temporary effects at end of turn.
+     */
+    fun clearTemporaryEffects(): CardInstance =
+        copy(temporaryKeywords = emptySet(), mustBeBlocked = false)
 
     companion object {
         fun create(definition: CardDefinition, ownerId: String): CardInstance =

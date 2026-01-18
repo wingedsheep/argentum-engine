@@ -13,6 +13,13 @@ enum class Keyword(val displayName: String) {
     HORSEMANSHIP("Horsemanship"),
     UNBLOCKABLE("Unblockable"),
 
+    // Landwalk
+    SWAMPWALK("Swampwalk"),
+    FORESTWALK("Forestwalk"),
+    ISLANDWALK("Islandwalk"),
+    MOUNTAINWALK("Mountainwalk"),
+    PLAINSWALK("Plainswalk"),
+
     // Combat modifiers
     FIRST_STRIKE("First strike"),
     DOUBLE_STRIKE("Double strike"),

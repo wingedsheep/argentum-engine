@@ -47,6 +47,13 @@ object EffectExecutor {
             is CreateTokenEffect -> executeCreateToken(state, effect, controllerId, events)
             is CompositeEffect -> executeComposite(state, effect, controllerId, sourceId, targets, events)
             is ConditionalEffect -> executeConditional(state, effect, controllerId, sourceId, targets, events)
+            // Portal card effects
+            is ShuffleIntoLibraryEffect -> executeShuffleIntoLibrary(state, effect, sourceId, events)
+            is LookAtTopCardsEffect -> executeLookAtTopCards(state, effect, controllerId, events)
+            is MustBeBlockedEffect -> executeMustBeBlocked(state, effect, targets)
+            is GrantKeywordUntilEndOfTurnEffect -> executeGrantKeywordUntilEndOfTurn(state, effect, targets)
+            is DestroyAllLandsEffect -> executeDestroyAllLands(state, events)
+            is DestroyAllCreaturesEffect -> executeDestroyAllCreatures(state, events)
         }
     }
 
@@ -398,5 +405,148 @@ object EffectExecutor {
 
     private fun getOpponent(playerId: PlayerId, state: GameState): PlayerId {
         return state.players.keys.first { it != playerId }
+    }
+
+    // =============================================================================
+    // Portal Card Effect Implementations
+    // =============================================================================
+
+    private fun executeShuffleIntoLibrary(
+        state: GameState,
+        effect: ShuffleIntoLibraryEffect,
+        sourceId: CardId,
+        events: MutableList<GameEvent>
+    ): GameState {
+        // For Self target, shuffle the source card into its owner's library
+        return when (effect.target) {
+            is EffectTarget.Self -> {
+                // Find the card - it might be in graveyard after death trigger
+                val location = state.findCard(sourceId)
+                if (location != null && location.zone == ZoneType.GRAVEYARD) {
+                    val ownerId = location.owner ?: return state
+                    events.add(GameEvent.CardMoved(sourceId.value, location.card.name, ZoneType.GRAVEYARD.name, ZoneType.LIBRARY.name))
+                    state.updatePlayer(ownerId) { p ->
+                        val newGraveyard = p.graveyard.remove(sourceId)
+                        val newLibrary = p.library.addToTop(location.card).shuffle()
+                        p.copy(graveyard = newGraveyard, library = newLibrary)
+                    }
+                } else {
+                    state
+                }
+            }
+            else -> state // Other targets not yet implemented
+        }
+    }
+
+    private fun executeLookAtTopCards(
+        state: GameState,
+        effect: LookAtTopCardsEffect,
+        controllerId: PlayerId,
+        events: MutableList<GameEvent>
+    ): GameState {
+        val player = state.getPlayer(controllerId)
+
+        // Take top N cards from library
+        var currentLibrary = player.library
+        val topCards = mutableListOf<CardInstance>()
+
+        repeat(effect.count) {
+            val (card, newLibrary) = currentLibrary.removeTop()
+            if (card != null) {
+                topCards.add(card)
+                currentLibrary = newLibrary
+            }
+        }
+
+        if (topCards.isEmpty()) return state
+
+        // For now, automatically keep the first keepCount cards (would need player choice in real impl)
+        val cardsToHand = topCards.take(effect.keepCount)
+        val cardsToGraveyard = topCards.drop(effect.keepCount)
+
+        var newHand = player.hand
+        for (card in cardsToHand) {
+            events.add(GameEvent.CardDrawn(controllerId.value, card.id.value, card.name))
+            newHand = newHand.addToTop(card)
+        }
+
+        var newGraveyard = player.graveyard
+        for (card in cardsToGraveyard) {
+            events.add(GameEvent.CardMoved(card.id.value, card.name, ZoneType.LIBRARY.name, ZoneType.GRAVEYARD.name))
+            newGraveyard = newGraveyard.addToTop(card)
+        }
+
+        return state.updatePlayer(controllerId) { p ->
+            p.copy(library = currentLibrary, hand = newHand, graveyard = newGraveyard)
+        }
+    }
+
+    private fun executeMustBeBlocked(
+        state: GameState,
+        effect: MustBeBlockedEffect,
+        targets: List<ChosenTarget>
+    ): GameState {
+        val cardTarget = targets.filterIsInstance<ChosenTarget.CardTarget>().firstOrNull()
+            ?: return state
+
+        // Set a flag on the creature that it must be blocked this turn
+        // This would be checked during block declaration
+        return state.updateBattlefield { zone ->
+            zone.updateCard(cardTarget.cardId) { it.withMustBeBlocked(true) }
+        }
+    }
+
+    private fun executeGrantKeywordUntilEndOfTurn(
+        state: GameState,
+        effect: GrantKeywordUntilEndOfTurnEffect,
+        targets: List<ChosenTarget>
+    ): GameState {
+        val cardTarget = targets.filterIsInstance<ChosenTarget.CardTarget>().firstOrNull()
+            ?: return state
+
+        return state.updateBattlefield { zone ->
+            zone.updateCard(cardTarget.cardId) { it.addTemporaryKeyword(effect.keyword) }
+        }
+    }
+
+    private fun executeDestroyAllLands(
+        state: GameState,
+        events: MutableList<GameEvent>
+    ): GameState {
+        var currentState = state
+
+        // Find all lands on the battlefield
+        val lands = state.battlefield.cards.filter { it.isLand }
+
+        for (land in lands) {
+            val ownerId = PlayerId.of(land.ownerId)
+            events.add(GameEvent.CardMoved(land.id.value, land.name, ZoneType.BATTLEFIELD.name, ZoneType.GRAVEYARD.name))
+            currentState = currentState
+                .updateBattlefield { it.remove(land.id) }
+                .updatePlayer(ownerId) { p -> p.updateGraveyard { it.addToTop(land) } }
+        }
+
+        return currentState
+    }
+
+    private fun executeDestroyAllCreatures(
+        state: GameState,
+        events: MutableList<GameEvent>
+    ): GameState {
+        var currentState = state
+
+        // Find all creatures on the battlefield
+        val creatures = state.battlefield.cards.filter { it.isCreature }
+
+        for (creature in creatures) {
+            val ownerId = PlayerId.of(creature.ownerId)
+            events.add(GameEvent.CardMoved(creature.id.value, creature.name, ZoneType.BATTLEFIELD.name, ZoneType.GRAVEYARD.name))
+            events.add(GameEvent.CreatureDied(creature.id.value, creature.name, creature.ownerId))
+            currentState = currentState
+                .updateBattlefield { it.remove(creature.id) }
+                .updatePlayer(ownerId) { p -> p.updateGraveyard { it.addToTop(creature.clearDamage()) } }
+        }
+
+        return currentState
     }
 }

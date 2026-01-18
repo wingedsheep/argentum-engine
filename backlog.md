@@ -357,19 +357,43 @@ Portal is an ideal starting set because it's simplified: limited keywords and st
 ## Phase 13: Portal Set Implementation
 
 ### 13.1 Set Module Structure
-- [ ] Create `sets/portal` module as a self-contained set package
-- [ ] Define `PortalSet` object that registers all cards
-- [ ] `CardRegistry` interface for sets to implement
-- [ ] Sets are loaded via service discovery or explicit registration
+- [x] Create `sets/portal` module as a self-contained set package
+- [x] Define `PortalSet` object that registers all cards
+- [x] `CardRegistry` interface for sets to implement
+- [x] Sets are loaded via service discovery or explicit registration
 
-### 13.2 Card Implementation
-- [ ] Implement all 222 cards from `scryfall-portal.json`
-- [ ] Each card is a Kotlin object implementing `CardScript`
-- [ ] Use LLM to generate initial implementations from Scryfall data
+### 13.2 Card Implementation (First 10 Cards)
+- [x] Alabaster Dragon - 4WW 4/4 Flying with death trigger (shuffle into library)
+- [x] Alluring Scent - 1GG Sorcery (must-be-blocked effect)
+- [x] Anaconda - 3G 3/3 Swampwalk
+- [x] Ancestral Memories - 2UUU Sorcery (look at top 7, keep 2)
+- [x] Angelic Blessing - 2W Sorcery (+3/+3 and flying until EOT)
+- [x] Archangel - 5WW 5/5 Flying, Vigilance
+- [x] Ardent Militia - 4W 2/5 Vigilance
+- [x] Armageddon - 3W Sorcery (destroy all lands)
+- [x] Armored Pegasus - 1W 1/2 Flying
+- [x] Arrogant Vampire - 3BB 4/3 Flying
+
+### 13.3 New Effects Added
+- [x] `ShuffleIntoLibraryEffect` - shuffle card into owner's library
+- [x] `LookAtTopCardsEffect` - look at top N, keep some, rest to graveyard
+- [x] `MustBeBlockedEffect` - all creatures able to block must do so
+- [x] `GrantKeywordUntilEndOfTurnEffect` - grant keyword until EOT
+- [x] `DestroyAllLandsEffect` - Armageddon
+- [x] `DestroyAllCreaturesEffect` - Wrath effect
+
+### 13.4 CardInstance Enhancements
+- [x] `temporaryKeywords` field for until-end-of-turn effects
+- [x] `mustBeBlocked` flag for combat effects
+- [x] `clearTemporaryEffects()` for end-of-turn cleanup
+
+### 13.5 Remaining Card Implementation
+- [ ] Implement remaining 212 cards from `scryfall-portal.json`
+- [ ] Each card uses CardDefinition + CardScript pattern
 - [ ] Validate all cards load and instantiate correctly
 
-### 13.3 Card Scenario Tests
-- [ ] Write focused tests verifying individual card scripts work correctly
+### 13.6 Card Scenario Tests
+- [x] Write tests verifying first 10 card scripts work correctly (22 tests)
 - [ ] Test card-to-card interactions (e.g., creature with ETB trigger, combat with keywords)
 - [ ] Cover edge cases for cards with complex abilities
 
@@ -429,3 +453,33 @@ Portal is an ideal starting set because it's simplified: limited keywords and st
 - Sideboard
 - Best-of-3 match structure
 - Deck construction validation (minimum 60 cards, 4-of limit)
+
+---
+
+## Future: Kernel & Script Architecture
+
+As the engine grows to support complex cards (e.g., *Chains of Mephistopheles*, *Panglacial Wurm*), consider evolving to a "Kernel & Script" architecture:
+
+### Core Concepts
+
+1. **ECS-lite State Model**
+   - Entities: Just unique IDs
+   - Components: Data bags attached to IDs (CardComponent, TappedComponent, MonstrousComponent)
+   - State: `Map<EntityId, ComponentContainer>` for maximum flexibility
+
+2. **Hybrid Logic System**
+   - Standard Effects (Data): Common actions (Damage, Draw, Destroy) as serializable data
+   - Scripted Effects (Code): `RunScript(scriptId)` for complex logic
+
+3. **Modifier-Based Layer System**
+   - Scripts emit Modifiers, engine projects final state via Rule 613
+   - Scripts never modify P/T directly; they return `Modifier(Layer.PT_MOD) { transform }`
+
+4. **Read-Only Query API for Scripts**
+   - `GameQuery` interface exposes `getEntity()`, `find()`, `hasComponent()`
+   - Scripts get full visibility but cannot mutate state directly
+
+### Benefits
+- Simple cards remain JSON/data-only (safe, serializable, easy to edit)
+- Complex cards have `scriptId` pointing to Kotlin code with full engine access
+- Aligns with how MTG Arena and Forge handle complexity scale
