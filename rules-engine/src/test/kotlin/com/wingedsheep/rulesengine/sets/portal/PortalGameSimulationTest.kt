@@ -718,4 +718,222 @@ class PortalGameSimulationTest : FunSpec({
             card?.isSorcery shouldBe true
         }
     }
+
+    context("Action-based gameplay demonstration") {
+        // These tests demonstrate how to use EcsLegalActionCalculator
+        // to determine valid actions and execute them via EcsActionHandler
+
+        val legalActionCalculator = EcsLegalActionCalculator()
+
+        test("Player can see available actions during main phase") {
+            val (initialState, _, _) = setupGame()
+            var state = initialState
+
+            // Setup: Sylas in main phase with a Forest in hand and one on battlefield
+            val (forestInHandId, s1) = state.addCardToHand("Forest", sylasId)
+            val (forestOnBattlefieldId, s2) = s1.addCardToBattlefield("Forest", sylasId)
+            val (jungleLionId, s3) = s2.addCardToHand("Jungle Lion", sylasId)
+            state = s3
+
+            // Set to main phase with Sylas as active player
+            state = state.copy(
+                turnState = state.turnState.copy(
+                    activePlayer = sylasId,
+                    priorityPlayer = sylasId,
+                    step = Step.PRECOMBAT_MAIN,
+                    phase = com.wingedsheep.rulesengine.game.Phase.PRECOMBAT_MAIN
+                )
+            )
+
+            // Get legal actions
+            val actions = legalActionCalculator.calculateLegalActions(state, sylasId)
+
+            // Should be able to:
+            // 1. Pass priority
+            actions.canPassPriority shouldBe true
+
+            // 2. Play the Forest from hand
+            actions.playableLands shouldHaveSize 1
+            actions.playableLands[0].cardId shouldBe forestInHandId
+            actions.playableLands[0].cardName shouldBe "Forest"
+
+            // 3. Activate mana ability on the untapped Forest
+            actions.activatableAbilities shouldHaveSize 1
+            actions.activatableAbilities[0].sourceId shouldBe forestOnBattlefieldId
+            actions.activatableAbilities[0].isManaAbility shouldBe true
+
+            // 4. Cast Jungle Lion (costs 1 mana, have 1 land)
+            actions.castableSpells shouldHaveSize 1
+            actions.castableSpells[0].cardId shouldBe jungleLionId
+            actions.castableSpells[0].cardName shouldBe "Jungle Lion"
+        }
+
+        test("Execute play land action via action handler") {
+            val (initialState, _, _) = setupGame()
+            var state = initialState
+
+            // Setup: Sylas in main phase with a Forest in hand
+            val (forestId, s1) = state.addCardToHand("Forest", sylasId)
+            state = s1
+
+            // Set to main phase
+            state = state.copy(
+                turnState = state.turnState.copy(
+                    activePlayer = sylasId,
+                    priorityPlayer = sylasId,
+                    step = Step.PRECOMBAT_MAIN,
+                    phase = com.wingedsheep.rulesengine.game.Phase.PRECOMBAT_MAIN
+                )
+            )
+
+            // Get legal actions
+            val actions = legalActionCalculator.calculateLegalActions(state, sylasId)
+            actions.playableLands shouldHaveSize 1
+
+            // Execute the play land action
+            val playLandAction = actions.playableLands[0].action
+            val result = actionHandler.execute(state, playLandAction)
+
+            result.shouldBeInstanceOf<EcsActionResult.Success>()
+            val newState = (result as EcsActionResult.Success).state
+
+            // Verify the land is now on battlefield
+            newState.getBattlefield() shouldContain forestId
+            newState.getHand(sylasId).contains(forestId) shouldBe false
+        }
+
+        test("Turn flow with legal actions: play land, tap for mana, cast creature") {
+            val (initialState, _, _) = setupGame()
+            var state = initialState
+
+            // Setup: Sylas has Forest in hand and Jungle Lion in hand
+            val (forestId, s1) = state.addCardToHand("Forest", sylasId)
+            val (jungleLionId, s2) = s1.addCardToHand("Jungle Lion", sylasId)
+            state = s2
+
+            // Set to main phase
+            state = state.copy(
+                turnState = state.turnState.copy(
+                    activePlayer = sylasId,
+                    priorityPlayer = sylasId,
+                    step = Step.PRECOMBAT_MAIN,
+                    phase = com.wingedsheep.rulesengine.game.Phase.PRECOMBAT_MAIN
+                )
+            )
+
+            // Step 1: Play land using action from legal actions
+            var actions = legalActionCalculator.calculateLegalActions(state, sylasId)
+            val playLandAction = actions.playableLands.first().action
+            var result = actionHandler.execute(state, playLandAction)
+            result.shouldBeInstanceOf<EcsActionResult.Success>()
+            state = (result as EcsActionResult.Success).state
+
+            // Verify land is on battlefield
+            state.getBattlefield() shouldContain forestId
+
+            // Step 2: Activate mana ability (tap forest for mana)
+            // Basic lands now have implicit mana abilities that the action handler recognizes
+            actions = legalActionCalculator.calculateLegalActions(state, sylasId)
+            val manaAbility = actions.activatableAbilities.first { it.isManaAbility }
+            result = actionHandler.execute(state, manaAbility.action)
+            result.shouldBeInstanceOf<EcsActionResult.Success>()
+            state = (result as EcsActionResult.Success).state
+
+            // Verify forest is tapped and mana is in pool
+            state.hasComponent<TappedComponent>(forestId) shouldBe true
+            val manaPool = state.getComponent<ManaPoolComponent>(sylasId)
+            manaPool?.pool?.green shouldBe 1
+
+            // Step 3: Cast Jungle Lion
+            val castAction = EcsCastSpell(
+                cardId = jungleLionId,
+                casterId = sylasId,
+                fromZone = ZoneId(ZoneType.HAND, sylasId)
+            )
+            result = actionHandler.execute(state, castAction)
+
+            // Cast spell puts it on the stack
+            result.shouldBeInstanceOf<EcsActionResult.Success>()
+            state = (result as EcsActionResult.Success).state
+            state.getStack() shouldContain jungleLionId
+        }
+
+        test("Attacker declaration with legal actions") {
+            val (initialState, _, _) = setupGame()
+            var state = initialState
+
+            // Setup: Sylas has a Jungle Lion without summoning sickness
+            val (jungleLionId, s1) = state.addCardToBattlefield("Jungle Lion", sylasId, hasSummoningSickness = false)
+            state = s1
+
+            // Set to declare attackers step
+            state = state.startCombat(defendingPlayerId = elaraId)
+            state = state.copy(
+                turnState = state.turnState.copy(
+                    activePlayer = sylasId,
+                    priorityPlayer = sylasId,
+                    step = Step.DECLARE_ATTACKERS,
+                    phase = com.wingedsheep.rulesengine.game.Phase.COMBAT
+                )
+            )
+
+            // Get legal actions
+            val actions = legalActionCalculator.calculateLegalActions(state, sylasId)
+
+            // Should be able to declare Jungle Lion as attacker
+            actions.declarableAttackers shouldHaveSize 1
+            actions.declarableAttackers[0].creatureId shouldBe jungleLionId
+            actions.declarableAttackers[0].power shouldBe 2
+            actions.declarableAttackers[0].toughness shouldBe 1
+
+            // Execute the declare attacker action
+            val declareAttackerAction = actions.declarableAttackers[0].action
+            val result = actionHandler.execute(state, declareAttackerAction)
+
+            result.shouldBeInstanceOf<EcsActionResult.Success>()
+            state = (result as EcsActionResult.Success).state
+
+            // Verify Jungle Lion is now attacking
+            state.hasComponent<AttackingComponent>(jungleLionId) shouldBe true
+        }
+
+        test("Blocker cannot be Jungle Lion due to cantBlock") {
+            val (initialState, modifierProvider, _) = setupGame()
+            var state = initialState
+
+            // Setup: Elara attacks with Grizzly Bears, Sylas has Jungle Lion
+            val (attackerId, s1) = state.addCardToBattlefield("Grizzly Bears", elaraId, hasSummoningSickness = false)
+            val (jungleLionId, s2) = s1.addCardToBattlefield("Jungle Lion", sylasId, hasSummoningSickness = false)
+            state = s2
+
+            // Set to declare blockers step with Sylas defending
+            state = state.startCombat(defendingPlayerId = sylasId)
+            state = state.copy(
+                turnState = state.turnState.copy(
+                    activePlayer = elaraId,
+                    priorityPlayer = sylasId,
+                    step = Step.DECLARE_BLOCKERS,
+                    phase = com.wingedsheep.rulesengine.game.Phase.COMBAT
+                )
+            )
+            // Mark attacker
+            state = state.updateEntity(attackerId) { it.with(AttackingComponent.attackingPlayer(sylasId)) }
+
+            // Get legal actions for Sylas
+            val actions = legalActionCalculator.calculateLegalActions(state, sylasId)
+
+            // Jungle Lion should NOT be able to block (cantBlock)
+            // Note: The EcsLegalActionCalculator currently doesn't check cantBlock keyword,
+            // but the combat validator does. Let's verify via combat validation.
+            val validationResult = com.wingedsheep.rulesengine.ecs.combat.EcsCombatValidator.canDeclareBlocker(
+                state = state,
+                blockerId = jungleLionId,
+                attackerId = attackerId,
+                playerId = sylasId,
+                modifierProvider = modifierProvider
+            )
+
+            validationResult.shouldBeInstanceOf<com.wingedsheep.rulesengine.ecs.combat.EcsCombatValidator.BlockValidationResult.Invalid>()
+        }
+    }
 })

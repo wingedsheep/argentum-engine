@@ -1,10 +1,14 @@
 package com.wingedsheep.rulesengine.ecs.action
 
 import com.wingedsheep.rulesengine.ability.AbilityCost
+import com.wingedsheep.rulesengine.ability.AbilityId
+import com.wingedsheep.rulesengine.ability.ActivatedAbility
 import com.wingedsheep.rulesengine.ability.AddColorlessManaEffect
 import com.wingedsheep.rulesengine.ability.AddManaEffect
+import com.wingedsheep.rulesengine.ability.TimingRestriction
 import com.wingedsheep.rulesengine.card.CounterType
 import com.wingedsheep.rulesengine.core.Keyword
+import com.wingedsheep.rulesengine.ecs.ComponentContainer
 import com.wingedsheep.rulesengine.ecs.EcsGameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
@@ -315,27 +319,74 @@ class EcsActionHandler {
             throw IllegalStateException("Player does not control this permanent")
         }
 
-        // Get the abilities component
-        val abilities = container.get<AbilitiesComponent>()
-            ?: throw IllegalStateException("Source has no abilities")
-
-        // Get the specific mana ability
-        val ability = abilities.getManaAbility(action.abilityIndex)
+        // Get the ability - either from AbilitiesComponent or infer from basic lands
+        val ability = getActivatableManaAbility(container, action.abilityIndex)
             ?: throw IllegalStateException("Mana ability not found at index ${action.abilityIndex}")
-
-        if (!ability.isManaAbility) {
-            throw IllegalStateException("Ability at index ${action.abilityIndex} is not a mana ability")
-        }
 
         var currentState = state
 
-        // Pay the cost
+        // Pay the cost (tap for basic lands)
         currentState = payAbilityCost(currentState, sourceId, ability.cost, action.playerId, events)
 
         // Execute the effect (add mana)
         currentState = executeManaEffect(currentState, action.playerId, ability.effect, events)
 
         return currentState
+    }
+
+    /**
+     * Get a mana ability from an entity, either from AbilitiesComponent or inferred from basic land types.
+     */
+    private fun getActivatableManaAbility(
+        container: ComponentContainer,
+        index: Int
+    ): ActivatedAbility? {
+        // First, check if the entity has explicit abilities defined
+        val abilities = container.get<AbilitiesComponent>()
+        if (abilities != null) {
+            return abilities.getManaAbility(index)
+        }
+
+        // If no AbilitiesComponent, check if it's a basic land and infer the mana ability
+        val cardComponent = container.get<CardComponent>() ?: return null
+        val def = cardComponent.definition
+
+        // Only handle basic lands with implicit mana abilities
+        if (!def.isLand) return null
+        val subtypes = def.typeLine.subtypes
+
+        // For index 0, return the basic land's mana ability based on its subtype
+        if (index == 0) {
+            // Match basic land types to their mana colors
+            return when {
+                subtypes.any { it.value.equals("Plains", ignoreCase = true) } ->
+                    createBasicLandManaAbility(com.wingedsheep.rulesengine.core.Color.WHITE)
+                subtypes.any { it.value.equals("Island", ignoreCase = true) } ->
+                    createBasicLandManaAbility(com.wingedsheep.rulesengine.core.Color.BLUE)
+                subtypes.any { it.value.equals("Swamp", ignoreCase = true) } ->
+                    createBasicLandManaAbility(com.wingedsheep.rulesengine.core.Color.BLACK)
+                subtypes.any { it.value.equals("Mountain", ignoreCase = true) } ->
+                    createBasicLandManaAbility(com.wingedsheep.rulesengine.core.Color.RED)
+                subtypes.any { it.value.equals("Forest", ignoreCase = true) } ->
+                    createBasicLandManaAbility(com.wingedsheep.rulesengine.core.Color.GREEN)
+                else -> null
+            }
+        }
+
+        return null
+    }
+
+    /**
+     * Create a basic land mana ability (tap: add one mana of the specified color).
+     */
+    private fun createBasicLandManaAbility(color: com.wingedsheep.rulesengine.core.Color): ActivatedAbility {
+        return ActivatedAbility(
+            id = AbilityId.generate(),
+            cost = AbilityCost.Tap,
+            effect = AddManaEffect(color, 1),
+            timingRestriction = TimingRestriction.INSTANT,
+            isManaAbility = true
+        )
     }
 
     /**
