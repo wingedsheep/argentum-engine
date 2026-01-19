@@ -4,6 +4,9 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 enum class Keyword(val displayName: String) {
+    // Class/Type keywords
+    CHANGELING("Changeling"),
+
     // Evasion
     FLYING("Flying"),
     MENACE("Menace"),

@@ -1,11 +1,19 @@
 package com.wingedsheep.rulesengine.ecs.layers
 
 import com.wingedsheep.rulesengine.core.CardType
+import com.wingedsheep.rulesengine.core.Keyword
+import com.wingedsheep.rulesengine.core.Subtype
 import com.wingedsheep.rulesengine.ecs.ComponentContainer
-import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.ZoneId
-import com.wingedsheep.rulesengine.ecs.components.*
+import com.wingedsheep.rulesengine.ecs.components.AttachedToComponent
+import com.wingedsheep.rulesengine.ecs.components.CardComponent
+import com.wingedsheep.rulesengine.ecs.components.ControllerComponent
+import com.wingedsheep.rulesengine.ecs.components.CountersComponent
+import com.wingedsheep.rulesengine.ecs.components.DamageComponent
+import com.wingedsheep.rulesengine.ecs.components.SummoningSicknessComponent
+import com.wingedsheep.rulesengine.ecs.components.TappedComponent
 
 /**
  * Projects the game state by applying all modifiers in layer order.
@@ -19,14 +27,6 @@ import com.wingedsheep.rulesengine.ecs.components.*
  * - Modifiers are collected from all sources (static abilities, auras, etc.)
  * - Modifiers are applied in layer order, then by timestamp within each layer
  * - The result is a "view" of the game state for rules purposes
- *
- * Example usage:
- * ```kotlin
- * val projector = StateProjector(state, modifiers)
- * val battlefield = projector.projectBattlefield()
- * val bear = projector.getView(bearEntityId)
- * println("Bear P/T: ${bear.power}/${bear.toughness}")
- * ```
  */
 class StateProjector(
     private val state: GameState,
@@ -175,11 +175,17 @@ class StateProjector(
 
     /**
      * Check if an entity matches the given criteria.
+     * Checks if the entity has the CHANGELING keyword when evaluating subtype criteria.
      */
     private fun matchesCriteria(entityId: EntityId, criteria: EntityCriteria): Boolean {
+        // We use the base definition to avoid recursion during projection.
         val container = state.getEntity(entityId) ?: return false
         val cardComponent = container.get<CardComponent>() ?: return false
         val definition = cardComponent.definition
+
+        val hasKeywordInDefinition = { kw: Keyword ->
+            definition.keywords.contains(kw)
+        }
 
         return when (criteria) {
             is EntityCriteria.Creatures -> definition.isCreature
@@ -188,7 +194,19 @@ class StateProjector(
             is EntityCriteria.Enchantments -> definition.typeLine.isEnchantment
             is EntityCriteria.Permanents -> definition.isPermanent
             is EntityCriteria.WithKeyword -> definition.keywords.contains(criteria.keyword)
-            is EntityCriteria.WithSubtype -> definition.typeLine.subtypes.contains(criteria.subtype)
+
+            is EntityCriteria.WithSubtype -> {
+                // Rule 702.73: Changeling (This object is every creature type.)
+                // If it's a creature and has changeling, it matches ALL subtypes.
+                val isChangeling = hasKeywordInDefinition(Keyword.CHANGELING)
+
+                if (definition.isCreature && isChangeling) {
+                    true
+                } else {
+                    definition.typeLine.subtypes.contains(criteria.subtype)
+                }
+            }
+
             is EntityCriteria.WithColor -> definition.manaCost.colors.contains(criteria.color)
             is EntityCriteria.And -> criteria.criteria.all { matchesCriteria(entityId, it) }
             is EntityCriteria.Or -> criteria.criteria.any { matchesCriteria(entityId, it) }
@@ -238,10 +256,19 @@ class StateProjector(
                 builder.subtypes.add(modification.subtype)
             }
             is Modification.RemoveSubtype -> {
-                builder.subtypes.remove(modification.subtype)
+                // Cannot remove a subtype if the object has Changeling and is a creature.
+                // Rule 702.73a: Changeling grants all creature types.
+                if (builder.keywords.contains(Keyword.CHANGELING) && builder.types.contains(CardType.CREATURE)) {
+                    // Implicitly keeps all subtypes.
+                } else {
+                    builder.subtypes.remove(modification.subtype)
+                }
             }
             is Modification.SetSubtypes -> {
-                builder.subtypes.clear()
+                // If it has Changeling, setting subtypes doesn't wipe "all creature types".
+                if (!builder.keywords.contains(Keyword.CHANGELING)) {
+                    builder.subtypes.clear()
+                }
                 builder.subtypes.addAll(modification.subtypes)
             }
 

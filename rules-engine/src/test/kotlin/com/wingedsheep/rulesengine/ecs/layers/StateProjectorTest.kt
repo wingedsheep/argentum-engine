@@ -445,4 +445,66 @@ class StateProjectorTest : FunSpec({
             view.canBlock.shouldBeFalse()
         }
     }
+
+    context("Changeling logic") {
+        test("Changeling entity matches specific subtype filter") {
+            // Setup: Create a creature with CHANGELING keyword but NOT the target subtype
+            val changelingDef = CardDefinition.creature(
+                name = "Changeling Hero",
+                manaCost = ManaCost.parse("{G}"),
+                subtypes = setOf(Subtype.of("Shapeshifter")), // Explicitly only Shapeshifter
+                power = 2,
+                toughness = 2,
+                keywords = setOf(Keyword.CHANGELING)
+            )
+
+            var state = newGame()
+            val (changelingId, state2) = state.createEntity(
+                EntityId.generate(),
+                CardComponent(changelingDef, player1Id),
+                ControllerComponent(player1Id)
+            )
+            val state3 = state2.addToZone(changelingId, ZoneId.BATTLEFIELD)
+
+            // Setup: Create a modifier that affects "Elves" only
+            val elfLordModifier = Modifier(
+                layer = Layer.PT_MODIFY,
+                sourceId = EntityId.of("elf_lord"),
+                timestamp = Modifier.nextTimestamp(),
+                modification = Modification.ModifyPT(1, 1),
+                filter = ModifierFilter.All(EntityCriteria.WithSubtype(Subtype.ELF))
+            )
+
+            // Action: Project
+            val projector = StateProjector(state3, listOf(elfLordModifier))
+            val view = projector.getView(changelingId)
+
+            // Assert: Should have +1/+1 because Changeling implies it is an Elf
+            view.shouldNotBeNull()
+            view.power shouldBe 3
+            view.toughness shouldBe 3
+        }
+
+        test("Non-Changeling entity respects subtype filter") {
+            // Setup: Standard Bear (Beast)
+            val (bearId, state) = newGame().addBear()
+
+            // Setup: Modifier affecting Elves
+            val elfLordModifier = Modifier(
+                layer = Layer.PT_MODIFY,
+                sourceId = EntityId.of("elf_lord"),
+                timestamp = Modifier.nextTimestamp(),
+                modification = Modification.ModifyPT(1, 1),
+                filter = ModifierFilter.All(EntityCriteria.WithSubtype(Subtype.ELF))
+            )
+
+            val projector = StateProjector(state, listOf(elfLordModifier))
+            val view = projector.getView(bearId)
+
+            // Assert: Bear is a Beast, not an Elf, so no buff
+            view.shouldNotBeNull()
+            view.power shouldBe 2
+            view.toughness shouldBe 2
+        }
+    }
 })

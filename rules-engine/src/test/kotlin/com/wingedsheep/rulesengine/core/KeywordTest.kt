@@ -16,6 +16,7 @@ class KeywordTest : FunSpec({
             Keyword.fromString("Reach") shouldBe Keyword.REACH
             Keyword.fromString("Deathtouch") shouldBe Keyword.DEATHTOUCH
             Keyword.fromString("Lifelink") shouldBe Keyword.LIFELINK
+            Keyword.fromString("Changeling") shouldBe Keyword.CHANGELING
         }
 
         test("parses multi-word keywords") {
@@ -27,6 +28,7 @@ class KeywordTest : FunSpec({
             Keyword.fromString("flying") shouldBe Keyword.FLYING
             Keyword.fromString("FLYING") shouldBe Keyword.FLYING
             Keyword.fromString("Flying") shouldBe Keyword.FLYING
+            Keyword.fromString("changeling") shouldBe Keyword.CHANGELING
         }
 
         test("returns null for unknown keyword") {
@@ -41,6 +43,11 @@ class KeywordTest : FunSpec({
             keywords shouldBe setOf(Keyword.FLYING)
         }
 
+        test("parses changeling keyword") {
+            val keywords = Keyword.parseFromOracleText("Changeling")
+            keywords shouldBe setOf(Keyword.CHANGELING)
+        }
+
         test("parses multiple keywords on separate lines") {
             val oracleText = """
                 Flying
@@ -51,8 +58,8 @@ class KeywordTest : FunSpec({
         }
 
         test("parses comma-separated keywords") {
-            val keywords = Keyword.parseFromOracleText("Flying, trample")
-            keywords shouldContainExactlyInAnyOrder listOf(Keyword.FLYING, Keyword.TRAMPLE)
+            val keywords = Keyword.parseFromOracleText("Flying, trample, changeling")
+            keywords shouldContainExactlyInAnyOrder listOf(Keyword.FLYING, Keyword.TRAMPLE, Keyword.CHANGELING)
         }
 
         test("ignores non-keyword text") {
@@ -76,6 +83,7 @@ class KeywordTest : FunSpec({
             Keyword.FIRST_STRIKE.displayName shouldBe "First strike"
             Keyword.DOUBLE_STRIKE.displayName shouldBe "Double strike"
             Keyword.DEATHTOUCH.displayName shouldBe "Deathtouch"
+            Keyword.CHANGELING.displayName shouldBe "Changeling"
         }
     }
 })
