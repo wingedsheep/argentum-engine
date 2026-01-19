@@ -164,6 +164,24 @@ class CardScriptBuilder(private val cardName: String) {
         )
     }
 
+    /**
+     * Add a planeswalker loyalty ability.
+     * @param loyaltyCost Positive for +X abilities, negative for -X abilities
+     * @param effect The effect of the ability
+     */
+    fun planeswalkerAbility(loyaltyCost: Int, effect: Effect) = apply {
+        activatedAbilities.add(
+            ActivatedAbility(
+                id = AbilityId.generate(),
+                cost = AbilityCost.Loyalty(loyaltyCost),
+                effect = effect,
+                timingRestriction = TimingRestriction.SORCERY,  // Planeswalker abilities are sorcery speed
+                isManaAbility = false,
+                isPlaneswalkerAbility = true
+            )
+        )
+    }
+
     fun staticAbility(ability: StaticAbility) = apply {
         staticAbilities.add(ability)
     }

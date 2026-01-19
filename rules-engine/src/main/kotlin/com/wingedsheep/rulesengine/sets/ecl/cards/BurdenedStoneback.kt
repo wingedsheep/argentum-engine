@@ -8,6 +8,8 @@ import com.wingedsheep.rulesengine.ability.OnEnterBattlefield
 import com.wingedsheep.rulesengine.ability.TimingRestriction
 import com.wingedsheep.rulesengine.ability.cardScript
 import com.wingedsheep.rulesengine.card.CardDefinition
+import com.wingedsheep.rulesengine.card.Rarity
+import com.wingedsheep.rulesengine.card.ScryfallMetadata
 import com.wingedsheep.rulesengine.core.Keyword
 import com.wingedsheep.rulesengine.core.ManaCost
 import com.wingedsheep.rulesengine.core.Subtype
@@ -21,7 +23,15 @@ object BurdenedStoneback {
         toughness = 4,
         oracleText = "This creature enters with two -1/-1 counters on it.\n" +
                 "{1}{W}, Remove a counter from this creature: Target creature gains indestructible until end of turn. " +
-                "Activate only as a sorcery."
+                "Activate only as a sorcery.",
+        metadata = ScryfallMetadata(
+            collectorNumber = "8",
+            rarity = Rarity.UNCOMMON,
+            artist = "Carl Critchlow",
+            imageUri = "https://cards.scryfall.io/normal/front/3/2/3278b8d0-3d2b-4d3d-bbf1-fd9b714b53ed.jpg",
+            scryfallId = "3278b8d0-3d2b-4d3d-bbf1-fd9b714b53ed",
+            releaseDate = "2026-01-23"
+        )
     )
 
     val script = cardScript("Burdened Stoneback") {

@@ -11,6 +11,8 @@ import com.wingedsheep.rulesengine.ability.OnTransform
 import com.wingedsheep.rulesengine.ability.TransformEffect
 import com.wingedsheep.rulesengine.ability.cardScript
 import com.wingedsheep.rulesengine.card.CardDefinition
+import com.wingedsheep.rulesengine.card.Rarity
+import com.wingedsheep.rulesengine.card.ScryfallMetadata
 import com.wingedsheep.rulesengine.core.Color
 import com.wingedsheep.rulesengine.core.ManaCost
 import com.wingedsheep.rulesengine.core.Subtype
@@ -58,7 +60,15 @@ object BrigidClachansHeart {
         oracleText = "When this creature enters or transforms into Brigid, Clachan's Heart, " +
                 "create a 1/1 green and white Kithkin creature token.\n" +
                 "At the beginning of your first main phase, you may pay {G}. " +
-                "If you do, transform this creature."
+                "If you do, transform this creature.",
+        metadata = ScryfallMetadata(
+            collectorNumber = "7",
+            rarity = Rarity.RARE,
+            artist = "Zoltan Boros",
+            imageUri = "https://cards.scryfall.io/normal/front/c/b/cb7d5bbb-4f68-4e38-8bb0-a95af21b24c8.jpg",
+            scryfallId = "cb7d5bbb-4f68-4e38-8bb0-a95af21b24c8",
+            releaseDate = "2026-01-23"
+        )
     )
 
     // Combined double-faced card definition

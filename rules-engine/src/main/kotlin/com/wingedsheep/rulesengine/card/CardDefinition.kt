@@ -3,6 +3,34 @@ package com.wingedsheep.rulesengine.card
 import com.wingedsheep.rulesengine.core.*
 import kotlinx.serialization.Serializable
 
+/**
+ * Metadata from Scryfall for web client features like booster drafts.
+ * Contains information useful for display, pricing, and card organization.
+ */
+@Serializable
+data class ScryfallMetadata(
+    val collectorNumber: String? = null,
+    val rarity: Rarity = Rarity.COMMON,
+    val artist: String? = null,
+    val flavorText: String? = null,
+    val imageUri: String? = null,
+    val scryfallId: String? = null,
+    val releaseDate: String? = null
+)
+
+/**
+ * Card rarity levels.
+ */
+@Serializable
+enum class Rarity {
+    COMMON,
+    UNCOMMON,
+    RARE,
+    MYTHIC,
+    SPECIAL,
+    BONUS
+}
+
 @Serializable
 data class CardDefinition(
     val name: String,
@@ -14,7 +42,9 @@ data class CardDefinition(
     val equipCost: ManaCost? = null,  // For Equipment cards
     val oracleId: String? = null,
     val setCode: String? = null,
-    val backFace: CardDefinition? = null  // For double-faced cards
+    val backFace: CardDefinition? = null,  // For double-faced cards
+    val metadata: ScryfallMetadata = ScryfallMetadata(),  // Scryfall metadata for web client
+    val startingLoyalty: Int? = null  // For planeswalkers
 ) {
     init {
         if (typeLine.isCreature) {
@@ -44,6 +74,7 @@ data class CardDefinition(
     val isEquipment: Boolean get() = typeLine.isEquipment
     val isPermanent: Boolean get() = typeLine.isPermanent
     val isDoubleFaced: Boolean get() = backFace != null
+    val isPlaneswalker: Boolean get() = CardType.PLANESWALKER in typeLine.cardTypes
 
     fun hasKeyword(keyword: Keyword): Boolean = keyword in keywords
 
@@ -74,7 +105,8 @@ data class CardDefinition(
             toughness: Int,
             oracleText: String = "",
             keywords: Set<Keyword> = emptySet(),
-            supertypes: Set<Supertype> = emptySet()
+            supertypes: Set<Supertype> = emptySet(),
+            metadata: ScryfallMetadata = ScryfallMetadata()
         ): CardDefinition = CardDefinition(
             name = name,
             manaCost = manaCost,
@@ -85,7 +117,8 @@ data class CardDefinition(
             ),
             oracleText = oracleText,
             creatureStats = CreatureStats(power, toughness),
-            keywords = keywords
+            keywords = keywords,
+            metadata = metadata
         )
 
         fun sorcery(
@@ -174,7 +207,8 @@ data class CardDefinition(
             manaCost: ManaCost,
             equipCost: ManaCost,
             oracleText: String = "",
-            supertypes: Set<Supertype> = emptySet()
+            supertypes: Set<Supertype> = emptySet(),
+            metadata: ScryfallMetadata = ScryfallMetadata()
         ): CardDefinition = CardDefinition(
             name = name,
             manaCost = manaCost,
@@ -184,7 +218,8 @@ data class CardDefinition(
                 subtypes = setOf(Subtype.EQUIPMENT)
             ),
             oracleText = oracleText,
-            equipCost = equipCost
+            equipCost = equipCost,
+            metadata = metadata
         )
 
         fun artifactCreature(
@@ -222,5 +257,54 @@ data class CardDefinition(
             require(backFace.isCreature) { "Back face must be a creature" }
             return frontFace.copy(backFace = backFace)
         }
+
+        /**
+         * Creates a planeswalker card.
+         * @param name Card name
+         * @param manaCost Mana cost
+         * @param subtypes Planeswalker subtypes (e.g., Ajani, Jace)
+         * @param startingLoyalty Starting loyalty counters
+         * @param oracleText Oracle text describing abilities
+         * @param supertypes Supertypes (typically Legendary)
+         * @param metadata Scryfall metadata
+         */
+        fun planeswalker(
+            name: String,
+            manaCost: ManaCost,
+            subtypes: Set<Subtype>,
+            startingLoyalty: Int,
+            oracleText: String = "",
+            supertypes: Set<Supertype> = setOf(Supertype.LEGENDARY),
+            metadata: ScryfallMetadata = ScryfallMetadata()
+        ): CardDefinition = CardDefinition(
+            name = name,
+            manaCost = manaCost,
+            typeLine = TypeLine(
+                supertypes = supertypes,
+                cardTypes = setOf(CardType.PLANESWALKER),
+                subtypes = subtypes
+            ),
+            oracleText = oracleText,
+            startingLoyalty = startingLoyalty,
+            metadata = metadata
+        )
+
+        /**
+         * Creates an instant card with metadata.
+         */
+        fun instant(
+            name: String,
+            manaCost: ManaCost,
+            oracleText: String,
+            keywords: Set<Keyword> = emptySet(),
+            metadata: ScryfallMetadata = ScryfallMetadata()
+        ): CardDefinition = CardDefinition(
+            name = name,
+            manaCost = manaCost,
+            typeLine = TypeLine.instant(),
+            oracleText = oracleText,
+            keywords = keywords,
+            metadata = metadata
+        )
     }
 }

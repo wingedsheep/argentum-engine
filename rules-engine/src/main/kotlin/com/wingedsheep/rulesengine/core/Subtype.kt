@@ -75,6 +75,14 @@ value class Subtype(val value: String) {
         // Artifact subtypes
         val EQUIPMENT = Subtype("Equipment")
 
+        // Planeswalker subtypes
+        val AJANI = Subtype("Ajani")
+        val JACE = Subtype("Jace")
+        val LILIANA = Subtype("Liliana")
+        val CHANDRA = Subtype("Chandra")
+        val GARRUK = Subtype("Garruk")
+        val NISSA = Subtype("Nissa")
+
         fun of(value: String): Subtype = Subtype(value)
     }
 }

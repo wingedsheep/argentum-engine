@@ -6,6 +6,8 @@ import com.wingedsheep.rulesengine.ability.SearchDestination
 import com.wingedsheep.rulesengine.ability.SearchLibraryEffect
 import com.wingedsheep.rulesengine.ability.cardScript
 import com.wingedsheep.rulesengine.card.CardDefinition
+import com.wingedsheep.rulesengine.card.Rarity
+import com.wingedsheep.rulesengine.card.ScryfallMetadata
 import com.wingedsheep.rulesengine.core.Keyword
 import com.wingedsheep.rulesengine.core.ManaCost
 import com.wingedsheep.rulesengine.core.Subtype
@@ -19,7 +21,16 @@ object ChangelingWayfinder {
         toughness = 2,
         keywords = setOf(Keyword.CHANGELING),
         oracleText = "Changeling (This card is every creature type.)\n" +
-                "When Changeling Wayfinder enters the battlefield, you may search your library for a basic land card, reveal it, put it into your hand, then shuffle."
+                "When Changeling Wayfinder enters the battlefield, you may search your library for a basic land card, reveal it, put it into your hand, then shuffle.",
+        metadata = ScryfallMetadata(
+            collectorNumber = "1",
+            rarity = Rarity.COMMON,
+            artist = "Quintin Gleim",
+            flavorText = "\"No map. No complaints.\"",
+            imageUri = "https://cards.scryfall.io/normal/front/6/c/6c6061aa-a4da-4115-85b6-d0aa22f2386c.jpg",
+            scryfallId = "6c6061aa-a4da-4115-85b6-d0aa22f2386c",
+            releaseDate = "2026-01-23"
+        )
     )
 
     val script = cardScript("Changeling Wayfinder") {

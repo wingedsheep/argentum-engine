@@ -117,7 +117,8 @@ data class ActivatedAbility(
     val cost: AbilityCost,
     val effect: Effect,
     val timingRestriction: TimingRestriction = TimingRestriction.INSTANT,
-    val isManaAbility: Boolean = false
+    val isManaAbility: Boolean = false,
+    val isPlaneswalkerAbility: Boolean = false
 )
 
 /**
@@ -139,6 +140,8 @@ sealed interface AbilityCost {
     data class Discard(val count: Int) : AbilityCost
     @kotlinx.serialization.Serializable
     data class RemoveCounter(val counterType: String, val count: Int = 1) : AbilityCost
+    @kotlinx.serialization.Serializable
+    data class Loyalty(val amount: Int) : AbilityCost  // Positive for +X, negative for -X
 }
 
 /**

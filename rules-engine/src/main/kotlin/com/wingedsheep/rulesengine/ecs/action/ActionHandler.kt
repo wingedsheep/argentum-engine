@@ -471,6 +471,35 @@ class GameActionHandler {
                     c.with(counters.remove(counterTypeToRemove, cost.count))
                 }
             }
+            is AbilityCost.Loyalty -> {
+                // Add or remove loyalty counters from the planeswalker
+                val container = state.getEntity(sourceId)!!
+                val counters = container.get<CountersComponent>() ?: CountersComponent.EMPTY
+                val currentLoyalty = counters.getCount(CounterType.LOYALTY)
+
+                // For negative costs, check if we have enough loyalty
+                if (cost.amount < 0 && currentLoyalty < -cost.amount) {
+                    throw IllegalStateException("Not enough loyalty counters (have $currentLoyalty, need ${-cost.amount})")
+                }
+
+                val cardName = container.get<CardComponent>()?.name ?: "Unknown"
+                val newLoyalty = currentLoyalty + cost.amount
+
+                if (cost.amount > 0) {
+                    events.add(GameActionEvent.CounterAdded(sourceId, cardName, "LOYALTY", cost.amount))
+                } else {
+                    events.add(GameActionEvent.CounterRemoved(sourceId, cardName, "LOYALTY", -cost.amount))
+                }
+
+                state.updateEntity(sourceId) { c ->
+                    val newCounters = if (cost.amount > 0) {
+                        counters.add(CounterType.LOYALTY, cost.amount)
+                    } else {
+                        counters.remove(CounterType.LOYALTY, -cost.amount)
+                    }
+                    c.with(newCounters)
+                }
+            }
         }
     }
 

@@ -46,7 +46,8 @@ enum class Keyword(val displayName: String) {
 
     // Lorwyn Eclipsed Keywords
     CHANGELING("Changeling"),
-    PROWESS("Prowess");
+    PROWESS("Prowess"),
+    CONVOKE("Convoke");
 
     companion object {
         fun fromString(value: String): Keyword? =

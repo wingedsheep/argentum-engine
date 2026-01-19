@@ -5,6 +5,8 @@ import com.wingedsheep.rulesengine.ability.EffectTarget
 import com.wingedsheep.rulesengine.ability.GrantKeywordUntilEndOfTurnEffect
 import com.wingedsheep.rulesengine.ability.cardScript
 import com.wingedsheep.rulesengine.card.CardDefinition
+import com.wingedsheep.rulesengine.card.Rarity
+import com.wingedsheep.rulesengine.card.ScryfallMetadata
 import com.wingedsheep.rulesengine.core.Keyword
 import com.wingedsheep.rulesengine.core.ManaCost
 import com.wingedsheep.rulesengine.core.Subtype
@@ -18,7 +20,16 @@ object AdeptWatershaper {
         toughness = 1,
         keywords = setOf(Keyword.PROWESS),
         oracleText = "Prowess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)\n" +
-                "{2}{U}: Target creature gains flying until end of turn."
+                "{2}{U}: Target creature gains flying until end of turn.",
+        metadata = ScryfallMetadata(
+            collectorNumber = "3",
+            rarity = Rarity.RARE,
+            artist = "Pauline Voss",
+            flavorText = "\"If even the simplest land-dweller can divert the river with no more than a shovel, just imagine what I can do.\"",
+            imageUri = "https://cards.scryfall.io/normal/front/6/e/6e53f246-8347-4632-9d5b-4aeb12f7b762.jpg",
+            scryfallId = "6e53f246-8347-4632-9d5b-4aeb12f7b762",
+            releaseDate = "2026-01-23"
+        )
     )
 
     val script = cardScript("Adept Watershaper") {
