@@ -19,7 +19,12 @@ import com.wingedsheep.rulesengine.sets.ecl.cards.KeepOut
 import com.wingedsheep.rulesengine.sets.ecl.cards.Kinbinding
 import com.wingedsheep.rulesengine.sets.ecl.cards.KinscaerSentry
 import com.wingedsheep.rulesengine.sets.ecl.cards.LiminalHold
+import com.wingedsheep.rulesengine.sets.ecl.cards.RiverguardsReflexes
 import com.wingedsheep.rulesengine.sets.ecl.cards.RooftopPercher
+import com.wingedsheep.rulesengine.sets.ecl.cards.ShoreLurker
+import com.wingedsheep.rulesengine.sets.ecl.cards.SunDappledCelebrant
+import com.wingedsheep.rulesengine.sets.ecl.cards.TimidShieldbearer
+import com.wingedsheep.rulesengine.sets.ecl.cards.TributaryVaulter
 
 object LorwynEclipsedSet : BaseCardRegistry() {
     override val setCode: String = "ECL"
@@ -46,6 +51,11 @@ object LorwynEclipsedSet : BaseCardRegistry() {
         register(Kinbinding.definition, Kinbinding.script)
         register(KinscaerSentry.definition, KinscaerSentry.script)
         register(LiminalHold.definition, LiminalHold.script)
+        register(RiverguardsReflexes.definition, RiverguardsReflexes.script)
         register(RooftopPercher.definition, RooftopPercher.script)
+        register(ShoreLurker.definition, ShoreLurker.script)
+        register(SunDappledCelebrant.definition, SunDappledCelebrant.script)
+        register(TimidShieldbearer.definition, TimidShieldbearer.script)
+        register(TributaryVaulter.definition, TributaryVaulter.script)
     }
 }

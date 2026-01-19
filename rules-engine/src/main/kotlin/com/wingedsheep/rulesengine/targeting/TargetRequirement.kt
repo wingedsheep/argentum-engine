@@ -2,6 +2,7 @@ package com.wingedsheep.rulesengine.targeting
 
 import com.wingedsheep.rulesengine.core.Color
 import com.wingedsheep.rulesengine.core.Keyword
+import com.wingedsheep.rulesengine.core.Subtype
 import com.wingedsheep.rulesengine.ecs.EntityId
 import kotlinx.serialization.Serializable
 
@@ -165,6 +166,11 @@ sealed interface CreatureTargetFilter {
     @Serializable
     data class WithToughnessAtMost(val maxToughness: Int) : CreatureTargetFilter {
         override val description: String = "with toughness $maxToughness or less"
+    }
+
+    @Serializable
+    data class WithSubtype(val subtype: Subtype) : CreatureTargetFilter {
+        override val description: String = subtype.value
     }
 
     @Serializable

@@ -427,6 +427,30 @@ data class LookAtTopCardsEffect(
 }
 
 /**
+ * Surveil N - Look at the top N cards of your library, then put any number of them
+ * into your graveyard and the rest on top of your library in any order.
+ * "Surveil 2"
+ */
+@Serializable
+data class SurveilEffect(
+    val count: Int
+) : Effect {
+    override val description: String = "Surveil $count"
+}
+
+/**
+ * Scry N - Look at the top N cards of your library, then put any number of them
+ * on the bottom of your library and the rest on top in any order.
+ * "Scry 2"
+ */
+@Serializable
+data class ScryEffect(
+    val count: Int
+) : Effect {
+    override val description: String = "Scry $count"
+}
+
+/**
  * Look at the top X cards of your library where X is determined dynamically,
  * and put any number of cards matching a filter onto the battlefield.
  * Then shuffle.

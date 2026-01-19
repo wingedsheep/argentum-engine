@@ -141,6 +141,7 @@ object TargetValidator {
             is CreatureTargetFilter.WithPowerAtMost -> (view.power ?: 0) <= filter.maxPower
             is CreatureTargetFilter.WithPowerAtLeast -> (view.power ?: 0) >= filter.minPower
             is CreatureTargetFilter.WithToughnessAtMost -> (view.toughness ?: 0) <= filter.maxToughness
+            is CreatureTargetFilter.WithSubtype -> view.subtypes.contains(filter.subtype)
             is CreatureTargetFilter.And -> filter.filters.all { subFilter ->
                 isValidCreatureTarget(target, state, projector, controllerId, subFilter)
             }
