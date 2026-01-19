@@ -2,7 +2,7 @@ package com.wingedsheep.rulesengine.ecs.combat
 
 import com.wingedsheep.rulesengine.core.Color
 import com.wingedsheep.rulesengine.core.Keyword
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.components.CardComponent
 import com.wingedsheep.rulesengine.ecs.components.ControllerComponent
@@ -31,7 +31,7 @@ import com.wingedsheep.rulesengine.ecs.layers.StateProjector
  * ```
  */
 class DamageEventProjector(
-    private val state: EcsGameState,
+    private val state: GameState,
     private val effects: List<DamagePreventionEffect> = emptyList(),
     private val modifierProvider: ModifierProvider? = null
 ) {
@@ -44,8 +44,8 @@ class DamageEventProjector(
      *
      * @return The final damage events after all prevention effects
      */
-    fun project(events: List<EcsCombatDamageCalculator.PendingDamageEvent>): DamageProjectionResult {
-        val projected = mutableListOf<EcsCombatDamageCalculator.PendingDamageEvent>()
+    fun project(events: List<CombatDamageCalculator.PendingDamageEvent>): DamageProjectionResult {
+        val projected = mutableListOf<CombatDamageCalculator.PendingDamageEvent>()
         val prevented = mutableListOf<PreventedDamage>()
         val consumedShields = mutableMapOf<EntityId, Int>()
 
@@ -68,7 +68,7 @@ class DamageEventProjector(
      * Project a single damage event through prevention effects.
      */
     private fun projectSingleEvent(
-        event: EcsCombatDamageCalculator.PendingDamageEvent,
+        event: CombatDamageCalculator.PendingDamageEvent,
         consumedShields: MutableMap<EntityId, Int>
     ): SingleEventResult {
         val source = projector.getView(event.sourceId)
@@ -143,7 +143,7 @@ class DamageEventProjector(
      */
     private fun applyEffect(
         effect: DamagePreventionEffect,
-        event: EcsCombatDamageCalculator.PendingDamageEvent,
+        event: CombatDamageCalculator.PendingDamageEvent,
         source: GameObjectView?,
         targetId: EntityId,
         currentAmount: Int,
@@ -168,7 +168,7 @@ class DamageEventProjector(
             }
 
             is DamagePreventionEffect.PreventCombatDamageToPlayer -> {
-                if (event is EcsCombatDamageCalculator.PendingDamageEvent.ToPlayer &&
+                if (event is CombatDamageCalculator.PendingDamageEvent.ToPlayer &&
                     event.targetPlayerId == effect.playerId
                 ) {
                     EffectApplicationResult(0, true)
@@ -178,7 +178,7 @@ class DamageEventProjector(
             }
 
             is DamagePreventionEffect.PreventCombatDamageToCreatures -> {
-                if (event is EcsCombatDamageCalculator.PendingDamageEvent.ToCreature) {
+                if (event is CombatDamageCalculator.PendingDamageEvent.ToCreature) {
                     EffectApplicationResult(0, true)
                 } else {
                     EffectApplicationResult(currentAmount, false)
@@ -227,7 +227,7 @@ class DamageEventProjector(
      */
     private fun effectApplies(
         effect: DamagePreventionEffect,
-        event: EcsCombatDamageCalculator.PendingDamageEvent,
+        event: CombatDamageCalculator.PendingDamageEvent,
         source: GameObjectView?,
         targetId: EntityId
     ): Boolean {
@@ -286,11 +286,11 @@ class DamageEventProjector(
     /**
      * Get the target entity ID from a damage event.
      */
-    private fun getTargetId(event: EcsCombatDamageCalculator.PendingDamageEvent): EntityId {
+    private fun getTargetId(event: CombatDamageCalculator.PendingDamageEvent): EntityId {
         return when (event) {
-            is EcsCombatDamageCalculator.PendingDamageEvent.ToPlayer -> event.targetPlayerId
-            is EcsCombatDamageCalculator.PendingDamageEvent.ToPlaneswalker -> event.targetPlaneswalker
-            is EcsCombatDamageCalculator.PendingDamageEvent.ToCreature -> event.targetCreatureId
+            is CombatDamageCalculator.PendingDamageEvent.ToPlayer -> event.targetPlayerId
+            is CombatDamageCalculator.PendingDamageEvent.ToPlaneswalker -> event.targetPlaneswalker
+            is CombatDamageCalculator.PendingDamageEvent.ToCreature -> event.targetCreatureId
         }
     }
 
@@ -298,24 +298,24 @@ class DamageEventProjector(
      * Create a new damage event with updated amount.
      */
     private fun updateEventAmount(
-        event: EcsCombatDamageCalculator.PendingDamageEvent,
+        event: CombatDamageCalculator.PendingDamageEvent,
         newAmount: Int
-    ): EcsCombatDamageCalculator.PendingDamageEvent {
+    ): CombatDamageCalculator.PendingDamageEvent {
         return when (event) {
-            is EcsCombatDamageCalculator.PendingDamageEvent.ToPlayer ->
+            is CombatDamageCalculator.PendingDamageEvent.ToPlayer ->
                 event.copy(amount = newAmount)
-            is EcsCombatDamageCalculator.PendingDamageEvent.ToPlaneswalker ->
+            is CombatDamageCalculator.PendingDamageEvent.ToPlaneswalker ->
                 event.copy(amount = newAmount)
-            is EcsCombatDamageCalculator.PendingDamageEvent.ToCreature ->
+            is CombatDamageCalculator.PendingDamageEvent.ToCreature ->
                 event.copy(amount = newAmount)
         }
     }
 
     private sealed interface SingleEventResult {
-        data class Dealt(val event: EcsCombatDamageCalculator.PendingDamageEvent) : SingleEventResult
+        data class Dealt(val event: CombatDamageCalculator.PendingDamageEvent) : SingleEventResult
         data class Prevented(val prevention: PreventedDamage) : SingleEventResult
         data class Reduced(
-            val event: EcsCombatDamageCalculator.PendingDamageEvent,
+            val event: CombatDamageCalculator.PendingDamageEvent,
             val prevention: PreventedDamage
         ) : SingleEventResult
     }
@@ -330,14 +330,14 @@ class DamageEventProjector(
          * Create a projector with no prevention effects.
          * All damage passes through unchanged.
          */
-        fun passthrough(state: EcsGameState): DamageEventProjector {
+        fun passthrough(state: GameState): DamageEventProjector {
             return DamageEventProjector(state, emptyList())
         }
 
         /**
          * Create a Fog-style projector that prevents all combat damage.
          */
-        fun fog(state: EcsGameState, sourceId: EntityId): DamageEventProjector {
+        fun fog(state: GameState, sourceId: EntityId): DamageEventProjector {
             return DamageEventProjector(
                 state,
                 listOf(DamagePreventionEffect.PreventAllCombatDamage(sourceId, "Fog"))
@@ -351,7 +351,7 @@ class DamageEventProjector(
  */
 data class DamageProjectionResult(
     /** Damage events that will actually be dealt */
-    val finalEvents: List<EcsCombatDamageCalculator.PendingDamageEvent>,
+    val finalEvents: List<CombatDamageCalculator.PendingDamageEvent>,
     /** Damage that was prevented */
     val preventedDamage: List<PreventedDamage>,
     /** How much of each damage shield was consumed */

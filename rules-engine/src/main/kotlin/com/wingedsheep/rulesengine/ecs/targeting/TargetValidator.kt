@@ -1,7 +1,7 @@
 package com.wingedsheep.rulesengine.ecs.targeting
 
 import com.wingedsheep.rulesengine.core.Keyword
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.layers.GameObjectView
@@ -10,11 +10,11 @@ import com.wingedsheep.rulesengine.ecs.layers.StateProjector
 /**
  * ECS-native target validation using StateProjector for entity views.
  *
- * This validator works directly with EcsGameState and uses GameObjectView
+ * This validator works directly with GameState and uses GameObjectView
  * for all entity data, ensuring that continuous effects (layers) are properly
  * applied when validating targets.
  */
-object EcsTargetValidator {
+object TargetValidator {
 
     /**
      * Result of target validation.
@@ -28,27 +28,27 @@ object EcsTargetValidator {
     /**
      * Target types that can be validated.
      */
-    sealed interface EcsTarget {
+    sealed interface ValidatorTarget {
         /** A player entity as a target. */
-        data class Player(val playerId: EntityId) : EcsTarget
+        data class Player(val playerId: EntityId) : ValidatorTarget
 
         /** A permanent on the battlefield as a target. */
-        data class Permanent(val entityId: EntityId) : EcsTarget
+        data class Permanent(val entityId: EntityId) : ValidatorTarget
 
         /** A spell/ability on the stack as a target. */
-        data class StackObject(val entityId: EntityId) : EcsTarget
+        data class StackObject(val entityId: EntityId) : ValidatorTarget
 
         /** A card in a graveyard as a target. */
-        data class GraveyardCard(val entityId: EntityId, val ownerId: EntityId) : EcsTarget
+        data class GraveyardCard(val entityId: EntityId, val ownerId: EntityId) : ValidatorTarget
 
         /** A card in exile as a target. */
-        data class ExiledCard(val entityId: EntityId) : EcsTarget
+        data class ExiledCard(val entityId: EntityId) : ValidatorTarget
     }
 
     /**
      * Targeting requirements for ECS validation.
      */
-    sealed interface EcsTargetRequirement {
+    sealed interface TargetRequirement {
         val description: String
         val count: Int get() = 1
         val optional: Boolean get() = false
@@ -57,7 +57,7 @@ object EcsTargetValidator {
         data class AnyTarget(
             override val count: Int = 1,
             override val optional: Boolean = false
-        ) : EcsTargetRequirement {
+        ) : TargetRequirement {
             override val description = "any target"
         }
 
@@ -65,7 +65,7 @@ object EcsTargetValidator {
         data class TargetPlayer(
             override val count: Int = 1,
             override val optional: Boolean = false
-        ) : EcsTargetRequirement {
+        ) : TargetRequirement {
             override val description = "target player"
         }
 
@@ -73,7 +73,7 @@ object EcsTargetValidator {
         data class TargetOpponent(
             override val count: Int = 1,
             override val optional: Boolean = false
-        ) : EcsTargetRequirement {
+        ) : TargetRequirement {
             override val description = "target opponent"
         }
 
@@ -82,7 +82,7 @@ object EcsTargetValidator {
             val filter: CreatureFilter = CreatureFilter.Any,
             override val count: Int = 1,
             override val optional: Boolean = false
-        ) : EcsTargetRequirement {
+        ) : TargetRequirement {
             override val description = when (filter) {
                 CreatureFilter.Any -> "target creature"
                 CreatureFilter.YouControl -> "target creature you control"
@@ -100,7 +100,7 @@ object EcsTargetValidator {
             val filter: PermanentFilter = PermanentFilter.Any,
             override val count: Int = 1,
             override val optional: Boolean = false
-        ) : EcsTargetRequirement {
+        ) : TargetRequirement {
             override val description = when (filter) {
                 PermanentFilter.Any -> "target permanent"
                 PermanentFilter.YouControl -> "target permanent you control"
@@ -118,7 +118,7 @@ object EcsTargetValidator {
             val filter: SpellFilter = SpellFilter.Any,
             override val count: Int = 1,
             override val optional: Boolean = false
-        ) : EcsTargetRequirement {
+        ) : TargetRequirement {
             override val description = when (filter) {
                 SpellFilter.Any -> "target spell"
                 SpellFilter.Instant -> "target instant spell"
@@ -133,7 +133,7 @@ object EcsTargetValidator {
             val filter: GraveyardFilter = GraveyardFilter.Any,
             override val count: Int = 1,
             override val optional: Boolean = false
-        ) : EcsTargetRequirement {
+        ) : TargetRequirement {
             override val description = when (filter) {
                 GraveyardFilter.Any -> "target card in a graveyard"
                 GraveyardFilter.YourGraveyard -> "target card in your graveyard"
@@ -196,9 +196,9 @@ object EcsTargetValidator {
      * Validate a single target against a requirement.
      */
     fun validateTarget(
-        target: EcsTarget,
-        requirement: EcsTargetRequirement,
-        state: EcsGameState,
+        target: ValidatorTarget,
+        requirement: TargetRequirement,
+        state: GameState,
         projector: StateProjector,
         controllerId: EntityId
     ): ValidationResult {
@@ -213,31 +213,31 @@ object EcsTargetValidator {
      * Check if a target is valid for a requirement.
      */
     fun isValidTarget(
-        target: EcsTarget,
-        requirement: EcsTargetRequirement,
-        state: EcsGameState,
+        target: ValidatorTarget,
+        requirement: TargetRequirement,
+        state: GameState,
         projector: StateProjector,
         controllerId: EntityId
     ): Boolean {
         return when (requirement) {
-            is EcsTargetRequirement.AnyTarget -> isValidAnyTarget(target, state, projector, controllerId)
-            is EcsTargetRequirement.TargetPlayer -> isValidPlayerTarget(target, state, controllerId, opponentOnly = false)
-            is EcsTargetRequirement.TargetOpponent -> isValidPlayerTarget(target, state, controllerId, opponentOnly = true)
-            is EcsTargetRequirement.TargetCreature -> isValidCreatureTarget(target, state, projector, controllerId, requirement.filter)
-            is EcsTargetRequirement.TargetPermanent -> isValidPermanentTarget(target, state, projector, controllerId, requirement.filter)
-            is EcsTargetRequirement.TargetSpell -> isValidSpellTarget(target, state, projector, requirement.filter)
-            is EcsTargetRequirement.TargetGraveyardCard -> isValidGraveyardTarget(target, state, controllerId, requirement.filter)
+            is TargetRequirement.AnyTarget -> isValidAnyTarget(target, state, projector, controllerId)
+            is TargetRequirement.TargetPlayer -> isValidPlayerTarget(target, state, controllerId, opponentOnly = false)
+            is TargetRequirement.TargetOpponent -> isValidPlayerTarget(target, state, controllerId, opponentOnly = true)
+            is TargetRequirement.TargetCreature -> isValidCreatureTarget(target, state, projector, controllerId, requirement.filter)
+            is TargetRequirement.TargetPermanent -> isValidPermanentTarget(target, state, projector, controllerId, requirement.filter)
+            is TargetRequirement.TargetSpell -> isValidSpellTarget(target, state, projector, requirement.filter)
+            is TargetRequirement.TargetGraveyardCard -> isValidGraveyardTarget(target, state, controllerId, requirement.filter)
         }
     }
 
     private fun isValidAnyTarget(
-        target: EcsTarget,
-        state: EcsGameState,
+        target: ValidatorTarget,
+        state: GameState,
         projector: StateProjector,
         controllerId: EntityId
     ): Boolean = when (target) {
-        is EcsTarget.Player -> state.hasEntity(target.playerId) && state.isAlive(target.playerId)
-        is EcsTarget.Permanent -> {
+        is ValidatorTarget.Player -> state.hasEntity(target.playerId) && state.isAlive(target.playerId)
+        is ValidatorTarget.Permanent -> {
             val view = projector.getView(target.entityId)
             view != null && canBeTargetedBy(view, controllerId)
         }
@@ -245,12 +245,12 @@ object EcsTargetValidator {
     }
 
     private fun isValidPlayerTarget(
-        target: EcsTarget,
-        state: EcsGameState,
+        target: ValidatorTarget,
+        state: GameState,
         controllerId: EntityId,
         opponentOnly: Boolean
     ): Boolean {
-        if (target !is EcsTarget.Player) return false
+        if (target !is ValidatorTarget.Player) return false
         if (!state.hasEntity(target.playerId)) return false
         if (!state.isAlive(target.playerId)) return false
         if (opponentOnly && target.playerId == controllerId) return false
@@ -258,13 +258,13 @@ object EcsTargetValidator {
     }
 
     private fun isValidCreatureTarget(
-        target: EcsTarget,
-        state: EcsGameState,
+        target: ValidatorTarget,
+        state: GameState,
         projector: StateProjector,
         controllerId: EntityId,
         filter: CreatureFilter
     ): Boolean {
-        if (target !is EcsTarget.Permanent) return false
+        if (target !is ValidatorTarget.Permanent) return false
 
         val view = projector.getView(target.entityId) ?: return false
         if (!view.isCreature) return false
@@ -283,13 +283,13 @@ object EcsTargetValidator {
     }
 
     private fun isValidPermanentTarget(
-        target: EcsTarget,
-        state: EcsGameState,
+        target: ValidatorTarget,
+        state: GameState,
         projector: StateProjector,
         controllerId: EntityId,
         filter: PermanentFilter
     ): Boolean {
-        if (target !is EcsTarget.Permanent) return false
+        if (target !is ValidatorTarget.Permanent) return false
 
         val view = projector.getView(target.entityId) ?: return false
         if (!view.isPermanent) return false
@@ -308,12 +308,12 @@ object EcsTargetValidator {
     }
 
     private fun isValidSpellTarget(
-        target: EcsTarget,
-        state: EcsGameState,
+        target: ValidatorTarget,
+        state: GameState,
         projector: StateProjector,
         filter: SpellFilter
     ): Boolean {
-        if (target !is EcsTarget.StackObject) return false
+        if (target !is ValidatorTarget.StackObject) return false
         if (target.entityId !in state.getStack()) return false
 
         val view = projector.getView(target.entityId) ?: return false
@@ -328,12 +328,12 @@ object EcsTargetValidator {
     }
 
     private fun isValidGraveyardTarget(
-        target: EcsTarget,
-        state: EcsGameState,
+        target: ValidatorTarget,
+        state: GameState,
         controllerId: EntityId,
         filter: GraveyardFilter
     ): Boolean {
-        if (target !is EcsTarget.GraveyardCard) return false
+        if (target !is ValidatorTarget.GraveyardCard) return false
 
         // Verify it's actually in that player's graveyard
         if (target.entityId !in state.getGraveyard(target.ownerId)) return false
@@ -381,64 +381,64 @@ object EcsTargetValidator {
      * Get all legal targets for a requirement.
      */
     fun getLegalTargets(
-        requirement: EcsTargetRequirement,
-        state: EcsGameState,
+        requirement: TargetRequirement,
+        state: GameState,
         projector: StateProjector,
         controllerId: EntityId
-    ): List<EcsTarget> {
-        val targets = mutableListOf<EcsTarget>()
+    ): List<ValidatorTarget> {
+        val targets = mutableListOf<ValidatorTarget>()
 
         when (requirement) {
-            is EcsTargetRequirement.AnyTarget -> {
+            is TargetRequirement.AnyTarget -> {
                 // Add players
                 for (playerId in state.getPlayerIds()) {
-                    val target = EcsTarget.Player(playerId)
+                    val target = ValidatorTarget.Player(playerId)
                     if (isValidTarget(target, requirement, state, projector, controllerId)) {
                         targets.add(target)
                     }
                 }
                 // Add permanents
                 for (entityId in state.getBattlefield()) {
-                    val target = EcsTarget.Permanent(entityId)
+                    val target = ValidatorTarget.Permanent(entityId)
                     if (isValidTarget(target, requirement, state, projector, controllerId)) {
                         targets.add(target)
                     }
                 }
             }
 
-            is EcsTargetRequirement.TargetPlayer,
-            is EcsTargetRequirement.TargetOpponent -> {
+            is TargetRequirement.TargetPlayer,
+            is TargetRequirement.TargetOpponent -> {
                 for (playerId in state.getPlayerIds()) {
-                    val target = EcsTarget.Player(playerId)
+                    val target = ValidatorTarget.Player(playerId)
                     if (isValidTarget(target, requirement, state, projector, controllerId)) {
                         targets.add(target)
                     }
                 }
             }
 
-            is EcsTargetRequirement.TargetCreature,
-            is EcsTargetRequirement.TargetPermanent -> {
+            is TargetRequirement.TargetCreature,
+            is TargetRequirement.TargetPermanent -> {
                 for (entityId in state.getBattlefield()) {
-                    val target = EcsTarget.Permanent(entityId)
+                    val target = ValidatorTarget.Permanent(entityId)
                     if (isValidTarget(target, requirement, state, projector, controllerId)) {
                         targets.add(target)
                     }
                 }
             }
 
-            is EcsTargetRequirement.TargetSpell -> {
+            is TargetRequirement.TargetSpell -> {
                 for (entityId in state.getStack()) {
-                    val target = EcsTarget.StackObject(entityId)
+                    val target = ValidatorTarget.StackObject(entityId)
                     if (isValidTarget(target, requirement, state, projector, controllerId)) {
                         targets.add(target)
                     }
                 }
             }
 
-            is EcsTargetRequirement.TargetGraveyardCard -> {
+            is TargetRequirement.TargetGraveyardCard -> {
                 for (playerId in state.getPlayerIds()) {
                     for (entityId in state.getGraveyard(playerId)) {
-                        val target = EcsTarget.GraveyardCard(entityId, playerId)
+                        val target = ValidatorTarget.GraveyardCard(entityId, playerId)
                         if (isValidTarget(target, requirement, state, projector, controllerId)) {
                             targets.add(target)
                         }
@@ -454,58 +454,58 @@ object EcsTargetValidator {
      * Check if any legal targets exist for a requirement.
      */
     fun hasLegalTargets(
-        requirement: EcsTargetRequirement,
-        state: EcsGameState,
+        requirement: TargetRequirement,
+        state: GameState,
         projector: StateProjector,
         controllerId: EntityId
     ): Boolean {
         // Use short-circuit evaluation
         when (requirement) {
-            is EcsTargetRequirement.AnyTarget -> {
+            is TargetRequirement.AnyTarget -> {
                 // Check players first
                 for (playerId in state.getPlayerIds()) {
-                    if (isValidTarget(EcsTarget.Player(playerId), requirement, state, projector, controllerId)) {
+                    if (isValidTarget(ValidatorTarget.Player(playerId), requirement, state, projector, controllerId)) {
                         return true
                     }
                 }
                 // Check permanents
                 for (entityId in state.getBattlefield()) {
-                    if (isValidTarget(EcsTarget.Permanent(entityId), requirement, state, projector, controllerId)) {
+                    if (isValidTarget(ValidatorTarget.Permanent(entityId), requirement, state, projector, controllerId)) {
                         return true
                     }
                 }
             }
 
-            is EcsTargetRequirement.TargetPlayer,
-            is EcsTargetRequirement.TargetOpponent -> {
+            is TargetRequirement.TargetPlayer,
+            is TargetRequirement.TargetOpponent -> {
                 for (playerId in state.getPlayerIds()) {
-                    if (isValidTarget(EcsTarget.Player(playerId), requirement, state, projector, controllerId)) {
+                    if (isValidTarget(ValidatorTarget.Player(playerId), requirement, state, projector, controllerId)) {
                         return true
                     }
                 }
             }
 
-            is EcsTargetRequirement.TargetCreature,
-            is EcsTargetRequirement.TargetPermanent -> {
+            is TargetRequirement.TargetCreature,
+            is TargetRequirement.TargetPermanent -> {
                 for (entityId in state.getBattlefield()) {
-                    if (isValidTarget(EcsTarget.Permanent(entityId), requirement, state, projector, controllerId)) {
+                    if (isValidTarget(ValidatorTarget.Permanent(entityId), requirement, state, projector, controllerId)) {
                         return true
                     }
                 }
             }
 
-            is EcsTargetRequirement.TargetSpell -> {
+            is TargetRequirement.TargetSpell -> {
                 for (entityId in state.getStack()) {
-                    if (isValidTarget(EcsTarget.StackObject(entityId), requirement, state, projector, controllerId)) {
+                    if (isValidTarget(ValidatorTarget.StackObject(entityId), requirement, state, projector, controllerId)) {
                         return true
                     }
                 }
             }
 
-            is EcsTargetRequirement.TargetGraveyardCard -> {
+            is TargetRequirement.TargetGraveyardCard -> {
                 for (playerId in state.getPlayerIds()) {
                     for (entityId in state.getGraveyard(playerId)) {
-                        if (isValidTarget(EcsTarget.GraveyardCard(entityId, playerId), requirement, state, projector, controllerId)) {
+                        if (isValidTarget(ValidatorTarget.GraveyardCard(entityId, playerId), requirement, state, projector, controllerId)) {
                             return true
                         }
                     }
@@ -519,8 +519,8 @@ object EcsTargetValidator {
      * Check if a spell/ability can be cast given its targeting requirements.
      */
     fun canMeetRequirements(
-        requirements: List<EcsTargetRequirement>,
-        state: EcsGameState,
+        requirements: List<TargetRequirement>,
+        state: GameState,
         projector: StateProjector,
         controllerId: EntityId
     ): Boolean {

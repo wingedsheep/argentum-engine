@@ -25,10 +25,10 @@ import kotlinx.serialization.Serializable
  * - Players are entities too (with PlayerComponent)
  * - Dynamic component attachment for runtime extensibility
  *
- * Use [EcsGameEngine] for game orchestration (setup, action execution, etc.)
+ * Use [GameEngine] for game orchestration (setup, action execution, etc.)
  */
 @Serializable
-data class EcsGameState(
+data class GameState(
     /**
      * All entities and their components.
      * Keys are entity IDs, values are containers with all attached components.
@@ -174,7 +174,7 @@ data class EcsGameState(
     fun updateEntity(
         id: EntityId,
         transform: (ComponentContainer) -> ComponentContainer
-    ): EcsGameState {
+    ): GameState {
         val container = entities[id] ?: return this
         return copy(entities = entities + (id to transform(container)))
     }
@@ -182,13 +182,13 @@ data class EcsGameState(
     /**
      * Add or update a component on an entity.
      */
-    fun addComponent(id: EntityId, component: Component): EcsGameState =
+    fun addComponent(id: EntityId, component: Component): GameState =
         updateEntity(id) { it.with(component) }
 
     /**
      * Remove a component from an entity.
      */
-    inline fun <reified T : Component> removeComponent(id: EntityId): EcsGameState =
+    inline fun <reified T : Component> removeComponent(id: EntityId): GameState =
         updateEntity(id) { it.without<T>() }
 
     /**
@@ -198,7 +198,7 @@ data class EcsGameState(
     fun createEntity(
         id: EntityId = EntityId.generate(),
         vararg components: Component
-    ): Pair<EntityId, EcsGameState> {
+    ): Pair<EntityId, GameState> {
         val container = ComponentContainer.of(*components)
         return id to copy(entities = entities + (id to container))
     }
@@ -209,7 +209,7 @@ data class EcsGameState(
     fun createEntity(
         id: EntityId = EntityId.generate(),
         components: List<Component>
-    ): Pair<EntityId, EcsGameState> {
+    ): Pair<EntityId, GameState> {
         val container = ComponentContainer.of(components)
         return id to copy(entities = entities + (id to container))
     }
@@ -217,7 +217,7 @@ data class EcsGameState(
     /**
      * Remove an entity completely (from entities map and all zones).
      */
-    fun removeEntity(id: EntityId): EcsGameState {
+    fun removeEntity(id: EntityId): GameState {
         val newZones = zones.mapValues { (_, entityIds) ->
             entityIds.filter { it != id }
         }
@@ -234,7 +234,7 @@ data class EcsGameState(
     /**
      * Add an entity to the top (end) of a zone.
      */
-    fun addToZone(entityId: EntityId, zoneId: ZoneId): EcsGameState {
+    fun addToZone(entityId: EntityId, zoneId: ZoneId): GameState {
         val currentContents = zones[zoneId] ?: emptyList()
         return copy(zones = zones + (zoneId to currentContents + entityId))
     }
@@ -242,7 +242,7 @@ data class EcsGameState(
     /**
      * Add an entity to the bottom (start) of a zone.
      */
-    fun addToZoneBottom(entityId: EntityId, zoneId: ZoneId): EcsGameState {
+    fun addToZoneBottom(entityId: EntityId, zoneId: ZoneId): GameState {
         val currentContents = zones[zoneId] ?: emptyList()
         return copy(zones = zones + (zoneId to listOf(entityId) + currentContents))
     }
@@ -250,7 +250,7 @@ data class EcsGameState(
     /**
      * Add an entity at a specific index in a zone.
      */
-    fun addToZoneAt(entityId: EntityId, zoneId: ZoneId, index: Int): EcsGameState {
+    fun addToZoneAt(entityId: EntityId, zoneId: ZoneId, index: Int): GameState {
         val currentContents = zones[zoneId] ?: emptyList()
         val newContents = currentContents.toMutableList().apply { add(index.coerceIn(0, size), entityId) }
         return copy(zones = zones + (zoneId to newContents))
@@ -259,7 +259,7 @@ data class EcsGameState(
     /**
      * Remove an entity from a specific zone.
      */
-    fun removeFromZone(entityId: EntityId, zoneId: ZoneId): EcsGameState {
+    fun removeFromZone(entityId: EntityId, zoneId: ZoneId): GameState {
         val currentContents = zones[zoneId] ?: return this
         return copy(zones = zones + (zoneId to currentContents.filter { it != entityId }))
     }
@@ -267,13 +267,13 @@ data class EcsGameState(
     /**
      * Move an entity from one zone to another.
      */
-    fun moveEntity(entityId: EntityId, fromZone: ZoneId, toZone: ZoneId): EcsGameState =
+    fun moveEntity(entityId: EntityId, fromZone: ZoneId, toZone: ZoneId): GameState =
         removeFromZone(entityId, fromZone).addToZone(entityId, toZone)
 
     /**
      * Remove an entity from its current zone (wherever it is).
      */
-    fun removeFromCurrentZone(entityId: EntityId): EcsGameState {
+    fun removeFromCurrentZone(entityId: EntityId): GameState {
         val currentZone = findZone(entityId) ?: return this
         return removeFromZone(entityId, currentZone)
     }
@@ -281,7 +281,7 @@ data class EcsGameState(
     /**
      * Shuffle a zone's contents.
      */
-    fun shuffleZone(zoneId: ZoneId): EcsGameState {
+    fun shuffleZone(zoneId: ZoneId): GameState {
         val currentContents = zones[zoneId] ?: return this
         return copy(zones = zones + (zoneId to currentContents.shuffled()))
     }
@@ -289,7 +289,7 @@ data class EcsGameState(
     /**
      * Shuffle a zone's contents with a specific random source.
      */
-    fun shuffleZone(zoneId: ZoneId, random: kotlin.random.Random): EcsGameState {
+    fun shuffleZone(zoneId: ZoneId, random: kotlin.random.Random): GameState {
         val currentContents = zones[zoneId] ?: return this
         return copy(zones = zones + (zoneId to currentContents.shuffled(random)))
     }
@@ -297,7 +297,7 @@ data class EcsGameState(
     /**
      * Add multiple entities to a zone.
      */
-    fun addEntitiesToZone(entityIds: List<EntityId>, zoneId: ZoneId): EcsGameState {
+    fun addEntitiesToZone(entityIds: List<EntityId>, zoneId: ZoneId): GameState {
         val currentContents = zones[zoneId] ?: emptyList()
         return copy(zones = zones + (zoneId to currentContents + entityIds))
     }
@@ -333,7 +333,7 @@ data class EcsGameState(
      * Remove and return the top entity from a zone.
      * Returns null and unchanged state if zone is empty.
      */
-    fun removeTopFromZone(zoneId: ZoneId): Pair<EntityId?, EcsGameState> {
+    fun removeTopFromZone(zoneId: ZoneId): Pair<EntityId?, GameState> {
         val contents = getZone(zoneId)
         return if (contents.isNotEmpty()) {
             contents.last() to copy(zones = zones + (zoneId to contents.dropLast(1)))
@@ -346,7 +346,7 @@ data class EcsGameState(
      * Remove and return the bottom entity from a zone.
      * Returns null and unchanged state if zone is empty.
      */
-    fun removeBottomFromZone(zoneId: ZoneId): Pair<EntityId?, EcsGameState> {
+    fun removeBottomFromZone(zoneId: ZoneId): Pair<EntityId?, GameState> {
         val contents = getZone(zoneId)
         return if (contents.isNotEmpty()) {
             contents.first() to copy(zones = zones + (zoneId to contents.drop(1)))
@@ -359,7 +359,7 @@ data class EcsGameState(
      * Remove the top N entities from a zone.
      * Returns the removed entities and updated state.
      */
-    fun removeTopNFromZone(zoneId: ZoneId, count: Int): Pair<List<EntityId>, EcsGameState> {
+    fun removeTopNFromZone(zoneId: ZoneId, count: Int): Pair<List<EntityId>, GameState> {
         val contents = getZone(zoneId)
         val toRemove = contents.takeLast(count)
         val remaining = contents.dropLast(count)
@@ -387,7 +387,7 @@ data class EcsGameState(
     /**
      * Set a global flag (string value).
      */
-    fun setFlag(key: String, value: String): EcsGameState =
+    fun setFlag(key: String, value: String): GameState =
         copy(globalFlags = globalFlags + (key to value))
 
     /**
@@ -398,7 +398,7 @@ data class EcsGameState(
     /**
      * Remove a global flag.
      */
-    fun removeFlag(key: String): EcsGameState =
+    fun removeFlag(key: String): GameState =
         copy(globalFlags = globalFlags - key)
 
     /**
@@ -431,7 +431,7 @@ data class EcsGameState(
     val isInCombat: Boolean
         get() = combat != null && currentPhase == Phase.COMBAT
 
-    fun startCombat(defendingPlayerId: EntityId): EcsGameState {
+    fun startCombat(defendingPlayerId: EntityId): GameState {
         return copy(
             combat = CombatState.create(
                 turnState.activePlayer,
@@ -440,23 +440,23 @@ data class EcsGameState(
         )
     }
 
-    fun endCombat(): EcsGameState = copy(combat = null)
+    fun endCombat(): GameState = copy(combat = null)
 
     // ==========================================================================
     // Game End Helpers
     // ==========================================================================
 
-    fun endGame(winnerId: EntityId?): EcsGameState =
+    fun endGame(winnerId: EntityId?): GameState =
         copy(isGameOver = true, winner = winnerId)
 
     // ==========================================================================
     // Trigger Helpers
     // ==========================================================================
 
-    fun addPendingTriggers(triggers: List<PendingTrigger>): EcsGameState =
+    fun addPendingTriggers(triggers: List<PendingTrigger>): GameState =
         copy(pendingTriggers = pendingTriggers + triggers)
 
-    fun clearPendingTriggers(): EcsGameState =
+    fun clearPendingTriggers(): GameState =
         copy(pendingTriggers = emptyList())
 
     val hasPendingTriggers: Boolean get() = pendingTriggers.isNotEmpty()
@@ -481,19 +481,19 @@ data class EcsGameState(
     /**
      * Add a pending Legend Rule choice.
      */
-    fun addPendingLegendRuleChoice(choice: com.wingedsheep.rulesengine.ecs.components.PendingLegendRuleChoice): EcsGameState =
+    fun addPendingLegendRuleChoice(choice: com.wingedsheep.rulesengine.ecs.components.PendingLegendRuleChoice): GameState =
         copy(pendingLegendRuleChoices = pendingLegendRuleChoices + choice)
 
     /**
      * Remove a pending Legend Rule choice (after it's been resolved).
      */
-    fun removePendingLegendRuleChoice(choice: com.wingedsheep.rulesengine.ecs.components.PendingLegendRuleChoice): EcsGameState =
+    fun removePendingLegendRuleChoice(choice: com.wingedsheep.rulesengine.ecs.components.PendingLegendRuleChoice): GameState =
         copy(pendingLegendRuleChoices = pendingLegendRuleChoices - choice)
 
     /**
      * Clear all pending Legend Rule choices for a player.
      */
-    fun clearPendingLegendRuleChoicesForPlayer(playerId: EntityId): EcsGameState =
+    fun clearPendingLegendRuleChoicesForPlayer(playerId: EntityId): GameState =
         copy(pendingLegendRuleChoices = pendingLegendRuleChoices.filter { it.controllerId != playerId })
 
     // ==========================================================================
@@ -568,39 +568,39 @@ data class EcsGameState(
     /**
      * Add a card to the top of a player's library.
      */
-    fun addToTopOfLibrary(playerId: EntityId, entityId: EntityId): EcsGameState =
+    fun addToTopOfLibrary(playerId: EntityId, entityId: EntityId): GameState =
         addToZone(entityId, ZoneId.library(playerId))
 
     /**
      * Add a card to the bottom of a player's library.
      */
-    fun addToBottomOfLibrary(playerId: EntityId, entityId: EntityId): EcsGameState =
+    fun addToBottomOfLibrary(playerId: EntityId, entityId: EntityId): GameState =
         addToZoneBottom(entityId, ZoneId.library(playerId))
 
     /**
      * Draw from a player's library (remove top card).
      * Returns the drawn entity and updated state.
      */
-    fun drawFromLibrary(playerId: EntityId): Pair<EntityId?, EcsGameState> =
+    fun drawFromLibrary(playerId: EntityId): Pair<EntityId?, GameState> =
         removeTopFromZone(ZoneId.library(playerId))
 
     /**
      * Draw multiple cards from a player's library.
      * Returns the drawn entities and updated state.
      */
-    fun drawCardsFromLibrary(playerId: EntityId, count: Int): Pair<List<EntityId>, EcsGameState> =
+    fun drawCardsFromLibrary(playerId: EntityId, count: Int): Pair<List<EntityId>, GameState> =
         removeTopNFromZone(ZoneId.library(playerId), count)
 
     /**
      * Shuffle a player's library.
      */
-    fun shuffleLibrary(playerId: EntityId): EcsGameState =
+    fun shuffleLibrary(playerId: EntityId): GameState =
         shuffleZone(ZoneId.library(playerId))
 
     /**
      * Shuffle a player's library with a specific random source.
      */
-    fun shuffleLibrary(playerId: EntityId, random: kotlin.random.Random): EcsGameState =
+    fun shuffleLibrary(playerId: EntityId, random: kotlin.random.Random): GameState =
         shuffleZone(ZoneId.library(playerId), random)
 
     // ==========================================================================
@@ -622,20 +622,20 @@ data class EcsGameState(
     /**
      * Add a card to a player's hand.
      */
-    fun addToHand(playerId: EntityId, entityId: EntityId): EcsGameState =
+    fun addToHand(playerId: EntityId, entityId: EntityId): GameState =
         addToZone(entityId, ZoneId.hand(playerId))
 
     /**
      * Remove a card from a player's hand.
      */
-    fun removeFromHand(playerId: EntityId, entityId: EntityId): EcsGameState =
+    fun removeFromHand(playerId: EntityId, entityId: EntityId): GameState =
         removeFromZone(entityId, ZoneId.hand(playerId))
 
     /**
      * Draw a card (remove from library and add to hand).
      * Returns the drawn entity and updated state, or null if library is empty.
      */
-    fun drawCard(playerId: EntityId): Pair<EntityId?, EcsGameState> {
+    fun drawCard(playerId: EntityId): Pair<EntityId?, GameState> {
         val (drawn, newState) = drawFromLibrary(playerId)
         return if (drawn != null) {
             drawn to newState.addToHand(playerId, drawn)
@@ -648,7 +648,7 @@ data class EcsGameState(
      * Draw multiple cards.
      * Returns the drawn entities and updated state.
      */
-    fun drawCards(playerId: EntityId, count: Int): Pair<List<EntityId>, EcsGameState> {
+    fun drawCards(playerId: EntityId, count: Int): Pair<List<EntityId>, GameState> {
         var state = this
         val drawn = mutableListOf<EntityId>()
         repeat(count) {
@@ -687,13 +687,13 @@ data class EcsGameState(
     /**
      * Add a card to a player's graveyard.
      */
-    fun addToGraveyard(playerId: EntityId, entityId: EntityId): EcsGameState =
+    fun addToGraveyard(playerId: EntityId, entityId: EntityId): GameState =
         addToZone(entityId, ZoneId.graveyard(playerId))
 
     /**
      * Remove a card from a player's graveyard.
      */
-    fun removeFromGraveyard(playerId: EntityId, entityId: EntityId): EcsGameState =
+    fun removeFromGraveyard(playerId: EntityId, entityId: EntityId): GameState =
         removeFromZone(entityId, ZoneId.graveyard(playerId))
 
     // ==========================================================================
@@ -713,13 +713,13 @@ data class EcsGameState(
     /**
      * Add an entity to the battlefield.
      */
-    fun addToBattlefield(entityId: EntityId): EcsGameState =
+    fun addToBattlefield(entityId: EntityId): GameState =
         addToZone(entityId, ZoneId.BATTLEFIELD)
 
     /**
      * Remove an entity from the battlefield.
      */
-    fun removeFromBattlefield(entityId: EntityId): EcsGameState =
+    fun removeFromBattlefield(entityId: EntityId): GameState =
         removeFromZone(entityId, ZoneId.BATTLEFIELD)
 
     /**
@@ -741,13 +741,13 @@ data class EcsGameState(
     /**
      * Add an entity to the stack (cast a spell).
      */
-    fun addToStack(entityId: EntityId): EcsGameState =
+    fun addToStack(entityId: EntityId): GameState =
         addToZone(entityId, ZoneId.STACK)
 
     /**
      * Remove and return the top spell/ability from the stack (resolve).
      */
-    fun popFromStack(): Pair<EntityId?, EcsGameState> =
+    fun popFromStack(): Pair<EntityId?, GameState> =
         removeTopFromZone(ZoneId.STACK)
 
     // ==========================================================================
@@ -757,13 +757,13 @@ data class EcsGameState(
     /**
      * Add an entity to exile.
      */
-    fun addToExile(entityId: EntityId): EcsGameState =
+    fun addToExile(entityId: EntityId): GameState =
         addToZone(entityId, ZoneId.EXILE)
 
     /**
      * Remove an entity from exile.
      */
-    fun removeFromExile(entityId: EntityId): EcsGameState =
+    fun removeFromExile(entityId: EntityId): GameState =
         removeFromZone(entityId, ZoneId.EXILE)
 
     /**
@@ -844,7 +844,7 @@ data class EcsGameState(
      * Gain life for a player.
      * Returns unchanged state if player doesn't exist.
      */
-    fun gainLife(playerId: EntityId, amount: Int): EcsGameState {
+    fun gainLife(playerId: EntityId, amount: Int): GameState {
         val life = getComponent<LifeComponent>(playerId) ?: return this
         return updateEntity(playerId) { it.with(life.gainLife(amount)) }
     }
@@ -853,7 +853,7 @@ data class EcsGameState(
      * Lose life for a player.
      * Returns unchanged state if player doesn't exist.
      */
-    fun loseLife(playerId: EntityId, amount: Int): EcsGameState {
+    fun loseLife(playerId: EntityId, amount: Int): GameState {
         val life = getComponent<LifeComponent>(playerId) ?: return this
         return updateEntity(playerId) { it.with(life.loseLife(amount)) }
     }
@@ -862,7 +862,7 @@ data class EcsGameState(
      * Set a player's life to a specific value.
      * Returns unchanged state if player doesn't exist.
      */
-    fun setLife(playerId: EntityId, amount: Int): EcsGameState {
+    fun setLife(playerId: EntityId, amount: Int): GameState {
         val life = getComponent<LifeComponent>(playerId) ?: return this
         return updateEntity(playerId) { it.with(life.setLife(amount)) }
     }
@@ -871,7 +871,7 @@ data class EcsGameState(
      * Add mana to a player's mana pool.
      * Returns unchanged state if player doesn't exist.
      */
-    fun addMana(playerId: EntityId, color: Color, amount: Int = 1): EcsGameState {
+    fun addMana(playerId: EntityId, color: Color, amount: Int = 1): GameState {
         val manaPool = getComponent<ManaPoolComponent>(playerId) ?: return this
         return updateEntity(playerId) { it.with(manaPool.add(color, amount)) }
     }
@@ -880,7 +880,7 @@ data class EcsGameState(
      * Add colorless mana to a player's mana pool.
      * Returns unchanged state if player doesn't exist.
      */
-    fun addColorlessMana(playerId: EntityId, amount: Int = 1): EcsGameState {
+    fun addColorlessMana(playerId: EntityId, amount: Int = 1): GameState {
         val manaPool = getComponent<ManaPoolComponent>(playerId) ?: return this
         return updateEntity(playerId) { it.with(manaPool.addColorless(amount)) }
     }
@@ -889,7 +889,7 @@ data class EcsGameState(
      * Empty a player's mana pool.
      * Returns unchanged state if player doesn't exist.
      */
-    fun emptyManaPool(playerId: EntityId): EcsGameState {
+    fun emptyManaPool(playerId: EntityId): GameState {
         val manaPool = getComponent<ManaPoolComponent>(playerId) ?: return this
         return updateEntity(playerId) { it.with(manaPool.empty()) }
     }
@@ -898,7 +898,7 @@ data class EcsGameState(
      * Add poison counters to a player.
      * Returns unchanged state if player doesn't exist.
      */
-    fun addPoisonCounters(playerId: EntityId, amount: Int): EcsGameState {
+    fun addPoisonCounters(playerId: EntityId, amount: Int): GameState {
         val poison = getComponent<PoisonComponent>(playerId) ?: return this
         return updateEntity(playerId) { it.with(poison.add(amount)) }
     }
@@ -907,7 +907,7 @@ data class EcsGameState(
      * Record that a player played a land this turn.
      * Returns unchanged state if player doesn't exist.
      */
-    fun recordLandPlayed(playerId: EntityId): EcsGameState {
+    fun recordLandPlayed(playerId: EntityId): GameState {
         val lands = getComponent<LandsPlayedComponent>(playerId) ?: return this
         return updateEntity(playerId) { it.with(lands.playLand()) }
     }
@@ -916,7 +916,7 @@ data class EcsGameState(
      * Reset lands played count (called at start of turn).
      * Returns unchanged state if player doesn't exist.
      */
-    fun resetLandsPlayed(playerId: EntityId): EcsGameState {
+    fun resetLandsPlayed(playerId: EntityId): GameState {
         val lands = getComponent<LandsPlayedComponent>(playerId) ?: return this
         return updateEntity(playerId) { it.with(lands.reset()) }
     }
@@ -924,13 +924,13 @@ data class EcsGameState(
     /**
      * Mark a player as having lost the game.
      */
-    fun markPlayerLost(playerId: EntityId, reason: String): EcsGameState =
+    fun markPlayerLost(playerId: EntityId, reason: String): GameState =
         addComponent(playerId, LostGameComponent(reason))
 
     /**
      * Mark a player as having won the game.
      */
-    fun markPlayerWon(playerId: EntityId): EcsGameState =
+    fun markPlayerWon(playerId: EntityId): GameState =
         addComponent(playerId, WonGameComponent)
 
     companion object {
@@ -939,7 +939,7 @@ data class EcsGameState(
          *
          * @param players List of (EntityId, playerName) pairs
          */
-        fun newGame(players: List<Pair<EntityId, String>>): EcsGameState {
+        fun newGame(players: List<Pair<EntityId, String>>): GameState {
             require(players.size >= 2) { "Game requires at least 2 players" }
 
             // Create player entities
@@ -970,7 +970,7 @@ data class EcsGameState(
             // Create turn state with EntityId player order
             val playerOrder = players.map { it.first }
 
-            return EcsGameState(
+            return GameState(
                 entities = entities,
                 zones = zones,
                 turnState = TurnState.newGame(playerOrder)
@@ -980,7 +980,7 @@ data class EcsGameState(
         /**
          * Create initial game state with simple string player names.
          */
-        fun newGame(player1Name: String, player2Name: String): EcsGameState {
+        fun newGame(player1Name: String, player2Name: String): GameState {
             val player1 = EntityId.generate() to player1Name
             val player2 = EntityId.generate() to player2Name
             return newGame(listOf(player1, player2))

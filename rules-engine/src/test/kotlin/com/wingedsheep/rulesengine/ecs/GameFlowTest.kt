@@ -14,7 +14,7 @@ import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlin.random.Random
 
-class EcsGameFlowTest : FunSpec({
+class GameFlowTest : FunSpec({
 
     val player1Id = EntityId.of("player1")
     val player2Id = EntityId.of("player2")
@@ -40,8 +40,8 @@ class EcsGameFlowTest : FunSpec({
         )
     }
 
-    fun createGameWithDeck(cardCount: Int = 60): EcsGameState {
-        var state = EcsGameState.newGame(listOf(player1Id to "Alice", player2Id to "Bob"))
+    fun createGameWithDeck(cardCount: Int = 60): GameState {
+        var state = GameState.newGame(listOf(player1Id to "Alice", player2Id to "Bob"))
 
         // Add cards to both players' libraries
         for (playerId in listOf(player1Id, player2Id)) {
@@ -61,7 +61,7 @@ class EcsGameFlowTest : FunSpec({
 
     context("Game Setup") {
         test("createGame creates initial state with correct players") {
-            val state = EcsGameEngine.createGame(listOf(player1Id to "Alice", player2Id to "Bob"))
+            val state = GameEngine.createGame(listOf(player1Id to "Alice", player2Id to "Bob"))
 
             state.getPlayerIds() shouldHaveSize 2
             state.turnState.playerOrder shouldHaveSize 2
@@ -72,10 +72,10 @@ class EcsGameFlowTest : FunSpec({
             val state = createGameWithDeck(60)
             val random = Random(42) // Fixed seed for reproducibility
 
-            val result = EcsGameEngine.setupGame(state, random)
+            val result = GameEngine.setupGame(state, random)
 
-            result.shouldBeInstanceOf<EcsSetupResult.Success>()
-            val setupState = (result as EcsSetupResult.Success).state
+            result.shouldBeInstanceOf<SetupResult.Success>()
+            val setupState = (result as SetupResult.Success).state
 
             // Each player should have 7 cards in hand
             setupState.getHand(player1Id) shouldHaveSize 7
@@ -87,7 +87,7 @@ class EcsGameFlowTest : FunSpec({
         }
 
         test("starting life total is 20") {
-            val state = EcsGameEngine.createGame(listOf(player1Id to "Alice", player2Id to "Bob"))
+            val state = GameEngine.createGame(listOf(player1Id to "Alice", player2Id to "Bob"))
 
             state.getComponent<LifeComponent>(player1Id)?.life shouldBe 20
             state.getComponent<LifeComponent>(player2Id)?.life shouldBe 20
@@ -99,13 +99,13 @@ class EcsGameFlowTest : FunSpec({
             val state = createGameWithDeck(60)
             val random = Random(42)
 
-            val setupResult = EcsGameEngine.setupGame(state, random) as EcsSetupResult.Success
+            val setupResult = GameEngine.setupGame(state, random) as SetupResult.Success
             val setupState = setupResult.state
 
-            val result = EcsGameEngine.startMulligan(setupState, player1Id, 1, random)
+            val result = GameEngine.startMulligan(setupState, player1Id, 1, random)
 
-            result.shouldBeInstanceOf<EcsMulliganResult.Success>()
-            val mulliganState = (result as EcsMulliganResult.Success).state
+            result.shouldBeInstanceOf<MulliganResult.Success>()
+            val mulliganState = (result as MulliganResult.Success).state
 
             // Player should still have 7 cards in hand
             mulliganState.getHand(player1Id) shouldHaveSize 7
@@ -118,21 +118,21 @@ class EcsGameFlowTest : FunSpec({
             val state = createGameWithDeck(60)
             val random = Random(42)
 
-            val setupResult = EcsGameEngine.setupGame(state, random) as EcsSetupResult.Success
+            val setupResult = GameEngine.setupGame(state, random) as SetupResult.Success
             var currentState = setupResult.state
 
             // Start mulligan
-            val mulliganResult = EcsGameEngine.startMulligan(currentState, player1Id, 1, random) as EcsMulliganResult.Success
+            val mulliganResult = GameEngine.startMulligan(currentState, player1Id, 1, random) as MulliganResult.Success
             currentState = mulliganResult.state
 
             // Get a card from hand to put on bottom
             val cardToPutOnBottom = currentState.getHand(player1Id).first()
 
             // Execute mulligan
-            val finalResult = EcsGameEngine.executeMulligan(currentState, player1Id, listOf(cardToPutOnBottom), random)
+            val finalResult = GameEngine.executeMulligan(currentState, player1Id, listOf(cardToPutOnBottom), random)
 
-            finalResult.shouldBeInstanceOf<EcsMulliganResult.Success>()
-            val finalState = (finalResult as EcsMulliganResult.Success).state
+            finalResult.shouldBeInstanceOf<MulliganResult.Success>()
+            val finalState = (finalResult as MulliganResult.Success).state
 
             // Player should have 6 cards in hand (7 - 1 put on bottom)
             finalState.getHand(player1Id) shouldHaveSize 6
@@ -145,28 +145,28 @@ class EcsGameFlowTest : FunSpec({
             val state = createGameWithDeck(60)
             val random = Random(42)
 
-            val setupResult = EcsGameEngine.setupGame(state, random) as EcsSetupResult.Success
+            val setupResult = GameEngine.setupGame(state, random) as SetupResult.Success
             val setupState = setupResult.state
 
-            val result = EcsGameEngine.startMulligan(setupState, player1Id, 2, random)
+            val result = GameEngine.startMulligan(setupState, player1Id, 2, random)
 
-            result.shouldBeInstanceOf<EcsMulliganResult.Success>()
-            (result as EcsMulliganResult.Success).cardsToPutOnBottom shouldBe 2
+            result.shouldBeInstanceOf<MulliganResult.Success>()
+            (result as MulliganResult.Success).cardsToPutOnBottom shouldBe 2
         }
     }
 
     context("Win/Lose Conditions") {
         test("player loses when life reaches 0") {
-            var state = EcsGameEngine.createGame(listOf(player1Id to "Alice", player2Id to "Bob"))
+            var state = GameEngine.createGame(listOf(player1Id to "Alice", player2Id to "Bob"))
 
             // Deal 20 damage to player 1
-            val result = EcsGameEngine.executeAction(state, EcsLoseLife(player1Id, 20))
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
-            state = (result as EcsActionResult.Success).state
+            val result = GameEngine.executeAction(state, LoseLife(player1Id, 20))
+            result.shouldBeInstanceOf<GameActionResult.Success>()
+            state = (result as GameActionResult.Success).state
 
             // Check state-based actions
-            val sbaResult = EcsGameEngine.checkStateBasedActions(state)
-            state = (sbaResult as EcsActionResult.Success).state
+            val sbaResult = GameEngine.checkStateBasedActions(state)
+            state = (sbaResult as GameActionResult.Success).state
 
             state.hasComponent<LostGameComponent>(player1Id) shouldBe true
             state.isGameOver shouldBe true
@@ -174,29 +174,29 @@ class EcsGameFlowTest : FunSpec({
         }
 
         test("player loses when drawing from empty library") {
-            val state = EcsGameEngine.createGame(listOf(player1Id to "Alice", player2Id to "Bob"))
+            val state = GameEngine.createGame(listOf(player1Id to "Alice", player2Id to "Bob"))
 
             // Try to draw a card from empty library
-            val result = EcsGameEngine.executeAction(state, EcsDrawCard(player1Id, 1))
-            val success = result as EcsActionResult.Success
+            val result = GameEngine.executeAction(state, DrawCard(player1Id, 1))
+            val success = result as GameActionResult.Success
 
             // Player should have lost
             success.state.hasComponent<LostGameComponent>(player1Id) shouldBe true
 
             // Check events
-            success.events.any { it is EcsActionEvent.DrawFailed } shouldBe true
+            success.events.any { it is GameActionEvent.DrawFailed } shouldBe true
         }
 
         test("player loses with 10 or more poison counters") {
-            var state = EcsGameEngine.createGame(listOf(player1Id to "Alice", player2Id to "Bob"))
+            var state = GameEngine.createGame(listOf(player1Id to "Alice", player2Id to "Bob"))
 
             // Give player 1 ten poison counters
-            val result = EcsGameEngine.executeAction(state, EcsAddPoisonCounters(player1Id, 10))
-            state = (result as EcsActionResult.Success).state
+            val result = GameEngine.executeAction(state, AddPoisonCounters(player1Id, 10))
+            state = (result as GameActionResult.Success).state
 
             // Check state-based actions
-            val sbaResult = EcsGameEngine.checkStateBasedActions(state)
-            state = (sbaResult as EcsActionResult.Success).state
+            val sbaResult = GameEngine.checkStateBasedActions(state)
+            state = (sbaResult as GameActionResult.Success).state
 
             state.hasComponent<LostGameComponent>(player1Id) shouldBe true
             state.isGameOver shouldBe true
@@ -204,15 +204,15 @@ class EcsGameFlowTest : FunSpec({
         }
 
         test("game is a draw when all players lose simultaneously") {
-            var state = EcsGameEngine.createGame(listOf(player1Id to "Alice", player2Id to "Bob"))
+            var state = GameEngine.createGame(listOf(player1Id to "Alice", player2Id to "Bob"))
 
             // Set both players to 0 life
             state = state.updateEntity(player1Id) { it.with(LifeComponent(0)) }
             state = state.updateEntity(player2Id) { it.with(LifeComponent(0)) }
 
             // Check state-based actions
-            val sbaResult = EcsGameEngine.checkStateBasedActions(state)
-            state = (sbaResult as EcsActionResult.Success).state
+            val sbaResult = GameEngine.checkStateBasedActions(state)
+            state = (sbaResult as GameActionResult.Success).state
 
             state.hasComponent<LostGameComponent>(player1Id) shouldBe true
             state.hasComponent<LostGameComponent>(player2Id) shouldBe true
@@ -223,7 +223,7 @@ class EcsGameFlowTest : FunSpec({
 
     context("State-Based Actions") {
         test("creature with 0 toughness dies") {
-            var state = EcsGameEngine.createGame(listOf(player1Id to "Alice", player2Id to "Bob"))
+            var state = GameEngine.createGame(listOf(player1Id to "Alice", player2Id to "Bob"))
 
             // Create a creature with 0 toughness
             val def = CardDefinition.creature(
@@ -241,8 +241,8 @@ class EcsGameFlowTest : FunSpec({
             state = newState.addToZone(creatureId, ZoneId.BATTLEFIELD)
 
             // Check state-based actions
-            val sbaResult = EcsGameEngine.checkStateBasedActions(state)
-            state = (sbaResult as EcsActionResult.Success).state
+            val sbaResult = GameEngine.checkStateBasedActions(state)
+            state = (sbaResult as GameActionResult.Success).state
 
             // Creature should be in graveyard
             state.getBattlefield().contains(creatureId) shouldBe false
@@ -250,7 +250,7 @@ class EcsGameFlowTest : FunSpec({
         }
 
         test("creature with lethal damage dies") {
-            var state = EcsGameEngine.createGame(listOf(player1Id to "Alice", player2Id to "Bob"))
+            var state = GameEngine.createGame(listOf(player1Id to "Alice", player2Id to "Bob"))
 
             // Create a 2/2 creature and deal 2 damage to it
             val def = CardDefinition.creature(
@@ -269,8 +269,8 @@ class EcsGameFlowTest : FunSpec({
             state = newState.addToZone(creatureId, ZoneId.BATTLEFIELD)
 
             // Check state-based actions
-            val sbaResult = EcsGameEngine.checkStateBasedActions(state)
-            state = (sbaResult as EcsActionResult.Success).state
+            val sbaResult = GameEngine.checkStateBasedActions(state)
+            state = (sbaResult as GameActionResult.Success).state
 
             // Creature should be in graveyard
             state.getBattlefield().contains(creatureId) shouldBe false
@@ -280,43 +280,43 @@ class EcsGameFlowTest : FunSpec({
 
     context("Game Engine utilities") {
         test("isGameOver returns correct value") {
-            var state = EcsGameEngine.createGame(listOf(player1Id to "Alice", player2Id to "Bob"))
+            var state = GameEngine.createGame(listOf(player1Id to "Alice", player2Id to "Bob"))
 
-            EcsGameEngine.isGameOver(state) shouldBe false
+            GameEngine.isGameOver(state) shouldBe false
 
             state = state.endGame(player1Id)
 
-            EcsGameEngine.isGameOver(state) shouldBe true
+            GameEngine.isGameOver(state) shouldBe true
         }
 
         test("getWinner returns correct value") {
-            var state = EcsGameEngine.createGame(listOf(player1Id to "Alice", player2Id to "Bob"))
+            var state = GameEngine.createGame(listOf(player1Id to "Alice", player2Id to "Bob"))
 
-            EcsGameEngine.getWinner(state) shouldBe null
+            GameEngine.getWinner(state) shouldBe null
 
             state = state.endGame(player1Id)
 
-            EcsGameEngine.getWinner(state) shouldBe player1Id
+            GameEngine.getWinner(state) shouldBe player1Id
         }
 
         test("executeAction delegates to action handler") {
-            val state = EcsGameEngine.createGame(listOf(player1Id to "Alice", player2Id to "Bob"))
-            val result = EcsGameEngine.executeAction(state, EcsGainLife(player1Id, 5))
+            val state = GameEngine.createGame(listOf(player1Id to "Alice", player2Id to "Bob"))
+            val result = GameEngine.executeAction(state, GainLife(player1Id, 5))
 
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
-            (result as EcsActionResult.Success).state.getComponent<LifeComponent>(player1Id)?.life shouldBe 25
+            result.shouldBeInstanceOf<GameActionResult.Success>()
+            (result as GameActionResult.Success).state.getComponent<LifeComponent>(player1Id)?.life shouldBe 25
         }
 
         test("executeActions executes multiple actions") {
-            val state = EcsGameEngine.createGame(listOf(player1Id to "Alice", player2Id to "Bob"))
+            val state = GameEngine.createGame(listOf(player1Id to "Alice", player2Id to "Bob"))
             val actions = listOf(
-                EcsGainLife(player1Id, 5),
-                EcsLoseLife(player2Id, 3)
+                GainLife(player1Id, 5),
+                LoseLife(player2Id, 3)
             )
-            val result = EcsGameEngine.executeActions(state, actions)
+            val result = GameEngine.executeActions(state, actions)
 
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
-            val success = result as EcsActionResult.Success
+            result.shouldBeInstanceOf<GameActionResult.Success>()
+            val success = result as GameActionResult.Success
             success.state.getComponent<LifeComponent>(player1Id)?.life shouldBe 25
             success.state.getComponent<LifeComponent>(player2Id)?.life shouldBe 17
         }

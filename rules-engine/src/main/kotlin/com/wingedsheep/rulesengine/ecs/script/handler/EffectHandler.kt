@@ -1,8 +1,8 @@
 package com.wingedsheep.rulesengine.ecs.script.handler
 
 import com.wingedsheep.rulesengine.ability.Effect
-import com.wingedsheep.rulesengine.ecs.EcsGameState
-import com.wingedsheep.rulesengine.ecs.script.EcsEvent
+import com.wingedsheep.rulesengine.ecs.GameState
+import com.wingedsheep.rulesengine.ecs.script.EffectEvent
 import com.wingedsheep.rulesengine.ecs.script.ExecutionContext
 import com.wingedsheep.rulesengine.ecs.script.ExecutionResult
 import kotlin.reflect.KClass
@@ -31,7 +31,7 @@ interface EffectHandler<T : Effect> {
      * @return Result containing new state, events, and any temporary modifiers
      */
     fun execute(
-        state: EcsGameState,
+        state: GameState,
         effect: T,
         context: ExecutionContext
     ): ExecutionResult
@@ -45,22 +45,22 @@ abstract class BaseEffectHandler<T : Effect> : EffectHandler<T> {
     /**
      * Create a no-op result (state unchanged, no events).
      */
-    protected fun noOp(state: EcsGameState): ExecutionResult =
+    protected fun noOp(state: GameState): ExecutionResult =
         ExecutionResult(state)
 
     /**
      * Create a result with the given state and events.
      */
     protected fun result(
-        state: EcsGameState,
-        vararg events: EcsEvent
+        state: GameState,
+        vararg events: EffectEvent
     ): ExecutionResult = ExecutionResult(state, events.toList())
 
     /**
      * Create a result with the given state and event list.
      */
     protected fun result(
-        state: EcsGameState,
-        events: List<EcsEvent>
+        state: GameState,
+        events: List<EffectEvent>
     ): ExecutionResult = ExecutionResult(state, events)
 }

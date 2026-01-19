@@ -1,7 +1,7 @@
 package com.wingedsheep.rulesengine.ecs.event
 
 import com.wingedsheep.rulesengine.ability.*
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.components.CardComponent
@@ -10,13 +10,13 @@ import com.wingedsheep.rulesengine.ecs.components.ControllerComponent
 /**
  * Detects triggered abilities that should fire based on game events.
  *
- * This is the ECS version of TriggerDetector, working with EntityId and EcsGameState
+ * This is the ECS version of TriggerDetector, working with EntityId and GameState
  * instead of CardId/PlayerId and GameState.
  *
  * Triggers are returned in APNAP (Active Player, Non-Active Player) order for
  * proper stack placement.
  */
-class EcsTriggerDetector {
+class TriggerDetector {
 
     /**
      * Detect all triggers that should fire based on the given events.
@@ -27,11 +27,11 @@ class EcsTriggerDetector {
      * @return List of pending triggers in APNAP order
      */
     fun detectTriggers(
-        state: EcsGameState,
-        events: List<EcsGameEvent>,
-        abilityRegistry: EcsAbilityRegistry
-    ): List<EcsPendingTrigger> {
-        val triggers = mutableListOf<EcsPendingTrigger>()
+        state: GameState,
+        events: List<GameEvent>,
+        abilityRegistry: AbilityRegistry
+    ): List<PendingTrigger> {
+        val triggers = mutableListOf<PendingTrigger>()
 
         for (event in events) {
             triggers.addAll(detectTriggersForEvent(state, event, abilityRegistry))
@@ -45,19 +45,19 @@ class EcsTriggerDetector {
      * Detect triggers for phase/step events.
      */
     fun detectPhaseStepTriggers(
-        state: EcsGameState,
+        state: GameState,
         phase: String,
         step: String,
         activePlayerId: EntityId,
-        abilityRegistry: EcsAbilityRegistry
-    ): List<EcsPendingTrigger> {
+        abilityRegistry: AbilityRegistry
+    ): List<PendingTrigger> {
         val event = when {
-            step == "Upkeep" -> EcsGameEvent.UpkeepBegan(activePlayerId)
-            step == "End" -> EcsGameEvent.EndStepBegan(activePlayerId)
+            step == "Upkeep" -> GameEvent.UpkeepBegan(activePlayerId)
+            step == "End" -> GameEvent.EndStepBegan(activePlayerId)
             step == "BeginCombat" -> {
                 // Get defending player (opponent)
                 val defendingPlayerId = state.getPlayerIds().find { it != activePlayerId } ?: return emptyList()
-                EcsGameEvent.CombatBegan(activePlayerId, defendingPlayerId)
+                GameEvent.CombatBegan(activePlayerId, defendingPlayerId)
             }
             else -> return emptyList()
         }
@@ -66,11 +66,11 @@ class EcsTriggerDetector {
     }
 
     private fun detectTriggersForEvent(
-        state: EcsGameState,
-        event: EcsGameEvent,
-        abilityRegistry: EcsAbilityRegistry
-    ): List<EcsPendingTrigger> {
-        val triggers = mutableListOf<EcsPendingTrigger>()
+        state: GameState,
+        event: GameEvent,
+        abilityRegistry: AbilityRegistry
+    ): List<PendingTrigger> {
+        val triggers = mutableListOf<PendingTrigger>()
 
         // Get all permanents on battlefield that might have triggered abilities
         for (entityId in state.getBattlefield()) {
@@ -84,12 +84,12 @@ class EcsTriggerDetector {
             for (ability in abilities) {
                 if (matchesTrigger(ability.trigger, event, entityId, controllerId, state)) {
                     triggers.add(
-                        EcsPendingTrigger(
+                        PendingTrigger(
                             ability = ability,
                             sourceId = entityId,
                             sourceName = cardComponent.definition.name,
                             controllerId = controllerId,
-                            triggerContext = EcsTriggerContext.fromEvent(event)
+                            triggerContext = TriggerContext.fromEvent(event)
                         )
                     )
                 }
@@ -97,7 +97,7 @@ class EcsTriggerDetector {
         }
 
         // Also check for death triggers (source might not be on battlefield anymore)
-        if (event is EcsGameEvent.CreatureDied) {
+        if (event is GameEvent.CreatureDied) {
             val entityId = event.entityId
             val container = state.getEntity(entityId) ?: return triggers
             val cardComponent = container.get<CardComponent>() ?: return triggers
@@ -107,12 +107,12 @@ class EcsTriggerDetector {
             for (ability in abilities) {
                 if (ability.trigger is OnDeath && (ability.trigger as OnDeath).selfOnly) {
                     triggers.add(
-                        EcsPendingTrigger(
+                        PendingTrigger(
                             ability = ability,
                             sourceId = entityId,
                             sourceName = cardComponent.definition.name,
                             controllerId = controllerId,
-                            triggerContext = EcsTriggerContext.fromEvent(event)
+                            triggerContext = TriggerContext.fromEvent(event)
                         )
                     )
                 }
@@ -124,50 +124,50 @@ class EcsTriggerDetector {
 
     private fun matchesTrigger(
         trigger: Trigger,
-        event: EcsGameEvent,
+        event: GameEvent,
         sourceId: EntityId,
         controllerId: EntityId,
-        state: EcsGameState
+        state: GameState
     ): Boolean {
         return when (trigger) {
             is OnEnterBattlefield -> {
-                event is EcsGameEvent.EnteredBattlefield &&
+                event is GameEvent.EnteredBattlefield &&
                     (!trigger.selfOnly || event.entityId == sourceId)
             }
 
             is OnLeavesBattlefield -> {
-                event is EcsGameEvent.LeftBattlefield &&
+                event is GameEvent.LeftBattlefield &&
                     (!trigger.selfOnly || event.entityId == sourceId)
             }
 
             is OnDeath -> {
-                event is EcsGameEvent.CreatureDied &&
+                event is GameEvent.CreatureDied &&
                     (!trigger.selfOnly || event.entityId == sourceId)
             }
 
             is OnDraw -> {
-                event is EcsGameEvent.CardDrawn &&
+                event is GameEvent.CardDrawn &&
                     (!trigger.controllerOnly || event.playerId == controllerId)
             }
 
             is OnAttack -> {
-                event is EcsGameEvent.AttackerDeclared &&
+                event is GameEvent.AttackerDeclared &&
                     (!trigger.selfOnly || event.creatureId == sourceId)
             }
 
             is OnBlock -> {
-                event is EcsGameEvent.BlockerDeclared &&
+                event is GameEvent.BlockerDeclared &&
                     (!trigger.selfOnly || event.blockerId == sourceId)
             }
 
             is OnDealsDamage -> {
                 when (event) {
-                    is EcsGameEvent.DamageDealtToPlayer -> {
+                    is GameEvent.DamageDealtToPlayer -> {
                         val matches = !trigger.selfOnly || event.sourceId == sourceId
                         val combatMatches = !trigger.combatOnly || event.isCombatDamage
                         matches && combatMatches
                     }
-                    is EcsGameEvent.DamageDealtToCreature -> {
+                    is GameEvent.DamageDealtToCreature -> {
                         val matches = !trigger.selfOnly || event.sourceId == sourceId
                         val combatMatches = !trigger.combatOnly || event.isCombatDamage
                         val targetMatches = !trigger.toPlayerOnly
@@ -178,34 +178,34 @@ class EcsTriggerDetector {
             }
 
             is OnUpkeep -> {
-                event is EcsGameEvent.UpkeepBegan &&
+                event is GameEvent.UpkeepBegan &&
                     (!trigger.controllerOnly || event.activePlayerId == controllerId)
             }
 
             is OnEndStep -> {
-                event is EcsGameEvent.EndStepBegan &&
+                event is GameEvent.EndStepBegan &&
                     (!trigger.controllerOnly || event.activePlayerId == controllerId)
             }
 
             is OnBeginCombat -> {
-                event is EcsGameEvent.CombatBegan &&
+                event is GameEvent.CombatBegan &&
                     (!trigger.controllerOnly || event.attackingPlayerId == controllerId)
             }
 
             is OnDamageReceived -> {
-                event is EcsGameEvent.DamageDealtToCreature &&
+                event is GameEvent.DamageDealtToCreature &&
                     (!trigger.selfOnly || event.targetCreatureId == sourceId)
             }
 
             is OnSpellCast -> {
-                event is EcsGameEvent.SpellCast &&
+                event is GameEvent.SpellCast &&
                     (!trigger.controllerOnly || event.casterId == controllerId) &&
                     matchesSpellTypeFilter(trigger.spellType, event)
             }
         }
     }
 
-    private fun matchesSpellTypeFilter(filter: SpellTypeFilter, event: EcsGameEvent.SpellCast): Boolean {
+    private fun matchesSpellTypeFilter(filter: SpellTypeFilter, event: GameEvent.SpellCast): Boolean {
         return when (filter) {
             SpellTypeFilter.ANY -> true
             SpellTypeFilter.CREATURE -> event.isCreatureSpell
@@ -220,9 +220,9 @@ class EcsTriggerDetector {
      * then non-active players in turn order.
      */
     private fun sortByApnapOrder(
-        state: EcsGameState,
-        triggers: List<EcsPendingTrigger>
-    ): List<EcsPendingTrigger> {
+        state: GameState,
+        triggers: List<PendingTrigger>
+    ): List<PendingTrigger> {
         val activePlayerId = state.activePlayerId ?: return triggers
 
         // Group by controller
@@ -248,7 +248,7 @@ class EcsTriggerDetector {
  * Implementations can look up abilities from CardDefinitions,
  * external files, or other sources.
  */
-interface EcsAbilityRegistry {
+interface AbilityRegistry {
     /**
      * Get all triggered abilities for the given entity.
      */
@@ -264,7 +264,7 @@ interface EcsAbilityRegistry {
  * In the full system, abilities would be loaded from card scripts or a database.
  * This implementation allows registering abilities manually for testing.
  */
-class CardDefinitionAbilityRegistry : EcsAbilityRegistry {
+class CardDefinitionAbilityRegistry : AbilityRegistry {
 
     private val abilitiesByCard = mutableMapOf<String, List<TriggeredAbility>>()
 

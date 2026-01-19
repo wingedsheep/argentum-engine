@@ -4,8 +4,8 @@ import com.wingedsheep.rulesengine.ability.Effect
 import com.wingedsheep.rulesengine.ability.TriggeredAbility
 import com.wingedsheep.rulesengine.ecs.Component
 import com.wingedsheep.rulesengine.ecs.EntityId
-import com.wingedsheep.rulesengine.ecs.event.EcsChosenTarget
-import com.wingedsheep.rulesengine.ecs.event.EcsTriggerContext
+import com.wingedsheep.rulesengine.ecs.event.ChosenTarget
+import com.wingedsheep.rulesengine.ecs.event.TriggerContext
 import kotlinx.serialization.Serializable
 
 /**
@@ -41,7 +41,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class SpellOnStackComponent(
     val casterId: EntityId,
-    val targets: List<EcsChosenTarget> = emptyList(),
+    val targets: List<ChosenTarget> = emptyList(),
     val xValue: Int? = null,
     val wasKicked: Boolean = false,
     val chosenModes: List<Int> = emptyList()
@@ -57,16 +57,16 @@ data class SpellOnStackComponent(
     val targetEntityIds: List<EntityId>
         get() = targets.mapNotNull { target ->
             when (target) {
-                is EcsChosenTarget.Player -> target.playerId
-                is EcsChosenTarget.Permanent -> target.entityId
-                is EcsChosenTarget.Card -> target.cardId
+                is ChosenTarget.Player -> target.playerId
+                is ChosenTarget.Permanent -> target.entityId
+                is ChosenTarget.Card -> target.cardId
             }
         }
 
     /**
      * Add a target to the spell.
      */
-    fun withTarget(target: EcsChosenTarget): SpellOnStackComponent =
+    fun withTarget(target: ChosenTarget): SpellOnStackComponent =
         copy(targets = targets + target)
 
     /**
@@ -108,8 +108,8 @@ data class TriggeredAbilityOnStackComponent(
     val sourceId: EntityId,
     val sourceName: String,
     val controllerId: EntityId,
-    val triggerContext: EcsTriggerContext,
-    val targets: List<EcsChosenTarget> = emptyList()
+    val triggerContext: TriggerContext,
+    val targets: List<ChosenTarget> = emptyList()
 ) : Component {
     val description: String
         get() = "$sourceName: ${ability.description}"
@@ -119,13 +119,13 @@ data class TriggeredAbilityOnStackComponent(
     val targetEntityIds: List<EntityId>
         get() = targets.mapNotNull { target ->
             when (target) {
-                is EcsChosenTarget.Player -> target.playerId
-                is EcsChosenTarget.Permanent -> target.entityId
-                is EcsChosenTarget.Card -> target.cardId
+                is ChosenTarget.Player -> target.playerId
+                is ChosenTarget.Permanent -> target.entityId
+                is ChosenTarget.Card -> target.cardId
             }
         }
 
-    fun withTarget(target: EcsChosenTarget): TriggeredAbilityOnStackComponent =
+    fun withTarget(target: ChosenTarget): TriggeredAbilityOnStackComponent =
         copy(targets = targets + target)
 }
 
@@ -151,19 +151,19 @@ data class ActivatedAbilityOnStackComponent(
     val sourceId: EntityId,
     val sourceName: String,
     val controllerId: EntityId,
-    val targets: List<EcsChosenTarget> = emptyList()
+    val targets: List<ChosenTarget> = emptyList()
 ) : Component {
     val hasTargets: Boolean get() = targets.isNotEmpty()
 
     val targetEntityIds: List<EntityId>
         get() = targets.mapNotNull { target ->
             when (target) {
-                is EcsChosenTarget.Player -> target.playerId
-                is EcsChosenTarget.Permanent -> target.entityId
-                is EcsChosenTarget.Card -> target.cardId
+                is ChosenTarget.Player -> target.playerId
+                is ChosenTarget.Permanent -> target.entityId
+                is ChosenTarget.Card -> target.cardId
             }
         }
 
-    fun withTarget(target: EcsChosenTarget): ActivatedAbilityOnStackComponent =
+    fun withTarget(target: ChosenTarget): ActivatedAbilityOnStackComponent =
         copy(targets = targets + target)
 }

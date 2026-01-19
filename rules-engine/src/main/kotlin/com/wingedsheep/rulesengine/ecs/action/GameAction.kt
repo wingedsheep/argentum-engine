@@ -11,13 +11,13 @@ import kotlinx.serialization.Serializable
  * Sealed hierarchy of ECS-compatible game actions.
  *
  * These actions operate on EntityIds rather than CardId/PlayerId,
- * allowing direct integration with the EcsGameState.
+ * allowing direct integration with the GameState.
  *
  * Actions are immutable descriptions of state changes - they don't
- * execute themselves but are interpreted by EcsActionHandler.
+ * execute themselves but are interpreted by GameActionHandler.
  */
 @Serializable
-sealed interface EcsAction {
+sealed interface GameAction {
     val description: String
 }
 
@@ -26,44 +26,44 @@ sealed interface EcsAction {
 // =============================================================================
 
 @Serializable
-data class EcsGainLife(
+data class GainLife(
     val playerId: EntityId,
     val amount: Int
-) : EcsAction {
+) : GameAction {
     override val description: String = "Player gains $amount life"
 }
 
 @Serializable
-data class EcsLoseLife(
+data class LoseLife(
     val playerId: EntityId,
     val amount: Int
-) : EcsAction {
+) : GameAction {
     override val description: String = "Player loses $amount life"
 }
 
 @Serializable
-data class EcsSetLife(
+data class SetLife(
     val playerId: EntityId,
     val amount: Int
-) : EcsAction {
+) : GameAction {
     override val description: String = "Player's life total becomes $amount"
 }
 
 @Serializable
-data class EcsDealDamageToPlayer(
+data class DealDamageToPlayer(
     val targetPlayerId: EntityId,
     val amount: Int,
     val sourceEntityId: EntityId? = null
-) : EcsAction {
+) : GameAction {
     override val description: String = "Deal $amount damage to player"
 }
 
 @Serializable
-data class EcsDealDamageToCreature(
+data class DealDamageToCreature(
     val targetEntityId: EntityId,
     val amount: Int,
     val sourceEntityId: EntityId? = null
-) : EcsAction {
+) : GameAction {
     override val description: String = "Deal $amount damage to creature"
 }
 
@@ -72,26 +72,26 @@ data class EcsDealDamageToCreature(
 // =============================================================================
 
 @Serializable
-data class EcsAddMana(
+data class AddMana(
     val playerId: EntityId,
     val color: Color,
     val amount: Int = 1
-) : EcsAction {
+) : GameAction {
     override val description: String = "Add $amount ${color.displayName} mana"
 }
 
 @Serializable
-data class EcsAddColorlessMana(
+data class AddColorlessMana(
     val playerId: EntityId,
     val amount: Int = 1
-) : EcsAction {
+) : GameAction {
     override val description: String = "Add $amount colorless mana"
 }
 
 @Serializable
-data class EcsEmptyManaPool(
+data class EmptyManaPool(
     val playerId: EntityId
-) : EcsAction {
+) : GameAction {
     override val description: String = "Empty mana pool"
 }
 
@@ -108,11 +108,11 @@ data class EcsEmptyManaPool(
  * @param playerId The player activating the ability
  */
 @Serializable
-data class EcsActivateManaAbility(
+data class ActivateManaAbility(
     val sourceEntityId: EntityId,
     val abilityIndex: Int,
     val playerId: EntityId
-) : EcsAction {
+) : GameAction {
     override val description: String = "Activate mana ability"
 }
 
@@ -121,18 +121,18 @@ data class EcsActivateManaAbility(
 // =============================================================================
 
 @Serializable
-data class EcsDrawCard(
+data class DrawCard(
     val playerId: EntityId,
     val count: Int = 1
-) : EcsAction {
+) : GameAction {
     override val description: String = "Draw $count card(s)"
 }
 
 @Serializable
-data class EcsDiscardCard(
+data class DiscardCard(
     val playerId: EntityId,
     val cardId: EntityId
-) : EcsAction {
+) : GameAction {
     override val description: String = "Discard a card"
 }
 
@@ -141,50 +141,50 @@ data class EcsDiscardCard(
 // =============================================================================
 
 @Serializable
-data class EcsMoveEntity(
+data class MoveEntity(
     val entityId: EntityId,
     val fromZone: ZoneId,
     val toZone: ZoneId,
     val toTop: Boolean = true
-) : EcsAction {
+) : GameAction {
     override val description: String = "Move entity from $fromZone to $toZone"
 }
 
 @Serializable
-data class EcsPutOntoBattlefield(
+data class PutOntoBattlefield(
     val entityId: EntityId,
     val controllerId: EntityId,
     val tapped: Boolean = false
-) : EcsAction {
+) : GameAction {
     override val description: String = "Put entity onto battlefield${if (tapped) " tapped" else ""}"
 }
 
 @Serializable
-data class EcsDestroyPermanent(
+data class DestroyPermanent(
     val entityId: EntityId
-) : EcsAction {
+) : GameAction {
     override val description: String = "Destroy permanent"
 }
 
 @Serializable
-data class EcsSacrificePermanent(
+data class SacrificePermanent(
     val entityId: EntityId,
     val controllerId: EntityId
-) : EcsAction {
+) : GameAction {
     override val description: String = "Sacrifice permanent"
 }
 
 @Serializable
-data class EcsExilePermanent(
+data class ExilePermanent(
     val entityId: EntityId
-) : EcsAction {
+) : GameAction {
     override val description: String = "Exile permanent"
 }
 
 @Serializable
-data class EcsReturnToHand(
+data class ReturnToHand(
     val entityId: EntityId
-) : EcsAction {
+) : GameAction {
     override val description: String = "Return to owner's hand"
 }
 
@@ -193,23 +193,23 @@ data class EcsReturnToHand(
 // =============================================================================
 
 @Serializable
-data class EcsTap(
+data class Tap(
     val entityId: EntityId
-) : EcsAction {
+) : GameAction {
     override val description: String = "Tap permanent"
 }
 
 @Serializable
-data class EcsUntap(
+data class Untap(
     val entityId: EntityId
-) : EcsAction {
+) : GameAction {
     override val description: String = "Untap permanent"
 }
 
 @Serializable
-data class EcsUntapAll(
+data class UntapAll(
     val controllerId: EntityId
-) : EcsAction {
+) : GameAction {
     override val description: String = "Untap all permanents"
 }
 
@@ -218,28 +218,28 @@ data class EcsUntapAll(
 // =============================================================================
 
 @Serializable
-data class EcsAddCounters(
+data class AddCounters(
     val entityId: EntityId,
     val counterType: String,
     val amount: Int = 1
-) : EcsAction {
+) : GameAction {
     override val description: String = "Add $amount $counterType counter(s)"
 }
 
 @Serializable
-data class EcsRemoveCounters(
+data class RemoveCounters(
     val entityId: EntityId,
     val counterType: String,
     val amount: Int = 1
-) : EcsAction {
+) : GameAction {
     override val description: String = "Remove $amount $counterType counter(s)"
 }
 
 @Serializable
-data class EcsAddPoisonCounters(
+data class AddPoisonCounters(
     val playerId: EntityId,
     val amount: Int
-) : EcsAction {
+) : GameAction {
     override val description: String = "Add $amount poison counter(s)"
 }
 
@@ -248,16 +248,16 @@ data class EcsAddPoisonCounters(
 // =============================================================================
 
 @Serializable
-data class EcsRemoveSummoningSickness(
+data class RemoveSummoningSickness(
     val entityId: EntityId
-) : EcsAction {
+) : GameAction {
     override val description: String = "Remove summoning sickness"
 }
 
 @Serializable
-data class EcsRemoveAllSummoningSickness(
+data class RemoveAllSummoningSickness(
     val controllerId: EntityId
-) : EcsAction {
+) : GameAction {
     override val description: String = "Remove summoning sickness from all creatures"
 }
 
@@ -266,17 +266,17 @@ data class EcsRemoveAllSummoningSickness(
 // =============================================================================
 
 @Serializable
-data class EcsPlayLand(
+data class PlayLand(
     val cardId: EntityId,
     val playerId: EntityId
-) : EcsAction {
+) : GameAction {
     override val description: String = "Play land"
 }
 
 @Serializable
-data class EcsResetLandsPlayed(
+data class ResetLandsPlayed(
     val playerId: EntityId
-) : EcsAction {
+) : GameAction {
     override val description: String = "Reset lands played this turn"
 }
 
@@ -285,9 +285,9 @@ data class EcsResetLandsPlayed(
 // =============================================================================
 
 @Serializable
-data class EcsShuffleLibrary(
+data class ShuffleLibrary(
     val playerId: EntityId
-) : EcsAction {
+) : GameAction {
     override val description: String = "Shuffle library"
 }
 
@@ -296,34 +296,34 @@ data class EcsShuffleLibrary(
 // =============================================================================
 
 @Serializable
-data class EcsBeginCombat(
+data class BeginCombat(
     val attackingPlayerId: EntityId,
     val defendingPlayerId: EntityId
-) : EcsAction {
+) : GameAction {
     override val description: String = "Begin combat"
 }
 
 @Serializable
-data class EcsDeclareAttacker(
+data class DeclareAttacker(
     val creatureId: EntityId,
     val controllerId: EntityId
-) : EcsAction {
+) : GameAction {
     override val description: String = "Declare attacker"
 }
 
 @Serializable
-data class EcsDeclareBlocker(
+data class DeclareBlocker(
     val blockerId: EntityId,
     val attackerId: EntityId,
     val controllerId: EntityId
-) : EcsAction {
+) : GameAction {
     override val description: String = "Declare blocker"
 }
 
 @Serializable
-data class EcsEndCombat(
+data class EndCombat(
     val playerId: EntityId
-) : EcsAction {
+) : GameAction {
     override val description: String = "End combat"
 }
 
@@ -334,11 +334,11 @@ data class EcsEndCombat(
  * to creatures blocking a single attacker.
  */
 @Serializable
-data class EcsOrderBlockers(
+data class OrderBlockers(
     val attackerId: EntityId,
     val orderedBlockerIds: List<EntityId>,
     val playerId: EntityId
-) : EcsAction {
+) : GameAction {
     override val description: String = "Order blockers for damage assignment"
 }
 
@@ -354,10 +354,10 @@ data class EcsOrderBlockers(
  *        active damage prevention effects (like Fog)
  */
 @Serializable
-data class EcsResolveCombatDamage(
+data class ResolveCombatDamage(
     val step: CombatDamageStep,
     val preventionEffectIds: List<EntityId> = emptyList()
-) : EcsAction {
+) : GameAction {
     override val description: String = "Resolve ${step.displayName} combat damage"
 }
 
@@ -375,24 +375,24 @@ enum class CombatDamageStep(val displayName: String) {
 // =============================================================================
 
 @Serializable
-data class EcsPassPriority(
+data class PassPriority(
     val playerId: EntityId
-) : EcsAction {
+) : GameAction {
     override val description: String = "Pass priority"
 }
 
 @Serializable
-data class EcsEndGame(
+data class EndGame(
     val winnerId: EntityId?
-) : EcsAction {
+) : GameAction {
     override val description: String = winnerId?.let { "Game ends. Winner declared!" } ?: "Game ends in a draw"
 }
 
 @Serializable
-data class EcsPlayerLoses(
+data class PlayerLoses(
     val playerId: EntityId,
     val reason: String
-) : EcsAction {
+) : GameAction {
     override val description: String = "Player loses: $reason"
 }
 
@@ -407,11 +407,11 @@ data class EcsPlayerLoses(
  * @param keepEntityId The legendary permanent to keep (others are sacrificed)
  */
 @Serializable
-data class EcsResolveLegendRule(
+data class ResolveLegendRule(
     val controllerId: EntityId,
     val legendaryName: String,
     val keepEntityId: EntityId
-) : EcsAction {
+) : GameAction {
     override val description: String = "Choose legendary to keep: $legendaryName"
 }
 
@@ -430,9 +430,9 @@ data class EcsResolveLegendRule(
  * Also validates targets on resolution and fizzles if all targets are invalid.
  */
 @Serializable
-data class EcsResolveTopOfStack(
+data class ResolveTopOfStack(
     val placeholder: Unit = Unit
-) : EcsAction {
+) : GameAction {
     override val description: String = "Resolve top of stack"
 }
 
@@ -448,15 +448,15 @@ data class EcsResolveTopOfStack(
  * @param xValue The value of X if applicable
  */
 @Serializable
-data class EcsCastSpell(
+data class CastSpell(
     val cardId: EntityId,
     val casterId: EntityId,
     val fromZone: com.wingedsheep.rulesengine.ecs.ZoneId,
-    val targets: List<com.wingedsheep.rulesengine.ecs.event.EcsChosenTarget> = emptyList(),
+    val targets: List<com.wingedsheep.rulesengine.ecs.event.ChosenTarget> = emptyList(),
     val xValue: Int? = null,
     /** Additional costs that were paid (sacrifice, discard, etc.) */
     val additionalCostPayment: AdditionalCostPayment = AdditionalCostPayment.NONE
-) : EcsAction {
+) : GameAction {
     override val description: String = "Cast spell"
 }
 
@@ -465,17 +465,17 @@ data class EcsCastSpell(
 // =============================================================================
 
 @Serializable
-data class EcsAttach(
+data class Attach(
     val attachmentId: EntityId,
     val targetId: EntityId
-) : EcsAction {
+) : GameAction {
     override val description: String = "Attach to permanent"
 }
 
 @Serializable
-data class EcsDetach(
+data class Detach(
     val attachmentId: EntityId
-) : EcsAction {
+) : GameAction {
     override val description: String = "Detach from permanent"
 }
 
@@ -484,15 +484,15 @@ data class EcsDetach(
 // =============================================================================
 
 @Serializable
-data class EcsCheckStateBasedActions(
+data class CheckStateBasedActions(
     val placeholder: Unit = Unit
-) : EcsAction {
+) : GameAction {
     override val description: String = "Check state-based actions"
 }
 
 @Serializable
-data class EcsClearDamage(
+data class ClearDamage(
     val entityId: EntityId? = null  // null means all creatures
-) : EcsAction {
+) : GameAction {
     override val description: String = "Clear damage"
 }

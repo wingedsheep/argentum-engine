@@ -8,12 +8,12 @@ import com.wingedsheep.rulesengine.ability.SearchLibraryEffect
 import com.wingedsheep.rulesengine.card.CardDefinition
 import com.wingedsheep.rulesengine.core.*
 import com.wingedsheep.rulesengine.ecs.Component
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
-import com.wingedsheep.rulesengine.ecs.action.EcsActionHandler
-import com.wingedsheep.rulesengine.ecs.action.EcsActionResult
-import com.wingedsheep.rulesengine.ecs.action.EcsCastSpell
+import com.wingedsheep.rulesengine.ecs.action.GameActionHandler
+import com.wingedsheep.rulesengine.ecs.action.GameActionResult
+import com.wingedsheep.rulesengine.ecs.action.CastSpell
 import com.wingedsheep.rulesengine.ecs.components.CardComponent
 import com.wingedsheep.rulesengine.ecs.components.ControllerComponent
 import com.wingedsheep.rulesengine.ecs.script.ExecutionContext
@@ -87,14 +87,14 @@ class NaturalOrderTest : FunSpec({
                 "Then shuffle your library."
     )
 
-    fun newGame(): EcsGameState = EcsGameState.newGame(
+    fun newGame(): GameState = GameState.newGame(
         listOf(player1Id to "Alice", player2Id to "Bob")
     )
 
-    fun EcsGameState.addCreatureToBattlefield(
+    fun GameState.addCreatureToBattlefield(
         def: CardDefinition,
         controllerId: EntityId
-    ): Pair<EntityId, EcsGameState> {
+    ): Pair<EntityId, GameState> {
         val components = mutableListOf<Component>(
             CardComponent(def, controllerId),
             ControllerComponent(controllerId)
@@ -103,10 +103,10 @@ class NaturalOrderTest : FunSpec({
         return creatureId to state1.addToZone(creatureId, ZoneId.BATTLEFIELD)
     }
 
-    fun EcsGameState.addCardToHand(
+    fun GameState.addCardToHand(
         def: CardDefinition,
         ownerId: EntityId
-    ): Pair<EntityId, EcsGameState> {
+    ): Pair<EntityId, GameState> {
         val components = mutableListOf<Component>(
             CardComponent(def, ownerId)
         )
@@ -115,10 +115,10 @@ class NaturalOrderTest : FunSpec({
         return cardId to state1.addToZone(cardId, handZone)
     }
 
-    fun EcsGameState.addCardToLibrary(
+    fun GameState.addCardToLibrary(
         def: CardDefinition,
         ownerId: EntityId
-    ): Pair<EntityId, EcsGameState> {
+    ): Pair<EntityId, GameState> {
         val components = mutableListOf<Component>(
             CardComponent(def, ownerId)
         )
@@ -127,7 +127,7 @@ class NaturalOrderTest : FunSpec({
         return cardId to state1.addToZone(cardId, libraryZone)
     }
 
-    val handler = EcsActionHandler()
+    val handler = GameActionHandler()
     val registry = EffectHandlerRegistry.default()
 
     context("Card Registration") {
@@ -195,7 +195,7 @@ class NaturalOrderTest : FunSpec({
             val payment = AdditionalCostPayment(
                 sacrificedPermanents = listOf(elvesId)
             )
-            val action = EcsCastSpell(
+            val action = CastSpell(
                 cardId = naturalOrderId,
                 casterId = player1Id,
                 fromZone = handZone,
@@ -203,9 +203,9 @@ class NaturalOrderTest : FunSpec({
             )
 
             val result = handler.execute(state, action)
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
+            result.shouldBeInstanceOf<GameActionResult.Success>()
 
-            val newState = (result as EcsActionResult.Success).state
+            val newState = (result as GameActionResult.Success).state
 
             // Elves should be in graveyard (sacrificed)
             newState.getBattlefield() shouldNotContain elvesId
@@ -313,7 +313,7 @@ class NaturalOrderTest : FunSpec({
 
             // Step 1: Cast Natural Order with sacrifice payment
             val payment = AdditionalCostPayment(sacrificedPermanents = listOf(mysticId))
-            val castAction = EcsCastSpell(
+            val castAction = CastSpell(
                 cardId = naturalOrderId,
                 casterId = player1Id,
                 fromZone = handZone,
@@ -321,8 +321,8 @@ class NaturalOrderTest : FunSpec({
             )
 
             val castResult = handler.execute(state, castAction)
-            castResult.shouldBeInstanceOf<EcsActionResult.Success>()
-            state = (castResult as EcsActionResult.Success).state
+            castResult.shouldBeInstanceOf<GameActionResult.Success>()
+            state = (castResult as GameActionResult.Success).state
 
             // Verify: Mystic sacrificed, Natural Order on stack
             state.getBattlefield() shouldNotContain mysticId

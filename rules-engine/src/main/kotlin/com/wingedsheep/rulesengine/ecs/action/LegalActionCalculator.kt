@@ -1,7 +1,7 @@
 package com.wingedsheep.rulesengine.ecs.action
 
 import com.wingedsheep.rulesengine.ability.AbilityRegistry
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.components.*
@@ -22,12 +22,12 @@ import com.wingedsheep.rulesengine.zone.ZoneType
  *
  * Usage:
  * ```kotlin
- * val calculator = EcsLegalActionCalculator()
+ * val calculator = LegalActionCalculator()
  * val legalActions = calculator.calculateLegalActions(state, playerId, abilityRegistry)
  * // Present legalActions to player, player chooses one, execute it
  * ```
  */
-class EcsLegalActionCalculator {
+class LegalActionCalculator {
 
     /**
      * Calculate all legal actions for a player in the current game state.
@@ -38,7 +38,7 @@ class EcsLegalActionCalculator {
      * @return A LegalActions object containing all available actions
      */
     fun calculateLegalActions(
-        state: EcsGameState,
+        state: GameState,
         playerId: EntityId,
         abilityRegistry: AbilityRegistry? = null
     ): LegalActions {
@@ -59,7 +59,7 @@ class EcsLegalActionCalculator {
     /**
      * Check if a player currently has priority (can take actions).
      */
-    private fun hasActivePriority(state: EcsGameState, playerId: EntityId): Boolean {
+    private fun hasActivePriority(state: GameState, playerId: EntityId): Boolean {
         // In a two-player game, the active player has priority first
         // After they pass, the non-active player gets priority
         // For simplicity, assume the active player has priority unless specified otherwise
@@ -69,7 +69,7 @@ class EcsLegalActionCalculator {
     /**
      * Get all lands in hand that can be played this turn.
      */
-    private fun getPlayableLands(state: EcsGameState, playerId: EntityId): List<PlayableLand> {
+    private fun getPlayableLands(state: GameState, playerId: EntityId): List<PlayableLand> {
         val step = state.turnState.step
 
         // Can only play lands during main phases on your turn
@@ -93,7 +93,7 @@ class EcsLegalActionCalculator {
                 PlayableLand(
                     cardId = cardId,
                     cardName = cardComponent.definition.name,
-                    action = EcsPlayLand(cardId, playerId)
+                    action = PlayLand(cardId, playerId)
                 )
             } else null
         }
@@ -102,7 +102,7 @@ class EcsLegalActionCalculator {
     /**
      * Get all spells in hand that can be cast.
      */
-    private fun getCastableSpells(state: EcsGameState, playerId: EntityId): List<CastableSpell> {
+    private fun getCastableSpells(state: GameState, playerId: EntityId): List<CastableSpell> {
         val step = state.turnState.step
         val isActivePlayer = state.activePlayerId == playerId
 
@@ -142,7 +142,7 @@ class EcsLegalActionCalculator {
                 manaCost = def.manaCost.toString(),
                 isCreature = def.isCreature,
                 requiresTargets = def.oracleText.contains("target"),
-                action = EcsCastSpell(
+                action = CastSpell(
                     cardId = cardId,
                     casterId = playerId,
                     fromZone = ZoneId(ZoneType.HAND, playerId)
@@ -154,7 +154,7 @@ class EcsLegalActionCalculator {
     /**
      * Count total available mana a player can produce by tapping lands.
      */
-    private fun countAvailableMana(state: EcsGameState, playerId: EntityId): Int {
+    private fun countAvailableMana(state: GameState, playerId: EntityId): Int {
         // Count untapped lands controlled by player
         return state.getBattlefield().count { entityId ->
             val container = state.getEntity(entityId) ?: return@count false
@@ -172,7 +172,7 @@ class EcsLegalActionCalculator {
      * Get all activatable abilities (mana abilities, activated abilities).
      */
     private fun getActivatableAbilities(
-        state: EcsGameState,
+        state: GameState,
         playerId: EntityId,
         abilityRegistry: AbilityRegistry?
     ): List<ActivatableAbility> {
@@ -195,7 +195,7 @@ class EcsLegalActionCalculator {
                         sourceName = cardComponent.definition.name,
                         description = "Tap for mana",
                         isManaAbility = true,
-                        action = EcsActivateManaAbility(
+                        action = ActivateManaAbility(
                             sourceEntityId = entityId,
                             abilityIndex = 0,
                             playerId = playerId
@@ -214,7 +214,7 @@ class EcsLegalActionCalculator {
     /**
      * Get all creatures that can be declared as attackers.
      */
-    private fun getDeclarableAttackers(state: EcsGameState, playerId: EntityId): List<DeclarableAttacker> {
+    private fun getDeclarableAttackers(state: GameState, playerId: EntityId): List<DeclarableAttacker> {
         val step = state.turnState.step
 
         // Can only declare attackers during declare attackers step on your turn
@@ -253,7 +253,7 @@ class EcsLegalActionCalculator {
                 creatureName = cardComponent.definition.name,
                 power = cardComponent.definition.creatureStats?.basePower ?: 0,
                 toughness = cardComponent.definition.creatureStats?.baseToughness ?: 0,
-                action = EcsDeclareAttacker(entityId, playerId)
+                action = DeclareAttacker(entityId, playerId)
             )
         }
     }
@@ -261,7 +261,7 @@ class EcsLegalActionCalculator {
     /**
      * Get all creatures that can be declared as blockers.
      */
-    private fun getDeclarableBlockers(state: EcsGameState, playerId: EntityId): List<DeclarableBlocker> {
+    private fun getDeclarableBlockers(state: GameState, playerId: EntityId): List<DeclarableBlocker> {
         val step = state.turnState.step
 
         // Can only declare blockers during declare blockers step when you're defending
@@ -299,7 +299,7 @@ class EcsLegalActionCalculator {
                     blockerId = blockerId,
                     blockerName = cardComponent.definition.name,
                     attackerId = attackerId,
-                    action = EcsDeclareBlocker(blockerId, attackerId, playerId)
+                    action = DeclareBlocker(blockerId, attackerId, playerId)
                 )
             }
         }
@@ -332,8 +332,8 @@ data class LegalActions(
     /**
      * Get all actions as a flat list.
      */
-    fun allActions(): List<EcsAction> = buildList {
-        if (canPassPriority) add(EcsPassPriority(playerId))
+    fun allActions(): List<GameAction> = buildList {
+        if (canPassPriority) add(PassPriority(playerId))
         addAll(playableLands.map { it.action })
         addAll(castableSpells.map { it.action })
         addAll(activatableAbilities.map { it.action })
@@ -348,7 +348,7 @@ data class LegalActions(
 data class PlayableLand(
     val cardId: EntityId,
     val cardName: String,
-    val action: EcsPlayLand
+    val action: PlayLand
 )
 
 /**
@@ -360,7 +360,7 @@ data class CastableSpell(
     val manaCost: String,
     val isCreature: Boolean,
     val requiresTargets: Boolean,
-    val action: EcsCastSpell
+    val action: CastSpell
 )
 
 /**
@@ -371,7 +371,7 @@ data class ActivatableAbility(
     val sourceName: String,
     val description: String,
     val isManaAbility: Boolean,
-    val action: EcsAction
+    val action: GameAction
 )
 
 /**
@@ -382,7 +382,7 @@ data class DeclarableAttacker(
     val creatureName: String,
     val power: Int,
     val toughness: Int,
-    val action: EcsDeclareAttacker
+    val action: DeclareAttacker
 )
 
 /**
@@ -392,5 +392,5 @@ data class DeclarableBlocker(
     val blockerId: EntityId,
     val blockerName: String,
     val attackerId: EntityId,
-    val action: EcsDeclareBlocker
+    val action: DeclareBlocker
 )

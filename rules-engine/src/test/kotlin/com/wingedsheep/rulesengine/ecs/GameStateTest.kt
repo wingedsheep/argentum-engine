@@ -11,12 +11,12 @@ import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 
-class EcsGameStateTest : FunSpec({
+class GameStateTest : FunSpec({
 
     val player1Id = EntityId.of("player1")
     val player2Id = EntityId.of("player2")
 
-    fun newGame(): EcsGameState = EcsGameState.newGame(
+    fun newGame(): GameState = GameState.newGame(
         listOf(
             player1Id to "Alice",
             player2Id to "Bob"

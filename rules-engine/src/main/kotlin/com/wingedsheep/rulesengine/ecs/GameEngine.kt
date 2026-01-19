@@ -8,10 +8,10 @@ import kotlin.random.Random
  * Main entry point for the ECS-based game engine.
  * Handles game setup, execution, and flow control.
  *
- * This replaces the old GameEngine by working directly with EcsGameState
- * and EcsActionHandler instead of the old GameState and ActionExecutor.
+ * This replaces the old GameEngine by working directly with GameState
+ * and GameActionHandler instead of the old GameState and ActionExecutor.
  */
-object EcsGameEngine {
+object GameEngine {
 
     /** Standard opening hand size */
     const val OPENING_HAND_SIZE = 7
@@ -19,7 +19,7 @@ object EcsGameEngine {
     /** Standard starting life total */
     const val STARTING_LIFE = LifeComponent.STARTING_LIFE
 
-    private val actionHandler = EcsActionHandler()
+    private val actionHandler = GameActionHandler()
 
     /**
      * Create a new game with the given players.
@@ -33,11 +33,11 @@ object EcsGameEngine {
         players: List<Pair<EntityId, String>>,
         startingPlayerId: EntityId? = null,
         random: Random = Random
-    ): EcsGameState {
+    ): GameState {
         require(players.size >= 2) { "Game requires at least 2 players" }
 
         // Create the base game state
-        val state = EcsGameState.newGame(players)
+        val state = GameState.newGame(players)
 
         // If a specific starting player is requested, we would update the turn state
         // For now, the first player in the list starts (matching TurnState.newGame behavior)
@@ -52,11 +52,11 @@ object EcsGameEngine {
      * @return Result containing the setup game state
      */
     fun setupGame(
-        state: EcsGameState,
+        state: GameState,
         random: Random = Random
-    ): EcsSetupResult {
+    ): SetupResult {
         var currentState = state
-        val events = mutableListOf<EcsActionEvent>()
+        val events = mutableListOf<GameActionEvent>()
 
         // Shuffle each player's library
         for (playerId in currentState.getPlayerIds()) {
@@ -70,19 +70,19 @@ object EcsGameEngine {
 
         // Draw opening hands (7 cards each)
         for (playerId in currentState.getPlayerIds()) {
-            val result = actionHandler.execute(currentState, EcsDrawCard(playerId, OPENING_HAND_SIZE))
+            val result = actionHandler.execute(currentState, DrawCard(playerId, OPENING_HAND_SIZE))
             when (result) {
-                is EcsActionResult.Success -> {
+                is GameActionResult.Success -> {
                     currentState = result.state
                     events.addAll(result.events)
                 }
-                is EcsActionResult.Failure -> {
-                    return EcsSetupResult.Failure(result.reason)
+                is GameActionResult.Failure -> {
+                    return SetupResult.Failure(result.reason)
                 }
             }
         }
 
-        return EcsSetupResult.Success(currentState, events)
+        return SetupResult.Success(currentState, events)
     }
 
     /**
@@ -96,7 +96,7 @@ object EcsGameEngine {
      * @return Result containing the updated state or failure info
      */
     fun loadDecks(
-        state: EcsGameState,
+        state: GameState,
         deckLoader: DeckLoader,
         decks: Map<EntityId, Map<String, Int>>
     ): DeckLoader.DeckLoadResult {
@@ -113,23 +113,23 @@ object EcsGameEngine {
      * @return Result of the mulligan
      */
     fun executeMulligan(
-        state: EcsGameState,
+        state: GameState,
         playerId: EntityId,
         cardsToBottom: List<EntityId>,
         random: Random = Random
-    ): EcsMulliganResult {
+    ): MulliganResult {
         val hand = state.getHand(playerId)
         val mulliganCount = OPENING_HAND_SIZE - hand.size + cardsToBottom.size
 
         // Validate that the player has the cards to put on bottom
         for (cardId in cardsToBottom) {
             if (!state.isInZone(cardId, ZoneId.hand(playerId))) {
-                return EcsMulliganResult.Failure("Card not in hand: $cardId")
+                return MulliganResult.Failure("Card not in hand: $cardId")
             }
         }
 
         var currentState = state
-        val events = mutableListOf<EcsActionEvent>()
+        val events = mutableListOf<GameActionEvent>()
 
         // Put the specified cards on the bottom of the library
         for (cardId in cardsToBottom) {
@@ -140,7 +140,7 @@ object EcsGameEngine {
                 .addToZoneBottom(cardId, libraryZone)
         }
 
-        return EcsMulliganResult.Success(currentState, events, mulliganCount)
+        return MulliganResult.Success(currentState, events, mulliganCount)
     }
 
     /**
@@ -153,17 +153,17 @@ object EcsGameEngine {
      * @return Result with new hand drawn (player must then choose cards to put on bottom)
      */
     fun startMulligan(
-        state: EcsGameState,
+        state: GameState,
         playerId: EntityId,
         mulliganNumber: Int,
         random: Random = Random
-    ): EcsMulliganResult {
+    ): MulliganResult {
         require(mulliganNumber >= 1) { "Mulligan number must be at least 1" }
 
         val handZone = ZoneId.hand(playerId)
         val libraryZone = ZoneId.library(playerId)
         var currentState = state
-        val events = mutableListOf<EcsActionEvent>()
+        val events = mutableListOf<GameActionEvent>()
 
         // Shuffle hand into library
         val handCards = currentState.getZone(handZone)
@@ -181,53 +181,53 @@ object EcsGameEngine {
         )
 
         // Draw new hand of 7
-        val result = actionHandler.execute(currentState, EcsDrawCard(playerId, OPENING_HAND_SIZE))
+        val result = actionHandler.execute(currentState, DrawCard(playerId, OPENING_HAND_SIZE))
         when (result) {
-            is EcsActionResult.Success -> {
+            is GameActionResult.Success -> {
                 currentState = result.state
                 events.addAll(result.events)
             }
-            is EcsActionResult.Failure -> {
-                return EcsMulliganResult.Failure(result.reason)
+            is GameActionResult.Failure -> {
+                return MulliganResult.Failure(result.reason)
             }
         }
 
         // Player now needs to put mulliganNumber cards on the bottom
-        return EcsMulliganResult.Success(currentState, events, mulliganNumber)
+        return MulliganResult.Success(currentState, events, mulliganNumber)
     }
 
     /**
      * Execute an action and return the result.
      */
-    fun executeAction(state: EcsGameState, action: EcsAction): EcsActionResult {
+    fun executeAction(state: GameState, action: GameAction): GameActionResult {
         return actionHandler.execute(state, action)
     }
 
     /**
      * Execute multiple actions in sequence.
      */
-    fun executeActions(state: EcsGameState, actions: List<EcsAction>): EcsActionResult {
+    fun executeActions(state: GameState, actions: List<GameAction>): GameActionResult {
         return actionHandler.executeAll(state, actions)
     }
 
     /**
      * Check state-based actions and return the result.
      */
-    fun checkStateBasedActions(state: EcsGameState): EcsActionResult {
-        return actionHandler.execute(state, EcsCheckStateBasedActions())
+    fun checkStateBasedActions(state: GameState): GameActionResult {
+        return actionHandler.execute(state, CheckStateBasedActions())
     }
 
     /**
      * Check if the game is over.
      */
-    fun isGameOver(state: EcsGameState): Boolean {
+    fun isGameOver(state: GameState): Boolean {
         return state.isGameOver
     }
 
     /**
      * Get the winner of the game (null if game is not over or was a draw).
      */
-    fun getWinner(state: EcsGameState): EntityId? {
+    fun getWinner(state: GameState): EntityId? {
         return state.winner
     }
 
@@ -242,7 +242,7 @@ object EcsGameEngine {
      * @param state Current game state
      * @return Result indicating who has priority or if the game is over
      */
-    fun processPriority(state: EcsGameState): PriorityResult {
+    fun processPriority(state: GameState): PriorityResult {
         var currentState = state
 
         // Check if game is over
@@ -252,7 +252,7 @@ object EcsGameEngine {
 
         // Step 1: Check State-Based Actions (loop until none)
         val sbaResult = checkStateBasedActions(currentState)
-        if (sbaResult is EcsActionResult.Success) {
+        if (sbaResult is GameActionResult.Success) {
             currentState = sbaResult.state
         }
 
@@ -280,17 +280,17 @@ object EcsGameEngine {
      * @param state Current game state (should have allPlayersPassed() == true)
      * @return Updated game state
      */
-    fun resolvePassedPriority(state: EcsGameState): EcsGameState {
+    fun resolvePassedPriority(state: GameState): GameState {
         val turnState = state.turnState
 
         return if (state.getStack().isNotEmpty()) {
             // Stack not empty: resolve top of stack, reset passes
-            val resolveResult = actionHandler.execute(state, EcsResolveTopOfStack())
+            val resolveResult = actionHandler.execute(state, ResolveTopOfStack())
             when (resolveResult) {
-                is EcsActionResult.Success -> resolveResult.state.copy(
+                is GameActionResult.Success -> resolveResult.state.copy(
                     turnState = turnState.resetConsecutivePasses().resetPriorityToActivePlayer()
                 )
-                is EcsActionResult.Failure -> state // Resolution failed, keep current state
+                is GameActionResult.Failure -> state // Resolution failed, keep current state
             }
         } else {
             // Stack empty: advance step/phase, reset passes
@@ -308,19 +308,19 @@ object EcsGameEngine {
      * @param action The action to execute
      * @return Result with updated state (passes reset to 0 on success)
      */
-    fun executePlayerAction(state: EcsGameState, action: EcsAction): EcsActionResult {
+    fun executePlayerAction(state: GameState, action: GameAction): GameActionResult {
         val result = actionHandler.execute(state, action)
         return when (result) {
-            is EcsActionResult.Success -> {
+            is GameActionResult.Success -> {
                 // Reset consecutive passes after any non-pass action
                 val newTurnState = result.state.turnState.resetConsecutivePasses()
-                EcsActionResult.Success(
+                GameActionResult.Success(
                     result.state.copy(turnState = newTurnState),
                     result.action,
                     result.events
                 )
             }
-            is EcsActionResult.Failure -> result
+            is GameActionResult.Failure -> result
         }
     }
 }
@@ -328,31 +328,31 @@ object EcsGameEngine {
 /**
  * Result of game setup.
  */
-sealed interface EcsSetupResult {
+sealed interface SetupResult {
     data class Success(
-        val state: EcsGameState,
-        val events: List<EcsActionEvent>
-    ) : EcsSetupResult
+        val state: GameState,
+        val events: List<GameActionEvent>
+    ) : SetupResult
 
-    data class Failure(val error: String) : EcsSetupResult
+    data class Failure(val error: String) : SetupResult
 }
 
 /**
  * Result of a mulligan operation.
  */
-sealed interface EcsMulliganResult {
+sealed interface MulliganResult {
     /**
      * @param state New game state after mulligan
      * @param events Events that occurred
      * @param cardsToPutOnBottom Number of cards the player must put on the bottom of their library
      */
     data class Success(
-        val state: EcsGameState,
-        val events: List<EcsActionEvent>,
+        val state: GameState,
+        val events: List<GameActionEvent>,
         val cardsToPutOnBottom: Int
-    ) : EcsMulliganResult
+    ) : MulliganResult
 
-    data class Failure(val error: String) : EcsMulliganResult
+    data class Failure(val error: String) : MulliganResult
 }
 
 /**
@@ -364,7 +364,7 @@ sealed interface PriorityResult {
      * The player can now take actions or pass priority.
      */
     data class PriorityGranted(
-        val state: EcsGameState,
+        val state: GameState,
         val priorityPlayer: EntityId
     ) : PriorityResult
 
@@ -372,7 +372,7 @@ sealed interface PriorityResult {
      * The game has ended.
      */
     data class GameOver(
-        val state: EcsGameState,
+        val state: GameState,
         val winner: EntityId?
     ) : PriorityResult
 }

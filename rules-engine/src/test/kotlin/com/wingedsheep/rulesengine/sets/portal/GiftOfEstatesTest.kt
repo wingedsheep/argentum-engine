@@ -8,13 +8,13 @@ import com.wingedsheep.rulesengine.ability.SearchLibraryEffect
 import com.wingedsheep.rulesengine.card.CardDefinition
 import com.wingedsheep.rulesengine.core.*
 import com.wingedsheep.rulesengine.ecs.Component
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.components.CardComponent
 import com.wingedsheep.rulesengine.ecs.components.ControllerComponent
 import com.wingedsheep.rulesengine.ecs.script.ExecutionContext
-import com.wingedsheep.rulesengine.ecs.script.handler.EcsConditionEvaluator
+import com.wingedsheep.rulesengine.ecs.script.handler.ConditionEvaluator
 import com.wingedsheep.rulesengine.ecs.script.handler.EffectHandlerRegistry
 import com.wingedsheep.rulesengine.zone.ZoneType
 import io.kotest.core.spec.style.FunSpec
@@ -53,14 +53,14 @@ class GiftOfEstatesTest : FunSpec({
         oracleText = "{T}: Add {W} or {U}."
     )
 
-    fun newGame(): EcsGameState = EcsGameState.newGame(
+    fun newGame(): GameState = GameState.newGame(
         listOf(player1Id to "Alice", player2Id to "Bob")
     )
 
-    fun EcsGameState.addLandToBattlefield(
+    fun GameState.addLandToBattlefield(
         def: CardDefinition,
         controllerId: EntityId
-    ): Pair<EntityId, EcsGameState> {
+    ): Pair<EntityId, GameState> {
         val components = mutableListOf<Component>(
             CardComponent(def, controllerId),
             ControllerComponent(controllerId)
@@ -69,10 +69,10 @@ class GiftOfEstatesTest : FunSpec({
         return landId to state1.addToZone(landId, ZoneId.BATTLEFIELD)
     }
 
-    fun EcsGameState.addCardToLibrary(
+    fun GameState.addCardToLibrary(
         def: CardDefinition,
         ownerId: EntityId
-    ): Pair<EntityId, EcsGameState> {
+    ): Pair<EntityId, GameState> {
         val components = mutableListOf<Component>(
             CardComponent(def, ownerId)
         )
@@ -95,7 +95,7 @@ class GiftOfEstatesTest : FunSpec({
             state = state4
 
             val context = ExecutionContext(player1Id, player1Id)
-            val result = EcsConditionEvaluator.evaluate(state, OpponentControlsMoreLands, context)
+            val result = ConditionEvaluator.evaluate(state, OpponentControlsMoreLands, context)
 
             result.shouldBeFalse()
         }
@@ -111,7 +111,7 @@ class GiftOfEstatesTest : FunSpec({
             state = state4
 
             val context = ExecutionContext(player1Id, player1Id)
-            val result = EcsConditionEvaluator.evaluate(state, OpponentControlsMoreLands, context)
+            val result = ConditionEvaluator.evaluate(state, OpponentControlsMoreLands, context)
 
             result.shouldBeFalse()
         }
@@ -127,7 +127,7 @@ class GiftOfEstatesTest : FunSpec({
             state = state4
 
             val context = ExecutionContext(player1Id, player1Id)
-            val result = EcsConditionEvaluator.evaluate(state, OpponentControlsMoreLands, context)
+            val result = ConditionEvaluator.evaluate(state, OpponentControlsMoreLands, context)
 
             result.shouldBeTrue()
         }
@@ -140,7 +140,7 @@ class GiftOfEstatesTest : FunSpec({
             state = state1
 
             val context = ExecutionContext(player1Id, player1Id)
-            val result = EcsConditionEvaluator.evaluate(state, OpponentControlsMoreLands, context)
+            val result = ConditionEvaluator.evaluate(state, OpponentControlsMoreLands, context)
 
             result.shouldBeTrue()
         }

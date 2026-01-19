@@ -1,7 +1,7 @@
 package com.wingedsheep.rulesengine.ecs.combat
 
 import com.wingedsheep.rulesengine.core.Keyword
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.components.*
 import com.wingedsheep.rulesengine.ecs.layers.GameObjectView
@@ -21,7 +21,7 @@ import com.wingedsheep.rulesengine.ecs.layers.StateProjector
  * The calculator produces PendingDamageEvents that can be modified by
  * prevention effects before being applied.
  */
-object EcsCombatDamageCalculator {
+object CombatDamageCalculator {
 
     // ==========================================================================
     // Combat Damage Steps
@@ -106,7 +106,7 @@ object EcsCombatDamageCalculator {
      * Only creatures with first strike or double strike deal damage in this step.
      */
     fun calculateFirstStrikeDamage(
-        state: EcsGameState,
+        state: GameState,
         modifierProvider: ModifierProvider? = null
     ): DamageCalculationResult {
         val combat = state.combat
@@ -157,7 +157,7 @@ object EcsCombatDamageCalculator {
      * - Have first strike but haven't dealt first strike damage yet
      */
     fun calculateRegularDamage(
-        state: EcsGameState,
+        state: GameState,
         modifierProvider: ModifierProvider? = null
     ): DamageCalculationResult {
         val combat = state.combat
@@ -207,7 +207,7 @@ object EcsCombatDamageCalculator {
      * Returns true if any attacker or blocker has first strike or double strike.
      */
     fun hasFirstStrikeStep(
-        state: EcsGameState,
+        state: GameState,
         modifierProvider: ModifierProvider? = null
     ): Boolean {
         val combat = state.combat ?: return false
@@ -241,7 +241,7 @@ object EcsCombatDamageCalculator {
      * Calculate all damage events from a single attacker.
      */
     private fun calculateAttackerDamage(
-        state: EcsGameState,
+        state: GameState,
         attackerId: EntityId,
         attacker: GameObjectView,
         projector: StateProjector
@@ -308,7 +308,7 @@ object EcsCombatDamageCalculator {
      * - Trample damage goes to the player after lethal to all blockers
      */
     private fun calculateDamageToBlockers(
-        state: EcsGameState,
+        state: GameState,
         attackerId: EntityId,
         attacker: GameObjectView,
         blockedBy: BlockedByComponent,
@@ -429,9 +429,9 @@ object EcsCombatDamageCalculator {
      * regular damage step (only double strike creatures deal twice).
      */
     fun markFirstStrikeDamageDealt(
-        state: EcsGameState,
+        state: GameState,
         creaturesDealtDamage: Set<EntityId>
-    ): EcsGameState {
+    ): GameState {
         var result = state
 
         for (creatureId in creaturesDealtDamage) {
@@ -454,7 +454,7 @@ object EcsCombatDamageCalculator {
      * Get all creatures that will deal damage in the current step.
      */
     fun getCreaturesDealingDamage(
-        state: EcsGameState,
+        state: GameState,
         step: DamageStep,
         modifierProvider: ModifierProvider? = null
     ): Set<EntityId> {
@@ -468,7 +468,7 @@ object EcsCombatDamageCalculator {
      * Check if a specific creature will deal damage in the given step.
      */
     fun willDealDamage(
-        state: EcsGameState,
+        state: GameState,
         creatureId: EntityId,
         step: DamageStep,
         modifierProvider: ModifierProvider? = null

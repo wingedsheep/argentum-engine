@@ -7,12 +7,12 @@ import com.wingedsheep.rulesengine.ability.SacrificeUnlessEffect
 import com.wingedsheep.rulesengine.card.CardDefinition
 import com.wingedsheep.rulesengine.core.*
 import com.wingedsheep.rulesengine.ecs.Component
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.components.CardComponent
 import com.wingedsheep.rulesengine.ecs.components.ControllerComponent
-import com.wingedsheep.rulesengine.ecs.decision.EcsSacrificeUnlessDecision
+import com.wingedsheep.rulesengine.ecs.decision.EffectSacrificeUnlessDecision
 import com.wingedsheep.rulesengine.ecs.script.ExecutionContext
 import com.wingedsheep.rulesengine.ecs.script.handler.EffectHandlerRegistry
 import com.wingedsheep.rulesengine.zone.ZoneType
@@ -51,14 +51,14 @@ class PrimevalForceTest : FunSpec({
         oracleText = "When Primeval Force enters the battlefield, sacrifice it unless you sacrifice three Forests."
     )
 
-    fun newGame(): EcsGameState = EcsGameState.newGame(
+    fun newGame(): GameState = GameState.newGame(
         listOf(player1Id to "Alice", player2Id to "Bob")
     )
 
-    fun EcsGameState.addLandToBattlefield(
+    fun GameState.addLandToBattlefield(
         def: CardDefinition,
         controllerId: EntityId
-    ): Pair<EntityId, EcsGameState> {
+    ): Pair<EntityId, GameState> {
         val components = mutableListOf<Component>(
             CardComponent(def, controllerId),
             ControllerComponent(controllerId)
@@ -67,10 +67,10 @@ class PrimevalForceTest : FunSpec({
         return landId to state1.addToZone(landId, ZoneId.BATTLEFIELD)
     }
 
-    fun EcsGameState.addCreatureToBattlefield(
+    fun GameState.addCreatureToBattlefield(
         def: CardDefinition,
         controllerId: EntityId
-    ): Pair<EntityId, EcsGameState> {
+    ): Pair<EntityId, GameState> {
         val components = mutableListOf<Component>(
             CardComponent(def, controllerId),
             ControllerComponent(controllerId)
@@ -201,9 +201,9 @@ class PrimevalForceTest : FunSpec({
             // Should need player input
             result.needsPlayerInput.shouldBeTrue()
             result.pendingDecision.shouldNotBeNull()
-            result.pendingDecision.shouldBeInstanceOf<EcsSacrificeUnlessDecision>()
+            result.pendingDecision.shouldBeInstanceOf<EffectSacrificeUnlessDecision>()
 
-            val decision = result.pendingDecision as EcsSacrificeUnlessDecision
+            val decision = result.pendingDecision as EffectSacrificeUnlessDecision
             decision.permanentToSacrifice shouldBe forceId
             decision.permanentName shouldBe "Primeval Force"
             decision.requiredCount shouldBe 3

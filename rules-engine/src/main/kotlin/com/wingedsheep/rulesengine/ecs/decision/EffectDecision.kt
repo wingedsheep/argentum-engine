@@ -13,7 +13,7 @@ import kotlinx.serialization.Serializable
  * collects the response, and continues the effect with the selection.
  */
 @Serializable
-sealed interface EcsPlayerDecision {
+sealed interface EffectDecision {
     /** The player who must make this decision */
     val playerId: EntityId
 
@@ -43,7 +43,7 @@ sealed interface EcsPlayerDecision {
  * @param filter The filter being applied (for display purposes)
  */
 @Serializable
-data class EcsChooseCards(
+data class EffectChooseCards(
     override val playerId: EntityId,
     override val description: String,
     override val decisionId: String,
@@ -54,7 +54,7 @@ data class EcsChooseCards(
     val sourceEntityId: EntityId? = null,
     val sourceName: String? = null,
     val filterDescription: String? = null
-) : EcsPlayerDecision {
+) : EffectDecision {
     /** Whether a specific number of cards must be chosen */
     val isExactCount: Boolean get() = minCount == maxCount
 }
@@ -71,13 +71,13 @@ data class CardOption(
 )
 
 /**
- * Response to an EcsChooseCards decision.
+ * Response to an EffectChooseCards decision.
  */
 @Serializable
-data class EcsCardsChoice(
+data class EffectCardsChoice(
     override val decisionId: String,
     val selectedCardIds: List<EntityId>
-) : EcsDecisionResponse
+) : EffectDecisionResponse
 
 // =============================================================================
 // Yes/No Decisions
@@ -88,22 +88,22 @@ data class EcsCardsChoice(
  * Used for optional effects, "may" abilities, etc.
  */
 @Serializable
-data class EcsYesNoDecision(
+data class EffectYesNoDecision(
     override val playerId: EntityId,
     override val description: String,
     override val decisionId: String,
     val sourceEntityId: EntityId? = null,
     val sourceName: String? = null
-) : EcsPlayerDecision
+) : EffectDecision
 
 /**
- * Response to an EcsYesNoDecision.
+ * Response to an EffectYesNoDecision.
  */
 @Serializable
-data class EcsYesNoChoice(
+data class EffectYesNoChoice(
     override val decisionId: String,
     val choice: Boolean
-) : EcsDecisionResponse
+) : EffectDecisionResponse
 
 // =============================================================================
 // Sacrifice Unless Decisions
@@ -120,7 +120,7 @@ data class EcsYesNoChoice(
  * @param requiredCount How many permanents must be sacrificed
  */
 @Serializable
-data class EcsSacrificeUnlessDecision(
+data class EffectSacrificeUnlessDecision(
     override val playerId: EntityId,
     override val description: String,
     override val decisionId: String,
@@ -130,24 +130,24 @@ data class EcsSacrificeUnlessDecision(
     val validCostTargets: List<CardOption>,
     val requiredCount: Int,
     val sourceEntityId: EntityId? = null
-) : EcsPlayerDecision {
+) : EffectDecision {
     /** Whether the player can pay the cost (has enough valid targets) */
     val canPayCost: Boolean get() = validCostTargets.size >= requiredCount
 }
 
 /**
- * Response to an EcsSacrificeUnlessDecision.
+ * Response to an EffectSacrificeUnlessDecision.
  *
  * @param payCost If true, player chose to pay the cost by sacrificing the selected permanents.
  *                If false, player chose to sacrifice the permanent instead.
  * @param sacrificedPermanents The permanents sacrificed to pay the cost (only used if payCost=true)
  */
 @Serializable
-data class EcsSacrificeUnlessChoice(
+data class EffectSacrificeUnlessChoice(
     override val decisionId: String,
     val payCost: Boolean,
     val sacrificedPermanents: List<EntityId> = emptyList()
-) : EcsDecisionResponse
+) : EffectDecisionResponse
 
 // =============================================================================
 // Base Response Interface
@@ -157,6 +157,6 @@ data class EcsSacrificeUnlessChoice(
  * Marker interface for all ECS decision responses.
  */
 @Serializable
-sealed interface EcsDecisionResponse {
+sealed interface EffectDecisionResponse {
     val decisionId: String
 }

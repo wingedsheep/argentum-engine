@@ -3,12 +3,12 @@ package com.wingedsheep.rulesengine.sets.portal
 import com.wingedsheep.rulesengine.ability.AbilityRegistry
 import com.wingedsheep.rulesengine.ability.register
 import com.wingedsheep.rulesengine.ecs.Component
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.action.*
 import com.wingedsheep.rulesengine.ecs.components.*
-import com.wingedsheep.rulesengine.ecs.script.EcsTarget
+import com.wingedsheep.rulesengine.ecs.script.ResolvedTarget
 import com.wingedsheep.rulesengine.ecs.script.ExecutionContext
 import com.wingedsheep.rulesengine.ecs.script.ScriptModifierProvider
 import com.wingedsheep.rulesengine.ecs.script.handler.EffectHandlerRegistry
@@ -44,22 +44,22 @@ class PortalGameSimulationTest : FunSpec({
     val sylasId = EntityId.of("sylas")
     val elaraId = EntityId.of("elara")
 
-    val actionHandler = EcsActionHandler()
+    val actionHandler = GameActionHandler()
     val registry = EffectHandlerRegistry.default()
 
     // Setup a game with Portal abilities registered
-    fun setupGame(): Triple<EcsGameState, ScriptModifierProvider, AbilityRegistry> {
-        val state = EcsGameState.newGame(listOf(sylasId to "Sylas", elaraId to "Elara"))
+    fun setupGame(): Triple<GameState, ScriptModifierProvider, AbilityRegistry> {
+        val state = GameState.newGame(listOf(sylasId to "Sylas", elaraId to "Elara"))
         val abilityRegistry = AbilityRegistry()
         PortalSet.getCardScripts().forEach { abilityRegistry.register(it) }
         return Triple(state, ScriptModifierProvider(abilityRegistry), abilityRegistry)
     }
 
     // Helper to add a card to a player's hand
-    fun EcsGameState.addCardToHand(
+    fun GameState.addCardToHand(
         cardName: String,
         ownerId: EntityId
-    ): Pair<EntityId, EcsGameState> {
+    ): Pair<EntityId, GameState> {
         val def = PortalSet.getCardDefinition(cardName)
             ?: throw IllegalArgumentException("Card '$cardName' not found in PortalSet")
         val (cardId, state1) = createEntity(
@@ -71,10 +71,10 @@ class PortalGameSimulationTest : FunSpec({
     }
 
     // Helper to add a card to a player's library
-    fun EcsGameState.addCardToLibrary(
+    fun GameState.addCardToLibrary(
         cardName: String,
         ownerId: EntityId
-    ): Pair<EntityId, EcsGameState> {
+    ): Pair<EntityId, GameState> {
         val def = PortalSet.getCardDefinition(cardName)
             ?: throw IllegalArgumentException("Card '$cardName' not found in PortalSet")
         val (cardId, state1) = createEntity(
@@ -86,12 +86,12 @@ class PortalGameSimulationTest : FunSpec({
     }
 
     // Helper to add a card to the battlefield
-    fun EcsGameState.addCardToBattlefield(
+    fun GameState.addCardToBattlefield(
         cardName: String,
         controllerId: EntityId,
         tapped: Boolean = false,
         hasSummoningSickness: Boolean = true
-    ): Pair<EntityId, EcsGameState> {
+    ): Pair<EntityId, GameState> {
         val def = PortalSet.getCardDefinition(cardName)
             ?: throw IllegalArgumentException("Card '$cardName' not found in PortalSet")
         val components = mutableListOf<Component>(
@@ -109,10 +109,10 @@ class PortalGameSimulationTest : FunSpec({
     }
 
     // Helper to "play" a land from hand to battlefield
-    fun EcsGameState.playLand(
+    fun GameState.playLand(
         cardId: EntityId,
         ownerId: EntityId
-    ): EcsGameState {
+    ): GameState {
         val handZone = ZoneId(ZoneType.HAND, ownerId)
         return this
             .removeFromZone(cardId, handZone)
@@ -120,11 +120,11 @@ class PortalGameSimulationTest : FunSpec({
     }
 
     // Helper to cast a creature from hand to battlefield
-    fun EcsGameState.castCreature(
+    fun GameState.castCreature(
         cardId: EntityId,
         ownerId: EntityId,
         hasSummoningSickness: Boolean = true
-    ): EcsGameState {
+    ): GameState {
         val handZone = ZoneId(ZoneType.HAND, ownerId)
         var state = this
             .removeFromZone(cardId, handZone)
@@ -136,42 +136,42 @@ class PortalGameSimulationTest : FunSpec({
     }
 
     // Helper to remove summoning sickness (simulate turn passing)
-    fun EcsGameState.removeSummoningSickness(cardId: EntityId): EcsGameState {
+    fun GameState.removeSummoningSickness(cardId: EntityId): GameState {
         return updateEntity(cardId) { it.without<SummoningSicknessComponent>() }
     }
 
     // Helper to tap a permanent
-    fun EcsGameState.tap(cardId: EntityId): EcsGameState {
+    fun GameState.tap(cardId: EntityId): GameState {
         return updateEntity(cardId) { it.with(TappedComponent) }
     }
 
     // Helper to untap a permanent
-    fun EcsGameState.untap(cardId: EntityId): EcsGameState {
+    fun GameState.untap(cardId: EntityId): GameState {
         return updateEntity(cardId) { it.without<TappedComponent>() }
     }
 
     // Helper to deal combat damage to a player
-    fun EcsGameState.dealDamageToPlayer(
+    fun GameState.dealDamageToPlayer(
         playerId: EntityId,
         amount: Int
-    ): EcsGameState {
+    ): GameState {
         val life = getComponent<LifeComponent>(playerId)?.life ?: 20
         return updateEntity(playerId) { it.with(LifeComponent(life - amount)) }
     }
 
     // Helper to deal damage to a creature
-    fun EcsGameState.dealDamageToCreature(
+    fun GameState.dealDamageToCreature(
         creatureId: EntityId,
         amount: Int
-    ): EcsGameState {
+    ): GameState {
         val existing = getComponent<DamageComponent>(creatureId)?.amount ?: 0
         return updateEntity(creatureId) { it.with(DamageComponent(existing + amount)) }
     }
 
     // Helper to destroy a permanent (move to graveyard)
-    fun EcsGameState.destroyPermanent(
+    fun GameState.destroyPermanent(
         cardId: EntityId
-    ): EcsGameState {
+    ): GameState {
         val card = getEntity(cardId)?.get<CardComponent>() ?: return this
         val ownerId = card.ownerId
         val graveyardZone = ZoneId(ZoneType.GRAVEYARD, ownerId)
@@ -182,23 +182,23 @@ class PortalGameSimulationTest : FunSpec({
     }
 
     // Helper to check state-based actions (lethal damage, etc.)
-    fun EcsGameState.checkStateBasedActions(): EcsGameState {
-        val result = actionHandler.execute(this, EcsCheckStateBasedActions())
-        return (result as EcsActionResult.Success).state
+    fun GameState.checkStateBasedActions(): GameState {
+        val result = actionHandler.execute(this, CheckStateBasedActions())
+        return (result as GameActionResult.Success).state
     }
 
     // Helper to get life total
-    fun EcsGameState.getLife(playerId: EntityId): Int {
+    fun GameState.getLife(playerId: EntityId): Int {
         return getComponent<LifeComponent>(playerId)?.life ?: 0
     }
 
     // Helper to set life total
-    fun EcsGameState.setLife(playerId: EntityId, life: Int): EcsGameState {
+    fun GameState.setLife(playerId: EntityId, life: Int): GameState {
         return updateEntity(playerId) { it.with(LifeComponent(life)) }
     }
 
     // Helper to count lands controlled by a player
-    fun EcsGameState.countLands(playerId: EntityId): Int {
+    fun GameState.countLands(playerId: EntityId): Int {
         return getBattlefield().count { entityId ->
             val entity = getEntity(entityId)
             val card = entity?.get<CardComponent>()
@@ -208,7 +208,7 @@ class PortalGameSimulationTest : FunSpec({
     }
 
     // Helper to count creatures controlled by a player
-    fun EcsGameState.countCreatures(playerId: EntityId): Int {
+    fun GameState.countCreatures(playerId: EntityId): Int {
         return getBattlefield().count { entityId ->
             val entity = getEntity(entityId)
             val card = entity?.get<CardComponent>()
@@ -591,7 +591,7 @@ class PortalGameSimulationTest : FunSpec({
             state = state.copy(turnState = state.turnState.copy(step = Step.DECLARE_BLOCKERS))
 
             // Try to declare Jungle Lion as blocker
-            val validationResult = com.wingedsheep.rulesengine.ecs.combat.EcsCombatValidator.canDeclareBlocker(
+            val validationResult = com.wingedsheep.rulesengine.ecs.combat.CombatValidator.canDeclareBlocker(
                 state = state,
                 blockerId = jungleLionId,
                 attackerId = attackerId,
@@ -600,7 +600,7 @@ class PortalGameSimulationTest : FunSpec({
             )
 
             // Should be invalid
-            validationResult.shouldBeInstanceOf<com.wingedsheep.rulesengine.ecs.combat.EcsCombatValidator.BlockValidationResult.Invalid>()
+            validationResult.shouldBeInstanceOf<com.wingedsheep.rulesengine.ecs.combat.CombatValidator.BlockValidationResult.Invalid>()
         }
 
         test("Wall of Swords has Defender and Flying") {
@@ -720,10 +720,10 @@ class PortalGameSimulationTest : FunSpec({
     }
 
     context("Action-based gameplay demonstration") {
-        // These tests demonstrate how to use EcsLegalActionCalculator
-        // to determine valid actions and execute them via EcsActionHandler
+        // These tests demonstrate how to use LegalActionCalculator
+        // to determine valid actions and execute them via GameActionHandler
 
-        val legalActionCalculator = EcsLegalActionCalculator()
+        val legalActionCalculator = LegalActionCalculator()
 
         test("Player can see available actions during main phase") {
             val (initialState, _, _) = setupGame()
@@ -794,8 +794,8 @@ class PortalGameSimulationTest : FunSpec({
             val playLandAction = actions.playableLands[0].action
             val result = actionHandler.execute(state, playLandAction)
 
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
-            val newState = (result as EcsActionResult.Success).state
+            result.shouldBeInstanceOf<GameActionResult.Success>()
+            val newState = (result as GameActionResult.Success).state
 
             // Verify the land is now on battlefield
             newState.getBattlefield() shouldContain forestId
@@ -825,8 +825,8 @@ class PortalGameSimulationTest : FunSpec({
             var actions = legalActionCalculator.calculateLegalActions(state, sylasId)
             val playLandAction = actions.playableLands.first().action
             var result = actionHandler.execute(state, playLandAction)
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
-            state = (result as EcsActionResult.Success).state
+            result.shouldBeInstanceOf<GameActionResult.Success>()
+            state = (result as GameActionResult.Success).state
 
             // Verify land is on battlefield
             state.getBattlefield() shouldContain forestId
@@ -836,8 +836,8 @@ class PortalGameSimulationTest : FunSpec({
             actions = legalActionCalculator.calculateLegalActions(state, sylasId)
             val manaAbility = actions.activatableAbilities.first { it.isManaAbility }
             result = actionHandler.execute(state, manaAbility.action)
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
-            state = (result as EcsActionResult.Success).state
+            result.shouldBeInstanceOf<GameActionResult.Success>()
+            state = (result as GameActionResult.Success).state
 
             // Verify forest is tapped and mana is in pool
             state.hasComponent<TappedComponent>(forestId) shouldBe true
@@ -845,7 +845,7 @@ class PortalGameSimulationTest : FunSpec({
             manaPool?.pool?.green shouldBe 1
 
             // Step 3: Cast Jungle Lion
-            val castAction = EcsCastSpell(
+            val castAction = CastSpell(
                 cardId = jungleLionId,
                 casterId = sylasId,
                 fromZone = ZoneId(ZoneType.HAND, sylasId)
@@ -853,8 +853,8 @@ class PortalGameSimulationTest : FunSpec({
             result = actionHandler.execute(state, castAction)
 
             // Cast spell puts it on the stack
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
-            state = (result as EcsActionResult.Success).state
+            result.shouldBeInstanceOf<GameActionResult.Success>()
+            state = (result as GameActionResult.Success).state
             state.getStack() shouldContain jungleLionId
         }
 
@@ -890,8 +890,8 @@ class PortalGameSimulationTest : FunSpec({
             val declareAttackerAction = actions.declarableAttackers[0].action
             val result = actionHandler.execute(state, declareAttackerAction)
 
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
-            state = (result as EcsActionResult.Success).state
+            result.shouldBeInstanceOf<GameActionResult.Success>()
+            state = (result as GameActionResult.Success).state
 
             // Verify Jungle Lion is now attacking
             state.hasComponent<AttackingComponent>(jungleLionId) shouldBe true
@@ -923,9 +923,9 @@ class PortalGameSimulationTest : FunSpec({
             val actions = legalActionCalculator.calculateLegalActions(state, sylasId)
 
             // Jungle Lion should NOT be able to block (cantBlock)
-            // Note: The EcsLegalActionCalculator currently doesn't check cantBlock keyword,
+            // Note: The LegalActionCalculator currently doesn't check cantBlock keyword,
             // but the combat validator does. Let's verify via combat validation.
-            val validationResult = com.wingedsheep.rulesengine.ecs.combat.EcsCombatValidator.canDeclareBlocker(
+            val validationResult = com.wingedsheep.rulesengine.ecs.combat.CombatValidator.canDeclareBlocker(
                 state = state,
                 blockerId = jungleLionId,
                 attackerId = attackerId,
@@ -933,7 +933,7 @@ class PortalGameSimulationTest : FunSpec({
                 modifierProvider = modifierProvider
             )
 
-            validationResult.shouldBeInstanceOf<com.wingedsheep.rulesengine.ecs.combat.EcsCombatValidator.BlockValidationResult.Invalid>()
+            validationResult.shouldBeInstanceOf<com.wingedsheep.rulesengine.ecs.combat.CombatValidator.BlockValidationResult.Invalid>()
         }
     }
 })

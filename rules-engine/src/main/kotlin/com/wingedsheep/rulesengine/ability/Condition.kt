@@ -8,8 +8,8 @@ import kotlinx.serialization.Serializable
  * Conditions that can be checked against the game state.
  * Used for conditional effects like "If you control...", "If your life total is...".
  *
- * Conditions are data objects - evaluation is handled by EcsConditionEvaluator
- * which checks these conditions against EcsGameState.
+ * Conditions are data objects - evaluation is handled by ConditionEvaluator
+ * which checks these conditions against GameState.
  */
 @Serializable
 sealed interface Condition {

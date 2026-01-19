@@ -5,7 +5,7 @@ import com.wingedsheep.rulesengine.combat.CombatState
 import com.wingedsheep.rulesengine.core.Keyword
 import com.wingedsheep.rulesengine.core.ManaCost
 import com.wingedsheep.rulesengine.core.Subtype
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.components.*
@@ -16,7 +16,7 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 
-class EcsLegalActionCalculatorTest : FunSpec({
+class LegalActionCalculatorTest : FunSpec({
 
     val player1Id = EntityId.of("player1")
     val player2Id = EntityId.of("player2")
@@ -55,17 +55,17 @@ class EcsLegalActionCalculatorTest : FunSpec({
         oracleText = "Lightning Bolt deals 3 damage to any target."
     )
 
-    fun newGame(): EcsGameState = EcsGameState.newGame(
+    fun newGame(): GameState = GameState.newGame(
         listOf(player1Id to "Alice", player2Id to "Bob")
     )
 
-    fun EcsGameState.withStep(step: Step): EcsGameState =
+    fun GameState.withStep(step: Step): GameState =
         copy(turnState = turnState.copy(step = step, phase = step.phase))
 
-    fun EcsGameState.withActivePlayer(playerId: EntityId): EcsGameState =
+    fun GameState.withActivePlayer(playerId: EntityId): GameState =
         copy(turnState = turnState.copy(activePlayer = playerId, priorityPlayer = playerId))
 
-    fun EcsGameState.addCardToHand(playerId: EntityId, definition: CardDefinition): Pair<EntityId, EcsGameState> {
+    fun GameState.addCardToHand(playerId: EntityId, definition: CardDefinition): Pair<EntityId, GameState> {
         val (cardId, state1) = createEntity(
             EntityId.generate(),
             CardComponent(definition, playerId),
@@ -74,12 +74,12 @@ class EcsLegalActionCalculatorTest : FunSpec({
         return cardId to state1.addToZone(cardId, ZoneId.hand(playerId))
     }
 
-    fun EcsGameState.addCreatureToBattlefield(
+    fun GameState.addCreatureToBattlefield(
         controllerId: EntityId,
         definition: CardDefinition,
         tapped: Boolean = false,
         summoningSickness: Boolean = true
-    ): Pair<EntityId, EcsGameState> {
+    ): Pair<EntityId, GameState> {
         var (creatureId, state1) = createEntity(
             EntityId.generate(),
             CardComponent(definition, controllerId),
@@ -94,7 +94,7 @@ class EcsLegalActionCalculatorTest : FunSpec({
         return creatureId to state1.addToZone(creatureId, ZoneId.BATTLEFIELD)
     }
 
-    fun EcsGameState.addLandToBattlefield(controllerId: EntityId, tapped: Boolean = false): Pair<EntityId, EcsGameState> {
+    fun GameState.addLandToBattlefield(controllerId: EntityId, tapped: Boolean = false): Pair<EntityId, GameState> {
         var (landId, state1) = createEntity(
             EntityId.generate(),
             CardComponent(forestDef, controllerId),
@@ -106,7 +106,7 @@ class EcsLegalActionCalculatorTest : FunSpec({
         return landId to state1.addToZone(landId, ZoneId.BATTLEFIELD)
     }
 
-    val calculator = EcsLegalActionCalculator()
+    val calculator = LegalActionCalculator()
 
     context("priority") {
         test("active player can pass priority") {

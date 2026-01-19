@@ -6,14 +6,14 @@ import com.wingedsheep.rulesengine.ability.DealDamageToAllEffect
 import com.wingedsheep.rulesengine.ability.DrainEffect
 import com.wingedsheep.rulesengine.ability.EffectTarget
 import com.wingedsheep.rulesengine.core.Keyword
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.components.CardComponent
 import com.wingedsheep.rulesengine.ecs.components.DamageComponent
 import com.wingedsheep.rulesengine.ecs.components.LifeComponent
-import com.wingedsheep.rulesengine.ecs.script.EcsEvent
-import com.wingedsheep.rulesengine.ecs.script.EcsTarget
+import com.wingedsheep.rulesengine.ecs.script.EffectEvent
+import com.wingedsheep.rulesengine.ecs.script.ResolvedTarget
 import com.wingedsheep.rulesengine.ecs.script.ExecutionContext
 import com.wingedsheep.rulesengine.ecs.script.ExecutionResult
 import kotlin.reflect.KClass
@@ -25,7 +25,7 @@ class DealDamageHandler : BaseEffectHandler<DealDamageEffect>() {
     override val effectClass: KClass<DealDamageEffect> = DealDamageEffect::class
 
     override fun execute(
-        state: EcsGameState,
+        state: GameState,
         effect: DealDamageEffect,
         context: ExecutionContext
     ): ExecutionResult {
@@ -37,7 +37,7 @@ class DealDamageHandler : BaseEffectHandler<DealDamageEffect>() {
             }
             is EffectTarget.EachOpponent -> {
                 var currentState = state
-                val events = mutableListOf<EcsEvent>()
+                val events = mutableListOf<EffectEvent>()
                 for (playerId in state.getPlayerIds()) {
                     if (playerId != context.controllerId) {
                         val result = dealDamageToPlayer(currentState, playerId, effect.amount, context.sourceId)
@@ -50,8 +50,8 @@ class DealDamageHandler : BaseEffectHandler<DealDamageEffect>() {
             is EffectTarget.TargetCreature, is EffectTarget.AnyTarget -> {
                 val target = context.targets.firstOrNull()
                 when (target) {
-                    is EcsTarget.Player -> dealDamageToPlayer(state, target.playerId, effect.amount, context.sourceId)
-                    is EcsTarget.Permanent -> dealDamageToCreature(state, target.entityId, effect.amount, context.sourceId)
+                    is ResolvedTarget.Player -> dealDamageToPlayer(state, target.playerId, effect.amount, context.sourceId)
+                    is ResolvedTarget.Permanent -> dealDamageToCreature(state, target.entityId, effect.amount, context.sourceId)
                     null -> noOp(state)
                 }
             }
@@ -60,7 +60,7 @@ class DealDamageHandler : BaseEffectHandler<DealDamageEffect>() {
     }
 
     private fun dealDamageToPlayer(
-        state: EcsGameState,
+        state: GameState,
         playerId: EntityId,
         amount: Int,
         sourceId: EntityId
@@ -72,11 +72,11 @@ class DealDamageHandler : BaseEffectHandler<DealDamageEffect>() {
             c.with(lifeComponent.loseLife(amount))
         }
 
-        return result(newState, EcsEvent.DamageDealtToPlayer(sourceId, playerId, amount))
+        return result(newState, EffectEvent.DamageDealtToPlayer(sourceId, playerId, amount))
     }
 
     private fun dealDamageToCreature(
-        state: EcsGameState,
+        state: GameState,
         creatureId: EntityId,
         amount: Int,
         sourceId: EntityId
@@ -88,7 +88,7 @@ class DealDamageHandler : BaseEffectHandler<DealDamageEffect>() {
             c.with(damageComponent.addDamage(amount))
         }
 
-        return result(newState, EcsEvent.DamageDealtToCreature(sourceId, creatureId, amount))
+        return result(newState, EffectEvent.DamageDealtToCreature(sourceId, creatureId, amount))
     }
 }
 
@@ -100,12 +100,12 @@ class DealDamageToAllCreaturesHandler : BaseEffectHandler<DealDamageToAllCreatur
     override val effectClass: KClass<DealDamageToAllCreaturesEffect> = DealDamageToAllCreaturesEffect::class
 
     override fun execute(
-        state: EcsGameState,
+        state: GameState,
         effect: DealDamageToAllCreaturesEffect,
         context: ExecutionContext
     ): ExecutionResult {
         var currentState = state
-        val events = mutableListOf<EcsEvent>()
+        val events = mutableListOf<EffectEvent>()
 
         val creatures = state.getBattlefield().filter { entityId ->
             val container = state.getEntity(entityId)
@@ -129,7 +129,7 @@ class DealDamageToAllCreaturesHandler : BaseEffectHandler<DealDamageToAllCreatur
                 c.with(damageComponent.addDamage(effect.amount))
             }
 
-            events.add(EcsEvent.DamageDealtToCreature(context.sourceId, creatureId, effect.amount))
+            events.add(EffectEvent.DamageDealtToCreature(context.sourceId, creatureId, effect.amount))
         }
 
         return ExecutionResult(currentState, events)
@@ -144,12 +144,12 @@ class DealDamageToAllHandler : BaseEffectHandler<DealDamageToAllEffect>() {
     override val effectClass: KClass<DealDamageToAllEffect> = DealDamageToAllEffect::class
 
     override fun execute(
-        state: EcsGameState,
+        state: GameState,
         effect: DealDamageToAllEffect,
         context: ExecutionContext
     ): ExecutionResult {
         var currentState = state
-        val events = mutableListOf<EcsEvent>()
+        val events = mutableListOf<EffectEvent>()
 
         // Deal damage to creatures
         val creatures = state.getBattlefield().filter { entityId ->
@@ -173,7 +173,7 @@ class DealDamageToAllHandler : BaseEffectHandler<DealDamageToAllEffect>() {
                 c.with(damageComponent.addDamage(effect.amount))
             }
 
-            events.add(EcsEvent.DamageDealtToCreature(context.sourceId, creatureId, effect.amount))
+            events.add(EffectEvent.DamageDealtToCreature(context.sourceId, creatureId, effect.amount))
         }
 
         // Deal damage to all players
@@ -185,7 +185,7 @@ class DealDamageToAllHandler : BaseEffectHandler<DealDamageToAllEffect>() {
                 c.with(lifeComponent.loseLife(effect.amount))
             }
 
-            events.add(EcsEvent.DamageDealtToPlayer(context.sourceId, playerId, effect.amount))
+            events.add(EffectEvent.DamageDealtToPlayer(context.sourceId, playerId, effect.amount))
         }
 
         return ExecutionResult(currentState, events)
@@ -200,35 +200,35 @@ class DrainHandler : BaseEffectHandler<DrainEffect>() {
     override val effectClass: KClass<DrainEffect> = DrainEffect::class
 
     override fun execute(
-        state: EcsGameState,
+        state: GameState,
         effect: DrainEffect,
         context: ExecutionContext
     ): ExecutionResult {
         var currentState = state
-        val events = mutableListOf<EcsEvent>()
+        val events = mutableListOf<EffectEvent>()
 
         // Deal damage to target
         when (effect.target) {
             is EffectTarget.AnyTarget, is EffectTarget.TargetCreature -> {
                 val target = context.targets.firstOrNull()
                 when (target) {
-                    is EcsTarget.Player -> {
+                    is ResolvedTarget.Player -> {
                         val container = currentState.getEntity(target.playerId)
                         val lifeComponent = container?.get<LifeComponent>() ?: return noOp(state)
 
                         currentState = currentState.updateEntity(target.playerId) { c ->
                             c.with(lifeComponent.loseLife(effect.amount))
                         }
-                        events.add(EcsEvent.DamageDealtToPlayer(context.sourceId, target.playerId, effect.amount))
+                        events.add(EffectEvent.DamageDealtToPlayer(context.sourceId, target.playerId, effect.amount))
                     }
-                    is EcsTarget.Permanent -> {
+                    is ResolvedTarget.Permanent -> {
                         val container = currentState.getEntity(target.entityId)
                         val damageComponent = container?.get<DamageComponent>() ?: DamageComponent(0)
 
                         currentState = currentState.updateEntity(target.entityId) { c ->
                             c.with(damageComponent.addDamage(effect.amount))
                         }
-                        events.add(EcsEvent.DamageDealtToCreature(context.sourceId, target.entityId, effect.amount))
+                        events.add(EffectEvent.DamageDealtToCreature(context.sourceId, target.entityId, effect.amount))
                     }
                     null -> return noOp(state)
                 }
@@ -241,18 +241,18 @@ class DrainHandler : BaseEffectHandler<DrainEffect>() {
                 currentState = currentState.updateEntity(opponentId) { c ->
                     c.with(lifeComponent.loseLife(effect.amount))
                 }
-                events.add(EcsEvent.DamageDealtToPlayer(context.sourceId, opponentId, effect.amount))
+                events.add(EffectEvent.DamageDealtToPlayer(context.sourceId, opponentId, effect.amount))
             }
             is EffectTarget.TargetNonblackCreature -> {
                 val target = context.targets.firstOrNull()
-                if (target is EcsTarget.Permanent) {
+                if (target is ResolvedTarget.Permanent) {
                     val container = currentState.getEntity(target.entityId)
                     val damageComponent = container?.get<DamageComponent>() ?: DamageComponent(0)
 
                     currentState = currentState.updateEntity(target.entityId) { c ->
                         c.with(damageComponent.addDamage(effect.amount))
                     }
-                    events.add(EcsEvent.DamageDealtToCreature(context.sourceId, target.entityId, effect.amount))
+                    events.add(EffectEvent.DamageDealtToCreature(context.sourceId, target.entityId, effect.amount))
                 } else {
                     return noOp(state)
                 }
@@ -267,7 +267,7 @@ class DrainHandler : BaseEffectHandler<DrainEffect>() {
         currentState = currentState.updateEntity(context.controllerId) { c ->
             c.with(controllerLife.gainLife(effect.amount))
         }
-        events.add(EcsEvent.LifeGained(context.controllerId, effect.amount))
+        events.add(EffectEvent.LifeGained(context.controllerId, effect.amount))
 
         return ExecutionResult(currentState, events)
     }

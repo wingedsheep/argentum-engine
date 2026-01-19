@@ -6,12 +6,12 @@ import com.wingedsheep.rulesengine.ability.SearchLibraryEffect
 import com.wingedsheep.rulesengine.card.CardDefinition
 import com.wingedsheep.rulesengine.core.*
 import com.wingedsheep.rulesengine.ecs.Component
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.components.CardComponent
 import com.wingedsheep.rulesengine.ecs.components.TappedComponent
-import com.wingedsheep.rulesengine.ecs.script.EcsEvent
+import com.wingedsheep.rulesengine.ecs.script.EffectEvent
 import com.wingedsheep.rulesengine.ecs.script.ExecutionContext
 import com.wingedsheep.rulesengine.ecs.script.handler.EffectHandlerRegistry
 import com.wingedsheep.rulesengine.zone.ZoneType
@@ -72,14 +72,14 @@ class NaturesLoreTest : FunSpec({
         oracleText = "{T}: Add {G} or {U}."
     )
 
-    fun newGame(): EcsGameState = EcsGameState.newGame(
+    fun newGame(): GameState = GameState.newGame(
         listOf(player1Id to "Alice", player2Id to "Bob")
     )
 
-    fun EcsGameState.addCardToLibrary(
+    fun GameState.addCardToLibrary(
         def: CardDefinition,
         ownerId: EntityId
-    ): Pair<EntityId, EcsGameState> {
+    ): Pair<EntityId, GameState> {
         val components = mutableListOf<Component>(
             CardComponent(def, ownerId)
         )
@@ -149,7 +149,7 @@ class NaturesLoreTest : FunSpec({
             val result = registry.execute(state, effect, context)
 
             // Should generate shuffle event
-            result.events.any { it is EcsEvent.LibraryShuffled } shouldBe true
+            result.events.any { it is EffectEvent.LibraryShuffled } shouldBe true
         }
 
         test("can find dual lands with Forest subtype") {
@@ -195,7 +195,7 @@ class NaturesLoreTest : FunSpec({
             result.state.getZone(libraryZone) shouldContain plainsId
 
             // Should still shuffle (even if nothing found)
-            result.events.any { it is EcsEvent.LibraryShuffled } shouldBe true
+            result.events.any { it is EffectEvent.LibraryShuffled } shouldBe true
         }
 
         test("generates correct events") {
@@ -209,13 +209,13 @@ class NaturesLoreTest : FunSpec({
             val result = registry.execute(state, effect, context)
 
             // Should have search event
-            result.events.any { it is EcsEvent.LibrarySearched } shouldBe true
+            result.events.any { it is EffectEvent.LibrarySearched } shouldBe true
 
             // Should have card moved event
-            result.events.any { it is EcsEvent.CardMovedToZone } shouldBe true
+            result.events.any { it is EffectEvent.CardMovedToZone } shouldBe true
 
             // Should have shuffle event
-            result.events.any { it is EcsEvent.LibraryShuffled } shouldBe true
+            result.events.any { it is EffectEvent.LibraryShuffled } shouldBe true
         }
     }
 

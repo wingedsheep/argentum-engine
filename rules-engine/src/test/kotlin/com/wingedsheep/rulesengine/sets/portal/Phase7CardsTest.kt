@@ -4,12 +4,12 @@ import com.wingedsheep.rulesengine.ability.*
 import com.wingedsheep.rulesengine.card.CardDefinition
 import com.wingedsheep.rulesengine.core.*
 import com.wingedsheep.rulesengine.ecs.Component
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.components.CardComponent
 import com.wingedsheep.rulesengine.ecs.components.ControllerComponent
-import com.wingedsheep.rulesengine.ecs.script.EcsTarget
+import com.wingedsheep.rulesengine.ecs.script.ResolvedTarget
 import com.wingedsheep.rulesengine.ecs.script.ExecutionContext
 import com.wingedsheep.rulesengine.ecs.script.handler.EffectHandlerRegistry
 import com.wingedsheep.rulesengine.zone.ZoneType
@@ -26,14 +26,14 @@ class Phase7CardsTest : FunSpec({
     val player1Id = EntityId.of("player1")
     val player2Id = EntityId.of("player2")
 
-    fun newGame(): EcsGameState = EcsGameState.newGame(
+    fun newGame(): GameState = GameState.newGame(
         listOf(player1Id to "Alice", player2Id to "Bob")
     )
 
-    fun EcsGameState.addCreatureToBattlefield(
+    fun GameState.addCreatureToBattlefield(
         def: CardDefinition,
         controllerId: EntityId
-    ): Pair<EntityId, EcsGameState> {
+    ): Pair<EntityId, GameState> {
         val components = mutableListOf<Component>(
             CardComponent(def, controllerId),
             ControllerComponent(controllerId)
@@ -309,14 +309,14 @@ class Phase7CardsTest : FunSpec({
             val context = ExecutionContext(
                 controllerId = player1Id,
                 sourceId = player1Id,
-                targets = listOf(EcsTarget.Permanent(creatureId))
+                targets = listOf(ResolvedTarget.Permanent(creatureId))
             )
 
             val result = registry.execute(state, effect, context)
 
             // Check that the event was produced
             result.events.any { event ->
-                event is com.wingedsheep.rulesengine.ecs.script.EcsEvent.StatsModified &&
+                event is com.wingedsheep.rulesengine.ecs.script.EffectEvent.StatsModified &&
                     event.entityId == creatureId &&
                     event.powerDelta == 4 &&
                     event.toughnessDelta == 4

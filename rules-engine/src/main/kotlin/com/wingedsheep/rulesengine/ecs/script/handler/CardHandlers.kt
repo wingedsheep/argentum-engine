@@ -6,11 +6,11 @@ import com.wingedsheep.rulesengine.ability.EffectTarget
 import com.wingedsheep.rulesengine.ability.ReturnFromGraveyardEffect
 import com.wingedsheep.rulesengine.ability.SearchDestination
 import com.wingedsheep.rulesengine.ability.WheelEffect
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.components.CardComponent
-import com.wingedsheep.rulesengine.ecs.script.EcsEvent
+import com.wingedsheep.rulesengine.ecs.script.EffectEvent
 import com.wingedsheep.rulesengine.ecs.script.ExecutionContext
 import com.wingedsheep.rulesengine.ecs.script.ExecutionResult
 import com.wingedsheep.rulesengine.zone.ZoneType
@@ -23,13 +23,13 @@ class DrawCardsHandler : BaseEffectHandler<DrawCardsEffect>() {
     override val effectClass: KClass<DrawCardsEffect> = DrawCardsEffect::class
 
     override fun execute(
-        state: EcsGameState,
+        state: GameState,
         effect: DrawCardsEffect,
         context: ExecutionContext
     ): ExecutionResult {
         val targetPlayerId = resolvePlayerTarget(effect.target, context.controllerId, state)
         var currentState = state
-        val events = mutableListOf<EcsEvent>()
+        val events = mutableListOf<EffectEvent>()
 
         repeat(effect.count) {
             val result = drawCard(currentState, targetPlayerId)
@@ -40,13 +40,13 @@ class DrawCardsHandler : BaseEffectHandler<DrawCardsEffect>() {
         return ExecutionResult(currentState, events)
     }
 
-    private fun drawCard(state: EcsGameState, playerId: EntityId): ExecutionResult {
+    private fun drawCard(state: GameState, playerId: EntityId): ExecutionResult {
         val libraryZone = ZoneId(ZoneType.LIBRARY, playerId)
         val handZone = ZoneId(ZoneType.HAND, playerId)
 
         val library = state.getZone(libraryZone)
         if (library.isEmpty()) {
-            return ExecutionResult(state, listOf(EcsEvent.DrawFailed(playerId)))
+            return ExecutionResult(state, listOf(EffectEvent.DrawFailed(playerId)))
         }
 
         val cardId = library.first()
@@ -58,7 +58,7 @@ class DrawCardsHandler : BaseEffectHandler<DrawCardsEffect>() {
 
         return ExecutionResult(
             state = newState,
-            events = listOf(EcsEvent.CardDrawn(playerId, cardId, cardName))
+            events = listOf(EffectEvent.CardDrawn(playerId, cardId, cardName))
         )
     }
 }
@@ -70,13 +70,13 @@ class DiscardCardsHandler : BaseEffectHandler<DiscardCardsEffect>() {
     override val effectClass: KClass<DiscardCardsEffect> = DiscardCardsEffect::class
 
     override fun execute(
-        state: EcsGameState,
+        state: GameState,
         effect: DiscardCardsEffect,
         context: ExecutionContext
     ): ExecutionResult {
         val targetPlayerId = resolvePlayerTarget(effect.target, context.controllerId, state)
         var currentState = state
-        val events = mutableListOf<EcsEvent>()
+        val events = mutableListOf<EffectEvent>()
 
         val handZone = ZoneId(ZoneType.HAND, targetPlayerId)
         val graveyardZone = ZoneId(ZoneType.GRAVEYARD, targetPlayerId)
@@ -90,7 +90,7 @@ class DiscardCardsHandler : BaseEffectHandler<DiscardCardsEffect>() {
                 .removeFromZone(cardId, handZone)
                 .addToZone(cardId, graveyardZone)
 
-            events.add(EcsEvent.CardDiscarded(targetPlayerId, cardId, cardName))
+            events.add(EffectEvent.CardDiscarded(targetPlayerId, cardId, cardName))
         }
 
         return ExecutionResult(currentState, events)
@@ -106,7 +106,7 @@ class ReturnFromGraveyardHandler : BaseEffectHandler<ReturnFromGraveyardEffect>(
     override val effectClass: KClass<ReturnFromGraveyardEffect> = ReturnFromGraveyardEffect::class
 
     override fun execute(
-        state: EcsGameState,
+        state: GameState,
         effect: ReturnFromGraveyardEffect,
         context: ExecutionContext
     ): ExecutionResult {
@@ -147,7 +147,7 @@ class ReturnFromGraveyardHandler : BaseEffectHandler<ReturnFromGraveyardEffect>(
 
         return result(
             currentState,
-            EcsEvent.CardMovedToZone(matchingCard, cardName, effect.destination.description)
+            EffectEvent.CardMovedToZone(matchingCard, cardName, effect.destination.description)
         )
     }
 }
@@ -160,12 +160,12 @@ class WheelHandler : BaseEffectHandler<WheelEffect>() {
     override val effectClass: KClass<WheelEffect> = WheelEffect::class
 
     override fun execute(
-        state: EcsGameState,
+        state: GameState,
         effect: WheelEffect,
         context: ExecutionContext
     ): ExecutionResult {
         var currentState = state
-        val events = mutableListOf<EcsEvent>()
+        val events = mutableListOf<EffectEvent>()
 
         val players = when (effect.target) {
             EffectTarget.Controller -> listOf(context.controllerId)
@@ -200,11 +200,11 @@ class WheelHandler : BaseEffectHandler<WheelEffect>() {
                     currentState = currentState
                         .removeFromZone(cardId, libraryZone)
                         .addToZone(cardId, handZone)
-                    events.add(EcsEvent.CardDrawn(playerId, cardId, cardName))
+                    events.add(EffectEvent.CardDrawn(playerId, cardId, cardName))
                 }
             }
 
-            events.add(EcsEvent.LibraryShuffled(playerId))
+            events.add(EffectEvent.LibraryShuffled(playerId))
         }
 
         return ExecutionResult(currentState, events)

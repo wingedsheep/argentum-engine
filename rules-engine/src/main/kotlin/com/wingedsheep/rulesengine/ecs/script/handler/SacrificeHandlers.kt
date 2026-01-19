@@ -2,14 +2,14 @@ package com.wingedsheep.rulesengine.ecs.script.handler
 
 import com.wingedsheep.rulesengine.ability.SacrificeUnlessEffect
 import com.wingedsheep.rulesengine.ability.EffectTarget
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.components.CardComponent
 import com.wingedsheep.rulesengine.ecs.components.ControllerComponent
 import com.wingedsheep.rulesengine.ecs.decision.CardOption
-import com.wingedsheep.rulesengine.ecs.decision.EcsSacrificeUnlessDecision
-import com.wingedsheep.rulesengine.ecs.script.EcsEvent
+import com.wingedsheep.rulesengine.ecs.decision.EffectSacrificeUnlessDecision
+import com.wingedsheep.rulesengine.ecs.script.EffectEvent
 import com.wingedsheep.rulesengine.ecs.script.EffectContinuation
 import com.wingedsheep.rulesengine.ecs.script.ExecutionContext
 import com.wingedsheep.rulesengine.ecs.script.ExecutionResult
@@ -34,7 +34,7 @@ class SacrificeUnlessHandler : BaseEffectHandler<SacrificeUnlessEffect>() {
     override val effectClass: KClass<SacrificeUnlessEffect> = SacrificeUnlessEffect::class
 
     override fun execute(
-        state: EcsGameState,
+        state: GameState,
         effect: SacrificeUnlessEffect,
         context: ExecutionContext
     ): ExecutionResult {
@@ -75,7 +75,7 @@ class SacrificeUnlessHandler : BaseEffectHandler<SacrificeUnlessEffect>() {
      * Find permanents on the battlefield controlled by the player that match the cost filter.
      */
     private fun findValidCostTargets(
-        state: EcsGameState,
+        state: GameState,
         playerId: EntityId,
         effect: SacrificeUnlessEffect
     ): List<EntityId> {
@@ -96,7 +96,7 @@ class SacrificeUnlessHandler : BaseEffectHandler<SacrificeUnlessEffect>() {
      * Create a pending decision for the player to choose whether to pay the cost.
      */
     private fun createPendingDecision(
-        state: EcsGameState,
+        state: GameState,
         playerId: EntityId,
         permanentToSacrifice: EntityId,
         permanentName: String,
@@ -117,7 +117,7 @@ class SacrificeUnlessHandler : BaseEffectHandler<SacrificeUnlessEffect>() {
 
         val decisionId = UUID.randomUUID().toString()
 
-        val decision = EcsSacrificeUnlessDecision(
+        val decision = EffectSacrificeUnlessDecision(
             playerId = playerId,
             description = "Sacrifice $permanentName or ${effect.cost.description}?",
             decisionId = decisionId,
@@ -152,7 +152,7 @@ class SacrificeUnlessHandler : BaseEffectHandler<SacrificeUnlessEffect>() {
      * Sacrifice a permanent (the source that wasn't paid for).
      */
     private fun sacrificePermanent(
-        state: EcsGameState,
+        state: GameState,
         permanentId: EntityId,
         permanentName: String,
         playerId: EntityId
@@ -166,7 +166,7 @@ class SacrificeUnlessHandler : BaseEffectHandler<SacrificeUnlessEffect>() {
         return ExecutionResult(
             state = newState,
             events = listOf(
-                EcsEvent.PermanentSacrificed(permanentId, permanentName, playerId)
+                EffectEvent.PermanentSacrificed(permanentId, permanentName, playerId)
             )
         )
     }
@@ -175,13 +175,13 @@ class SacrificeUnlessHandler : BaseEffectHandler<SacrificeUnlessEffect>() {
      * Sacrifice permanents to pay the cost.
      */
     private fun sacrificeForCost(
-        state: EcsGameState,
+        state: GameState,
         permanentIds: List<EntityId>,
         costDescription: String,
         playerId: EntityId
     ): ExecutionResult {
         var currentState = state
-        val events = mutableListOf<EcsEvent>()
+        val events = mutableListOf<EffectEvent>()
         val graveyardZone = ZoneId(ZoneType.GRAVEYARD, playerId)
 
         for (permanentId in permanentIds) {
@@ -192,7 +192,7 @@ class SacrificeUnlessHandler : BaseEffectHandler<SacrificeUnlessEffect>() {
                 .removeFromZone(permanentId, ZoneId.BATTLEFIELD)
                 .addToZone(permanentId, graveyardZone)
 
-            events.add(EcsEvent.PermanentSacrificed(permanentId, permanentName, playerId))
+            events.add(EffectEvent.PermanentSacrificed(permanentId, permanentName, playerId))
         }
 
         return ExecutionResult(

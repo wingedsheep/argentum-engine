@@ -9,14 +9,14 @@ import com.wingedsheep.rulesengine.ability.ShuffleLibraryEffect
 import com.wingedsheep.rulesengine.card.CardDefinition
 import com.wingedsheep.rulesengine.core.Supertype
 import com.wingedsheep.rulesengine.core.Subtype
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.components.CardComponent
 import com.wingedsheep.rulesengine.ecs.components.TappedComponent
 import com.wingedsheep.rulesengine.ecs.decision.CardOption
-import com.wingedsheep.rulesengine.ecs.decision.EcsChooseCards
-import com.wingedsheep.rulesengine.ecs.script.EcsEvent
+import com.wingedsheep.rulesengine.ecs.decision.EffectChooseCards
+import com.wingedsheep.rulesengine.ecs.script.EffectEvent
 import com.wingedsheep.rulesengine.ecs.script.EffectContinuation
 import com.wingedsheep.rulesengine.ecs.script.ExecutionContext
 import com.wingedsheep.rulesengine.ecs.script.ExecutionResult
@@ -32,13 +32,13 @@ class ShuffleLibraryHandler : BaseEffectHandler<ShuffleLibraryEffect>() {
     override val effectClass: KClass<ShuffleLibraryEffect> = ShuffleLibraryEffect::class
 
     override fun execute(
-        state: EcsGameState,
+        state: GameState,
         effect: ShuffleLibraryEffect,
         context: ExecutionContext
     ): ExecutionResult {
         val targetPlayerId = resolvePlayerTarget(effect.target, context.controllerId, state)
         val newState = state.shuffleLibrary(targetPlayerId)
-        return result(newState, EcsEvent.LibraryShuffled(targetPlayerId))
+        return result(newState, EffectEvent.LibraryShuffled(targetPlayerId))
     }
 }
 
@@ -58,7 +58,7 @@ class SearchLibraryHandler : BaseEffectHandler<SearchLibraryEffect>() {
     override val effectClass: KClass<SearchLibraryEffect> = SearchLibraryEffect::class
 
     override fun execute(
-        state: EcsGameState,
+        state: GameState,
         effect: SearchLibraryEffect,
         context: ExecutionContext
     ): ExecutionResult {
@@ -103,7 +103,7 @@ class SearchLibraryHandler : BaseEffectHandler<SearchLibraryEffect>() {
      * Includes a continuation that will complete the search when called.
      */
     private fun createPendingDecision(
-        state: EcsGameState,
+        state: GameState,
         playerId: EntityId,
         matchingCards: List<EntityId>,
         effect: SearchLibraryEffect,
@@ -127,7 +127,7 @@ class SearchLibraryHandler : BaseEffectHandler<SearchLibraryEffect>() {
 
         val decisionId = UUID.randomUUID().toString()
 
-        val decision = EcsChooseCards(
+        val decision = EffectChooseCards(
             playerId = playerId,
             description = "Choose ${if (effect.count == 1) "a card" else "up to ${effect.count} cards"} to put ${effect.destination.description}",
             decisionId = decisionId,
@@ -150,7 +150,7 @@ class SearchLibraryHandler : BaseEffectHandler<SearchLibraryEffect>() {
         // Return partial result with pending decision
         return ExecutionResult(
             state = state,
-            events = listOf(EcsEvent.LibrarySearched(playerId, matchingCards.size, effect.filter.description)),
+            events = listOf(EffectEvent.LibrarySearched(playerId, matchingCards.size, effect.filter.description)),
             pendingDecision = decision,
             continuation = continuation
         )
@@ -160,7 +160,7 @@ class SearchLibraryHandler : BaseEffectHandler<SearchLibraryEffect>() {
      * Complete the search by moving selected cards to the destination.
      */
     private fun completeSearch(
-        state: EcsGameState,
+        state: GameState,
         playerId: EntityId,
         selectedCards: List<EntityId>,
         effect: SearchLibraryEffect
@@ -173,9 +173,9 @@ class SearchLibraryHandler : BaseEffectHandler<SearchLibraryEffect>() {
 
         // Move selected cards to destination
         var currentState = state
-        val events = mutableListOf<EcsEvent>()
+        val events = mutableListOf<EffectEvent>()
 
-        events.add(EcsEvent.LibrarySearched(playerId, selectedCards.size, effect.filter.description))
+        events.add(EffectEvent.LibrarySearched(playerId, selectedCards.size, effect.filter.description))
 
         // For TOP_OF_LIBRARY with shuffle, we need to shuffle first, then put on top
         // This matches cards like Personal Tutor: "shuffle, then put that card on top"
@@ -187,13 +187,13 @@ class SearchLibraryHandler : BaseEffectHandler<SearchLibraryEffect>() {
 
             // Shuffle the library (without the selected cards)
             currentState = currentState.shuffleLibrary(playerId)
-            events.add(EcsEvent.LibraryShuffled(playerId))
+            events.add(EffectEvent.LibraryShuffled(playerId))
 
             // Now put selected cards on top of library (in reverse order so first selected is on top)
             for (cardId in selectedCards.reversed()) {
                 val cardName = currentState.getEntity(cardId)?.get<CardComponent>()?.definition?.name ?: "Unknown"
                 currentState = currentState.addToZoneAt(cardId, libraryZone, 0)
-                events.add(EcsEvent.CardMovedToZone(cardId, cardName, "top of library"))
+                events.add(EffectEvent.CardMovedToZone(cardId, cardName, "top of library"))
             }
 
             return result(currentState, events)
@@ -220,13 +220,13 @@ class SearchLibraryHandler : BaseEffectHandler<SearchLibraryEffect>() {
                 currentState = currentState.updateEntity(cardId) { it.with(TappedComponent) }
             }
 
-            events.add(EcsEvent.CardMovedToZone(cardId, cardName, zoneName))
+            events.add(EffectEvent.CardMovedToZone(cardId, cardName, zoneName))
         }
 
         // Shuffle library if required (for non-TOP_OF_LIBRARY destinations)
         if (effect.shuffleAfter) {
             currentState = currentState.shuffleLibrary(playerId)
-            events.add(EcsEvent.LibraryShuffled(playerId))
+            events.add(EffectEvent.LibraryShuffled(playerId))
         }
 
         return result(currentState, events)
@@ -236,7 +236,7 @@ class SearchLibraryHandler : BaseEffectHandler<SearchLibraryEffect>() {
      * Complete search when no cards match (or player chose none).
      */
     private fun completeSearchWithNoMatches(
-        state: EcsGameState,
+        state: GameState,
         playerId: EntityId,
         effect: SearchLibraryEffect
     ): ExecutionResult {
@@ -245,12 +245,12 @@ class SearchLibraryHandler : BaseEffectHandler<SearchLibraryEffect>() {
             result(
                 shuffledState,
                 listOf(
-                    EcsEvent.LibrarySearched(playerId, 0, effect.filter.description),
-                    EcsEvent.LibraryShuffled(playerId)
+                    EffectEvent.LibrarySearched(playerId, 0, effect.filter.description),
+                    EffectEvent.LibraryShuffled(playerId)
                 )
             )
         } else {
-            result(state, EcsEvent.LibrarySearched(playerId, 0, effect.filter.description))
+            result(state, EffectEvent.LibrarySearched(playerId, 0, effect.filter.description))
         }
     }
 
@@ -314,7 +314,7 @@ class PutOnTopOfLibraryHandler : BaseEffectHandler<PutOnTopOfLibraryEffect>() {
     override val effectClass: KClass<PutOnTopOfLibraryEffect> = PutOnTopOfLibraryEffect::class
 
     override fun execute(
-        state: EcsGameState,
+        state: GameState,
         effect: PutOnTopOfLibraryEffect,
         context: ExecutionContext
     ): ExecutionResult {
@@ -323,7 +323,7 @@ class PutOnTopOfLibraryHandler : BaseEffectHandler<PutOnTopOfLibraryEffect>() {
             EffectTarget.Self -> context.sourceId
             else -> context.targets.firstOrNull()?.let {
                 when (it) {
-                    is com.wingedsheep.rulesengine.ecs.script.EcsTarget.Permanent -> it.entityId
+                    is com.wingedsheep.rulesengine.ecs.script.ResolvedTarget.Permanent -> it.entityId
                     else -> null
                 }
             } ?: context.sourceId
@@ -347,7 +347,7 @@ class PutOnTopOfLibraryHandler : BaseEffectHandler<PutOnTopOfLibraryEffect>() {
 
         return result(
             currentState,
-            EcsEvent.CardMovedToZone(targetId, cardName, "top of library")
+            EffectEvent.CardMovedToZone(targetId, cardName, "top of library")
         )
     }
 }

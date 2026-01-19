@@ -5,10 +5,10 @@ import com.wingedsheep.rulesengine.ability.register
 import com.wingedsheep.rulesengine.card.CardDefinition
 import com.wingedsheep.rulesengine.core.ManaCost
 import com.wingedsheep.rulesengine.core.Subtype
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
-import com.wingedsheep.rulesengine.ecs.combat.EcsCombatValidator
+import com.wingedsheep.rulesengine.ecs.combat.CombatValidator
 import com.wingedsheep.rulesengine.ecs.components.*
 import com.wingedsheep.rulesengine.ecs.script.ScriptModifierProvider
 import com.wingedsheep.rulesengine.game.Step
@@ -21,8 +21,8 @@ class JungleLionScenarioTest : FunSpec({
     val player2Id = EntityId.of("player2") // Bob
 
     // Helper to setup a game with Portal Set abilities registered
-    fun setupGame(): Pair<EcsGameState, ScriptModifierProvider> {
-        val state = EcsGameState.newGame(listOf(player1Id to "Alice", player2Id to "Bob"))
+    fun setupGame(): Pair<GameState, ScriptModifierProvider> {
+        val state = GameState.newGame(listOf(player1Id to "Alice", player2Id to "Bob"))
 
         // Register Portal abilities
         val registry = AbilityRegistry()
@@ -33,10 +33,10 @@ class JungleLionScenarioTest : FunSpec({
     }
 
     // Helper to create a specific card on the battlefield
-    fun EcsGameState.addCardToBattlefield(
+    fun GameState.addCardToBattlefield(
         cardName: String,
         controllerId: EntityId
-    ): Pair<EntityId, EcsGameState> {
+    ): Pair<EntityId, GameState> {
         val def = PortalSet.getCardDefinition(cardName)
             ?: throw IllegalArgumentException("Card $cardName not found in PortalSet")
 
@@ -60,7 +60,7 @@ class JungleLionScenarioTest : FunSpec({
     )
 
     // Helper to add a generic bear (for the opponent)
-    fun EcsGameState.addGenericBear(controllerId: EntityId): Pair<EntityId, EcsGameState> {
+    fun GameState.addGenericBear(controllerId: EntityId): Pair<EntityId, GameState> {
         val (id, s1) = createEntity(
             EntityId.generate(),
             CardComponent(bearDef, controllerId),
@@ -105,7 +105,7 @@ class JungleLionScenarioTest : FunSpec({
             state = state.copy(turnState = state.turnState.copy(step = Step.DECLARE_BLOCKERS))
 
             // ACT: Alice tries to block Bob's bear with Jungle Lion
-            val validationResult = EcsCombatValidator.canDeclareBlocker(
+            val validationResult = CombatValidator.canDeclareBlocker(
                 state = state,
                 blockerId = lionId,
                 attackerId = attackerId,
@@ -114,7 +114,7 @@ class JungleLionScenarioTest : FunSpec({
             )
 
             // ASSERT: Should be invalid due to "This creature can't block"
-            validationResult.shouldBeInstanceOf<EcsCombatValidator.BlockValidationResult.Invalid>()
+            validationResult.shouldBeInstanceOf<CombatValidator.BlockValidationResult.Invalid>()
         }
 
         test("Jungle Lion CAN attack (it is not a defender)") {
@@ -132,7 +132,7 @@ class JungleLionScenarioTest : FunSpec({
             ))
 
             // ACT
-            val validationResult = EcsCombatValidator.canDeclareAttacker(
+            val validationResult = CombatValidator.canDeclareAttacker(
                 state = state,
                 creatureId = lionId,
                 playerId = player1Id,
@@ -140,7 +140,7 @@ class JungleLionScenarioTest : FunSpec({
             )
 
             // ASSERT
-            validationResult.shouldBeInstanceOf<EcsCombatValidator.ValidationResult.Valid>()
+            validationResult.shouldBeInstanceOf<CombatValidator.ValidationResult.Valid>()
         }
     }
 })

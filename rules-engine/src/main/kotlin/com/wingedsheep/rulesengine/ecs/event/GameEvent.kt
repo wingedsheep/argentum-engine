@@ -2,15 +2,15 @@ package com.wingedsheep.rulesengine.ecs.event
 
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
-import com.wingedsheep.rulesengine.ecs.action.EcsActionEvent
-import com.wingedsheep.rulesengine.ecs.script.EcsEvent
+import com.wingedsheep.rulesengine.ecs.action.GameActionEvent
+import com.wingedsheep.rulesengine.ecs.script.EffectEvent
 import kotlinx.serialization.Serializable
 
 /**
  * Unified game events for the ECS system.
  *
  * These events represent all observable game occurrences that can trigger abilities.
- * They can be created from EcsActionEvent (action execution) or EcsEvent (effect execution).
+ * They can be created from GameActionEvent (action execution) or EffectEvent (effect execution).
  *
  * Events are used for:
  * - Trigger detection (which triggered abilities should fire)
@@ -18,7 +18,7 @@ import kotlinx.serialization.Serializable
  * - UI notifications
  */
 @Serializable
-sealed interface EcsGameEvent {
+sealed interface GameEvent {
 
     // =========================================================================
     // Zone Change Events
@@ -33,7 +33,7 @@ sealed interface EcsGameEvent {
         val cardName: String,
         val controllerId: EntityId,
         val fromZone: ZoneId?
-    ) : EcsGameEvent
+    ) : GameEvent
 
     /**
      * A permanent left the battlefield.
@@ -43,7 +43,7 @@ sealed interface EcsGameEvent {
         val entityId: EntityId,
         val cardName: String,
         val toZone: ZoneId
-    ) : EcsGameEvent
+    ) : GameEvent
 
     /**
      * A creature died (went to graveyard from battlefield).
@@ -53,7 +53,7 @@ sealed interface EcsGameEvent {
         val entityId: EntityId,
         val cardName: String,
         val ownerId: EntityId
-    ) : EcsGameEvent
+    ) : GameEvent
 
     /**
      * A card was exiled.
@@ -63,7 +63,7 @@ sealed interface EcsGameEvent {
         val entityId: EntityId,
         val cardName: String,
         val fromZone: ZoneId?
-    ) : EcsGameEvent
+    ) : GameEvent
 
     /**
      * A card was returned to its owner's hand.
@@ -72,7 +72,7 @@ sealed interface EcsGameEvent {
     data class ReturnedToHand(
         val entityId: EntityId,
         val cardName: String
-    ) : EcsGameEvent
+    ) : GameEvent
 
     // =========================================================================
     // Card Drawing Events
@@ -86,7 +86,7 @@ sealed interface EcsGameEvent {
         val playerId: EntityId,
         val cardId: EntityId,
         val cardName: String
-    ) : EcsGameEvent
+    ) : GameEvent
 
     /**
      * A player discarded a card.
@@ -96,7 +96,7 @@ sealed interface EcsGameEvent {
         val playerId: EntityId,
         val cardId: EntityId,
         val cardName: String
-    ) : EcsGameEvent
+    ) : GameEvent
 
     // =========================================================================
     // Combat Events
@@ -109,7 +109,7 @@ sealed interface EcsGameEvent {
     data class CombatBegan(
         val attackingPlayerId: EntityId,
         val defendingPlayerId: EntityId
-    ) : EcsGameEvent
+    ) : GameEvent
 
     /**
      * A creature was declared as an attacker.
@@ -120,7 +120,7 @@ sealed interface EcsGameEvent {
         val cardName: String,
         val attackingPlayerId: EntityId,
         val defendingPlayerId: EntityId
-    ) : EcsGameEvent
+    ) : GameEvent
 
     /**
      * A creature was declared as a blocker.
@@ -130,7 +130,7 @@ sealed interface EcsGameEvent {
         val blockerId: EntityId,
         val blockerName: String,
         val attackerId: EntityId
-    ) : EcsGameEvent
+    ) : GameEvent
 
     /**
      * Combat ended.
@@ -138,7 +138,7 @@ sealed interface EcsGameEvent {
     @Serializable
     data class CombatEnded(
         val activePlayerId: EntityId
-    ) : EcsGameEvent
+    ) : GameEvent
 
     // =========================================================================
     // Damage Events
@@ -153,7 +153,7 @@ sealed interface EcsGameEvent {
         val targetPlayerId: EntityId,
         val amount: Int,
         val isCombatDamage: Boolean = false
-    ) : EcsGameEvent
+    ) : GameEvent
 
     /**
      * Damage was dealt to a creature.
@@ -164,7 +164,7 @@ sealed interface EcsGameEvent {
         val targetCreatureId: EntityId,
         val amount: Int,
         val isCombatDamage: Boolean = false
-    ) : EcsGameEvent
+    ) : GameEvent
 
     // =========================================================================
     // Life Events
@@ -178,7 +178,7 @@ sealed interface EcsGameEvent {
         val playerId: EntityId,
         val amount: Int,
         val newTotal: Int
-    ) : EcsGameEvent
+    ) : GameEvent
 
     /**
      * A player lost life.
@@ -188,7 +188,7 @@ sealed interface EcsGameEvent {
         val playerId: EntityId,
         val amount: Int,
         val newTotal: Int
-    ) : EcsGameEvent
+    ) : GameEvent
 
     // =========================================================================
     // Phase/Step Events
@@ -200,7 +200,7 @@ sealed interface EcsGameEvent {
     @Serializable
     data class UpkeepBegan(
         val activePlayerId: EntityId
-    ) : EcsGameEvent
+    ) : GameEvent
 
     /**
      * End step began.
@@ -208,7 +208,7 @@ sealed interface EcsGameEvent {
     @Serializable
     data class EndStepBegan(
         val activePlayerId: EntityId
-    ) : EcsGameEvent
+    ) : GameEvent
 
     // =========================================================================
     // Spell Events
@@ -224,7 +224,7 @@ sealed interface EcsGameEvent {
         val casterId: EntityId,
         val isCreatureSpell: Boolean,
         val isInstantOrSorcery: Boolean
-    ) : EcsGameEvent
+    ) : GameEvent
 
     // =========================================================================
     // Tap/Untap Events
@@ -237,7 +237,7 @@ sealed interface EcsGameEvent {
     data class PermanentTapped(
         val entityId: EntityId,
         val cardName: String
-    ) : EcsGameEvent
+    ) : GameEvent
 
     /**
      * A permanent was untapped.
@@ -246,7 +246,7 @@ sealed interface EcsGameEvent {
     data class PermanentUntapped(
         val entityId: EntityId,
         val cardName: String
-    ) : EcsGameEvent
+    ) : GameEvent
 
     // =========================================================================
     // Counter Events
@@ -260,7 +260,7 @@ sealed interface EcsGameEvent {
         val entityId: EntityId,
         val counterType: String,
         val count: Int
-    ) : EcsGameEvent
+    ) : GameEvent
 
     /**
      * Counters were removed from a permanent.
@@ -270,7 +270,7 @@ sealed interface EcsGameEvent {
         val entityId: EntityId,
         val counterType: String,
         val count: Int
-    ) : EcsGameEvent
+    ) : GameEvent
 
     // =========================================================================
     // Game End Events
@@ -283,7 +283,7 @@ sealed interface EcsGameEvent {
     data class PlayerLost(
         val playerId: EntityId,
         val reason: String
-    ) : EcsGameEvent
+    ) : GameEvent
 
     /**
      * The game ended.
@@ -291,74 +291,74 @@ sealed interface EcsGameEvent {
     @Serializable
     data class GameEnded(
         val winnerId: EntityId?
-    ) : EcsGameEvent
+    ) : GameEvent
 }
 
 /**
- * Extension functions to convert from other event types to EcsGameEvent.
+ * Extension functions to convert from other event types to GameEvent.
  */
-object EcsGameEventConverter {
+object GameEventConverter {
 
     /**
-     * Convert an EcsActionEvent to EcsGameEvent(s).
+     * Convert an GameActionEvent to GameEvent(s).
      * Some action events may produce multiple game events.
      */
-    fun fromActionEvent(event: EcsActionEvent): List<EcsGameEvent> {
+    fun fromActionEvent(event: GameActionEvent): List<GameEvent> {
         return when (event) {
-            is EcsActionEvent.LifeChanged -> {
+            is GameActionEvent.LifeChanged -> {
                 val amount = event.newLife - event.oldLife
                 if (amount > 0) {
-                    listOf(EcsGameEvent.LifeGained(event.playerId, amount, event.newLife))
+                    listOf(GameEvent.LifeGained(event.playerId, amount, event.newLife))
                 } else if (amount < 0) {
-                    listOf(EcsGameEvent.LifeLost(event.playerId, -amount, event.newLife))
+                    listOf(GameEvent.LifeLost(event.playerId, -amount, event.newLife))
                 } else {
                     emptyList()
                 }
             }
 
-            is EcsActionEvent.DamageDealtToPlayer -> listOf(
-                EcsGameEvent.DamageDealtToPlayer(event.sourceId, event.targetId, event.amount)
+            is GameActionEvent.DamageDealtToPlayer -> listOf(
+                GameEvent.DamageDealtToPlayer(event.sourceId, event.targetId, event.amount)
             )
 
-            is EcsActionEvent.DamageDealtToCreature -> listOf(
-                EcsGameEvent.DamageDealtToCreature(event.sourceId, event.targetId, event.amount)
+            is GameActionEvent.DamageDealtToCreature -> listOf(
+                GameEvent.DamageDealtToCreature(event.sourceId, event.targetId, event.amount)
             )
 
-            is EcsActionEvent.CardDrawn -> listOf(
-                EcsGameEvent.CardDrawn(event.playerId, event.cardId, event.cardName)
+            is GameActionEvent.CardDrawn -> listOf(
+                GameEvent.CardDrawn(event.playerId, event.cardId, event.cardName)
             )
 
-            is EcsActionEvent.CardDiscarded -> listOf(
-                EcsGameEvent.CardDiscarded(event.playerId, event.cardId, event.cardName)
+            is GameActionEvent.CardDiscarded -> listOf(
+                GameEvent.CardDiscarded(event.playerId, event.cardId, event.cardName)
             )
 
-            is EcsActionEvent.CreatureDied -> listOf(
-                EcsGameEvent.CreatureDied(event.entityId, event.name, event.ownerId)
+            is GameActionEvent.CreatureDied -> listOf(
+                GameEvent.CreatureDied(event.entityId, event.name, event.ownerId)
             )
 
-            is EcsActionEvent.CardExiled -> listOf(
-                EcsGameEvent.CardExiled(event.entityId, event.name, null)
+            is GameActionEvent.CardExiled -> listOf(
+                GameEvent.CardExiled(event.entityId, event.name, null)
             )
 
-            is EcsActionEvent.CardReturnedToHand -> listOf(
-                EcsGameEvent.ReturnedToHand(event.entityId, event.name)
+            is GameActionEvent.CardReturnedToHand -> listOf(
+                GameEvent.ReturnedToHand(event.entityId, event.name)
             )
 
-            is EcsActionEvent.PermanentTapped -> listOf(
-                EcsGameEvent.PermanentTapped(event.entityId, event.name)
+            is GameActionEvent.PermanentTapped -> listOf(
+                GameEvent.PermanentTapped(event.entityId, event.name)
             )
 
-            is EcsActionEvent.PermanentUntapped -> listOf(
-                EcsGameEvent.PermanentUntapped(event.entityId, event.name)
+            is GameActionEvent.PermanentUntapped -> listOf(
+                GameEvent.PermanentUntapped(event.entityId, event.name)
             )
 
-            is EcsActionEvent.CombatStarted -> listOf(
-                EcsGameEvent.CombatBegan(event.attackingPlayerId, event.defendingPlayerId)
+            is GameActionEvent.CombatStarted -> listOf(
+                GameEvent.CombatBegan(event.attackingPlayerId, event.defendingPlayerId)
             )
 
-            is EcsActionEvent.AttackerDeclared -> listOf(
+            is GameActionEvent.AttackerDeclared -> listOf(
                 // Note: We don't have full context here, would need state to populate defendingPlayerId
-                EcsGameEvent.AttackerDeclared(
+                GameEvent.AttackerDeclared(
                     event.creatureId,
                     event.name,
                     EntityId.of("unknown"), // Would be filled in by trigger detector with state
@@ -366,35 +366,35 @@ object EcsGameEventConverter {
                 )
             )
 
-            is EcsActionEvent.BlockerDeclared -> listOf(
-                EcsGameEvent.BlockerDeclared(event.blockerId, event.name, event.attackerId)
+            is GameActionEvent.BlockerDeclared -> listOf(
+                GameEvent.BlockerDeclared(event.blockerId, event.name, event.attackerId)
             )
 
-            is EcsActionEvent.CombatEnded -> listOf(
-                EcsGameEvent.CombatEnded(event.playerId)
+            is GameActionEvent.CombatEnded -> listOf(
+                GameEvent.CombatEnded(event.playerId)
             )
 
-            is EcsActionEvent.PlayerLost -> listOf(
-                EcsGameEvent.PlayerLost(event.playerId, event.reason)
+            is GameActionEvent.PlayerLost -> listOf(
+                GameEvent.PlayerLost(event.playerId, event.reason)
             )
 
-            is EcsActionEvent.GameEnded -> listOf(
-                EcsGameEvent.GameEnded(event.winnerId)
+            is GameActionEvent.GameEnded -> listOf(
+                GameEvent.GameEnded(event.winnerId)
             )
 
             // DamageDealt (unified) maps to the appropriate damage event
-            is EcsActionEvent.DamageDealt -> {
+            is GameActionEvent.DamageDealt -> {
                 if (event.isCombatDamage) {
                     // Combat damage - could expand to track both player and creature damage
-                    listOf(EcsGameEvent.DamageDealtToCreature(event.sourceId, event.targetId, event.amount))
+                    listOf(GameEvent.DamageDealtToCreature(event.sourceId, event.targetId, event.amount))
                 } else {
-                    listOf(EcsGameEvent.DamageDealtToCreature(event.sourceId, event.targetId, event.amount))
+                    listOf(GameEvent.DamageDealtToCreature(event.sourceId, event.targetId, event.amount))
                 }
             }
 
             // Stack resolution events
-            is EcsActionEvent.SpellCast -> listOf(
-                EcsGameEvent.SpellCast(
+            is GameActionEvent.SpellCast -> listOf(
+                GameEvent.SpellCast(
                     spellId = event.entityId,
                     spellName = event.name,
                     casterId = event.casterId,
@@ -403,8 +403,8 @@ object EcsGameEventConverter {
                 )
             )
 
-            is EcsActionEvent.PermanentEnteredBattlefield -> listOf(
-                EcsGameEvent.EnteredBattlefield(
+            is GameActionEvent.PermanentEnteredBattlefield -> listOf(
+                GameEvent.EnteredBattlefield(
                     entityId = event.entityId,
                     cardName = event.name,
                     controllerId = event.controllerId,
@@ -413,85 +413,85 @@ object EcsGameEventConverter {
             )
 
             // Events that don't directly map to trigger-relevant game events
-            is EcsActionEvent.ManaAdded,
-            is EcsActionEvent.DrawFailed,
-            is EcsActionEvent.CardMoved,
-            is EcsActionEvent.PermanentDestroyed,
-            is EcsActionEvent.LandPlayed,
-            is EcsActionEvent.Attached,
-            is EcsActionEvent.Detached,
-            is EcsActionEvent.BlockersOrdered,
-            is EcsActionEvent.SpellResolved,
-            is EcsActionEvent.SpellFizzled,
-            is EcsActionEvent.AbilityResolved,
-            is EcsActionEvent.AbilityFizzled -> emptyList()
+            is GameActionEvent.ManaAdded,
+            is GameActionEvent.DrawFailed,
+            is GameActionEvent.CardMoved,
+            is GameActionEvent.PermanentDestroyed,
+            is GameActionEvent.LandPlayed,
+            is GameActionEvent.Attached,
+            is GameActionEvent.Detached,
+            is GameActionEvent.BlockersOrdered,
+            is GameActionEvent.SpellResolved,
+            is GameActionEvent.SpellFizzled,
+            is GameActionEvent.AbilityResolved,
+            is GameActionEvent.AbilityFizzled -> emptyList()
         }
     }
 
     /**
-     * Convert an EcsEvent (from effect execution) to EcsGameEvent(s).
+     * Convert an EffectEvent (from effect execution) to GameEvent(s).
      */
-    fun fromEffectEvent(event: EcsEvent): List<EcsGameEvent> {
+    fun fromEffectEvent(event: EffectEvent): List<GameEvent> {
         return when (event) {
-            is EcsEvent.LifeGained -> listOf(
-                EcsGameEvent.LifeGained(event.playerId, event.amount, 0) // Total not available
+            is EffectEvent.LifeGained -> listOf(
+                GameEvent.LifeGained(event.playerId, event.amount, 0) // Total not available
             )
 
-            is EcsEvent.LifeLost -> listOf(
-                EcsGameEvent.LifeLost(event.playerId, event.amount, 0) // Total not available
+            is EffectEvent.LifeLost -> listOf(
+                GameEvent.LifeLost(event.playerId, event.amount, 0) // Total not available
             )
 
-            is EcsEvent.DamageDealtToPlayer -> listOf(
-                EcsGameEvent.DamageDealtToPlayer(event.sourceId, event.targetId, event.amount)
+            is EffectEvent.DamageDealtToPlayer -> listOf(
+                GameEvent.DamageDealtToPlayer(event.sourceId, event.targetId, event.amount)
             )
 
-            is EcsEvent.DamageDealtToCreature -> listOf(
-                EcsGameEvent.DamageDealtToCreature(event.sourceId, event.targetId, event.amount)
+            is EffectEvent.DamageDealtToCreature -> listOf(
+                GameEvent.DamageDealtToCreature(event.sourceId, event.targetId, event.amount)
             )
 
-            is EcsEvent.CardDrawn -> listOf(
-                EcsGameEvent.CardDrawn(event.playerId, event.cardId, event.cardName)
+            is EffectEvent.CardDrawn -> listOf(
+                GameEvent.CardDrawn(event.playerId, event.cardId, event.cardName)
             )
 
-            is EcsEvent.CardDiscarded -> listOf(
-                EcsGameEvent.CardDiscarded(event.playerId, event.cardId, event.cardName)
+            is EffectEvent.CardDiscarded -> listOf(
+                GameEvent.CardDiscarded(event.playerId, event.cardId, event.cardName)
             )
 
-            is EcsEvent.CreatureDied -> listOf(
-                EcsGameEvent.CreatureDied(event.entityId, event.name, event.ownerId)
+            is EffectEvent.CreatureDied -> listOf(
+                GameEvent.CreatureDied(event.entityId, event.name, event.ownerId)
             )
 
-            is EcsEvent.PermanentExiled -> listOf(
-                EcsGameEvent.CardExiled(event.entityId, event.name, null)
+            is EffectEvent.PermanentExiled -> listOf(
+                GameEvent.CardExiled(event.entityId, event.name, null)
             )
 
-            is EcsEvent.PermanentReturnedToHand -> listOf(
-                EcsGameEvent.ReturnedToHand(event.entityId, event.name)
+            is EffectEvent.PermanentReturnedToHand -> listOf(
+                GameEvent.ReturnedToHand(event.entityId, event.name)
             )
 
-            is EcsEvent.PermanentTapped -> listOf(
-                EcsGameEvent.PermanentTapped(event.entityId, event.name)
+            is EffectEvent.PermanentTapped -> listOf(
+                GameEvent.PermanentTapped(event.entityId, event.name)
             )
 
-            is EcsEvent.PermanentUntapped -> listOf(
-                EcsGameEvent.PermanentUntapped(event.entityId, event.name)
+            is EffectEvent.PermanentUntapped -> listOf(
+                GameEvent.PermanentUntapped(event.entityId, event.name)
             )
 
-            is EcsEvent.CountersAdded -> listOf(
-                EcsGameEvent.CountersAdded(event.entityId, event.counterType, event.count)
+            is EffectEvent.CountersAdded -> listOf(
+                GameEvent.CountersAdded(event.entityId, event.counterType, event.count)
             )
 
             // Events that don't map to trigger-relevant game events
-            is EcsEvent.DrawFailed,
-            is EcsEvent.PermanentDestroyed,
-            is EcsEvent.PermanentSacrificed,
-            is EcsEvent.StatsModified,
-            is EcsEvent.ManaAdded,
-            is EcsEvent.TokenCreated,
-            is EcsEvent.KeywordGranted,
-            is EcsEvent.LibraryShuffled,
-            is EcsEvent.LibrarySearched,
-            is EcsEvent.CardMovedToZone -> emptyList()
+            is EffectEvent.DrawFailed,
+            is EffectEvent.PermanentDestroyed,
+            is EffectEvent.PermanentSacrificed,
+            is EffectEvent.StatsModified,
+            is EffectEvent.ManaAdded,
+            is EffectEvent.TokenCreated,
+            is EffectEvent.KeywordGranted,
+            is EffectEvent.LibraryShuffled,
+            is EffectEvent.LibrarySearched,
+            is EffectEvent.CardMovedToZone -> emptyList()
         }
     }
 }

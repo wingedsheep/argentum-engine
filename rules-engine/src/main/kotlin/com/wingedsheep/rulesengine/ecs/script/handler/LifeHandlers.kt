@@ -3,12 +3,12 @@ package com.wingedsheep.rulesengine.ecs.script.handler
 import com.wingedsheep.rulesengine.ability.EffectTarget
 import com.wingedsheep.rulesengine.ability.GainLifeEffect
 import com.wingedsheep.rulesengine.ability.LoseLifeEffect
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.components.ControllerComponent
 import com.wingedsheep.rulesengine.ecs.components.LifeComponent
-import com.wingedsheep.rulesengine.ecs.script.EcsEvent
-import com.wingedsheep.rulesengine.ecs.script.EcsTarget
+import com.wingedsheep.rulesengine.ecs.script.EffectEvent
+import com.wingedsheep.rulesengine.ecs.script.ResolvedTarget
 import com.wingedsheep.rulesengine.ecs.script.ExecutionContext
 import com.wingedsheep.rulesengine.ecs.script.ExecutionResult
 import kotlin.reflect.KClass
@@ -20,7 +20,7 @@ class GainLifeHandler : BaseEffectHandler<GainLifeEffect>() {
     override val effectClass: KClass<GainLifeEffect> = GainLifeEffect::class
 
     override fun execute(
-        state: EcsGameState,
+        state: GameState,
         effect: GainLifeEffect,
         context: ExecutionContext
     ): ExecutionResult {
@@ -32,7 +32,7 @@ class GainLifeHandler : BaseEffectHandler<GainLifeEffect>() {
             c.with(lifeComponent.gainLife(effect.amount))
         }
 
-        return result(newState, EcsEvent.LifeGained(targetPlayerId, effect.amount))
+        return result(newState, EffectEvent.LifeGained(targetPlayerId, effect.amount))
     }
 }
 
@@ -43,7 +43,7 @@ class LoseLifeHandler : BaseEffectHandler<LoseLifeEffect>() {
     override val effectClass: KClass<LoseLifeEffect> = LoseLifeEffect::class
 
     override fun execute(
-        state: EcsGameState,
+        state: GameState,
         effect: LoseLifeEffect,
         context: ExecutionContext
     ): ExecutionResult {
@@ -55,7 +55,7 @@ class LoseLifeHandler : BaseEffectHandler<LoseLifeEffect>() {
             c.with(lifeComponent.loseLife(effect.amount))
         }
 
-        return result(newState, EcsEvent.LifeLost(targetPlayerId, effect.amount))
+        return result(newState, EffectEvent.LifeLost(targetPlayerId, effect.amount))
     }
 }
 
@@ -63,7 +63,7 @@ class LoseLifeHandler : BaseEffectHandler<LoseLifeEffect>() {
 internal fun resolvePlayerTarget(
     target: EffectTarget,
     controllerId: EntityId,
-    state: EcsGameState,
+    state: GameState,
     context: ExecutionContext? = null
 ): EntityId {
     return when (target) {
@@ -72,7 +72,7 @@ internal fun resolvePlayerTarget(
         is EffectTarget.TargetController -> {
             // Get the controller of the first target
             val firstTarget = context?.targets?.firstOrNull()
-            if (firstTarget is EcsTarget.Permanent) {
+            if (firstTarget is ResolvedTarget.Permanent) {
                 val entity = state.getEntity(firstTarget.entityId)
                 entity?.get<ControllerComponent>()?.controllerId ?: controllerId
             } else {
@@ -83,6 +83,6 @@ internal fun resolvePlayerTarget(
     }
 }
 
-internal fun getOpponent(playerId: EntityId, state: EcsGameState): EntityId {
+internal fun getOpponent(playerId: EntityId, state: GameState): EntityId {
     return state.getPlayerIds().first { it != playerId }
 }

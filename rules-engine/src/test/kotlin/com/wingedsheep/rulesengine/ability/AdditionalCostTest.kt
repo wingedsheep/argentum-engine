@@ -3,12 +3,12 @@ package com.wingedsheep.rulesengine.ability
 import com.wingedsheep.rulesengine.card.CardDefinition
 import com.wingedsheep.rulesengine.core.*
 import com.wingedsheep.rulesengine.ecs.Component
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
-import com.wingedsheep.rulesengine.ecs.action.EcsActionHandler
-import com.wingedsheep.rulesengine.ecs.action.EcsActionResult
-import com.wingedsheep.rulesengine.ecs.action.EcsCastSpell
+import com.wingedsheep.rulesengine.ecs.action.GameActionHandler
+import com.wingedsheep.rulesengine.ecs.action.GameActionResult
+import com.wingedsheep.rulesengine.ecs.action.CastSpell
 import com.wingedsheep.rulesengine.ecs.components.CardComponent
 import com.wingedsheep.rulesengine.ecs.components.ControllerComponent
 import com.wingedsheep.rulesengine.ecs.components.LifeComponent
@@ -52,14 +52,14 @@ class AdditionalCostTest : FunSpec({
         oracleText = "Do something"
     )
 
-    fun newGame(): EcsGameState = EcsGameState.newGame(
+    fun newGame(): GameState = GameState.newGame(
         listOf(player1Id to "Alice", player2Id to "Bob")
     )
 
-    fun EcsGameState.addCreatureToBattlefield(
+    fun GameState.addCreatureToBattlefield(
         def: CardDefinition,
         controllerId: EntityId
-    ): Pair<EntityId, EcsGameState> {
+    ): Pair<EntityId, GameState> {
         val components = mutableListOf<Component>(
             CardComponent(def, controllerId),
             ControllerComponent(controllerId)
@@ -68,10 +68,10 @@ class AdditionalCostTest : FunSpec({
         return creatureId to state1.addToZone(creatureId, ZoneId.BATTLEFIELD)
     }
 
-    fun EcsGameState.addCardToHand(
+    fun GameState.addCardToHand(
         def: CardDefinition,
         ownerId: EntityId
-    ): Pair<EntityId, EcsGameState> {
+    ): Pair<EntityId, GameState> {
         val components = mutableListOf<Component>(
             CardComponent(def, ownerId)
         )
@@ -80,7 +80,7 @@ class AdditionalCostTest : FunSpec({
         return cardId to state1.addToZone(cardId, handZone)
     }
 
-    val handler = EcsActionHandler()
+    val handler = GameActionHandler()
 
     context("AdditionalCost data classes") {
         test("SacrificePermanent has correct description") {
@@ -216,7 +216,7 @@ class AdditionalCostTest : FunSpec({
             val payment = AdditionalCostPayment(
                 sacrificedPermanents = listOf(creatureId)
             )
-            val action = EcsCastSpell(
+            val action = CastSpell(
                 cardId = spellId,
                 casterId = player1Id,
                 fromZone = ZoneId(ZoneType.HAND, player1Id),
@@ -224,9 +224,9 @@ class AdditionalCostTest : FunSpec({
             )
 
             val result = handler.execute(state, action)
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
+            result.shouldBeInstanceOf<GameActionResult.Success>()
 
-            val newState = (result as EcsActionResult.Success).state
+            val newState = (result as GameActionResult.Success).state
 
             // Creature should no longer be on battlefield (sacrificed)
             newState.getBattlefield() shouldNotContain creatureId
@@ -258,7 +258,7 @@ class AdditionalCostTest : FunSpec({
             val payment = AdditionalCostPayment(
                 discardedCards = listOf(cardToDiscard)
             )
-            val action = EcsCastSpell(
+            val action = CastSpell(
                 cardId = spellId,
                 casterId = player1Id,
                 fromZone = handZone,
@@ -266,9 +266,9 @@ class AdditionalCostTest : FunSpec({
             )
 
             val result = handler.execute(state, action)
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
+            result.shouldBeInstanceOf<GameActionResult.Success>()
 
-            val newState = (result as EcsActionResult.Success).state
+            val newState = (result as GameActionResult.Success).state
 
             // Discarded card should be in graveyard
             newState.getGraveyard(player1Id) shouldContain cardToDiscard
@@ -292,7 +292,7 @@ class AdditionalCostTest : FunSpec({
 
             // Cast spell with life payment
             val payment = AdditionalCostPayment(lifePaid = 3)
-            val action = EcsCastSpell(
+            val action = CastSpell(
                 cardId = spellId,
                 casterId = player1Id,
                 fromZone = ZoneId(ZoneType.HAND, player1Id),
@@ -300,9 +300,9 @@ class AdditionalCostTest : FunSpec({
             )
 
             val result = handler.execute(state, action)
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
+            result.shouldBeInstanceOf<GameActionResult.Success>()
 
-            val newState = (result as EcsActionResult.Success).state
+            val newState = (result as GameActionResult.Success).state
 
             // Life should be reduced
             newState.getComponent<LifeComponent>(player1Id)!!.life shouldBe 17
@@ -336,7 +336,7 @@ class AdditionalCostTest : FunSpec({
                 discardedCards = listOf(cardToDiscard),
                 lifePaid = 2
             )
-            val action = EcsCastSpell(
+            val action = CastSpell(
                 cardId = spellId,
                 casterId = player1Id,
                 fromZone = ZoneId(ZoneType.HAND, player1Id),
@@ -344,9 +344,9 @@ class AdditionalCostTest : FunSpec({
             )
 
             val result = handler.execute(state, action)
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
+            result.shouldBeInstanceOf<GameActionResult.Success>()
 
-            val newState = (result as EcsActionResult.Success).state
+            val newState = (result as GameActionResult.Success).state
 
             // Creature should be in graveyard (sacrificed)
             newState.getBattlefield() shouldNotContain creatureId

@@ -11,12 +11,12 @@ import kotlinx.serialization.Serializable
  * ECS version using EntityId instead of CardId/PlayerId.
  */
 @Serializable
-data class EcsPendingTrigger(
+data class PendingTrigger(
     val ability: TriggeredAbility,
     val sourceId: EntityId,
     val sourceName: String,
     val controllerId: EntityId,
-    val triggerContext: EcsTriggerContext
+    val triggerContext: TriggerContext
 ) {
     val description: String
         get() = "$sourceName: ${ability.description}"
@@ -30,9 +30,9 @@ data class EcsPendingTrigger(
  * This is what gets put on the stack when a trigger fires.
  */
 @Serializable
-data class EcsStackedTrigger(
-    val pendingTrigger: EcsPendingTrigger,
-    val chosenTargets: List<EcsChosenTarget> = emptyList()
+data class StackedTrigger(
+    val pendingTrigger: PendingTrigger,
+    val chosenTargets: List<ChosenTarget> = emptyList()
 ) {
     val sourceId: EntityId get() = pendingTrigger.sourceId
     val controllerId: EntityId get() = pendingTrigger.controllerId
@@ -43,13 +43,13 @@ data class EcsStackedTrigger(
  * A target that has been chosen for an effect.
  */
 @Serializable
-sealed interface EcsChosenTarget {
+sealed interface ChosenTarget {
     @Serializable
-    data class Player(val playerId: EntityId) : EcsChosenTarget
+    data class Player(val playerId: EntityId) : ChosenTarget
 
     @Serializable
-    data class Permanent(val entityId: EntityId) : EcsChosenTarget
+    data class Permanent(val entityId: EntityId) : ChosenTarget
 
     @Serializable
-    data class Card(val cardId: EntityId, val zoneId: com.wingedsheep.rulesengine.ecs.ZoneId) : EcsChosenTarget
+    data class Card(val cardId: EntityId, val zoneId: com.wingedsheep.rulesengine.ecs.ZoneId) : ChosenTarget
 }

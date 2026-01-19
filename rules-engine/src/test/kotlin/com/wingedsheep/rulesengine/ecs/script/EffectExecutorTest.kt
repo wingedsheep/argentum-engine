@@ -7,7 +7,7 @@ import com.wingedsheep.rulesengine.core.Color
 import com.wingedsheep.rulesengine.core.Keyword
 import com.wingedsheep.rulesengine.core.ManaCost
 import com.wingedsheep.rulesengine.core.Subtype
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.components.*
@@ -18,7 +18,7 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
-class EcsEffectExecutorTest : FunSpec({
+class EffectExecutorTest : FunSpec({
 
     val player1Id = EntityId.of("player1")
     val player2Id = EntityId.of("player2")
@@ -33,11 +33,11 @@ class EcsEffectExecutorTest : FunSpec({
 
     val forestDef = CardDefinition.basicLand("Forest", Subtype.FOREST)
 
-    fun newGame(): EcsGameState = EcsGameState.newGame(
+    fun newGame(): GameState = GameState.newGame(
         listOf(player1Id to "Alice", player2Id to "Bob")
     )
 
-    fun EcsGameState.addBear(controller: EntityId = player1Id): Pair<EntityId, EcsGameState> {
+    fun GameState.addBear(controller: EntityId = player1Id): Pair<EntityId, GameState> {
         val (bearId, state1) = createEntity(
             EntityId.generate(),
             CardComponent(bearDef, controller),
@@ -46,7 +46,7 @@ class EcsEffectExecutorTest : FunSpec({
         return bearId to state1.addToZone(bearId, ZoneId.BATTLEFIELD)
     }
 
-    val executor = EcsEffectExecutor()
+    val executor = EffectExecutor()
 
     context("life gain effects") {
         test("controller gains life") {
@@ -60,7 +60,7 @@ class EcsEffectExecutorTest : FunSpec({
             lifeComponent?.life shouldBe 23  // 20 starting + 3
 
             result.events shouldHaveSize 1
-            result.events.first().shouldBeInstanceOf<EcsEvent.LifeGained>()
+            result.events.first().shouldBeInstanceOf<EffectEvent.LifeGained>()
         }
 
         test("opponent gains life") {
@@ -87,7 +87,7 @@ class EcsEffectExecutorTest : FunSpec({
             lifeComponent?.life shouldBe 16  // 20 starting - 4
 
             result.events shouldHaveSize 1
-            result.events.first().shouldBeInstanceOf<EcsEvent.LifeLost>()
+            result.events.first().shouldBeInstanceOf<EffectEvent.LifeLost>()
         }
     }
 
@@ -103,7 +103,7 @@ class EcsEffectExecutorTest : FunSpec({
             lifeComponent?.life shouldBe 17  // 20 - 3
 
             result.events shouldHaveSize 1
-            result.events.first().shouldBeInstanceOf<EcsEvent.DamageDealtToPlayer>()
+            result.events.first().shouldBeInstanceOf<EffectEvent.DamageDealtToPlayer>()
         }
 
         test("deal damage to creature") {
@@ -112,7 +112,7 @@ class EcsEffectExecutorTest : FunSpec({
             val context = ExecutionContext(
                 controllerId = player1Id,
                 sourceId = player1Id,
-                targets = listOf(EcsTarget.Permanent(bearId))
+                targets = listOf(ResolvedTarget.Permanent(bearId))
             )
 
             val result = executor.execute(state, effect, context)
@@ -121,7 +121,7 @@ class EcsEffectExecutorTest : FunSpec({
             damageComponent?.amount shouldBe 1
 
             result.events shouldHaveSize 1
-            result.events.first().shouldBeInstanceOf<EcsEvent.DamageDealtToCreature>()
+            result.events.first().shouldBeInstanceOf<EffectEvent.DamageDealtToCreature>()
         }
     }
 
@@ -132,13 +132,13 @@ class EcsEffectExecutorTest : FunSpec({
             val context = ExecutionContext(
                 controllerId = player1Id,
                 sourceId = player1Id,
-                targets = listOf(EcsTarget.Permanent(bearId))
+                targets = listOf(ResolvedTarget.Permanent(bearId))
             )
 
             val result = executor.execute(state, effect, context)
 
             result.state.getEntity(bearId)?.has<TappedComponent>() shouldBe true
-            result.events.first().shouldBeInstanceOf<EcsEvent.PermanentTapped>()
+            result.events.first().shouldBeInstanceOf<EffectEvent.PermanentTapped>()
         }
 
         test("untap a creature") {
@@ -150,13 +150,13 @@ class EcsEffectExecutorTest : FunSpec({
             val context = ExecutionContext(
                 controllerId = player1Id,
                 sourceId = player1Id,
-                targets = listOf(EcsTarget.Permanent(bearId))
+                targets = listOf(ResolvedTarget.Permanent(bearId))
             )
 
             val result = executor.execute(state, effect, context)
 
             result.state.getEntity(bearId)?.has<TappedComponent>() shouldBe false
-            result.events.first().shouldBeInstanceOf<EcsEvent.PermanentUntapped>()
+            result.events.first().shouldBeInstanceOf<EffectEvent.PermanentUntapped>()
         }
     }
 
@@ -167,7 +167,7 @@ class EcsEffectExecutorTest : FunSpec({
             val context = ExecutionContext(
                 controllerId = player1Id,
                 sourceId = player1Id,
-                targets = listOf(EcsTarget.Permanent(bearId))
+                targets = listOf(ResolvedTarget.Permanent(bearId))
             )
 
             val result = executor.execute(state, effect, context)
@@ -177,8 +177,8 @@ class EcsEffectExecutorTest : FunSpec({
             result.state.getZone(ZoneId(ZoneType.GRAVEYARD, player1Id)).contains(bearId) shouldBe true
 
             result.events shouldHaveSize 2  // Destroyed + CreatureDied
-            result.events.any { it is EcsEvent.PermanentDestroyed } shouldBe true
-            result.events.any { it is EcsEvent.CreatureDied } shouldBe true
+            result.events.any { it is EffectEvent.PermanentDestroyed } shouldBe true
+            result.events.any { it is EffectEvent.CreatureDied } shouldBe true
         }
     }
 
@@ -189,7 +189,7 @@ class EcsEffectExecutorTest : FunSpec({
             val context = ExecutionContext(
                 controllerId = player1Id,
                 sourceId = player1Id,
-                targets = listOf(EcsTarget.Permanent(bearId))
+                targets = listOf(ResolvedTarget.Permanent(bearId))
             )
 
             val result = executor.execute(state, effect, context)
@@ -198,7 +198,7 @@ class EcsEffectExecutorTest : FunSpec({
             counters?.plusOnePlusOneCount shouldBe 2
 
             result.events shouldHaveSize 1
-            result.events.first().shouldBeInstanceOf<EcsEvent.CountersAdded>()
+            result.events.first().shouldBeInstanceOf<EffectEvent.CountersAdded>()
         }
 
         test("add counters to self") {
@@ -229,7 +229,7 @@ class EcsEffectExecutorTest : FunSpec({
             manaPool?.pool?.green shouldBe 1
 
             result.events shouldHaveSize 1
-            result.events.first().shouldBeInstanceOf<EcsEvent.ManaAdded>()
+            result.events.first().shouldBeInstanceOf<EffectEvent.ManaAdded>()
         }
 
         test("add colorless mana") {
@@ -326,7 +326,7 @@ class EcsEffectExecutorTest : FunSpec({
             val context = ExecutionContext(
                 controllerId = player1Id,
                 sourceId = player1Id,
-                targets = listOf(EcsTarget.Permanent(bearId))
+                targets = listOf(ResolvedTarget.Permanent(bearId))
             )
 
             val result = executor.execute(state, effect, context)
@@ -342,7 +342,7 @@ class EcsEffectExecutorTest : FunSpec({
             val context = ExecutionContext(
                 controllerId = player1Id,
                 sourceId = player1Id,
-                targets = listOf(EcsTarget.Permanent(bearId))
+                targets = listOf(ResolvedTarget.Permanent(bearId))
             )
 
             val result = executor.execute(state, effect, context)

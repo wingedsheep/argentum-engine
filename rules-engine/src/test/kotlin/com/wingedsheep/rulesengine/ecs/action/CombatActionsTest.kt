@@ -4,8 +4,8 @@ import com.wingedsheep.rulesengine.card.CardDefinition
 import com.wingedsheep.rulesengine.core.Keyword
 import com.wingedsheep.rulesengine.core.ManaCost
 import com.wingedsheep.rulesengine.core.Subtype
-import com.wingedsheep.rulesengine.ecs.EcsGameEngine
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameEngine
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.Component
@@ -19,7 +19,7 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
-class EcsCombatActionsTest : FunSpec({
+class CombatActionsTest : FunSpec({
 
     val player1Id = EntityId.of("player1")
     val player2Id = EntityId.of("player2")
@@ -58,15 +58,15 @@ class EcsCombatActionsTest : FunSpec({
         toughness = 3
     )
 
-    fun newGame(): EcsGameState = EcsGameState.newGame(
+    fun newGame(): GameState = GameState.newGame(
         listOf(player1Id to "Alice", player2Id to "Bob")
     )
 
-    fun EcsGameState.addCreatureToBattlefield(
+    fun GameState.addCreatureToBattlefield(
         def: CardDefinition,
         controllerId: EntityId,
         hasSummoningSickness: Boolean = true
-    ): Pair<EntityId, EcsGameState> {
+    ): Pair<EntityId, GameState> {
         val components = mutableListOf<Component>(
             CardComponent(def, controllerId),
             ControllerComponent(controllerId)
@@ -82,19 +82,19 @@ class EcsCombatActionsTest : FunSpec({
         return creatureId to state1.addToZone(creatureId, ZoneId.BATTLEFIELD)
     }
 
-    fun createGameInDeclareAttackersStep(): EcsGameState {
+    fun createGameInDeclareAttackersStep(): GameState {
         val state = newGame()
         return state
             .advanceToStep(Step.DECLARE_ATTACKERS)
             .startCombat(player2Id)
     }
 
-    fun createGameInDeclareBlockersStep(): EcsGameState {
+    fun createGameInDeclareBlockersStep(): GameState {
         return createGameInDeclareAttackersStep()
             .advanceToStep(Step.DECLARE_BLOCKERS)
     }
 
-    val handler = EcsActionHandler()
+    val handler = GameActionHandler()
 
     context("BeginCombat action") {
         test("initializes combat state") {
@@ -102,11 +102,11 @@ class EcsCombatActionsTest : FunSpec({
 
             state.combat.shouldBeNull()
 
-            val action = EcsBeginCombat(player1Id, player2Id)
+            val action = BeginCombat(player1Id, player2Id)
             val result = handler.execute(state, action)
 
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
-            val success = result as EcsActionResult.Success
+            result.shouldBeInstanceOf<GameActionResult.Success>()
+            val success = result as GameActionResult.Success
             success.state.combat.shouldNotBeNull()
             success.state.combat!!.attackingPlayer.value shouldBe player1Id.value
             success.state.combat!!.defendingPlayer.value shouldBe player2Id.value
@@ -119,11 +119,11 @@ class EcsCombatActionsTest : FunSpec({
             val (bearId, state1) = state.addCreatureToBattlefield(bearDef, player1Id, hasSummoningSickness = false)
             state = state1
 
-            val action = EcsDeclareAttacker(bearId, player1Id)
+            val action = DeclareAttacker(bearId, player1Id)
             val result = handler.execute(state, action)
 
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
-            val success = result as EcsActionResult.Success
+            result.shouldBeInstanceOf<GameActionResult.Success>()
+            val success = result as GameActionResult.Success
             success.state.hasComponent<AttackingComponent>(bearId).shouldBeTrue()
         }
 
@@ -132,11 +132,11 @@ class EcsCombatActionsTest : FunSpec({
             val (bearId, state1) = state.addCreatureToBattlefield(bearDef, player1Id, hasSummoningSickness = false)
             state = state1
 
-            val action = EcsDeclareAttacker(bearId, player1Id)
+            val action = DeclareAttacker(bearId, player1Id)
             val result = handler.execute(state, action)
 
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
-            val success = result as EcsActionResult.Success
+            result.shouldBeInstanceOf<GameActionResult.Success>()
+            val success = result as GameActionResult.Success
             success.state.hasComponent<TappedComponent>(bearId).shouldBeTrue()
         }
 
@@ -145,11 +145,11 @@ class EcsCombatActionsTest : FunSpec({
             val (angelId, state1) = state.addCreatureToBattlefield(vigilanceCreatureDef, player1Id, hasSummoningSickness = false)
             state = state1
 
-            val action = EcsDeclareAttacker(angelId, player1Id)
+            val action = DeclareAttacker(angelId, player1Id)
             val result = handler.execute(state, action)
 
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
-            val success = result as EcsActionResult.Success
+            result.shouldBeInstanceOf<GameActionResult.Success>()
+            val success = result as GameActionResult.Success
             success.state.hasComponent<TappedComponent>(angelId).shouldBeFalse()
             success.state.hasComponent<AttackingComponent>(angelId).shouldBeTrue()
         }
@@ -159,10 +159,10 @@ class EcsCombatActionsTest : FunSpec({
             val (bearId, state1) = state.addCreatureToBattlefield(bearDef, player1Id, hasSummoningSickness = true)
             state = state1
 
-            val action = EcsDeclareAttacker(bearId, player1Id)
+            val action = DeclareAttacker(bearId, player1Id)
             val result = handler.execute(state, action)
 
-            result.shouldBeInstanceOf<EcsActionResult.Failure>()
+            result.shouldBeInstanceOf<GameActionResult.Failure>()
         }
 
         test("fails for tapped creature") {
@@ -170,10 +170,10 @@ class EcsCombatActionsTest : FunSpec({
             val (bearId, state1) = state.addCreatureToBattlefield(bearDef, player1Id, hasSummoningSickness = false)
             state = state1.updateEntity(bearId) { it.with(TappedComponent) }
 
-            val action = EcsDeclareAttacker(bearId, player1Id)
+            val action = DeclareAttacker(bearId, player1Id)
             val result = handler.execute(state, action)
 
-            result.shouldBeInstanceOf<EcsActionResult.Failure>()
+            result.shouldBeInstanceOf<GameActionResult.Failure>()
         }
     }
 
@@ -188,11 +188,11 @@ class EcsCombatActionsTest : FunSpec({
                 it.with(AttackingComponent.attackingPlayer(player2Id))
             }
 
-            val action = EcsDeclareBlocker(blockerId, attackerId, player2Id)
+            val action = DeclareBlocker(blockerId, attackerId, player2Id)
             val result = handler.execute(state, action)
 
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
-            val success = result as EcsActionResult.Success
+            result.shouldBeInstanceOf<GameActionResult.Success>()
+            val success = result as GameActionResult.Success
             success.state.hasComponent<BlockingComponent>(blockerId).shouldBeTrue()
         }
 
@@ -205,10 +205,10 @@ class EcsCombatActionsTest : FunSpec({
             state = state2.updateEntity(blockerId) { it.with(TappedComponent) }
             state = state.updateEntity(attackerId) { it.with(AttackingComponent.attackingPlayer(player2Id)) }
 
-            val action = EcsDeclareBlocker(blockerId, attackerId, player2Id)
+            val action = DeclareBlocker(blockerId, attackerId, player2Id)
             val result = handler.execute(state, action)
 
-            result.shouldBeInstanceOf<EcsActionResult.Failure>()
+            result.shouldBeInstanceOf<GameActionResult.Failure>()
         }
     }
 
@@ -220,11 +220,11 @@ class EcsCombatActionsTest : FunSpec({
 
             state.combat.shouldNotBeNull()
 
-            val action = EcsEndCombat(player1Id)
+            val action = EndCombat(player1Id)
             val result = handler.execute(state, action)
 
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
-            val success = result as EcsActionResult.Success
+            result.shouldBeInstanceOf<GameActionResult.Success>()
+            val success = result as GameActionResult.Success
             success.state.combat.shouldBeNull()
         }
 
@@ -233,11 +233,11 @@ class EcsCombatActionsTest : FunSpec({
             val (attackerId, state1) = state.addCreatureToBattlefield(bearDef, player1Id, hasSummoningSickness = false)
             state = state1.updateEntity(attackerId) { it.with(AttackingComponent.attackingPlayer(player2Id)) }
 
-            val action = EcsEndCombat(player1Id)
+            val action = EndCombat(player1Id)
             val result = handler.execute(state, action)
 
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
-            val success = result as EcsActionResult.Success
+            result.shouldBeInstanceOf<GameActionResult.Success>()
+            val success = result as GameActionResult.Success
             success.state.hasComponent<AttackingComponent>(attackerId).shouldBeFalse()
         }
 
@@ -249,11 +249,11 @@ class EcsCombatActionsTest : FunSpec({
                 .updateEntity(attackerId) { it.with(AttackingComponent.attackingPlayer(player2Id)) }
                 .updateEntity(blockerId) { it.with(BlockingComponent(attackerId)) }
 
-            val action = EcsEndCombat(player1Id)
+            val action = EndCombat(player1Id)
             val result = handler.execute(state, action)
 
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
-            val success = result as EcsActionResult.Success
+            result.shouldBeInstanceOf<GameActionResult.Success>()
+            val success = result as GameActionResult.Success
             success.state.hasComponent<BlockingComponent>(blockerId).shouldBeFalse()
         }
     }
@@ -267,10 +267,10 @@ class EcsCombatActionsTest : FunSpec({
             val initialLife = state.getComponent<LifeComponent>(player2Id)!!.life
 
             // Simulate combat damage via action
-            val damageResult = handler.execute(state, EcsDealDamageToPlayer(player2Id, 2, attackerId))
+            val damageResult = handler.execute(state, DealDamageToPlayer(player2Id, 2, attackerId))
 
-            damageResult.shouldBeInstanceOf<EcsActionResult.Success>()
-            val success = damageResult as EcsActionResult.Success
+            damageResult.shouldBeInstanceOf<GameActionResult.Success>()
+            val success = damageResult as GameActionResult.Success
             success.state.getComponent<LifeComponent>(player2Id)!!.life shouldBe initialLife - 2
         }
 
@@ -283,10 +283,10 @@ class EcsCombatActionsTest : FunSpec({
                 .updateEntity(blockerId) { it.with(BlockingComponent(attackerId)) }
 
             // Simulate combat damage
-            val damageResult = handler.execute(state, EcsDealDamageToCreature(blockerId, 3, attackerId))
+            val damageResult = handler.execute(state, DealDamageToCreature(blockerId, 3, attackerId))
 
-            damageResult.shouldBeInstanceOf<EcsActionResult.Success>()
-            val success = damageResult as EcsActionResult.Success
+            damageResult.shouldBeInstanceOf<GameActionResult.Success>()
+            val success = damageResult as GameActionResult.Success
             success.state.getComponent<DamageComponent>(blockerId)!!.amount shouldBe 3
         }
 
@@ -299,10 +299,10 @@ class EcsCombatActionsTest : FunSpec({
                 .updateEntity(blockerId) { it.with(BlockingComponent(attackerId)) }
 
             // Simulate combat damage
-            val damageResult = handler.execute(state, EcsDealDamageToCreature(attackerId, 3, blockerId))
+            val damageResult = handler.execute(state, DealDamageToCreature(attackerId, 3, blockerId))
 
-            damageResult.shouldBeInstanceOf<EcsActionResult.Success>()
-            val success = damageResult as EcsActionResult.Success
+            damageResult.shouldBeInstanceOf<GameActionResult.Success>()
+            val success = damageResult as GameActionResult.Success
             success.state.getComponent<DamageComponent>(attackerId)!!.amount shouldBe 3
         }
 
@@ -314,10 +314,10 @@ class EcsCombatActionsTest : FunSpec({
             state = state1.updateEntity(creatureId) { it.with(DamageComponent(2)) }
 
             // Check state-based actions
-            val sbaResult = handler.execute(state, EcsCheckStateBasedActions())
+            val sbaResult = handler.execute(state, CheckStateBasedActions())
 
-            sbaResult.shouldBeInstanceOf<EcsActionResult.Success>()
-            val success = sbaResult as EcsActionResult.Success
+            sbaResult.shouldBeInstanceOf<GameActionResult.Success>()
+            val success = sbaResult as GameActionResult.Success
 
             success.state.getBattlefield().contains(creatureId).shouldBeFalse()
             success.state.getGraveyard(player1Id).contains(creatureId).shouldBeTrue()
@@ -329,10 +329,10 @@ class EcsCombatActionsTest : FunSpec({
             var state = newGame()
             state = state.updateEntity(player2Id) { it.with(LifeComponent(0)) }
 
-            val sbaResult = handler.execute(state, EcsCheckStateBasedActions())
+            val sbaResult = handler.execute(state, CheckStateBasedActions())
 
-            sbaResult.shouldBeInstanceOf<EcsActionResult.Success>()
-            val success = sbaResult as EcsActionResult.Success
+            sbaResult.shouldBeInstanceOf<GameActionResult.Success>()
+            val success = sbaResult as GameActionResult.Success
             success.state.hasComponent<LostGameComponent>(player2Id).shouldBeTrue()
         }
 
@@ -340,10 +340,10 @@ class EcsCombatActionsTest : FunSpec({
             var state = newGame()
             state = state.updateEntity(player2Id) { it.with(LifeComponent(-5)) }
 
-            val sbaResult = handler.execute(state, EcsCheckStateBasedActions())
+            val sbaResult = handler.execute(state, CheckStateBasedActions())
 
-            sbaResult.shouldBeInstanceOf<EcsActionResult.Success>()
-            val success = sbaResult as EcsActionResult.Success
+            sbaResult.shouldBeInstanceOf<GameActionResult.Success>()
+            val success = sbaResult as GameActionResult.Success
             success.state.hasComponent<LostGameComponent>(player2Id).shouldBeTrue()
         }
 
@@ -351,10 +351,10 @@ class EcsCombatActionsTest : FunSpec({
             var state = newGame()
             state = state.updateEntity(player2Id) { it.with(PoisonComponent(10)) }
 
-            val sbaResult = handler.execute(state, EcsCheckStateBasedActions())
+            val sbaResult = handler.execute(state, CheckStateBasedActions())
 
-            sbaResult.shouldBeInstanceOf<EcsActionResult.Success>()
-            val success = sbaResult as EcsActionResult.Success
+            sbaResult.shouldBeInstanceOf<GameActionResult.Success>()
+            val success = sbaResult as GameActionResult.Success
             success.state.hasComponent<LostGameComponent>(player2Id).shouldBeTrue()
         }
 
@@ -362,10 +362,10 @@ class EcsCombatActionsTest : FunSpec({
             var state = newGame()
             state = state.updateEntity(player2Id) { it.with(PoisonComponent(9)) }
 
-            val sbaResult = handler.execute(state, EcsCheckStateBasedActions())
+            val sbaResult = handler.execute(state, CheckStateBasedActions())
 
-            sbaResult.shouldBeInstanceOf<EcsActionResult.Success>()
-            val success = sbaResult as EcsActionResult.Success
+            sbaResult.shouldBeInstanceOf<GameActionResult.Success>()
+            val success = sbaResult as GameActionResult.Success
             success.state.hasComponent<LostGameComponent>(player2Id).shouldBeFalse()
         }
 
@@ -373,10 +373,10 @@ class EcsCombatActionsTest : FunSpec({
             var state = newGame()
             state = state.updateEntity(player2Id) { it.with(LifeComponent(0)) }
 
-            val sbaResult = handler.execute(state, EcsCheckStateBasedActions())
+            val sbaResult = handler.execute(state, CheckStateBasedActions())
 
-            sbaResult.shouldBeInstanceOf<EcsActionResult.Success>()
-            val success = sbaResult as EcsActionResult.Success
+            sbaResult.shouldBeInstanceOf<GameActionResult.Success>()
+            val success = sbaResult as GameActionResult.Success
             success.state.isGameOver.shouldBeTrue()
             success.state.winner shouldBe player1Id
         }
@@ -386,33 +386,33 @@ class EcsCombatActionsTest : FunSpec({
             val (bearId, state1) = state.addCreatureToBattlefield(bearDef, player1Id, hasSummoningSickness = false)
             state = state1.updateEntity(bearId) { it.with(DamageComponent(2)) }
 
-            val sbaResult = handler.execute(state, EcsCheckStateBasedActions())
+            val sbaResult = handler.execute(state, CheckStateBasedActions())
 
-            sbaResult.shouldBeInstanceOf<EcsActionResult.Success>()
-            val success = sbaResult as EcsActionResult.Success
-            success.events.any { it is EcsActionEvent.CreatureDied }.shouldBeTrue()
+            sbaResult.shouldBeInstanceOf<GameActionResult.Success>()
+            val success = sbaResult as GameActionResult.Success
+            success.events.any { it is GameActionEvent.CreatureDied }.shouldBeTrue()
         }
 
         test("generates PlayerLost event when player loses") {
             var state = newGame()
             state = state.updateEntity(player2Id) { it.with(LifeComponent(0)) }
 
-            val sbaResult = handler.execute(state, EcsCheckStateBasedActions())
+            val sbaResult = handler.execute(state, CheckStateBasedActions())
 
-            sbaResult.shouldBeInstanceOf<EcsActionResult.Success>()
-            val success = sbaResult as EcsActionResult.Success
-            success.events.any { it is EcsActionEvent.PlayerLost }.shouldBeTrue()
+            sbaResult.shouldBeInstanceOf<GameActionResult.Success>()
+            val success = sbaResult as GameActionResult.Success
+            success.events.any { it is GameActionEvent.PlayerLost }.shouldBeTrue()
         }
 
         test("generates GameEnded event when game ends") {
             var state = newGame()
             state = state.updateEntity(player2Id) { it.with(LifeComponent(0)) }
 
-            val sbaResult = handler.execute(state, EcsCheckStateBasedActions())
+            val sbaResult = handler.execute(state, CheckStateBasedActions())
 
-            sbaResult.shouldBeInstanceOf<EcsActionResult.Success>()
-            val success = sbaResult as EcsActionResult.Success
-            success.events.any { it is EcsActionEvent.GameEnded }.shouldBeTrue()
+            sbaResult.shouldBeInstanceOf<GameActionResult.Success>()
+            val success = sbaResult as GameActionResult.Success
+            success.events.any { it is GameActionEvent.GameEnded }.shouldBeTrue()
         }
 
         test("handles multiple creatures dying simultaneously") {
@@ -423,10 +423,10 @@ class EcsCombatActionsTest : FunSpec({
                 .updateEntity(bear1Id) { it.with(DamageComponent(2)) }
                 .updateEntity(bear2Id) { it.with(DamageComponent(3)) }
 
-            val sbaResult = handler.execute(state, EcsCheckStateBasedActions())
+            val sbaResult = handler.execute(state, CheckStateBasedActions())
 
-            sbaResult.shouldBeInstanceOf<EcsActionResult.Success>()
-            val success = sbaResult as EcsActionResult.Success
+            sbaResult.shouldBeInstanceOf<GameActionResult.Success>()
+            val success = sbaResult as GameActionResult.Success
             success.state.getBattlefield().contains(bear1Id).shouldBeFalse()
             success.state.getBattlefield().contains(bear2Id).shouldBeFalse()
             success.state.getGraveyard(player1Id).contains(bear1Id).shouldBeTrue()
@@ -443,28 +443,28 @@ class EcsCombatActionsTest : FunSpec({
             state = state2
 
             // Declare attacker
-            val declareResult = handler.execute(state, EcsDeclareAttacker(attackerId, player1Id))
-            declareResult.shouldBeInstanceOf<EcsActionResult.Success>()
-            state = (declareResult as EcsActionResult.Success).state.advanceToStep(Step.DECLARE_BLOCKERS)
+            val declareResult = handler.execute(state, DeclareAttacker(attackerId, player1Id))
+            declareResult.shouldBeInstanceOf<GameActionResult.Success>()
+            state = (declareResult as GameActionResult.Success).state.advanceToStep(Step.DECLARE_BLOCKERS)
 
             // Declare blocker
-            val blockResult = handler.execute(state, EcsDeclareBlocker(blockerId, attackerId, player2Id))
-            blockResult.shouldBeInstanceOf<EcsActionResult.Success>()
-            state = (blockResult as EcsActionResult.Success).state.advanceToStep(Step.COMBAT_DAMAGE)
+            val blockResult = handler.execute(state, DeclareBlocker(blockerId, attackerId, player2Id))
+            blockResult.shouldBeInstanceOf<GameActionResult.Success>()
+            state = (blockResult as GameActionResult.Success).state.advanceToStep(Step.COMBAT_DAMAGE)
 
             // Deal combat damage (attacker 3 to blocker, blocker 2 to attacker)
-            val damageResult1 = handler.execute(state, EcsDealDamageToCreature(blockerId, 3, attackerId))
-            state = (damageResult1 as EcsActionResult.Success).state
-            val damageResult2 = handler.execute(state, EcsDealDamageToCreature(attackerId, 2, blockerId))
-            state = (damageResult2 as EcsActionResult.Success).state
+            val damageResult1 = handler.execute(state, DealDamageToCreature(blockerId, 3, attackerId))
+            state = (damageResult1 as GameActionResult.Success).state
+            val damageResult2 = handler.execute(state, DealDamageToCreature(attackerId, 2, blockerId))
+            state = (damageResult2 as GameActionResult.Success).state
 
             // Attacker took 2 damage, blocker took 3 damage
             state.getComponent<DamageComponent>(attackerId)!!.amount shouldBe 2
             state.getComponent<DamageComponent>(blockerId)!!.amount shouldBe 3
 
             // Check state-based actions - blocker should die (3 damage >= 2 toughness)
-            val sbaResult = handler.execute(state, EcsCheckStateBasedActions())
-            state = (sbaResult as EcsActionResult.Success).state
+            val sbaResult = handler.execute(state, CheckStateBasedActions())
+            state = (sbaResult as GameActionResult.Success).state
 
             // Blocker is dead
             state.getBattlefield().contains(blockerId).shouldBeFalse()
@@ -474,9 +474,9 @@ class EcsCombatActionsTest : FunSpec({
             state.getBattlefield().contains(attackerId).shouldBeTrue()
 
             // End combat
-            val endResult = handler.execute(state, EcsEndCombat(player1Id))
-            endResult.shouldBeInstanceOf<EcsActionResult.Success>()
-            (endResult as EcsActionResult.Success).state.combat.shouldBeNull()
+            val endResult = handler.execute(state, EndCombat(player1Id))
+            endResult.shouldBeInstanceOf<GameActionResult.Success>()
+            (endResult as GameActionResult.Success).state.combat.shouldBeNull()
         }
 
         test("unblocked attacker deals damage to player") {
@@ -487,17 +487,17 @@ class EcsCombatActionsTest : FunSpec({
             val initialLife = state.getComponent<LifeComponent>(player2Id)!!.life
 
             // Declare attacker
-            state = (handler.execute(state, EcsDeclareAttacker(attackerId, player1Id)) as EcsActionResult.Success).state
+            state = (handler.execute(state, DeclareAttacker(attackerId, player1Id)) as GameActionResult.Success).state
                 .advanceToStep(Step.DECLARE_BLOCKERS)
                 .advanceToStep(Step.COMBAT_DAMAGE)
 
             // Deal combat damage to player (no blockers)
-            state = (handler.execute(state, EcsDealDamageToPlayer(player2Id, 3, attackerId)) as EcsActionResult.Success).state
+            state = (handler.execute(state, DealDamageToPlayer(player2Id, 3, attackerId)) as GameActionResult.Success).state
 
             state.getComponent<LifeComponent>(player2Id)!!.life shouldBe initialLife - 3
 
             // End combat
-            state = (handler.execute(state, EcsEndCombat(player1Id)) as EcsActionResult.Success).state
+            state = (handler.execute(state, EndCombat(player1Id)) as GameActionResult.Success).state
             state.combat.shouldBeNull()
         }
 
@@ -509,15 +509,15 @@ class EcsCombatActionsTest : FunSpec({
             state = state1.updateEntity(player2Id) { it.with(LifeComponent(3)) }
 
             // Declare attacker and deal damage
-            state = (handler.execute(state, EcsDeclareAttacker(attackerId, player1Id)) as EcsActionResult.Success).state
+            state = (handler.execute(state, DeclareAttacker(attackerId, player1Id)) as GameActionResult.Success).state
                 .advanceToStep(Step.DECLARE_BLOCKERS)
                 .advanceToStep(Step.COMBAT_DAMAGE)
-            state = (handler.execute(state, EcsDealDamageToPlayer(player2Id, 3, attackerId)) as EcsActionResult.Success).state
+            state = (handler.execute(state, DealDamageToPlayer(player2Id, 3, attackerId)) as GameActionResult.Success).state
 
             state.getComponent<LifeComponent>(player2Id)!!.life shouldBe 0
 
             // Check state-based actions - player should lose
-            state = (handler.execute(state, EcsCheckStateBasedActions()) as EcsActionResult.Success).state
+            state = (handler.execute(state, CheckStateBasedActions()) as GameActionResult.Success).state
 
             state.isGameOver.shouldBeTrue()
             state.winner shouldBe player1Id
@@ -526,6 +526,6 @@ class EcsCombatActionsTest : FunSpec({
 })
 
 // Extension to advance game to a specific step
-private fun EcsGameState.advanceToStep(step: Step): EcsGameState {
+private fun GameState.advanceToStep(step: Step): GameState {
     return copy(turnState = turnState.copy(step = step))
 }

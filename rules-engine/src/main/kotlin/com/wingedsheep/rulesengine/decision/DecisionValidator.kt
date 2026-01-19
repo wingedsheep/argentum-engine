@@ -1,6 +1,6 @@
 package com.wingedsheep.rulesengine.decision
 
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameState
 
 /**
  * Validates that player responses are legal for the given decision.
@@ -15,7 +15,7 @@ object DecisionValidator {
      * @param response The player's response
      * @return ValidationResult indicating whether the response is valid
      */
-    fun validate(state: EcsGameState, decision: PlayerDecision, response: DecisionResponse): ValidationResult {
+    fun validate(state: GameState, decision: PlayerDecision, response: DecisionResponse): ValidationResult {
         return when (decision) {
             is ChooseTargets -> validateTargetsChoice(state, decision, response)
             is ChooseAttackers -> validateAttackersChoice(decision, response)
@@ -34,7 +34,7 @@ object DecisionValidator {
     }
 
     private fun validateTargetsChoice(
-        state: EcsGameState,
+        state: GameState,
         decision: ChooseTargets,
         response: DecisionResponse
     ): ValidationResult {
@@ -326,7 +326,7 @@ object DecisionValidator {
     }
 
     private fun validatePriorityChoice(
-        state: EcsGameState,
+        state: GameState,
         decision: PriorityDecision,
         response: DecisionResponse
     ): ValidationResult {

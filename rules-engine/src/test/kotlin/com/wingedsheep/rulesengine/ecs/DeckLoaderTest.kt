@@ -16,7 +16,7 @@ class DeckLoaderTest : FunSpec({
     val player1Id = EntityId.of("player1")
     val player2Id = EntityId.of("player2")
 
-    fun newGame(): EcsGameState = EcsGameState.newGame(
+    fun newGame(): GameState = GameState.newGame(
         listOf(
             player1Id to "Alice",
             player2Id to "Bob"
@@ -157,8 +157,8 @@ class DeckLoaderTest : FunSpec({
         }
     }
 
-    context("EcsGameEngine integration") {
-        test("loadDecks works through EcsGameEngine") {
+    context("GameEngine integration") {
+        test("loadDecks works through GameEngine") {
             val state = newGame()
             val deckLoader = DeckLoader.create(PortalSet)
 
@@ -167,7 +167,7 @@ class DeckLoaderTest : FunSpec({
                 player2Id to mapOf("Mountain" to 20)
             )
 
-            val result = EcsGameEngine.loadDecks(state, deckLoader, decks)
+            val result = GameEngine.loadDecks(state, deckLoader, decks)
             result.shouldBeInstanceOf<DeckLoader.DeckLoadResult.Success>()
 
             val success = result as DeckLoader.DeckLoadResult.Success

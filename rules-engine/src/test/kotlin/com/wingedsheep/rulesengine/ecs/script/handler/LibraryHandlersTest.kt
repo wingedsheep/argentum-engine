@@ -12,13 +12,13 @@ import com.wingedsheep.rulesengine.core.Supertype
 import com.wingedsheep.rulesengine.core.TypeLine
 import com.wingedsheep.rulesengine.core.CardType
 import com.wingedsheep.rulesengine.ecs.Component
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.components.CardComponent
 import com.wingedsheep.rulesengine.ecs.components.TappedComponent
-import com.wingedsheep.rulesengine.ecs.decision.EcsChooseCards
-import com.wingedsheep.rulesengine.ecs.script.EcsEvent
+import com.wingedsheep.rulesengine.ecs.decision.EffectChooseCards
+import com.wingedsheep.rulesengine.ecs.script.EffectEvent
 import com.wingedsheep.rulesengine.ecs.script.ExecutionContext
 import com.wingedsheep.rulesengine.ecs.script.ExecutionResult
 import com.wingedsheep.rulesengine.zone.ZoneType
@@ -74,14 +74,14 @@ class LibraryHandlersTest : FunSpec({
         toughness = 1
     )
 
-    fun newGame(): EcsGameState = EcsGameState.newGame(
+    fun newGame(): GameState = GameState.newGame(
         listOf(player1Id to "Alice", player2Id to "Bob")
     )
 
-    fun EcsGameState.addCardToLibrary(
+    fun GameState.addCardToLibrary(
         def: CardDefinition,
         ownerId: EntityId
-    ): Pair<EntityId, EcsGameState> {
+    ): Pair<EntityId, GameState> {
         val components = mutableListOf<Component>(
             CardComponent(def, ownerId)
         )
@@ -114,7 +114,7 @@ class LibraryHandlersTest : FunSpec({
             result.state.getZone(libraryZone) shouldHaveSize 3
 
             // Should generate shuffle event
-            result.events.any { it is EcsEvent.LibraryShuffled } shouldBe true
+            result.events.any { it is EffectEvent.LibraryShuffled } shouldBe true
         }
     }
 
@@ -307,10 +307,10 @@ class LibraryHandlersTest : FunSpec({
             // With multiple matches, we should get a pending decision
             initialResult.needsPlayerInput shouldBe true
             initialResult.pendingDecision.shouldNotBeNull()
-            initialResult.pendingDecision.shouldBeInstanceOf<EcsChooseCards>()
+            initialResult.pendingDecision.shouldBeInstanceOf<EffectChooseCards>()
             initialResult.continuation.shouldNotBeNull()
 
-            val decision = initialResult.pendingDecision as EcsChooseCards
+            val decision = initialResult.pendingDecision as EffectChooseCards
             decision.cards shouldHaveSize 3  // All 3 forests available to choose
             decision.maxCount shouldBe 2     // Can pick up to 2
 
@@ -343,8 +343,8 @@ class LibraryHandlersTest : FunSpec({
             // Hand should still be empty (no creatures found)
             result.state.getZone(handZone) shouldHaveSize 0
             // Should still generate search and shuffle events
-            result.events.any { it is EcsEvent.LibrarySearched } shouldBe true
-            result.events.any { it is EcsEvent.LibraryShuffled } shouldBe true
+            result.events.any { it is EffectEvent.LibrarySearched } shouldBe true
+            result.events.any { it is EffectEvent.LibraryShuffled } shouldBe true
         }
 
         test("generates correct events") {
@@ -363,9 +363,9 @@ class LibraryHandlersTest : FunSpec({
             val result = registry.execute(state, effect, context)
 
             // Should have search, move, and shuffle events
-            result.events.any { it is EcsEvent.LibrarySearched } shouldBe true
-            result.events.any { it is EcsEvent.CardMovedToZone } shouldBe true
-            result.events.any { it is EcsEvent.LibraryShuffled } shouldBe true
+            result.events.any { it is EffectEvent.LibrarySearched } shouldBe true
+            result.events.any { it is EffectEvent.CardMovedToZone } shouldBe true
+            result.events.any { it is EffectEvent.LibraryShuffled } shouldBe true
         }
 
         test("puts card on top of library when destination is TOP_OF_LIBRARY") {
@@ -472,9 +472,9 @@ class LibraryHandlersTest : FunSpec({
             // Multiple matches should require player input
             result.needsPlayerInput shouldBe true
             result.pendingDecision.shouldNotBeNull()
-            result.pendingDecision.shouldBeInstanceOf<EcsChooseCards>()
+            result.pendingDecision.shouldBeInstanceOf<EffectChooseCards>()
 
-            val decision = result.pendingDecision as EcsChooseCards
+            val decision = result.pendingDecision as EffectChooseCards
             decision.playerId shouldBe player1Id
             decision.cards shouldHaveSize 2
             decision.cards.map { it.entityId } shouldContain forest1Id
@@ -528,7 +528,7 @@ class LibraryHandlersTest : FunSpec({
             val result = registry.execute(state, effect, context)
 
             result.needsPlayerInput shouldBe true
-            val decision = result.pendingDecision as EcsChooseCards
+            val decision = result.pendingDecision as EffectChooseCards
 
             // Card options should include display information
             val bearOption = decision.cards.find { it.entityId == bearId }
@@ -565,7 +565,7 @@ class LibraryHandlersTest : FunSpec({
             finalResult.state.getZone(handZone) shouldContain forest1Id
 
             // Events should include shuffle
-            finalResult.events.any { it is EcsEvent.LibraryShuffled } shouldBe true
+            finalResult.events.any { it is EffectEvent.LibraryShuffled } shouldBe true
         }
     }
 })

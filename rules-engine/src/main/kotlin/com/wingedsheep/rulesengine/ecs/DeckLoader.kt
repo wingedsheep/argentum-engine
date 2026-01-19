@@ -31,7 +31,7 @@ class DeckLoader(
          * @property cardIds The IDs of all cards that were created
          */
         data class Success(
-            val state: EcsGameState,
+            val state: GameState,
             val cardIds: List<EntityId>
         ) : DeckLoadResult
 
@@ -58,7 +58,7 @@ class DeckLoader(
      * @return DeckLoadResult with the new state and card IDs, or failure info
      */
     fun loadDeck(
-        state: EcsGameState,
+        state: GameState,
         playerId: EntityId,
         deckList: Map<String, Int>
     ): DeckLoadResult {
@@ -114,7 +114,7 @@ class DeckLoader(
      * @return DeckLoadResult with the new state, or failure info
      */
     fun loadDecks(
-        state: EcsGameState,
+        state: GameState,
         decks: Map<EntityId, Map<String, Int>>
     ): DeckLoadResult {
         var currentState = state
@@ -169,11 +169,11 @@ class DeckLoader(
      * Create a card entity with all appropriate components.
      */
     private fun createCardEntity(
-        state: EcsGameState,
+        state: GameState,
         definition: CardDefinition,
         script: CardScript?,
         ownerId: EntityId
-    ): Pair<EntityId, EcsGameState> {
+    ): Pair<EntityId, GameState> {
         val cardId = EntityId.generate()
 
         // Base components every card has

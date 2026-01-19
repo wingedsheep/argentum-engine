@@ -19,7 +19,7 @@ class ManaAbilityTest : FunSpec({
     val player1Id = EntityId.of("player1")
     val player2Id = EntityId.of("player2")
 
-    fun newGame(): EcsGameState = EcsGameState.newGame(
+    fun newGame(): GameState = GameState.newGame(
         listOf(
             player1Id to "Alice",
             player2Id to "Bob"
@@ -63,17 +63,17 @@ class ManaAbilityTest : FunSpec({
             }
 
             // Activate the mana ability
-            val result = EcsGameEngine.executeAction(
+            val result = GameEngine.executeAction(
                 s2,
-                EcsActivateManaAbility(
+                ActivateManaAbility(
                     sourceEntityId = forestId,
                     abilityIndex = 0,
                     playerId = player1Id
                 )
             )
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
+            result.shouldBeInstanceOf<GameActionResult.Success>()
 
-            val finalState = (result as EcsActionResult.Success).state
+            val finalState = (result as GameActionResult.Success).state
 
             // Forest should be tapped
             finalState.getEntity(forestId)?.get<TappedComponent>().shouldNotBeNull()
@@ -99,17 +99,17 @@ class ManaAbilityTest : FunSpec({
             val s2 = s1.addToZone(forestId, ZoneId.BATTLEFIELD)
 
             // Try to activate the mana ability
-            val result = EcsGameEngine.executeAction(
+            val result = GameEngine.executeAction(
                 s2,
-                EcsActivateManaAbility(
+                ActivateManaAbility(
                     sourceEntityId = forestId,
                     abilityIndex = 0,
                     playerId = player1Id
                 )
             )
-            result.shouldBeInstanceOf<EcsActionResult.Failure>()
+            result.shouldBeInstanceOf<GameActionResult.Failure>()
 
-            val failure = result as EcsActionResult.Failure
+            val failure = result as GameActionResult.Failure
             failure.reason shouldBe "Permanent is already tapped"
         }
 
@@ -127,17 +127,17 @@ class ManaAbilityTest : FunSpec({
             val s2 = s1.addToZone(forestId, ZoneId.BATTLEFIELD)
 
             // Player1 tries to activate player2's forest
-            val result = EcsGameEngine.executeAction(
+            val result = GameEngine.executeAction(
                 s2,
-                EcsActivateManaAbility(
+                ActivateManaAbility(
                     sourceEntityId = forestId,
                     abilityIndex = 0,
                     playerId = player1Id
                 )
             )
-            result.shouldBeInstanceOf<EcsActionResult.Failure>()
+            result.shouldBeInstanceOf<GameActionResult.Failure>()
 
-            val failure = result as EcsActionResult.Failure
+            val failure = result as GameActionResult.Failure
             failure.reason shouldBe "Player does not control this permanent"
         }
 
@@ -155,17 +155,17 @@ class ManaAbilityTest : FunSpec({
             val s2 = s1.addToZone(forestId, ZoneId.hand(player1Id))
 
             // Try to activate the mana ability
-            val result = EcsGameEngine.executeAction(
+            val result = GameEngine.executeAction(
                 s2,
-                EcsActivateManaAbility(
+                ActivateManaAbility(
                     sourceEntityId = forestId,
                     abilityIndex = 0,
                     playerId = player1Id
                 )
             )
-            result.shouldBeInstanceOf<EcsActionResult.Failure>()
+            result.shouldBeInstanceOf<GameActionResult.Failure>()
 
-            val failure = result as EcsActionResult.Failure
+            val failure = result as GameActionResult.Failure
             failure.reason shouldBe "Mana ability source must be on the battlefield"
         }
     }
@@ -188,17 +188,17 @@ class ManaAbilityTest : FunSpec({
             s2.getStack().isEmpty().shouldBeTrue()
 
             // Activate the mana ability
-            val result = EcsGameEngine.executeAction(
+            val result = GameEngine.executeAction(
                 s2,
-                EcsActivateManaAbility(
+                ActivateManaAbility(
                     sourceEntityId = forestId,
                     abilityIndex = 0,
                     playerId = player1Id
                 )
             )
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
+            result.shouldBeInstanceOf<GameActionResult.Success>()
 
-            val finalState = (result as EcsActionResult.Success).state
+            val finalState = (result as GameActionResult.Success).state
 
             // Stack should still be empty (mana ability doesn't use stack)
             finalState.getStack().isEmpty().shouldBeTrue()

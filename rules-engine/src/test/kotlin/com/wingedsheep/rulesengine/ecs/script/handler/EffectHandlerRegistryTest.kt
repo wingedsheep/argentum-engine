@@ -1,7 +1,7 @@
 package com.wingedsheep.rulesengine.ecs.script.handler
 
 import com.wingedsheep.rulesengine.ability.*
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.script.ExecutionContext
 import com.wingedsheep.rulesengine.ecs.script.ExecutionResult
@@ -16,7 +16,7 @@ class EffectHandlerRegistryTest : FunSpec({
     val player1Id = EntityId.of("player1")
     val player2Id = EntityId.of("player2")
 
-    fun newGame(): EcsGameState = EcsGameState.newGame(
+    fun newGame(): GameState = GameState.newGame(
         listOf(player1Id to "Alice", player2Id to "Bob")
     )
 
@@ -129,7 +129,7 @@ class EffectHandlerRegistryTest : FunSpec({
                 override val effectClass: KClass<GainLifeEffect> = GainLifeEffect::class
 
                 override fun execute(
-                    state: EcsGameState,
+                    state: GameState,
                     effect: GainLifeEffect,
                     context: ExecutionContext
                 ): ExecutionResult {

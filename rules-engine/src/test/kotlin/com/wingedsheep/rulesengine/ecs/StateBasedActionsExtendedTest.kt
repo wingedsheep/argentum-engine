@@ -20,7 +20,7 @@ class StateBasedActionsExtendedTest : FunSpec({
     val player1Id = EntityId.of("player1")
     val player2Id = EntityId.of("player2")
 
-    fun newGame(): EcsGameState = EcsGameState.newGame(
+    fun newGame(): GameState = GameState.newGame(
         listOf(
             player1Id to "Alice",
             player2Id to "Bob"
@@ -69,10 +69,10 @@ class StateBasedActionsExtendedTest : FunSpec({
             val stateOnBattlefield = stateWithDragon.addToZone(dragon1, ZoneId.BATTLEFIELD)
 
             // Run SBAs
-            val result = EcsGameEngine.checkStateBasedActions(stateOnBattlefield)
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
+            val result = GameEngine.checkStateBasedActions(stateOnBattlefield)
+            result.shouldBeInstanceOf<GameActionResult.Success>()
 
-            val newState = (result as EcsActionResult.Success).state
+            val newState = (result as GameActionResult.Success).state
             newState.getBattlefield().shouldContain(dragon1)
             newState.hasPendingLegendRuleChoices.shouldBeFalse()
         }
@@ -102,10 +102,10 @@ class StateBasedActionsExtendedTest : FunSpec({
             s4.getBattlefield().shouldHaveSize(2)
 
             // Run SBAs
-            val result = EcsGameEngine.checkStateBasedActions(s4)
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
+            val result = GameEngine.checkStateBasedActions(s4)
+            result.shouldBeInstanceOf<GameActionResult.Success>()
 
-            val newState = (result as EcsActionResult.Success).state
+            val newState = (result as GameActionResult.Success).state
 
             // Both should still be on battlefield (waiting for player choice)
             newState.getBattlefield().shouldHaveSize(2)
@@ -145,21 +145,21 @@ class StateBasedActionsExtendedTest : FunSpec({
             val s4 = s3.addToZone(dragon2, ZoneId.BATTLEFIELD)
 
             // Run SBAs to create pending choice
-            val sbaResult = EcsGameEngine.checkStateBasedActions(s4)
-            val stateWithChoice = (sbaResult as EcsActionResult.Success).state
+            val sbaResult = GameEngine.checkStateBasedActions(s4)
+            val stateWithChoice = (sbaResult as GameActionResult.Success).state
 
             // Player chooses to keep dragon2
-            val resolveResult = EcsGameEngine.executeAction(
+            val resolveResult = GameEngine.executeAction(
                 stateWithChoice,
-                EcsResolveLegendRule(
+                ResolveLegendRule(
                     controllerId = player1Id,
                     legendaryName = "Legendary Dragon",
                     keepEntityId = dragon2
                 )
             )
-            resolveResult.shouldBeInstanceOf<EcsActionResult.Success>()
+            resolveResult.shouldBeInstanceOf<GameActionResult.Success>()
 
-            val finalState = (resolveResult as EcsActionResult.Success).state
+            val finalState = (resolveResult as GameActionResult.Success).state
 
             // dragon2 should be on battlefield, dragon1 in graveyard
             finalState.getBattlefield().shouldHaveSize(1)
@@ -192,10 +192,10 @@ class StateBasedActionsExtendedTest : FunSpec({
             val s4 = s3.addToZone(dragon2, ZoneId.BATTLEFIELD)
 
             // Run SBAs
-            val result = EcsGameEngine.checkStateBasedActions(s4)
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
+            val result = GameEngine.checkStateBasedActions(s4)
+            result.shouldBeInstanceOf<GameActionResult.Success>()
 
-            val newState = (result as EcsActionResult.Success).state
+            val newState = (result as GameActionResult.Success).state
 
             // Both should remain on battlefield (different controllers)
             newState.getBattlefield().shouldHaveSize(2)
@@ -239,10 +239,10 @@ class StateBasedActionsExtendedTest : FunSpec({
             s5.getBattlefield().shouldContain(auraId)
 
             // Run SBAs
-            val result = EcsGameEngine.checkStateBasedActions(s5)
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
+            val result = GameEngine.checkStateBasedActions(s5)
+            result.shouldBeInstanceOf<GameActionResult.Success>()
 
-            val newState = (result as EcsActionResult.Success).state
+            val newState = (result as GameActionResult.Success).state
 
             // Aura should be in graveyard
             newState.getBattlefield().contains(auraId).shouldBeFalse()
@@ -272,10 +272,10 @@ class StateBasedActionsExtendedTest : FunSpec({
             val s4 = s3.addToZone(auraId, ZoneId.BATTLEFIELD)
 
             // Run SBAs
-            val result = EcsGameEngine.checkStateBasedActions(s4)
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
+            val result = GameEngine.checkStateBasedActions(s4)
+            result.shouldBeInstanceOf<GameActionResult.Success>()
 
-            val newState = (result as EcsActionResult.Success).state
+            val newState = (result as GameActionResult.Success).state
 
             // Both should still be on battlefield
             newState.getBattlefield().shouldContain(bearId)
@@ -309,10 +309,10 @@ class StateBasedActionsExtendedTest : FunSpec({
             s3.getGraveyard(player1Id).shouldContain(tokenId)
 
             // Run SBAs
-            val result = EcsGameEngine.checkStateBasedActions(s3)
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
+            val result = GameEngine.checkStateBasedActions(s3)
+            result.shouldBeInstanceOf<GameActionResult.Success>()
 
-            val newState = (result as EcsActionResult.Success).state
+            val newState = (result as GameActionResult.Success).state
 
             // Token should be completely removed
             newState.hasEntity(tokenId).shouldBeFalse()
@@ -333,10 +333,10 @@ class StateBasedActionsExtendedTest : FunSpec({
             val s2 = s1.addToZone(tokenId, ZoneId.BATTLEFIELD)
 
             // Run SBAs
-            val result = EcsGameEngine.checkStateBasedActions(s2)
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
+            val result = GameEngine.checkStateBasedActions(s2)
+            result.shouldBeInstanceOf<GameActionResult.Success>()
 
-            val newState = (result as EcsActionResult.Success).state
+            val newState = (result as GameActionResult.Success).state
 
             // Token should still exist on battlefield
             newState.hasEntity(tokenId).shouldBeTrue()
@@ -369,10 +369,10 @@ class StateBasedActionsExtendedTest : FunSpec({
             initialCounters.getCount(CounterType.MINUS_ONE_MINUS_ONE) shouldBe 2
 
             // Run SBAs
-            val result = EcsGameEngine.checkStateBasedActions(s2)
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
+            val result = GameEngine.checkStateBasedActions(s2)
+            result.shouldBeInstanceOf<GameActionResult.Success>()
 
-            val newState = (result as EcsActionResult.Success).state
+            val newState = (result as GameActionResult.Success).state
 
             // Should have 1 +1/+1 counter and 0 -1/-1 counters
             val finalCounters = newState.getComponent<CountersComponent>(bearId)
@@ -399,10 +399,10 @@ class StateBasedActionsExtendedTest : FunSpec({
             val s2 = s1.addToZone(bearId, ZoneId.BATTLEFIELD)
 
             // Run SBAs
-            val result = EcsGameEngine.checkStateBasedActions(s2)
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
+            val result = GameEngine.checkStateBasedActions(s2)
+            result.shouldBeInstanceOf<GameActionResult.Success>()
 
-            val newState = (result as EcsActionResult.Success).state
+            val newState = (result as GameActionResult.Success).state
 
             // Should have 0 of both types
             val finalCounters = newState.getComponent<CountersComponent>(bearId)
@@ -428,10 +428,10 @@ class StateBasedActionsExtendedTest : FunSpec({
             val s2 = s1.addToZone(bearId, ZoneId.BATTLEFIELD)
 
             // Run SBAs
-            val result = EcsGameEngine.checkStateBasedActions(s2)
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
+            val result = GameEngine.checkStateBasedActions(s2)
+            result.shouldBeInstanceOf<GameActionResult.Success>()
 
-            val newState = (result as EcsActionResult.Success).state
+            val newState = (result as GameActionResult.Success).state
 
             // Should still have 3 +1/+1 counters
             val finalCounters = newState.getComponent<CountersComponent>(bearId)

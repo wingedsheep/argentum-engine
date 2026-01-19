@@ -9,19 +9,19 @@ import com.wingedsheep.rulesengine.ability.TimingRestriction
 import com.wingedsheep.rulesengine.core.CounterType
 import com.wingedsheep.rulesengine.core.Keyword
 import com.wingedsheep.rulesengine.ecs.ComponentContainer
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.combat.DamageEventProjector
 import com.wingedsheep.rulesengine.ecs.combat.DamagePreventionEffect
-import com.wingedsheep.rulesengine.ecs.combat.EcsCombatDamageCalculator
+import com.wingedsheep.rulesengine.ecs.combat.CombatDamageCalculator
 import com.wingedsheep.rulesengine.ecs.components.*
 import com.wingedsheep.rulesengine.ecs.components.PendingLegendRuleChoice
-import com.wingedsheep.rulesengine.ecs.stack.EcsStackResolver
+import com.wingedsheep.rulesengine.ecs.stack.StackResolver
 import com.wingedsheep.rulesengine.zone.ZoneType
 
 /**
- * Handles execution of EcsActions against EcsGameState.
+ * Handles execution of GameActions against GameState.
  *
  * All operations are pure functions - each action produces a new state
  * without modifying the original. Events are generated for game logging
@@ -29,130 +29,130 @@ import com.wingedsheep.rulesengine.zone.ZoneType
  *
  * Example usage:
  * ```kotlin
- * val handler = EcsActionHandler()
- * val result = handler.execute(state, EcsDrawCard(playerId, 2))
+ * val handler = GameActionHandler()
+ * val result = handler.execute(state, DrawCard(playerId, 2))
  * when (result) {
- *     is EcsActionResult.Success -> println("New state: ${result.state}")
- *     is EcsActionResult.Failure -> println("Error: ${result.reason}")
+ *     is GameActionResult.Success -> println("New state: ${result.state}")
+ *     is GameActionResult.Failure -> println("Error: ${result.reason}")
  * }
  * ```
  */
-class EcsActionHandler {
+class GameActionHandler {
 
     /**
      * Execute a single action and return the result.
      */
-    fun execute(state: EcsGameState, action: EcsAction): EcsActionResult {
+    fun execute(state: GameState, action: GameAction): GameActionResult {
         return try {
             val (newState, events) = executeAction(state, action)
-            EcsActionResult.Success(newState, action, events)
+            GameActionResult.Success(newState, action, events)
         } catch (e: IllegalStateException) {
-            EcsActionResult.Failure(state, action, e.message ?: "Unknown error")
+            GameActionResult.Failure(state, action, e.message ?: "Unknown error")
         } catch (e: IllegalArgumentException) {
-            EcsActionResult.Failure(state, action, e.message ?: "Invalid argument")
+            GameActionResult.Failure(state, action, e.message ?: "Invalid argument")
         }
     }
 
     /**
      * Execute multiple actions in sequence.
      */
-    fun executeAll(state: EcsGameState, actions: List<EcsAction>): EcsActionResult {
+    fun executeAll(state: GameState, actions: List<GameAction>): GameActionResult {
         var currentState = state
-        val allEvents = mutableListOf<EcsActionEvent>()
+        val allEvents = mutableListOf<GameActionEvent>()
 
         for (action in actions) {
             val result = execute(currentState, action)
             when (result) {
-                is EcsActionResult.Success -> {
+                is GameActionResult.Success -> {
                     currentState = result.state
                     allEvents.addAll(result.events)
                 }
-                is EcsActionResult.Failure -> return result
+                is GameActionResult.Failure -> return result
             }
         }
 
         return if (actions.isNotEmpty()) {
-            EcsActionResult.Success(currentState, actions.last(), allEvents)
+            GameActionResult.Success(currentState, actions.last(), allEvents)
         } else {
-            EcsActionResult.Success(state, EcsCheckStateBasedActions(), emptyList())
+            GameActionResult.Success(state, CheckStateBasedActions(), emptyList())
         }
     }
 
-    private fun executeAction(state: EcsGameState, action: EcsAction): Pair<EcsGameState, List<EcsActionEvent>> {
-        val events = mutableListOf<EcsActionEvent>()
+    private fun executeAction(state: GameState, action: GameAction): Pair<GameState, List<GameActionEvent>> {
+        val events = mutableListOf<GameActionEvent>()
 
         val newState = when (action) {
             // Life actions
-            is EcsGainLife -> executeGainLife(state, action, events)
-            is EcsLoseLife -> executeLoseLife(state, action, events)
-            is EcsSetLife -> executeSetLife(state, action, events)
-            is EcsDealDamageToPlayer -> executeDealDamageToPlayer(state, action, events)
-            is EcsDealDamageToCreature -> executeDealDamageToCreature(state, action, events)
+            is GainLife -> executeGainLife(state, action, events)
+            is LoseLife -> executeLoseLife(state, action, events)
+            is SetLife -> executeSetLife(state, action, events)
+            is DealDamageToPlayer -> executeDealDamageToPlayer(state, action, events)
+            is DealDamageToCreature -> executeDealDamageToCreature(state, action, events)
 
             // Mana actions
-            is EcsAddMana -> executeAddMana(state, action, events)
-            is EcsAddColorlessMana -> executeAddColorlessMana(state, action, events)
-            is EcsEmptyManaPool -> executeEmptyManaPool(state, action)
-            is EcsActivateManaAbility -> executeActivateManaAbility(state, action, events)
+            is AddMana -> executeAddMana(state, action, events)
+            is AddColorlessMana -> executeAddColorlessMana(state, action, events)
+            is EmptyManaPool -> executeEmptyManaPool(state, action)
+            is ActivateManaAbility -> executeActivateManaAbility(state, action, events)
 
             // Card drawing
-            is EcsDrawCard -> executeDrawCard(state, action, events)
-            is EcsDiscardCard -> executeDiscardCard(state, action, events)
+            is DrawCard -> executeDrawCard(state, action, events)
+            is DiscardCard -> executeDiscardCard(state, action, events)
 
             // Zone movement
-            is EcsMoveEntity -> executeMoveEntity(state, action, events)
-            is EcsPutOntoBattlefield -> executePutOntoBattlefield(state, action, events)
-            is EcsDestroyPermanent -> executeDestroyPermanent(state, action, events)
-            is EcsSacrificePermanent -> executeSacrificePermanent(state, action, events)
-            is EcsExilePermanent -> executeExilePermanent(state, action, events)
-            is EcsReturnToHand -> executeReturnToHand(state, action, events)
+            is MoveEntity -> executeMoveEntity(state, action, events)
+            is PutOntoBattlefield -> executePutOntoBattlefield(state, action, events)
+            is DestroyPermanent -> executeDestroyPermanent(state, action, events)
+            is SacrificePermanent -> executeSacrificePermanent(state, action, events)
+            is ExilePermanent -> executeExilePermanent(state, action, events)
+            is ReturnToHand -> executeReturnToHand(state, action, events)
 
             // Tap/Untap
-            is EcsTap -> executeTap(state, action, events)
-            is EcsUntap -> executeUntap(state, action, events)
-            is EcsUntapAll -> executeUntapAll(state, action, events)
+            is Tap -> executeTap(state, action, events)
+            is Untap -> executeUntap(state, action, events)
+            is UntapAll -> executeUntapAll(state, action, events)
 
             // Counters
-            is EcsAddCounters -> executeAddCounters(state, action)
-            is EcsRemoveCounters -> executeRemoveCounters(state, action)
-            is EcsAddPoisonCounters -> executeAddPoisonCounters(state, action)
+            is AddCounters -> executeAddCounters(state, action)
+            is RemoveCounters -> executeRemoveCounters(state, action)
+            is AddPoisonCounters -> executeAddPoisonCounters(state, action)
 
             // Summoning sickness
-            is EcsRemoveSummoningSickness -> executeRemoveSummoningSickness(state, action)
-            is EcsRemoveAllSummoningSickness -> executeRemoveAllSummoningSickness(state, action)
+            is RemoveSummoningSickness -> executeRemoveSummoningSickness(state, action)
+            is RemoveAllSummoningSickness -> executeRemoveAllSummoningSickness(state, action)
 
             // Land actions
-            is EcsPlayLand -> executePlayLand(state, action, events)
-            is EcsResetLandsPlayed -> executeResetLandsPlayed(state, action)
+            is PlayLand -> executePlayLand(state, action, events)
+            is ResetLandsPlayed -> executeResetLandsPlayed(state, action)
 
             // Library actions
-            is EcsShuffleLibrary -> executeShuffleLibrary(state, action)
+            is ShuffleLibrary -> executeShuffleLibrary(state, action)
 
             // Combat actions
-            is EcsBeginCombat -> executeBeginCombat(state, action, events)
-            is EcsDeclareAttacker -> executeDeclareAttacker(state, action, events)
-            is EcsDeclareBlocker -> executeDeclareBlocker(state, action, events)
-            is EcsOrderBlockers -> executeOrderBlockers(state, action, events)
-            is EcsResolveCombatDamage -> executeResolveCombatDamage(state, action, events)
-            is EcsEndCombat -> executeEndCombat(state, action, events)
+            is BeginCombat -> executeBeginCombat(state, action, events)
+            is DeclareAttacker -> executeDeclareAttacker(state, action, events)
+            is DeclareBlocker -> executeDeclareBlocker(state, action, events)
+            is OrderBlockers -> executeOrderBlockers(state, action, events)
+            is ResolveCombatDamage -> executeResolveCombatDamage(state, action, events)
+            is EndCombat -> executeEndCombat(state, action, events)
 
             // Game flow
-            is EcsPassPriority -> executePassPriority(state, action)
-            is EcsEndGame -> executeEndGame(state, action, events)
-            is EcsPlayerLoses -> executePlayerLoses(state, action, events)
-            is EcsResolveLegendRule -> executeResolveLegendRule(state, action, events)
+            is PassPriority -> executePassPriority(state, action)
+            is EndGame -> executeEndGame(state, action, events)
+            is PlayerLoses -> executePlayerLoses(state, action, events)
+            is ResolveLegendRule -> executeResolveLegendRule(state, action, events)
 
             // Stack resolution
-            is EcsResolveTopOfStack -> executeResolveTopOfStack(state, events)
-            is EcsCastSpell -> executeCastSpell(state, action, events)
+            is ResolveTopOfStack -> executeResolveTopOfStack(state, events)
+            is CastSpell -> executeCastSpell(state, action, events)
 
             // Attachment actions
-            is EcsAttach -> executeAttach(state, action, events)
-            is EcsDetach -> executeDetach(state, action, events)
+            is Attach -> executeAttach(state, action, events)
+            is Detach -> executeDetach(state, action, events)
 
             // State-based actions
-            is EcsCheckStateBasedActions -> executeCheckStateBasedActions(state, events)
-            is EcsClearDamage -> executeClearDamage(state, action)
+            is CheckStateBasedActions -> executeCheckStateBasedActions(state, events)
+            is ClearDamage -> executeClearDamage(state, action)
         }
 
         return newState to events
@@ -163,16 +163,16 @@ class EcsActionHandler {
     // =========================================================================
 
     private fun executeGainLife(
-        state: EcsGameState,
-        action: EcsGainLife,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
+        state: GameState,
+        action: GainLife,
+        events: MutableList<GameActionEvent>
+    ): GameState {
         val container = state.getEntity(action.playerId) ?: throw IllegalStateException("Player not found")
         val lifeComponent = container.get<LifeComponent>() ?: throw IllegalStateException("Player has no life component")
 
         val oldLife = lifeComponent.life
         val newLife = oldLife + action.amount
-        events.add(EcsActionEvent.LifeChanged(action.playerId, oldLife, newLife))
+        events.add(GameActionEvent.LifeChanged(action.playerId, oldLife, newLife))
 
         return state.updateEntity(action.playerId) { c ->
             c.with(lifeComponent.gainLife(action.amount))
@@ -180,16 +180,16 @@ class EcsActionHandler {
     }
 
     private fun executeLoseLife(
-        state: EcsGameState,
-        action: EcsLoseLife,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
+        state: GameState,
+        action: LoseLife,
+        events: MutableList<GameActionEvent>
+    ): GameState {
         val container = state.getEntity(action.playerId) ?: throw IllegalStateException("Player not found")
         val lifeComponent = container.get<LifeComponent>() ?: throw IllegalStateException("Player has no life component")
 
         val oldLife = lifeComponent.life
         val newLife = oldLife - action.amount
-        events.add(EcsActionEvent.LifeChanged(action.playerId, oldLife, newLife))
+        events.add(GameActionEvent.LifeChanged(action.playerId, oldLife, newLife))
 
         return state.updateEntity(action.playerId) { c ->
             c.with(lifeComponent.loseLife(action.amount))
@@ -197,15 +197,15 @@ class EcsActionHandler {
     }
 
     private fun executeSetLife(
-        state: EcsGameState,
-        action: EcsSetLife,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
+        state: GameState,
+        action: SetLife,
+        events: MutableList<GameActionEvent>
+    ): GameState {
         val container = state.getEntity(action.playerId) ?: throw IllegalStateException("Player not found")
         val lifeComponent = container.get<LifeComponent>() ?: throw IllegalStateException("Player has no life component")
 
         val oldLife = lifeComponent.life
-        events.add(EcsActionEvent.LifeChanged(action.playerId, oldLife, action.amount))
+        events.add(GameActionEvent.LifeChanged(action.playerId, oldLife, action.amount))
 
         return state.updateEntity(action.playerId) { c ->
             c.with(lifeComponent.setLife(action.amount))
@@ -213,17 +213,17 @@ class EcsActionHandler {
     }
 
     private fun executeDealDamageToPlayer(
-        state: EcsGameState,
-        action: EcsDealDamageToPlayer,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
+        state: GameState,
+        action: DealDamageToPlayer,
+        events: MutableList<GameActionEvent>
+    ): GameState {
         val container = state.getEntity(action.targetPlayerId) ?: throw IllegalStateException("Target player not found")
         val lifeComponent = container.get<LifeComponent>() ?: throw IllegalStateException("Player has no life component")
 
         val oldLife = lifeComponent.life
         val newLife = oldLife - action.amount
-        events.add(EcsActionEvent.DamageDealtToPlayer(action.sourceEntityId, action.targetPlayerId, action.amount))
-        events.add(EcsActionEvent.LifeChanged(action.targetPlayerId, oldLife, newLife))
+        events.add(GameActionEvent.DamageDealtToPlayer(action.sourceEntityId, action.targetPlayerId, action.amount))
+        events.add(GameActionEvent.LifeChanged(action.targetPlayerId, oldLife, newLife))
 
         return state.updateEntity(action.targetPlayerId) { c ->
             c.with(lifeComponent.loseLife(action.amount))
@@ -231,14 +231,14 @@ class EcsActionHandler {
     }
 
     private fun executeDealDamageToCreature(
-        state: EcsGameState,
-        action: EcsDealDamageToCreature,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
+        state: GameState,
+        action: DealDamageToCreature,
+        events: MutableList<GameActionEvent>
+    ): GameState {
         val container = state.getEntity(action.targetEntityId) ?: throw IllegalStateException("Target creature not found")
         val damageComponent = container.get<DamageComponent>() ?: DamageComponent(0)
 
-        events.add(EcsActionEvent.DamageDealtToCreature(action.sourceEntityId, action.targetEntityId, action.amount))
+        events.add(GameActionEvent.DamageDealtToCreature(action.sourceEntityId, action.targetEntityId, action.amount))
 
         return state.updateEntity(action.targetEntityId) { c ->
             c.with(damageComponent.addDamage(action.amount))
@@ -250,14 +250,14 @@ class EcsActionHandler {
     // =========================================================================
 
     private fun executeAddMana(
-        state: EcsGameState,
-        action: EcsAddMana,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
+        state: GameState,
+        action: AddMana,
+        events: MutableList<GameActionEvent>
+    ): GameState {
         val container = state.getEntity(action.playerId) ?: throw IllegalStateException("Player not found")
         val manaPool = container.get<ManaPoolComponent>() ?: ManaPoolComponent()
 
-        events.add(EcsActionEvent.ManaAdded(action.playerId, action.color.displayName, action.amount))
+        events.add(GameActionEvent.ManaAdded(action.playerId, action.color.displayName, action.amount))
 
         return state.updateEntity(action.playerId) { c ->
             c.with(manaPool.add(action.color, action.amount))
@@ -265,21 +265,21 @@ class EcsActionHandler {
     }
 
     private fun executeAddColorlessMana(
-        state: EcsGameState,
-        action: EcsAddColorlessMana,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
+        state: GameState,
+        action: AddColorlessMana,
+        events: MutableList<GameActionEvent>
+    ): GameState {
         val container = state.getEntity(action.playerId) ?: throw IllegalStateException("Player not found")
         val manaPool = container.get<ManaPoolComponent>() ?: ManaPoolComponent()
 
-        events.add(EcsActionEvent.ManaAdded(action.playerId, "Colorless", action.amount))
+        events.add(GameActionEvent.ManaAdded(action.playerId, "Colorless", action.amount))
 
         return state.updateEntity(action.playerId) { c ->
             c.with(manaPool.addColorless(action.amount))
         }
     }
 
-    private fun executeEmptyManaPool(state: EcsGameState, action: EcsEmptyManaPool): EcsGameState {
+    private fun executeEmptyManaPool(state: GameState, action: EmptyManaPool): GameState {
         val container = state.getEntity(action.playerId) ?: throw IllegalStateException("Player not found")
         val manaPool = container.get<ManaPoolComponent>() ?: return state
 
@@ -298,10 +298,10 @@ class EcsActionHandler {
      * 3. Adding mana to the player's pool
      */
     private fun executeActivateManaAbility(
-        state: EcsGameState,
-        action: EcsActivateManaAbility,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
+        state: GameState,
+        action: ActivateManaAbility,
+        events: MutableList<GameActionEvent>
+    ): GameState {
         val sourceId = action.sourceEntityId
 
         // Verify source is on the battlefield
@@ -393,12 +393,12 @@ class EcsActionHandler {
      * Pay the cost of an ability.
      */
     private fun payAbilityCost(
-        state: EcsGameState,
+        state: GameState,
         sourceId: EntityId,
         cost: AbilityCost,
         playerId: EntityId,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
+        events: MutableList<GameActionEvent>
+    ): GameState {
         return when (cost) {
             is AbilityCost.Tap -> {
                 // Check if already tapped
@@ -407,7 +407,7 @@ class EcsActionHandler {
                     throw IllegalStateException("Permanent is already tapped")
                 }
                 val cardName = container.get<CardComponent>()?.name ?: "Unknown"
-                events.add(EcsActionEvent.PermanentTapped(sourceId, cardName))
+                events.add(GameActionEvent.PermanentTapped(sourceId, cardName))
                 state.updateEntity(sourceId) { c -> c.with(TappedComponent) }
             }
             is AbilityCost.Composite -> {
@@ -429,7 +429,7 @@ class EcsActionHandler {
                     throw IllegalStateException("Not enough life to pay cost")
                 }
                 val newLife = lifeComp.life - cost.amount
-                events.add(EcsActionEvent.LifeChanged(playerId, lifeComp.life, newLife))
+                events.add(GameActionEvent.LifeChanged(playerId, lifeComp.life, newLife))
                 state.updateEntity(playerId) { c -> c.with(lifeComp.loseLife(cost.amount)) }
             }
             is AbilityCost.Sacrifice -> {
@@ -447,16 +447,16 @@ class EcsActionHandler {
      * Execute a mana-producing effect.
      */
     private fun executeManaEffect(
-        state: EcsGameState,
+        state: GameState,
         playerId: EntityId,
         effect: com.wingedsheep.rulesengine.ability.Effect,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
+        events: MutableList<GameActionEvent>
+    ): GameState {
         return when (effect) {
             is AddManaEffect -> {
                 val container = state.getEntity(playerId) ?: throw IllegalStateException("Player not found")
                 val manaPool = container.get<ManaPoolComponent>() ?: ManaPoolComponent()
-                events.add(EcsActionEvent.ManaAdded(playerId, effect.color.displayName, effect.amount))
+                events.add(GameActionEvent.ManaAdded(playerId, effect.color.displayName, effect.amount))
                 state.updateEntity(playerId) { c ->
                     c.with(manaPool.add(effect.color, effect.amount))
                 }
@@ -464,7 +464,7 @@ class EcsActionHandler {
             is AddColorlessManaEffect -> {
                 val container = state.getEntity(playerId) ?: throw IllegalStateException("Player not found")
                 val manaPool = container.get<ManaPoolComponent>() ?: ManaPoolComponent()
-                events.add(EcsActionEvent.ManaAdded(playerId, "Colorless", effect.amount))
+                events.add(GameActionEvent.ManaAdded(playerId, "Colorless", effect.amount))
                 state.updateEntity(playerId) { c ->
                     c.with(manaPool.addColorless(effect.amount))
                 }
@@ -480,10 +480,10 @@ class EcsActionHandler {
     // =========================================================================
 
     private fun executeDrawCard(
-        state: EcsGameState,
-        action: EcsDrawCard,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
+        state: GameState,
+        action: DrawCard,
+        events: MutableList<GameActionEvent>
+    ): GameState {
         var currentState = state
         val libraryZone = ZoneId.library(action.playerId)
         val handZone = ZoneId.hand(action.playerId)
@@ -491,7 +491,7 @@ class EcsActionHandler {
         repeat(action.count) {
             val library = currentState.getZone(libraryZone)
             if (library.isEmpty()) {
-                events.add(EcsActionEvent.DrawFailed(action.playerId))
+                events.add(GameActionEvent.DrawFailed(action.playerId))
                 // Mark player as lost due to drawing from empty library
                 currentState = currentState.updateEntity(action.playerId) { c ->
                     c.with(LostGameComponent.decked())
@@ -502,7 +502,7 @@ class EcsActionHandler {
             val cardId = library.first()
             val cardName = currentState.getEntity(cardId)?.get<CardComponent>()?.definition?.name ?: "Unknown"
 
-            events.add(EcsActionEvent.CardDrawn(action.playerId, cardId, cardName))
+            events.add(GameActionEvent.CardDrawn(action.playerId, cardId, cardName))
 
             currentState = currentState
                 .removeFromZone(cardId, libraryZone)
@@ -513,10 +513,10 @@ class EcsActionHandler {
     }
 
     private fun executeDiscardCard(
-        state: EcsGameState,
-        action: EcsDiscardCard,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
+        state: GameState,
+        action: DiscardCard,
+        events: MutableList<GameActionEvent>
+    ): GameState {
         val handZone = ZoneId.hand(action.playerId)
         val graveyardZone = ZoneId.graveyard(action.playerId)
 
@@ -525,7 +525,7 @@ class EcsActionHandler {
         }
 
         val cardName = state.getEntity(action.cardId)?.get<CardComponent>()?.definition?.name ?: "Unknown"
-        events.add(EcsActionEvent.CardDiscarded(action.playerId, action.cardId, cardName))
+        events.add(GameActionEvent.CardDiscarded(action.playerId, action.cardId, cardName))
 
         return state
             .removeFromZone(action.cardId, handZone)
@@ -537,12 +537,12 @@ class EcsActionHandler {
     // =========================================================================
 
     private fun executeMoveEntity(
-        state: EcsGameState,
-        action: EcsMoveEntity,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
+        state: GameState,
+        action: MoveEntity,
+        events: MutableList<GameActionEvent>
+    ): GameState {
         val cardName = state.getEntity(action.entityId)?.get<CardComponent>()?.definition?.name ?: "Unknown"
-        events.add(EcsActionEvent.CardMoved(action.entityId, cardName, action.fromZone, action.toZone))
+        events.add(GameActionEvent.CardMoved(action.entityId, cardName, action.fromZone, action.toZone))
 
         var newState = state.removeFromZone(action.entityId, action.fromZone)
         newState = if (action.toTop) {
@@ -555,10 +555,10 @@ class EcsActionHandler {
     }
 
     private fun executePutOntoBattlefield(
-        state: EcsGameState,
-        action: EcsPutOntoBattlefield,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
+        state: GameState,
+        action: PutOntoBattlefield,
+        events: MutableList<GameActionEvent>
+    ): GameState {
         val container = state.getEntity(action.entityId) ?: throw IllegalStateException("Entity not found")
         val cardComponent = container.get<CardComponent>() ?: throw IllegalStateException("Entity has no card component")
 
@@ -566,7 +566,7 @@ class EcsActionHandler {
         val currentZone = state.findZone(action.entityId)
 
         if (currentZone != null) {
-            events.add(EcsActionEvent.CardMoved(action.entityId, cardName, currentZone, ZoneId.BATTLEFIELD))
+            events.add(GameActionEvent.CardMoved(action.entityId, cardName, currentZone, ZoneId.BATTLEFIELD))
         }
 
         // Remove from current zone and add to battlefield
@@ -596,25 +596,25 @@ class EcsActionHandler {
         }
 
         // Emit PermanentEnteredBattlefield event for ETB trigger detection
-        events.add(EcsActionEvent.PermanentEnteredBattlefield(action.entityId, cardName, action.controllerId))
+        events.add(GameActionEvent.PermanentEnteredBattlefield(action.entityId, cardName, action.controllerId))
 
         return newState
     }
 
     private fun executeDestroyPermanent(
-        state: EcsGameState,
-        action: EcsDestroyPermanent,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
+        state: GameState,
+        action: DestroyPermanent,
+        events: MutableList<GameActionEvent>
+    ): GameState {
         val container = state.getEntity(action.entityId) ?: throw IllegalStateException("Entity not found")
         val cardComponent = container.get<CardComponent>() ?: throw IllegalStateException("Entity has no card component")
 
         val cardName = cardComponent.definition.name
         val graveyardZone = ZoneId.graveyard(cardComponent.ownerId)
 
-        events.add(EcsActionEvent.PermanentDestroyed(action.entityId, cardName))
+        events.add(GameActionEvent.PermanentDestroyed(action.entityId, cardName))
         if (cardComponent.definition.isCreature) {
-            events.add(EcsActionEvent.CreatureDied(action.entityId, cardName, cardComponent.ownerId))
+            events.add(GameActionEvent.CreatureDied(action.entityId, cardName, cardComponent.ownerId))
         }
 
         // Move to graveyard and clear damage
@@ -629,25 +629,25 @@ class EcsActionHandler {
     }
 
     private fun executeSacrificePermanent(
-        state: EcsGameState,
-        action: EcsSacrificePermanent,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
-        return executeDestroyPermanent(state, EcsDestroyPermanent(action.entityId), events)
+        state: GameState,
+        action: SacrificePermanent,
+        events: MutableList<GameActionEvent>
+    ): GameState {
+        return executeDestroyPermanent(state, DestroyPermanent(action.entityId), events)
     }
 
     private fun executeExilePermanent(
-        state: EcsGameState,
-        action: EcsExilePermanent,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
+        state: GameState,
+        action: ExilePermanent,
+        events: MutableList<GameActionEvent>
+    ): GameState {
         val container = state.getEntity(action.entityId) ?: throw IllegalStateException("Entity not found")
         val cardComponent = container.get<CardComponent>() ?: throw IllegalStateException("Entity has no card component")
 
         val cardName = cardComponent.definition.name
         val currentZone = state.findZone(action.entityId) ?: throw IllegalStateException("Entity not in any zone")
 
-        events.add(EcsActionEvent.CardExiled(action.entityId, cardName))
+        events.add(GameActionEvent.CardExiled(action.entityId, cardName))
 
         return state
             .removeFromZone(action.entityId, currentZone)
@@ -655,10 +655,10 @@ class EcsActionHandler {
     }
 
     private fun executeReturnToHand(
-        state: EcsGameState,
-        action: EcsReturnToHand,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
+        state: GameState,
+        action: ReturnToHand,
+        events: MutableList<GameActionEvent>
+    ): GameState {
         val container = state.getEntity(action.entityId) ?: throw IllegalStateException("Entity not found")
         val cardComponent = container.get<CardComponent>() ?: throw IllegalStateException("Entity has no card component")
 
@@ -666,7 +666,7 @@ class EcsActionHandler {
         val currentZone = state.findZone(action.entityId) ?: throw IllegalStateException("Entity not in any zone")
         val ownerHand = ZoneId.hand(cardComponent.ownerId)
 
-        events.add(EcsActionEvent.CardReturnedToHand(action.entityId, cardName))
+        events.add(GameActionEvent.CardReturnedToHand(action.entityId, cardName))
 
         return state
             .removeFromZone(action.entityId, currentZone)
@@ -678,38 +678,38 @@ class EcsActionHandler {
     // =========================================================================
 
     private fun executeTap(
-        state: EcsGameState,
-        action: EcsTap,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
+        state: GameState,
+        action: Tap,
+        events: MutableList<GameActionEvent>
+    ): GameState {
         val cardName = state.getEntity(action.entityId)?.get<CardComponent>()?.definition?.name ?: "Unknown"
-        events.add(EcsActionEvent.PermanentTapped(action.entityId, cardName))
+        events.add(GameActionEvent.PermanentTapped(action.entityId, cardName))
 
         return state.updateEntity(action.entityId) { c -> c.with(TappedComponent) }
     }
 
     private fun executeUntap(
-        state: EcsGameState,
-        action: EcsUntap,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
+        state: GameState,
+        action: Untap,
+        events: MutableList<GameActionEvent>
+    ): GameState {
         val cardName = state.getEntity(action.entityId)?.get<CardComponent>()?.definition?.name ?: "Unknown"
-        events.add(EcsActionEvent.PermanentUntapped(action.entityId, cardName))
+        events.add(GameActionEvent.PermanentUntapped(action.entityId, cardName))
 
         return state.updateEntity(action.entityId) { c -> c.without<TappedComponent>() }
     }
 
     private fun executeUntapAll(
-        state: EcsGameState,
-        action: EcsUntapAll,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
+        state: GameState,
+        action: UntapAll,
+        events: MutableList<GameActionEvent>
+    ): GameState {
         var currentState = state
 
         for (entityId in state.getPermanentsControlledBy(action.controllerId)) {
             if (currentState.hasComponent<TappedComponent>(entityId)) {
                 val cardName = currentState.getEntity(entityId)?.get<CardComponent>()?.definition?.name ?: "Unknown"
-                events.add(EcsActionEvent.PermanentUntapped(entityId, cardName))
+                events.add(GameActionEvent.PermanentUntapped(entityId, cardName))
                 currentState = currentState.updateEntity(entityId) { c -> c.without<TappedComponent>() }
             }
         }
@@ -721,7 +721,7 @@ class EcsActionHandler {
     // Counters
     // =========================================================================
 
-    private fun executeAddCounters(state: EcsGameState, action: EcsAddCounters): EcsGameState {
+    private fun executeAddCounters(state: GameState, action: AddCounters): GameState {
         val counterType = try {
             CounterType.valueOf(
                 action.counterType.uppercase()
@@ -741,7 +741,7 @@ class EcsActionHandler {
         }
     }
 
-    private fun executeRemoveCounters(state: EcsGameState, action: EcsRemoveCounters): EcsGameState {
+    private fun executeRemoveCounters(state: GameState, action: RemoveCounters): GameState {
         val counterType = try {
             CounterType.valueOf(
                 action.counterType.uppercase()
@@ -761,7 +761,7 @@ class EcsActionHandler {
         }
     }
 
-    private fun executeAddPoisonCounters(state: EcsGameState, action: EcsAddPoisonCounters): EcsGameState {
+    private fun executeAddPoisonCounters(state: GameState, action: AddPoisonCounters): GameState {
         val container = state.getEntity(action.playerId) ?: throw IllegalStateException("Player not found")
         val poison = container.get<PoisonComponent>() ?: PoisonComponent()
 
@@ -774,11 +774,11 @@ class EcsActionHandler {
     // Summoning Sickness
     // =========================================================================
 
-    private fun executeRemoveSummoningSickness(state: EcsGameState, action: EcsRemoveSummoningSickness): EcsGameState {
+    private fun executeRemoveSummoningSickness(state: GameState, action: RemoveSummoningSickness): GameState {
         return state.updateEntity(action.entityId) { c -> c.without<SummoningSicknessComponent>() }
     }
 
-    private fun executeRemoveAllSummoningSickness(state: EcsGameState, action: EcsRemoveAllSummoningSickness): EcsGameState {
+    private fun executeRemoveAllSummoningSickness(state: GameState, action: RemoveAllSummoningSickness): GameState {
         var currentState = state
 
         for (creatureId in state.getCreaturesControlledBy(action.controllerId)) {
@@ -797,10 +797,10 @@ class EcsActionHandler {
     // =========================================================================
 
     private fun executePlayLand(
-        state: EcsGameState,
-        action: EcsPlayLand,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
+        state: GameState,
+        action: PlayLand,
+        events: MutableList<GameActionEvent>
+    ): GameState {
         val playerContainer = state.getEntity(action.playerId) ?: throw IllegalStateException("Player not found")
         val landsPlayed = playerContainer.get<LandsPlayedComponent>() ?: LandsPlayedComponent()
 
@@ -820,7 +820,7 @@ class EcsActionHandler {
             throw IllegalStateException("Card not in hand")
         }
 
-        events.add(EcsActionEvent.LandPlayed(action.playerId, action.cardId, cardComponent.definition.name))
+        events.add(GameActionEvent.LandPlayed(action.playerId, action.cardId, cardComponent.definition.name))
 
         return state
             .removeFromZone(action.cardId, handZone)
@@ -833,7 +833,7 @@ class EcsActionHandler {
             }
     }
 
-    private fun executeResetLandsPlayed(state: EcsGameState, action: EcsResetLandsPlayed): EcsGameState {
+    private fun executeResetLandsPlayed(state: GameState, action: ResetLandsPlayed): GameState {
         val container = state.getEntity(action.playerId) ?: throw IllegalStateException("Player not found")
         val landsPlayed = container.get<LandsPlayedComponent>() ?: return state
 
@@ -846,7 +846,7 @@ class EcsActionHandler {
     // Library Actions
     // =========================================================================
 
-    private fun executeShuffleLibrary(state: EcsGameState, action: EcsShuffleLibrary): EcsGameState {
+    private fun executeShuffleLibrary(state: GameState, action: ShuffleLibrary): GameState {
         return state.shuffleZone(ZoneId.library(action.playerId))
     }
 
@@ -855,19 +855,19 @@ class EcsActionHandler {
     // =========================================================================
 
     private fun executeBeginCombat(
-        state: EcsGameState,
-        action: EcsBeginCombat,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
-        events.add(EcsActionEvent.CombatStarted(action.attackingPlayerId, action.defendingPlayerId))
+        state: GameState,
+        action: BeginCombat,
+        events: MutableList<GameActionEvent>
+    ): GameState {
+        events.add(GameActionEvent.CombatStarted(action.attackingPlayerId, action.defendingPlayerId))
         return state.startCombat(action.defendingPlayerId)
     }
 
     private fun executeDeclareAttacker(
-        state: EcsGameState,
-        action: EcsDeclareAttacker,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
+        state: GameState,
+        action: DeclareAttacker,
+        events: MutableList<GameActionEvent>
+    ): GameState {
         val combat = state.combat ?: throw IllegalStateException("Not in combat")
         val container = state.getEntity(action.creatureId) ?: throw IllegalStateException("Creature not found")
 
@@ -888,7 +888,7 @@ class EcsActionHandler {
 
         val cardComponent = container.get<CardComponent>()
         val cardName = cardComponent?.definition?.name ?: "Unknown"
-        events.add(EcsActionEvent.AttackerDeclared(action.creatureId, cardName))
+        events.add(GameActionEvent.AttackerDeclared(action.creatureId, cardName))
 
         val newCombat = combat.addAttacker(action.creatureId)
 
@@ -904,10 +904,10 @@ class EcsActionHandler {
     }
 
     private fun executeDeclareBlocker(
-        state: EcsGameState,
-        action: EcsDeclareBlocker,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
+        state: GameState,
+        action: DeclareBlocker,
+        events: MutableList<GameActionEvent>
+    ): GameState {
         val combat = state.combat ?: throw IllegalStateException("Not in combat")
         val container = state.getEntity(action.blockerId) ?: throw IllegalStateException("Blocker not found")
 
@@ -916,7 +916,7 @@ class EcsActionHandler {
         }
 
         val cardName = container.get<CardComponent>()?.definition?.name ?: "Unknown"
-        events.add(EcsActionEvent.BlockerDeclared(action.blockerId, action.attackerId, cardName))
+        events.add(GameActionEvent.BlockerDeclared(action.blockerId, action.attackerId, cardName))
 
         val newCombat = combat.addBlocker(action.blockerId, action.attackerId)
 
@@ -937,10 +937,10 @@ class EcsActionHandler {
     }
 
     private fun executeOrderBlockers(
-        state: EcsGameState,
-        action: EcsOrderBlockers,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
+        state: GameState,
+        action: OrderBlockers,
+        events: MutableList<GameActionEvent>
+    ): GameState {
         val combat = state.combat ?: throw IllegalStateException("Not in combat")
 
         // Verify this is the attacking player
@@ -963,7 +963,7 @@ class EcsActionHandler {
             throw IllegalStateException("Ordered blockers don't match actual blockers")
         }
 
-        events.add(EcsActionEvent.BlockersOrdered(action.attackerId, action.orderedBlockerIds))
+        events.add(GameActionEvent.BlockersOrdered(action.attackerId, action.orderedBlockerIds))
 
         // Update the BlockedByComponent with the new order
         return state.updateEntity(action.attackerId) { c ->
@@ -972,23 +972,23 @@ class EcsActionHandler {
     }
 
     private fun executeResolveCombatDamage(
-        state: EcsGameState,
-        action: EcsResolveCombatDamage,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
+        state: GameState,
+        action: ResolveCombatDamage,
+        events: MutableList<GameActionEvent>
+    ): GameState {
         val combat = state.combat ?: throw IllegalStateException("Not in combat")
 
         // Calculate damage based on the step
         val damageStep = when (action.step) {
-            CombatDamageStep.FIRST_STRIKE -> EcsCombatDamageCalculator.DamageStep.FIRST_STRIKE
-            CombatDamageStep.REGULAR -> EcsCombatDamageCalculator.DamageStep.REGULAR
+            CombatDamageStep.FIRST_STRIKE -> CombatDamageCalculator.DamageStep.FIRST_STRIKE
+            CombatDamageStep.REGULAR -> CombatDamageCalculator.DamageStep.REGULAR
         }
 
         val damageResult = when (damageStep) {
-            EcsCombatDamageCalculator.DamageStep.FIRST_STRIKE ->
-                EcsCombatDamageCalculator.calculateFirstStrikeDamage(state)
-            EcsCombatDamageCalculator.DamageStep.REGULAR ->
-                EcsCombatDamageCalculator.calculateRegularDamage(state)
+            CombatDamageCalculator.DamageStep.FIRST_STRIKE ->
+                CombatDamageCalculator.calculateFirstStrikeDamage(state)
+            CombatDamageCalculator.DamageStep.REGULAR ->
+                CombatDamageCalculator.calculateRegularDamage(state)
         }
 
         // Apply prevention effects if any
@@ -1006,12 +1006,12 @@ class EcsActionHandler {
 
         for (event in projectedDamage.finalEvents) {
             when (event) {
-                is EcsCombatDamageCalculator.PendingDamageEvent.ToPlayer -> {
+                is CombatDamageCalculator.PendingDamageEvent.ToPlayer -> {
                     val lifeComponent = newState.getComponent<LifeComponent>(event.targetPlayerId)
                     if (lifeComponent != null) {
                         val oldLife = lifeComponent.life
                         val newLife = oldLife - event.amount
-                        events.add(EcsActionEvent.DamageDealt(
+                        events.add(GameActionEvent.DamageDealt(
                             event.sourceId,
                             event.targetPlayerId,
                             event.amount,
@@ -1022,13 +1022,13 @@ class EcsActionHandler {
                         }
                     }
                 }
-                is EcsCombatDamageCalculator.PendingDamageEvent.ToPlaneswalker -> {
+                is CombatDamageCalculator.PendingDamageEvent.ToPlaneswalker -> {
                     // Remove loyalty counters from planeswalker
                     val counters = newState.getComponent<CountersComponent>(event.targetPlaneswalker)
                     if (counters != null) {
                         val currentLoyalty = counters.counters[CounterType.LOYALTY] ?: 0
                         val newLoyalty = (currentLoyalty - event.amount).coerceAtLeast(0)
-                        events.add(EcsActionEvent.DamageDealt(
+                        events.add(GameActionEvent.DamageDealt(
                             event.sourceId,
                             event.targetPlaneswalker,
                             event.amount,
@@ -1039,11 +1039,11 @@ class EcsActionHandler {
                         }
                     }
                 }
-                is EcsCombatDamageCalculator.PendingDamageEvent.ToCreature -> {
+                is CombatDamageCalculator.PendingDamageEvent.ToCreature -> {
                     val damageComponent = newState.getComponent<DamageComponent>(event.targetCreatureId)
                     val currentDamage = damageComponent?.amount ?: 0
                     val newDamage = currentDamage + event.amount
-                    events.add(EcsActionEvent.DamageDealt(
+                    events.add(GameActionEvent.DamageDealt(
                         event.sourceId,
                         event.targetCreatureId,
                         event.amount,
@@ -1057,8 +1057,8 @@ class EcsActionHandler {
         }
 
         // If this was first strike damage, mark creatures as having dealt first strike damage
-        if (damageStep == EcsCombatDamageCalculator.DamageStep.FIRST_STRIKE) {
-            newState = EcsCombatDamageCalculator.markFirstStrikeDamageDealt(
+        if (damageStep == CombatDamageCalculator.DamageStep.FIRST_STRIKE) {
+            newState = CombatDamageCalculator.markFirstStrikeDamageDealt(
                 newState,
                 damageResult.creaturesDealtDamage
             )
@@ -1068,11 +1068,11 @@ class EcsActionHandler {
     }
 
     private fun executeEndCombat(
-        state: EcsGameState,
-        action: EcsEndCombat,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
-        events.add(EcsActionEvent.CombatEnded(action.playerId))
+        state: GameState,
+        action: EndCombat,
+        events: MutableList<GameActionEvent>
+    ): GameState {
+        events.add(GameActionEvent.CombatEnded(action.playerId))
 
         // Remove combat components from all creatures
         var newState = state
@@ -1092,7 +1092,7 @@ class EcsActionHandler {
     // Game Flow
     // =========================================================================
 
-    private fun executePassPriority(state: EcsGameState, action: EcsPassPriority): EcsGameState {
+    private fun executePassPriority(state: GameState, action: PassPriority): GameState {
         val turnState = state.turnState
 
         // Verify the correct player is passing
@@ -1109,20 +1109,20 @@ class EcsActionHandler {
     }
 
     private fun executeEndGame(
-        state: EcsGameState,
-        action: EcsEndGame,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
-        events.add(EcsActionEvent.GameEnded(action.winnerId))
+        state: GameState,
+        action: EndGame,
+        events: MutableList<GameActionEvent>
+    ): GameState {
+        events.add(GameActionEvent.GameEnded(action.winnerId))
         return state.endGame(action.winnerId)
     }
 
     private fun executePlayerLoses(
-        state: EcsGameState,
-        action: EcsPlayerLoses,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
-        events.add(EcsActionEvent.PlayerLost(action.playerId, action.reason))
+        state: GameState,
+        action: PlayerLoses,
+        events: MutableList<GameActionEvent>
+    ): GameState {
+        events.add(GameActionEvent.PlayerLost(action.playerId, action.reason))
         return state.updateEntity(action.playerId) { c ->
             c.with(LostGameComponent(action.reason))
         }
@@ -1133,10 +1133,10 @@ class EcsActionHandler {
      * and putting all others with the same name into the graveyard.
      */
     private fun executeResolveLegendRule(
-        state: EcsGameState,
-        action: EcsResolveLegendRule,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
+        state: GameState,
+        action: ResolveLegendRule,
+        events: MutableList<GameActionEvent>
+    ): GameState {
         // Find the pending choice
         val pendingChoice = state.pendingLegendRuleChoices.find {
             it.controllerId == action.controllerId && it.legendaryName == action.legendaryName
@@ -1155,7 +1155,7 @@ class EcsActionHandler {
             val cardComp = currentState.getEntity(entityId)?.get<CardComponent>()
             if (cardComp != null && entityId in currentState.getBattlefield()) {
                 val graveyardZone = ZoneId.graveyard(cardComp.ownerId)
-                events.add(EcsActionEvent.PermanentDestroyed(entityId, cardComp.name))
+                events.add(GameActionEvent.PermanentDestroyed(entityId, cardComp.name))
                 currentState = currentState
                     .removeFromZone(entityId, ZoneId.BATTLEFIELD)
                     .addToZone(entityId, graveyardZone)
@@ -1172,49 +1172,49 @@ class EcsActionHandler {
     // Stack Resolution
     // =========================================================================
 
-    private val stackResolver = EcsStackResolver()
+    private val stackResolver = StackResolver()
 
     private fun executeResolveTopOfStack(
-        state: EcsGameState,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
+        state: GameState,
+        events: MutableList<GameActionEvent>
+    ): GameState {
         val result = stackResolver.resolveTopOfStack(state)
 
         return when (result) {
-            is EcsStackResolver.ResolutionResult.Resolved -> {
+            is StackResolver.ResolutionResult.Resolved -> {
                 // Convert stack resolution events to action events
                 for (stackEvent in result.events) {
                     events.addAll(convertStackEvent(stackEvent))
                 }
                 result.state
             }
-            is EcsStackResolver.ResolutionResult.Fizzled -> {
+            is StackResolver.ResolutionResult.Fizzled -> {
                 for (stackEvent in result.events) {
                     events.addAll(convertStackEvent(stackEvent))
                 }
                 result.state
             }
-            is EcsStackResolver.ResolutionResult.EmptyStack -> {
+            is StackResolver.ResolutionResult.EmptyStack -> {
                 // Nothing to resolve
                 state
             }
-            is EcsStackResolver.ResolutionResult.Error -> {
+            is StackResolver.ResolutionResult.Error -> {
                 throw IllegalStateException("Stack resolution error: ${result.message}")
             }
         }
     }
 
     private fun executeCastSpell(
-        state: EcsGameState,
-        action: EcsCastSpell,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
+        state: GameState,
+        action: CastSpell,
+        events: MutableList<GameActionEvent>
+    ): GameState {
         val container = state.getEntity(action.cardId)
             ?: throw IllegalStateException("Card not found: ${action.cardId}")
         val cardComponent = container.get<CardComponent>()
             ?: throw IllegalStateException("CardComponent missing")
 
-        events.add(EcsActionEvent.SpellCast(action.cardId, cardComponent.name, action.casterId))
+        events.add(GameActionEvent.SpellCast(action.cardId, cardComponent.name, action.casterId))
 
         // Pay additional costs first (before moving spell to stack)
         var newState = payAdditionalCosts(state, action.casterId, action.additionalCostPayment, events)
@@ -1243,44 +1243,44 @@ class EcsActionHandler {
      * Pay additional costs (sacrifice, discard, life, etc.) as part of casting a spell.
      */
     private fun payAdditionalCosts(
-        state: EcsGameState,
+        state: GameState,
         playerId: EntityId,
         payment: com.wingedsheep.rulesengine.ability.AdditionalCostPayment,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
+        events: MutableList<GameActionEvent>
+    ): GameState {
         var newState = state
 
         // Sacrifice permanents
         for (permanentId in payment.sacrificedPermanents) {
-            val (resultState, resultEvents) = executeAction(newState, EcsSacrificePermanent(permanentId, playerId))
+            val (resultState, resultEvents) = executeAction(newState, SacrificePermanent(permanentId, playerId))
             newState = resultState
             events.addAll(resultEvents)
         }
 
         // Discard cards
         for (cardId in payment.discardedCards) {
-            val (resultState, resultEvents) = executeAction(newState, EcsDiscardCard(playerId, cardId))
+            val (resultState, resultEvents) = executeAction(newState, DiscardCard(playerId, cardId))
             newState = resultState
             events.addAll(resultEvents)
         }
 
         // Pay life
         if (payment.lifePaid > 0) {
-            val (resultState, resultEvents) = executeAction(newState, EcsLoseLife(playerId, payment.lifePaid))
+            val (resultState, resultEvents) = executeAction(newState, LoseLife(playerId, payment.lifePaid))
             newState = resultState
             events.addAll(resultEvents)
         }
 
         // Exile cards
         for (cardId in payment.exiledCards) {
-            val (resultState, resultEvents) = executeAction(newState, EcsExilePermanent(cardId))
+            val (resultState, resultEvents) = executeAction(newState, ExilePermanent(cardId))
             newState = resultState
             events.addAll(resultEvents)
         }
 
         // Tap permanents
         for (permanentId in payment.tappedPermanents) {
-            val (resultState, resultEvents) = executeAction(newState, EcsTap(permanentId))
+            val (resultState, resultEvents) = executeAction(newState, Tap(permanentId))
             newState = resultState
             events.addAll(resultEvents)
         }
@@ -1292,22 +1292,22 @@ class EcsActionHandler {
      * Convert stack resolution events to action events.
      */
     private fun convertStackEvent(
-        event: EcsStackResolver.StackResolutionEvent
-    ): List<EcsActionEvent> {
+        event: StackResolver.StackResolutionEvent
+    ): List<GameActionEvent> {
         return when (event) {
-            is EcsStackResolver.StackResolutionEvent.SpellResolved ->
-                listOf(EcsActionEvent.SpellResolved(event.entityId, event.name))
-            is EcsStackResolver.StackResolutionEvent.SpellFizzled ->
-                listOf(EcsActionEvent.SpellFizzled(event.entityId, event.name, event.reason))
-            is EcsStackResolver.StackResolutionEvent.PermanentEnteredBattlefield ->
-                listOf(EcsActionEvent.PermanentEnteredBattlefield(event.entityId, event.name, event.controllerId))
-            is EcsStackResolver.StackResolutionEvent.SpellMovedToGraveyard ->
-                listOf(EcsActionEvent.CardMoved(event.entityId, event.name, ZoneId.STACK, ZoneId.graveyard(event.ownerId)))
-            is EcsStackResolver.StackResolutionEvent.AbilityResolved ->
-                listOf(EcsActionEvent.AbilityResolved(event.description, event.sourceId))
-            is EcsStackResolver.StackResolutionEvent.AbilityFizzled ->
-                listOf(EcsActionEvent.AbilityFizzled(event.description, event.sourceId, event.reason))
-            is EcsStackResolver.StackResolutionEvent.EffectEvent ->
+            is StackResolver.StackResolutionEvent.SpellResolved ->
+                listOf(GameActionEvent.SpellResolved(event.entityId, event.name))
+            is StackResolver.StackResolutionEvent.SpellFizzled ->
+                listOf(GameActionEvent.SpellFizzled(event.entityId, event.name, event.reason))
+            is StackResolver.StackResolutionEvent.PermanentEnteredBattlefield ->
+                listOf(GameActionEvent.PermanentEnteredBattlefield(event.entityId, event.name, event.controllerId))
+            is StackResolver.StackResolutionEvent.SpellMovedToGraveyard ->
+                listOf(GameActionEvent.CardMoved(event.entityId, event.name, ZoneId.STACK, ZoneId.graveyard(event.ownerId)))
+            is StackResolver.StackResolutionEvent.AbilityResolved ->
+                listOf(GameActionEvent.AbilityResolved(event.description, event.sourceId))
+            is StackResolver.StackResolutionEvent.AbilityFizzled ->
+                listOf(GameActionEvent.AbilityFizzled(event.description, event.sourceId, event.reason))
+            is StackResolver.StackResolutionEvent.EffectEventWrapper ->
                 emptyList() // Effect events are handled separately
         }
     }
@@ -1317,13 +1317,13 @@ class EcsActionHandler {
     // =========================================================================
 
     private fun executeAttach(
-        state: EcsGameState,
-        action: EcsAttach,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
+        state: GameState,
+        action: Attach,
+        events: MutableList<GameActionEvent>
+    ): GameState {
         val attachmentName = state.getEntity(action.attachmentId)?.get<CardComponent>()?.definition?.name ?: "Unknown"
         val targetName = state.getEntity(action.targetId)?.get<CardComponent>()?.definition?.name ?: "Unknown"
-        events.add(EcsActionEvent.Attached(action.attachmentId, attachmentName, action.targetId, targetName))
+        events.add(GameActionEvent.Attached(action.attachmentId, attachmentName, action.targetId, targetName))
 
         return state.updateEntity(action.attachmentId) { c ->
             c.with(AttachedToComponent(action.targetId))
@@ -1331,12 +1331,12 @@ class EcsActionHandler {
     }
 
     private fun executeDetach(
-        state: EcsGameState,
-        action: EcsDetach,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
+        state: GameState,
+        action: Detach,
+        events: MutableList<GameActionEvent>
+    ): GameState {
         val attachmentName = state.getEntity(action.attachmentId)?.get<CardComponent>()?.definition?.name ?: "Unknown"
-        events.add(EcsActionEvent.Detached(action.attachmentId, attachmentName))
+        events.add(GameActionEvent.Detached(action.attachmentId, attachmentName))
 
         return state.updateEntity(action.attachmentId) { c ->
             c.without<AttachedToComponent>()
@@ -1348,9 +1348,9 @@ class EcsActionHandler {
     // =========================================================================
 
     private fun executeCheckStateBasedActions(
-        state: EcsGameState,
-        events: MutableList<EcsActionEvent>
-    ): EcsGameState {
+        state: GameState,
+        events: MutableList<GameActionEvent>
+    ): GameState {
         var currentState = state
         var actionsPerformed: Boolean
 
@@ -1371,7 +1371,7 @@ class EcsActionHandler {
                 // Creature dies if: toughness is 0 or less, OR damage >= toughness (with toughness > 0)
                 if (toughness <= 0 || damage >= toughness) {
                     val graveyardZone = ZoneId.graveyard(cardComponent.ownerId)
-                    events.add(EcsActionEvent.CreatureDied(entityId, cardComponent.definition.name, cardComponent.ownerId))
+                    events.add(GameActionEvent.CreatureDied(entityId, cardComponent.definition.name, cardComponent.ownerId))
 
                     currentState = currentState
                         .removeFromZone(entityId, ZoneId.BATTLEFIELD)
@@ -1389,7 +1389,7 @@ class EcsActionHandler {
                 val alreadyLost = container.has<LostGameComponent>()
 
                 if (life.isAtZeroOrLess && !alreadyLost) {
-                    events.add(EcsActionEvent.PlayerLost(playerId, "Life total reached 0 or less"))
+                    events.add(GameActionEvent.PlayerLost(playerId, "Life total reached 0 or less"))
                     currentState = currentState.updateEntity(playerId) { c ->
                         c.with(LostGameComponent.zeroLife())
                     }
@@ -1404,7 +1404,7 @@ class EcsActionHandler {
                 val alreadyLost = container.has<LostGameComponent>()
 
                 if (poison.isLethal && !alreadyLost) {
-                    events.add(EcsActionEvent.PlayerLost(playerId, "10 or more poison counters"))
+                    events.add(GameActionEvent.PlayerLost(playerId, "10 or more poison counters"))
                     currentState = currentState.updateEntity(playerId) { c ->
                         c.with(LostGameComponent.poison())
                     }
@@ -1440,17 +1440,17 @@ class EcsActionHandler {
         }
 
         if (activePlayers.size == 1) {
-            events.add(EcsActionEvent.GameEnded(activePlayers.first()))
+            events.add(GameActionEvent.GameEnded(activePlayers.first()))
             currentState = currentState.endGame(activePlayers.first())
         } else if (activePlayers.isEmpty()) {
-            events.add(EcsActionEvent.GameEnded(null))
+            events.add(GameActionEvent.GameEnded(null))
             currentState = currentState.endGame(null)
         }
 
         return currentState
     }
 
-    private fun executeClearDamage(state: EcsGameState, action: EcsClearDamage): EcsGameState {
+    private fun executeClearDamage(state: GameState, action: ClearDamage): GameState {
         if (action.entityId != null) {
             return state.updateEntity(action.entityId) { c -> c.without<DamageComponent>() }
         }
@@ -1475,12 +1475,12 @@ class EcsActionHandler {
      * into their owners' graveyards.
      *
      * This creates pending choices that must be resolved by the player via
-     * the EcsResolveLegendRule action. No permanents are destroyed here.
+     * the ResolveLegendRule action. No permanents are destroyed here.
      */
     private fun checkLegendRule(
-        state: EcsGameState,
-        @Suppress("UNUSED_PARAMETER") events: MutableList<EcsActionEvent>
-    ): Pair<EcsGameState, Boolean> {
+        state: GameState,
+        @Suppress("UNUSED_PARAMETER") events: MutableList<GameActionEvent>
+    ): Pair<GameState, Boolean> {
         var currentState = state
         var choicesCreated = false
 
@@ -1531,9 +1531,9 @@ class EcsActionHandler {
      * into its owner's graveyard.
      */
     private fun checkAuraValidity(
-        state: EcsGameState,
-        events: MutableList<EcsActionEvent>
-    ): Pair<EcsGameState, Boolean> {
+        state: GameState,
+        events: MutableList<GameActionEvent>
+    ): Pair<GameState, Boolean> {
         var currentState = state
         var actionsPerformed = false
 
@@ -1549,7 +1549,7 @@ class EcsActionHandler {
             if (attachedTo == null) {
                 // Aura not attached - goes to graveyard
                 val graveyardZone = ZoneId.graveyard(cardComp.ownerId)
-                events.add(EcsActionEvent.PermanentDestroyed(entityId, cardComp.name))
+                events.add(GameActionEvent.PermanentDestroyed(entityId, cardComp.name))
                 currentState = currentState
                     .removeFromZone(entityId, ZoneId.BATTLEFIELD)
                     .addToZone(entityId, graveyardZone)
@@ -1561,7 +1561,7 @@ class EcsActionHandler {
             val targetExists = attachedTo.targetId in currentState.getBattlefield()
             if (!targetExists) {
                 val graveyardZone = ZoneId.graveyard(cardComp.ownerId)
-                events.add(EcsActionEvent.PermanentDestroyed(entityId, cardComp.name))
+                events.add(GameActionEvent.PermanentDestroyed(entityId, cardComp.name))
                 currentState = currentState
                     .removeFromZone(entityId, ZoneId.BATTLEFIELD)
                     .addToZone(entityId, graveyardZone)
@@ -1578,9 +1578,9 @@ class EcsActionHandler {
      * it ceases to exist.
      */
     private fun checkTokenCessation(
-        state: EcsGameState,
-        @Suppress("UNUSED_PARAMETER") events: MutableList<EcsActionEvent>
-    ): Pair<EcsGameState, Boolean> {
+        state: GameState,
+        @Suppress("UNUSED_PARAMETER") events: MutableList<GameActionEvent>
+    ): Pair<GameState, Boolean> {
         var currentState = state
         var actionsPerformed = false
 
@@ -1609,9 +1609,9 @@ class EcsActionHandler {
      * where N is the smaller of the number of +1/+1 and -1/-1 counters on it.
      */
     private fun checkCounterCancellation(
-        state: EcsGameState,
-        @Suppress("UNUSED_PARAMETER") events: MutableList<EcsActionEvent>
-    ): Pair<EcsGameState, Boolean> {
+        state: GameState,
+        @Suppress("UNUSED_PARAMETER") events: MutableList<GameActionEvent>
+    ): Pair<GameState, Boolean> {
         var currentState = state
         var actionsPerformed = false
 
@@ -1642,55 +1642,55 @@ class EcsActionHandler {
 /**
  * Result of an action execution.
  */
-sealed interface EcsActionResult {
+sealed interface GameActionResult {
     data class Success(
-        val state: EcsGameState,
-        val action: EcsAction,
-        val events: List<EcsActionEvent> = emptyList()
-    ) : EcsActionResult
+        val state: GameState,
+        val action: GameAction,
+        val events: List<GameActionEvent> = emptyList()
+    ) : GameActionResult
 
     data class Failure(
-        val state: EcsGameState,
-        val action: EcsAction,
+        val state: GameState,
+        val action: GameAction,
         val reason: String
-    ) : EcsActionResult
+    ) : GameActionResult
 }
 
 /**
  * Events generated during action execution.
  */
-sealed interface EcsActionEvent {
-    data class LifeChanged(val playerId: EntityId, val oldLife: Int, val newLife: Int) : EcsActionEvent
-    data class DamageDealtToPlayer(val sourceId: EntityId?, val targetId: EntityId, val amount: Int) : EcsActionEvent
-    data class DamageDealtToCreature(val sourceId: EntityId?, val targetId: EntityId, val amount: Int) : EcsActionEvent
-    data class ManaAdded(val playerId: EntityId, val color: String, val amount: Int) : EcsActionEvent
-    data class CardDrawn(val playerId: EntityId, val cardId: EntityId, val cardName: String) : EcsActionEvent
-    data class DrawFailed(val playerId: EntityId) : EcsActionEvent
-    data class CardDiscarded(val playerId: EntityId, val cardId: EntityId, val cardName: String) : EcsActionEvent
-    data class CardMoved(val entityId: EntityId, val cardName: String, val fromZone: ZoneId, val toZone: ZoneId) : EcsActionEvent
-    data class PermanentDestroyed(val entityId: EntityId, val name: String) : EcsActionEvent
-    data class CreatureDied(val entityId: EntityId, val name: String, val ownerId: EntityId) : EcsActionEvent
-    data class CardExiled(val entityId: EntityId, val name: String) : EcsActionEvent
-    data class CardReturnedToHand(val entityId: EntityId, val name: String) : EcsActionEvent
-    data class PermanentTapped(val entityId: EntityId, val name: String) : EcsActionEvent
-    data class PermanentUntapped(val entityId: EntityId, val name: String) : EcsActionEvent
-    data class LandPlayed(val playerId: EntityId, val cardId: EntityId, val name: String) : EcsActionEvent
-    data class CombatStarted(val attackingPlayerId: EntityId, val defendingPlayerId: EntityId) : EcsActionEvent
-    data class AttackerDeclared(val creatureId: EntityId, val name: String) : EcsActionEvent
-    data class BlockerDeclared(val blockerId: EntityId, val attackerId: EntityId, val name: String) : EcsActionEvent
-    data class BlockersOrdered(val attackerId: EntityId, val orderedBlockerIds: List<EntityId>) : EcsActionEvent
-    data class DamageDealt(val sourceId: EntityId, val targetId: EntityId, val amount: Int, val isCombatDamage: Boolean) : EcsActionEvent
-    data class CombatEnded(val playerId: EntityId) : EcsActionEvent
-    data class GameEnded(val winnerId: EntityId?) : EcsActionEvent
-    data class PlayerLost(val playerId: EntityId, val reason: String) : EcsActionEvent
-    data class Attached(val attachmentId: EntityId, val attachmentName: String, val targetId: EntityId, val targetName: String) : EcsActionEvent
-    data class Detached(val attachmentId: EntityId, val name: String) : EcsActionEvent
+sealed interface GameActionEvent {
+    data class LifeChanged(val playerId: EntityId, val oldLife: Int, val newLife: Int) : GameActionEvent
+    data class DamageDealtToPlayer(val sourceId: EntityId?, val targetId: EntityId, val amount: Int) : GameActionEvent
+    data class DamageDealtToCreature(val sourceId: EntityId?, val targetId: EntityId, val amount: Int) : GameActionEvent
+    data class ManaAdded(val playerId: EntityId, val color: String, val amount: Int) : GameActionEvent
+    data class CardDrawn(val playerId: EntityId, val cardId: EntityId, val cardName: String) : GameActionEvent
+    data class DrawFailed(val playerId: EntityId) : GameActionEvent
+    data class CardDiscarded(val playerId: EntityId, val cardId: EntityId, val cardName: String) : GameActionEvent
+    data class CardMoved(val entityId: EntityId, val cardName: String, val fromZone: ZoneId, val toZone: ZoneId) : GameActionEvent
+    data class PermanentDestroyed(val entityId: EntityId, val name: String) : GameActionEvent
+    data class CreatureDied(val entityId: EntityId, val name: String, val ownerId: EntityId) : GameActionEvent
+    data class CardExiled(val entityId: EntityId, val name: String) : GameActionEvent
+    data class CardReturnedToHand(val entityId: EntityId, val name: String) : GameActionEvent
+    data class PermanentTapped(val entityId: EntityId, val name: String) : GameActionEvent
+    data class PermanentUntapped(val entityId: EntityId, val name: String) : GameActionEvent
+    data class LandPlayed(val playerId: EntityId, val cardId: EntityId, val name: String) : GameActionEvent
+    data class CombatStarted(val attackingPlayerId: EntityId, val defendingPlayerId: EntityId) : GameActionEvent
+    data class AttackerDeclared(val creatureId: EntityId, val name: String) : GameActionEvent
+    data class BlockerDeclared(val blockerId: EntityId, val attackerId: EntityId, val name: String) : GameActionEvent
+    data class BlockersOrdered(val attackerId: EntityId, val orderedBlockerIds: List<EntityId>) : GameActionEvent
+    data class DamageDealt(val sourceId: EntityId, val targetId: EntityId, val amount: Int, val isCombatDamage: Boolean) : GameActionEvent
+    data class CombatEnded(val playerId: EntityId) : GameActionEvent
+    data class GameEnded(val winnerId: EntityId?) : GameActionEvent
+    data class PlayerLost(val playerId: EntityId, val reason: String) : GameActionEvent
+    data class Attached(val attachmentId: EntityId, val attachmentName: String, val targetId: EntityId, val targetName: String) : GameActionEvent
+    data class Detached(val attachmentId: EntityId, val name: String) : GameActionEvent
 
     // Stack resolution events
-    data class SpellCast(val entityId: EntityId, val name: String, val casterId: EntityId) : EcsActionEvent
-    data class SpellResolved(val entityId: EntityId, val name: String) : EcsActionEvent
-    data class SpellFizzled(val entityId: EntityId, val name: String, val reason: String) : EcsActionEvent
-    data class PermanentEnteredBattlefield(val entityId: EntityId, val name: String, val controllerId: EntityId) : EcsActionEvent
-    data class AbilityResolved(val description: String, val sourceId: EntityId) : EcsActionEvent
-    data class AbilityFizzled(val description: String, val sourceId: EntityId, val reason: String) : EcsActionEvent
+    data class SpellCast(val entityId: EntityId, val name: String, val casterId: EntityId) : GameActionEvent
+    data class SpellResolved(val entityId: EntityId, val name: String) : GameActionEvent
+    data class SpellFizzled(val entityId: EntityId, val name: String, val reason: String) : GameActionEvent
+    data class PermanentEnteredBattlefield(val entityId: EntityId, val name: String, val controllerId: EntityId) : GameActionEvent
+    data class AbilityResolved(val description: String, val sourceId: EntityId) : GameActionEvent
+    data class AbilityFizzled(val description: String, val sourceId: EntityId, val reason: String) : GameActionEvent
 }

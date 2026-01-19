@@ -18,7 +18,7 @@ class PriorityStateMachineTest : FunSpec({
     val player1Id = EntityId.of("player1")
     val player2Id = EntityId.of("player2")
 
-    fun newGame(): EcsGameState = EcsGameState.newGame(
+    fun newGame(): GameState = GameState.newGame(
         listOf(
             player1Id to "Alice",
             player2Id to "Bob"
@@ -43,10 +43,10 @@ class PriorityStateMachineTest : FunSpec({
             val baseState = newGame()
             val state = baseState.copy(turnState = baseState.turnState.advanceToStep(Step.PRECOMBAT_MAIN))
 
-            val result = EcsGameEngine.executeAction(state, EcsPassPriority(player1Id))
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
+            val result = GameEngine.executeAction(state, PassPriority(player1Id))
+            result.shouldBeInstanceOf<GameActionResult.Success>()
 
-            val newState = (result as EcsActionResult.Success).state
+            val newState = (result as GameActionResult.Success).state
             newState.turnState.consecutivePasses shouldBe 1
         }
 
@@ -55,14 +55,14 @@ class PriorityStateMachineTest : FunSpec({
             state = state.copy(turnState = state.turnState.advanceToStep(Step.PRECOMBAT_MAIN))
 
             // Player 1 passes
-            val result1 = EcsGameEngine.executeAction(state, EcsPassPriority(player1Id))
-            state = (result1 as EcsActionResult.Success).state
+            val result1 = GameEngine.executeAction(state, PassPriority(player1Id))
+            state = (result1 as GameActionResult.Success).state
             state.turnState.consecutivePasses shouldBe 1
             state.turnState.priorityPlayer shouldBe player2Id
 
             // Player 2 passes
-            val result2 = EcsGameEngine.executeAction(state, EcsPassPriority(player2Id))
-            state = (result2 as EcsActionResult.Success).state
+            val result2 = GameEngine.executeAction(state, PassPriority(player2Id))
+            state = (result2 as GameActionResult.Success).state
             state.turnState.consecutivePasses shouldBe 2
         }
 
@@ -127,10 +127,10 @@ class PriorityStateMachineTest : FunSpec({
             )
 
             // Execute a player action (e.g., gain life)
-            val result = EcsGameEngine.executePlayerAction(state, EcsGainLife(player1Id, 5))
-            result.shouldBeInstanceOf<EcsActionResult.Success>()
+            val result = GameEngine.executePlayerAction(state, GainLife(player1Id, 5))
+            result.shouldBeInstanceOf<GameActionResult.Success>()
 
-            val newState = (result as EcsActionResult.Success).state
+            val newState = (result as GameActionResult.Success).state
             newState.turnState.consecutivePasses shouldBe 0
         }
     }
@@ -144,7 +144,7 @@ class PriorityStateMachineTest : FunSpec({
                     .copy(consecutivePasses = 2)
             )
 
-            val resolved = EcsGameEngine.resolvePassedPriority(state)
+            val resolved = GameEngine.resolvePassedPriority(state)
 
             resolved.turnState.step shouldBe Step.DRAW
             resolved.turnState.consecutivePasses shouldBe 0
@@ -169,7 +169,7 @@ class PriorityStateMachineTest : FunSpec({
 
             stateWithPasses.getStack().size shouldBe 1
 
-            val resolved = EcsGameEngine.resolvePassedPriority(stateWithPasses)
+            val resolved = GameEngine.resolvePassedPriority(stateWithPasses)
 
             // Stack should be empty (resolved to battlefield for permanent)
             resolved.getStack().isEmpty().shouldBeTrue()
@@ -183,7 +183,7 @@ class PriorityStateMachineTest : FunSpec({
             val baseState = newGame()
             val state = baseState.copy(turnState = baseState.turnState.advanceToStep(Step.PRECOMBAT_MAIN))
 
-            val result = EcsGameEngine.processPriority(state)
+            val result = GameEngine.processPriority(state)
             result.shouldBeInstanceOf<PriorityResult.PriorityGranted>()
 
             val granted = result as PriorityResult.PriorityGranted
@@ -194,7 +194,7 @@ class PriorityStateMachineTest : FunSpec({
             val state = newGame()
             val gameOver = state.endGame(player1Id)
 
-            val result = EcsGameEngine.processPriority(gameOver)
+            val result = GameEngine.processPriority(gameOver)
             result.shouldBeInstanceOf<PriorityResult.GameOver>()
 
             val over = result as PriorityResult.GameOver
@@ -209,7 +209,7 @@ class PriorityStateMachineTest : FunSpec({
                 c.with(LifeComponent(0))
             }
 
-            val result = EcsGameEngine.processPriority(state)
+            val result = GameEngine.processPriority(state)
             result.shouldBeInstanceOf<PriorityResult.GameOver>()
 
             val over = result as PriorityResult.GameOver
@@ -224,17 +224,17 @@ class PriorityStateMachineTest : FunSpec({
             val initialStep = state.turnState.step
 
             // Player 1 passes
-            val result1 = EcsGameEngine.executeAction(state, EcsPassPriority(player1Id))
-            state = (result1 as EcsActionResult.Success).state
+            val result1 = GameEngine.executeAction(state, PassPriority(player1Id))
+            state = (result1 as GameActionResult.Success).state
 
             // Player 2 passes
-            val result2 = EcsGameEngine.executeAction(state, EcsPassPriority(player2Id))
-            state = (result2 as EcsActionResult.Success).state
+            val result2 = GameEngine.executeAction(state, PassPriority(player2Id))
+            state = (result2 as GameActionResult.Success).state
 
             // Both have passed, so resolvePassedPriority should advance
             state.turnState.allPlayersPassed().shouldBeTrue()
 
-            val resolved = EcsGameEngine.resolvePassedPriority(state)
+            val resolved = GameEngine.resolvePassedPriority(state)
             resolved.turnState.step shouldBe Step.DRAW
         }
     }

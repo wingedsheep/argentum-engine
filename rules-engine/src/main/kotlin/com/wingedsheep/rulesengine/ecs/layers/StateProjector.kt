@@ -2,7 +2,7 @@ package com.wingedsheep.rulesengine.ecs.layers
 
 import com.wingedsheep.rulesengine.core.CardType
 import com.wingedsheep.rulesengine.ecs.ComponentContainer
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.components.*
@@ -11,7 +11,7 @@ import com.wingedsheep.rulesengine.ecs.components.*
  * Projects the game state by applying all modifiers in layer order.
  *
  * The StateProjector implements MTG's continuous effects system (Rule 613).
- * It takes the base EcsGameState and produces GameObjectViews that represent
+ * It takes the base GameState and produces GameObjectViews that represent
  * the current "true" state of each entity after all continuous effects are applied.
  *
  * Key principles:
@@ -29,7 +29,7 @@ import com.wingedsheep.rulesengine.ecs.components.*
  * ```
  */
 class StateProjector(
-    private val state: EcsGameState,
+    private val state: GameState,
     private val modifiers: List<Modifier> = emptyList()
 ) {
     // Cache for projected views
@@ -379,7 +379,7 @@ class StateProjector(
          * Create a projector with modifiers collected from the game state.
          * This collects modifiers from all static abilities on the battlefield.
          */
-        fun forState(state: EcsGameState, modifierProvider: ModifierProvider? = null): StateProjector {
+        fun forState(state: GameState, modifierProvider: ModifierProvider? = null): StateProjector {
             val modifiers = modifierProvider?.getModifiers(state) ?: emptyList()
             return StateProjector(state, modifiers)
         }

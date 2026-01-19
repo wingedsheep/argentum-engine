@@ -1,7 +1,7 @@
 package com.wingedsheep.rulesengine.ecs.script.handler
 
 import com.wingedsheep.rulesengine.ability.Effect
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.script.ExecutionContext
 import com.wingedsheep.rulesengine.ecs.script.ExecutionResult
 import kotlin.reflect.KClass
@@ -28,7 +28,7 @@ class EffectHandlerRegistry private constructor(
      * @throws IllegalStateException if no handler is registered for the effect type
      */
     fun execute(
-        state: EcsGameState,
+        state: GameState,
         effect: Effect,
         context: ExecutionContext
     ): ExecutionResult {

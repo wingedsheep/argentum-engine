@@ -1,7 +1,7 @@
 package com.wingedsheep.rulesengine.ecs.script
 
 import com.wingedsheep.rulesengine.ability.*
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.components.AttachedToComponent
@@ -30,7 +30,7 @@ class ScriptModifierProvider(
     private val registry: AbilityRegistry
 ) : ModifierProvider {
 
-    override fun getModifiers(state: EcsGameState): List<Modifier> {
+    override fun getModifiers(state: GameState): List<Modifier> {
         val modifiers = mutableListOf<Modifier>()
 
         // Iterate over all permanents on the battlefield
@@ -62,7 +62,7 @@ class ScriptModifierProvider(
         ability: StaticAbility,
         sourceId: EntityId,
         controllerId: EntityId,
-        state: EcsGameState
+        state: GameState
     ): List<Modifier> {
         return when (ability) {
             is GrantKeyword -> convertGrantKeyword(ability, sourceId, controllerId, state)
@@ -79,7 +79,7 @@ class ScriptModifierProvider(
         ability: GrantKeyword,
         sourceId: EntityId,
         controllerId: EntityId,
-        state: EcsGameState
+        state: GameState
     ): List<Modifier> {
         val filter = resolveStaticTarget(ability.target, sourceId, state)
             ?: return emptyList()
@@ -102,7 +102,7 @@ class ScriptModifierProvider(
         ability: ModifyStats,
         sourceId: EntityId,
         controllerId: EntityId,
-        state: EcsGameState
+        state: GameState
     ): List<Modifier> {
         val filter = resolveStaticTarget(ability.target, sourceId, state)
             ?: return emptyList()
@@ -249,7 +249,7 @@ class ScriptModifierProvider(
         ability: CantBlock,
         sourceId: EntityId,
         controllerId: EntityId,
-        state: EcsGameState
+        state: GameState
     ): List<Modifier> {
         val filter = resolveStaticTarget(ability.target, sourceId, state)
             ?: return emptyList()
@@ -271,7 +271,7 @@ class ScriptModifierProvider(
     private fun resolveStaticTarget(
         target: StaticTarget,
         sourceId: EntityId,
-        state: EcsGameState
+        state: GameState
     ): ModifierFilter? {
         return when (target) {
             is StaticTarget.AttachedCreature -> {

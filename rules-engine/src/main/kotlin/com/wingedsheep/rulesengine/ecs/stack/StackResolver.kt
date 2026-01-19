@@ -2,14 +2,14 @@ package com.wingedsheep.rulesengine.ecs.stack
 
 import com.wingedsheep.rulesengine.ability.CardScriptRepository
 import com.wingedsheep.rulesengine.ecs.ComponentContainer
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.components.*
-import com.wingedsheep.rulesengine.ecs.event.EcsChosenTarget
-import com.wingedsheep.rulesengine.ecs.script.EcsEffectExecutor
-import com.wingedsheep.rulesengine.ecs.script.EcsEvent
-import com.wingedsheep.rulesengine.ecs.script.EcsTarget
+import com.wingedsheep.rulesengine.ecs.event.ChosenTarget
+import com.wingedsheep.rulesengine.ecs.script.EffectExecutor
+import com.wingedsheep.rulesengine.ecs.script.EffectEvent
+import com.wingedsheep.rulesengine.ecs.script.ResolvedTarget
 import com.wingedsheep.rulesengine.ecs.script.ExecutionContext
 
 /**
@@ -24,8 +24,8 @@ import com.wingedsheep.rulesengine.ecs.script.ExecutionContext
  * Also handles target validation on resolution - if all targets are illegal,
  * the spell or ability "fizzles" (goes to graveyard without effect).
  */
-class EcsStackResolver(
-    private val effectExecutor: EcsEffectExecutor = EcsEffectExecutor(),
+class StackResolver(
+    private val effectExecutor: EffectExecutor = EffectExecutor(),
     private val scriptRepository: CardScriptRepository? = null
 ) {
 
@@ -38,7 +38,7 @@ class EcsStackResolver(
          * The item resolved successfully.
          */
         data class Resolved(
-            val state: EcsGameState,
+            val state: GameState,
             val events: List<StackResolutionEvent>
         ) : ResolutionResult
 
@@ -46,7 +46,7 @@ class EcsStackResolver(
          * The spell/ability fizzled because all targets were invalid.
          */
         data class Fizzled(
-            val state: EcsGameState,
+            val state: GameState,
             val reason: String,
             val events: List<StackResolutionEvent>
         ) : ResolutionResult
@@ -72,7 +72,7 @@ class EcsStackResolver(
         data class SpellMovedToGraveyard(val entityId: EntityId, val name: String, val ownerId: EntityId) : StackResolutionEvent
         data class AbilityResolved(val description: String, val sourceId: EntityId) : StackResolutionEvent
         data class AbilityFizzled(val description: String, val sourceId: EntityId, val reason: String) : StackResolutionEvent
-        data class EffectEvent(val event: EcsEvent) : StackResolutionEvent
+        data class EffectEventWrapper(val event: com.wingedsheep.rulesengine.ecs.script.EffectEvent) : StackResolutionEvent
     }
 
     // ==========================================================================
@@ -84,7 +84,7 @@ class EcsStackResolver(
      *
      * This is the main entry point for stack resolution.
      */
-    fun resolveTopOfStack(state: EcsGameState): ResolutionResult {
+    fun resolveTopOfStack(state: GameState): ResolutionResult {
         val topOfStack = state.getTopOfStack()
             ?: return ResolutionResult.EmptyStack
 
@@ -108,7 +108,7 @@ class EcsStackResolver(
      * Resolve a spell on the stack.
      */
     private fun resolveSpell(
-        state: EcsGameState,
+        state: GameState,
         entityId: EntityId,
         container: ComponentContainer
     ): ResolutionResult {
@@ -128,7 +128,7 @@ class EcsStackResolver(
             }
         }
 
-        // Remove from stack first (popFromStack returns Pair<EntityId?, EcsGameState>)
+        // Remove from stack first (popFromStack returns Pair<EntityId?, GameState>)
         val (_, stateAfterPop) = state.popFromStack()
         var newState = stateAfterPop
 
@@ -162,12 +162,12 @@ class EcsStackResolver(
      * Resolve a permanent spell by moving it to the battlefield.
      */
     private fun resolvePermanentSpell(
-        state: EcsGameState,
+        state: GameState,
         entityId: EntityId,
         container: ComponentContainer,
         spellComponent: SpellOnStackComponent,
         cardComponent: CardComponent
-    ): EcsGameState {
+    ): GameState {
         val controllerId = spellComponent.casterId
 
         // Remove the SpellOnStackComponent and add permanent components
@@ -185,9 +185,9 @@ class EcsStackResolver(
         if (cardComponent.isAura && spellComponent.targets.isNotEmpty()) {
             val target = spellComponent.targets.first()
             val targetId = when (target) {
-                is EcsChosenTarget.Permanent -> target.entityId
-                is EcsChosenTarget.Player -> target.playerId
-                is EcsChosenTarget.Card -> target.cardId
+                is ChosenTarget.Permanent -> target.entityId
+                is ChosenTarget.Player -> target.playerId
+                is ChosenTarget.Card -> target.cardId
             }
             newContainer = newContainer.with(AttachedToComponent(targetId))
         }
@@ -202,11 +202,11 @@ class EcsStackResolver(
      * Resolve a non-permanent spell by executing its effects.
      */
     private fun resolveNonPermanentSpell(
-        state: EcsGameState,
+        state: GameState,
         entityId: EntityId,
         spellComponent: SpellOnStackComponent,
         cardComponent: CardComponent
-    ): Pair<EcsGameState, List<StackResolutionEvent>> {
+    ): Pair<GameState, List<StackResolutionEvent>> {
         val events = mutableListOf<StackResolutionEvent>()
 
         var newState = state
@@ -219,12 +219,12 @@ class EcsStackResolver(
             val context = ExecutionContext(
                 controllerId = spellComponent.casterId,
                 sourceId = entityId,
-                targets = spellComponent.targets.map { chosenToEcsTarget(it) }
+                targets = spellComponent.targets.map { chosenToResolvedTarget(it) }
             )
 
             val result = effectExecutor.execute(newState, spellEffect.effect, context)
             newState = result.state
-            events.addAll(result.events.map { StackResolutionEvent.EffectEvent(it) })
+            events.addAll(result.events.map { StackResolutionEvent.EffectEventWrapper(it) })
         }
 
         // Move to graveyard
@@ -246,7 +246,7 @@ class EcsStackResolver(
      * Fizzle a spell (all targets became invalid).
      */
     private fun fizzleSpell(
-        state: EcsGameState,
+        state: GameState,
         entityId: EntityId,
         cardComponent: CardComponent,
         reason: String
@@ -282,7 +282,7 @@ class EcsStackResolver(
      * Resolve a triggered ability on the stack.
      */
     private fun resolveTriggeredAbility(
-        state: EcsGameState,
+        state: GameState,
         entityId: EntityId,
         container: ComponentContainer
     ): ResolutionResult {
@@ -308,13 +308,13 @@ class EcsStackResolver(
         val context = ExecutionContext(
             controllerId = triggerComponent.controllerId,
             sourceId = triggerComponent.sourceId,
-            targets = triggerComponent.targets.map { chosenToEcsTarget(it) }
+            targets = triggerComponent.targets.map { chosenToResolvedTarget(it) }
         )
 
         val ability = triggerComponent.ability
         val result = effectExecutor.execute(newState, ability.effect, context)
         newState = result.state
-        events.addAll(result.events.map { StackResolutionEvent.EffectEvent(it) })
+        events.addAll(result.events.map { StackResolutionEvent.EffectEventWrapper(it) })
         events.add(StackResolutionEvent.AbilityResolved(triggerComponent.description, triggerComponent.sourceId))
 
         // Remove the triggered ability entity (it only exists on the stack)
@@ -327,7 +327,7 @@ class EcsStackResolver(
      * Fizzle a triggered ability.
      */
     private fun fizzleTriggeredAbility(
-        state: EcsGameState,
+        state: GameState,
         entityId: EntityId,
         triggerComponent: TriggeredAbilityOnStackComponent,
         reason: String
@@ -354,7 +354,7 @@ class EcsStackResolver(
      * Resolve an activated ability on the stack.
      */
     private fun resolveActivatedAbility(
-        state: EcsGameState,
+        state: GameState,
         entityId: EntityId,
         container: ComponentContainer
     ): ResolutionResult {
@@ -380,12 +380,12 @@ class EcsStackResolver(
         val context = ExecutionContext(
             controllerId = abilityComponent.controllerId,
             sourceId = abilityComponent.sourceId,
-            targets = abilityComponent.targets.map { chosenToEcsTarget(it) }
+            targets = abilityComponent.targets.map { chosenToResolvedTarget(it) }
         )
 
         val result = effectExecutor.execute(newState, abilityComponent.effect, context)
         newState = result.state
-        events.addAll(result.events.map { StackResolutionEvent.EffectEvent(it) })
+        events.addAll(result.events.map { StackResolutionEvent.EffectEventWrapper(it) })
         events.add(StackResolutionEvent.AbilityResolved(abilityComponent.sourceName, abilityComponent.sourceId))
 
         // Remove the activated ability entity
@@ -398,7 +398,7 @@ class EcsStackResolver(
      * Fizzle an activated ability.
      */
     private fun fizzleActivatedAbility(
-        state: EcsGameState,
+        state: GameState,
         entityId: EntityId,
         abilityComponent: ActivatedAbilityOnStackComponent,
         reason: String
@@ -427,23 +427,23 @@ class EcsStackResolver(
      * - For cards: The card is still in the expected zone
      */
     private fun validateTargets(
-        state: EcsGameState,
-        targets: List<EcsChosenTarget>
-    ): List<EcsChosenTarget> {
+        state: GameState,
+        targets: List<ChosenTarget>
+    ): List<ChosenTarget> {
         return targets.filter { target ->
             when (target) {
-                is EcsChosenTarget.Player -> {
+                is ChosenTarget.Player -> {
                     // Player target is valid if they haven't lost
                     val container = state.getEntity(target.playerId)
                     container != null &&
                             container.has<PlayerComponent>() &&
                             !container.has<LostGameComponent>()
                 }
-                is EcsChosenTarget.Permanent -> {
+                is ChosenTarget.Permanent -> {
                     // Permanent target is valid if still on battlefield
                     target.entityId in state.getBattlefield()
                 }
-                is EcsChosenTarget.Card -> {
+                is ChosenTarget.Card -> {
                     // Card target is valid if still in the specified zone
                     target.cardId in state.getZone(target.zoneId)
                 }
@@ -456,13 +456,13 @@ class EcsStackResolver(
     // ==========================================================================
 
     /**
-     * Convert EcsChosenTarget to EcsTarget for effect execution.
+     * Convert ChosenTarget to ResolvedTarget for effect execution.
      */
-    private fun chosenToEcsTarget(chosen: EcsChosenTarget): EcsTarget {
+    private fun chosenToResolvedTarget(chosen: ChosenTarget): ResolvedTarget {
         return when (chosen) {
-            is EcsChosenTarget.Player -> EcsTarget.Player(chosen.playerId)
-            is EcsChosenTarget.Permanent -> EcsTarget.Permanent(chosen.entityId)
-            is EcsChosenTarget.Card -> EcsTarget.Permanent(chosen.cardId) // Treat cards as permanents for now
+            is ChosenTarget.Player -> ResolvedTarget.Player(chosen.playerId)
+            is ChosenTarget.Permanent -> ResolvedTarget.Permanent(chosen.entityId)
+            is ChosenTarget.Card -> ResolvedTarget.Permanent(chosen.cardId) // Treat cards as permanents for now
         }
     }
 }

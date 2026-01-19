@@ -1,6 +1,6 @@
 package com.wingedsheep.rulesengine.ecs.layers
 
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameState
 
 /**
  * Interface for providing modifiers from various sources.
@@ -10,7 +10,7 @@ interface ModifierProvider {
     /**
      * Get all active modifiers for the current game state.
      */
-    fun getModifiers(state: EcsGameState): List<Modifier>
+    fun getModifiers(state: GameState): List<Modifier>
 }
 
 /**
@@ -18,5 +18,5 @@ interface ModifierProvider {
  * Useful for testing or simple scenarios.
  */
 class StaticModifierProvider(private val modifiers: List<Modifier>) : ModifierProvider {
-    override fun getModifiers(state: EcsGameState): List<Modifier> = modifiers
+    override fun getModifiers(state: GameState): List<Modifier> = modifiers
 }

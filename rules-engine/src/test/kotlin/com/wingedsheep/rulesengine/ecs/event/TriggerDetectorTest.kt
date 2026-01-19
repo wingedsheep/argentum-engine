@@ -4,7 +4,7 @@ import com.wingedsheep.rulesengine.ability.*
 import com.wingedsheep.rulesengine.card.CardDefinition
 import com.wingedsheep.rulesengine.core.ManaCost
 import com.wingedsheep.rulesengine.core.Subtype
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.components.CardComponent
@@ -15,7 +15,7 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 
-class EcsTriggerDetectorTest : FunSpec({
+class TriggerDetectorTest : FunSpec({
 
     val player1Id = EntityId.of("player1")
     val player2Id = EntityId.of("player2")
@@ -61,11 +61,11 @@ class EcsTriggerDetectorTest : FunSpec({
         toughness = 2
     )
 
-    fun newGame(): EcsGameState = EcsGameState.newGame(
+    fun newGame(): GameState = GameState.newGame(
         listOf(player1Id to "Alice", player2Id to "Bob")
     )
 
-    fun EcsGameState.addCreature(def: CardDefinition, controllerId: EntityId): Pair<EntityId, EcsGameState> {
+    fun GameState.addCreature(def: CardDefinition, controllerId: EntityId): Pair<EntityId, GameState> {
         val (entityId, state1) = createEntity(
             EntityId.generate(),
             CardComponent(def, controllerId),
@@ -116,7 +116,7 @@ class EcsTriggerDetectorTest : FunSpec({
         return registry
     }
 
-    val detector = EcsTriggerDetector()
+    val detector = TriggerDetector()
     val registry = createRegistry()
 
     context("ETB trigger detection") {
@@ -124,7 +124,7 @@ class EcsTriggerDetectorTest : FunSpec({
         test("detects self ETB trigger") {
             val (creatureId, state) = newGame().addCreature(elvishVisionary, player1Id)
 
-            val event = EcsGameEvent.EnteredBattlefield(
+            val event = GameEvent.EnteredBattlefield(
                 entityId = creatureId,
                 cardName = "Elvish Visionary",
                 controllerId = player1Id,
@@ -142,7 +142,7 @@ class EcsTriggerDetectorTest : FunSpec({
             val (_, state1) = newGame().addCreature(elvishVisionary, player1Id)
             val (otherId, state) = state1.addCreature(basicBear, player2Id)
 
-            val event = EcsGameEvent.EnteredBattlefield(
+            val event = GameEvent.EnteredBattlefield(
                 entityId = otherId,
                 cardName = "Grizzly Bears",
                 controllerId = player2Id,
@@ -161,7 +161,7 @@ class EcsTriggerDetectorTest : FunSpec({
             val (_, state1) = newGame().addCreature(bloodArtist, player1Id)
             val (bearId, state) = state1.addCreature(basicBear, player2Id)
 
-            val event = EcsGameEvent.CreatureDied(
+            val event = GameEvent.CreatureDied(
                 entityId = bearId,
                 cardName = "Grizzly Bears",
                 ownerId = player2Id
@@ -177,7 +177,7 @@ class EcsTriggerDetectorTest : FunSpec({
             val (bloodArtistId, state) = newGame().addCreature(bloodArtist, player1Id)
 
             // Blood Artist itself dies
-            val event = EcsGameEvent.CreatureDied(
+            val event = GameEvent.CreatureDied(
                 entityId = bloodArtistId,
                 cardName = "Blood Artist",
                 ownerId = player1Id
@@ -195,7 +195,7 @@ class EcsTriggerDetectorTest : FunSpec({
         test("detects controller's upkeep trigger") {
             val (_, state) = newGame().addCreature(darkConfidant, player1Id)
 
-            val event = EcsGameEvent.UpkeepBegan(activePlayerId = player1Id)
+            val event = GameEvent.UpkeepBegan(activePlayerId = player1Id)
 
             val triggers = detector.detectTriggers(state, listOf(event), registry)
 
@@ -206,7 +206,7 @@ class EcsTriggerDetectorTest : FunSpec({
         test("does not trigger on opponent's upkeep with controllerOnly") {
             val (_, state) = newGame().addCreature(darkConfidant, player1Id)
 
-            val event = EcsGameEvent.UpkeepBegan(activePlayerId = player2Id)
+            val event = GameEvent.UpkeepBegan(activePlayerId = player2Id)
 
             val triggers = detector.detectTriggers(state, listOf(event), registry)
 
@@ -219,7 +219,7 @@ class EcsTriggerDetectorTest : FunSpec({
         test("detects self attack trigger") {
             val (creatureId, state) = newGame().addCreature(heroOfBladehold, player1Id)
 
-            val event = EcsGameEvent.AttackerDeclared(
+            val event = GameEvent.AttackerDeclared(
                 creatureId = creatureId,
                 cardName = "Hero of Bladehold",
                 attackingPlayerId = player1Id,
@@ -236,7 +236,7 @@ class EcsTriggerDetectorTest : FunSpec({
             val (_, state1) = newGame().addCreature(heroOfBladehold, player1Id)
             val (bearId, state) = state1.addCreature(basicBear, player1Id)
 
-            val event = EcsGameEvent.AttackerDeclared(
+            val event = GameEvent.AttackerDeclared(
                 creatureId = bearId,
                 cardName = "Grizzly Bears",
                 attackingPlayerId = player1Id,
@@ -273,7 +273,7 @@ class EcsTriggerDetectorTest : FunSpec({
                 turnState = state2.turnState.copy(activePlayer = player1Id)
             )
 
-            val event = EcsGameEvent.UpkeepBegan(activePlayerId = player1Id)
+            val event = GameEvent.UpkeepBegan(activePlayerId = player1Id)
 
             // Only player1's trigger should fire (controllerOnly = true)
             val triggers = detector.detectTriggers(state, listOf(event), registry)
@@ -290,13 +290,13 @@ class EcsTriggerDetectorTest : FunSpec({
             val (creature2Id, state) = state1.addCreature(elvishVisionary, player2Id)
 
             val events = listOf(
-                EcsGameEvent.EnteredBattlefield(
+                GameEvent.EnteredBattlefield(
                     entityId = creature1Id,
                     cardName = "Elvish Visionary",
                     controllerId = player1Id,
                     fromZone = ZoneId.hand(player1Id)
                 ),
-                EcsGameEvent.EnteredBattlefield(
+                GameEvent.EnteredBattlefield(
                     entityId = creature2Id,
                     cardName = "Elvish Visionary",
                     controllerId = player2Id,

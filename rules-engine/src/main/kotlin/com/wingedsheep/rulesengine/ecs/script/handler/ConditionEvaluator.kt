@@ -1,7 +1,7 @@
 package com.wingedsheep.rulesengine.ecs.script.handler
 
 import com.wingedsheep.rulesengine.ability.*
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.components.*
@@ -9,12 +9,12 @@ import com.wingedsheep.rulesengine.ecs.script.ExecutionContext
 import com.wingedsheep.rulesengine.zone.ZoneType
 
 /**
- * Evaluates conditions against EcsGameState.
+ * Evaluates conditions against GameState.
  *
  * This provides ECS-compatible condition checking for the effect handler system.
  * It evaluates the existing Condition sealed hierarchy against the ECS game state.
  */
-object EcsConditionEvaluator {
+object ConditionEvaluator {
 
     /**
      * Evaluate a condition against the ECS game state.
@@ -25,7 +25,7 @@ object EcsConditionEvaluator {
      * @return true if the condition is met
      */
     fun evaluate(
-        state: EcsGameState,
+        state: GameState,
         condition: Condition,
         context: ExecutionContext
     ): Boolean {
@@ -190,29 +190,29 @@ object EcsConditionEvaluator {
 
     // Helper functions
 
-    private fun getOpponents(state: EcsGameState, playerId: EntityId): List<EntityId> {
+    private fun getOpponents(state: GameState, playerId: EntityId): List<EntityId> {
         return state.getPlayerIds().filter { it != playerId }
     }
 
-    private fun getBattlefieldEntitiesControlledBy(state: EcsGameState, controllerId: EntityId): List<EntityId> {
+    private fun getBattlefieldEntitiesControlledBy(state: GameState, controllerId: EntityId): List<EntityId> {
         return state.getBattlefield().filter { entityId ->
             val controller = state.getEntity(entityId)?.get<ControllerComponent>()
             controller?.controllerId == controllerId
         }
     }
 
-    private fun getCreaturesControlledBy(state: EcsGameState, controllerId: EntityId): List<EntityId> {
+    private fun getCreaturesControlledBy(state: GameState, controllerId: EntityId): List<EntityId> {
         return getBattlefieldEntitiesControlledBy(state, controllerId).filter { entityId ->
             val cardComponent = state.getEntity(entityId)?.get<CardComponent>()
             cardComponent?.definition?.isCreature == true
         }
     }
 
-    private fun countCreaturesControlledBy(state: EcsGameState, controllerId: EntityId): Int {
+    private fun countCreaturesControlledBy(state: GameState, controllerId: EntityId): Int {
         return getCreaturesControlledBy(state, controllerId).size
     }
 
-    private fun countLandsControlledBy(state: EcsGameState, controllerId: EntityId): Int {
+    private fun countLandsControlledBy(state: GameState, controllerId: EntityId): Int {
         return getBattlefieldEntitiesControlledBy(state, controllerId).count { entityId ->
             val cardComponent = state.getEntity(entityId)?.get<CardComponent>()
             cardComponent?.definition?.isLand == true

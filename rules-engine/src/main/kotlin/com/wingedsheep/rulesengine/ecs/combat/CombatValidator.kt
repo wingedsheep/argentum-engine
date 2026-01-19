@@ -1,7 +1,7 @@
 package com.wingedsheep.rulesengine.ecs.combat
 
 import com.wingedsheep.rulesengine.core.Keyword
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.components.*
 import com.wingedsheep.rulesengine.ecs.layers.GameObjectView
@@ -21,7 +21,7 @@ import com.wingedsheep.rulesengine.game.Step
  * All keyword checks use the StateProjector to get the post-layer state,
  * ensuring effects like "loses all abilities" are properly respected.
  */
-object EcsCombatValidator {
+object CombatValidator {
 
     // ==========================================================================
     // Validation Results
@@ -77,7 +77,7 @@ object EcsCombatValidator {
      * @param modifierProvider Optional provider for continuous effects
      */
     fun canDeclareAttacker(
-        state: EcsGameState,
+        state: GameState,
         creatureId: EntityId,
         playerId: EntityId,
         modifierProvider: ModifierProvider? = null
@@ -149,7 +149,7 @@ object EcsCombatValidator {
      * (typically added by effects like Propaganda on the defending player's side).
      */
     private fun collectAttackCosts(
-        state: EcsGameState,
+        state: GameState,
         creatureId: EntityId,
         playerId: EntityId
     ): List<AttackCost> {
@@ -179,7 +179,7 @@ object EcsCombatValidator {
      * - Blocking restrictions on the blocker
      */
     fun canDeclareBlocker(
-        state: EcsGameState,
+        state: GameState,
         blockerId: EntityId,
         attackerId: EntityId,
         playerId: EntityId,
@@ -333,7 +333,7 @@ object EcsCombatValidator {
      * Collect any costs required to block with this creature.
      */
     private fun collectBlockCosts(
-        state: EcsGameState,
+        state: GameState,
         blockerId: EntityId,
         attackerId: EntityId
     ): List<BlockCost> {
@@ -360,7 +360,7 @@ object EcsCombatValidator {
      * @return List of attackers with menace that don't have enough blockers
      */
     fun validateMenaceRequirements(
-        state: EcsGameState,
+        state: GameState,
         modifierProvider: ModifierProvider? = null
     ): List<EntityId> {
         val combat = state.combat ?: return emptyList()
@@ -394,7 +394,7 @@ object EcsCombatValidator {
      * Used to validate that required attacks have been made.
      */
     fun getCreaturesThatMustAttack(
-        state: EcsGameState,
+        state: GameState,
         playerId: EntityId,
         modifierProvider: ModifierProvider? = null
     ): List<EntityId> {
@@ -423,7 +423,7 @@ object EcsCombatValidator {
      * Used to validate that required blocks have been made.
      */
     fun getCreaturesThatMustBlock(
-        state: EcsGameState,
+        state: GameState,
         playerId: EntityId,
         modifierProvider: ModifierProvider? = null
     ): List<EntityId> {
@@ -450,7 +450,7 @@ object EcsCombatValidator {
      * Used to validate that creatures that must be blocked have blockers.
      */
     fun getUnblockedMustBeBlockedCreatures(
-        state: EcsGameState,
+        state: GameState,
         modifierProvider: ModifierProvider? = null
     ): List<EntityId> {
         val combat = state.combat ?: return emptyList()
@@ -472,7 +472,7 @@ object EcsCombatValidator {
      * Returns true if the blocker can legally block any attacker that must be blocked.
      */
     fun canBlockAnyMustBeBlocked(
-        state: EcsGameState,
+        state: GameState,
         blockerId: EntityId,
         playerId: EntityId,
         modifierProvider: ModifierProvider? = null
@@ -496,7 +496,7 @@ object EcsCombatValidator {
      * Returns a list of all combat violations that need to be resolved.
      */
     fun validateCombatDeclarations(
-        state: EcsGameState,
+        state: GameState,
         modifierProvider: ModifierProvider? = null
     ): CombatDeclarationValidation {
         val combat = state.combat ?: return CombatDeclarationValidation.empty()
@@ -522,7 +522,7 @@ object EcsCombatValidator {
      * Check if any creature can legally attack.
      */
     fun hasLegalAttackers(
-        state: EcsGameState,
+        state: GameState,
         playerId: EntityId,
         modifierProvider: ModifierProvider? = null
     ): Boolean {
@@ -537,7 +537,7 @@ object EcsCombatValidator {
      * Check if any creature can legally block.
      */
     fun hasLegalBlockers(
-        state: EcsGameState,
+        state: GameState,
         playerId: EntityId,
         modifierProvider: ModifierProvider? = null
     ): Boolean {

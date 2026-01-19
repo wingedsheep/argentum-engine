@@ -3,7 +3,7 @@ package com.wingedsheep.rulesengine.ecs.combat
 import com.wingedsheep.rulesengine.card.CardDefinition
 import com.wingedsheep.rulesengine.core.ManaCost
 import com.wingedsheep.rulesengine.core.Subtype
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.components.*
@@ -12,7 +12,7 @@ import com.wingedsheep.rulesengine.game.Step
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.types.shouldBeInstanceOf
 
-class EcsCombatValidatorTest : FunSpec({
+class CombatValidatorTest : FunSpec({
 
     val player1Id = EntityId.of("player1")
     val player2Id = EntityId.of("player2")
@@ -25,15 +25,15 @@ class EcsCombatValidatorTest : FunSpec({
         toughness = 2
     )
 
-    fun newGame(): EcsGameState = EcsGameState.newGame(
+    fun newGame(): GameState = GameState.newGame(
         listOf(player1Id to "Alice", player2Id to "Bob")
     )
 
-    fun EcsGameState.addCreatureToBattlefield(
+    fun GameState.addCreatureToBattlefield(
         def: CardDefinition,
         controllerId: EntityId,
         hasSummoningSickness: Boolean = true
-    ): Pair<EntityId, EcsGameState> {
+    ): Pair<EntityId, GameState> {
         val (creatureId, state1) = createEntity(
             EntityId.generate(),
             CardComponent(def, controllerId),
@@ -46,7 +46,7 @@ class EcsCombatValidatorTest : FunSpec({
         return creatureId to state2.addToZone(creatureId, ZoneId.BATTLEFIELD)
     }
 
-    fun createGameInDeclareBlockersStep(): EcsGameState {
+    fun createGameInDeclareBlockersStep(): GameState {
         var state = newGame()
         // Advance to Combat
         state = state.copy(turnState = state.turnState.copy(step = Step.DECLARE_BLOCKERS))
@@ -72,7 +72,7 @@ class EcsCombatValidatorTest : FunSpec({
 
             // Inject a modifier provider that restricts the blocker
             val modifierProvider = object : ModifierProvider {
-                override fun getModifiers(state: EcsGameState): List<Modifier> {
+                override fun getModifiers(state: GameState): List<Modifier> {
                     return listOf(
                         Modifier(
                             layer = Layer.ABILITY,
@@ -86,12 +86,12 @@ class EcsCombatValidatorTest : FunSpec({
             }
 
             // Perform validation
-            val result = EcsCombatValidator.canDeclareBlocker(
+            val result = CombatValidator.canDeclareBlocker(
                 state, blockerId, attackerId, player2Id, modifierProvider
             )
 
-            // This confirms that EcsCombatValidator checks view.canBlock or view.cantBlock
-            result.shouldBeInstanceOf<EcsCombatValidator.BlockValidationResult.Invalid>()
+            // This confirms that CombatValidator checks view.canBlock or view.cantBlock
+            result.shouldBeInstanceOf<CombatValidator.BlockValidationResult.Invalid>()
         }
     }
 })

@@ -13,7 +13,7 @@ import com.wingedsheep.rulesengine.ecs.EntityId
  *
  * This represents the "current" state of an entity as seen by the game rules,
  * after all modifiers from Layer 1-7 have been applied. The base entity data
- * in the EcsGameState remains unchanged; this is a calculated view.
+ * in the GameState remains unchanged; this is a calculated view.
  *
  * Example:
  * - Base state: Grizzly Bears (2/2, no abilities)

@@ -5,7 +5,7 @@ import com.wingedsheep.rulesengine.core.CounterType
 import com.wingedsheep.rulesengine.core.Keyword
 import com.wingedsheep.rulesengine.core.ManaCost
 import com.wingedsheep.rulesengine.core.Subtype
-import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.components.*
@@ -37,11 +37,11 @@ class StateProjectorTest : FunSpec({
         keywords = setOf(Keyword.FLYING)
     )
 
-    fun newGame(): EcsGameState = EcsGameState.newGame(
+    fun newGame(): GameState = GameState.newGame(
         listOf(player1Id to "Alice", player2Id to "Bob")
     )
 
-    fun EcsGameState.addBear(id: EntityId = EntityId.generate()): Pair<EntityId, EcsGameState> {
+    fun GameState.addBear(id: EntityId = EntityId.generate()): Pair<EntityId, GameState> {
         val (bearId, state1) = createEntity(
             id,
             CardComponent(bearDef, player1Id),

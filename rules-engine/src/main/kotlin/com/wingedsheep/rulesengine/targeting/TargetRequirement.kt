@@ -9,8 +9,8 @@ import kotlinx.serialization.Serializable
  * Defines what can be targeted by a spell or ability.
  * Each TargetRequirement specifies the valid targets and any restrictions.
  *
- * TargetRequirements are data objects - validation is handled by EcsTargetValidator
- * which checks targets against EcsGameState.
+ * TargetRequirements are data objects - validation is handled by TargetValidator
+ * which checks targets against GameState.
  */
 @Serializable
 sealed interface TargetRequirement {
@@ -71,7 +71,7 @@ data class TargetCreature(
 /**
  * Filter for creature targeting restrictions.
  *
- * Filters are pure data - validation is handled by EcsTargetValidator.
+ * Filters are pure data - validation is handled by TargetValidator.
  */
 @Serializable
 sealed interface CreatureTargetFilter {
@@ -174,7 +174,7 @@ data class TargetPermanent(
 /**
  * Filter for permanent targeting restrictions.
  *
- * Filters are pure data - validation is handled by EcsTargetValidator.
+ * Filters are pure data - validation is handled by TargetValidator.
  */
 @Serializable
 sealed interface PermanentTargetFilter {
@@ -278,7 +278,7 @@ data class TargetCardInGraveyard(
 /**
  * Filter for graveyard card targeting.
  *
- * Filters are pure data - validation is handled by EcsTargetValidator.
+ * Filters are pure data - validation is handled by TargetValidator.
  */
 @Serializable
 sealed interface GraveyardCardFilter {
@@ -336,7 +336,7 @@ data class TargetSpell(
 /**
  * Filter for spell targeting.
  *
- * Filters are pure data - validation is handled by EcsTargetValidator.
+ * Filters are pure data - validation is handled by TargetValidator.
  */
 @Serializable
 sealed interface SpellTargetFilter {
