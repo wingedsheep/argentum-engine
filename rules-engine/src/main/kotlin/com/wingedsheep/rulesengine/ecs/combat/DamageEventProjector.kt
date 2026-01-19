@@ -6,6 +6,8 @@ import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.components.CardComponent
 import com.wingedsheep.rulesengine.ecs.components.ControllerComponent
+import com.wingedsheep.rulesengine.ecs.components.ProtectionComponent
+import com.wingedsheep.rulesengine.ecs.components.ProtectionFrom
 import com.wingedsheep.rulesengine.ecs.layers.GameObjectView
 import com.wingedsheep.rulesengine.ecs.layers.ModifierProvider
 import com.wingedsheep.rulesengine.ecs.layers.StateProjector
@@ -270,17 +272,34 @@ class DamageEventProjector(
 
     /**
      * Check if a creature has protection from the source.
+     *
+     * Protection prevents damage from sources that match the protection criteria.
+     * This checks the ProtectionComponent on the target entity to determine
+     * if the source matches any of the protection characteristics.
+     *
+     * Note: Per CR 702.19b, protection does NOT affect damage assignment.
+     * Lethal damage is calculated based on toughness alone, ignoring protection.
+     * Protection only prevents the actual dealing of damage.
      */
     private fun hasProtectionFrom(target: GameObjectView, source: GameObjectView): Boolean {
-        if (!target.hasKeyword(Keyword.PROTECTION)) {
-            return false
+        // Get the ProtectionComponent from the target entity
+        val protectionComponent = state.getComponent<ProtectionComponent>(target.entityId)
+            ?: return false
+
+        // Check each protection against the source's characteristics
+        for (protection in protectionComponent.protections) {
+            val matches = when (protection) {
+                is ProtectionFrom.FromColor -> protection.color in source.colors
+                is ProtectionFrom.FromCardType -> protection.type in source.types
+                is ProtectionFrom.FromCreatureType -> protection.subtype in source.subtypes
+                is ProtectionFrom.FromEverything -> true
+                is ProtectionFrom.FromMulticolored -> source.colors.size > 1
+                is ProtectionFrom.FromMonocolored -> source.colors.size == 1
+            }
+            if (matches) return true
         }
 
-        // Basic protection checks (would need more sophisticated tracking
-        // of what the protection is from)
-        // For now, check color-based protection
-        // A full implementation would store the protection characteristics
-        return false // Placeholder - full implementation needs protection tracking
+        return false
     }
 
     /**

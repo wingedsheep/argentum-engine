@@ -176,6 +176,7 @@ object CombatValidator {
      * - Basic blocking requirements
      * - Evasion abilities on the attacker
      * - Blocking restrictions on the blocker
+     * - Timing: creature must have been on battlefield when declare blockers step began
      */
     fun canDeclareBlocker(
         state: GameState,
@@ -195,6 +196,13 @@ object CombatValidator {
 
         if (combat.defendingPlayer != playerId) {
             return BlockValidationResult.Invalid("Only the defending player can declare blockers")
+        }
+
+        // Check if creature is eligible to block (was on battlefield when declare blockers began)
+        // MTG Rule 509.1a: A creature that enters the battlefield after blockers are declared
+        // cannot be declared as a blocker.
+        if (!combat.isEligibleBlocker(blockerId)) {
+            return BlockValidationResult.Invalid("Creature entered the battlefield after blockers were declared and cannot block")
         }
 
         // Get projected views for both creatures

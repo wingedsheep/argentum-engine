@@ -294,10 +294,35 @@ object GameEngine {
             }
         } else {
             // Stack empty: advance step/phase, reset passes
-            state.copy(
-                turnState = turnState.advanceStep()
-            )
+            val newTurnState = turnState.advanceStep()
+            var newState = state.copy(turnState = newTurnState)
+
+            // When transitioning to DECLARE_BLOCKERS, capture eligible blockers
+            // (MTG Rule 509.1a: creatures entering after blockers are declared cannot block)
+            if (newTurnState.step == com.wingedsheep.rulesengine.game.Step.DECLARE_BLOCKERS) {
+                newState = captureEligibleBlockers(newState)
+            }
+
+            newState
         }
+    }
+
+    /**
+     * Capture the set of creatures eligible to be declared as blockers.
+     *
+     * This is called when transitioning to the DECLARE_BLOCKERS step.
+     * Only creatures that are on the battlefield at this moment can be declared
+     * as blockers - creatures entering later in the step cannot block.
+     */
+    private fun captureEligibleBlockers(state: GameState): GameState {
+        val combat = state.combat ?: return state
+
+        // Get all creatures controlled by the defending player that are currently on battlefield
+        val eligibleBlockers = state.getCreaturesControlledBy(combat.defendingPlayer).toSet()
+
+        // Update the combat state with eligible blockers
+        val updatedCombat = combat.withEligibleBlockers(eligibleBlockers)
+        return state.copy(combat = updatedCombat)
     }
 
     /**
