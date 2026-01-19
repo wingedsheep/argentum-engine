@@ -151,6 +151,8 @@ class EffectHandlerRegistry private constructor(
                 .register(SacrificeUnlessHandler())
                 // Wheel effects
                 .register(WheelHandler())
+                // Stack effects
+                .register(CounterSpellHandler())
                 .build()
 
             return registry

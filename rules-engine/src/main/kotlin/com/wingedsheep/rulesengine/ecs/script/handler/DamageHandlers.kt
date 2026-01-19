@@ -53,6 +53,7 @@ class DealDamageHandler : BaseEffectHandler<DealDamageEffect>() {
                     is ChosenTarget.Player -> dealDamageToPlayer(state, target.playerId, effect.amount, context.sourceId)
                     is ChosenTarget.Permanent -> dealDamageToCreature(state, target.entityId, effect.amount, context.sourceId)
                     is ChosenTarget.Card -> dealDamageToCreature(state, target.cardId, effect.amount, context.sourceId)
+                    is ChosenTarget.Spell -> noOp(state)  // Cannot deal damage to a spell on the stack
                     null -> noOp(state)
                 }
             }
@@ -240,6 +241,7 @@ class DrainHandler : BaseEffectHandler<DrainEffect>() {
                         }
                         events.add(EffectEvent.DamageDealtToCreature(context.sourceId, target.cardId, effect.amount))
                     }
+                    is ChosenTarget.Spell -> return noOp(state)  // Cannot deal damage to a spell on the stack
                     null -> return noOp(state)
                 }
             }

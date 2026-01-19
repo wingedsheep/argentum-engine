@@ -491,7 +491,8 @@ object GameEventConverter {
             is EffectEvent.KeywordGranted,
             is EffectEvent.LibraryShuffled,
             is EffectEvent.LibrarySearched,
-            is EffectEvent.CardMovedToZone -> emptyList()
+            is EffectEvent.CardMovedToZone,
+            is EffectEvent.SpellCountered -> emptyList()
         }
     }
 }

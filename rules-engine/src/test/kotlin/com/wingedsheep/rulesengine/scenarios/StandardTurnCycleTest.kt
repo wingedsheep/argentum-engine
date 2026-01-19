@@ -1,4 +1,4 @@
-package com.wingedsheep.rulesengine.ecs
+package com.wingedsheep.rulesengine.scenarios
 
 import com.wingedsheep.rulesengine.card.CardDefinition
 import com.wingedsheep.rulesengine.core.Subtype
@@ -44,10 +44,10 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  */
 class StandardTurnCycleTest : FunSpec({
 
-    val player1Id = EntityId.of("player1")  // Alice (Active Player)
-    val player2Id = EntityId.of("player2")  // Bob (Non-Active Player)
+    val player1Id = com.wingedsheep.rulesengine.ecs.EntityId.Companion.of("player1")  // Alice (Active Player)
+    val player2Id = com.wingedsheep.rulesengine.ecs.EntityId.Companion.of("player2")  // Bob (Non-Active Player)
 
-    fun newGame(): GameState = GameState.newGame(
+    fun newGame(): com.wingedsheep.rulesengine.ecs.GameState = com.wingedsheep.rulesengine.ecs.GameState.Companion.newGame(
         listOf(
             player1Id to "Alice",
             player2Id to "Bob"
@@ -59,28 +59,28 @@ class StandardTurnCycleTest : FunSpec({
     /**
      * Helper to put a card in a player's hand for testing.
      */
-    fun GameState.putCardInHand(cardDef: CardDefinition, playerId: EntityId): Pair<EntityId, GameState> {
+    fun com.wingedsheep.rulesengine.ecs.GameState.putCardInHand(cardDef: CardDefinition, playerId: com.wingedsheep.rulesengine.ecs.EntityId): Pair<com.wingedsheep.rulesengine.ecs.EntityId, com.wingedsheep.rulesengine.ecs.GameState> {
         val (cardId, state1) = createEntity(
-            EntityId.generate(),
+            com.wingedsheep.rulesengine.ecs.EntityId.Companion.generate(),
             CardComponent(cardDef, playerId),
             ControllerComponent(playerId)
         )
-        val state2 = state1.addToZone(cardId, ZoneId.hand(playerId))
+        val state2 = state1.addToZone(cardId, com.wingedsheep.rulesengine.ecs.ZoneId.Companion.hand(playerId))
         return cardId to state2
     }
 
     /**
      * Helper to put cards in a player's library for testing.
      */
-    fun GameState.putCardsInLibrary(cardDef: CardDefinition, playerId: EntityId, count: Int): GameState {
+    fun com.wingedsheep.rulesengine.ecs.GameState.putCardsInLibrary(cardDef: CardDefinition, playerId: com.wingedsheep.rulesengine.ecs.EntityId, count: Int): com.wingedsheep.rulesengine.ecs.GameState {
         var state = this
         repeat(count) {
             val (cardId, newState) = state.createEntity(
-                EntityId.generate(),
+                com.wingedsheep.rulesengine.ecs.EntityId.Companion.generate(),
                 CardComponent(cardDef, playerId),
                 ControllerComponent(playerId)
             )
-            state = newState.addToZone(cardId, ZoneId.library(playerId))
+            state = newState.addToZone(cardId, com.wingedsheep.rulesengine.ecs.ZoneId.Companion.library(playerId))
         }
         return state
     }
@@ -89,24 +89,24 @@ class StandardTurnCycleTest : FunSpec({
      * Helper to have both players pass priority and let the engine advance.
      * This is the proper way to test the engine - priority passing drives state transitions.
      */
-    fun passAndAdvance(state: GameState): GameState {
+    fun passAndAdvance(state: com.wingedsheep.rulesengine.ecs.GameState): com.wingedsheep.rulesengine.ecs.GameState {
         // Active player passes priority
-        val result1 = GameEngine.executeAction(state, PassPriority(state.turnState.priorityPlayer))
+        val result1 = com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, PassPriority(state.turnState.priorityPlayer))
         var currentState = (result1 as GameActionResult.Success).state
 
         // Non-active player passes priority
-        val result2 = GameEngine.executeAction(currentState, PassPriority(currentState.turnState.priorityPlayer))
+        val result2 = com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(currentState, PassPriority(currentState.turnState.priorityPlayer))
         currentState = (result2 as GameActionResult.Success).state
 
         // All players have passed, engine resolves (advances step or resolves stack)
         currentState.turnState.allPlayersPassed().shouldBeTrue()
-        return GameEngine.resolvePassedPriority(currentState)
+        return com.wingedsheep.rulesengine.ecs.GameEngine.resolvePassedPriority(currentState)
     }
 
     /**
      * Advances from UNTAP step (which has no priority) to UPKEEP.
      */
-    fun advanceFromUntap(state: GameState): GameState {
+    fun advanceFromUntap(state: com.wingedsheep.rulesengine.ecs.GameState): com.wingedsheep.rulesengine.ecs.GameState {
         state.turnState.step shouldBe Step.UNTAP
         return state.copy(turnState = state.turnState.advanceStep())
     }
@@ -114,7 +114,7 @@ class StandardTurnCycleTest : FunSpec({
     /**
      * Advances from CLEANUP step (which has no priority) to next turn's UNTAP.
      */
-    fun advanceFromCleanup(state: GameState): GameState {
+    fun advanceFromCleanup(state: com.wingedsheep.rulesengine.ecs.GameState): com.wingedsheep.rulesengine.ecs.GameState {
         state.turnState.step shouldBe Step.CLEANUP
         return state.copy(turnState = state.turnState.advanceStep())
     }
@@ -175,7 +175,7 @@ class StandardTurnCycleTest : FunSpec({
             val initialHandSize = state.getHand(player1Id).size
 
             // Execute turn-based draw action
-            val drawResult = GameEngine.executeAction(state, DrawCard(player1Id, 1))
+            val drawResult = com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, DrawCard(player1Id, 1))
             drawResult.shouldBeInstanceOf<GameActionResult.Success>()
             state = (drawResult as GameActionResult.Success).state
 
@@ -212,7 +212,7 @@ class StandardTurnCycleTest : FunSpec({
             state.getLandsPlayed(player1Id) shouldBe 0
 
             // Play the Mountain - special action, doesn't use stack
-            val playLandResult = GameEngine.executeAction(state, PlayLand(mountainId, player1Id))
+            val playLandResult = com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, PlayLand(mountainId, player1Id))
             playLandResult.shouldBeInstanceOf<GameActionResult.Success>()
             state = (playLandResult as GameActionResult.Success).state
 
@@ -377,14 +377,14 @@ class StandardTurnCycleTest : FunSpec({
             // 3. DRAW STEP - draw a card
             state.turnState.step shouldBe Step.DRAW
             visitedSteps.add(state.turnState.step)
-            val drawResult = GameEngine.executeAction(state, DrawCard(player1Id, 1))
+            val drawResult = com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, DrawCard(player1Id, 1))
             state = (drawResult as GameActionResult.Success).state
             state = passAndAdvance(state)
 
             // 4. PRECOMBAT MAIN PHASE - play Mountain
             state.turnState.step shouldBe Step.PRECOMBAT_MAIN
             visitedSteps.add(state.turnState.step)
-            val playLandResult = GameEngine.executeAction(state, PlayLand(mountainId, player1Id))
+            val playLandResult = com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, PlayLand(mountainId, player1Id))
             state = (playLandResult as GameActionResult.Success).state
             state.isOnBattlefield(mountainId).shouldBeTrue()
             state = passAndAdvance(state)
@@ -479,7 +479,7 @@ class StandardTurnCycleTest : FunSpec({
             state.turnState.step shouldBe Step.PRECOMBAT_MAIN
             state.turnState.step.isMainPhase.shouldBeTrue()
 
-            val result = GameEngine.executeAction(state, PlayLand(mountainId, player1Id))
+            val result = com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, PlayLand(mountainId, player1Id))
             result.shouldBeInstanceOf<GameActionResult.Success>()
         }
 
@@ -498,7 +498,7 @@ class StandardTurnCycleTest : FunSpec({
 
             // Play first land - should succeed
             state.canPlayLand(player1Id).shouldBeTrue()
-            val result1 = GameEngine.executeAction(state, PlayLand(mountain1Id, player1Id))
+            val result1 = com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, PlayLand(mountain1Id, player1Id))
             result1.shouldBeInstanceOf<GameActionResult.Success>()
             state = (result1 as GameActionResult.Success).state
 
@@ -506,7 +506,7 @@ class StandardTurnCycleTest : FunSpec({
             state.canPlayLand(player1Id).shouldBeFalse()
             state.getLandsPlayed(player1Id) shouldBe 1
 
-            val result2 = GameEngine.executeAction(state, PlayLand(mountain2Id, player1Id))
+            val result2 = com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, PlayLand(mountain2Id, player1Id))
             result2.shouldBeInstanceOf<GameActionResult.Failure>()
             (result2 as GameActionResult.Failure).reason shouldBe "Cannot play another land this turn"
         }
@@ -521,13 +521,13 @@ class StandardTurnCycleTest : FunSpec({
             state = passAndAdvance(state) // UPKEEP -> DRAW
             state = passAndAdvance(state) // DRAW -> PRECOMBAT_MAIN
 
-            val playResult = GameEngine.executeAction(state, PlayLand(mountainId, player1Id))
+            val playResult = com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, PlayLand(mountainId, player1Id))
             state = (playResult as GameActionResult.Success).state
 
             state.getLandsPlayed(player1Id) shouldBe 1
 
             // Reset lands played (turn-based action at beginning of turn)
-            val resetResult = GameEngine.executeAction(state, ResetLandsPlayed(player1Id))
+            val resetResult = com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, ResetLandsPlayed(player1Id))
             state = (resetResult as GameActionResult.Success).state
 
             state.getLandsPlayed(player1Id) shouldBe 0
@@ -546,7 +546,7 @@ class StandardTurnCycleTest : FunSpec({
             state.turnState.activePlayer shouldBe player1Id
 
             // Player 1 passes
-            val result1 = GameEngine.executeAction(state, PassPriority(player1Id))
+            val result1 = com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, PassPriority(player1Id))
             state = (result1 as GameActionResult.Success).state
 
             // Priority moves to player 2
@@ -554,7 +554,7 @@ class StandardTurnCycleTest : FunSpec({
             state.turnState.consecutivePasses shouldBe 1
 
             // Player 2 passes
-            val result2 = GameEngine.executeAction(state, PassPriority(player2Id))
+            val result2 = com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, PassPriority(player2Id))
             state = (result2 as GameActionResult.Success).state
 
             // Both have passed
@@ -574,16 +574,16 @@ class StandardTurnCycleTest : FunSpec({
             state = passAndAdvance(state) // DRAW -> PRECOMBAT_MAIN
 
             // Play the land
-            val playResult = GameEngine.executeAction(state, PlayLand(mountainId, player1Id))
+            val playResult = com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, PlayLand(mountainId, player1Id))
             state = (playResult as GameActionResult.Success).state
 
             // Tap the mountain
-            val tapResult = GameEngine.executeAction(state, Tap(mountainId))
+            val tapResult = com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, Tap(mountainId))
             state = (tapResult as GameActionResult.Success).state
             state.hasComponent<TappedComponent>(mountainId).shouldBeTrue()
 
             // Execute UntapAll for the active player
-            val untapResult = GameEngine.executeAction(state, UntapAll(player1Id))
+            val untapResult = com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, UntapAll(player1Id))
             state = (untapResult as GameActionResult.Success).state
 
             // Mountain should be untapped

@@ -129,4 +129,5 @@ sealed interface EffectEvent {
     data class LibrarySearched(val playerId: EntityId, val foundCount: Int, val filterDescription: String) : EffectEvent
     data class CardMovedToZone(val cardId: EntityId, val cardName: String, val toZone: String) : EffectEvent
     data class PermanentSacrificed(val entityId: EntityId, val name: String, val controllerId: EntityId) : EffectEvent
+    data class SpellCountered(val spellEntityId: EntityId, val spellName: String, val ownerId: EntityId) : EffectEvent
 }

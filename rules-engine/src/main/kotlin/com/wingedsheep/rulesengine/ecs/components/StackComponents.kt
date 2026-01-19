@@ -60,6 +60,7 @@ data class SpellOnStackComponent(
                 is ChosenTarget.Player -> target.playerId
                 is ChosenTarget.Permanent -> target.entityId
                 is ChosenTarget.Card -> target.cardId
+                is ChosenTarget.Spell -> target.spellEntityId
             }
         }
 
@@ -122,6 +123,7 @@ data class TriggeredAbilityOnStackComponent(
                 is ChosenTarget.Player -> target.playerId
                 is ChosenTarget.Permanent -> target.entityId
                 is ChosenTarget.Card -> target.cardId
+                is ChosenTarget.Spell -> target.spellEntityId
             }
         }
 
@@ -161,6 +163,7 @@ data class ActivatedAbilityOnStackComponent(
                 is ChosenTarget.Player -> target.playerId
                 is ChosenTarget.Permanent -> target.entityId
                 is ChosenTarget.Card -> target.cardId
+                is ChosenTarget.Spell -> target.spellEntityId
             }
         }
 

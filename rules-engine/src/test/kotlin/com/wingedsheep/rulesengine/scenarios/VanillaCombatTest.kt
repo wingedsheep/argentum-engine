@@ -1,4 +1,4 @@
-package com.wingedsheep.rulesengine.ecs
+package com.wingedsheep.rulesengine.scenarios
 
 import com.wingedsheep.rulesengine.card.CardDefinition
 import com.wingedsheep.rulesengine.core.ManaCost
@@ -43,8 +43,8 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  */
 class VanillaCombatTest : FunSpec({
 
-    val player1Id = EntityId.of("player1")  // Player A (Attacking)
-    val player2Id = EntityId.of("player2")  // Player B (Blocking)
+    val player1Id = _root_ide_package_.com.wingedsheep.rulesengine.ecs.EntityId.Companion.of("player1")  // Player A (Attacking)
+    val player2Id = _root_ide_package_.com.wingedsheep.rulesengine.ecs.EntityId.Companion.of("player2")  // Player B (Blocking)
 
     // Grizzly Bears - 2/2 for {1}{G}
     val grizzlyBearsDef = CardDefinition.creature(
@@ -64,19 +64,19 @@ class VanillaCombatTest : FunSpec({
         toughness = 3
     )
 
-    fun newGame(): GameState = GameState.newGame(
+    fun newGame(): com.wingedsheep.rulesengine.ecs.GameState = _root_ide_package_.com.wingedsheep.rulesengine.ecs.GameState.Companion.newGame(
         listOf(player1Id to "Alice", player2Id to "Bob")
     )
 
     /**
      * Helper to add a creature to the battlefield.
      */
-    fun GameState.addCreatureToBattlefield(
+    fun com.wingedsheep.rulesengine.ecs.GameState.addCreatureToBattlefield(
         def: CardDefinition,
-        controllerId: EntityId,
+        controllerId: com.wingedsheep.rulesengine.ecs.EntityId,
         hasSummoningSickness: Boolean = true
-    ): Pair<EntityId, GameState> {
-        val components = mutableListOf<Component>(
+    ): Pair<com.wingedsheep.rulesengine.ecs.EntityId, com.wingedsheep.rulesengine.ecs.GameState> {
+        val components = mutableListOf<com.wingedsheep.rulesengine.ecs.Component>(
             CardComponent(def, controllerId),
             ControllerComponent(controllerId)
         )
@@ -85,35 +85,35 @@ class VanillaCombatTest : FunSpec({
         }
 
         val (creatureId, state1) = createEntity(
-            EntityId.generate(),
+            _root_ide_package_.com.wingedsheep.rulesengine.ecs.EntityId.Companion.generate(),
             components
         )
-        return creatureId to state1.addToZone(creatureId, ZoneId.BATTLEFIELD)
+        return creatureId to state1.addToZone(creatureId, _root_ide_package_.com.wingedsheep.rulesengine.ecs.ZoneId.Companion.BATTLEFIELD)
     }
 
     /**
      * Helper to have both players pass priority and let the engine advance.
      * This is the proper way to test the engine - priority passing drives state transitions.
      */
-    fun passAndAdvance(state: GameState): GameState {
+    fun passAndAdvance(state: com.wingedsheep.rulesengine.ecs.GameState): com.wingedsheep.rulesengine.ecs.GameState {
         // Active player passes priority
-        val result1 = GameEngine.executeAction(state, PassPriority(state.turnState.priorityPlayer))
+        val result1 = _root_ide_package_.com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, PassPriority(state.turnState.priorityPlayer))
         var currentState = (result1 as GameActionResult.Success).state
 
         // Non-active player passes priority
-        val result2 = GameEngine.executeAction(currentState, PassPriority(currentState.turnState.priorityPlayer))
+        val result2 = _root_ide_package_.com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(currentState, PassPriority(currentState.turnState.priorityPlayer))
         currentState = (result2 as GameActionResult.Success).state
 
         // All players have passed, engine resolves (advances step or resolves stack)
         currentState.turnState.allPlayersPassed().shouldBeTrue()
-        return GameEngine.resolvePassedPriority(currentState)
+        return _root_ide_package_.com.wingedsheep.rulesengine.ecs.GameEngine.resolvePassedPriority(currentState)
     }
 
     /**
      * Creates a game state ready for the declare attackers step with combat started.
      * Uses proper priority passing to advance through the turn.
      */
-    fun createGameInDeclareAttackersStep(): GameState {
+    fun createGameInDeclareAttackersStep(): com.wingedsheep.rulesengine.ecs.GameState {
         var state = newGame()
 
         // UNTAP step has no priority, advance directly
@@ -197,7 +197,7 @@ class VanillaCombatTest : FunSpec({
             state.turnState.step shouldBe Step.DECLARE_ATTACKERS
 
             // Player A attacks with Grizzly Bears
-            val declareAttackerResult = GameEngine.executeAction(state, DeclareAttacker(bearsId, player1Id))
+            val declareAttackerResult = _root_ide_package_.com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, DeclareAttacker(bearsId, player1Id))
             declareAttackerResult.shouldBeInstanceOf<GameActionResult.Success>()
             state = (declareAttackerResult as GameActionResult.Success).state
 
@@ -217,7 +217,7 @@ class VanillaCombatTest : FunSpec({
             state.turnState.step shouldBe Step.DECLARE_BLOCKERS
 
             // Player B blocks with Centaur Courser
-            val declareBlockerResult = GameEngine.executeAction(state, DeclareBlocker(courserId, bearsId, player2Id))
+            val declareBlockerResult = _root_ide_package_.com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, DeclareBlocker(courserId, bearsId, player2Id))
             declareBlockerResult.shouldBeInstanceOf<GameActionResult.Success>()
             state = (declareBlockerResult as GameActionResult.Success).state
 
@@ -245,7 +245,7 @@ class VanillaCombatTest : FunSpec({
             state.turnState.step shouldBe Step.COMBAT_DAMAGE
 
             // Resolve combat damage (regular step - no first strike creatures)
-            val combatDamageResult = GameEngine.executeAction(
+            val combatDamageResult = _root_ide_package_.com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(
                 state,
                 ResolveCombatDamage(CombatDamageStep.REGULAR)
             )
@@ -273,7 +273,7 @@ class VanillaCombatTest : FunSpec({
 
             // === STEP 5: STATE-BASED ACTIONS ===
             // Check state-based actions - creatures with lethal damage die
-            val sbaResult = GameEngine.executeAction(state, CheckStateBasedActions())
+            val sbaResult = _root_ide_package_.com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, CheckStateBasedActions())
             sbaResult.shouldBeInstanceOf<GameActionResult.Success>()
             state = (sbaResult as GameActionResult.Success).state
 
@@ -310,18 +310,18 @@ class VanillaCombatTest : FunSpec({
             state = state2
 
             // Declare attacker
-            state = (GameEngine.executeAction(state, DeclareAttacker(bearsId, player1Id)) as GameActionResult.Success).state
+            state = (_root_ide_package_.com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, DeclareAttacker(bearsId, player1Id)) as GameActionResult.Success).state
             state = passAndAdvance(state) // -> DECLARE_BLOCKERS
 
             // Declare blocker
-            state = (GameEngine.executeAction(state, DeclareBlocker(courserId, bearsId, player2Id)) as GameActionResult.Success).state
+            state = (_root_ide_package_.com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, DeclareBlocker(courserId, bearsId, player2Id)) as GameActionResult.Success).state
             state = passAndAdvance(state) // -> FIRST_STRIKE_COMBAT_DAMAGE
             state = passAndAdvance(state) // -> COMBAT_DAMAGE
 
             state.turnState.step shouldBe Step.COMBAT_DAMAGE
 
             // Resolve combat damage and check events
-            val combatDamageResult = GameEngine.executeAction(
+            val combatDamageResult = _root_ide_package_.com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(
                 state,
                 ResolveCombatDamage(CombatDamageStep.REGULAR)
             ) as GameActionResult.Success
@@ -361,15 +361,15 @@ class VanillaCombatTest : FunSpec({
             state = state2
 
             // Full combat flow with priority passing
-            state = (GameEngine.executeAction(state, DeclareAttacker(bearsId, player1Id)) as GameActionResult.Success).state
+            state = (_root_ide_package_.com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, DeclareAttacker(bearsId, player1Id)) as GameActionResult.Success).state
             state = passAndAdvance(state) // -> DECLARE_BLOCKERS
-            state = (GameEngine.executeAction(state, DeclareBlocker(courserId, bearsId, player2Id)) as GameActionResult.Success).state
+            state = (_root_ide_package_.com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, DeclareBlocker(courserId, bearsId, player2Id)) as GameActionResult.Success).state
             state = passAndAdvance(state) // -> FIRST_STRIKE_COMBAT_DAMAGE
             state = passAndAdvance(state) // -> COMBAT_DAMAGE
-            state = (GameEngine.executeAction(state, ResolveCombatDamage(CombatDamageStep.REGULAR)) as GameActionResult.Success).state
+            state = (_root_ide_package_.com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, ResolveCombatDamage(CombatDamageStep.REGULAR)) as GameActionResult.Success).state
 
             // Check SBA and verify CreatureDied event
-            val sbaResult = GameEngine.executeAction(state, CheckStateBasedActions()) as GameActionResult.Success
+            val sbaResult = _root_ide_package_.com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, CheckStateBasedActions()) as GameActionResult.Success
 
             val creatureDiedEvents = sbaResult.events.filterIsInstance<GameActionEvent.CreatureDied>()
             creatureDiedEvents.size shouldBe 1
@@ -396,19 +396,19 @@ class VanillaCombatTest : FunSpec({
             state = state2
 
             // Full combat until damage resolved
-            state = (GameEngine.executeAction(state, DeclareAttacker(bearsId, player1Id)) as GameActionResult.Success).state
+            state = (_root_ide_package_.com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, DeclareAttacker(bearsId, player1Id)) as GameActionResult.Success).state
             state = passAndAdvance(state) // -> DECLARE_BLOCKERS
-            state = (GameEngine.executeAction(state, DeclareBlocker(courserId, bearsId, player2Id)) as GameActionResult.Success).state
+            state = (_root_ide_package_.com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, DeclareBlocker(courserId, bearsId, player2Id)) as GameActionResult.Success).state
             state = passAndAdvance(state) // -> FIRST_STRIKE_COMBAT_DAMAGE
             state = passAndAdvance(state) // -> COMBAT_DAMAGE
-            state = (GameEngine.executeAction(state, ResolveCombatDamage(CombatDamageStep.REGULAR)) as GameActionResult.Success).state
-            state = (GameEngine.executeAction(state, CheckStateBasedActions()) as GameActionResult.Success).state
+            state = (_root_ide_package_.com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, ResolveCombatDamage(CombatDamageStep.REGULAR)) as GameActionResult.Success).state
+            state = (_root_ide_package_.com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, CheckStateBasedActions()) as GameActionResult.Success).state
 
             // Combat is still active
             state.combat.shouldNotBeNull()
 
             // End combat
-            val endCombatResult = GameEngine.executeAction(state, EndCombat(player1Id))
+            val endCombatResult = _root_ide_package_.com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, EndCombat(player1Id))
             endCombatResult.shouldBeInstanceOf<GameActionResult.Success>()
             state = (endCombatResult as GameActionResult.Success).state
 
@@ -441,9 +441,9 @@ class VanillaCombatTest : FunSpec({
             state = state2
 
             // Setup combat with proper priority passing
-            state = (GameEngine.executeAction(state, DeclareAttacker(bearsId, player1Id)) as GameActionResult.Success).state
+            state = (_root_ide_package_.com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, DeclareAttacker(bearsId, player1Id)) as GameActionResult.Success).state
             state = passAndAdvance(state) // -> DECLARE_BLOCKERS
-            state = (GameEngine.executeAction(state, DeclareBlocker(courserId, bearsId, player2Id)) as GameActionResult.Success).state
+            state = (_root_ide_package_.com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, DeclareBlocker(courserId, bearsId, player2Id)) as GameActionResult.Success).state
             state = passAndAdvance(state) // -> FIRST_STRIKE_COMBAT_DAMAGE
             state = passAndAdvance(state) // -> COMBAT_DAMAGE
 
@@ -454,7 +454,7 @@ class VanillaCombatTest : FunSpec({
             state.getComponent<DamageComponent>(courserId).shouldBeNull()
 
             // Resolve damage - a single action applies all damage
-            state = (GameEngine.executeAction(state, ResolveCombatDamage(CombatDamageStep.REGULAR)) as GameActionResult.Success).state
+            state = (_root_ide_package_.com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, ResolveCombatDamage(CombatDamageStep.REGULAR)) as GameActionResult.Success).state
 
             // After single damage resolution, BOTH creatures have damage marked
             // This proves damage is simultaneous (not sequential)
@@ -481,7 +481,7 @@ class VanillaCombatTest : FunSpec({
             state = state.updateEntity(giantId) { it.with(DamageComponent(3)) }
 
             // Check SBA - should die (3 >= 3)
-            state = (GameEngine.executeAction(state, CheckStateBasedActions()) as GameActionResult.Success).state
+            state = (_root_ide_package_.com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, CheckStateBasedActions()) as GameActionResult.Success).state
 
             state.isOnBattlefield(giantId).shouldBeFalse()
             state.getGraveyard(player1Id).contains(giantId).shouldBeTrue()
@@ -502,7 +502,7 @@ class VanillaCombatTest : FunSpec({
             state = state.updateEntity(giantId) { it.with(DamageComponent(2)) }
 
             // Check SBA - should survive (2 < 3)
-            state = (GameEngine.executeAction(state, CheckStateBasedActions()) as GameActionResult.Success).state
+            state = (_root_ide_package_.com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, CheckStateBasedActions()) as GameActionResult.Success).state
 
             state.isOnBattlefield(giantId).shouldBeTrue()
             state.getComponent<DamageComponent>(giantId)!!.amount shouldBe 2
@@ -542,7 +542,7 @@ class VanillaCombatTest : FunSpec({
             state.getComponent<DamageComponent>(courserId)!!.amount shouldBe 2
 
             // Execute cleanup action to clear damage
-            val cleanupResult = GameEngine.executeAction(state, PerformCleanupStep(player1Id))
+            val cleanupResult = _root_ide_package_.com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, PerformCleanupStep(player1Id))
             cleanupResult.shouldBeInstanceOf<GameActionResult.Success>()
             state = (cleanupResult as GameActionResult.Success).state
 
@@ -578,14 +578,14 @@ class VanillaCombatTest : FunSpec({
             state = state2
 
             // Attack and block with proper priority passing
-            state = (GameEngine.executeAction(state, DeclareAttacker(bearsId, player1Id)) as GameActionResult.Success).state
+            state = (_root_ide_package_.com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, DeclareAttacker(bearsId, player1Id)) as GameActionResult.Success).state
             state = passAndAdvance(state) // -> DECLARE_BLOCKERS
-            state = (GameEngine.executeAction(state, DeclareBlocker(wallId, bearsId, player2Id)) as GameActionResult.Success).state
+            state = (_root_ide_package_.com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, DeclareBlocker(wallId, bearsId, player2Id)) as GameActionResult.Success).state
             state = passAndAdvance(state) // -> FIRST_STRIKE_COMBAT_DAMAGE
             state = passAndAdvance(state) // -> COMBAT_DAMAGE
 
             // Resolve damage
-            state = (GameEngine.executeAction(state, ResolveCombatDamage(CombatDamageStep.REGULAR)) as GameActionResult.Success).state
+            state = (_root_ide_package_.com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, ResolveCombatDamage(CombatDamageStep.REGULAR)) as GameActionResult.Success).state
 
             // Wall (0 power) deals no damage to Bears
             state.getComponent<DamageComponent>(bearsId).shouldBeNull()
@@ -594,7 +594,7 @@ class VanillaCombatTest : FunSpec({
             state.getComponent<DamageComponent>(wallId)!!.amount shouldBe 2
 
             // SBA check - both survive (wall has 3 toughness with 2 damage, Bears has no damage)
-            state = (GameEngine.executeAction(state, CheckStateBasedActions()) as GameActionResult.Success).state
+            state = (_root_ide_package_.com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, CheckStateBasedActions()) as GameActionResult.Success).state
 
             state.isOnBattlefield(bearsId).shouldBeTrue()
             state.isOnBattlefield(wallId).shouldBeTrue()
@@ -617,21 +617,21 @@ class VanillaCombatTest : FunSpec({
             state = state2
 
             // Attack and block with proper priority passing
-            state = (GameEngine.executeAction(state, DeclareAttacker(bears1Id, player1Id)) as GameActionResult.Success).state
+            state = (_root_ide_package_.com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, DeclareAttacker(bears1Id, player1Id)) as GameActionResult.Success).state
             state = passAndAdvance(state) // -> DECLARE_BLOCKERS
-            state = (GameEngine.executeAction(state, DeclareBlocker(bears2Id, bears1Id, player2Id)) as GameActionResult.Success).state
+            state = (_root_ide_package_.com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, DeclareBlocker(bears2Id, bears1Id, player2Id)) as GameActionResult.Success).state
             state = passAndAdvance(state) // -> FIRST_STRIKE_COMBAT_DAMAGE
             state = passAndAdvance(state) // -> COMBAT_DAMAGE
 
             // Resolve damage
-            state = (GameEngine.executeAction(state, ResolveCombatDamage(CombatDamageStep.REGULAR)) as GameActionResult.Success).state
+            state = (_root_ide_package_.com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, ResolveCombatDamage(CombatDamageStep.REGULAR)) as GameActionResult.Success).state
 
             // Both deal 2 damage to each other (2/2 vs 2/2)
             state.getComponent<DamageComponent>(bears1Id)!!.amount shouldBe 2
             state.getComponent<DamageComponent>(bears2Id)!!.amount shouldBe 2
 
             // SBA check - both die (2 >= 2)
-            state = (GameEngine.executeAction(state, CheckStateBasedActions()) as GameActionResult.Success).state
+            state = (_root_ide_package_.com.wingedsheep.rulesengine.ecs.GameEngine.executeAction(state, CheckStateBasedActions()) as GameActionResult.Success).state
 
             state.isOnBattlefield(bears1Id).shouldBeFalse()
             state.isOnBattlefield(bears2Id).shouldBeFalse()

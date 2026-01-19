@@ -52,4 +52,11 @@ sealed interface ChosenTarget {
 
     @Serializable
     data class Card(val cardId: EntityId, val zoneId: com.wingedsheep.rulesengine.ecs.ZoneId) : ChosenTarget
+
+    /**
+     * A spell on the stack.
+     * Used for effects like Counterspell that target spells.
+     */
+    @Serializable
+    data class Spell(val spellEntityId: EntityId) : ChosenTarget
 }

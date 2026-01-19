@@ -50,6 +50,7 @@ fun ChosenTarget.toTarget(): Target = when (this) {
     is ChosenTarget.Player -> Target.PlayerTarget(playerId)
     is ChosenTarget.Permanent -> Target.CardTarget(entityId)
     is ChosenTarget.Card -> Target.CardTarget(cardId)
+    is ChosenTarget.Spell -> Target.CardTarget(spellEntityId)  // Spells on stack are represented as cards
 }
 
 /**

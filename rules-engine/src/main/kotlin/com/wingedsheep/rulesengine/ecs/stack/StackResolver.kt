@@ -198,6 +198,7 @@ class StackResolver(
                 is ChosenTarget.Permanent -> target.entityId
                 is ChosenTarget.Player -> target.playerId
                 is ChosenTarget.Card -> target.cardId
+                is ChosenTarget.Spell -> target.spellEntityId  // Unlikely for auras, but handle for completeness
             }
             newContainer = newContainer.with(AttachedToComponent(targetId))
         }
@@ -471,6 +472,10 @@ class StackResolver(
                 is ChosenTarget.Card -> {
                     // Card target is valid if still in the specified zone
                     target.cardId in state.getZone(target.zoneId)
+                }
+                is ChosenTarget.Spell -> {
+                    // Spell target is valid if still on the stack
+                    target.spellEntityId in state.getStack()
                 }
             }
         }
