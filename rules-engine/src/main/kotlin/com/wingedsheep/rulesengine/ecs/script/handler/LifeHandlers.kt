@@ -7,8 +7,8 @@ import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.components.ControllerComponent
 import com.wingedsheep.rulesengine.ecs.components.LifeComponent
+import com.wingedsheep.rulesengine.ecs.event.ChosenTarget
 import com.wingedsheep.rulesengine.ecs.script.EffectEvent
-import com.wingedsheep.rulesengine.ecs.script.ResolvedTarget
 import com.wingedsheep.rulesengine.ecs.script.ExecutionContext
 import com.wingedsheep.rulesengine.ecs.script.ExecutionResult
 import kotlin.reflect.KClass
@@ -72,8 +72,13 @@ internal fun resolvePlayerTarget(
         is EffectTarget.TargetController -> {
             // Get the controller of the first target
             val firstTarget = context?.targets?.firstOrNull()
-            if (firstTarget is ResolvedTarget.Permanent) {
-                val entity = state.getEntity(firstTarget.entityId)
+            val entityId = when (firstTarget) {
+                is ChosenTarget.Permanent -> firstTarget.entityId
+                is ChosenTarget.Card -> firstTarget.cardId
+                else -> null
+            }
+            if (entityId != null) {
+                val entity = state.getEntity(entityId)
                 entity?.get<ControllerComponent>()?.controllerId ?: controllerId
             } else {
                 controllerId

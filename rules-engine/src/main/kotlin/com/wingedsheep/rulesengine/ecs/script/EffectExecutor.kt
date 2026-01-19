@@ -4,6 +4,7 @@ import com.wingedsheep.rulesengine.ability.Effect
 import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.decision.EffectDecision
+import com.wingedsheep.rulesengine.ecs.event.ChosenTarget
 import com.wingedsheep.rulesengine.ecs.script.handler.EffectHandlerRegistry
 import com.wingedsheep.rulesengine.ecs.layers.Modifier
 
@@ -49,11 +50,14 @@ class EffectExecutor(
 
 /**
  * Context for effect execution.
+ *
+ * Targets are represented as ChosenTarget, which is the unified target type
+ * used throughout the ECS architecture.
  */
 data class ExecutionContext(
     val controllerId: EntityId,
     val sourceId: EntityId,
-    val targets: List<ResolvedTarget> = emptyList()
+    val targets: List<ChosenTarget> = emptyList()
 )
 
 /**
@@ -97,14 +101,6 @@ fun interface EffectContinuation {
      * @return The final result after completing the effect
      */
     fun resume(selectedIds: List<EntityId>): ExecutionResult
-}
-
-/**
- * Target types for effect execution - represents a resolved target.
- */
-sealed interface ResolvedTarget {
-    data class Player(val playerId: EntityId) : ResolvedTarget
-    data class Permanent(val entityId: EntityId) : ResolvedTarget
 }
 
 /**

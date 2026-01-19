@@ -93,13 +93,10 @@ class JungleLionScenarioTest : FunSpec({
             state = state.copy(turnState = state.turnState.copy(activePlayer = player2Id))
             // 2. Start Combat
             state = state.startCombat(defendingPlayerId = player1Id)
-            // 3. Declare Bob's bear as attacker
+            // 3. Declare Bob's bear as attacker (ECS pattern: add AttackingComponent to entity)
             state = state.updateEntity(attackerId) {
                 it.with(AttackingComponent.attackingPlayer(player1Id))
             }
-
-            // Use copy/combat!!.addAttacker instead of updateCombat
-            state = state.copy(combat = state.combat!!.addAttacker(attackerId))
 
             // 4. Move to Declare Blockers
             state = state.copy(turnState = state.turnState.copy(step = Step.DECLARE_BLOCKERS))

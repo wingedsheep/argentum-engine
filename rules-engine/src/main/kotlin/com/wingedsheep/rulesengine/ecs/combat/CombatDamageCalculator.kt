@@ -109,15 +109,16 @@ object CombatDamageCalculator {
         state: GameState,
         modifierProvider: ModifierProvider? = null
     ): DamageCalculationResult {
-        val combat = state.combat
-            ?: return DamageCalculationResult(DamageStep.FIRST_STRIKE, emptyList(), emptySet())
+        if (state.combat == null) {
+            return DamageCalculationResult(DamageStep.FIRST_STRIKE, emptyList(), emptySet())
+        }
 
         val projector = StateProjector.forState(state, modifierProvider)
         val damageEvents = mutableListOf<PendingDamageEvent>()
         val creaturesDealtDamage = mutableSetOf<EntityId>()
 
-        // Calculate damage from attackers with first strike or double strike
-        for (attackerId in combat.attackers.keys) {
+        // Calculate damage from attackers with first strike or double strike (ECS query)
+        for (attackerId in state.entitiesWithComponent<AttackingComponent>()) {
             val attacking = state.getComponent<AttackingComponent>(attackerId) ?: continue
 
             // Skip if doesn't deal first strike damage
@@ -160,15 +161,16 @@ object CombatDamageCalculator {
         state: GameState,
         modifierProvider: ModifierProvider? = null
     ): DamageCalculationResult {
-        val combat = state.combat
-            ?: return DamageCalculationResult(DamageStep.REGULAR, emptyList(), emptySet())
+        if (state.combat == null) {
+            return DamageCalculationResult(DamageStep.REGULAR, emptyList(), emptySet())
+        }
 
         val projector = StateProjector.forState(state, modifierProvider)
         val damageEvents = mutableListOf<PendingDamageEvent>()
         val creaturesDealtDamage = mutableSetOf<EntityId>()
 
-        // Calculate damage from attackers
-        for (attackerId in combat.attackers.keys) {
+        // Calculate damage from attackers (ECS query)
+        for (attackerId in state.entitiesWithComponent<AttackingComponent>()) {
             val attacking = state.getComponent<AttackingComponent>(attackerId) ?: continue
 
             // Skip if doesn't deal regular damage
@@ -210,11 +212,11 @@ object CombatDamageCalculator {
         state: GameState,
         modifierProvider: ModifierProvider? = null
     ): Boolean {
-        val combat = state.combat ?: return false
+        if (state.combat == null) return false
         val projector = StateProjector.forState(state, modifierProvider)
 
-        // Check attackers
-        for (attackerId in combat.attackers.keys) {
+        // Check attackers (ECS query)
+        for (attackerId in state.entitiesWithComponent<AttackingComponent>()) {
             val attacker = projector.getView(attackerId) ?: continue
             if (attacker.hasKeyword(Keyword.FIRST_STRIKE) || attacker.hasKeyword(Keyword.DOUBLE_STRIKE)) {
                 return true

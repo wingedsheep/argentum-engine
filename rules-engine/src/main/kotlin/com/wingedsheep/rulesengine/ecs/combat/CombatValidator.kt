@@ -128,8 +128,7 @@ object CombatValidator {
         }
 
         // Must not already be attacking
-        val combat = state.combat
-        if (combat != null && creatureId in combat.attackers.keys) {
+        if (state.hasComponent<AttackingComponent>(creatureId)) {
             return ValidationResult.Invalid("Creature is already attacking")
         }
 
@@ -239,7 +238,7 @@ object CombatValidator {
         }
 
         // Attacker must be attacking
-        if (attackerId !in combat.attackers.keys) {
+        if (!state.hasComponent<AttackingComponent>(attackerId)) {
             return BlockValidationResult.Invalid("Target creature is not attacking")
         }
 
@@ -363,11 +362,12 @@ object CombatValidator {
         state: GameState,
         modifierProvider: ModifierProvider? = null
     ): List<EntityId> {
-        val combat = state.combat ?: return emptyList()
+        if (state.combat == null) return emptyList()
         val projector = StateProjector.forState(state, modifierProvider)
         val violations = mutableListOf<EntityId>()
 
-        for (attackerId in combat.attackers.keys) {
+        // Query all entities with AttackingComponent (ECS pattern)
+        for (attackerId in state.entitiesWithComponent<AttackingComponent>()) {
             val attacker = projector.getView(attackerId) ?: continue
 
             if (attacker.hasKeyword(Keyword.MENACE)) {
@@ -407,7 +407,7 @@ object CombatValidator {
             if (!mustAttack) return@filter false
 
             // Is not already attacking
-            if (creatureId in combat.attackers.keys) return@filter false
+            if (state.hasComponent<AttackingComponent>(creatureId)) return@filter false
 
             // Can actually attack (not tapped, no summoning sickness, etc.)
             val creature = projector.getView(creatureId) ?: return@filter false
@@ -453,9 +453,10 @@ object CombatValidator {
         state: GameState,
         modifierProvider: ModifierProvider? = null
     ): List<EntityId> {
-        val combat = state.combat ?: return emptyList()
+        if (state.combat == null) return emptyList()
 
-        return combat.attackers.keys.filter { attackerId ->
+        // Query all attackers via ECS component
+        return state.entitiesWithComponent<AttackingComponent>().filter { attackerId ->
             // Has MustBeBlockedComponent
             val mustBeBlocked = state.hasComponent<MustBeBlockedComponent>(attackerId)
             if (!mustBeBlocked) return@filter false
@@ -541,10 +542,14 @@ object CombatValidator {
         playerId: EntityId,
         modifierProvider: ModifierProvider? = null
     ): Boolean {
-        val combat = state.combat ?: return false
+        if (state.combat == null) return false
+
+        // Query all attackers via ECS component
+        val attackerIds = state.entitiesWithComponent<AttackingComponent>()
+        if (attackerIds.isEmpty()) return false
 
         return state.getCreaturesControlledBy(playerId).any { blockerId ->
-            combat.attackers.keys.any { attackerId ->
+            attackerIds.any { attackerId ->
                 canDeclareBlocker(state, blockerId, attackerId, playerId, modifierProvider).let { result ->
                     result is BlockValidationResult.Valid || result is BlockValidationResult.RequiresCost
                 }

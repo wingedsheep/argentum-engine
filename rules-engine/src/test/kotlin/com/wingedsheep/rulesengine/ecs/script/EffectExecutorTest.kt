@@ -11,6 +11,7 @@ import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.components.*
+import com.wingedsheep.rulesengine.ecs.event.ChosenTarget
 import com.wingedsheep.rulesengine.zone.ZoneType
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -112,7 +113,7 @@ class EffectExecutorTest : FunSpec({
             val context = ExecutionContext(
                 controllerId = player1Id,
                 sourceId = player1Id,
-                targets = listOf(ResolvedTarget.Permanent(bearId))
+                targets = listOf(ChosenTarget.Permanent(bearId))
             )
 
             val result = executor.execute(state, effect, context)
@@ -132,7 +133,7 @@ class EffectExecutorTest : FunSpec({
             val context = ExecutionContext(
                 controllerId = player1Id,
                 sourceId = player1Id,
-                targets = listOf(ResolvedTarget.Permanent(bearId))
+                targets = listOf(ChosenTarget.Permanent(bearId))
             )
 
             val result = executor.execute(state, effect, context)
@@ -150,7 +151,7 @@ class EffectExecutorTest : FunSpec({
             val context = ExecutionContext(
                 controllerId = player1Id,
                 sourceId = player1Id,
-                targets = listOf(ResolvedTarget.Permanent(bearId))
+                targets = listOf(ChosenTarget.Permanent(bearId))
             )
 
             val result = executor.execute(state, effect, context)
@@ -167,7 +168,7 @@ class EffectExecutorTest : FunSpec({
             val context = ExecutionContext(
                 controllerId = player1Id,
                 sourceId = player1Id,
-                targets = listOf(ResolvedTarget.Permanent(bearId))
+                targets = listOf(ChosenTarget.Permanent(bearId))
             )
 
             val result = executor.execute(state, effect, context)
@@ -189,7 +190,7 @@ class EffectExecutorTest : FunSpec({
             val context = ExecutionContext(
                 controllerId = player1Id,
                 sourceId = player1Id,
-                targets = listOf(ResolvedTarget.Permanent(bearId))
+                targets = listOf(ChosenTarget.Permanent(bearId))
             )
 
             val result = executor.execute(state, effect, context)
@@ -326,7 +327,7 @@ class EffectExecutorTest : FunSpec({
             val context = ExecutionContext(
                 controllerId = player1Id,
                 sourceId = player1Id,
-                targets = listOf(ResolvedTarget.Permanent(bearId))
+                targets = listOf(ChosenTarget.Permanent(bearId))
             )
 
             val result = executor.execute(state, effect, context)
@@ -342,7 +343,7 @@ class EffectExecutorTest : FunSpec({
             val context = ExecutionContext(
                 controllerId = player1Id,
                 sourceId = player1Id,
-                targets = listOf(ResolvedTarget.Permanent(bearId))
+                targets = listOf(ChosenTarget.Permanent(bearId))
             )
 
             val result = executor.execute(state, effect, context)

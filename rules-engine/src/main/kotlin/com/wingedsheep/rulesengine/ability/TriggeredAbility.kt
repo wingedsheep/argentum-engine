@@ -1,6 +1,7 @@
 package com.wingedsheep.rulesengine.ability
 
 import com.wingedsheep.rulesengine.ecs.EntityId
+import com.wingedsheep.rulesengine.ecs.event.ChosenTarget
 import kotlinx.serialization.Serializable
 
 /**
@@ -127,6 +128,8 @@ sealed interface TriggerContext {
 /**
  * A triggered ability on the stack, ready to resolve.
  * This is what gets put on the stack when a trigger fires.
+ *
+ * Note: Uses ChosenTarget from ecs.event package for target representation.
  */
 @Serializable
 data class StackedTrigger(
@@ -136,22 +139,4 @@ data class StackedTrigger(
     val sourceId: EntityId get() = pendingTrigger.sourceId
     val controllerId: EntityId get() = pendingTrigger.controllerId
     val description: String get() = pendingTrigger.description
-}
-
-/**
- * A target that has been chosen for an effect.
- */
-@Serializable
-sealed interface ChosenTarget {
-    /**
-     * A player as a chosen target.
-     */
-    @Serializable
-    data class PlayerTarget(val entityId: EntityId) : ChosenTarget
-
-    /**
-     * A card/permanent as a chosen target.
-     */
-    @Serializable
-    data class CardTarget(val entityId: EntityId) : ChosenTarget
 }

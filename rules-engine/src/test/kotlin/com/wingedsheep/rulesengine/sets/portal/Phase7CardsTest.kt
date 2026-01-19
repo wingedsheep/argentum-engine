@@ -9,7 +9,7 @@ import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.components.CardComponent
 import com.wingedsheep.rulesengine.ecs.components.ControllerComponent
-import com.wingedsheep.rulesengine.ecs.script.ResolvedTarget
+import com.wingedsheep.rulesengine.ecs.event.ChosenTarget
 import com.wingedsheep.rulesengine.ecs.script.ExecutionContext
 import com.wingedsheep.rulesengine.ecs.script.handler.EffectHandlerRegistry
 import com.wingedsheep.rulesengine.zone.ZoneType
@@ -309,7 +309,7 @@ class Phase7CardsTest : FunSpec({
             val context = ExecutionContext(
                 controllerId = player1Id,
                 sourceId = player1Id,
-                targets = listOf(ResolvedTarget.Permanent(creatureId))
+                targets = listOf(ChosenTarget.Permanent(creatureId))
             )
 
             val result = registry.execute(state, effect, context)

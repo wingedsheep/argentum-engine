@@ -899,17 +899,14 @@ class GameActionHandler {
         val cardName = cardComponent?.definition?.name ?: "Unknown"
         events.add(GameActionEvent.AttackerDeclared(action.creatureId, cardName))
 
-        val newCombat = combat.addAttacker(action.creatureId)
-
         // Check for Vigilance - creatures with vigilance don't tap when attacking
         val hasVigilance = cardComponent?.definition?.keywords?.contains(Keyword.VIGILANCE) ?: false
 
-        return state
-            .copy(combat = newCombat)
-            .updateEntity(action.creatureId) { c ->
-                val withAttacking = c.with(AttackingComponent.attackingPlayer(combat.defendingPlayer))
-                if (hasVigilance) withAttacking else withAttacking.with(TappedComponent)
-            }
+        // Add AttackingComponent to the creature (ECS pattern - attacker status lives on the entity)
+        return state.updateEntity(action.creatureId) { c ->
+            val withAttacking = c.with(AttackingComponent.attackingPlayer(combat.defendingPlayer))
+            if (hasVigilance) withAttacking else withAttacking.with(TappedComponent)
+        }
     }
 
     private fun executeDeclareBlocker(
@@ -917,7 +914,7 @@ class GameActionHandler {
         action: DeclareBlocker,
         events: MutableList<GameActionEvent>
     ): GameState {
-        val combat = state.combat ?: throw IllegalStateException("Not in combat")
+        if (state.combat == null) throw IllegalStateException("Not in combat")
         val container = state.getEntity(action.blockerId) ?: throw IllegalStateException("Blocker not found")
 
         if (container.has<TappedComponent>()) {
@@ -927,10 +924,8 @@ class GameActionHandler {
         val cardName = container.get<CardComponent>()?.definition?.name ?: "Unknown"
         events.add(GameActionEvent.BlockerDeclared(action.blockerId, action.attackerId, cardName))
 
-        val newCombat = combat.addBlocker(action.blockerId, action.attackerId)
-
+        // Add BlockingComponent to the blocker (ECS pattern - blocker status lives on the entity)
         return state
-            .copy(combat = newCombat)
             .updateEntity(action.blockerId) { c ->
                 c.with(BlockingComponent(action.attackerId))
             }

@@ -16,8 +16,8 @@ import com.wingedsheep.rulesengine.ecs.layers.Layer
 import com.wingedsheep.rulesengine.ecs.layers.Modification
 import com.wingedsheep.rulesengine.ecs.layers.Modifier
 import com.wingedsheep.rulesengine.ecs.layers.ModifierFilter
+import com.wingedsheep.rulesengine.ecs.event.ChosenTarget
 import com.wingedsheep.rulesengine.ecs.script.EffectEvent
-import com.wingedsheep.rulesengine.ecs.script.ResolvedTarget
 import com.wingedsheep.rulesengine.ecs.script.ExecutionContext
 import com.wingedsheep.rulesengine.ecs.script.ExecutionResult
 import kotlin.reflect.KClass
@@ -33,7 +33,7 @@ class TapUntapHandler : BaseEffectHandler<TapUntapEffect>() {
         effect: TapUntapEffect,
         context: ExecutionContext
     ): ExecutionResult {
-        val target = context.targets.filterIsInstance<ResolvedTarget.Permanent>().firstOrNull()
+        val target = context.targets.filterIsInstance<ChosenTarget.Permanent>().firstOrNull()
             ?: return noOp(state)
 
         val newState = if (effect.tap) {
@@ -64,7 +64,7 @@ class ModifyStatsHandler : BaseEffectHandler<ModifyStatsEffect>() {
         effect: ModifyStatsEffect,
         context: ExecutionContext
     ): ExecutionResult {
-        val target = context.targets.filterIsInstance<ResolvedTarget.Permanent>().firstOrNull()
+        val target = context.targets.filterIsInstance<ChosenTarget.Permanent>().firstOrNull()
             ?: return noOp(state)
 
         return ExecutionResult(
@@ -101,7 +101,7 @@ class AddCountersHandler : BaseEffectHandler<AddCountersEffect>() {
     ): ExecutionResult {
         val targetId = when (effect.target) {
             is EffectTarget.Self -> context.sourceId
-            else -> context.targets.filterIsInstance<ResolvedTarget.Permanent>().firstOrNull()?.entityId
+            else -> context.targets.filterIsInstance<ChosenTarget.Permanent>().firstOrNull()?.entityId
                 ?: return noOp(state)
         }
 
@@ -138,7 +138,7 @@ class MustBeBlockedHandler : BaseEffectHandler<MustBeBlockedEffect>() {
         effect: MustBeBlockedEffect,
         context: ExecutionContext
     ): ExecutionResult {
-        val target = context.targets.filterIsInstance<ResolvedTarget.Permanent>().firstOrNull()
+        val target = context.targets.filterIsInstance<ChosenTarget.Permanent>().firstOrNull()
             ?: return noOp(state)
 
         val newState = state.updateEntity(target.entityId) { c ->
@@ -160,7 +160,7 @@ class GrantKeywordUntilEndOfTurnHandler : BaseEffectHandler<GrantKeywordUntilEnd
         effect: GrantKeywordUntilEndOfTurnEffect,
         context: ExecutionContext
     ): ExecutionResult {
-        val target = context.targets.filterIsInstance<ResolvedTarget.Permanent>().firstOrNull()
+        val target = context.targets.filterIsInstance<ChosenTarget.Permanent>().firstOrNull()
             ?: return noOp(state)
 
         return ExecutionResult(

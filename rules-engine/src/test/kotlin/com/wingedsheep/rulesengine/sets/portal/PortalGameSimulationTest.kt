@@ -8,7 +8,7 @@ import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.action.*
 import com.wingedsheep.rulesengine.ecs.components.*
-import com.wingedsheep.rulesengine.ecs.script.ResolvedTarget
+import com.wingedsheep.rulesengine.ecs.event.ChosenTarget
 import com.wingedsheep.rulesengine.ecs.script.ExecutionContext
 import com.wingedsheep.rulesengine.ecs.script.ScriptModifierProvider
 import com.wingedsheep.rulesengine.ecs.script.handler.EffectHandlerRegistry

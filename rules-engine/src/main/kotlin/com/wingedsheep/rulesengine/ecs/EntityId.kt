@@ -1,7 +1,5 @@
 package com.wingedsheep.rulesengine.ecs
 
-import com.wingedsheep.rulesengine.core.CardId
-import com.wingedsheep.rulesengine.player.PlayerId
 import kotlinx.serialization.Serializable
 import java.util.UUID
 
@@ -9,8 +7,8 @@ import java.util.UUID
  * Universal identifier for all game entities.
  * Can represent cards, tokens, players, abilities, emblems, etc.
  *
- * This replaces the more specific CardId for ECS usage while maintaining
- * interoperability with existing code through conversion functions.
+ * EntityId is the single unified identifier type in the ECS architecture.
+ * All game objects (players, cards, tokens, abilities) use this type.
  */
 @JvmInline
 @Serializable
@@ -28,29 +26,5 @@ value class EntityId(val value: String) {
          * Create an EntityId from a string value.
          */
         fun of(value: String): EntityId = EntityId(value)
-
-        /**
-         * Convert a CardId to an EntityId.
-         * Used during migration from old state to ECS state.
-         */
-        fun fromCardId(cardId: CardId): EntityId = EntityId(cardId.value)
-
-        /**
-         * Convert a PlayerId to an EntityId.
-         * Used during migration from old state to ECS state.
-         */
-        fun fromPlayerId(playerId: PlayerId): EntityId = EntityId(playerId.value)
     }
-
-    /**
-     * Convert this EntityId to a CardId.
-     * Used during migration from ECS state back to old state.
-     */
-    fun toCardId(): CardId = CardId(value)
-
-    /**
-     * Convert this EntityId to a PlayerId.
-     * Used during migration from ECS state back to old state.
-     */
-    fun toPlayerId(): PlayerId = PlayerId.of(value)
 }

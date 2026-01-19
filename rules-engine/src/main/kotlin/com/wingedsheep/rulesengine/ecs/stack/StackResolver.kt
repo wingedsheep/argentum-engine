@@ -10,7 +10,6 @@ import com.wingedsheep.rulesengine.ecs.event.ChosenTarget
 import com.wingedsheep.rulesengine.ecs.layers.Modifier
 import com.wingedsheep.rulesengine.ecs.script.EffectExecutor
 import com.wingedsheep.rulesengine.ecs.script.EffectEvent
-import com.wingedsheep.rulesengine.ecs.script.ResolvedTarget
 import com.wingedsheep.rulesengine.ecs.script.ExecutionContext
 
 /**
@@ -240,7 +239,7 @@ class StackResolver(
             val context = ExecutionContext(
                 controllerId = spellComponent.casterId,
                 sourceId = entityId,
-                targets = spellComponent.targets.map { chosenToResolvedTarget(it) }
+                targets = spellComponent.targets
             )
 
             val result = effectExecutor.execute(newState, spellEffect.effect, context)
@@ -331,7 +330,7 @@ class StackResolver(
         val context = ExecutionContext(
             controllerId = triggerComponent.controllerId,
             sourceId = triggerComponent.sourceId,
-            targets = triggerComponent.targets.map { chosenToResolvedTarget(it) }
+            targets = triggerComponent.targets
         )
 
         val ability = triggerComponent.ability
@@ -405,7 +404,7 @@ class StackResolver(
         val context = ExecutionContext(
             controllerId = abilityComponent.controllerId,
             sourceId = abilityComponent.sourceId,
-            targets = abilityComponent.targets.map { chosenToResolvedTarget(it) }
+            targets = abilityComponent.targets
         )
 
         val result = effectExecutor.execute(newState, abilityComponent.effect, context)
@@ -477,18 +476,4 @@ class StackResolver(
         }
     }
 
-    // ==========================================================================
-    // Utility Methods
-    // ==========================================================================
-
-    /**
-     * Convert ChosenTarget to ResolvedTarget for effect execution.
-     */
-    private fun chosenToResolvedTarget(chosen: ChosenTarget): ResolvedTarget {
-        return when (chosen) {
-            is ChosenTarget.Player -> ResolvedTarget.Player(chosen.playerId)
-            is ChosenTarget.Permanent -> ResolvedTarget.Permanent(chosen.entityId)
-            is ChosenTarget.Card -> ResolvedTarget.Permanent(chosen.cardId) // Treat cards as permanents for now
-        }
-    }
 }

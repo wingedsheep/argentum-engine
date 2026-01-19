@@ -12,8 +12,8 @@ import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.components.CardComponent
 import com.wingedsheep.rulesengine.ecs.components.DamageComponent
 import com.wingedsheep.rulesengine.ecs.components.LifeComponent
+import com.wingedsheep.rulesengine.ecs.event.ChosenTarget
 import com.wingedsheep.rulesengine.ecs.script.EffectEvent
-import com.wingedsheep.rulesengine.ecs.script.ResolvedTarget
 import com.wingedsheep.rulesengine.ecs.script.ExecutionContext
 import com.wingedsheep.rulesengine.ecs.script.ExecutionResult
 import kotlin.reflect.KClass
@@ -50,8 +50,9 @@ class DealDamageHandler : BaseEffectHandler<DealDamageEffect>() {
             is EffectTarget.TargetCreature, is EffectTarget.AnyTarget -> {
                 val target = context.targets.firstOrNull()
                 when (target) {
-                    is ResolvedTarget.Player -> dealDamageToPlayer(state, target.playerId, effect.amount, context.sourceId)
-                    is ResolvedTarget.Permanent -> dealDamageToCreature(state, target.entityId, effect.amount, context.sourceId)
+                    is ChosenTarget.Player -> dealDamageToPlayer(state, target.playerId, effect.amount, context.sourceId)
+                    is ChosenTarget.Permanent -> dealDamageToCreature(state, target.entityId, effect.amount, context.sourceId)
+                    is ChosenTarget.Card -> dealDamageToCreature(state, target.cardId, effect.amount, context.sourceId)
                     null -> noOp(state)
                 }
             }
@@ -212,7 +213,7 @@ class DrainHandler : BaseEffectHandler<DrainEffect>() {
             is EffectTarget.AnyTarget, is EffectTarget.TargetCreature -> {
                 val target = context.targets.firstOrNull()
                 when (target) {
-                    is ResolvedTarget.Player -> {
+                    is ChosenTarget.Player -> {
                         val container = currentState.getEntity(target.playerId)
                         val lifeComponent = container?.get<LifeComponent>() ?: return noOp(state)
 
@@ -221,7 +222,7 @@ class DrainHandler : BaseEffectHandler<DrainEffect>() {
                         }
                         events.add(EffectEvent.DamageDealtToPlayer(context.sourceId, target.playerId, effect.amount))
                     }
-                    is ResolvedTarget.Permanent -> {
+                    is ChosenTarget.Permanent -> {
                         val container = currentState.getEntity(target.entityId)
                         val damageComponent = container?.get<DamageComponent>() ?: DamageComponent(0)
 
@@ -229,6 +230,15 @@ class DrainHandler : BaseEffectHandler<DrainEffect>() {
                             c.with(damageComponent.addDamage(effect.amount))
                         }
                         events.add(EffectEvent.DamageDealtToCreature(context.sourceId, target.entityId, effect.amount))
+                    }
+                    is ChosenTarget.Card -> {
+                        val container = currentState.getEntity(target.cardId)
+                        val damageComponent = container?.get<DamageComponent>() ?: DamageComponent(0)
+
+                        currentState = currentState.updateEntity(target.cardId) { c ->
+                            c.with(damageComponent.addDamage(effect.amount))
+                        }
+                        events.add(EffectEvent.DamageDealtToCreature(context.sourceId, target.cardId, effect.amount))
                     }
                     null -> return noOp(state)
                 }
@@ -245,7 +255,7 @@ class DrainHandler : BaseEffectHandler<DrainEffect>() {
             }
             is EffectTarget.TargetNonblackCreature -> {
                 val target = context.targets.firstOrNull()
-                if (target is ResolvedTarget.Permanent) {
+                if (target is ChosenTarget.Permanent) {
                     val container = currentState.getEntity(target.entityId)
                     val damageComponent = container?.get<DamageComponent>() ?: DamageComponent(0)
 

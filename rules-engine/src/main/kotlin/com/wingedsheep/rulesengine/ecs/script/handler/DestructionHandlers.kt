@@ -13,8 +13,8 @@ import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.components.CardComponent
 import com.wingedsheep.rulesengine.ecs.components.ControllerComponent
 import com.wingedsheep.rulesengine.ecs.components.DamageComponent
+import com.wingedsheep.rulesengine.ecs.event.ChosenTarget
 import com.wingedsheep.rulesengine.ecs.script.EffectEvent
-import com.wingedsheep.rulesengine.ecs.script.ResolvedTarget
 import com.wingedsheep.rulesengine.ecs.script.ExecutionContext
 import com.wingedsheep.rulesengine.ecs.script.ExecutionResult
 import com.wingedsheep.rulesengine.zone.ZoneType
@@ -31,7 +31,7 @@ class DestroyHandler : BaseEffectHandler<DestroyEffect>() {
         effect: DestroyEffect,
         context: ExecutionContext
     ): ExecutionResult {
-        val target = context.targets.filterIsInstance<ResolvedTarget.Permanent>().firstOrNull()
+        val target = context.targets.filterIsInstance<ChosenTarget.Permanent>().firstOrNull()
             ?: return noOp(state)
 
         return destroyPermanent(state, target.entityId)
@@ -49,7 +49,7 @@ class ExileHandler : BaseEffectHandler<ExileEffect>() {
         effect: ExileEffect,
         context: ExecutionContext
     ): ExecutionResult {
-        val target = context.targets.filterIsInstance<ResolvedTarget.Permanent>().firstOrNull()
+        val target = context.targets.filterIsInstance<ChosenTarget.Permanent>().firstOrNull()
             ?: return noOp(state)
 
         val container = state.getEntity(target.entityId) ?: return noOp(state)
@@ -74,7 +74,7 @@ class ReturnToHandHandler : BaseEffectHandler<ReturnToHandEffect>() {
         effect: ReturnToHandEffect,
         context: ExecutionContext
     ): ExecutionResult {
-        val target = context.targets.filterIsInstance<ResolvedTarget.Permanent>().firstOrNull()
+        val target = context.targets.filterIsInstance<ChosenTarget.Permanent>().firstOrNull()
             ?: return noOp(state)
 
         val container = state.getEntity(target.entityId) ?: return noOp(state)

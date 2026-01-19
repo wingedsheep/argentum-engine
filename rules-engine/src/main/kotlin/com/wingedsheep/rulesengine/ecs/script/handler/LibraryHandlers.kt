@@ -16,6 +16,7 @@ import com.wingedsheep.rulesengine.ecs.components.CardComponent
 import com.wingedsheep.rulesengine.ecs.components.TappedComponent
 import com.wingedsheep.rulesengine.ecs.decision.CardOption
 import com.wingedsheep.rulesengine.ecs.decision.EffectChooseCards
+import com.wingedsheep.rulesengine.ecs.event.ChosenTarget
 import com.wingedsheep.rulesengine.ecs.script.EffectEvent
 import com.wingedsheep.rulesengine.ecs.script.EffectContinuation
 import com.wingedsheep.rulesengine.ecs.script.ExecutionContext
@@ -323,7 +324,8 @@ class PutOnTopOfLibraryHandler : BaseEffectHandler<PutOnTopOfLibraryEffect>() {
             EffectTarget.Self -> context.sourceId
             else -> context.targets.firstOrNull()?.let {
                 when (it) {
-                    is com.wingedsheep.rulesengine.ecs.script.ResolvedTarget.Permanent -> it.entityId
+                    is ChosenTarget.Permanent -> it.entityId
+                    is ChosenTarget.Card -> it.cardId
                     else -> null
                 }
             } ?: context.sourceId

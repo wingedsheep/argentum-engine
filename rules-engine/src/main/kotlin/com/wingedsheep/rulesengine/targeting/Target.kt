@@ -1,11 +1,14 @@
 package com.wingedsheep.rulesengine.targeting
 
-import com.wingedsheep.rulesengine.ability.ChosenTarget
 import com.wingedsheep.rulesengine.ecs.EntityId
+import com.wingedsheep.rulesengine.ecs.event.ChosenTarget
 import kotlinx.serialization.Serializable
 
 /**
  * Represents a potential or selected target for a spell or ability.
+ *
+ * This is a simplified target representation for UI/selection purposes.
+ * For effect execution, targets are converted to ChosenTarget.
  *
  * Uses EntityId for all target identification.
  */
@@ -33,19 +36,20 @@ sealed interface Target {
 }
 
 /**
- * Convert a Target to a ChosenTarget (for compatibility with existing effect system).
+ * Convert a Target to a ChosenTarget for effect execution.
  */
 fun Target.toChosenTarget(): ChosenTarget = when (this) {
-    is Target.PlayerTarget -> ChosenTarget.PlayerTarget(entityId)
-    is Target.CardTarget -> ChosenTarget.CardTarget(entityId)
+    is Target.PlayerTarget -> ChosenTarget.Player(entityId)
+    is Target.CardTarget -> ChosenTarget.Permanent(entityId)
 }
 
 /**
- * Convert a ChosenTarget to a Target.
+ * Convert a ChosenTarget to a Target for UI display.
  */
 fun ChosenTarget.toTarget(): Target = when (this) {
-    is ChosenTarget.PlayerTarget -> Target.PlayerTarget(entityId)
-    is ChosenTarget.CardTarget -> Target.CardTarget(entityId)
+    is ChosenTarget.Player -> Target.PlayerTarget(playerId)
+    is ChosenTarget.Permanent -> Target.CardTarget(entityId)
+    is ChosenTarget.Card -> Target.CardTarget(cardId)
 }
 
 /**

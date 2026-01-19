@@ -1,6 +1,7 @@
 package com.wingedsheep.rulesengine.ability
 
 import com.wingedsheep.rulesengine.ecs.EntityId
+import com.wingedsheep.rulesengine.ecs.event.ChosenTarget
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
@@ -176,7 +177,7 @@ class TriggeredAbilityTest : FunSpec({
 
             val stackedTrigger = StackedTrigger(
                 pendingTrigger = pendingTrigger,
-                chosenTargets = listOf(ChosenTarget.CardTarget(EntityId.of("target_456")))
+                chosenTargets = listOf(ChosenTarget.Permanent(EntityId.of("target_456")))
             )
 
             stackedTrigger.chosenTargets.size shouldBe 1
@@ -184,13 +185,13 @@ class TriggeredAbilityTest : FunSpec({
     }
 
     context("ChosenTarget") {
-        test("PlayerTarget stores entity ID") {
-            val target = ChosenTarget.PlayerTarget(EntityId.of("player2"))
-            target.entityId.value shouldBe "player2"
+        test("Player stores player ID") {
+            val target = ChosenTarget.Player(EntityId.of("player2"))
+            target.playerId.value shouldBe "player2"
         }
 
-        test("CardTarget stores entity ID") {
-            val target = ChosenTarget.CardTarget(EntityId.of("card_789"))
+        test("Permanent stores entity ID") {
+            val target = ChosenTarget.Permanent(EntityId.of("card_789"))
             target.entityId.value shouldBe "card_789"
         }
     }

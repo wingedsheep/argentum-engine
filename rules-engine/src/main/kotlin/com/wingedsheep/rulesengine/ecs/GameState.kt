@@ -11,7 +11,6 @@ import com.wingedsheep.rulesengine.player.ManaPool
 import com.wingedsheep.rulesengine.game.Phase
 import com.wingedsheep.rulesengine.game.Step
 import com.wingedsheep.rulesengine.game.TurnState
-import com.wingedsheep.rulesengine.player.PlayerId
 import kotlinx.serialization.Serializable
 
 /**

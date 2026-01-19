@@ -63,12 +63,9 @@ class CombatValidatorTest : FunSpec({
             // Blocker (Player 2)
             val (blockerId, state2) = state1.addCreatureToBattlefield(bearDef, player2Id, false)
 
-            // Declare attacker
+            // Declare attacker (ECS pattern: add AttackingComponent to entity)
             state = state2
                 .updateEntity(attackerId) { it.with(AttackingComponent.attackingPlayer(player2Id)) }
-
-            // FIXED: Use copy/combat!!.addAttacker instead of updateCombat
-            state = state.copy(combat = state.combat!!.addAttacker(attackerId))
 
             // Inject a modifier provider that restricts the blocker
             val modifierProvider = object : ModifierProvider {

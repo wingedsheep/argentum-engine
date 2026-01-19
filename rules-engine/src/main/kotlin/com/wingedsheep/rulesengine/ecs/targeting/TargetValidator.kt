@@ -4,6 +4,8 @@ import com.wingedsheep.rulesengine.core.Keyword
 import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
+import com.wingedsheep.rulesengine.ecs.components.AttackingComponent
+import com.wingedsheep.rulesengine.ecs.components.BlockingComponent
 import com.wingedsheep.rulesengine.ecs.layers.GameObjectView
 import com.wingedsheep.rulesengine.ecs.layers.StateProjector
 
@@ -274,8 +276,8 @@ object TargetValidator {
             CreatureFilter.Any -> true
             CreatureFilter.YouControl -> view.controllerId == controllerId
             CreatureFilter.YouDontControl -> view.controllerId != controllerId
-            CreatureFilter.Attacking -> state.combat?.isAttacking(target.entityId) == true
-            CreatureFilter.Blocking -> state.combat?.isBlocking(target.entityId) == true
+            CreatureFilter.Attacking -> state.hasComponent<AttackingComponent>(target.entityId)
+            CreatureFilter.Blocking -> state.hasComponent<BlockingComponent>(target.entityId)
             CreatureFilter.Tapped -> view.isTapped
             CreatureFilter.Untapped -> !view.isTapped
             is CreatureFilter.WithKeyword -> view.hasKeyword(filter.keyword)
