@@ -157,7 +157,8 @@ data class CardDefinition(
             manaCost: ManaCost,
             oracleText: String = "",
             subtypes: Set<Subtype> = emptySet(),
-            supertypes: Set<Supertype> = emptySet()
+            supertypes: Set<Supertype> = emptySet(),
+            metadata: ScryfallMetadata = ScryfallMetadata()
         ): CardDefinition = CardDefinition(
             name = name,
             manaCost = manaCost,
@@ -166,7 +167,8 @@ data class CardDefinition(
                 cardTypes = setOf(CardType.ENCHANTMENT),
                 subtypes = subtypes
             ),
-            oracleText = oracleText
+            oracleText = oracleText,
+            metadata = metadata
         )
 
         fun aura(

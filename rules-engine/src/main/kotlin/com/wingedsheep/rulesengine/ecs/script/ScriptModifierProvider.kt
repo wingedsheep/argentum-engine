@@ -70,6 +70,7 @@ class ScriptModifierProvider(
             is GlobalEffect -> convertGlobalEffect(ability, sourceId, controllerId)
             is CantBlock -> convertCantBlock(ability, sourceId, controllerId, state)
             is AssignDamageEqualToToughness -> convertAssignDamageEqualToToughness(ability, sourceId, controllerId, state)
+            is GrantDynamicStatsEffect -> convertGrantDynamicStatsEffect(ability, sourceId, controllerId, state)
         }
     }
 
@@ -290,6 +291,30 @@ class ScriptModifierProvider(
     }
 
     /**
+     * Convert GrantDynamicStatsEffect static ability to modifiers.
+     * This creates a modifier that applies +X/+X where X is evaluated at projection time.
+     */
+    private fun convertGrantDynamicStatsEffect(
+        ability: GrantDynamicStatsEffect,
+        sourceId: EntityId,
+        controllerId: EntityId,
+        state: GameState
+    ): List<Modifier> {
+        val filter = resolveStaticTarget(ability.target, sourceId, state)
+            ?: return emptyList()
+
+        return listOf(
+            Modifier(
+                layer = Layer.PT_MODIFY,
+                sourceId = sourceId,
+                timestamp = Modifier.nextTimestamp(),
+                modification = Modification.ModifyPTDynamic(ability.powerBonus, ability.toughnessBonus),
+                filter = filter
+            )
+        )
+    }
+
+    /**
      * Resolve a StaticTarget to a ModifierFilter.
      */
     private fun resolveStaticTarget(
@@ -316,6 +341,13 @@ class ScriptModifierProvider(
 
             is StaticTarget.SpecificCard -> {
                 ModifierFilter.Specific(target.entityId)
+            }
+
+            is StaticTarget.AllControlledCreatures -> {
+                // Get controller from source
+                val controllerId = state.getEntity(sourceId)?.get<ControllerComponent>()?.controllerId
+                    ?: return null
+                ModifierFilter.ControlledBy(controllerId)
             }
         }
     }

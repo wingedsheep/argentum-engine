@@ -1,5 +1,6 @@
 package com.wingedsheep.rulesengine.ecs.layers
 
+import com.wingedsheep.rulesengine.ability.DynamicAmount
 import com.wingedsheep.rulesengine.core.Color
 import com.wingedsheep.rulesengine.core.CardType
 import com.wingedsheep.rulesengine.core.Keyword
@@ -211,6 +212,16 @@ sealed interface Modification {
      */
     @Serializable
     data class ModifyToughness(val delta: Int) : Modification
+
+    /**
+     * Modify power and toughness by dynamic amounts that are evaluated at projection time.
+     * Used for effects like "Creatures you control get +X/+X where X is..."
+     */
+    @Serializable
+    data class ModifyPTDynamic(
+        val powerSource: DynamicAmount,
+        val toughnessSource: DynamicAmount
+    ) : Modification
 
     // =========================================================================
     // Layer 7e: P/T switching

@@ -310,6 +310,30 @@ sealed interface DynamicAmount {
     data class Fixed(val amount: Int) : DynamicAmount {
         override val description: String = "$amount"
     }
+
+    /**
+     * Count of creatures that entered the battlefield under your control this turn.
+     */
+    @Serializable
+    data object CreaturesEnteredThisTurn : DynamicAmount {
+        override val description: String = "the number of creatures that entered the battlefield under your control this turn"
+    }
+
+    /**
+     * Count of attacking creatures you control.
+     */
+    @Serializable
+    data object AttackingCreaturesYouControl : DynamicAmount {
+        override val description: String = "the number of attacking creatures you control"
+    }
+
+    /**
+     * Count of colors among permanents you control.
+     */
+    @Serializable
+    data object ColorsAmongPermanentsYouControl : DynamicAmount {
+        override val description: String = "the number of colors among permanents you control"
+    }
 }
 
 // =============================================================================
@@ -865,6 +889,12 @@ sealed interface EffectTarget {
         override val description: String = "target artifact"
     }
 
+    /** Target nonland permanent an opponent controls */
+    @Serializable
+    data object TargetOpponentNonlandPermanent : EffectTarget {
+        override val description: String = "target nonland permanent an opponent controls"
+    }
+
     /** The controller of the target (used for effects like "its controller gains 4 life") */
     @Serializable
     data object TargetController : EffectTarget {
@@ -1082,3 +1112,42 @@ data class TransformAllCreaturesEffect(
         append(effects.joinToString(", "))
     }
 }
+
+// =============================================================================
+// Exile Until Leaves Effects
+// =============================================================================
+
+/**
+ * Exile a permanent until this permanent leaves the battlefield.
+ * Used for O-Ring style effects like Liminal Hold.
+ */
+@Serializable
+data class ExileUntilLeavesEffect(
+    val target: EffectTarget
+) : Effect {
+    override val description: String =
+        "Exile ${target.description} until this permanent leaves the battlefield"
+}
+
+// =============================================================================
+// Put From Hand Effects
+// =============================================================================
+
+/**
+ * Put a creature card from your hand onto the battlefield.
+ * Used for effects like Kinscaer Sentry.
+ */
+@Serializable
+data class PutCreatureFromHandOntoBattlefieldEffect(
+    val maxManaValueSource: DynamicAmount,
+    val entersTapped: Boolean = false,
+    val entersAttacking: Boolean = false
+) : Effect {
+    override val description: String = buildString {
+        append("Put a creature card with mana value ${maxManaValueSource.description} or less ")
+        append("from your hand onto the battlefield")
+        if (entersTapped) append(" tapped")
+        if (entersAttacking) append(" and attacking")
+    }
+}
+

@@ -16,6 +16,9 @@ import com.wingedsheep.rulesengine.sets.ecl.cards.FlockImpostor
 import com.wingedsheep.rulesengine.sets.ecl.cards.GallantFowlknight
 import com.wingedsheep.rulesengine.sets.ecl.cards.GoldmeadowNomad
 import com.wingedsheep.rulesengine.sets.ecl.cards.KeepOut
+import com.wingedsheep.rulesengine.sets.ecl.cards.Kinbinding
+import com.wingedsheep.rulesengine.sets.ecl.cards.KinscaerSentry
+import com.wingedsheep.rulesengine.sets.ecl.cards.LiminalHold
 import com.wingedsheep.rulesengine.sets.ecl.cards.RooftopPercher
 
 object LorwynEclipsedSet : BaseCardRegistry() {
@@ -40,6 +43,9 @@ object LorwynEclipsedSet : BaseCardRegistry() {
         register(GallantFowlknight.definition, GallantFowlknight.script)
         register(GoldmeadowNomad.definition, GoldmeadowNomad.script)
         register(KeepOut.definition, KeepOut.script)
+        register(Kinbinding.definition, Kinbinding.script)
+        register(KinscaerSentry.definition, KinscaerSentry.script)
+        register(LiminalHold.definition, LiminalHold.script)
         register(RooftopPercher.definition, RooftopPercher.script)
     }
 }

@@ -1,5 +1,6 @@
 package com.wingedsheep.rulesengine.ecs.layers
 
+import com.wingedsheep.rulesengine.ability.DynamicAmount
 import com.wingedsheep.rulesengine.core.CardType
 import com.wingedsheep.rulesengine.core.Keyword
 import com.wingedsheep.rulesengine.core.Subtype
@@ -229,7 +230,7 @@ class StateProjector(
         val builder = GameObjectViewBuilder.from(baseView)
 
         for (modifier in sorted) {
-            applyModification(builder, modifier.modification)
+            applyModification(builder, modifier)
         }
 
         return builder.build()
@@ -238,7 +239,8 @@ class StateProjector(
     /**
      * Apply a single modification to the view builder.
      */
-    private fun applyModification(builder: GameObjectViewBuilder, modification: Modification) {
+    private fun applyModification(builder: GameObjectViewBuilder, modifier: Modifier) {
+        val modification = modifier.modification
         when (modification) {
             // Layer 2: Control
             is Modification.ChangeControl -> {
@@ -342,6 +344,15 @@ class StateProjector(
             is Modification.ModifyToughness -> {
                 builder.toughness = builder.toughness?.plus(modification.delta)
             }
+            is Modification.ModifyPTDynamic -> {
+                val controllerId = state.getEntity(modifier.sourceId)?.get<ControllerComponent>()?.controllerId
+                if (controllerId != null) {
+                    val powerBonus = evaluateDynamicAmount(modification.powerSource, modifier.sourceId, controllerId)
+                    val toughnessBonus = evaluateDynamicAmount(modification.toughnessSource, modifier.sourceId, controllerId)
+                    builder.power = builder.power?.plus(powerBonus)
+                    builder.toughness = builder.toughness?.plus(toughnessBonus)
+                }
+            }
 
             // Layer 7e: P/T switching
             is Modification.SwitchPT -> {
@@ -410,6 +421,49 @@ class StateProjector(
             CDAType.CUSTOM -> {
                 // Custom CDAs need script support
                 0 to 0
+            }
+        }
+    }
+
+    /**
+     * Evaluate a dynamic amount for effects like "+X/+X where X is..."
+     */
+    private fun evaluateDynamicAmount(amount: DynamicAmount, sourceId: EntityId, controllerId: EntityId): Int {
+        return when (amount) {
+            is DynamicAmount.Fixed -> amount.amount
+            is DynamicAmount.OtherCreaturesYouControl -> {
+                state.getCreaturesControlledBy(controllerId).count { it != sourceId }
+            }
+            is DynamicAmount.CreaturesYouControl -> {
+                state.getCreaturesControlledBy(controllerId).size
+            }
+            is DynamicAmount.AllCreatures -> {
+                state.getBattlefield().count { entityId ->
+                    state.getComponent<CardComponent>(entityId)?.definition?.isCreature == true
+                }
+            }
+            is DynamicAmount.YourLifeTotal -> {
+                state.getComponent<com.wingedsheep.rulesengine.ecs.components.LifeComponent>(controllerId)?.life ?: 0
+            }
+            is DynamicAmount.CreaturesEnteredThisTurn -> {
+                // TODO: Track creatures that entered this turn
+                // This requires turn tracking infrastructure to be added
+                // For now returns 0 - the card Kinbinding will need this implemented
+                0
+            }
+            is DynamicAmount.AttackingCreaturesYouControl -> {
+                // Count creatures with AttackingComponent that we control
+                state.getBattlefield().count { entityId ->
+                    state.getComponent<com.wingedsheep.rulesengine.ecs.components.AttackingComponent>(entityId) != null &&
+                        state.getComponent<ControllerComponent>(entityId)?.controllerId == controllerId
+                }
+            }
+            is DynamicAmount.ColorsAmongPermanentsYouControl -> {
+                state.getPermanentsControlledBy(controllerId)
+                    .mapNotNull { state.getComponent<CardComponent>(it)?.definition?.colors }
+                    .flatten()
+                    .toSet()
+                    .size
             }
         }
     }

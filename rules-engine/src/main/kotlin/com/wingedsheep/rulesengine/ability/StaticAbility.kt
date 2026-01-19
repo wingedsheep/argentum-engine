@@ -139,5 +139,23 @@ sealed interface StaticTarget {
     data object Controller : StaticTarget
 
     @Serializable
+    data object AllControlledCreatures : StaticTarget
+
+    @Serializable
     data class SpecificCard(val entityId: EntityId) : StaticTarget
+}
+
+/**
+ * Grants dynamic power/toughness bonus based on a variable amount.
+ * Used for effects like "Creatures you control get +X/+X where X is..."
+ */
+@Serializable
+data class GrantDynamicStatsEffect(
+    val target: StaticTarget,
+    val powerBonus: DynamicAmount,
+    val toughnessBonus: DynamicAmount
+) : StaticAbility {
+    override val description: String = buildString {
+        append("Creatures get +X/+X where X is ${powerBonus.description}")
+    }
 }
