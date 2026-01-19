@@ -422,4 +422,27 @@ class StateProjectorTest : FunSpec({
             creatures[0].entityId shouldBe bearId
         }
     }
+
+    context("Ability/Restriction modifiers") {
+        test("AddCantBlockRestriction prevents blocking") {
+            val (bearId, state) = newGame().addBear()
+
+            val modifier = Modifier(
+                layer = Layer.ABILITY,
+                sourceId = EntityId.of("source"),
+                timestamp = Modifier.nextTimestamp(),
+                modification = Modification.AddCantBlockRestriction,
+                filter = ModifierFilter.Specific(bearId)
+            )
+
+            val projector = StateProjector(state, listOf(modifier))
+            val view = projector.getView(bearId)
+
+            view.shouldNotBeNull()
+            // The flag should be set
+            view.cantBlock.shouldBeTrue()
+            // The derived property should prevent blocking
+            view.canBlock.shouldBeFalse()
+        }
+    }
 })

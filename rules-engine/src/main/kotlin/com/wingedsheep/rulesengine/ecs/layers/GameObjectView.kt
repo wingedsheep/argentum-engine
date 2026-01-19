@@ -34,6 +34,7 @@ import com.wingedsheep.rulesengine.ecs.EntityId
  * @property attachedTo The entity this is attached to (for auras/equipment), null if not attached
  * @property attachments Entities attached to this permanent (reverse lookup for convenience)
  * @property loyalty Current loyalty for planeswalkers (derived from loyalty counters), null for non-planeswalkers
+ * @property cantBlock Whether this creature is prevented from blocking (defaults to false)
  */
 data class GameObjectView(
     val entityId: EntityId,
@@ -53,7 +54,8 @@ data class GameObjectView(
     val counters: Map<CounterType, Int> = emptyMap(),
     val attachedTo: EntityId? = null,
     val attachments: List<EntityId> = emptyList(),
-    val loyalty: Int? = null
+    val loyalty: Int? = null,
+    val cantBlock: Boolean = false
 ) {
     /**
      * Check if this object is a creature.
@@ -133,7 +135,7 @@ data class GameObjectView(
      * Check if this creature can block.
      */
     val canBlock: Boolean
-        get() = isCreature && !isTapped
+        get() = isCreature && !isTapped && !cantBlock
 
     /**
      * Check if this creature has flying or reach (for blocking purposes).
@@ -243,7 +245,8 @@ data class GameObjectView(
                 counters = counters,
                 attachedTo = attachedTo,
                 attachments = attachments,
-                loyalty = loyalty
+                loyalty = loyalty,
+                cantBlock = false
             )
         }
     }
@@ -271,7 +274,8 @@ class GameObjectViewBuilder(
     val counters: MutableMap<CounterType, Int> = mutableMapOf(),
     var attachedTo: EntityId? = null,
     val attachments: MutableList<EntityId> = mutableListOf(),
-    var loyalty: Int? = null
+    var loyalty: Int? = null,
+    var cantBlock: Boolean = false
 ) {
     /**
      * Build the final immutable view.
@@ -301,7 +305,8 @@ class GameObjectViewBuilder(
             counters = counters.toMap(),
             attachedTo = attachedTo,
             attachments = attachments.toList(),
-            loyalty = finalLoyalty
+            loyalty = finalLoyalty,
+            cantBlock = cantBlock
         )
     }
 
@@ -327,7 +332,8 @@ class GameObjectViewBuilder(
             counters = view.counters.toMutableMap(),
             attachedTo = view.attachedTo,
             attachments = view.attachments.toMutableList(),
-            loyalty = view.loyalty
+            loyalty = view.loyalty,
+            cantBlock = view.cantBlock
         )
     }
 }

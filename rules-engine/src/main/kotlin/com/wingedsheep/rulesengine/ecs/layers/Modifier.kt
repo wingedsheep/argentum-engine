@@ -140,6 +140,12 @@ sealed interface Modification {
     @Serializable
     data object RemoveAllAbilities : Modification
 
+    /**
+     * Add a restriction that prevents blocking.
+     */
+    @Serializable
+    data object AddCantBlockRestriction : Modification
+
     // =========================================================================
     // Layer 7a: P/T from CDAs
     // =========================================================================

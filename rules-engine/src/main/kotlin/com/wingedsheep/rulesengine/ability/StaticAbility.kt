@@ -55,6 +55,17 @@ data class GlobalEffect(
 }
 
 /**
+ * Prevents a creature from blocking.
+ * Used for cards like Jungle Lion or effects like "Target creature can't block".
+ */
+@Serializable
+data class CantBlock(
+    val target: StaticTarget = StaticTarget.SourceCreature
+) : StaticAbility {
+    override val description: String = "${target.toString().lowercase()} can't block"
+}
+
+/**
  * Types of global effects from enchantments.
  */
 @Serializable

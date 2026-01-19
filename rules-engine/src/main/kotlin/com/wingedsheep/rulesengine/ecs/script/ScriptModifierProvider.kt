@@ -68,6 +68,7 @@ class ScriptModifierProvider(
             is GrantKeyword -> convertGrantKeyword(ability, sourceId, controllerId, state)
             is ModifyStats -> convertModifyStats(ability, sourceId, controllerId, state)
             is GlobalEffect -> convertGlobalEffect(ability, sourceId, controllerId)
+            is CantBlock -> convertCantBlock(ability, sourceId, controllerId, state)
         }
     }
 
@@ -220,14 +221,48 @@ class ScriptModifierProvider(
                 )
             }
 
-            GlobalEffectType.CREATURES_CANT_ATTACK,
             GlobalEffectType.CREATURES_CANT_BLOCK -> {
-                // These would need special handling - perhaps add a "can't attack/block" modifier
-                // For now, these are placeholder as they require different mechanism
+                // Global effect: e.g. "Creatures can't block"
+                modifiers.add(
+                    Modifier(
+                        layer = Layer.ABILITY, // Can't block is handled in Layer 6 (ability/rules mod)
+                        sourceId = sourceId,
+                        timestamp = Modifier.nextTimestamp(),
+                        modification = Modification.AddCantBlockRestriction,
+                        filter = filter
+                    )
+                )
+            }
+
+            GlobalEffectType.CREATURES_CANT_ATTACK -> {
+                // Placeholder - would need similar treatment if implemented
             }
         }
 
         return modifiers
+    }
+
+    /**
+     * Convert CantBlock static ability to modifiers.
+     */
+    private fun convertCantBlock(
+        ability: CantBlock,
+        sourceId: EntityId,
+        controllerId: EntityId,
+        state: EcsGameState
+    ): List<Modifier> {
+        val filter = resolveStaticTarget(ability.target, sourceId, state)
+            ?: return emptyList()
+
+        return listOf(
+            Modifier(
+                layer = Layer.ABILITY, // Layer 6: Ability-adding/removing/rules setting
+                sourceId = sourceId,
+                timestamp = Modifier.nextTimestamp(),
+                modification = Modification.AddCantBlockRestriction,
+                filter = filter
+            )
+        )
     }
 
     /**

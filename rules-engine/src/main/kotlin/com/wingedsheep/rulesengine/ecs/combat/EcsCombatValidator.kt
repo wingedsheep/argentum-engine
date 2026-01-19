@@ -1,7 +1,5 @@
 package com.wingedsheep.rulesengine.ecs.combat
 
-import com.wingedsheep.rulesengine.core.CardType
-import com.wingedsheep.rulesengine.core.Color
 import com.wingedsheep.rulesengine.core.Keyword
 import com.wingedsheep.rulesengine.ecs.EcsGameState
 import com.wingedsheep.rulesengine.ecs.EntityId
@@ -229,6 +227,12 @@ object EcsCombatValidator {
             return BlockValidationResult.Invalid("This creature cannot block")
         }
 
+        // Check restriction from static abilities (e.g. Jungle Lion "This creature can't block")
+        // This comes from Modifications applied by the StateProjector
+        if (blocker.cantBlock) {
+            return BlockValidationResult.Invalid("This creature cannot block")
+        }
+
         // Blocker must be untapped
         if (blocker.isTapped) {
             return BlockValidationResult.Invalid("Tapped creatures cannot block")
@@ -297,7 +301,7 @@ object EcsCombatValidator {
         // Fear: Can only be blocked by artifact creatures or black creatures
         if (attacker.hasKeyword(Keyword.FEAR)) {
             val isArtifactCreature = blocker.isArtifact
-            val isBlack = Color.BLACK in blocker.colors
+            val isBlack = com.wingedsheep.rulesengine.core.Color.BLACK in blocker.colors
             if (!isArtifactCreature && !isBlack) {
                 return "Cannot block a creature with fear unless blocker is an artifact creature or black"
             }

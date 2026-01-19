@@ -268,6 +268,9 @@ class StateProjector(
                 builder.hasAbilities = false
                 builder.keywords.clear()
             }
+            is Modification.AddCantBlockRestriction -> {
+                builder.cantBlock = true
+            }
 
             // Layer 7a: CDAs
             is Modification.SetPTFromCDA -> {
@@ -381,23 +384,4 @@ class StateProjector(
             return StateProjector(state, modifiers)
         }
     }
-}
-
-/**
- * Interface for providing modifiers from various sources.
- * This allows scripts and the ability registry to contribute modifiers.
- */
-interface ModifierProvider {
-    /**
-     * Get all active modifiers for the current game state.
-     */
-    fun getModifiers(state: EcsGameState): List<Modifier>
-}
-
-/**
- * Simple modifier provider that returns a static list.
- * Useful for testing or simple scenarios.
- */
-class StaticModifierProvider(private val modifiers: List<Modifier>) : ModifierProvider {
-    override fun getModifiers(state: EcsGameState): List<Modifier> = modifiers
 }

@@ -29,6 +29,7 @@ object PortalSet : BaseCardRegistry() {
         registerArmageddon()
         registerArmoredPegasus()
         registerArrogantVampire()
+        registerJungleLion()
     }
 
     // =========================================================================
@@ -247,5 +248,29 @@ object PortalSet : BaseCardRegistry() {
         )
 
         registerFrenchVanilla(definition)
+    }
+
+    /**
+     * Jungle Lion - G
+     * Creature — Cat
+     * 2/1
+     * This creature can't block.
+     */
+    private fun registerJungleLion() {
+        val definition = CardDefinition.creature(
+            name = "Jungle Lion",
+            manaCost = ManaCost.parse("{G}"),
+            subtypes = setOf(Subtype.CAT),
+            power = 2,
+            toughness = 1,
+            oracleText = "This creature can't block."
+        )
+
+        val script = cardScript("Jungle Lion") {
+            // We register a static ability targeting the source creature itself
+            staticAbility(CantBlock(StaticTarget.SourceCreature))
+        }
+
+        register(definition, script)
     }
 }
