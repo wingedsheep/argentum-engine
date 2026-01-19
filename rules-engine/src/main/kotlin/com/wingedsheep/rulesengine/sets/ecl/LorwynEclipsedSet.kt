@@ -11,10 +11,13 @@ import com.wingedsheep.rulesengine.sets.ecl.cards.ChangelingWayfinder
 import com.wingedsheep.rulesengine.sets.ecl.cards.ClachanFestival
 import com.wingedsheep.rulesengine.sets.ecl.cards.CribSwap
 import com.wingedsheep.rulesengine.sets.ecl.cards.CuriousColossus
+import com.wingedsheep.rulesengine.sets.ecl.cards.DisruptorOfCurrents
 import com.wingedsheep.rulesengine.sets.ecl.cards.EncumberedReejerey
 import com.wingedsheep.rulesengine.sets.ecl.cards.FlockImpostor
 import com.wingedsheep.rulesengine.sets.ecl.cards.GallantFowlknight
+import com.wingedsheep.rulesengine.sets.ecl.cards.Glamermite
 import com.wingedsheep.rulesengine.sets.ecl.cards.GoldmeadowNomad
+import com.wingedsheep.rulesengine.sets.ecl.cards.GravelgillScoundrel
 import com.wingedsheep.rulesengine.sets.ecl.cards.KeepOut
 import com.wingedsheep.rulesengine.sets.ecl.cards.Kinbinding
 import com.wingedsheep.rulesengine.sets.ecl.cards.KinscaerSentry
@@ -25,6 +28,7 @@ import com.wingedsheep.rulesengine.sets.ecl.cards.ShoreLurker
 import com.wingedsheep.rulesengine.sets.ecl.cards.SunDappledCelebrant
 import com.wingedsheep.rulesengine.sets.ecl.cards.TimidShieldbearer
 import com.wingedsheep.rulesengine.sets.ecl.cards.TributaryVaulter
+import com.wingedsheep.rulesengine.sets.ecl.cards.WanderbrinePreacher
 
 object LorwynEclipsedSet : BaseCardRegistry() {
     override val setCode: String = "ECL"
@@ -43,10 +47,13 @@ object LorwynEclipsedSet : BaseCardRegistry() {
         register(ClachanFestival.definition, ClachanFestival.script)
         register(CribSwap.definition, CribSwap.script)
         register(CuriousColossus.definition, CuriousColossus.script)
+        register(DisruptorOfCurrents.definition, DisruptorOfCurrents.script)
         register(EncumberedReejerey.definition, EncumberedReejerey.script)
         register(FlockImpostor.definition, FlockImpostor.script)
         register(GallantFowlknight.definition, GallantFowlknight.script)
+        register(Glamermite.definition, Glamermite.script)
         register(GoldmeadowNomad.definition, GoldmeadowNomad.script)
+        register(GravelgillScoundrel.definition, GravelgillScoundrel.script)
         register(KeepOut.definition, KeepOut.script)
         register(Kinbinding.definition, Kinbinding.script)
         register(KinscaerSentry.definition, KinscaerSentry.script)
@@ -57,5 +64,6 @@ object LorwynEclipsedSet : BaseCardRegistry() {
         register(SunDappledCelebrant.definition, SunDappledCelebrant.script)
         register(TimidShieldbearer.definition, TimidShieldbearer.script)
         register(TributaryVaulter.definition, TributaryVaulter.script)
+        register(WanderbrinePreacher.definition, WanderbrinePreacher.script)
     }
 }

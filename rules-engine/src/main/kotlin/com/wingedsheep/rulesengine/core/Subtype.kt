@@ -20,6 +20,7 @@ value class Subtype(val value: String) {
         val DRAGON = Subtype("Dragon")
         val ELEMENTAL = Subtype("Elemental")
         val ELF = Subtype("Elf")
+        val FAERIE = Subtype("Faerie")
         val FROG = Subtype("Frog")
         val GOBLIN = Subtype("Goblin")
         val HORROR = Subtype("Horror")
