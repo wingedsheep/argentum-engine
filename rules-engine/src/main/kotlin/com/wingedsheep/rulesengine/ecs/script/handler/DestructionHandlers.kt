@@ -4,6 +4,7 @@ import com.wingedsheep.rulesengine.ability.DestroyAllCreaturesEffect
 import com.wingedsheep.rulesengine.ability.DestroyAllLandsEffect
 import com.wingedsheep.rulesengine.ability.DestroyAllLandsOfTypeEffect
 import com.wingedsheep.rulesengine.ability.DestroyEffect
+import com.wingedsheep.rulesengine.ability.EffectTarget
 import com.wingedsheep.rulesengine.ability.ExileEffect
 import com.wingedsheep.rulesengine.ability.ReturnToHandEffect
 import com.wingedsheep.rulesengine.core.Subtype
@@ -11,7 +12,6 @@ import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.components.CardComponent
-import com.wingedsheep.rulesengine.ecs.components.ControllerComponent
 import com.wingedsheep.rulesengine.ecs.components.DamageComponent
 import com.wingedsheep.rulesengine.ecs.event.ChosenTarget
 import com.wingedsheep.rulesengine.ecs.script.EffectEvent
@@ -20,9 +20,6 @@ import com.wingedsheep.rulesengine.ecs.script.ExecutionResult
 import com.wingedsheep.rulesengine.zone.ZoneType
 import kotlin.reflect.KClass
 
-/**
- * Handler for DestroyEffect.
- */
 class DestroyHandler : BaseEffectHandler<DestroyEffect>() {
     override val effectClass: KClass<DestroyEffect> = DestroyEffect::class
 
@@ -38,9 +35,6 @@ class DestroyHandler : BaseEffectHandler<DestroyEffect>() {
     }
 }
 
-/**
- * Handler for ExileEffect.
- */
 class ExileHandler : BaseEffectHandler<ExileEffect>() {
     override val effectClass: KClass<ExileEffect> = ExileEffect::class
 
@@ -49,23 +43,45 @@ class ExileHandler : BaseEffectHandler<ExileEffect>() {
         effect: ExileEffect,
         context: ExecutionContext
     ): ExecutionResult {
-        val target = context.targets.filterIsInstance<ChosenTarget.Permanent>().firstOrNull()
-            ?: return noOp(state)
+        val targetsToExile = when (val targetType = effect.target) {
+            is EffectTarget.ContextTarget -> context.getTargetsForIndex(targetType.index)
+            is EffectTarget.AnyTarget -> context.targets
+            is EffectTarget.TargetCardInGraveyard -> context.targets
+            else -> emptyList()
+        }
 
-        val container = state.getEntity(target.entityId) ?: return noOp(state)
-        val cardComponent = container.get<CardComponent>() ?: return noOp(state)
+        var currentState = state
+        val events = mutableListOf<EffectEvent>()
 
-        val newState = state
-            .removeFromZone(target.entityId, ZoneId.BATTLEFIELD)
-            .addToZone(target.entityId, ZoneId.EXILE)
+        for (target in targetsToExile) {
+            when (target) {
+                is ChosenTarget.Permanent -> {
+                    val container = currentState.getEntity(target.entityId) ?: continue
+                    val cardComponent = container.get<CardComponent>() ?: continue
 
-        return result(newState, EffectEvent.PermanentExiled(target.entityId, cardComponent.definition.name))
+                    currentState = currentState
+                        .removeFromZone(target.entityId, ZoneId.BATTLEFIELD)
+                        .addToZone(target.entityId, ZoneId.EXILE)
+
+                    events.add(EffectEvent.PermanentExiled(target.entityId, cardComponent.definition.name))
+                }
+                is ChosenTarget.Card -> {
+                    val container = currentState.getEntity(target.cardId) ?: continue
+                    val cardComponent = container.get<CardComponent>() ?: continue
+
+                    currentState = currentState.removeFromZone(target.cardId, target.zoneId)
+                    currentState = currentState.addToZone(target.cardId, ZoneId.EXILE)
+
+                    events.add(EffectEvent.CardExiled(target.cardId, cardComponent.definition.name))
+                }
+                else -> {}
+            }
+        }
+
+        return result(currentState, events)
     }
 }
 
-/**
- * Handler for ReturnToHandEffect.
- */
 class ReturnToHandHandler : BaseEffectHandler<ReturnToHandEffect>() {
     override val effectClass: KClass<ReturnToHandEffect> = ReturnToHandEffect::class
 
@@ -80,7 +96,7 @@ class ReturnToHandHandler : BaseEffectHandler<ReturnToHandEffect>() {
         val container = state.getEntity(target.entityId) ?: return noOp(state)
         val cardComponent = container.get<CardComponent>() ?: return noOp(state)
 
-        val ownerHand = ZoneId(ZoneType.HAND, cardComponent.ownerId)
+        val ownerHand = ZoneId.hand(cardComponent.ownerId)
 
         val newState = state
             .removeFromZone(target.entityId, ZoneId.BATTLEFIELD)
@@ -90,9 +106,6 @@ class ReturnToHandHandler : BaseEffectHandler<ReturnToHandEffect>() {
     }
 }
 
-/**
- * Handler for DestroyAllLandsEffect.
- */
 class DestroyAllLandsHandler : BaseEffectHandler<DestroyAllLandsEffect>() {
     override val effectClass: KClass<DestroyAllLandsEffect> = DestroyAllLandsEffect::class
 
@@ -118,9 +131,6 @@ class DestroyAllLandsHandler : BaseEffectHandler<DestroyAllLandsEffect>() {
     }
 }
 
-/**
- * Handler for DestroyAllCreaturesEffect.
- */
 class DestroyAllCreaturesHandler : BaseEffectHandler<DestroyAllCreaturesEffect>() {
     override val effectClass: KClass<DestroyAllCreaturesEffect> = DestroyAllCreaturesEffect::class
 
@@ -146,10 +156,6 @@ class DestroyAllCreaturesHandler : BaseEffectHandler<DestroyAllCreaturesEffect>(
     }
 }
 
-/**
- * Handler for DestroyAllLandsOfTypeEffect.
- * Destroys all lands of a specific type (e.g., Plains, Islands).
- */
 class DestroyAllLandsOfTypeHandler : BaseEffectHandler<DestroyAllLandsOfTypeEffect>() {
     override val effectClass: KClass<DestroyAllLandsOfTypeEffect> = DestroyAllLandsOfTypeEffect::class
 
@@ -166,7 +172,7 @@ class DestroyAllLandsOfTypeHandler : BaseEffectHandler<DestroyAllLandsOfTypeEffe
         val lands = state.getBattlefield().filter { entityId ->
             val cardComponent = state.getEntity(entityId)?.get<CardComponent>() ?: return@filter false
             cardComponent.definition.isLand &&
-                cardComponent.definition.typeLine.subtypes.contains(targetSubtype)
+                    cardComponent.definition.typeLine.subtypes.contains(targetSubtype)
         }
 
         for (landId in lands) {
@@ -179,18 +185,16 @@ class DestroyAllLandsOfTypeHandler : BaseEffectHandler<DestroyAllLandsOfTypeEffe
     }
 }
 
-// Shared utility function for destroying permanents
 internal fun destroyPermanent(state: GameState, entityId: EntityId): ExecutionResult {
     val container = state.getEntity(entityId) ?: return ExecutionResult(state)
     val cardComponent = container.get<CardComponent>() ?: return ExecutionResult(state)
 
     val ownerId = cardComponent.ownerId
-    val graveyardZone = ZoneId(ZoneType.GRAVEYARD, ownerId)
+    val graveyardZone = ZoneId.graveyard(ownerId)
 
     val newState = state
         .removeFromZone(entityId, ZoneId.BATTLEFIELD)
         .addToZone(entityId, graveyardZone)
-        // Clear damage when moving to graveyard
         .updateEntity(entityId) { c -> c.without<DamageComponent>() }
 
     val events = mutableListOf<EffectEvent>(

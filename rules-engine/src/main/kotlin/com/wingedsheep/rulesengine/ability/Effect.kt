@@ -13,6 +13,18 @@ import kotlinx.serialization.Serializable
 sealed interface Effect {
     /** Human-readable description of the effect */
     val description: String
+
+    /**
+     * Operator to chain effects.
+     * Allows syntax like: EffectA then EffectB
+     */
+    infix fun then(next: Effect): CompositeEffect {
+        return if (this is CompositeEffect) {
+            CompositeEffect(this.effects + next)
+        } else {
+            CompositeEffect(listOf(this, next))
+        }
+    }
 }
 
 // =============================================================================
@@ -327,11 +339,6 @@ data class ShuffleLibraryEffect(
 /**
  * Search library for cards matching a filter.
  * "Search your library for a Forest card and put it onto the battlefield"
- *
- * @param selectedCardIds Optional explicit card IDs to select. When provided,
- *        the handler will select these specific cards (if they match the filter)
- *        instead of auto-selecting. This enables player choice in the decision
- *        system and deterministic testing.
  */
 @Serializable
 data class SearchLibraryEffect(
@@ -672,6 +679,12 @@ sealed interface EffectTarget {
         override val description: String = "any target"
     }
 
+    /** Target card in a graveyard */
+    @Serializable
+    data object TargetCardInGraveyard : EffectTarget {
+        override val description: String = "target card in a graveyard"
+    }
+
     /** All creatures */
     @Serializable
     data object AllCreatures : EffectTarget {
@@ -712,6 +725,14 @@ sealed interface EffectTarget {
     @Serializable
     data object TargetController : EffectTarget {
         override val description: String = "its controller"
+    }
+
+    /**
+     * Refers to a specific target selection from the declaration phase.
+     */
+    @Serializable
+    data class ContextTarget(val index: Int) : EffectTarget {
+        override val description: String = "target"
     }
 }
 
@@ -755,13 +776,12 @@ data class SacrificeCost(
 /**
  * Sacrifice a permanent unless a cost is paid.
  * "Sacrifice this creature unless you sacrifice three Forests."
- *
- * Used for cards like Primeval Force that require a sacrifice decision on ETB.
  */
 @Serializable
 data class SacrificeUnlessEffect(
     val permanentToSacrifice: EffectTarget,
     val cost: SacrificeCost
 ) : Effect {
-    override val description: String = "Sacrifice ${permanentToSacrifice.description} unless you ${cost.description}"
+    override val description: String =
+        "Sacrifice ${permanentToSacrifice.description} unless you ${cost.description}"
 }

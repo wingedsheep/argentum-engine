@@ -1,12 +1,19 @@
 package com.wingedsheep.rulesengine.ability
 
+import com.wingedsheep.rulesengine.card.CardDefinition
 import com.wingedsheep.rulesengine.core.Color
 import com.wingedsheep.rulesengine.core.Keyword
+import com.wingedsheep.rulesengine.core.ManaCost
+import com.wingedsheep.rulesengine.core.Subtype
+import com.wingedsheep.rulesengine.targeting.AnyTarget
+import com.wingedsheep.rulesengine.targeting.TargetCardInGraveyard
+import com.wingedsheep.rulesengine.targeting.TargetPlayer
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 
 class CardScriptTest : FunSpec({
 
@@ -67,7 +74,7 @@ class CardScriptTest : FunSpec({
                 )
             )
             script.spellEffect?.description shouldBe
-                "If you control a creature, deal 3 damage to any target. Otherwise, deal 1 damage to any target"
+                    "If you control a creature, deal 3 damage to any target. Otherwise, deal 1 damage to any target"
         }
     }
 
@@ -140,6 +147,33 @@ class CardScriptTest : FunSpec({
             script.keywords shouldHaveSize 2
             script.triggeredAbilities shouldHaveSize 1
             script.triggeredAbilities[0].optional shouldBe true
+        }
+
+        test("targets returns valid index reference") {
+            val builder = CardScriptBuilder("Test Spell")
+
+            // Corrected syntax: Top-level classes, not nested in interface
+            val ref1 = builder.targets(AnyTarget())
+            val ref2 = builder.targets(TargetPlayer())
+
+            ref1.index shouldBe 0
+            ref2.index shouldBe 1
+        }
+
+        test("using reference in effect") {
+            val builder = CardScriptBuilder("Test Spell")
+
+            // Corrected syntax
+            val ref = builder.targets(TargetCardInGraveyard())
+
+            builder.spell(ExileEffect(EffectTarget.ContextTarget(ref.index)))
+
+            val script = builder.build()
+            val effect = script.spellEffect?.effect
+
+            effect.shouldBeInstanceOf<ExileEffect>()
+            (effect as ExileEffect).target.shouldBeInstanceOf<EffectTarget.ContextTarget>()
+            (effect.target as EffectTarget.ContextTarget).index shouldBe 0
         }
     }
 
@@ -225,10 +259,10 @@ class CardScriptTest : FunSpec({
 
             registry.hasAbilities("Siege Rhino") shouldBe true
             registry.getTriggeredAbilities(
-                com.wingedsheep.rulesengine.card.CardDefinition.creature(
+                CardDefinition.creature(
                     name = "Siege Rhino",
-                    manaCost = com.wingedsheep.rulesengine.core.ManaCost.parse("{1}{W}{B}{G}"),
-                    subtypes = setOf(com.wingedsheep.rulesengine.core.Subtype.BEAST),
+                    manaCost = ManaCost.parse("{1}{W}{B}{G}"),
+                    subtypes = setOf(Subtype.BEAST),
                     power = 4,
                     toughness = 5
                 )
@@ -260,7 +294,7 @@ class CardScriptTest : FunSpec({
                 elseEffect = DealDamageEffect(2, EffectTarget.TargetCreature)
             )
             effect.description shouldBe
-                "If your life total is 10 or less, deal 5 damage to target creature. Otherwise, deal 2 damage to target creature"
+                    "If your life total is 10 or less, deal 5 damage to target creature. Otherwise, deal 2 damage to target creature"
         }
     }
 

@@ -3,10 +3,41 @@ package com.wingedsheep.rulesengine.ability
 import com.wingedsheep.rulesengine.core.Color
 import com.wingedsheep.rulesengine.core.Keyword
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.types.shouldBeInstanceOf
 
 class EffectTest : FunSpec({
+
+    context("Effect Operators") {
+        test("then operator creates CompositeEffect") {
+            val effect1 = GainLifeEffect(1)
+            val effect2 = DrawCardsEffect(1)
+
+            val composite = effect1 then effect2
+
+            composite.shouldBeInstanceOf<CompositeEffect>()
+            composite.effects shouldHaveSize 2
+            composite.effects[0] shouldBe effect1
+            composite.effects[1] shouldBe effect2
+        }
+
+        test("then operator flattens nested CompositeEffects") {
+            val effect1 = GainLifeEffect(1)
+            val effect2 = DrawCardsEffect(1)
+            val effect3 = LoseLifeEffect(1)
+
+            // (A then B) then C
+            val composite1 = effect1 then effect2
+            val finalComposite = composite1 then effect3
+
+            finalComposite.effects shouldHaveSize 3
+            finalComposite.effects[0] shouldBe effect1
+            finalComposite.effects[1] shouldBe effect2
+            finalComposite.effects[2] shouldBe effect3
+        }
+    }
 
     context("GainLifeEffect") {
         test("controller gain life has correct description") {

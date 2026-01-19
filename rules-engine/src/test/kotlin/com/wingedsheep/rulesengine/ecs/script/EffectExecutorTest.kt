@@ -2,7 +2,6 @@ package com.wingedsheep.rulesengine.ecs.script
 
 import com.wingedsheep.rulesengine.ability.*
 import com.wingedsheep.rulesengine.card.CardDefinition
-import com.wingedsheep.rulesengine.core.CounterType
 import com.wingedsheep.rulesengine.core.Color
 import com.wingedsheep.rulesengine.core.Keyword
 import com.wingedsheep.rulesengine.core.ManaCost
@@ -14,6 +13,7 @@ import com.wingedsheep.rulesengine.ecs.components.*
 import com.wingedsheep.rulesengine.ecs.event.ChosenTarget
 import com.wingedsheep.rulesengine.zone.ZoneType
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
@@ -48,6 +48,44 @@ class EffectExecutorTest : FunSpec({
     }
 
     val executor = EffectExecutor()
+
+    context("Explicit Target Binding") {
+        test("ContextTarget selects specific target group for ExileEffect") {
+            // Setup: Create 2 cards in graveyard
+            var state = newGame()
+            val (card1Id, state2) = state.createEntity(EntityId.generate(), CardComponent(forestDef, player1Id))
+            val (card2Id, state3) = state2.createEntity(EntityId.generate(), CardComponent(forestDef, player1Id))
+
+            val graveyard = ZoneId.graveyard(player1Id)
+            state = state3.addToZone(card1Id, graveyard)
+                .addToZone(card2Id, graveyard)
+
+            // Setup: Mock Context with explicit indices
+            // Requirement 0: Selects card1
+            // Requirement 1: Selects card2
+            val target1 = ChosenTarget.Card(card1Id, graveyard)
+            val target2 = ChosenTarget.Card(card2Id, graveyard)
+
+            val context = ExecutionContext(
+                controllerId = player1Id,
+                sourceId = player1Id,
+                targetsByIndex = mapOf(
+                    0 to listOf(target1),
+                    1 to listOf(target2)
+                )
+            )
+
+            // Action: Execute effect bound ONLY to index 0
+            val effect = ExileEffect(EffectTarget.ContextTarget(0))
+            val result = executor.execute(state, effect, context)
+
+            // Assert: card1 is exiled
+            result.state.getZone(ZoneId.EXILE).contains(card1Id).shouldBeTrue()
+
+            // Assert: card2 is NOT exiled (remains in graveyard)
+            result.state.getZone(graveyard).contains(card2Id).shouldBeTrue()
+        }
+    }
 
     context("life gain effects") {
         test("controller gains life") {

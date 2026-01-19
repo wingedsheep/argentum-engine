@@ -13,9 +13,9 @@ import com.wingedsheep.rulesengine.core.Subtype
 object ChangelingWayfinder {
     val definition = CardDefinition.creature(
         name = "Changeling Wayfinder",
-        manaCost = ManaCost.parse("{2}{G}"),
+        manaCost = ManaCost.parse("{3}"),
         subtypes = setOf(Subtype.of("Shapeshifter")),
-        power = 2,
+        power = 1,
         toughness = 2,
         keywords = setOf(Keyword.CHANGELING),
         oracleText = "Changeling (This card is every creature type.)\n" +

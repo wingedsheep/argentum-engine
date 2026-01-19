@@ -386,6 +386,7 @@ object GameEventConverter {
             is GameActionEvent.DamageDealt -> {
                 if (event.isCombatDamage) {
                     // Combat damage - could expand to track both player and creature damage
+                    // Assuming for now it's mostly creatures in this context, or differentiating via target
                     listOf(GameEvent.DamageDealtToCreature(event.sourceId, event.targetId, event.amount))
                 } else {
                     listOf(GameEvent.DamageDealtToCreature(event.sourceId, event.targetId, event.amount))
@@ -463,6 +464,11 @@ object GameEventConverter {
 
             is EffectEvent.PermanentExiled -> listOf(
                 GameEvent.CardExiled(event.entityId, event.name, null)
+            )
+
+            // Handle CardExiled from EffectEvent
+            is EffectEvent.CardExiled -> listOf(
+                GameEvent.CardExiled(event.cardId, event.cardName, null)
             )
 
             is EffectEvent.PermanentReturnedToHand -> listOf(
