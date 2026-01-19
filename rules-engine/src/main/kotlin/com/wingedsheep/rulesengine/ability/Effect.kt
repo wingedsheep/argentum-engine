@@ -389,6 +389,33 @@ data class LookAtTopCardsEffect(
 }
 
 /**
+ * Look at the top X cards of your library where X is determined dynamically,
+ * and put any number of cards matching a filter onto the battlefield.
+ * Then shuffle.
+ *
+ * Used for effects like Ajani's ultimate:
+ * "Look at the top X cards of your library, where X is your life total.
+ *  You may put any number of nonland permanent cards with mana value 3 or less
+ *  from among them onto the battlefield. Then shuffle."
+ *
+ * @property countSource What determines how many cards to look at
+ * @property filter Cards matching this filter may be put onto the battlefield
+ * @property shuffleAfter Whether to shuffle after (typically true)
+ */
+@Serializable
+data class LookAtTopXPutOntoBattlefieldEffect(
+    val countSource: DynamicAmount,
+    val filter: CardFilter,
+    val shuffleAfter: Boolean = true
+) : Effect {
+    override val description: String = buildString {
+        append("Look at the top X cards of your library, where X is ${countSource.description}. ")
+        append("You may put any number of ${filter.description}s from among them onto the battlefield")
+        if (shuffleAfter) append(". Then shuffle")
+    }
+}
+
+/**
  * Shuffle a player's library.
  * "Shuffle your library" or "Target player shuffles their library"
  */
@@ -512,6 +539,30 @@ sealed interface CardFilter {
     @Serializable
     data class Or(val filters: List<CardFilter>) : CardFilter {
         override val description: String = filters.joinToString(" or ") { it.description }
+    }
+
+    /** Match permanent cards (creature, artifact, enchantment, planeswalker) */
+    @Serializable
+    data object PermanentCard : CardFilter {
+        override val description: String = "permanent card"
+    }
+
+    /** Match nonland permanent cards */
+    @Serializable
+    data object NonlandPermanentCard : CardFilter {
+        override val description: String = "nonland permanent card"
+    }
+
+    /** Match cards with mana value at most X */
+    @Serializable
+    data class ManaValueAtMost(val maxManaValue: Int) : CardFilter {
+        override val description: String = "card with mana value $maxManaValue or less"
+    }
+
+    /** Negation filter - match cards that don't match the inner filter */
+    @Serializable
+    data class Not(val filter: CardFilter) : CardFilter {
+        override val description: String = "non${filter.description}"
     }
 }
 

@@ -1,8 +1,11 @@
 package com.wingedsheep.rulesengine.sets.ecl.cards
 
+import com.wingedsheep.rulesengine.ability.CardFilter
 import com.wingedsheep.rulesengine.ability.CreateTokenEffect
 import com.wingedsheep.rulesengine.ability.DealDamageEffect
+import com.wingedsheep.rulesengine.ability.DynamicAmount
 import com.wingedsheep.rulesengine.ability.EffectTarget
+import com.wingedsheep.rulesengine.ability.LookAtTopXPutOntoBattlefieldEffect
 import com.wingedsheep.rulesengine.ability.cardScript
 import com.wingedsheep.rulesengine.card.CardDefinition
 import com.wingedsheep.rulesengine.card.Rarity
@@ -67,19 +70,20 @@ object AjaniOutlandChaperone {
         )
 
         // −8: Ultimate ability - look at top X cards, put permanents CMC 3 or less onto battlefield
-        // Note: This complex ability requires specialized effect handling
-        // Placeholder for now - full implementation needs:
-        // - LookAtTopCardsEffect with dynamic X based on life total
-        // - Filter for nonland permanents with MV <= 3
-        // - Put onto battlefield effect
+        // "Look at the top X cards of your library, where X is your life total.
+        //  You may put any number of nonland permanent cards with mana value 3 or less
+        //  from among them onto the battlefield. Then shuffle."
         planeswalkerAbility(
             loyaltyCost = -8,
-            effect = CreateTokenEffect(  // Placeholder - actual would be complex library manipulation
-                count = 0,
-                power = 0,
-                toughness = 0,
-                colors = emptySet(),
-                creatureTypes = emptySet()
+            effect = LookAtTopXPutOntoBattlefieldEffect(
+                countSource = DynamicAmount.YourLifeTotal,
+                filter = CardFilter.And(
+                    listOf(
+                        CardFilter.NonlandPermanentCard,
+                        CardFilter.ManaValueAtMost(3)
+                    )
+                ),
+                shuffleAfter = true
             )
         )
     }

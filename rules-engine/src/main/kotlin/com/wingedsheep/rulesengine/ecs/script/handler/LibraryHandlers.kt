@@ -298,6 +298,22 @@ class SearchLibraryHandler : BaseEffectHandler<SearchLibraryEffect>() {
                 is CardFilter.Or -> {
                     filter.filters.any { matchesFilter(definition, it) }
                 }
+
+                is CardFilter.PermanentCard -> {
+                    definition.isPermanent
+                }
+
+                is CardFilter.NonlandPermanentCard -> {
+                    definition.isPermanent && !definition.isLand
+                }
+
+                is CardFilter.ManaValueAtMost -> {
+                    definition.cmc <= filter.maxManaValue
+                }
+
+                is CardFilter.Not -> {
+                    !matchesFilter(definition, filter.filter)
+                }
             }
         }
     }
