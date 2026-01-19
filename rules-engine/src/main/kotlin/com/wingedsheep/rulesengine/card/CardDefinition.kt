@@ -13,7 +13,8 @@ data class CardDefinition(
     val keywords: Set<Keyword> = emptySet(),
     val equipCost: ManaCost? = null,  // For Equipment cards
     val oracleId: String? = null,
-    val setCode: String? = null
+    val setCode: String? = null,
+    val backFace: CardDefinition? = null  // For double-faced cards
 ) {
     init {
         if (typeLine.isCreature) {
@@ -42,6 +43,7 @@ data class CardDefinition(
     val isAura: Boolean get() = typeLine.isAura
     val isEquipment: Boolean get() = typeLine.isEquipment
     val isPermanent: Boolean get() = typeLine.isPermanent
+    val isDoubleFaced: Boolean get() = backFace != null
 
     fun hasKeyword(keyword: Keyword): Boolean = keyword in keywords
 
@@ -206,5 +208,19 @@ data class CardDefinition(
             creatureStats = CreatureStats(power, toughness),
             keywords = keywords
         )
+
+        /**
+         * Creates a double-faced transforming creature card.
+         * @param frontFace The front face definition (must be a creature)
+         * @param backFace The back face definition (must be a creature)
+         */
+        fun doubleFacedCreature(
+            frontFace: CardDefinition,
+            backFace: CardDefinition
+        ): CardDefinition {
+            require(frontFace.isCreature) { "Front face must be a creature" }
+            require(backFace.isCreature) { "Back face must be a creature" }
+            return frontFace.copy(backFace = backFace)
+        }
     }
 }

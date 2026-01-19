@@ -79,4 +79,12 @@ abstract class BaseCardRegistry : CardRegistry {
         definitions[definition.name] = definition
         scripts[definition.name] = CardScript.withKeywords(definition.name, *definition.keywords.toTypedArray())
     }
+
+    /**
+     * Register just a script without a definition.
+     * Used for back faces of double-faced cards that share a definition.
+     */
+    protected fun registerScript(script: CardScript) {
+        scripts[script.cardName] = script
+    }
 }

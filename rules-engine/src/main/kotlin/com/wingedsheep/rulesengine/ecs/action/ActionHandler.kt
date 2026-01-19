@@ -449,6 +449,28 @@ class GameActionHandler {
                 // Would need to handle discard - for now, not used by basic mana abilities
                 throw IllegalStateException("Discard cost not supported for mana abilities yet")
             }
+            is AbilityCost.RemoveCounter -> {
+                // Remove a counter from the source permanent
+                val container = state.getEntity(sourceId)!!
+                val counters = container.get<CountersComponent>() ?: CountersComponent.EMPTY
+                // Find a counter to remove - "any" means any type
+                val counterTypeToRemove = if (cost.counterType == "any") {
+                    // Find first available counter type
+                    counters.counters.keys.firstOrNull()
+                        ?: throw IllegalStateException("No counters to remove")
+                } else {
+                    // Specific counter type
+                    CounterType.valueOf(cost.counterType.uppercase().replace("/", "_").replace("+", "PLUS_").replace("-", "MINUS_"))
+                }
+                if (counters.getCount(counterTypeToRemove) < cost.count) {
+                    throw IllegalStateException("Not enough ${cost.counterType} counters to remove")
+                }
+                val cardName = container.get<CardComponent>()?.name ?: "Unknown"
+                events.add(GameActionEvent.CounterRemoved(sourceId, cardName, counterTypeToRemove.name, cost.count))
+                state.updateEntity(sourceId) { c ->
+                    c.with(counters.remove(counterTypeToRemove, cost.count))
+                }
+            }
         }
     }
 
@@ -1864,4 +1886,6 @@ sealed interface GameActionEvent {
     data class PermanentEnteredBattlefield(val entityId: EntityId, val name: String, val controllerId: EntityId) : GameActionEvent
     data class AbilityResolved(val description: String, val sourceId: EntityId) : GameActionEvent
     data class AbilityFizzled(val description: String, val sourceId: EntityId, val reason: String) : GameActionEvent
+    data class CounterAdded(val entityId: EntityId, val name: String, val counterType: String, val count: Int) : GameActionEvent
+    data class CounterRemoved(val entityId: EntityId, val name: String, val counterType: String, val count: Int) : GameActionEvent
 }

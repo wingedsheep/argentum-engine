@@ -231,3 +231,50 @@ enum class SpellTypeFilter {
     NONCREATURE,
     INSTANT_OR_SORCERY
 }
+
+// =============================================================================
+// Main Phase Triggers
+// =============================================================================
+
+/**
+ * Triggers at the beginning of the first main phase.
+ * "At the beginning of your first main phase..."
+ *
+ * This is distinct from generic main phase triggers - it only triggers
+ * on the pre-combat main phase, not the post-combat main phase.
+ */
+@Serializable
+data class OnFirstMainPhase(
+    val controllerOnly: Boolean = true
+) : Trigger {
+    override val description: String = if (controllerOnly) {
+        "At the beginning of your first main phase"
+    } else {
+        "At the beginning of each player's first main phase"
+    }
+}
+
+// =============================================================================
+// Transform Triggers
+// =============================================================================
+
+/**
+ * Triggers when a permanent transforms.
+ * "When this creature transforms..."
+ *
+ * Can be filtered to only trigger when transforming into a specific face.
+ */
+@Serializable
+data class OnTransform(
+    val selfOnly: Boolean = true,
+    val intoBackFace: Boolean? = null  // null = any transform, true = only when transforming to back, false = only when transforming to front
+) : Trigger {
+    override val description: String = buildString {
+        append(if (selfOnly) "When this creature transforms" else "Whenever a permanent transforms")
+        when (intoBackFace) {
+            true -> append(" into its back face")
+            false -> append(" into its front face")
+            null -> { /* any transform */ }
+        }
+    }
+}

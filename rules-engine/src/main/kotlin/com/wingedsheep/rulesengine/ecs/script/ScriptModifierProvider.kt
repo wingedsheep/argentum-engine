@@ -69,6 +69,7 @@ class ScriptModifierProvider(
             is ModifyStats -> convertModifyStats(ability, sourceId, controllerId, state)
             is GlobalEffect -> convertGlobalEffect(ability, sourceId, controllerId)
             is CantBlock -> convertCantBlock(ability, sourceId, controllerId, state)
+            is AssignDamageEqualToToughness -> convertAssignDamageEqualToToughness(ability, sourceId, controllerId, state)
         }
     }
 
@@ -260,6 +261,29 @@ class ScriptModifierProvider(
                 sourceId = sourceId,
                 timestamp = Modifier.nextTimestamp(),
                 modification = Modification.AddCantBlockRestriction,
+                filter = filter
+            )
+        )
+    }
+
+    /**
+     * Convert AssignDamageEqualToToughness static ability to modifiers.
+     */
+    private fun convertAssignDamageEqualToToughness(
+        ability: AssignDamageEqualToToughness,
+        sourceId: EntityId,
+        controllerId: EntityId,
+        state: GameState
+    ): List<Modifier> {
+        val filter = resolveStaticTarget(ability.target, sourceId, state)
+            ?: return emptyList()
+
+        return listOf(
+            Modifier(
+                layer = Layer.ABILITY, // Layer 6: Ability-adding/removing/rules setting
+                sourceId = sourceId,
+                timestamp = Modifier.nextTimestamp(),
+                modification = Modification.AssignDamageEqualToToughness(ability.onlyWhenToughnessGreaterThanPower),
                 filter = filter
             )
         )

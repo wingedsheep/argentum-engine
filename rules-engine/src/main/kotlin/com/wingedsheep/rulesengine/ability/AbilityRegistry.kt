@@ -137,6 +137,8 @@ sealed interface AbilityCost {
     data class Sacrifice(val filter: String) : AbilityCost
     @kotlinx.serialization.Serializable
     data class Discard(val count: Int) : AbilityCost
+    @kotlinx.serialization.Serializable
+    data class RemoveCounter(val counterType: String, val count: Int = 1) : AbilityCost
 }
 
 /**

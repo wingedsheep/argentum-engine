@@ -146,6 +146,15 @@ sealed interface Modification {
     @Serializable
     data object AddCantBlockRestriction : Modification
 
+    /**
+     * Makes a creature assign combat damage equal to its toughness rather than power.
+     * @property onlyWhenToughnessGreaterThanPower If true, only applies when toughness > power
+     */
+    @Serializable
+    data class AssignDamageEqualToToughness(
+        val onlyWhenToughnessGreaterThanPower: Boolean = true
+    ) : Modification
+
     // =========================================================================
     // Layer 7a: P/T from CDAs
     // =========================================================================

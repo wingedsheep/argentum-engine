@@ -119,3 +119,19 @@ data class CountersComponent(
         val EMPTY = CountersComponent()
     }
 }
+
+/**
+ * Marks a double-faced card as showing its back face.
+ *
+ * When present, the card is transformed and uses its backFace definition.
+ * When absent, the card shows its front face (default).
+ *
+ * This component is toggled by Transform effects/actions.
+ *
+ * Usage:
+ * - Transform to back: `container.with(TransformedComponent)`
+ * - Transform to front: `container.without<TransformedComponent>()`
+ * - Check if transformed: `container.has<TransformedComponent>()`
+ */
+@Serializable
+data object TransformedComponent : Component

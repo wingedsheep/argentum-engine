@@ -231,6 +231,73 @@ data class AddColorlessManaEffect(
     override val description: String = "Add ${"{C}".repeat(amount)}"
 }
 
+/**
+ * Add dynamic mana effect where the amount is determined at resolution time.
+ * "Add X mana in any combination of {G} and/or {W}, where X is the number of other creatures you control."
+ *
+ * @property amountSource What determines the amount of mana to add
+ * @property allowedColors The colors of mana that can be produced (player chooses distribution)
+ */
+@Serializable
+data class AddDynamicManaEffect(
+    val amountSource: DynamicAmount,
+    val allowedColors: Set<Color>
+) : Effect {
+    override val description: String = buildString {
+        append("Add X mana in any combination of ")
+        append(allowedColors.joinToString(" and/or ") { "{${it.symbol}}" })
+        append(", where X is ${amountSource.description}")
+    }
+}
+
+/**
+ * Sources for dynamic values in effects.
+ */
+@Serializable
+sealed interface DynamicAmount {
+    val description: String
+
+    /**
+     * Count of other creatures you control.
+     */
+    @Serializable
+    data object OtherCreaturesYouControl : DynamicAmount {
+        override val description: String = "the number of other creatures you control"
+    }
+
+    /**
+     * Count of creatures you control (including self).
+     */
+    @Serializable
+    data object CreaturesYouControl : DynamicAmount {
+        override val description: String = "the number of creatures you control"
+    }
+
+    /**
+     * Count of all creatures on the battlefield.
+     */
+    @Serializable
+    data object AllCreatures : DynamicAmount {
+        override val description: String = "the number of creatures on the battlefield"
+    }
+
+    /**
+     * Your current life total.
+     */
+    @Serializable
+    data object YourLifeTotal : DynamicAmount {
+        override val description: String = "your life total"
+    }
+
+    /**
+     * Fixed amount (for consistency in the type system).
+     */
+    @Serializable
+    data class Fixed(val amount: Int) : DynamicAmount {
+        override val description: String = "$amount"
+    }
+}
+
 // =============================================================================
 // Token Effects
 // =============================================================================
@@ -753,6 +820,22 @@ data class ReturnFromGraveyardEffect(
 ) : Effect {
     override val description: String =
         "Return ${filter.description} from your graveyard ${destination.description}"
+}
+
+// =============================================================================
+// Transform Effects
+// =============================================================================
+
+/**
+ * Transform a double-faced permanent.
+ * Toggles between front and back face.
+ * "Transform this creature"
+ */
+@Serializable
+data class TransformEffect(
+    val target: EffectTarget = EffectTarget.Self
+) : Effect {
+    override val description: String = "Transform ${target.description}"
 }
 
 // =============================================================================

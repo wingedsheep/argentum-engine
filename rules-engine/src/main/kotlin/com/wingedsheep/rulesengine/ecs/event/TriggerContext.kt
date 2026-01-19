@@ -186,6 +186,19 @@ sealed interface TriggerContext {
                     activePlayerId = event.activePlayerId
                 )
 
+                is GameEvent.FirstMainPhaseBegan -> PhaseStep(
+                    phase = "Main",
+                    step = "FirstMain",
+                    activePlayerId = event.activePlayerId
+                )
+
+                is GameEvent.Transformed -> ZoneChange(
+                    entityId = event.entityId,
+                    cardName = event.cardName,
+                    fromZone = ZoneId.BATTLEFIELD,  // Transform is on battlefield
+                    toZone = ZoneId.BATTLEFIELD     // Still on battlefield
+                )
+
                 // Events without specific trigger context
                 is GameEvent.CombatEnded,
                 is GameEvent.LifeGained,

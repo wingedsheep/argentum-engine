@@ -221,6 +221,8 @@ class EventLogger(
             is GameEvent.LifeLost -> "Player lost ${event.amount} life (now ${event.newTotal})"
             is GameEvent.UpkeepBegan -> "Upkeep began"
             is GameEvent.EndStepBegan -> "End step began"
+            is GameEvent.FirstMainPhaseBegan -> "First main phase began"
+            is GameEvent.Transformed -> "${event.cardName} transformed to ${if (event.toBackFace) "back" else "front"} face"
             is GameEvent.SpellCast -> "${event.spellName} was cast"
             is GameEvent.PermanentTapped -> "${event.cardName} was tapped"
             is GameEvent.PermanentUntapped -> "${event.cardName} was untapped"

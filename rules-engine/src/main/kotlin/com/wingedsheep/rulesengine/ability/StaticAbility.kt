@@ -66,6 +66,26 @@ data class CantBlock(
 }
 
 /**
+ * Creature assigns combat damage equal to its toughness rather than its power.
+ * Conditional variant: only when toughness is greater than power.
+ * Used for cards like Bark of Doran, Doran the Siege Tower, etc.
+ */
+@Serializable
+data class AssignDamageEqualToToughness(
+    val target: StaticTarget = StaticTarget.AttachedCreature,
+    val onlyWhenToughnessGreaterThanPower: Boolean = true
+) : StaticAbility {
+    override val description: String = buildString {
+        if (onlyWhenToughnessGreaterThanPower) {
+            append("As long as equipped creature's toughness is greater than its power, it ")
+        } else {
+            append("This creature ")
+        }
+        append("assigns combat damage equal to its toughness rather than its power")
+    }
+}
+
+/**
  * Types of global effects from enchantments.
  */
 @Serializable

@@ -35,6 +35,7 @@ import com.wingedsheep.rulesengine.ecs.EntityId
  * @property attachments Entities attached to this permanent (reverse lookup for convenience)
  * @property loyalty Current loyalty for planeswalkers (derived from loyalty counters), null for non-planeswalkers
  * @property cantBlock Whether this creature is prevented from blocking (defaults to false)
+ * @property assignsDamageEqualToToughness Whether this creature assigns combat damage equal to toughness (Doran effect)
  */
 data class GameObjectView(
     val entityId: EntityId,
@@ -55,7 +56,8 @@ data class GameObjectView(
     val attachedTo: EntityId? = null,
     val attachments: List<EntityId> = emptyList(),
     val loyalty: Int? = null,
-    val cantBlock: Boolean = false
+    val cantBlock: Boolean = false,
+    val assignsDamageEqualToToughness: Boolean = false
 ) {
     /**
      * Check if this object is a creature.
@@ -246,7 +248,8 @@ data class GameObjectView(
                 attachedTo = attachedTo,
                 attachments = attachments,
                 loyalty = loyalty,
-                cantBlock = false
+                cantBlock = false,
+                assignsDamageEqualToToughness = false
             )
         }
     }
@@ -275,7 +278,8 @@ class GameObjectViewBuilder(
     var attachedTo: EntityId? = null,
     val attachments: MutableList<EntityId> = mutableListOf(),
     var loyalty: Int? = null,
-    var cantBlock: Boolean = false
+    var cantBlock: Boolean = false,
+    var assignsDamageEqualToToughness: Boolean = false
 ) {
     /**
      * Build the final immutable view.
@@ -306,7 +310,8 @@ class GameObjectViewBuilder(
             attachedTo = attachedTo,
             attachments = attachments.toList(),
             loyalty = finalLoyalty,
-            cantBlock = cantBlock
+            cantBlock = cantBlock,
+            assignsDamageEqualToToughness = assignsDamageEqualToToughness
         )
     }
 
@@ -333,7 +338,8 @@ class GameObjectViewBuilder(
             attachedTo = view.attachedTo,
             attachments = view.attachments.toMutableList(),
             loyalty = view.loyalty,
-            cantBlock = view.cantBlock
+            cantBlock = view.cantBlock,
+            assignsDamageEqualToToughness = view.assignsDamageEqualToToughness
         )
     }
 }

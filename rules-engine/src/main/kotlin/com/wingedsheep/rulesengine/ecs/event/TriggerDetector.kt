@@ -202,6 +202,17 @@ class TriggerDetector {
                     (!trigger.controllerOnly || event.casterId == controllerId) &&
                     matchesSpellTypeFilter(trigger.spellType, event)
             }
+
+            is OnFirstMainPhase -> {
+                event is GameEvent.FirstMainPhaseBegan &&
+                    (!trigger.controllerOnly || event.activePlayerId == controllerId)
+            }
+
+            is OnTransform -> {
+                event is GameEvent.Transformed &&
+                    (!trigger.selfOnly || event.entityId == sourceId) &&
+                    (trigger.intoBackFace == null || trigger.intoBackFace == event.toBackFace)
+            }
         }
     }
 

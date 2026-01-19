@@ -299,6 +299,19 @@ class StateProjector(
                 builder.cantBlock = true
             }
 
+            is Modification.AssignDamageEqualToToughness -> {
+                // For conditional variant, only apply if toughness > power
+                if (modification.onlyWhenToughnessGreaterThanPower) {
+                    val power = builder.power ?: 0
+                    val toughness = builder.toughness ?: 0
+                    if (toughness > power) {
+                        builder.assignsDamageEqualToToughness = true
+                    }
+                } else {
+                    builder.assignsDamageEqualToToughness = true
+                }
+            }
+
             // Layer 7a: CDAs
             is Modification.SetPTFromCDA -> {
                 val (power, toughness) = evaluateCDA(modification.cdaType, builder.entityId)

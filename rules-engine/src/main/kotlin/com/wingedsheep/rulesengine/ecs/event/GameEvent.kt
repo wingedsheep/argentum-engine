@@ -210,6 +210,28 @@ sealed interface GameEvent {
         val activePlayerId: EntityId
     ) : GameEvent
 
+    /**
+     * First main phase began (pre-combat main phase).
+     */
+    @Serializable
+    data class FirstMainPhaseBegan(
+        val activePlayerId: EntityId
+    ) : GameEvent
+
+    // =========================================================================
+    // Transform Events
+    // =========================================================================
+
+    /**
+     * A double-faced permanent transformed.
+     */
+    @Serializable
+    data class Transformed(
+        val entityId: EntityId,
+        val cardName: String,
+        val toBackFace: Boolean  // true if transformed to back face, false if to front
+    ) : GameEvent
+
     // =========================================================================
     // Spell Events
     // =========================================================================
@@ -426,6 +448,14 @@ object GameEventConverter {
             is GameActionEvent.SpellFizzled,
             is GameActionEvent.AbilityResolved,
             is GameActionEvent.AbilityFizzled -> emptyList()
+
+            is GameActionEvent.CounterAdded -> listOf(
+                GameEvent.CountersAdded(event.entityId, event.counterType, event.count)
+            )
+
+            is GameActionEvent.CounterRemoved -> listOf(
+                GameEvent.CountersRemoved(event.entityId, event.counterType, event.count)
+            )
         }
     }
 
