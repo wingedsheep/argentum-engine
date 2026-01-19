@@ -4,9 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 enum class Keyword(val displayName: String) {
-    // Class/Type keywords
-    CHANGELING("Changeling"),
-
     // Evasion
     FLYING("Flying"),
     MENACE("Menace"),
@@ -45,7 +42,11 @@ enum class Keyword(val displayName: String) {
     PROTECTION("Protection"),
 
     // Other
-    FLYING_REACH("Flying, Reach");
+    FLYING_REACH("Flying, Reach"),
+
+    // Lorwyn Eclipsed Keywords
+    CHANGELING("Changeling"),
+    PROWESS("Prowess");
 
     companion object {
         fun fromString(value: String): Keyword? =

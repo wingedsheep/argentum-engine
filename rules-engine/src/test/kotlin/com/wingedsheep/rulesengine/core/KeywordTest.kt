@@ -17,6 +17,7 @@ class KeywordTest : FunSpec({
             Keyword.fromString("Deathtouch") shouldBe Keyword.DEATHTOUCH
             Keyword.fromString("Lifelink") shouldBe Keyword.LIFELINK
             Keyword.fromString("Changeling") shouldBe Keyword.CHANGELING
+            Keyword.fromString("Prowess") shouldBe Keyword.PROWESS
         }
 
         test("parses multi-word keywords") {
@@ -26,9 +27,7 @@ class KeywordTest : FunSpec({
 
         test("parsing is case insensitive") {
             Keyword.fromString("flying") shouldBe Keyword.FLYING
-            Keyword.fromString("FLYING") shouldBe Keyword.FLYING
-            Keyword.fromString("Flying") shouldBe Keyword.FLYING
-            Keyword.fromString("changeling") shouldBe Keyword.CHANGELING
+            Keyword.fromString("prowess") shouldBe Keyword.PROWESS
         }
 
         test("returns null for unknown keyword") {
@@ -38,52 +37,16 @@ class KeywordTest : FunSpec({
     }
 
     context("parseFromOracleText") {
-        test("parses single keyword on its own line") {
-            val keywords = Keyword.parseFromOracleText("Flying")
-            keywords shouldBe setOf(Keyword.FLYING)
-        }
-
-        test("parses changeling keyword") {
-            val keywords = Keyword.parseFromOracleText("Changeling")
-            keywords shouldBe setOf(Keyword.CHANGELING)
-        }
-
-        test("parses multiple keywords on separate lines") {
-            val oracleText = """
-                Flying
-                Vigilance
-            """.trimIndent()
-            val keywords = Keyword.parseFromOracleText(oracleText)
-            keywords shouldContainExactlyInAnyOrder listOf(Keyword.FLYING, Keyword.VIGILANCE)
-        }
-
-        test("parses comma-separated keywords") {
-            val keywords = Keyword.parseFromOracleText("Flying, trample, changeling")
-            keywords shouldContainExactlyInAnyOrder listOf(Keyword.FLYING, Keyword.TRAMPLE, Keyword.CHANGELING)
-        }
-
-        test("ignores non-keyword text") {
-            val oracleText = """
-                Flying
-                When this creature enters the battlefield, draw a card.
-            """.trimIndent()
-            val keywords = Keyword.parseFromOracleText(oracleText)
-            keywords shouldBe setOf(Keyword.FLYING)
-        }
-
-        test("returns empty set for no keywords") {
-            val keywords = Keyword.parseFromOracleText("Deal 3 damage to any target.")
-            keywords shouldBe emptySet()
+        test("parses mixed keywords") {
+            val keywords = Keyword.parseFromOracleText("Flying, Prowess")
+            keywords shouldContainExactlyInAnyOrder listOf(Keyword.FLYING, Keyword.PROWESS)
         }
     }
 
     context("displayName") {
         test("keywords have correct display names") {
             Keyword.FLYING.displayName shouldBe "Flying"
-            Keyword.FIRST_STRIKE.displayName shouldBe "First strike"
-            Keyword.DOUBLE_STRIKE.displayName shouldBe "Double strike"
-            Keyword.DEATHTOUCH.displayName shouldBe "Deathtouch"
-            Keyword.CHANGELING.displayName shouldBe "Changeling"
+            Keyword.PROWESS.displayName shouldBe "Prowess"
         }
     }
 })

@@ -8,6 +8,7 @@ import com.wingedsheep.rulesengine.ability.MustBeBlockedEffect
 import com.wingedsheep.rulesengine.ability.TapUntapEffect
 import com.wingedsheep.rulesengine.core.CounterType
 import com.wingedsheep.rulesengine.ecs.GameState
+import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.components.CardComponent
 import com.wingedsheep.rulesengine.ecs.components.CountersComponent
 import com.wingedsheep.rulesengine.ecs.components.MustBeBlockedComponent
@@ -22,6 +23,18 @@ import com.wingedsheep.rulesengine.ecs.script.ExecutionContext
 import com.wingedsheep.rulesengine.ecs.script.ExecutionResult
 import kotlin.reflect.KClass
 
+// Helper to resolve single permanent target from context or effect definition
+private fun resolveTargetId(effectTarget: EffectTarget, context: ExecutionContext): EntityId? {
+    return when (effectTarget) {
+        is EffectTarget.Self -> context.sourceId
+        is EffectTarget.ContextTarget -> {
+            val targets = context.getTargetsForIndex(effectTarget.index)
+            targets.filterIsInstance<ChosenTarget.Permanent>().firstOrNull()?.entityId
+        }
+        else -> context.targets.filterIsInstance<ChosenTarget.Permanent>().firstOrNull()?.entityId
+    }
+}
+
 /**
  * Handler for TapUntapEffect.
  */
@@ -33,20 +46,19 @@ class TapUntapHandler : BaseEffectHandler<TapUntapEffect>() {
         effect: TapUntapEffect,
         context: ExecutionContext
     ): ExecutionResult {
-        val target = context.targets.filterIsInstance<ChosenTarget.Permanent>().firstOrNull()
-            ?: return noOp(state)
+        val targetId = resolveTargetId(effect.target, context) ?: return noOp(state)
 
         val newState = if (effect.tap) {
-            state.updateEntity(target.entityId) { c -> c.with(TappedComponent) }
+            state.updateEntity(targetId) { c -> c.with(TappedComponent) }
         } else {
-            state.updateEntity(target.entityId) { c -> c.without<TappedComponent>() }
+            state.updateEntity(targetId) { c -> c.without<TappedComponent>() }
         }
 
-        val cardName = state.getEntity(target.entityId)?.get<CardComponent>()?.definition?.name ?: "Unknown"
+        val cardName = state.getEntity(targetId)?.get<CardComponent>()?.definition?.name ?: "Unknown"
         val event = if (effect.tap) {
-            EffectEvent.PermanentTapped(target.entityId, cardName)
+            EffectEvent.PermanentTapped(targetId, cardName)
         } else {
-            EffectEvent.PermanentUntapped(target.entityId, cardName)
+            EffectEvent.PermanentUntapped(targetId, cardName)
         }
 
         return result(newState, event)
@@ -64,12 +76,12 @@ class ModifyStatsHandler : BaseEffectHandler<ModifyStatsEffect>() {
         effect: ModifyStatsEffect,
         context: ExecutionContext
     ): ExecutionResult {
-        val target = context.targets.filterIsInstance<ChosenTarget.Permanent>().firstOrNull()
-            ?: return noOp(state)
+        // FIX: Use resolveTargetId to handle EffectTarget.Self correctly
+        val targetId = resolveTargetId(effect.target, context) ?: return noOp(state)
 
         return ExecutionResult(
             state = state,
-            events = listOf(EffectEvent.StatsModified(target.entityId, effect.powerModifier, effect.toughnessModifier)),
+            events = listOf(EffectEvent.StatsModified(targetId, effect.powerModifier, effect.toughnessModifier)),
             temporaryModifiers = if (effect.untilEndOfTurn) {
                 listOf(
                     Modifier(
@@ -80,7 +92,7 @@ class ModifyStatsHandler : BaseEffectHandler<ModifyStatsEffect>() {
                             effect.powerModifier,
                             effect.toughnessModifier
                         ),
-                        filter = ModifierFilter.Specific(target.entityId)
+                        filter = ModifierFilter.Specific(targetId)
                     )
                 )
             } else emptyList()
@@ -99,11 +111,8 @@ class AddCountersHandler : BaseEffectHandler<AddCountersEffect>() {
         effect: AddCountersEffect,
         context: ExecutionContext
     ): ExecutionResult {
-        val targetId = when (effect.target) {
-            is EffectTarget.Self -> context.sourceId
-            else -> context.targets.filterIsInstance<ChosenTarget.Permanent>().firstOrNull()?.entityId
-                ?: return noOp(state)
-        }
+        // Use resolveTargetId for consistency
+        val targetId = resolveTargetId(effect.target, context) ?: return noOp(state)
 
         val counterType = try {
             CounterType.valueOf(
@@ -138,10 +147,9 @@ class MustBeBlockedHandler : BaseEffectHandler<MustBeBlockedEffect>() {
         effect: MustBeBlockedEffect,
         context: ExecutionContext
     ): ExecutionResult {
-        val target = context.targets.filterIsInstance<ChosenTarget.Permanent>().firstOrNull()
-            ?: return noOp(state)
+        val targetId = resolveTargetId(effect.target, context) ?: return noOp(state)
 
-        val newState = state.updateEntity(target.entityId) { c ->
+        val newState = state.updateEntity(targetId) { c ->
             c.with(MustBeBlockedComponent)
         }
 
@@ -160,19 +168,18 @@ class GrantKeywordUntilEndOfTurnHandler : BaseEffectHandler<GrantKeywordUntilEnd
         effect: GrantKeywordUntilEndOfTurnEffect,
         context: ExecutionContext
     ): ExecutionResult {
-        val target = context.targets.filterIsInstance<ChosenTarget.Permanent>().firstOrNull()
-            ?: return noOp(state)
+        val targetId = resolveTargetId(effect.target, context) ?: return noOp(state)
 
         return ExecutionResult(
             state = state,
-            events = listOf(EffectEvent.KeywordGranted(target.entityId, effect.keyword)),
+            events = listOf(EffectEvent.KeywordGranted(targetId, effect.keyword)),
             temporaryModifiers = listOf(
                 Modifier(
                     layer = Layer.ABILITY,
                     sourceId = context.sourceId,
                     timestamp = Modifier.nextTimestamp(),
                     modification = Modification.AddKeyword(effect.keyword),
-                    filter = ModifierFilter.Specific(target.entityId)
+                    filter = ModifierFilter.Specific(targetId)
                 )
             )
         )

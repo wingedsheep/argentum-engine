@@ -349,4 +349,31 @@ class CardScriptTest : FunSpec({
             script.spellEffect?.description shouldBe "Destroy target creature"
         }
     }
+
+    context("CardScriptBuilder Macros") {
+        test("prowess() adds keyword and trigger") {
+            val script = cardScript("Monastery Swiftspear") {
+                prowess()
+            }
+
+            // Check Keyword
+            script.keywords shouldContain Keyword.PROWESS
+
+            // Check Trigger structure
+            script.triggeredAbilities shouldHaveSize 1
+            val ability = script.triggeredAbilities.first()
+
+            val trigger = ability.trigger
+            trigger.shouldBeInstanceOf<OnSpellCast>()
+            trigger.controllerOnly shouldBe true
+            trigger.spellType shouldBe SpellTypeFilter.NONCREATURE
+
+            val effect = ability.effect
+            effect.shouldBeInstanceOf<ModifyStatsEffect>()
+            effect.powerModifier shouldBe 1
+            effect.toughnessModifier shouldBe 1
+            effect.target shouldBe EffectTarget.Self
+            effect.untilEndOfTurn shouldBe true
+        }
+    }
 })
