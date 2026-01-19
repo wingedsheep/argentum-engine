@@ -544,6 +544,9 @@ class EcsActionHandler {
             updated
         }
 
+        // Emit PermanentEnteredBattlefield event for ETB trigger detection
+        events.add(EcsActionEvent.PermanentEnteredBattlefield(action.entityId, cardName, action.controllerId))
+
         return newState
     }
 
