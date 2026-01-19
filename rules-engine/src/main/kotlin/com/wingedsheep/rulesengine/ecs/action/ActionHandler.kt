@@ -17,6 +17,9 @@ import com.wingedsheep.rulesengine.ecs.combat.DamagePreventionEffect
 import com.wingedsheep.rulesengine.ecs.combat.CombatDamageCalculator
 import com.wingedsheep.rulesengine.ecs.components.*
 import com.wingedsheep.rulesengine.ecs.components.PendingLegendRuleChoice
+import com.wingedsheep.rulesengine.ecs.layers.ActiveContinuousEffect
+import com.wingedsheep.rulesengine.ecs.layers.EffectDuration
+import com.wingedsheep.rulesengine.ecs.layers.Modifier
 import com.wingedsheep.rulesengine.ecs.stack.StackResolver
 import com.wingedsheep.rulesengine.zone.ZoneType
 
@@ -153,6 +156,12 @@ class GameActionHandler {
             // State-based actions
             is CheckStateBasedActions -> executeCheckStateBasedActions(state, events)
             is ClearDamage -> executeClearDamage(state, action)
+
+            // Turn/Step actions
+            is PerformCleanupStep -> executePerformCleanupStep(state, action, events)
+            is ExpireEndOfCombatEffects -> executeExpireEndOfCombatEffects(state)
+            is ExpireEffectsForPermanent -> executeExpireEffectsForPermanent(state, action)
+            is ResolveCleanupDiscard -> executeResolveCleanupDiscard(state, action, events)
         }
 
         return newState to events
@@ -1186,7 +1195,13 @@ class GameActionHandler {
                 for (stackEvent in result.events) {
                     events.addAll(convertStackEvent(stackEvent))
                 }
-                result.state
+
+                // Persist temporary modifiers as continuous effects
+                val continuousEffects = result.temporaryModifiers.map { modifier ->
+                    convertModifierToContinuousEffect(modifier, result.state.turnNumber)
+                }
+
+                result.state.addContinuousEffects(continuousEffects)
             }
             is StackResolver.ResolutionResult.Fizzled -> {
                 for (stackEvent in result.events) {
@@ -1202,6 +1217,37 @@ class GameActionHandler {
                 throw IllegalStateException("Stack resolution error: ${result.message}")
             }
         }
+    }
+
+    /**
+     * Convert a temporary Modifier to an ActiveContinuousEffect.
+     *
+     * By default, temporary modifiers from spells/abilities are "until end of turn"
+     * effects. More specific durations would need to be encoded in the effect
+     * definition or modifier itself.
+     */
+    private fun convertModifierToContinuousEffect(
+        modifier: Modifier,
+        currentTurn: Int
+    ): ActiveContinuousEffect {
+        // Look up the source name for a description
+        // For now, use a generic description based on the modification type
+        val description = when (val mod = modifier.modification) {
+            is com.wingedsheep.rulesengine.ecs.layers.Modification.ModifyPT ->
+                "+${mod.powerDelta}/+${mod.toughnessDelta} until end of turn"
+            is com.wingedsheep.rulesengine.ecs.layers.Modification.AddKeyword ->
+                "Gains ${mod.keyword.name.lowercase()} until end of turn"
+            is com.wingedsheep.rulesengine.ecs.layers.Modification.SetPT ->
+                "Becomes ${mod.power}/${mod.toughness} until end of turn"
+            else -> "Continuous effect until end of turn"
+        }
+
+        return ActiveContinuousEffect.fromModifier(
+            modifier = modifier,
+            duration = EffectDuration.UntilEndOfTurn,
+            description = description,
+            createdOnTurn = currentTurn
+        )
     }
 
     private fun executeCastSpell(
@@ -1636,6 +1682,136 @@ class GameActionHandler {
         }
 
         return currentState to actionsPerformed
+    }
+
+    // =========================================================================
+    // Turn/Step Actions
+    // =========================================================================
+
+    /**
+     * Perform the cleanup step at end of turn.
+     *
+     * Per Rule 514, the cleanup step:
+     * 1. Active player discards down to maximum hand size (7 by default)
+     * 2. All damage is removed from permanents
+     * 3. All "until end of turn" and "this turn" effects end
+     *
+     * If the active player has more cards than their maximum hand size,
+     * a PendingCleanupDiscard is created and must be resolved before
+     * the turn can end.
+     */
+    private fun executePerformCleanupStep(
+        state: GameState,
+        action: PerformCleanupStep,
+        @Suppress("UNUSED_PARAMETER") events: MutableList<GameActionEvent>
+    ): GameState {
+        var currentState = state
+
+        // 1. Expire "until end of turn" continuous effects
+        currentState = currentState.expireEndOfTurnEffects()
+
+        // 2. Clear damage from all creatures
+        for (entityId in currentState.getBattlefield()) {
+            if (currentState.hasComponent<DamageComponent>(entityId)) {
+                currentState = currentState.updateEntity(entityId) { c ->
+                    c.without<DamageComponent>()
+                }
+            }
+        }
+
+        // 3. Check if active player needs to discard down to hand size
+        // Default max hand size is 7 (would check for modifiers in a full implementation)
+        val maxHandSize = 7
+        val hand = currentState.getHand(action.playerId)
+        val handSize = hand.size
+
+        if (handSize > maxHandSize) {
+            // Create a pending discard decision
+            val discardCount = handSize - maxHandSize
+            val pendingDiscard = com.wingedsheep.rulesengine.ecs.components.PendingCleanupDiscard(
+                playerId = action.playerId,
+                currentHandSize = handSize,
+                maxHandSize = maxHandSize,
+                discardCount = discardCount,
+                cardsInHand = hand
+            )
+            currentState = currentState.addPendingCleanupDiscard(pendingDiscard)
+        }
+
+        return currentState
+    }
+
+    /**
+     * Resolve a cleanup discard decision.
+     *
+     * The player has chosen which cards to discard to get down to their
+     * maximum hand size.
+     */
+    private fun executeResolveCleanupDiscard(
+        state: GameState,
+        action: ResolveCleanupDiscard,
+        events: MutableList<GameActionEvent>
+    ): GameState {
+        // Verify there's a pending discard for this player
+        val pendingDiscard = state.getPendingCleanupDiscardForPlayer(action.playerId)
+            ?: throw IllegalStateException("No pending cleanup discard for player ${action.playerId}")
+
+        // Verify the correct number of cards is being discarded
+        if (action.cardsToDiscard.size != pendingDiscard.discardCount) {
+            throw IllegalArgumentException(
+                "Must discard exactly ${pendingDiscard.discardCount} cards, but ${action.cardsToDiscard.size} were selected"
+            )
+        }
+
+        // Verify all selected cards are in the player's hand
+        val hand = state.getHand(action.playerId).toSet()
+        for (cardId in action.cardsToDiscard) {
+            if (cardId !in hand) {
+                throw IllegalArgumentException("Card $cardId is not in player's hand")
+            }
+        }
+
+        var currentState = state
+
+        // Discard each card
+        for (cardId in action.cardsToDiscard) {
+            val cardComponent = currentState.getComponent<CardComponent>(cardId)
+            val cardName = cardComponent?.name ?: "Unknown"
+
+            events.add(GameActionEvent.CardDiscarded(action.playerId, cardId, cardName))
+
+            // Move card from hand to graveyard
+            val handZone = ZoneId.hand(action.playerId)
+            val graveyardZone = ZoneId.graveyard(action.playerId)
+
+            currentState = currentState
+                .removeFromZone(cardId, handZone)
+                .addToZone(cardId, graveyardZone)
+        }
+
+        // Remove the pending discard
+        currentState = currentState.removePendingCleanupDiscardForPlayer(action.playerId)
+
+        return currentState
+    }
+
+    /**
+     * Expire "until end of combat" effects.
+     * Called when combat ends.
+     */
+    private fun executeExpireEndOfCombatEffects(state: GameState): GameState {
+        return state.expireEndOfCombatEffects()
+    }
+
+    /**
+     * Expire effects that depend on a permanent that's leaving the battlefield.
+     * Called when a permanent leaves to clean up WhileOnBattlefield and WhileAttached effects.
+     */
+    private fun executeExpireEffectsForPermanent(
+        state: GameState,
+        action: ExpireEffectsForPermanent
+    ): GameState {
+        return state.expireEffectsForLeavingPermanent(action.permanentId)
     }
 }
 

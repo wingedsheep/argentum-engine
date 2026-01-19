@@ -60,3 +60,30 @@ data class PendingLegendRuleChoicesComponent(
         val EMPTY = PendingLegendRuleChoicesComponent()
     }
 }
+
+/**
+ * Represents a pending cleanup discard that a player must make.
+ *
+ * At the end of turn during the cleanup step, if a player has more cards
+ * in hand than their maximum hand size (typically 7), they must discard
+ * down to that limit.
+ *
+ * @property playerId The player who must discard
+ * @property currentHandSize The number of cards currently in hand
+ * @property maxHandSize The maximum hand size allowed
+ * @property discardCount The number of cards that must be discarded
+ * @property cardsInHand The entity IDs of cards in hand (for selection)
+ */
+@Serializable
+data class PendingCleanupDiscard(
+    val playerId: EntityId,
+    val currentHandSize: Int,
+    val maxHandSize: Int,
+    val discardCount: Int,
+    val cardsInHand: List<EntityId>
+) {
+    init {
+        require(discardCount > 0) { "Discard count must be positive" }
+        require(currentHandSize > maxHandSize) { "Hand size must exceed max for discard" }
+    }
+}

@@ -1,10 +1,8 @@
 package com.wingedsheep.rulesengine.ability
 
-import com.wingedsheep.rulesengine.core.CardId
 import com.wingedsheep.rulesengine.core.Color
 import com.wingedsheep.rulesengine.core.Keyword
 import com.wingedsheep.rulesengine.ecs.EntityId
-import com.wingedsheep.rulesengine.player.PlayerId
 import kotlinx.serialization.Serializable
 
 /**

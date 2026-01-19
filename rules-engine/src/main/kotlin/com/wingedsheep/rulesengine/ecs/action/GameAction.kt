@@ -496,3 +496,67 @@ data class ClearDamage(
 ) : GameAction {
     override val description: String = "Clear damage"
 }
+
+// =============================================================================
+// Turn/Step Actions
+// =============================================================================
+
+/**
+ * Perform the cleanup step at the end of turn.
+ *
+ * This handles:
+ * - Expiring "until end of turn" continuous effects
+ * - Clearing damage from all creatures
+ * - Discarding down to maximum hand size (triggers decision if needed)
+ *
+ * Note: The actual step advancement happens via TurnState.advanceStep()
+ * after this action completes.
+ */
+@Serializable
+data class PerformCleanupStep(
+    val playerId: EntityId
+) : GameAction {
+    override val description: String = "Perform cleanup step"
+}
+
+/**
+ * Expire continuous effects at the end of combat.
+ *
+ * Called when combat ends to clean up "until end of combat" effects.
+ */
+@Serializable
+data class ExpireEndOfCombatEffects(
+    val placeholder: Unit = Unit
+) : GameAction {
+    override val description: String = "Expire end of combat effects"
+}
+
+/**
+ * Expire effects when a permanent leaves the battlefield.
+ *
+ * Called to clean up effects with WhileOnBattlefield or WhileAttached duration
+ * when the associated permanent leaves.
+ */
+@Serializable
+data class ExpireEffectsForPermanent(
+    val permanentId: EntityId
+) : GameAction {
+    override val description: String = "Expire effects for leaving permanent"
+}
+
+/**
+ * Resolve a cleanup discard decision.
+ *
+ * During cleanup, if a player has more cards than their maximum hand size,
+ * they must discard down to that limit. This action resolves that choice.
+ *
+ * @param playerId The player who is discarding
+ * @param cardsToDiscard The cards chosen to be discarded
+ */
+@Serializable
+data class ResolveCleanupDiscard(
+    val playerId: EntityId,
+    val cardsToDiscard: List<EntityId>
+) : GameAction {
+    override val description: String = "Discard to hand size"
+}

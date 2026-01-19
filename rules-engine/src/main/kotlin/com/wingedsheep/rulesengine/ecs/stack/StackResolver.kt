@@ -7,6 +7,7 @@ import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.components.*
 import com.wingedsheep.rulesengine.ecs.event.ChosenTarget
+import com.wingedsheep.rulesengine.ecs.layers.Modifier
 import com.wingedsheep.rulesengine.ecs.script.EffectExecutor
 import com.wingedsheep.rulesengine.ecs.script.EffectEvent
 import com.wingedsheep.rulesengine.ecs.script.ResolvedTarget
@@ -36,10 +37,17 @@ class StackResolver(
     sealed interface ResolutionResult {
         /**
          * The item resolved successfully.
+         *
+         * @property state The game state after resolution
+         * @property events Events generated during resolution
+         * @property temporaryModifiers Modifiers created by the resolved spell/ability
+         *   (e.g., "+3/+3 until end of turn" effects). These need to be persisted
+         *   as continuous effects by the caller.
          */
         data class Resolved(
             val state: GameState,
-            val events: List<StackResolutionEvent>
+            val events: List<StackResolutionEvent>,
+            val temporaryModifiers: List<Modifier> = emptyList()
         ) : ResolutionResult
 
         /**
@@ -136,6 +144,8 @@ class StackResolver(
         val definition = cardComponent.definition
         val isPermanent = definition.isPermanent
 
+        val temporaryModifiers = mutableListOf<Modifier>()
+
         if (isPermanent) {
             // Permanent spell - move to battlefield
             newState = resolvePermanentSpell(newState, entityId, container, spellComponent, cardComponent)
@@ -150,12 +160,13 @@ class StackResolver(
         } else {
             // Non-permanent spell (instant/sorcery) - execute effects and move to graveyard
             val effectResult = resolveNonPermanentSpell(newState, entityId, spellComponent, cardComponent)
-            newState = effectResult.first
-            events.addAll(effectResult.second)
+            newState = effectResult.state
+            events.addAll(effectResult.events)
+            temporaryModifiers.addAll(effectResult.temporaryModifiers)
             events.add(StackResolutionEvent.SpellResolved(entityId, cardComponent.name))
         }
 
-        return ResolutionResult.Resolved(newState, events)
+        return ResolutionResult.Resolved(newState, events, temporaryModifiers)
     }
 
     /**
@@ -199,6 +210,15 @@ class StackResolver(
     }
 
     /**
+     * Result of resolving a non-permanent spell.
+     */
+    private data class SpellResolutionResult(
+        val state: GameState,
+        val events: List<StackResolutionEvent>,
+        val temporaryModifiers: List<Modifier>
+    )
+
+    /**
      * Resolve a non-permanent spell by executing its effects.
      */
     private fun resolveNonPermanentSpell(
@@ -206,8 +226,9 @@ class StackResolver(
         entityId: EntityId,
         spellComponent: SpellOnStackComponent,
         cardComponent: CardComponent
-    ): Pair<GameState, List<StackResolutionEvent>> {
+    ): SpellResolutionResult {
         val events = mutableListOf<StackResolutionEvent>()
+        val modifiers = mutableListOf<Modifier>()
 
         var newState = state
 
@@ -225,6 +246,7 @@ class StackResolver(
             val result = effectExecutor.execute(newState, spellEffect.effect, context)
             newState = result.state
             events.addAll(result.events.map { StackResolutionEvent.EffectEventWrapper(it) })
+            modifiers.addAll(result.temporaryModifiers)
         }
 
         // Move to graveyard
@@ -239,7 +261,7 @@ class StackResolver(
         newState = newState.addToZone(entityId, graveyardZone)
         events.add(StackResolutionEvent.SpellMovedToGraveyard(entityId, cardComponent.name, ownerId))
 
-        return newState to events
+        return SpellResolutionResult(newState, events, modifiers)
     }
 
     /**
@@ -290,6 +312,7 @@ class StackResolver(
             ?: return ResolutionResult.Error("TriggeredAbilityOnStackComponent missing")
 
         val events = mutableListOf<StackResolutionEvent>()
+        val temporaryModifiers = mutableListOf<Modifier>()
 
         // Check if targets are still valid
         if (triggerComponent.hasTargets) {
@@ -315,12 +338,13 @@ class StackResolver(
         val result = effectExecutor.execute(newState, ability.effect, context)
         newState = result.state
         events.addAll(result.events.map { StackResolutionEvent.EffectEventWrapper(it) })
+        temporaryModifiers.addAll(result.temporaryModifiers)
         events.add(StackResolutionEvent.AbilityResolved(triggerComponent.description, triggerComponent.sourceId))
 
         // Remove the triggered ability entity (it only exists on the stack)
         newState = newState.removeEntity(entityId)
 
-        return ResolutionResult.Resolved(newState, events)
+        return ResolutionResult.Resolved(newState, events, temporaryModifiers)
     }
 
     /**
@@ -362,6 +386,7 @@ class StackResolver(
             ?: return ResolutionResult.Error("ActivatedAbilityOnStackComponent missing")
 
         val events = mutableListOf<StackResolutionEvent>()
+        val temporaryModifiers = mutableListOf<Modifier>()
 
         // Check if targets are still valid
         if (abilityComponent.hasTargets) {
@@ -386,12 +411,13 @@ class StackResolver(
         val result = effectExecutor.execute(newState, abilityComponent.effect, context)
         newState = result.state
         events.addAll(result.events.map { StackResolutionEvent.EffectEventWrapper(it) })
+        temporaryModifiers.addAll(result.temporaryModifiers)
         events.add(StackResolutionEvent.AbilityResolved(abilityComponent.sourceName, abilityComponent.sourceId))
 
         // Remove the activated ability entity
         newState = newState.removeEntity(entityId)
 
-        return ResolutionResult.Resolved(newState, events)
+        return ResolutionResult.Resolved(newState, events, temporaryModifiers)
     }
 
     /**

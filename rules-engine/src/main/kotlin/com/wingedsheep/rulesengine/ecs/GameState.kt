@@ -5,6 +5,8 @@ import com.wingedsheep.rulesengine.ability.StackedTrigger
 import com.wingedsheep.rulesengine.combat.CombatState
 import com.wingedsheep.rulesengine.core.Color
 import com.wingedsheep.rulesengine.ecs.components.*
+import com.wingedsheep.rulesengine.ecs.layers.ActiveContinuousEffect
+import com.wingedsheep.rulesengine.ecs.layers.EffectDuration
 import com.wingedsheep.rulesengine.player.ManaPool
 import com.wingedsheep.rulesengine.game.Phase
 import com.wingedsheep.rulesengine.game.Step
@@ -75,7 +77,31 @@ data class GameState(
      * When a player controls multiple legendary permanents with the same name,
      * they must choose which one to keep.
      */
-    val pendingLegendRuleChoices: List<com.wingedsheep.rulesengine.ecs.components.PendingLegendRuleChoice> = emptyList()
+    val pendingLegendRuleChoices: List<com.wingedsheep.rulesengine.ecs.components.PendingLegendRuleChoice> = emptyList(),
+
+    /**
+     * Active continuous effects that modify game objects.
+     *
+     * These are "floating" effects created by spells and abilities that persist
+     * independently of their source. Examples:
+     * - "Target creature gets +3/+3 until end of turn" (Giant Growth)
+     * - "Creatures you control gain flying until end of turn"
+     *
+     * Unlike static abilities (which come from permanents on the battlefield),
+     * continuous effects persist based on their duration, even if the source
+     * that created them leaves play.
+     *
+     * Effects are applied in layer order (Rule 613), then by timestamp.
+     * They expire based on their duration (end of turn, end of combat, etc.)
+     */
+    val continuousEffects: List<ActiveContinuousEffect> = emptyList(),
+
+    /**
+     * Pending cleanup discards that need player input.
+     * During the cleanup step, players with more cards than their max hand size
+     * must discard down to the limit.
+     */
+    val pendingCleanupDiscards: List<com.wingedsheep.rulesengine.ecs.components.PendingCleanupDiscard> = emptyList()
 ) {
     // ==========================================================================
     // Entity Queries
@@ -495,6 +521,172 @@ data class GameState(
      */
     fun clearPendingLegendRuleChoicesForPlayer(playerId: EntityId): GameState =
         copy(pendingLegendRuleChoices = pendingLegendRuleChoices.filter { it.controllerId != playerId })
+
+    // ==========================================================================
+    // Continuous Effects Helpers
+    // ==========================================================================
+
+    /**
+     * Check if there are any active continuous effects.
+     */
+    val hasContinuousEffects: Boolean get() = continuousEffects.isNotEmpty()
+
+    /**
+     * Add a continuous effect to the game state.
+     */
+    fun addContinuousEffect(effect: ActiveContinuousEffect): GameState =
+        copy(continuousEffects = continuousEffects + effect)
+
+    /**
+     * Add multiple continuous effects to the game state.
+     */
+    fun addContinuousEffects(effects: List<ActiveContinuousEffect>): GameState =
+        if (effects.isEmpty()) this else copy(continuousEffects = continuousEffects + effects)
+
+    /**
+     * Remove a specific continuous effect.
+     */
+    fun removeContinuousEffect(effectId: EntityId): GameState =
+        copy(continuousEffects = continuousEffects.filter { it.id != effectId })
+
+    /**
+     * Remove all continuous effects matching a predicate.
+     */
+    fun removeContinuousEffectsWhere(predicate: (ActiveContinuousEffect) -> Boolean): GameState =
+        copy(continuousEffects = continuousEffects.filterNot(predicate))
+
+    /**
+     * Remove all continuous effects created by a specific source.
+     */
+    fun removeContinuousEffectsFromSource(sourceId: EntityId): GameState =
+        copy(continuousEffects = continuousEffects.filter { it.sourceId != sourceId })
+
+    /**
+     * Remove all "until end of turn" effects.
+     * Called during the cleanup step.
+     */
+    fun expireEndOfTurnEffects(): GameState =
+        copy(continuousEffects = continuousEffects.filter {
+            it.duration != EffectDuration.UntilEndOfTurn
+        })
+
+    /**
+     * Remove all "until end of combat" effects.
+     * Called when combat ends.
+     */
+    fun expireEndOfCombatEffects(): GameState =
+        copy(continuousEffects = continuousEffects.filter {
+            it.duration != EffectDuration.UntilEndOfCombat
+        })
+
+    /**
+     * Remove effects that depend on a permanent that left the battlefield.
+     * Handles WhileOnBattlefield and WhileAttached durations.
+     */
+    fun expireEffectsForLeavingPermanent(permanentId: EntityId): GameState =
+        copy(continuousEffects = continuousEffects.filter { effect ->
+            when (val duration = effect.duration) {
+                is EffectDuration.WhileOnBattlefield -> duration.permanentId != permanentId
+                is EffectDuration.WhileAttached -> duration.attachmentId != permanentId
+                else -> true
+            }
+        })
+
+    /**
+     * Expire "until your next turn" effects for a specific player.
+     * Called at the beginning of that player's turn.
+     */
+    fun expireUntilNextTurnEffects(playerId: EntityId): GameState =
+        copy(continuousEffects = continuousEffects.filter { effect ->
+            when (val duration = effect.duration) {
+                is EffectDuration.UntilNextTurn -> duration.playerId != playerId
+                else -> true
+            }
+        })
+
+    /**
+     * Expire "until your next upkeep" effects for a specific player.
+     * Called at the beginning of that player's upkeep.
+     */
+    fun expireUntilNextUpkeepEffects(playerId: EntityId): GameState =
+        copy(continuousEffects = continuousEffects.filter { effect ->
+            when (val duration = effect.duration) {
+                is EffectDuration.UntilYourNextUpkeep -> duration.playerId != playerId
+                else -> true
+            }
+        })
+
+    /**
+     * Decrement and expire "for N turns" effects.
+     * Called at the beginning of the counting player's turn.
+     * Returns updated state with decremented counters and expired effects removed.
+     */
+    fun tickForTurnsEffects(playerId: EntityId): GameState {
+        val (remaining, updated) = continuousEffects.partition { effect ->
+            when (val duration = effect.duration) {
+                is EffectDuration.ForTurns -> duration.countingPlayerId != playerId
+                else -> true
+            }
+        }
+
+        val decremented = updated.mapNotNull { effect ->
+            val duration = effect.duration as EffectDuration.ForTurns
+            val newRemaining = duration.remainingTurns - 1
+            if (newRemaining <= 0) {
+                null // Effect expires
+            } else {
+                effect.copy(duration = EffectDuration.ForTurns(newRemaining, duration.countingPlayerId))
+            }
+        }
+
+        return copy(continuousEffects = remaining + decremented)
+    }
+
+    /**
+     * Get all continuous effects affecting a specific entity.
+     */
+    fun getContinuousEffectsAffecting(entityId: EntityId): List<ActiveContinuousEffect> =
+        continuousEffects.filter { effect ->
+            when (val filter = effect.filter) {
+                is com.wingedsheep.rulesengine.ecs.layers.ModifierFilter.Specific -> filter.entityId == entityId
+                is com.wingedsheep.rulesengine.ecs.layers.ModifierFilter.Self -> effect.sourceId == entityId
+                // Other filter types require full evaluation against the game state
+                else -> false
+            }
+        }
+
+    // ==========================================================================
+    // Pending Cleanup Discard Helpers
+    // ==========================================================================
+
+    /**
+     * Check if there are any pending cleanup discards.
+     */
+    val hasPendingCleanupDiscards: Boolean get() = pendingCleanupDiscards.isNotEmpty()
+
+    /**
+     * Get pending cleanup discard for a specific player.
+     */
+    fun getPendingCleanupDiscardForPlayer(playerId: EntityId): com.wingedsheep.rulesengine.ecs.components.PendingCleanupDiscard? =
+        pendingCleanupDiscards.find { it.playerId == playerId }
+
+    /**
+     * Add a pending cleanup discard.
+     */
+    fun addPendingCleanupDiscard(discard: com.wingedsheep.rulesengine.ecs.components.PendingCleanupDiscard): GameState =
+        copy(pendingCleanupDiscards = pendingCleanupDiscards + discard)
+
+    /**
+     * Remove a pending cleanup discard (after it's been resolved).
+     */
+    fun removePendingCleanupDiscard(discard: com.wingedsheep.rulesengine.ecs.components.PendingCleanupDiscard): GameState =
+        copy(pendingCleanupDiscards = pendingCleanupDiscards - discard)
+
+    /**
+     * Remove pending cleanup discard for a specific player.
+     */
+    fun removePendingCleanupDiscardForPlayer(playerId: EntityId): GameState =
+        copy(pendingCleanupDiscards = pendingCleanupDiscards.filter { it.playerId != playerId })
 
     // ==========================================================================
     // Convenience Helpers
