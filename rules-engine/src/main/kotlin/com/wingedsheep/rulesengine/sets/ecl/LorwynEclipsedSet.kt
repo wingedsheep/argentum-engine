@@ -2,6 +2,7 @@ package com.wingedsheep.rulesengine.sets.ecl
 
 import com.wingedsheep.rulesengine.sets.BaseCardRegistry
 import com.wingedsheep.rulesengine.sets.ecl.cards.ChangelingWayfinder
+import com.wingedsheep.rulesengine.sets.ecl.cards.RooftopPercher
 
 /**
  * The Lorwyn Eclipsed set (ECL).
@@ -12,10 +13,7 @@ object LorwynEclipsedSet : BaseCardRegistry() {
     override val setName: String = "Lorwyn Eclipsed"
 
     init {
-        // Register cards
         register(ChangelingWayfinder.definition, ChangelingWayfinder.script)
-
-        // Future cards will be added here
-        // register(ChangelingTitan.definition, ChangelingTitan.script)
+        register(RooftopPercher.definition, RooftopPercher.script)
     }
 }

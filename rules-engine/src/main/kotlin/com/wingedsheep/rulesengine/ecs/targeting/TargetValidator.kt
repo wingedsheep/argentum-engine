@@ -1,13 +1,18 @@
 package com.wingedsheep.rulesengine.ecs.targeting
 
 import com.wingedsheep.rulesengine.core.Keyword
-import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
-import com.wingedsheep.rulesengine.ecs.ZoneId
+import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.components.AttackingComponent
 import com.wingedsheep.rulesengine.ecs.components.BlockingComponent
+import com.wingedsheep.rulesengine.ecs.components.CardComponent
+import com.wingedsheep.rulesengine.ecs.components.ControllerComponent
+import com.wingedsheep.rulesengine.ecs.components.LostGameComponent
+import com.wingedsheep.rulesengine.ecs.components.PlayerComponent
+import com.wingedsheep.rulesengine.ecs.event.ChosenTarget
 import com.wingedsheep.rulesengine.ecs.layers.GameObjectView
 import com.wingedsheep.rulesengine.ecs.layers.StateProjector
+import com.wingedsheep.rulesengine.targeting.*
 
 /**
  * ECS-native target validation using StateProjector for entity views.
@@ -31,163 +36,11 @@ object TargetValidator {
      * Target types that can be validated.
      */
     sealed interface ValidatorTarget {
-        /** A player entity as a target. */
         data class Player(val playerId: EntityId) : ValidatorTarget
-
-        /** A permanent on the battlefield as a target. */
         data class Permanent(val entityId: EntityId) : ValidatorTarget
-
-        /** A spell/ability on the stack as a target. */
         data class StackObject(val entityId: EntityId) : ValidatorTarget
-
-        /** A card in a graveyard as a target. */
         data class GraveyardCard(val entityId: EntityId, val ownerId: EntityId) : ValidatorTarget
-
-        /** A card in exile as a target. */
         data class ExiledCard(val entityId: EntityId) : ValidatorTarget
-    }
-
-    /**
-     * Targeting requirements for ECS validation.
-     */
-    sealed interface TargetRequirement {
-        val description: String
-        val count: Int get() = 1
-        val optional: Boolean get() = false
-
-        /** Any target (player or permanent). */
-        data class AnyTarget(
-            override val count: Int = 1,
-            override val optional: Boolean = false
-        ) : TargetRequirement {
-            override val description = "any target"
-        }
-
-        /** Target player. */
-        data class TargetPlayer(
-            override val count: Int = 1,
-            override val optional: Boolean = false
-        ) : TargetRequirement {
-            override val description = "target player"
-        }
-
-        /** Target opponent. */
-        data class TargetOpponent(
-            override val count: Int = 1,
-            override val optional: Boolean = false
-        ) : TargetRequirement {
-            override val description = "target opponent"
-        }
-
-        /** Target creature. */
-        data class TargetCreature(
-            val filter: CreatureFilter = CreatureFilter.Any,
-            override val count: Int = 1,
-            override val optional: Boolean = false
-        ) : TargetRequirement {
-            override val description = when (filter) {
-                CreatureFilter.Any -> "target creature"
-                CreatureFilter.YouControl -> "target creature you control"
-                CreatureFilter.YouDontControl -> "target creature you don't control"
-                CreatureFilter.Attacking -> "target attacking creature"
-                CreatureFilter.Blocking -> "target blocking creature"
-                CreatureFilter.Tapped -> "target tapped creature"
-                CreatureFilter.Untapped -> "target untapped creature"
-                is CreatureFilter.WithKeyword -> "target creature with ${filter.keyword.name.lowercase()}"
-            }
-        }
-
-        /** Target permanent. */
-        data class TargetPermanent(
-            val filter: PermanentFilter = PermanentFilter.Any,
-            override val count: Int = 1,
-            override val optional: Boolean = false
-        ) : TargetRequirement {
-            override val description = when (filter) {
-                PermanentFilter.Any -> "target permanent"
-                PermanentFilter.YouControl -> "target permanent you control"
-                PermanentFilter.YouDontControl -> "target permanent you don't control"
-                PermanentFilter.Artifact -> "target artifact"
-                PermanentFilter.Enchantment -> "target enchantment"
-                PermanentFilter.ArtifactOrEnchantment -> "target artifact or enchantment"
-                PermanentFilter.Land -> "target land"
-                PermanentFilter.Nonland -> "target nonland permanent"
-            }
-        }
-
-        /** Target spell on the stack. */
-        data class TargetSpell(
-            val filter: SpellFilter = SpellFilter.Any,
-            override val count: Int = 1,
-            override val optional: Boolean = false
-        ) : TargetRequirement {
-            override val description = when (filter) {
-                SpellFilter.Any -> "target spell"
-                SpellFilter.Instant -> "target instant spell"
-                SpellFilter.Sorcery -> "target sorcery spell"
-                SpellFilter.Creature -> "target creature spell"
-                SpellFilter.Noncreature -> "target noncreature spell"
-            }
-        }
-
-        /** Target card in a graveyard. */
-        data class TargetGraveyardCard(
-            val filter: GraveyardFilter = GraveyardFilter.Any,
-            override val count: Int = 1,
-            override val optional: Boolean = false
-        ) : TargetRequirement {
-            override val description = when (filter) {
-                GraveyardFilter.Any -> "target card in a graveyard"
-                GraveyardFilter.YourGraveyard -> "target card in your graveyard"
-                GraveyardFilter.OpponentsGraveyard -> "target card in an opponent's graveyard"
-                GraveyardFilter.Creature -> "target creature card in a graveyard"
-                GraveyardFilter.Instant -> "target instant card in a graveyard"
-                GraveyardFilter.Sorcery -> "target sorcery card in a graveyard"
-            }
-        }
-    }
-
-    /** Filters for creature targeting. */
-    sealed interface CreatureFilter {
-        data object Any : CreatureFilter
-        data object YouControl : CreatureFilter
-        data object YouDontControl : CreatureFilter
-        data object Attacking : CreatureFilter
-        data object Blocking : CreatureFilter
-        data object Tapped : CreatureFilter
-        data object Untapped : CreatureFilter
-        data class WithKeyword(val keyword: Keyword) : CreatureFilter
-    }
-
-    /** Filters for permanent targeting. */
-    sealed interface PermanentFilter {
-        data object Any : PermanentFilter
-        data object YouControl : PermanentFilter
-        data object YouDontControl : PermanentFilter
-        data object Artifact : PermanentFilter
-        data object Enchantment : PermanentFilter
-        data object ArtifactOrEnchantment : PermanentFilter
-        data object Land : PermanentFilter
-        data object Nonland : PermanentFilter
-    }
-
-    /** Filters for spell targeting. */
-    sealed interface SpellFilter {
-        data object Any : SpellFilter
-        data object Instant : SpellFilter
-        data object Sorcery : SpellFilter
-        data object Creature : SpellFilter
-        data object Noncreature : SpellFilter
-    }
-
-    /** Filters for graveyard card targeting. */
-    sealed interface GraveyardFilter {
-        data object Any : GraveyardFilter
-        data object YourGraveyard : GraveyardFilter
-        data object OpponentsGraveyard : GraveyardFilter
-        data object Creature : GraveyardFilter
-        data object Instant : GraveyardFilter
-        data object Sorcery : GraveyardFilter
     }
 
     // ==========================================================================
@@ -222,13 +75,15 @@ object TargetValidator {
         controllerId: EntityId
     ): Boolean {
         return when (requirement) {
-            is TargetRequirement.AnyTarget -> isValidAnyTarget(target, state, projector, controllerId)
-            is TargetRequirement.TargetPlayer -> isValidPlayerTarget(target, state, controllerId, opponentOnly = false)
-            is TargetRequirement.TargetOpponent -> isValidPlayerTarget(target, state, controllerId, opponentOnly = true)
-            is TargetRequirement.TargetCreature -> isValidCreatureTarget(target, state, projector, controllerId, requirement.filter)
-            is TargetRequirement.TargetPermanent -> isValidPermanentTarget(target, state, projector, controllerId, requirement.filter)
-            is TargetRequirement.TargetSpell -> isValidSpellTarget(target, state, projector, requirement.filter)
-            is TargetRequirement.TargetGraveyardCard -> isValidGraveyardTarget(target, state, controllerId, requirement.filter)
+            is AnyTarget -> isValidAnyTarget(target, state, projector, controllerId)
+            is TargetPlayer -> isValidPlayerTarget(target, state, controllerId, opponentOnly = false)
+            is TargetOpponent -> isValidPlayerTarget(target, state, controllerId, opponentOnly = true)
+            is TargetCreature -> isValidCreatureTarget(target, state, projector, controllerId, requirement.filter)
+            is TargetPermanent -> isValidPermanentTarget(target, state, projector, controllerId, requirement.filter)
+            is TargetSpell -> isValidSpellTarget(target, state, projector, requirement.filter)
+            is TargetCardInGraveyard -> isValidGraveyardTarget(target, state, controllerId, requirement.filter)
+            // Handle other requirements or composite requirements if added later
+            else -> false
         }
     }
 
@@ -264,7 +119,7 @@ object TargetValidator {
         state: GameState,
         projector: StateProjector,
         controllerId: EntityId,
-        filter: CreatureFilter
+        filter: CreatureTargetFilter
     ): Boolean {
         if (target !is ValidatorTarget.Permanent) return false
 
@@ -273,14 +128,22 @@ object TargetValidator {
         if (!canBeTargetedBy(view, controllerId)) return false
 
         return when (filter) {
-            CreatureFilter.Any -> true
-            CreatureFilter.YouControl -> view.controllerId == controllerId
-            CreatureFilter.YouDontControl -> view.controllerId != controllerId
-            CreatureFilter.Attacking -> state.hasComponent<AttackingComponent>(target.entityId)
-            CreatureFilter.Blocking -> state.hasComponent<BlockingComponent>(target.entityId)
-            CreatureFilter.Tapped -> view.isTapped
-            CreatureFilter.Untapped -> !view.isTapped
-            is CreatureFilter.WithKeyword -> view.hasKeyword(filter.keyword)
+            CreatureTargetFilter.Any -> true
+            CreatureTargetFilter.YouControl -> view.controllerId == controllerId
+            CreatureTargetFilter.OpponentControls -> view.controllerId != controllerId
+            CreatureTargetFilter.Attacking -> state.hasComponent<AttackingComponent>(target.entityId)
+            CreatureTargetFilter.Blocking -> state.hasComponent<BlockingComponent>(target.entityId)
+            CreatureTargetFilter.Tapped -> view.isTapped
+            CreatureTargetFilter.Untapped -> !view.isTapped
+            is CreatureTargetFilter.WithKeyword -> view.hasKeyword(filter.keyword)
+            is CreatureTargetFilter.WithoutKeyword -> !view.hasKeyword(filter.keyword)
+            is CreatureTargetFilter.WithColor -> view.colors.contains(filter.color)
+            is CreatureTargetFilter.WithPowerAtMost -> (view.power ?: 0) <= filter.maxPower
+            is CreatureTargetFilter.WithPowerAtLeast -> (view.power ?: 0) >= filter.minPower
+            is CreatureTargetFilter.WithToughnessAtMost -> (view.toughness ?: 0) <= filter.maxToughness
+            is CreatureTargetFilter.And -> filter.filters.all { subFilter ->
+                isValidCreatureTarget(target, state, projector, controllerId, subFilter)
+            }
         }
     }
 
@@ -289,7 +152,7 @@ object TargetValidator {
         state: GameState,
         projector: StateProjector,
         controllerId: EntityId,
-        filter: PermanentFilter
+        filter: PermanentTargetFilter
     ): Boolean {
         if (target !is ValidatorTarget.Permanent) return false
 
@@ -298,14 +161,15 @@ object TargetValidator {
         if (!canBeTargetedBy(view, controllerId)) return false
 
         return when (filter) {
-            PermanentFilter.Any -> true
-            PermanentFilter.YouControl -> view.controllerId == controllerId
-            PermanentFilter.YouDontControl -> view.controllerId != controllerId
-            PermanentFilter.Artifact -> view.isArtifact
-            PermanentFilter.Enchantment -> view.isEnchantment
-            PermanentFilter.ArtifactOrEnchantment -> view.isArtifact || view.isEnchantment
-            PermanentFilter.Land -> view.isLand
-            PermanentFilter.Nonland -> !view.isLand
+            PermanentTargetFilter.Any -> true
+            PermanentTargetFilter.YouControl -> view.controllerId == controllerId
+            PermanentTargetFilter.OpponentControls -> view.controllerId != controllerId
+            PermanentTargetFilter.Artifact -> view.isArtifact
+            PermanentTargetFilter.Enchantment -> view.isEnchantment
+            PermanentTargetFilter.Creature -> view.isCreature
+            PermanentTargetFilter.Land -> view.isLand
+            PermanentTargetFilter.NonCreature -> !view.isCreature
+            PermanentTargetFilter.NonLand -> !view.isLand
         }
     }
 
@@ -313,7 +177,7 @@ object TargetValidator {
         target: ValidatorTarget,
         state: GameState,
         projector: StateProjector,
-        filter: SpellFilter
+        filter: SpellTargetFilter
     ): Boolean {
         if (target !is ValidatorTarget.StackObject) return false
         if (target.entityId !in state.getStack()) return false
@@ -321,11 +185,11 @@ object TargetValidator {
         val view = projector.getView(target.entityId) ?: return false
 
         return when (filter) {
-            SpellFilter.Any -> true
-            SpellFilter.Instant -> view.isInstant
-            SpellFilter.Sorcery -> view.isSorcery
-            SpellFilter.Creature -> view.isCreature
-            SpellFilter.Noncreature -> !view.isCreature
+            SpellTargetFilter.Any -> true
+            SpellTargetFilter.Instant -> view.isInstant
+            SpellTargetFilter.Sorcery -> view.isSorcery
+            SpellTargetFilter.Creature -> view.isCreature
+            SpellTargetFilter.Noncreature -> !view.isCreature
         }
     }
 
@@ -333,7 +197,7 @@ object TargetValidator {
         target: ValidatorTarget,
         state: GameState,
         controllerId: EntityId,
-        filter: GraveyardFilter
+        filter: GraveyardCardFilter
     ): Boolean {
         if (target !is ValidatorTarget.GraveyardCard) return false
 
@@ -342,20 +206,25 @@ object TargetValidator {
 
         // Check filter
         return when (filter) {
-            GraveyardFilter.Any -> true
-            GraveyardFilter.YourGraveyard -> target.ownerId == controllerId
-            GraveyardFilter.OpponentsGraveyard -> target.ownerId != controllerId
-            GraveyardFilter.Creature -> {
-                val component = state.getComponent<com.wingedsheep.rulesengine.ecs.components.CardComponent>(target.entityId)
+            GraveyardCardFilter.Any -> true
+            // Note: GraveyardCardFilter might need updating to support "YourGraveyard" logic if strictly enforced here
+            // or we assume the restriction is handled by the `TargetGraveyardCard` (which doesn't restrict ownership by default)
+            GraveyardCardFilter.Creature -> {
+                val component = state.getComponent<CardComponent>(target.entityId)
                 component?.isCreature == true
             }
-            GraveyardFilter.Instant -> {
-                val component = state.getComponent<com.wingedsheep.rulesengine.ecs.components.CardComponent>(target.entityId)
+            GraveyardCardFilter.Instant -> {
+                val component = state.getComponent<CardComponent>(target.entityId)
                 component?.definition?.typeLine?.isInstant == true
             }
-            GraveyardFilter.Sorcery -> {
-                val component = state.getComponent<com.wingedsheep.rulesengine.ecs.components.CardComponent>(target.entityId)
+            GraveyardCardFilter.Sorcery -> {
+                val component = state.getComponent<CardComponent>(target.entityId)
                 component?.definition?.typeLine?.isSorcery == true
+            }
+            GraveyardCardFilter.InstantOrSorcery -> {
+                val component = state.getComponent<CardComponent>(target.entityId)
+                val typeLine = component?.definition?.typeLine
+                typeLine?.isInstant == true || typeLine?.isSorcery == true
             }
         }
     }
@@ -391,7 +260,7 @@ object TargetValidator {
         val targets = mutableListOf<ValidatorTarget>()
 
         when (requirement) {
-            is TargetRequirement.AnyTarget -> {
+            is AnyTarget -> {
                 // Add players
                 for (playerId in state.getPlayerIds()) {
                     val target = ValidatorTarget.Player(playerId)
@@ -408,8 +277,8 @@ object TargetValidator {
                 }
             }
 
-            is TargetRequirement.TargetPlayer,
-            is TargetRequirement.TargetOpponent -> {
+            is TargetPlayer,
+            is TargetOpponent -> {
                 for (playerId in state.getPlayerIds()) {
                     val target = ValidatorTarget.Player(playerId)
                     if (isValidTarget(target, requirement, state, projector, controllerId)) {
@@ -418,8 +287,8 @@ object TargetValidator {
                 }
             }
 
-            is TargetRequirement.TargetCreature,
-            is TargetRequirement.TargetPermanent -> {
+            is TargetCreature,
+            is TargetPermanent -> {
                 for (entityId in state.getBattlefield()) {
                     val target = ValidatorTarget.Permanent(entityId)
                     if (isValidTarget(target, requirement, state, projector, controllerId)) {
@@ -428,7 +297,7 @@ object TargetValidator {
                 }
             }
 
-            is TargetRequirement.TargetSpell -> {
+            is TargetSpell -> {
                 for (entityId in state.getStack()) {
                     val target = ValidatorTarget.StackObject(entityId)
                     if (isValidTarget(target, requirement, state, projector, controllerId)) {
@@ -437,7 +306,7 @@ object TargetValidator {
                 }
             }
 
-            is TargetRequirement.TargetGraveyardCard -> {
+            is TargetCardInGraveyard -> {
                 for (playerId in state.getPlayerIds()) {
                     for (entityId in state.getGraveyard(playerId)) {
                         val target = ValidatorTarget.GraveyardCard(entityId, playerId)
@@ -446,6 +315,10 @@ object TargetValidator {
                         }
                     }
                 }
+            }
+
+            else -> {
+                // Handle other target types if necessary
             }
         }
 
@@ -461,60 +334,8 @@ object TargetValidator {
         projector: StateProjector,
         controllerId: EntityId
     ): Boolean {
-        // Use short-circuit evaluation
-        when (requirement) {
-            is TargetRequirement.AnyTarget -> {
-                // Check players first
-                for (playerId in state.getPlayerIds()) {
-                    if (isValidTarget(ValidatorTarget.Player(playerId), requirement, state, projector, controllerId)) {
-                        return true
-                    }
-                }
-                // Check permanents
-                for (entityId in state.getBattlefield()) {
-                    if (isValidTarget(ValidatorTarget.Permanent(entityId), requirement, state, projector, controllerId)) {
-                        return true
-                    }
-                }
-            }
-
-            is TargetRequirement.TargetPlayer,
-            is TargetRequirement.TargetOpponent -> {
-                for (playerId in state.getPlayerIds()) {
-                    if (isValidTarget(ValidatorTarget.Player(playerId), requirement, state, projector, controllerId)) {
-                        return true
-                    }
-                }
-            }
-
-            is TargetRequirement.TargetCreature,
-            is TargetRequirement.TargetPermanent -> {
-                for (entityId in state.getBattlefield()) {
-                    if (isValidTarget(ValidatorTarget.Permanent(entityId), requirement, state, projector, controllerId)) {
-                        return true
-                    }
-                }
-            }
-
-            is TargetRequirement.TargetSpell -> {
-                for (entityId in state.getStack()) {
-                    if (isValidTarget(ValidatorTarget.StackObject(entityId), requirement, state, projector, controllerId)) {
-                        return true
-                    }
-                }
-            }
-
-            is TargetRequirement.TargetGraveyardCard -> {
-                for (playerId in state.getPlayerIds()) {
-                    for (entityId in state.getGraveyard(playerId)) {
-                        if (isValidTarget(ValidatorTarget.GraveyardCard(entityId, playerId), requirement, state, projector, controllerId)) {
-                            return true
-                        }
-                    }
-                }
-            }
-        }
-        return false
+        val legalTargets = getLegalTargets(requirement, state, projector, controllerId)
+        return legalTargets.isNotEmpty()
     }
 
     /**
@@ -532,5 +353,42 @@ object TargetValidator {
             }
         }
         return true
+    }
+
+    // ==========================================================================
+    // ChosenTarget Validation (Stack Resolution)
+    // ==========================================================================
+
+    /**
+     * Validate a list of chosen targets against current game state (on resolution).
+     * Used by StackResolver.
+     */
+    fun validateChosenTargets(
+        state: GameState,
+        targets: List<ChosenTarget>
+    ): List<ChosenTarget> {
+        return targets.filter { target ->
+            when (target) {
+                is ChosenTarget.Player -> {
+                    // Player target is valid if they haven't lost
+                    val container = state.getEntity(target.playerId)
+                    container != null &&
+                            container.has<PlayerComponent>() &&
+                            !container.has<LostGameComponent>()
+                }
+                is ChosenTarget.Permanent -> {
+                    // Permanent target is valid if still on battlefield
+                    target.entityId in state.getBattlefield()
+                }
+                is ChosenTarget.Card -> {
+                    // Card target is valid if still in the specified zone
+                    target.cardId in state.getZone(target.zoneId)
+                }
+                is ChosenTarget.Spell -> {
+                    // Spell target is valid if still on the stack
+                    target.spellEntityId in state.getStack()
+                }
+            }
+        }
     }
 }

@@ -35,6 +35,11 @@ class DestroyHandler : BaseEffectHandler<DestroyEffect>() {
     }
 }
 
+/**
+ * Handler for ExileEffect.
+ * Supports exiling Permanents (from battlefield) and Cards (from graveyard/hand/library).
+ * Handles multiple targets via explicit binding or implicit context.
+ */
 class ExileHandler : BaseEffectHandler<ExileEffect>() {
     override val effectClass: KClass<ExileEffect> = ExileEffect::class
 
@@ -43,6 +48,7 @@ class ExileHandler : BaseEffectHandler<ExileEffect>() {
         effect: ExileEffect,
         context: ExecutionContext
     ): ExecutionResult {
+        // Resolve explicit targets (via index) or implicit targets (legacy behavior)
         val targetsToExile = when (val targetType = effect.target) {
             is EffectTarget.ContextTarget -> context.getTargetsForIndex(targetType.index)
             is EffectTarget.AnyTarget -> context.targets
@@ -56,6 +62,7 @@ class ExileHandler : BaseEffectHandler<ExileEffect>() {
         for (target in targetsToExile) {
             when (target) {
                 is ChosenTarget.Permanent -> {
+                    // Exile from Battlefield
                     val container = currentState.getEntity(target.entityId) ?: continue
                     val cardComponent = container.get<CardComponent>() ?: continue
 
@@ -66,9 +73,11 @@ class ExileHandler : BaseEffectHandler<ExileEffect>() {
                     events.add(EffectEvent.PermanentExiled(target.entityId, cardComponent.definition.name))
                 }
                 is ChosenTarget.Card -> {
+                    // Exile from Graveyard/Hand/Library
                     val container = currentState.getEntity(target.cardId) ?: continue
                     val cardComponent = container.get<CardComponent>() ?: continue
 
+                    // Remove from the specific zone captured in the target
                     currentState = currentState.removeFromZone(target.cardId, target.zoneId)
                     currentState = currentState.addToZone(target.cardId, ZoneId.EXILE)
 

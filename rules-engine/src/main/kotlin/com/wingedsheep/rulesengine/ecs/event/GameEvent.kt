@@ -463,10 +463,9 @@ object GameEventConverter {
             )
 
             is EffectEvent.PermanentExiled -> listOf(
-                GameEvent.CardExiled(event.entityId, event.name, null)
+                GameEvent.CardExiled(event.entityId, event.name, ZoneId.BATTLEFIELD)
             )
 
-            // Handle CardExiled from EffectEvent
             is EffectEvent.CardExiled -> listOf(
                 GameEvent.CardExiled(event.cardId, event.cardName, null)
             )

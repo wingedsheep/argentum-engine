@@ -728,7 +728,9 @@ sealed interface EffectTarget {
     }
 
     /**
-     * Refers to a specific target selection from the declaration phase.
+     * TARGET BINDING: Refers to a specific target selection from the declaration phase.
+     * This solves the ambiguity of which target applies to which effect.
+     * * @property index The index of the TargetRequirement in the CardScript.
      */
     @Serializable
     data class ContextTarget(val index: Int) : EffectTarget {
@@ -782,6 +784,6 @@ data class SacrificeUnlessEffect(
     val permanentToSacrifice: EffectTarget,
     val cost: SacrificeCost
 ) : Effect {
-    override val description: String =
-        "Sacrifice ${permanentToSacrifice.description} unless you ${cost.description}"
+    override val description:
+            String = "Sacrifice ${permanentToSacrifice.description} unless you ${cost.description}"
 }
