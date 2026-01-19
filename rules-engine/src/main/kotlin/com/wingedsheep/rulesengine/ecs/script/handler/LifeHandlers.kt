@@ -5,8 +5,10 @@ import com.wingedsheep.rulesengine.ability.GainLifeEffect
 import com.wingedsheep.rulesengine.ability.LoseLifeEffect
 import com.wingedsheep.rulesengine.ecs.EcsGameState
 import com.wingedsheep.rulesengine.ecs.EntityId
+import com.wingedsheep.rulesengine.ecs.components.ControllerComponent
 import com.wingedsheep.rulesengine.ecs.components.LifeComponent
 import com.wingedsheep.rulesengine.ecs.script.EcsEvent
+import com.wingedsheep.rulesengine.ecs.script.EcsTarget
 import com.wingedsheep.rulesengine.ecs.script.ExecutionContext
 import com.wingedsheep.rulesengine.ecs.script.ExecutionResult
 import kotlin.reflect.KClass
@@ -22,7 +24,7 @@ class GainLifeHandler : BaseEffectHandler<GainLifeEffect>() {
         effect: GainLifeEffect,
         context: ExecutionContext
     ): ExecutionResult {
-        val targetPlayerId = resolvePlayerTarget(effect.target, context.controllerId, state)
+        val targetPlayerId = resolvePlayerTarget(effect.target, context.controllerId, state, context)
         val container = state.getEntity(targetPlayerId) ?: return noOp(state)
         val lifeComponent = container.get<LifeComponent>() ?: return noOp(state)
 
@@ -45,7 +47,7 @@ class LoseLifeHandler : BaseEffectHandler<LoseLifeEffect>() {
         effect: LoseLifeEffect,
         context: ExecutionContext
     ): ExecutionResult {
-        val targetPlayerId = resolvePlayerTarget(effect.target, context.controllerId, state)
+        val targetPlayerId = resolvePlayerTarget(effect.target, context.controllerId, state, context)
         val container = state.getEntity(targetPlayerId) ?: return noOp(state)
         val lifeComponent = container.get<LifeComponent>() ?: return noOp(state)
 
@@ -58,10 +60,25 @@ class LoseLifeHandler : BaseEffectHandler<LoseLifeEffect>() {
 }
 
 // Shared utility function for resolving player targets
-internal fun resolvePlayerTarget(target: EffectTarget, controllerId: EntityId, state: EcsGameState): EntityId {
+internal fun resolvePlayerTarget(
+    target: EffectTarget,
+    controllerId: EntityId,
+    state: EcsGameState,
+    context: ExecutionContext? = null
+): EntityId {
     return when (target) {
         is EffectTarget.Controller -> controllerId
         is EffectTarget.Opponent -> getOpponent(controllerId, state)
+        is EffectTarget.TargetController -> {
+            // Get the controller of the first target
+            val firstTarget = context?.targets?.firstOrNull()
+            if (firstTarget is EcsTarget.Permanent) {
+                val entity = state.getEntity(firstTarget.entityId)
+                entity?.get<ControllerComponent>()?.controllerId ?: controllerId
+            } else {
+                controllerId
+            }
+        }
         else -> controllerId
     }
 }

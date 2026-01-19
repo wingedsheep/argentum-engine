@@ -205,6 +205,27 @@ data object OpponentControlsMoreCreatures : Condition {
     }
 }
 
+/**
+ * Condition: "If an opponent controls more lands than you"
+ * Used by Gift of Estates and similar cards.
+ */
+@Serializable
+data object OpponentControlsMoreLands : Condition {
+    override val description: String = "if an opponent controls more lands than you"
+
+    override fun isMet(state: GameState, controllerId: PlayerId, sourceId: CardId?): Boolean {
+        val myLands = state.battlefield.cards.count {
+            it.controllerId == controllerId.value && it.isLand
+        }
+        return state.players.values.any { opponent ->
+            opponent.id != controllerId &&
+            state.battlefield.cards.count {
+                it.controllerId == opponent.id.value && it.isLand
+            } > myLands
+        }
+    }
+}
+
 // =============================================================================
 // Hand/Library Conditions
 // =============================================================================

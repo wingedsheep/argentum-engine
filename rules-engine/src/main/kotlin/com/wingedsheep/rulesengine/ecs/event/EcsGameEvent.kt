@@ -484,10 +484,14 @@ object EcsGameEventConverter {
             // Events that don't map to trigger-relevant game events
             is EcsEvent.DrawFailed,
             is EcsEvent.PermanentDestroyed,
+            is EcsEvent.PermanentSacrificed,
             is EcsEvent.StatsModified,
             is EcsEvent.ManaAdded,
             is EcsEvent.TokenCreated,
-            is EcsEvent.KeywordGranted -> emptyList()
+            is EcsEvent.KeywordGranted,
+            is EcsEvent.LibraryShuffled,
+            is EcsEvent.LibrarySearched,
+            is EcsEvent.CardMovedToZone -> emptyList()
         }
     }
 }

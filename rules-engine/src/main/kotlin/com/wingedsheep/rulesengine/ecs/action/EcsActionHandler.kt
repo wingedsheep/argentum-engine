@@ -4,6 +4,7 @@ import com.wingedsheep.rulesengine.ability.AbilityCost
 import com.wingedsheep.rulesengine.ability.AddColorlessManaEffect
 import com.wingedsheep.rulesengine.ability.AddManaEffect
 import com.wingedsheep.rulesengine.card.CounterType
+import com.wingedsheep.rulesengine.core.Keyword
 import com.wingedsheep.rulesengine.ecs.EcsGameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
@@ -831,17 +832,20 @@ class EcsActionHandler {
             throw IllegalStateException("Creature has summoning sickness")
         }
 
-        val cardName = container.get<CardComponent>()?.definition?.name ?: "Unknown"
+        val cardComponent = container.get<CardComponent>()
+        val cardName = cardComponent?.definition?.name ?: "Unknown"
         events.add(EcsActionEvent.AttackerDeclared(action.creatureId, cardName))
 
         val newCombat = combat.addAttacker(action.creatureId)
 
-        // Tap the attacker (unless has vigilance - would need keyword check)
+        // Check for Vigilance - creatures with vigilance don't tap when attacking
+        val hasVigilance = cardComponent?.definition?.keywords?.contains(Keyword.VIGILANCE) ?: false
+
         return state
             .copy(combat = newCombat)
             .updateEntity(action.creatureId) { c ->
-                c.with(TappedComponent)
-                    .with(AttackingComponent.attackingPlayer(combat.defendingPlayer))
+                val withAttacking = c.with(AttackingComponent.attackingPlayer(combat.defendingPlayer))
+                if (hasVigilance) withAttacking else withAttacking.with(TappedComponent)
             }
     }
 
@@ -1158,8 +1162,11 @@ class EcsActionHandler {
 
         events.add(EcsActionEvent.SpellCast(action.cardId, cardComponent.name, action.casterId))
 
+        // Pay additional costs first (before moving spell to stack)
+        var newState = payAdditionalCosts(state, action.casterId, action.additionalCostPayment, events)
+
         // Remove from source zone
-        var newState = state.removeFromZone(action.cardId, action.fromZone)
+        newState = newState.removeFromZone(action.cardId, action.fromZone)
 
         // Add to stack with SpellOnStackComponent
         newState = newState.updateEntity(action.cardId) { c ->
@@ -1174,6 +1181,55 @@ class EcsActionHandler {
 
         // Add to stack zone
         newState = newState.addToStack(action.cardId)
+
+        return newState
+    }
+
+    /**
+     * Pay additional costs (sacrifice, discard, life, etc.) as part of casting a spell.
+     */
+    private fun payAdditionalCosts(
+        state: EcsGameState,
+        playerId: EntityId,
+        payment: com.wingedsheep.rulesengine.ability.AdditionalCostPayment,
+        events: MutableList<EcsActionEvent>
+    ): EcsGameState {
+        var newState = state
+
+        // Sacrifice permanents
+        for (permanentId in payment.sacrificedPermanents) {
+            val (resultState, resultEvents) = executeAction(newState, EcsSacrificePermanent(permanentId, playerId))
+            newState = resultState
+            events.addAll(resultEvents)
+        }
+
+        // Discard cards
+        for (cardId in payment.discardedCards) {
+            val (resultState, resultEvents) = executeAction(newState, EcsDiscardCard(playerId, cardId))
+            newState = resultState
+            events.addAll(resultEvents)
+        }
+
+        // Pay life
+        if (payment.lifePaid > 0) {
+            val (resultState, resultEvents) = executeAction(newState, EcsLoseLife(playerId, payment.lifePaid))
+            newState = resultState
+            events.addAll(resultEvents)
+        }
+
+        // Exile cards
+        for (cardId in payment.exiledCards) {
+            val (resultState, resultEvents) = executeAction(newState, EcsExilePermanent(cardId))
+            newState = resultState
+            events.addAll(resultEvents)
+        }
+
+        // Tap permanents
+        for (permanentId in payment.tappedPermanents) {
+            val (resultState, resultEvents) = executeAction(newState, EcsTap(permanentId))
+            newState = resultState
+            events.addAll(resultEvents)
+        }
 
         return newState
     }

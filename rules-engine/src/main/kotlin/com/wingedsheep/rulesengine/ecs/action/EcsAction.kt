@@ -1,5 +1,6 @@
 package com.wingedsheep.rulesengine.ecs.action
 
+import com.wingedsheep.rulesengine.ability.AdditionalCostPayment
 import com.wingedsheep.rulesengine.core.Color
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
@@ -452,7 +453,9 @@ data class EcsCastSpell(
     val casterId: EntityId,
     val fromZone: com.wingedsheep.rulesengine.ecs.ZoneId,
     val targets: List<com.wingedsheep.rulesengine.ecs.event.EcsChosenTarget> = emptyList(),
-    val xValue: Int? = null
+    val xValue: Int? = null,
+    /** Additional costs that were paid (sacrifice, discard, etc.) */
+    val additionalCostPayment: AdditionalCostPayment = AdditionalCostPayment.NONE
 ) : EcsAction {
     override val description: String = "Cast spell"
 }

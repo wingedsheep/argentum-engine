@@ -140,6 +140,20 @@ class EcsCombatActionsTest : FunSpec({
             success.state.hasComponent<TappedComponent>(bearId).shouldBeTrue()
         }
 
+        test("does not tap creature with vigilance when declaring attacker") {
+            var state = createGameInDeclareAttackersStep()
+            val (angelId, state1) = state.addCreatureToBattlefield(vigilanceCreatureDef, player1Id, hasSummoningSickness = false)
+            state = state1
+
+            val action = EcsDeclareAttacker(angelId, player1Id)
+            val result = handler.execute(state, action)
+
+            result.shouldBeInstanceOf<EcsActionResult.Success>()
+            val success = result as EcsActionResult.Success
+            success.state.hasComponent<TappedComponent>(angelId).shouldBeFalse()
+            success.state.hasComponent<AttackingComponent>(angelId).shouldBeTrue()
+        }
+
         test("fails for creature with summoning sickness") {
             var state = createGameInDeclareAttackersStep()
             val (bearId, state1) = state.addCreatureToBattlefield(bearDef, player1Id, hasSummoningSickness = true)

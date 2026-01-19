@@ -2,9 +2,11 @@ package com.wingedsheep.rulesengine.ecs.script.handler
 
 import com.wingedsheep.rulesengine.ability.DestroyAllCreaturesEffect
 import com.wingedsheep.rulesengine.ability.DestroyAllLandsEffect
+import com.wingedsheep.rulesengine.ability.DestroyAllLandsOfTypeEffect
 import com.wingedsheep.rulesengine.ability.DestroyEffect
 import com.wingedsheep.rulesengine.ability.ExileEffect
 import com.wingedsheep.rulesengine.ability.ReturnToHandEffect
+import com.wingedsheep.rulesengine.core.Subtype
 import com.wingedsheep.rulesengine.ecs.EcsGameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
@@ -136,6 +138,39 @@ class DestroyAllCreaturesHandler : BaseEffectHandler<DestroyAllCreaturesEffect>(
 
         for (creatureId in creatures) {
             val result = destroyPermanent(currentState, creatureId)
+            currentState = result.state
+            events.addAll(result.events)
+        }
+
+        return ExecutionResult(currentState, events)
+    }
+}
+
+/**
+ * Handler for DestroyAllLandsOfTypeEffect.
+ * Destroys all lands of a specific type (e.g., Plains, Islands).
+ */
+class DestroyAllLandsOfTypeHandler : BaseEffectHandler<DestroyAllLandsOfTypeEffect>() {
+    override val effectClass: KClass<DestroyAllLandsOfTypeEffect> = DestroyAllLandsOfTypeEffect::class
+
+    override fun execute(
+        state: EcsGameState,
+        effect: DestroyAllLandsOfTypeEffect,
+        context: ExecutionContext
+    ): ExecutionResult {
+        var currentState = state
+        val events = mutableListOf<EcsEvent>()
+
+        val targetSubtype = Subtype.of(effect.landType)
+
+        val lands = state.getBattlefield().filter { entityId ->
+            val cardComponent = state.getEntity(entityId)?.get<CardComponent>() ?: return@filter false
+            cardComponent.definition.isLand &&
+                cardComponent.definition.typeLine.subtypes.contains(targetSubtype)
+        }
+
+        for (landId in lands) {
+            val result = destroyPermanent(currentState, landId)
             currentState = result.state
             events.addAll(result.events)
         }

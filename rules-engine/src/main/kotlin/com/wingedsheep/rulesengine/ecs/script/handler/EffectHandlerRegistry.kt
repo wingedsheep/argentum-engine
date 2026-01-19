@@ -110,9 +110,13 @@ class EffectHandlerRegistry private constructor(
                 .register(LoseLifeHandler())
                 // Damage effects
                 .register(DealDamageHandler())
+                .register(DealDamageToAllCreaturesHandler())
+                .register(DealDamageToAllHandler())
+                .register(DrainHandler())
                 // Card drawing effects
                 .register(DrawCardsHandler())
                 .register(DiscardCardsHandler())
+                .register(ReturnFromGraveyardHandler())
                 // Destruction/removal effects
                 .register(DestroyHandler())
                 .register(ExileHandler())
@@ -133,12 +137,20 @@ class EffectHandlerRegistry private constructor(
                 // Library effects
                 .register(ShuffleIntoLibraryHandler())
                 .register(LookAtTopCardsHandler())
+                .register(ShuffleLibraryHandler())
+                .register(SearchLibraryHandler())
+                .register(PutOnTopOfLibraryHandler())
                 // Combat effects
                 .register(MustBeBlockedHandler())
                 .register(GrantKeywordUntilEndOfTurnHandler())
                 // Mass destruction effects
                 .register(DestroyAllLandsHandler())
                 .register(DestroyAllCreaturesHandler())
+                .register(DestroyAllLandsOfTypeHandler())
+                // Sacrifice effects
+                .register(SacrificeUnlessHandler())
+                // Wheel effects
+                .register(WheelHandler())
                 .build()
 
             return registry

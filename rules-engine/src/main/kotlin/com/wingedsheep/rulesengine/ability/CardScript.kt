@@ -34,7 +34,10 @@ data class CardScript(
     val spellEffect: SpellEffect? = null,
 
     /** Targeting requirements for the spell (if it targets) */
-    val targetRequirements: List<TargetRequirement> = emptyList()
+    val targetRequirements: List<TargetRequirement> = emptyList(),
+
+    /** Additional costs beyond mana (e.g., sacrifice a creature for Natural Order) */
+    val additionalCosts: List<AdditionalCost> = emptyList()
 ) {
     /**
      * Check if this card has any abilities.
@@ -120,6 +123,7 @@ class CardScriptBuilder(private val cardName: String) {
     private val staticAbilities = mutableListOf<StaticAbility>()
     private var spellEffect: SpellEffect? = null
     private val targetRequirements = mutableListOf<TargetRequirement>()
+    private val additionalCosts = mutableListOf<AdditionalCost>()
 
     fun keyword(keyword: Keyword) = apply {
         keywords.add(keyword)
@@ -213,6 +217,42 @@ class CardScriptBuilder(private val cardName: String) {
         targetRequirements.addAll(requirements)
     }
 
+    /**
+     * Add an additional cost to the spell (beyond mana).
+     * Example: additionalCost(AdditionalCost.SacrificePermanent(CardFilter.CreatureCard))
+     */
+    fun additionalCost(cost: AdditionalCost) = apply {
+        additionalCosts.add(cost)
+    }
+
+    /**
+     * Add multiple additional costs.
+     */
+    fun additionalCosts(vararg costs: AdditionalCost) = apply {
+        additionalCosts.addAll(costs)
+    }
+
+    /**
+     * Convenience method: Sacrifice a permanent as an additional cost.
+     */
+    fun sacrificeCost(filter: CardFilter, count: Int = 1) = apply {
+        additionalCosts.add(AdditionalCost.SacrificePermanent(filter, count))
+    }
+
+    /**
+     * Convenience method: Discard cards as an additional cost.
+     */
+    fun discardCost(count: Int = 1, filter: CardFilter = CardFilter.AnyCard) = apply {
+        additionalCosts.add(AdditionalCost.DiscardCards(count, filter))
+    }
+
+    /**
+     * Convenience method: Pay life as an additional cost.
+     */
+    fun payLifeCost(amount: Int) = apply {
+        additionalCosts.add(AdditionalCost.PayLife(amount))
+    }
+
     fun build(): CardScript = CardScript(
         cardName = cardName,
         keywords = keywords,
@@ -220,7 +260,8 @@ class CardScriptBuilder(private val cardName: String) {
         activatedAbilities = activatedAbilities,
         staticAbilities = staticAbilities,
         spellEffect = spellEffect,
-        targetRequirements = targetRequirements
+        targetRequirements = targetRequirements,
+        additionalCosts = additionalCosts
     )
 }
 

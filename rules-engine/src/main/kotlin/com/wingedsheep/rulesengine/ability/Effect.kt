@@ -3,6 +3,7 @@ package com.wingedsheep.rulesengine.ability
 import com.wingedsheep.rulesengine.core.CardId
 import com.wingedsheep.rulesengine.core.Color
 import com.wingedsheep.rulesengine.core.Keyword
+import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.player.PlayerId
 import kotlinx.serialization.Serializable
 
@@ -283,6 +284,17 @@ data class ShuffleIntoLibraryEffect(
 }
 
 /**
+ * Put a card on top of its owner's library.
+ * "Put this card on top of its owner's library"
+ */
+@Serializable
+data class PutOnTopOfLibraryEffect(
+    val target: EffectTarget
+) : Effect {
+    override val description: String = "Put ${target.description} on top of its owner's library"
+}
+
+/**
  * Look at the top N cards and choose some to keep.
  * "Look at the top N cards of your library. Put X of them into your hand and the rest into your graveyard."
  */
@@ -296,6 +308,138 @@ data class LookAtTopCardsEffect(
         append("Look at the top $count cards of your library. ")
         append("Put $keepCount of them into your hand and the rest into your ")
         append(if (restToGraveyard) "graveyard" else "library in any order")
+    }
+}
+
+/**
+ * Shuffle a player's library.
+ * "Shuffle your library" or "Target player shuffles their library"
+ */
+@Serializable
+data class ShuffleLibraryEffect(
+    val target: EffectTarget = EffectTarget.Controller
+) : Effect {
+    override val description: String = when (target) {
+        EffectTarget.Controller -> "Shuffle your library"
+        EffectTarget.Opponent -> "Target opponent shuffles their library"
+        else -> "Target player shuffles their library"
+    }
+}
+
+/**
+ * Search library for cards matching a filter.
+ * "Search your library for a Forest card and put it onto the battlefield"
+ *
+ * @param selectedCardIds Optional explicit card IDs to select. When provided,
+ *        the handler will select these specific cards (if they match the filter)
+ *        instead of auto-selecting. This enables player choice in the decision
+ *        system and deterministic testing.
+ */
+@Serializable
+data class SearchLibraryEffect(
+    val filter: CardFilter,
+    val count: Int = 1,
+    val destination: SearchDestination = SearchDestination.HAND,
+    val entersTapped: Boolean = false,
+    val shuffleAfter: Boolean = true,
+    val reveal: Boolean = false,
+    val selectedCardIds: List<EntityId>? = null
+) : Effect {
+    override val description: String = buildString {
+        append("Search your library for ")
+        append(if (count == 1) "a" else "up to $count")
+        append(" ${filter.description}")
+        if (count != 1) append("s")
+        if (reveal) append(", reveal ${if (count == 1) "it" else "them"},")
+        append(" and put ${if (count == 1) "it" else "them"} ")
+        append(destination.description)
+        if (entersTapped && destination == SearchDestination.BATTLEFIELD) {
+            append(" tapped")
+        }
+        if (shuffleAfter) append(". Then shuffle your library")
+    }
+}
+
+/**
+ * Destination for searched cards.
+ */
+@Serializable
+enum class SearchDestination(val description: String) {
+    HAND("into your hand"),
+    BATTLEFIELD("onto the battlefield"),
+    GRAVEYARD("into your graveyard"),
+    TOP_OF_LIBRARY("on top of your library")
+}
+
+// =============================================================================
+// Card Filters
+// =============================================================================
+
+/**
+ * Filter for matching cards during search effects.
+ */
+@Serializable
+sealed interface CardFilter {
+    val description: String
+
+    /** Match any card */
+    @Serializable
+    data object AnyCard : CardFilter {
+        override val description: String = "card"
+    }
+
+    /** Match creature cards */
+    @Serializable
+    data object CreatureCard : CardFilter {
+        override val description: String = "creature card"
+    }
+
+    /** Match land cards */
+    @Serializable
+    data object LandCard : CardFilter {
+        override val description: String = "land card"
+    }
+
+    /** Match basic land cards */
+    @Serializable
+    data object BasicLandCard : CardFilter {
+        override val description: String = "basic land card"
+    }
+
+    /** Match sorcery cards */
+    @Serializable
+    data object SorceryCard : CardFilter {
+        override val description: String = "sorcery card"
+    }
+
+    /** Match instant cards */
+    @Serializable
+    data object InstantCard : CardFilter {
+        override val description: String = "instant card"
+    }
+
+    /** Match cards with a specific subtype (e.g., "Forest", "Elf") */
+    @Serializable
+    data class HasSubtype(val subtype: String) : CardFilter {
+        override val description: String = subtype
+    }
+
+    /** Match cards with a specific color */
+    @Serializable
+    data class HasColor(val color: Color) : CardFilter {
+        override val description: String = "${color.displayName.lowercase()} card"
+    }
+
+    /** Match cards that are both a type and have a specific property */
+    @Serializable
+    data class And(val filters: List<CardFilter>) : CardFilter {
+        override val description: String = filters.joinToString(" ") { it.description }
+    }
+
+    /** Match cards that match any of the filters */
+    @Serializable
+    data class Or(val filters: List<CardFilter>) : CardFilter {
+        override val description: String = filters.joinToString(" or ") { it.description }
     }
 }
 
@@ -350,6 +494,85 @@ data object DestroyAllLandsEffect : Effect {
 @Serializable
 data object DestroyAllCreaturesEffect : Effect {
     override val description: String = "Destroy all creatures"
+}
+
+/**
+ * Destroy all lands of a specific type.
+ * "Destroy all Plains." / "Destroy all Islands."
+ */
+@Serializable
+data class DestroyAllLandsOfTypeEffect(
+    val landType: String
+) : Effect {
+    override val description: String = "Destroy all ${landType}s"
+}
+
+/**
+ * Wheel effect - each affected player shuffles their hand into their library, then draws that many cards.
+ * Used for Winds of Change, Wheel of Fortune-style effects.
+ */
+@Serializable
+data class WheelEffect(
+    val target: EffectTarget = EffectTarget.EachPlayer
+) : Effect {
+    override val description: String = when (target) {
+        EffectTarget.Controller -> "Shuffle your hand into your library, then draw that many cards"
+        EffectTarget.EachPlayer -> "Each player shuffles their hand into their library, then draws that many cards"
+        else -> "Shuffle hand into library, then draw that many cards"
+    }
+}
+
+/**
+ * Deal damage to all creatures.
+ * "Deal X damage to each creature."
+ */
+@Serializable
+data class DealDamageToAllCreaturesEffect(
+    val amount: Int,
+    val onlyFlying: Boolean = false,
+    val onlyNonFlying: Boolean = false
+) : Effect {
+    override val description: String = buildString {
+        append("Deal $amount damage to each ")
+        when {
+            onlyFlying -> append("creature with flying")
+            onlyNonFlying -> append("creature without flying")
+            else -> append("creature")
+        }
+    }
+}
+
+/**
+ * Deal damage to each creature and each player.
+ * Used for effects like Earthquake, Dry Spell, Fire Tempest.
+ */
+@Serializable
+data class DealDamageToAllEffect(
+    val amount: Int,
+    val onlyFlyingCreatures: Boolean = false,
+    val onlyNonFlyingCreatures: Boolean = false
+) : Effect {
+    override val description: String = buildString {
+        append("Deal $amount damage to each ")
+        when {
+            onlyFlyingCreatures -> append("creature with flying")
+            onlyNonFlyingCreatures -> append("creature without flying")
+            else -> append("creature")
+        }
+        append(" and each player")
+    }
+}
+
+/**
+ * Drain effect - deal damage and gain that much life.
+ * "Deal X damage to target and you gain X life."
+ */
+@Serializable
+data class DrainEffect(
+    val amount: Int,
+    val target: EffectTarget
+) : Effect {
+    override val description: String = "Deal $amount damage to ${target.description} and you gain $amount life"
 }
 
 // =============================================================================
@@ -417,6 +640,18 @@ sealed interface EffectTarget {
         override val description: String = "target nonland permanent"
     }
 
+    /** Target land */
+    @Serializable
+    data object TargetLand : EffectTarget {
+        override val description: String = "target land"
+    }
+
+    /** Target nonblack creature */
+    @Serializable
+    data object TargetNonblackCreature : EffectTarget {
+        override val description: String = "target nonblack creature"
+    }
+
     /** Any target (creature or player) */
     @Serializable
     data object AnyTarget : EffectTarget {
@@ -452,4 +687,67 @@ sealed interface EffectTarget {
     data object EachPlayer : EffectTarget {
         override val description: String = "each player"
     }
+
+    /** Target tapped creature */
+    @Serializable
+    data object TargetTappedCreature : EffectTarget {
+        override val description: String = "target tapped creature"
+    }
+
+    /** The controller of the target (used for effects like "its controller gains 4 life") */
+    @Serializable
+    data object TargetController : EffectTarget {
+        override val description: String = "its controller"
+    }
+}
+
+// =============================================================================
+// Graveyard Effects
+// =============================================================================
+
+/**
+ * Return a card from graveyard to another zone.
+ * "Return target creature card from your graveyard to your hand"
+ */
+@Serializable
+data class ReturnFromGraveyardEffect(
+    val filter: CardFilter,
+    val destination: SearchDestination = SearchDestination.HAND
+) : Effect {
+    override val description: String =
+        "Return ${filter.description} from your graveyard ${destination.description}"
+}
+
+// =============================================================================
+// Sacrifice Effects
+// =============================================================================
+
+/**
+ * Represents a sacrifice cost - a number of permanents matching a filter.
+ * "sacrifice three Forests"
+ */
+@Serializable
+data class SacrificeCost(
+    val filter: CardFilter,
+    val count: Int = 1
+) {
+    val description: String = if (count == 1) {
+        "sacrifice a ${filter.description}"
+    } else {
+        "sacrifice $count ${filter.description}s"
+    }
+}
+
+/**
+ * Sacrifice a permanent unless a cost is paid.
+ * "Sacrifice this creature unless you sacrifice three Forests."
+ *
+ * Used for cards like Primeval Force that require a sacrifice decision on ETB.
+ */
+@Serializable
+data class SacrificeUnlessEffect(
+    val permanentToSacrifice: EffectTarget,
+    val cost: SacrificeCost
+) : Effect {
+    override val description: String = "Sacrifice ${permanentToSacrifice.description} unless you ${cost.description}"
 }

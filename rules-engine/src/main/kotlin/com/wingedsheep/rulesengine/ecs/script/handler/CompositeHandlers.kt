@@ -47,6 +47,7 @@ class CompositeHandler(
  * Handler for ConditionalEffect.
  *
  * Takes a callback to execute sub-effects, avoiding circular dependency on the registry.
+ * Uses EcsConditionEvaluator to check conditions against the ECS game state.
  */
 class ConditionalHandler(
     private val executeEffect: (Effect, EcsGameState, ExecutionContext) -> ExecutionResult
@@ -58,7 +59,7 @@ class ConditionalHandler(
         effect: ConditionalEffect,
         context: ExecutionContext
     ): ExecutionResult {
-        val conditionMet = evaluateCondition(state, effect.condition, context)
+        val conditionMet = EcsConditionEvaluator.evaluate(state, effect.condition, context)
 
         return if (conditionMet) {
             executeEffect(effect.effect, state, context)
@@ -67,16 +68,6 @@ class ConditionalHandler(
         } else {
             noOp(state)
         }
-    }
-
-    private fun evaluateCondition(
-        state: EcsGameState,
-        condition: Condition,
-        context: ExecutionContext
-    ): Boolean {
-        // Condition evaluation would need to be implemented based on ECS state
-        // For now, return true as a placeholder
-        return true
     }
 }
 
