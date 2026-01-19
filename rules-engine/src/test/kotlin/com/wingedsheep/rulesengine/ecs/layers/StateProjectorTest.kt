@@ -1,7 +1,7 @@
 package com.wingedsheep.rulesengine.ecs.layers
 
 import com.wingedsheep.rulesengine.card.CardDefinition
-import com.wingedsheep.rulesengine.card.CounterType
+import com.wingedsheep.rulesengine.core.CounterType
 import com.wingedsheep.rulesengine.core.Keyword
 import com.wingedsheep.rulesengine.core.ManaCost
 import com.wingedsheep.rulesengine.core.Subtype

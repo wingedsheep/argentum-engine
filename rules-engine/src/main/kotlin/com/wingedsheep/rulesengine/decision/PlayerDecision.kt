@@ -1,8 +1,7 @@
 package com.wingedsheep.rulesengine.decision
 
-import com.wingedsheep.rulesengine.core.CardId
 import com.wingedsheep.rulesengine.core.Color
-import com.wingedsheep.rulesengine.player.PlayerId
+import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.targeting.Target
 import com.wingedsheep.rulesengine.targeting.TargetRequirement
 import kotlinx.serialization.Serializable
@@ -15,7 +14,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 sealed interface PlayerDecision {
     /** The player who must make this decision */
-    val playerId: PlayerId
+    val playerId: EntityId
 
     /** Human-readable description of what the player needs to decide */
     val description: String
@@ -30,8 +29,8 @@ sealed interface PlayerDecision {
  */
 @Serializable
 data class ChooseTargets(
-    override val playerId: PlayerId,
-    val sourceCardId: CardId,
+    override val playerId: EntityId,
+    val sourceEntityId: EntityId,
     val sourceName: String,
     val requirements: List<TargetRequirement>,
     val legalTargets: Map<Int, List<Target>> // Index -> list of legal targets for that requirement
@@ -56,9 +55,9 @@ data class TargetsChoice(
  */
 @Serializable
 data class ChooseAttackers(
-    override val playerId: PlayerId,
-    val legalAttackers: List<CardId>,
-    val defendingPlayer: PlayerId
+    override val playerId: EntityId,
+    val legalAttackers: List<EntityId>,
+    val defendingPlayer: EntityId
 ) : PlayerDecision {
     override val description: String = "Choose attackers"
 }
@@ -68,7 +67,7 @@ data class ChooseAttackers(
  */
 @Serializable
 data class AttackersChoice(
-    val attackerIds: List<CardId>
+    val attackerIds: List<EntityId>
 ) : DecisionResponse
 
 /**
@@ -76,11 +75,11 @@ data class AttackersChoice(
  */
 @Serializable
 data class ChooseBlockers(
-    override val playerId: PlayerId,
-    val legalBlockers: List<CardId>,
-    val attackers: List<CardId>,
+    override val playerId: EntityId,
+    val legalBlockers: List<EntityId>,
+    val attackers: List<EntityId>,
     /** Map of blocker -> list of attackers it can legally block */
-    val legalBlocks: Map<CardId, List<CardId>>
+    val legalBlocks: Map<EntityId, List<EntityId>>
 ) : PlayerDecision {
     override val description: String = "Choose blockers"
 }
@@ -91,7 +90,7 @@ data class ChooseBlockers(
 @Serializable
 data class BlockersChoice(
     /** Map of blocker -> attacker it is blocking */
-    val blocks: Map<CardId, CardId>
+    val blocks: Map<EntityId, EntityId>
 ) : DecisionResponse
 
 /**
@@ -99,9 +98,9 @@ data class BlockersChoice(
  */
 @Serializable
 data class ChooseDamageAssignmentOrder(
-    override val playerId: PlayerId,
-    val attackerId: CardId,
-    val blockerIds: List<CardId>
+    override val playerId: EntityId,
+    val attackerId: EntityId,
+    val blockerIds: List<EntityId>
 ) : PlayerDecision {
     override val description: String = "Choose damage assignment order for blockers"
 }
@@ -111,7 +110,7 @@ data class ChooseDamageAssignmentOrder(
  */
 @Serializable
 data class DamageAssignmentOrderChoice(
-    val orderedBlockerIds: List<CardId>
+    val orderedBlockerIds: List<EntityId>
 ) : DecisionResponse
 
 // =============================================================================
@@ -124,7 +123,7 @@ data class DamageAssignmentOrderChoice(
  */
 @Serializable
 data class ChooseManaPayment(
-    override val playerId: PlayerId,
+    override val playerId: EntityId,
     val cardName: String,
     val requiredWhite: Int = 0,
     val requiredBlue: Int = 0,
@@ -166,9 +165,9 @@ data class ManaPaymentChoice(
  */
 @Serializable
 data class YesNoDecision(
-    override val playerId: PlayerId,
+    override val playerId: EntityId,
     override val description: String,
-    val sourceCardId: CardId? = null,
+    val sourceEntityId: EntityId? = null,
     val sourceName: String? = null
 ) : PlayerDecision
 
@@ -190,12 +189,12 @@ data class YesNoChoice(
  */
 @Serializable
 data class ChooseCards(
-    override val playerId: PlayerId,
+    override val playerId: EntityId,
     override val description: String,
-    val cards: List<CardId>,
+    val cards: List<EntityId>,
     val minCount: Int,
     val maxCount: Int,
-    val sourceCardId: CardId? = null,
+    val sourceEntityId: EntityId? = null,
     val sourceName: String? = null
 ) : PlayerDecision {
     /** Whether a specific number of cards must be chosen */
@@ -207,7 +206,7 @@ data class ChooseCards(
  */
 @Serializable
 data class CardsChoice(
-    val selectedCardIds: List<CardId>
+    val selectedCardIds: List<EntityId>
 ) : DecisionResponse
 
 // =============================================================================
@@ -220,7 +219,7 @@ data class CardsChoice(
  */
 @Serializable
 data class ChooseOrder<T>(
-    override val playerId: PlayerId,
+    override val playerId: EntityId,
     override val description: String,
     val items: List<T>,
     val itemDescriptions: List<String>
@@ -244,8 +243,8 @@ data class OrderChoice(
  */
 @Serializable
 data class ChooseMode(
-    override val playerId: PlayerId,
-    val sourceCardId: CardId,
+    override val playerId: EntityId,
+    val sourceEntityId: EntityId,
     val sourceName: String,
     val modes: List<ModeOption>,
     val minModes: Int = 1,
@@ -282,11 +281,11 @@ data class ModeChoice(
  */
 @Serializable
 data class ChooseNumber(
-    override val playerId: PlayerId,
+    override val playerId: EntityId,
     override val description: String,
     val minimum: Int,
     val maximum: Int,
-    val sourceCardId: CardId? = null,
+    val sourceEntityId: EntityId? = null,
     val sourceName: String? = null
 ) : PlayerDecision
 
@@ -307,7 +306,7 @@ data class NumberChoice(
  */
 @Serializable
 data class PriorityDecision(
-    override val playerId: PlayerId,
+    override val playerId: EntityId,
     val canCastSpells: Boolean,
     val canActivateAbilities: Boolean,
     val canPlayLand: Boolean,
@@ -325,13 +324,13 @@ sealed interface PriorityChoice : DecisionResponse {
     data object Pass : PriorityChoice
 
     @Serializable
-    data class CastSpell(val cardId: CardId) : PriorityChoice
+    data class CastSpell(val cardId: EntityId) : PriorityChoice
 
     @Serializable
-    data class ActivateAbility(val sourceCardId: CardId, val abilityIndex: Int = 0) : PriorityChoice
+    data class ActivateAbility(val sourceEntityId: EntityId, val abilityIndex: Int = 0) : PriorityChoice
 
     @Serializable
-    data class PlayLand(val cardId: CardId) : PriorityChoice
+    data class PlayLand(val cardId: EntityId) : PriorityChoice
 }
 
 // =============================================================================
@@ -343,7 +342,7 @@ sealed interface PriorityChoice : DecisionResponse {
  */
 @Serializable
 data class MulliganDecision(
-    override val playerId: PlayerId,
+    override val playerId: EntityId,
     val handSize: Int,
     val mulliganNumber: Int
 ) : PlayerDecision {
@@ -371,8 +370,8 @@ sealed interface MulliganChoice : DecisionResponse {
  */
 @Serializable
 data class ChooseMulliganBottomCards(
-    override val playerId: PlayerId,
-    val hand: List<CardId>,
+    override val playerId: EntityId,
+    val hand: List<EntityId>,
     val cardsToPutOnBottom: Int
 ) : PlayerDecision {
     override val description: String = "Choose $cardsToPutOnBottom card(s) to put on the bottom of your library"

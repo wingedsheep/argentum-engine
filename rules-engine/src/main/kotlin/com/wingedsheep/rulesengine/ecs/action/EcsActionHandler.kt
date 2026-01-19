@@ -6,7 +6,7 @@ import com.wingedsheep.rulesengine.ability.ActivatedAbility
 import com.wingedsheep.rulesengine.ability.AddColorlessManaEffect
 import com.wingedsheep.rulesengine.ability.AddManaEffect
 import com.wingedsheep.rulesengine.ability.TimingRestriction
-import com.wingedsheep.rulesengine.card.CounterType
+import com.wingedsheep.rulesengine.core.CounterType
 import com.wingedsheep.rulesengine.core.Keyword
 import com.wingedsheep.rulesengine.ecs.ComponentContainer
 import com.wingedsheep.rulesengine.ecs.EcsGameState

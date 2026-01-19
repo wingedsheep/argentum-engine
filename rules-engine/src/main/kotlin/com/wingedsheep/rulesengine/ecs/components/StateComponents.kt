@@ -1,6 +1,6 @@
 package com.wingedsheep.rulesengine.ecs.components
 
-import com.wingedsheep.rulesengine.card.CounterType
+import com.wingedsheep.rulesengine.core.CounterType
 import com.wingedsheep.rulesengine.ecs.Component
 import kotlinx.serialization.Serializable
 

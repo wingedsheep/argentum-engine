@@ -1,8 +1,6 @@
 package com.wingedsheep.rulesengine.ability
 
-import com.wingedsheep.rulesengine.core.CardId
 import com.wingedsheep.rulesengine.ecs.EntityId
-import com.wingedsheep.rulesengine.player.PlayerId
 import kotlinx.serialization.Serializable
 
 /**
@@ -56,9 +54,9 @@ value class AbilityId(val value: String) {
 @Serializable
 data class PendingTrigger(
     val ability: TriggeredAbility,
-    val sourceId: CardId,
+    val sourceId: EntityId,
     val sourceName: String,
-    val controllerId: PlayerId,
+    val controllerId: EntityId,
     val triggerContext: TriggerContext
 ) {
     val description: String
@@ -78,7 +76,7 @@ sealed interface TriggerContext {
     /** Context for zone change triggers */
     @Serializable
     data class ZoneChange(
-        val cardId: CardId,
+        val cardId: EntityId,
         val cardName: String,
         val fromZone: String,
         val toZone: String
@@ -87,8 +85,8 @@ sealed interface TriggerContext {
     /** Context for damage triggers */
     @Serializable
     data class DamageDealt(
-        val sourceId: CardId?,
-        val targetId: String,
+        val sourceId: EntityId?,
+        val targetId: EntityId,
         val amount: Int,
         val isPlayer: Boolean,
         val isCombat: Boolean
@@ -99,30 +97,30 @@ sealed interface TriggerContext {
     data class PhaseStep(
         val phase: String,
         val step: String,
-        val activePlayerId: PlayerId
+        val activePlayerId: EntityId
     ) : TriggerContext
 
     /** Context for spell cast triggers */
     @Serializable
     data class SpellCast(
-        val spellId: CardId,
+        val spellId: EntityId,
         val spellName: String,
-        val casterId: PlayerId
+        val casterId: EntityId
     ) : TriggerContext
 
     /** Context for card draw triggers */
     @Serializable
     data class CardDrawn(
-        val playerId: PlayerId,
-        val cardId: CardId
+        val playerId: EntityId,
+        val cardId: EntityId
     ) : TriggerContext
 
     /** Context for attack/block triggers */
     @Serializable
     data class Combat(
-        val attackerId: CardId?,
-        val blockerId: CardId?,
-        val defendingPlayerId: PlayerId?
+        val attackerId: EntityId?,
+        val blockerId: EntityId?,
+        val defendingPlayerId: EntityId?
     ) : TriggerContext
 }
 
@@ -135,8 +133,8 @@ data class StackedTrigger(
     val pendingTrigger: PendingTrigger,
     val chosenTargets: List<ChosenTarget> = emptyList()
 ) {
-    val sourceId: CardId get() = pendingTrigger.sourceId
-    val controllerId: PlayerId get() = pendingTrigger.controllerId
+    val sourceId: EntityId get() = pendingTrigger.sourceId
+    val controllerId: EntityId get() = pendingTrigger.controllerId
     val description: String get() = pendingTrigger.description
 }
 
@@ -147,30 +145,13 @@ data class StackedTrigger(
 sealed interface ChosenTarget {
     /**
      * A player as a chosen target.
-     *
-     * Uses EntityId for ECS compatibility. The playerId property provides
-     * backward compatibility with the old PlayerId-based system.
      */
     @Serializable
-    data class PlayerTarget(val entityId: EntityId) : ChosenTarget {
-        /**
-         * Get the PlayerId for backward compatibility with old system.
-         */
-        val playerId: PlayerId get() = entityId.toPlayerId()
+    data class PlayerTarget(val entityId: EntityId) : ChosenTarget
 
-        companion object {
-            /**
-             * Create from PlayerId (backward compatibility).
-             */
-            @Deprecated(
-                "Use PlayerTarget(EntityId) instead",
-                ReplaceWith("PlayerTarget(EntityId.fromPlayerId(playerId))")
-            )
-            fun fromPlayerId(playerId: PlayerId): PlayerTarget =
-                PlayerTarget(EntityId.fromPlayerId(playerId))
-        }
-    }
-
+    /**
+     * A card/permanent as a chosen target.
+     */
     @Serializable
-    data class CardTarget(val cardId: CardId) : ChosenTarget
+    data class CardTarget(val entityId: EntityId) : ChosenTarget
 }

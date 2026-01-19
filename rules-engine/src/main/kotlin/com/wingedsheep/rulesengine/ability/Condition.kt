@@ -1,30 +1,20 @@
 package com.wingedsheep.rulesengine.ability
 
-import com.wingedsheep.rulesengine.core.CardId
 import com.wingedsheep.rulesengine.core.Keyword
 import com.wingedsheep.rulesengine.core.Subtype
-import com.wingedsheep.rulesengine.game.GameState
-import com.wingedsheep.rulesengine.player.PlayerId
 import kotlinx.serialization.Serializable
 
 /**
  * Conditions that can be checked against the game state.
  * Used for conditional effects like "If you control...", "If your life total is...".
+ *
+ * Conditions are data objects - evaluation is handled by EcsConditionEvaluator
+ * which checks these conditions against EcsGameState.
  */
 @Serializable
 sealed interface Condition {
     /** Human-readable description of this condition */
     val description: String
-
-    /**
-     * Check if this condition is met.
-     *
-     * @param state The current game state
-     * @param controllerId The player who controls the source of this condition
-     * @param sourceId The card that is the source of this condition (optional)
-     * @return true if the condition is met
-     */
-    fun isMet(state: GameState, controllerId: PlayerId, sourceId: CardId? = null): Boolean
 }
 
 // =============================================================================
@@ -37,10 +27,6 @@ sealed interface Condition {
 @Serializable
 data class LifeTotalAtMost(val threshold: Int) : Condition {
     override val description: String = "if your life total is $threshold or less"
-
-    override fun isMet(state: GameState, controllerId: PlayerId, sourceId: CardId?): Boolean {
-        return state.getPlayer(controllerId).life <= threshold
-    }
 }
 
 /**
@@ -49,10 +35,6 @@ data class LifeTotalAtMost(val threshold: Int) : Condition {
 @Serializable
 data class LifeTotalAtLeast(val threshold: Int) : Condition {
     override val description: String = "if your life total is $threshold or more"
-
-    override fun isMet(state: GameState, controllerId: PlayerId, sourceId: CardId?): Boolean {
-        return state.getPlayer(controllerId).life >= threshold
-    }
 }
 
 /**
@@ -61,11 +43,6 @@ data class LifeTotalAtLeast(val threshold: Int) : Condition {
 @Serializable
 data object MoreLifeThanOpponent : Condition {
     override val description: String = "if you have more life than an opponent"
-
-    override fun isMet(state: GameState, controllerId: PlayerId, sourceId: CardId?): Boolean {
-        val myLife = state.getPlayer(controllerId).life
-        return state.players.values.any { it.id != controllerId && myLife > it.life }
-    }
 }
 
 /**
@@ -74,11 +51,6 @@ data object MoreLifeThanOpponent : Condition {
 @Serializable
 data object LessLifeThanOpponent : Condition {
     override val description: String = "if you have less life than an opponent"
-
-    override fun isMet(state: GameState, controllerId: PlayerId, sourceId: CardId?): Boolean {
-        val myLife = state.getPlayer(controllerId).life
-        return state.players.values.any { it.id != controllerId && myLife < it.life }
-    }
 }
 
 // =============================================================================
@@ -91,12 +63,6 @@ data object LessLifeThanOpponent : Condition {
 @Serializable
 data object ControlCreature : Condition {
     override val description: String = "if you control a creature"
-
-    override fun isMet(state: GameState, controllerId: PlayerId, sourceId: CardId?): Boolean {
-        return state.battlefield.cards.any {
-            it.controllerId == controllerId.value && it.isCreature
-        }
-    }
 }
 
 /**
@@ -105,12 +71,6 @@ data object ControlCreature : Condition {
 @Serializable
 data class ControlCreaturesAtLeast(val count: Int) : Condition {
     override val description: String = "if you control $count or more creatures"
-
-    override fun isMet(state: GameState, controllerId: PlayerId, sourceId: CardId?): Boolean {
-        return state.battlefield.cards.count {
-            it.controllerId == controllerId.value && it.isCreature
-        } >= count
-    }
 }
 
 /**
@@ -119,12 +79,6 @@ data class ControlCreaturesAtLeast(val count: Int) : Condition {
 @Serializable
 data class ControlCreatureWithKeyword(val keyword: Keyword) : Condition {
     override val description: String = "if you control a creature with ${keyword.displayName.lowercase()}"
-
-    override fun isMet(state: GameState, controllerId: PlayerId, sourceId: CardId?): Boolean {
-        return state.battlefield.cards.any {
-            it.controllerId == controllerId.value && it.isCreature && it.hasKeyword(keyword)
-        }
-    }
 }
 
 /**
@@ -133,14 +87,6 @@ data class ControlCreatureWithKeyword(val keyword: Keyword) : Condition {
 @Serializable
 data class ControlCreatureOfType(val subtype: Subtype) : Condition {
     override val description: String = "if you control a ${subtype.value}"
-
-    override fun isMet(state: GameState, controllerId: PlayerId, sourceId: CardId?): Boolean {
-        return state.battlefield.cards.any {
-            it.controllerId == controllerId.value &&
-            it.isCreature &&
-            subtype in it.definition.typeLine.subtypes
-        }
-    }
 }
 
 /**
@@ -149,12 +95,6 @@ data class ControlCreatureOfType(val subtype: Subtype) : Condition {
 @Serializable
 data object ControlEnchantment : Condition {
     override val description: String = "if you control an enchantment"
-
-    override fun isMet(state: GameState, controllerId: PlayerId, sourceId: CardId?): Boolean {
-        return state.battlefield.cards.any {
-            it.controllerId == controllerId.value && it.isEnchantment
-        }
-    }
 }
 
 /**
@@ -163,12 +103,6 @@ data object ControlEnchantment : Condition {
 @Serializable
 data object ControlArtifact : Condition {
     override val description: String = "if you control an artifact"
-
-    override fun isMet(state: GameState, controllerId: PlayerId, sourceId: CardId?): Boolean {
-        return state.battlefield.cards.any {
-            it.controllerId == controllerId.value && it.isArtifact
-        }
-    }
 }
 
 /**
@@ -177,12 +111,6 @@ data object ControlArtifact : Condition {
 @Serializable
 data object OpponentControlsCreature : Condition {
     override val description: String = "if an opponent controls a creature"
-
-    override fun isMet(state: GameState, controllerId: PlayerId, sourceId: CardId?): Boolean {
-        return state.battlefield.cards.any {
-            it.controllerId != controllerId.value && it.isCreature
-        }
-    }
 }
 
 /**
@@ -191,18 +119,6 @@ data object OpponentControlsCreature : Condition {
 @Serializable
 data object OpponentControlsMoreCreatures : Condition {
     override val description: String = "if an opponent controls more creatures than you"
-
-    override fun isMet(state: GameState, controllerId: PlayerId, sourceId: CardId?): Boolean {
-        val myCreatures = state.battlefield.cards.count {
-            it.controllerId == controllerId.value && it.isCreature
-        }
-        return state.players.values.any { opponent ->
-            opponent.id != controllerId &&
-            state.battlefield.cards.count {
-                it.controllerId == opponent.id.value && it.isCreature
-            } > myCreatures
-        }
-    }
 }
 
 /**
@@ -212,18 +128,6 @@ data object OpponentControlsMoreCreatures : Condition {
 @Serializable
 data object OpponentControlsMoreLands : Condition {
     override val description: String = "if an opponent controls more lands than you"
-
-    override fun isMet(state: GameState, controllerId: PlayerId, sourceId: CardId?): Boolean {
-        val myLands = state.battlefield.cards.count {
-            it.controllerId == controllerId.value && it.isLand
-        }
-        return state.players.values.any { opponent ->
-            opponent.id != controllerId &&
-            state.battlefield.cards.count {
-                it.controllerId == opponent.id.value && it.isLand
-            } > myLands
-        }
-    }
 }
 
 // =============================================================================
@@ -236,10 +140,6 @@ data object OpponentControlsMoreLands : Condition {
 @Serializable
 data object EmptyHand : Condition {
     override val description: String = "if you have no cards in hand"
-
-    override fun isMet(state: GameState, controllerId: PlayerId, sourceId: CardId?): Boolean {
-        return state.getPlayer(controllerId).hand.isEmpty
-    }
 }
 
 /**
@@ -248,10 +148,6 @@ data object EmptyHand : Condition {
 @Serializable
 data class CardsInHandAtLeast(val count: Int) : Condition {
     override val description: String = "if you have $count or more cards in hand"
-
-    override fun isMet(state: GameState, controllerId: PlayerId, sourceId: CardId?): Boolean {
-        return state.getPlayer(controllerId).hand.size >= count
-    }
 }
 
 /**
@@ -260,10 +156,6 @@ data class CardsInHandAtLeast(val count: Int) : Condition {
 @Serializable
 data class CardsInHandAtMost(val count: Int) : Condition {
     override val description: String = "if you have $count or fewer cards in hand"
-
-    override fun isMet(state: GameState, controllerId: PlayerId, sourceId: CardId?): Boolean {
-        return state.getPlayer(controllerId).hand.size <= count
-    }
 }
 
 // =============================================================================
@@ -276,10 +168,6 @@ data class CardsInHandAtMost(val count: Int) : Condition {
 @Serializable
 data class CreatureCardsInGraveyardAtLeast(val count: Int) : Condition {
     override val description: String = "if there are $count or more creature cards in your graveyard"
-
-    override fun isMet(state: GameState, controllerId: PlayerId, sourceId: CardId?): Boolean {
-        return state.getPlayer(controllerId).graveyard.cards.count { it.isCreature } >= count
-    }
 }
 
 /**
@@ -288,10 +176,6 @@ data class CreatureCardsInGraveyardAtLeast(val count: Int) : Condition {
 @Serializable
 data class CardsInGraveyardAtLeast(val count: Int) : Condition {
     override val description: String = "if there are $count or more cards in your graveyard"
-
-    override fun isMet(state: GameState, controllerId: PlayerId, sourceId: CardId?): Boolean {
-        return state.getPlayer(controllerId).graveyard.size >= count
-    }
 }
 
 // =============================================================================
@@ -304,12 +188,6 @@ data class CardsInGraveyardAtLeast(val count: Int) : Condition {
 @Serializable
 data object SourceIsAttacking : Condition {
     override val description: String = "if this creature is attacking"
-
-    override fun isMet(state: GameState, controllerId: PlayerId, sourceId: CardId?): Boolean {
-        if (sourceId == null) return false
-        @Suppress("DEPRECATION")
-        return state.combat?.isAttacking(sourceId) == true
-    }
 }
 
 /**
@@ -318,12 +196,6 @@ data object SourceIsAttacking : Condition {
 @Serializable
 data object SourceIsBlocking : Condition {
     override val description: String = "if this creature is blocking"
-
-    override fun isMet(state: GameState, controllerId: PlayerId, sourceId: CardId?): Boolean {
-        if (sourceId == null) return false
-        @Suppress("DEPRECATION")
-        return state.combat?.isBlocking(sourceId) == true
-    }
 }
 
 /**
@@ -332,12 +204,6 @@ data object SourceIsBlocking : Condition {
 @Serializable
 data object SourceIsTapped : Condition {
     override val description: String = "if this creature is tapped"
-
-    override fun isMet(state: GameState, controllerId: PlayerId, sourceId: CardId?): Boolean {
-        if (sourceId == null) return false
-        val card = state.battlefield.getCard(sourceId) ?: return false
-        return card.isTapped
-    }
 }
 
 /**
@@ -346,12 +212,6 @@ data object SourceIsTapped : Condition {
 @Serializable
 data object SourceIsUntapped : Condition {
     override val description: String = "if this creature is untapped"
-
-    override fun isMet(state: GameState, controllerId: PlayerId, sourceId: CardId?): Boolean {
-        if (sourceId == null) return false
-        val card = state.battlefield.getCard(sourceId) ?: return false
-        return !card.isTapped
-    }
 }
 
 // =============================================================================
@@ -364,11 +224,6 @@ data object SourceIsUntapped : Condition {
 @Serializable
 data object IsYourTurn : Condition {
     override val description: String = "if it's your turn"
-
-    override fun isMet(state: GameState, controllerId: PlayerId, sourceId: CardId?): Boolean {
-        @Suppress("DEPRECATION")
-        return state.turnState.isActivePlayer(controllerId)
-    }
 }
 
 /**
@@ -377,11 +232,6 @@ data object IsYourTurn : Condition {
 @Serializable
 data object IsNotYourTurn : Condition {
     override val description: String = "if it's not your turn"
-
-    override fun isMet(state: GameState, controllerId: PlayerId, sourceId: CardId?): Boolean {
-        @Suppress("DEPRECATION")
-        return !state.turnState.isActivePlayer(controllerId)
-    }
 }
 
 // =============================================================================
@@ -394,10 +244,6 @@ data object IsNotYourTurn : Condition {
 @Serializable
 data class AllConditions(val conditions: List<Condition>) : Condition {
     override val description: String = conditions.joinToString(" and ") { it.description }
-
-    override fun isMet(state: GameState, controllerId: PlayerId, sourceId: CardId?): Boolean {
-        return conditions.all { it.isMet(state, controllerId, sourceId) }
-    }
 }
 
 /**
@@ -406,10 +252,6 @@ data class AllConditions(val conditions: List<Condition>) : Condition {
 @Serializable
 data class AnyCondition(val conditions: List<Condition>) : Condition {
     override val description: String = conditions.joinToString(" or ") { it.description }
-
-    override fun isMet(state: GameState, controllerId: PlayerId, sourceId: CardId?): Boolean {
-        return conditions.any { it.isMet(state, controllerId, sourceId) }
-    }
 }
 
 /**
@@ -418,10 +260,6 @@ data class AnyCondition(val conditions: List<Condition>) : Condition {
 @Serializable
 data class NotCondition(val condition: Condition) : Condition {
     override val description: String = "if not (${condition.description})"
-
-    override fun isMet(state: GameState, controllerId: PlayerId, sourceId: CardId?): Boolean {
-        return !condition.isMet(state, controllerId, sourceId)
-    }
 }
 
 // =============================================================================

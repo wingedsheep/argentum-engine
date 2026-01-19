@@ -6,7 +6,7 @@ import com.wingedsheep.rulesengine.ability.GrantKeywordUntilEndOfTurnEffect
 import com.wingedsheep.rulesengine.ability.ModifyStatsEffect
 import com.wingedsheep.rulesengine.ability.MustBeBlockedEffect
 import com.wingedsheep.rulesengine.ability.TapUntapEffect
-import com.wingedsheep.rulesengine.card.CounterType
+import com.wingedsheep.rulesengine.core.CounterType
 import com.wingedsheep.rulesengine.ecs.EcsGameState
 import com.wingedsheep.rulesengine.ecs.components.CardComponent
 import com.wingedsheep.rulesengine.ecs.components.CountersComponent

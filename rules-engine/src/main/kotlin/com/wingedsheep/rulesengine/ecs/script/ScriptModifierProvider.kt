@@ -291,8 +291,7 @@ class ScriptModifierProvider(
             }
 
             is StaticTarget.SpecificCard -> {
-                // Convert old CardId to EntityId
-                ModifierFilter.Specific(EntityId.of(target.cardId.value))
+                ModifierFilter.Specific(target.entityId)
             }
         }
     }

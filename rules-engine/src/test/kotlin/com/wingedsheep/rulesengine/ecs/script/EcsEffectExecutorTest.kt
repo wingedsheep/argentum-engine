@@ -2,7 +2,7 @@ package com.wingedsheep.rulesengine.ecs.script
 
 import com.wingedsheep.rulesengine.ability.*
 import com.wingedsheep.rulesengine.card.CardDefinition
-import com.wingedsheep.rulesengine.card.CounterType
+import com.wingedsheep.rulesengine.core.CounterType
 import com.wingedsheep.rulesengine.core.Color
 import com.wingedsheep.rulesengine.core.Keyword
 import com.wingedsheep.rulesengine.core.ManaCost

@@ -1,70 +1,34 @@
 package com.wingedsheep.rulesengine.targeting
 
 import com.wingedsheep.rulesengine.ability.ChosenTarget
-import com.wingedsheep.rulesengine.core.CardId
 import com.wingedsheep.rulesengine.ecs.EntityId
-import com.wingedsheep.rulesengine.player.PlayerId
 import kotlinx.serialization.Serializable
 
 /**
  * Represents a potential or selected target for a spell or ability.
+ *
+ * Uses EntityId for all target identification.
  */
 @Serializable
 sealed interface Target {
     /**
      * A player as a target.
-     *
-     * Uses EntityId for ECS compatibility. The playerId property provides
-     * backward compatibility with the old PlayerId-based system.
      */
     @Serializable
-    data class PlayerTarget(val entityId: EntityId) : Target {
-        /**
-         * Get the PlayerId for backward compatibility with old system.
-         */
-        val playerId: PlayerId get() = entityId.toPlayerId()
-
-        companion object {
-            /**
-             * Create from PlayerId (backward compatibility).
-             */
-            @Deprecated(
-                "Use PlayerTarget(EntityId) instead",
-                ReplaceWith("PlayerTarget(EntityId.fromPlayerId(playerId))")
-            )
-            fun fromPlayerId(playerId: PlayerId): PlayerTarget =
-                PlayerTarget(EntityId.fromPlayerId(playerId))
-        }
-    }
+    data class PlayerTarget(val entityId: EntityId) : Target
 
     /**
-     * A card (on battlefield, stack, graveyard, etc.) as a target.
+     * A card/permanent as a target.
      */
     @Serializable
-    data class CardTarget(val cardId: CardId) : Target
+    data class CardTarget(val entityId: EntityId) : Target
 
     companion object {
-        /**
-         * Create a player target from an EntityId (preferred).
-         */
         fun player(entityId: EntityId): Target = PlayerTarget(entityId)
+        fun player(id: String): Target = PlayerTarget(EntityId.of(id))
 
-        /**
-         * Create a player target from a PlayerId (backward compatibility).
-         */
-        @Deprecated(
-            "Use player(EntityId) instead",
-            ReplaceWith("player(EntityId.fromPlayerId(playerId))")
-        )
-        fun player(playerId: PlayerId): Target = PlayerTarget(EntityId.fromPlayerId(playerId))
-
-        /**
-         * Create a player target from a string ID.
-         */
-        fun player(playerId: String): Target = PlayerTarget(EntityId.of(playerId))
-
-        fun card(cardId: CardId): Target = CardTarget(cardId)
-        fun card(cardId: String): Target = CardTarget(CardId(cardId))
+        fun card(entityId: EntityId): Target = CardTarget(entityId)
+        fun card(id: String): Target = CardTarget(EntityId.of(id))
     }
 }
 
@@ -73,7 +37,7 @@ sealed interface Target {
  */
 fun Target.toChosenTarget(): ChosenTarget = when (this) {
     is Target.PlayerTarget -> ChosenTarget.PlayerTarget(entityId)
-    is Target.CardTarget -> ChosenTarget.CardTarget(cardId)
+    is Target.CardTarget -> ChosenTarget.CardTarget(entityId)
 }
 
 /**
@@ -81,7 +45,7 @@ fun Target.toChosenTarget(): ChosenTarget = when (this) {
  */
 fun ChosenTarget.toTarget(): Target = when (this) {
     is ChosenTarget.PlayerTarget -> Target.PlayerTarget(entityId)
-    is ChosenTarget.CardTarget -> Target.CardTarget(cardId)
+    is ChosenTarget.CardTarget -> Target.CardTarget(entityId)
 }
 
 /**
@@ -174,9 +138,9 @@ data class TargetSelection(
  */
 @Serializable
 data class TargetingInfo(
-    val sourceId: CardId,
+    val sourceId: EntityId,
     val sourceName: String,
-    val controllerId: PlayerId,
+    val controllerId: EntityId,
     val requirements: List<TargetRequirement>,
     val selection: TargetSelection = TargetSelection.forRequirements(requirements)
 ) {

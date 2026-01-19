@@ -1,7 +1,7 @@
 package com.wingedsheep.rulesengine.decision
 
-import com.wingedsheep.rulesengine.game.GameState
-import com.wingedsheep.rulesengine.player.PlayerId
+import com.wingedsheep.rulesengine.ecs.EcsGameState
+import com.wingedsheep.rulesengine.ecs.EntityId
 
 /**
  * Abstraction for getting player input/decisions during the game.
@@ -21,7 +21,7 @@ interface PlayerInterface {
      * @param decision The decision that needs to be made
      * @return The player's response to the decision
      */
-    fun requestDecision(state: GameState, decision: PlayerDecision): DecisionResponse
+    fun requestDecision(state: EcsGameState, decision: PlayerDecision): DecisionResponse
 }
 
 /**
@@ -41,7 +41,7 @@ sealed interface DecisionResult {
     /**
      * The player conceded the game instead of making a decision.
      */
-    data class Conceded(val playerId: PlayerId) : DecisionResult
+    data class Conceded(val playerId: EntityId) : DecisionResult
 }
 
 /**
@@ -57,7 +57,7 @@ interface AsyncPlayerInterface : PlayerInterface {
      * @return The result of the decision request
      */
     fun requestDecisionWithTimeout(
-        state: GameState,
+        state: EcsGameState,
         decision: PlayerDecision,
         timeoutMs: Long
     ): DecisionResult
@@ -68,19 +68,19 @@ interface AsyncPlayerInterface : PlayerInterface {
  * Useful for multi-player games where each player may have a different interface.
  */
 class MultiPlayerInterface(
-    private val playerInterfaces: Map<PlayerId, PlayerInterface>
+    private val playerInterfaces: Map<EntityId, PlayerInterface>
 ) : PlayerInterface {
-    override fun requestDecision(state: GameState, decision: PlayerDecision): DecisionResponse {
+    override fun requestDecision(state: EcsGameState, decision: PlayerDecision): DecisionResponse {
         val playerInterface = playerInterfaces[decision.playerId]
             ?: throw IllegalStateException("No interface registered for player ${decision.playerId}")
         return playerInterface.requestDecision(state, decision)
     }
 
-    fun registerPlayer(playerId: PlayerId, playerInterface: PlayerInterface): MultiPlayerInterface {
+    fun registerPlayer(playerId: EntityId, playerInterface: PlayerInterface): MultiPlayerInterface {
         return MultiPlayerInterface(playerInterfaces + (playerId to playerInterface))
     }
 
-    fun unregisterPlayer(playerId: PlayerId): MultiPlayerInterface {
+    fun unregisterPlayer(playerId: EntityId): MultiPlayerInterface {
         return MultiPlayerInterface(playerInterfaces - playerId)
     }
 
@@ -98,7 +98,7 @@ class ScriptedPlayerInterface(
 ) : PlayerInterface {
     private var nextResponseIndex = 0
 
-    override fun requestDecision(state: GameState, decision: PlayerDecision): DecisionResponse {
+    override fun requestDecision(state: EcsGameState, decision: PlayerDecision): DecisionResponse {
         if (nextResponseIndex >= responses.size) {
             throw IllegalStateException("No more scripted responses available for decision: ${decision.description}")
         }
@@ -139,7 +139,7 @@ class ScriptedPlayerInterface(
 class AutoPlayerInterface(
     private val defaultResponder: (PlayerDecision) -> DecisionResponse = ::defaultResponse
 ) : PlayerInterface {
-    override fun requestDecision(state: GameState, decision: PlayerDecision): DecisionResponse {
+    override fun requestDecision(state: EcsGameState, decision: PlayerDecision): DecisionResponse {
         return defaultResponder(decision)
     }
 
@@ -171,9 +171,9 @@ class AutoPlayerInterface(
  */
 class InterceptingPlayerInterface(
     private val delegate: PlayerInterface,
-    private val interceptor: (GameState, PlayerDecision, DecisionResponse) -> DecisionResponse = { _, _, response -> response }
+    private val interceptor: (EcsGameState, PlayerDecision, DecisionResponse) -> DecisionResponse = { _, _, response -> response }
 ) : PlayerInterface {
-    override fun requestDecision(state: GameState, decision: PlayerDecision): DecisionResponse {
+    override fun requestDecision(state: EcsGameState, decision: PlayerDecision): DecisionResponse {
         val response = delegate.requestDecision(state, decision)
         return interceptor(state, decision, response)
     }
@@ -193,7 +193,7 @@ class LoggingPlayerInterface(
     val decisionLog: List<Pair<PlayerDecision, DecisionResponse>>
         get() = _decisionLog.toList()
 
-    override fun requestDecision(state: GameState, decision: PlayerDecision): DecisionResponse {
+    override fun requestDecision(state: EcsGameState, decision: PlayerDecision): DecisionResponse {
         val response = delegate.requestDecision(state, decision)
         _decisionLog.add(decision to response)
         logger(decision, response)

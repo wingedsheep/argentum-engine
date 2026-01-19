@@ -1,7 +1,7 @@
 package com.wingedsheep.rulesengine.ecs
 
 import com.wingedsheep.rulesengine.card.CardDefinition
-import com.wingedsheep.rulesengine.card.CounterType
+import com.wingedsheep.rulesengine.core.CounterType
 import com.wingedsheep.rulesengine.core.*
 import com.wingedsheep.rulesengine.ecs.action.*
 import com.wingedsheep.rulesengine.ecs.components.*

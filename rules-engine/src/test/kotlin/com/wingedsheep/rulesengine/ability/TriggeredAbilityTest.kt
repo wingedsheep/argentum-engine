@@ -1,8 +1,6 @@
 package com.wingedsheep.rulesengine.ability
 
-import com.wingedsheep.rulesengine.core.CardId
 import com.wingedsheep.rulesengine.ecs.EntityId
-import com.wingedsheep.rulesengine.player.PlayerId
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
@@ -66,8 +64,8 @@ class TriggeredAbilityTest : FunSpec({
             val effect = GainLifeEffect(amount = 2, target = EffectTarget.Controller)
             val ability = TriggeredAbility.create(trigger, effect)
 
-            val cardId = CardId("card_123")
-            val controllerId = PlayerId.of("player1")
+            val cardId = EntityId.of("card_123")
+            val controllerId = EntityId.of("player1")
 
             val pendingTrigger = PendingTrigger(
                 ability = ability,
@@ -89,9 +87,9 @@ class TriggeredAbilityTest : FunSpec({
 
             val pendingTrigger = PendingTrigger(
                 ability = ability,
-                sourceId = CardId("card_123"),
+                sourceId = EntityId.of("card_123"),
                 sourceName = "Soul Warden",
-                controllerId = PlayerId.of("player1"),
+                controllerId = EntityId.of("player1"),
                 triggerContext = TriggerContext.None
             )
 
@@ -102,7 +100,7 @@ class TriggeredAbilityTest : FunSpec({
     context("TriggerContext") {
         test("ZoneChange context stores zone information") {
             val context = TriggerContext.ZoneChange(
-                cardId = CardId("card_456"),
+                cardId = EntityId.of("card_456"),
                 cardName = "Grizzly Bears",
                 fromZone = "HAND",
                 toZone = "BATTLEFIELD"
@@ -116,8 +114,8 @@ class TriggeredAbilityTest : FunSpec({
 
         test("DamageDealt context stores damage information") {
             val context = TriggerContext.DamageDealt(
-                sourceId = CardId("attacker_123"),
-                targetId = "player2",
+                sourceId = EntityId.of("attacker_123"),
+                targetId = EntityId.of("player2"),
                 amount = 3,
                 isPlayer = true,
                 isCombat = true
@@ -132,7 +130,7 @@ class TriggeredAbilityTest : FunSpec({
             val context = TriggerContext.PhaseStep(
                 phase = "BEGINNING",
                 step = "UPKEEP",
-                activePlayerId = PlayerId.of("player1")
+                activePlayerId = EntityId.of("player1")
             )
 
             context.phase shouldBe "BEGINNING"
@@ -148,9 +146,9 @@ class TriggeredAbilityTest : FunSpec({
 
             val pendingTrigger = PendingTrigger(
                 ability = ability,
-                sourceId = CardId("card_123"),
+                sourceId = EntityId.of("card_123"),
                 sourceName = "Soul Warden",
-                controllerId = PlayerId.of("player1"),
+                controllerId = EntityId.of("player1"),
                 triggerContext = TriggerContext.None
             )
 
@@ -159,8 +157,8 @@ class TriggeredAbilityTest : FunSpec({
                 chosenTargets = emptyList()
             )
 
-            stackedTrigger.sourceId shouldBe CardId("card_123")
-            stackedTrigger.controllerId shouldBe PlayerId.of("player1")
+            stackedTrigger.sourceId shouldBe EntityId.of("card_123")
+            stackedTrigger.controllerId shouldBe EntityId.of("player1")
         }
 
         test("stacked trigger can have chosen targets") {
@@ -170,15 +168,15 @@ class TriggeredAbilityTest : FunSpec({
 
             val pendingTrigger = PendingTrigger(
                 ability = ability,
-                sourceId = CardId("card_123"),
+                sourceId = EntityId.of("card_123"),
                 sourceName = "Flametongue Kavu",
-                controllerId = PlayerId.of("player1"),
+                controllerId = EntityId.of("player1"),
                 triggerContext = TriggerContext.None
             )
 
             val stackedTrigger = StackedTrigger(
                 pendingTrigger = pendingTrigger,
-                chosenTargets = listOf(ChosenTarget.CardTarget(CardId("target_456")))
+                chosenTargets = listOf(ChosenTarget.CardTarget(EntityId.of("target_456")))
             )
 
             stackedTrigger.chosenTargets.size shouldBe 1
@@ -186,15 +184,14 @@ class TriggeredAbilityTest : FunSpec({
     }
 
     context("ChosenTarget") {
-        test("PlayerTarget stores player ID") {
+        test("PlayerTarget stores entity ID") {
             val target = ChosenTarget.PlayerTarget(EntityId.of("player2"))
-            target.playerId.value shouldBe "player2"
             target.entityId.value shouldBe "player2"
         }
 
-        test("CardTarget stores card ID") {
-            val target = ChosenTarget.CardTarget(CardId("card_789"))
-            target.cardId.value shouldBe "card_789"
+        test("CardTarget stores entity ID") {
+            val target = ChosenTarget.CardTarget(EntityId.of("card_789"))
+            target.entityId.value shouldBe "card_789"
         }
     }
 })
