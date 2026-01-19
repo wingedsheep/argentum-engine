@@ -137,19 +137,56 @@ class CardScriptBuilder(private val cardName: String) {
         triggeredAbilities.add(ability)
     }
 
-    fun activated(cost: AbilityCost, effect: Effect, timing: TimingRestriction = TimingRestriction.INSTANT) = apply {
+    fun activated(
+        cost: AbilityCost,
+        effect: Effect,
+        timing: TimingRestriction = TimingRestriction.INSTANT,
+        isManaAbility: Boolean = false
+    ) = apply {
         activatedAbilities.add(
             ActivatedAbility(
                 id = AbilityId.generate(),
                 cost = cost,
                 effect = effect,
-                timingRestriction = timing
+                timingRestriction = timing,
+                isManaAbility = isManaAbility
             )
         )
     }
 
     fun activated(ability: ActivatedAbility) = apply {
         activatedAbilities.add(ability)
+    }
+
+    /**
+     * Add a mana ability (tap to add mana).
+     * Mana abilities resolve immediately without using the stack.
+     */
+    fun manaAbility(effect: AddManaEffect) = apply {
+        activatedAbilities.add(
+            ActivatedAbility(
+                id = AbilityId.generate(),
+                cost = AbilityCost.Tap,
+                effect = effect,
+                timingRestriction = TimingRestriction.INSTANT,
+                isManaAbility = true
+            )
+        )
+    }
+
+    /**
+     * Add a colorless mana ability.
+     */
+    fun manaAbility(effect: AddColorlessManaEffect) = apply {
+        activatedAbilities.add(
+            ActivatedAbility(
+                id = AbilityId.generate(),
+                cost = AbilityCost.Tap,
+                effect = effect,
+                timingRestriction = TimingRestriction.INSTANT,
+                isManaAbility = true
+            )
+        )
     }
 
     fun staticAbility(ability: StaticAbility) = apply {

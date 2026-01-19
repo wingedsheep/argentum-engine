@@ -86,6 +86,24 @@ object EcsGameEngine {
     }
 
     /**
+     * Load decks for all players using a DeckLoader.
+     *
+     * This is a convenience method that integrates DeckLoader with the game setup flow.
+     *
+     * @param state The game state to load decks into
+     * @param deckLoader The DeckLoader configured with card registries
+     * @param decks Map of player IDs to their deck lists
+     * @return Result containing the updated state or failure info
+     */
+    fun loadDecks(
+        state: EcsGameState,
+        deckLoader: DeckLoader,
+        decks: Map<EntityId, Map<String, Int>>
+    ): DeckLoader.DeckLoadResult {
+        return deckLoader.loadDecks(state, decks)
+    }
+
+    /**
      * Execute a mulligan for a player (London mulligan rules).
      *
      * @param state Current game state
@@ -212,6 +230,99 @@ object EcsGameEngine {
     fun getWinner(state: EcsGameState): EntityId? {
         return state.winner
     }
+
+    // =========================================================================
+    // Priority State Machine (Rule 116)
+    // =========================================================================
+
+    /**
+     * Process priority: Run SBA -> Check Triggers -> Grant Priority.
+     * This is the core game loop that should be called after any action.
+     *
+     * @param state Current game state
+     * @return Result indicating who has priority or if the game is over
+     */
+    fun processPriority(state: EcsGameState): PriorityResult {
+        var currentState = state
+
+        // Check if game is over
+        if (currentState.isGameOver) {
+            return PriorityResult.GameOver(currentState, currentState.winner)
+        }
+
+        // Step 1: Check State-Based Actions (loop until none)
+        val sbaResult = checkStateBasedActions(currentState)
+        if (sbaResult is EcsActionResult.Success) {
+            currentState = sbaResult.state
+        }
+
+        // Check again if game ended due to SBAs
+        if (currentState.isGameOver) {
+            return PriorityResult.GameOver(currentState, currentState.winner)
+        }
+
+        // Step 2: Triggered abilities would be stacked here (future implementation)
+        // TODO: Detect triggered abilities from events and add to stack in APNAP order
+
+        // Step 3: Return state with priority granted
+        return PriorityResult.PriorityGranted(
+            state = currentState,
+            priorityPlayer = currentState.turnState.priorityPlayer
+        )
+    }
+
+    /**
+     * Handle when all players pass priority in succession.
+     *
+     * If the stack is not empty: resolve the top object and reset passes.
+     * If the stack is empty: advance to the next step/phase.
+     *
+     * @param state Current game state (should have allPlayersPassed() == true)
+     * @return Updated game state
+     */
+    fun resolvePassedPriority(state: EcsGameState): EcsGameState {
+        val turnState = state.turnState
+
+        return if (state.getStack().isNotEmpty()) {
+            // Stack not empty: resolve top of stack, reset passes
+            val resolveResult = actionHandler.execute(state, EcsResolveTopOfStack())
+            when (resolveResult) {
+                is EcsActionResult.Success -> resolveResult.state.copy(
+                    turnState = turnState.resetConsecutivePasses().resetPriorityToActivePlayer()
+                )
+                is EcsActionResult.Failure -> state // Resolution failed, keep current state
+            }
+        } else {
+            // Stack empty: advance step/phase, reset passes
+            state.copy(
+                turnState = turnState.advanceStep()
+            )
+        }
+    }
+
+    /**
+     * Execute a player action that resets the consecutive passes counter.
+     * Use this for any action other than passing priority.
+     *
+     * @param state Current game state
+     * @param action The action to execute
+     * @return Result with updated state (passes reset to 0 on success)
+     */
+    fun executePlayerAction(state: EcsGameState, action: EcsAction): EcsActionResult {
+        val result = actionHandler.execute(state, action)
+        return when (result) {
+            is EcsActionResult.Success -> {
+                // Reset consecutive passes after any non-pass action
+                val newTurnState = result.state.turnState.resetConsecutivePasses()
+                EcsActionResult.Success(
+                    result.state.copy(turnState = newTurnState),
+                    result.action,
+                    result.events
+                )
+            }
+            is EcsActionResult.Failure -> result
+        }
+    }
 }
 
 /**
@@ -242,4 +353,26 @@ sealed interface EcsMulliganResult {
     ) : EcsMulliganResult
 
     data class Failure(val error: String) : EcsMulliganResult
+}
+
+/**
+ * Result of processing priority.
+ */
+sealed interface PriorityResult {
+    /**
+     * Priority has been granted to a player.
+     * The player can now take actions or pass priority.
+     */
+    data class PriorityGranted(
+        val state: EcsGameState,
+        val priorityPlayer: EntityId
+    ) : PriorityResult
+
+    /**
+     * The game has ended.
+     */
+    data class GameOver(
+        val state: EcsGameState,
+        val winner: EntityId?
+    ) : PriorityResult
 }

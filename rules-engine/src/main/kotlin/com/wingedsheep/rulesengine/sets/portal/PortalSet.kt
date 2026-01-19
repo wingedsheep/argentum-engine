@@ -18,6 +18,9 @@ object PortalSet : BaseCardRegistry() {
     }
 
     private fun registerAllCards() {
+        // Register basic lands first
+        registerBasicLands()
+
         // Register all Portal cards
         registerAlabasterDragon()
         registerAlluringScent()
@@ -30,6 +33,61 @@ object PortalSet : BaseCardRegistry() {
         registerArmoredPegasus()
         registerArrogantVampire()
         registerJungleLion()
+    }
+
+    // =========================================================================
+    // Basic Lands
+    // =========================================================================
+
+    /**
+     * Register all five basic lands with their mana abilities.
+     */
+    private fun registerBasicLands() {
+        registerForest()
+        registerIsland()
+        registerMountain()
+        registerPlains()
+        registerSwamp()
+    }
+
+    private fun registerForest() {
+        val definition = CardDefinition.basicLand("Forest", Subtype.FOREST)
+        val script = cardScript("Forest") {
+            manaAbility(AddManaEffect(Color.GREEN))
+        }
+        register(definition, script)
+    }
+
+    private fun registerIsland() {
+        val definition = CardDefinition.basicLand("Island", Subtype.ISLAND)
+        val script = cardScript("Island") {
+            manaAbility(AddManaEffect(Color.BLUE))
+        }
+        register(definition, script)
+    }
+
+    private fun registerMountain() {
+        val definition = CardDefinition.basicLand("Mountain", Subtype.MOUNTAIN)
+        val script = cardScript("Mountain") {
+            manaAbility(AddManaEffect(Color.RED))
+        }
+        register(definition, script)
+    }
+
+    private fun registerPlains() {
+        val definition = CardDefinition.basicLand("Plains", Subtype.PLAINS)
+        val script = cardScript("Plains") {
+            manaAbility(AddManaEffect(Color.WHITE))
+        }
+        register(definition, script)
+    }
+
+    private fun registerSwamp() {
+        val definition = CardDefinition.basicLand("Swamp", Subtype.SWAMP)
+        val script = cardScript("Swamp") {
+            manaAbility(AddManaEffect(Color.BLACK))
+        }
+        register(definition, script)
     }
 
     // =========================================================================

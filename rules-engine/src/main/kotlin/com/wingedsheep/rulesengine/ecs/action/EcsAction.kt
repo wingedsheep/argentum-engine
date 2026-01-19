@@ -94,6 +94,27 @@ data class EcsEmptyManaPool(
     override val description: String = "Empty mana pool"
 }
 
+/**
+ * Activate a mana ability on a permanent.
+ *
+ * Mana abilities resolve immediately without using the stack (Rule 605).
+ * This action handles:
+ * 1. Paying the cost (typically tapping)
+ * 2. Adding mana to the player's mana pool
+ *
+ * @param sourceEntityId The permanent with the mana ability
+ * @param abilityIndex Index of the ability in the entity's mana abilities list
+ * @param playerId The player activating the ability
+ */
+@Serializable
+data class EcsActivateManaAbility(
+    val sourceEntityId: EntityId,
+    val abilityIndex: Int,
+    val playerId: EntityId
+) : EcsAction {
+    override val description: String = "Activate mana ability"
+}
+
 // =============================================================================
 // Card Drawing Actions
 // =============================================================================
@@ -372,6 +393,25 @@ data class EcsPlayerLoses(
     val reason: String
 ) : EcsAction {
     override val description: String = "Player loses: $reason"
+}
+
+/**
+ * Resolve a Legend Rule choice.
+ *
+ * When a player controls multiple legendary permanents with the same name,
+ * they must choose which one to keep. This action resolves that choice.
+ *
+ * @param controllerId The player making the choice
+ * @param legendaryName The name of the legendary permanent
+ * @param keepEntityId The legendary permanent to keep (others are sacrificed)
+ */
+@Serializable
+data class EcsResolveLegendRule(
+    val controllerId: EntityId,
+    val legendaryName: String,
+    val keepEntityId: EntityId
+) : EcsAction {
+    override val description: String = "Choose legendary to keep: $legendaryName"
 }
 
 // =============================================================================

@@ -1,5 +1,8 @@
 package com.wingedsheep.rulesengine.ecs.action
 
+import com.wingedsheep.rulesengine.ability.AbilityCost
+import com.wingedsheep.rulesengine.ability.AddColorlessManaEffect
+import com.wingedsheep.rulesengine.ability.AddManaEffect
 import com.wingedsheep.rulesengine.card.CounterType
 import com.wingedsheep.rulesengine.ecs.EcsGameState
 import com.wingedsheep.rulesengine.ecs.EntityId
@@ -8,6 +11,7 @@ import com.wingedsheep.rulesengine.ecs.combat.DamageEventProjector
 import com.wingedsheep.rulesengine.ecs.combat.DamagePreventionEffect
 import com.wingedsheep.rulesengine.ecs.combat.EcsCombatDamageCalculator
 import com.wingedsheep.rulesengine.ecs.components.*
+import com.wingedsheep.rulesengine.ecs.components.PendingLegendRuleChoice
 import com.wingedsheep.rulesengine.ecs.stack.EcsStackResolver
 import com.wingedsheep.rulesengine.zone.ZoneType
 
@@ -84,6 +88,7 @@ class EcsActionHandler {
             is EcsAddMana -> executeAddMana(state, action, events)
             is EcsAddColorlessMana -> executeAddColorlessMana(state, action, events)
             is EcsEmptyManaPool -> executeEmptyManaPool(state, action)
+            is EcsActivateManaAbility -> executeActivateManaAbility(state, action, events)
 
             // Card drawing
             is EcsDrawCard -> executeDrawCard(state, action, events)
@@ -130,6 +135,7 @@ class EcsActionHandler {
             is EcsPassPriority -> executePassPriority(state, action)
             is EcsEndGame -> executeEndGame(state, action, events)
             is EcsPlayerLoses -> executePlayerLoses(state, action, events)
+            is EcsResolveLegendRule -> executeResolveLegendRule(state, action, events)
 
             // Stack resolution
             is EcsResolveTopOfStack -> executeResolveTopOfStack(state, events)
@@ -274,6 +280,146 @@ class EcsActionHandler {
 
         return state.updateEntity(action.playerId) { c ->
             c.with(manaPool.empty())
+        }
+    }
+
+    /**
+     * Execute a mana ability activation.
+     *
+     * Mana abilities resolve immediately without using the stack (Rule 605).
+     * This handles:
+     * 1. Validating the ability exists and can be activated
+     * 2. Paying the cost (typically tapping)
+     * 3. Adding mana to the player's pool
+     */
+    private fun executeActivateManaAbility(
+        state: EcsGameState,
+        action: EcsActivateManaAbility,
+        events: MutableList<EcsActionEvent>
+    ): EcsGameState {
+        val sourceId = action.sourceEntityId
+
+        // Verify source is on the battlefield
+        if (sourceId !in state.getBattlefield()) {
+            throw IllegalStateException("Mana ability source must be on the battlefield")
+        }
+
+        val container = state.getEntity(sourceId)
+            ?: throw IllegalStateException("Source entity not found")
+
+        // Verify player controls the permanent
+        val controller = container.get<ControllerComponent>()
+            ?: throw IllegalStateException("Source has no controller")
+        if (controller.controllerId != action.playerId) {
+            throw IllegalStateException("Player does not control this permanent")
+        }
+
+        // Get the abilities component
+        val abilities = container.get<AbilitiesComponent>()
+            ?: throw IllegalStateException("Source has no abilities")
+
+        // Get the specific mana ability
+        val ability = abilities.getManaAbility(action.abilityIndex)
+            ?: throw IllegalStateException("Mana ability not found at index ${action.abilityIndex}")
+
+        if (!ability.isManaAbility) {
+            throw IllegalStateException("Ability at index ${action.abilityIndex} is not a mana ability")
+        }
+
+        var currentState = state
+
+        // Pay the cost
+        currentState = payAbilityCost(currentState, sourceId, ability.cost, action.playerId, events)
+
+        // Execute the effect (add mana)
+        currentState = executeManaEffect(currentState, action.playerId, ability.effect, events)
+
+        return currentState
+    }
+
+    /**
+     * Pay the cost of an ability.
+     */
+    private fun payAbilityCost(
+        state: EcsGameState,
+        sourceId: EntityId,
+        cost: AbilityCost,
+        playerId: EntityId,
+        events: MutableList<EcsActionEvent>
+    ): EcsGameState {
+        return when (cost) {
+            is AbilityCost.Tap -> {
+                // Check if already tapped
+                val container = state.getEntity(sourceId)!!
+                if (container.get<TappedComponent>() != null) {
+                    throw IllegalStateException("Permanent is already tapped")
+                }
+                val cardName = container.get<CardComponent>()?.name ?: "Unknown"
+                events.add(EcsActionEvent.PermanentTapped(sourceId, cardName))
+                state.updateEntity(sourceId) { c -> c.with(TappedComponent) }
+            }
+            is AbilityCost.Composite -> {
+                // Pay all costs in the composite
+                cost.costs.fold(state) { s, subCost ->
+                    payAbilityCost(s, sourceId, subCost, playerId, events)
+                }
+            }
+            is AbilityCost.Mana -> {
+                // For mana abilities that cost mana (rare but possible)
+                // This would deduct from the player's mana pool
+                // For simplicity, basic lands don't have mana costs
+                state
+            }
+            is AbilityCost.PayLife -> {
+                val container = state.getEntity(playerId) ?: throw IllegalStateException("Player not found")
+                val lifeComp = container.get<LifeComponent>() ?: throw IllegalStateException("Player has no life component")
+                if (lifeComp.life < cost.amount) {
+                    throw IllegalStateException("Not enough life to pay cost")
+                }
+                val newLife = lifeComp.life - cost.amount
+                events.add(EcsActionEvent.LifeChanged(playerId, lifeComp.life, newLife))
+                state.updateEntity(playerId) { c -> c.with(lifeComp.loseLife(cost.amount)) }
+            }
+            is AbilityCost.Sacrifice -> {
+                // Would need to handle sacrifice - for now, not used by basic mana abilities
+                throw IllegalStateException("Sacrifice cost not supported for mana abilities yet")
+            }
+            is AbilityCost.Discard -> {
+                // Would need to handle discard - for now, not used by basic mana abilities
+                throw IllegalStateException("Discard cost not supported for mana abilities yet")
+            }
+        }
+    }
+
+    /**
+     * Execute a mana-producing effect.
+     */
+    private fun executeManaEffect(
+        state: EcsGameState,
+        playerId: EntityId,
+        effect: com.wingedsheep.rulesengine.ability.Effect,
+        events: MutableList<EcsActionEvent>
+    ): EcsGameState {
+        return when (effect) {
+            is AddManaEffect -> {
+                val container = state.getEntity(playerId) ?: throw IllegalStateException("Player not found")
+                val manaPool = container.get<ManaPoolComponent>() ?: ManaPoolComponent()
+                events.add(EcsActionEvent.ManaAdded(playerId, effect.color.displayName, effect.amount))
+                state.updateEntity(playerId) { c ->
+                    c.with(manaPool.add(effect.color, effect.amount))
+                }
+            }
+            is AddColorlessManaEffect -> {
+                val container = state.getEntity(playerId) ?: throw IllegalStateException("Player not found")
+                val manaPool = container.get<ManaPoolComponent>() ?: ManaPoolComponent()
+                events.add(EcsActionEvent.ManaAdded(playerId, "Colorless", effect.amount))
+                state.updateEntity(playerId) { c ->
+                    c.with(manaPool.addColorless(effect.amount))
+                }
+            }
+            else -> {
+                throw IllegalStateException("Unsupported effect type for mana ability: ${effect::class.simpleName}")
+            }
         }
     }
 
@@ -889,9 +1035,19 @@ class EcsActionHandler {
     // =========================================================================
 
     private fun executePassPriority(state: EcsGameState, action: EcsPassPriority): EcsGameState {
-        // Priority passing is handled by TurnState updates - this is a stub for now
-        // In a full implementation, this would update the turn state to pass priority
-        return state
+        val turnState = state.turnState
+
+        // Verify the correct player is passing
+        if (turnState.priorityPlayer != action.playerId) {
+            throw IllegalStateException("Player ${action.playerId} cannot pass priority - it's ${turnState.priorityPlayer}'s priority")
+        }
+
+        // Increment consecutive passes and move priority to next player
+        val newTurnState = turnState
+            .incrementConsecutivePasses()
+            .passPriority()
+
+        return state.copy(turnState = newTurnState)
     }
 
     private fun executeEndGame(
@@ -912,6 +1068,46 @@ class EcsActionHandler {
         return state.updateEntity(action.playerId) { c ->
             c.with(LostGameComponent(action.reason))
         }
+    }
+
+    /**
+     * Resolve a Legend Rule choice by keeping the chosen legendary
+     * and putting all others with the same name into the graveyard.
+     */
+    private fun executeResolveLegendRule(
+        state: EcsGameState,
+        action: EcsResolveLegendRule,
+        events: MutableList<EcsActionEvent>
+    ): EcsGameState {
+        // Find the pending choice
+        val pendingChoice = state.pendingLegendRuleChoices.find {
+            it.controllerId == action.controllerId && it.legendaryName == action.legendaryName
+        } ?: throw IllegalStateException("No pending Legend Rule choice for ${action.legendaryName}")
+
+        // Validate the choice
+        if (action.keepEntityId !in pendingChoice.duplicateIds) {
+            throw IllegalStateException("${action.keepEntityId} is not one of the duplicate legendaries")
+        }
+
+        var currentState = state
+
+        // Put all others into the graveyard
+        val toSacrifice = pendingChoice.duplicateIds.filter { it != action.keepEntityId }
+        for (entityId in toSacrifice) {
+            val cardComp = currentState.getEntity(entityId)?.get<CardComponent>()
+            if (cardComp != null && entityId in currentState.getBattlefield()) {
+                val graveyardZone = ZoneId.graveyard(cardComp.ownerId)
+                events.add(EcsActionEvent.PermanentDestroyed(entityId, cardComp.name))
+                currentState = currentState
+                    .removeFromZone(entityId, ZoneId.BATTLEFIELD)
+                    .addToZone(entityId, graveyardZone)
+            }
+        }
+
+        // Remove the pending choice
+        currentState = currentState.removePendingLegendRuleChoice(pendingChoice)
+
+        return currentState
     }
 
     // =========================================================================
@@ -1106,6 +1302,26 @@ class EcsActionHandler {
                 }
             }
 
+            // Legend Rule (704.5j): If player controls 2+ legendaries with same name, sacrifice extras
+            val legendResult = checkLegendRule(currentState, events)
+            currentState = legendResult.first
+            if (legendResult.second) actionsPerformed = true
+
+            // Aura Validity (704.5m, 704.5n): If aura's target is gone or illegal, put aura in graveyard
+            val auraResult = checkAuraValidity(currentState, events)
+            currentState = auraResult.first
+            if (auraResult.second) actionsPerformed = true
+
+            // Token Cessation (704.5d): Tokens not on battlefield cease to exist
+            val tokenResult = checkTokenCessation(currentState, events)
+            currentState = tokenResult.first
+            if (tokenResult.second) actionsPerformed = true
+
+            // Counter Cancellation (704.5q): +1/+1 and -1/-1 counters cancel each other
+            val counterResult = checkCounterCancellation(currentState, events)
+            currentState = counterResult.first
+            if (counterResult.second) actionsPerformed = true
+
         } while (actionsPerformed)
 
         // Check for game end
@@ -1137,6 +1353,179 @@ class EcsActionHandler {
             }
         }
         return currentState
+    }
+
+    // =========================================================================
+    // State-Based Action Helpers
+    // =========================================================================
+
+    /**
+     * Legend Rule (704.5j): If a player controls two or more legendary permanents
+     * with the same name, that player chooses one of them and puts the rest
+     * into their owners' graveyards.
+     *
+     * This creates pending choices that must be resolved by the player via
+     * the EcsResolveLegendRule action. No permanents are destroyed here.
+     */
+    private fun checkLegendRule(
+        state: EcsGameState,
+        @Suppress("UNUSED_PARAMETER") events: MutableList<EcsActionEvent>
+    ): Pair<EcsGameState, Boolean> {
+        var currentState = state
+        var choicesCreated = false
+
+        // Group legendaries by controller and name
+        val legendaries = state.getBattlefield()
+            .mapNotNull { entityId ->
+                val container = state.getEntity(entityId)
+                val cardComp = container?.get<CardComponent>()
+                val controllerComp = container?.get<ControllerComponent>()
+                if (cardComp != null && controllerComp != null &&
+                    cardComp.definition.typeLine.isLegendary) {
+                    Triple(entityId, controllerComp.controllerId, cardComp.name)
+                } else null
+            }
+            .groupBy { it.second to it.third }  // Group by (controller, name)
+
+        for ((key, group) in legendaries) {
+            val (controllerId, name) = key
+            if (group.size > 1) {
+                // Check if we already have a pending choice for this
+                val existingChoice = currentState.pendingLegendRuleChoices.find {
+                    it.controllerId == controllerId && it.legendaryName == name
+                }
+
+                if (existingChoice == null) {
+                    // Create a pending choice for the player
+                    val duplicateIds = group.map { it.first }
+                    val pendingChoice = PendingLegendRuleChoice(
+                        controllerId = controllerId,
+                        legendaryName = name,
+                        duplicateIds = duplicateIds
+                    )
+                    currentState = currentState.addPendingLegendRuleChoice(pendingChoice)
+                    choicesCreated = true
+                }
+            }
+        }
+
+        // Note: We return false for actionsPerformed because no state was actually changed
+        // (no permanents destroyed). The pending choice needs to be resolved separately.
+        // However, we do need to signal that choices were created.
+        return currentState to choicesCreated
+    }
+
+    /**
+     * Aura Validity (704.5m, 704.5n): If an Aura is attached to an illegal object
+     * or player, or is not attached to an object or player, that Aura is put
+     * into its owner's graveyard.
+     */
+    private fun checkAuraValidity(
+        state: EcsGameState,
+        events: MutableList<EcsActionEvent>
+    ): Pair<EcsGameState, Boolean> {
+        var currentState = state
+        var actionsPerformed = false
+
+        for (entityId in state.getBattlefield()) {
+            val container = currentState.getEntity(entityId) ?: continue
+            val cardComp = container.get<CardComponent>() ?: continue
+
+            if (!cardComp.isAura) continue
+
+            val attachedTo = container.get<AttachedToComponent>()
+
+            // Check if aura is attached to something
+            if (attachedTo == null) {
+                // Aura not attached - goes to graveyard
+                val graveyardZone = ZoneId.graveyard(cardComp.ownerId)
+                events.add(EcsActionEvent.PermanentDestroyed(entityId, cardComp.name))
+                currentState = currentState
+                    .removeFromZone(entityId, ZoneId.BATTLEFIELD)
+                    .addToZone(entityId, graveyardZone)
+                actionsPerformed = true
+                continue
+            }
+
+            // Check if target still exists on battlefield
+            val targetExists = attachedTo.targetId in currentState.getBattlefield()
+            if (!targetExists) {
+                val graveyardZone = ZoneId.graveyard(cardComp.ownerId)
+                events.add(EcsActionEvent.PermanentDestroyed(entityId, cardComp.name))
+                currentState = currentState
+                    .removeFromZone(entityId, ZoneId.BATTLEFIELD)
+                    .addToZone(entityId, graveyardZone)
+                    .updateEntity(entityId) { c -> c.without<AttachedToComponent>() }
+                actionsPerformed = true
+            }
+        }
+
+        return currentState to actionsPerformed
+    }
+
+    /**
+     * Token Cessation (704.5d): If a token is in a zone other than the battlefield,
+     * it ceases to exist.
+     */
+    private fun checkTokenCessation(
+        state: EcsGameState,
+        @Suppress("UNUSED_PARAMETER") events: MutableList<EcsActionEvent>
+    ): Pair<EcsGameState, Boolean> {
+        var currentState = state
+        var actionsPerformed = false
+
+        // Find all tokens not on battlefield
+        val battlefield = state.getBattlefield().toSet()
+        val tokensNotOnBattlefield = state.entitiesWithComponent<TokenComponent>()
+            .filter { it !in battlefield }
+
+        for (entityId in tokensNotOnBattlefield) {
+            // Find which zone the token is in and remove it
+            val zone = currentState.findZone(entityId)
+            if (zone != null) {
+                currentState = currentState.removeFromZone(entityId, zone)
+            }
+            // Remove the entity entirely
+            currentState = currentState.removeEntity(entityId)
+            actionsPerformed = true
+        }
+
+        return currentState to actionsPerformed
+    }
+
+    /**
+     * Counter Cancellation (704.5q): If a permanent has both a +1/+1 counter
+     * and a -1/-1 counter on it, N +1/+1 and N -1/-1 counters are removed from it,
+     * where N is the smaller of the number of +1/+1 and -1/-1 counters on it.
+     */
+    private fun checkCounterCancellation(
+        state: EcsGameState,
+        @Suppress("UNUSED_PARAMETER") events: MutableList<EcsActionEvent>
+    ): Pair<EcsGameState, Boolean> {
+        var currentState = state
+        var actionsPerformed = false
+
+        for (entityId in state.getBattlefield()) {
+            val container = currentState.getEntity(entityId) ?: continue
+            val counters = container.get<CountersComponent>() ?: continue
+
+            val plusCounters = counters.getCount(CounterType.PLUS_ONE_PLUS_ONE)
+            val minusCounters = counters.getCount(CounterType.MINUS_ONE_MINUS_ONE)
+
+            if (plusCounters > 0 && minusCounters > 0) {
+                val toRemove = minOf(plusCounters, minusCounters)
+                val newCounters = counters
+                    .remove(CounterType.PLUS_ONE_PLUS_ONE, toRemove)
+                    .remove(CounterType.MINUS_ONE_MINUS_ONE, toRemove)
+
+                currentState = currentState.updateEntity(entityId) { c ->
+                    c.with(newCounters)
+                }
+                actionsPerformed = true
+            }
+        }
+
+        return currentState to actionsPerformed
     }
 }
 

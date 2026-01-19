@@ -101,15 +101,23 @@ class AbilityRegistry {
 }
 
 /**
- * Placeholder for activated abilities (tap abilities, etc.)
- * Full implementation in a future phase.
+ * Activated abilities (tap abilities, mana abilities, etc.)
+ *
+ * @property id Unique identifier for this ability
+ * @property cost The cost to activate (tap, mana, sacrifice, etc.)
+ * @property effect The effect that occurs when activated
+ * @property timingRestriction When this ability can be activated
+ * @property isManaAbility If true, this ability adds mana and doesn't use the stack.
+ *                         Mana abilities resolve immediately and can be activated
+ *                         while paying costs (Rule 605).
  */
 @kotlinx.serialization.Serializable
 data class ActivatedAbility(
     val id: AbilityId,
     val cost: AbilityCost,
     val effect: Effect,
-    val timingRestriction: TimingRestriction = TimingRestriction.INSTANT
+    val timingRestriction: TimingRestriction = TimingRestriction.INSTANT,
+    val isManaAbility: Boolean = false
 )
 
 /**

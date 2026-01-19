@@ -17,7 +17,8 @@ data class TurnState(
     val phase: Phase = Phase.BEGINNING,
     val step: Step = Step.UNTAP,
     val isFirstTurn: Boolean = true,
-    val playerOrder: List<EntityId>
+    val playerOrder: List<EntityId>,
+    val consecutivePasses: Int = 0
 ) {
     init {
         require(playerOrder.isNotEmpty()) { "Player order cannot be empty" }
@@ -76,7 +77,8 @@ data class TurnState(
             copy(
                 step = nextStep,
                 phase = nextStep.phase,
-                priorityPlayer = activePlayer
+                priorityPlayer = activePlayer,
+                consecutivePasses = 0
             )
         }
     }
@@ -91,7 +93,8 @@ data class TurnState(
             priorityPlayer = nextPlayer,
             phase = Phase.BEGINNING,
             step = Step.UNTAP,
-            isFirstTurn = false
+            isFirstTurn = false,
+            consecutivePasses = 0
         )
     }
 
@@ -100,7 +103,8 @@ data class TurnState(
         return copy(
             phase = targetPhase,
             step = targetStep,
-            priorityPlayer = activePlayer
+            priorityPlayer = activePlayer,
+            consecutivePasses = 0
         )
     }
 
@@ -108,7 +112,8 @@ data class TurnState(
         return copy(
             phase = targetStep.phase,
             step = targetStep,
-            priorityPlayer = activePlayer
+            priorityPlayer = activePlayer,
+            consecutivePasses = 0
         )
     }
 
@@ -122,6 +127,31 @@ data class TurnState(
 
     fun priorityPassedByAllPlayers(startingFrom: EntityId): Boolean =
         priorityPlayer == startingFrom
+
+    // =========================================================================
+    // Consecutive Passes Tracking (for Priority State Machine)
+    // =========================================================================
+
+    /**
+     * Increment the consecutive passes counter.
+     * Called when a player passes priority.
+     */
+    fun incrementConsecutivePasses(): TurnState =
+        copy(consecutivePasses = consecutivePasses + 1)
+
+    /**
+     * Reset consecutive passes to zero.
+     * Called when a player takes an action or the stack resolves.
+     */
+    fun resetConsecutivePasses(): TurnState =
+        copy(consecutivePasses = 0)
+
+    /**
+     * Check if all players have passed priority in succession.
+     * When true, the top of stack resolves (if not empty) or the step/phase advances.
+     */
+    fun allPlayersPassed(): Boolean =
+        consecutivePasses >= playerOrder.size
 
     companion object {
         /**

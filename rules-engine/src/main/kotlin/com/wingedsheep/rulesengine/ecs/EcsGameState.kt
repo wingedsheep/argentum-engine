@@ -68,7 +68,14 @@ data class EcsGameState(
      * Trigger tracking (shared with old system for compatibility).
      */
     val pendingTriggers: List<PendingTrigger> = emptyList(),
-    val triggersOnStack: List<StackedTrigger> = emptyList()
+    val triggersOnStack: List<StackedTrigger> = emptyList(),
+
+    /**
+     * Pending Legend Rule choices that need player input.
+     * When a player controls multiple legendary permanents with the same name,
+     * they must choose which one to keep.
+     */
+    val pendingLegendRuleChoices: List<com.wingedsheep.rulesengine.ecs.components.PendingLegendRuleChoice> = emptyList()
 ) {
     // ==========================================================================
     // Entity Queries
@@ -455,6 +462,39 @@ data class EcsGameState(
     val hasPendingTriggers: Boolean get() = pendingTriggers.isNotEmpty()
 
     val hasTriggersOnStack: Boolean get() = triggersOnStack.isNotEmpty()
+
+    // ==========================================================================
+    // Pending Legend Rule Choices
+    // ==========================================================================
+
+    /**
+     * Check if there are any pending Legend Rule choices.
+     */
+    val hasPendingLegendRuleChoices: Boolean get() = pendingLegendRuleChoices.isNotEmpty()
+
+    /**
+     * Get pending Legend Rule choices for a specific player.
+     */
+    fun getPendingLegendRuleChoicesForPlayer(playerId: EntityId): List<com.wingedsheep.rulesengine.ecs.components.PendingLegendRuleChoice> =
+        pendingLegendRuleChoices.filter { it.controllerId == playerId }
+
+    /**
+     * Add a pending Legend Rule choice.
+     */
+    fun addPendingLegendRuleChoice(choice: com.wingedsheep.rulesengine.ecs.components.PendingLegendRuleChoice): EcsGameState =
+        copy(pendingLegendRuleChoices = pendingLegendRuleChoices + choice)
+
+    /**
+     * Remove a pending Legend Rule choice (after it's been resolved).
+     */
+    fun removePendingLegendRuleChoice(choice: com.wingedsheep.rulesengine.ecs.components.PendingLegendRuleChoice): EcsGameState =
+        copy(pendingLegendRuleChoices = pendingLegendRuleChoices - choice)
+
+    /**
+     * Clear all pending Legend Rule choices for a player.
+     */
+    fun clearPendingLegendRuleChoicesForPlayer(playerId: EntityId): EcsGameState =
+        copy(pendingLegendRuleChoices = pendingLegendRuleChoices.filter { it.controllerId != playerId })
 
     // ==========================================================================
     // Convenience Helpers
