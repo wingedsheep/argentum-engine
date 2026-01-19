@@ -8,6 +8,7 @@ import com.wingedsheep.rulesengine.card.Rarity
 import com.wingedsheep.rulesengine.card.ScryfallMetadata
 import com.wingedsheep.rulesengine.core.Keyword
 import com.wingedsheep.rulesengine.core.ManaCost
+import com.wingedsheep.rulesengine.targeting.TargetCreature
 
 /**
  * Appeal to Eirdu
@@ -42,12 +43,20 @@ object AppealToEirdu {
         keywords(Keyword.CONVOKE)
 
         // One or two target creatures each get +2/+1 until end of turn
-        // Note: Multi-target spells require specialized targeting (1-2 targets)
+        // Requires 1-2 targets (not "up to" - at least one target is required)
+        val creatureTargets = targets(
+            TargetCreature(
+                count = 2,      // Maximum 2 targets
+                minCount = 1    // Minimum 1 target (not optional)
+            )
+        )
+
+        // Effect applies to each targeted creature
         spell(
             ModifyStatsEffect(
                 powerModifier = 2,
                 toughnessModifier = 1,
-                target = EffectTarget.TargetCreature,
+                target = EffectTarget.ContextTarget(creatureTargets.index),
                 untilEndOfTurn = true
             )
         )

@@ -11,12 +11,26 @@ import kotlinx.serialization.Serializable
  *
  * TargetRequirements are data objects - validation is handled by TargetValidator
  * which checks targets against GameState.
+ *
+ * Target count semantics:
+ * - count = maximum number of targets
+ * - minCount = minimum number of targets (defaults to count if not specified)
+ * - optional = if true, minCount becomes 0 ("up to X" targets)
+ *
+ * Examples:
+ * - "target creature": count=1, minCount=1
+ * - "up to two target creatures": count=2, optional=true (minCount becomes 0)
+ * - "one or two target creatures": count=2, minCount=1
  */
 @Serializable
 sealed interface TargetRequirement {
     val description: String
-    val count: Int get() = 1  // How many targets are required
-    val optional: Boolean get() = false  // "up to X" targets
+    val count: Int get() = 1  // Maximum targets
+    val minCount: Int get() = count  // Minimum targets (defaults to count)
+    val optional: Boolean get() = false  // If true, minCount becomes 0
+
+    /** Effective minimum after considering optional flag */
+    val effectiveMinCount: Int get() = if (optional) 0 else minCount
 }
 
 // =============================================================================
@@ -51,19 +65,30 @@ data class TargetOpponent(
 
 /**
  * Target creature (any creature on the battlefield).
+ *
+ * @param count Maximum number of targets
+ * @param minCount Minimum number of targets (for "one or two" style targeting)
+ * @param optional If true, allows 0 targets ("up to X" style targeting)
+ * @param filter Restrictions on which creatures can be targeted
  */
 @Serializable
 data class TargetCreature(
     override val count: Int = 1,
+    override val minCount: Int = count,
     override val optional: Boolean = false,
     val filter: CreatureTargetFilter = CreatureTargetFilter.Any
 ) : TargetRequirement {
     override val description: String = buildString {
-        append("target ")
+        if (optional) {
+            append("up to ")
+        } else if (minCount < count) {
+            append("$minCount to ")
+        }
         if (filter != CreatureTargetFilter.Any) {
             append(filter.description)
             append(" ")
         }
+        append("target ")
         append(if (count == 1) "creature" else "$count creatures")
     }
 }
