@@ -15,9 +15,9 @@ import com.wingedsheep.rulesengine.ecs.Component
 import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
+import com.wingedsheep.rulesengine.decision.ChooseCards
 import com.wingedsheep.rulesengine.ecs.components.CardComponent
 import com.wingedsheep.rulesengine.ecs.components.TappedComponent
-import com.wingedsheep.rulesengine.ecs.decision.EffectChooseCards
 import com.wingedsheep.rulesengine.ecs.script.EffectEvent
 import com.wingedsheep.rulesengine.ecs.script.ExecutionContext
 import com.wingedsheep.rulesengine.ecs.script.ExecutionResult
@@ -307,10 +307,10 @@ class LibraryHandlersTest : FunSpec({
             // With multiple matches, we should get a pending decision
             initialResult.needsPlayerInput shouldBe true
             initialResult.pendingDecision.shouldNotBeNull()
-            initialResult.pendingDecision.shouldBeInstanceOf<EffectChooseCards>()
+            initialResult.pendingDecision.shouldBeInstanceOf<ChooseCards>()
             initialResult.continuation.shouldNotBeNull()
 
-            val decision = initialResult.pendingDecision as EffectChooseCards
+            val decision = initialResult.pendingDecision as ChooseCards
             decision.cards shouldHaveSize 3  // All 3 forests available to choose
             decision.maxCount shouldBe 2     // Can pick up to 2
 
@@ -472,9 +472,9 @@ class LibraryHandlersTest : FunSpec({
             // Multiple matches should require player input
             result.needsPlayerInput shouldBe true
             result.pendingDecision.shouldNotBeNull()
-            result.pendingDecision.shouldBeInstanceOf<EffectChooseCards>()
+            result.pendingDecision.shouldBeInstanceOf<ChooseCards>()
 
-            val decision = result.pendingDecision as EffectChooseCards
+            val decision = result.pendingDecision as ChooseCards
             decision.playerId shouldBe player1Id
             decision.cards shouldHaveSize 2
             decision.cards.map { it.entityId } shouldContain forest1Id
@@ -528,7 +528,7 @@ class LibraryHandlersTest : FunSpec({
             val result = registry.execute(state, effect, context)
 
             result.needsPlayerInput shouldBe true
-            val decision = result.pendingDecision as EffectChooseCards
+            val decision = result.pendingDecision as ChooseCards
 
             // Card options should include display information
             val bearOption = decision.cards.find { it.entityId == bearId }

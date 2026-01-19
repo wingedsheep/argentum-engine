@@ -30,6 +30,7 @@ object DecisionValidator {
             is PriorityDecision -> validatePriorityChoice(state, decision, response)
             is MulliganDecision -> validateMulliganChoice(response)
             is ChooseMulliganBottomCards -> validateMulliganBottomCards(decision, response)
+            is SacrificeUnlessDecision -> validateSacrificeUnlessChoice(decision, response)
         }
     }
 
@@ -225,8 +226,9 @@ object DecisionValidator {
         }
 
         // Check all selected cards are valid options
+        val validCardIds = decision.cards.map { it.entityId }
         for (cardId in response.selectedCardIds) {
-            if (cardId !in decision.cards) {
+            if (cardId !in validCardIds) {
                 return ValidationResult.Invalid("Invalid card selected: $cardId")
             }
         }
@@ -393,6 +395,39 @@ object DecisionValidator {
         // No duplicates
         if (response.selectedCardIds.size != response.selectedCardIds.distinct().size) {
             return ValidationResult.Invalid("Duplicate cards selected")
+        }
+
+        return ValidationResult.Valid
+    }
+
+    private fun validateSacrificeUnlessChoice(
+        decision: SacrificeUnlessDecision,
+        response: DecisionResponse
+    ): ValidationResult {
+        if (response !is SacrificeUnlessChoice) {
+            return ValidationResult.Invalid("Expected SacrificeUnlessChoice response")
+        }
+
+        if (response.payCost) {
+            // If paying the cost, verify correct number of permanents were selected
+            if (response.sacrificedPermanents.size != decision.requiredCount) {
+                return ValidationResult.Invalid(
+                    "Must sacrifice exactly ${decision.requiredCount} permanents to pay cost"
+                )
+            }
+
+            // All selected permanents must be in valid cost targets
+            val validTargetIds = decision.validCostTargets.map { it.entityId }
+            for (permanentId in response.sacrificedPermanents) {
+                if (permanentId !in validTargetIds) {
+                    return ValidationResult.Invalid("Invalid permanent selected for sacrifice: $permanentId")
+                }
+            }
+
+            // No duplicates
+            if (response.sacrificedPermanents.size != response.sacrificedPermanents.distinct().size) {
+                return ValidationResult.Invalid("Duplicate permanents selected")
+            }
         }
 
         return ValidationResult.Valid

@@ -1,9 +1,9 @@
 package com.wingedsheep.rulesengine.ecs.script
 
 import com.wingedsheep.rulesengine.ability.Effect
+import com.wingedsheep.rulesengine.decision.PlayerDecision
 import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
-import com.wingedsheep.rulesengine.ecs.decision.EffectDecision
 import com.wingedsheep.rulesengine.ecs.event.ChosenTarget
 import com.wingedsheep.rulesengine.ecs.script.handler.EffectHandlerRegistry
 import com.wingedsheep.rulesengine.ecs.layers.Modifier
@@ -79,7 +79,7 @@ data class ExecutionResult(
      * A decision that needs player input before the effect can complete.
      * Null if the effect completed without needing input.
      */
-    val pendingDecision: EffectDecision? = null,
+    val pendingDecision: PlayerDecision? = null,
     /**
      * Continuation to call when the pending decision is resolved.
      * The game loop should call this with the player's response.

@@ -148,19 +148,20 @@ class AutoPlayerInterface(
          * Provides sensible default responses for each decision type.
          */
         fun defaultResponse(decision: PlayerDecision): DecisionResponse = when (decision) {
-            is ChooseTargets -> TargetsChoice(emptyMap())
-            is ChooseAttackers -> AttackersChoice(emptyList())
-            is ChooseBlockers -> BlockersChoice(emptyMap())
-            is ChooseDamageAssignmentOrder -> DamageAssignmentOrderChoice(decision.blockerIds)
-            is ChooseManaPayment -> ManaPaymentChoice() // Use colorless first, then any color
-            is YesNoDecision -> YesNoChoice(false) // Default to "no"
-            is ChooseCards -> CardsChoice(decision.cards.take(decision.minCount))
-            is ChooseOrder<*> -> OrderChoice(decision.items.indices.toList())
-            is ChooseMode -> ModeChoice(listOf(0)) // Choose first mode
-            is ChooseNumber -> NumberChoice(decision.minimum)
-            is PriorityDecision -> PriorityChoice.Pass
-            is MulliganDecision -> MulliganChoice.Keep
-            is ChooseMulliganBottomCards -> CardsChoice(decision.hand.take(decision.cardsToPutOnBottom))
+            is ChooseTargets -> TargetsChoice(decision.decisionId, emptyMap())
+            is ChooseAttackers -> AttackersChoice(decision.decisionId, emptyList())
+            is ChooseBlockers -> BlockersChoice(decision.decisionId, emptyMap())
+            is ChooseDamageAssignmentOrder -> DamageAssignmentOrderChoice(decision.decisionId, decision.blockerIds)
+            is ChooseManaPayment -> ManaPaymentChoice(decision.decisionId)
+            is YesNoDecision -> YesNoChoice(decision.decisionId, false) // Default to "no"
+            is ChooseCards -> CardsChoice(decision.decisionId, decision.cards.take(decision.minCount).map { it.entityId })
+            is ChooseOrder<*> -> OrderChoice(decision.decisionId, decision.items.indices.toList())
+            is ChooseMode -> ModeChoice(decision.decisionId, listOf(0)) // Choose first mode
+            is ChooseNumber -> NumberChoice(decision.decisionId, decision.minimum)
+            is PriorityDecision -> PriorityChoice.Pass(decision.decisionId)
+            is MulliganDecision -> MulliganChoice.Keep(decision.decisionId)
+            is ChooseMulliganBottomCards -> CardsChoice(decision.decisionId, decision.hand.take(decision.cardsToPutOnBottom))
+            is SacrificeUnlessDecision -> SacrificeUnlessChoice(decision.decisionId, false) // Default to not paying
         }
     }
 }

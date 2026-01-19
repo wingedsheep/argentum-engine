@@ -9,20 +9,20 @@ import com.wingedsheep.rulesengine.ability.ShuffleLibraryEffect
 import com.wingedsheep.rulesengine.card.CardDefinition
 import com.wingedsheep.rulesengine.core.Supertype
 import com.wingedsheep.rulesengine.core.Subtype
+import com.wingedsheep.rulesengine.decision.CardOption
+import com.wingedsheep.rulesengine.decision.ChooseCards
+import com.wingedsheep.rulesengine.decision.PlayerDecision
 import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.components.CardComponent
 import com.wingedsheep.rulesengine.ecs.components.TappedComponent
-import com.wingedsheep.rulesengine.ecs.decision.CardOption
-import com.wingedsheep.rulesengine.ecs.decision.EffectChooseCards
 import com.wingedsheep.rulesengine.ecs.event.ChosenTarget
 import com.wingedsheep.rulesengine.ecs.script.EffectEvent
 import com.wingedsheep.rulesengine.ecs.script.EffectContinuation
 import com.wingedsheep.rulesengine.ecs.script.ExecutionContext
 import com.wingedsheep.rulesengine.ecs.script.ExecutionResult
 import com.wingedsheep.rulesengine.zone.ZoneType
-import java.util.UUID
 import kotlin.reflect.KClass
 
 /**
@@ -126,12 +126,9 @@ class SearchLibraryHandler : BaseEffectHandler<SearchLibraryEffect>() {
             state.getEntity(sourceId)?.get<CardComponent>()?.definition?.name
         }
 
-        val decisionId = UUID.randomUUID().toString()
-
-        val decision = EffectChooseCards(
+        val decision = ChooseCards.create(
             playerId = playerId,
             description = "Choose ${if (effect.count == 1) "a card" else "up to ${effect.count} cards"} to put ${effect.destination.description}",
-            decisionId = decisionId,
             cards = cardOptions,
             minCount = 0,  // Player can "fail to find" even if matches exist
             maxCount = effect.count,

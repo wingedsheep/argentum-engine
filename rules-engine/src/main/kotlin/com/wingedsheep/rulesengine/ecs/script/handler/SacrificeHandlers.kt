@@ -2,19 +2,18 @@ package com.wingedsheep.rulesengine.ecs.script.handler
 
 import com.wingedsheep.rulesengine.ability.SacrificeUnlessEffect
 import com.wingedsheep.rulesengine.ability.EffectTarget
+import com.wingedsheep.rulesengine.decision.CardOption
+import com.wingedsheep.rulesengine.decision.SacrificeUnlessDecision
 import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.components.CardComponent
 import com.wingedsheep.rulesengine.ecs.components.ControllerComponent
-import com.wingedsheep.rulesengine.ecs.decision.CardOption
-import com.wingedsheep.rulesengine.ecs.decision.EffectSacrificeUnlessDecision
 import com.wingedsheep.rulesengine.ecs.script.EffectEvent
 import com.wingedsheep.rulesengine.ecs.script.EffectContinuation
 import com.wingedsheep.rulesengine.ecs.script.ExecutionContext
 import com.wingedsheep.rulesengine.ecs.script.ExecutionResult
 import com.wingedsheep.rulesengine.zone.ZoneType
-import java.util.UUID
 import kotlin.reflect.KClass
 
 /**
@@ -115,12 +114,9 @@ class SacrificeUnlessHandler : BaseEffectHandler<SacrificeUnlessEffect>() {
             )
         }
 
-        val decisionId = UUID.randomUUID().toString()
-
-        val decision = EffectSacrificeUnlessDecision(
+        val decision = SacrificeUnlessDecision.create(
             playerId = playerId,
             description = "Sacrifice $permanentName or ${effect.cost.description}?",
-            decisionId = decisionId,
             permanentToSacrifice = permanentToSacrifice,
             permanentName = permanentName,
             costDescription = effect.cost.description,

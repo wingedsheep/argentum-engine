@@ -10,9 +10,9 @@ import com.wingedsheep.rulesengine.ecs.Component
 import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
+import com.wingedsheep.rulesengine.decision.SacrificeUnlessDecision
 import com.wingedsheep.rulesengine.ecs.components.CardComponent
 import com.wingedsheep.rulesengine.ecs.components.ControllerComponent
-import com.wingedsheep.rulesengine.ecs.decision.EffectSacrificeUnlessDecision
 import com.wingedsheep.rulesengine.ecs.script.ExecutionContext
 import com.wingedsheep.rulesengine.ecs.script.handler.EffectHandlerRegistry
 import com.wingedsheep.rulesengine.zone.ZoneType
@@ -201,9 +201,9 @@ class PrimevalForceTest : FunSpec({
             // Should need player input
             result.needsPlayerInput.shouldBeTrue()
             result.pendingDecision.shouldNotBeNull()
-            result.pendingDecision.shouldBeInstanceOf<EffectSacrificeUnlessDecision>()
+            result.pendingDecision.shouldBeInstanceOf<SacrificeUnlessDecision>()
 
-            val decision = result.pendingDecision as EffectSacrificeUnlessDecision
+            val decision = result.pendingDecision as SacrificeUnlessDecision
             decision.permanentToSacrifice shouldBe forceId
             decision.permanentName shouldBe "Primeval Force"
             decision.requiredCount shouldBe 3
