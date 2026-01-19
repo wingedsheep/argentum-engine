@@ -306,5 +306,50 @@ data class CardDefinition(
             keywords = keywords,
             metadata = metadata
         )
+
+        /**
+         * Creates a Kindred Instant (instant with creature subtypes).
+         * Used for spells like Crib Swap that have Changeling.
+         */
+        fun kindredInstant(
+            name: String,
+            manaCost: ManaCost,
+            subtypes: Set<Subtype>,
+            oracleText: String,
+            keywords: Set<Keyword> = emptySet(),
+            metadata: ScryfallMetadata = ScryfallMetadata()
+        ): CardDefinition = CardDefinition(
+            name = name,
+            manaCost = manaCost,
+            typeLine = TypeLine(
+                cardTypes = setOf(CardType.KINDRED, CardType.INSTANT),
+                subtypes = subtypes
+            ),
+            oracleText = oracleText,
+            keywords = keywords,
+            metadata = metadata
+        )
+
+        /**
+         * Creates a Kindred Enchantment (enchantment with creature subtypes).
+         */
+        fun kindredEnchantment(
+            name: String,
+            manaCost: ManaCost,
+            subtypes: Set<Subtype>,
+            oracleText: String,
+            keywords: Set<Keyword> = emptySet(),
+            metadata: ScryfallMetadata = ScryfallMetadata()
+        ): CardDefinition = CardDefinition(
+            name = name,
+            manaCost = manaCost,
+            typeLine = TypeLine(
+                cardTypes = setOf(CardType.KINDRED, CardType.ENCHANTMENT),
+                subtypes = subtypes
+            ),
+            oracleText = oracleText,
+            keywords = keywords,
+            metadata = metadata
+        )
     }
 }

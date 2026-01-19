@@ -36,6 +36,7 @@ value class Subtype(val value: String) {
         val ROGUE = Subtype("Rogue")
         val SCOUT = Subtype("Scout")
         val SERPENT = Subtype("Serpent")
+        val SHAPESHIFTER = Subtype("Shapeshifter")
         val SOLDIER = Subtype("Soldier")
         val SPIRIT = Subtype("Spirit")
         val WALL = Subtype("Wall")

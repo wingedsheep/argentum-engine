@@ -839,6 +839,18 @@ sealed interface EffectTarget {
         override val description: String = "target tapped creature"
     }
 
+    /** Target enchantment */
+    @Serializable
+    data object TargetEnchantment : EffectTarget {
+        override val description: String = "target enchantment"
+    }
+
+    /** Target artifact */
+    @Serializable
+    data object TargetArtifact : EffectTarget {
+        override val description: String = "target artifact"
+    }
+
     /** The controller of the target (used for effects like "its controller gains 4 life") */
     @Serializable
     data object TargetController : EffectTarget {
@@ -920,4 +932,103 @@ data class SacrificeUnlessEffect(
 ) : Effect {
     override val description:
             String = "Sacrifice ${permanentToSacrifice.description} unless you ${cost.description}"
+}
+
+// =============================================================================
+// Exile and Replace Effects
+// =============================================================================
+
+/**
+ * Exile a creature and create a token for its controller.
+ * Used for effects like Crib Swap: "Exile target creature. Its controller creates a 1/1 token."
+ *
+ * @property target The creature to exile
+ * @property tokenPower Power of the replacement token
+ * @property tokenToughness Toughness of the replacement token
+ * @property tokenColors Colors of the token (empty for colorless)
+ * @property tokenTypes Creature types of the token
+ * @property tokenKeywords Keywords the token has
+ */
+@Serializable
+data class ExileAndReplaceWithTokenEffect(
+    val target: EffectTarget,
+    val tokenPower: Int,
+    val tokenToughness: Int,
+    val tokenColors: Set<Color> = emptySet(),
+    val tokenTypes: Set<String>,
+    val tokenKeywords: Set<Keyword> = emptySet()
+) : Effect {
+    override val description: String = buildString {
+        append("Exile ${target.description}. Its controller creates a ")
+        append("$tokenPower/$tokenToughness ")
+        if (tokenColors.isEmpty()) {
+            append("colorless ")
+        } else {
+            append(tokenColors.joinToString(" and ") { it.displayName.lowercase() })
+            append(" ")
+        }
+        append(tokenTypes.joinToString(" "))
+        append(" creature token")
+        if (tokenKeywords.isNotEmpty()) {
+            append(" with ")
+            append(tokenKeywords.joinToString(", ") { it.displayName.lowercase() })
+        }
+    }
+}
+
+// =============================================================================
+// Modal/Choice Effects
+// =============================================================================
+
+/**
+ * Modal spell effect - choose one of several modes.
+ * "Choose one — [Mode A] or [Mode B]"
+ *
+ * @property modes List of possible effects to choose from
+ * @property chooseCount How many modes to choose (default 1)
+ */
+@Serializable
+data class ModalEffect(
+    val modes: List<Effect>,
+    val chooseCount: Int = 1
+) : Effect {
+    override val description: String = buildString {
+        append("Choose ")
+        if (chooseCount == 1) {
+            append("one")
+        } else {
+            append(chooseCount)
+        }
+        append(" —\n")
+        modes.forEachIndexed { index, effect ->
+            append("• ")
+            append(effect.description)
+            if (index < modes.lastIndex) append("\n")
+        }
+    }
+}
+
+// =============================================================================
+// Graveyard Activation Effects
+// =============================================================================
+
+/**
+ * Effect that can be activated from the graveyard.
+ * Used for cards like Goldmeadow Nomad with graveyard abilities.
+ * Note: This is typically handled as an activated ability, not a spell effect.
+ */
+@Serializable
+data class CreateTokenFromGraveyardEffect(
+    val power: Int,
+    val toughness: Int,
+    val colors: Set<Color>,
+    val creatureTypes: Set<String>
+) : Effect {
+    override val description: String = buildString {
+        append("Create a $power/$toughness ")
+        append(colors.joinToString(" and ") { it.displayName.lowercase() })
+        append(" ")
+        append(creatureTypes.joinToString(" "))
+        append(" creature token")
+    }
 }

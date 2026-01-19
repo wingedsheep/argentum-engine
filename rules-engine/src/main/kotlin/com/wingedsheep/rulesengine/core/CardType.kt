@@ -10,7 +10,8 @@ enum class CardType(val displayName: String) {
     ENCHANTMENT("Enchantment"),
     ARTIFACT("Artifact"),
     LAND("Land"),
-    PLANESWALKER("Planeswalker");
+    PLANESWALKER("Planeswalker"),
+    KINDRED("Kindred");  // Replaces "Tribal" - allows non-creature spells to have creature types
 
     val isPermanent: Boolean
         get() = this in listOf(CREATURE, ENCHANTMENT, ARTIFACT, LAND, PLANESWALKER)
