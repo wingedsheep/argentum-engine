@@ -86,20 +86,37 @@ class StandardTurnCycleTest : FunSpec({
     }
 
     /**
-     * Helper to have both players pass priority and advance the step.
+     * Helper to have both players pass priority and let the engine advance.
+     * This is the proper way to test the engine - priority passing drives state transitions.
      */
     fun passAndAdvance(state: GameState): GameState {
-        // Player 1 (active) passes
+        // Active player passes priority
         val result1 = GameEngine.executeAction(state, PassPriority(state.turnState.priorityPlayer))
         var currentState = (result1 as GameActionResult.Success).state
 
-        // Player 2 (non-active) passes
+        // Non-active player passes priority
         val result2 = GameEngine.executeAction(currentState, PassPriority(currentState.turnState.priorityPlayer))
         currentState = (result2 as GameActionResult.Success).state
 
-        // All players have passed, resolve
+        // All players have passed, engine resolves (advances step or resolves stack)
         currentState.turnState.allPlayersPassed().shouldBeTrue()
         return GameEngine.resolvePassedPriority(currentState)
+    }
+
+    /**
+     * Advances from UNTAP step (which has no priority) to UPKEEP.
+     */
+    fun advanceFromUntap(state: GameState): GameState {
+        state.turnState.step shouldBe Step.UNTAP
+        return state.copy(turnState = state.turnState.advanceStep())
+    }
+
+    /**
+     * Advances from CLEANUP step (which has no priority) to next turn's UNTAP.
+     */
+    fun advanceFromCleanup(state: GameState): GameState {
+        state.turnState.step shouldBe Step.CLEANUP
+        return state.copy(turnState = state.turnState.advanceStep())
     }
 
     context("Scenario 1.1: Standard Turn Cycle - Happy Path") {
@@ -114,29 +131,30 @@ class StandardTurnCycleTest : FunSpec({
             state.turnState.isFirstTurn.shouldBeTrue()
         }
 
-        test("untap step has no priority - skips directly to upkeep") {
-            val state = newGame()
+        test("untap step has no priority - engine advances directly to upkeep") {
+            var state = newGame()
 
             // Untap step does not grant priority (CR 502.3)
             Step.UNTAP.hasPriority.shouldBeFalse()
+            state.turnState.step shouldBe Step.UNTAP
 
-            // Advance to upkeep (simulating engine auto-advancing from untap)
-            val upkeepState = state.copy(turnState = state.turnState.advanceStep())
+            // Advance from untap (no priority, direct advance)
+            state = advanceFromUntap(state)
 
-            upkeepState.turnState.step shouldBe Step.UPKEEP
-            upkeepState.turnState.phase shouldBe Phase.BEGINNING
-            upkeepState.turnState.priorityPlayer shouldBe player1Id
+            state.turnState.step shouldBe Step.UPKEEP
+            state.turnState.phase shouldBe Phase.BEGINNING
+            state.turnState.priorityPlayer shouldBe player1Id
         }
 
-        test("upkeep step - both players pass, advance to draw step") {
+        test("upkeep step - both players pass priority, engine advances to draw step") {
             var state = newGame()
-            // Skip to upkeep (untap has no priority)
-            state = state.copy(turnState = state.turnState.advanceToStep(Step.UPKEEP))
 
+            // Advance from UNTAP (no priority)
+            state = advanceFromUntap(state)
             state.turnState.step shouldBe Step.UPKEEP
             Step.UPKEEP.hasPriority.shouldBeTrue()
 
-            // Both players pass
+            // Both players pass priority
             state = passAndAdvance(state)
 
             state.turnState.step shouldBe Step.DRAW
@@ -147,8 +165,11 @@ class StandardTurnCycleTest : FunSpec({
             var state = newGame()
             // Put a card in player1's library to draw
             state = state.putCardsInLibrary(mountainDef, player1Id, 5)
-            // Advance to draw step
-            state = state.copy(turnState = state.turnState.advanceToStep(Step.DRAW))
+
+            // Advance through UNTAP and UPKEEP
+            state = advanceFromUntap(state)
+            state = passAndAdvance(state) // UPKEEP -> DRAW
+            state.turnState.step shouldBe Step.DRAW
 
             val initialLibrarySize = state.getLibrary(player1Id).size
             val initialHandSize = state.getHand(player1Id).size
@@ -174,8 +195,12 @@ class StandardTurnCycleTest : FunSpec({
             // Put Mountain in player1's hand
             val (mountainId, stateWithMountain) = state.putCardInHand(mountainDef, player1Id)
             state = stateWithMountain
-            // Advance to precombat main phase
-            state = state.copy(turnState = state.turnState.advanceToStep(Step.PRECOMBAT_MAIN))
+
+            // Advance through UNTAP, UPKEEP, DRAW to PRECOMBAT_MAIN
+            state = advanceFromUntap(state)
+            state = passAndAdvance(state) // UPKEEP -> DRAW
+            state = passAndAdvance(state) // DRAW -> PRECOMBAT_MAIN
+            state.turnState.step shouldBe Step.PRECOMBAT_MAIN
 
             // Verify main phase properties
             Step.PRECOMBAT_MAIN.isMainPhase.shouldBeTrue()
@@ -214,8 +239,13 @@ class StandardTurnCycleTest : FunSpec({
 
         test("combat phase - all steps are visited even without attackers") {
             var state = newGame()
-            // Advance to begin combat
-            state = state.copy(turnState = state.turnState.advanceToStep(Step.BEGIN_COMBAT))
+
+            // Advance to BEGIN_COMBAT through proper priority passing
+            state = advanceFromUntap(state)
+            state = passAndAdvance(state) // UPKEEP -> DRAW
+            state = passAndAdvance(state) // DRAW -> PRECOMBAT_MAIN
+            state = passAndAdvance(state) // PRECOMBAT_MAIN -> BEGIN_COMBAT
+            state.turnState.step shouldBe Step.BEGIN_COMBAT
 
             val combatSteps = listOf(
                 Step.BEGIN_COMBAT,
@@ -227,15 +257,10 @@ class StandardTurnCycleTest : FunSpec({
             )
 
             // Verify all combat steps exist and are visited in order
-            for ((index, expectedStep) in combatSteps.withIndex()) {
+            for (expectedStep in combatSteps) {
                 state.turnState.step shouldBe expectedStep
                 state.turnState.phase shouldBe Phase.COMBAT
-
-                if (expectedStep.hasPriority) {
-                    state = passAndAdvance(state)
-                } else {
-                    state = state.copy(turnState = state.turnState.advanceStep())
-                }
+                state = passAndAdvance(state)
             }
 
             // After combat ends, we should be in postcombat main
@@ -245,8 +270,20 @@ class StandardTurnCycleTest : FunSpec({
 
         test("postcombat main phase - players pass") {
             var state = newGame()
-            state = state.copy(turnState = state.turnState.advanceToStep(Step.POSTCOMBAT_MAIN))
 
+            // Advance to POSTCOMBAT_MAIN through the full turn
+            state = advanceFromUntap(state)
+            state = passAndAdvance(state) // UPKEEP -> DRAW
+            state = passAndAdvance(state) // DRAW -> PRECOMBAT_MAIN
+            state = passAndAdvance(state) // PRECOMBAT_MAIN -> BEGIN_COMBAT
+            state = passAndAdvance(state) // BEGIN_COMBAT -> DECLARE_ATTACKERS
+            state = passAndAdvance(state) // DECLARE_ATTACKERS -> DECLARE_BLOCKERS
+            state = passAndAdvance(state) // DECLARE_BLOCKERS -> FIRST_STRIKE_COMBAT_DAMAGE
+            state = passAndAdvance(state) // FIRST_STRIKE_COMBAT_DAMAGE -> COMBAT_DAMAGE
+            state = passAndAdvance(state) // COMBAT_DAMAGE -> END_COMBAT
+            state = passAndAdvance(state) // END_COMBAT -> POSTCOMBAT_MAIN
+
+            state.turnState.step shouldBe Step.POSTCOMBAT_MAIN
             Step.POSTCOMBAT_MAIN.isMainPhase.shouldBeTrue()
             Step.POSTCOMBAT_MAIN.allowsSorcerySpeed.shouldBeTrue()
 
@@ -258,8 +295,21 @@ class StandardTurnCycleTest : FunSpec({
 
         test("end step - players pass") {
             var state = newGame()
-            state = state.copy(turnState = state.turnState.advanceToStep(Step.END))
 
+            // Advance to END step through the full turn
+            state = advanceFromUntap(state)
+            state = passAndAdvance(state) // UPKEEP -> DRAW
+            state = passAndAdvance(state) // DRAW -> PRECOMBAT_MAIN
+            state = passAndAdvance(state) // PRECOMBAT_MAIN -> BEGIN_COMBAT
+            state = passAndAdvance(state) // BEGIN_COMBAT -> DECLARE_ATTACKERS
+            state = passAndAdvance(state) // DECLARE_ATTACKERS -> DECLARE_BLOCKERS
+            state = passAndAdvance(state) // DECLARE_BLOCKERS -> FIRST_STRIKE_COMBAT_DAMAGE
+            state = passAndAdvance(state) // FIRST_STRIKE_COMBAT_DAMAGE -> COMBAT_DAMAGE
+            state = passAndAdvance(state) // COMBAT_DAMAGE -> END_COMBAT
+            state = passAndAdvance(state) // END_COMBAT -> POSTCOMBAT_MAIN
+            state = passAndAdvance(state) // POSTCOMBAT_MAIN -> END
+
+            state.turnState.step shouldBe Step.END
             Step.END.hasPriority.shouldBeTrue()
 
             state = passAndAdvance(state)
@@ -270,21 +320,35 @@ class StandardTurnCycleTest : FunSpec({
 
         test("cleanup step has no priority and advances to next turn") {
             var state = newGame()
-            state = state.copy(turnState = state.turnState.advanceToStep(Step.CLEANUP))
 
+            // Advance to CLEANUP step through the full turn
+            state = advanceFromUntap(state)
+            state = passAndAdvance(state) // UPKEEP -> DRAW
+            state = passAndAdvance(state) // DRAW -> PRECOMBAT_MAIN
+            state = passAndAdvance(state) // PRECOMBAT_MAIN -> BEGIN_COMBAT
+            state = passAndAdvance(state) // BEGIN_COMBAT -> DECLARE_ATTACKERS
+            state = passAndAdvance(state) // DECLARE_ATTACKERS -> DECLARE_BLOCKERS
+            state = passAndAdvance(state) // DECLARE_BLOCKERS -> FIRST_STRIKE_COMBAT_DAMAGE
+            state = passAndAdvance(state) // FIRST_STRIKE_COMBAT_DAMAGE -> COMBAT_DAMAGE
+            state = passAndAdvance(state) // COMBAT_DAMAGE -> END_COMBAT
+            state = passAndAdvance(state) // END_COMBAT -> POSTCOMBAT_MAIN
+            state = passAndAdvance(state) // POSTCOMBAT_MAIN -> END
+            state = passAndAdvance(state) // END -> CLEANUP
+
+            state.turnState.step shouldBe Step.CLEANUP
             // Cleanup step does not grant priority normally (CR 514.3)
             Step.CLEANUP.hasPriority.shouldBeFalse()
 
-            // Advance step from cleanup wraps to next turn
-            val nextTurnState = state.copy(turnState = state.turnState.advanceStep())
+            // Advance from cleanup (no priority) wraps to next turn
+            state = advanceFromCleanup(state)
 
             // Verify turn advanced
-            nextTurnState.turnState.turnNumber shouldBe 2
-            nextTurnState.turnState.activePlayer shouldBe player2Id
-            nextTurnState.turnState.priorityPlayer shouldBe player2Id
-            nextTurnState.turnState.phase shouldBe Phase.BEGINNING
-            nextTurnState.turnState.step shouldBe Step.UNTAP
-            nextTurnState.turnState.isFirstTurn.shouldBeFalse()
+            state.turnState.turnNumber shouldBe 2
+            state.turnState.activePlayer shouldBe player2Id
+            state.turnState.priorityPlayer shouldBe player2Id
+            state.turnState.phase shouldBe Phase.BEGINNING
+            state.turnState.step shouldBe Step.UNTAP
+            state.turnState.isFirstTurn.shouldBeFalse()
         }
 
         test("full turn cycle - complete happy path") {
@@ -303,7 +367,7 @@ class StandardTurnCycleTest : FunSpec({
             // 1. UNTAP STEP (no priority)
             state.turnState.step shouldBe Step.UNTAP
             visitedSteps.add(state.turnState.step)
-            state = state.copy(turnState = state.turnState.advanceStep())
+            state = advanceFromUntap(state)
 
             // 2. UPKEEP STEP
             state.turnState.step shouldBe Step.UPKEEP
@@ -363,7 +427,7 @@ class StandardTurnCycleTest : FunSpec({
             // 8. CLEANUP STEP (no priority)
             state.turnState.step shouldBe Step.CLEANUP
             visitedSteps.add(state.turnState.step)
-            state = state.copy(turnState = state.turnState.advanceStep())
+            state = advanceFromCleanup(state)
 
             // === VERIFICATION ===
 
@@ -401,15 +465,18 @@ class StandardTurnCycleTest : FunSpec({
             val (mountainId, stateWithMountain) = state.putCardInHand(mountainDef, player1Id)
             state = stateWithMountain
 
-            // Try to play land during upkeep (should fail)
-            state = state.copy(turnState = state.turnState.advanceToStep(Step.UPKEEP))
+            // Advance to UPKEEP
+            state = advanceFromUntap(state)
+            state.turnState.step shouldBe Step.UPKEEP
             Step.UPKEEP.isMainPhase.shouldBeFalse()
 
             // Verify main phase check
             state.turnState.step.isMainPhase.shouldBeFalse()
 
-            // Move to main phase for successful play
-            state = state.copy(turnState = state.turnState.advanceToStep(Step.PRECOMBAT_MAIN))
+            // Advance to main phase for successful play
+            state = passAndAdvance(state) // UPKEEP -> DRAW
+            state = passAndAdvance(state) // DRAW -> PRECOMBAT_MAIN
+            state.turnState.step shouldBe Step.PRECOMBAT_MAIN
             state.turnState.step.isMainPhase.shouldBeTrue()
 
             val result = GameEngine.executeAction(state, PlayLand(mountainId, player1Id))
@@ -423,8 +490,11 @@ class StandardTurnCycleTest : FunSpec({
             val (mountain2Id, state2) = state1.putCardInHand(mountainDef, player1Id)
             state = state2
 
-            // Move to main phase
-            state = state.copy(turnState = state.turnState.advanceToStep(Step.PRECOMBAT_MAIN))
+            // Advance to main phase
+            state = advanceFromUntap(state)
+            state = passAndAdvance(state) // UPKEEP -> DRAW
+            state = passAndAdvance(state) // DRAW -> PRECOMBAT_MAIN
+            state.turnState.step shouldBe Step.PRECOMBAT_MAIN
 
             // Play first land - should succeed
             state.canPlayLand(player1Id).shouldBeTrue()
@@ -446,8 +516,11 @@ class StandardTurnCycleTest : FunSpec({
             val (mountainId, stateWithMountain) = state.putCardInHand(mountainDef, player1Id)
             state = stateWithMountain
 
-            // Play land in main phase
-            state = state.copy(turnState = state.turnState.advanceToStep(Step.PRECOMBAT_MAIN))
+            // Advance to main phase and play land
+            state = advanceFromUntap(state)
+            state = passAndAdvance(state) // UPKEEP -> DRAW
+            state = passAndAdvance(state) // DRAW -> PRECOMBAT_MAIN
+
             val playResult = GameEngine.executeAction(state, PlayLand(mountainId, player1Id))
             state = (playResult as GameActionResult.Success).state
 
@@ -463,7 +536,10 @@ class StandardTurnCycleTest : FunSpec({
 
         test("priority starts with active player and cycles correctly") {
             var state = newGame()
-            state = state.copy(turnState = state.turnState.advanceToStep(Step.UPKEEP))
+
+            // Advance to UPKEEP
+            state = advanceFromUntap(state)
+            state.turnState.step shouldBe Step.UPKEEP
 
             // Active player has priority first
             state.turnState.priorityPlayer shouldBe player1Id
@@ -488,10 +564,14 @@ class StandardTurnCycleTest : FunSpec({
 
         test("untap step untaps all permanents controlled by active player") {
             var state = newGame()
-            // Put a tapped Mountain on battlefield for player 1
+            // Put a Mountain in hand
             val (mountainId, stateWithMountain) = state.putCardInHand(mountainDef, player1Id)
             state = stateWithMountain
-                .copy(turnState = stateWithMountain.turnState.advanceToStep(Step.PRECOMBAT_MAIN))
+
+            // Advance to main phase
+            state = advanceFromUntap(state)
+            state = passAndAdvance(state) // UPKEEP -> DRAW
+            state = passAndAdvance(state) // DRAW -> PRECOMBAT_MAIN
 
             // Play the land
             val playResult = GameEngine.executeAction(state, PlayLand(mountainId, player1Id))
@@ -604,21 +684,31 @@ class StandardTurnCycleTest : FunSpec({
             Step.CLEANUP.phase shouldBe Phase.ENDING
         }
 
-        test("advanceStep correctly updates phase when crossing boundaries") {
+        test("phase transitions occur correctly through priority passing") {
             var state = newGame()
 
-            // Advance through draw step to main phase
-            state = state.copy(turnState = state.turnState.advanceToStep(Step.DRAW))
+            // Start at UNTAP (BEGINNING phase)
             state.turnState.phase shouldBe Phase.BEGINNING
+            state = advanceFromUntap(state)
 
-            val afterDraw = state.copy(turnState = state.turnState.advanceStep())
-            afterDraw.turnState.step shouldBe Step.PRECOMBAT_MAIN
-            afterDraw.turnState.phase shouldBe Phase.PRECOMBAT_MAIN
+            // UPKEEP still in BEGINNING
+            state.turnState.step shouldBe Step.UPKEEP
+            state.turnState.phase shouldBe Phase.BEGINNING
+            state = passAndAdvance(state)
 
-            // Advance from main to combat
-            val afterMain = afterDraw.copy(turnState = afterDraw.turnState.advanceStep())
-            afterMain.turnState.step shouldBe Step.BEGIN_COMBAT
-            afterMain.turnState.phase shouldBe Phase.COMBAT
+            // DRAW still in BEGINNING
+            state.turnState.step shouldBe Step.DRAW
+            state.turnState.phase shouldBe Phase.BEGINNING
+            state = passAndAdvance(state)
+
+            // PRECOMBAT_MAIN - now in PRECOMBAT_MAIN phase
+            state.turnState.step shouldBe Step.PRECOMBAT_MAIN
+            state.turnState.phase shouldBe Phase.PRECOMBAT_MAIN
+            state = passAndAdvance(state)
+
+            // BEGIN_COMBAT - now in COMBAT phase
+            state.turnState.step shouldBe Step.BEGIN_COMBAT
+            state.turnState.phase shouldBe Phase.COMBAT
         }
     }
 })
