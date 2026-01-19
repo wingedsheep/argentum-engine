@@ -204,6 +204,20 @@ data class AddCountersEffect(
         "Put $count $counterType counter${if (count != 1) "s" else ""} on ${target.description}"
 }
 
+/**
+ * Remove counters effect.
+ * "Remove X -1/-1 counters from target creature"
+ */
+@Serializable
+data class RemoveCountersEffect(
+    val counterType: String,
+    val count: Int,
+    val target: EffectTarget
+) : Effect {
+    override val description: String =
+        "Remove $count $counterType counter${if (count != 1) "s" else ""} from ${target.description}"
+}
+
 // =============================================================================
 // Mana Effects
 // =============================================================================
@@ -1030,5 +1044,41 @@ data class CreateTokenFromGraveyardEffect(
         append(" ")
         append(creatureTypes.joinToString(" "))
         append(" creature token")
+    }
+}
+
+// =============================================================================
+// Mass Transformation Effects
+// =============================================================================
+
+/**
+ * Effect that transforms multiple creatures at once.
+ * Used for effects like Curious Colossus: "each creature target opponent controls
+ * loses all abilities, becomes a Coward, and has base P/T 1/1."
+ *
+ * @property target Which creatures are affected
+ * @property loseAllAbilities If true, creatures lose all abilities
+ * @property addCreatureType Type to add (if any)
+ * @property setBasePower New base power (if set)
+ * @property setBaseToughness New base toughness (if set)
+ */
+@Serializable
+data class TransformAllCreaturesEffect(
+    val target: EffectTarget,
+    val loseAllAbilities: Boolean = false,
+    val addCreatureType: String? = null,
+    val setBasePower: Int? = null,
+    val setBaseToughness: Int? = null
+) : Effect {
+    override val description: String = buildString {
+        append("Each creature ${target.description}")
+        val effects = mutableListOf<String>()
+        if (loseAllAbilities) effects.add("loses all abilities")
+        if (addCreatureType != null) effects.add("becomes a $addCreatureType in addition to its other types")
+        if (setBasePower != null && setBaseToughness != null) {
+            effects.add("has base power and toughness $setBasePower/$setBaseToughness")
+        }
+        append(" ")
+        append(effects.joinToString(", "))
     }
 }

@@ -255,6 +255,40 @@ data class OnFirstMainPhase(
 }
 
 // =============================================================================
+// Tap/Untap Triggers
+// =============================================================================
+
+/**
+ * Triggers when a permanent becomes tapped.
+ * "Whenever this creature becomes tapped..."
+ */
+@Serializable
+data class OnBecomesTapped(
+    val selfOnly: Boolean = true
+) : Trigger {
+    override val description: String = if (selfOnly) {
+        "Whenever this creature becomes tapped"
+    } else {
+        "Whenever a creature becomes tapped"
+    }
+}
+
+/**
+ * Triggers when a permanent becomes untapped.
+ * "Whenever this creature becomes untapped..."
+ */
+@Serializable
+data class OnBecomesUntapped(
+    val selfOnly: Boolean = true
+) : Trigger {
+    override val description: String = if (selfOnly) {
+        "Whenever this creature becomes untapped"
+    } else {
+        "Whenever a creature becomes untapped"
+    }
+}
+
+// =============================================================================
 // Transform Triggers
 // =============================================================================
 

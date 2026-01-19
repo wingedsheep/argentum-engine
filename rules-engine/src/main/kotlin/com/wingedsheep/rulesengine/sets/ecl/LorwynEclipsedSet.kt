@@ -8,7 +8,10 @@ import com.wingedsheep.rulesengine.sets.ecl.cards.BarkOfDoran
 import com.wingedsheep.rulesengine.sets.ecl.cards.BrigidClachansHeart
 import com.wingedsheep.rulesengine.sets.ecl.cards.BurdenedStoneback
 import com.wingedsheep.rulesengine.sets.ecl.cards.ChangelingWayfinder
+import com.wingedsheep.rulesengine.sets.ecl.cards.ClachanFestival
 import com.wingedsheep.rulesengine.sets.ecl.cards.CribSwap
+import com.wingedsheep.rulesengine.sets.ecl.cards.CuriousColossus
+import com.wingedsheep.rulesengine.sets.ecl.cards.EncumberedReejerey
 import com.wingedsheep.rulesengine.sets.ecl.cards.FlockImpostor
 import com.wingedsheep.rulesengine.sets.ecl.cards.GallantFowlknight
 import com.wingedsheep.rulesengine.sets.ecl.cards.GoldmeadowNomad
@@ -29,7 +32,10 @@ object LorwynEclipsedSet : BaseCardRegistry() {
         registerScript(BrigidClachansHeart.backScript)
         register(BurdenedStoneback.definition, BurdenedStoneback.script)
         register(ChangelingWayfinder.definition, ChangelingWayfinder.script)
+        register(ClachanFestival.definition, ClachanFestival.script)
         register(CribSwap.definition, CribSwap.script)
+        register(CuriousColossus.definition, CuriousColossus.script)
+        register(EncumberedReejerey.definition, EncumberedReejerey.script)
         register(FlockImpostor.definition, FlockImpostor.script)
         register(GallantFowlknight.definition, GallantFowlknight.script)
         register(GoldmeadowNomad.definition, GoldmeadowNomad.script)

@@ -213,6 +213,16 @@ class TriggerDetector {
                     (!trigger.selfOnly || event.entityId == sourceId) &&
                     (trigger.intoBackFace == null || trigger.intoBackFace == event.toBackFace)
             }
+
+            is OnBecomesTapped -> {
+                event is GameEvent.PermanentTapped &&
+                    (!trigger.selfOnly || event.entityId == sourceId)
+            }
+
+            is OnBecomesUntapped -> {
+                event is GameEvent.PermanentUntapped &&
+                    (!trigger.selfOnly || event.entityId == sourceId)
+            }
         }
     }
 
