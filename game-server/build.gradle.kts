@@ -14,4 +14,6 @@ dependencies {
     testImplementation(libs.springBootStarterTest)
     testImplementation(libs.kotestRunner)
     testImplementation(libs.kotestAssertions)
+    testImplementation(libs.kotestExtensionsSpring)
+    testImplementation(libs.kotlinxCoroutinesTest)
 }
