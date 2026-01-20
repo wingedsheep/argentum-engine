@@ -19,8 +19,10 @@ import com.wingedsheep.rulesengine.ecs.combat.CombatDamageCalculator
 import com.wingedsheep.rulesengine.ecs.components.*
 import com.wingedsheep.rulesengine.ecs.components.PendingLegendRuleChoice
 import com.wingedsheep.rulesengine.ecs.layers.ActiveContinuousEffect
+import com.wingedsheep.rulesengine.ecs.layers.ContinuousEffectModifierProvider
 import com.wingedsheep.rulesengine.ecs.layers.EffectDuration
 import com.wingedsheep.rulesengine.ecs.layers.Modifier
+import com.wingedsheep.rulesengine.ecs.layers.StateProjector
 import com.wingedsheep.rulesengine.ecs.stack.StackResolver
 import com.wingedsheep.rulesengine.zone.ZoneType
 import kotlinx.serialization.Serializable
@@ -1533,22 +1535,28 @@ class GameActionHandler {
         do {
             actionsPerformed = false
 
-            // Check creatures with lethal damage
+            // Create a StateProjector with continuous effects for this SBA check iteration
+            // This ensures we use layer-modified P/T values (Rule 704.5f, 704.5g)
+            val modifierProvider = ContinuousEffectModifierProvider()
+            val projector = StateProjector.forState(currentState, modifierProvider)
+
+            // Check creatures with lethal damage or 0 toughness (Rule 704.5f, 704.5g)
             for (entityId in currentState.getBattlefield()) {
-                val container = currentState.getEntity(entityId) ?: continue
-                val cardComponent = container.get<CardComponent>() ?: continue
+                val view = projector.getView(entityId) ?: continue
 
-                if (!cardComponent.definition.isCreature) continue
+                // Must be a creature (using projected type - creature-ness can change via layers)
+                if (!view.isCreature) continue
 
-                val damage = container.get<DamageComponent>()?.amount ?: 0
-                val toughness = cardComponent.definition.creatureStats?.baseToughness ?: 0
-                // Note: This doesn't account for modifiers - in practice, use StateProjector
+                val projectedToughness = view.toughness ?: 0
+                val damage = view.damage
 
-                // Creature dies if: toughness is 0 or less, OR damage >= toughness (with toughness > 0)
-                if (toughness <= 0 || damage >= toughness) {
-                    val graveyardZone = ZoneId.graveyard(cardComponent.ownerId)
-                    events.add(GameActionEvent.CreatureDied(entityId, cardComponent.definition.name, cardComponent.ownerId))
+                // Creature dies if:
+                // - Toughness is 0 or less (Rule 704.5f), OR
+                // - Damage marked on it >= toughness (Rule 704.5g)
+                if (projectedToughness <= 0 || damage >= projectedToughness) {
+                    events.add(GameActionEvent.CreatureDied(entityId, view.name, view.ownerId))
 
+                    val graveyardZone = ZoneId.graveyard(view.ownerId)
                     currentState = currentState
                         .removeFromZone(entityId, ZoneId.BATTLEFIELD)
                         .addToZone(entityId, graveyardZone)

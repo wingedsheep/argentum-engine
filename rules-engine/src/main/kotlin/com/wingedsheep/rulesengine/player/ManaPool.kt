@@ -145,6 +145,40 @@ data class ManaPool(
         return remaining >= cost.genericAmount
     }
 
+    /**
+     * Pay a mana cost by spending the required mana from the pool.
+     *
+     * Spends colored mana first for colored requirements, then uses
+     * remaining mana for generic costs (preferring colorless first).
+     *
+     * @param cost The mana cost to pay
+     * @return A new ManaPool with the cost deducted
+     * @throws IllegalArgumentException if the cost cannot be paid
+     */
+    fun pay(cost: ManaCost): ManaPool {
+        require(canPay(cost)) { "Cannot pay cost $cost with pool $this" }
+
+        var pool = this
+
+        // Pay colored mana requirements first
+        for ((color, count) in cost.colorCount) {
+            pool = pool.spend(color, count)
+        }
+
+        // Pay colorless requirements (specifically {C} mana)
+        val colorlessRequired = cost.symbols.count { it is ManaSymbol.Colorless }
+        if (colorlessRequired > 0) {
+            pool = pool.spendColorless(colorlessRequired)
+        }
+
+        // Pay generic mana requirement
+        if (cost.genericAmount > 0) {
+            pool = pool.spendGeneric(cost.genericAmount)
+        }
+
+        return pool
+    }
+
     fun empty(): ManaPool = EMPTY
 
     override fun toString(): String = buildString {

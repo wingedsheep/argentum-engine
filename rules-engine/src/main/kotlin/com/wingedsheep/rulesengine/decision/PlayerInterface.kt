@@ -162,6 +162,14 @@ class AutoPlayerInterface(
             is MulliganDecision -> MulliganChoice.Keep(decision.decisionId)
             is ChooseMulliganBottomCards -> CardsChoice(decision.decisionId, decision.hand.take(decision.cardsToPutOnBottom))
             is SacrificeUnlessDecision -> SacrificeUnlessChoice(decision.decisionId, false) // Default to not paying
+            is ResolveManaWindow -> {
+                // Default: proceed with casting if mana is available, otherwise cancel
+                if (decision.canPayCost) {
+                    ManaWindowResponse.ProceedWithCasting(decision.decisionId)
+                } else {
+                    ManaWindowResponse.CancelCasting(decision.decisionId)
+                }
+            }
         }
     }
 }

@@ -1,10 +1,13 @@
 package com.wingedsheep.rulesengine.ecs.action
 
 import com.wingedsheep.rulesengine.ability.AbilityRegistry
+import com.wingedsheep.rulesengine.core.Keyword
 import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.components.*
+import com.wingedsheep.rulesengine.ecs.layers.GameObjectView
+import com.wingedsheep.rulesengine.ecs.layers.StateProjector
 import com.wingedsheep.rulesengine.game.Step
 import com.wingedsheep.rulesengine.zone.ZoneType
 
@@ -35,15 +38,21 @@ class LegalActionCalculator {
      * @param state The current game state
      * @param playerId The player to calculate actions for
      * @param abilityRegistry Optional registry for looking up abilities
+     * @param projector Optional StateProjector for using projected state (layer-modified keywords/P/T).
+     *                  If not provided, a default projector with no modifiers will be used.
      * @return A LegalActions object containing all available actions
      */
     fun calculateLegalActions(
         state: GameState,
         playerId: EntityId,
-        abilityRegistry: AbilityRegistry? = null
+        abilityRegistry: AbilityRegistry? = null,
+        projector: StateProjector? = null
     ): LegalActions {
         // Always can pass priority if it's this player's priority
         val hasPriority = hasActivePriority(state, playerId)
+
+        // Use provided projector or create a default one (no modifiers)
+        val effectiveProjector = projector ?: StateProjector(state)
 
         return LegalActions(
             playerId = playerId,
@@ -51,8 +60,8 @@ class LegalActionCalculator {
             playableLands = if (hasPriority) getPlayableLands(state, playerId) else emptyList(),
             castableSpells = if (hasPriority) getCastableSpells(state, playerId) else emptyList(),
             activatableAbilities = if (hasPriority) getActivatableAbilities(state, playerId, abilityRegistry) else emptyList(),
-            declarableAttackers = getDeclarableAttackers(state, playerId),
-            declarableBlockers = getDeclarableBlockers(state, playerId)
+            declarableAttackers = getDeclarableAttackers(state, playerId, effectiveProjector),
+            declarableBlockers = getDeclarableBlockers(state, playerId, effectiveProjector)
         )
     }
 
@@ -213,8 +222,13 @@ class LegalActionCalculator {
 
     /**
      * Get all creatures that can be declared as attackers.
+     * Uses the StateProjector to get layer-modified keywords and P/T values.
      */
-    private fun getDeclarableAttackers(state: GameState, playerId: EntityId): List<DeclarableAttacker> {
+    private fun getDeclarableAttackers(
+        state: GameState,
+        playerId: EntityId,
+        projector: StateProjector
+    ): List<DeclarableAttacker> {
         val step = state.turnState.step
 
         // Can only declare attackers during declare attackers step on your turn
@@ -223,36 +237,35 @@ class LegalActionCalculator {
 
         // Find all creatures controlled by player that can attack
         return state.getBattlefield().mapNotNull { entityId ->
-            val container = state.getEntity(entityId) ?: return@mapNotNull null
-            val cardComponent = container.get<CardComponent>() ?: return@mapNotNull null
-            val controllerComponent = container.get<ControllerComponent>() ?: return@mapNotNull null
+            // Get the projected view for layer-modified state
+            val view = projector.getView(entityId) ?: return@mapNotNull null
 
-            // Must be a creature controlled by player
-            if (!cardComponent.definition.isCreature) return@mapNotNull null
-            if (controllerComponent.controllerId != playerId) return@mapNotNull null
+            // Must be a creature controlled by player (using projected values)
+            if (!view.isCreature) return@mapNotNull null
+            if (view.controllerId != playerId) return@mapNotNull null
 
             // Must not be tapped
-            if (container.has<TappedComponent>()) return@mapNotNull null
+            if (view.isTapped) return@mapNotNull null
 
-            // Must not have summoning sickness (unless has haste)
-            if (container.has<SummoningSicknessComponent>()) {
-                val hasHaste = cardComponent.definition.keywords.contains(com.wingedsheep.rulesengine.core.Keyword.HASTE)
-                if (!hasHaste) return@mapNotNull null
+            // Must not have summoning sickness (unless has haste) - use projected keywords
+            if (view.hasSummoningSickness) {
+                if (!view.hasKeyword(Keyword.HASTE)) return@mapNotNull null
             }
 
-            // Must not have defender
-            if (cardComponent.definition.keywords.contains(com.wingedsheep.rulesengine.core.Keyword.DEFENDER)) {
+            // Must not have defender - use projected keywords
+            if (view.hasKeyword(Keyword.DEFENDER)) {
                 return@mapNotNull null
             }
 
             // Must not already be attacking
+            val container = state.getEntity(entityId) ?: return@mapNotNull null
             if (container.has<AttackingComponent>()) return@mapNotNull null
 
             DeclarableAttacker(
                 creatureId = entityId,
-                creatureName = cardComponent.definition.name,
-                power = cardComponent.definition.creatureStats?.basePower ?: 0,
-                toughness = cardComponent.definition.creatureStats?.baseToughness ?: 0,
+                creatureName = view.name,
+                power = view.power ?: 0,
+                toughness = view.toughness ?: 0,
                 action = DeclareAttacker(entityId, playerId)
             )
         }
@@ -260,8 +273,13 @@ class LegalActionCalculator {
 
     /**
      * Get all creatures that can be declared as blockers.
+     * Uses the StateProjector to get layer-modified keywords and check evasion abilities.
      */
-    private fun getDeclarableBlockers(state: GameState, playerId: EntityId): List<DeclarableBlocker> {
+    private fun getDeclarableBlockers(
+        state: GameState,
+        playerId: EntityId,
+        projector: StateProjector
+    ): List<DeclarableBlocker> {
         val step = state.turnState.step
 
         // Can only declare blockers during declare blockers step when you're defending
@@ -271,33 +289,54 @@ class LegalActionCalculator {
         val combat = state.combat ?: return emptyList()
         if (combat.defendingPlayer != playerId) return emptyList()
 
-        // Get all attackers that can be blocked
-        val attackers = state.getBattlefield().filter { entityId ->
-            state.getEntity(entityId)?.has<AttackingComponent>() == true
+        // Get all attackers that can be blocked (with their projected views)
+        val attackerViews = state.getBattlefield().mapNotNull { entityId ->
+            val container = state.getEntity(entityId) ?: return@mapNotNull null
+            if (!container.has<AttackingComponent>()) return@mapNotNull null
+            val view = projector.getView(entityId) ?: return@mapNotNull null
+            entityId to view
         }
 
         // Find all creatures controlled by player that can block
         return state.getBattlefield().flatMap { blockerId ->
-            val container = state.getEntity(blockerId) ?: return@flatMap emptyList()
-            val cardComponent = container.get<CardComponent>() ?: return@flatMap emptyList()
-            val controllerComponent = container.get<ControllerComponent>() ?: return@flatMap emptyList()
+            // Get the projected view for layer-modified state
+            val blockerView = projector.getView(blockerId) ?: return@flatMap emptyList()
 
-            // Must be a creature controlled by player
-            if (!cardComponent.definition.isCreature) return@flatMap emptyList<DeclarableBlocker>()
-            if (controllerComponent.controllerId != playerId) return@flatMap emptyList<DeclarableBlocker>()
+            // Must be a creature controlled by player (using projected values)
+            if (!blockerView.isCreature) return@flatMap emptyList<DeclarableBlocker>()
+            if (blockerView.controllerId != playerId) return@flatMap emptyList<DeclarableBlocker>()
 
             // Must not be tapped
-            if (container.has<TappedComponent>()) return@flatMap emptyList<DeclarableBlocker>()
+            if (blockerView.isTapped) return@flatMap emptyList<DeclarableBlocker>()
 
             // Must not already be blocking
+            val container = state.getEntity(blockerId) ?: return@flatMap emptyList<DeclarableBlocker>()
             if (container.has<BlockingComponent>()) return@flatMap emptyList<DeclarableBlocker>()
 
+            // Check if this creature can block (cantBlock restriction from continuous effects)
+            if (blockerView.cantBlock) return@flatMap emptyList<DeclarableBlocker>()
+
             // For each attacker this creature could block, create a blocker option
-            attackers.mapNotNull { attackerId ->
-                // TODO: Check flying/reach, shadow, etc.
+            attackerViews.mapNotNull { (attackerId, attackerView) ->
+                // Check flying/reach evasion (Rule 509.1b)
+                // A creature with flying can only be blocked by creatures with flying or reach
+                if (attackerView.hasKeyword(Keyword.FLYING) && !blockerView.canBlockFlying) {
+                    return@mapNotNull null
+                }
+
+                // Check shadow evasion (if implemented)
+                // A creature with shadow can only be blocked by creatures with shadow,
+                // and can only block creatures with shadow
+                if (attackerView.hasKeyword(Keyword.SHADOW) && !blockerView.hasKeyword(Keyword.SHADOW)) {
+                    return@mapNotNull null
+                }
+                if (blockerView.hasKeyword(Keyword.SHADOW) && !attackerView.hasKeyword(Keyword.SHADOW)) {
+                    return@mapNotNull null
+                }
+
                 DeclarableBlocker(
                     blockerId = blockerId,
-                    blockerName = cardComponent.definition.name,
+                    blockerName = blockerView.name,
                     attackerId = attackerId,
                     action = DeclareBlocker(blockerId, attackerId, playerId)
                 )

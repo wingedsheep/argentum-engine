@@ -528,7 +528,9 @@ object GameEventConverter {
             is EffectEvent.LibraryShuffled,
             is EffectEvent.LibrarySearched,
             is EffectEvent.CardMovedToZone,
-            is EffectEvent.SpellCountered -> emptyList()
+            is EffectEvent.SpellCountered,
+            is EffectEvent.SpellCast,
+            is EffectEvent.SpellCastCancelled -> emptyList()
         }
     }
 }

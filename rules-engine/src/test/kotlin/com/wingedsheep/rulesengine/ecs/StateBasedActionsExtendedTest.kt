@@ -5,6 +5,8 @@ import com.wingedsheep.rulesengine.core.CounterType
 import com.wingedsheep.rulesengine.core.*
 import com.wingedsheep.rulesengine.ecs.action.*
 import com.wingedsheep.rulesengine.ecs.components.*
+import com.wingedsheep.rulesengine.ecs.layers.ContinuousEffectFactory
+import com.wingedsheep.rulesengine.ecs.layers.Modifier
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
@@ -437,6 +439,190 @@ class StateBasedActionsExtendedTest : FunSpec({
             val finalCounters = newState.getComponent<CountersComponent>(bearId)
             finalCounters.shouldNotBeNull()
             finalCounters.getCount(CounterType.PLUS_ONE_PLUS_ONE) shouldBe 3
+        }
+    }
+
+    context("Creature Death with Layer-Modified Toughness (704.5f, 704.5g)") {
+        beforeTest {
+            Modifier.resetTimestamps()
+        }
+
+        test("creature survives damage when layer effect boosts toughness") {
+            var state = newGame()
+
+            // Create 2/2 bear with 3 damage (would normally die)
+            val bearId = EntityId.generate()
+            val (_, s1) = state.createEntity(
+                bearId,
+                CardComponent(bearDef, player1Id),
+                ControllerComponent(player1Id),
+                DamageComponent(3)
+            )
+            val s2 = s1.addToZone(bearId, ZoneId.BATTLEFIELD)
+
+            // Add a continuous effect that gives +2/+2 (toughness becomes 4, can survive 3 damage)
+            val giantGrowthEffect = ContinuousEffectFactory.pumpCreature(
+                sourceId = EntityId.of("giant_growth_spell"),
+                targetId = bearId,
+                powerBonus = 2,
+                toughnessBonus = 2,
+                description = "Giant Growth"
+            )
+            val s3 = s2.addContinuousEffect(giantGrowthEffect)
+
+            // Run SBAs
+            val result = GameEngine.checkStateBasedActions(s3)
+            result.shouldBeInstanceOf<GameActionResult.Success>()
+
+            val newState = (result as GameActionResult.Success).state
+
+            // Creature should still be on battlefield (4 toughness - 3 damage = 1)
+            newState.getBattlefield().shouldContain(bearId)
+            newState.getGraveyard(player1Id).contains(bearId).shouldBeFalse()
+        }
+
+        test("creature dies with less damage when layer effect reduces toughness") {
+            var state = newGame()
+
+            // Create 2/2 bear with only 1 damage (would normally survive)
+            val bearId = EntityId.generate()
+            val (_, s1) = state.createEntity(
+                bearId,
+                CardComponent(bearDef, player1Id),
+                ControllerComponent(player1Id),
+                DamageComponent(1)
+            )
+            val s2 = s1.addToZone(bearId, ZoneId.BATTLEFIELD)
+
+            // Add a continuous effect that gives -1/-1 (toughness becomes 1, dies to 1 damage)
+            val weaknessEffect = ContinuousEffectFactory.pumpCreature(
+                sourceId = EntityId.of("weakness_spell"),
+                targetId = bearId,
+                powerBonus = -1,
+                toughnessBonus = -1,
+                description = "Weakness"
+            )
+            val s3 = s2.addContinuousEffect(weaknessEffect)
+
+            // Run SBAs
+            val result = GameEngine.checkStateBasedActions(s3)
+            result.shouldBeInstanceOf<GameActionResult.Success>()
+
+            val newState = (result as GameActionResult.Success).state
+
+            // Creature should be dead (1 toughness - 1 damage = 0)
+            newState.getBattlefield().contains(bearId).shouldBeFalse()
+            newState.getGraveyard(player1Id).shouldContain(bearId)
+        }
+
+        test("creature with 0 or less toughness from layer effect dies without any damage") {
+            var state = newGame()
+
+            // Create 2/2 bear with NO damage
+            val bearId = EntityId.generate()
+            val (_, s1) = state.createEntity(
+                bearId,
+                CardComponent(bearDef, player1Id),
+                ControllerComponent(player1Id)
+                // No damage component
+            )
+            val s2 = s1.addToZone(bearId, ZoneId.BATTLEFIELD)
+
+            // Add a continuous effect that gives -0/-3 (toughness becomes -1)
+            val humilityEffect = ContinuousEffectFactory.pumpCreature(
+                sourceId = EntityId.of("humility"),
+                targetId = bearId,
+                powerBonus = 0,
+                toughnessBonus = -3,
+                description = "Toughness reducer"
+            )
+            val s3 = s2.addContinuousEffect(humilityEffect)
+
+            // Run SBAs
+            val result = GameEngine.checkStateBasedActions(s3)
+            result.shouldBeInstanceOf<GameActionResult.Success>()
+
+            val newState = (result as GameActionResult.Success).state
+
+            // Creature should be dead (toughness is -1, Rule 704.5f)
+            newState.getBattlefield().contains(bearId).shouldBeFalse()
+            newState.getGraveyard(player1Id).shouldContain(bearId)
+        }
+
+        test("creature at exactly lethal damage threshold survives with toughness boost") {
+            var state = newGame()
+
+            // Create 2/2 bear with 2 damage (exactly lethal)
+            val bearId = EntityId.generate()
+            val (_, s1) = state.createEntity(
+                bearId,
+                CardComponent(bearDef, player1Id),
+                ControllerComponent(player1Id),
+                DamageComponent(2)
+            )
+            val s2 = s1.addToZone(bearId, ZoneId.BATTLEFIELD)
+
+            // Add a continuous effect that gives +0/+1 (toughness becomes 3, survives 2 damage)
+            val boostEffect = ContinuousEffectFactory.pumpCreature(
+                sourceId = EntityId.of("boost"),
+                targetId = bearId,
+                powerBonus = 0,
+                toughnessBonus = 1,
+                description = "Toughness boost"
+            )
+            val s3 = s2.addContinuousEffect(boostEffect)
+
+            // Run SBAs
+            val result = GameEngine.checkStateBasedActions(s3)
+            result.shouldBeInstanceOf<GameActionResult.Success>()
+
+            val newState = (result as GameActionResult.Success).state
+
+            // Creature should survive (3 toughness - 2 damage = 1)
+            newState.getBattlefield().shouldContain(bearId)
+        }
+
+        test("multiple layer effects are applied correctly for toughness check") {
+            var state = newGame()
+
+            // Create 2/2 bear with 4 damage
+            val bearId = EntityId.generate()
+            val (_, s1) = state.createEntity(
+                bearId,
+                CardComponent(bearDef, player1Id),
+                ControllerComponent(player1Id),
+                DamageComponent(4)
+            )
+            val s2 = s1.addToZone(bearId, ZoneId.BATTLEFIELD)
+
+            // Add +1/+1 effect
+            val effect1 = ContinuousEffectFactory.pumpCreature(
+                sourceId = EntityId.of("anthem1"),
+                targetId = bearId,
+                powerBonus = 1,
+                toughnessBonus = 1,
+                description = "Anthem 1"
+            )
+
+            // Add +2/+2 effect
+            val effect2 = ContinuousEffectFactory.pumpCreature(
+                sourceId = EntityId.of("anthem2"),
+                targetId = bearId,
+                powerBonus = 2,
+                toughnessBonus = 2,
+                description = "Anthem 2"
+            )
+
+            val s3 = s2.addContinuousEffect(effect1).addContinuousEffect(effect2)
+
+            // Run SBAs
+            val result = GameEngine.checkStateBasedActions(s3)
+            result.shouldBeInstanceOf<GameActionResult.Success>()
+
+            val newState = (result as GameActionResult.Success).state
+
+            // Creature should survive: 2 + 1 + 2 = 5 toughness, 4 damage = 1 remaining
+            newState.getBattlefield().shouldContain(bearId)
         }
     }
 })

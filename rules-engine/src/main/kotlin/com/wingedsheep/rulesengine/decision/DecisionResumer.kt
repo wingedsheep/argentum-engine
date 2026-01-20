@@ -4,8 +4,16 @@ import com.wingedsheep.rulesengine.ability.SearchDestination
 import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
+import com.wingedsheep.rulesengine.ecs.action.ActivateManaAbility
+import com.wingedsheep.rulesengine.ecs.action.CastSpell
+import com.wingedsheep.rulesengine.ecs.action.GameActionHandler
+import com.wingedsheep.rulesengine.ecs.action.GameActionResult
 import com.wingedsheep.rulesengine.ecs.components.CardComponent
+import com.wingedsheep.rulesengine.ecs.components.ControllerComponent
+import com.wingedsheep.rulesengine.ecs.components.ManaPoolComponent
+import com.wingedsheep.rulesengine.ecs.components.SpellOnStackComponent
 import com.wingedsheep.rulesengine.ecs.components.TappedComponent
+import com.wingedsheep.rulesengine.ecs.event.ChosenTarget
 import com.wingedsheep.rulesengine.ecs.script.EffectEvent
 import com.wingedsheep.rulesengine.zone.ZoneType
 
@@ -77,6 +85,7 @@ class DecisionResumer {
             is LookAtTopCardsContext -> resumeLookAtTopCards(clearedState, context, response)
             is ModeChoiceContext -> resumeModeChoice(clearedState, context, response)
             is CleanupDiscardContext -> resumeCleanupDiscard(clearedState, context, response)
+            is ManaWindowContext -> resumeManaWindow(clearedState, context, response)
         }
     }
 
@@ -405,5 +414,251 @@ class DecisionResumer {
         currentState = currentState.removePendingCleanupDiscardForPlayer(playerId)
 
         return DecisionResumeResult(currentState, events)
+    }
+
+    // =========================================================================
+    // ManaWindowContext Resumption (CR 601.2g)
+    // =========================================================================
+
+    private fun resumeManaWindow(
+        state: GameState,
+        context: ManaWindowContext,
+        response: DecisionResponse
+    ): DecisionResumeResult {
+        val manaResponse = response as? ManaWindowResponse
+            ?: error("Expected ManaWindowResponse for ManaWindowContext, got ${response::class.simpleName}")
+
+        return when (manaResponse) {
+            is ManaWindowResponse.ActivateAbility -> {
+                resumeManaWindowActivateAbility(state, context, manaResponse)
+            }
+            is ManaWindowResponse.ProceedWithCasting -> {
+                resumeManaWindowProceed(state, context, manaResponse)
+            }
+            is ManaWindowResponse.CancelCasting -> {
+                resumeManaWindowCancel(state, context)
+            }
+        }
+    }
+
+    /**
+     * Player activated a mana ability during the mana window.
+     * Execute the ability, then re-enter the mana window.
+     */
+    private fun resumeManaWindowActivateAbility(
+        state: GameState,
+        context: ManaWindowContext,
+        response: ManaWindowResponse.ActivateAbility
+    ): DecisionResumeResult {
+        val events = mutableListOf<EffectEvent>()
+
+        // Execute the mana ability via GameActionHandler
+        val action = ActivateManaAbility(
+            sourceEntityId = response.sourceEntityId,
+            abilityIndex = response.abilityIndex,
+            playerId = context.controllerId
+        )
+
+        val handler = GameActionHandler()
+        val result = handler.execute(state, action)
+
+        val newState = when (result) {
+            is GameActionResult.Success -> result.state
+            is GameActionResult.Failure -> {
+                // If mana ability failed, return to mana window with error
+                // For now, just return the original state
+                state
+            }
+        }
+
+        // Re-enter the mana window with updated state
+        // The caller should create a new mana window decision
+        val manaWindowState = createManaWindowDecision(
+            newState,
+            context.cardEntityId,
+            context.cardName,
+            context.manaCostRequired,
+            context.fromZone,
+            context.controllerId,
+            context.selectedTargets,
+            context.xValue,
+            context.additionalCostPayment
+        )
+
+        return DecisionResumeResult(manaWindowState, events)
+    }
+
+    /**
+     * Player chose to proceed with casting.
+     * Validate mana payment and complete the spell cast.
+     */
+    private fun resumeManaWindowProceed(
+        state: GameState,
+        context: ManaWindowContext,
+        response: ManaWindowResponse.ProceedWithCasting
+    ): DecisionResumeResult {
+        val events = mutableListOf<EffectEvent>()
+        var currentState = state
+
+        // Get player's mana pool
+        val manaPool = currentState.getComponent<ManaPoolComponent>(context.controllerId)?.pool
+            ?: error("Player has no mana pool")
+
+        // Validate that mana cost can be paid
+        if (!manaPool.canPay(context.manaCostRequired)) {
+            error("Insufficient mana to pay cost ${context.manaCostRequired}")
+        }
+
+        // Spend the mana
+        val spentPool = manaPool.pay(context.manaCostRequired)
+        currentState = currentState.updateEntity(context.controllerId) { container ->
+            container.with(ManaPoolComponent(spentPool))
+        }
+
+        // Now complete the spell cast by putting it on the stack
+        // The card should move from hand to stack
+        currentState = currentState.removeFromZone(context.cardEntityId, context.fromZone)
+
+        // Convert EntityId targets to ChosenTarget (assuming they are permanents)
+        // TODO: Support different target types based on context
+        val chosenTargets = context.selectedTargets.map { entityId ->
+            ChosenTarget.Permanent(entityId)
+        }
+
+        // Add SpellOnStackComponent
+        currentState = currentState.updateEntity(context.cardEntityId) { container ->
+            container.with(
+                SpellOnStackComponent(
+                    casterId = context.controllerId,
+                    targets = chosenTargets,
+                    xValue = context.xValue
+                )
+            )
+        }
+
+        // Add to stack
+        currentState = currentState.addToStack(context.cardEntityId)
+
+        // Generate spell cast event
+        events.add(EffectEvent.SpellCast(context.cardEntityId, context.cardName, context.controllerId))
+
+        return DecisionResumeResult(currentState, events)
+    }
+
+    /**
+     * Player chose to cancel casting.
+     * Return the card to its original zone (hand).
+     */
+    private fun resumeManaWindowCancel(
+        state: GameState,
+        context: ManaWindowContext
+    ): DecisionResumeResult {
+        // The card hasn't moved yet during mana window, so just clear state
+        // and generate cancel event
+        val events = listOf(
+            EffectEvent.SpellCastCancelled(context.cardName, context.controllerId)
+        )
+        return DecisionResumeResult(state, events)
+    }
+
+    /**
+     * Create a mana window decision and set it on the game state.
+     */
+    private fun createManaWindowDecision(
+        state: GameState,
+        cardEntityId: EntityId,
+        cardName: String,
+        manaCost: com.wingedsheep.rulesengine.core.ManaCost,
+        fromZone: ZoneId,
+        controllerId: EntityId,
+        selectedTargets: List<EntityId>,
+        xValue: Int,
+        additionalCostPayment: AdditionalCostPaymentInfo?
+    ): GameState {
+        // Get current mana pool
+        val manaPool = state.getComponent<ManaPoolComponent>(controllerId)?.pool
+            ?: com.wingedsheep.rulesengine.player.ManaPool.EMPTY
+
+        // Find available mana abilities
+        val availableAbilities = findAvailableManaAbilities(state, controllerId)
+
+        // Create the decision
+        val decisionId = java.util.UUID.randomUUID().toString()
+        val decision = ResolveManaWindow(
+            decisionId = decisionId,
+            playerId = controllerId,
+            cardName = cardName,
+            cardEntityId = cardEntityId,
+            manaCostDisplay = manaCost.toString(),
+            currentManaPoolDisplay = manaPool.toString(),
+            canPayCost = manaPool.canPay(manaCost),
+            availableManaAbilities = availableAbilities.map { ability ->
+                ManaAbilityOption(
+                    sourceEntityId = ability.sourceEntityId,
+                    sourceName = ability.sourceName,
+                    abilityIndex = ability.abilityIndex,
+                    description = ability.description
+                )
+            }
+        )
+
+        // Create the context
+        val context = ManaWindowContext(
+            sourceId = cardEntityId,
+            controllerId = controllerId,
+            cardEntityId = cardEntityId,
+            cardName = cardName,
+            manaCostRequired = manaCost,
+            fromZone = fromZone,
+            selectedTargets = selectedTargets,
+            xValue = xValue,
+            additionalCostPayment = additionalCostPayment
+        )
+
+        return state.setPendingDecision(decision, context)
+    }
+
+    /**
+     * Find all mana abilities the player can activate.
+     */
+    private fun findAvailableManaAbilities(
+        state: GameState,
+        playerId: EntityId
+    ): List<AvailableManaAbility> {
+        val abilities = mutableListOf<AvailableManaAbility>()
+
+        for (entityId in state.getBattlefield()) {
+            val container = state.getEntity(entityId) ?: continue
+            val controllerComponent = container.get<ControllerComponent>() ?: continue
+            if (controllerComponent.controllerId != playerId) continue
+
+            val cardComponent = container.get<CardComponent>() ?: continue
+            val isTapped = container.has<TappedComponent>()
+
+            // Basic lands have implicit mana abilities
+            if (cardComponent.definition.isLand && !isTapped) {
+                val landSubtypes = cardComponent.definition.typeLine.subtypes
+                val description = when {
+                    landSubtypes.any { it.value.equals("Plains", ignoreCase = true) } -> "Tap: Add {W}"
+                    landSubtypes.any { it.value.equals("Island", ignoreCase = true) } -> "Tap: Add {U}"
+                    landSubtypes.any { it.value.equals("Swamp", ignoreCase = true) } -> "Tap: Add {B}"
+                    landSubtypes.any { it.value.equals("Mountain", ignoreCase = true) } -> "Tap: Add {R}"
+                    landSubtypes.any { it.value.equals("Forest", ignoreCase = true) } -> "Tap: Add {G}"
+                    else -> "Tap for mana"
+                }
+
+                abilities.add(AvailableManaAbility(
+                    sourceEntityId = entityId,
+                    sourceName = cardComponent.definition.name,
+                    abilityIndex = 0,
+                    description = description,
+                    isTapped = isTapped
+                ))
+            }
+
+            // TODO: Add support for non-land mana abilities from AbilitiesComponent
+        }
+
+        return abilities
     }
 }

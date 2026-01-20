@@ -265,6 +265,88 @@ data class ManaPaymentChoice(
 }
 
 // =============================================================================
+// Mana Window Decisions (CR 601.2g)
+// =============================================================================
+
+/**
+ * Decision presented during the mana window phase of spell casting.
+ *
+ * Per Rule 601.2g, players can activate mana abilities while casting a spell
+ * before paying costs. This decision allows the player to:
+ * 1. Activate a mana ability (which resolves immediately)
+ * 2. Proceed with casting (if mana is sufficient)
+ * 3. Cancel the spell casting
+ *
+ * The mana window loops until the player chooses to proceed or cancel.
+ */
+@Serializable
+data class ResolveManaWindow(
+    override val decisionId: String,
+    override val playerId: EntityId,
+    /** Name of the spell being cast */
+    val cardName: String,
+    /** The entity ID of the card being cast */
+    val cardEntityId: EntityId,
+    /** Human-readable representation of the mana cost */
+    val manaCostDisplay: String,
+    /** Current mana pool state (for display) */
+    val currentManaPoolDisplay: String,
+    /** Whether the current mana pool can pay the cost */
+    val canPayCost: Boolean,
+    /** Available mana abilities that can be activated */
+    val availableManaAbilities: List<ManaAbilityOption>
+) : PlayerDecision {
+    override val description: String = "Mana window for casting $cardName ($manaCostDisplay)"
+}
+
+/**
+ * A mana ability option displayed during the mana window.
+ */
+@Serializable
+data class ManaAbilityOption(
+    val sourceEntityId: EntityId,
+    val sourceName: String,
+    val abilityIndex: Int,
+    val description: String
+)
+
+/**
+ * Response to a ResolveManaWindow decision.
+ */
+@Serializable
+sealed interface ManaWindowResponse : DecisionResponse {
+    /**
+     * Activate a mana ability during the mana window.
+     * The mana window will loop after the ability resolves.
+     */
+    @Serializable
+    data class ActivateAbility(
+        override val decisionId: String,
+        val sourceEntityId: EntityId,
+        val abilityIndex: Int
+    ) : ManaWindowResponse
+
+    /**
+     * Proceed with casting the spell, paying the mana cost.
+     * Requires that the current mana pool can pay the cost.
+     */
+    @Serializable
+    data class ProceedWithCasting(
+        override val decisionId: String,
+        /** Optional specification of how to pay generic costs */
+        val genericPayment: ManaPaymentChoice? = null
+    ) : ManaWindowResponse
+
+    /**
+     * Cancel the spell casting and return the card to its original zone.
+     */
+    @Serializable
+    data class CancelCasting(
+        override val decisionId: String
+    ) : ManaWindowResponse
+}
+
+// =============================================================================
 // Yes/No Decisions
 // =============================================================================
 

@@ -31,6 +31,7 @@ object DecisionValidator {
             is MulliganDecision -> validateMulliganChoice(response)
             is ChooseMulliganBottomCards -> validateMulliganBottomCards(decision, response)
             is SacrificeUnlessDecision -> validateSacrificeUnlessChoice(decision, response)
+            is ResolveManaWindow -> validateManaWindowResponse(decision, response)
         }
     }
 
@@ -431,6 +432,42 @@ object DecisionValidator {
         }
 
         return ValidationResult.Valid
+    }
+
+    private fun validateManaWindowResponse(
+        decision: ResolveManaWindow,
+        response: DecisionResponse
+    ): ValidationResult {
+        if (response !is ManaWindowResponse) {
+            return ValidationResult.Invalid("Expected ManaWindowResponse")
+        }
+
+        return when (response) {
+            is ManaWindowResponse.ActivateAbility -> {
+                // Verify the ability exists in available abilities
+                val abilityExists = decision.availableManaAbilities.any { ability ->
+                    ability.sourceEntityId == response.sourceEntityId &&
+                    ability.abilityIndex == response.abilityIndex
+                }
+                if (!abilityExists) {
+                    ValidationResult.Invalid("Invalid mana ability selected")
+                } else {
+                    ValidationResult.Valid
+                }
+            }
+            is ManaWindowResponse.ProceedWithCasting -> {
+                // Verify that player can pay the cost
+                if (!decision.canPayCost) {
+                    ValidationResult.Invalid("Cannot proceed: insufficient mana to pay cost")
+                } else {
+                    ValidationResult.Valid
+                }
+            }
+            is ManaWindowResponse.CancelCasting -> {
+                // Always valid to cancel
+                ValidationResult.Valid
+            }
+        }
     }
 
     /**
