@@ -10,6 +10,7 @@ import com.wingedsheep.rulesengine.sets.ecl.cards.BileVialBoggart
 import com.wingedsheep.rulesengine.sets.ecl.cards.BlightedBlackthorn
 import com.wingedsheep.rulesengine.sets.ecl.cards.Blossombind
 import com.wingedsheep.rulesengine.sets.ecl.cards.BoggartPrankster
+import com.wingedsheep.rulesengine.sets.ecl.cards.BoneclubBerserker
 import com.wingedsheep.rulesengine.sets.ecl.cards.BrigidClachansHeart
 import com.wingedsheep.rulesengine.sets.ecl.cards.BurdenedStoneback
 import com.wingedsheep.rulesengine.sets.ecl.cards.ChangelingWayfinder
@@ -18,7 +19,10 @@ import com.wingedsheep.rulesengine.sets.ecl.cards.CribSwap
 import com.wingedsheep.rulesengine.sets.ecl.cards.CuriousColossus
 import com.wingedsheep.rulesengine.sets.ecl.cards.DawnhandEulogist
 import com.wingedsheep.rulesengine.sets.ecl.cards.DisruptorOfCurrents
+import com.wingedsheep.rulesengine.sets.ecl.cards.ElderAuntie
 import com.wingedsheep.rulesengine.sets.ecl.cards.EncumberedReejerey
+import com.wingedsheep.rulesengine.sets.ecl.cards.FeedTheFlames
+import com.wingedsheep.rulesengine.sets.ecl.cards.FlamekinGildweaver
 import com.wingedsheep.rulesengine.sets.ecl.cards.FlockImpostor
 import com.wingedsheep.rulesengine.sets.ecl.cards.GallantFowlknight
 import com.wingedsheep.rulesengine.sets.ecl.cards.Glamermite
@@ -60,6 +64,7 @@ object LorwynEclipsedSet : BaseCardRegistry() {
         register(BlightedBlackthorn.definition, BlightedBlackthorn.script)
         register(Blossombind.definition, Blossombind.script)
         register(BoggartPrankster.definition, BoggartPrankster.script)
+        register(BoneclubBerserker.definition, BoneclubBerserker.script)
         register(BrigidClachansHeart.definition, BrigidClachansHeart.script)
         // Also register back face script for Brigid
         registerScript(BrigidClachansHeart.backScript)
@@ -70,7 +75,10 @@ object LorwynEclipsedSet : BaseCardRegistry() {
         register(CuriousColossus.definition, CuriousColossus.script)
         register(DawnhandEulogist.definition, DawnhandEulogist.script)
         register(DisruptorOfCurrents.definition, DisruptorOfCurrents.script)
+        register(ElderAuntie.definition, ElderAuntie.script)
         register(EncumberedReejerey.definition, EncumberedReejerey.script)
+        register(FeedTheFlames.definition, FeedTheFlames.script)
+        register(FlamekinGildweaver.definition, FlamekinGildweaver.script)
         register(FlockImpostor.definition, FlockImpostor.script)
         register(GallantFowlknight.definition, GallantFowlknight.script)
         register(Glamermite.definition, Glamermite.script)
