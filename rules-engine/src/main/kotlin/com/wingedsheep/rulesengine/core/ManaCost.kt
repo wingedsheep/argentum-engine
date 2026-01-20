@@ -9,10 +9,14 @@ data class ManaCost(val symbols: List<ManaSymbol>) {
         get() = symbols.sumOf { it.cmc }
 
     val colors: Set<Color>
-        get() = symbols
-            .filterIsInstance<ManaSymbol.Colored>()
-            .map { it.color }
-            .toSet()
+        get() = symbols.flatMap { symbol ->
+            when (symbol) {
+                is ManaSymbol.Colored -> listOf(symbol.color)
+                is ManaSymbol.Hybrid -> listOf(symbol.color1, symbol.color2)
+                is ManaSymbol.Phyrexian -> listOf(symbol.color)
+                else -> emptyList()
+            }
+        }.toSet()
 
     val colorCount: Map<Color, Int>
         get() = symbols
@@ -55,6 +59,31 @@ data class ManaCost(val symbols: List<ManaSymbol>) {
                     content == "C" -> ManaSymbol.C
                     content == "X" -> ManaSymbol.X
                     content.toIntOrNull() != null -> ManaSymbol.generic(content.toInt())
+                    // Hybrid mana: {W/U}, {G/U}, etc.
+                    content.contains("/") && !content.contains("P") -> {
+                        val parts = content.split("/")
+                        if (parts.size == 2) {
+                            val color1 = Color.fromSymbol(parts[0][0])
+                            val color2 = Color.fromSymbol(parts[1][0])
+                            if (color1 != null && color2 != null) {
+                                ManaSymbol.Hybrid(color1, color2)
+                            } else {
+                                throw IllegalArgumentException("Unknown hybrid mana symbol: {$content}")
+                            }
+                        } else {
+                            throw IllegalArgumentException("Unknown mana symbol: {$content}")
+                        }
+                    }
+                    // Phyrexian mana: {W/P}, {G/P}, etc.
+                    content.contains("/P") -> {
+                        val colorPart = content.substringBefore("/P")
+                        val color = Color.fromSymbol(colorPart[0])
+                        if (color != null) {
+                            ManaSymbol.Phyrexian(color)
+                        } else {
+                            throw IllegalArgumentException("Unknown Phyrexian mana symbol: {$content}")
+                        }
+                    }
                     else -> throw IllegalArgumentException("Unknown mana symbol: {$content}")
                 }
                 symbols.add(symbol)

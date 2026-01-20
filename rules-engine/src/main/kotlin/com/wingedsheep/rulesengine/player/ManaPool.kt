@@ -116,6 +116,17 @@ data class ManaPool(
                 is ManaSymbol.X -> {
                     // X can be 0, so always payable
                 }
+                is ManaSymbol.Hybrid -> {
+                    // Can pay with either color, check if at least one is available
+                    val available1 = get(symbol.color1)
+                    val available2 = get(symbol.color2)
+                    if (available1 < 1 && available2 < 1) return false
+                    availableForGeneric -= 1
+                }
+                is ManaSymbol.Phyrexian -> {
+                    // Can always pay (with life as fallback), but prefer mana
+                    availableForGeneric -= 1
+                }
             }
         }
 

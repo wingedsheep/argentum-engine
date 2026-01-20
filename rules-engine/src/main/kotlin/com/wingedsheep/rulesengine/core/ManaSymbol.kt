@@ -30,6 +30,26 @@ sealed interface ManaSymbol {
         override fun toString(): String = "{X}"
     }
 
+    /**
+     * Hybrid mana symbol - can be paid with either of two colors.
+     * Example: {G/U} can be paid with {G} or {U}
+     */
+    @Serializable
+    data class Hybrid(val color1: Color, val color2: Color) : ManaSymbol {
+        override val cmc: Int = 1
+        override fun toString(): String = "{${color1.symbol}/${color2.symbol}}"
+    }
+
+    /**
+     * Phyrexian mana symbol - can be paid with colored mana or 2 life.
+     * Example: {G/P} can be paid with {G} or 2 life
+     */
+    @Serializable
+    data class Phyrexian(val color: Color) : ManaSymbol {
+        override val cmc: Int = 1
+        override fun toString(): String = "{${color.symbol}/P}"
+    }
+
     companion object {
         val W = Colored(Color.WHITE)
         val U = Colored(Color.BLUE)
