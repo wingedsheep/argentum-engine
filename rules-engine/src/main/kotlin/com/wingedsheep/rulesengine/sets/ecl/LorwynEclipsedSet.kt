@@ -3,8 +3,10 @@ package com.wingedsheep.rulesengine.sets.ecl
 import com.wingedsheep.rulesengine.sets.BaseCardRegistry
 import com.wingedsheep.rulesengine.sets.ecl.cards.AdeptWatershaper
 import com.wingedsheep.rulesengine.sets.ecl.cards.AjaniOutlandChaperone
+import com.wingedsheep.rulesengine.sets.ecl.cards.AquitectsDefenses
 import com.wingedsheep.rulesengine.sets.ecl.cards.AppealToEirdu
 import com.wingedsheep.rulesengine.sets.ecl.cards.BarkOfDoran
+import com.wingedsheep.rulesengine.sets.ecl.cards.Blossombind
 import com.wingedsheep.rulesengine.sets.ecl.cards.BrigidClachansHeart
 import com.wingedsheep.rulesengine.sets.ecl.cards.BurdenedStoneback
 import com.wingedsheep.rulesengine.sets.ecl.cards.ChangelingWayfinder
@@ -21,6 +23,7 @@ import com.wingedsheep.rulesengine.sets.ecl.cards.GravelgillScoundrel
 import com.wingedsheep.rulesengine.sets.ecl.cards.KeepOut
 import com.wingedsheep.rulesengine.sets.ecl.cards.Kinbinding
 import com.wingedsheep.rulesengine.sets.ecl.cards.KinscaerSentry
+import com.wingedsheep.rulesengine.sets.ecl.cards.KulrathMystic
 import com.wingedsheep.rulesengine.sets.ecl.cards.LiminalHold
 import com.wingedsheep.rulesengine.sets.ecl.cards.RiverguardsReflexes
 import com.wingedsheep.rulesengine.sets.ecl.cards.RooftopPercher
@@ -29,6 +32,7 @@ import com.wingedsheep.rulesengine.sets.ecl.cards.SunDappledCelebrant
 import com.wingedsheep.rulesengine.sets.ecl.cards.TimidShieldbearer
 import com.wingedsheep.rulesengine.sets.ecl.cards.TributaryVaulter
 import com.wingedsheep.rulesengine.sets.ecl.cards.WanderbrinePreacher
+import com.wingedsheep.rulesengine.sets.ecl.cards.WanderbrineTrapper
 
 object LorwynEclipsedSet : BaseCardRegistry() {
     override val setCode: String = "ECL"
@@ -37,8 +41,10 @@ object LorwynEclipsedSet : BaseCardRegistry() {
     init {
         register(AdeptWatershaper.definition, AdeptWatershaper.script)
         register(AjaniOutlandChaperone.definition, AjaniOutlandChaperone.script)
+        register(AquitectsDefenses.definition, AquitectsDefenses.script)
         register(AppealToEirdu.definition, AppealToEirdu.script)
         register(BarkOfDoran.definition, BarkOfDoran.script)
+        register(Blossombind.definition, Blossombind.script)
         register(BrigidClachansHeart.definition, BrigidClachansHeart.script)
         // Also register back face script for Brigid
         registerScript(BrigidClachansHeart.backScript)
@@ -57,6 +63,7 @@ object LorwynEclipsedSet : BaseCardRegistry() {
         register(KeepOut.definition, KeepOut.script)
         register(Kinbinding.definition, Kinbinding.script)
         register(KinscaerSentry.definition, KinscaerSentry.script)
+        register(KulrathMystic.definition, KulrathMystic.script)
         register(LiminalHold.definition, LiminalHold.script)
         register(RiverguardsReflexes.definition, RiverguardsReflexes.script)
         register(RooftopPercher.definition, RooftopPercher.script)
@@ -65,5 +72,6 @@ object LorwynEclipsedSet : BaseCardRegistry() {
         register(TimidShieldbearer.definition, TimidShieldbearer.script)
         register(TributaryVaulter.definition, TributaryVaulter.script)
         register(WanderbrinePreacher.definition, WanderbrinePreacher.script)
+        register(WanderbrineTrapper.definition, WanderbrineTrapper.script)
     }
 }

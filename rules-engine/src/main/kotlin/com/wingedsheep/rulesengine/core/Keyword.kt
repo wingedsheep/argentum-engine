@@ -48,7 +48,8 @@ enum class Keyword(val displayName: String) {
     CHANGELING("Changeling"),
     PROWESS("Prowess"),
     CONVOKE("Convoke"),
-    CANT_BE_BLOCKED("Can't be blocked");
+    CANT_BE_BLOCKED("Can't be blocked"),
+    CANT_UNTAP("Can't untap");
 
     companion object {
         fun fromString(value: String): Keyword? =

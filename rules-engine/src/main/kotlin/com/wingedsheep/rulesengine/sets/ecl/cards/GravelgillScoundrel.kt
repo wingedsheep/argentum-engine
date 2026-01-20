@@ -1,9 +1,8 @@
 package com.wingedsheep.rulesengine.sets.ecl.cards
 
-import com.wingedsheep.rulesengine.ability.AbilityCost
 import com.wingedsheep.rulesengine.ability.EffectTarget
 import com.wingedsheep.rulesengine.ability.GrantKeywordUntilEndOfTurnEffect
-import com.wingedsheep.rulesengine.ability.TimingRestriction
+import com.wingedsheep.rulesengine.ability.OnAttack
 import com.wingedsheep.rulesengine.ability.cardScript
 import com.wingedsheep.rulesengine.card.CardDefinition
 import com.wingedsheep.rulesengine.card.Rarity
@@ -17,7 +16,8 @@ import com.wingedsheep.rulesengine.core.Subtype
  *
  * {1}{U} Creature — Merfolk Rogue 1/3
  * Vigilance
- * {T}: Target creature can't be blocked this turn.
+ * Whenever this creature attacks, you may tap another untapped creature you control.
+ * If you do, this creature can't be blocked this turn.
  */
 object GravelgillScoundrel {
     val definition = CardDefinition.creature(
@@ -27,11 +27,12 @@ object GravelgillScoundrel {
         power = 1,
         toughness = 3,
         keywords = setOf(Keyword.VIGILANCE),
-        oracleText = "Vigilance\n{T}: Target creature can't be blocked this turn.",
+        oracleText = "Vigilance\nWhenever this creature attacks, you may tap another untapped creature " +
+                "you control. If you do, this creature can't be blocked this turn.",
         metadata = ScryfallMetadata(
             collectorNumber = "53",
             rarity = Rarity.COMMON,
-            artist = "Ovidio Cartagena",
+            artist = "John Tedrick",
             imageUri = "https://cards.scryfall.io/normal/front/b/b/bb7b7b7b-7b7b-7b7b-7b7b-7b7b7b7b7b7b.jpg",
             releaseDate = "2026-01-23"
         )
@@ -40,15 +41,16 @@ object GravelgillScoundrel {
     val script = cardScript("Gravelgill Scoundrel") {
         keywords(Keyword.VIGILANCE)
 
-        // {T}: Target creature can't be blocked this turn
-        // Note: CANT_BE_BLOCKED keyword exists but effect needs proper duration
-        activated(
-            cost = AbilityCost.Tap,
+        // Attack trigger: may tap another creature to become unblockable
+        // TODO: Full implementation needs conditional "tap another creature" cost
+        // For now, models as optional self-unblockable on attack
+        triggered(
+            trigger = OnAttack(),
             effect = GrantKeywordUntilEndOfTurnEffect(
                 keyword = Keyword.CANT_BE_BLOCKED,
-                target = EffectTarget.TargetCreature
+                target = EffectTarget.Self
             ),
-            timing = TimingRestriction.SORCERY  // Can only be used before attackers declared
+            optional = true
         )
     }
 }

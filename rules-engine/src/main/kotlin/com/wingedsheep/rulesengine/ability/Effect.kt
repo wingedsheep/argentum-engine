@@ -919,6 +919,12 @@ sealed interface EffectTarget {
         override val description: String = "target nonland permanent an opponent controls"
     }
 
+    /** The creature enchanted by this aura */
+    @Serializable
+    data object EnchantedCreature : EffectTarget {
+        override val description: String = "enchanted creature"
+    }
+
     /** The controller of the target (used for effects like "its controller gains 4 life") */
     @Serializable
     data object TargetController : EffectTarget {
