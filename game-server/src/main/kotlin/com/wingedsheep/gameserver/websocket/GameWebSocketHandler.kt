@@ -1,0 +1,333 @@
+package com.wingedsheep.gameserver.websocket
+
+import com.wingedsheep.gameserver.protocol.ClientMessage
+import com.wingedsheep.gameserver.protocol.ErrorCode
+import com.wingedsheep.gameserver.protocol.GameOverReason
+import com.wingedsheep.gameserver.protocol.ServerMessage
+import com.wingedsheep.gameserver.session.GameSession
+import com.wingedsheep.gameserver.session.PlayerSession
+import com.wingedsheep.rulesengine.ecs.EntityId
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Component
+import org.springframework.web.socket.CloseStatus
+import org.springframework.web.socket.TextMessage
+import org.springframework.web.socket.WebSocketSession
+import org.springframework.web.socket.handler.TextWebSocketHandler
+import java.util.concurrent.ConcurrentHashMap
+
+/**
+ * WebSocket handler for game communication.
+ *
+ * Handles:
+ * - Player connections and disconnections
+ * - Game creation and joining
+ * - Action submission and routing
+ * - State updates broadcast
+ */
+@Component
+class GameWebSocketHandler : TextWebSocketHandler() {
+
+    private val logger = LoggerFactory.getLogger(GameWebSocketHandler::class.java)
+
+    private val json = Json {
+        ignoreUnknownKeys = true
+        encodeDefaults = true
+        classDiscriminator = "type"
+    }
+
+    // Connected players indexed by WebSocket session ID
+    private val playerSessions = ConcurrentHashMap<String, PlayerSession>()
+
+    // Active game sessions indexed by session ID
+    private val gameSessions = ConcurrentHashMap<String, GameSession>()
+
+    // Waiting game (single game session waiting for second player)
+    @Volatile
+    private var waitingGameSession: GameSession? = null
+
+    override fun afterConnectionEstablished(session: WebSocketSession) {
+        logger.info("WebSocket connection established: ${session.id}")
+    }
+
+    override fun handleTextMessage(session: WebSocketSession, message: TextMessage) {
+        try {
+            val clientMessage = json.decodeFromString<ClientMessage>(message.payload)
+            logger.debug("Received message from ${session.id}: $clientMessage")
+
+            when (clientMessage) {
+                is ClientMessage.Connect -> handleConnect(session, clientMessage)
+                is ClientMessage.CreateGame -> handleCreateGame(session, clientMessage)
+                is ClientMessage.JoinGame -> handleJoinGame(session, clientMessage)
+                is ClientMessage.SubmitAction -> handleSubmitAction(session, clientMessage)
+                is ClientMessage.Concede -> handleConcede(session)
+            }
+        } catch (e: Exception) {
+            logger.error("Error handling message from ${session.id}", e)
+            sendError(session, ErrorCode.INTERNAL_ERROR, "Failed to process message: ${e.message}")
+        }
+    }
+
+    override fun afterConnectionClosed(session: WebSocketSession, status: CloseStatus) {
+        logger.info("WebSocket connection closed: ${session.id}, status: $status")
+        handleDisconnect(session)
+    }
+
+    override fun handleTransportError(session: WebSocketSession, exception: Throwable) {
+        logger.error("Transport error for ${session.id}", exception)
+        handleDisconnect(session)
+    }
+
+    private fun handleConnect(session: WebSocketSession, message: ClientMessage.Connect) {
+        // Check if already connected
+        if (playerSessions.containsKey(session.id)) {
+            sendError(session, ErrorCode.ALREADY_CONNECTED, "Already connected")
+            return
+        }
+
+        // Create new player session
+        val playerId = EntityId.generate()
+        val playerSession = PlayerSession(
+            webSocketSession = session,
+            playerId = playerId,
+            playerName = message.playerName
+        )
+        playerSessions[session.id] = playerSession
+
+        logger.info("Player connected: ${message.playerName} (${playerId.value})")
+
+        // Send confirmation
+        send(session, ServerMessage.Connected(playerId.value))
+    }
+
+    private fun handleCreateGame(session: WebSocketSession, message: ClientMessage.CreateGame) {
+        val playerSession = playerSessions[session.id]
+        if (playerSession == null) {
+            sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        // Validate deck (basic validation for now)
+        if (message.deckList.isEmpty()) {
+            sendError(session, ErrorCode.INVALID_DECK, "Deck list cannot be empty")
+            return
+        }
+
+        // Create new game session
+        val gameSession = GameSession()
+        gameSession.addPlayer(playerSession, message.deckList)
+
+        gameSessions[gameSession.sessionId] = gameSession
+        waitingGameSession = gameSession
+
+        logger.info("Game created: ${gameSession.sessionId} by ${playerSession.playerName}")
+
+        // Send confirmation with session ID
+        send(session, ServerMessage.GameCreated(gameSession.sessionId))
+    }
+
+    private fun handleJoinGame(session: WebSocketSession, message: ClientMessage.JoinGame) {
+        val playerSession = playerSessions[session.id]
+        if (playerSession == null) {
+            sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        // Find game session
+        val gameSession = gameSessions[message.sessionId]
+        if (gameSession == null) {
+            sendError(session, ErrorCode.GAME_NOT_FOUND, "Game not found: ${message.sessionId}")
+            return
+        }
+
+        if (gameSession.isFull) {
+            sendError(session, ErrorCode.GAME_FULL, "Game is full")
+            return
+        }
+
+        // Validate deck
+        if (message.deckList.isEmpty()) {
+            sendError(session, ErrorCode.INVALID_DECK, "Deck list cannot be empty")
+            return
+        }
+
+        // Add player to game
+        gameSession.addPlayer(playerSession, message.deckList)
+
+        // Clear waiting game if this was it
+        if (waitingGameSession?.sessionId == gameSession.sessionId) {
+            waitingGameSession = null
+        }
+
+        logger.info("Player ${playerSession.playerName} joined game ${gameSession.sessionId}")
+
+        // Start the game if ready
+        if (gameSession.isReady) {
+            startGame(gameSession)
+        }
+    }
+
+    private fun startGame(gameSession: GameSession) {
+        logger.info("Starting game: ${gameSession.sessionId}")
+
+        val state = gameSession.startGame()
+
+        val player1 = gameSession.player1
+        val player2 = gameSession.player2
+
+        if (player1 != null && player2 != null) {
+            // Notify both players
+            send(player1.webSocketSession, ServerMessage.GameStarted(player2.playerName))
+            send(player2.webSocketSession, ServerMessage.GameStarted(player1.playerName))
+
+            // Send initial state updates
+            broadcastStateUpdate(gameSession, emptyList())
+        }
+    }
+
+    private fun handleSubmitAction(session: WebSocketSession, message: ClientMessage.SubmitAction) {
+        val playerSession = playerSessions[session.id]
+        if (playerSession == null) {
+            sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        val gameSessionId = playerSession.currentGameSessionId
+        if (gameSessionId == null) {
+            sendError(session, ErrorCode.GAME_NOT_FOUND, "Not in a game")
+            return
+        }
+
+        val gameSession = gameSessions[gameSessionId]
+        if (gameSession == null) {
+            sendError(session, ErrorCode.GAME_NOT_FOUND, "Game not found")
+            return
+        }
+
+        // Execute the action
+        val result = gameSession.executeAction(playerSession.playerId, message.action)
+        when (result) {
+            is GameSession.ActionResult.Success -> {
+                logger.debug("Action executed: ${message.action.description}")
+                broadcastStateUpdate(gameSession, result.events)
+
+                // Check if game ended
+                if (gameSession.isGameOver()) {
+                    broadcastGameOver(gameSession)
+                }
+            }
+            is GameSession.ActionResult.Failure -> {
+                sendError(session, ErrorCode.INVALID_ACTION, result.reason)
+            }
+        }
+    }
+
+    private fun handleConcede(session: WebSocketSession) {
+        val playerSession = playerSessions[session.id]
+        if (playerSession == null) {
+            sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        val gameSessionId = playerSession.currentGameSessionId
+        if (gameSessionId == null) {
+            sendError(session, ErrorCode.GAME_NOT_FOUND, "Not in a game")
+            return
+        }
+
+        val gameSession = gameSessions[gameSessionId]
+        if (gameSession == null) {
+            sendError(session, ErrorCode.GAME_NOT_FOUND, "Game not found")
+            return
+        }
+
+        logger.info("Player ${playerSession.playerName} conceded game ${gameSession.sessionId}")
+
+        gameSession.playerConcedes(playerSession.playerId)
+        broadcastGameOver(gameSession, GameOverReason.CONCESSION)
+    }
+
+    private fun handleDisconnect(session: WebSocketSession) {
+        val playerSession = playerSessions.remove(session.id) ?: return
+
+        logger.info("Player disconnected: ${playerSession.playerName}")
+
+        // Handle game cleanup
+        val gameSessionId = playerSession.currentGameSessionId
+        if (gameSessionId != null) {
+            val gameSession = gameSessions[gameSessionId]
+            if (gameSession != null) {
+                // Notify opponent and end game
+                val opponentId = gameSession.getOpponentId(playerSession.playerId)
+                if (opponentId != null) {
+                    val opponentSession = gameSession.getPlayerSession(opponentId)
+                    if (opponentSession?.isConnected == true) {
+                        send(
+                            opponentSession.webSocketSession,
+                            ServerMessage.GameOver(opponentId, GameOverReason.DISCONNECTION)
+                        )
+                    }
+                }
+
+                // Clean up game session
+                gameSessions.remove(gameSessionId)
+                if (waitingGameSession?.sessionId == gameSessionId) {
+                    waitingGameSession = null
+                }
+            }
+        }
+    }
+
+    private fun broadcastStateUpdate(
+        gameSession: GameSession,
+        events: List<com.wingedsheep.rulesengine.ecs.action.GameActionEvent>
+    ) {
+        val player1 = gameSession.player1
+        val player2 = gameSession.player2
+
+        player1?.let { session ->
+            val update = gameSession.createStateUpdate(session.playerId, events)
+            if (update != null) {
+                send(session.webSocketSession, update)
+            }
+        }
+
+        player2?.let { session ->
+            val update = gameSession.createStateUpdate(session.playerId, events)
+            if (update != null) {
+                send(session.webSocketSession, update)
+            }
+        }
+    }
+
+    private fun broadcastGameOver(
+        gameSession: GameSession,
+        reason: GameOverReason? = null
+    ) {
+        val winnerId = gameSession.getWinnerId()
+        val gameOverReason = reason ?: gameSession.getGameOverReason() ?: GameOverReason.LIFE_ZERO
+        val message = ServerMessage.GameOver(winnerId, gameOverReason)
+
+        gameSession.player1?.let { send(it.webSocketSession, message) }
+        gameSession.player2?.let { send(it.webSocketSession, message) }
+
+        // Clean up
+        gameSessions.remove(gameSession.sessionId)
+    }
+
+    private fun send(session: WebSocketSession, message: ServerMessage) {
+        try {
+            if (session.isOpen) {
+                val jsonText = json.encodeToString(message)
+                session.sendMessage(TextMessage(jsonText))
+            }
+        } catch (e: Exception) {
+            logger.error("Failed to send message to ${session.id}", e)
+        }
+    }
+
+    private fun sendError(session: WebSocketSession, code: ErrorCode, message: String) {
+        send(session, ServerMessage.Error(code, message))
+    }
+}
