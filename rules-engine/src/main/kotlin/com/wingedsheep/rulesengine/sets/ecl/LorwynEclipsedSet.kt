@@ -6,13 +6,17 @@ import com.wingedsheep.rulesengine.sets.ecl.cards.AjaniOutlandChaperone
 import com.wingedsheep.rulesengine.sets.ecl.cards.AquitectsDefenses
 import com.wingedsheep.rulesengine.sets.ecl.cards.AppealToEirdu
 import com.wingedsheep.rulesengine.sets.ecl.cards.BarkOfDoran
+import com.wingedsheep.rulesengine.sets.ecl.cards.BileVialBoggart
+import com.wingedsheep.rulesengine.sets.ecl.cards.BlightedBlackthorn
 import com.wingedsheep.rulesengine.sets.ecl.cards.Blossombind
+import com.wingedsheep.rulesengine.sets.ecl.cards.BoggartPrankster
 import com.wingedsheep.rulesengine.sets.ecl.cards.BrigidClachansHeart
 import com.wingedsheep.rulesengine.sets.ecl.cards.BurdenedStoneback
 import com.wingedsheep.rulesengine.sets.ecl.cards.ChangelingWayfinder
 import com.wingedsheep.rulesengine.sets.ecl.cards.ClachanFestival
 import com.wingedsheep.rulesengine.sets.ecl.cards.CribSwap
 import com.wingedsheep.rulesengine.sets.ecl.cards.CuriousColossus
+import com.wingedsheep.rulesengine.sets.ecl.cards.DawnhandEulogist
 import com.wingedsheep.rulesengine.sets.ecl.cards.DisruptorOfCurrents
 import com.wingedsheep.rulesengine.sets.ecl.cards.EncumberedReejerey
 import com.wingedsheep.rulesengine.sets.ecl.cards.FlockImpostor
@@ -48,7 +52,10 @@ object LorwynEclipsedSet : BaseCardRegistry() {
         register(AquitectsDefenses.definition, AquitectsDefenses.script)
         register(AppealToEirdu.definition, AppealToEirdu.script)
         register(BarkOfDoran.definition, BarkOfDoran.script)
+        register(BileVialBoggart.definition, BileVialBoggart.script)
+        register(BlightedBlackthorn.definition, BlightedBlackthorn.script)
         register(Blossombind.definition, Blossombind.script)
+        register(BoggartPrankster.definition, BoggartPrankster.script)
         register(BrigidClachansHeart.definition, BrigidClachansHeart.script)
         // Also register back face script for Brigid
         registerScript(BrigidClachansHeart.backScript)
@@ -57,6 +64,7 @@ object LorwynEclipsedSet : BaseCardRegistry() {
         register(ClachanFestival.definition, ClachanFestival.script)
         register(CribSwap.definition, CribSwap.script)
         register(CuriousColossus.definition, CuriousColossus.script)
+        register(DawnhandEulogist.definition, DawnhandEulogist.script)
         register(DisruptorOfCurrents.definition, DisruptorOfCurrents.script)
         register(EncumberedReejerey.definition, EncumberedReejerey.script)
         register(FlockImpostor.definition, FlockImpostor.script)

@@ -42,6 +42,7 @@ value class Subtype(val value: String) {
         val SOLDIER = Subtype("Soldier")
         val SPIRIT = Subtype("Spirit")
         val WALL = Subtype("Wall")
+        val WARLOCK = Subtype("Warlock")
         val WARRIOR = Subtype("Warrior")
         val WIZARD = Subtype("Wizard")
         val WURM = Subtype("Wurm")
