@@ -722,6 +722,15 @@ class GameActionHandler {
                 updated = updated.with(SummoningSicknessComponent)
             }
 
+            // Add base components for projection
+            val definition = cardComponent.definition
+            updated = updated.with(BaseTypesComponent(definition.typeLine.cardTypes, definition.typeLine.subtypes))
+            updated = updated.with(BaseColorsComponent(definition.colors))
+            updated = updated.with(BaseKeywordsComponent(definition.keywords))
+            definition.creatureStats?.let {
+                updated = updated.with(BaseStatsComponent(it.basePower, it.baseToughness))
+            }
+
             updated
         }
 
