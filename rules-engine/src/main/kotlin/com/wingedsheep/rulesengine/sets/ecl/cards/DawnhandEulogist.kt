@@ -1,8 +1,8 @@
 package com.wingedsheep.rulesengine.sets.ecl.cards
 
-import com.wingedsheep.rulesengine.ability.CompositeEffect
 import com.wingedsheep.rulesengine.ability.DrainEffect
 import com.wingedsheep.rulesengine.ability.EffectTarget
+import com.wingedsheep.rulesengine.ability.MillEffect
 import com.wingedsheep.rulesengine.ability.OnEnterBattlefield
 import com.wingedsheep.rulesengine.ability.cardScript
 import com.wingedsheep.rulesengine.card.CardDefinition
@@ -43,15 +43,14 @@ object DawnhandEulogist {
         keywords(Keyword.MENACE)
 
         // ETB: Mill 3, then conditional drain
-        // TODO: MillEffect needs implementation
         // TODO: Conditional based on graveyard contents needs Condition infrastructure
+        // For now, mill and drain happen unconditionally
         triggered(
             trigger = OnEnterBattlefield(),
-            effect = DrainEffect(
+            effect = MillEffect(count = 3) then DrainEffect(
                 amount = 2,
                 target = EffectTarget.EachOpponent
             )
-            // Note: Mill and condition omitted - needs MillEffect and Condition
         )
     }
 }

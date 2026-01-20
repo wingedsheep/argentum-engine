@@ -223,6 +223,28 @@ class TriggerDetector {
                 event is GameEvent.PermanentUntapped &&
                     (!trigger.selfOnly || event.entityId == sourceId)
             }
+
+            is OnOtherCreatureEnters -> {
+                // TODO: Need to check if entering entity is a creature from state
+                // For now, triggers on any permanent entering (script handler should filter)
+                event is GameEvent.EnteredBattlefield &&
+                    event.entityId != sourceId &&
+                    (!trigger.youControlOnly || event.controllerId == controllerId)
+            }
+
+            is OnYouAttack -> {
+                // Triggers when you enter combat as the attacking player
+                // TODO: minAttackers filter requires tracking attacker count in event
+                event is GameEvent.CombatBegan &&
+                    event.attackingPlayerId == controllerId
+            }
+
+            is OnOtherCreatureWithSubtypeDies -> {
+                // TODO: Need to track subtype and controller in CreatureDied event or lookup from state
+                // For now, triggers on any creature death (script handler should filter)
+                event is GameEvent.CreatureDied &&
+                    event.entityId != sourceId
+            }
         }
     }
 

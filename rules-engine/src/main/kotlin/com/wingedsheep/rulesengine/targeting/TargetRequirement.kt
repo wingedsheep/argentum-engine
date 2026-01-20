@@ -283,6 +283,17 @@ data class TargetCreatureOrPlayer(
     override val description: String = if (count == 1) "target creature or player" else "$count targets (creatures or players)"
 }
 
+/**
+ * "Target creature or planeswalker" - modern burn spell targeting.
+ */
+@Serializable
+data class TargetCreatureOrPlaneswalker(
+    override val count: Int = 1,
+    override val optional: Boolean = false
+) : TargetRequirement {
+    override val description: String = if (count == 1) "target creature or planeswalker" else "$count targets (creatures or planeswalkers)"
+}
+
 // =============================================================================
 // Card Targeting (other zones)
 // =============================================================================
@@ -396,6 +407,33 @@ sealed interface SpellTargetFilter {
     @Serializable
     data object Sorcery : SpellTargetFilter {
         override val description: String = "sorcery"
+    }
+
+    /**
+     * Target spell with a specific mana value.
+     * "spell with mana value 2"
+     */
+    @Serializable
+    data class WithManaValue(val manaValue: Int) : SpellTargetFilter {
+        override val description: String = "spell with mana value $manaValue"
+    }
+
+    /**
+     * Target spell with mana value at most N.
+     * "spell with mana value 3 or less"
+     */
+    @Serializable
+    data class WithManaValueAtMost(val manaValue: Int) : SpellTargetFilter {
+        override val description: String = "spell with mana value $manaValue or less"
+    }
+
+    /**
+     * Target spell with mana value at least N.
+     * "spell with mana value 4 or greater"
+     */
+    @Serializable
+    data class WithManaValueAtLeast(val manaValue: Int) : SpellTargetFilter {
+        override val description: String = "spell with mana value $manaValue or greater"
     }
 }
 

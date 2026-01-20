@@ -40,9 +40,8 @@ object KulrathMystic {
 
     val script = cardScript("Kulrath Mystic") {
         // Whenever you cast a spell with MV 4+, get +2/+0 and vigilance until EOT
-        // TODO: OnSpellCast needs manaValueAtLeast filter
         triggered(
-            trigger = OnSpellCast(controllerOnly = true),
+            trigger = OnSpellCast(controllerOnly = true, manaValueAtLeast = 4),
             effect = CompositeEffect(
                 effects = listOf(
                     ModifyStatsEffect(
@@ -57,7 +56,6 @@ object KulrathMystic {
                     )
                 )
             )
-            // TODO: Add condition for MV >= 4 when filter infrastructure is added
         )
     }
 }

@@ -35,11 +35,10 @@ object BoneclubBerserker {
 
     val script = cardScript("Boneclub Berserker") {
         // +2/+0 for each other Goblin you control
-        // TODO: Needs OtherGoblinsYouControl dynamic amount
         staticAbility(
             GrantDynamicStatsEffect(
                 target = StaticTarget.SourceCreature,
-                powerBonus = DynamicAmount.OtherCreaturesYouControl,  // Placeholder - should be OtherGoblinsYouControl
+                powerBonus = DynamicAmount.OtherCreaturesWithSubtypeYouControl(Subtype.GOBLIN),
                 toughnessBonus = DynamicAmount.Fixed(0)
             )
         )

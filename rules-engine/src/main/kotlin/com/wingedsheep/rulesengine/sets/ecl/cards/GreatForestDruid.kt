@@ -1,11 +1,10 @@
 package com.wingedsheep.rulesengine.sets.ecl.cards
 
-import com.wingedsheep.rulesengine.ability.AddManaEffect
+import com.wingedsheep.rulesengine.ability.AddAnyColorManaEffect
 import com.wingedsheep.rulesengine.ability.cardScript
 import com.wingedsheep.rulesengine.card.CardDefinition
 import com.wingedsheep.rulesengine.card.Rarity
 import com.wingedsheep.rulesengine.card.ScryfallMetadata
-import com.wingedsheep.rulesengine.core.Color
 import com.wingedsheep.rulesengine.core.ManaCost
 import com.wingedsheep.rulesengine.core.Subtype
 
@@ -34,7 +33,6 @@ object GreatForestDruid {
 
     val script = cardScript("Great Forest Druid") {
         // {T}: Add one mana of any color
-        // TODO: Needs AddAnyColorManaEffect for proper implementation
-        manaAbility(AddManaEffect(Color.GREEN))  // Placeholder - should be any color
+        manaAbility(AddAnyColorManaEffect())
     }
 }

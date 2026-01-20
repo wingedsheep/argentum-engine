@@ -7,7 +7,7 @@ import com.wingedsheep.rulesengine.card.CardDefinition
 import com.wingedsheep.rulesengine.card.Rarity
 import com.wingedsheep.rulesengine.card.ScryfallMetadata
 import com.wingedsheep.rulesengine.core.ManaCost
-import com.wingedsheep.rulesengine.targeting.TargetCreature
+import com.wingedsheep.rulesengine.targeting.TargetCreatureOrPlaneswalker
 
 /**
  * Sear
@@ -30,13 +30,12 @@ object Sear {
     )
 
     val script = cardScript("Sear") {
-        // TODO: Should also target planeswalkers - needs TargetCreatureOrPlaneswalker
-        targets(TargetCreature())
+        targets(TargetCreatureOrPlaneswalker())
 
         spell(
             DealDamageEffect(
                 amount = 4,
-                target = EffectTarget.TargetCreature
+                target = EffectTarget.TargetCreature  // Works for creatures and planeswalkers
             )
         )
     }

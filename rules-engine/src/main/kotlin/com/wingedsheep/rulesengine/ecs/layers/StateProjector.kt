@@ -465,6 +465,13 @@ class StateProjector(
                     .toSet()
                     .size
             }
+            is DynamicAmount.OtherCreaturesWithSubtypeYouControl -> {
+                // Count other creatures you control with the specific subtype
+                state.getCreaturesControlledBy(controllerId).count { entityId ->
+                    entityId != sourceId &&
+                        state.getComponent<CardComponent>(entityId)?.definition?.typeLine?.subtypes?.contains(amount.subtype) == true
+                }
+            }
         }
     }
 

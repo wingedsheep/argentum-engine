@@ -1,6 +1,6 @@
 package com.wingedsheep.rulesengine.sets.ecl.cards
 
-import com.wingedsheep.rulesengine.ability.CreateTokenEffect
+import com.wingedsheep.rulesengine.ability.CreateTreasureTokensEffect
 import com.wingedsheep.rulesengine.ability.EffectTarget
 import com.wingedsheep.rulesengine.ability.ModifyStatsEffect
 import com.wingedsheep.rulesengine.ability.cardScript
@@ -39,13 +39,7 @@ object RecklessRansacking {
                 toughnessModifier = 2,
                 target = EffectTarget.TargetCreature,
                 untilEndOfTurn = true
-            ) then CreateTokenEffect(
-                count = 1,
-                power = 0,
-                toughness = 0,
-                colors = emptySet(),  // Colorless
-                creatureTypes = setOf("Treasure")  // TODO: Needs proper artifact token support
-            )
+            ) then CreateTreasureTokensEffect()
         )
     }
 }

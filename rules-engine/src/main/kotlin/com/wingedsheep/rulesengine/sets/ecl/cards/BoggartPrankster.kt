@@ -2,7 +2,7 @@ package com.wingedsheep.rulesengine.sets.ecl.cards
 
 import com.wingedsheep.rulesengine.ability.EffectTarget
 import com.wingedsheep.rulesengine.ability.ModifyStatsEffect
-import com.wingedsheep.rulesengine.ability.OnAttack
+import com.wingedsheep.rulesengine.ability.OnYouAttack
 import com.wingedsheep.rulesengine.ability.cardScript
 import com.wingedsheep.rulesengine.card.CardDefinition
 import com.wingedsheep.rulesengine.card.Rarity
@@ -35,10 +35,10 @@ object BoggartPrankster {
 
     val script = cardScript("Boggart Prankster") {
         // Whenever you attack, target attacking Goblin gets +1/+0
-        // TODO: "Whenever you attack" needs OnYouAttack trigger (different from OnAttack self)
-        // TODO: Target restriction "attacking Goblin you control" needs filter combination
+        // TODO: Triggered ability targeting needs TriggeredAbility targeting infrastructure
+        // Target filter should be: Attacking Goblin you control
         triggered(
-            trigger = OnAttack(selfOnly = false),  // Triggers on any attack
+            trigger = OnYouAttack(),
             effect = ModifyStatsEffect(
                 powerModifier = 1,
                 toughnessModifier = 0,

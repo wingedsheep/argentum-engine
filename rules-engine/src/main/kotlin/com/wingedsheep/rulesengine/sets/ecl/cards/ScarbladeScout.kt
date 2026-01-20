@@ -1,7 +1,7 @@
 package com.wingedsheep.rulesengine.sets.ecl.cards
 
+import com.wingedsheep.rulesengine.ability.MillEffect
 import com.wingedsheep.rulesengine.ability.OnEnterBattlefield
-import com.wingedsheep.rulesengine.ability.SurveilEffect
 import com.wingedsheep.rulesengine.ability.cardScript
 import com.wingedsheep.rulesengine.card.CardDefinition
 import com.wingedsheep.rulesengine.card.Rarity
@@ -38,11 +38,10 @@ object ScarbladeScout {
     val script = cardScript("Scarblade Scout") {
         keywords(Keyword.LIFELINK)
 
-        // ETB: Mill 2 (using Surveil as placeholder - mill puts cards directly to graveyard)
-        // TODO: Add proper MillEffect
+        // ETB: Mill 2
         triggered(
             trigger = OnEnterBattlefield(),
-            effect = SurveilEffect(count = 2)  // Close approximation until MillEffect exists
+            effect = MillEffect(count = 2)
         )
     }
 }

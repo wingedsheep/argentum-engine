@@ -1,5 +1,8 @@
 package com.wingedsheep.rulesengine.sets.ecl.cards
 
+import com.wingedsheep.rulesengine.ability.EffectTarget
+import com.wingedsheep.rulesengine.ability.ModifyStatsEffect
+import com.wingedsheep.rulesengine.ability.OnOtherCreatureEnters
 import com.wingedsheep.rulesengine.ability.cardScript
 import com.wingedsheep.rulesengine.card.CardDefinition
 import com.wingedsheep.rulesengine.card.Rarity
@@ -36,7 +39,15 @@ object CrossroadsWatcher {
     val script = cardScript("Crossroads Watcher") {
         keywords(Keyword.TRAMPLE)
 
-        // TODO: Needs OnOtherCreatureEnters trigger and ModifyStatsEffect with EffectTarget.Self
         // Whenever another creature you control enters, this creature gets +1/+0 until end of turn
+        triggered(
+            trigger = OnOtherCreatureEnters(),
+            effect = ModifyStatsEffect(
+                powerModifier = 1,
+                toughnessModifier = 0,
+                target = EffectTarget.Self,
+                untilEndOfTurn = true
+            )
+        )
     }
 }

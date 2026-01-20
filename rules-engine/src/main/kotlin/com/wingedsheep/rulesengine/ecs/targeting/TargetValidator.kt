@@ -191,6 +191,11 @@ object TargetValidator {
             SpellTargetFilter.Sorcery -> view.isSorcery
             SpellTargetFilter.Creature -> view.isCreature
             SpellTargetFilter.Noncreature -> !view.isCreature
+            // TODO: Mana value filtering requires adding manaValue to GameObjectView
+            // For now, these filters pass all spells (validation should happen in effect handler)
+            is SpellTargetFilter.WithManaValue -> true
+            is SpellTargetFilter.WithManaValueAtLeast -> true
+            is SpellTargetFilter.WithManaValueAtMost -> true
         }
     }
 

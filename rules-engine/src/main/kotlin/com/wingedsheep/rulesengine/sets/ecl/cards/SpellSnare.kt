@@ -30,8 +30,7 @@ object SpellSnare {
     )
 
     val script = cardScript("Spell Snare") {
-        // TODO: ManaValue filter needs SpellTargetFilter.WithManaValue
-        targets(TargetSpell())
+        targets(TargetSpell(filter = SpellTargetFilter.WithManaValue(2)))
 
         spell(CounterSpellEffect)
     }

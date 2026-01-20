@@ -2,6 +2,7 @@ package com.wingedsheep.rulesengine.ability
 
 import com.wingedsheep.rulesengine.core.Color
 import com.wingedsheep.rulesengine.core.Keyword
+import com.wingedsheep.rulesengine.core.Subtype
 import com.wingedsheep.rulesengine.ecs.EntityId
 import kotlinx.serialization.Serializable
 
@@ -246,6 +247,23 @@ data class AddColorlessManaEffect(
 }
 
 /**
+ * Add one mana of any color effect.
+ * "{T}: Add one mana of any color."
+ *
+ * The player chooses the color when this ability resolves.
+ */
+@Serializable
+data class AddAnyColorManaEffect(
+    val amount: Int = 1
+) : Effect {
+    override val description: String = if (amount == 1) {
+        "Add one mana of any color"
+    } else {
+        "Add $amount mana of any color"
+    }
+}
+
+/**
  * Add dynamic mana effect where the amount is determined at resolution time.
  * "Add X mana in any combination of {G} and/or {W}, where X is the number of other creatures you control."
  *
@@ -277,6 +295,15 @@ sealed interface DynamicAmount {
     @Serializable
     data object OtherCreaturesYouControl : DynamicAmount {
         override val description: String = "the number of other creatures you control"
+    }
+
+    /**
+     * Count of other creatures with a specific subtype you control.
+     * "the number of other Goblins you control"
+     */
+    @Serializable
+    data class OtherCreaturesWithSubtypeYouControl(val subtype: Subtype) : DynamicAmount {
+        override val description: String = "the number of other ${subtype.value}s you control"
     }
 
     /**
@@ -369,6 +396,21 @@ data class CreateTokenEffect(
     }
 }
 
+/**
+ * Create Treasure artifact tokens.
+ * Treasure tokens have "{T}, Sacrifice this artifact: Add one mana of any color."
+ */
+@Serializable
+data class CreateTreasureTokensEffect(
+    val count: Int = 1
+) : Effect {
+    override val description: String = if (count == 1) {
+        "Create a Treasure token"
+    } else {
+        "Create $count Treasure tokens"
+    }
+}
+
 // =============================================================================
 // Composite Effects
 // =============================================================================
@@ -436,6 +478,24 @@ data class SurveilEffect(
     val count: Int
 ) : Effect {
     override val description: String = "Surveil $count"
+}
+
+/**
+ * Mill N - Put the top N cards of a player's library into their graveyard.
+ * "Mill 3" or "Target player mills 3 cards"
+ */
+@Serializable
+data class MillEffect(
+    val count: Int,
+    val target: EffectTarget = EffectTarget.Controller
+) : Effect {
+    override val description: String = when (target) {
+        is EffectTarget.Controller -> "Mill $count"
+        is EffectTarget.AnyPlayer -> "Target player mills $count"
+        is EffectTarget.EachOpponent -> "Each opponent mills $count"
+        is EffectTarget.Opponent -> "Target opponent mills $count"
+        else -> "${target.description} mills $count"
+    }
 }
 
 /**

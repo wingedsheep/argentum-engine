@@ -1,5 +1,8 @@
 package com.wingedsheep.rulesengine.sets.ecl.cards
 
+import com.wingedsheep.rulesengine.ability.DealDamageEffect
+import com.wingedsheep.rulesengine.ability.EffectTarget
+import com.wingedsheep.rulesengine.ability.OnOtherCreatureWithSubtypeDies
 import com.wingedsheep.rulesengine.ability.cardScript
 import com.wingedsheep.rulesengine.card.CardDefinition
 import com.wingedsheep.rulesengine.card.Rarity
@@ -36,7 +39,13 @@ object BoggartCursecrafter {
     val script = cardScript("Boggart Cursecrafter") {
         keywords(Keyword.DEATHTOUCH)
 
-        // TODO: Needs OnOtherGoblinDeath trigger and DealDamageToEachOpponent effect
         // Whenever another Goblin you control dies, this creature deals 1 damage to each opponent
+        triggered(
+            trigger = OnOtherCreatureWithSubtypeDies(Subtype.GOBLIN),
+            effect = DealDamageEffect(
+                amount = 1,
+                target = EffectTarget.EachOpponent
+            )
+        )
     }
 }

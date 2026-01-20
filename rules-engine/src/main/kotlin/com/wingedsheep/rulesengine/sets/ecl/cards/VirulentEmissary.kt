@@ -1,5 +1,8 @@
 package com.wingedsheep.rulesengine.sets.ecl.cards
 
+import com.wingedsheep.rulesengine.ability.EffectTarget
+import com.wingedsheep.rulesengine.ability.GainLifeEffect
+import com.wingedsheep.rulesengine.ability.OnOtherCreatureEnters
 import com.wingedsheep.rulesengine.ability.cardScript
 import com.wingedsheep.rulesengine.card.CardDefinition
 import com.wingedsheep.rulesengine.card.Rarity
@@ -36,7 +39,10 @@ object VirulentEmissary {
     val script = cardScript("Virulent Emissary") {
         keywords(Keyword.DEATHTOUCH)
 
-        // TODO: Needs OnOtherCreatureEnters trigger and GainLifeEffect
         // Whenever another creature enters under your control, you gain 1 life
+        triggered(
+            trigger = OnOtherCreatureEnters(),
+            effect = GainLifeEffect(1, EffectTarget.Controller)
+        )
     }
 }

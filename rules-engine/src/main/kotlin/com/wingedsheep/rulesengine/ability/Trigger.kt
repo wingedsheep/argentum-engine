@@ -1,5 +1,6 @@
 package com.wingedsheep.rulesengine.ability
 
+import com.wingedsheep.rulesengine.core.Subtype
 import kotlinx.serialization.Serializable
 
 /**
@@ -32,6 +33,21 @@ data class OnEnterBattlefield(
 }
 
 /**
+ * Triggers when another creature you control enters the battlefield.
+ * "Whenever another creature you control enters the battlefield..."
+ */
+@Serializable
+data class OnOtherCreatureEnters(
+    val youControlOnly: Boolean = true
+) : Trigger {
+    override val description: String = if (youControlOnly) {
+        "Whenever another creature you control enters the battlefield"
+    } else {
+        "Whenever another creature enters the battlefield"
+    }
+}
+
+/**
  * Triggers when a permanent leaves the battlefield.
  * "When [this creature] leaves the battlefield..."
  */
@@ -58,6 +74,22 @@ data class OnDeath(
         "When this creature dies"
     } else {
         "Whenever a creature dies"
+    }
+}
+
+/**
+ * Triggers when another creature with a specific subtype you control dies.
+ * "Whenever another Goblin you control dies..."
+ */
+@Serializable
+data class OnOtherCreatureWithSubtypeDies(
+    val subtype: Subtype,
+    val youControlOnly: Boolean = true
+) : Trigger {
+    override val description: String = if (youControlOnly) {
+        "Whenever another ${subtype.value} you control dies"
+    } else {
+        "Whenever another ${subtype.value} dies"
     }
 }
 
@@ -96,6 +128,25 @@ data class OnAttack(
         "Whenever this creature attacks"
     } else {
         "Whenever a creature attacks"
+    }
+}
+
+/**
+ * Triggers when you attack (declare attackers).
+ * "Whenever you attack..."
+ *
+ * This triggers once per combat when you declare one or more attackers,
+ * regardless of how many creatures attack. Different from OnAttack which
+ * triggers for each creature that attacks.
+ */
+@Serializable
+data class OnYouAttack(
+    val minAttackers: Int = 1
+) : Trigger {
+    override val description: String = if (minAttackers > 1) {
+        "Whenever you attack with $minAttackers or more creatures"
+    } else {
+        "Whenever you attack"
     }
 }
 
@@ -211,7 +262,10 @@ data class OnDamageReceived(
 @Serializable
 data class OnSpellCast(
     val controllerOnly: Boolean = true,
-    val spellType: SpellTypeFilter = SpellTypeFilter.ANY
+    val spellType: SpellTypeFilter = SpellTypeFilter.ANY,
+    val manaValueAtLeast: Int? = null,
+    val manaValueAtMost: Int? = null,
+    val manaValueEquals: Int? = null
 ) : Trigger {
     override val description: String = buildString {
         append(if (controllerOnly) "Whenever you cast " else "Whenever a player casts ")
@@ -221,6 +275,9 @@ data class OnSpellCast(
             SpellTypeFilter.NONCREATURE -> "a noncreature spell"
             SpellTypeFilter.INSTANT_OR_SORCERY -> "an instant or sorcery spell"
         })
+        manaValueEquals?.let { append(" with mana value $it") }
+        manaValueAtLeast?.let { append(" with mana value $it or greater") }
+        manaValueAtMost?.let { append(" with mana value $it or less") }
     }
 }
 

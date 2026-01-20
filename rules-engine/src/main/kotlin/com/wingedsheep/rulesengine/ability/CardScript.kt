@@ -164,6 +164,18 @@ class CardScriptBuilder(private val cardName: String) {
         )
     }
 
+    fun manaAbility(effect: AddAnyColorManaEffect) = apply {
+        activatedAbilities.add(
+            ActivatedAbility(
+                id = AbilityId.generate(),
+                cost = AbilityCost.Tap,
+                effect = effect,
+                timingRestriction = TimingRestriction.INSTANT,
+                isManaAbility = true
+            )
+        )
+    }
+
     /**
      * Add a planeswalker loyalty ability.
      * @param loyaltyCost Positive for +X abilities, negative for -X abilities
