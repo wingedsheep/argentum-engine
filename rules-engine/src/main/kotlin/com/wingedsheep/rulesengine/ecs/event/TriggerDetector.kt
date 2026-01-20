@@ -15,6 +15,14 @@ import com.wingedsheep.rulesengine.ecs.components.ControllerComponent
  *
  * Triggers are returned in APNAP (Active Player, Non-Active Player) order for
  * proper stack placement.
+ *
+ * ## Performance
+ *
+ * When a [TriggerIndex] is provided, trigger detection uses O(1) event-to-entity
+ * lookup instead of iterating over all battlefield permanents for each event.
+ * This dramatically improves performance for boards with many permanents.
+ *
+ * Without an index, the detector falls back to O(N) iteration over all permanents.
  */
 class TriggerDetector {
 
@@ -24,17 +32,20 @@ class TriggerDetector {
      * @param state The current game state (for looking up abilities)
      * @param events The events that occurred
      * @param abilityRegistry Provider of triggered abilities for each entity
+     * @param index Optional trigger index for O(1) entity lookup. If not provided,
+     *              falls back to iterating over all battlefield entities.
      * @return List of pending triggers in APNAP order
      */
     fun detectTriggers(
         state: GameState,
         events: List<GameEvent>,
-        abilityRegistry: AbilityRegistry
+        abilityRegistry: AbilityRegistry,
+        index: TriggerIndex? = null
     ): List<PendingTrigger> {
         val triggers = mutableListOf<PendingTrigger>()
 
         for (event in events) {
-            triggers.addAll(detectTriggersForEvent(state, event, abilityRegistry))
+            triggers.addAll(detectTriggersForEvent(state, event, abilityRegistry, index))
         }
 
         // Sort by APNAP order
@@ -68,12 +79,22 @@ class TriggerDetector {
     private fun detectTriggersForEvent(
         state: GameState,
         event: GameEvent,
-        abilityRegistry: AbilityRegistry
+        abilityRegistry: AbilityRegistry,
+        index: TriggerIndex? = null
     ): List<PendingTrigger> {
         val triggers = mutableListOf<PendingTrigger>()
 
-        // Get all permanents on battlefield that might have triggered abilities
-        for (entityId in state.getBattlefield()) {
+        // Get entities to check - either from index (O(1)) or all battlefield entities (O(N))
+        val entitiesToCheck = if (index != null) {
+            // Use index for O(1) lookup
+            index.getEntitiesForEvent(event)
+        } else {
+            // Fall back to checking all battlefield entities
+            state.getBattlefield().toSet()
+        }
+
+        // Check entities for matching triggers
+        for (entityId in entitiesToCheck) {
             val container = state.getEntity(entityId) ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue
             val controllerId = container.get<ControllerComponent>()?.controllerId ?: continue
@@ -96,25 +117,65 @@ class TriggerDetector {
             }
         }
 
+        // OnDealsDamage triggers can respond to both damage-to-player and damage-to-creature events.
+        // These aren't in the index (since they map to multiple categories), so check all entities
+        // that deal damage when we see a damage event.
+        if (event is GameEvent.DamageDealtToPlayer || event is GameEvent.DamageDealtToCreature) {
+            val sourceId = when (event) {
+                is GameEvent.DamageDealtToPlayer -> event.sourceId
+                is GameEvent.DamageDealtToCreature -> event.sourceId
+                else -> null
+            }
+
+            if (sourceId != null && sourceId !in entitiesToCheck) {
+                val container = state.getEntity(sourceId)
+                val cardComponent = container?.get<CardComponent>()
+                val controllerId = container?.get<ControllerComponent>()?.controllerId
+
+                if (cardComponent != null && controllerId != null) {
+                    val abilities = abilityRegistry.getTriggeredAbilities(sourceId, cardComponent.definition)
+                    for (ability in abilities) {
+                        if (ability.trigger is OnDealsDamage &&
+                            matchesTrigger(ability.trigger, event, sourceId, controllerId, state)
+                        ) {
+                            triggers.add(
+                                PendingTrigger(
+                                    ability = ability,
+                                    sourceId = sourceId,
+                                    sourceName = cardComponent.definition.name,
+                                    controllerId = controllerId,
+                                    triggerContext = TriggerContext.fromEvent(event)
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
         // Also check for death triggers (source might not be on battlefield anymore)
         if (event is GameEvent.CreatureDied) {
             val entityId = event.entityId
-            val container = state.getEntity(entityId) ?: return triggers
-            val cardComponent = container.get<CardComponent>() ?: return triggers
-            val controllerId = container.get<ControllerComponent>()?.controllerId ?: return triggers
+            // Skip if already checked via index
+            if (entityId !in entitiesToCheck) {
+                val container = state.getEntity(entityId) ?: return triggers
+                val cardComponent = container.get<CardComponent>() ?: return triggers
+                val controllerId = container.get<ControllerComponent>()?.controllerId ?: return triggers
 
-            val abilities = abilityRegistry.getTriggeredAbilities(entityId, cardComponent.definition)
-            for (ability in abilities) {
-                if (ability.trigger is OnDeath && (ability.trigger as OnDeath).selfOnly) {
-                    triggers.add(
-                        PendingTrigger(
-                            ability = ability,
-                            sourceId = entityId,
-                            sourceName = cardComponent.definition.name,
-                            controllerId = controllerId,
-                            triggerContext = TriggerContext.fromEvent(event)
+                val abilities = abilityRegistry.getTriggeredAbilities(entityId, cardComponent.definition)
+                for (ability in abilities) {
+                    val trigger = ability.trigger
+                    if (trigger is OnDeath && trigger.selfOnly) {
+                        triggers.add(
+                            PendingTrigger(
+                                ability = ability,
+                                sourceId = entityId,
+                                sourceName = cardComponent.definition.name,
+                                controllerId = controllerId,
+                                triggerContext = TriggerContext.fromEvent(event)
+                            )
                         )
-                    )
+                    }
                 }
             }
         }

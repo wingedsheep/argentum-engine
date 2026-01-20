@@ -278,8 +278,17 @@ class GameSession(
         val result = GameEngine.executePlayerAction(state, action)
         return when (result) {
             is GameActionResult.Success -> {
-                gameState = result.state
-                ActionResult.Success(result.state, result.events)
+                var newState = result.state
+                val allEvents = result.events.toMutableList()
+
+                // Check if all players have passed priority
+                // If so, resolve the stack or advance the phase
+                if (newState.turnState.allPlayersPassed()) {
+                    newState = GameEngine.resolvePassedPriority(newState)
+                }
+
+                gameState = newState
+                ActionResult.Success(newState, allEvents)
             }
             is GameActionResult.Failure -> {
                 ActionResult.Failure(result.reason)

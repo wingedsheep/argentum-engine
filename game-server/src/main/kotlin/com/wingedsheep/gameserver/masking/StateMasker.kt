@@ -23,8 +23,10 @@ class StateMasker {
         val playerIds = state.getPlayerIds()
 
         // Mask entities based on zone visibility
+        // Only include visible entities in the entities map - hidden entities are
+        // represented only by zone sizes (MaskedZone.size) to reduce message size.
         val maskedEntities = mutableMapOf<EntityId, MaskedEntity>()
-        val maskedZones = mutableMapOf<ZoneId, MaskedZone>()
+        val maskedZones = mutableListOf<MaskedZone>()
 
         for ((zoneId, entityIds) in state.zones) {
             val isVisible = isZoneVisibleTo(zoneId, viewingPlayerId)
@@ -34,18 +36,19 @@ class StateMasker {
                 size = entityIds.size,
                 isVisible = isVisible
             )
-            maskedZones[zoneId] = maskedZone
+            maskedZones.add(maskedZone)
 
-            // Mask entities in this zone
-            // Note: ComponentContainer is not sent to clients because Component polymorphic
-            // serialization is not configured. Entity data should be sent via dedicated
-            // serializable DTOs when needed by the client.
-            for (entityId in entityIds) {
-                maskedEntities[entityId] = MaskedEntity(
-                    id = entityId,
-                    isVisible = isVisible,
-                    components = null  // Components not serialized to client
-                )
+            // Only include entities from visible zones in the entities map.
+            // Hidden zone entities (like library cards) are omitted to reduce
+            // message size - the client only needs the zone size for these.
+            if (isVisible) {
+                for (entityId in entityIds) {
+                    maskedEntities[entityId] = MaskedEntity(
+                        id = entityId,
+                        isVisible = true,
+                        components = null  // Components not serialized to client
+                    )
+                }
             }
         }
 

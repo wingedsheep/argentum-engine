@@ -35,8 +35,9 @@ data class MaskedGameState(
      * Zone contents.
      * For hidden zones (library), only size is provided.
      * For hand, opponent's hand shows only count.
+     * Use findZone() or getZone() to look up zones by ZoneId.
      */
-    val zones: Map<ZoneId, MaskedZone>,
+    val zones: List<MaskedZone>,
 
     /**
      * Player information visible to this player.

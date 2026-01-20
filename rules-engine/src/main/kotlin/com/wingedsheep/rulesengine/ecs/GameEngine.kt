@@ -297,6 +297,11 @@ object GameEngine {
             val newTurnState = turnState.advanceStep()
             var newState = state.copy(turnState = newTurnState)
 
+            // Detect maintenance actions if we advanced to a new turn
+            if (newTurnState.turnNumber > turnState.turnNumber) {
+                newState = handleTurnStart(newState, newTurnState.activePlayer)
+            }
+
             // When transitioning to DECLARE_BLOCKERS, capture eligible blockers
             // (MTG Rule 509.1a: creatures entering after blockers are declared cannot block)
             if (newTurnState.step == com.wingedsheep.rulesengine.game.Step.DECLARE_BLOCKERS) {
@@ -305,6 +310,31 @@ object GameEngine {
 
             newState
         }
+    }
+
+    /**
+     * Handle maintenance actions at the start of a turn.
+     * - Reset lands played for all players.
+     * - Remove summoning sickness from the active player's creatures.
+     */
+    private fun handleTurnStart(state: GameState, activePlayerId: EntityId): GameState {
+        var currentState = state
+
+        // Reset lands played for all players
+        for (playerId in currentState.getPlayerIds()) {
+            val result = actionHandler.execute(currentState, ResetLandsPlayed(playerId))
+            if (result is GameActionResult.Success) {
+                currentState = result.state
+            }
+        }
+
+        // Remove summoning sickness for the active player's creatures
+        val sicknessResult = actionHandler.execute(currentState, RemoveAllSummoningSickness(activePlayerId))
+        if (sicknessResult is GameActionResult.Success) {
+            currentState = sicknessResult.state
+        }
+
+        return currentState
     }
 
     /**
@@ -326,24 +356,28 @@ object GameEngine {
     }
 
     /**
-     * Execute a player action that resets the consecutive passes counter.
-     * Use this for any action other than passing priority.
+     * Execute a player action, handling the consecutive passes counter appropriately.
+     *
+     * For PassPriority: The action handler already increments consecutive passes.
+     * For other actions: Reset consecutive passes to 0 (the action "breaks" the pass chain).
      *
      * @param state Current game state
      * @param action The action to execute
-     * @return Result with updated state (passes reset to 0 on success)
+     * @return Result with updated state
      */
     fun executePlayerAction(state: GameState, action: GameAction): GameActionResult {
         val result = actionHandler.execute(state, action)
         return when (result) {
             is GameActionResult.Success -> {
-                // Reset consecutive passes after any non-pass action
-                val newTurnState = result.state.turnState.resetConsecutivePasses()
-                GameActionResult.Success(
-                    result.state.copy(turnState = newTurnState),
-                    result.action,
-                    result.events
-                )
+                // Only reset consecutive passes for non-pass actions.
+                // PassPriority already handles the pass counter in the action handler.
+                val newState = if (action is PassPriority) {
+                    result.state
+                } else {
+                    val newTurnState = result.state.turnState.resetConsecutivePasses()
+                    result.state.copy(turnState = newTurnState)
+                }
+                GameActionResult.Success(newState, result.action, result.events)
             }
             is GameActionResult.Failure -> result
         }

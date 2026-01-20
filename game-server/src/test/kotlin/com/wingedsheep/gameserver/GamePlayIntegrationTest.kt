@@ -57,6 +57,11 @@ class GamePlayIntegrationTest(
         classDiscriminator = "type"
     }
 
+    // Shared WebSocket container with long timeout for all test clients
+    val wsContainer = org.apache.tomcat.websocket.WsWebSocketContainer().apply {
+        defaultMaxSessionIdleTimeout = 300_000L // 5 minutes
+    }
+
     // Track clients for cleanup
     val activeClients = mutableListOf<TestWebSocketClient>()
 
@@ -77,7 +82,7 @@ class GamePlayIntegrationTest(
     // =========================================================================
 
     fun createClient(): TestWebSocketClient {
-        val client = TestWebSocketClient(json)
+        val client = TestWebSocketClient(json, wsContainer)
         activeClients.add(client)
         return client
     }
@@ -171,22 +176,22 @@ class GamePlayIntegrationTest(
             ?: error("Player $playerId not found in state")
 
     fun MaskedGameState.hand(playerId: EntityId): MaskedZone =
-        zones.entries.find { it.key.type == ZoneType.HAND && it.key.ownerId == playerId }?.value
+        zones.find { it.zoneId.type == ZoneType.HAND && it.zoneId.ownerId == playerId }
             ?: error("Hand zone for $playerId not found")
 
     fun MaskedGameState.library(playerId: EntityId): MaskedZone =
-        zones.entries.find { it.key.type == ZoneType.LIBRARY && it.key.ownerId == playerId }?.value
+        zones.find { it.zoneId.type == ZoneType.LIBRARY && it.zoneId.ownerId == playerId }
             ?: error("Library zone for $playerId not found")
 
     fun MaskedGameState.graveyard(playerId: EntityId): MaskedZone =
-        zones.entries.find { it.key.type == ZoneType.GRAVEYARD && it.key.ownerId == playerId }?.value
+        zones.find { it.zoneId.type == ZoneType.GRAVEYARD && it.zoneId.ownerId == playerId }
             ?: error("Graveyard zone for $playerId not found")
 
     fun MaskedGameState.battlefield(): MaskedZone =
-        zones[ZoneId.BATTLEFIELD] ?: error("Battlefield zone not found")
+        zones.find { it.zoneId == ZoneId.BATTLEFIELD } ?: error("Battlefield zone not found")
 
     fun MaskedGameState.stack(): MaskedZone =
-        zones[ZoneId.STACK] ?: error("Stack zone not found")
+        zones.find { it.zoneId == ZoneId.STACK } ?: error("Stack zone not found")
 
     /**
      * Sets up a game and completes the mulligan phase with both players keeping their hands.
@@ -292,7 +297,10 @@ class GamePlayIntegrationTest(
         val currentTurn = player1.client.requireLatestState().turnNumber
         repeat(maxPasses) {
             val state = player1.client.requireLatestState()
-            if (state.turnNumber > currentTurn) return state
+            // Wait until turn advances AND we reach precombat main phase (where lands can be played)
+            if (state.turnNumber > currentTurn && state.currentPhase == Phase.PRECOMBAT_MAIN) {
+                return state
+            }
             if (state.isGameOver) error("Game ended while advancing turn")
 
             val priority = priorityPlayer()
@@ -1318,15 +1326,17 @@ data class PlayerContext(
     val name: String
 )
 
-class TestWebSocketClient(private val json: Json) {
+class TestWebSocketClient(private val json: Json, private val container: jakarta.websocket.WebSocketContainer) {
     private var session: WebSocketSession? = null
     val messages = CopyOnWriteArrayList<ServerMessage>()
     private val connectLatch = CountDownLatch(1)
     private val closed = AtomicBoolean(false)
 
+    val isOpen: Boolean get() = session?.isOpen == true && !closed.get()
+
     suspend fun connect(url: String) {
         withContext(Dispatchers.IO) {
-            val client = StandardWebSocketClient()
+            val client = StandardWebSocketClient(container)
             session = client.execute(
                 object : TextWebSocketHandler() {
                     override fun afterConnectionEstablished(session: WebSocketSession) {
@@ -1349,6 +1359,7 @@ class TestWebSocketClient(private val json: Json) {
 
                     override fun handleTransportError(session: WebSocketSession, exception: Throwable) {
                         // Log transport errors for debugging
+                        closed.set(true)
                     }
                 },
                 WebSocketHttpHeaders(),
@@ -1363,6 +1374,7 @@ class TestWebSocketClient(private val json: Json) {
 
     fun send(message: ClientMessage) {
         check(!closed.get()) { "Cannot send on closed connection" }
+        check(session?.isOpen == true) { "WebSocket session is not open" }
         session?.sendMessage(TextMessage(json.encodeToString(message)))
     }
 
