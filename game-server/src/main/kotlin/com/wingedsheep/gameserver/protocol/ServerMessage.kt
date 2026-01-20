@@ -65,6 +65,15 @@ sealed interface ServerMessage {
     ) : ServerMessage
 
     /**
+     * Basic card info for display in mulligan UI.
+     */
+    @Serializable
+    data class MulliganCardInfo(
+        val name: String,
+        val imageUri: String? = null
+    )
+
+    /**
      * Mulligan decision required. Sent when player must choose to keep or mulligan.
      */
     @Serializable
@@ -75,7 +84,9 @@ sealed interface ServerMessage {
         /** How many times this player has mulliganed (0 = first look at opening hand) */
         val mulliganCount: Int,
         /** If keeping, how many cards must be put on bottom */
-        val cardsToPutOnBottom: Int
+        val cardsToPutOnBottom: Int,
+        /** Card info for display (entity ID -> card info) */
+        val cards: Map<EntityId, MulliganCardInfo> = emptyMap()
     ) : ServerMessage
 
     /**

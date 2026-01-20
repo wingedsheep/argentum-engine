@@ -238,10 +238,23 @@ class GameSession(
     fun getMulliganDecision(playerId: EntityId): ServerMessage.MulliganDecision {
         val hand = getHand(playerId)
         val count = mulliganCounts[playerId] ?: 0
+        val state = gameState
+        val cards = if (state != null) {
+            hand.associateWith { entityId ->
+                val cardComponent = state.getComponent<com.wingedsheep.rulesengine.ecs.components.CardComponent>(entityId)
+                ServerMessage.MulliganCardInfo(
+                    name = cardComponent?.name ?: "Unknown",
+                    imageUri = cardComponent?.definition?.metadata?.imageUri
+                )
+            }
+        } else {
+            emptyMap()
+        }
         return ServerMessage.MulliganDecision(
             hand = hand,
             mulliganCount = count,
-            cardsToPutOnBottom = count
+            cardsToPutOnBottom = count,
+            cards = cards
         )
     }
 

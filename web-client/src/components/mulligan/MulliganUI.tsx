@@ -1,5 +1,4 @@
 import { useGameStore, type MulliganState } from '../../store/gameStore'
-import { useCard } from '../../store/selectors'
 import type { EntityId } from '../../types'
 
 /**
@@ -13,7 +12,7 @@ export function MulliganUI() {
   return (
     <div
       style={{
-        position: 'absolute',
+        position: 'fixed',
         top: 0,
         left: 0,
         right: 0,
@@ -25,6 +24,7 @@ export function MulliganUI() {
         justifyContent: 'center',
         gap: 24,
         pointerEvents: 'auto',
+        zIndex: 1000,
       }}
     >
       {mulliganState.phase === 'deciding' ? (
@@ -64,9 +64,18 @@ function MulliganDecision({ state }: { state: MulliganState }) {
           padding: 16,
         }}
       >
-        {state.hand.map((cardId) => (
-          <MulliganCard key={cardId} cardId={cardId} selectable={false} />
-        ))}
+        {state.hand.map((cardId) => {
+          const cardInfo = state.cards[cardId]
+          return (
+            <MulliganCard
+              key={cardId}
+              cardId={cardId}
+              cardName={cardInfo?.name || 'Unknown'}
+              imageUri={cardInfo?.imageUri}
+              selectable={false}
+            />
+          )
+        })}
       </div>
 
       {/* Action buttons */}
@@ -133,15 +142,20 @@ function ChooseBottomCards({ state }: { state: MulliganState }) {
           padding: 16,
         }}
       >
-        {state.hand.map((cardId) => (
-          <MulliganCard
-            key={cardId}
-            cardId={cardId}
-            selectable
-            isSelected={state.selectedCards.includes(cardId)}
-            onClick={() => toggleMulliganCard(cardId)}
-          />
-        ))}
+        {state.hand.map((cardId) => {
+          const cardInfo = state.cards[cardId]
+          return (
+            <MulliganCard
+              key={cardId}
+              cardId={cardId}
+              cardName={cardInfo?.name || 'Unknown'}
+              imageUri={cardInfo?.imageUri}
+              selectable
+              isSelected={state.selectedCards.includes(cardId)}
+              onClick={() => toggleMulliganCard(cardId)}
+            />
+          )
+        })}
       </div>
 
       {/* Confirm button */}
@@ -166,78 +180,81 @@ function ChooseBottomCards({ state }: { state: MulliganState }) {
 
 /**
  * Card display for mulligan UI.
+ * Uses imageUri from server if available, otherwise falls back to Scryfall API.
  */
 function MulliganCard({
-  cardId,
+  cardId: _cardId,
+  cardName,
+  imageUri,
   selectable,
   isSelected = false,
   onClick,
 }: {
   cardId: EntityId
+  cardName: string
+  imageUri?: string | null | undefined
   selectable: boolean
   isSelected?: boolean
   onClick?: () => void
 }) {
-  const card = useCard(cardId)
-
-  if (!card) return null
+  // Use provided imageUri or fall back to Scryfall API
+  const cardImageUrl = imageUri || `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&format=image&version=normal`
 
   return (
     <div
       onClick={selectable ? onClick : undefined}
       style={{
-        width: 120,
-        height: 168,
-        backgroundColor: isSelected ? '#003300' : '#222',
-        border: isSelected ? '3px solid #00ff00' : '1px solid #444',
-        borderRadius: 8,
+        width: 130,
+        height: 182,
+        backgroundColor: isSelected ? '#003300' : '#1a1a1a',
+        border: isSelected ? '3px solid #00ff00' : '2px solid #444',
+        borderRadius: 10,
         display: 'flex',
         flexDirection: 'column',
-        padding: 8,
+        overflow: 'hidden',
         cursor: selectable ? 'pointer' : 'default',
         transition: 'all 0.15s',
-        transform: isSelected ? 'translateY(-8px)' : 'none',
+        transform: isSelected ? 'translateY(-8px) scale(1.05)' : 'none',
+        boxShadow: isSelected ? '0 8px 20px rgba(0, 255, 0, 0.3)' : '0 4px 8px rgba(0, 0, 0, 0.5)',
       }}
     >
-      {/* Card name */}
-      <span
+      {/* Card image */}
+      <img
+        src={cardImageUrl}
+        alt={cardName}
         style={{
-          color: 'white',
-          fontSize: 12,
-          fontWeight: 500,
-          marginBottom: 4,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+        }}
+        onError={(e) => {
+          // Hide image on error and show placeholder
+          e.currentTarget.style.display = 'none'
+        }}
+      />
+
+      {/* Fallback text (shown if image fails) */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          padding: '8px',
+          display: 'none', // Will be shown via CSS when image fails
         }}
       >
-        {card.name}
-      </span>
-
-      {/* Mana cost */}
-      <span style={{ color: '#888', fontSize: 11 }}>{card.manaCost}</span>
-
-      {/* Type line */}
-      <span
-        style={{
-          color: '#666',
-          fontSize: 10,
-          marginTop: 'auto',
-        }}
-      >
-        {card.typeLine}
-      </span>
-
-      {/* P/T for creatures */}
-      {card.power !== null && card.toughness !== null && (
         <span
           style={{
             color: 'white',
-            fontSize: 12,
-            fontWeight: 'bold',
-            alignSelf: 'flex-end',
+            fontSize: 11,
+            fontWeight: 500,
           }}
         >
-          {card.power}/{card.toughness}
+          {cardName}
         </span>
-      )}
+      </div>
     </div>
   )
 }

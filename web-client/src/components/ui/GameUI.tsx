@@ -1,6 +1,6 @@
+import { useState } from 'react'
 import { useGameStore } from '../../store/gameStore'
 import { LifeCounter } from './LifeCounter'
-import { ManaPool } from './ManaPool'
 import { PhaseIndicator } from './PhaseIndicator'
 import { ActionMenu } from './ActionMenu'
 import { TargetingOverlay2D } from '../targeting/TargetingOverlay'
@@ -109,10 +109,8 @@ export function GameUI() {
           />
         )}
 
-        {/* Mana pool */}
-        {viewingPlayer?.manaPool && (
-          <ManaPool manaPool={viewingPlayer.manaPool} />
-        )}
+        {/* Mana pool - currently not sent by server */}
+        {/* TODO: Add mana pool display when server sends MaskedPlayer.manaPool */}
       </div>
 
       {/* Action menu (centered, when card selected) */}
@@ -140,12 +138,21 @@ function ConnectionOverlay({
   error: string | undefined
 }) {
   const createGame = useGameStore((state) => state.createGame)
+  const joinGame = useGameStore((state) => state.joinGame)
+  const [joinSessionId, setJoinSessionId] = useState('')
 
-  // Simple test deck
+  // Simple test deck using cards from PortalSet
   const testDeck = {
-    'Forest': 20,
-    'Grizzly Bears': 20,
-    'Giant Growth': 20,
+    'Forest': 24,
+    'Grizzly Bears': 16,
+    'Monstrous Growth': 10,
+    'Gorilla Warrior': 10,
+  }
+
+  const handleJoin = () => {
+    if (joinSessionId.trim()) {
+      joinGame(joinSessionId.trim(), testDeck)
+    }
   }
 
   return (
@@ -175,7 +182,7 @@ function ConnectionOverlay({
       )}
 
       {status === 'connected' && !sessionId && (
-        <div style={{ display: 'flex', gap: 16 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24, alignItems: 'center' }}>
           <button
             onClick={() => createGame(testDeck)}
             style={{
@@ -190,6 +197,46 @@ function ConnectionOverlay({
           >
             Create Game
           </button>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#666' }}>
+            <div style={{ width: 60, height: 1, backgroundColor: '#666' }} />
+            <span>or</span>
+            <div style={{ width: 60, height: 1, backgroundColor: '#666' }} />
+          </div>
+
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input
+              type="text"
+              value={joinSessionId}
+              onChange={(e) => setJoinSessionId(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
+              placeholder="Enter Session ID"
+              style={{
+                padding: '12px 16px',
+                fontSize: 16,
+                backgroundColor: '#222',
+                color: 'white',
+                border: '1px solid #444',
+                borderRadius: 8,
+                width: 200,
+              }}
+            />
+            <button
+              onClick={handleJoin}
+              disabled={!joinSessionId.trim()}
+              style={{
+                padding: '12px 24px',
+                fontSize: 18,
+                backgroundColor: joinSessionId.trim() ? '#00aa44' : '#333',
+                color: 'white',
+                border: 'none',
+                borderRadius: 8,
+                cursor: joinSessionId.trim() ? 'pointer' : 'not-allowed',
+              }}
+            >
+              Join Game
+            </button>
+          </div>
         </div>
       )}
 

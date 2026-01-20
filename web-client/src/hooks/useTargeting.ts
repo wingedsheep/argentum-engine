@@ -120,8 +120,8 @@ export function useTargeting() {
     (entityId: EntityId): [number, number, number] | null => {
       if (!gameState) return null
 
-      const card = gameState.cards[entityId]
-      if (!card) {
+      const entity = gameState.entities[entityId]
+      if (!entity) {
         // Might be a player
         const player = gameState.players.find((p) => p.playerId === entityId)
         if (player) {

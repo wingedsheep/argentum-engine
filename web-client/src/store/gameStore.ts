@@ -24,6 +24,14 @@ import { GameWebSocket, getWebSocketUrl, type ConnectionStatus } from '../networ
 import { handleServerMessage, createLoggingHandlers, type MessageHandlers } from '../network/messageHandlers'
 
 /**
+ * Mulligan card info.
+ */
+export interface MulliganCardInfo {
+  name: string
+  imageUri: string | null
+}
+
+/**
  * Mulligan state during the mulligan phase.
  */
 export interface MulliganState {
@@ -32,6 +40,7 @@ export interface MulliganState {
   mulliganCount: number
   cardsToPutOnBottom: number
   selectedCards: readonly EntityId[]
+  cards: Record<EntityId, MulliganCardInfo>
 }
 
 /**
@@ -160,20 +169,23 @@ export const useGameStore = create<GameStore>()(
             mulliganCount: msg.mulliganCount,
             cardsToPutOnBottom: msg.cardsToPutOnBottom,
             selectedCards: [],
+            cards: msg.cards || {},
           },
         })
       },
 
       onChooseBottomCards: (msg) => {
-        set({
+        set((state) => ({
           mulliganState: {
             phase: 'choosingBottomCards',
             hand: msg.hand,
             mulliganCount: 0,
             cardsToPutOnBottom: msg.cardsToPutOnBottom,
             selectedCards: [],
+            // Preserve cards from the deciding phase
+            cards: state.mulliganState?.cards || {},
           },
-        })
+        }))
       },
 
       onMulliganComplete: () => {
@@ -225,6 +237,12 @@ export const useGameStore = create<GameStore>()(
 
       // Connection actions
       connect: (playerName) => {
+        // Prevent multiple connection attempts
+        const { connectionStatus } = get()
+        if (connectionStatus === 'connecting' || connectionStatus === 'connected') {
+          return
+        }
+
         if (ws) {
           ws.disconnect()
         }

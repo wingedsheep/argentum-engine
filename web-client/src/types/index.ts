@@ -42,6 +42,7 @@ export {
 // Game State
 export type {
   ClientGameState,
+  MaskedEntity,
   ClientCard,
   ClientZone,
   ClientPlayer,

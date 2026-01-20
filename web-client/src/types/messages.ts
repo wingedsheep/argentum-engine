@@ -67,6 +67,14 @@ export interface LegalActionInfo {
 }
 
 /**
+ * Card info for mulligan display.
+ */
+export interface MulliganCardInfo {
+  readonly name: string
+  readonly imageUri: string | null
+}
+
+/**
  * Mulligan decision required.
  */
 export interface MulliganDecisionMessage {
@@ -74,6 +82,7 @@ export interface MulliganDecisionMessage {
   readonly hand: readonly EntityId[]
   readonly mulliganCount: number
   readonly cardsToPutOnBottom: number
+  readonly cards: Record<EntityId, MulliganCardInfo>
 }
 
 /**

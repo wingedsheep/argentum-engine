@@ -3,14 +3,14 @@ import { EntityId, ZoneId } from './entities'
 
 /**
  * Client-facing game state DTO.
- * Matches backend ClientGameState.kt
+ * Matches backend MaskedGameState.kt
  */
 export interface ClientGameState {
   /** The player viewing this state */
   readonly viewingPlayerId: EntityId
 
-  /** All visible cards/permanents */
-  readonly cards: Record<EntityId, ClientCard>
+  /** All visible entities with their components (raw ECS data) */
+  readonly entities: Record<EntityId, MaskedEntity>
 
   /** Zone information */
   readonly zones: readonly ClientZone[]
@@ -36,9 +36,17 @@ export interface ClientGameState {
 
   /** The winner, if the game is over */
   readonly winnerId: EntityId | null
+}
 
-  /** Combat state, if in combat */
-  readonly combat: ClientCombatState | null
+/**
+ * A masked entity from the server.
+ * Contains raw component data that needs to be extracted.
+ */
+export interface MaskedEntity {
+  readonly id: EntityId
+  readonly isVisible: boolean
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  readonly components: Record<string, any> | null
 }
 
 /**
@@ -123,13 +131,13 @@ export interface ClientCard {
 
 /**
  * Zone information for client display.
- * Matches backend ClientZone.kt
+ * Matches backend MaskedZone.kt
  */
 export interface ClientZone {
   readonly zoneId: ZoneId
 
-  /** Card IDs in this zone, in order */
-  readonly cardIds: readonly EntityId[]
+  /** Entity IDs in this zone, in order (may be empty for hidden zones) */
+  readonly entityIds: readonly EntityId[]
 
   /** Number of cards in the zone (always available, even for hidden zones) */
   readonly size: number
@@ -140,7 +148,7 @@ export interface ClientZone {
 
 /**
  * Player information for client display.
- * Matches backend ClientPlayer.kt
+ * Matches backend MaskedPlayer.kt
  */
 export interface ClientPlayer {
   readonly playerId: EntityId
@@ -152,9 +160,6 @@ export interface ClientPlayer {
   readonly graveyardSize: number
   readonly landsPlayedThisTurn: number
   readonly hasLost: boolean
-
-  /** Mana in mana pool (only visible for own player) */
-  readonly manaPool: ClientManaPool | null
 }
 
 /**
