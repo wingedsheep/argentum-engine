@@ -7,6 +7,8 @@ import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.components.*
 import com.wingedsheep.rulesengine.ecs.layers.GameObjectView
+import com.wingedsheep.rulesengine.ecs.layers.ModifierProvider
+import com.wingedsheep.rulesengine.ecs.layers.ProjectionCache
 import com.wingedsheep.rulesengine.ecs.layers.StateProjector
 import com.wingedsheep.rulesengine.game.Step
 import com.wingedsheep.rulesengine.zone.ZoneType
@@ -40,19 +42,33 @@ class LegalActionCalculator {
      * @param abilityRegistry Optional registry for looking up abilities
      * @param projector Optional StateProjector for using projected state (layer-modified keywords/P/T).
      *                  If not provided, a default projector with no modifiers will be used.
+     * @param cache Optional ProjectionCache for caching projected views across multiple queries.
+     *              When provided, dramatically improves performance for complex board states.
+     * @param modifierProvider Optional ModifierProvider for collecting continuous effects.
      * @return A LegalActions object containing all available actions
      */
     fun calculateLegalActions(
         state: GameState,
         playerId: EntityId,
         abilityRegistry: AbilityRegistry? = null,
-        projector: StateProjector? = null
+        projector: StateProjector? = null,
+        cache: ProjectionCache? = null,
+        modifierProvider: ModifierProvider? = null
     ): LegalActions {
         // Always can pass priority if it's this player's priority
         val hasPriority = hasActivePriority(state, playerId)
 
-        // Use provided projector or create a default one (no modifiers)
-        val effectiveProjector = projector ?: StateProjector(state)
+        // Use provided projector, or get one from cache, or create a default one
+        val effectiveProjector = projector
+            ?: cache?.getProjector(state, modifierProvider)
+            ?: StateProjector(state)
+
+        // Wrap projector in a cache-aware accessor if cache is provided
+        val viewAccessor: (EntityId) -> GameObjectView? = if (cache != null) {
+            { entityId -> cache.getView(state, entityId, modifierProvider) }
+        } else {
+            { entityId -> effectiveProjector.getView(entityId) }
+        }
 
         return LegalActions(
             playerId = playerId,
@@ -60,8 +76,8 @@ class LegalActionCalculator {
             playableLands = if (hasPriority) getPlayableLands(state, playerId) else emptyList(),
             castableSpells = if (hasPriority) getCastableSpells(state, playerId) else emptyList(),
             activatableAbilities = if (hasPriority) getActivatableAbilities(state, playerId, abilityRegistry) else emptyList(),
-            declarableAttackers = getDeclarableAttackers(state, playerId, effectiveProjector),
-            declarableBlockers = getDeclarableBlockers(state, playerId, effectiveProjector)
+            declarableAttackers = getDeclarableAttackers(state, playerId, viewAccessor),
+            declarableBlockers = getDeclarableBlockers(state, playerId, viewAccessor)
         )
     }
 
@@ -222,12 +238,14 @@ class LegalActionCalculator {
 
     /**
      * Get all creatures that can be declared as attackers.
-     * Uses the StateProjector to get layer-modified keywords and P/T values.
+     * Uses the view accessor to get layer-modified keywords and P/T values.
+     *
+     * @param viewAccessor Function to get projected views, allowing cache usage
      */
     private fun getDeclarableAttackers(
         state: GameState,
         playerId: EntityId,
-        projector: StateProjector
+        viewAccessor: (EntityId) -> GameObjectView?
     ): List<DeclarableAttacker> {
         val step = state.turnState.step
 
@@ -238,7 +256,7 @@ class LegalActionCalculator {
         // Find all creatures controlled by player that can attack
         return state.getBattlefield().mapNotNull { entityId ->
             // Get the projected view for layer-modified state
-            val view = projector.getView(entityId) ?: return@mapNotNull null
+            val view = viewAccessor(entityId) ?: return@mapNotNull null
 
             // Must be a creature controlled by player (using projected values)
             if (!view.isCreature) return@mapNotNull null
@@ -273,12 +291,14 @@ class LegalActionCalculator {
 
     /**
      * Get all creatures that can be declared as blockers.
-     * Uses the StateProjector to get layer-modified keywords and check evasion abilities.
+     * Uses the view accessor to get layer-modified keywords and check evasion abilities.
+     *
+     * @param viewAccessor Function to get projected views, allowing cache usage
      */
     private fun getDeclarableBlockers(
         state: GameState,
         playerId: EntityId,
-        projector: StateProjector
+        viewAccessor: (EntityId) -> GameObjectView?
     ): List<DeclarableBlocker> {
         val step = state.turnState.step
 
@@ -293,14 +313,14 @@ class LegalActionCalculator {
         val attackerViews = state.getBattlefield().mapNotNull { entityId ->
             val container = state.getEntity(entityId) ?: return@mapNotNull null
             if (!container.has<AttackingComponent>()) return@mapNotNull null
-            val view = projector.getView(entityId) ?: return@mapNotNull null
+            val view = viewAccessor(entityId) ?: return@mapNotNull null
             entityId to view
         }
 
         // Find all creatures controlled by player that can block
         return state.getBattlefield().flatMap { blockerId ->
             // Get the projected view for layer-modified state
-            val blockerView = projector.getView(blockerId) ?: return@flatMap emptyList()
+            val blockerView = viewAccessor(blockerId) ?: return@flatMap emptyList()
 
             // Must be a creature controlled by player (using projected values)
             if (!blockerView.isCreature) return@flatMap emptyList<DeclarableBlocker>()
