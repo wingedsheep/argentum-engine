@@ -1348,3 +1348,205 @@ data class DealDamageExileOnDeathEffect(
     }
 }
 
+// =============================================================================
+// Life Payment Effects
+// =============================================================================
+
+/**
+ * Lose half your life, rounded up.
+ * Used for cards like Cruel Bargain.
+ */
+@Serializable
+data class LoseHalfLifeEffect(
+    val roundUp: Boolean = true,
+    val target: EffectTarget = EffectTarget.Controller
+) : Effect {
+    override val description: String = when (target) {
+        EffectTarget.Controller -> "You lose half your life${if (roundUp) ", rounded up" else ", rounded down"}"
+        else -> "${target.description} loses half their life${if (roundUp) ", rounded up" else ", rounded down"}"
+    }
+}
+
+/**
+ * Target player's owner gains life equal to a fixed amount.
+ * Used for effects like "Its owner gains 4 life" (Path of Peace).
+ * This targets the owner of the previously targeted permanent.
+ */
+@Serializable
+data class OwnerGainsLifeEffect(
+    val amount: Int
+) : Effect {
+    override val description: String = "Its owner gains $amount life"
+}
+
+// =============================================================================
+// Phase Skip Effects
+// =============================================================================
+
+/**
+ * Target player skips their combat phases during their next turn.
+ * Used for cards like False Peace.
+ */
+@Serializable
+data class SkipCombatPhasesEffect(
+    val target: EffectTarget = EffectTarget.AnyPlayer
+) : Effect {
+    override val description: String = "${target.description} skips all combat phases of their next turn"
+}
+
+/**
+ * Target player's creatures and lands don't untap during their next untap step.
+ * Used for cards like Exhaustion.
+ */
+@Serializable
+data class SkipUntapEffect(
+    val target: EffectTarget = EffectTarget.Opponent,
+    val affectsCreatures: Boolean = true,
+    val affectsLands: Boolean = true
+) : Effect {
+    override val description: String = buildString {
+        val affectedTypes = listOfNotNull(
+            if (affectsCreatures) "Creatures" else null,
+            if (affectsLands) "lands" else null
+        ).joinToString(" and ")
+        append("$affectedTypes ${target.description} controls don't untap during their next untap step")
+    }
+}
+
+// =============================================================================
+// X Spell Effects (Dynamic Amount)
+// =============================================================================
+
+/**
+ * Deal X damage where X is determined by the spell's X value.
+ * Used for cards like Blaze.
+ */
+@Serializable
+data class DealXDamageEffect(
+    val target: EffectTarget
+) : Effect {
+    override val description: String = "Deal X damage to ${target.description}"
+}
+
+/**
+ * Each player draws X cards where X is determined by the spell's X value.
+ * Used for cards like Prosperity.
+ */
+@Serializable
+data class EachPlayerDrawsXEffect(
+    val includeController: Boolean = true,
+    val includeOpponents: Boolean = true
+) : Effect {
+    override val description: String = when {
+        includeController && includeOpponents -> "Each player draws X cards"
+        includeController -> "You draw X cards"
+        includeOpponents -> "Each opponent draws X cards"
+        else -> "Draw X cards"
+    }
+}
+
+// =============================================================================
+// Grant Keyword to Group Effects
+// =============================================================================
+
+/**
+ * Grant a keyword to multiple creatures until end of turn.
+ * Used for cards like Nature's Cloak: "Green creatures you control gain forestwalk until end of turn."
+ *
+ * @property keyword The keyword to grant
+ * @property filter Which creatures are affected
+ */
+@Serializable
+data class GrantKeywordToGroupEffect(
+    val keyword: Keyword,
+    val filter: CreatureGroupFilter,
+    val untilEndOfTurn: Boolean = true
+) : Effect {
+    override val description: String = buildString {
+        append("${filter.description} gain ${keyword.displayName.lowercase()}")
+        if (untilEndOfTurn) append(" until end of turn")
+    }
+}
+
+/**
+ * Filter for groups of creatures affected by mass effects.
+ */
+@Serializable
+sealed interface CreatureGroupFilter {
+    val description: String
+
+    /** All creatures you control */
+    @Serializable
+    data object AllYouControl : CreatureGroupFilter {
+        override val description: String = "Creatures you control"
+    }
+
+    /** All creatures opponents control */
+    @Serializable
+    data object AllOpponentsControl : CreatureGroupFilter {
+        override val description: String = "Creatures your opponents control"
+    }
+
+    /** All creatures */
+    @Serializable
+    data object All : CreatureGroupFilter {
+        override val description: String = "All creatures"
+    }
+
+    /** Creatures you control with a specific color */
+    @Serializable
+    data class ColorYouControl(val color: Color) : CreatureGroupFilter {
+        override val description: String = "${color.displayName} creatures you control"
+    }
+
+    /** Creatures you control with a specific keyword */
+    @Serializable
+    data class WithKeywordYouControl(val keyword: Keyword) : CreatureGroupFilter {
+        override val description: String = "Creatures you control with ${keyword.displayName.lowercase()}"
+    }
+}
+
+/**
+ * Modify power/toughness for a group of creatures until end of turn.
+ * Used for cards like Warrior's Charge: "Creatures you control get +1/+1 until end of turn."
+ *
+ * @property powerModifier Power bonus (can be negative)
+ * @property toughnessModifier Toughness bonus (can be negative)
+ * @property filter Which creatures are affected
+ */
+@Serializable
+data class ModifyStatsForGroupEffect(
+    val powerModifier: Int,
+    val toughnessModifier: Int,
+    val filter: CreatureGroupFilter,
+    val untilEndOfTurn: Boolean = true
+) : Effect {
+    override val description: String = buildString {
+        append("${filter.description} get ")
+        val powerStr = if (powerModifier >= 0) "+$powerModifier" else "$powerModifier"
+        val toughStr = if (toughnessModifier >= 0) "+$toughnessModifier" else "$toughnessModifier"
+        append("$powerStr/$toughStr")
+        if (untilEndOfTurn) append(" until end of turn")
+    }
+}
+
+/**
+ * Triggered sacrifice effect: Sacrifice this unless you discard a card.
+ * Used for cards like Thundering Wurm with ETB sacrifice triggers.
+ *
+ * @property landOnly If true, must discard a land card specifically
+ */
+@Serializable
+data class SacrificeUnlessDiscardEffect(
+    val landOnly: Boolean = false
+) : Effect {
+    override val description: String = buildString {
+        append("Sacrifice this permanent unless you discard ")
+        if (landOnly) {
+            append("a land card")
+        } else {
+            append("a card")
+        }
+    }
+}
+

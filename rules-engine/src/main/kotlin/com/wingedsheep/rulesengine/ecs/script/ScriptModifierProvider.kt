@@ -82,6 +82,21 @@ class ScriptModifierProvider(
                 // This static ability is read from the card's script when calculating costs
                 emptyList()
             }
+            is CantBeBlockedByColor -> {
+                // Blocking restrictions by color are checked during combat in the declare blockers step
+                // The static ability is tracked on the permanent via its script
+                emptyList()
+            }
+            is MaxBlockersRestriction -> {
+                // Maximum blockers restriction is checked during combat in the declare blockers step
+                // The static ability is tracked on the permanent via its script
+                emptyList()
+            }
+            is CanOnlyBlockCreaturesWithKeyword -> {
+                // Blocking restriction for what this creature can block is checked during declare blockers
+                // The static ability is tracked on the permanent via its script
+                emptyList()
+            }
         }
     }
 

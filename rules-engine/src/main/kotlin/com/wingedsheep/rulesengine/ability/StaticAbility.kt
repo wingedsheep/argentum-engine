@@ -1,5 +1,6 @@
 package com.wingedsheep.rulesengine.ability
 
+import com.wingedsheep.rulesengine.core.Color
 import com.wingedsheep.rulesengine.core.Keyword
 import com.wingedsheep.rulesengine.ecs.EntityId
 import kotlinx.serialization.Serializable
@@ -217,4 +218,44 @@ sealed interface CostReductionSource {
     data object CreaturesYouControl : CostReductionSource {
         override val description: String = "the number of creatures you control"
     }
+}
+
+// =============================================================================
+// Blocking Restrictions
+// =============================================================================
+
+/**
+ * This creature can't be blocked by creatures of a specific color.
+ * Used for cards like Sacred Knight: "can't be blocked by black creatures."
+ */
+@Serializable
+data class CantBeBlockedByColor(
+    val color: Color,
+    val target: StaticTarget = StaticTarget.SourceCreature
+) : StaticAbility {
+    override val description: String = "can't be blocked by ${color.displayName.lowercase()} creatures"
+}
+
+/**
+ * Limits the maximum number of creatures that can block this creature.
+ * Used for cards like Charging Rhino/Stalking Tiger: "can't be blocked by more than one creature."
+ */
+@Serializable
+data class MaxBlockersRestriction(
+    val maxBlockers: Int,
+    val target: StaticTarget = StaticTarget.SourceCreature
+) : StaticAbility {
+    override val description: String = "can't be blocked by more than $maxBlockers creature${if (maxBlockers != 1) "s" else ""}"
+}
+
+/**
+ * This creature can only block creatures with a specific keyword.
+ * Used for cards like Cloud Spirit: "can block only creatures with flying."
+ */
+@Serializable
+data class CanOnlyBlockCreaturesWithKeyword(
+    val keyword: Keyword,
+    val target: StaticTarget = StaticTarget.SourceCreature
+) : StaticAbility {
+    override val description: String = "can block only creatures with ${keyword.displayName.lowercase()}"
 }
