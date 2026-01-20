@@ -40,21 +40,25 @@ import com.wingedsheep.rulesengine.sets.ecl.cards.Kinbinding
 import com.wingedsheep.rulesengine.sets.ecl.cards.KinscaerSentry
 import com.wingedsheep.rulesengine.sets.ecl.cards.KulrathMystic
 import com.wingedsheep.rulesengine.sets.ecl.cards.LiminalHold
+import com.wingedsheep.rulesengine.sets.ecl.cards.LysAlanaInformant
 import com.wingedsheep.rulesengine.sets.ecl.cards.MoongloveExtractor
 import com.wingedsheep.rulesengine.sets.ecl.cards.NamelessInversion
 import com.wingedsheep.rulesengine.sets.ecl.cards.RiverguardsReflexes
 import com.wingedsheep.rulesengine.sets.ecl.cards.RecklessRansacking
 import com.wingedsheep.rulesengine.sets.ecl.cards.RooftopPercher
 import com.wingedsheep.rulesengine.sets.ecl.cards.RunAwayTogether
+import com.wingedsheep.rulesengine.sets.ecl.cards.SafewrightCavalry
 import com.wingedsheep.rulesengine.sets.ecl.cards.ScarbladeScout
 import com.wingedsheep.rulesengine.sets.ecl.cards.Sear
 import com.wingedsheep.rulesengine.sets.ecl.cards.ShoreLurker
+import com.wingedsheep.rulesengine.sets.ecl.cards.SurlyFarrier
 import com.wingedsheep.rulesengine.sets.ecl.cards.SilvergillPeddler
 import com.wingedsheep.rulesengine.sets.ecl.cards.SpellSnare
 import com.wingedsheep.rulesengine.sets.ecl.cards.Stratosoarer
 import com.wingedsheep.rulesengine.sets.ecl.cards.SunDappledCelebrant
 import com.wingedsheep.rulesengine.sets.ecl.cards.TimidShieldbearer
 import com.wingedsheep.rulesengine.sets.ecl.cards.TributaryVaulter
+import com.wingedsheep.rulesengine.sets.ecl.cards.UnforgivingAim
 import com.wingedsheep.rulesengine.sets.ecl.cards.WanderbrinePreacher
 import com.wingedsheep.rulesengine.sets.ecl.cards.WanderbrineTrapper
 
@@ -104,21 +108,25 @@ object LorwynEclipsedSet : BaseCardRegistry() {
         register(KinscaerSentry.definition, KinscaerSentry.script)
         register(KulrathMystic.definition, KulrathMystic.script)
         register(LiminalHold.definition, LiminalHold.script)
+        register(LysAlanaInformant.definition, LysAlanaInformant.script)
         register(MoongloveExtractor.definition, MoongloveExtractor.script)
         register(NamelessInversion.definition, NamelessInversion.script)
         register(RiverguardsReflexes.definition, RiverguardsReflexes.script)
         register(RecklessRansacking.definition, RecklessRansacking.script)
         register(RooftopPercher.definition, RooftopPercher.script)
         register(RunAwayTogether.definition, RunAwayTogether.script)
+        register(SafewrightCavalry.definition, SafewrightCavalry.script)
         register(ScarbladeScout.definition, ScarbladeScout.script)
         register(Sear.definition, Sear.script)
         register(ShoreLurker.definition, ShoreLurker.script)
+        register(SurlyFarrier.definition, SurlyFarrier.script)
         register(SilvergillPeddler.definition, SilvergillPeddler.script)
         register(SpellSnare.definition, SpellSnare.script)
         register(Stratosoarer.definition, Stratosoarer.script)
         register(SunDappledCelebrant.definition, SunDappledCelebrant.script)
         register(TimidShieldbearer.definition, TimidShieldbearer.script)
         register(TributaryVaulter.definition, TributaryVaulter.script)
+        register(UnforgivingAim.definition, UnforgivingAim.script)
         register(WanderbrinePreacher.definition, WanderbrinePreacher.script)
         register(WanderbrineTrapper.definition, WanderbrineTrapper.script)
     }
