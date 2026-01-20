@@ -71,7 +71,7 @@ The server acts as a **"Pure Pipe."** It manages the reality of networking and i
 The client is a **"Dumb Terminal."** It contains zero rule logic, making it impossible to cheat by modifying local code.
 
 ### 4.1 Visual Experience
-*   **Rendering:** Built with WebGL (Three.js/Babylon.js). Cards are 3D objects that fly, tap, and stack.
+*   **Rendering:** Built with WebGL (Three.js/Babylon.js). Cards are objects that fly, tap, and stack.
 *   **Event-Driven Animations:** The client listens for `GameEvents` (e.g., `DamageDealt`, `PermanentTapped`) to trigger particle effects and sound cues.
 *   **Asset Streaming:** Card art is fetched on-demand from a high-speed CDN or Scryfall API.
 
