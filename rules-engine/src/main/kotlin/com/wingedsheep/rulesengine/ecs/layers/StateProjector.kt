@@ -29,7 +29,16 @@ import com.wingedsheep.rulesengine.ecs.components.ProjectedTypesComponent
  * - The base state is never modified
  * - Modifiers are collected from all sources (static abilities, auras, etc.)
  * - Modifiers are applied in layer order, then by timestamp within each layer
+ * - Dependencies between modifiers are resolved via fixed-point iteration (Rule 613.8)
  * - The result is a "view" of the game state for rules purposes
+ *
+ * ## Rule 613.8 - Dependencies
+ * When Effect A applies to objects based on characteristics that Effect B modifies,
+ * and both apply in the same layer, B must be applied first. This is resolved by:
+ * 1. Analyzing filter dependencies for each modifier
+ * 2. Building a dependency graph
+ * 3. Applying topological sort with timestamp as tiebreaker
+ * 4. Using fixed-point iteration to handle complex dependency chains
  */
 class StateProjector(
     private val state: GameState,
@@ -205,6 +214,9 @@ class StateProjector(
      * This method applies all modifiers using the Modification.apply() extension,
      * storing results in projected components rather than a POJO builder.
      *
+     * Per Rule 613.8, dependencies between modifiers are resolved using fixed-point
+     * iteration when modifiers in the same layer depend on each other's results.
+     *
      * @param entityId The entity to project
      * @return The projected ComponentContainer, or null if the entity doesn't exist
      */
@@ -221,9 +233,8 @@ class StateProjector(
         // Initialize projected components from base components
         var container = initializeProjectedComponents(baseContainer)
 
-        // Get and sort modifiers by layer, then timestamp
-        val sorted = (modifiersByTarget[entityId] ?: emptyList())
-            .sortedWith(compareBy({ it.layer.order }, { it.timestamp }))
+        // Get modifiers for this entity
+        val entityModifiers = modifiersByTarget[entityId] ?: emptyList()
 
         // Build context for CDA/dynamic evaluation
         val context = ProjectionContext(
@@ -233,12 +244,29 @@ class StateProjector(
             controllerId = controllerId
         )
 
-        // Apply each modifier using the component-based system
-        for (modifier in sorted) {
-            container = modifier.modification.apply(
-                container,
-                context.copy(sourceId = modifier.sourceId)
-            )
+        // Group modifiers by layer for dependency resolution
+        val modifiersByLayer = entityModifiers.groupBy { it.layer }
+
+        // Apply modifiers layer by layer
+        for (layer in Layer.entries.sortedBy { it.order }) {
+            val layerModifiers = modifiersByLayer[layer] ?: continue
+
+            // Resolve dependencies within this layer
+            val sortedLayerModifiers = if (layerModifiers.size > 1 && hasPotentialDependencies(layerModifiers)) {
+                val resolver = DependencyResolver(state)
+                resolver.sortWithDependencies(layerModifiers)
+            } else {
+                // No dependencies possible, just sort by timestamp
+                layerModifiers.sortedBy { it.timestamp }
+            }
+
+            // Apply each modifier in the resolved order
+            for (modifier in sortedLayerModifiers) {
+                container = modifier.modification.apply(
+                    container,
+                    context.copy(sourceId = modifier.sourceId)
+                )
+            }
         }
 
         // Apply counters (Layer 7d)
@@ -247,6 +275,34 @@ class StateProjector(
         // Cache and return
         containerCache[entityId] = container
         return container
+    }
+
+    /**
+     * Quick check if a list of modifiers might have dependencies.
+     * Used to skip expensive dependency analysis when not needed.
+     */
+    private fun hasPotentialDependencies(modifiers: List<Modifier>): Boolean {
+        // Need at least one modifier with a characteristic-based filter
+        val hasCharacteristicFilter = modifiers.any { it.filter is ModifierFilter.All }
+        if (!hasCharacteristicFilter) return false
+
+        // Need at least one modifier that changes characteristics
+        return modifiers.any { modifier ->
+            when (modifier.modification) {
+                is Modification.AddType,
+                is Modification.RemoveType,
+                is Modification.AddSubtype,
+                is Modification.RemoveSubtype,
+                is Modification.SetSubtypes,
+                is Modification.AddColor,
+                is Modification.RemoveColor,
+                is Modification.SetColors,
+                is Modification.AddKeyword,
+                is Modification.RemoveKeyword,
+                is Modification.RemoveAllAbilities -> true
+                else -> false
+            }
+        }
     }
 
     /**
