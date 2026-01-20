@@ -501,10 +501,28 @@ class GameActionHandler {
                 }
             }
             is AbilityCost.TapOtherCreature -> {
-                // Would need to handle tapping another creature as a cost
-                // This requires UI/targeting interaction to select which creature to tap
-                // For now, not fully supported
-                throw IllegalStateException("TapOtherCreature cost requires targeting infrastructure")
+                // Tap another creature as a cost
+                // The targetId must be provided (chosen by player/UI before activation)
+                val targetId = cost.targetId
+                    ?: throw IllegalStateException("TapOtherCreature cost requires a target creature to be selected")
+
+                // Verify the target is a valid untapped creature we control
+                val targetContainer = state.getEntity(targetId)
+                    ?: throw IllegalStateException("Target creature not found")
+                val targetController = targetContainer.get<ControllerComponent>()?.controllerId
+                if (targetController != playerId) {
+                    throw IllegalStateException("Target creature must be controlled by you")
+                }
+                if (targetContainer.get<TappedComponent>() != null) {
+                    throw IllegalStateException("Target creature is already tapped")
+                }
+                if (targetId == sourceId) {
+                    throw IllegalStateException("Must tap another creature, not the source")
+                }
+
+                val cardName = targetContainer.get<CardComponent>()?.name ?: "Unknown"
+                events.add(GameActionEvent.PermanentTapped(targetId, cardName))
+                state.updateEntity(targetId) { c -> c.with(TappedComponent) }
             }
         }
     }

@@ -49,8 +49,8 @@ object Blossombind {
             )
         )
 
-        // Static: Enchanted creature can't untap
-        // TODO: CantReceiveCountersEffect needs additional infrastructure
+        // Static: Enchanted creature can't untap and can't have counters put on it
         grantKeyword(Keyword.CANT_UNTAP)
+        cantReceiveCounters()
     }
 }

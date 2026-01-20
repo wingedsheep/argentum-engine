@@ -159,3 +159,14 @@ data class GrantDynamicStatsEffect(
         append("Creatures get +X/+X where X is ${powerBonus.description}")
     }
 }
+
+/**
+ * Prevents a permanent from having counters put on it.
+ * Used for Auras like Blossombind.
+ */
+@Serializable
+data class CantReceiveCounters(
+    val target: StaticTarget = StaticTarget.AttachedCreature
+) : StaticAbility {
+    override val description: String = "${target.toString().lowercase()} can't have counters put on it"
+}

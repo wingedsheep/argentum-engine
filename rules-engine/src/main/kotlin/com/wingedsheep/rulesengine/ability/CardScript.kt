@@ -206,6 +206,10 @@ class CardScriptBuilder(private val cardName: String) {
         staticAbilities.add(ModifyStats(power, toughness, target))
     }
 
+    fun cantReceiveCounters(target: StaticTarget = StaticTarget.AttachedCreature) = apply {
+        staticAbilities.add(CantReceiveCounters(target))
+    }
+
     fun spell(effect: Effect) = apply {
         spellEffect = SpellEffect(effect)
     }

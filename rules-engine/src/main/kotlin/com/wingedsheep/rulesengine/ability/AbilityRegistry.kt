@@ -142,8 +142,18 @@ sealed interface AbilityCost {
     data class RemoveCounter(val counterType: String, val count: Int = 1) : AbilityCost
     @kotlinx.serialization.Serializable
     data class Loyalty(val amount: Int) : AbilityCost  // Positive for +X, negative for -X
+    /**
+     * Tap another untapped creature you control as a cost.
+     * @param count Number of creatures to tap
+     * @param filter Optional filter for valid targets (e.g., "untapped Merfolk you control")
+     * @param targetId The entity ID of the creature chosen to tap (filled in during cost payment)
+     */
     @kotlinx.serialization.Serializable
-    data class TapOtherCreature(val count: Int = 1) : AbilityCost  // Tap another untapped creature you control
+    data class TapOtherCreature(
+        val count: Int = 1,
+        val filter: String = "untapped creature you control",
+        val targetId: com.wingedsheep.rulesengine.ecs.EntityId? = null
+    ) : AbilityCost
 }
 
 /**

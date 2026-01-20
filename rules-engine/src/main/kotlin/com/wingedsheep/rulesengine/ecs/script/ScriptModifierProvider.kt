@@ -71,6 +71,11 @@ class ScriptModifierProvider(
             is CantBlock -> convertCantBlock(ability, sourceId, controllerId, state)
             is AssignDamageEqualToToughness -> convertAssignDamageEqualToToughness(ability, sourceId, controllerId, state)
             is GrantDynamicStatsEffect -> convertGrantDynamicStatsEffect(ability, sourceId, controllerId, state)
+            is CantReceiveCounters -> {
+                // Counter prevention is handled in ActionHandler when adding counters
+                // The static ability is tracked on the permanent via its script
+                emptyList()
+            }
         }
     }
 
