@@ -63,6 +63,42 @@ sealed interface ServerMessage {
         val winnerId: EntityId?,
         val reason: GameOverReason
     ) : ServerMessage
+
+    /**
+     * Mulligan decision required. Sent when player must choose to keep or mulligan.
+     */
+    @Serializable
+    @SerialName("mulliganDecision")
+    data class MulliganDecision(
+        /** The player's current hand card IDs */
+        val hand: List<EntityId>,
+        /** How many times this player has mulliganed (0 = first look at opening hand) */
+        val mulliganCount: Int,
+        /** If keeping, how many cards must be put on bottom */
+        val cardsToPutOnBottom: Int
+    ) : ServerMessage
+
+    /**
+     * Player must choose cards to put on bottom of library after keeping a mulliganed hand.
+     */
+    @Serializable
+    @SerialName("chooseBottomCards")
+    data class ChooseBottomCards(
+        /** The player's current hand card IDs */
+        val hand: List<EntityId>,
+        /** How many cards must be put on bottom */
+        val cardsToPutOnBottom: Int
+    ) : ServerMessage
+
+    /**
+     * Mulligan phase is complete and the game is starting.
+     */
+    @Serializable
+    @SerialName("mulliganComplete")
+    data class MulliganComplete(
+        /** Player's final hand size after putting cards on bottom */
+        val finalHandSize: Int
+    ) : ServerMessage
 }
 
 /**

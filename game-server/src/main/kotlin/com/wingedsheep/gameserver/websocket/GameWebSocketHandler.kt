@@ -62,6 +62,9 @@ class GameWebSocketHandler : TextWebSocketHandler() {
                 is ClientMessage.JoinGame -> handleJoinGame(session, clientMessage)
                 is ClientMessage.SubmitAction -> handleSubmitAction(session, clientMessage)
                 is ClientMessage.Concede -> handleConcede(session)
+                is ClientMessage.KeepHand -> handleKeepHand(session)
+                is ClientMessage.Mulligan -> handleMulligan(session)
+                is ClientMessage.ChooseBottomCards -> handleChooseBottomCards(session, clientMessage)
             }
         } catch (e: Exception) {
             logger.error("Error handling message from ${session.id}", e)
@@ -171,7 +174,7 @@ class GameWebSocketHandler : TextWebSocketHandler() {
     private fun startGame(gameSession: GameSession) {
         logger.info("Starting game: ${gameSession.sessionId}")
 
-        val state = gameSession.startGame()
+        gameSession.startGame()
 
         val player1 = gameSession.player1
         val player2 = gameSession.player2
@@ -181,7 +184,152 @@ class GameWebSocketHandler : TextWebSocketHandler() {
             send(player1.webSocketSession, ServerMessage.GameStarted(player2.playerName))
             send(player2.webSocketSession, ServerMessage.GameStarted(player1.playerName))
 
-            // Send initial state updates
+            // Send mulligan decisions to both players
+            sendMulliganDecision(gameSession, player1)
+            sendMulliganDecision(gameSession, player2)
+        }
+    }
+
+    private fun sendMulliganDecision(gameSession: GameSession, playerSession: PlayerSession) {
+        val decision = gameSession.getMulliganDecision(playerSession.playerId)
+        send(playerSession.webSocketSession, decision)
+    }
+
+    private fun handleKeepHand(session: WebSocketSession) {
+        val playerSession = playerSessions[session.id]
+        if (playerSession == null) {
+            sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        val gameSessionId = playerSession.currentGameSessionId
+        if (gameSessionId == null) {
+            sendError(session, ErrorCode.GAME_NOT_FOUND, "Not in a game")
+            return
+        }
+
+        val gameSession = gameSessions[gameSessionId]
+        if (gameSession == null) {
+            sendError(session, ErrorCode.GAME_NOT_FOUND, "Game not found")
+            return
+        }
+
+        if (!gameSession.isMulliganPhase) {
+            sendError(session, ErrorCode.INVALID_ACTION, "Not in mulligan phase")
+            return
+        }
+
+        val result = gameSession.keepHand(playerSession.playerId)
+        when (result) {
+            is GameSession.MulliganActionResult.Success -> {
+                logger.info("Player ${playerSession.playerName} kept hand")
+                val finalHandSize = gameSession.getHand(playerSession.playerId).size
+                send(session, ServerMessage.MulliganComplete(finalHandSize))
+                checkMulliganPhaseComplete(gameSession)
+            }
+            is GameSession.MulliganActionResult.NeedsBottomCards -> {
+                logger.info("Player ${playerSession.playerName} kept hand, needs to choose ${result.count} cards for bottom")
+                val msg = gameSession.getChooseBottomCardsMessage(playerSession.playerId)
+                if (msg != null) {
+                    send(session, msg)
+                }
+            }
+            is GameSession.MulliganActionResult.Failure -> {
+                sendError(session, ErrorCode.INVALID_ACTION, result.reason)
+            }
+        }
+    }
+
+    private fun handleMulligan(session: WebSocketSession) {
+        val playerSession = playerSessions[session.id]
+        if (playerSession == null) {
+            sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        val gameSessionId = playerSession.currentGameSessionId
+        if (gameSessionId == null) {
+            sendError(session, ErrorCode.GAME_NOT_FOUND, "Not in a game")
+            return
+        }
+
+        val gameSession = gameSessions[gameSessionId]
+        if (gameSession == null) {
+            sendError(session, ErrorCode.GAME_NOT_FOUND, "Game not found")
+            return
+        }
+
+        if (!gameSession.isMulliganPhase) {
+            sendError(session, ErrorCode.INVALID_ACTION, "Not in mulligan phase")
+            return
+        }
+
+        val result = gameSession.takeMulligan(playerSession.playerId)
+        when (result) {
+            is GameSession.MulliganActionResult.Success -> {
+                val count = gameSession.getMulliganCount(playerSession.playerId)
+                logger.info("Player ${playerSession.playerName} mulliganed (count: $count)")
+                sendMulliganDecision(gameSession, playerSession)
+            }
+            is GameSession.MulliganActionResult.NeedsBottomCards -> {
+                // This shouldn't happen from takeMulligan, but handle it
+                val msg = gameSession.getChooseBottomCardsMessage(playerSession.playerId)
+                if (msg != null) {
+                    send(session, msg)
+                }
+            }
+            is GameSession.MulliganActionResult.Failure -> {
+                sendError(session, ErrorCode.INVALID_ACTION, result.reason)
+            }
+        }
+    }
+
+    private fun handleChooseBottomCards(session: WebSocketSession, message: ClientMessage.ChooseBottomCards) {
+        val playerSession = playerSessions[session.id]
+        if (playerSession == null) {
+            sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        val gameSessionId = playerSession.currentGameSessionId
+        if (gameSessionId == null) {
+            sendError(session, ErrorCode.GAME_NOT_FOUND, "Not in a game")
+            return
+        }
+
+        val gameSession = gameSessions[gameSessionId]
+        if (gameSession == null) {
+            sendError(session, ErrorCode.GAME_NOT_FOUND, "Game not found")
+            return
+        }
+
+        if (!gameSession.isAwaitingBottomCards(playerSession.playerId)) {
+            sendError(session, ErrorCode.INVALID_ACTION, "Not awaiting bottom card selection")
+            return
+        }
+
+        val result = gameSession.chooseBottomCards(playerSession.playerId, message.cardIds)
+        when (result) {
+            is GameSession.MulliganActionResult.Success -> {
+                logger.info("Player ${playerSession.playerName} completed mulligan")
+                val finalHandSize = gameSession.getHand(playerSession.playerId).size
+                send(session, ServerMessage.MulliganComplete(finalHandSize))
+                checkMulliganPhaseComplete(gameSession)
+            }
+            is GameSession.MulliganActionResult.NeedsBottomCards -> {
+                // Shouldn't happen from chooseBottomCards
+                sendError(session, ErrorCode.INTERNAL_ERROR, "Unexpected state")
+            }
+            is GameSession.MulliganActionResult.Failure -> {
+                sendError(session, ErrorCode.INVALID_ACTION, result.reason)
+            }
+        }
+    }
+
+    private fun checkMulliganPhaseComplete(gameSession: GameSession) {
+        if (gameSession.allMulligansComplete) {
+            logger.info("Mulligan phase complete for game ${gameSession.sessionId}")
+            // Send initial state updates to both players
             broadcastStateUpdate(gameSession, emptyList())
         }
     }
@@ -202,6 +350,12 @@ class GameWebSocketHandler : TextWebSocketHandler() {
         val gameSession = gameSessions[gameSessionId]
         if (gameSession == null) {
             sendError(session, ErrorCode.GAME_NOT_FOUND, "Game not found")
+            return
+        }
+
+        // Check if we're still in mulligan phase
+        if (gameSession.isMulliganPhase) {
+            sendError(session, ErrorCode.INVALID_ACTION, "Mulligan phase not complete")
             return
         }
 

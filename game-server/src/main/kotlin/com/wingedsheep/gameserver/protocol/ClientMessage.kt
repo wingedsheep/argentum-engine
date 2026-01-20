@@ -1,5 +1,6 @@
 package com.wingedsheep.gameserver.protocol
 
+import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.action.GameAction
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -47,4 +48,26 @@ sealed interface ClientMessage {
     @Serializable
     @SerialName("concede")
     data object Concede : ClientMessage
+
+    /**
+     * Keep the current opening hand (end mulligan phase for this player).
+     */
+    @Serializable
+    @SerialName("keepHand")
+    data object KeepHand : ClientMessage
+
+    /**
+     * Mulligan: shuffle hand back and draw a new hand.
+     */
+    @Serializable
+    @SerialName("mulligan")
+    data object Mulligan : ClientMessage
+
+    /**
+     * Choose which cards to put on the bottom of the library after keeping a mulliganed hand.
+     * The number of cards must equal the mulligan count (number of mulligans taken).
+     */
+    @Serializable
+    @SerialName("chooseBottomCards")
+    data class ChooseBottomCards(val cardIds: List<EntityId>) : ClientMessage
 }

@@ -22,6 +22,7 @@ import com.wingedsheep.rulesengine.ecs.layers.EffectDuration
 import com.wingedsheep.rulesengine.ecs.layers.Modifier
 import com.wingedsheep.rulesengine.ecs.stack.StackResolver
 import com.wingedsheep.rulesengine.zone.ZoneType
+import kotlinx.serialization.Serializable
 
 /**
  * Handles execution of GameActions against GameState.
@@ -1960,40 +1961,74 @@ sealed interface GameActionResult {
 /**
  * Events generated during action execution.
  */
+@Serializable
 sealed interface GameActionEvent {
+    @Serializable
     data class LifeChanged(val playerId: EntityId, val oldLife: Int, val newLife: Int) : GameActionEvent
+    @Serializable
     data class DamageDealtToPlayer(val sourceId: EntityId?, val targetId: EntityId, val amount: Int) : GameActionEvent
+    @Serializable
     data class DamageDealtToCreature(val sourceId: EntityId?, val targetId: EntityId, val amount: Int) : GameActionEvent
+    @Serializable
     data class ManaAdded(val playerId: EntityId, val color: String, val amount: Int) : GameActionEvent
+    @Serializable
     data class CardDrawn(val playerId: EntityId, val cardId: EntityId, val cardName: String) : GameActionEvent
+    @Serializable
     data class DrawFailed(val playerId: EntityId) : GameActionEvent
+    @Serializable
     data class CardDiscarded(val playerId: EntityId, val cardId: EntityId, val cardName: String) : GameActionEvent
+    @Serializable
     data class CardMoved(val entityId: EntityId, val cardName: String, val fromZone: ZoneId, val toZone: ZoneId) : GameActionEvent
+    @Serializable
     data class PermanentDestroyed(val entityId: EntityId, val name: String) : GameActionEvent
+    @Serializable
     data class CreatureDied(val entityId: EntityId, val name: String, val ownerId: EntityId) : GameActionEvent
+    @Serializable
     data class CardExiled(val entityId: EntityId, val name: String) : GameActionEvent
+    @Serializable
     data class CardReturnedToHand(val entityId: EntityId, val name: String) : GameActionEvent
+    @Serializable
     data class PermanentTapped(val entityId: EntityId, val name: String) : GameActionEvent
+    @Serializable
     data class PermanentUntapped(val entityId: EntityId, val name: String) : GameActionEvent
+    @Serializable
     data class LandPlayed(val playerId: EntityId, val cardId: EntityId, val name: String) : GameActionEvent
+    @Serializable
     data class CombatStarted(val attackingPlayerId: EntityId, val defendingPlayerId: EntityId) : GameActionEvent
+    @Serializable
     data class AttackerDeclared(val creatureId: EntityId, val name: String) : GameActionEvent
+    @Serializable
     data class BlockerDeclared(val blockerId: EntityId, val attackerId: EntityId, val name: String) : GameActionEvent
+    @Serializable
     data class BlockersOrdered(val attackerId: EntityId, val orderedBlockerIds: List<EntityId>) : GameActionEvent
+    @Serializable
     data class DamageDealt(val sourceId: EntityId, val targetId: EntityId, val amount: Int, val isCombatDamage: Boolean) : GameActionEvent
+    @Serializable
     data class CombatEnded(val playerId: EntityId) : GameActionEvent
+    @Serializable
     data class GameEnded(val winnerId: EntityId?) : GameActionEvent
+    @Serializable
     data class PlayerLost(val playerId: EntityId, val reason: String) : GameActionEvent
+    @Serializable
     data class Attached(val attachmentId: EntityId, val attachmentName: String, val targetId: EntityId, val targetName: String) : GameActionEvent
+    @Serializable
     data class Detached(val attachmentId: EntityId, val name: String) : GameActionEvent
 
     // Stack resolution events
+    @Serializable
     data class SpellCast(val entityId: EntityId, val name: String, val casterId: EntityId) : GameActionEvent
+    @Serializable
     data class SpellResolved(val entityId: EntityId, val name: String) : GameActionEvent
+    @Serializable
     data class SpellFizzled(val entityId: EntityId, val name: String, val reason: String) : GameActionEvent
+    @Serializable
     data class PermanentEnteredBattlefield(val entityId: EntityId, val name: String, val controllerId: EntityId) : GameActionEvent
+    @Serializable
     data class AbilityResolved(val description: String, val sourceId: EntityId) : GameActionEvent
+    @Serializable
     data class AbilityFizzled(val description: String, val sourceId: EntityId, val reason: String) : GameActionEvent
+    @Serializable
     data class CounterAdded(val entityId: EntityId, val name: String, val counterType: String, val count: Int) : GameActionEvent
+    @Serializable
     data class CounterRemoved(val entityId: EntityId, val name: String, val counterType: String, val count: Int) : GameActionEvent
 }

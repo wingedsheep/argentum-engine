@@ -37,24 +37,25 @@ class StateMasker {
             maskedZones[zoneId] = maskedZone
 
             // Mask entities in this zone
+            // Note: ComponentContainer is not sent to clients because Component polymorphic
+            // serialization is not configured. Entity data should be sent via dedicated
+            // serializable DTOs when needed by the client.
             for (entityId in entityIds) {
-                val container = state.getEntity(entityId)
                 maskedEntities[entityId] = MaskedEntity(
                     id = entityId,
                     isVisible = isVisible,
-                    components = if (isVisible) container else null
+                    components = null  // Components not serialized to client
                 )
             }
         }
 
         // Also include player entities (always visible)
         for (playerId in playerIds) {
-            val container = state.getEntity(playerId)
-            if (container != null && playerId !in maskedEntities) {
+            if (playerId !in maskedEntities) {
                 maskedEntities[playerId] = MaskedEntity(
                     id = playerId,
                     isVisible = true,
-                    components = container
+                    components = null  // Components not serialized to client
                 )
             }
         }
