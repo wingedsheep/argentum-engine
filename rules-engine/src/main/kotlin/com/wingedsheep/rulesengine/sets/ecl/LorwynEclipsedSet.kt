@@ -27,7 +27,11 @@ import com.wingedsheep.rulesengine.sets.ecl.cards.KulrathMystic
 import com.wingedsheep.rulesengine.sets.ecl.cards.LiminalHold
 import com.wingedsheep.rulesengine.sets.ecl.cards.RiverguardsReflexes
 import com.wingedsheep.rulesengine.sets.ecl.cards.RooftopPercher
+import com.wingedsheep.rulesengine.sets.ecl.cards.RunAwayTogether
 import com.wingedsheep.rulesengine.sets.ecl.cards.ShoreLurker
+import com.wingedsheep.rulesengine.sets.ecl.cards.SilvergillPeddler
+import com.wingedsheep.rulesengine.sets.ecl.cards.SpellSnare
+import com.wingedsheep.rulesengine.sets.ecl.cards.Stratosoarer
 import com.wingedsheep.rulesengine.sets.ecl.cards.SunDappledCelebrant
 import com.wingedsheep.rulesengine.sets.ecl.cards.TimidShieldbearer
 import com.wingedsheep.rulesengine.sets.ecl.cards.TributaryVaulter
@@ -67,7 +71,11 @@ object LorwynEclipsedSet : BaseCardRegistry() {
         register(LiminalHold.definition, LiminalHold.script)
         register(RiverguardsReflexes.definition, RiverguardsReflexes.script)
         register(RooftopPercher.definition, RooftopPercher.script)
+        register(RunAwayTogether.definition, RunAwayTogether.script)
         register(ShoreLurker.definition, ShoreLurker.script)
+        register(SilvergillPeddler.definition, SilvergillPeddler.script)
+        register(SpellSnare.definition, SpellSnare.script)
+        register(Stratosoarer.definition, Stratosoarer.script)
         register(SunDappledCelebrant.definition, SunDappledCelebrant.script)
         register(TimidShieldbearer.definition, TimidShieldbearer.script)
         register(TributaryVaulter.definition, TributaryVaulter.script)

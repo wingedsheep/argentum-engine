@@ -11,6 +11,7 @@ value class Subtype(val value: String) {
         // Common creature types
         val ANGEL = Subtype("Angel")
         val ASSASSIN = Subtype("Assassin")
+        val CITIZEN = Subtype("Citizen")
         val BEAR = Subtype("Bear")
         val BEAST = Subtype("Beast")
         val BIRD = Subtype("Bird")
