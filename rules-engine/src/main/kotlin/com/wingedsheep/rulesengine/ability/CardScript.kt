@@ -252,6 +252,65 @@ class CardScriptBuilder(private val cardName: String) {
         additionalCosts.add(AdditionalCost.PayLife(amount))
     }
 
+    /**
+     * Cycling {cost}: Discard this card: Draw a card.
+     * An activated ability from hand.
+     */
+    fun cycling(manaCost: AbilityCost.Mana) = apply {
+        activatedAbilities.add(
+            ActivatedAbility(
+                id = AbilityId.generate(),
+                cost = AbilityCost.Composite(listOf(manaCost, AbilityCost.DiscardSelf)),
+                effect = DrawCardsEffect(count = 1, target = EffectTarget.Controller),
+                timingRestriction = TimingRestriction.INSTANT,
+                activateFromZone = com.wingedsheep.rulesengine.zone.ZoneType.HAND
+            )
+        )
+    }
+
+    /**
+     * Basic landcycling {cost}: Discard this card: Search for a basic land card.
+     * An activated ability from hand.
+     */
+    fun basicLandcycling(manaCost: AbilityCost.Mana) = apply {
+        activatedAbilities.add(
+            ActivatedAbility(
+                id = AbilityId.generate(),
+                cost = AbilityCost.Composite(listOf(manaCost, AbilityCost.DiscardSelf)),
+                effect = SearchLibraryEffect(
+                    filter = CardFilter.BasicLandCard,
+                    count = 1,
+                    destination = SearchDestination.HAND,
+                    reveal = true,
+                    shuffleAfter = true
+                ),
+                timingRestriction = TimingRestriction.SORCERY, // Cycling is sorcery speed
+                activateFromZone = com.wingedsheep.rulesengine.zone.ZoneType.HAND
+            )
+        )
+    }
+
+    /**
+     * Type cycling for specific land types (e.g., Forestcycling, Islandcycling).
+     */
+    fun landTypeCycling(landType: String, manaCost: AbilityCost.Mana) = apply {
+        activatedAbilities.add(
+            ActivatedAbility(
+                id = AbilityId.generate(),
+                cost = AbilityCost.Composite(listOf(manaCost, AbilityCost.DiscardSelf)),
+                effect = SearchLibraryEffect(
+                    filter = CardFilter.HasSubtype(landType),
+                    count = 1,
+                    destination = SearchDestination.HAND,
+                    reveal = true,
+                    shuffleAfter = true
+                ),
+                timingRestriction = TimingRestriction.SORCERY,
+                activateFromZone = com.wingedsheep.rulesengine.zone.ZoneType.HAND
+            )
+        )
+    }
+
     fun build(): CardScript = CardScript(
         cardName = cardName,
         keywords = keywords,

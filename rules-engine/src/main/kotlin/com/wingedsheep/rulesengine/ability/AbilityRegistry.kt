@@ -101,7 +101,7 @@ class AbilityRegistry {
 }
 
 /**
- * Activated abilities (tap abilities, mana abilities, etc.)
+ * Activated abilities (tap abilities, mana abilities, cycling, etc.)
  *
  * @property id Unique identifier for this ability
  * @property cost The cost to activate (tap, mana, sacrifice, etc.)
@@ -110,6 +110,8 @@ class AbilityRegistry {
  * @property isManaAbility If true, this ability adds mana and doesn't use the stack.
  *                         Mana abilities resolve immediately and can be activated
  *                         while paying costs (Rule 605).
+ * @property activateFromZone The zone this ability can be activated from.
+ *                            Most abilities are from BATTLEFIELD, cycling is from HAND.
  */
 @kotlinx.serialization.Serializable
 data class ActivatedAbility(
@@ -118,7 +120,8 @@ data class ActivatedAbility(
     val effect: Effect,
     val timingRestriction: TimingRestriction = TimingRestriction.INSTANT,
     val isManaAbility: Boolean = false,
-    val isPlaneswalkerAbility: Boolean = false
+    val isPlaneswalkerAbility: Boolean = false,
+    val activateFromZone: com.wingedsheep.rulesengine.zone.ZoneType = com.wingedsheep.rulesengine.zone.ZoneType.BATTLEFIELD
 )
 
 /**
@@ -167,6 +170,13 @@ sealed interface AbilityCost {
         val amount: Int,
         val targetId: com.wingedsheep.rulesengine.ecs.EntityId? = null
     ) : AbilityCost
+
+    /**
+     * Discard this card as a cost.
+     * Used for cycling and similar abilities activated from hand.
+     */
+    @kotlinx.serialization.Serializable
+    data object DiscardSelf : AbilityCost
 }
 
 /**

@@ -1,5 +1,6 @@
 package com.wingedsheep.rulesengine.sets.ecl.cards
 
+import com.wingedsheep.rulesengine.ability.AbilityCost
 import com.wingedsheep.rulesengine.ability.EffectTarget
 import com.wingedsheep.rulesengine.ability.GrantKeywordUntilEndOfTurnEffect
 import com.wingedsheep.rulesengine.ability.OnEnterBattlefield
@@ -50,6 +51,7 @@ object Stratosoarer {
             )
         )
 
-        // TODO: Basic landcycling needs cycling/typeycling infrastructure
+        // Basic landcycling {1}{U}
+        basicLandcycling(AbilityCost.Mana(blue = 1, generic = 1))
     }
 }

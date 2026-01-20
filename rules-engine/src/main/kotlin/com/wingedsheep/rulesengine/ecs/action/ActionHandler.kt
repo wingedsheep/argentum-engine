@@ -551,6 +551,25 @@ class GameActionHandler {
                     c.with(counters.add(CounterType.MINUS_ONE_MINUS_ONE, cost.amount))
                 }
             }
+            is AbilityCost.DiscardSelf -> {
+                // Discard the source card as a cost (used for cycling abilities)
+                // The source should be in hand and gets moved to graveyard
+                val container = state.getEntity(sourceId)
+                    ?: throw IllegalStateException("Source card not found")
+                val cardComponent = container.get<CardComponent>()
+                val cardName = cardComponent?.name ?: "Unknown"
+                val ownerId = cardComponent?.ownerId ?: playerId
+
+                // Find the zone the card is in (should be hand for cycling)
+                val currentZone = state.findZone(sourceId)
+                    ?: throw IllegalStateException("Source card not in any zone")
+
+                events.add(GameActionEvent.CardDiscarded(playerId, sourceId, cardName))
+
+                // Move from current zone to graveyard
+                state.removeFromZone(sourceId, currentZone)
+                    .addToZone(sourceId, ZoneId.graveyard(ownerId))
+            }
         }
     }
 
