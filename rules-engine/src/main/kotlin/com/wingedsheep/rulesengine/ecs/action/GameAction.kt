@@ -2,6 +2,7 @@ package com.wingedsheep.rulesengine.ecs.action
 
 import com.wingedsheep.rulesengine.ability.AdditionalCostPayment
 import com.wingedsheep.rulesengine.core.Color
+import com.wingedsheep.rulesengine.decision.DecisionResponse
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.zone.ZoneType
@@ -559,4 +560,29 @@ data class ResolveCleanupDiscard(
     val cardsToDiscard: List<EntityId>
 ) : GameAction {
     override val description: String = "Discard to hand size"
+}
+
+// =============================================================================
+// Decision Submission Actions
+// =============================================================================
+
+/**
+ * Submit a player's response to a pending decision.
+ *
+ * This is the primary mechanism for players to respond to effect-driven choices
+ * like library searches, discard selections, sacrifice decisions, etc.
+ *
+ * When processed:
+ * 1. Validates the response matches the pending decision
+ * 2. Uses [DecisionResumer] to complete the effect
+ * 3. Clears the pending decision from game state
+ *
+ * @param response The player's response to the pending decision
+ * @see com.wingedsheep.rulesengine.decision.DecisionResumer
+ */
+@Serializable
+data class SubmitDecision(
+    val response: DecisionResponse
+) : GameAction {
+    override val description: String = "Submit decision response"
 }

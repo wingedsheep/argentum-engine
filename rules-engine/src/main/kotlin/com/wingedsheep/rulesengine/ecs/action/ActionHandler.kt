@@ -8,6 +8,7 @@ import com.wingedsheep.rulesengine.ability.AddManaEffect
 import com.wingedsheep.rulesengine.ability.TimingRestriction
 import com.wingedsheep.rulesengine.core.CounterType
 import com.wingedsheep.rulesengine.core.Keyword
+import com.wingedsheep.rulesengine.decision.DecisionResumer
 import com.wingedsheep.rulesengine.ecs.ComponentContainer
 import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
@@ -163,6 +164,9 @@ class GameActionHandler {
             is ExpireEndOfCombatEffects -> executeExpireEndOfCombatEffects(state)
             is ExpireEffectsForPermanent -> executeExpireEffectsForPermanent(state, action)
             is ResolveCleanupDiscard -> executeResolveCleanupDiscard(state, action, events)
+
+            // Decision submission
+            is SubmitDecision -> executeSubmitDecision(state, action, events)
         }
 
         return newState to events
@@ -1939,6 +1943,45 @@ class GameActionHandler {
     ): GameState {
         return state.expireEffectsForLeavingPermanent(action.permanentId)
     }
+
+    // =========================================================================
+    // Decision Submission Actions
+    // =========================================================================
+
+    private val decisionResumer = DecisionResumer()
+
+    /**
+     * Execute a decision submission.
+     *
+     * This handles the player's response to a pending decision, using the
+     * [DecisionResumer] to complete the effect based on the stored context.
+     *
+     * @throws IllegalStateException if there's no pending decision or context
+     * @throws IllegalArgumentException if the response doesn't match the pending decision
+     */
+    private fun executeSubmitDecision(
+        state: GameState,
+        action: SubmitDecision,
+        events: MutableList<GameActionEvent>
+    ): GameState {
+        // Verify there's a pending decision
+        if (!state.isPausedForDecision) {
+            throw IllegalStateException("Cannot submit decision: no pending decision in game state")
+        }
+
+        // Resume the effect with the player's response
+        val result = decisionResumer.resume(state, action.response)
+
+        // Convert EffectEvents to GameActionEvents
+        // Note: In a full implementation, we'd have a proper event mapping
+        // For now, we add a generic event to track the decision completion
+        events.add(GameActionEvent.DecisionSubmitted(
+            state.pendingDecision!!.playerId,
+            state.pendingDecision!!.decisionId
+        ))
+
+        return result.state
+    }
 }
 
 /**
@@ -2031,4 +2074,8 @@ sealed interface GameActionEvent {
     data class CounterAdded(val entityId: EntityId, val name: String, val counterType: String, val count: Int) : GameActionEvent
     @Serializable
     data class CounterRemoved(val entityId: EntityId, val name: String, val counterType: String, val count: Int) : GameActionEvent
+
+    // Decision events
+    @Serializable
+    data class DecisionSubmitted(val playerId: EntityId, val decisionId: String) : GameActionEvent
 }

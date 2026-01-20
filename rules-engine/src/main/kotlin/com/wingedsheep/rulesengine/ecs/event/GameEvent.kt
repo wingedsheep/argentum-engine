@@ -447,7 +447,8 @@ object GameEventConverter {
             is GameActionEvent.SpellResolved,
             is GameActionEvent.SpellFizzled,
             is GameActionEvent.AbilityResolved,
-            is GameActionEvent.AbilityFizzled -> emptyList()
+            is GameActionEvent.AbilityFizzled,
+            is GameActionEvent.DecisionSubmitted -> emptyList()
 
             is GameActionEvent.CounterAdded -> listOf(
                 GameEvent.CountersAdded(event.entityId, event.counterType, event.count)

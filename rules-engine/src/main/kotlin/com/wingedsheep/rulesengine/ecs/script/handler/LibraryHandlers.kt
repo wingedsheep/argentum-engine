@@ -12,6 +12,7 @@ import com.wingedsheep.rulesengine.core.Subtype
 import com.wingedsheep.rulesengine.decision.CardOption
 import com.wingedsheep.rulesengine.decision.ChooseCards
 import com.wingedsheep.rulesengine.decision.PlayerDecision
+import com.wingedsheep.rulesengine.decision.SearchLibraryContext
 import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
@@ -101,7 +102,18 @@ class SearchLibraryHandler : BaseEffectHandler<SearchLibraryEffect>() {
 
     /**
      * Create a pending decision for the player to choose which cards to take.
-     * Includes a continuation that will complete the search when called.
+     *
+     * This stores a serializable [SearchLibraryContext] in the game state for
+     * stateless resumption via [DecisionResumer], while also providing a legacy
+     * [EffectContinuation] for backward compatibility.
+     *
+     * ## Migration Path
+     *
+     * **New code (preferred):** Use `SubmitDecision` action with the game state's
+     * `decisionContext` - this enables crash recovery and save/load.
+     *
+     * **Legacy code:** Can still use the `continuation` field - it will be deprecated
+     * in a future release.
      */
     private fun createPendingDecision(
         state: GameState,
@@ -138,19 +150,37 @@ class SearchLibraryHandler : BaseEffectHandler<SearchLibraryEffect>() {
             filterDescription = effect.filter.description
         )
 
-        // Create continuation that will complete the search with the player's selection
+        // Create serializable context for resumption (new stateless pattern)
+        val searchContext = SearchLibraryContext(
+            sourceId = context.sourceId,
+            controllerId = context.controllerId,
+            searchedPlayerId = playerId,
+            validTargets = matchingCards,
+            maxCount = effect.count,
+            destination = effect.destination,
+            shuffleAfter = effect.shuffleAfter,
+            entersTapped = effect.entersTapped,
+            filterDescription = effect.filter.description
+        )
+
+        // Store decision and context in game state (stateless pattern)
+        val newState = state.setPendingDecision(decision, searchContext)
+
+        // Create continuation for backward compatibility
+        // This will be deprecated - new code should use SubmitDecision action
+        @Suppress("DEPRECATION")
         val continuation = EffectContinuation { selectedIds ->
             // Validate selection against matching cards
             val validSelection = selectedIds.filter { it in matchingCards }.take(effect.count)
             completeSearch(state, playerId, validSelection, effect)
         }
 
-        // Return partial result with pending decision
+        // Return result with both stateless context (in state) and legacy continuation
         return ExecutionResult(
-            state = state,
+            state = newState,
             events = listOf(EffectEvent.LibrarySearched(playerId, matchingCards.size, effect.filter.description)),
             pendingDecision = decision,
-            continuation = continuation
+            continuation = continuation  // Kept for backward compatibility
         )
     }
 

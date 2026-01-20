@@ -4,6 +4,8 @@ import com.wingedsheep.rulesengine.ability.PendingTrigger
 import com.wingedsheep.rulesengine.ability.StackedTrigger
 import com.wingedsheep.rulesengine.combat.CombatState
 import com.wingedsheep.rulesengine.core.Color
+import com.wingedsheep.rulesengine.decision.DecisionContext
+import com.wingedsheep.rulesengine.decision.PlayerDecision
 import com.wingedsheep.rulesengine.ecs.components.*
 import com.wingedsheep.rulesengine.ecs.layers.ActiveContinuousEffect
 import com.wingedsheep.rulesengine.ecs.layers.EffectDuration
@@ -100,7 +102,31 @@ data class GameState(
      * During the cleanup step, players with more cards than their max hand size
      * must discard down to the limit.
      */
-    val pendingCleanupDiscards: List<com.wingedsheep.rulesengine.ecs.components.PendingCleanupDiscard> = emptyList()
+    val pendingCleanupDiscards: List<com.wingedsheep.rulesengine.ecs.components.PendingCleanupDiscard> = emptyList(),
+
+    /**
+     * Pending decision that needs player input before the game can proceed.
+     *
+     * When an effect (like library search) needs player input, the decision
+     * is stored here. The game loop presents this to the player, collects
+     * their response, and submits it via [SubmitDecision] action.
+     *
+     * Null if no pending decision (game can proceed normally).
+     */
+    val pendingDecision: PlayerDecision? = null,
+
+    /**
+     * Context for resuming the pending decision's effect.
+     *
+     * Contains all serializable state needed to complete the effect once
+     * the player responds. This replaces lambda-based continuations with
+     * data that can be persisted and resumed after server restart.
+     *
+     * Must be non-null whenever [pendingDecision] is non-null.
+     *
+     * @see DecisionContext
+     */
+    val decisionContext: DecisionContext? = null
 ) {
     // ==========================================================================
     // Entity Queries
@@ -686,6 +712,48 @@ data class GameState(
      */
     fun removePendingCleanupDiscardForPlayer(playerId: EntityId): GameState =
         copy(pendingCleanupDiscards = pendingCleanupDiscards.filter { it.playerId != playerId })
+
+    // ==========================================================================
+    // Pending Decision Helpers
+    // ==========================================================================
+
+    /**
+     * Check if the game is paused waiting for a player decision.
+     *
+     * When true, no game actions should be processed until the pending
+     * decision is resolved via [SubmitDecision].
+     */
+    val isPausedForDecision: Boolean get() = pendingDecision != null
+
+    /**
+     * Set a pending decision that needs player input.
+     *
+     * This pauses the game until the player responds. The decision and context
+     * are stored in the game state and can survive serialization/deserialization.
+     *
+     * @param decision The decision to present to the player
+     * @param context The serializable context for resuming the effect
+     * @return New game state with the pending decision set
+     */
+    fun setPendingDecision(decision: PlayerDecision, context: DecisionContext): GameState =
+        copy(pendingDecision = decision, decisionContext = context)
+
+    /**
+     * Clear the pending decision after it has been resolved.
+     *
+     * Called after processing the player's response via [DecisionResumer].
+     *
+     * @return New game state with no pending decision
+     */
+    fun clearPendingDecision(): GameState =
+        copy(pendingDecision = null, decisionContext = null)
+
+    /**
+     * Get the player who must make the pending decision.
+     *
+     * @return The player's entity ID, or null if no pending decision
+     */
+    fun getPendingDecisionPlayer(): EntityId? = pendingDecision?.playerId
 
     // ==========================================================================
     // Convenience Helpers

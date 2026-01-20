@@ -74,13 +74,35 @@ data class ExecutionContext(
 /**
  * Result of effect execution.
  *
- * When an effect needs player input, it sets [pendingDecision] and [continuation].
- * The game loop should:
- * 1. Present the decision to the player
- * 2. Collect the response
- * 3. Call the continuation with the response to complete the effect
+ * When an effect needs player input, the decision and context are stored in the
+ * [state]'s `pendingDecision` and `decisionContext` fields. The game loop should:
+ * 1. Check if [state.isPausedForDecision]
+ * 2. If so, present the decision to the player
+ * 3. Collect the response
+ * 4. Submit it via [SubmitDecision] action to complete the effect
  *
- * If [pendingDecision] is null, the effect completed synchronously.
+ * ## Migration from Lambda-Based Continuations
+ *
+ * The old pattern used [pendingDecision] and [continuation] fields on this class.
+ * The new stateless pattern stores decisions in [GameState] instead:
+ *
+ * **Old (deprecated):**
+ * ```kotlin
+ * val result = executor.execute(state, effect, context)
+ * if (result.pendingDecision != null) {
+ *     val response = getPlayerResponse(result.pendingDecision)
+ *     val finalResult = result.continuation!!.resume(response)
+ * }
+ * ```
+ *
+ * **New (preferred):**
+ * ```kotlin
+ * val result = executor.execute(state, effect, context)
+ * if (result.state.isPausedForDecision) {
+ *     val response = getPlayerResponse(result.state.pendingDecision!!)
+ *     val finalResult = actionHandler.execute(result.state, SubmitDecision(response))
+ * }
+ * ```
  */
 data class ExecutionResult(
     val state: GameState,
@@ -88,18 +110,38 @@ data class ExecutionResult(
     val temporaryModifiers: List<Modifier> = emptyList(),
     /**
      * A decision that needs player input before the effect can complete.
-     * Null if the effect completed without needing input.
+     *
+     * @deprecated Use [state.pendingDecision] instead. Decisions are now stored in
+     * [GameState] for stateless resumption. This field is retained for backward
+     * compatibility during migration.
      */
+    @Deprecated(
+        message = "Use state.pendingDecision instead for stateless decision handling",
+        replaceWith = ReplaceWith("state.pendingDecision")
+    )
     val pendingDecision: PlayerDecision? = null,
     /**
      * Continuation to call when the pending decision is resolved.
-     * The game loop should call this with the player's response.
-     * Null if no pending decision.
+     *
+     * @deprecated Lambda-based continuations are not serializable and prevent
+     * stateless game resumption. Use [SubmitDecision] action with [DecisionResumer]
+     * instead. This field is retained for backward compatibility during migration.
+     *
+     * @see com.wingedsheep.rulesengine.decision.DecisionResumer
      */
+    @Deprecated(
+        message = "Use SubmitDecision action with DecisionResumer instead for stateless decision handling",
+        replaceWith = ReplaceWith("actionHandler.execute(state, SubmitDecision(response))")
+    )
     val continuation: EffectContinuation? = null
 ) {
-    /** Whether this result requires player input before completing */
-    val needsPlayerInput: Boolean get() = pendingDecision != null
+    /**
+     * Whether this result requires player input before completing.
+     *
+     * Checks both the legacy [pendingDecision] field and the new stateless
+     * [GameState.isPausedForDecision] for backward compatibility.
+     */
+    val needsPlayerInput: Boolean get() = state.isPausedForDecision || pendingDecision != null
 }
 
 /**
