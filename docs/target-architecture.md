@@ -1,133 +1,98 @@
-# Target Architecture Specification
+# Target Architecture Specification: Argentum Engine
 
-The platform consists of three decoupled modules. This design ensures that the game rules can evolve independently of
-the server infrastructure or the graphical interface.
+The Argentum Engine is a data-driven, modular Magic: The Gathering simulation and networking platform. It employs a pure **Entity-Component-System (ECS)** core, a **stateless decision protocol**, and a **declarative scripting layer** to ensure the game is 100% persistent, horizontally scalable, and infinitely extensible.
 
 ---
 
 ## 1. Module: Rules Engine (`rules-engine`)
 
-**Role:** The Domain Logic Kernel.
-**Status:** Pure Kotlin Library (No Frameworks, No I/O).
+**Role:** The Domain Logic Kernel.  
+**Status:** Pure Kotlin 2.2 Library (Deterministic, I/O-free, Framework-agnostic).
 
-This module is a deterministic state machine. It contains the complete "brain" of Magic: The Gathering. It does not know
-about players, sockets, or databases; it only knows about Game States and Actions.
+The Rules Engine acts as a deterministic state machine. It treats game rules as a pure transformation function: `(GameState, Action) -> Result(NewGameState, Events)`.
 
-### Core Architecture: Entity Component System (ECS)
+### 1.1 Core Architecture: Entity Component System (ECS)
+*   **Entities:** Every game object (Card, Player, Ability, Spell on Stack, Emblem) is a unique, stable `EntityId`.
+*   **Components:** Small, immutable data bags (e.g., `LifeComponent`, `TappedComponent`, `ManaPoolComponent`).
+*   **Immutable State:** The `GameState` is a serializable snapshot of all entities. Every action produces a *new* state, enabling trivial undo/redo and AI simulation.
 
-* **Entities:** Every game object (Card, Player, Ability, Spell on Stack) is just a unique ID.
-* **Components:** Data is attached to entities via components (e.g., `TappedComponent`, `FlyingComponent`,
-  `OwnerComponent`). This composition allows for infinite flexibility in card design.
-* **Immutable State:** The `GameState` object is immutable. Every action produces a *new* `GameState`. This enables
-  features like "Undo," AI simulation (Monte Carlo Tree Search), and instant replay.
+### 1.2 State Projection & The Layer System (CR 613)
+The engine distinguishes between the **Base State** (stored in components) and the **Projected State** (how the card actually looks).
+*   **State Projector:** A robust engine that applies continuous effects in the strict order required by the Comprehensive Rules (Copy → Control → Text → Type → Color → Ability → P/T).
+*   **GameObjectView:** A calculated, read-only view of an entity used for rule checks (e.g., "Is this creature currently a Goblin?" or "Does it have flying?").
 
-### Key Sub-Systems
-
-* **The Layer System (CR 613):** A robust projection engine that calculates the "visible" state of cards by applying
-  continuous effects in the correct order (Copy -> Control -> Text -> Type -> Color -> Ability -> P/T).
-* **The Stack & Priority:** A strictly ordered state machine that manages the "Stack" zone, ensuring priority is passed
-  correctly between players before anything resolves.
-* **Event & Replacement Pipeline:** A middleware layer that intercepts events (like "Draw Card") and checks for
-  modification effects (like "Dredge" or "Spirit of the Labyrinth") before applying them.
-* **Complex Mana Solver:** A logic solver that can determine if a player can pay a cost like `{1}{G/W}{P}` given their
-  current board state, handling snow, life-payment, and hybrid mana automatically.
-
-### Extensibility
-
-* **Card Scripting DSL:** Cards are defined in Kotlin scripts or DSL files. This allows new sets to be added by simply
-  dropping in new script files without recompiling the core engine.
-* **Scryfall Integration:** An adapter layer that hydrates card definitions (Oracle text, stats) directly from Scryfall
-  data.
+### 1.3 Stack, Priority, and Mana
+*   **Priority State Machine:** Manages the passing of priority, ensuring the active player acts first and the stack resolves only when all players pass in succession.
+*   **Complex Mana Solver:** A logic engine that determines if a player can pay costs like `{1}{G/W}{P}`, handling snow mana, life-payment, and hybrid mana automatically.
+*   **Replacement Pipeline (CR 614):** A middleware layer that intercepts "Proposed Actions" (e.g., Draw Card) and checks for modification effects (e.g., "instead, draw two") before they hit the state.
 
 ---
 
-## 2. Module: Game Server (`game-server`)
+## 2. Declarative Scripting & Modular Content
 
-**Role:** The Infrastructure & Orchestrator.
+The engine is designed for horizontal growth. Adding a new set does not require modifying the Rules Engine kernel.
+
+### 2.1 Kotlin DSL Scripting
+Card behaviors are defined using a declarative Kotlin DSL. This DSL converts human-readable text into atomic, serializable `Effect` and `Trigger` data structures.
+*   **Modular Reusability:** Effects (e.g., `DealDamage`, `SearchLibrary`) are modular atoms. New mechanics are created by composing these atoms.
+*   **Set Isolation:** Each expansion is implemented as a standalone package containing its own `CardRegistry`.
+*   **Scryfall Integration:** Card metadata (name, cost, type line) is hydrated via Scryfall data, while logic is defined in the script.
+
+### 2.2 Stateless Decision Protocol
+To support persistence and crash recovery, the engine is **stateless**.
+*   **Pause & Resume:** When an effect requires input (e.g., "Choose a target"), the engine returns a `GameState` containing a `PendingDecision` and a `DecisionContext` (metadata defining where the script paused).
+*   **Persistence:** The entire logic state—even in the middle of a complex card's text—is saved to the database. There are no memory-resident lambdas or callbacks.
+
+---
+
+## 3. Module: Game Server (`game-server`)
+
+**Role:** The Infrastructure & Orchestrator.  
 **Status:** Spring Boot 4.x Application.
 
-This module wraps the Rules Engine and provides the infrastructure for multiplayer gaming. It handles the "reality" of
-running a game service.
+The server acts as a **"Pure Pipe."** It manages the reality of networking and identity while delegating all logic to the Rules Engine.
 
-### Core Responsibilities
+### 3.1 Responsibilities
+*   **Session Management:** Hosts concurrent matches, routing incoming JSON messages to the correct engine instance.
+*   **Stateless Integration:** For every message, the server loads the `GameState` from **PostgreSQL**, runs the logic, saves the new state, and broadcasts.
+*   **Matchmaking & Auth:** Manages queues (Draft, Commander, Standard) using ELO-based matchmaking. Handles OAuth2/Keycloak login.
+*   **Drafting Engine:** A specialized sub-system for Pods of up to 8 players, handling pack generation and passing logic.
 
-* **Game Session Management:** It hosts thousands of concurrent `GameEngine` instances in memory. It routes incoming
-  user actions to the correct engine instance.
-* **Identity & Persistence:**
-* **PostgreSQL:** Stores user profiles, deck lists, match history, and card collection data.
-* **Keycloak:** Handles OAuth2 login (Google) and user sessions.
-
-
-* **Matchmaking:** A queuing system that pairs players based on format (Standard, Draft, Commander) and skill level (
-  ELO).
-
-### The Security Layer: State Masking
-
-The server acts as the source of truth and prevents cheating.
-
-* **The Problem:** The `GameState` contains all info, including the opponent's hand and the order of the library.
-* **The Solution:** Before sending an update to *Player A*, the server runs a **State Masker**. This removes or
-  obfuscates all private information belonging to *Player B*. The client literally never receives the data for the
-  opponent's hand.
-
-### Drafting Engine
-
-A specialized sub-system for Booster Drafts.
-
-* It manages "Pods" of up to 8 players. You can also draft with friends if you create a room.
-* It handles the logic of passing packs (left/right).
-* It generates card pools from the set data and converts the final pool into a deck validation checklist.
+### 3.2 The Security Layer: State Masking
+*   **The Fog of War:** The server is the source of truth. Before sending an update to Player A, it runs a `StateMasker` to strip private information. Opponent hands and library orders are replaced with opaque "hidden" identifiers.
 
 ---
 
-## 3. Module: Web Client (`web-client`)
+## 4. Module: Web Client (`web-client`)
 
-**Role:** The Visualizer.
-**Status:** Browser-based Application (WebGL).
+**Role:** The Visualizer.  
+**Status:** Browser-based WebGL Application.
 
-The client is a "dumb terminal." It makes no decisions and calculates no rules. Its only job is to display the state it
-receives and capture user intent.
+The client is a **"Dumb Terminal."** It contains zero rule logic, making it impossible to cheat by modifying local code.
 
-### Visual Experience (MTG Arena-like)
+### 4.1 Visual Experience
+*   **Rendering:** Built with WebGL (Three.js/Babylon.js). Cards are 3D objects that fly, tap, and stack.
+*   **Event-Driven Animations:** The client listens for `GameEvents` (e.g., `DamageDealt`, `PermanentTapped`) to trigger particle effects and sound cues.
+*   **Asset Streaming:** Card art is fetched on-demand from a high-speed CDN or Scryfall API.
 
-* **Tabletop:** Built with WebGL (Three.js/Babylon.js). Cards are visual objects that can fly, tap, and stack.
-* **Asset Streaming:** Card art is streamed on-demand from a CMS or Scryfall to keep the initial load time low.
-* **Animations:** The client interprets `GameEvents` (e.g., `DamageDealt`, `CardDrawn`) to trigger particle effects,
-  sound effects, and card movements.
-
-### User Interaction
-
-* **Contextual Input:** The client knows what mode the engine is in (e.g., "Declare Attackers"). It highlights valid
-  objects (untapped creatures) and disables invalid ones.
-* **Action Dispatch:** When a player makes a move (drags an arrow from a Spell to a Target), the client sends a
-  structured JSON message to the server: `TargetSelected { source: 101, target: 202 }`.
+### 4.2 User Intent Capture
+*   **Contextual Input:** The server provides a list of `legalActions` and `targetRequirements`. The client uses this to highlight valid targets and prevent illegal moves before they are even sent.
+*   **Action Dispatch:** Captures user moves (e.g., dragging an arrow from a spell to a target) and sends structured `SubmitAction` or `SubmitDecision` JSON to the server.
 
 ---
 
-# System Interaction Flow
+## 5. Interaction Flow: The Decision-Response Loop
 
-Here is how the end-state system handles a standard gameplay loop:
-
-1. **Match Start:** Two players match via the **Game Server**. The server initializes a new **Rules Engine** instance,
-   loads the players' decks from **PostgreSQL**, and shuffles them.
-2. **State Broadcast:** The server masks the initial state for each player and pushes it via WebSocket. The **Web Client
-   ** renders the opening hand.
-3. **Player Action:** Player A plays a Land. The Client sends `PlayLand(CardID)` to the server.
-4. **Verification:** The Server passes the action to the **Rules Engine**.
-
-* The Engine checks: *Is it their turn? Is the stack empty? Have they played a land yet?*
-* If Valid: The Engine updates the state (moves card Hand -> Battlefield).
-* If Invalid: The Engine returns an error, which the server relays to the client.
-
-
-5. **Update Cycle:**
-
-* The Engine emits events: `ZoneChange(Hand -> Battlefield)`.
-* The Server masks the new state and broadcasts the events + state delta to both clients.
-
-
-6. **Visuals:**
-
-* Player A's client animates the card moving from hand to play.
-* Player B's client animates a "face down" card moving from the opponent's hand area to the battlefield, revealing it as
-  it lands.
+1.  **Match Start:** Two players match. The server initializes a new **Rules Engine**, loads decks from the DB, and shuffles.
+2.  **State Broadcast:** The server masks the state for each player and pushes it via WebSocket.
+3.  **Proactive Action:** Player A sends `SubmitAction(CastSpell)`.
+    *   The Server loads state, identifies the action.
+    *   The Rules Engine moves the card to the stack and checks for a required target.
+    *   **The Engine Pauses:** It returns a `PendingDecision(ChooseTarget)`.
+4.  **Persistence:** The Server saves the `GameState` (with the decision context) to PostgreSQL.
+5.  **Reactive Decision:** Player A receives the request, clicks a creature, and sends `SubmitDecision(TargetID)`.
+6.  **Resolution:**
+    *   The Server re-hydrates the state.
+    *   The Rules Engine sees the ID, resumes the script, and executes the effect.
+    *   The Engine emits `GameEvents`.
+    *   The Server masks the results and broadcasts the final update to all clients.
