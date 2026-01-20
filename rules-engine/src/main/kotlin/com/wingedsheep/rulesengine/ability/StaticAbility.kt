@@ -170,3 +170,51 @@ data class CantReceiveCounters(
 ) : StaticAbility {
     override val description: String = "${target.toString().lowercase()} can't have counters put on it"
 }
+
+/**
+ * Reduces the cost to cast this spell.
+ * Used for Vivid and similar cost-reduction mechanics.
+ *
+ * Note: This is a static ability that affects casting cost.
+ * Full implementation requires cost calculation during spell casting.
+ *
+ * @property reductionSource How the reduction amount is determined
+ */
+@Serializable
+data class SpellCostReduction(
+    val reductionSource: CostReductionSource
+) : StaticAbility {
+    override val description: String = "This spell costs {X} less to cast, where X is ${reductionSource.description}"
+}
+
+/**
+ * Sources for cost reduction amounts.
+ */
+@Serializable
+sealed interface CostReductionSource {
+    val description: String
+
+    /**
+     * Vivid - reduces cost by number of colors among permanents you control.
+     */
+    @Serializable
+    data object ColorsAmongPermanentsYouControl : CostReductionSource {
+        override val description: String = "the number of colors among permanents you control"
+    }
+
+    /**
+     * Reduces cost by a fixed amount.
+     */
+    @Serializable
+    data class Fixed(val amount: Int) : CostReductionSource {
+        override val description: String = "$amount"
+    }
+
+    /**
+     * Reduces cost by number of creatures you control.
+     */
+    @Serializable
+    data object CreaturesYouControl : CostReductionSource {
+        override val description: String = "the number of creatures you control"
+    }
+}

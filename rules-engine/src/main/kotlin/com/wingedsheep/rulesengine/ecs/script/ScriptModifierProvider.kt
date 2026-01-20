@@ -1,6 +1,7 @@
 package com.wingedsheep.rulesengine.ecs.script
 
 import com.wingedsheep.rulesengine.ability.*
+import com.wingedsheep.rulesengine.ability.SpellCostReduction
 import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
@@ -74,6 +75,11 @@ class ScriptModifierProvider(
             is CantReceiveCounters -> {
                 // Counter prevention is handled in ActionHandler when adding counters
                 // The static ability is tracked on the permanent via its script
+                emptyList()
+            }
+            is SpellCostReduction -> {
+                // Cost reduction is handled during spell casting in the casting system
+                // This static ability is read from the card's script when calculating costs
                 emptyList()
             }
         }

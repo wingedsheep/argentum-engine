@@ -37,6 +37,7 @@ object WildvinePummeler {
     val script = cardScript("Wildvine Pummeler") {
         keywords(Keyword.REACH, Keyword.TRAMPLE)
 
-        // TODO: Vivid cost reduction needs spell cost modification infrastructure
+        // Vivid - costs {X} less where X is colors among permanents you control
+        vividCostReduction()
     }
 }

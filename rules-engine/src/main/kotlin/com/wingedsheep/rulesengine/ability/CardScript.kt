@@ -215,6 +215,13 @@ class CardScriptBuilder(private val cardName: String) {
         staticAbilities.add(CantReceiveCounters(target))
     }
 
+    /**
+     * Add Vivid cost reduction: costs {X} less where X is colors among permanents you control.
+     */
+    fun vividCostReduction() = apply {
+        staticAbilities.add(SpellCostReduction(CostReductionSource.ColorsAmongPermanentsYouControl))
+    }
+
     fun spell(effect: Effect) = apply {
         spellEffect = SpellEffect(effect)
     }

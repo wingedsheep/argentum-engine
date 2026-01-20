@@ -1,6 +1,6 @@
 package com.wingedsheep.rulesengine.sets.ecl.cards
 
-import com.wingedsheep.rulesengine.ability.DealDamageEffect
+import com.wingedsheep.rulesengine.ability.DealDamageExileOnDeathEffect
 import com.wingedsheep.rulesengine.ability.EffectTarget
 import com.wingedsheep.rulesengine.ability.cardScript
 import com.wingedsheep.rulesengine.card.CardDefinition
@@ -34,10 +34,9 @@ object FeedTheFlames {
     val script = cardScript("Feed the Flames") {
         targets(TargetCreature())
 
-        // Deal 5 damage to target creature
-        // TODO: "exile instead of dying" replacement effect needs infrastructure
+        // Deal 5 damage to target creature, exile instead of dying this turn
         spell(
-            DealDamageEffect(
+            DealDamageExileOnDeathEffect(
                 amount = 5,
                 target = EffectTarget.TargetCreature
             )

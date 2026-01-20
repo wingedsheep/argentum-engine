@@ -1006,6 +1006,12 @@ sealed interface EffectTarget {
         override val description: String = "its controller"
     }
 
+    /** Target creature with flying */
+    @Serializable
+    data object TargetCreatureWithFlying : EffectTarget {
+        override val description: String = "target creature with flying"
+    }
+
     /**
      * TARGET BINDING: Refers to a specific target selection from the declaration phase.
      * This solves the ambiguity of which target applies to which effect.
@@ -1319,6 +1325,26 @@ data class TapCreatureForEffectEffect(
     override val description: String = buildString {
         append("You may tap another untapped creature you control. If you do, ")
         append(innerEffect.description.replaceFirstChar { it.lowercase() })
+    }
+}
+
+/**
+ * Deal damage with a replacement effect: if the creature would die this turn, exile it instead.
+ * Used for cards like Feed the Flames.
+ *
+ * This combines damage dealing with a death-replacement effect that lasts until end of turn.
+ *
+ * @property amount The amount of damage to deal
+ * @property target The creature to target
+ */
+@Serializable
+data class DealDamageExileOnDeathEffect(
+    val amount: Int,
+    val target: EffectTarget
+) : Effect {
+    override val description: String = buildString {
+        append("Deal $amount damage to ${target.description}. ")
+        append("If that creature would die this turn, exile it instead")
     }
 }
 

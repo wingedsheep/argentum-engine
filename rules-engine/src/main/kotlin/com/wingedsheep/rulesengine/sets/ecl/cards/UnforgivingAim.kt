@@ -35,23 +35,22 @@ object UnforgivingAim {
     )
 
     val script = cardScript("Unforgiving Aim") {
-        // TODO: Each mode needs its own targeting setup
-        // Mode 1: Destroy target creature with flying
-        // Mode 2: Destroy target enchantment
-        // Mode 3: Create a 2/2 black and green Elf creature token
-
+        // Modal spell with three modes, each with different (or no) targeting
         spell(
             ModalEffect(
                 modes = listOf(
-                    DestroyEffect(EffectTarget.TargetCreature),  // Mode 1: Destroy creature with flying
-                    DestroyEffect(EffectTarget.TargetCreature),  // Mode 2: Destroy enchantment (placeholder)
+                    // Mode 1: Destroy target creature with flying
+                    DestroyEffect(EffectTarget.TargetCreatureWithFlying),
+                    // Mode 2: Destroy target enchantment
+                    DestroyEffect(EffectTarget.TargetEnchantment),
+                    // Mode 3: Create a 2/2 black and green Elf creature token (no target)
                     CreateTokenEffect(
                         count = 1,
                         power = 2,
                         toughness = 2,
                         colors = setOf(Color.BLACK, Color.GREEN),
                         creatureTypes = setOf("Elf")
-                    )  // Mode 3: Create Elf token
+                    )
                 )
             )
         )
