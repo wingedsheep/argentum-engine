@@ -9,6 +9,7 @@ import com.wingedsheep.rulesengine.sets.ecl.cards.BarkOfDoran
 import com.wingedsheep.rulesengine.sets.ecl.cards.BileVialBoggart
 import com.wingedsheep.rulesengine.sets.ecl.cards.BlightedBlackthorn
 import com.wingedsheep.rulesengine.sets.ecl.cards.Blossombind
+import com.wingedsheep.rulesengine.sets.ecl.cards.BlossomingDefense
 import com.wingedsheep.rulesengine.sets.ecl.cards.BoggartPrankster
 import com.wingedsheep.rulesengine.sets.ecl.cards.BoneclubBerserker
 import com.wingedsheep.rulesengine.sets.ecl.cards.BrigidClachansHeart
@@ -16,8 +17,10 @@ import com.wingedsheep.rulesengine.sets.ecl.cards.BurdenedStoneback
 import com.wingedsheep.rulesengine.sets.ecl.cards.ChangelingWayfinder
 import com.wingedsheep.rulesengine.sets.ecl.cards.ClachanFestival
 import com.wingedsheep.rulesengine.sets.ecl.cards.CribSwap
+import com.wingedsheep.rulesengine.sets.ecl.cards.CrossroadsWatcher
 import com.wingedsheep.rulesengine.sets.ecl.cards.CuriousColossus
 import com.wingedsheep.rulesengine.sets.ecl.cards.DawnhandEulogist
+import com.wingedsheep.rulesengine.sets.ecl.cards.DawnsLightArcher
 import com.wingedsheep.rulesengine.sets.ecl.cards.DisruptorOfCurrents
 import com.wingedsheep.rulesengine.sets.ecl.cards.ElderAuntie
 import com.wingedsheep.rulesengine.sets.ecl.cards.EncumberedReejerey
@@ -29,6 +32,7 @@ import com.wingedsheep.rulesengine.sets.ecl.cards.Glamermite
 import com.wingedsheep.rulesengine.sets.ecl.cards.GoldmeadowNomad
 import com.wingedsheep.rulesengine.sets.ecl.cards.GravelgillScoundrel
 import com.wingedsheep.rulesengine.sets.ecl.cards.Graveshifter
+import com.wingedsheep.rulesengine.sets.ecl.cards.GreatForestDruid
 import com.wingedsheep.rulesengine.sets.ecl.cards.GristleGlutton
 import com.wingedsheep.rulesengine.sets.ecl.cards.ImpoliteEntrance
 import com.wingedsheep.rulesengine.sets.ecl.cards.KeepOut
@@ -67,6 +71,7 @@ object LorwynEclipsedSet : BaseCardRegistry() {
         register(BileVialBoggart.definition, BileVialBoggart.script)
         register(BlightedBlackthorn.definition, BlightedBlackthorn.script)
         register(Blossombind.definition, Blossombind.script)
+        register(BlossomingDefense.definition, BlossomingDefense.script)
         register(BoggartPrankster.definition, BoggartPrankster.script)
         register(BoneclubBerserker.definition, BoneclubBerserker.script)
         register(BrigidClachansHeart.definition, BrigidClachansHeart.script)
@@ -76,8 +81,10 @@ object LorwynEclipsedSet : BaseCardRegistry() {
         register(ChangelingWayfinder.definition, ChangelingWayfinder.script)
         register(ClachanFestival.definition, ClachanFestival.script)
         register(CribSwap.definition, CribSwap.script)
+        register(CrossroadsWatcher.definition, CrossroadsWatcher.script)
         register(CuriousColossus.definition, CuriousColossus.script)
         register(DawnhandEulogist.definition, DawnhandEulogist.script)
+        register(DawnsLightArcher.definition, DawnsLightArcher.script)
         register(DisruptorOfCurrents.definition, DisruptorOfCurrents.script)
         register(ElderAuntie.definition, ElderAuntie.script)
         register(EncumberedReejerey.definition, EncumberedReejerey.script)
@@ -89,6 +96,7 @@ object LorwynEclipsedSet : BaseCardRegistry() {
         register(GoldmeadowNomad.definition, GoldmeadowNomad.script)
         register(GravelgillScoundrel.definition, GravelgillScoundrel.script)
         register(Graveshifter.definition, Graveshifter.script)
+        register(GreatForestDruid.definition, GreatForestDruid.script)
         register(GristleGlutton.definition, GristleGlutton.script)
         register(ImpoliteEntrance.definition, ImpoliteEntrance.script)
         register(KeepOut.definition, KeepOut.script)
