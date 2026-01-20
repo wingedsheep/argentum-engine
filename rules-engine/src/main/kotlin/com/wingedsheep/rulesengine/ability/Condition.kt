@@ -178,6 +178,15 @@ data class CardsInGraveyardAtLeast(val count: Int) : Condition {
     override val description: String = "if there are $count or more cards in your graveyard"
 }
 
+/**
+ * Condition: "If there is a [subtype] card in your graveyard"
+ * Used for tribal synergies like Dawnhand Eulogist.
+ */
+@Serializable
+data class GraveyardContainsSubtype(val subtype: Subtype) : Condition {
+    override val description: String = "if there is a ${subtype.value} card in your graveyard"
+}
+
 // =============================================================================
 // Source Conditions
 // =============================================================================

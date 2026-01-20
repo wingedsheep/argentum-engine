@@ -142,6 +142,8 @@ sealed interface AbilityCost {
     data class RemoveCounter(val counterType: String, val count: Int = 1) : AbilityCost
     @kotlinx.serialization.Serializable
     data class Loyalty(val amount: Int) : AbilityCost  // Positive for +X, negative for -X
+    @kotlinx.serialization.Serializable
+    data class TapOtherCreature(val count: Int = 1) : AbilityCost  // Tap another untapped creature you control
 }
 
 /**

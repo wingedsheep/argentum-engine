@@ -1,5 +1,7 @@
 package com.wingedsheep.rulesengine.sets.ecl.cards
 
+import com.wingedsheep.rulesengine.ability.ConditionalEffect
+import com.wingedsheep.rulesengine.ability.GraveyardContainsSubtype
 import com.wingedsheep.rulesengine.ability.DrainEffect
 import com.wingedsheep.rulesengine.ability.EffectTarget
 import com.wingedsheep.rulesengine.ability.MillEffect
@@ -42,14 +44,15 @@ object DawnhandEulogist {
     val script = cardScript("Dawnhand Eulogist") {
         keywords(Keyword.MENACE)
 
-        // ETB: Mill 3, then conditional drain
-        // TODO: Conditional based on graveyard contents needs Condition infrastructure
-        // For now, mill and drain happen unconditionally
+        // ETB: Mill 3, then if there's an Elf in graveyard, drain 2
         triggered(
             trigger = OnEnterBattlefield(),
-            effect = MillEffect(count = 3) then DrainEffect(
-                amount = 2,
-                target = EffectTarget.EachOpponent
+            effect = MillEffect(count = 3) then ConditionalEffect(
+                condition = GraveyardContainsSubtype(Subtype.ELF),
+                effect = DrainEffect(
+                    amount = 2,
+                    target = EffectTarget.EachOpponent
+                )
             )
         )
     }

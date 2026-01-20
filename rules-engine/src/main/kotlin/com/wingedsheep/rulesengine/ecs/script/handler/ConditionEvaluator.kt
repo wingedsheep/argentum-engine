@@ -147,6 +147,13 @@ object ConditionEvaluator {
                 state.getZone(graveyardZone).size >= condition.count
             }
 
+            is GraveyardContainsSubtype -> {
+                val graveyardZone = ZoneId(ZoneType.GRAVEYARD, controllerId)
+                state.getZone(graveyardZone).any { entityId ->
+                    state.getEntity(entityId)?.get<CardComponent>()?.definition?.typeLine?.subtypes?.contains(condition.subtype) == true
+                }
+            }
+
             // Source Conditions
             is SourceIsAttacking -> {
                 state.getEntity(sourceId)?.has<AttackingComponent>() == true

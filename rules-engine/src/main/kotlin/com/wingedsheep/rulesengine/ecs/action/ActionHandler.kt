@@ -500,6 +500,12 @@ class GameActionHandler {
                     c.with(newCounters)
                 }
             }
+            is AbilityCost.TapOtherCreature -> {
+                // Would need to handle tapping another creature as a cost
+                // This requires UI/targeting interaction to select which creature to tap
+                // For now, not fully supported
+                throw IllegalStateException("TapOtherCreature cost requires targeting infrastructure")
+            }
         }
     }
 

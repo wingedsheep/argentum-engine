@@ -6,6 +6,7 @@ import com.wingedsheep.rulesengine.ability.ModifyStatsEffect
 import com.wingedsheep.rulesengine.ability.TimingRestriction
 import com.wingedsheep.rulesengine.ability.cardScript
 import com.wingedsheep.rulesengine.card.CardDefinition
+import com.wingedsheep.rulesengine.core.Keyword
 import com.wingedsheep.rulesengine.card.Rarity
 import com.wingedsheep.rulesengine.card.ScryfallMetadata
 import com.wingedsheep.rulesengine.core.ManaCost
@@ -38,7 +39,8 @@ object SafewrightCavalry {
     )
 
     val script = cardScript("Safewright Cavalry") {
-        // TODO: "Can't be blocked by more than one creature" needs evasion infrastructure
+        // Can't be blocked by more than one creature
+        keywords(Keyword.CANT_BE_BLOCKED_BY_MORE_THAN_ONE)
 
         // Pump an Elf target
         val elfTarget = targets(

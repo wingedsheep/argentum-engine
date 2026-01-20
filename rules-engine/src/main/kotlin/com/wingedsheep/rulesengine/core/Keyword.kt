@@ -49,7 +49,8 @@ enum class Keyword(val displayName: String) {
     PROWESS("Prowess"),
     CONVOKE("Convoke"),
     CANT_BE_BLOCKED("Can't be blocked"),
-    CANT_UNTAP("Can't untap");
+    CANT_UNTAP("Can't untap"),
+    CANT_BE_BLOCKED_BY_MORE_THAN_ONE("Can't be blocked by more than one creature");
 
     companion object {
         fun fromString(value: String): Keyword? =

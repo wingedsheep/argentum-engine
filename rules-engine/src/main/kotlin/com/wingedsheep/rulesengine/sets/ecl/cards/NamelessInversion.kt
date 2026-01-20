@@ -1,6 +1,7 @@
 package com.wingedsheep.rulesengine.sets.ecl.cards
 
 import com.wingedsheep.rulesengine.ability.EffectTarget
+import com.wingedsheep.rulesengine.ability.LoseAllCreatureTypesEffect
 import com.wingedsheep.rulesengine.ability.ModifyStatsEffect
 import com.wingedsheep.rulesengine.ability.cardScript
 import com.wingedsheep.rulesengine.card.CardDefinition
@@ -39,11 +40,13 @@ object NamelessInversion {
         targets(TargetCreature())
 
         // +3/-3 and loses all creature types until end of turn
-        // TODO: "loses all creature types" effect needs additional infrastructure
         spell(
             ModifyStatsEffect(
                 powerModifier = 3,
                 toughnessModifier = -3,
+                target = EffectTarget.TargetCreature,
+                untilEndOfTurn = true
+            ) then LoseAllCreatureTypesEffect(
                 target = EffectTarget.TargetCreature,
                 untilEndOfTurn = true
             )

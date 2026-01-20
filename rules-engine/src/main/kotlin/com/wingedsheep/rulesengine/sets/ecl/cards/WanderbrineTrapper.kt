@@ -35,13 +35,12 @@ object WanderbrineTrapper {
 
     val script = cardScript("Wanderbrine Trapper") {
         // {1}, {T}, Tap another untapped creature you control: Tap target creature an opponent controls
-        // TODO: "Tap another creature" cost needs TapOtherCreature cost type
         activated(
             cost = AbilityCost.Composite(
                 costs = listOf(
                     AbilityCost.Mana(generic = 1),
-                    AbilityCost.Tap
-                    // TODO: Add AbilityCost.TapOtherCreature when implemented
+                    AbilityCost.Tap,
+                    AbilityCost.TapOtherCreature()
                 )
             ),
             effect = TapUntapEffect(

@@ -192,6 +192,21 @@ data class ModifyStatsEffect(
 }
 
 /**
+ * Remove all creature types from a target creature.
+ * "Target creature loses all creature types until end of turn"
+ */
+@Serializable
+data class LoseAllCreatureTypesEffect(
+    val target: EffectTarget,
+    val untilEndOfTurn: Boolean = true
+) : Effect {
+    override val description: String = buildString {
+        append("${target.description} loses all creature types")
+        if (untilEndOfTurn) append(" until end of turn")
+    }
+}
+
+/**
  * Add counters effect.
  * "Put X +1/+1 counters on target creature"
  */

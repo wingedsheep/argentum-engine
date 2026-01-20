@@ -4,6 +4,7 @@ import com.wingedsheep.rulesengine.ability.CompositeEffect
 import com.wingedsheep.rulesengine.ability.DrawCardsEffect
 import com.wingedsheep.rulesengine.ability.EffectTarget
 import com.wingedsheep.rulesengine.ability.LoseLifeEffect
+import com.wingedsheep.rulesengine.ability.OnAttack
 import com.wingedsheep.rulesengine.ability.OnEnterBattlefield
 import com.wingedsheep.rulesengine.ability.cardScript
 import com.wingedsheep.rulesengine.card.CardDefinition
@@ -39,20 +40,28 @@ object BlightedBlackthorn {
     )
 
     val script = cardScript("Blighted Blackthorn") {
-        // ETB: May blight 2 to draw and lose life
+        // Shared effect for both triggers
         // TODO: Blight mechanic needs implementation (put -1/-1 counters as cost)
         // For now, model as optional draw + life loss
+        val blightEffect = CompositeEffect(
+            effects = listOf(
+                DrawCardsEffect(count = 1, target = EffectTarget.Controller),
+                LoseLifeEffect(amount = 1, target = EffectTarget.Controller)
+            )
+        )
+
+        // ETB: May blight 2 to draw and lose life
         triggered(
             trigger = OnEnterBattlefield(),
-            effect = CompositeEffect(
-                effects = listOf(
-                    DrawCardsEffect(count = 1, target = EffectTarget.Controller),
-                    LoseLifeEffect(amount = 1, target = EffectTarget.Controller)
-                )
-            ),
+            effect = blightEffect,
             optional = true
         )
 
-        // TODO: Also triggers on attack - needs multi-trigger support
+        // Attack: May blight 2 to draw and lose life
+        triggered(
+            trigger = OnAttack(selfOnly = true),
+            effect = blightEffect,
+            optional = true
+        )
     }
 }
