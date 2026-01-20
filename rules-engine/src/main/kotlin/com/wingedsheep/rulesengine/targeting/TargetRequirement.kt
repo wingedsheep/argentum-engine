@@ -177,6 +177,24 @@ sealed interface CreatureTargetFilter {
     data class And(val filters: List<CreatureTargetFilter>) : CreatureTargetFilter {
         override val description: String = filters.joinToString(" ") { it.description }
     }
+
+    /**
+     * Attacking creature you control.
+     * Used for abilities like "target attacking creature you control"
+     */
+    @Serializable
+    data object AttackingYouControl : CreatureTargetFilter {
+        override val description: String = "attacking creature you control"
+    }
+
+    /**
+     * Attacking creature with a specific subtype that you control.
+     * Used for tribal attack triggers like "target attacking Goblin you control"
+     */
+    @Serializable
+    data class AttackingWithSubtypeYouControl(val subtype: Subtype) : CreatureTargetFilter {
+        override val description: String = "attacking ${subtype.value} you control"
+    }
 }
 
 // =============================================================================

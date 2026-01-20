@@ -1256,3 +1256,69 @@ data class PutCreatureFromHandOntoBattlefieldEffect(
     }
 }
 
+// =============================================================================
+// Blight Effects (Lorwyn Eclipsed)
+// =============================================================================
+
+/**
+ * Blight effect - "may blight N. If you do, [effect]"
+ * Blight N means "put N -1/-1 counters on a creature you control".
+ * This is an optional cost-gated effect used in triggered abilities.
+ *
+ * The player may choose a creature they control to blight. If they do,
+ * the inner effect happens. If they don't (or can't), nothing happens.
+ *
+ * @property blightAmount Number of -1/-1 counters to place
+ * @property innerEffect The effect that happens if the player blights
+ * @property targetId The creature chosen to receive the counters (filled in during resolution)
+ */
+@Serializable
+data class BlightEffect(
+    val blightAmount: Int,
+    val innerEffect: Effect,
+    val targetId: EntityId? = null
+) : Effect {
+    override val description: String = buildString {
+        append("You may blight $blightAmount. If you do, ")
+        append(innerEffect.description.replaceFirstChar { it.lowercase() })
+    }
+}
+
+/**
+ * Put -1/-1 counters on a creature.
+ * Used for blight effects and wither-style damage.
+ *
+ * @property count Number of -1/-1 counters to place
+ * @property target The creature to receive the counters
+ */
+@Serializable
+data class AddMinusCountersEffect(
+    val count: Int,
+    val target: EffectTarget
+) : Effect {
+    override val description: String =
+        "Put $count -1/-1 counter${if (count != 1) "s" else ""} on ${target.description}"
+}
+
+// =============================================================================
+// Optional Cost-Gated Effects
+// =============================================================================
+
+/**
+ * "May tap another untapped creature you control. If you do, [effect]."
+ * This is an optional cost-gated effect - the player may pay the cost to get the effect.
+ *
+ * @property innerEffect The effect that happens if the player pays the tap cost
+ * @property targetId The creature chosen to tap (filled in during resolution)
+ */
+@Serializable
+data class TapCreatureForEffectEffect(
+    val innerEffect: Effect,
+    val targetId: EntityId? = null
+) : Effect {
+    override val description: String = buildString {
+        append("You may tap another untapped creature you control. If you do, ")
+        append(innerEffect.description.replaceFirstChar { it.lowercase() })
+    }
+}
+

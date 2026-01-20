@@ -34,8 +34,8 @@ object RunAwayTogether {
     )
 
     val script = cardScript("Run Away Together") {
-        // Target one creature you control and one opponent controls
-        // TODO: "different players" constraint needs TargetConstraint infrastructure
+        // "Different players" = one creature you control, one opponent controls
+        // This is the canonical interpretation for two-player games
         targets(
             TargetCreature(filter = CreatureTargetFilter.YouControl),
             TargetCreature(filter = CreatureTargetFilter.OpponentControls)

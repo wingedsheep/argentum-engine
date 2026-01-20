@@ -36,9 +36,11 @@ object GristleGlutton {
 
     val script = cardScript("Gristle Glutton") {
         // {T}, Blight 1: Discard a card, then draw a card (looting)
-        // TODO: Blight cost needs infrastructure
         activated(
-            cost = AbilityCost.Tap,
+            cost = AbilityCost.Composite(listOf(
+                AbilityCost.Tap,
+                AbilityCost.Blight(amount = 1)
+            )),
             effect = DiscardCardsEffect(
                 count = 1,
                 target = EffectTarget.Controller

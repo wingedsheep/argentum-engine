@@ -111,8 +111,13 @@ class CardScriptBuilder(private val cardName: String) {
 
     // --- Ability Builders ---
 
-    fun triggered(trigger: Trigger, effect: Effect, optional: Boolean = false) = apply {
-        triggeredAbilities.add(TriggeredAbility.create(trigger, effect, optional))
+    fun triggered(
+        trigger: Trigger,
+        effect: Effect,
+        optional: Boolean = false,
+        targetRequirement: TargetRequirement? = null
+    ) = apply {
+        triggeredAbilities.add(TriggeredAbility.create(trigger, effect, optional, targetRequirement))
     }
 
     fun triggered(ability: TriggeredAbility) = apply {

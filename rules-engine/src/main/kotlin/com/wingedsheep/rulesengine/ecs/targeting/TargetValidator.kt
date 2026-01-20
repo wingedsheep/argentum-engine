@@ -145,6 +145,15 @@ object TargetValidator {
             is CreatureTargetFilter.And -> filter.filters.all { subFilter ->
                 isValidCreatureTarget(target, state, projector, controllerId, subFilter)
             }
+            CreatureTargetFilter.AttackingYouControl -> {
+                state.hasComponent<AttackingComponent>(target.entityId) &&
+                        view.controllerId == controllerId
+            }
+            is CreatureTargetFilter.AttackingWithSubtypeYouControl -> {
+                state.hasComponent<AttackingComponent>(target.entityId) &&
+                        view.controllerId == controllerId &&
+                        view.subtypes.contains(filter.subtype)
+            }
         }
     }
 

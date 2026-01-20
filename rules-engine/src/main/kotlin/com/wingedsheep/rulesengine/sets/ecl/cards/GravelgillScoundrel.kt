@@ -3,6 +3,7 @@ package com.wingedsheep.rulesengine.sets.ecl.cards
 import com.wingedsheep.rulesengine.ability.EffectTarget
 import com.wingedsheep.rulesengine.ability.GrantKeywordUntilEndOfTurnEffect
 import com.wingedsheep.rulesengine.ability.OnAttack
+import com.wingedsheep.rulesengine.ability.TapCreatureForEffectEffect
 import com.wingedsheep.rulesengine.ability.cardScript
 import com.wingedsheep.rulesengine.card.CardDefinition
 import com.wingedsheep.rulesengine.card.Rarity
@@ -42,15 +43,14 @@ object GravelgillScoundrel {
         keywords(Keyword.VIGILANCE)
 
         // Attack trigger: may tap another creature to become unblockable
-        // TODO: Full implementation needs conditional "tap another creature" cost
-        // For now, models as optional self-unblockable on attack
         triggered(
             trigger = OnAttack(),
-            effect = GrantKeywordUntilEndOfTurnEffect(
-                keyword = Keyword.CANT_BE_BLOCKED,
-                target = EffectTarget.Self
-            ),
-            optional = true
+            effect = TapCreatureForEffectEffect(
+                innerEffect = GrantKeywordUntilEndOfTurnEffect(
+                    keyword = Keyword.CANT_BE_BLOCKED,
+                    target = EffectTarget.Self
+                )
+            )
         )
     }
 }

@@ -524,6 +524,33 @@ class GameActionHandler {
                 events.add(GameActionEvent.PermanentTapped(targetId, cardName))
                 state.updateEntity(targetId) { c -> c.with(TappedComponent) }
             }
+            is AbilityCost.Blight -> {
+                // Blight N: Put N -1/-1 counters on a creature you control
+                // The targetId must be provided (chosen by player/UI before activation)
+                val targetId = cost.targetId
+                    ?: throw IllegalStateException("Blight cost requires a target creature to be selected")
+
+                // Verify the target is a creature we control
+                val targetContainer = state.getEntity(targetId)
+                    ?: throw IllegalStateException("Target creature not found")
+                val targetController = targetContainer.get<ControllerComponent>()?.controllerId
+                if (targetController != playerId) {
+                    throw IllegalStateException("Target creature must be controlled by you")
+                }
+                val cardComponent = targetContainer.get<CardComponent>()
+                    ?: throw IllegalStateException("Target must be a card")
+                if (!cardComponent.isCreature) {
+                    throw IllegalStateException("Target must be a creature")
+                }
+
+                // Add -1/-1 counters to the target creature
+                val counters = targetContainer.get<CountersComponent>() ?: CountersComponent.EMPTY
+                val cardName = cardComponent.name
+                events.add(GameActionEvent.CounterAdded(targetId, cardName, "MINUS_ONE_MINUS_ONE", cost.amount))
+                state.updateEntity(targetId) { c ->
+                    c.with(counters.add(CounterType.MINUS_ONE_MINUS_ONE, cost.amount))
+                }
+            }
         }
     }
 

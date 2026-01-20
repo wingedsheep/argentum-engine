@@ -154,6 +154,19 @@ sealed interface AbilityCost {
         val filter: String = "untapped creature you control",
         val targetId: com.wingedsheep.rulesengine.ecs.EntityId? = null
     ) : AbilityCost
+
+    /**
+     * Blight N: Put N -1/-1 counters on a creature you control as a cost.
+     * This is a Lorwyn Eclipsed mechanic that represents decay/sacrifice.
+     *
+     * @param amount Number of -1/-1 counters to place
+     * @param targetId The entity ID of the creature to blight (filled in during cost payment)
+     */
+    @kotlinx.serialization.Serializable
+    data class Blight(
+        val amount: Int,
+        val targetId: com.wingedsheep.rulesengine.ecs.EntityId? = null
+    ) : AbilityCost
 }
 
 /**

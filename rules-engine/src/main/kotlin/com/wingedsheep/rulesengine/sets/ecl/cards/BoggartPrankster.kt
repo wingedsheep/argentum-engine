@@ -9,6 +9,8 @@ import com.wingedsheep.rulesengine.card.Rarity
 import com.wingedsheep.rulesengine.card.ScryfallMetadata
 import com.wingedsheep.rulesengine.core.ManaCost
 import com.wingedsheep.rulesengine.core.Subtype
+import com.wingedsheep.rulesengine.targeting.CreatureTargetFilter
+import com.wingedsheep.rulesengine.targeting.TargetCreature
 
 /**
  * Boggart Prankster
@@ -34,9 +36,7 @@ object BoggartPrankster {
     )
 
     val script = cardScript("Boggart Prankster") {
-        // Whenever you attack, target attacking Goblin gets +1/+0
-        // TODO: Triggered ability targeting needs TriggeredAbility targeting infrastructure
-        // Target filter should be: Attacking Goblin you control
+        // Whenever you attack, target attacking Goblin you control gets +1/+0 until end of turn
         triggered(
             trigger = OnYouAttack(),
             effect = ModifyStatsEffect(
@@ -44,6 +44,9 @@ object BoggartPrankster {
                 toughnessModifier = 0,
                 target = EffectTarget.TargetCreature,
                 untilEndOfTurn = true
+            ),
+            targetRequirement = TargetCreature(
+                filter = CreatureTargetFilter.AttackingWithSubtypeYouControl(Subtype.GOBLIN)
             )
         )
     }
