@@ -29,6 +29,8 @@ import com.wingedsheep.rulesengine.sets.ecl.cards.Glamermite
 import com.wingedsheep.rulesengine.sets.ecl.cards.GoldmeadowNomad
 import com.wingedsheep.rulesengine.sets.ecl.cards.GravelgillScoundrel
 import com.wingedsheep.rulesengine.sets.ecl.cards.Graveshifter
+import com.wingedsheep.rulesengine.sets.ecl.cards.GristleGlutton
+import com.wingedsheep.rulesengine.sets.ecl.cards.ImpoliteEntrance
 import com.wingedsheep.rulesengine.sets.ecl.cards.KeepOut
 import com.wingedsheep.rulesengine.sets.ecl.cards.Kinbinding
 import com.wingedsheep.rulesengine.sets.ecl.cards.KinscaerSentry
@@ -37,9 +39,11 @@ import com.wingedsheep.rulesengine.sets.ecl.cards.LiminalHold
 import com.wingedsheep.rulesengine.sets.ecl.cards.MoongloveExtractor
 import com.wingedsheep.rulesengine.sets.ecl.cards.NamelessInversion
 import com.wingedsheep.rulesengine.sets.ecl.cards.RiverguardsReflexes
+import com.wingedsheep.rulesengine.sets.ecl.cards.RecklessRansacking
 import com.wingedsheep.rulesengine.sets.ecl.cards.RooftopPercher
 import com.wingedsheep.rulesengine.sets.ecl.cards.RunAwayTogether
 import com.wingedsheep.rulesengine.sets.ecl.cards.ScarbladeScout
+import com.wingedsheep.rulesengine.sets.ecl.cards.Sear
 import com.wingedsheep.rulesengine.sets.ecl.cards.ShoreLurker
 import com.wingedsheep.rulesengine.sets.ecl.cards.SilvergillPeddler
 import com.wingedsheep.rulesengine.sets.ecl.cards.SpellSnare
@@ -85,6 +89,8 @@ object LorwynEclipsedSet : BaseCardRegistry() {
         register(GoldmeadowNomad.definition, GoldmeadowNomad.script)
         register(GravelgillScoundrel.definition, GravelgillScoundrel.script)
         register(Graveshifter.definition, Graveshifter.script)
+        register(GristleGlutton.definition, GristleGlutton.script)
+        register(ImpoliteEntrance.definition, ImpoliteEntrance.script)
         register(KeepOut.definition, KeepOut.script)
         register(Kinbinding.definition, Kinbinding.script)
         register(KinscaerSentry.definition, KinscaerSentry.script)
@@ -93,9 +99,11 @@ object LorwynEclipsedSet : BaseCardRegistry() {
         register(MoongloveExtractor.definition, MoongloveExtractor.script)
         register(NamelessInversion.definition, NamelessInversion.script)
         register(RiverguardsReflexes.definition, RiverguardsReflexes.script)
+        register(RecklessRansacking.definition, RecklessRansacking.script)
         register(RooftopPercher.definition, RooftopPercher.script)
         register(RunAwayTogether.definition, RunAwayTogether.script)
         register(ScarbladeScout.definition, ScarbladeScout.script)
+        register(Sear.definition, Sear.script)
         register(ShoreLurker.definition, ShoreLurker.script)
         register(SilvergillPeddler.definition, SilvergillPeddler.script)
         register(SpellSnare.definition, SpellSnare.script)
