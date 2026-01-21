@@ -358,6 +358,7 @@ class LegalActionCalculator {
                     blockerId = blockerId,
                     blockerName = blockerView.name,
                     attackerId = attackerId,
+                    attackerName = attackerView.name,
                     action = DeclareBlocker(blockerId, attackerId, playerId)
                 )
             }
@@ -451,5 +452,6 @@ data class DeclarableBlocker(
     val blockerId: EntityId,
     val blockerName: String,
     val attackerId: EntityId,
+    val attackerName: String,
     val action: DeclareBlocker
 )

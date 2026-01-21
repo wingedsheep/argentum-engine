@@ -381,24 +381,8 @@ class FlashAmbushTest : FunSpec({
             state = passAndAdvance(state)
 
             // === COMBAT DAMAGE ===
+            // Combat damage is automatically resolved as a turn-based action when entering this step
             state.turnState.step shouldBe Step.COMBAT_DAMAGE
-
-            // Calculate and apply damage
-            val damageCalculator = com.wingedsheep.rulesengine.ecs.combat.CombatDamageCalculator
-            val damageResult = damageCalculator.calculateRegularDamage(state)
-
-            // Apply damage
-            for (event in damageResult.damageEvents) {
-                state = when (event) {
-                    is com.wingedsheep.rulesengine.ecs.combat.CombatDamageCalculator.PendingDamageEvent.ToCreature -> {
-                        val damageComponent = state.getComponent<DamageComponent>(event.targetCreatureId) ?: DamageComponent(0)
-                        state.updateEntity(event.targetCreatureId) { c ->
-                            c.with(damageComponent.addDamage(event.amount))
-                        }
-                    }
-                    else -> state
-                }
-            }
 
             // Check damage marked
             // Bears (2/2) blocked by Angel (3/4)

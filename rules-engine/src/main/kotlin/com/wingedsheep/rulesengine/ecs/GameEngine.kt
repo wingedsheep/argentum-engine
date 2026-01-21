@@ -357,6 +357,32 @@ object GameEngine {
                     }
                 }
             }
+            com.wingedsheep.rulesengine.game.Step.FIRST_STRIKE_COMBAT_DAMAGE -> {
+                // Rule 510.4: First strike combat damage step
+                // Only creatures with first strike or double strike deal damage here
+                if (currentState.combat != null) {
+                    val damageResult = actionHandler.execute(
+                        currentState,
+                        ResolveCombatDamage(CombatDamageStep.FIRST_STRIKE)
+                    )
+                    if (damageResult is GameActionResult.Success) {
+                        currentState = damageResult.state
+                    }
+                }
+            }
+            com.wingedsheep.rulesengine.game.Step.COMBAT_DAMAGE -> {
+                // Rule 510.2: Regular combat damage step
+                // All creatures without first strike (or with double strike) deal damage here
+                if (currentState.combat != null) {
+                    val damageResult = actionHandler.execute(
+                        currentState,
+                        ResolveCombatDamage(CombatDamageStep.REGULAR)
+                    )
+                    if (damageResult is GameActionResult.Success) {
+                        currentState = damageResult.state
+                    }
+                }
+            }
             com.wingedsheep.rulesengine.game.Step.END_COMBAT -> {
                 // Rule 511: End combat when leaving the combat phase
                 val endCombatResult = actionHandler.execute(currentState, EndCombat(activePlayerId))

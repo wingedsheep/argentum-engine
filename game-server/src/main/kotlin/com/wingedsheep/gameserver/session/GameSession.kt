@@ -397,7 +397,7 @@ class GameSession(
         for (blocker in legalActions.declarableBlockers) {
             result.add(LegalActionInfo(
                 actionType = "DeclareBlocker",
-                description = "Block with ${blocker.blockerName}",
+                description = "Block ${blocker.attackerName} with ${blocker.blockerName}",
                 action = blocker.action
             ))
         }
