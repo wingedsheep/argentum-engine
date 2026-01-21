@@ -1,7 +1,7 @@
 import { useGameStore } from '../../store/gameStore'
 import { useViewingPlayer, useOpponent, useZoneCards, useBattlefieldCards } from '../../store/selectors'
 import { hand, graveyard } from '../../types'
-import type { ClientCard, ZoneId, ClientPlayer } from '../../types'
+import type { ClientCard, ZoneId, ClientPlayer, EntityId } from '../../types'
 import { PhaseIndicator } from '../ui/PhaseIndicator'
 
 /**
@@ -26,13 +26,6 @@ export function GameBoard() {
       {/* Opponent area (top) */}
       <div style={styles.opponentArea}>
         <div style={styles.playerRowWithZones}>
-          {/* Opponent deck/graveyard (left side) */}
-          {opponent && (
-            <ZonePile
-              player={opponent}
-              />
-          )}
-
           <div style={styles.playerMainArea}>
             {/* Opponent info */}
             <div style={styles.playerInfo}>
@@ -52,6 +45,9 @@ export function GameBoard() {
             {/* Opponent battlefield - lands first (closer to opponent), then creatures */}
             <BattlefieldArea isOpponent />
           </div>
+
+          {/* Opponent deck/graveyard (right side) */}
+          {opponent && <ZonePile player={opponent} />}
         </div>
       </div>
 
@@ -69,9 +65,6 @@ export function GameBoard() {
       {/* Player area (bottom) */}
       <div style={styles.playerArea}>
         <div style={styles.playerRowWithZones}>
-          {/* Player deck/graveyard (left side) */}
-          <ZonePile player={viewingPlayer} />
-
           <div style={styles.playerMainArea}>
             {/* Player battlefield - creatures first (closer to center), then lands */}
             <BattlefieldArea isOpponent={false} />
@@ -106,6 +99,9 @@ export function GameBoard() {
               )}
             </div>
           </div>
+
+          {/* Player deck/graveyard (right side) */}
+          <ZonePile player={viewingPlayer} />
         </div>
       </div>
 
@@ -289,7 +285,16 @@ function GameCard({
 }) {
   const selectCard = useGameStore((state) => state.selectCard)
   const selectedCardId = useGameStore((state) => state.selectedCardId)
+  const targetingState = useGameStore((state) => state.targetingState)
+  const legalActions = useGameStore((state) => state.legalActions)
+  const submitAction = useGameStore((state) => state.submitAction)
+  const cancelTargeting = useGameStore((state) => state.cancelTargeting)
+
   const isSelected = selectedCardId === card.id
+
+  // Check if this card is a valid target in targeting mode
+  const isValidTarget = targetingState?.validTargets.includes(card.id) ?? false
+  const isInTargetingMode = targetingState !== null
 
   const cardImageUrl = faceDown
     ? 'https://backs.scryfall.io/large/2/2/222b7a3b-2321-4d4c-af19-19338b134971.jpg?1677416389'
@@ -298,17 +303,53 @@ function GameCard({
   const width = small ? 60 : battlefield ? 100 : 120
   const height = small ? 84 : battlefield ? 140 : 168
 
+  const handleClick = () => {
+    if (isInTargetingMode && isValidTarget) {
+      // In targeting mode and this is a valid target - complete the block
+      const blockerId = targetingState.selectedTargets[0] // We stored blocker ID here
+      const attackerId = card.id
+
+      // Find the matching DeclareBlocker action
+      const blockAction = legalActions.find((info) => {
+        const action = info.action
+        return action.type === 'DeclareBlocker' &&
+               action.blockerId === blockerId &&
+               action.attackerId === attackerId
+      })
+
+      if (blockAction) {
+        submitAction(blockAction.action)
+        cancelTargeting()
+      }
+    } else if (interactive && !isInTargetingMode) {
+      // Normal selection
+      selectCard(isSelected ? null : card.id)
+    }
+  }
+
+  // Determine border color based on state
+  let borderStyle = '2px solid #333'
+  if (isSelected) {
+    borderStyle = '3px solid #ffff00'
+  } else if (isValidTarget) {
+    borderStyle = '3px solid #ff4444' // Red border for valid block targets
+  }
+
   return (
     <div
-      onClick={interactive ? () => selectCard(isSelected ? null : card.id) : undefined}
+      onClick={handleClick}
       style={{
         ...styles.card,
         width,
         height,
-        cursor: interactive ? 'pointer' : 'default',
-        border: isSelected ? '3px solid #ffff00' : '2px solid #333',
+        cursor: (interactive || isValidTarget) ? 'pointer' : 'default',
+        border: borderStyle,
         transform: `${card.isTapped ? 'rotate(90deg)' : ''} ${isSelected ? 'translateY(-8px)' : ''}`,
-        boxShadow: isSelected ? '0 8px 20px rgba(255, 255, 0, 0.4)' : '0 2px 8px rgba(0,0,0,0.5)',
+        boxShadow: isSelected
+          ? '0 8px 20px rgba(255, 255, 0, 0.4)'
+          : isValidTarget
+            ? '0 4px 15px rgba(255, 68, 68, 0.6)'
+            : '0 2px 8px rgba(0,0,0,0.5)',
       }}
     >
       <img
@@ -333,18 +374,43 @@ function GameCard({
       {card.isTapped && (
         <div style={styles.tappedOverlay} />
       )}
+
+      {/* Summoning sickness indicator */}
+      {battlefield && card.hasSummoningSickness && card.cardTypes.includes('CREATURE') && (
+        <div style={styles.summoningSicknessOverlay}>
+          <div style={styles.summoningSicknessIcon}>💤</div>
+        </div>
+      )}
     </div>
   )
 }
 
 /**
  * Action menu that appears when a card with legal actions is selected.
+ * Handles targeting mode for blocking (select blocker, then click attacker).
  */
 function ActionMenu() {
   const selectedCardId = useGameStore((state) => state.selectedCardId)
   const legalActions = useGameStore((state) => state.legalActions)
   const submitAction = useGameStore((state) => state.submitAction)
   const selectCard = useGameStore((state) => state.selectCard)
+  const targetingState = useGameStore((state) => state.targetingState)
+  const startTargeting = useGameStore((state) => state.startTargeting)
+  const cancelTargeting = useGameStore((state) => state.cancelTargeting)
+
+  // If in targeting mode, show targeting UI instead
+  if (targetingState) {
+    return (
+      <div style={styles.targetingOverlay}>
+        <div style={styles.targetingPrompt}>
+          Select an attacker to block
+        </div>
+        <button onClick={cancelTargeting} style={styles.cancelButton}>
+          Cancel
+        </button>
+      </div>
+    )
+  }
 
   if (!selectedCardId) return null
 
@@ -369,11 +435,35 @@ function ActionMenu() {
 
   if (cardActions.length === 0) return null
 
+  // Separate blocking actions from others - we'll show a single "Block" button
+  const blockActions = cardActions.filter((info) => info.action.type === 'DeclareBlocker')
+  const otherActions = cardActions.filter((info) => info.action.type !== 'DeclareBlocker')
+
+  // Get valid attacker IDs for blocking
+  const validAttackerIds = blockActions.map((info) => {
+    const action = info.action as { type: 'DeclareBlocker'; attackerId: EntityId }
+    return action.attackerId
+  })
+
+  const handleBlockClick = () => {
+    // Enter targeting mode - player must now click on an attacker
+    // Store blockerId in selectedTargets[0] so we can retrieve it later
+    startTargeting({
+      action: { type: 'DeclareBlocker' } as any,
+      validTargets: validAttackerIds,
+      selectedTargets: [selectedCardId], // Store the blocker ID here
+      requiredCount: 1,
+    })
+    selectCard(null)
+  }
+
   return (
     <div style={styles.actionMenuOverlay} onClick={() => selectCard(null)}>
       <div style={styles.actionMenu} onClick={(e) => e.stopPropagation()}>
         <div style={styles.actionMenuTitle}>Actions</div>
-        {cardActions.map((info, index) => (
+
+        {/* Regular actions */}
+        {otherActions.map((info, index) => (
           <button
             key={index}
             onClick={() => {
@@ -385,6 +475,17 @@ function ActionMenu() {
             {info.description}
           </button>
         ))}
+
+        {/* Single block button if blocking is available */}
+        {blockActions.length > 0 && (
+          <button
+            onClick={handleBlockClick}
+            style={styles.actionButton}
+          >
+            Block (select attacker)
+          </button>
+        )}
+
         <button
           onClick={() => selectCard(null)}
           style={styles.cancelButton}
@@ -609,6 +710,42 @@ const styles: Record<string, React.CSSProperties> = {
     right: 0,
     bottom: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
+  },
+  summoningSicknessOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(100, 100, 150, 0.3)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    pointerEvents: 'none',
+  },
+  summoningSicknessIcon: {
+    fontSize: 24,
+    opacity: 0.8,
+  },
+  targetingOverlay: {
+    position: 'absolute',
+    bottom: 20,
+    left: '50%',
+    transform: 'translateX(-50%)',
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    padding: '16px 24px',
+    borderRadius: 12,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 12,
+    zIndex: 100,
+    border: '2px solid #ff4444',
+  },
+  targetingPrompt: {
+    color: '#ff4444',
+    fontSize: 16,
+    fontWeight: 600,
   },
   actionMenuOverlay: {
     position: 'absolute',

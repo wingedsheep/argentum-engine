@@ -1,19 +1,19 @@
 /**
- * Scene lighting setup.
+ * Scene lighting setup - optimized for top-down view.
  *
- * Uses a combination of ambient light for base illumination
- * and directional lights for shadows and depth.
+ * Uses primarily ambient lighting for even illumination
+ * with subtle directional light for depth.
  */
 export function Lighting() {
   return (
     <>
-      {/* Ambient light for base illumination */}
-      <ambientLight intensity={0.4} />
+      {/* Strong ambient light for even illumination of cards */}
+      <ambientLight intensity={0.7} />
 
-      {/* Main directional light (from above and slightly front) */}
+      {/* Main directional light from directly above */}
       <directionalLight
-        position={[5, 10, 5]}
-        intensity={0.8}
+        position={[0, 15, 0]}
+        intensity={0.5}
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
@@ -24,18 +24,10 @@ export function Lighting() {
         shadow-camera-bottom={-10}
       />
 
-      {/* Fill light from the opposite side */}
+      {/* Subtle fill light */}
       <directionalLight
-        position={[-5, 5, -5]}
-        intensity={0.3}
-      />
-
-      {/* Subtle point light for card highlights */}
-      <pointLight
-        position={[0, 3, 0]}
+        position={[0, 10, 5]}
         intensity={0.2}
-        distance={10}
-        decay={2}
       />
     </>
   )

@@ -7,65 +7,8 @@ import type {
   ClientPlayer,
   LegalActionInfo,
   ZoneId,
-  MaskedEntity,
 } from '../types'
-import { ZoneType, zoneIdEquals, entityId } from '../types'
-
-/**
- * Extract ClientCard-like data from a MaskedEntity's components.
- * This bridges the gap between the server's ECS format and our display needs.
- */
-function extractCardFromEntity(entity: MaskedEntity): ClientCard | null {
-  if (!entity.isVisible || !entity.components) {
-    return null
-  }
-
-  const c = entity.components
-
-  // Extract data from various components
-  // The server sends components with type names as keys
-  const cardDef = c['CardDefinitionComponent'] || c['com.wingedsheep.rulesengine.ecs.components.card.CardDefinitionComponent'] || {}
-  const owner = c['OwnerComponent'] || c['com.wingedsheep.rulesengine.ecs.components.identity.OwnerComponent'] || {}
-  const controller = c['ControllerComponent'] || c['com.wingedsheep.rulesengine.ecs.components.identity.ControllerComponent'] || {}
-  const zone = c['ZoneComponent'] || c['com.wingedsheep.rulesengine.ecs.components.state.ZoneComponent'] || {}
-  const tapped = c['TappedComponent'] || c['com.wingedsheep.rulesengine.ecs.components.state.TappedComponent']
-  const damage = c['DamageComponent'] || c['com.wingedsheep.rulesengine.ecs.components.combat.DamageComponent'] || {}
-  const summoningSickness = c['SummoningSicknessComponent'] || c['com.wingedsheep.rulesengine.ecs.components.state.SummoningSicknessComponent']
-  const pt = c['PowerToughnessComponent'] || c['com.wingedsheep.rulesengine.ecs.components.stats.PowerToughnessComponent'] || {}
-  const attacking = c['AttackingComponent'] || c['com.wingedsheep.rulesengine.ecs.components.combat.AttackingComponent']
-  const blocking = c['BlockingComponent'] || c['com.wingedsheep.rulesengine.ecs.components.combat.BlockingComponent']
-
-  return {
-    id: entity.id,
-    name: cardDef.name || cardDef.cardName || 'Unknown',
-    manaCost: cardDef.manaCost || '',
-    manaValue: cardDef.manaValue || cardDef.convertedManaCost || 0,
-    typeLine: cardDef.typeLine || '',
-    cardTypes: cardDef.cardTypes || cardDef.types || [],
-    subtypes: cardDef.subtypes || [],
-    colors: cardDef.colors || [],
-    oracleText: cardDef.oracleText || cardDef.text || '',
-    power: pt.power ?? cardDef.power ?? null,
-    toughness: pt.toughness ?? cardDef.toughness ?? null,
-    damage: damage.damage ?? damage.amount ?? null,
-    keywords: cardDef.keywords || [],
-    counters: {},
-    isTapped: !!tapped,
-    hasSummoningSickness: !!summoningSickness,
-    isTransformed: false,
-    isAttacking: !!attacking,
-    isBlocking: !!blocking,
-    attackingTarget: attacking?.target ?? null,
-    blockingTarget: blocking?.attacker ?? null,
-    controllerId: controller.controllerId ? entityId(controller.controllerId) : entity.id,
-    ownerId: owner.ownerId ? entityId(owner.ownerId) : entity.id,
-    isToken: cardDef.isToken || false,
-    zone: zone.zoneId || null,
-    attachedTo: null,
-    attachments: [],
-    isFaceDown: !entity.isVisible,
-  }
-}
+import { ZoneType, zoneIdEquals } from '../types'
 
 /**
  * Select the game state.
@@ -147,9 +90,7 @@ export function useCard(cardId: EntityId | null): ClientCard | null {
   const gameState = useGameStore(selectGameState)
   return useMemo(() => {
     if (!gameState || !cardId) return null
-    const entity = gameState.entities[cardId]
-    if (!entity) return null
-    return extractCardFromEntity(entity)
+    return gameState.cards[cardId] ?? null
   }, [gameState, cardId])
 }
 
@@ -161,13 +102,10 @@ export function useZoneCards(zoneId: ZoneId): readonly ClientCard[] {
   return useMemo(() => {
     if (!gameState) return []
     const zone = gameState.zones.find((z) => zoneIdEquals(z.zoneId, zoneId))
-    if (!zone || !zone.entityIds) return []
-    return zone.entityIds
-      .map((id) => {
-        const entity = gameState.entities[id]
-        return entity ? extractCardFromEntity(entity) : null
-      })
-      .filter((card): card is ClientCard => card !== null)
+    if (!zone || !zone.cardIds) return []
+    return zone.cardIds
+      .map((id) => gameState.cards[id])
+      .filter((card): card is ClientCard => card !== null && card !== undefined)
   }, [gameState, zoneId])
 }
 
@@ -279,7 +217,7 @@ export function useBattlefieldCards(): {
     }
 
     const battlefield = gameState.zones.find((z) => z.zoneId.type === ZoneType.BATTLEFIELD)
-    if (!battlefield || !battlefield.entityIds) {
+    if (!battlefield || !battlefield.cardIds) {
       return {
         playerLands: [],
         playerCreatures: [],
@@ -290,18 +228,15 @@ export function useBattlefieldCards(): {
       }
     }
 
-    const cards = battlefield.entityIds
-      .map((id) => {
-        const entity = gameState.entities[id]
-        return entity ? extractCardFromEntity(entity) : null
-      })
-      .filter((card): card is ClientCard => card !== null)
+    const cards = battlefield.cardIds
+      .map((id) => gameState.cards[id])
+      .filter((card): card is ClientCard => card !== null && card !== undefined)
 
     const playerCards = cards.filter((c) => c.controllerId === playerId)
     const opponentCards = cards.filter((c) => c.controllerId !== playerId)
 
-    const isLand = (c: ClientCard) => c.cardTypes.includes('Land')
-    const isCreature = (c: ClientCard) => c.cardTypes.includes('Creature')
+    const isLand = (c: ClientCard) => c.cardTypes.includes('LAND')
+    const isCreature = (c: ClientCard) => c.cardTypes.includes('CREATURE')
 
     return {
       playerLands: playerCards.filter(isLand),
@@ -322,13 +257,10 @@ export function useStackCards(): readonly ClientCard[] {
   return useMemo(() => {
     if (!gameState) return []
     const stack = gameState.zones.find((z) => z.zoneId.type === ZoneType.STACK)
-    if (!stack || !stack.entityIds) return []
-    return stack.entityIds
-      .map((id) => {
-        const entity = gameState.entities[id]
-        return entity ? extractCardFromEntity(entity) : null
-      })
-      .filter((card): card is ClientCard => card !== null)
+    if (!stack || !stack.cardIds) return []
+    return stack.cardIds
+      .map((id) => gameState.cards[id])
+      .filter((card): card is ClientCard => card !== null && card !== undefined)
   }, [gameState])
 }
 

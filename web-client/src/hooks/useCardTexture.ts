@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react'
 import { TextureLoader, Texture, SRGBColorSpace } from 'three'
 
+// Configure TextureLoader for cross-origin requests
+const textureLoader = new TextureLoader()
+textureLoader.crossOrigin = 'anonymous'
+
 /**
  * Cache for loaded textures to prevent reloading.
  */
@@ -23,7 +27,7 @@ export function getScryfallImageUrl(
 /**
  * Placeholder image for card backs.
  */
-export const CARD_BACK_URL = 'https://backs.scryfall.io/large/c1/09/c1092f8a-3cd9-46b5-a06e-bf8ab43e4bb9.jpg'
+export const CARD_BACK_URL = 'https://backs.scryfall.io/large/2/2/222b7a3b-2321-4d4c-af19-19338b134971.jpg?1677416389'
 
 /**
  * Hook to load a card texture from Scryfall.
@@ -48,8 +52,7 @@ export function useCardTexture(cardName: string | null): Texture | null {
       return
     }
 
-    const loader = new TextureLoader()
-    loader.load(
+    textureLoader.load(
       url,
       (loadedTexture) => {
         loadedTexture.colorSpace = SRGBColorSpace
@@ -83,8 +86,7 @@ export function useCardBackTexture(): Texture | null {
       return
     }
 
-    const loader = new TextureLoader()
-    loader.load(
+    textureLoader.load(
       CARD_BACK_URL,
       (loadedTexture) => {
         loadedTexture.colorSpace = SRGBColorSpace
@@ -106,12 +108,10 @@ export function useCardBackTexture(): Texture | null {
  * Useful for loading hand/battlefield cards in advance.
  */
 export function preloadCardTextures(cardNames: string[]): void {
-  const loader = new TextureLoader()
-
   cardNames.forEach((name) => {
     const url = getScryfallImageUrl(name, 'normal')
     if (!textureCache.has(url)) {
-      loader.load(
+      textureLoader.load(
         url,
         (texture) => {
           texture.colorSpace = SRGBColorSpace

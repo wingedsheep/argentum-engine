@@ -1,8 +1,8 @@
 package com.wingedsheep.gameserver
 
-import com.wingedsheep.gameserver.masking.MaskedGameState
-import com.wingedsheep.gameserver.masking.MaskedPlayer
-import com.wingedsheep.gameserver.masking.MaskedZone
+import com.wingedsheep.gameserver.dto.ClientGameState
+import com.wingedsheep.gameserver.dto.ClientPlayer
+import com.wingedsheep.gameserver.dto.ClientZone
 import com.wingedsheep.gameserver.protocol.ClientMessage
 import com.wingedsheep.gameserver.protocol.ErrorCode
 import com.wingedsheep.gameserver.protocol.GameOverReason
@@ -100,10 +100,10 @@ class GamePlayIntegrationTest(
         return messages.filterIsInstance<ServerMessage.Connected>().first().playerId
     }
 
-    fun TestWebSocketClient.latestState(): MaskedGameState? =
+    fun TestWebSocketClient.latestState(): ClientGameState? =
         messages.filterIsInstance<ServerMessage.StateUpdate>().lastOrNull()?.state
 
-    fun TestWebSocketClient.requireLatestState(): MaskedGameState =
+    fun TestWebSocketClient.requireLatestState(): ClientGameState =
         latestState() ?: error("No state update received")
 
     fun TestWebSocketClient.latestError(): ServerMessage.Error? =
@@ -153,7 +153,7 @@ class GamePlayIntegrationTest(
         }
     }
 
-    suspend fun TestWebSocketClient.submitAndWait(action: GameAction): MaskedGameState {
+    suspend fun TestWebSocketClient.submitAndWait(action: GameAction): ClientGameState {
         val countBefore = stateUpdateCount()
         send(ClientMessage.SubmitAction(action))
         eventually(5.seconds) {
@@ -171,26 +171,26 @@ class GamePlayIntegrationTest(
         return allErrors().last()
     }
 
-    fun MaskedGameState.player(playerId: EntityId): MaskedPlayer =
+    fun ClientGameState.player(playerId: EntityId): ClientPlayer =
         players.find { it.playerId == playerId }
             ?: error("Player $playerId not found in state")
 
-    fun MaskedGameState.hand(playerId: EntityId): MaskedZone =
+    fun ClientGameState.hand(playerId: EntityId): ClientZone =
         zones.find { it.zoneId.type == ZoneType.HAND && it.zoneId.ownerId == playerId }
             ?: error("Hand zone for $playerId not found")
 
-    fun MaskedGameState.library(playerId: EntityId): MaskedZone =
+    fun ClientGameState.library(playerId: EntityId): ClientZone =
         zones.find { it.zoneId.type == ZoneType.LIBRARY && it.zoneId.ownerId == playerId }
             ?: error("Library zone for $playerId not found")
 
-    fun MaskedGameState.graveyard(playerId: EntityId): MaskedZone =
+    fun ClientGameState.graveyard(playerId: EntityId): ClientZone =
         zones.find { it.zoneId.type == ZoneType.GRAVEYARD && it.zoneId.ownerId == playerId }
             ?: error("Graveyard zone for $playerId not found")
 
-    fun MaskedGameState.battlefield(): MaskedZone =
+    fun ClientGameState.battlefield(): ClientZone =
         zones.find { it.zoneId == ZoneId.BATTLEFIELD } ?: error("Battlefield zone not found")
 
-    fun MaskedGameState.stack(): MaskedZone =
+    fun ClientGameState.stack(): ClientZone =
         zones.find { it.zoneId == ZoneId.STACK } ?: error("Stack zone not found")
 
     /**
@@ -273,7 +273,7 @@ class GamePlayIntegrationTest(
         return if (state.priorityPlayerId == player1.id) player2 else player1
     }
 
-    suspend fun GameContext.passBothPriorities(): MaskedGameState {
+    suspend fun GameContext.passBothPriorities(): ClientGameState {
         val priority = priorityPlayer()
         val nonPriority = nonPriorityPlayer()
 
@@ -281,7 +281,7 @@ class GamePlayIntegrationTest(
         return nonPriority.client.submitAndWait(PassPriority(nonPriority.id))
     }
 
-    suspend fun GameContext.advanceToPhase(targetPhase: Phase, maxPasses: Int = 100): MaskedGameState {
+    suspend fun GameContext.advanceToPhase(targetPhase: Phase, maxPasses: Int = 100): ClientGameState {
         repeat(maxPasses) {
             val state = player1.client.requireLatestState()
             if (state.currentPhase == targetPhase) return state
@@ -293,7 +293,7 @@ class GamePlayIntegrationTest(
         error("Failed to reach phase $targetPhase after $maxPasses priority passes")
     }
 
-    suspend fun GameContext.advanceToNextTurn(maxPasses: Int = 100): MaskedGameState {
+    suspend fun GameContext.advanceToNextTurn(maxPasses: Int = 100): ClientGameState {
         val currentTurn = player1.client.requireLatestState().turnNumber
         repeat(maxPasses) {
             val state = player1.client.requireLatestState()
@@ -313,10 +313,10 @@ class GamePlayIntegrationTest(
         val state = player.client.requireLatestState()
         val hand = state.hand(player.id)
 
-        require(hand.entityIds.isNotEmpty()) { "No cards in hand to play" }
+        require(hand.cardIds.isNotEmpty()) { "No cards in hand to play" }
         require(state.priorityPlayerId == player.id) { "Player does not have priority" }
 
-        val landId = hand.entityIds.first()
+        val landId = hand.cardIds.first()
         player.client.submitAndWait(PlayLand(cardId = landId, playerId = player.id))
         return landId
     }
@@ -688,10 +688,10 @@ class GamePlayIntegrationTest(
                 ownHand.isVisible shouldBe true
             }
             withClue("Own hand should contain 7 card entity IDs") {
-                ownHand.entityIds shouldHaveSize 7
+                ownHand.cardIds shouldHaveSize 7
             }
             withClue("Hand size should match entity count") {
-                ownHand.size shouldBe ownHand.entityIds.size
+                ownHand.size shouldBe ownHand.cardIds.size
             }
         }
 
@@ -705,7 +705,7 @@ class GamePlayIntegrationTest(
                 opponentHand.isVisible shouldBe false
             }
             withClue("Opponent hand entity IDs should be hidden") {
-                opponentHand.entityIds.shouldBeEmpty()
+                opponentHand.cardIds.shouldBeEmpty()
             }
             withClue("Opponent hand card count should still be visible") {
                 opponentHand.size shouldBe 7
@@ -719,7 +719,7 @@ class GamePlayIntegrationTest(
             val ownLibrary = state.library(ctx.player1.id)
 
             ownLibrary.isVisible shouldBe false
-            ownLibrary.entityIds.shouldBeEmpty()
+            ownLibrary.cardIds.shouldBeEmpty()
             ownLibrary.size shouldBe 33
         }
 
@@ -730,7 +730,7 @@ class GamePlayIntegrationTest(
             val opponentLibrary = state.library(ctx.player2.id)
 
             opponentLibrary.isVisible shouldBe false
-            opponentLibrary.entityIds.shouldBeEmpty()
+            opponentLibrary.cardIds.shouldBeEmpty()
             opponentLibrary.size shouldBe 33
         }
 
@@ -746,12 +746,12 @@ class GamePlayIntegrationTest(
 
             withClue("Battlefield visible to player 1") {
                 state1.battlefield().isVisible shouldBe true
-                state1.battlefield().entityIds shouldContain landId
+                state1.battlefield().cardIds shouldContain landId
             }
 
             withClue("Battlefield visible to player 2") {
                 state2.battlefield().isVisible shouldBe true
-                state2.battlefield().entityIds shouldContain landId
+                state2.battlefield().cardIds shouldContain landId
             }
         }
 
@@ -803,7 +803,7 @@ class GamePlayIntegrationTest(
             val newState = active.client.requireLatestState()
 
             withClue("Land should be on battlefield") {
-                newState.battlefield().entityIds shouldContain landId
+                newState.battlefield().cardIds shouldContain landId
                 newState.battlefield().size shouldBe initialBattlefieldSize + 1
             }
 
@@ -824,7 +824,7 @@ class GamePlayIntegrationTest(
 
             // Get a second land from hand
             val state = active.client.requireLatestState()
-            val secondLand = state.hand(active.id).entityIds.firstOrNull()
+            val secondLand = state.hand(active.id).cardIds.firstOrNull()
 
             if (secondLand != null) {
                 val error = active.client.submitAndExpectError(
@@ -862,9 +862,9 @@ class GamePlayIntegrationTest(
             val state = nonPriority.client.requireLatestState()
             val hand = state.hand(nonPriority.id)
 
-            if (hand.entityIds.isNotEmpty()) {
+            if (hand.cardIds.isNotEmpty()) {
                 val error = nonPriority.client.submitAndExpectError(
-                    PlayLand(cardId = hand.entityIds.first(), playerId = nonPriority.id)
+                    PlayLand(cardId = hand.cardIds.first(), playerId = nonPriority.id)
                 )
 
                 error.code shouldBe ErrorCode.INVALID_ACTION
@@ -889,7 +889,7 @@ class GamePlayIntegrationTest(
 
             // Land should still be on battlefield
             val state = active.client.requireLatestState()
-            state.battlefield().entityIds shouldContain landId
+            state.battlefield().cardIds shouldContain landId
         }
 
         test("cannot tap already tapped land") {

@@ -1,85 +1,110 @@
-import { useRef } from 'react'
-import { Mesh } from 'three'
-
 /**
- * The game table surface.
+ * The game table surface - MTG Arena style.
  *
- * A flat plane representing the play mat where cards are placed.
- * Uses a dark green color reminiscent of classic card table felt.
+ * A flat plane representing the battlefield with zone indicators.
+ * Dark theme matching MTG Arena's aesthetic.
  */
 export function Table() {
-  const meshRef = useRef<Mesh>(null)
-
   return (
     <group>
-      {/* Main table surface */}
-      <mesh
-        ref={meshRef}
-        rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, -0.01, 0]}
-        receiveShadow
-      >
-        <planeGeometry args={[14, 10]} />
-        <meshStandardMaterial
-          color="#1a472a"
-          roughness={0.8}
-          metalness={0.1}
-        />
-      </mesh>
-
-      {/* Table edge/border */}
+      {/* Main battlefield surface */}
       <mesh
         rotation={[-Math.PI / 2, 0, 0]}
         position={[0, -0.02, 0]}
+        receiveShadow
       >
-        <planeGeometry args={[14.5, 10.5]} />
+        <planeGeometry args={[16, 12]} />
         <meshStandardMaterial
-          color="#0d2818"
+          color="#1a1a2e"
           roughness={0.9}
           metalness={0.0}
         />
       </mesh>
 
-      {/* Zone divider line (center) */}
+      {/* Battlefield center - slightly lighter */}
+      <mesh
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, -0.01, 0]}
+        receiveShadow
+      >
+        <planeGeometry args={[14, 8]} />
+        <meshStandardMaterial
+          color="#16213e"
+          roughness={0.8}
+          metalness={0.1}
+        />
+      </mesh>
+
+      {/* Center divider line */}
       <mesh
         rotation={[-Math.PI / 2, 0, 0]}
         position={[0, 0.001, 0]}
       >
-        <planeGeometry args={[12, 0.02]} />
+        <planeGeometry args={[14, 0.03]} />
         <meshStandardMaterial
-          color="#2d5a3d"
+          color="#0f3460"
           roughness={0.5}
-          metalness={0.2}
+          metalness={0.3}
         />
       </mesh>
 
-      {/* Player area indicator */}
+      {/* Player creature zone highlight */}
       <mesh
         rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, 0.001, 2]}
+        position={[0, 0.001, 1.2]}
       >
-        <planeGeometry args={[10, 0.01]} />
+        <planeGeometry args={[12, 1.0]} />
         <meshStandardMaterial
-          color="#2d5a3d"
-          roughness={0.5}
-          metalness={0.2}
+          color="#1a3a5c"
+          roughness={0.7}
+          metalness={0.1}
           transparent
-          opacity={0.5}
+          opacity={0.3}
         />
       </mesh>
 
-      {/* Opponent area indicator */}
+      {/* Player land zone highlight */}
       <mesh
         rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, 0.001, -2]}
+        position={[0, 0.001, 2.6]}
       >
-        <planeGeometry args={[10, 0.01]} />
+        <planeGeometry args={[12, 1.0]} />
         <meshStandardMaterial
-          color="#2d5a3d"
-          roughness={0.5}
-          metalness={0.2}
+          color="#1a4a3c"
+          roughness={0.7}
+          metalness={0.1}
           transparent
-          opacity={0.5}
+          opacity={0.3}
+        />
+      </mesh>
+
+      {/* Opponent creature zone highlight */}
+      <mesh
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, 0.001, -1.2]}
+      >
+        <planeGeometry args={[12, 1.0]} />
+        <meshStandardMaterial
+          color="#3a1a1a"
+          roughness={0.7}
+          metalness={0.1}
+          transparent
+          opacity={0.3}
+        />
+      </mesh>
+
+      {/* Opponent land zone highlight */}
+      <mesh
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, 0.001, -2.6]}
+      >
+        <planeGeometry args={[12, 1.0]} />
+        <meshStandardMaterial
+          color="#4a2a1a"
+          roughness={0.7}
+          metalness={0.1}
+          transparent
+          opacity={0.3}
         />
       </mesh>
     </group>

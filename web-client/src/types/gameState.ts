@@ -3,14 +3,14 @@ import { EntityId, ZoneId } from './entities'
 
 /**
  * Client-facing game state DTO.
- * Matches backend MaskedGameState.kt
+ * Matches backend ClientGameState.kt
  */
 export interface ClientGameState {
   /** The player viewing this state */
   readonly viewingPlayerId: EntityId
 
-  /** All visible entities with their components (raw ECS data) */
-  readonly entities: Record<EntityId, MaskedEntity>
+  /** All visible cards/permanents */
+  readonly cards: Record<EntityId, ClientCard>
 
   /** Zone information */
   readonly zones: readonly ClientZone[]
@@ -36,17 +36,9 @@ export interface ClientGameState {
 
   /** The winner, if the game is over */
   readonly winnerId: EntityId | null
-}
 
-/**
- * A masked entity from the server.
- * Contains raw component data that needs to be extracted.
- */
-export interface MaskedEntity {
-  readonly id: EntityId
-  readonly isVisible: boolean
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  readonly components: Record<string, any> | null
+  /** Combat state, if in combat */
+  readonly combat: ClientCombatState | null
 }
 
 /**
@@ -131,13 +123,13 @@ export interface ClientCard {
 
 /**
  * Zone information for client display.
- * Matches backend MaskedZone.kt
+ * Matches backend ClientZone.kt
  */
 export interface ClientZone {
   readonly zoneId: ZoneId
 
-  /** Entity IDs in this zone, in order (may be empty for hidden zones) */
-  readonly entityIds: readonly EntityId[]
+  /** Card IDs in this zone, in order (may be empty for hidden zones) */
+  readonly cardIds: readonly EntityId[]
 
   /** Number of cards in the zone (always available, even for hidden zones) */
   readonly size: number

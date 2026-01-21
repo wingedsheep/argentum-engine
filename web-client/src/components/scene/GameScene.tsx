@@ -9,9 +9,10 @@ import { Graveyard } from '../zones/Graveyard'
 import { Stack } from '../zones/Stack'
 import { useGameStore } from '../../store/gameStore'
 import { hand, library, graveyard } from '../../types'
+import { ZONE_POSITIONS } from '../zones/ZoneLayout'
 
 /**
- * Main 3D scene containing the game table and all zones.
+ * Main scene containing the game board - MTG Arena style layout.
  */
 export function GameScene() {
   const playerId = useGameStore((state) => state.playerId)
@@ -22,7 +23,7 @@ export function GameScene() {
 
   return (
     <Canvas
-      style={{ width: '100%', height: '100%' }}
+      style={{ width: '100%', height: '100%', background: '#0a0a15' }}
       gl={{ antialias: true, alpha: false }}
       dpr={[1, 2]}
     >
@@ -35,17 +36,17 @@ export function GameScene() {
         <>
           <Hand
             zoneId={hand(playerId)}
-            position={[0, 0.1, 3.5]}
+            position={ZONE_POSITIONS.playerHand}
             rotation={[0, 0, 0]}
             isOpponent={false}
           />
           <Library
             zoneId={library(playerId)}
-            position={[4.5, 0, 2.5]}
+            position={ZONE_POSITIONS.playerLibrary}
           />
           <Graveyard
             zoneId={graveyard(playerId)}
-            position={[4.5, 0, 1]}
+            position={ZONE_POSITIONS.playerGraveyard}
           />
         </>
       )}
@@ -55,17 +56,17 @@ export function GameScene() {
         <>
           <Hand
             zoneId={hand(opponentId)}
-            position={[0, 0.1, -3.5]}
+            position={ZONE_POSITIONS.opponentHand}
             rotation={[0, Math.PI, 0]}
             isOpponent={true}
           />
           <Library
             zoneId={library(opponentId)}
-            position={[-4.5, 0, -2.5]}
+            position={ZONE_POSITIONS.opponentLibrary}
           />
           <Graveyard
             zoneId={graveyard(opponentId)}
-            position={[-4.5, 0, -1]}
+            position={ZONE_POSITIONS.opponentGraveyard}
           />
         </>
       )}
@@ -74,7 +75,7 @@ export function GameScene() {
       <Battlefield />
 
       {/* Stack (right side) */}
-      <Stack position={[5.5, 0, 0]} />
+      <Stack position={ZONE_POSITIONS.stack} />
     </Canvas>
   )
 }

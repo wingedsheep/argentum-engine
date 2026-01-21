@@ -75,13 +75,8 @@ export function Card3D({
     meshRef.current.position.y += (targetY - meshRef.current.position.y) * 0.1
   })
 
-  // Calculate rotation including tapped state
+  // Calculate tapped rotation (around Y axis for top-down view)
   const tappedRotation = card.isTapped ? Math.PI / 2 : 0
-  const finalRotation: [number, number, number] = [
-    rotation[0],
-    rotation[1] + tappedRotation,
-    rotation[2],
-  ]
 
   // Frame color for fallback
   const frameColor = getCardFrameColor(card.colors)
@@ -112,8 +107,12 @@ export function Card3D({
     document.body.style.cursor = 'auto'
   }
 
+  // For top-down view, card lies flat on the table with face up
+  // Apply tapped rotation around Y axis
+  const groupRotation: [number, number, number] = [0, rotation[1] + tappedRotation, 0]
+
   return (
-    <group position={position} rotation={finalRotation}>
+    <group position={position} rotation={groupRotation}>
       {/* Highlight glow */}
       {actualHighlight && (
         <CardHighlight
@@ -124,62 +123,64 @@ export function Card3D({
         />
       )}
 
-      {/* Main card mesh */}
+      {/* Main card mesh - rotated to lie flat */}
       <mesh
         ref={meshRef}
         onClick={handleClick}
         onPointerOver={handlePointerOver}
         onPointerOut={handlePointerOut}
+        rotation={[-Math.PI / 2, 0, 0]}
         castShadow
         receiveShadow
       >
-        <boxGeometry args={[width, depth, height]} />
+        <boxGeometry args={[width, height, depth]} />
 
-        {/* Materials for each face: right, left, top, bottom, front, back */}
+        {/* Materials for each face: +X, -X, +Y (front/face), -Y (back), +Z, -Z */}
         <meshStandardMaterial attach="material-0" color={frameColor} /> {/* Right */}
         <meshStandardMaterial attach="material-1" color={frameColor} /> {/* Left */}
-        <meshStandardMaterial attach="material-2" color={frameColor} /> {/* Top */}
-        <meshStandardMaterial attach="material-3" color={frameColor} /> {/* Bottom */}
 
-        {/* Front face - card image or placeholder */}
+        {/* Top face (Y+) - card front when lying flat */}
         {frontTexture && !faceDown ? (
           <meshStandardMaterial
-            attach="material-4"
+            attach="material-2"
             map={frontTexture}
             roughness={0.4}
             metalness={0.1}
           />
         ) : (
           <meshStandardMaterial
-            attach="material-4"
+            attach="material-2"
             color={faceDown ? '#2a2a4e' : frameColor}
             roughness={0.6}
           />
         )}
 
-        {/* Back face - card back */}
+        {/* Bottom face (Y-) - card back when lying flat */}
         {backTexture ? (
           <meshStandardMaterial
-            attach="material-5"
+            attach="material-3"
             map={backTexture}
             roughness={0.4}
             metalness={0.1}
           />
         ) : (
           <meshStandardMaterial
-            attach="material-5"
+            attach="material-3"
             color="#1a1a2e"
             roughness={0.6}
           />
         )}
+
+        <meshStandardMaterial attach="material-4" color={frameColor} /> {/* Front Z+ */}
+        <meshStandardMaterial attach="material-5" color={frameColor} /> {/* Back Z- */}
       </mesh>
 
       {/* Card name (for placeholder without texture) */}
       {!frontTexture && !faceDown && (
         <Text
-          position={[0, depth / 2 + 0.001, -height * 0.35]}
+          position={[0, depth / 2 + 0.02, -height * 0.35]}
           rotation={[-Math.PI / 2, 0, 0]}
-          fontSize={0.06 * scale}
+          fontSize={0.18 * scale}
           color="#000000"
           anchorX="center"
           anchorY="middle"
@@ -195,7 +196,7 @@ export function Card3D({
           power={card.power}
           toughness={card.toughness}
           damage={card.damage}
-          position={[width * 0.35, depth / 2 + 0.002, height * 0.4]}
+          position={[width * 0.35, depth / 2 + 0.01, height * 0.35]}
           scale={scale}
         />
       )}
@@ -204,14 +205,14 @@ export function Card3D({
       {!faceDown && Object.keys(card.counters).length > 0 && (
         <CounterDisplay
           counters={card.counters}
-          position={[-width * 0.35, depth / 2 + 0.002, -height * 0.2]}
+          position={[-width * 0.35, depth / 2 + 0.01, -height * 0.2]}
           scale={scale}
         />
       )}
 
       {/* Summoning sickness indicator */}
-      {!faceDown && card.hasSummoningSickness && card.cardTypes.includes('Creature') && (
-        <mesh position={[0, depth / 2 + 0.003, 0]}>
+      {!faceDown && card.hasSummoningSickness && card.cardTypes.includes('CREATURE') && (
+        <mesh position={[0, depth / 2 + 0.015, 0]} rotation={[-Math.PI / 2, 0, 0]}>
           <ringGeometry args={[width * 0.3, width * 0.32, 32]} />
           <meshBasicMaterial color="#888888" transparent opacity={0.5} />
         </mesh>

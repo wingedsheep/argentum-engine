@@ -2,31 +2,32 @@ import type { Vector3Tuple } from 'three'
 
 /**
  * Standard card dimensions (MTG card ratio 2.5" x 3.5")
+ * Scaled up for better visibility in the 3D view
  */
-export const CARD_WIDTH = 0.63
-export const CARD_HEIGHT = 0.88
-export const CARD_DEPTH = 0.01
+export const CARD_WIDTH = 1.4
+export const CARD_HEIGHT = 2.0
+export const CARD_DEPTH = 0.02
 
 /**
  * Card scale factors for different zones
  */
 export const CARD_SCALES = {
-  hand: 0.9,
-  battlefield: 0.75,
-  stack: 0.7,
-  graveyard: 0.65,
-  library: 0.65,
+  hand: 1.0,
+  battlefield: 0.9,
+  stack: 0.8,
+  graveyard: 0.75,
+  library: 0.75,
 } as const
 
 /**
  * Spacing between cards in different zones
  */
 export const CARD_SPACING = {
-  hand: 0.5,
-  battlefieldRow: 0.85,
-  battlefieldColumn: 0.7,
-  stack: 0.15,
-  graveyardOffset: 0.02,
+  hand: 1.0,
+  battlefieldRow: 1.8,
+  battlefieldColumn: 2.4,
+  stack: 0.3,
+  graveyardOffset: 0.04,
 } as const
 
 /**
@@ -40,27 +41,36 @@ export const MAX_VISIBLE_CARDS = {
 } as const
 
 /**
- * Zone positions on the table
+ * Zone positions on the table - MTG Arena style layout
+ *
+ * Layout from top to bottom:
+ * - Opponent hand (face down, row)
+ * - Opponent lands
+ * - Opponent creatures
+ * - Center divider
+ * - Player creatures
+ * - Player lands
+ * - Player hand (visible, overlapping row)
  */
 export const ZONE_POSITIONS = {
-  // Player zones (positive Z)
-  playerHand: [0, 0.1, 3.5] as Vector3Tuple,
-  playerLands: [0, 0, 2] as Vector3Tuple,
-  playerCreatures: [0, 0, 0.8] as Vector3Tuple,
-  playerOther: [-3.5, 0, 1.4] as Vector3Tuple,
-  playerLibrary: [4.5, 0, 2.5] as Vector3Tuple,
-  playerGraveyard: [4.5, 0, 1] as Vector3Tuple,
+  // Player zones (positive Z - bottom of screen)
+  playerHand: [0, 0, 5.5] as Vector3Tuple,
+  playerLands: [0, 0, 2.5] as Vector3Tuple,
+  playerCreatures: [0, 0, 0] as Vector3Tuple,
+  playerOther: [-8.0, 0, 1.2] as Vector3Tuple,
+  playerLibrary: [9.0, 0, 4.0] as Vector3Tuple,
+  playerGraveyard: [9.0, 0, 1.5] as Vector3Tuple,
 
-  // Opponent zones (negative Z)
-  opponentHand: [0, 0.1, -3.5] as Vector3Tuple,
-  opponentLands: [0, 0, -2] as Vector3Tuple,
-  opponentCreatures: [0, 0, -0.8] as Vector3Tuple,
-  opponentOther: [3.5, 0, -1.4] as Vector3Tuple,
-  opponentLibrary: [-4.5, 0, -2.5] as Vector3Tuple,
-  opponentGraveyard: [-4.5, 0, -1] as Vector3Tuple,
+  // Opponent zones (negative Z - top of screen)
+  opponentHand: [0, 0, -5.5] as Vector3Tuple,
+  opponentLands: [0, 0, -2.5] as Vector3Tuple,
+  opponentCreatures: [0, 0, 0] as Vector3Tuple,
+  opponentOther: [8.0, 0, -1.2] as Vector3Tuple,
+  opponentLibrary: [-9.0, 0, -4.0] as Vector3Tuple,
+  opponentGraveyard: [-9.0, 0, -1.5] as Vector3Tuple,
 
   // Shared zones
-  stack: [5.5, 0, 0] as Vector3Tuple,
+  stack: [10.0, 0, 0] as Vector3Tuple,
 } as const
 
 /**
