@@ -7,6 +7,7 @@ import com.wingedsheep.gameserver.protocol.ServerMessage
 import com.wingedsheep.gameserver.session.GameSession
 import com.wingedsheep.gameserver.session.PlayerSession
 import com.wingedsheep.rulesengine.ecs.EntityId
+import com.wingedsheep.rulesengine.ecs.action.gameActionSerializersModule
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
@@ -35,6 +36,7 @@ class GameWebSocketHandler : TextWebSocketHandler() {
         ignoreUnknownKeys = true
         encodeDefaults = true
         classDiscriminator = "type"
+        serializersModule = gameActionSerializersModule
     }
 
     // Connected players indexed by WebSocket session ID

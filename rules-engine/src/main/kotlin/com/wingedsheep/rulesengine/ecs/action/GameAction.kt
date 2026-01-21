@@ -6,7 +6,11 @@ import com.wingedsheep.rulesengine.decision.DecisionResponse
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.zone.ZoneType
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
+import kotlinx.serialization.modules.subclass
 
 /**
  * Sealed hierarchy of ECS-compatible game actions.
@@ -27,6 +31,7 @@ sealed interface GameAction {
 // =============================================================================
 
 @Serializable
+@SerialName("GainLife")
 data class GainLife(
     val playerId: EntityId,
     val amount: Int
@@ -35,6 +40,7 @@ data class GainLife(
 }
 
 @Serializable
+@SerialName("LoseLife")
 data class LoseLife(
     val playerId: EntityId,
     val amount: Int
@@ -43,6 +49,7 @@ data class LoseLife(
 }
 
 @Serializable
+@SerialName("SetLife")
 data class SetLife(
     val playerId: EntityId,
     val amount: Int
@@ -51,6 +58,7 @@ data class SetLife(
 }
 
 @Serializable
+@SerialName("DealDamageToPlayer")
 data class DealDamageToPlayer(
     val targetPlayerId: EntityId,
     val amount: Int,
@@ -60,6 +68,7 @@ data class DealDamageToPlayer(
 }
 
 @Serializable
+@SerialName("DealDamageToCreature")
 data class DealDamageToCreature(
     val targetEntityId: EntityId,
     val amount: Int,
@@ -73,6 +82,7 @@ data class DealDamageToCreature(
 // =============================================================================
 
 @Serializable
+@SerialName("AddMana")
 data class AddMana(
     val playerId: EntityId,
     val color: Color,
@@ -82,6 +92,7 @@ data class AddMana(
 }
 
 @Serializable
+@SerialName("AddColorlessMana")
 data class AddColorlessMana(
     val playerId: EntityId,
     val amount: Int = 1
@@ -90,6 +101,7 @@ data class AddColorlessMana(
 }
 
 @Serializable
+@SerialName("EmptyManaPool")
 data class EmptyManaPool(
     val playerId: EntityId
 ) : GameAction {
@@ -109,6 +121,7 @@ data class EmptyManaPool(
  * @param playerId The player activating the ability
  */
 @Serializable
+@SerialName("ActivateManaAbility")
 data class ActivateManaAbility(
     val sourceEntityId: EntityId,
     val abilityIndex: Int,
@@ -122,6 +135,7 @@ data class ActivateManaAbility(
 // =============================================================================
 
 @Serializable
+@SerialName("DrawCard")
 data class DrawCard(
     val playerId: EntityId,
     val count: Int = 1
@@ -130,6 +144,7 @@ data class DrawCard(
 }
 
 @Serializable
+@SerialName("DiscardCard")
 data class DiscardCard(
     val playerId: EntityId,
     val cardId: EntityId
@@ -142,6 +157,7 @@ data class DiscardCard(
 // =============================================================================
 
 @Serializable
+@SerialName("MoveEntity")
 data class MoveEntity(
     val entityId: EntityId,
     val fromZone: ZoneId,
@@ -152,6 +168,7 @@ data class MoveEntity(
 }
 
 @Serializable
+@SerialName("PutOntoBattlefield")
 data class PutOntoBattlefield(
     val entityId: EntityId,
     val controllerId: EntityId,
@@ -161,6 +178,7 @@ data class PutOntoBattlefield(
 }
 
 @Serializable
+@SerialName("DestroyPermanent")
 data class DestroyPermanent(
     val entityId: EntityId
 ) : GameAction {
@@ -168,6 +186,7 @@ data class DestroyPermanent(
 }
 
 @Serializable
+@SerialName("SacrificePermanent")
 data class SacrificePermanent(
     val entityId: EntityId,
     val controllerId: EntityId
@@ -176,6 +195,7 @@ data class SacrificePermanent(
 }
 
 @Serializable
+@SerialName("ExilePermanent")
 data class ExilePermanent(
     val entityId: EntityId
 ) : GameAction {
@@ -183,6 +203,7 @@ data class ExilePermanent(
 }
 
 @Serializable
+@SerialName("ReturnToHand")
 data class ReturnToHand(
     val entityId: EntityId
 ) : GameAction {
@@ -194,6 +215,7 @@ data class ReturnToHand(
 // =============================================================================
 
 @Serializable
+@SerialName("Tap")
 data class Tap(
     val entityId: EntityId
 ) : GameAction {
@@ -201,6 +223,7 @@ data class Tap(
 }
 
 @Serializable
+@SerialName("Untap")
 data class Untap(
     val entityId: EntityId
 ) : GameAction {
@@ -208,6 +231,7 @@ data class Untap(
 }
 
 @Serializable
+@SerialName("UntapAll")
 data class UntapAll(
     val controllerId: EntityId
 ) : GameAction {
@@ -219,6 +243,7 @@ data class UntapAll(
 // =============================================================================
 
 @Serializable
+@SerialName("AddCounters")
 data class AddCounters(
     val entityId: EntityId,
     val counterType: String,
@@ -228,6 +253,7 @@ data class AddCounters(
 }
 
 @Serializable
+@SerialName("RemoveCounters")
 data class RemoveCounters(
     val entityId: EntityId,
     val counterType: String,
@@ -237,6 +263,7 @@ data class RemoveCounters(
 }
 
 @Serializable
+@SerialName("AddPoisonCounters")
 data class AddPoisonCounters(
     val playerId: EntityId,
     val amount: Int
@@ -249,6 +276,7 @@ data class AddPoisonCounters(
 // =============================================================================
 
 @Serializable
+@SerialName("RemoveSummoningSickness")
 data class RemoveSummoningSickness(
     val entityId: EntityId
 ) : GameAction {
@@ -256,6 +284,7 @@ data class RemoveSummoningSickness(
 }
 
 @Serializable
+@SerialName("RemoveAllSummoningSickness")
 data class RemoveAllSummoningSickness(
     val controllerId: EntityId
 ) : GameAction {
@@ -267,6 +296,7 @@ data class RemoveAllSummoningSickness(
 // =============================================================================
 
 @Serializable
+@SerialName("PlayLand")
 data class PlayLand(
     val cardId: EntityId,
     val playerId: EntityId
@@ -275,6 +305,7 @@ data class PlayLand(
 }
 
 @Serializable
+@SerialName("ResetLandsPlayed")
 data class ResetLandsPlayed(
     val playerId: EntityId
 ) : GameAction {
@@ -286,6 +317,7 @@ data class ResetLandsPlayed(
 // =============================================================================
 
 @Serializable
+@SerialName("ShuffleLibrary")
 data class ShuffleLibrary(
     val playerId: EntityId
 ) : GameAction {
@@ -297,6 +329,7 @@ data class ShuffleLibrary(
 // =============================================================================
 
 @Serializable
+@SerialName("BeginCombat")
 data class BeginCombat(
     val attackingPlayerId: EntityId,
     val defendingPlayerId: EntityId
@@ -305,6 +338,7 @@ data class BeginCombat(
 }
 
 @Serializable
+@SerialName("DeclareAttacker")
 data class DeclareAttacker(
     val creatureId: EntityId,
     val controllerId: EntityId
@@ -313,6 +347,7 @@ data class DeclareAttacker(
 }
 
 @Serializable
+@SerialName("DeclareBlocker")
 data class DeclareBlocker(
     val blockerId: EntityId,
     val attackerId: EntityId,
@@ -322,6 +357,7 @@ data class DeclareBlocker(
 }
 
 @Serializable
+@SerialName("EndCombat")
 data class EndCombat(
     val playerId: EntityId
 ) : GameAction {
@@ -335,6 +371,7 @@ data class EndCombat(
  * to creatures blocking a single attacker.
  */
 @Serializable
+@SerialName("OrderBlockers")
 data class OrderBlockers(
     val attackerId: EntityId,
     val orderedBlockerIds: List<EntityId>,
@@ -355,6 +392,7 @@ data class OrderBlockers(
  *        active damage prevention effects (like Fog)
  */
 @Serializable
+@SerialName("ResolveCombatDamage")
 data class ResolveCombatDamage(
     val step: CombatDamageStep,
     val preventionEffectIds: List<EntityId> = emptyList()
@@ -376,6 +414,7 @@ enum class CombatDamageStep(val displayName: String) {
 // =============================================================================
 
 @Serializable
+@SerialName("PassPriority")
 data class PassPriority(
     val playerId: EntityId
 ) : GameAction {
@@ -383,6 +422,7 @@ data class PassPriority(
 }
 
 @Serializable
+@SerialName("EndGame")
 data class EndGame(
     val winnerId: EntityId?
 ) : GameAction {
@@ -390,6 +430,7 @@ data class EndGame(
 }
 
 @Serializable
+@SerialName("PlayerLoses")
 data class PlayerLoses(
     val playerId: EntityId,
     val reason: String
@@ -408,6 +449,7 @@ data class PlayerLoses(
  * @param keepEntityId The legendary permanent to keep (others are sacrificed)
  */
 @Serializable
+@SerialName("ResolveLegendRule")
 data class ResolveLegendRule(
     val controllerId: EntityId,
     val legendaryName: String,
@@ -431,6 +473,7 @@ data class ResolveLegendRule(
  * Also validates targets on resolution and fizzles if all targets are invalid.
  */
 @Serializable
+@SerialName("ResolveTopOfStack")
 data class ResolveTopOfStack(
     val placeholder: Unit = Unit
 ) : GameAction {
@@ -449,6 +492,7 @@ data class ResolveTopOfStack(
  * @param xValue The value of X if applicable
  */
 @Serializable
+@SerialName("CastSpell")
 data class CastSpell(
     val cardId: EntityId,
     val casterId: EntityId,
@@ -466,6 +510,7 @@ data class CastSpell(
 // =============================================================================
 
 @Serializable
+@SerialName("Attach")
 data class Attach(
     val attachmentId: EntityId,
     val targetId: EntityId
@@ -474,6 +519,7 @@ data class Attach(
 }
 
 @Serializable
+@SerialName("Detach")
 data class Detach(
     val attachmentId: EntityId
 ) : GameAction {
@@ -485,6 +531,7 @@ data class Detach(
 // =============================================================================
 
 @Serializable
+@SerialName("CheckStateBasedActions")
 data class CheckStateBasedActions(
     val placeholder: Unit = Unit
 ) : GameAction {
@@ -492,6 +539,7 @@ data class CheckStateBasedActions(
 }
 
 @Serializable
+@SerialName("ClearDamage")
 data class ClearDamage(
     val entityId: EntityId? = null  // null means all creatures
 ) : GameAction {
@@ -514,6 +562,7 @@ data class ClearDamage(
  * after this action completes.
  */
 @Serializable
+@SerialName("PerformCleanupStep")
 data class PerformCleanupStep(
     val playerId: EntityId
 ) : GameAction {
@@ -526,6 +575,7 @@ data class PerformCleanupStep(
  * Called when combat ends to clean up "until end of combat" effects.
  */
 @Serializable
+@SerialName("ExpireEndOfCombatEffects")
 data class ExpireEndOfCombatEffects(
     val placeholder: Unit = Unit
 ) : GameAction {
@@ -539,6 +589,7 @@ data class ExpireEndOfCombatEffects(
  * when the associated permanent leaves.
  */
 @Serializable
+@SerialName("ExpireEffectsForPermanent")
 data class ExpireEffectsForPermanent(
     val permanentId: EntityId
 ) : GameAction {
@@ -555,6 +606,7 @@ data class ExpireEffectsForPermanent(
  * @param cardsToDiscard The cards chosen to be discarded
  */
 @Serializable
+@SerialName("ResolveCleanupDiscard")
 data class ResolveCleanupDiscard(
     val playerId: EntityId,
     val cardsToDiscard: List<EntityId>
@@ -581,8 +633,71 @@ data class ResolveCleanupDiscard(
  * @see com.wingedsheep.rulesengine.decision.DecisionResumer
  */
 @Serializable
+@SerialName("SubmitDecision")
 data class SubmitDecision(
     val response: DecisionResponse
 ) : GameAction {
     override val description: String = "Submit decision response"
+}
+
+// =============================================================================
+// Serialization Module
+// =============================================================================
+
+/**
+ * SerializersModule for polymorphic GameAction serialization.
+ * Required for JSON serialization/deserialization of GameAction subtypes.
+ */
+val gameActionSerializersModule = SerializersModule {
+    polymorphic(GameAction::class) {
+        subclass(GainLife::class)
+        subclass(LoseLife::class)
+        subclass(SetLife::class)
+        subclass(DealDamageToPlayer::class)
+        subclass(DealDamageToCreature::class)
+        subclass(AddMana::class)
+        subclass(AddColorlessMana::class)
+        subclass(EmptyManaPool::class)
+        subclass(ActivateManaAbility::class)
+        subclass(DrawCard::class)
+        subclass(DiscardCard::class)
+        subclass(MoveEntity::class)
+        subclass(PutOntoBattlefield::class)
+        subclass(DestroyPermanent::class)
+        subclass(SacrificePermanent::class)
+        subclass(ExilePermanent::class)
+        subclass(ReturnToHand::class)
+        subclass(Tap::class)
+        subclass(Untap::class)
+        subclass(UntapAll::class)
+        subclass(AddCounters::class)
+        subclass(RemoveCounters::class)
+        subclass(AddPoisonCounters::class)
+        subclass(RemoveSummoningSickness::class)
+        subclass(RemoveAllSummoningSickness::class)
+        subclass(PlayLand::class)
+        subclass(ResetLandsPlayed::class)
+        subclass(ShuffleLibrary::class)
+        subclass(BeginCombat::class)
+        subclass(DeclareAttacker::class)
+        subclass(DeclareBlocker::class)
+        subclass(EndCombat::class)
+        subclass(OrderBlockers::class)
+        subclass(ResolveCombatDamage::class)
+        subclass(PassPriority::class)
+        subclass(EndGame::class)
+        subclass(PlayerLoses::class)
+        subclass(ResolveLegendRule::class)
+        subclass(ResolveTopOfStack::class)
+        subclass(CastSpell::class)
+        subclass(Attach::class)
+        subclass(Detach::class)
+        subclass(CheckStateBasedActions::class)
+        subclass(ClearDamage::class)
+        subclass(PerformCleanupStep::class)
+        subclass(ExpireEndOfCombatEffects::class)
+        subclass(ExpireEffectsForPermanent::class)
+        subclass(ResolveCleanupDiscard::class)
+        subclass(SubmitDecision::class)
+    }
 }

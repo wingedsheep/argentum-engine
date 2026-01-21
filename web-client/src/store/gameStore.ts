@@ -129,6 +129,60 @@ export interface GameStore {
 let ws: GameWebSocket | null = null
 
 /**
+ * Determines if we should auto-pass priority.
+ * Auto-passes when:
+ * - It's our priority (implied by receiving legalActions)
+ * - The only meaningful legal actions are PassPriority and/or mana abilities
+ *   (mana abilities without anything to spend them on are not useful)
+ * - We're not in a main phase where player might want to hold priority
+ *
+ * This skips through steps like UNTAP, UPKEEP, DRAW, BEGIN_COMBAT, etc.
+ * when there are no meaningful actions available.
+ */
+function shouldAutoPass(
+  legalActions: readonly LegalActionInfo[],
+  gameState: ClientGameState,
+  playerId: EntityId
+): boolean {
+  // Must have priority
+  if (gameState.priorityPlayerId !== playerId) {
+    return false
+  }
+
+  // Must have at least PassPriority available
+  const hasPassPriority = legalActions.some((a) => a.action.type === 'PassPriority')
+  if (!hasPassPriority) {
+    return false
+  }
+
+  // Check if there are any meaningful actions besides PassPriority and mana abilities
+  // Meaningful actions include: PlayLand, CastSpell, ActivateAbility (non-mana), DeclareAttacker, DeclareBlocker
+  const hasMeaningfulActions = legalActions.some((a) => {
+    const type = a.action.type
+    // PassPriority and mana abilities are not considered "meaningful" for auto-pass
+    if (type === 'PassPriority') return false
+    if (type === 'ActivateManaAbility') return false
+    // Everything else is meaningful
+    return true
+  })
+
+  // If there are meaningful actions, don't auto-pass
+  if (hasMeaningfulActions) {
+    return false
+  }
+
+  // Skip auto-pass during main phases - player might be thinking or waiting
+  // (Even if they only have mana abilities, they might want to hold priority)
+  const step = gameState.currentStep
+  if (step === 'PRECOMBAT_MAIN' || step === 'POSTCOMBAT_MAIN') {
+    return false
+  }
+
+  // Auto-pass for all other steps when only PassPriority/mana abilities are available
+  return true
+}
+
+/**
  * Main Zustand store for game state.
  */
 export const useGameStore = create<GameStore>()(
@@ -159,6 +213,19 @@ export const useGameStore = create<GameStore>()(
           legalActions: msg.legalActions,
           pendingEvents: [...state.pendingEvents, ...msg.events],
         }))
+
+        // Auto-pass when the only action available is PassPriority
+        // This skips through steps with no meaningful player actions
+        const { playerId } = get()
+        if (playerId && shouldAutoPass(msg.legalActions, msg.state, playerId)) {
+          // Small delay to allow state to settle and prevent rapid-fire passes
+          setTimeout(() => {
+            const passAction = msg.legalActions.find((a) => a.action.type === 'PassPriority')
+            if (passAction && ws) {
+              ws.send(createSubmitActionMessage(passAction.action))
+            }
+          }, 50)
+        }
       },
 
       onMulliganDecision: (msg) => {

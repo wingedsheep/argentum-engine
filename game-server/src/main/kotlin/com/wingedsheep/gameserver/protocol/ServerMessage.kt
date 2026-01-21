@@ -1,6 +1,6 @@
 package com.wingedsheep.gameserver.protocol
 
-import com.wingedsheep.gameserver.masking.MaskedGameState
+import com.wingedsheep.gameserver.dto.ClientGameState
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.action.GameAction
 import com.wingedsheep.rulesengine.ecs.action.GameActionEvent
@@ -39,7 +39,7 @@ sealed interface ServerMessage {
     @Serializable
     @SerialName("stateUpdate")
     data class StateUpdate(
-        val state: MaskedGameState,
+        val state: ClientGameState,
         val events: List<GameActionEvent>,
         val legalActions: List<LegalActionInfo>
     ) : ServerMessage

@@ -1,7 +1,7 @@
 package com.wingedsheep.gameserver.session
 
-import com.wingedsheep.gameserver.masking.MaskedGameState
-import com.wingedsheep.gameserver.masking.StateMasker
+import com.wingedsheep.gameserver.dto.ClientGameState
+import com.wingedsheep.gameserver.dto.ClientStateTransformer
 import com.wingedsheep.gameserver.protocol.GameOverReason
 import com.wingedsheep.gameserver.protocol.LegalActionInfo
 import com.wingedsheep.gameserver.protocol.ServerMessage
@@ -14,6 +14,7 @@ import com.wingedsheep.rulesengine.ecs.SetupResult
 import com.wingedsheep.rulesengine.ecs.action.GameAction
 import com.wingedsheep.rulesengine.ecs.action.GameActionEvent
 import com.wingedsheep.rulesengine.ecs.action.GameActionResult
+import com.wingedsheep.rulesengine.ecs.action.LegalActionCalculator
 import com.wingedsheep.rulesengine.sets.portal.PortalSet
 import java.util.UUID
 import kotlin.random.Random
@@ -23,7 +24,7 @@ import kotlin.random.Random
  */
 class GameSession(
     val sessionId: String = UUID.randomUUID().toString(),
-    private val stateMasker: StateMasker = StateMasker(),
+    private val stateTransformer: ClientStateTransformer = ClientStateTransformer(),
     private val random: Random = Random.Default
 ) {
     private var gameState: GameState? = null
@@ -322,16 +323,15 @@ class GameSession(
     }
 
     /**
-     * Get the masked game state for a specific player.
+     * Get the client game state for a specific player.
      */
-    fun getMaskedState(playerId: EntityId): MaskedGameState? {
+    fun getClientState(playerId: EntityId): ClientGameState? {
         val state = gameState ?: return null
-        return stateMasker.mask(state, playerId)
+        return stateTransformer.transform(state, playerId)
     }
 
     /**
-     * Get legal actions for a player.
-     * TODO: Implement proper legal action detection using rules engine
+     * Get legal actions for a player using the LegalActionCalculator.
      */
     fun getLegalActions(playerId: EntityId): List<LegalActionInfo> {
         val state = gameState ?: return emptyList()
@@ -341,18 +341,77 @@ class GameSession(
             return emptyList()
         }
 
-        // TODO: Implement proper legal action detection
-        // For now, return a basic list based on game state
-        return emptyList()
+        // Use the LegalActionCalculator from the rules engine
+        val calculator = LegalActionCalculator()
+        val legalActions = calculator.calculateLegalActions(state, playerId)
+
+        // Convert to LegalActionInfo list
+        val result = mutableListOf<LegalActionInfo>()
+
+        // Pass priority is always available when you have priority
+        if (legalActions.canPassPriority) {
+            result.add(LegalActionInfo(
+                actionType = "PassPriority",
+                description = "Pass priority",
+                action = com.wingedsheep.rulesengine.ecs.action.PassPriority(playerId)
+            ))
+        }
+
+        // Playable lands
+        for (land in legalActions.playableLands) {
+            result.add(LegalActionInfo(
+                actionType = "PlayLand",
+                description = "Play ${land.cardName}",
+                action = land.action
+            ))
+        }
+
+        // Castable spells
+        for (spell in legalActions.castableSpells) {
+            result.add(LegalActionInfo(
+                actionType = "CastSpell",
+                description = "Cast ${spell.cardName}",
+                action = spell.action
+            ))
+        }
+
+        // Activatable abilities (mana abilities, etc.)
+        for (ability in legalActions.activatableAbilities) {
+            result.add(LegalActionInfo(
+                actionType = if (ability.isManaAbility) "ActivateManaAbility" else "ActivateAbility",
+                description = "${ability.sourceName}: ${ability.description}",
+                action = ability.action
+            ))
+        }
+
+        // Declarable attackers
+        for (attacker in legalActions.declarableAttackers) {
+            result.add(LegalActionInfo(
+                actionType = "DeclareAttacker",
+                description = "Attack with ${attacker.creatureName}",
+                action = attacker.action
+            ))
+        }
+
+        // Declarable blockers
+        for (blocker in legalActions.declarableBlockers) {
+            result.add(LegalActionInfo(
+                actionType = "DeclareBlocker",
+                description = "Block with ${blocker.blockerName}",
+                action = blocker.action
+            ))
+        }
+
+        return result
     }
 
     /**
      * Create a state update message for a player.
      */
     fun createStateUpdate(playerId: EntityId, events: List<GameActionEvent>): ServerMessage.StateUpdate? {
-        val maskedState = getMaskedState(playerId) ?: return null
+        val clientState = getClientState(playerId) ?: return null
         val legalActions = getLegalActions(playerId)
-        return ServerMessage.StateUpdate(maskedState, events, legalActions)
+        return ServerMessage.StateUpdate(clientState, events, legalActions)
     }
 
     /**

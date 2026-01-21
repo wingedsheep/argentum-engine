@@ -302,6 +302,9 @@ object GameEngine {
                 newState = handleTurnStart(newState, newTurnState.activePlayer)
             }
 
+            // Handle step-specific turn-based actions
+            newState = handleStepBasedActions(newState, newTurnState)
+
             // When transitioning to DECLARE_BLOCKERS, capture eligible blockers
             // (MTG Rule 509.1a: creatures entering after blockers are declared cannot block)
             if (newTurnState.step == com.wingedsheep.rulesengine.game.Step.DECLARE_BLOCKERS) {
@@ -310,6 +313,42 @@ object GameEngine {
 
             newState
         }
+    }
+
+    /**
+     * Handle turn-based actions that occur at the beginning of specific steps.
+     * - UNTAP: Untap all permanents controlled by active player (Rule 502.3)
+     * - DRAW: Active player draws a card (Rule 504.1)
+     */
+    private fun handleStepBasedActions(state: GameState, turnState: com.wingedsheep.rulesengine.game.TurnState): GameState {
+        var currentState = state
+        val activePlayerId = turnState.activePlayer
+
+        when (turnState.step) {
+            com.wingedsheep.rulesengine.game.Step.UNTAP -> {
+                // Rule 502.3: Untap all permanents controlled by active player
+                val untapResult = actionHandler.execute(currentState, UntapAll(activePlayerId))
+                if (untapResult is GameActionResult.Success) {
+                    currentState = untapResult.state
+                }
+            }
+            com.wingedsheep.rulesengine.game.Step.DRAW -> {
+                // Rule 504.1: Active player draws a card
+                // Exception: First player on first turn doesn't draw (Rule 103.7a)
+                val skipFirstDraw = turnState.turnNumber == 1 && turnState.isFirstTurn
+                if (!skipFirstDraw) {
+                    val drawResult = actionHandler.execute(currentState, DrawCard(activePlayerId, 1))
+                    if (drawResult is GameActionResult.Success) {
+                        currentState = drawResult.state
+                    }
+                }
+            }
+            else -> {
+                // No automatic actions for other steps
+            }
+        }
+
+        return currentState
     }
 
     /**
