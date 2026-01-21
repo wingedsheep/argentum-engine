@@ -343,6 +343,27 @@ object GameEngine {
                     }
                 }
             }
+            com.wingedsheep.rulesengine.game.Step.DECLARE_ATTACKERS -> {
+                // Rule 508: Initialize combat when entering declare attackers step
+                // The defending player is the opponent of the active player
+                val defendingPlayerId = currentState.getPlayerIds().find { it != activePlayerId }
+                if (defendingPlayerId != null) {
+                    val combatResult = actionHandler.execute(
+                        currentState,
+                        BeginCombat(activePlayerId, defendingPlayerId)
+                    )
+                    if (combatResult is GameActionResult.Success) {
+                        currentState = combatResult.state
+                    }
+                }
+            }
+            com.wingedsheep.rulesengine.game.Step.END_COMBAT -> {
+                // Rule 511: End combat when leaving the combat phase
+                val endCombatResult = actionHandler.execute(currentState, EndCombat(activePlayerId))
+                if (endCombatResult is GameActionResult.Success) {
+                    currentState = endCombatResult.state
+                }
+            }
             else -> {
                 // No automatic actions for other steps
             }

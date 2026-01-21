@@ -1,7 +1,7 @@
 import { useGameStore } from '../../store/gameStore'
 import { useViewingPlayer, useOpponent, useZoneCards, useBattlefieldCards } from '../../store/selectors'
-import { hand } from '../../types'
-import type { ClientCard, ZoneId } from '../../types'
+import { hand, graveyard } from '../../types'
+import type { ClientCard, ZoneId, ClientPlayer } from '../../types'
 import { PhaseIndicator } from '../ui/PhaseIndicator'
 
 /**
@@ -25,23 +25,34 @@ export function GameBoard() {
     <div style={styles.container}>
       {/* Opponent area (top) */}
       <div style={styles.opponentArea}>
-        {/* Opponent info */}
-        <div style={styles.playerInfo}>
-          <span style={styles.playerName}>{opponent?.name ?? 'Opponent'}</span>
-          <LifeDisplay life={opponent?.life ?? 0} />
+        <div style={styles.playerRowWithZones}>
+          {/* Opponent deck/graveyard (left side) */}
+          {opponent && (
+            <ZonePile
+              player={opponent}
+              />
+          )}
+
+          <div style={styles.playerMainArea}>
+            {/* Opponent info */}
+            <div style={styles.playerInfo}>
+              <span style={styles.playerName}>{opponent?.name ?? 'Opponent'}</span>
+              <LifeDisplay life={opponent?.life ?? 0} />
+            </div>
+
+            {/* Opponent hand (face down) */}
+            {opponent && (
+              <CardRow
+                zoneId={hand(opponent.playerId)}
+                faceDown
+                small
+              />
+            )}
+
+            {/* Opponent battlefield - lands first (closer to opponent), then creatures */}
+            <BattlefieldArea isOpponent />
+          </div>
         </div>
-
-        {/* Opponent hand (face down) */}
-        {opponent && (
-          <CardRow
-            zoneId={hand(opponent.playerId)}
-            faceDown
-            small
-          />
-        )}
-
-        {/* Opponent battlefield */}
-        <BattlefieldArea isOpponent />
       </div>
 
       {/* Center - Phase indicator and stack */}
@@ -57,37 +68,44 @@ export function GameBoard() {
 
       {/* Player area (bottom) */}
       <div style={styles.playerArea}>
-        {/* Player battlefield */}
-        <BattlefieldArea isOpponent={false} />
+        <div style={styles.playerRowWithZones}>
+          {/* Player deck/graveyard (left side) */}
+          <ZonePile player={viewingPlayer} />
 
-        {/* Player hand */}
-        <CardRow
-          zoneId={hand(playerId)}
-          faceDown={false}
-          interactive
-        />
+          <div style={styles.playerMainArea}>
+            {/* Player battlefield - creatures first (closer to center), then lands */}
+            <BattlefieldArea isOpponent={false} />
 
-        {/* Player info and actions */}
-        <div style={styles.playerControls}>
-          <div style={styles.playerInfo}>
-            <span style={styles.playerName}>{viewingPlayer.name}</span>
-            <LifeDisplay life={viewingPlayer.life} isPlayer />
+            {/* Player hand */}
+            <CardRow
+              zoneId={hand(playerId)}
+              faceDown={false}
+              interactive
+            />
+
+            {/* Player info and actions */}
+            <div style={styles.playerControls}>
+              <div style={styles.playerInfo}>
+                <span style={styles.playerName}>{viewingPlayer.name}</span>
+                <LifeDisplay life={viewingPlayer.life} isPlayer />
+              </div>
+
+              {hasPriority && (
+                <button
+                  onClick={() => {
+                    submitAction({
+                      type: 'PassPriority',
+                      playerId: viewingPlayer.playerId,
+                      description: 'Pass priority',
+                    })
+                  }}
+                  style={styles.passButton}
+                >
+                  Pass
+                </button>
+              )}
+            </div>
           </div>
-
-          {hasPriority && (
-            <button
-              onClick={() => {
-                submitAction({
-                  type: 'PassPriority',
-                  playerId: viewingPlayer.playerId,
-                  description: 'Pass priority',
-                })
-              }}
-              style={styles.passButton}
-            >
-              Pass
-            </button>
-          )}
         </div>
       </div>
 
@@ -153,7 +171,60 @@ function CardRow({
 }
 
 /**
+ * Deck and graveyard pile display.
+ */
+function ZonePile({ player }: { player: ClientPlayer }) {
+  const graveyardCards = useZoneCards(graveyard(player.playerId))
+  const topGraveyardCard = graveyardCards[graveyardCards.length - 1]
+
+  return (
+    <div style={styles.zonePile}>
+      {/* Library/Deck */}
+      <div style={styles.zoneStack}>
+        <div style={styles.deckPile}>
+          {player.librarySize > 0 ? (
+            <img
+              src="https://backs.scryfall.io/large/2/2/222b7a3b-2321-4d4c-af19-19338b134971.jpg?1677416389"
+              alt="Library"
+              style={styles.pileImage}
+            />
+          ) : (
+            <div style={styles.emptyPile} />
+          )}
+          <div style={styles.pileCount}>{player.librarySize}</div>
+        </div>
+        <span style={styles.zoneLabel}>Deck</span>
+      </div>
+
+      {/* Graveyard */}
+      <div style={styles.zoneStack}>
+        <div style={styles.graveyardPile}>
+          {topGraveyardCard ? (
+            <img
+              src={`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(topGraveyardCard.name)}&format=image&version=normal`}
+              alt={topGraveyardCard.name}
+              style={{ ...styles.pileImage, opacity: 0.8 }}
+              onError={(e) => {
+                e.currentTarget.style.display = 'none'
+              }}
+            />
+          ) : (
+            <div style={styles.emptyPile} />
+          )}
+          {player.graveyardSize > 0 && (
+            <div style={styles.pileCount}>{player.graveyardSize}</div>
+          )}
+        </div>
+        <span style={styles.zoneLabel}>Graveyard</span>
+      </div>
+    </div>
+  )
+}
+
+/**
  * Battlefield area with lands and creatures.
+ * For player: creatures first (closer to center), then lands (closer to player)
+ * For opponent: lands first (closer to opponent), then creatures (closer to center)
  */
 function BattlefieldArea({ isOpponent }: { isOpponent: boolean }) {
   const {
@@ -166,11 +237,16 @@ function BattlefieldArea({ isOpponent }: { isOpponent: boolean }) {
   const lands = isOpponent ? opponentLands : playerLands
   const creatures = isOpponent ? opponentCreatures : playerCreatures
 
+  // For opponent: lands first (top), creatures second (bottom/closer to center)
+  // For player: creatures first (top/closer to center), lands second (bottom/closer to player)
+  const firstRow = isOpponent ? lands : creatures
+  const secondRow = isOpponent ? creatures : lands
+
   return (
     <div style={styles.battlefieldArea}>
-      {/* Lands row */}
+      {/* First row */}
       <div style={styles.battlefieldRow}>
-        {lands.map((card) => (
+        {firstRow.map((card) => (
           <GameCard
             key={card.id}
             card={card}
@@ -180,9 +256,9 @@ function BattlefieldArea({ isOpponent }: { isOpponent: boolean }) {
         ))}
       </div>
 
-      {/* Creatures row */}
+      {/* Second row */}
       <div style={styles.battlefieldRow}>
-        {creatures.map((card) => (
+        {secondRow.map((card) => (
           <GameCard
             key={card.id}
             card={card}
@@ -345,6 +421,7 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: 'center',
     alignItems: 'center',
     padding: '8px 0',
+    flex: 1,
   },
   playerArea: {
     display: 'flex',
@@ -352,6 +429,79 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     gap: 8,
     marginTop: 'auto',
+  },
+  playerRowWithZones: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 16,
+    width: '100%',
+    justifyContent: 'center',
+  },
+  playerMainArea: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+  },
+  zonePile: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 12,
+    alignItems: 'center',
+    minWidth: 80,
+  },
+  zoneStack: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 4,
+  },
+  deckPile: {
+    position: 'relative',
+    width: 70,
+    height: 98,
+    borderRadius: 6,
+    overflow: 'hidden',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
+  },
+  graveyardPile: {
+    position: 'relative',
+    width: 70,
+    height: 98,
+    borderRadius: 6,
+    overflow: 'hidden',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
+    backgroundColor: '#1a1a2e',
+  },
+  pileImage: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+  },
+  emptyPile: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#1a1a2e',
+    border: '2px dashed #333',
+    borderRadius: 6,
+  },
+  pileCount: {
+    position: 'absolute',
+    bottom: 4,
+    right: 4,
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 700,
+    padding: '2px 6px',
+    borderRadius: 4,
+  },
+  zoneLabel: {
+    color: '#666',
+    fontSize: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   playerInfo: {
     display: 'flex',
