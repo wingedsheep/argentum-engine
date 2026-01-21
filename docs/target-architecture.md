@@ -1,98 +1,139 @@
-# Target Architecture Specification: Argentum Engine
+# Argentum System Architecture
 
-The Argentum Engine is a data-driven, modular Magic: The Gathering simulation and networking platform. It employs a pure **Entity-Component-System (ECS)** core, a **stateless decision protocol**, and a **declarative scripting layer** to ensure the game is 100% persistent, horizontally scalable, and infinitely extensible.
+This document outlines the high-level architecture of the Argentum platform. The system is designed to be **modular**, *
+*stateless**, and **secure**, treating the Game Engine as the single source of truth for all logic.
 
----
+## 1. Top-Level Topology
 
-## 1. Module: Rules Engine (`rules-engine`)
+The system consists of three distinct deployable artifacts (or modules):
 
-**Role:** The Domain Logic Kernel.  
-**Status:** Pure Kotlin 2.2 Library (Deterministic, I/O-free, Framework-agnostic).
-
-The Rules Engine acts as a deterministic state machine. It treats game rules as a pure transformation function: `(GameState, Action) -> Result(NewGameState, Events)`.
-
-### 1.1 Core Architecture: Entity Component System (ECS)
-*   **Entities:** Every game object (Card, Player, Ability, Spell on Stack, Emblem) is a unique, stable `EntityId`.
-*   **Components:** Small, immutable data bags (e.g., `LifeComponent`, `TappedComponent`, `ManaPoolComponent`).
-*   **Immutable State:** The `GameState` is a serializable snapshot of all entities. Every action produces a *new* state, enabling trivial undo/redo and AI simulation.
-
-### 1.2 State Projection & The Layer System (CR 613)
-The engine distinguishes between the **Base State** (stored in components) and the **Projected State** (how the card actually looks).
-*   **State Projector:** A robust engine that applies continuous effects in the strict order required by the Comprehensive Rules (Copy → Control → Text → Type → Color → Ability → P/T).
-*   **GameObjectView:** A calculated, read-only view of an entity used for rule checks (e.g., "Is this creature currently a Goblin?" or "Does it have flying?").
-
-### 1.3 Stack, Priority, and Mana
-*   **Priority State Machine:** Manages the passing of priority, ensuring the active player acts first and the stack resolves only when all players pass in succession.
-*   **Complex Mana Solver:** A logic engine that determines if a player can pay costs like `{1}{G/W}{P}`, handling snow mana, life-payment, and hybrid mana automatically.
-*   **Replacement Pipeline (CR 614):** A middleware layer that intercepts "Proposed Actions" (e.g., Draw Card) and checks for modification effects (e.g., "instead, draw two") before they hit the state.
+1. **`rules-engine` (Shared Library)**: The Pure Logic Kernel.
+2. **`game-server` (Backend Application)**: The Orchestrator & Host.
+3. **`web-client` (Frontend Application)**: The Visualizer.
 
 ---
 
-## 2. Declarative Scripting & Modular Content
+## 2. Module Responsibilities
 
-The engine is designed for horizontal growth. Adding a new set does not require modifying the Rules Engine kernel.
+### A. rules-engine (The Brain)
 
-### 2.1 Kotlin DSL Scripting
-Card behaviors are defined using a declarative Kotlin DSL. This DSL converts human-readable text into atomic, serializable `Effect` and `Trigger` data structures.
-*   **Modular Reusability:** Effects (e.g., `DealDamage`, `SearchLibrary`) are modular atoms. New mechanics are created by composing these atoms.
-*   **Set Isolation:** Each expansion is implemented as a standalone package containing its own `CardRegistry`.
-*   **Scryfall Integration:** Card metadata (name, cost, type line) is hydrated via Scryfall data, while logic is defined in the script.
+*Type: Kotlin Library (JAR)*
 
-### 2.2 Stateless Decision Protocol
-To support persistence and crash recovery, the engine is **stateless**.
-*   **Pause & Resume:** When an effect requires input (e.g., "Choose a target"), the engine returns a `GameState` containing a `PendingDecision` and a `DecisionContext` (metadata defining where the script paused).
-*   **Persistence:** The entire logic state—even in the middle of a complex card's text—is saved to the database. There are no memory-resident lambdas or callbacks.
+This is a pure logic library. It has **no** knowledge of databases, networks, users, or time. It is deterministic:
+`f(State, Action) = NewState`.
 
----
+* **Logic:** Contains the Entity-Component-System (ECS), The Stack, Combat calculations, and Layer System (CR 613).
+* **Validation:** It is the **sole authority** on what a player can do. It exposes a `LegalActionCalculator`.
+* **Modularity:** It defines the `CardRegistry` interface. It does **not** contain all cards. Sets (e.g., `set-portal`,
+  `set-alpha`) are separate modules that implement `CardRegistry` and are loaded by the engine.
 
-## 3. Module: Game Server (`game-server`)
+### B. game-server (The Host)
 
-**Role:** The Infrastructure & Orchestrator.  
-**Status:** Spring Boot 4.x Application.
+*Type: Spring Boot Application*
 
-The server acts as a **"Pure Pipe."** It manages the reality of networking and identity while delegating all logic to the Rules Engine.
+This handles the "Real World." It wraps the `rules-engine` and manages persistence and networking.
 
-### 3.1 Responsibilities
-*   **Session Management:** Hosts concurrent matches, routing incoming JSON messages to the correct engine instance.
-*   **Stateless Integration:** For every message, the server loads the `GameState` from **PostgreSQL**, runs the logic, saves the new state, and broadcasts.
-*   **Matchmaking & Auth:** Manages queues (Draft, Commander, Standard) using ELO-based matchmaking. Handles OAuth2/Keycloak login.
-*   **Drafting Engine:** A specialized sub-system for Pods of up to 8 players, handling pack generation and passing logic.
+* **Drafting:** Manages the low-frequency state of Draft Lobbies (pack generation, passing logic, saving decks). Uses
+  REST APIs.
+* **Gameplay:** Hosts the active in-memory `GameState`. Manages the WebSocket connections.
+* **State Masking:** Before sending state to the Client, it runs `StateMasker` to hide opponent hands and library
+  cards (Fog of War).
+* **User Mgmt:** Handles Authentication and matchmaking (connecting Friends).
 
-### 3.2 The Security Layer: State Masking
-*   **The Fog of War:** The server is the source of truth. Before sending an update to Player A, it runs a `StateMasker` to strip private information. Opponent hands and library orders are replaced with opaque "hidden" identifiers.
+### C. web-client (The Dumb Terminal)
 
----
+*Type: React / Three.js Application*
 
-## 4. Module: Web Client (`web-client`)
+This is a visualization layer. It contains **zero** game rules.
 
-**Role:** The Visualizer.  
-**Status:** Browser-based WebGL Application.
-
-The client is a **"Dumb Terminal."** It contains zero rule logic, making it impossible to cheat by modifying local code.
-
-### 4.1 Visual Experience
-*   **Rendering:** Built with WebGL (Three.js/Babylon.js). Cards are objects that fly, tap, and stack.
-*   **Event-Driven Animations:** The client listens for `GameEvents` (e.g., `DamageDealt`, `PermanentTapped`) to trigger particle effects and sound cues.
-*   **Asset Streaming:** Card art is fetched on-demand from a high-speed CDN or Scryfall API.
-
-### 4.2 User Intent Capture
-*   **Contextual Input:** The server provides a list of `legalActions` and `targetRequirements`. The client uses this to highlight valid targets and prevent illegal moves before they are even sent.
-*   **Action Dispatch:** Captures user moves (e.g., dragging an arrow from a spell to a target) and sends structured `SubmitAction` or `SubmitDecision` JSON to the server.
+* **Rendering:** Projects the JSON `ClientGameState` onto a 3D table.
+* **Animation:** Listens for an `events` array to trigger visual cues (particles, movement).
+* **Action Capture:** Renders `legalActions` provided by the server. If the server says "Card A is playable", the client
+  draws a green glow. If the user clicks it, the client sends a message. It does **not** calculate if the move is valid.
 
 ---
 
-## 5. Interaction Flow: The Decision-Response Loop
+## 3. Modularity Strategy
 
-1.  **Match Start:** Two players match. The server initializes a new **Rules Engine**, loads decks from the DB, and shuffles.
-2.  **State Broadcast:** The server masks the state for each player and pushes it via WebSocket.
-3.  **Proactive Action:** Player A sends `SubmitAction(CastSpell)`.
-    *   The Server loads state, identifies the action.
-    *   The Rules Engine moves the card to the stack and checks for a required target.
-    *   **The Engine Pauses:** It returns a `PendingDecision(ChooseTarget)`.
-4.  **Persistence:** The Server saves the `GameState` (with the decision context) to PostgreSQL.
-5.  **Reactive Decision:** Player A receives the request, clicks a creature, and sends `SubmitDecision(TargetID)`.
-6.  **Resolution:**
-    *   The Server re-hydrates the state.
-    *   The Rules Engine sees the ID, resumes the script, and executes the effect.
-    *   The Engine emits `GameEvents`.
-    *   The Server masks the results and broadcasts the final update to all clients.
+To prevent the engine from becoming a monolith of 25,000 cards, we use a Registry pattern.
+
+1. **`rules-engine-core`**: Contains base mechanics (Flying, Trample, Instant, Land).
+2. **`set-xxx` modules**: (e.g., `set-portal`) depend on core. They contain Kotlin files defining `CardDefinition` and
+   Scripts.
+3. **Loader**: On startup, `game-server` scans the classpath for classes implementing `CardRegistry` and registers them
+   into the Engine.
+
+```kotlin
+interface CardRegistry {
+    val setCode: String
+    fun getCards(): List<CardDefinition>
+}
+```
+
+This allows us to ship updates (new sets) by simply dropping a new JAR file into the server classpath without
+recompiling the core engine.
+
+```
+
+---
+
+### 2. `docs/data-contracts.md`
+*Defines exactly what data moves between the layers.*
+
+```markdown
+
+```
+
+```
+
+---
+
+### 3. `docs/api-guide.md`
+*A quick developer guide on how to add new features.*
+
+```markdown
+# Developer Guide: How to Extend Argentum
+
+## 1. Adding a New Card Set
+You do **not** modify `rules-engine` core to add cards.
+
+1.  Create a new Gradle module: `sets/set-alpha`.
+2.  Implement `CardRegistry`:
+    ```kotlin
+    object AlphaSet : CardRegistry {
+        override val setCode = "LEA"
+        override fun getCards() = listOf(
+            BlackLotus.definition,
+            GiantGrowth.definition
+        )
+    }
+    ```
+3.  Implement Card Scripts using the DSL:
+    ```kotlin
+    val BlackLotus = card("Black Lotus") {
+        type("Artifact")
+        activatedAbility("{T}, Sacrifice {self}") {
+            effect(AddMana.ofAnyColor(3))
+        }
+    }
+    ```
+4.  Add the module as a dependency to `game-server`. The loader will find it automatically.
+
+## 2. Adding a New Mechanic (e.g., Scry)
+This requires modifying `rules-engine`.
+
+1.  **Define the Effect:** Add `ScryEffect(amount: Int)` to `Effect.kt`.
+2.  **Write the Handler:** Create `ScryHandler.kt`.
+    *   This handler needs to return a `PendingDecision` because the user needs to choose top/bottom orders.
+3.  **Register the Handler:** Add to `EffectHandlerRegistry`.
+4.  **Update Client (Optional):** If `Scry` requires a unique UI (like ordering cards visually), update `web-client` to handle the `DecisionRequest` for reordering.
+
+## 3. Deployment Strategy
+For "Me and my friends":
+
+1.  **Build:** Run `./gradlew build`. This produces `game-server.jar`.
+2.  **Build Frontend:** Run `npm run build` in `web-client`.
+3.  **Dockerize:** Create a Docker Compose file.
+    *   `postgres`: Database for decks/users.
+    *   `app`: Runs the `game-server.jar`.
+    *   `nginx`: Serves the static `web-client` files and proxies `/api` and `/ws` to the app container.
