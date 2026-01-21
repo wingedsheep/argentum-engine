@@ -525,7 +525,14 @@ class CombatActionsTest : FunSpec({
     }
 })
 
-// Extension to advance game to a specific step
-private fun GameState.advanceToStep(step: Step): GameState {
-    return copy(turnState = turnState.copy(step = step))
+// Extension to advance game to a specific step by stepping through properly
+private fun GameState.advanceToStep(targetStep: Step): GameState {
+    var state = this
+    var iterations = 0
+    while (state.turnState.step != targetStep && iterations < 20) {
+        state = state.copy(turnState = state.turnState.advanceStep())
+        iterations++
+    }
+    require(state.turnState.step == targetStep) { "Failed to reach step $targetStep after $iterations iterations" }
+    return state
 }

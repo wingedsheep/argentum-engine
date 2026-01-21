@@ -88,6 +88,11 @@ class StandardTurnCycleTest : FunSpec({
     /**
      * Helper to have both players pass priority and let the engine advance.
      * This is the proper way to test the engine - priority passing drives state transitions.
+     *
+     * Note: The rules-engine does NOT auto-advance through non-priority steps (UNTAP, CLEANUP).
+     * Auto-advancement is handled by the game-server. Tests must manually advance through
+     * non-priority steps using advanceFromUntap() or advanceFromCleanup().
+     * However, SBAs are run after resolution/step advancement.
      */
     fun passAndAdvance(state: com.wingedsheep.rulesengine.ecs.GameState): com.wingedsheep.rulesengine.ecs.GameState {
         // Active player passes priority
@@ -100,7 +105,15 @@ class StandardTurnCycleTest : FunSpec({
 
         // All players have passed, engine resolves (advances step or resolves stack)
         currentState.turnState.allPlayersPassed().shouldBeTrue()
-        return com.wingedsheep.rulesengine.ecs.GameEngine.resolvePassedPriority(currentState)
+        currentState = com.wingedsheep.rulesengine.ecs.GameEngine.resolvePassedPriority(currentState)
+
+        // Run SBAs (e.g., creatures die from lethal damage)
+        // Note: processPriority no longer auto-advances, it just runs SBAs
+        val priorityResult = com.wingedsheep.rulesengine.ecs.GameEngine.processPriority(currentState)
+        return when (priorityResult) {
+            is com.wingedsheep.rulesengine.ecs.PriorityResult.PriorityGranted -> priorityResult.state
+            is com.wingedsheep.rulesengine.ecs.PriorityResult.GameOver -> priorityResult.state
+        }
     }
 
     /**
@@ -293,7 +306,7 @@ class StandardTurnCycleTest : FunSpec({
             state.turnState.phase shouldBe Phase.ENDING
         }
 
-        test("end step - players pass") {
+        test("end step - players pass and game advances to cleanup then next turn") {
             var state = newGame()
 
             // Advance to END step through the full turn
@@ -312,43 +325,30 @@ class StandardTurnCycleTest : FunSpec({
             state.turnState.step shouldBe Step.END
             Step.END.hasPriority.shouldBeTrue()
 
-            state = passAndAdvance(state)
-
-            state.turnState.step shouldBe Step.CLEANUP
-            state.turnState.phase shouldBe Phase.ENDING
-        }
-
-        test("cleanup step has no priority and advances to next turn") {
-            var state = newGame()
-
-            // Advance to CLEANUP step through the full turn
-            state = advanceFromUntap(state)
-            state = passAndAdvance(state) // UPKEEP -> DRAW
-            state = passAndAdvance(state) // DRAW -> PRECOMBAT_MAIN
-            state = passAndAdvance(state) // PRECOMBAT_MAIN -> BEGIN_COMBAT
-            state = passAndAdvance(state) // BEGIN_COMBAT -> DECLARE_ATTACKERS
-            state = passAndAdvance(state) // DECLARE_ATTACKERS -> DECLARE_BLOCKERS
-            state = passAndAdvance(state) // DECLARE_BLOCKERS -> FIRST_STRIKE_COMBAT_DAMAGE
-            state = passAndAdvance(state) // FIRST_STRIKE_COMBAT_DAMAGE -> COMBAT_DAMAGE
-            state = passAndAdvance(state) // COMBAT_DAMAGE -> END_COMBAT
-            state = passAndAdvance(state) // END_COMBAT -> POSTCOMBAT_MAIN
-            state = passAndAdvance(state) // POSTCOMBAT_MAIN -> END
+            // Passing at END advances to CLEANUP (no priority step)
             state = passAndAdvance(state) // END -> CLEANUP
-
             state.turnState.step shouldBe Step.CLEANUP
-            // Cleanup step does not grant priority normally (CR 514.3)
-            Step.CLEANUP.hasPriority.shouldBeFalse()
+            state.turnState.turnNumber shouldBe 1 // Still turn 1 during cleanup
 
-            // Advance from cleanup (no priority) wraps to next turn
-            state = advanceFromCleanup(state)
+            // Manually advance through CLEANUP to next turn's UNTAP, then to UPKEEP
+            state = advanceFromCleanup(state) // CLEANUP -> turn 2 UNTAP
+            state = advanceFromUntap(state) // UNTAP -> UPKEEP
 
             // Verify turn advanced
             state.turnState.turnNumber shouldBe 2
             state.turnState.activePlayer shouldBe player2Id
             state.turnState.priorityPlayer shouldBe player2Id
             state.turnState.phase shouldBe Phase.BEGINNING
-            state.turnState.step shouldBe Step.UNTAP
-            state.turnState.isFirstTurn.shouldBeFalse()
+            state.turnState.step shouldBe Step.UPKEEP
+        }
+
+        test("cleanup step has no priority") {
+            // Cleanup step does not grant priority normally (CR 514.3)
+            Step.CLEANUP.hasPriority.shouldBeFalse()
+
+            // The rules-engine allows step-by-step testing by not auto-advancing.
+            // The game-server handles auto-advancement through non-priority steps.
+            // Here we can directly test cleanup step behavior.
         }
 
         test("full turn cycle - complete happy path") {
@@ -424,15 +424,22 @@ class StandardTurnCycleTest : FunSpec({
             visitedSteps.add(state.turnState.step)
             state = passAndAdvance(state)
 
-            // 8. CLEANUP STEP (no priority)
+            // 8. CLEANUP STEP (no priority - manual advance needed)
             state.turnState.step shouldBe Step.CLEANUP
             visitedSteps.add(state.turnState.step)
-            state = advanceFromCleanup(state)
+            state = advanceFromCleanup(state) // CLEANUP -> turn 2 UNTAP
+
+            // === TURN 2 starts (Player 2) ===
+
+            // UNTAP step (no priority - manual advance needed)
+            state.turnState.step shouldBe Step.UNTAP
+            visitedSteps.add(state.turnState.step)
+            state = advanceFromUntap(state) // UNTAP -> UPKEEP
 
             // === VERIFICATION ===
 
-            // All 13 steps were visited
-            visitedSteps.size shouldBe 13
+            // All 14 steps were visited (including CLEANUP and turn 2 UNTAP)
+            visitedSteps.size shouldBe 14
             visitedSteps shouldBe listOf(
                 Step.UNTAP,
                 Step.UPKEEP,
@@ -446,14 +453,15 @@ class StandardTurnCycleTest : FunSpec({
                 Step.END_COMBAT,
                 Step.POSTCOMBAT_MAIN,
                 Step.END,
-                Step.CLEANUP
+                Step.CLEANUP,
+                Step.UNTAP  // Turn 2 UNTAP
             )
 
-            // Turn ended, now Player 2's turn
+            // Turn ended, now Player 2's turn at UPKEEP
             state.turnState.turnNumber shouldBe 2
             state.turnState.activePlayer shouldBe player2Id
             state.turnState.priorityPlayer shouldBe player2Id
-            state.turnState.step shouldBe Step.UNTAP
+            state.turnState.step shouldBe Step.UPKEEP
             state.turnState.phase shouldBe Phase.BEGINNING
 
             // Land remains on battlefield

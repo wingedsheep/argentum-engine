@@ -78,44 +78,8 @@ class TurnStateTest : FunSpec({
         }
     }
 
-    context("advanceToNextTurn") {
-        test("switches active player") {
-            val state = TurnState.newGame(playerOrder)
-            val nextTurn = state.advanceToNextTurn()
-
-            nextTurn.turnNumber shouldBe 2
-            nextTurn.activePlayer shouldBe player2
-            nextTurn.priorityPlayer shouldBe player2
-            nextTurn.step shouldBe Step.UNTAP
-        }
-
-        test("wraps around player order") {
-            val state = TurnState.newGame(playerOrder, player2)
-            val nextTurn = state.advanceToNextTurn()
-
-            nextTurn.activePlayer shouldBe player1
-        }
-    }
-
-    context("advanceToPhase") {
-        test("jumps to target phase") {
-            val state = TurnState.newGame(playerOrder)
-            val combat = state.advanceToPhase(Phase.COMBAT)
-
-            combat.phase shouldBe Phase.COMBAT
-            combat.step shouldBe Step.BEGIN_COMBAT
-        }
-    }
-
-    context("advanceToStep") {
-        test("jumps to target step") {
-            val state = TurnState.newGame(playerOrder)
-            val attackers = state.advanceToStep(Step.DECLARE_ATTACKERS)
-
-            attackers.step shouldBe Step.DECLARE_ATTACKERS
-            attackers.phase shouldBe Phase.COMBAT
-        }
-    }
+    // Note: advanceToNextTurn, advanceToPhase, advanceToStep are private
+    // Turn transitions are tested via advanceStep() in the "wraps to next turn after cleanup" test above
 
     context("priority") {
         test("passPriority moves to next player") {
@@ -158,23 +122,28 @@ class TurnStateTest : FunSpec({
 
     context("canPlaySorcerySpeed") {
         test("true during main phase when active player has priority") {
-            val state = TurnState.newGame(playerOrder)
-                .advanceToStep(Step.PRECOMBAT_MAIN)
+            // Advance UNTAP -> UPKEEP -> DRAW -> PRECOMBAT_MAIN (3 steps)
+            var state = TurnState.newGame(playerOrder)
+            repeat(3) { state = state.advanceStep() }
+            state.step shouldBe Step.PRECOMBAT_MAIN
 
             state.canPlaySorcerySpeed.shouldBeTrue()
         }
 
         test("false during main phase when non-active player has priority") {
-            val state = TurnState.newGame(playerOrder)
-                .advanceToStep(Step.PRECOMBAT_MAIN)
-                .passPriority()
+            // Advance UNTAP -> UPKEEP -> DRAW -> PRECOMBAT_MAIN (3 steps)
+            var state = TurnState.newGame(playerOrder)
+            repeat(3) { state = state.advanceStep() }
+            state = state.passPriority()
 
             state.canPlaySorcerySpeed.shouldBeFalse()
         }
 
         test("false during combat") {
-            val state = TurnState.newGame(playerOrder)
-                .advanceToStep(Step.DECLARE_ATTACKERS)
+            // Advance UNTAP -> UPKEEP -> DRAW -> PRECOMBAT_MAIN -> BEGIN_COMBAT -> DECLARE_ATTACKERS (5 steps)
+            var state = TurnState.newGame(playerOrder)
+            repeat(5) { state = state.advanceStep() }
+            state.step shouldBe Step.DECLARE_ATTACKERS
 
             state.canPlaySorcerySpeed.shouldBeFalse()
         }

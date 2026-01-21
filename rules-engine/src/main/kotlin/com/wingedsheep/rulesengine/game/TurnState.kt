@@ -50,7 +50,10 @@ data class TurnState(
         }
     }
 
-    fun advanceToNextTurn(): TurnState {
+    /**
+     * Internal: Advance to the next turn. Only called from advanceStep() when at CLEANUP.
+     */
+    private fun advanceToNextTurn(): TurnState {
         val nextPlayerIndex = (activePlayerIndex + 1) % playerOrder.size
         val nextPlayer = playerOrder[nextPlayerIndex]
 
@@ -61,25 +64,6 @@ data class TurnState(
             phase = Phase.BEGINNING,
             step = Step.UNTAP,
             isFirstTurn = false,
-            consecutivePasses = 0
-        )
-    }
-
-    fun advanceToPhase(targetPhase: Phase): TurnState {
-        val targetStep = Step.firstStepOf(targetPhase)
-        return copy(
-            phase = targetPhase,
-            step = targetStep,
-            priorityPlayer = activePlayer,
-            consecutivePasses = 0
-        )
-    }
-
-    fun advanceToStep(targetStep: Step): TurnState {
-        return copy(
-            phase = targetStep.phase,
-            step = targetStep,
-            priorityPlayer = activePlayer,
             consecutivePasses = 0
         )
     }

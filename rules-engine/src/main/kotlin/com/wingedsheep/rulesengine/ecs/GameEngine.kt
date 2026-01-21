@@ -236,8 +236,12 @@ object GameEngine {
     // =========================================================================
 
     /**
-     * Process priority: Run SBA -> Check Triggers -> Grant Priority.
-     * This is the core game loop that should be called after any action.
+     * Process priority: Run SBAs and check for game over.
+     * This runs state-based actions and returns the result.
+     *
+     * Note: Auto-advancing through non-priority steps (UNTAP, CLEANUP) is handled
+     * by the game server, not the rules engine. This allows for step-by-step testing
+     * and configurable auto-pass behavior.
      *
      * @param state Current game state
      * @return Result indicating who has priority or if the game is over
@@ -250,7 +254,7 @@ object GameEngine {
             return PriorityResult.GameOver(currentState, currentState.winner)
         }
 
-        // Step 1: Check State-Based Actions (loop until none)
+        // Run SBAs until stable (checkStateBasedActions already loops internally)
         val sbaResult = checkStateBasedActions(currentState)
         if (sbaResult is GameActionResult.Success) {
             currentState = sbaResult.state
@@ -261,10 +265,9 @@ object GameEngine {
             return PriorityResult.GameOver(currentState, currentState.winner)
         }
 
-        // Step 2: Triggered abilities would be stacked here (future implementation)
         // TODO: Detect triggered abilities from events and add to stack in APNAP order
 
-        // Step 3: Return state with priority granted
+        // Return state with priority granted
         return PriorityResult.PriorityGranted(
             state = currentState,
             priorityPlayer = currentState.turnState.priorityPlayer
@@ -274,7 +277,7 @@ object GameEngine {
     /**
      * Handle when all players pass priority in succession.
      *
-     * If the stack is not empty: resolve the top object and reset passes.
+     * If the stack is not empty: resolve the top object, run SBAs, and reset passes.
      * If the stack is empty: advance to the next step/phase.
      *
      * @param state Current game state (should have allPlayersPassed() == true)
@@ -287,9 +290,17 @@ object GameEngine {
             // Stack not empty: resolve top of stack, reset passes
             val resolveResult = actionHandler.execute(state, ResolveTopOfStack())
             when (resolveResult) {
-                is GameActionResult.Success -> resolveResult.state.copy(
-                    turnState = turnState.resetConsecutivePasses().resetPriorityToActivePlayer()
-                )
+                is GameActionResult.Success -> {
+                    var newState = resolveResult.state.copy(
+                        turnState = turnState.resetConsecutivePasses().resetPriorityToActivePlayer()
+                    )
+                    // Run SBAs after resolution (e.g., creature dies from damage)
+                    val sbaResult = checkStateBasedActions(newState)
+                    if (sbaResult is GameActionResult.Success) {
+                        newState = sbaResult.state
+                    }
+                    newState
+                }
                 is GameActionResult.Failure -> state // Resolution failed, keep current state
             }
         } else {
@@ -388,6 +399,16 @@ object GameEngine {
                 val endCombatResult = actionHandler.execute(currentState, EndCombat(activePlayerId))
                 if (endCombatResult is GameActionResult.Success) {
                     currentState = endCombatResult.state
+                }
+            }
+            com.wingedsheep.rulesengine.game.Step.CLEANUP -> {
+                // Rule 514: Cleanup step
+                // - Discard down to maximum hand size (if needed)
+                // - Remove all damage from permanents
+                // - End "until end of turn" effects
+                val cleanupResult = actionHandler.execute(currentState, PerformCleanupStep(activePlayerId))
+                if (cleanupResult is GameActionResult.Success) {
+                    currentState = cleanupResult.state
                 }
             }
             else -> {

@@ -10,6 +10,7 @@ import com.wingedsheep.gameserver.protocol.ServerMessage
 import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.ZoneId
 import com.wingedsheep.rulesengine.ecs.action.*
+import com.wingedsheep.rulesengine.ecs.action.gameActionSerializersModule
 import com.wingedsheep.rulesengine.game.Phase
 import com.wingedsheep.rulesengine.zone.ZoneType
 import io.kotest.assertions.nondeterministic.eventually
@@ -55,15 +56,18 @@ class GamePlayIntegrationTest(
         ignoreUnknownKeys = true
         encodeDefaults = true
         classDiscriminator = "type"
-    }
-
-    // Shared WebSocket container with long timeout for all test clients
-    val wsContainer = org.apache.tomcat.websocket.WsWebSocketContainer().apply {
-        defaultMaxSessionIdleTimeout = 300_000L // 5 minutes
+        serializersModule = gameActionSerializersModule
     }
 
     // Track clients for cleanup
     val activeClients = mutableListOf<TestWebSocketClient>()
+
+    // Create a new WebSocket container for each test to ensure isolation
+    fun createWsContainer() = org.apache.tomcat.websocket.WsWebSocketContainer().apply {
+        defaultMaxSessionIdleTimeout = 300_000L // 5 minutes
+        defaultMaxTextMessageBufferSize = 1024 * 1024 // 1MB buffer for large state updates
+        defaultMaxBinaryMessageBufferSize = 1024 * 1024 // 1MB buffer
+    }
 
     afterEach {
         activeClients.forEach { it.close() }
@@ -82,7 +86,7 @@ class GamePlayIntegrationTest(
     // =========================================================================
 
     fun createClient(): TestWebSocketClient {
-        val client = TestWebSocketClient(json, wsContainer)
+        val client = TestWebSocketClient(json, createWsContainer())
         activeClients.add(client)
         return client
     }
@@ -115,8 +119,7 @@ class GamePlayIntegrationTest(
     fun TestWebSocketClient.allStateUpdates(): List<ServerMessage.StateUpdate> =
         messages.filterIsInstance<ServerMessage.StateUpdate>()
 
-    fun TestWebSocketClient.stateUpdateCount(): Int =
-        messages.count { it is ServerMessage.StateUpdate }
+    fun TestWebSocketClient.stateUpdateCount(): Int = stateUpdateCountFast()
 
     fun TestWebSocketClient.clearMessages() {
         messages.clear()
@@ -281,14 +284,49 @@ class GamePlayIntegrationTest(
         return nonPriority.client.submitAndWait(PassPriority(nonPriority.id))
     }
 
+    /**
+     * Pass priority and wait for both players to receive the state update.
+     * This ensures the loop condition is always checked with updated state.
+     */
+    suspend fun GameContext.passPriorityConsistent(): ClientGameState {
+        val countBefore1 = player1.client.stateUpdateCount()
+        val countBefore2 = player2.client.stateUpdateCount()
+        val errorCountBefore1 = player1.client.allErrors().size
+        val errorCountBefore2 = player2.client.allErrors().size
+
+        // Determine priority player from player1's state and submit through their client
+        val state = player1.client.requireLatestState()
+        val priority = if (state.priorityPlayerId == player1.id) player1 else player2
+
+
+        priority.client.send(ClientMessage.SubmitAction(PassPriority(priority.id)))
+
+        // Always wait for PLAYER1 to receive the state update since we use player1's state
+        // for the loop condition in advanceToNextTurn
+        eventually(10.seconds) {
+            // Check for errors first
+            val newErrors1 = player1.client.allErrors().size > errorCountBefore1
+            val newErrors2 = player2.client.allErrors().size > errorCountBefore2
+            if (newErrors1 || newErrors2) {
+                val err1 = player1.client.allErrors().lastOrNull()
+                val err2 = player2.client.allErrors().lastOrNull()
+                error("Received error during passPriorityConsistent: p1=$err1, p2=$err2, state=T${state.turnNumber}/${state.currentPhase}/${state.currentStep}, priority=${state.priorityPlayerId}")
+            }
+
+            // Wait for player1 to receive the state update (player1 is used for loop conditions)
+            (player1.client.stateUpdateCount() > countBefore1) shouldBe true
+        }
+
+        return player1.client.requireLatestState()
+    }
+
     suspend fun GameContext.advanceToPhase(targetPhase: Phase, maxPasses: Int = 100): ClientGameState {
         repeat(maxPasses) {
             val state = player1.client.requireLatestState()
             if (state.currentPhase == targetPhase) return state
             if (state.isGameOver) error("Game ended while advancing to phase $targetPhase")
 
-            val priority = priorityPlayer()
-            priority.client.submitAndWait(PassPriority(priority.id))
+            passPriorityConsistent()
         }
         error("Failed to reach phase $targetPhase after $maxPasses priority passes")
     }
@@ -303,8 +341,7 @@ class GamePlayIntegrationTest(
             }
             if (state.isGameOver) error("Game ended while advancing turn")
 
-            val priority = priorityPlayer()
-            priority.client.submitAndWait(PassPriority(priority.id))
+            passPriorityConsistent()
         }
         error("Failed to advance to next turn after $maxPasses priority passes")
     }
@@ -1331,8 +1368,11 @@ class TestWebSocketClient(private val json: Json, private val container: jakarta
     val messages = CopyOnWriteArrayList<ServerMessage>()
     private val connectLatch = CountDownLatch(1)
     private val closed = AtomicBoolean(false)
+    private val stateUpdateCounter = java.util.concurrent.atomic.AtomicInteger(0)
 
     val isOpen: Boolean get() = session?.isOpen == true && !closed.get()
+
+    fun stateUpdateCountFast(): Int = stateUpdateCounter.get()
 
     suspend fun connect(url: String) {
         withContext(Dispatchers.IO) {
@@ -1345,11 +1385,11 @@ class TestWebSocketClient(private val json: Json, private val container: jakarta
 
                     override fun handleTextMessage(session: WebSocketSession, message: TextMessage) {
                         if (closed.get()) return
-                        try {
-                            val serverMessage = json.decodeFromString<ServerMessage>(message.payload)
-                            messages.add(serverMessage)
-                        } catch (_: Exception) {
-                            // Ignore parse errors in tests
+                        val serverMessage = json.decodeFromString<ServerMessage>(message.payload)
+                        messages.add(serverMessage)
+                        // Increment counter for fast checking
+                        if (serverMessage is ServerMessage.StateUpdate) {
+                            stateUpdateCounter.incrementAndGet()
                         }
                     }
 
@@ -1358,7 +1398,6 @@ class TestWebSocketClient(private val json: Json, private val container: jakarta
                     }
 
                     override fun handleTransportError(session: WebSocketSession, exception: Throwable) {
-                        // Log transport errors for debugging
                         closed.set(true)
                     }
                 },

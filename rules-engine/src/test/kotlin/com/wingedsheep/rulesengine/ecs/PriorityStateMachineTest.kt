@@ -25,6 +25,18 @@ class PriorityStateMachineTest : FunSpec({
         )
     )
 
+    // Helper to advance step by step to a target step
+    fun GameState.advanceToStep(targetStep: Step): GameState {
+        var state = this
+        var iterations = 0
+        while (state.turnState.step != targetStep && iterations < 20) {
+            state = state.copy(turnState = state.turnState.advanceStep())
+            iterations++
+        }
+        require(state.turnState.step == targetStep) { "Failed to reach step $targetStep" }
+        return state
+    }
+
     val bearDef = CardDefinition.creature(
         name = "Grizzly Bears",
         manaCost = ManaCost.parse("{1}{G}"),
@@ -40,8 +52,7 @@ class PriorityStateMachineTest : FunSpec({
         }
 
         test("increments when player passes priority") {
-            val baseState = newGame()
-            val state = baseState.copy(turnState = baseState.turnState.advanceToStep(Step.PRECOMBAT_MAIN))
+            val state = newGame().advanceToStep(Step.PRECOMBAT_MAIN)
 
             val result = GameEngine.executeAction(state, PassPriority(player1Id))
             result.shouldBeInstanceOf<GameActionResult.Success>()
@@ -51,8 +62,7 @@ class PriorityStateMachineTest : FunSpec({
         }
 
         test("increments for each player pass") {
-            var state = newGame()
-            state = state.copy(turnState = state.turnState.advanceToStep(Step.PRECOMBAT_MAIN))
+            var state = newGame().advanceToStep(Step.PRECOMBAT_MAIN)
 
             // Player 1 passes
             val result1 = GameEngine.executeAction(state, PassPriority(player1Id))
@@ -80,16 +90,12 @@ class PriorityStateMachineTest : FunSpec({
         }
 
         test("resets when turn advances") {
-            val state = newGame()
-            val stateWithPasses = state.copy(
-                turnState = state.turnState.copy(consecutivePasses = 2)
-            )
+            var state = newGame()
+            // Advance through entire turn (13 steps) to reach turn 2
+            repeat(13) { state = state.copy(turnState = state.turnState.advanceStep()) }
 
-            val nextTurn = stateWithPasses.copy(
-                turnState = stateWithPasses.turnState.advanceToNextTurn()
-            )
-
-            nextTurn.turnState.consecutivePasses shouldBe 0
+            state.turnState.turnNumber shouldBe 2
+            state.turnState.consecutivePasses shouldBe 0
         }
     }
 
@@ -118,8 +124,7 @@ class PriorityStateMachineTest : FunSpec({
 
     context("executePlayerAction resets passes") {
         test("resets consecutivePasses after action") {
-            var state = newGame()
-            state = state.copy(turnState = state.turnState.advanceToStep(Step.PRECOMBAT_MAIN))
+            var state = newGame().advanceToStep(Step.PRECOMBAT_MAIN)
 
             // Set up some passes
             state = state.copy(
@@ -137,11 +142,9 @@ class PriorityStateMachineTest : FunSpec({
 
     context("resolvePassedPriority") {
         test("advances step when stack is empty") {
-            var state = newGame()
+            var state = newGame().advanceToStep(Step.UPKEEP)
             state = state.copy(
-                turnState = state.turnState
-                    .advanceToStep(Step.UPKEEP)
-                    .copy(consecutivePasses = 2)
+                turnState = state.turnState.copy(consecutivePasses = 2)
             )
 
             val resolved = GameEngine.resolvePassedPriority(state)
@@ -151,8 +154,7 @@ class PriorityStateMachineTest : FunSpec({
         }
 
         test("resolves top of stack when stack not empty") {
-            var state = newGame()
-            state = state.copy(turnState = state.turnState.advanceToStep(Step.PRECOMBAT_MAIN))
+            var state = newGame().advanceToStep(Step.PRECOMBAT_MAIN)
 
             // Create a card and put it on the stack
             val cardId = EntityId.generate()
@@ -180,8 +182,7 @@ class PriorityStateMachineTest : FunSpec({
 
     context("processPriority") {
         test("returns PriorityGranted when game not over") {
-            val baseState = newGame()
-            val state = baseState.copy(turnState = baseState.turnState.advanceToStep(Step.PRECOMBAT_MAIN))
+            val state = newGame().advanceToStep(Step.PRECOMBAT_MAIN)
 
             val result = GameEngine.processPriority(state)
             result.shouldBeInstanceOf<PriorityResult.PriorityGranted>()
@@ -219,8 +220,7 @@ class PriorityStateMachineTest : FunSpec({
 
     context("priority flow integration") {
         test("full priority pass cycle advances step") {
-            var state = newGame()
-            state = state.copy(turnState = state.turnState.advanceToStep(Step.UPKEEP))
+            var state = newGame().advanceToStep(Step.UPKEEP)
             val initialStep = state.turnState.step
 
             // Player 1 passes

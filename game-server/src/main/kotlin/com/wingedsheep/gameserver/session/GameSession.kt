@@ -10,11 +10,13 @@ import com.wingedsheep.rulesengine.ecs.EntityId
 import com.wingedsheep.rulesengine.ecs.GameEngine
 import com.wingedsheep.rulesengine.ecs.GameState
 import com.wingedsheep.rulesengine.ecs.MulliganResult
+import com.wingedsheep.rulesengine.ecs.PriorityResult
 import com.wingedsheep.rulesengine.ecs.SetupResult
 import com.wingedsheep.rulesengine.ecs.action.GameAction
 import com.wingedsheep.rulesengine.ecs.action.GameActionEvent
 import com.wingedsheep.rulesengine.ecs.action.GameActionResult
 import com.wingedsheep.rulesengine.ecs.action.LegalActionCalculator
+import com.wingedsheep.rulesengine.game.Step
 import com.wingedsheep.rulesengine.sets.portal.PortalSet
 import java.util.UUID
 import kotlin.random.Random
@@ -44,6 +46,52 @@ class GameSession(
     val isStarted: Boolean get() = gameState != null
     val isMulliganPhase: Boolean get() = gameState != null && !mulliganComplete.all { it.value }
     val allMulligansComplete: Boolean get() = mulliganComplete.size == 2 && mulliganComplete.all { it.value }
+
+    /**
+     * Advance the game to the first step with priority after mulligan phase completes.
+     * This runs SBAs and auto-advances through UNTAP to UPKEEP where priority is first granted.
+     */
+    fun startMainGame() {
+        val state = gameState ?: return
+        gameState = autoAdvanceToPriorityStep(state)
+    }
+
+    /**
+     * Auto-advance through non-priority steps (UNTAP, CLEANUP) until we reach a step
+     * where players can act. This is called after every action and resolution.
+     *
+     * The rules engine provides step-by-step methods. The game server orchestrates
+     * the auto-advancement through steps that don't grant priority.
+     */
+    private fun autoAdvanceToPriorityStep(state: GameState): GameState {
+        var currentState = state
+        var iterations = 0
+        val maxIterations = 10 // Safety limit to prevent infinite loops
+
+        // Loop until we reach a step with priority or game ends
+        while (!currentState.isGameOver && iterations < maxIterations) {
+            iterations++
+
+            // Run SBAs
+            val priorityResult = GameEngine.processPriority(currentState)
+            currentState = when (priorityResult) {
+                is PriorityResult.PriorityGranted -> priorityResult.state
+                is PriorityResult.GameOver -> return priorityResult.state
+            }
+
+            // Check if we're at a non-priority step with empty stack
+            val step = currentState.turnState.step
+            if (!step.hasPriority && currentState.getStack().isEmpty()) {
+                // Auto-advance through this step
+                currentState = GameEngine.resolvePassedPriority(currentState)
+            } else {
+                // We're at a step with priority, stop auto-advancing
+                break
+            }
+        }
+
+        return currentState
+    }
 
     /**
      * Add a player to this game session.
@@ -279,6 +327,11 @@ class GameSession(
 
     /**
      * Execute a game action.
+     *
+     * After every action:
+     * 1. Run SBAs and auto-advance through non-priority steps (UNTAP, CLEANUP)
+     * 2. Check if all players passed - resolve stack or advance
+     * 3. Run SBAs and auto-advance again after resolution
      */
     fun executeAction(playerId: EntityId, action: GameAction): ActionResult {
         val state = gameState ?: return ActionResult.Failure("Game not started")
@@ -295,10 +348,16 @@ class GameSession(
                 var newState = result.state
                 val allEvents = result.events.toMutableList()
 
+                // Run SBAs and auto-advance through non-priority steps
+                newState = autoAdvanceToPriorityStep(newState)
+
                 // Check if all players have passed priority
                 // If so, resolve the stack or advance the phase
-                if (newState.turnState.allPlayersPassed()) {
+                if (newState.turnState.allPlayersPassed() && !newState.isGameOver) {
                     newState = GameEngine.resolvePassedPriority(newState)
+
+                    // Run SBAs and auto-advance again after resolution
+                    newState = autoAdvanceToPriorityStep(newState)
                 }
 
                 gameState = newState

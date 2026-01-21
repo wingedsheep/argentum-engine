@@ -331,6 +331,8 @@ class GameWebSocketHandler : TextWebSocketHandler() {
     private fun checkMulliganPhaseComplete(gameSession: GameSession) {
         if (gameSession.allMulligansComplete) {
             logger.info("Mulligan phase complete for game ${gameSession.sessionId}")
+            // Advance the game to the first step with priority (UPKEEP)
+            gameSession.startMainGame()
             // Send initial state updates to both players
             broadcastStateUpdate(gameSession, emptyList())
         }
@@ -442,18 +444,26 @@ class GameWebSocketHandler : TextWebSocketHandler() {
         val player1 = gameSession.player1
         val player2 = gameSession.player2
 
-        player1?.let { session ->
-            val update = gameSession.createStateUpdate(session.playerId, events)
-            if (update != null) {
-                send(session.webSocketSession, update)
+        try {
+            player1?.let { session ->
+                val update = gameSession.createStateUpdate(session.playerId, events)
+                if (update != null) {
+                    send(session.webSocketSession, update)
+                } else {
+                    logger.warn("createStateUpdate returned null for player1")
+                }
             }
-        }
 
-        player2?.let { session ->
-            val update = gameSession.createStateUpdate(session.playerId, events)
-            if (update != null) {
-                send(session.webSocketSession, update)
+            player2?.let { session ->
+                val update = gameSession.createStateUpdate(session.playerId, events)
+                if (update != null) {
+                    send(session.webSocketSession, update)
+                } else {
+                    logger.warn("createStateUpdate returned null for player2")
+                }
             }
+        } catch (e: Exception) {
+            logger.error("Error broadcasting state update", e)
         }
     }
 
@@ -477,6 +487,8 @@ class GameWebSocketHandler : TextWebSocketHandler() {
             if (session.isOpen) {
                 val jsonText = json.encodeToString(message)
                 session.sendMessage(TextMessage(jsonText))
+            } else {
+                logger.warn("Cannot send message - session ${session.id} is closed")
             }
         } catch (e: Exception) {
             logger.error("Failed to send message to ${session.id}", e)
