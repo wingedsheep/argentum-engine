@@ -5,22 +5,43 @@ import kotlinx.serialization.Serializable
 /**
  * Sealed interface for replacement effects.
  *
- * Replacement effects intercept game actions BEFORE they happen and
+ * Replacement effects intercept game events BEFORE they happen and
  * modify or replace them entirely. Unlike triggered abilities, replacement
  * effects do not use the stack.
  *
- * Examples:
- * - Doubling Season: "If an effect would create tokens, it creates twice that many instead"
- * - Rest in Peace: "If a card would be put into a graveyard, exile it instead"
- * - Hardened Scales: "If counters would be placed, place one additional counter"
+ * The system is compositional - replacement effects are specified by combining
+ * a GameEvent filter with a modification/replacement behavior.
  *
- * Usage:
+ * Examples:
  * ```kotlin
- * staticAbility {
- *     replacementEffect = DoubleTokenCreation(
- *         appliesTo = ReplacementAppliesTo.TokensYouCreate
+ * // Doubling Season (tokens)
+ * DoubleTokenCreation(
+ *     appliesTo = GameEvent.TokenCreationEvent(controller = ControllerFilter.You)
+ * )
+ *
+ * // Hardened Scales
+ * ModifyCounterPlacement(
+ *     modifier = 1,
+ *     appliesTo = GameEvent.CounterPlacementEvent(
+ *         counterType = CounterTypeFilter.PlusOnePlusOne,
+ *         recipient = RecipientFilter.CreatureYouControl
  *     )
- * }
+ * )
+ *
+ * // Rest in Peace
+ * RedirectZoneChange(
+ *     newDestination = Zone.Exile,
+ *     appliesTo = GameEvent.ZoneChangeEvent(to = Zone.Graveyard)
+ * )
+ *
+ * // Prevention shield (combat damage from red sources)
+ * PreventDamage(
+ *     appliesTo = GameEvent.DamageEvent(
+ *         recipient = RecipientFilter.You,
+ *         source = SourceFilter.HasColor(Color.RED),
+ *         damageType = DamageType.Combat
+ *     )
+ * )
  * ```
  */
 @Serializable
@@ -28,166 +49,8 @@ sealed interface ReplacementEffect {
     /** Human-readable description of the replacement effect */
     val description: String
 
-    /** What type of event this replacement applies to */
-    val appliesTo: ReplacementAppliesTo
-}
-
-/**
- * Defines what type of game event a replacement effect intercepts.
- */
-@Serializable
-sealed interface ReplacementAppliesTo {
-    val description: String
-
-    // =========================================================================
-    // Token Creation
-    // =========================================================================
-
-    /**
-     * When an effect would create tokens under your control.
-     * Example: Doubling Season
-     */
-    @Serializable
-    data object TokensYouCreate : ReplacementAppliesTo {
-        override val description = "an effect would create one or more tokens under your control"
-    }
-
-    /**
-     * When any effect would create tokens.
-     */
-    @Serializable
-    data object AnyTokenCreation : ReplacementAppliesTo {
-        override val description = "an effect would create one or more tokens"
-    }
-
-    // =========================================================================
-    // Counter Placement
-    // =========================================================================
-
-    /**
-     * When one or more +1/+1 counters would be placed on a creature you control.
-     * Example: Hardened Scales, Doubling Season
-     */
-    @Serializable
-    data object PlusCountersOnYourCreatures : ReplacementAppliesTo {
-        override val description = "one or more +1/+1 counters would be placed on a creature you control"
-    }
-
-    /**
-     * When any counters would be placed on a permanent you control.
-     */
-    @Serializable
-    data class CountersOnYourPermanents(val counterType: String? = null) : ReplacementAppliesTo {
-        override val description = buildString {
-            append("one or more ")
-            if (counterType != null) append("$counterType ")
-            append("counters would be placed on a permanent you control")
-        }
-    }
-
-    // =========================================================================
-    // Damage
-    // =========================================================================
-
-    /**
-     * When damage would be dealt to you.
-     * Example: Platinum Emperion (prevents life change)
-     */
-    @Serializable
-    data object DamageToYou : ReplacementAppliesTo {
-        override val description = "damage would be dealt to you"
-    }
-
-    /**
-     * When damage would be dealt to a creature you control.
-     * Example: Damage prevention effects
-     */
-    @Serializable
-    data object DamageToYourCreatures : ReplacementAppliesTo {
-        override val description = "damage would be dealt to a creature you control"
-    }
-
-    /**
-     * When combat damage would be dealt.
-     */
-    @Serializable
-    data object CombatDamage : ReplacementAppliesTo {
-        override val description = "combat damage would be dealt"
-    }
-
-    // =========================================================================
-    // Zone Changes
-    // =========================================================================
-
-    /**
-     * When a card would be put into a graveyard from anywhere.
-     * Example: Rest in Peace
-     */
-    @Serializable
-    data object CardsEnteringGraveyard : ReplacementAppliesTo {
-        override val description = "a card would be put into a graveyard from anywhere"
-    }
-
-    /**
-     * When a creature you control would die.
-     * Example: Undying, Persist
-     */
-    @Serializable
-    data object YourCreaturesDying : ReplacementAppliesTo {
-        override val description = "a creature you control would die"
-    }
-
-    /**
-     * When a permanent would enter the battlefield.
-     * Example: Blood Moon (lands enter as Mountains)
-     */
-    @Serializable
-    data object PermanentsEnteringBattlefield : ReplacementAppliesTo {
-        override val description = "a permanent would enter the battlefield"
-    }
-
-    /**
-     * When a creature would enter the battlefield under your control.
-     * Example: Leyline of Singularity
-     */
-    @Serializable
-    data object CreaturesEnteringUnderYourControl : ReplacementAppliesTo {
-        override val description = "a creature would enter the battlefield under your control"
-    }
-
-    // =========================================================================
-    // Card Drawing
-    // =========================================================================
-
-    /**
-     * When you would draw a card.
-     * Example: Dredge, Underrealm Lich
-     */
-    @Serializable
-    data object YouDrawing : ReplacementAppliesTo {
-        override val description = "you would draw a card"
-    }
-
-    // =========================================================================
-    // Life Changes
-    // =========================================================================
-
-    /**
-     * When you would gain life.
-     * Example: Tainted Remedy
-     */
-    @Serializable
-    data object YouGainingLife : ReplacementAppliesTo {
-        override val description = "you would gain life"
-    }
-
-    /**
-     * When you would lose life.
-     */
-    @Serializable
-    data object YouLosingLife : ReplacementAppliesTo {
-        override val description = "you would lose life"
-    }
+    /** What type of event this replacement intercepts (compositional) */
+    val appliesTo: GameEvent
 }
 
 // =============================================================================
@@ -196,13 +59,14 @@ sealed interface ReplacementAppliesTo {
 
 /**
  * Double the number of tokens created.
- * Example: Doubling Season, Parallel Lives
+ * Example: Doubling Season, Parallel Lives, Anointed Procession
  */
 @Serializable
 data class DoubleTokenCreation(
-    override val appliesTo: ReplacementAppliesTo = ReplacementAppliesTo.TokensYouCreate
+    override val appliesTo: GameEvent = GameEvent.TokenCreationEvent()
 ) : ReplacementEffect {
-    override val description = "If ${appliesTo.description}, it creates twice that many of those tokens instead"
+    override val description: String =
+        "If ${appliesTo.description}, create twice that many of those tokens instead"
 }
 
 /**
@@ -211,10 +75,10 @@ data class DoubleTokenCreation(
 @Serializable
 data class ModifyTokenCount(
     val modifier: Int,
-    override val appliesTo: ReplacementAppliesTo = ReplacementAppliesTo.TokensYouCreate
+    override val appliesTo: GameEvent = GameEvent.TokenCreationEvent()
 ) : ReplacementEffect {
-    override val description = buildString {
-        append("If ${appliesTo.description}, it creates ")
+    override val description: String = buildString {
+        append("If ${appliesTo.description}, create ")
         if (modifier > 0) append("$modifier more")
         else append("${-modifier} fewer")
         append(" of those tokens instead")
@@ -227,97 +91,121 @@ data class ModifyTokenCount(
 
 /**
  * Double the number of counters placed.
- * Example: Doubling Season
+ * Example: Doubling Season (counters), Corpsejack Menace
  */
 @Serializable
 data class DoubleCounterPlacement(
-    override val appliesTo: ReplacementAppliesTo = ReplacementAppliesTo.PlusCountersOnYourCreatures
+    override val appliesTo: GameEvent = GameEvent.CounterPlacementEvent(
+        counterType = CounterTypeFilter.PlusOnePlusOne,
+        recipient = RecipientFilter.CreatureYouControl
+    )
 ) : ReplacementEffect {
-    override val description = "If ${appliesTo.description}, twice that many of those counters are placed instead"
+    override val description: String =
+        "If ${appliesTo.description}, place twice that many counters instead"
 }
 
 /**
  * Add additional counters when counters are placed.
- * Example: Hardened Scales (+1), Winding Constrictor (+1)
+ * Example: Hardened Scales (+1), Winding Constrictor (+1), Branching Evolution (double)
  */
 @Serializable
-data class AdditionalCounters(
-    val additionalCount: Int = 1,
-    override val appliesTo: ReplacementAppliesTo = ReplacementAppliesTo.PlusCountersOnYourCreatures
+data class ModifyCounterPlacement(
+    val modifier: Int = 1,
+    override val appliesTo: GameEvent = GameEvent.CounterPlacementEvent(
+        counterType = CounterTypeFilter.PlusOnePlusOne,
+        recipient = RecipientFilter.CreatureYouControl
+    )
 ) : ReplacementEffect {
-    override val description = "If ${appliesTo.description}, $additionalCount additional counter is placed"
-}
-
-// =============================================================================
-// Enter the Battlefield Replacement Effects
-// =============================================================================
-
-/**
- * Permanent enters the battlefield tapped.
- * Example: Glacial Fortress (conditional), basic tap lands
- */
-@Serializable
-data class EntersTapped(
-    val filter: CardFilter? = null,
-    override val appliesTo: ReplacementAppliesTo = ReplacementAppliesTo.PermanentsEnteringBattlefield
-) : ReplacementEffect {
-    override val description = buildString {
-        if (filter != null) {
-            append("${filter.description} enters the battlefield tapped")
+    override val description: String = buildString {
+        append("If ${appliesTo.description}, ")
+        if (modifier > 0) {
+            append("$modifier additional counter")
+            if (modifier > 1) append("s")
+            append(" is placed")
         } else {
-            append("This permanent enters the battlefield tapped")
+            append("${-modifier} fewer counter")
+            if (-modifier > 1) append("s")
+            append(" is placed")
         }
     }
 }
 
+// =============================================================================
+// Zone Change Replacement Effects
+// =============================================================================
+
 /**
- * Creature enters with +1/+1 counters.
- * Example: Master Biomancer
+ * Redirect a zone change to a different destination.
+ * Example: Rest in Peace (graveyard → exile), Leyline of the Void
+ */
+@Serializable
+data class RedirectZoneChange(
+    val newDestination: Zone,
+    override val appliesTo: GameEvent
+) : ReplacementEffect {
+    override val description: String =
+        "If ${appliesTo.description}, put it into ${newDestination.description} instead"
+}
+
+/**
+ * Permanent enters the battlefield tapped.
+ * Example: Glacial Fortress (conditional), tap lands, Thalia Heretic Cathar
+ */
+@Serializable
+data class EntersTapped(
+    override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
+        objectFilter = ObjectFilter.Any,
+        to = Zone.Battlefield
+    )
+) : ReplacementEffect {
+    override val description: String = "If ${appliesTo.description}, it enters tapped"
+}
+
+/**
+ * Permanent/creature enters with counters.
+ * Example: Master Biomancer, Metallic Mimic
  */
 @Serializable
 data class EntersWithCounters(
-    val counterType: String = "+1/+1",
+    val counterType: CounterTypeFilter = CounterTypeFilter.PlusOnePlusOne,
     val count: Int,
-    override val appliesTo: ReplacementAppliesTo = ReplacementAppliesTo.CreaturesEnteringUnderYourControl
+    override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
+        objectFilter = ObjectFilter.CreatureYouControl,
+        to = Zone.Battlefield
+    )
 ) : ReplacementEffect {
-    override val description = "If ${appliesTo.description}, it enters with $count additional $counterType counters"
+    override val description: String =
+        "If ${appliesTo.description}, it enters with $count ${counterType.description} counters"
 }
 
-// =============================================================================
-// Death Replacement Effects
-// =============================================================================
-
 /**
- * If a creature would die, return it to the battlefield instead (with modification).
- * Example: Undying (return with +1/+1 counter if it had none)
+ * Undying - if creature dies without +1/+1 counters, return it with one.
  */
 @Serializable
 data class UndyingEffect(
-    override val appliesTo: ReplacementAppliesTo = ReplacementAppliesTo.YourCreaturesDying
+    override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
+        objectFilter = ObjectFilter.CreatureYouControl,
+        from = Zone.Battlefield,
+        to = Zone.Graveyard
+    )
 ) : ReplacementEffect {
-    override val description = "When this creature dies, if it had no +1/+1 counters on it, return it to the battlefield with a +1/+1 counter"
+    override val description: String =
+        "When this creature dies, if it had no +1/+1 counters on it, return it to the battlefield with a +1/+1 counter"
 }
 
 /**
- * If a creature would die, return it to the battlefield instead (with -1/-1 counter).
- * Example: Persist
+ * Persist - if creature dies without -1/-1 counters, return it with one.
  */
 @Serializable
 data class PersistEffect(
-    override val appliesTo: ReplacementAppliesTo = ReplacementAppliesTo.YourCreaturesDying
+    override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
+        objectFilter = ObjectFilter.CreatureYouControl,
+        from = Zone.Battlefield,
+        to = Zone.Graveyard
+    )
 ) : ReplacementEffect {
-    override val description = "When this creature dies, if it had no -1/-1 counters on it, return it to the battlefield with a -1/-1 counter"
-}
-
-/**
- * If a card would be put into a graveyard, exile it instead.
- * Example: Rest in Peace
- */
-@Serializable
-data class ExileInsteadOfGraveyard(
-    override val appliesTo: ReplacementAppliesTo = ReplacementAppliesTo.CardsEnteringGraveyard
-) : ReplacementEffect {
-    override val description = "If a card would be put into a graveyard from anywhere, exile it instead"
+    override val description: String =
+        "When this creature dies, if it had no -1/-1 counters on it, return it to the battlefield with a -1/-1 counter"
 }
 
 // =============================================================================
@@ -326,14 +214,14 @@ data class ExileInsteadOfGraveyard(
 
 /**
  * Prevent damage.
- * Example: Fog effects, protection
+ * Example: Fog effects, protection, damage shields
  */
 @Serializable
 data class PreventDamage(
     val amount: Int? = null,  // null = prevent all
-    override val appliesTo: ReplacementAppliesTo
+    override val appliesTo: GameEvent
 ) : ReplacementEffect {
-    override val description = buildString {
+    override val description: String = buildString {
         append("If ${appliesTo.description}, prevent ")
         if (amount == null) {
             append("that damage")
@@ -345,14 +233,27 @@ data class PreventDamage(
 
 /**
  * Redirect damage to another target.
- * Example: Pariah, Stuffy Doll
+ * Example: Pariah, Stuffy Doll, Boros Reckoner
  */
 @Serializable
 data class RedirectDamage(
     val redirectTo: EffectTarget,
-    override val appliesTo: ReplacementAppliesTo
+    override val appliesTo: GameEvent
 ) : ReplacementEffect {
-    override val description = "If ${appliesTo.description}, that damage is dealt to ${redirectTo.description} instead"
+    override val description: String =
+        "If ${appliesTo.description}, that damage is dealt to ${redirectTo.description} instead"
+}
+
+/**
+ * Double damage dealt.
+ * Example: Furnace of Rath, Insult // Injury
+ */
+@Serializable
+data class DoubleDamage(
+    override val appliesTo: GameEvent
+) : ReplacementEffect {
+    override val description: String =
+        "If ${appliesTo.description}, it deals double that damage instead"
 }
 
 // =============================================================================
@@ -366,7 +267,80 @@ data class RedirectDamage(
 @Serializable
 data class ReplaceDrawWithEffect(
     val replacementEffect: Effect,
-    override val appliesTo: ReplacementAppliesTo = ReplacementAppliesTo.YouDrawing
+    override val appliesTo: GameEvent = GameEvent.DrawEvent()
 ) : ReplacementEffect {
-    override val description = "If ${appliesTo.description}, instead ${replacementEffect.description}"
+    override val description: String =
+        "If ${appliesTo.description}, instead ${replacementEffect.description}"
 }
+
+/**
+ * Prevent drawing (with optional replacement).
+ * Example: Spirit of the Labyrinth (second draw), Narset Parter of Veils
+ */
+@Serializable
+data class PreventDraw(
+    override val appliesTo: GameEvent = GameEvent.DrawEvent()
+) : ReplacementEffect {
+    override val description: String =
+        "If ${appliesTo.description}, that draw doesn't happen"
+}
+
+// =============================================================================
+// Life Replacement Effects
+// =============================================================================
+
+/**
+ * Prevent life gain.
+ * Example: Erebos, Sulfuric Vortex
+ */
+@Serializable
+data class PreventLifeGain(
+    override val appliesTo: GameEvent = GameEvent.LifeGainEvent()
+) : ReplacementEffect {
+    override val description: String =
+        "If ${appliesTo.description}, that player gains no life instead"
+}
+
+/**
+ * Replace life gain with another effect.
+ * Example: Tainted Remedy (life gain becomes life loss)
+ */
+@Serializable
+data class ReplaceLifeGain(
+    val replacementEffect: Effect,
+    override val appliesTo: GameEvent = GameEvent.LifeGainEvent()
+) : ReplacementEffect {
+    override val description: String =
+        "If ${appliesTo.description}, instead ${replacementEffect.description}"
+}
+
+/**
+ * Modify life gain amount.
+ * Example: Alhammarret's Archive (double life gain)
+ */
+@Serializable
+data class ModifyLifeGain(
+    val multiplier: Int = 2,
+    override val appliesTo: GameEvent = GameEvent.LifeGainEvent()
+) : ReplacementEffect {
+    override val description: String = when (multiplier) {
+        2 -> "If ${appliesTo.description}, gain twice that much life instead"
+        0 -> "If ${appliesTo.description}, gain no life instead"
+        else -> "If ${appliesTo.description}, gain $multiplier times that much life instead"
+    }
+}
+
+// =============================================================================
+// Generic Replacement Effect
+// =============================================================================
+
+/**
+ * Generic replacement effect for complex scenarios.
+ * Use when no specific replacement effect type fits.
+ */
+@Serializable
+data class GenericReplacementEffect(
+    val replacement: Effect?,  // null = prevent entirely
+    override val appliesTo: GameEvent,
+    override val description: String
+) : ReplacementEffect

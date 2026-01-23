@@ -181,14 +181,14 @@ data class ModifyStatsEffect(
     val powerModifier: Int,
     val toughnessModifier: Int,
     val target: EffectTarget,
-    val untilEndOfTurn: Boolean = true
+    val duration: Duration = Duration.EndOfTurn
 ) : Effect {
     override val description: String = buildString {
         append("${target.description} gets ")
         append(if (powerModifier >= 0) "+$powerModifier" else "$powerModifier")
         append("/")
         append(if (toughnessModifier >= 0) "+$toughnessModifier" else "$toughnessModifier")
-        if (untilEndOfTurn) append(" until end of turn")
+        if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
 }
 
@@ -199,11 +199,11 @@ data class ModifyStatsEffect(
 @Serializable
 data class LoseAllCreatureTypesEffect(
     val target: EffectTarget,
-    val untilEndOfTurn: Boolean = true
+    val duration: Duration = Duration.EndOfTurn
 ) : Effect {
     override val description: String = buildString {
         append("${target.description} loses all creature types")
-        if (untilEndOfTurn) append(" until end of turn")
+        if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
 }
 
@@ -1792,11 +1792,11 @@ data class EachPlayerDrawsXEffect(
 data class GrantKeywordToGroupEffect(
     val keyword: Keyword,
     val filter: CreatureGroupFilter,
-    val untilEndOfTurn: Boolean = true
+    val duration: Duration = Duration.EndOfTurn
 ) : Effect {
     override val description: String = buildString {
         append("${filter.description} gain ${keyword.displayName.lowercase()}")
-        if (untilEndOfTurn) append(" until end of turn")
+        if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
 }
 
@@ -1851,14 +1851,14 @@ data class ModifyStatsForGroupEffect(
     val powerModifier: Int,
     val toughnessModifier: Int,
     val filter: CreatureGroupFilter,
-    val untilEndOfTurn: Boolean = true
+    val duration: Duration = Duration.EndOfTurn
 ) : Effect {
     override val description: String = buildString {
         append("${filter.description} get ")
         val powerStr = if (powerModifier >= 0) "+$powerModifier" else "$powerModifier"
         val toughStr = if (toughnessModifier >= 0) "+$toughnessModifier" else "$toughnessModifier"
         append("$powerStr/$toughStr")
-        if (untilEndOfTurn) append(" until end of turn")
+        if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
 }
 

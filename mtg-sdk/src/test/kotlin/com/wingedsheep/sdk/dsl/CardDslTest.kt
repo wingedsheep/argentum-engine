@@ -757,18 +757,46 @@ class CardDslTest : DescribeSpec({
             doublingSeason.typeLine.isEnchantment shouldBe true
         }
 
-        it("should have ReplacementEffect types available") {
-            // Test that replacement effect types are properly defined
+        it("should have compositional ReplacementEffect types available") {
+            // Test that replacement effect types are properly defined with compositional filters
             val tokenDoubler = DoubleTokenCreation()
-            tokenDoubler.appliesTo shouldBe ReplacementAppliesTo.TokensYouCreate
-            tokenDoubler.description shouldBe "If an effect would create one or more tokens under your control, it creates twice that many of those tokens instead"
+            tokenDoubler.appliesTo.shouldBeInstanceOf<GameEvent.TokenCreationEvent>()
 
-            val counterAdder = AdditionalCounters(additionalCount = 1)
-            counterAdder.additionalCount shouldBe 1
-            counterAdder.appliesTo shouldBe ReplacementAppliesTo.PlusCountersOnYourCreatures
+            // Hardened Scales - +1 counter when +1/+1 counters placed on creatures you control
+            val counterAdder = ModifyCounterPlacement(
+                modifier = 1,
+                appliesTo = GameEvent.CounterPlacementEvent(
+                    counterType = CounterTypeFilter.PlusOnePlusOne,
+                    recipient = RecipientFilter.CreatureYouControl
+                )
+            )
+            counterAdder.modifier shouldBe 1
+            counterAdder.appliesTo.shouldBeInstanceOf<GameEvent.CounterPlacementEvent>()
 
-            val entersTapped = EntersTapped()
-            entersTapped.appliesTo shouldBe ReplacementAppliesTo.PermanentsEnteringBattlefield
+            // Enters tapped with compositional event
+            val entersTapped = EntersTapped(
+                appliesTo = GameEvent.ZoneChangeEvent(
+                    objectFilter = ObjectFilter.NonlandPermanent,
+                    to = Zone.Battlefield
+                )
+            )
+            entersTapped.appliesTo.shouldBeInstanceOf<GameEvent.ZoneChangeEvent>()
+
+            // Rest in Peace - redirect graveyard to exile
+            val restInPeace = RedirectZoneChange(
+                newDestination = Zone.Exile,
+                appliesTo = GameEvent.ZoneChangeEvent(to = Zone.Graveyard)
+            )
+            restInPeace.newDestination shouldBe Zone.Exile
+
+            // Combat damage from red sources to creatures you control
+            val damageFilter = GameEvent.DamageEvent(
+                recipient = RecipientFilter.CreatureYouControl,
+                source = SourceFilter.HasColor(com.wingedsheep.sdk.core.Color.RED),
+                damageType = DamageType.Combat
+            )
+            damageFilter.recipient shouldBe RecipientFilter.CreatureYouControl
+            damageFilter.damageType shouldBe DamageType.Combat
         }
 
         it("should support CardScript with replacement effects") {
