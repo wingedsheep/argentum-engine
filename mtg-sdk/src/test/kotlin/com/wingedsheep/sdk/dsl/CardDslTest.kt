@@ -889,4 +889,101 @@ class CardDslTest : DescribeSpec({
             effect.storeAs shouldBe EffectVariable.EntityRef("exiledCreature")
         }
     }
+
+    describe("Conditional Static Abilities") {
+
+        it("should define Karakyk Guardian with conditional hexproof") {
+            val karakykGuardian = card("Karakyk Guardian") {
+                manaCost = "{3}{G}{U}{R}"
+                typeLine = "Creature — Dragon"
+                power = 6
+                toughness = 5
+                keywords(Keyword.FLYING, Keyword.VIGILANCE, Keyword.TRAMPLE)
+
+                staticAbility {
+                    ability = GrantKeyword(Keyword.HEXPROOF, StaticTarget.SourceCreature)
+                    condition = NotCondition(SourceHasDealtDamage)
+                }
+            }
+
+            karakykGuardian.name shouldBe "Karakyk Guardian"
+            karakykGuardian.keywords shouldContain Keyword.FLYING
+            karakykGuardian.keywords shouldContain Keyword.VIGILANCE
+            karakykGuardian.keywords shouldContain Keyword.TRAMPLE
+
+            karakykGuardian.staticAbilities shouldHaveSize 1
+            val staticAbility = karakykGuardian.staticAbilities[0]
+            staticAbility.shouldBeInstanceOf<ConditionalStaticAbility>()
+
+            val conditional = staticAbility as ConditionalStaticAbility
+            conditional.ability.shouldBeInstanceOf<GrantKeyword>()
+            conditional.condition.shouldBeInstanceOf<NotCondition>()
+
+            val grantKeyword = conditional.ability as GrantKeyword
+            grantKeyword.keyword shouldBe Keyword.HEXPROOF
+            grantKeyword.target shouldBe StaticTarget.SourceCreature
+
+            val notCondition = conditional.condition as NotCondition
+            notCondition.condition shouldBe SourceHasDealtDamage
+        }
+
+        it("should support conditional stat bonuses") {
+            val feralKrushok = card("Feral Krushok") {
+                manaCost = "{4}{G}"
+                typeLine = "Creature — Beast"
+                power = 4
+                toughness = 4
+
+                // Gets +2/+2 while attacking
+                staticAbility {
+                    ability = ModifyStats(2, 2, StaticTarget.SourceCreature)
+                    condition = SourceIsAttacking
+                }
+            }
+
+            feralKrushok.staticAbilities shouldHaveSize 1
+            val staticAbility = feralKrushok.staticAbilities[0]
+            staticAbility.shouldBeInstanceOf<ConditionalStaticAbility>()
+
+            val conditional = staticAbility as ConditionalStaticAbility
+            conditional.ability.shouldBeInstanceOf<ModifyStats>()
+            conditional.condition shouldBe SourceIsAttacking
+
+            val modifyStats = conditional.ability as ModifyStats
+            modifyStats.powerBonus shouldBe 2
+            modifyStats.toughnessBonus shouldBe 2
+        }
+
+        it("should support conditional blocking restrictions") {
+            val guardianShield = card("Guardian Shield-Bearer") {
+                manaCost = "{1}{W}"
+                typeLine = "Creature — Human Soldier"
+                power = 2
+                toughness = 3
+
+                // Can't block unless you have more life than an opponent
+                staticAbility {
+                    ability = CantBlock(StaticTarget.SourceCreature)
+                    condition = NotCondition(MoreLifeThanOpponent)
+                }
+            }
+
+            guardianShield.staticAbilities shouldHaveSize 1
+            val staticAbility = guardianShield.staticAbilities[0]
+            staticAbility.shouldBeInstanceOf<ConditionalStaticAbility>()
+
+            val conditional = staticAbility as ConditionalStaticAbility
+            conditional.ability.shouldBeInstanceOf<CantBlock>()
+            conditional.condition.shouldBeInstanceOf<NotCondition>()
+        }
+
+        it("should describe conditional abilities correctly") {
+            val conditional = ConditionalStaticAbility(
+                ability = GrantKeyword(Keyword.HEXPROOF, StaticTarget.SourceCreature),
+                condition = NotCondition(SourceHasDealtDamage)
+            )
+
+            conditional.description shouldBe "Grants hexproof if not (this creature has dealt damage)"
+        }
+    }
 })

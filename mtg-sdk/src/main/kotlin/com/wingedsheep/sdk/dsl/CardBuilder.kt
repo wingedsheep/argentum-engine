@@ -472,7 +472,31 @@ class StaticAbilityBuilder {
     var effect: Effect? = null
     var filter: Any? = null  // Can be CreatureFilter or StaticTarget
 
+    /**
+     * Condition that must be met for this static ability to apply.
+     * Used for cards like Karakyk Guardian: "hexproof if it hasn't dealt damage yet"
+     */
+    var condition: Condition? = null
+
+    /**
+     * Direct static ability assignment (bypasses effect conversion).
+     * Takes precedence over effect if set.
+     */
+    var ability: StaticAbility? = null
+
     fun build(): StaticAbility {
+        // Build the base ability
+        val baseAbility = ability ?: buildFromEffect()
+
+        // Wrap in conditional if condition is set
+        return if (condition != null) {
+            ConditionalStaticAbility(baseAbility, condition!!)
+        } else {
+            baseAbility
+        }
+    }
+
+    private fun buildFromEffect(): StaticAbility {
         // Convert effect to appropriate StaticAbility type
         return when (val e = effect) {
             is ModifyStatsEffect -> ModifyStats(

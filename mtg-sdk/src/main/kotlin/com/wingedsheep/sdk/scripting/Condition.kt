@@ -223,6 +223,35 @@ data object SourceIsUntapped : Condition {
     override val description: String = "if this creature is untapped"
 }
 
+/**
+ * Condition: "If this creature has dealt damage"
+ * Used for cards like Karakyk Guardian: "has hexproof if it hasn't dealt damage yet"
+ *
+ * The engine tracks damage dealt history per-object since entering the battlefield.
+ */
+@Serializable
+data object SourceHasDealtDamage : Condition {
+    override val description: String = "this creature has dealt damage"
+}
+
+/**
+ * Condition: "If this creature has dealt combat damage to a player"
+ * Used for Saboteur abilities and similar effects.
+ */
+@Serializable
+data object SourceHasDealtCombatDamageToPlayer : Condition {
+    override val description: String = "this creature has dealt combat damage to a player"
+}
+
+/**
+ * Condition: "If this creature entered the battlefield this turn"
+ * Used for summoning sickness checks and ETB-sensitive abilities.
+ */
+@Serializable
+data object SourceEnteredThisTurn : Condition {
+    override val description: String = "this creature entered the battlefield this turn"
+}
+
 // =============================================================================
 // Turn/Phase Conditions
 // =============================================================================

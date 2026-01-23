@@ -259,3 +259,25 @@ data class CanOnlyBlockCreaturesWithKeyword(
 ) : StaticAbility {
     override val description: String = "can block only creatures with ${keyword.displayName.lowercase()}"
 }
+
+// =============================================================================
+// Conditional Static Abilities
+// =============================================================================
+
+/**
+ * A static ability that only applies when a condition is met.
+ * Used for cards like Karakyk Guardian: "hexproof if it hasn't dealt damage yet"
+ *
+ * The engine checks the condition during state projection and only applies
+ * the underlying ability's effect when the condition is true.
+ *
+ * @property ability The underlying static ability to apply when condition is met
+ * @property condition The condition that must be true for the ability to apply
+ */
+@Serializable
+data class ConditionalStaticAbility(
+    val ability: StaticAbility,
+    val condition: Condition
+) : StaticAbility {
+    override val description: String = "${ability.description} ${condition.description}"
+}
