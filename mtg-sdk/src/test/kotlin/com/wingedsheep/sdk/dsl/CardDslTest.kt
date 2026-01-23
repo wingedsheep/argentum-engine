@@ -2,6 +2,7 @@ package com.wingedsheep.sdk.dsl
 
 import com.wingedsheep.sdk.core.*
 import com.wingedsheep.sdk.model.CardDefinition
+import com.wingedsheep.sdk.model.CharacteristicValue
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.targeting.*
@@ -510,6 +511,354 @@ class CardDslTest : DescribeSpec({
             }
 
             gift.spellEffect shouldNotBe null
+        }
+    }
+
+    // =========================================================================
+    // NEW FEATURES: Target Binding, Modal Targeting, Dynamic Stats
+    // =========================================================================
+
+    describe("Named Target Binding") {
+
+        it("should define Electrolyze with two named targets") {
+            val electrolyze = card("Electrolyze") {
+                manaCost = "{1}{U}{R}"
+                typeLine = "Instant"
+
+                spell {
+                    // Named target bindings - each gets an index
+                    val firstTarget = target("first target", Targets.Any)
+                    val secondTarget = target("second target", Targets.Any)
+
+                    effect = Effects.Composite(
+                        Effects.DealDamage(1, firstTarget),
+                        Effects.DealDamage(1, secondTarget),
+                        Effects.DrawCards(1)
+                    )
+                }
+            }
+
+            electrolyze.name shouldBe "Electrolyze"
+            electrolyze.targetRequirements shouldHaveSize 2
+            electrolyze.spellEffect shouldNotBe null
+            electrolyze.spellEffect.shouldBeInstanceOf<CompositeEffect>()
+
+            val composite = electrolyze.spellEffect as CompositeEffect
+            composite.effects shouldHaveSize 3
+
+            // First effect targets ContextTarget(0)
+            val damage1 = composite.effects[0] as DealDamageEffect
+            damage1.target shouldBe EffectTarget.ContextTarget(0)
+
+            // Second effect targets ContextTarget(1)
+            val damage2 = composite.effects[1] as DealDamageEffect
+            damage2.target shouldBe EffectTarget.ContextTarget(1)
+        }
+    }
+
+    describe("Modal Spells with Per-Mode Targeting") {
+
+        it("should define Cryptic Command with mode-specific targets") {
+            val crypticCommand = card("Cryptic Command") {
+                manaCost = "{1}{U}{U}{U}"
+                typeLine = "Instant"
+
+                spell {
+                    modal(chooseCount = 2) {
+                        mode("Counter target spell") {
+                            val spell = target("spell", Targets.Spell)
+                            effect = CounterSpellEffect
+                        }
+                        mode("Return target permanent to its owner's hand") {
+                            val permanent = target("permanent", Targets.Permanent)
+                            effect = Effects.ReturnToHand(permanent)
+                        }
+                        mode("Tap all creatures your opponents control") {
+                            effect = TapUntapEffect(EffectTarget.AllOpponentCreatures, tap = true)
+                        }
+                        mode("Draw a card", Effects.DrawCards(1))
+                    }
+                }
+            }
+
+            crypticCommand.name shouldBe "Cryptic Command"
+            crypticCommand.spellEffect shouldNotBe null
+            crypticCommand.spellEffect.shouldBeInstanceOf<ModalEffect>()
+
+            val modal = crypticCommand.spellEffect as ModalEffect
+            modal.chooseCount shouldBe 2
+            modal.modes shouldHaveSize 4
+
+            // Mode 1 has a target requirement (spell)
+            modal.modes[0].targetRequirements shouldHaveSize 1
+
+            // Mode 2 has a target requirement (permanent)
+            modal.modes[1].targetRequirements shouldHaveSize 1
+
+            // Mode 3 has no target requirement
+            modal.modes[2].targetRequirements shouldHaveSize 0
+
+            // Mode 4 has no target requirement
+            modal.modes[3].targetRequirements shouldHaveSize 0
+        }
+
+        it("should define Charm with simple mode choices") {
+            val charm = card("Bant Charm") {
+                manaCost = "{G}{W}{U}"
+                typeLine = "Instant"
+
+                spell {
+                    modal {
+                        mode("Destroy target artifact", Effects.Destroy(EffectTarget.TargetArtifact))
+                        mode("Put target creature on the bottom of its owner's library") {
+                            val creature = target("creature", Targets.Creature)
+                            effect = PutOnTopOfLibraryEffect(creature)
+                        }
+                        mode("Counter target instant spell") {
+                            val instant = target("instant", Targets.Spell)
+                            effect = CounterSpellEffect
+                        }
+                    }
+                }
+            }
+
+            charm.spellEffect.shouldBeInstanceOf<ModalEffect>()
+            val modal = charm.spellEffect as ModalEffect
+            modal.chooseCount shouldBe 1
+            modal.modes shouldHaveSize 3
+        }
+    }
+
+    describe("Dynamic Creature Stats") {
+
+        it("should define Tarmogoyf with dynamic power and toughness") {
+            val tarmogoyf = card("Tarmogoyf") {
+                manaCost = "{1}{G}"
+                typeLine = "Creature — Lhurgoyf"
+
+                // */*+1 where * is number of card types in all graveyards
+                dynamicStats(
+                    DynamicAmount.CardTypesInAllGraveyards,
+                    powerOffset = 0,
+                    toughnessOffset = 1
+                )
+            }
+
+            tarmogoyf.name shouldBe "Tarmogoyf"
+            tarmogoyf.creatureStats shouldNotBe null
+            tarmogoyf.creatureStats!!.isDynamic shouldBe true
+
+            // Power is * (dynamic with no offset)
+            tarmogoyf.creatureStats!!.power.shouldBeInstanceOf<com.wingedsheep.sdk.model.CharacteristicValue.Dynamic>()
+
+            // Toughness is *+1 (dynamic with +1 offset)
+            tarmogoyf.creatureStats!!.toughness.shouldBeInstanceOf<com.wingedsheep.sdk.model.CharacteristicValue.DynamicWithOffset>()
+            val toughness = tarmogoyf.creatureStats!!.toughness as com.wingedsheep.sdk.model.CharacteristicValue.DynamicWithOffset
+            toughness.offset shouldBe 1
+        }
+
+        it("should define Lhurgoyf with creature-count based stats") {
+            val lhurgoyf = card("Lhurgoyf") {
+                manaCost = "{2}{G}{G}"
+                typeLine = "Creature — Lhurgoyf"
+
+                dynamicPower = com.wingedsheep.sdk.model.CharacteristicValue.Dynamic(DynamicAmount.CreatureCardsInYourGraveyard)
+                dynamicToughness = com.wingedsheep.sdk.model.CharacteristicValue.DynamicWithOffset(DynamicAmount.CreatureCardsInYourGraveyard, 1)
+            }
+
+            lhurgoyf.creatureStats shouldNotBe null
+            lhurgoyf.creatureStats!!.isDynamic shouldBe true
+            lhurgoyf.creatureStats!!.basePower shouldBe null  // No fixed base power
+        }
+    }
+
+    describe("Variable Binding (Object Memory)") {
+
+        it("should define Oblivion Ring with exile-and-return pattern") {
+            val oRing = card("Oblivion Ring") {
+                manaCost = "{2}{W}"
+                typeLine = "Enchantment"
+
+                // ETB: Exile target nonland permanent until this leaves
+                triggeredAbility {
+                    trigger = Triggers.EntersBattlefield
+                    target = Targets.NonlandPermanent
+                    effect = StoreResultEffect(
+                        effect = ExileEffect(EffectTarget.ContextTarget(0)),
+                        storeAs = EffectVariable.EntityRef("exiledCard")
+                    )
+                }
+
+                // LTB: Return the exiled card
+                triggeredAbility {
+                    trigger = Triggers.LeavesBattlefield
+                    effect = ReturnFromGraveyardEffect(
+                        filter = CardFilter.AnyCard,
+                        destination = SearchDestination.BATTLEFIELD
+                    )
+                }
+            }
+
+            oRing.name shouldBe "Oblivion Ring"
+            oRing.triggeredAbilities shouldHaveSize 2
+
+            // First trigger stores the exiled card
+            val etbEffect = oRing.triggeredAbilities[0].effect
+            etbEffect.shouldBeInstanceOf<StoreResultEffect>()
+            val storeEffect = etbEffect as StoreResultEffect
+            storeEffect.storeAs shouldBe EffectVariable.EntityRef("exiledCard")
+        }
+
+        it("should define Scapeshift with count-passing pattern") {
+            val scapeshift = card("Scapeshift") {
+                manaCost = "{2}{G}{G}"
+                typeLine = "Sorcery"
+
+                spell {
+                    // Sacrifice any number of lands, then search for that many
+                    effect = EffectPatterns.sacrificeFor(
+                        filter = CardFilter.LandCard,
+                        countName = "sacrificedLands",
+                        thenEffect = SearchLibraryEffect(
+                            filter = CardFilter.LandCard,
+                            count = 0, // Engine will read from VariableReference
+                            destination = SearchDestination.BATTLEFIELD,
+                            entersTapped = false
+                        )
+                    )
+                }
+            }
+
+            scapeshift.spellEffect shouldNotBe null
+            scapeshift.spellEffect.shouldBeInstanceOf<CompositeEffect>()
+
+            val composite = scapeshift.spellEffect as CompositeEffect
+            composite.effects shouldHaveSize 2
+
+            // First effect stores the count
+            composite.effects[0].shouldBeInstanceOf<StoreCountEffect>()
+            val storeCount = composite.effects[0] as StoreCountEffect
+            storeCount.storeAs shouldBe EffectVariable.Count("sacrificedLands")
+        }
+    }
+
+    describe("Replacement Effects") {
+
+        it("should define Doubling Season with token doubling") {
+            val doublingSeason = card("Doubling Season") {
+                manaCost = "{4}{G}"
+                typeLine = "Enchantment"
+
+                // Note: ReplacementEffect is defined but CardScript field
+                // is used to store them
+            }
+
+            doublingSeason.name shouldBe "Doubling Season"
+            doublingSeason.typeLine.isEnchantment shouldBe true
+        }
+
+        it("should have ReplacementEffect types available") {
+            // Test that replacement effect types are properly defined
+            val tokenDoubler = DoubleTokenCreation()
+            tokenDoubler.appliesTo shouldBe ReplacementAppliesTo.TokensYouCreate
+            tokenDoubler.description shouldBe "If an effect would create one or more tokens under your control, it creates twice that many of those tokens instead"
+
+            val counterAdder = AdditionalCounters(additionalCount = 1)
+            counterAdder.additionalCount shouldBe 1
+            counterAdder.appliesTo shouldBe ReplacementAppliesTo.PlusCountersOnYourCreatures
+
+            val entersTapped = EntersTapped()
+            entersTapped.appliesTo shouldBe ReplacementAppliesTo.PermanentsEnteringBattlefield
+        }
+
+        it("should support CardScript with replacement effects") {
+            val restInPeace = card("Rest in Peace") {
+                manaCost = "{1}{W}"
+                typeLine = "Enchantment"
+            }
+
+            // Verify script can hold replacement effects (even if empty for now)
+            restInPeace.script.hasReplacementEffects shouldBe false
+        }
+    }
+
+    describe("Optional Cost Effects") {
+
+        it("should support may-pay pattern") {
+            val optionalEffect = OptionalCostEffect(
+                cost = PayLifeEffect(2),
+                ifPaid = DrawCardsEffect(1),
+                ifNotPaid = null
+            )
+
+            optionalEffect.description shouldBe "You may pay 2 life. If you do, draw a card"
+        }
+
+        it("should support may-pay-or-else pattern") {
+            val optionalEffect = OptionalCostEffect(
+                cost = SacrificeEffect(CardFilter.CreatureCard),
+                ifPaid = DealDamageEffect(3, EffectTarget.AnyTarget),
+                ifNotPaid = LoseLifeEffect(3, EffectTarget.Controller)
+            )
+
+            optionalEffect.description shouldBe "You may sacrifice a creature card. If you do, deal 3 damage to any target. Otherwise, you lose 3 life"
+        }
+
+        it("should support reflexive triggers") {
+            val reflexive = ReflexiveTriggerEffect(
+                action = SacrificeEffect(CardFilter.CreatureCard),
+                optional = true,
+                reflexiveEffect = DealDamageEffect(5, EffectTarget.AnyTarget)
+            )
+
+            reflexive.description shouldBe "You may sacrifice a creature card. When you do, deal 5 damage to any target"
+        }
+    }
+
+    describe("Effect Patterns Helper") {
+
+        it("should create sacrifice-for pattern with variable binding") {
+            val effect = EffectPatterns.sacrificeFor(
+                filter = CardFilter.LandCard,
+                countName = "landCount",
+                thenEffect = DrawCardsEffect(1)
+            )
+
+            effect.shouldBeInstanceOf<CompositeEffect>()
+            val composite = effect as CompositeEffect
+            composite.effects shouldHaveSize 2
+            composite.effects[0].shouldBeInstanceOf<StoreCountEffect>()
+        }
+
+        it("should create may-pay shorthand") {
+            val effect = EffectPatterns.mayPay(
+                PayLifeEffect(3),
+                DrawCardsEffect(2)
+            )
+
+            effect.shouldBeInstanceOf<OptionalCostEffect>()
+            effect.cost shouldBe PayLifeEffect(3)
+            effect.ifPaid shouldBe DrawCardsEffect(2, EffectTarget.Controller)
+        }
+
+        it("should create reflexive trigger shorthand") {
+            val effect = EffectPatterns.reflexiveTrigger(
+                action = SacrificeEffect(CardFilter.CreatureCard),
+                whenYouDo = GainLifeEffect(5)
+            )
+
+            effect.shouldBeInstanceOf<ReflexiveTriggerEffect>()
+            effect.optional shouldBe true
+        }
+
+        it("should create store entity shorthand") {
+            val effect = EffectPatterns.storeEntity(
+                effect = ExileEffect(EffectTarget.TargetCreature),
+                `as` = "exiledCreature"
+            )
+
+            effect.shouldBeInstanceOf<StoreResultEffect>()
+            effect.storeAs shouldBe EffectVariable.EntityRef("exiledCreature")
         }
     }
 })

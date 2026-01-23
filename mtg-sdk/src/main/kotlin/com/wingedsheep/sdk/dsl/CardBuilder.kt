@@ -50,14 +50,35 @@ class CardBuilder(private val name: String) {
     var typeLine: String = ""
 
     /**
-     * Power (for creatures).
+     * Power (for creatures). Can be set as Int for fixed stats.
      */
     var power: Int? = null
 
     /**
-     * Toughness (for creatures).
+     * Toughness (for creatures). Can be set as Int for fixed stats.
      */
     var toughness: Int? = null
+
+    /**
+     * Dynamic power (for creatures with characteristic-defining abilities).
+     * Takes precedence over `power` if set.
+     */
+    var dynamicPower: CharacteristicValue? = null
+
+    /**
+     * Dynamic toughness (for creatures with characteristic-defining abilities).
+     * Takes precedence over `toughness` if set.
+     */
+    var dynamicToughness: CharacteristicValue? = null
+
+    /**
+     * Set dynamic stats from the same source with optional offsets.
+     * Example: `dynamicStats(DynamicAmount.CardTypesInAllGraveyards, toughnessOffset = 1)` for Tarmogoyf.
+     */
+    fun dynamicStats(source: DynamicAmount, powerOffset: Int = 0, toughnessOffset: Int = 0) {
+        dynamicPower = CharacteristicValue.dynamic(source, powerOffset)
+        dynamicToughness = CharacteristicValue.dynamic(source, toughnessOffset)
+    }
 
     /**
      * Starting loyalty (for planeswalkers).
@@ -212,10 +233,17 @@ class CardBuilder(private val name: String) {
         val parsedManaCost = if (manaCost.isNotEmpty()) ManaCost.parse(manaCost) else ManaCost.ZERO
 
         // Build creature stats if power/toughness provided
-        val creatureStats = if (power != null && toughness != null) {
-            CreatureStats(power!!, toughness!!)
-        } else {
-            null
+        // Dynamic values take precedence over fixed Int values
+        val creatureStats = when {
+            dynamicPower != null || dynamicToughness != null -> {
+                val finalPower = dynamicPower ?: power?.let { CharacteristicValue.Fixed(it) }
+                    ?: CharacteristicValue.Fixed(0)
+                val finalToughness = dynamicToughness ?: toughness?.let { CharacteristicValue.Fixed(it) }
+                    ?: CharacteristicValue.Fixed(0)
+                CreatureStats(finalPower, finalToughness)
+            }
+            power != null && toughness != null -> CreatureStats(power!!, toughness!!)
+            else -> null
         }
 
         // Build the script
@@ -252,14 +280,148 @@ class CardBuilder(private val name: String) {
 // Spell Builder
 // =============================================================================
 
+/**
+ * Builder for spell effects (instants and sorceries).
+ *
+ * Supports two targeting styles:
+ *
+ * 1. Simple (single target):
+ * ```kotlin
+ * spell {
+ *     target = Targets.Creature
+ *     effect = Effects.Destroy(EffectTarget.TargetCreature)
+ * }
+ * ```
+ *
+ * 2. Named binding (multiple targets):
+ * ```kotlin
+ * spell {
+ *     val creature = target("creature", TargetCreature())
+ *     val player = target("player", TargetPlayer())
+ *     effect = Effects.Composite(
+ *         Effects.Destroy(creature),
+ *         Effects.DealDamage(3, player)
+ *     )
+ * }
+ * ```
+ */
 @CardDsl
 class SpellBuilder {
     var effect: Effect? = null
     var target: TargetRequirement? = null
     var condition: Condition? = null
 
+    // Named target bindings
+    private val namedTargets: MutableList<Pair<String, TargetRequirement>> = mutableListOf()
+
+    /**
+     * Declare a named target and get an EffectTarget reference to use in effects.
+     *
+     * @param name A descriptive name for the target (for debugging/documentation)
+     * @param requirement The target requirement specification
+     * @return An EffectTarget.ContextTarget that references this target by index
+     */
+    fun target(name: String, requirement: TargetRequirement): EffectTarget.ContextTarget {
+        val index = namedTargets.size
+        namedTargets.add(name to requirement)
+        return EffectTarget.ContextTarget(index)
+    }
+
     internal val targetRequirements: List<TargetRequirement>
-        get() = listOfNotNull(target)
+        get() = if (namedTargets.isNotEmpty()) {
+            namedTargets.map { it.second }
+        } else {
+            listOfNotNull(target)
+        }
+
+    /**
+     * Define a modal spell effect.
+     *
+     * Example (Cryptic Command):
+     * ```kotlin
+     * spell {
+     *     modal(chooseCount = 2) {
+     *         mode("Counter target spell") {
+     *             target = TargetSpell()
+     *             effect = Effects.CounterSpell()
+     *         }
+     *         mode("Return target permanent to its owner's hand") {
+     *             target = TargetPermanent()
+     *             effect = Effects.ReturnToHand(EffectTarget.ContextTarget(0))
+     *         }
+     *         mode("Tap all creatures your opponents control") {
+     *             effect = Effects.TapAll(CreatureGroupFilter.OpponentsControl)
+     *         }
+     *         mode("Draw a card") {
+     *             effect = Effects.DrawCards(1)
+     *         }
+     *     }
+     * }
+     * ```
+     */
+    fun modal(chooseCount: Int = 1, init: ModalBuilder.() -> Unit) {
+        val builder = ModalBuilder(chooseCount)
+        builder.init()
+        effect = builder.build()
+    }
+}
+
+// =============================================================================
+// Modal Builder
+// =============================================================================
+
+/**
+ * Builder for modal spells with per-mode targeting.
+ */
+@CardDsl
+class ModalBuilder(private val chooseCount: Int) {
+    private val modes: MutableList<Mode> = mutableListOf()
+
+    /**
+     * Add a mode with the given description.
+     */
+    fun mode(description: String, init: ModeBuilder.() -> Unit) {
+        val builder = ModeBuilder(description)
+        builder.init()
+        modes.add(builder.build())
+    }
+
+    /**
+     * Add a mode with no target and a simple effect.
+     */
+    fun mode(description: String, effect: Effect) {
+        modes.add(Mode.noTarget(effect, description))
+    }
+
+    internal fun build(): ModalEffect = ModalEffect(modes.toList(), chooseCount)
+}
+
+/**
+ * Builder for a single mode within a modal spell.
+ */
+@CardDsl
+class ModeBuilder(private val description: String) {
+    var effect: Effect = DrawCardsEffect(0, EffectTarget.Controller)
+    var target: TargetRequirement? = null
+    private val targets: MutableList<TargetRequirement> = mutableListOf()
+
+    /**
+     * Add a named target for this mode and get an EffectTarget reference.
+     */
+    fun target(name: String, requirement: TargetRequirement): EffectTarget.ContextTarget {
+        val index = targets.size
+        targets.add(requirement)
+        return EffectTarget.ContextTarget(index)
+    }
+
+    internal fun build(): Mode {
+        val allTargets = if (targets.isNotEmpty()) {
+            targets.toList()
+        } else {
+            listOfNotNull(target)
+        }
+        return Mode(effect, allTargets, description)
+    }
 }
 
 // =============================================================================

@@ -4,6 +4,8 @@ import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.targeting.TargetRequirement
 import kotlinx.serialization.Serializable
 
+// Type alias for clarity - replacement effects are in the scripting package
+
 /**
  * CardScript contains the behavioral logic of a card - what happens when it's cast,
  * what abilities it has, and what targets it requires.
@@ -100,6 +102,13 @@ data class CardScript(
     val staticAbilities: List<StaticAbility> = emptyList(),
 
     /**
+     * Replacement effects that modify game events before they happen.
+     * Unlike triggered abilities, replacement effects don't use the stack.
+     * Examples: Doubling Season (doubles tokens/counters), Rest in Peace (exile instead of graveyard).
+     */
+    val replacementEffects: List<ReplacementEffect> = emptyList(),
+
+    /**
      * Additional costs that must be paid when casting this spell.
      * Separate from mana costs.
      * Examples: Sacrifice a creature, discard a card, pay life.
@@ -123,6 +132,7 @@ data class CardScript(
                 triggeredAbilities.isNotEmpty() ||
                 activatedAbilities.isNotEmpty() ||
                 staticAbilities.isNotEmpty() ||
+                replacementEffects.isNotEmpty() ||
                 additionalCosts.isNotEmpty() ||
                 auraTarget != null
 
@@ -145,10 +155,16 @@ data class CardScript(
         get() = additionalCosts.isNotEmpty()
 
     /**
-     * All abilities (triggered + activated) for iteration.
+     * All abilities (triggered + activated + static + replacement) for iteration.
      */
     val allAbilities: List<Any>
-        get() = triggeredAbilities + activatedAbilities + staticAbilities
+        get() = triggeredAbilities + activatedAbilities + staticAbilities + replacementEffects
+
+    /**
+     * Whether this card has replacement effects.
+     */
+    val hasReplacementEffects: Boolean
+        get() = replacementEffects.isNotEmpty()
 
     companion object {
         /**
@@ -201,11 +217,28 @@ data class CardScript(
         fun permanent(
             vararg activatedAbilities: ActivatedAbility,
             staticAbilities: List<StaticAbility> = emptyList(),
-            triggeredAbilities: List<TriggeredAbility> = emptyList()
+            triggeredAbilities: List<TriggeredAbility> = emptyList(),
+            replacementEffects: List<ReplacementEffect> = emptyList()
         ): CardScript = CardScript(
             activatedAbilities = activatedAbilities.toList(),
             staticAbilities = staticAbilities,
-            triggeredAbilities = triggeredAbilities
+            triggeredAbilities = triggeredAbilities,
+            replacementEffects = replacementEffects
+        )
+
+        /**
+         * Create a script with replacement effects (like Doubling Season, Rest in Peace).
+         */
+        fun withReplacementEffects(
+            vararg replacementEffects: ReplacementEffect,
+            staticAbilities: List<StaticAbility> = emptyList(),
+            triggeredAbilities: List<TriggeredAbility> = emptyList(),
+            activatedAbilities: List<ActivatedAbility> = emptyList()
+        ): CardScript = CardScript(
+            replacementEffects = replacementEffects.toList(),
+            staticAbilities = staticAbilities,
+            triggeredAbilities = triggeredAbilities,
+            activatedAbilities = activatedAbilities
         )
     }
 }

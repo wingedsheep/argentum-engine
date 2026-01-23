@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.targeting.TargetRequirement
 import kotlinx.serialization.Serializable
 
 /**
@@ -376,6 +377,162 @@ sealed interface DynamicAmount {
     data object ColorsAmongPermanentsYouControl : DynamicAmount {
         override val description: String = "the number of colors among permanents you control"
     }
+
+    // =========================================================================
+    // Graveyard-based DynamicAmounts (for Tarmogoyf, etc.)
+    // =========================================================================
+
+    /**
+     * Count of card types among cards in all graveyards.
+     * Used for Tarmogoyf's characteristic-defining ability.
+     */
+    @Serializable
+    data object CardTypesInAllGraveyards : DynamicAmount {
+        override val description: String = "the number of card types among cards in all graveyards"
+    }
+
+    /**
+     * Count of cards in your graveyard.
+     * Used for creatures like Lhurgoyf.
+     */
+    @Serializable
+    data object CardsInYourGraveyard : DynamicAmount {
+        override val description: String = "the number of cards in your graveyard"
+    }
+
+    /**
+     * Count of creature cards in your graveyard.
+     */
+    @Serializable
+    data object CreatureCardsInYourGraveyard : DynamicAmount {
+        override val description: String = "the number of creature cards in your graveyard"
+    }
+
+    /**
+     * Count of lands you control.
+     */
+    @Serializable
+    data object LandsYouControl : DynamicAmount {
+        override val description: String = "the number of lands you control"
+    }
+
+    // =========================================================================
+    // X Value and Variable References
+    // =========================================================================
+
+    /**
+     * The X value of the spell (from mana cost).
+     * Used for X spells like Fireball.
+     */
+    @Serializable
+    data object XValue : DynamicAmount {
+        override val description: String = "X"
+    }
+
+    /**
+     * Reference to a stored variable by name.
+     * Used for effects that need to reference a previously computed/stored value.
+     * Example: Scapeshift stores "sacrificedCount" and SearchLibrary reads it.
+     */
+    @Serializable
+    data class VariableReference(val variableName: String) : DynamicAmount {
+        override val description: String = "the stored $variableName"
+    }
+}
+
+// =============================================================================
+// Effect Variables (for context binding between effects)
+// =============================================================================
+
+/**
+ * Represents a variable that can store values during effect execution.
+ *
+ * This enables effects to:
+ * 1. Store the result of an action (e.g., which card was exiled)
+ * 2. Store a count (e.g., how many lands were sacrificed)
+ * 3. Reference these stored values in subsequent effects
+ *
+ * Usage:
+ * ```kotlin
+ * // Store the exiled card reference
+ * StoreResultEffect(
+ *     effect = ExileEffect(EffectTarget.ContextTarget(0)),
+ *     storeAs = EffectVariable.EntityRef("exiledCard")
+ * )
+ *
+ * // Later, return it from exile
+ * ReturnFromExileEffect(StoredEntityTarget("exiledCard"))
+ * ```
+ */
+@Serializable
+sealed interface EffectVariable {
+    /** Name used to reference this variable */
+    val name: String
+
+    /** Human-readable description */
+    val description: String
+
+    /**
+     * Stores a reference to an entity (card, permanent, player).
+     * Used for: "exile target creature... return the exiled card"
+     */
+    @Serializable
+    data class EntityRef(override val name: String) : EffectVariable {
+        override val description: String = "the $name"
+    }
+
+    /**
+     * Stores a count/number.
+     * Used for: "sacrifice any number of lands... search for that many lands"
+     */
+    @Serializable
+    data class Count(override val name: String) : EffectVariable {
+        override val description: String = "the number of $name"
+    }
+
+    /**
+     * Stores an amount (damage dealt, life gained, etc.).
+     * Used for: "deal damage equal to the damage dealt this way"
+     */
+    @Serializable
+    data class Amount(override val name: String) : EffectVariable {
+        override val description: String = "the $name amount"
+    }
+}
+
+/**
+ * Effect that stores the result of executing an inner effect.
+ *
+ * This enables Oblivion Ring-style effects where the first trigger
+ * needs to remember which card it exiled so the second trigger
+ * can return it.
+ *
+ * @param effect The effect to execute
+ * @param storeAs The variable to store the result in
+ */
+@Serializable
+data class StoreResultEffect(
+    val effect: Effect,
+    val storeAs: EffectVariable
+) : Effect {
+    override val description: String = "${effect.description} (stored as ${storeAs.name})"
+}
+
+/**
+ * Effect that stores a count from the result of executing an effect.
+ *
+ * Used for variable-count effects like Scapeshift:
+ * "Sacrifice any number of lands. Search for that many land cards."
+ *
+ * @param effect The effect to execute (typically a sacrifice or similar)
+ * @param storeAs The count variable to store the number in
+ */
+@Serializable
+data class StoreCountEffect(
+    val effect: Effect,
+    val storeAs: EffectVariable.Count
+) : Effect {
+    override val description: String = "${effect.description} (count stored as ${storeAs.name})"
 }
 
 // =============================================================================
@@ -1021,6 +1178,20 @@ sealed interface EffectTarget {
     data class ContextTarget(val index: Int) : EffectTarget {
         override val description: String = "target"
     }
+
+    /**
+     * VARIABLE BINDING: Refers to an entity stored in a variable during effect execution.
+     *
+     * This enables Oblivion Ring-style effects:
+     * - First trigger exiles a creature and stores it: `StoreResultEffect(exile, "exiledCard")`
+     * - Second trigger returns it: `ReturnFromExileEffect(StoredEntityTarget("exiledCard"))`
+     *
+     * @property variableName The name of the variable holding the entity reference.
+     */
+    @Serializable
+    data class StoredEntityTarget(val variableName: String) : EffectTarget {
+        override val description: String = "the stored $variableName"
+    }
 }
 
 // =============================================================================
@@ -1136,30 +1307,191 @@ data class ExileAndReplaceWithTokenEffect(
 // =============================================================================
 
 /**
- * Modal spell effect - choose one of several modes.
- * "Choose one — [Mode A] or [Mode B]"
+ * Represents a single mode in a modal spell.
  *
- * @property modes List of possible effects to choose from
+ * Each mode can have its own targeting requirements, allowing cards like
+ * Cryptic Command where different modes need different targets.
+ *
+ * @property effect The effect when this mode is chosen
+ * @property targetRequirements Targets required for this specific mode
+ * @property description Human-readable description of the mode
+ */
+@Serializable
+data class Mode(
+    val effect: Effect,
+    val targetRequirements: List<TargetRequirement> = emptyList(),
+    val description: String = effect.description
+) {
+    companion object {
+        /**
+         * Create a mode with no targeting.
+         */
+        fun noTarget(effect: Effect, description: String = effect.description): Mode =
+            Mode(effect, emptyList(), description)
+
+        /**
+         * Create a mode with a single target.
+         */
+        fun withTarget(effect: Effect, target: TargetRequirement, description: String = effect.description): Mode =
+            Mode(effect, listOf(target), description)
+    }
+}
+
+/**
+ * Modal spell effect - choose one or more of several modes.
+ * "Choose one — [Mode A] or [Mode B]"
+ * "Choose two — [Mode A], [Mode B], [Mode C], or [Mode D]"
+ *
+ * Each mode can have its own targeting requirements, which are combined
+ * based on which modes are chosen when the spell is cast.
+ *
+ * Example (Cryptic Command):
+ * ```kotlin
+ * ModalEffect(
+ *     modes = listOf(
+ *         Mode.withTarget(CounterSpellEffect, TargetSpell(), "Counter target spell"),
+ *         Mode.withTarget(ReturnToHandEffect(EffectTarget.ContextTarget(0)), TargetPermanent(), "Return target permanent to its owner's hand"),
+ *         Mode.noTarget(TapAllCreaturesEffect(CreatureGroupFilter.OpponentsControl), "Tap all creatures your opponents control"),
+ *         Mode.noTarget(DrawCardsEffect(1), "Draw a card")
+ *     ),
+ *     chooseCount = 2
+ * )
+ * ```
+ *
+ * @property modes List of possible modes to choose from
  * @property chooseCount How many modes to choose (default 1)
  */
 @Serializable
 data class ModalEffect(
-    val modes: List<Effect>,
+    val modes: List<Mode>,
     val chooseCount: Int = 1
 ) : Effect {
     override val description: String = buildString {
         append("Choose ")
-        if (chooseCount == 1) {
-            append("one")
-        } else {
-            append(chooseCount)
+        when (chooseCount) {
+            1 -> append("one")
+            2 -> append("two")
+            3 -> append("three")
+            else -> append(chooseCount)
         }
         append(" —\n")
-        modes.forEachIndexed { index, effect ->
+        modes.forEachIndexed { index, mode ->
             append("• ")
-            append(effect.description)
+            append(mode.description)
             if (index < modes.lastIndex) append("\n")
         }
+    }
+
+    companion object {
+        /**
+         * Create a simple modal effect with effects that have no targeting.
+         * Backwards compatible with the old List<Effect> pattern.
+         */
+        fun simple(effects: List<Effect>, chooseCount: Int = 1): ModalEffect =
+            ModalEffect(effects.map { Mode.noTarget(it) }, chooseCount)
+
+        /**
+         * Create a choose-one modal effect.
+         */
+        fun chooseOne(vararg modes: Mode): ModalEffect =
+            ModalEffect(modes.toList(), 1)
+
+        /**
+         * Create a choose-two modal effect (Cryptic Command style).
+         */
+        fun chooseTwo(vararg modes: Mode): ModalEffect =
+            ModalEffect(modes.toList(), 2)
+    }
+}
+
+// =============================================================================
+// Optional Cost Effects
+// =============================================================================
+
+/**
+ * Effect with an optional cost - "You may [cost]. If you do, [ifPaid]."
+ *
+ * This is the fundamental building block for optional effects like:
+ * - "You may pay {2}. If you do, draw a card."
+ * - "You may sacrifice a creature. If you do, deal 3 damage to any target."
+ * - "You may discard a card. If you do, draw two cards."
+ *
+ * @property cost The optional cost the player may pay (e.g., PayLifeEffect, SacrificeEffect)
+ * @property ifPaid The effect that happens if the player pays the cost
+ * @property ifNotPaid Optional effect if the player doesn't pay (usually null)
+ */
+@Serializable
+data class OptionalCostEffect(
+    val cost: Effect,
+    val ifPaid: Effect,
+    val ifNotPaid: Effect? = null
+) : Effect {
+    override val description: String = buildString {
+        append("You may ${cost.description.replaceFirstChar { it.lowercase() }}. ")
+        append("If you do, ${ifPaid.description.replaceFirstChar { it.lowercase() }}")
+        if (ifNotPaid != null) {
+            append(". Otherwise, ${ifNotPaid.description.replaceFirstChar { it.lowercase() }}")
+        }
+    }
+}
+
+/**
+ * Pay life cost effect.
+ * Used as a cost in OptionalCostEffect.
+ */
+@Serializable
+data class PayLifeEffect(
+    val amount: Int
+) : Effect {
+    override val description: String = "pay $amount life"
+}
+
+/**
+ * Sacrifice permanents effect.
+ * Can be used as a cost or standalone effect.
+ *
+ * @property filter Which permanents can be sacrificed
+ * @property count How many to sacrifice
+ * @property any If true, "any number" (for Scapeshift)
+ */
+@Serializable
+data class SacrificeEffect(
+    val filter: CardFilter,
+    val count: Int = 1,
+    val any: Boolean = false
+) : Effect {
+    override val description: String = buildString {
+        append("sacrifice ")
+        when {
+            any -> append("any number of ${filter.description}s")
+            count == 1 -> append("a ${filter.description}")
+            else -> append("$count ${filter.description}s")
+        }
+    }
+}
+
+/**
+ * Reflexive trigger - "When you do, [effect]."
+ *
+ * Used for abilities that trigger from the resolution of another effect.
+ * Example: Heart-Piercer Manticore - "You may sacrifice another creature.
+ *          When you do, deal damage equal to that creature's power."
+ *
+ * @property action The optional action (sacrifice, discard, etc.)
+ * @property optional Whether the action is optional
+ * @property reflexiveEffect The effect that happens "when you do"
+ */
+@Serializable
+data class ReflexiveTriggerEffect(
+    val action: Effect,
+    val optional: Boolean = true,
+    val reflexiveEffect: Effect
+) : Effect {
+    override val description: String = buildString {
+        if (optional) append("You may ")
+        append(action.description.replaceFirstChar { it.lowercase() })
+        append(". When you do, ")
+        append(reflexiveEffect.description.replaceFirstChar { it.lowercase() })
     }
 }
 
