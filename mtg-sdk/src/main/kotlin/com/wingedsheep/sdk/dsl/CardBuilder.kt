@@ -254,7 +254,8 @@ class CardBuilder(private val name: String) {
             activatedAbilities = activatedAbilities.toList(),
             staticAbilities = staticAbilities.toList(),
             additionalCosts = additionalCosts.toList(),
-            auraTarget = auraTarget
+            auraTarget = auraTarget,
+            castRestrictions = spellBuilder?.restrictions ?: emptyList()
         )
 
         // Build metadata
@@ -313,6 +314,33 @@ class SpellBuilder {
 
     // Named target bindings
     private val namedTargets: MutableList<Pair<String, TargetRequirement>> = mutableListOf()
+
+    // Cast restrictions
+    private val castRestrictions: MutableList<CastRestriction> = mutableListOf()
+
+    /**
+     * Add a timing restriction: "Cast only during the [step]."
+     */
+    fun castOnlyDuring(step: Step) {
+        castRestrictions.add(CastRestriction.OnlyDuringStep(step))
+    }
+
+    /**
+     * Add a timing restriction: "Cast only during the [phase]."
+     */
+    fun castOnlyDuring(phase: Phase) {
+        castRestrictions.add(CastRestriction.OnlyDuringPhase(phase))
+    }
+
+    /**
+     * Add a conditional restriction: "Cast only if [condition]."
+     */
+    fun castOnlyIf(condition: Condition) {
+        castRestrictions.add(CastRestriction.OnlyIfCondition(condition))
+    }
+
+    internal val restrictions: List<CastRestriction>
+        get() = castRestrictions.toList()
 
     /**
      * Declare a named target and get an EffectTarget reference to use in effects.

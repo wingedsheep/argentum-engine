@@ -10,6 +10,7 @@ value class Subtype(val value: String) {
     companion object {
         // Common creature types
         val ANGEL = Subtype("Angel")
+        val ARCHER = Subtype("Archer")
         val ASSASSIN = Subtype("Assassin")
         val CITIZEN = Subtype("Citizen")
         val BEAR = Subtype("Bear")

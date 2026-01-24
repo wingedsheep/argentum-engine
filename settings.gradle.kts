@@ -22,5 +22,8 @@ plugins {
 include(":game-server")
 include(":utils")
 include(":rules-engine")
+include(":rules-engine-old")
+include(":mtg-sdk")
+include(":mtg-sets")
 
 rootProject.name = "argentum-engine"

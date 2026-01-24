@@ -281,3 +281,37 @@ data class ConditionalStaticAbility(
 ) : StaticAbility {
     override val description: String = "${ability.description} ${condition.description}"
 }
+
+// =============================================================================
+// Evasion Abilities
+// =============================================================================
+
+/**
+ * This creature can't be blocked by creatures with power X or greater.
+ * Used for cards like Fleet-Footed Monk: "can't be blocked by creatures with power 2 or greater."
+ *
+ * @property minPower The minimum power a creature must have to be excluded from blocking
+ * @property target What this ability applies to (typically SourceCreature)
+ */
+@Serializable
+data class CantBeBlockedByPower(
+    val minPower: Int,
+    val target: StaticTarget = StaticTarget.SourceCreature
+) : StaticAbility {
+    override val description: String = "can't be blocked by creatures with power $minPower or greater"
+}
+
+/**
+ * This creature can't be blocked except by creatures with a specific keyword.
+ * Used for Flying, Shadow, Horsemanship, etc.
+ *
+ * @property requiredKeyword The keyword blockers must have
+ * @property target What this ability applies to
+ */
+@Serializable
+data class CantBeBlockedExceptByKeyword(
+    val requiredKeyword: Keyword,
+    val target: StaticTarget = StaticTarget.SourceCreature
+) : StaticAbility {
+    override val description: String = "can't be blocked except by creatures with ${requiredKeyword.displayName.lowercase()}"
+}

@@ -120,7 +120,14 @@ data class CardScript(
      * If set, this permanent is an Aura that attaches to valid targets.
      * Example: TargetCreature() for "Enchant creature"
      */
-    val auraTarget: TargetRequirement? = null
+    val auraTarget: TargetRequirement? = null,
+
+    /**
+     * Timing and conditional restrictions on when this spell can be cast.
+     * Used for cards like "Cast only during the declare attackers step."
+     * The engine enforces these during legal action calculation.
+     */
+    val castRestrictions: List<CastRestriction> = emptyList()
 ) {
     /**
      * Whether this card has any scripted behavior.
@@ -134,7 +141,14 @@ data class CardScript(
                 staticAbilities.isNotEmpty() ||
                 replacementEffects.isNotEmpty() ||
                 additionalCosts.isNotEmpty() ||
-                auraTarget != null
+                auraTarget != null ||
+                castRestrictions.isNotEmpty()
+
+    /**
+     * Whether this spell has timing/conditional restrictions on casting.
+     */
+    val hasCastRestrictions: Boolean
+        get() = castRestrictions.isNotEmpty()
 
     /**
      * Whether this is an Aura that requires an enchant target.

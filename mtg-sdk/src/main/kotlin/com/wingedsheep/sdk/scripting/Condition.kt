@@ -273,6 +273,36 @@ data object IsNotYourTurn : Condition {
 }
 
 // =============================================================================
+// Combat Conditions
+// =============================================================================
+
+/**
+ * Condition: "If you've been attacked this step"
+ * Used for cards like Defiant Stand and Harsh Justice that can only be cast
+ * during the declare attackers step if you've been attacked.
+ */
+@Serializable
+data object YouWereAttackedThisStep : Condition {
+    override val description: String = "if you've been attacked this step"
+}
+
+/**
+ * Condition: "If you were dealt combat damage this turn"
+ */
+@Serializable
+data object YouWereDealtCombatDamageThisTurn : Condition {
+    override val description: String = "if you were dealt combat damage this turn"
+}
+
+/**
+ * Condition: "If you attacked this turn"
+ */
+@Serializable
+data object YouAttackedThisTurn : Condition {
+    override val description: String = "if you attacked this turn"
+}
+
+// =============================================================================
 // Composite Conditions
 // =============================================================================
 

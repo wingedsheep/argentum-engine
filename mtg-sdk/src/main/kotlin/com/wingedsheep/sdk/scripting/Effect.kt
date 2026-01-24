@@ -1836,6 +1836,18 @@ sealed interface CreatureGroupFilter {
     data class WithKeywordYouControl(val keyword: Keyword) : CreatureGroupFilter {
         override val description: String = "Creatures you control with ${keyword.displayName.lowercase()}"
     }
+
+    /** All nonwhite creatures */
+    @Serializable
+    data object NonWhite : CreatureGroupFilter {
+        override val description: String = "All nonwhite creatures"
+    }
+
+    /** Creatures that are not a specific color */
+    @Serializable
+    data class NotColor(val excludedColor: Color) : CreatureGroupFilter {
+        override val description: String = "All non${excludedColor.displayName.lowercase()} creatures"
+    }
 }
 
 /**
@@ -1918,4 +1930,76 @@ data class SeparatePermanentsIntoPilesEffect(
     override val description: String =
         "Separate all permanents ${target.description} controls into two piles. " +
                 "That player sacrifices all permanents in the pile of their choice"
+}
+
+// =============================================================================
+// Life Gain Based on Game State
+// =============================================================================
+
+/**
+ * Gain life equal to a fixed amount per creature attacking you.
+ * "You gain 3 life for each creature attacking you."
+ * Used for Blessed Reversal.
+ *
+ * @property lifePerAttacker Amount of life gained per attacking creature
+ */
+@Serializable
+data class GainLifePerAttackerEffect(
+    val lifePerAttacker: Int
+) : Effect {
+    override val description: String = "You gain $lifePerAttacker life for each creature attacking you"
+}
+
+// =============================================================================
+// Mass Tap Effects
+// =============================================================================
+
+/**
+ * Tap all creatures matching a filter.
+ * "Tap all nonwhite creatures."
+ * Used for Blinding Light.
+ *
+ * @property filter Which creatures are affected
+ */
+@Serializable
+data class TapAllCreaturesEffect(
+    val filter: CreatureGroupFilter = CreatureGroupFilter.All
+) : Effect {
+    override val description: String = "Tap ${filter.description.replaceFirstChar { it.lowercase() }}"
+}
+
+// =============================================================================
+// Combat Damage Effects
+// =============================================================================
+
+/**
+ * Creates a delayed trigger for the rest of the turn that reflects combat damage.
+ * "This turn, whenever an attacking creature deals combat damage to you,
+ *  it deals that much damage to its controller."
+ * Used for Harsh Justice.
+ *
+ * The engine implements this by creating a temporary triggered ability that
+ * listens for combat damage events and applies reflection.
+ */
+@Serializable
+data class ReflectCombatDamageEffect(
+    val target: EffectTarget = EffectTarget.Controller
+) : Effect {
+    override val description: String =
+        "This turn, whenever an attacking creature deals combat damage to you, " +
+                "it deals that much damage to its controller"
+}
+
+/**
+ * Prevents combat damage that would be dealt by specified creatures.
+ * "Prevent all combat damage that would be dealt by creatures you don't control."
+ * Used for Fog-type effects with creature restrictions.
+ */
+@Serializable
+data class PreventCombatDamageFromEffect(
+    val source: CreatureGroupFilter,
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    override val description: String =
+        "Prevent all combat damage that would be dealt by ${source.description.replaceFirstChar { it.lowercase() }}"
 }
