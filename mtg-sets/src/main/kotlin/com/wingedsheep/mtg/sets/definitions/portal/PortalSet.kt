@@ -163,7 +163,18 @@ object PortalSet {
         FireSnake,
         FireTempest,
         Flashfires,
-        ForkedLightning
+        ForkedLightning,
+        // Cards 131-140
+        GoblinBully,
+        HighlandGiant,
+        HillGiant,
+        HulkingCyclops,
+        HulkingGoblin,
+        LastChance,
+        LavaAxe,
+        LavaFlow,
+        LizardWarrior,
+        MinotaurWarrior
     )
 
     /**

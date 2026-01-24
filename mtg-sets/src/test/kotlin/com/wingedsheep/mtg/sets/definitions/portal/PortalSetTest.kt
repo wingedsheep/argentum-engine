@@ -2097,9 +2097,159 @@ class PortalSetTest : DescribeSpec({
         }
     }
 
+    describe("Portal Set - Cards 131-140") {
+
+        describe("Goblin Bully") {
+            val card = GoblinBully
+
+            it("should be a 2/1 vanilla Goblin") {
+                card.manaCost.toString() shouldBe "{1}{R}"
+                card.cmc shouldBe 2
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.GOBLIN
+                card.creatureStats?.basePower shouldBe 2
+                card.creatureStats?.baseToughness shouldBe 1
+                card.keywords shouldHaveSize 0
+            }
+        }
+
+        describe("Highland Giant") {
+            val card = HighlandGiant
+
+            it("should be a 3/4 vanilla Giant") {
+                card.manaCost.toString() shouldBe "{2}{R}{R}"
+                card.cmc shouldBe 4
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.GIANT
+                card.creatureStats?.basePower shouldBe 3
+                card.creatureStats?.baseToughness shouldBe 4
+                card.keywords shouldHaveSize 0
+            }
+        }
+
+        describe("Hill Giant") {
+            val card = HillGiant
+
+            it("should be a 3/3 vanilla Giant") {
+                card.manaCost.toString() shouldBe "{3}{R}"
+                card.cmc shouldBe 4
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.GIANT
+                card.creatureStats?.basePower shouldBe 3
+                card.creatureStats?.baseToughness shouldBe 3
+                card.keywords shouldHaveSize 0
+            }
+        }
+
+        describe("Hulking Cyclops") {
+            val card = HulkingCyclops
+
+            it("should be a 5/5 Cyclops") {
+                card.manaCost.toString() shouldBe "{3}{R}{R}"
+                card.cmc shouldBe 5
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.CYCLOPS
+                card.creatureStats?.basePower shouldBe 5
+                card.creatureStats?.baseToughness shouldBe 5
+            }
+
+            it("should not be able to block") {
+                card.staticAbilities shouldHaveSize 1
+                card.staticAbilities.first().shouldBeInstanceOf<CantBlock>()
+            }
+        }
+
+        describe("Hulking Goblin") {
+            val card = HulkingGoblin
+
+            it("should be a 2/2 Goblin") {
+                card.manaCost.toString() shouldBe "{1}{R}"
+                card.cmc shouldBe 2
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.GOBLIN
+                card.creatureStats?.basePower shouldBe 2
+                card.creatureStats?.baseToughness shouldBe 2
+            }
+
+            it("should not be able to block") {
+                card.staticAbilities shouldHaveSize 1
+                card.staticAbilities.first().shouldBeInstanceOf<CantBlock>()
+            }
+        }
+
+        describe("Last Chance") {
+            val card = LastChance
+
+            it("should take an extra turn with lose condition") {
+                card.manaCost.toString() shouldBe "{R}{R}"
+                card.cmc shouldBe 2
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<TakeExtraTurnEffect>()
+                val effect = card.spellEffect as TakeExtraTurnEffect
+                effect.loseAtEndStep shouldBe true
+            }
+        }
+
+        describe("Lava Axe") {
+            val card = LavaAxe
+
+            it("should deal 5 damage to target player") {
+                card.manaCost.toString() shouldBe "{4}{R}"
+                card.cmc shouldBe 5
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<DealDamageEffect>()
+                val effect = card.spellEffect as DealDamageEffect
+                effect.amount shouldBe 5
+                card.targetRequirements shouldHaveSize 1
+            }
+        }
+
+        describe("Lava Flow") {
+            val card = LavaFlow
+
+            it("should destroy target creature or land") {
+                card.manaCost.toString() shouldBe "{3}{R}{R}"
+                card.cmc shouldBe 5
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<DestroyEffect>()
+                card.targetRequirements shouldHaveSize 1
+            }
+        }
+
+        describe("Lizard Warrior") {
+            val card = LizardWarrior
+
+            it("should be a 4/2 vanilla Lizard Warrior") {
+                card.manaCost.toString() shouldBe "{3}{R}"
+                card.cmc shouldBe 4
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.LIZARD
+                card.typeLine.subtypes shouldContain Subtype.WARRIOR
+                card.creatureStats?.basePower shouldBe 4
+                card.creatureStats?.baseToughness shouldBe 2
+                card.keywords shouldHaveSize 0
+            }
+        }
+
+        describe("Minotaur Warrior") {
+            val card = MinotaurWarrior
+
+            it("should be a 2/3 vanilla Minotaur Warrior") {
+                card.manaCost.toString() shouldBe "{2}{R}"
+                card.cmc shouldBe 3
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.MINOTAUR
+                card.typeLine.subtypes shouldContain Subtype.WARRIOR
+                card.creatureStats?.basePower shouldBe 2
+                card.creatureStats?.baseToughness shouldBe 3
+                card.keywords shouldHaveSize 0
+            }
+        }
+    }
+
     describe("PortalSet object") {
-        it("should have 130 cards in the set") {
-            PortalSet.allCards shouldHaveSize 130
+        it("should have 140 cards in the set") {
+            PortalSet.allCards shouldHaveSize 140
         }
 
         it("should have correct set code") {

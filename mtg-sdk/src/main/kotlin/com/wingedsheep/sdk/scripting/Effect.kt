@@ -2834,3 +2834,25 @@ data class SacrificeUnlessSacrificePermanentEffect(
         if (permanentType.first().lowercaseChar() in "aeiou") "an" else "a"
     } $permanentType"
 }
+
+// =============================================================================
+// Turn Manipulation Effects
+// =============================================================================
+
+/**
+ * Take an extra turn after this one, with a consequence at end of turn.
+ * Used for Last Chance: "Take an extra turn after this one. At the beginning of that turn's end step, you lose the game."
+ *
+ * @param loseAtEndStep If true, you lose the game at the beginning of that turn's end step
+ */
+@Serializable
+data class TakeExtraTurnEffect(
+    val loseAtEndStep: Boolean = false
+) : Effect {
+    override val description: String = buildString {
+        append("Take an extra turn after this one")
+        if (loseAtEndStep) {
+            append(". At the beginning of that turn's end step, you lose the game")
+        }
+    }
+}

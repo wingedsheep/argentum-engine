@@ -1,0 +1,31 @@
+package com.wingedsheep.mtg.sets.definitions.portal.cards
+
+import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.DealDamageEffect
+import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.targeting.TargetPlayer
+
+/**
+ * Lava Axe
+ * {4}{R}
+ * Sorcery
+ * Lava Axe deals 5 damage to target player or planeswalker.
+ */
+val LavaAxe = card("Lava Axe") {
+    manaCost = "{4}{R}"
+    typeLine = "Sorcery"
+
+    spell {
+        target = TargetPlayer()
+        effect = DealDamageEffect(5, EffectTarget.ContextTarget(0))
+    }
+
+    metadata {
+        rarity = Rarity.COMMON
+        collectorNumber = "137"
+        artist = "Brian Snoddy"
+        flavorText = "The axe comes down, and the enemy goes up—in flames."
+        imageUri = "https://cards.scryfall.io/normal/front/0/7/07a8b9c0-d1e2-f3a4-b5c6-d7e8f9a0b1c2.jpg"
+    }
+}

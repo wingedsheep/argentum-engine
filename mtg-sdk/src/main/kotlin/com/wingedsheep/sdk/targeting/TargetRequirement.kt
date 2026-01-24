@@ -282,6 +282,11 @@ sealed interface PermanentTargetFilter {
     data object NonLand : PermanentTargetFilter {
         override val description: String = "nonland"
     }
+
+    @Serializable
+    data object CreatureOrLand : PermanentTargetFilter {
+        override val description: String = "creature or land"
+    }
 }
 
 // =============================================================================
