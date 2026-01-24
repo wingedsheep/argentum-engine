@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.portal.cards
 
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 
@@ -15,10 +14,9 @@ import com.wingedsheep.sdk.model.Rarity
 val ArrogantVampire = card("Arrogant Vampire") {
     manaCost = "{3}{B}{B}"
     typeLine = "Creature — Vampire"
-    subtypes = listOf(Subtype.VAMPIRE)
     power = 4
     toughness = 3
-    keywords = listOf(Keyword.FLYING)
+    keywords(Keyword.FLYING)
 
     metadata {
         rarity = Rarity.UNCOMMON

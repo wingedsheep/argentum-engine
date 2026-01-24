@@ -1130,9 +1130,151 @@ class PortalSetTest : DescribeSpec({
         }
     }
 
+    describe("Portal Set - Cards 71-80") {
+
+        describe("Taunt") {
+            val card = Taunt
+
+            it("should force creatures to attack") {
+                card.manaCost.toString() shouldBe "{U}"
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<TauntEffect>()
+            }
+
+            it("should target a player") {
+                card.targetRequirements shouldHaveSize 1
+            }
+        }
+
+        describe("Theft of Dreams") {
+            val card = TheftOfDreams
+
+            it("should draw per tapped creature") {
+                card.manaCost.toString() shouldBe "{2}{U}"
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<DrawCardsEffect>()
+                val effect = card.spellEffect as DrawCardsEffect
+                effect.count shouldBe DynamicAmount.TappedCreaturesTargetOpponentControls
+            }
+
+            it("should target an opponent") {
+                card.targetRequirements shouldHaveSize 1
+            }
+        }
+
+        describe("Thing from the Deep") {
+            val card = ThingFromTheDeep
+
+            it("should be a 9/9 Leviathan") {
+                card.manaCost.toString() shouldBe "{6}{U}{U}{U}"
+                card.cmc shouldBe 9
+                card.creatureStats?.basePower shouldBe 9
+                card.creatureStats?.baseToughness shouldBe 9
+                card.typeLine.subtypes shouldContain Subtype.LEVIATHAN
+            }
+
+            it("should have attack trigger with sacrifice requirement") {
+                card.triggeredAbilities shouldHaveSize 1
+                val trigger = card.triggeredAbilities.first()
+                trigger.trigger.shouldBeInstanceOf<OnAttack>()
+                trigger.effect.shouldBeInstanceOf<SacrificeUnlessSacrificePermanentEffect>()
+            }
+        }
+
+        describe("Tidal Surge") {
+            val card = TidalSurge
+
+            it("should tap up to 3 creatures without flying") {
+                card.manaCost.toString() shouldBe "{1}{U}"
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<TapTargetCreaturesEffect>()
+                val effect = card.spellEffect as TapTargetCreaturesEffect
+                effect.maxTargets shouldBe 3
+            }
+        }
+
+        describe("Time Ebb") {
+            val card = TimeEbb
+
+            it("should put creature on top of library") {
+                card.manaCost.toString() shouldBe "{2}{U}"
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<PutOnTopOfLibraryEffect>()
+            }
+
+            it("should target a creature") {
+                card.targetRequirements shouldHaveSize 1
+            }
+        }
+
+        describe("Touch of Brilliance") {
+            val card = TouchOfBrilliance
+
+            it("should draw 2 cards") {
+                card.manaCost.toString() shouldBe "{3}{U}"
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<DrawCardsEffect>()
+                val effect = card.spellEffect as DrawCardsEffect
+                effect.count shouldBe DynamicAmount.Fixed(2)
+            }
+        }
+
+        describe("Wind Drake") {
+            val card = WindDrake
+
+            it("should be a 2/2 Drake with flying") {
+                card.manaCost.toString() shouldBe "{2}{U}"
+                card.creatureStats?.basePower shouldBe 2
+                card.creatureStats?.baseToughness shouldBe 2
+                card.typeLine.subtypes shouldContain Subtype.DRAKE
+                card.keywords shouldContain Keyword.FLYING
+            }
+        }
+
+        describe("Withering Gaze") {
+            val card = WitheringGaze
+
+            it("should reveal hand and draw per Forest/green card") {
+                card.manaCost.toString() shouldBe "{2}{U}"
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<RevealHandDrawPerMatchEffect>()
+                val effect = card.spellEffect as RevealHandDrawPerMatchEffect
+                effect.landType shouldBe "Forest"
+                effect.color shouldBe Color.GREEN
+            }
+        }
+
+        describe("Arrogant Vampire") {
+            val card = ArrogantVampire
+
+            it("should be a 4/3 Vampire with flying") {
+                card.manaCost.toString() shouldBe "{3}{B}{B}"
+                card.cmc shouldBe 5
+                card.creatureStats?.basePower shouldBe 4
+                card.creatureStats?.baseToughness shouldBe 3
+                card.typeLine.subtypes shouldContain Subtype.VAMPIRE
+                card.keywords shouldContain Keyword.FLYING
+            }
+        }
+
+        describe("Assassin's Blade") {
+            val card = AssassinsBlade
+
+            it("should be an instant that destroys attacking nonblack creature") {
+                card.manaCost.toString() shouldBe "{1}{B}"
+                card.typeLine.isInstant shouldBe true
+                card.spellEffect.shouldBeInstanceOf<DestroyEffect>()
+            }
+
+            it("should target an attacking nonblack creature") {
+                card.targetRequirements shouldHaveSize 1
+            }
+        }
+    }
+
     describe("PortalSet object") {
-        it("should have 70 cards in the set") {
-            PortalSet.allCards shouldHaveSize 70
+        it("should have 80 cards in the set") {
+            PortalSet.allCards shouldHaveSize 80
         }
 
         it("should have correct set code") {

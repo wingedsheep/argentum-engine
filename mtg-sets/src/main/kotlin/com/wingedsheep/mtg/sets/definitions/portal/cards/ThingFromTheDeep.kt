@@ -1,10 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.portal.cards
 
-import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.SacrificeUnlessSacrificePermanentEffect
-import com.wingedsheep.sdk.trigger.OnAttack
 
 /**
  * Thing from the Deep
@@ -16,12 +15,11 @@ import com.wingedsheep.sdk.trigger.OnAttack
 val ThingFromTheDeep = card("Thing from the Deep") {
     manaCost = "{6}{U}{U}{U}"
     typeLine = "Creature — Leviathan"
-    subtypes = listOf(Subtype.LEVIATHAN)
     power = 9
     toughness = 9
 
     triggeredAbility {
-        trigger = OnAttack()
+        trigger = Triggers.Attacks
         effect = SacrificeUnlessSacrificePermanentEffect("Island")
     }
 
