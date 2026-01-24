@@ -511,8 +511,39 @@ class ActionProcessor(
     }
 
     private fun executeOrderBlockers(state: GameState, action: OrderBlockers): ExecutionResult {
-        // TODO: Store blocker damage assignment order
-        return ExecutionResult.success(state)
+        val attackerId = action.attackerId
+
+        // Validate the attacker exists and is actually blocked
+        val attackerContainer = state.getEntity(attackerId)
+            ?: return ExecutionResult.error(state, "Attacker not found: $attackerId")
+
+        val blockedComponent = attackerContainer.get<com.wingedsheep.engine.state.components.combat.BlockedComponent>()
+            ?: return ExecutionResult.error(state, "Creature is not blocked")
+
+        // Validate all ordered blockers are actually blocking this attacker
+        val actualBlockers = blockedComponent.blockerIds.toSet()
+        val orderedBlockers = action.orderedBlockers.toSet()
+
+        if (actualBlockers != orderedBlockers) {
+            return ExecutionResult.error(
+                state,
+                "Ordered blockers must contain exactly the creatures blocking this attacker"
+            )
+        }
+
+        // Store the damage assignment order on the attacker
+        val newState = state.updateEntity(attackerId) { container ->
+            container.with(
+                com.wingedsheep.engine.state.components.combat.DamageAssignmentOrderComponent(
+                    action.orderedBlockers
+                )
+            )
+        }
+
+        return ExecutionResult.success(
+            newState,
+            listOf(BlockerOrderDeclaredEvent(attackerId, action.orderedBlockers))
+        )
     }
 
     private fun executeMakeChoice(state: GameState, action: MakeChoice): ExecutionResult {
@@ -720,6 +751,57 @@ class ActionProcessor(
                 }
                 if (response.optionIndex < 0 || response.optionIndex >= decision.options.size) {
                     return "Invalid option index: ${response.optionIndex}"
+                }
+                null
+            }
+            is AssignDamageDecision -> {
+                if (response !is DamageAssignmentResponse) {
+                    return "Expected damage assignment response"
+                }
+                // Validate total damage doesn't exceed available power
+                val totalDamage = response.assignments.values.sum()
+                if (totalDamage > decision.availablePower) {
+                    return "Total damage ($totalDamage) exceeds available power (${decision.availablePower})"
+                }
+                // Validate all targets are valid
+                val validTargets = decision.orderedTargets.toSet() + listOfNotNull(decision.defenderId)
+                for (targetId in response.assignments.keys) {
+                    if (targetId !in validTargets) {
+                        return "Invalid damage target: $targetId"
+                    }
+                }
+                // Validate damage assignment order (each blocker must have lethal before next)
+                var allPreviousHaveLethal = true
+                for (blockerId in decision.orderedTargets) {
+                    val assignedDamage = response.assignments[blockerId] ?: 0
+                    val lethalRequired = decision.minimumAssignments[blockerId] ?: 0
+                    val hasLethal = assignedDamage >= lethalRequired
+
+                    if (!hasLethal && !allPreviousHaveLethal) {
+                        // This is fine - we can assign 0 to later blockers
+                    } else if (!hasLethal) {
+                        allPreviousHaveLethal = false
+                    }
+
+                    // Check that no subsequent blocker has damage if this one doesn't have lethal
+                    if (!hasLethal) {
+                        val laterBlockers = decision.orderedTargets.dropWhile { it != blockerId }.drop(1)
+                        for (laterBlocker in laterBlockers) {
+                            if ((response.assignments[laterBlocker] ?: 0) > 0) {
+                                return "Cannot assign damage to later blocker until earlier blockers have lethal damage"
+                            }
+                        }
+                    }
+                }
+                // Validate trample damage only if all blockers have lethal
+                val damageToDefender = response.assignments[decision.defenderId] ?: 0
+                if (damageToDefender > 0) {
+                    if (!decision.hasTrample) {
+                        return "Cannot assign damage to defending player without trample"
+                    }
+                    if (!allPreviousHaveLethal) {
+                        return "Cannot assign trample damage until all blockers have lethal damage"
+                    }
                 }
                 null
             }

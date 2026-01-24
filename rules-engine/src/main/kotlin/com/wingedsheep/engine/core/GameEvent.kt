@@ -169,6 +169,24 @@ data class BlockersDeclaredEvent(
     val blockers: Map<EntityId, List<EntityId>>  // blocker -> blocked attackers
 ) : GameEvent
 
+/**
+ * Player ordered blockers for damage assignment.
+ */
+@Serializable
+data class BlockerOrderDeclaredEvent(
+    val attackerId: EntityId,
+    val orderedBlockers: List<EntityId>  // First in list receives damage first
+) : GameEvent
+
+/**
+ * Combat damage was assigned.
+ */
+@Serializable
+data class DamageAssignedEvent(
+    val attackerId: EntityId,
+    val assignments: Map<EntityId, Int>  // target -> damage amount
+) : GameEvent
+
 // =============================================================================
 // Turn/Phase Events
 // =============================================================================

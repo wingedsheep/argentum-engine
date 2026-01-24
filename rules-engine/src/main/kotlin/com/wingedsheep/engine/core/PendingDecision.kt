@@ -240,6 +240,36 @@ data class ChooseOptionDecision(
     val options: List<String>
 ) : PendingDecision
 
+/**
+ * Player must assign combat damage from an attacker to blockers.
+ *
+ * Per CR 510.1c: Damage must be assigned in order. A creature cannot be
+ * assigned damage until all creatures before it in the order have been
+ * assigned lethal damage.
+ *
+ * @property attackerId The attacking creature assigning damage
+ * @property availablePower Total damage available to assign
+ * @property orderedTargets Blockers in damage assignment order (first = first to receive damage)
+ * @property defenderId The defending player (only receives damage if attacker has trample)
+ * @property minimumAssignments Minimum damage each blocker must receive (lethal damage)
+ * @property hasTrample Whether excess damage can go to defending player
+ * @property hasDeathtouch If true, 1 damage is lethal to any creature
+ */
+@Serializable
+data class AssignDamageDecision(
+    override val id: String,
+    override val playerId: EntityId,
+    override val prompt: String,
+    override val context: DecisionContext,
+    val attackerId: EntityId,
+    val availablePower: Int,
+    val orderedTargets: List<EntityId>,
+    val defenderId: EntityId?,
+    val minimumAssignments: Map<EntityId, Int>,
+    val hasTrample: Boolean,
+    val hasDeathtouch: Boolean
+) : PendingDecision
+
 // =============================================================================
 // Decision Responses
 // =============================================================================
@@ -344,4 +374,14 @@ data class PilesSplitResponse(
 data class OptionChosenResponse(
     override val decisionId: String,
     val optionIndex: Int
+) : DecisionResponse
+
+/**
+ * Response to AssignDamageDecision.
+ */
+@Serializable
+data class DamageAssignmentResponse(
+    override val decisionId: String,
+    /** Map of target ID (creature or player) to damage amount */
+    val assignments: Map<EntityId, Int>
 ) : DecisionResponse

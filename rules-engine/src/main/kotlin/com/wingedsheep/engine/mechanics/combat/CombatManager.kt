@@ -22,7 +22,9 @@ import com.wingedsheep.sdk.model.EntityId
  * 4. Combat damage step (first strike, then regular)
  * 5. End of combat step
  */
-class CombatManager {
+class CombatManager(
+    private val damageCalculator: DamageCalculator = DamageCalculator()
+) {
 
     // =========================================================================
     // Declare Attackers
@@ -388,6 +390,11 @@ class CombatManager {
 
     /**
      * Deal combat damage between an attacker and blockers.
+     *
+     * This uses the damage assignment order (if set) and applies damage according to CR 510:
+     * - Damage must be assigned in order
+     * - Each blocker must receive lethal before moving to the next
+     * - Excess damage with trample goes to defending player
      */
     private fun dealCombatDamageBetweenCreatures(
         state: GameState,
@@ -401,19 +408,55 @@ class CombatManager {
         val attackerContainer = newState.getEntity(attackerId) ?: return newState to events
         val attackerCard = attackerContainer.get<CardComponent>() ?: return newState to events
         val attackerPower = attackerCard.baseStats?.basePower ?: 0
+        val attackerKeywords = attackerCard.baseKeywords
+        val hasTrample = attackerKeywords.contains(Keyword.TRAMPLE)
 
-        // Deal attacker's damage to first blocker (simplified - no damage ordering)
-        if (attackerPower > 0 && blockerIds.isNotEmpty()) {
-            val firstBlocker = blockerIds.first()
-            val currentDamage = newState.getEntity(firstBlocker)?.get<DamageComponent>()?.amount ?: 0
-            newState = newState.updateEntity(firstBlocker) { container ->
-                container.with(DamageComponent(currentDamage + attackerPower))
+        // Get blockers in damage assignment order (or default order)
+        val orderedBlockers = attackerContainer.get<DamageAssignmentOrderComponent>()?.orderedBlockers
+            ?: blockerIds
+
+        // Check for manual damage assignment component
+        val manualAssignment = attackerContainer.get<DamageAssignmentComponent>()
+
+        // Calculate damage distribution
+        val damageDistribution = if (manualAssignment != null) {
+            // Use player-specified assignment
+            manualAssignment.assignments
+        } else {
+            // Auto-calculate optimal distribution
+            damageCalculator.calculateAutoDamageDistribution(newState, attackerId).assignments
+        }
+
+        // Apply attacker's damage to blockers (and potentially defending player with trample)
+        for ((targetId, damage) in damageDistribution) {
+            if (damage <= 0) continue
+
+            // Check if target is a player or creature
+            val targetContainer = newState.getEntity(targetId)
+            val isPlayer = targetContainer?.get<LifeTotalComponent>() != null &&
+                           targetContainer.get<CardComponent>() == null
+
+            if (isPlayer) {
+                // Deal damage to defending player (trample)
+                val currentLife = targetContainer?.get<LifeTotalComponent>()?.life ?: 0
+                val newLife = currentLife - damage
+                newState = newState.updateEntity(targetId) { container ->
+                    container.with(LifeTotalComponent(newLife))
+                }
+                events.add(DamageDealtEvent(attackerId, targetId, damage, true))
+                events.add(LifeChangedEvent(targetId, currentLife, newLife, LifeChangeReason.DAMAGE))
+            } else {
+                // Deal damage to blocker
+                val currentDamage = targetContainer?.get<DamageComponent>()?.amount ?: 0
+                newState = newState.updateEntity(targetId) { container ->
+                    container.with(DamageComponent(currentDamage + damage))
+                }
+                events.add(DamageDealtEvent(attackerId, targetId, damage, true))
             }
-            events.add(DamageDealtEvent(attackerId, firstBlocker, attackerPower, true))
         }
 
         // Each blocker deals damage to attacker
-        for (blockerId in blockerIds) {
+        for (blockerId in orderedBlockers) {
             val blockerContainer = newState.getEntity(blockerId) ?: continue
             val blockerCard = blockerContainer.get<CardComponent>() ?: continue
             val blockerKeywords = blockerCard.baseKeywords
@@ -485,6 +528,9 @@ class CombatManager {
                     .without<BlockingComponent>()
                     .without<BlockedComponent>()
                     .without<DamageAssignmentComponent>()
+                    .without<DamageAssignmentOrderComponent>()
+                    .without<DealtFirstStrikeDamageComponent>()
+                    .without<RequiresManualDamageAssignmentComponent>()
             }
         }
 
