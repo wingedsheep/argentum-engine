@@ -357,6 +357,23 @@ data class CantBeBlockedExceptByKeyword(
     override val description: String = "can't be blocked except by creatures with ${requiredKeyword.displayName.lowercase()}"
 }
 
+/**
+ * This creature can't be blocked by more than N creatures.
+ * Used for Charging Rhino: "can't be blocked by more than one creature."
+ *
+ * @property maxBlockers The maximum number of creatures that can block this creature
+ * @property target What this ability applies to
+ */
+@Serializable
+data class CantBeBlockedByMoreThan(
+    val maxBlockers: Int,
+    val target: StaticTarget = StaticTarget.SourceCreature
+) : StaticAbility {
+    override val description: String = "can't be blocked by more than ${
+        if (maxBlockers == 1) "one creature" else "$maxBlockers creatures"
+    }"
+}
+
 // =============================================================================
 // Attack Restrictions
 // =============================================================================

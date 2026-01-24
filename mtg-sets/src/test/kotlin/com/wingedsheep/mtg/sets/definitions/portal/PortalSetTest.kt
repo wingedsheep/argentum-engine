@@ -2542,9 +2542,147 @@ class PortalSetTest : DescribeSpec({
         }
     }
 
+    describe("Portal Set - Cards 161-170") {
+        describe("Charging Rhino") {
+            val card = ChargingRhino
+
+            it("should be a 4/4 Rhino that can't be blocked by more than one creature") {
+                card.manaCost.toString() shouldBe "{3}{G}{G}"
+                card.cmc shouldBe 5
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.RHINO
+                card.creatureStats?.basePower shouldBe 4
+                card.creatureStats?.baseToughness shouldBe 4
+                card.script.staticAbilities shouldHaveSize 1
+                val ability = card.script.staticAbilities.first()
+                ability.shouldBeInstanceOf<CantBeBlockedByMoreThan>()
+                ability.maxBlockers shouldBe 1
+            }
+        }
+
+        describe("Deep Wood") {
+            val card = DeepWood
+
+            it("should prevent damage from attacking creatures") {
+                card.manaCost.toString() shouldBe "{1}{G}"
+                card.cmc shouldBe 2
+                card.typeLine.isInstant shouldBe true
+                card.spellEffect.shouldBeInstanceOf<PreventDamageFromAttackingCreaturesThisTurnEffect>()
+            }
+        }
+
+        describe("Elite Cat Warrior") {
+            val card = EliteCatWarrior
+
+            it("should be a 2/3 Cat Warrior with forestwalk") {
+                card.manaCost.toString() shouldBe "{2}{G}"
+                card.cmc shouldBe 3
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.CAT
+                card.typeLine.subtypes shouldContain Subtype.WARRIOR
+                card.creatureStats?.basePower shouldBe 2
+                card.creatureStats?.baseToughness shouldBe 3
+                card.keywords shouldContain Keyword.FORESTWALK
+            }
+        }
+
+        describe("Elven Cache") {
+            val card = ElvenCache
+
+            it("should return target card from graveyard to hand") {
+                card.manaCost.toString() shouldBe "{2}{G}{G}"
+                card.cmc shouldBe 4
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<ReturnFromGraveyardEffect>()
+            }
+        }
+
+        describe("Elvish Ranger") {
+            val card = ElvishRanger
+
+            it("should be a 4/1 Elf Ranger") {
+                card.manaCost.toString() shouldBe "{2}{G}"
+                card.cmc shouldBe 3
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.ELF
+                card.typeLine.subtypes shouldContain Subtype.RANGER
+                card.creatureStats?.basePower shouldBe 4
+                card.creatureStats?.baseToughness shouldBe 1
+            }
+        }
+
+        describe("Fruition") {
+            val card = Fruition
+
+            it("should gain life for each Forest on battlefield") {
+                card.manaCost.toString() shouldBe "{G}"
+                card.cmc shouldBe 1
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<GainLifeForEachLandOnBattlefieldEffect>()
+                val effect = card.spellEffect as GainLifeForEachLandOnBattlefieldEffect
+                effect.landType shouldBe "Forest"
+            }
+        }
+
+        describe("Giant Spider") {
+            val card = GiantSpider
+
+            it("should be a 2/4 Spider with reach") {
+                card.manaCost.toString() shouldBe "{3}{G}"
+                card.cmc shouldBe 4
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.SPIDER
+                card.creatureStats?.basePower shouldBe 2
+                card.creatureStats?.baseToughness shouldBe 4
+                card.keywords shouldContain Keyword.REACH
+            }
+        }
+
+        describe("Gorilla Warrior") {
+            val card = GorillaWarrior
+
+            it("should be a 3/2 Ape Warrior") {
+                card.manaCost.toString() shouldBe "{2}{G}"
+                card.cmc shouldBe 3
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.APE
+                card.typeLine.subtypes shouldContain Subtype.WARRIOR
+                card.creatureStats?.basePower shouldBe 3
+                card.creatureStats?.baseToughness shouldBe 2
+            }
+        }
+
+        describe("Grizzly Bears") {
+            val card = GrizzlyBears
+
+            it("should be a 2/2 Bear") {
+                card.manaCost.toString() shouldBe "{1}{G}"
+                card.cmc shouldBe 2
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.BEAR
+                card.creatureStats?.basePower shouldBe 2
+                card.creatureStats?.baseToughness shouldBe 2
+            }
+        }
+
+        describe("Hurricane") {
+            val card = Hurricane
+
+            it("should deal X damage to flying creatures and players") {
+                card.manaCost.toString() shouldBe "{X}{G}"
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<DealXDamageToAllEffect>()
+                val effect = card.spellEffect as DealXDamageToAllEffect
+                effect.creatureFilter.shouldBeInstanceOf<CreatureDamageFilter.WithKeyword>()
+                (effect.creatureFilter as CreatureDamageFilter.WithKeyword).keyword shouldBe Keyword.FLYING
+                effect.includePlayers shouldBe true
+            }
+        }
+    }
+
     describe("PortalSet object") {
-        it("should have 160 cards in the set") {
-            PortalSet.allCards shouldHaveSize 160
+        it("should have 170 cards in the set") {
+            PortalSet.allCards shouldHaveSize 170
         }
 
         it("should have correct set code") {

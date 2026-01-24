@@ -2888,3 +2888,35 @@ data class TakeExtraTurnEffect(
 data object WindsOfChangeEffect : Effect {
     override val description: String = "Each player shuffles their hand into their library, then draws that many cards"
 }
+
+// =============================================================================
+// Damage Prevention Effects
+// =============================================================================
+
+/**
+ * Prevent all damage that would be dealt to you this turn by attacking creatures.
+ * Used for Deep Wood: "Prevent all damage that would be dealt to you this turn by attacking creatures."
+ */
+@Serializable
+data object PreventDamageFromAttackingCreaturesThisTurnEffect : Effect {
+    override val description: String = "Prevent all damage that would be dealt to you this turn by attacking creatures"
+}
+
+// =============================================================================
+// Land-Based Life Gain Effects
+// =============================================================================
+
+/**
+ * Gain life equal to the number of lands of a specific type on the battlefield.
+ * Used for Fruition: "You gain 1 life for each Forest on the battlefield."
+ *
+ * @property landType The type of land to count (e.g., "Forest")
+ * @property lifePerLand The amount of life gained per land
+ */
+@Serializable
+data class GainLifeForEachLandOnBattlefieldEffect(
+    val landType: String,
+    val lifePerLand: Int = 1
+) : Effect {
+    override val description: String = "You gain $lifePerLand life for each $landType on the battlefield"
+}
