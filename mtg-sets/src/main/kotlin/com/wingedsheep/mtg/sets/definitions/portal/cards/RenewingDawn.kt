@@ -2,7 +2,8 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GainLifePerLandTypeOpponentControlsEffect
+import com.wingedsheep.sdk.scripting.DynamicAmount
+import com.wingedsheep.sdk.scripting.GainLifeEffect
 import com.wingedsheep.sdk.targeting.TargetOpponent
 
 /**
@@ -17,9 +18,8 @@ val RenewingDawn = card("Renewing Dawn") {
 
     spell {
         target = TargetOpponent()
-        effect = GainLifePerLandTypeOpponentControlsEffect(
-            lifePerLand = 2,
-            landType = "Mountain"
+        effect = GainLifeEffect(
+            DynamicAmount.LandsOfTypeTargetOpponentControls(landType = "Mountain", multiplier = 2)
         )
     }
 

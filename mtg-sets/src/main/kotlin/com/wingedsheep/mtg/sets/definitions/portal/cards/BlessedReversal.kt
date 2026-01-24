@@ -2,7 +2,8 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GainLifePerAttackerEffect
+import com.wingedsheep.sdk.scripting.DynamicAmount
+import com.wingedsheep.sdk.scripting.GainLifeEffect
 
 /**
  * Blessed Reversal
@@ -15,7 +16,7 @@ val BlessedReversal = card("Blessed Reversal") {
     typeLine = "Instant"
 
     spell {
-        effect = GainLifePerAttackerEffect(lifePerAttacker = 3)
+        effect = GainLifeEffect(DynamicAmount.CreaturesAttackingYou(multiplier = 3))
     }
 
     metadata {

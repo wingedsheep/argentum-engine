@@ -3,7 +3,8 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GainLifePerColoredCreatureOpponentControlsEffect
+import com.wingedsheep.sdk.scripting.DynamicAmount
+import com.wingedsheep.sdk.scripting.GainLifeEffect
 import com.wingedsheep.sdk.targeting.TargetOpponent
 
 /**
@@ -18,9 +19,8 @@ val Starlight = card("Starlight") {
 
     spell {
         target = TargetOpponent()
-        effect = GainLifePerColoredCreatureOpponentControlsEffect(
-            lifePerCreature = 3,
-            color = Color.BLACK
+        effect = GainLifeEffect(
+            DynamicAmount.CreaturesOfColorTargetOpponentControls(color = Color.BLACK, multiplier = 3)
         )
     }
 

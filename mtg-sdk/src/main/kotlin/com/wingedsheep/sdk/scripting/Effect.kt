@@ -39,14 +39,17 @@ sealed interface Effect {
  */
 @Serializable
 data class GainLifeEffect(
-    val amount: Int,
+    val amount: DynamicAmount,
     val target: EffectTarget = EffectTarget.Controller
 ) : Effect {
+    /** Convenience constructor for fixed amounts */
+    constructor(amount: Int, target: EffectTarget = EffectTarget.Controller) : this(DynamicAmount.Fixed(amount), target)
+
     override val description: String = when (target) {
-        EffectTarget.Controller -> "You gain $amount life"
-        EffectTarget.Opponent -> "Target opponent gains $amount life"
-        EffectTarget.AnyPlayer -> "Target player gains $amount life"
-        else -> "Gain $amount life"
+        EffectTarget.Controller -> "You gain ${amount.description} life"
+        EffectTarget.Opponent -> "Target opponent gains ${amount.description} life"
+        EffectTarget.AnyPlayer -> "Target player gains ${amount.description} life"
+        else -> "Gain ${amount.description} life"
     }
 }
 
@@ -93,13 +96,19 @@ data class DealDamageEffect(
  */
 @Serializable
 data class DrawCardsEffect(
-    val count: Int,
+    val count: DynamicAmount,
     val target: EffectTarget = EffectTarget.Controller
 ) : Effect {
+    /** Convenience constructor for fixed amounts */
+    constructor(count: Int, target: EffectTarget = EffectTarget.Controller) : this(DynamicAmount.Fixed(count), target)
+
     override val description: String = when (target) {
-        EffectTarget.Controller -> "Draw ${if (count == 1) "a card" else "$count cards"}"
-        EffectTarget.Opponent -> "Target opponent draws ${if (count == 1) "a card" else "$count cards"}"
-        else -> "Target player draws ${if (count == 1) "a card" else "$count cards"}"
+        EffectTarget.Controller -> when (val c = count) {
+            is DynamicAmount.Fixed -> "Draw ${if (c.amount == 1) "a card" else "${c.amount} cards"}"
+            else -> "Draw cards equal to ${c.description}"
+        }
+        EffectTarget.Opponent -> "Target opponent draws cards equal to ${count.description}"
+        else -> "Target player draws cards equal to ${count.description}"
     }
 }
 
@@ -437,6 +446,64 @@ sealed interface DynamicAmount {
     @Serializable
     data class VariableReference(val variableName: String) : DynamicAmount {
         override val description: String = "the stored $variableName"
+    }
+
+    // =========================================================================
+    // Opponent-relative DynamicAmounts
+    // =========================================================================
+
+    /**
+     * Count of creatures attacking you, optionally with a multiplier.
+     * Used for effects like Blessed Reversal ("gain 3 life for each creature attacking you").
+     */
+    @Serializable
+    data class CreaturesAttackingYou(val multiplier: Int = 1) : DynamicAmount {
+        override val description: String = if (multiplier == 1) {
+            "the number of creatures attacking you"
+        } else {
+            "$multiplier for each creature attacking you"
+        }
+    }
+
+    /**
+     * Count of lands of a specific type target opponent controls.
+     * Used for color-hosers like Renewing Dawn.
+     */
+    @Serializable
+    data class LandsOfTypeTargetOpponentControls(
+        val landType: String,
+        val multiplier: Int = 1
+    ) : DynamicAmount {
+        override val description: String = if (multiplier == 1) {
+            "the number of ${landType}s target opponent controls"
+        } else {
+            "$multiplier for each $landType target opponent controls"
+        }
+    }
+
+    /**
+     * Count of creatures of a specific color target opponent controls.
+     * Used for color-hosers like Starlight.
+     */
+    @Serializable
+    data class CreaturesOfColorTargetOpponentControls(
+        val color: Color,
+        val multiplier: Int = 1
+    ) : DynamicAmount {
+        override val description: String = if (multiplier == 1) {
+            "the number of ${color.displayName.lowercase()} creatures target opponent controls"
+        } else {
+            "$multiplier for each ${color.displayName.lowercase()} creature target opponent controls"
+        }
+    }
+
+    /**
+     * Difference in hand sizes between target opponent and you (if positive).
+     * Used for effects like Balance of Power.
+     */
+    @Serializable
+    data object HandSizeDifferenceFromTargetOpponent : DynamicAmount {
+        override val description: String = "the difference if target opponent has more cards in hand than you"
     }
 }
 
@@ -1792,19 +1859,6 @@ data class EachPlayerMayDrawEffect(
 }
 
 /**
- * Draw cards equal to the difference in hand sizes if opponent has more.
- * "If target opponent has more cards in hand than you, draw cards equal to the difference."
- * Used for Balance of Power.
- */
-@Serializable
-data class DrawCardsEqualToHandDifferenceEffect(
-    val target: EffectTarget = EffectTarget.Opponent
-) : Effect {
-    override val description: String =
-        "If ${target.description} has more cards in hand than you, draw cards equal to the difference"
-}
-
-/**
  * Target opponent reveals their hand and you draw for each card matching criteria.
  * "Target opponent reveals their hand. You draw a card for each Mountain and red card in it."
  * Used for Baleful Stare.
@@ -2000,52 +2054,6 @@ data class SeparatePermanentsIntoPilesEffect(
 // =============================================================================
 // Life Gain Based on Game State
 // =============================================================================
-
-/**
- * Gain life equal to a fixed amount per creature attacking you.
- * "You gain 3 life for each creature attacking you."
- * Used for Blessed Reversal.
- *
- * @property lifePerAttacker Amount of life gained per attacking creature
- */
-@Serializable
-data class GainLifePerAttackerEffect(
-    val lifePerAttacker: Int
-) : Effect {
-    override val description: String = "You gain $lifePerAttacker life for each creature attacking you"
-}
-
-/**
- * Gain life for each land of a specific type target opponent controls.
- * "You gain 2 life for each Mountain target opponent controls."
- * Used for Renewing Dawn.
- *
- * @property lifePerLand Amount of life gained per land
- * @property landType The land type to count (e.g., "Mountain", "Forest")
- */
-@Serializable
-data class GainLifePerLandTypeOpponentControlsEffect(
-    val lifePerLand: Int,
-    val landType: String
-) : Effect {
-    override val description: String = "You gain $lifePerLand life for each $landType target opponent controls"
-}
-
-/**
- * Gain life for each creature of a specific color target opponent controls.
- * "You gain 3 life for each black creature target opponent controls."
- * Used for Starlight.
- *
- * @property lifePerCreature Amount of life gained per creature
- * @property color The color of creatures to count
- */
-@Serializable
-data class GainLifePerColoredCreatureOpponentControlsEffect(
-    val lifePerCreature: Int,
-    val color: Color
-) : Effect {
-    override val description: String = "You gain $lifePerCreature life for each ${color.displayName.lowercase()} creature target opponent controls"
-}
 
 // =============================================================================
 // Mass Tap Effects

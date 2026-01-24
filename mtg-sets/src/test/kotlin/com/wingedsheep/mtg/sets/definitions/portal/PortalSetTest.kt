@@ -173,9 +173,11 @@ class PortalSetTest : DescribeSpec({
             }
 
             it("should gain life per attacker") {
-                card.spellEffect.shouldBeInstanceOf<GainLifePerAttackerEffect>()
-                val effect = card.spellEffect as GainLifePerAttackerEffect
-                effect.lifePerAttacker shouldBe 3
+                card.spellEffect.shouldBeInstanceOf<GainLifeEffect>()
+                val effect = card.spellEffect as GainLifeEffect
+                effect.amount.shouldBeInstanceOf<DynamicAmount.CreaturesAttackingYou>()
+                val dynamic = effect.amount as DynamicAmount.CreaturesAttackingYou
+                dynamic.multiplier shouldBe 3
             }
         }
 
@@ -431,10 +433,12 @@ class PortalSetTest : DescribeSpec({
 
             it("should gain life per Mountain") {
                 card.typeLine.isSorcery shouldBe true
-                card.spellEffect.shouldBeInstanceOf<GainLifePerLandTypeOpponentControlsEffect>()
-                val effect = card.spellEffect as GainLifePerLandTypeOpponentControlsEffect
-                effect.lifePerLand shouldBe 2
-                effect.landType shouldBe "Mountain"
+                card.spellEffect.shouldBeInstanceOf<GainLifeEffect>()
+                val effect = card.spellEffect as GainLifeEffect
+                effect.amount.shouldBeInstanceOf<DynamicAmount.LandsOfTypeTargetOpponentControls>()
+                val dynamic = effect.amount as DynamicAmount.LandsOfTypeTargetOpponentControls
+                dynamic.landType shouldBe "Mountain"
+                dynamic.multiplier shouldBe 2
             }
 
             it("should target an opponent") {
@@ -469,7 +473,7 @@ class PortalSetTest : DescribeSpec({
                 card.typeLine.isSorcery shouldBe true
                 card.spellEffect.shouldBeInstanceOf<GainLifeEffect>()
                 val effect = card.spellEffect as GainLifeEffect
-                effect.amount shouldBe 4
+                effect.amount shouldBe DynamicAmount.Fixed(4)
             }
         }
 
@@ -507,7 +511,7 @@ class PortalSetTest : DescribeSpec({
                 trigger.trigger.shouldBeInstanceOf<OnEnterBattlefield>()
                 trigger.effect.shouldBeInstanceOf<GainLifeEffect>()
                 val effect = trigger.effect as GainLifeEffect
-                effect.amount shouldBe 4
+                effect.amount shouldBe DynamicAmount.Fixed(4)
             }
         }
 
@@ -527,10 +531,12 @@ class PortalSetTest : DescribeSpec({
 
             it("should gain life per black creature") {
                 card.typeLine.isSorcery shouldBe true
-                card.spellEffect.shouldBeInstanceOf<GainLifePerColoredCreatureOpponentControlsEffect>()
-                val effect = card.spellEffect as GainLifePerColoredCreatureOpponentControlsEffect
-                effect.lifePerCreature shouldBe 3
-                effect.color shouldBe Color.BLACK
+                card.spellEffect.shouldBeInstanceOf<GainLifeEffect>()
+                val effect = card.spellEffect as GainLifeEffect
+                effect.amount.shouldBeInstanceOf<DynamicAmount.CreaturesOfColorTargetOpponentControls>()
+                val dynamic = effect.amount as DynamicAmount.CreaturesOfColorTargetOpponentControls
+                dynamic.color shouldBe Color.BLACK
+                dynamic.multiplier shouldBe 3
             }
 
             it("should target an opponent") {
@@ -626,7 +632,7 @@ class PortalSetTest : DescribeSpec({
                 trigger.trigger.shouldBeInstanceOf<OnEnterBattlefield>()
                 trigger.effect.shouldBeInstanceOf<GainLifeEffect>()
                 val effect = trigger.effect as GainLifeEffect
-                effect.amount shouldBe 2
+                effect.amount shouldBe DynamicAmount.Fixed(2)
             }
         }
 
@@ -705,7 +711,9 @@ class PortalSetTest : DescribeSpec({
 
             it("should draw cards equal to hand difference") {
                 card.typeLine.isSorcery shouldBe true
-                card.spellEffect.shouldBeInstanceOf<DrawCardsEqualToHandDifferenceEffect>()
+                card.spellEffect.shouldBeInstanceOf<DrawCardsEffect>()
+                val effect = card.spellEffect as DrawCardsEffect
+                effect.count shouldBe DynamicAmount.HandSizeDifferenceFromTargetOpponent
             }
 
             it("should target an opponent") {
