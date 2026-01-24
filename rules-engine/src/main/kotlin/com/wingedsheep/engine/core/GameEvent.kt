@@ -298,6 +298,30 @@ data class LibraryShuffledEvent(
 ) : GameEvent
 
 // =============================================================================
+// Decision Events
+// =============================================================================
+
+/**
+ * The engine paused and is awaiting a decision.
+ */
+@Serializable
+data class DecisionRequestedEvent(
+    val decisionId: String,
+    val playerId: EntityId,
+    val decisionType: String,
+    val prompt: String
+) : GameEvent
+
+/**
+ * A player submitted a decision response.
+ */
+@Serializable
+data class DecisionSubmittedEvent(
+    val decisionId: String,
+    val playerId: EntityId
+) : GameEvent
+
+// =============================================================================
 // Game State Events
 // =============================================================================
 
@@ -316,7 +340,8 @@ enum class GameEndReason {
     DECK_EMPTY,
     POISON_COUNTERS,
     CONCESSION,
-    ALTERNATIVE_WIN
+    ALTERNATIVE_WIN,
+    UNKNOWN
 }
 
 /**

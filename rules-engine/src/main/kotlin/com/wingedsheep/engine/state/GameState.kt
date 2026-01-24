@@ -51,7 +51,10 @@ data class GameState(
     val winnerId: EntityId? = null,
 
     /** Whether the game has ended */
-    val gameOver: Boolean = false
+    val gameOver: Boolean = false,
+
+    /** Current pending decision awaiting player input (null if engine is not paused) */
+    val pendingDecision: com.wingedsheep.engine.core.PendingDecision? = null
 ) {
     // =========================================================================
     // Entity Operations
@@ -267,6 +270,23 @@ data class GameState(
      * Check if all players have passed priority.
      */
     fun allPlayersPassed(): Boolean = priorityPassedBy.containsAll(turnOrder)
+
+    /**
+     * Check if the engine is paused awaiting a decision.
+     */
+    fun isPaused(): Boolean = pendingDecision != null
+
+    /**
+     * Set a pending decision (pauses the engine).
+     */
+    fun withPendingDecision(decision: com.wingedsheep.engine.core.PendingDecision): GameState =
+        copy(pendingDecision = decision)
+
+    /**
+     * Clear the pending decision (resumes the engine).
+     */
+    fun clearPendingDecision(): GameState =
+        copy(pendingDecision = null)
 
     /**
      * Get the next player in turn order after the given player.

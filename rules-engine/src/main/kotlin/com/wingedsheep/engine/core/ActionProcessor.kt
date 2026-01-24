@@ -75,6 +75,7 @@ class ActionProcessor(
             is MakeChoice -> validateMakeChoice(state, action)
             is SelectTargets -> validateSelectTargets(state, action)
             is ChooseManaColor -> validateChooseManaColor(state, action)
+            is SubmitDecision -> validateSubmitDecision(state, action)
             is Concede -> null  // Always valid
         }
     }
@@ -279,6 +280,7 @@ class ActionProcessor(
             is MakeChoice -> executeMakeChoice(state, action)
             is SelectTargets -> executeSelectTargets(state, action)
             is ChooseManaColor -> executeChooseManaColor(state, action)
+            is SubmitDecision -> executeSubmitDecision(state, action)
             is Concede -> executeConcede(state, action)
         }
     }
@@ -559,5 +561,194 @@ class ActionProcessor(
 
     private fun advanceGame(state: GameState): ExecutionResult {
         return turnManager.advanceStep(state)
+    }
+
+    // =========================================================================
+    // Decision Handling
+    // =========================================================================
+
+    private fun validateSubmitDecision(state: GameState, action: SubmitDecision): String? {
+        val pending = state.pendingDecision
+            ?: return "No pending decision to respond to"
+
+        if (pending.playerId != action.playerId) {
+            return "You are not the player who needs to make this decision"
+        }
+
+        if (pending.id != action.response.decisionId) {
+            return "Decision ID mismatch: expected ${pending.id}, got ${action.response.decisionId}"
+        }
+
+        // Validate the response matches the decision type
+        return validateDecisionResponse(pending, action.response)
+    }
+
+    private fun validateDecisionResponse(decision: PendingDecision, response: DecisionResponse): String? {
+        return when (decision) {
+            is ChooseTargetsDecision -> {
+                if (response !is TargetsResponse) {
+                    return "Expected target selection response"
+                }
+                // Validate all selected targets are in the legal targets list
+                for ((reqIndex, selectedIds) in response.selectedTargets) {
+                    val legalForReq = decision.legalTargets[reqIndex] ?: emptyList()
+                    for (id in selectedIds) {
+                        if (id !in legalForReq) {
+                            return "Invalid target: $id is not a legal choice for requirement $reqIndex"
+                        }
+                    }
+                    // Check min/max constraints
+                    val req = decision.targetRequirements.find { it.index == reqIndex }
+                    if (req != null) {
+                        if (selectedIds.size < req.minTargets) {
+                            return "Not enough targets for requirement $reqIndex: need at least ${req.minTargets}"
+                        }
+                        if (selectedIds.size > req.maxTargets) {
+                            return "Too many targets for requirement $reqIndex: maximum is ${req.maxTargets}"
+                        }
+                    }
+                }
+                null
+            }
+            is SelectCardsDecision -> {
+                if (response !is CardsSelectedResponse) {
+                    return "Expected card selection response"
+                }
+                // Validate all selected cards are in the options
+                for (cardId in response.selectedCards) {
+                    if (cardId !in decision.options) {
+                        return "Invalid selection: $cardId is not a valid option"
+                    }
+                }
+                if (response.selectedCards.size < decision.minSelections) {
+                    return "Not enough cards selected: need at least ${decision.minSelections}"
+                }
+                if (response.selectedCards.size > decision.maxSelections) {
+                    return "Too many cards selected: maximum is ${decision.maxSelections}"
+                }
+                null
+            }
+            is YesNoDecision -> {
+                if (response !is YesNoResponse) {
+                    return "Expected yes/no response"
+                }
+                null
+            }
+            is ChooseModeDecision -> {
+                if (response !is ModesChosenResponse) {
+                    return "Expected mode selection response"
+                }
+                // Validate all selected modes exist and are available
+                for (modeIndex in response.selectedModes) {
+                    val mode = decision.modes.find { it.index == modeIndex }
+                    if (mode == null) {
+                        return "Invalid mode index: $modeIndex"
+                    }
+                    if (!mode.available) {
+                        return "Mode $modeIndex is not available"
+                    }
+                }
+                if (response.selectedModes.size < decision.minModes) {
+                    return "Not enough modes selected: need at least ${decision.minModes}"
+                }
+                if (response.selectedModes.size > decision.maxModes) {
+                    return "Too many modes selected: maximum is ${decision.maxModes}"
+                }
+                null
+            }
+            is ChooseColorDecision -> {
+                if (response !is ColorChosenResponse) {
+                    return "Expected color choice response"
+                }
+                if (response.color !in decision.availableColors) {
+                    return "Invalid color: ${response.color} is not available"
+                }
+                null
+            }
+            is ChooseNumberDecision -> {
+                if (response !is NumberChosenResponse) {
+                    return "Expected number choice response"
+                }
+                if (response.number < decision.minValue || response.number > decision.maxValue) {
+                    return "Invalid number: must be between ${decision.minValue} and ${decision.maxValue}"
+                }
+                null
+            }
+            is DistributeDecision -> {
+                if (response !is DistributionResponse) {
+                    return "Expected distribution response"
+                }
+                val total = response.distribution.values.sum()
+                if (total != decision.totalAmount) {
+                    return "Distribution must total ${decision.totalAmount}, got $total"
+                }
+                for ((targetId, amount) in response.distribution) {
+                    if (targetId !in decision.targets) {
+                        return "Invalid target for distribution: $targetId"
+                    }
+                    if (amount < decision.minPerTarget) {
+                        return "Each target must receive at least ${decision.minPerTarget}"
+                    }
+                }
+                null
+            }
+            is OrderObjectsDecision -> {
+                if (response !is OrderedResponse) {
+                    return "Expected ordering response"
+                }
+                if (response.orderedObjects.toSet() != decision.objects.toSet()) {
+                    return "Ordered objects must contain exactly the same objects as the decision"
+                }
+                null
+            }
+            is SplitPilesDecision -> {
+                if (response !is PilesSplitResponse) {
+                    return "Expected pile split response"
+                }
+                val allCards = response.piles.flatten().toSet()
+                if (allCards != decision.cards.toSet()) {
+                    return "Piles must contain exactly the same cards as the decision"
+                }
+                if (response.piles.size != decision.numberOfPiles) {
+                    return "Must split into exactly ${decision.numberOfPiles} piles"
+                }
+                null
+            }
+            is ChooseOptionDecision -> {
+                if (response !is OptionChosenResponse) {
+                    return "Expected option choice response"
+                }
+                if (response.optionIndex < 0 || response.optionIndex >= decision.options.size) {
+                    return "Invalid option index: ${response.optionIndex}"
+                }
+                null
+            }
+        }
+    }
+
+    private fun executeSubmitDecision(state: GameState, action: SubmitDecision): ExecutionResult {
+        val pending = state.pendingDecision
+            ?: return ExecutionResult.error(state, "No pending decision")
+
+        // Clear the pending decision from state
+        val clearedState = state.clearPendingDecision()
+
+        // Emit event that decision was submitted
+        val events = mutableListOf<GameEvent>(
+            DecisionSubmittedEvent(pending.id, action.playerId)
+        )
+
+        // Process the decision response based on type
+        // For now, just return success with cleared state
+        // In a full implementation, this would resume the paused execution
+        // by looking up the continuation context and calling the appropriate handler
+
+        // TODO: Implement decision handlers that resume execution based on the context
+        // For example:
+        // - ChooseTargetsDecision during casting -> finish putting spell on stack
+        // - SelectCardsDecision during discard -> actually discard the selected cards
+        // - YesNoDecision for may abilities -> either execute or skip the effect
+
+        return ExecutionResult.success(clearedState, events)
     }
 }

@@ -181,6 +181,22 @@ data class ChooseManaColor(
 ) : GameAction
 
 // =============================================================================
+// Decision Response
+// =============================================================================
+
+/**
+ * Player submits a response to a pending decision.
+ *
+ * This is used to resume the engine after it has paused for player input.
+ * The response must match the type expected by the pending decision.
+ */
+@Serializable
+data class SubmitDecision(
+    override val playerId: EntityId,
+    val response: DecisionResponse
+) : GameAction
+
+// =============================================================================
 // Concession
 // =============================================================================
 
