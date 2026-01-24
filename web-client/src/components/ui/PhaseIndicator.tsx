@@ -1,4 +1,5 @@
 import { Phase, Step, StepDisplayNames } from '../../types'
+import { useResponsive } from '../../hooks/useResponsive'
 
 interface PhaseIndicatorProps {
   phase: Phase
@@ -18,28 +19,30 @@ export function PhaseIndicator({
   isActivePlayer,
   hasPriority,
 }: PhaseIndicatorProps) {
+  const responsive = useResponsive()
+
   return (
     <div
       style={{
         backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        borderRadius: 8,
-        padding: '8px 16px',
+        borderRadius: responsive.isMobile ? 6 : 8,
+        padding: responsive.isMobile ? '6px 10px' : '8px 16px',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: 4,
+        gap: responsive.isMobile ? 2 : 4,
         pointerEvents: 'auto',
       }}
     >
       {/* Turn number */}
-      <span style={{ color: '#888', fontSize: 11 }}>
+      <span style={{ color: '#888', fontSize: responsive.isMobile ? 9 : 11 }}>
         Turn {turnNumber}
       </span>
 
       {/* Phase/Step display */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <PhaseIcon phase={phase} />
-        <span style={{ color: '#fff', fontSize: 14, fontWeight: 500 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: responsive.isMobile ? 4 : 8 }}>
+        <PhaseIcon phase={phase} isMobile={responsive.isMobile} />
+        <span style={{ color: '#fff', fontSize: responsive.isMobile ? 11 : 14, fontWeight: 500 }}>
           {StepDisplayNames[step]}
         </span>
       </div>
@@ -48,19 +51,21 @@ export function PhaseIndicator({
       <div
         style={{
           display: 'flex',
-          gap: 8,
-          marginTop: 4,
+          gap: responsive.isMobile ? 4 : 8,
+          marginTop: responsive.isMobile ? 2 : 4,
         }}
       >
         <StatusBadge
           label="Active"
           active={isActivePlayer}
           color="#0088ff"
+          isMobile={responsive.isMobile}
         />
         <StatusBadge
           label="Priority"
           active={hasPriority}
           color="#00ff00"
+          isMobile={responsive.isMobile}
         />
       </div>
     </div>
@@ -70,7 +75,7 @@ export function PhaseIndicator({
 /**
  * Phase icon based on current phase.
  */
-function PhaseIcon({ phase }: { phase: Phase }) {
+function PhaseIcon({ phase, isMobile = false }: { phase: Phase; isMobile?: boolean }) {
   const icons: Record<Phase, string> = {
     [Phase.BEGINNING]: '🌅',
     [Phase.PRECOMBAT_MAIN]: '📜',
@@ -79,7 +84,7 @@ function PhaseIcon({ phase }: { phase: Phase }) {
     [Phase.ENDING]: '🌙',
   }
 
-  return <span style={{ fontSize: 18 }}>{icons[phase]}</span>
+  return <span style={{ fontSize: isMobile ? 14 : 18 }}>{icons[phase]}</span>
 }
 
 /**
@@ -89,19 +94,21 @@ function StatusBadge({
   label,
   active,
   color,
+  isMobile = false,
 }: {
   label: string
   active: boolean
   color: string
+  isMobile?: boolean
 }) {
   return (
     <div
       style={{
-        padding: '2px 8px',
+        padding: isMobile ? '1px 6px' : '2px 8px',
         borderRadius: 4,
         backgroundColor: active ? color : '#333',
         opacity: active ? 1 : 0.5,
-        fontSize: 11,
+        fontSize: isMobile ? 9 : 11,
         color: active ? '#000' : '#888',
         fontWeight: active ? 600 : 400,
       }}

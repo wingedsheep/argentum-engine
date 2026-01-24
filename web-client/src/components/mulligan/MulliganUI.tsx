@@ -1,11 +1,13 @@
 import { useGameStore, type MulliganState } from '../../store/gameStore'
 import type { EntityId } from '../../types'
+import { useResponsive, calculateFittingCardWidth, type ResponsiveSizes } from '../../hooks/useResponsive'
 
 /**
  * Mulligan UI overlay.
  */
 export function MulliganUI() {
   const mulliganState = useGameStore((state) => state.mulliganState)
+  const responsive = useResponsive()
 
   if (!mulliganState) return null
 
@@ -22,15 +24,16 @@ export function MulliganUI() {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 24,
+        gap: responsive.isMobile ? 12 : 24,
+        padding: responsive.containerPadding,
         pointerEvents: 'auto',
         zIndex: 1000,
       }}
     >
       {mulliganState.phase === 'deciding' ? (
-        <MulliganDecision state={mulliganState} />
+        <MulliganDecision state={mulliganState} responsive={responsive} />
       ) : (
-        <ChooseBottomCards state={mulliganState} />
+        <ChooseBottomCards state={mulliganState} responsive={responsive} />
       )}
     </div>
   )
@@ -39,19 +42,25 @@ export function MulliganUI() {
 /**
  * Mulligan decision phase - keep or mulligan.
  */
-function MulliganDecision({ state }: { state: MulliganState }) {
+function MulliganDecision({ state, responsive }: { state: MulliganState; responsive: ResponsiveSizes }) {
   const keepHand = useGameStore((s) => s.keepHand)
   const mulligan = useGameStore((s) => s.mulligan)
 
+  // Calculate card size that fits all 7 cards
+  const availableWidth = responsive.viewportWidth - (responsive.containerPadding * 2) - 32 // extra padding
+  const gap = responsive.isMobile ? 4 : 8
+  const maxCardWidth = responsive.isMobile ? 90 : 130
+  const cardWidth = calculateFittingCardWidth(state.hand.length, availableWidth, gap, maxCardWidth, 45)
+
   return (
     <>
-      <h2 style={{ color: 'white', margin: 0 }}>
+      <h2 style={{ color: 'white', margin: 0, fontSize: responsive.isMobile ? 18 : 24 }}>
         {state.mulliganCount === 0
           ? 'Opening Hand'
           : `Mulligan ${state.mulliganCount}`}
       </h2>
 
-      <p style={{ color: '#888', margin: 0 }}>
+      <p style={{ color: '#888', margin: 0, fontSize: responsive.fontSize.normal, textAlign: 'center' }}>
         {state.mulliganCount > 0 &&
           `If you keep, you'll put ${state.cardsToPutOnBottom} card(s) on the bottom.`}
       </p>
@@ -60,8 +69,11 @@ function MulliganDecision({ state }: { state: MulliganState }) {
       <div
         style={{
           display: 'flex',
-          gap: 8,
-          padding: 16,
+          gap,
+          padding: responsive.isMobile ? 8 : 16,
+          justifyContent: 'center',
+          flexWrap: 'wrap',
+          maxWidth: '100%',
         }}
       >
         {state.hand.map((cardId) => {
@@ -73,18 +85,20 @@ function MulliganDecision({ state }: { state: MulliganState }) {
               cardName={cardInfo?.name || 'Unknown'}
               imageUri={cardInfo?.imageUri}
               selectable={false}
+              cardWidth={cardWidth}
+              isMobile={responsive.isMobile}
             />
           )
         })}
       </div>
 
       {/* Action buttons */}
-      <div style={{ display: 'flex', gap: 16 }}>
+      <div style={{ display: 'flex', gap: responsive.isMobile ? 8 : 16, flexWrap: 'wrap', justifyContent: 'center' }}>
         <button
           onClick={keepHand}
           style={{
-            padding: '12px 32px',
-            fontSize: 18,
+            padding: responsive.isMobile ? '10px 20px' : '12px 32px',
+            fontSize: responsive.fontSize.large,
             backgroundColor: '#00aa00',
             color: 'white',
             border: 'none',
@@ -98,8 +112,8 @@ function MulliganDecision({ state }: { state: MulliganState }) {
         <button
           onClick={mulligan}
           style={{
-            padding: '12px 32px',
-            fontSize: 18,
+            padding: responsive.isMobile ? '10px 20px' : '12px 32px',
+            fontSize: responsive.fontSize.large,
             backgroundColor: '#cc6600',
             color: 'white',
             border: 'none',
@@ -117,20 +131,26 @@ function MulliganDecision({ state }: { state: MulliganState }) {
 /**
  * Choose cards to put on bottom after keeping.
  */
-function ChooseBottomCards({ state }: { state: MulliganState }) {
+function ChooseBottomCards({ state, responsive }: { state: MulliganState; responsive: ResponsiveSizes }) {
   const chooseBottomCards = useGameStore((s) => s.chooseBottomCards)
   const toggleMulliganCard = useGameStore((s) => s.toggleMulliganCard)
 
   const canConfirm = state.selectedCards.length === state.cardsToPutOnBottom
 
+  // Calculate card size that fits all cards
+  const availableWidth = responsive.viewportWidth - (responsive.containerPadding * 2) - 32
+  const gap = responsive.isMobile ? 4 : 8
+  const maxCardWidth = responsive.isMobile ? 90 : 130
+  const cardWidth = calculateFittingCardWidth(state.hand.length, availableWidth, gap, maxCardWidth, 45)
+
   return (
     <>
-      <h2 style={{ color: 'white', margin: 0 }}>
+      <h2 style={{ color: 'white', margin: 0, fontSize: responsive.isMobile ? 18 : 24 }}>
         Choose {state.cardsToPutOnBottom} Card
         {state.cardsToPutOnBottom > 1 ? 's' : ''} for Bottom
       </h2>
 
-      <p style={{ color: '#888', margin: 0 }}>
+      <p style={{ color: '#888', margin: 0, fontSize: responsive.fontSize.normal }}>
         Selected: {state.selectedCards.length} / {state.cardsToPutOnBottom}
       </p>
 
@@ -138,8 +158,11 @@ function ChooseBottomCards({ state }: { state: MulliganState }) {
       <div
         style={{
           display: 'flex',
-          gap: 8,
-          padding: 16,
+          gap,
+          padding: responsive.isMobile ? 8 : 16,
+          justifyContent: 'center',
+          flexWrap: 'wrap',
+          maxWidth: '100%',
         }}
       >
         {state.hand.map((cardId) => {
@@ -153,6 +176,8 @@ function ChooseBottomCards({ state }: { state: MulliganState }) {
               selectable
               isSelected={state.selectedCards.includes(cardId)}
               onClick={() => toggleMulliganCard(cardId)}
+              cardWidth={cardWidth}
+              isMobile={responsive.isMobile}
             />
           )
         })}
@@ -163,8 +188,8 @@ function ChooseBottomCards({ state }: { state: MulliganState }) {
         onClick={() => chooseBottomCards(state.selectedCards)}
         disabled={!canConfirm}
         style={{
-          padding: '12px 32px',
-          fontSize: 18,
+          padding: responsive.isMobile ? '10px 20px' : '12px 32px',
+          fontSize: responsive.fontSize.large,
           backgroundColor: canConfirm ? '#00aa00' : '#444',
           color: canConfirm ? 'white' : '#888',
           border: 'none',
@@ -189,6 +214,8 @@ function MulliganCard({
   selectable,
   isSelected = false,
   onClick,
+  cardWidth = 130,
+  isMobile = false,
 }: {
   cardId: EntityId
   cardName: string
@@ -196,19 +223,24 @@ function MulliganCard({
   selectable: boolean
   isSelected?: boolean
   onClick?: () => void
+  cardWidth?: number
+  isMobile?: boolean
 }) {
   // Use provided imageUri or fall back to Scryfall API
   const cardImageUrl = imageUri || `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&format=image&version=normal`
+
+  const cardRatio = 1.4
+  const cardHeight = Math.round(cardWidth * cardRatio)
 
   return (
     <div
       onClick={selectable ? onClick : undefined}
       style={{
-        width: 130,
-        height: 182,
+        width: cardWidth,
+        height: cardHeight,
         backgroundColor: isSelected ? '#003300' : '#1a1a1a',
         border: isSelected ? '3px solid #00ff00' : '2px solid #444',
-        borderRadius: 10,
+        borderRadius: isMobile ? 6 : 10,
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
@@ -216,6 +248,7 @@ function MulliganCard({
         transition: 'all 0.15s',
         transform: isSelected ? 'translateY(-8px) scale(1.05)' : 'none',
         boxShadow: isSelected ? '0 8px 20px rgba(0, 255, 0, 0.3)' : '0 4px 8px rgba(0, 0, 0, 0.5)',
+        flexShrink: 0,
       }}
     >
       {/* Card image */}
@@ -241,14 +274,14 @@ function MulliganCard({
           left: 0,
           right: 0,
           backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          padding: '8px',
+          padding: isMobile ? '4px' : '8px',
           display: 'none', // Will be shown via CSS when image fails
         }}
       >
         <span
           style={{
             color: 'white',
-            fontSize: 11,
+            fontSize: isMobile ? 9 : 11,
             fontWeight: 500,
           }}
         >

@@ -1,8 +1,19 @@
 import { useGameStore } from '../../store/gameStore'
-import { useViewingPlayer, useOpponent, useZoneCards, useBattlefieldCards } from '../../store/selectors'
+import { useViewingPlayer, useOpponent, useZoneCards, useBattlefieldCards, useHasLegalActions } from '../../store/selectors'
 import { hand, graveyard } from '../../types'
-import type { ClientCard, ZoneId, ClientPlayer, EntityId } from '../../types'
+import type { ClientCard, ZoneId, ClientPlayer } from '../../types'
 import { PhaseIndicator } from '../ui/PhaseIndicator'
+import { useResponsive, calculateFittingCardWidth, type ResponsiveSizes } from '../../hooks/useResponsive'
+import React, { createContext, useContext } from 'react'
+
+// Context to pass responsive sizes down the component tree
+const ResponsiveContext = createContext<ResponsiveSizes | null>(null)
+
+function useResponsiveContext(): ResponsiveSizes {
+  const ctx = useContext(ResponsiveContext)
+  if (!ctx) throw new Error('ResponsiveContext not provided')
+  return ctx
+}
 
 /**
  * 2D Game board layout - MTG Arena style.
@@ -11,6 +22,7 @@ export function GameBoard() {
   const gameState = useGameStore((state) => state.gameState)
   const playerId = useGameStore((state) => state.playerId)
   const submitAction = useGameStore((state) => state.submitAction)
+  const responsive = useResponsive()
 
   const viewingPlayer = useViewingPlayer()
   const opponent = useOpponent()
@@ -22,14 +34,19 @@ export function GameBoard() {
   const hasPriority = gameState.priorityPlayerId === viewingPlayer.playerId
 
   return (
-    <div style={styles.container}>
+    <ResponsiveContext.Provider value={responsive}>
+    <div style={{
+      ...styles.container,
+      padding: responsive.containerPadding,
+      gap: responsive.sectionGap,
+    }}>
       {/* Opponent area (top) */}
       <div style={styles.opponentArea}>
         <div style={styles.playerRowWithZones}>
           <div style={styles.playerMainArea}>
             {/* Opponent info */}
             <div style={styles.playerInfo}>
-              <span style={styles.playerName}>{opponent?.name ?? 'Opponent'}</span>
+              <span style={{ ...styles.playerName, fontSize: responsive.fontSize.normal }}>{opponent?.name ?? 'Opponent'}</span>
               <LifeDisplay life={opponent?.life ?? 0} />
             </div>
 
@@ -79,7 +96,7 @@ export function GameBoard() {
             {/* Player info and actions */}
             <div style={styles.playerControls}>
               <div style={styles.playerInfo}>
-                <span style={styles.playerName}>{viewingPlayer.name}</span>
+                <span style={{ ...styles.playerName, fontSize: responsive.fontSize.normal }}>{viewingPlayer.name}</span>
                 <LifeDisplay life={viewingPlayer.life} isPlayer />
               </div>
 
@@ -89,10 +106,13 @@ export function GameBoard() {
                     submitAction({
                       type: 'PassPriority',
                       playerId: viewingPlayer.playerId,
-                      description: 'Pass priority',
                     })
                   }}
-                  style={styles.passButton}
+                  style={{
+                    ...styles.passButton,
+                    padding: responsive.isMobile ? '8px 16px' : '10px 24px',
+                    fontSize: responsive.fontSize.normal,
+                  }}
                 >
                   Pass
                 </button>
@@ -108,6 +128,7 @@ export function GameBoard() {
       {/* Action menu for selected card */}
       <ActionMenu />
     </div>
+    </ResponsiveContext.Provider>
   )
 }
 
@@ -115,13 +136,18 @@ export function GameBoard() {
  * Life total display.
  */
 function LifeDisplay({ life, isPlayer = false }: { life: number; isPlayer?: boolean }) {
+  const responsive = useResponsiveContext()
   const bgColor = isPlayer ? '#1a3a5a' : '#3a1a4a'
   const borderColor = isPlayer ? '#3a7aba' : '#7a3a9a'
+  const size = responsive.isMobile ? 36 : responsive.isTablet ? 42 : 48
 
   return (
     <div
       style={{
         ...styles.lifeDisplay,
+        width: size,
+        height: size,
+        fontSize: responsive.fontSize.large,
         backgroundColor: bgColor,
         borderColor: borderColor,
       }}
@@ -146,13 +172,29 @@ function CardRow({
   small?: boolean
 }) {
   const cards = useZoneCards(zoneId)
+  const responsive = useResponsiveContext()
 
   if (cards.length === 0) {
-    return <div style={styles.emptyZone}>No cards</div>
+    return <div style={{ ...styles.emptyZone, fontSize: responsive.fontSize.small }}>No cards</div>
   }
 
+  // Calculate available width for the hand (viewport - padding - zone piles on sides)
+  const sideZoneWidth = responsive.pileWidth + 20 // pile + margin
+  const availableWidth = responsive.viewportWidth - (responsive.containerPadding * 2) - (sideZoneWidth * 2)
+
+  // Calculate card width that fits all cards
+  const baseWidth = small ? responsive.smallCardWidth : responsive.cardWidth
+  const minWidth = small ? 30 : 45
+  const fittingWidth = calculateFittingCardWidth(
+    cards.length,
+    availableWidth,
+    responsive.cardGap,
+    baseWidth,
+    minWidth
+  )
+
   return (
-    <div style={styles.cardRow}>
+    <div style={{ ...styles.cardRow, gap: responsive.cardGap, padding: responsive.cardGap }}>
       {cards.map((card) => (
         <GameCard
           key={card.id}
@@ -160,6 +202,7 @@ function CardRow({
           faceDown={faceDown}
           interactive={interactive}
           small={small}
+          overrideWidth={fittingWidth}
         />
       ))}
     </div>
@@ -172,12 +215,19 @@ function CardRow({
 function ZonePile({ player }: { player: ClientPlayer }) {
   const graveyardCards = useZoneCards(graveyard(player.playerId))
   const topGraveyardCard = graveyardCards[graveyardCards.length - 1]
+  const responsive = useResponsiveContext()
+
+  const pileStyle = {
+    width: responsive.pileWidth,
+    height: responsive.pileHeight,
+    borderRadius: responsive.isMobile ? 4 : 6,
+  }
 
   return (
-    <div style={styles.zonePile}>
+    <div style={{ ...styles.zonePile, gap: responsive.cardGap, minWidth: responsive.pileWidth + 10 }}>
       {/* Library/Deck */}
       <div style={styles.zoneStack}>
-        <div style={styles.deckPile}>
+        <div style={{ ...styles.deckPile, ...pileStyle }}>
           {player.librarySize > 0 ? (
             <img
               src="https://backs.scryfall.io/large/2/2/222b7a3b-2321-4d4c-af19-19338b134971.jpg?1677416389"
@@ -187,14 +237,14 @@ function ZonePile({ player }: { player: ClientPlayer }) {
           ) : (
             <div style={styles.emptyPile} />
           )}
-          <div style={styles.pileCount}>{player.librarySize}</div>
+          <div style={{ ...styles.pileCount, fontSize: responsive.fontSize.small }}>{player.librarySize}</div>
         </div>
-        <span style={styles.zoneLabel}>Deck</span>
+        <span style={{ ...styles.zoneLabel, fontSize: responsive.isMobile ? 8 : 10 }}>Deck</span>
       </div>
 
       {/* Graveyard */}
       <div style={styles.zoneStack}>
-        <div style={styles.graveyardPile}>
+        <div style={{ ...styles.graveyardPile, ...pileStyle }}>
           {topGraveyardCard ? (
             <img
               src={`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(topGraveyardCard.name)}&format=image&version=normal`}
@@ -208,10 +258,10 @@ function ZonePile({ player }: { player: ClientPlayer }) {
             <div style={styles.emptyPile} />
           )}
           {player.graveyardSize > 0 && (
-            <div style={styles.pileCount}>{player.graveyardSize}</div>
+            <div style={{ ...styles.pileCount, fontSize: responsive.fontSize.small }}>{player.graveyardSize}</div>
           )}
         </div>
-        <span style={styles.zoneLabel}>Graveyard</span>
+        <span style={{ ...styles.zoneLabel, fontSize: responsive.isMobile ? 8 : 10 }}>Graveyard</span>
       </div>
     </div>
   )
@@ -229,6 +279,7 @@ function BattlefieldArea({ isOpponent }: { isOpponent: boolean }) {
     opponentLands,
     opponentCreatures,
   } = useBattlefieldCards()
+  const responsive = useResponsiveContext()
 
   const lands = isOpponent ? opponentLands : playerLands
   const creatures = isOpponent ? opponentCreatures : playerCreatures
@@ -238,10 +289,12 @@ function BattlefieldArea({ isOpponent }: { isOpponent: boolean }) {
   const firstRow = isOpponent ? lands : creatures
   const secondRow = isOpponent ? creatures : lands
 
+  const minHeight = responsive.isMobile ? 100 : responsive.isTablet ? 130 : 160
+
   return (
-    <div style={styles.battlefieldArea}>
+    <div style={{ ...styles.battlefieldArea, gap: responsive.cardGap, minHeight }}>
       {/* First row */}
-      <div style={styles.battlefieldRow}>
+      <div style={{ ...styles.battlefieldRow, gap: responsive.cardGap }}>
         {firstRow.map((card) => (
           <GameCard
             key={card.id}
@@ -253,7 +306,7 @@ function BattlefieldArea({ isOpponent }: { isOpponent: boolean }) {
       </div>
 
       {/* Second row */}
-      <div style={styles.battlefieldRow}>
+      <div style={{ ...styles.battlefieldRow, gap: responsive.cardGap }}>
         {secondRow.map((card) => (
           <GameCard
             key={card.id}
@@ -276,63 +329,63 @@ function GameCard({
   interactive = false,
   small = false,
   battlefield = false,
+  overrideWidth,
 }: {
   card: ClientCard
   faceDown?: boolean
   interactive?: boolean
   small?: boolean
   battlefield?: boolean
+  overrideWidth?: number
 }) {
   const selectCard = useGameStore((state) => state.selectCard)
   const selectedCardId = useGameStore((state) => state.selectedCardId)
   const targetingState = useGameStore((state) => state.targetingState)
-  const legalActions = useGameStore((state) => state.legalActions)
-  const submitAction = useGameStore((state) => state.submitAction)
-  const cancelTargeting = useGameStore((state) => state.cancelTargeting)
+  const responsive = useResponsiveContext()
+
+  // Check if card has legal actions (is playable)
+  const hasLegalActions = useHasLegalActions(card.id)
 
   const isSelected = selectedCardId === card.id
-
-  // Check if this card is a valid target in targeting mode
-  const isValidTarget = targetingState?.validTargets.includes(card.id) ?? false
   const isInTargetingMode = targetingState !== null
+  const isValidTarget = targetingState?.validTargets.includes(card.id) ?? false
+  const isPlayable = interactive && hasLegalActions && !faceDown
 
   const cardImageUrl = faceDown
     ? 'https://backs.scryfall.io/large/2/2/222b7a3b-2321-4d4c-af19-19338b134971.jpg?1677416389'
     : `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(card.name)}&format=image&version=normal`
 
-  const width = small ? 60 : battlefield ? 100 : 120
-  const height = small ? 84 : battlefield ? 140 : 168
+  // Use responsive sizes, but allow override for fitting cards in hand
+  const baseWidth = small
+    ? responsive.smallCardWidth
+    : battlefield
+      ? responsive.battlefieldCardWidth
+      : responsive.cardWidth
+  const width = overrideWidth ?? baseWidth
+  const cardRatio = 1.4
+  const height = Math.round(width * cardRatio)
 
   const handleClick = () => {
-    if (isInTargetingMode && isValidTarget) {
-      // In targeting mode and this is a valid target - complete the block
-      const blockerId = targetingState.selectedTargets[0] // We stored blocker ID here
-      const attackerId = card.id
-
-      // Find the matching DeclareBlocker action
-      const blockAction = legalActions.find((info) => {
-        const action = info.action
-        return action.type === 'DeclareBlocker' &&
-               action.blockerId === blockerId &&
-               action.attackerId === attackerId
-      })
-
-      if (blockAction) {
-        submitAction(blockAction.action)
-        cancelTargeting()
-      }
-    } else if (interactive && !isInTargetingMode) {
+    if (interactive && !isInTargetingMode) {
       // Normal selection
       selectCard(isSelected ? null : card.id)
     }
   }
 
-  // Determine border color based on state
+  // Determine border color based on state (priority: selected > validTarget > playable > default)
   let borderStyle = '2px solid #333'
+  let boxShadow = '0 2px 8px rgba(0,0,0,0.5)'
+
   if (isSelected) {
     borderStyle = '3px solid #ffff00'
+    boxShadow = '0 8px 20px rgba(255, 255, 0, 0.4)'
   } else if (isValidTarget) {
-    borderStyle = '3px solid #ff4444' // Red border for valid block targets
+    borderStyle = '3px solid #ff4444'
+    boxShadow = '0 4px 15px rgba(255, 68, 68, 0.6)'
+  } else if (isPlayable) {
+    // Green highlight for playable cards
+    borderStyle = '2px solid #00ff00'
+    boxShadow = '0 0 12px rgba(0, 255, 0, 0.5), 0 0 24px rgba(0, 255, 0, 0.3)'
   }
 
   return (
@@ -342,14 +395,11 @@ function GameCard({
         ...styles.card,
         width,
         height,
+        borderRadius: responsive.isMobile ? 4 : 8,
         cursor: (interactive || isValidTarget) ? 'pointer' : 'default',
         border: borderStyle,
         transform: `${card.isTapped ? 'rotate(90deg)' : ''} ${isSelected ? 'translateY(-8px)' : ''}`,
-        boxShadow: isSelected
-          ? '0 8px 20px rgba(255, 255, 0, 0.4)'
-          : isValidTarget
-            ? '0 4px 15px rgba(255, 68, 68, 0.6)'
-            : '0 2px 8px rgba(0,0,0,0.5)',
+        boxShadow,
       }}
     >
       <img
@@ -364,9 +414,9 @@ function GameCard({
       />
       {/* Fallback when image fails */}
       <div style={styles.cardFallback}>
-        <span style={styles.cardName}>{faceDown ? '' : card.name}</span>
+        <span style={{ ...styles.cardName, fontSize: responsive.fontSize.small }}>{faceDown ? '' : card.name}</span>
         {!faceDown && card.power !== null && card.toughness !== null && (
-          <span style={styles.cardPT}>{card.power}/{card.toughness}</span>
+          <span style={{ ...styles.cardPT, fontSize: responsive.fontSize.normal }}>{card.power}/{card.toughness}</span>
         )}
       </div>
 
@@ -378,8 +428,13 @@ function GameCard({
       {/* Summoning sickness indicator */}
       {battlefield && card.hasSummoningSickness && card.cardTypes.includes('CREATURE') && (
         <div style={styles.summoningSicknessOverlay}>
-          <div style={styles.summoningSicknessIcon}>💤</div>
+          <div style={{ ...styles.summoningSicknessIcon, fontSize: responsive.isMobile ? 16 : 24 }}>💤</div>
         </div>
+      )}
+
+      {/* Playable indicator glow effect */}
+      {isPlayable && !isSelected && (
+        <div style={styles.playableGlow} />
       )}
     </div>
   )
@@ -395,17 +450,24 @@ function ActionMenu() {
   const submitAction = useGameStore((state) => state.submitAction)
   const selectCard = useGameStore((state) => state.selectCard)
   const targetingState = useGameStore((state) => state.targetingState)
-  const startTargeting = useGameStore((state) => state.startTargeting)
   const cancelTargeting = useGameStore((state) => state.cancelTargeting)
+  const responsive = useResponsiveContext()
 
   // If in targeting mode, show targeting UI instead
   if (targetingState) {
     return (
-      <div style={styles.targetingOverlay}>
-        <div style={styles.targetingPrompt}>
+      <div style={{
+        ...styles.targetingOverlay,
+        padding: responsive.isMobile ? '12px 16px' : '16px 24px',
+      }}>
+        <div style={{ ...styles.targetingPrompt, fontSize: responsive.fontSize.normal }}>
           Select an attacker to block
         </div>
-        <button onClick={cancelTargeting} style={styles.cancelButton}>
+        <button onClick={cancelTargeting} style={{
+          ...styles.cancelButton,
+          padding: responsive.isMobile ? '8px 12px' : '10px 16px',
+          fontSize: responsive.fontSize.normal,
+        }}>
           Cancel
         </button>
       </div>
@@ -422,12 +484,8 @@ function ActionMenu() {
         return action.cardId === selectedCardId
       case 'CastSpell':
         return action.cardId === selectedCardId
-      case 'ActivateManaAbility':
-        return action.sourceEntityId === selectedCardId
-      case 'DeclareAttacker':
-        return action.creatureId === selectedCardId
-      case 'DeclareBlocker':
-        return action.blockerId === selectedCardId
+      case 'ActivateAbility':
+        return action.sourceId === selectedCardId
       default:
         return false
     }
@@ -435,60 +493,43 @@ function ActionMenu() {
 
   if (cardActions.length === 0) return null
 
-  // Separate blocking actions from others - we'll show a single "Block" button
-  const blockActions = cardActions.filter((info) => info.action.type === 'DeclareBlocker')
-  const otherActions = cardActions.filter((info) => info.action.type !== 'DeclareBlocker')
-
-  // Get valid attacker IDs for blocking
-  const validAttackerIds = blockActions.map((info) => {
-    const action = info.action as { type: 'DeclareBlocker'; attackerId: EntityId }
-    return action.attackerId
-  })
-
-  const handleBlockClick = () => {
-    // Enter targeting mode - player must now click on an attacker
-    // Store blockerId in selectedTargets[0] so we can retrieve it later
-    startTargeting({
-      action: { type: 'DeclareBlocker' } as any,
-      validTargets: validAttackerIds,
-      selectedTargets: [selectedCardId], // Store the blocker ID here
-      requiredCount: 1,
-    })
-    selectCard(null)
-  }
-
   return (
     <div style={styles.actionMenuOverlay} onClick={() => selectCard(null)}>
-      <div style={styles.actionMenu} onClick={(e) => e.stopPropagation()}>
-        <div style={styles.actionMenuTitle}>Actions</div>
+      <div style={{
+        ...styles.actionMenu,
+        padding: responsive.isMobile ? 12 : 16,
+        minWidth: responsive.isMobile ? 160 : 200,
+      }} onClick={(e) => e.stopPropagation()}>
+        <div style={{
+          ...styles.actionMenuTitle,
+          fontSize: responsive.fontSize.small,
+        }}>Actions</div>
 
-        {/* Regular actions */}
-        {otherActions.map((info, index) => (
+        {/* Card actions */}
+        {cardActions.map((info, index) => (
           <button
             key={index}
             onClick={() => {
               submitAction(info.action)
               selectCard(null)
             }}
-            style={styles.actionButton}
+            style={{
+              ...styles.actionButton,
+              padding: responsive.isMobile ? '10px 12px' : '12px 16px',
+              fontSize: responsive.fontSize.normal,
+            }}
           >
             {info.description}
           </button>
         ))}
 
-        {/* Single block button if blocking is available */}
-        {blockActions.length > 0 && (
-          <button
-            onClick={handleBlockClick}
-            style={styles.actionButton}
-          >
-            Block (select attacker)
-          </button>
-        )}
-
         <button
           onClick={() => selectCard(null)}
-          style={styles.cancelButton}
+          style={{
+            ...styles.cancelButton,
+            padding: responsive.isMobile ? '8px 12px' : '10px 16px',
+            fontSize: responsive.fontSize.normal,
+          }}
         >
           Cancel
         </button>
@@ -507,34 +548,31 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     flexDirection: 'column',
     backgroundColor: '#0a0a15',
-    padding: 16,
-    gap: 8,
     overflow: 'hidden',
   },
   opponentArea: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: 8,
   },
   centerArea: {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: '8px 0',
+    padding: '4px 0',
     flex: 1,
+    minHeight: 40,
   },
   playerArea: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: 8,
     marginTop: 'auto',
   },
   playerRowWithZones: {
     display: 'flex',
     alignItems: 'center',
-    gap: 16,
+    gap: 8,
     width: '100%',
     justifyContent: 'center',
   },
@@ -542,35 +580,28 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: 8,
+    gap: 4,
     flex: 1,
+    minWidth: 0, // Allow shrinking
   },
   zonePile: {
     display: 'flex',
     flexDirection: 'column',
-    gap: 12,
     alignItems: 'center',
-    minWidth: 80,
   },
   zoneStack: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: 4,
+    gap: 2,
   },
   deckPile: {
     position: 'relative',
-    width: 70,
-    height: 98,
-    borderRadius: 6,
     overflow: 'hidden',
     boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
   },
   graveyardPile: {
     position: 'relative',
-    width: 70,
-    height: 98,
-    borderRadius: 6,
     overflow: 'hidden',
     boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
     backgroundColor: '#1a1a2e',
@@ -607,32 +638,27 @@ const styles: Record<string, React.CSSProperties> = {
   playerInfo: {
     display: 'flex',
     alignItems: 'center',
-    gap: 12,
+    gap: 8,
   },
   playerName: {
     color: '#888',
-    fontSize: 14,
   },
   lifeDisplay: {
-    width: 48,
-    height: 48,
     borderRadius: '50%',
     border: '3px solid',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: 20,
     fontWeight: 700,
   },
   playerControls: {
     display: 'flex',
     alignItems: 'center',
-    gap: 24,
-    padding: 8,
+    gap: 12,
+    padding: 4,
   },
   passButton: {
-    padding: '12px 32px',
-    fontSize: 16,
+    padding: '10px 24px',
     fontWeight: 600,
     backgroundColor: '#e67e22',
     color: 'white',
@@ -643,31 +669,25 @@ const styles: Record<string, React.CSSProperties> = {
   cardRow: {
     display: 'flex',
     justifyContent: 'center',
-    gap: 8,
-    padding: 8,
     flexWrap: 'wrap',
+    maxWidth: '100%',
   },
   emptyZone: {
     color: '#444',
-    fontSize: 12,
-    padding: 8,
+    padding: 4,
   },
   battlefieldArea: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: 8,
-    minHeight: 160,
   },
   battlefieldRow: {
     display: 'flex',
     justifyContent: 'center',
-    gap: 8,
     flexWrap: 'wrap',
   },
   card: {
     position: 'relative',
-    borderRadius: 8,
     overflow: 'hidden',
     backgroundColor: '#1a1a2e',
     transition: 'transform 0.15s, box-shadow 0.15s',
@@ -688,20 +708,18 @@ const styles: Record<string, React.CSSProperties> = {
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 8,
+    padding: 4,
     backgroundColor: '#2a2a4e',
   },
   cardName: {
     color: 'white',
-    fontSize: 10,
     textAlign: 'center',
     fontWeight: 500,
   },
   cardPT: {
     color: 'white',
-    fontSize: 14,
     fontWeight: 700,
-    marginTop: 8,
+    marginTop: 4,
   },
   tappedOverlay: {
     position: 'absolute',
@@ -724,8 +742,19 @@ const styles: Record<string, React.CSSProperties> = {
     pointerEvents: 'none',
   },
   summoningSicknessIcon: {
-    fontSize: 24,
     opacity: 0.8,
+  },
+  playableGlow: {
+    position: 'absolute',
+    top: -2,
+    left: -2,
+    right: -2,
+    bottom: -2,
+    borderRadius: 10,
+    pointerEvents: 'none',
+    animation: 'playablePulse 2s ease-in-out infinite',
+    background: 'transparent',
+    boxShadow: '0 0 8px rgba(0, 255, 0, 0.4)',
   },
   targetingOverlay: {
     position: 'absolute',
