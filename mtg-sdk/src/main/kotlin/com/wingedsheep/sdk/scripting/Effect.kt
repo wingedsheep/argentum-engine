@@ -505,6 +505,15 @@ sealed interface DynamicAmount {
     data object HandSizeDifferenceFromTargetOpponent : DynamicAmount {
         override val description: String = "the difference if target opponent has more cards in hand than you"
     }
+
+    /**
+     * Number of tapped creatures target opponent controls.
+     * Used for Theft of Dreams.
+     */
+    @Serializable
+    data object TappedCreaturesTargetOpponentControls : DynamicAmount {
+        override val description: String = "the number of tapped creatures target opponent controls"
+    }
 }
 
 // =============================================================================
@@ -2252,4 +2261,94 @@ data class SorcerousSightEffect(
     val target: EffectTarget = EffectTarget.Opponent
 ) : Effect {
     override val description: String = "Look at ${target.description}'s hand. Draw a card"
+}
+
+// =============================================================================
+// Combat Manipulation Effects
+// =============================================================================
+
+/**
+ * Force creatures to attack during target player's next turn.
+ * Used for Taunt: "During target player's next turn, creatures that player controls attack you if able."
+ */
+@Serializable
+data class TauntEffect(
+    val target: EffectTarget = EffectTarget.AnyPlayer
+) : Effect {
+    override val description: String =
+        "During ${target.description}'s next turn, creatures they control attack you if able"
+}
+
+/**
+ * Tap up to X target creatures with a filter.
+ * Used for Tidal Surge: "Tap up to three target creatures without flying."
+ */
+@Serializable
+data class TapTargetCreaturesEffect(
+    val maxTargets: Int,
+    val filter: CreatureTargetFilter = CreatureTargetFilter.Any
+) : Effect {
+    override val description: String = buildString {
+        append("Tap up to $maxTargets target ")
+        if (filter != CreatureTargetFilter.Any) {
+            append("${filter.description} ")
+        }
+        append("creature${if (maxTargets > 1) "s" else ""}")
+    }
+}
+
+/**
+ * Filter for creature targeting.
+ */
+@Serializable
+sealed interface CreatureTargetFilter {
+    val description: String
+
+    @Serializable
+    data object Any : CreatureTargetFilter {
+        override val description: String = ""
+    }
+
+    @Serializable
+    data object WithoutFlying : CreatureTargetFilter {
+        override val description: String = "without flying"
+    }
+
+    @Serializable
+    data object WithFlying : CreatureTargetFilter {
+        override val description: String = "with flying"
+    }
+
+    @Serializable
+    data object Tapped : CreatureTargetFilter {
+        override val description: String = "tapped"
+    }
+
+    @Serializable
+    data object Untapped : CreatureTargetFilter {
+        override val description: String = "untapped"
+    }
+
+    @Serializable
+    data object Attacking : CreatureTargetFilter {
+        override val description: String = "attacking"
+    }
+
+    @Serializable
+    data object Nonblack : CreatureTargetFilter {
+        override val description: String = "nonblack"
+    }
+}
+
+/**
+ * Sacrifice this creature unless you sacrifice a permanent of a specific type.
+ * Used for Thing from the Deep: "Whenever this creature attacks, sacrifice it unless you sacrifice an Island."
+ */
+@Serializable
+data class SacrificeUnlessSacrificePermanentEffect(
+    val permanentType: String
+) : Effect {
+    override val description: String = "Sacrifice this creature unless you sacrifice ${
+        if (permanentType.first().lowercaseChar() in "aeiou") "an" else "a"
+    } $permanentType"
 }

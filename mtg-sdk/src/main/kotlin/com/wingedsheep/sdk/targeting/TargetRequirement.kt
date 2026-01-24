@@ -195,6 +195,15 @@ sealed interface CreatureTargetFilter {
     data class AttackingWithSubtypeYouControl(val subtype: Subtype) : CreatureTargetFilter {
         override val description: String = "attacking ${subtype.value} you control"
     }
+
+    /**
+     * Creature that is not a specific color.
+     * Used for cards like "target nonblack creature"
+     */
+    @Serializable
+    data class NotColor(val color: Color) : CreatureTargetFilter {
+        override val description: String = "non${color.displayName.lowercase()}"
+    }
 }
 
 // =============================================================================

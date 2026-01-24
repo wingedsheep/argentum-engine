@@ -62,6 +62,7 @@ value class Subtype(val value: String) {
         val EEL = Subtype("Eel")
         val GIANT = Subtype("Giant")
         val GRIFFIN = Subtype("Griffin")
+        val LEVIATHAN = Subtype("Leviathan")
         val LIZARD = Subtype("Lizard")
         val MERFOLK = Subtype("Merfolk")
         val MINOTAUR = Subtype("Minotaur")
@@ -71,6 +72,7 @@ value class Subtype(val value: String) {
         val TREEFOLK = Subtype("Treefolk")
         val TURTLE = Subtype("Turtle")
         val UNICORN = Subtype("Unicorn")
+        val VAMPIRE = Subtype("Vampire")
 
         // Basic land types
         val PLAINS = Subtype("Plains")
