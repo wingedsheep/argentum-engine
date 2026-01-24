@@ -26,7 +26,7 @@ val Gravedigger = card("Gravedigger") {
     triggeredAbility {
         trigger = OnEnterBattlefield()
         optional = true
-        target = TargetCardInGraveyard(filter = GraveyardCardFilter.Creature, yourGraveyardOnly = true)
+        target = TargetCardInGraveyard(filter = GraveyardCardFilter.CreatureInYourGraveyard)
         effect = ReturnFromGraveyardEffect(
             filter = CardFilter.CreatureCard,
             destination = SearchDestination.HAND

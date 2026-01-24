@@ -1,13 +1,14 @@
 package com.wingedsheep.mtg.sets.definitions.portal.cards
 
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.ActivationRestriction
 import com.wingedsheep.sdk.scripting.DestroyEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.targeting.CreatureTargetFilter
+import com.wingedsheep.sdk.targeting.TargetCreature
 
 /**
  * King's Assassin
@@ -25,8 +26,8 @@ val KingsAssassin = card("King's Assassin") {
 
     activatedAbility {
         cost = AbilityCost.Tap
-        effect = DestroyEffect(EffectTarget.TargetTappedCreature)
-        targetRequirement = targets.TappedCreature
+        target = TargetCreature(filter = CreatureTargetFilter.Tapped)
+        effect = DestroyEffect(EffectTarget.ContextTarget(0))
         restrictions = listOf(
             ActivationRestriction.All(
                 ActivationRestriction.OnlyDuringYourTurn,

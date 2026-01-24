@@ -1552,7 +1552,9 @@ class PortalSetTest : DescribeSpec({
                 card.typeLine.isSorcery shouldBe true
                 card.spellEffect.shouldBeInstanceOf<DestroyEffect>()
                 val effect = card.spellEffect as DestroyEffect
-                effect.target shouldBe EffectTarget.TargetNonblackCreature
+                effect.target shouldBe EffectTarget.ContextTarget(0)
+                // Target requirement specifies nonblack creature
+                card.targetRequirements shouldHaveSize 1
             }
         }
 
@@ -1624,7 +1626,9 @@ class PortalSetTest : DescribeSpec({
                 card.spellEffect.shouldBeInstanceOf<DiscardRandomEffect>()
                 val effect = card.spellEffect as DiscardRandomEffect
                 effect.count shouldBe 1
-                effect.target shouldBe EffectTarget.Opponent
+                effect.target shouldBe EffectTarget.ContextTarget(0)
+                // Target requirement specifies opponent
+                card.targetRequirements shouldHaveSize 1
             }
         }
     }

@@ -2,6 +2,7 @@ package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.targeting.TargetRequirement
 import kotlinx.serialization.Serializable
 
 /**
@@ -13,6 +14,7 @@ data class ActivatedAbility(
     val id: AbilityId,
     val cost: AbilityCost,
     val effect: Effect,
+    val targetRequirement: TargetRequirement? = null,
     val timing: TimingRule = TimingRule.InstantSpeed,
     val restrictions: List<ActivationRestriction> = emptyList(),
     val isManaAbility: Boolean = false,

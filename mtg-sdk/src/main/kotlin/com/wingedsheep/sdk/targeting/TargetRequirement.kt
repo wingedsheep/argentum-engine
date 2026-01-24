@@ -377,6 +377,15 @@ sealed interface GraveyardCardFilter {
     data object InstantOrSorcery : GraveyardCardFilter {
         override val description: String = "instant or sorcery"
     }
+
+    /**
+     * Creature card in your graveyard.
+     * Used for "target creature card from your graveyard"
+     */
+    @Serializable
+    data object CreatureInYourGraveyard : GraveyardCardFilter {
+        override val description: String = "creature card from your graveyard"
+    }
 }
 
 // =============================================================================

@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.ModifyStatsEffect
+import com.wingedsheep.sdk.targeting.TargetCreature
 
 /**
  * Howling Fury
@@ -17,13 +18,13 @@ val HowlingFury = card("Howling Fury") {
     typeLine = "Sorcery"
 
     spell {
+        target = TargetCreature()
         effect = ModifyStatsEffect(
             powerModifier = 4,
             toughnessModifier = 0,
-            target = EffectTarget.TargetCreature,
+            target = EffectTarget.ContextTarget(0),
             duration = Duration.EndOfTurn
         )
-        targetRequirement = targets.Creature
     }
 
     metadata {

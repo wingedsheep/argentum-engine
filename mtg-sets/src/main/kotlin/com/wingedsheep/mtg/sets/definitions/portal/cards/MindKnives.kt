@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.DiscardRandomEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.targeting.TargetOpponent
 
 /**
  * Mind Knives
@@ -16,8 +17,8 @@ val MindKnives = card("Mind Knives") {
     typeLine = "Sorcery"
 
     spell {
-        effect = DiscardRandomEffect(1, EffectTarget.Opponent)
-        targetRequirement = targets.Opponent
+        target = TargetOpponent()
+        effect = DiscardRandomEffect(1, EffectTarget.ContextTarget(0))
     }
 
     metadata {

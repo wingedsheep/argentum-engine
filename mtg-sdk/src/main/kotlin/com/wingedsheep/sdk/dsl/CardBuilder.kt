@@ -491,6 +491,7 @@ class TriggeredAbilityBuilder {
 class ActivatedAbilityBuilder {
     var cost: AbilityCost = AbilityCost.Tap
     var effect: Effect = DrawCardsEffect(0, EffectTarget.Controller)
+    var target: TargetRequirement? = null
     var manaAbility: Boolean = false
     var timing: TimingRule = TimingRule.InstantSpeed
     var restrictions: List<ActivationRestriction> = emptyList()
@@ -499,6 +500,7 @@ class ActivatedAbilityBuilder {
         id = AbilityId.generate(),
         cost = cost,
         effect = effect,
+        targetRequirement = target,
         isManaAbility = manaAbility,
         timing = timing,
         restrictions = restrictions

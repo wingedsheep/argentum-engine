@@ -1,9 +1,12 @@
 package com.wingedsheep.mtg.sets.definitions.portal.cards
 
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.DestroyEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.targeting.CreatureTargetFilter
+import com.wingedsheep.sdk.targeting.TargetCreature
 
 /**
  * Hand of Death
@@ -16,8 +19,8 @@ val HandOfDeath = card("Hand of Death") {
     typeLine = "Sorcery"
 
     spell {
-        effect = DestroyEffect(EffectTarget.TargetNonblackCreature)
-        targetRequirement = targets.NonblackCreature
+        target = TargetCreature(filter = CreatureTargetFilter.NotColor(Color.BLACK))
+        effect = DestroyEffect(EffectTarget.ContextTarget(0))
     }
 
     metadata {

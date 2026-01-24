@@ -1,10 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.portal.cards
 
-import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CardFilter
+import com.wingedsheep.sdk.scripting.OnEnterBattlefield
 import com.wingedsheep.sdk.scripting.SacrificeUnlessDiscardEffect
 
 /**
@@ -22,7 +21,7 @@ val MercenaryKnight = card("Mercenary Knight") {
     toughness = 4
 
     triggeredAbility {
-        trigger = Triggers.EntersBattlefield
+        trigger = OnEnterBattlefield()
         effect = SacrificeUnlessDiscardEffect(CardFilter.CreatureCard)
     }
 
