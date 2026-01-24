@@ -122,7 +122,7 @@ class StateProjector {
     private fun collectContinuousEffects(state: GameState): List<ContinuousEffect> {
         val effects = mutableListOf<ContinuousEffect>()
 
-        // Collect effects from static abilities on permanents
+        // 1. Collect effects from static abilities on permanents
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
 
@@ -140,6 +140,27 @@ class StateProjector {
                         affectedEntities = resolveAffectedEntities(state, entityId, effect.affectsFilter)
                     )
                 })
+            }
+        }
+
+        // 2. Collect floating effects (from resolved spells like Giant Growth)
+        for (floating in state.floatingEffects) {
+            // Only include effects whose affected entities still exist on battlefield
+            val validAffectedEntities = floating.effect.affectedEntities.filter { entityId ->
+                state.getBattlefield().contains(entityId)
+            }.toSet()
+
+            if (validAffectedEntities.isNotEmpty()) {
+                effects.add(
+                    ContinuousEffect(
+                        sourceId = floating.sourceId ?: EntityId("floating-${floating.id}"),
+                        layer = floating.effect.layer,
+                        sublayer = floating.effect.sublayer,
+                        timestamp = floating.timestamp,
+                        modification = floating.effect.modification.toModification(),
+                        affectedEntities = validAffectedEntities
+                    )
+                )
             }
         }
 

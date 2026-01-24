@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.state
 
+import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.ZoneType
@@ -54,7 +55,10 @@ data class GameState(
     val gameOver: Boolean = false,
 
     /** Current pending decision awaiting player input (null if engine is not paused) */
-    val pendingDecision: com.wingedsheep.engine.core.PendingDecision? = null
+    val pendingDecision: com.wingedsheep.engine.core.PendingDecision? = null,
+
+    /** Active floating effects (temporary effects from spells like Giant Growth) */
+    val floatingEffects: List<ActiveFloatingEffect> = emptyList()
 ) {
     // =========================================================================
     // Entity Operations

@@ -1,0 +1,124 @@
+package com.wingedsheep.engine.mechanics.layers
+
+import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.Duration
+import kotlinx.serialization.Serializable
+
+/**
+ * Represents a "floating" continuous effect that exists independently of permanents.
+ *
+ * Floating effects are created by spells and abilities that resolve and create
+ * temporary modifications (like Giant Growth giving +3/+3 until end of turn).
+ *
+ * Unlike static abilities (which are tied to permanents), floating effects:
+ * - Exist in the game state independently
+ * - Have a duration that determines when they expire
+ * - Are cleaned up during the cleanup step (for EndOfTurn) or other appropriate times
+ *
+ * ## Example
+ * When Giant Growth resolves targeting a creature:
+ * 1. The spell moves to graveyard
+ * 2. An ActiveFloatingEffect is created with Duration.EndOfTurn
+ * 3. StateProjector reads this effect and applies +3/+3
+ * 4. At cleanup, TurnManager removes effects with EndOfTurn duration
+ */
+@Serializable
+data class ActiveFloatingEffect(
+    /** Unique identifier for this floating effect */
+    val id: EntityId,
+
+    /** The continuous effect data (layer, modification, affected entities) */
+    val effect: FloatingEffectData,
+
+    /** How long this effect lasts */
+    val duration: Duration,
+
+    /** The source that created this effect (for tracking/display) */
+    val sourceId: EntityId?,
+
+    /** The source's name (for UI display) */
+    val sourceName: String? = null,
+
+    /** Who controls this effect (for "your creatures" type effects) */
+    val controllerId: EntityId,
+
+    /** Timestamp when this effect was created (for ordering) */
+    val timestamp: Long
+)
+
+/**
+ * Data for a floating continuous effect.
+ *
+ * This is separate from ContinuousEffectData because floating effects
+ * store their affected entities directly (resolved at creation time)
+ * rather than using a filter that's re-evaluated.
+ */
+@Serializable
+data class FloatingEffectData(
+    /** Which layer this effect applies in */
+    val layer: Layer,
+
+    /** Sublayer for layer 7 (P/T) effects */
+    val sublayer: Sublayer? = null,
+
+    /** What modification this effect makes */
+    val modification: SerializableModification,
+
+    /** The specific entities this effect applies to (resolved at creation) */
+    val affectedEntities: Set<EntityId>
+)
+
+/**
+ * Serializable version of Modification for floating effects.
+ *
+ * This mirrors the Modification sealed interface but is serializable
+ * for storage in GameState.
+ */
+@Serializable
+sealed interface SerializableModification {
+    @Serializable
+    data class SetPowerToughness(val power: Int, val toughness: Int) : SerializableModification
+
+    @Serializable
+    data class ModifyPowerToughness(val powerMod: Int, val toughnessMod: Int) : SerializableModification
+
+    @Serializable
+    data object SwitchPowerToughness : SerializableModification
+
+    @Serializable
+    data class GrantKeyword(val keyword: String) : SerializableModification
+
+    @Serializable
+    data class RemoveKeyword(val keyword: String) : SerializableModification
+
+    @Serializable
+    data class ChangeColor(val colors: Set<String>) : SerializableModification
+
+    @Serializable
+    data class AddColor(val colors: Set<String>) : SerializableModification
+
+    @Serializable
+    data class AddType(val type: String) : SerializableModification
+
+    @Serializable
+    data class RemoveType(val type: String) : SerializableModification
+
+    @Serializable
+    data class ChangeController(val newControllerId: EntityId) : SerializableModification
+}
+
+/**
+ * Convert SerializableModification to Modification for the projector.
+ */
+fun SerializableModification.toModification(): Modification = when (this) {
+    is SerializableModification.SetPowerToughness -> Modification.SetPowerToughness(power, toughness)
+    is SerializableModification.ModifyPowerToughness -> Modification.ModifyPowerToughness(powerMod, toughnessMod)
+    is SerializableModification.SwitchPowerToughness -> Modification.SwitchPowerToughness(EntityId(""))
+    is SerializableModification.GrantKeyword -> Modification.GrantKeyword(keyword)
+    is SerializableModification.RemoveKeyword -> Modification.RemoveKeyword(keyword)
+    is SerializableModification.ChangeColor -> Modification.ChangeColor(colors)
+    is SerializableModification.AddColor -> Modification.AddColor(colors)
+    is SerializableModification.AddType -> Modification.AddType(type)
+    is SerializableModification.RemoveType -> Modification.RemoveType(type)
+    is SerializableModification.ChangeController -> Modification.ChangeController(newControllerId)
+}

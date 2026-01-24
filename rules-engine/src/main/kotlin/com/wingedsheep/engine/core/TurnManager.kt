@@ -7,10 +7,13 @@ import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComp
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.player.LandDropsComponent
+import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.Duration
 
 /**
  * Manages turn-based game flow: phases, steps, and turn transitions.
@@ -303,11 +306,59 @@ class TurnManager {
 
     /**
      * Clean up end-of-turn effects.
+     *
+     * This is called at the end of each turn and handles:
+     * 1. Expiring "until end of turn" floating effects (Giant Growth, etc.)
+     * 2. Emptying mana pools
+     * 3. Resetting per-turn trackers (land drops)
      */
     private fun cleanupEndOfTurn(state: GameState): GameState {
-        // TODO: Remove "until end of turn" continuous effects
-        // TODO: Empty mana pools
-        return state
+        var newState = state
+
+        // 1. Expire floating effects with EndOfTurn duration
+        val remainingEffects = newState.floatingEffects.filter { floatingEffect ->
+            when (floatingEffect.duration) {
+                is Duration.EndOfTurn -> false  // Remove it
+                is Duration.EndOfCombat -> false  // Should already be removed, but clean up
+                is Duration.UntilYourNextTurn -> true  // Keep until that player's next turn
+                is Duration.UntilYourNextUpkeep -> true  // Keep until upkeep
+                is Duration.Permanent -> true  // Never expires
+                is Duration.WhileSourceOnBattlefield -> {
+                    // Keep if source is still on battlefield
+                    val sourceId = floatingEffect.sourceId
+                    sourceId != null && newState.getBattlefield().contains(sourceId)
+                }
+                is Duration.UntilPhase -> true  // Handle in phase transitions
+                is Duration.UntilCondition -> true  // Handle condition checking elsewhere
+            }
+        }
+        newState = newState.copy(floatingEffects = remainingEffects)
+
+        // 2. Empty mana pools for all players
+        for (playerId in newState.turnOrder) {
+            newState = newState.updateEntity(playerId) { container ->
+                val manaPool = container.get<ManaPoolComponent>()
+                if (manaPool != null && !manaPool.isEmpty) {
+                    container.with(manaPool.empty())
+                } else {
+                    container
+                }
+            }
+        }
+
+        // 3. Reset per-turn trackers (land drops reset at start of turn, but clean up here too)
+        for (playerId in newState.turnOrder) {
+            newState = newState.updateEntity(playerId) { container ->
+                val landDrops = container.get<LandDropsComponent>()
+                if (landDrops != null) {
+                    container.with(landDrops.reset())
+                } else {
+                    container
+                }
+            }
+        }
+
+        return newState
     }
 
     /**
