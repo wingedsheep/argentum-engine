@@ -6,8 +6,11 @@ import com.wingedsheep.gameserver.protocol.GameOverReason
 import com.wingedsheep.gameserver.protocol.ServerMessage
 import com.wingedsheep.gameserver.session.GameSession
 import com.wingedsheep.gameserver.session.PlayerSession
-import com.wingedsheep.rulesengine.ecs.EntityId
-import com.wingedsheep.rulesengine.ecs.action.gameActionSerializersModule
+import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.engine.core.GameEvent
+import com.wingedsheep.engine.core.engineSerializersModule
+import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.mtg.sets.definitions.portal.PortalSet
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
@@ -36,7 +39,12 @@ class GameWebSocketHandler : TextWebSocketHandler() {
         ignoreUnknownKeys = true
         encodeDefaults = true
         classDiscriminator = "type"
-        serializersModule = gameActionSerializersModule
+        serializersModule = engineSerializersModule
+    }
+
+    // Card registry for loading card definitions
+    private val cardRegistry = CardRegistry().apply {
+        register(PortalSet.allCards)
     }
 
     // Connected players indexed by WebSocket session ID
@@ -119,8 +127,8 @@ class GameWebSocketHandler : TextWebSocketHandler() {
             return
         }
 
-        // Create new game session
-        val gameSession = GameSession()
+        // Create new game session with CardRegistry
+        val gameSession = GameSession(cardRegistry = cardRegistry)
         gameSession.addPlayer(playerSession, message.deckList)
 
         gameSessions[gameSession.sessionId] = gameSession
@@ -331,8 +339,7 @@ class GameWebSocketHandler : TextWebSocketHandler() {
     private fun checkMulliganPhaseComplete(gameSession: GameSession) {
         if (gameSession.allMulligansComplete) {
             logger.info("Mulligan phase complete for game ${gameSession.sessionId}")
-            // Advance the game to the first step with priority (UPKEEP)
-            gameSession.startMainGame()
+            // The engine handles advancing out of mulligan phase automatically
             // Send initial state updates to both players
             broadcastStateUpdate(gameSession, emptyList())
         }
@@ -367,13 +374,18 @@ class GameWebSocketHandler : TextWebSocketHandler() {
         val result = gameSession.executeAction(playerSession.playerId, message.action)
         when (result) {
             is GameSession.ActionResult.Success -> {
-                logger.debug("Action executed: ${message.action.description}")
+                logger.debug("Action executed successfully")
                 broadcastStateUpdate(gameSession, result.events)
 
                 // Check if game ended
                 if (gameSession.isGameOver()) {
                     broadcastGameOver(gameSession)
                 }
+            }
+            is GameSession.ActionResult.PausedForDecision -> {
+                logger.debug("Action paused for decision: ${result.decision}")
+                broadcastStateUpdate(gameSession, result.events)
+                // The client will receive the state with pending decision info
             }
             is GameSession.ActionResult.Failure -> {
                 sendError(session, ErrorCode.INVALID_ACTION, result.reason)
@@ -439,7 +451,7 @@ class GameWebSocketHandler : TextWebSocketHandler() {
 
     private fun broadcastStateUpdate(
         gameSession: GameSession,
-        events: List<com.wingedsheep.rulesengine.ecs.action.GameActionEvent>
+        events: List<GameEvent>
     ) {
         val player1 = gameSession.player1
         val player2 = gameSession.player2

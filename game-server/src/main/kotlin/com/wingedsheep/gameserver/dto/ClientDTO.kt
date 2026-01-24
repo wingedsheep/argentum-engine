@@ -1,12 +1,12 @@
 package com.wingedsheep.gameserver.dto
 
-import com.wingedsheep.rulesengine.core.Color
-import com.wingedsheep.rulesengine.core.CounterType
-import com.wingedsheep.rulesengine.core.Keyword
-import com.wingedsheep.rulesengine.ecs.EntityId
-import com.wingedsheep.rulesengine.ecs.ZoneId
-import com.wingedsheep.rulesengine.game.Phase
-import com.wingedsheep.rulesengine.game.Step
+import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.sdk.core.Phase
+import com.wingedsheep.sdk.core.Step
 import kotlinx.serialization.Serializable
 
 /**
@@ -130,7 +130,7 @@ data class ClientCard(
     val isToken: Boolean,
 
     /** Zone this card is currently in */
-    val zone: ZoneId?,
+    val zone: ZoneKey?,
 
     /** Attached to (for auras, equipment) */
     val attachedTo: EntityId?,
@@ -147,7 +147,7 @@ data class ClientCard(
  */
 @Serializable
 data class ClientZone(
-    val zoneId: ZoneId,
+    val zoneId: ZoneKey,
 
     /** Card IDs in this zone, in order */
     val cardIds: List<EntityId>,

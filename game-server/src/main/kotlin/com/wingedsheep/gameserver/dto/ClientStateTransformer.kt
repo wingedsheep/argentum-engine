@@ -1,14 +1,14 @@
 package com.wingedsheep.gameserver.dto
 
-import com.wingedsheep.rulesengine.core.Color
-import com.wingedsheep.rulesengine.core.Keyword
-import com.wingedsheep.rulesengine.ecs.EntityId
-import com.wingedsheep.rulesengine.ecs.GameState
-import com.wingedsheep.rulesengine.ecs.ZoneId
-import com.wingedsheep.rulesengine.ecs.components.*
-import com.wingedsheep.rulesengine.ecs.layers.ModifierProvider
-import com.wingedsheep.rulesengine.ecs.layers.ProjectionCache
-import com.wingedsheep.rulesengine.zone.ZoneType
+import com.wingedsheep.sdk.core.Phase
+import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.identity.*
+import com.wingedsheep.engine.state.components.battlefield.*
+import com.wingedsheep.engine.state.components.combat.*
+import com.wingedsheep.engine.state.components.player.*
 
 /**
  * Transforms internal game state into client-facing DTOs.
@@ -19,21 +19,17 @@ import com.wingedsheep.rulesengine.zone.ZoneType
  * - Applies continuous effects to show "true" card state
  * - Prevents information leakage by only including relevant data
  */
-class ClientStateTransformer(
-    private val modifierProvider: ModifierProvider? = null
-) {
+class ClientStateTransformer {
     /**
      * Transform the game state for a specific player's view.
      *
      * @param state The full game state
      * @param viewingPlayerId The player who will see this state
-     * @param projectionCache Optional cache for layer projections
      * @return Client-safe game state DTO
      */
     fun transform(
         state: GameState,
-        viewingPlayerId: EntityId,
-        projectionCache: ProjectionCache? = null
+        viewingPlayerId: EntityId
     ): ClientGameState {
         // Build visible cards map
         val cards = mutableMapOf<EntityId, ClientCard>()
@@ -41,12 +37,12 @@ class ClientStateTransformer(
         // Process all zones
         val zones = mutableListOf<ClientZone>()
 
-        for ((zoneId, entityIds) in state.zones) {
-            val isVisible = isZoneVisibleTo(zoneId, viewingPlayerId)
+        for ((zoneKey, entityIds) in state.zones) {
+            val isVisible = isZoneVisibleTo(zoneKey, viewingPlayerId)
 
             zones.add(
                 ClientZone(
-                    zoneId = zoneId,
+                    zoneId = zoneKey,
                     cardIds = if (isVisible) entityIds else emptyList(),
                     size = entityIds.size,
                     isVisible = isVisible
@@ -56,7 +52,7 @@ class ClientStateTransformer(
             // Only include card details for visible zones
             if (isVisible) {
                 for (entityId in entityIds) {
-                    val clientCard = transformCard(state, entityId, zoneId, projectionCache)
+                    val clientCard = transformCard(state, entityId, zoneKey)
                     if (clientCard != null) {
                         cards[entityId] = clientCard
                     }
@@ -65,25 +61,29 @@ class ClientStateTransformer(
         }
 
         // Build player information
-        val players = state.getPlayerIds().map { playerId ->
+        val players = state.turnOrder.map { playerId ->
             transformPlayer(state, playerId, viewingPlayerId)
         }
 
         // Build combat state if in combat
         val combat = transformCombat(state)
 
+        // Get active and priority players, defaulting to first player if not set
+        val activePlayerId = state.activePlayerId ?: state.turnOrder.firstOrNull() ?: viewingPlayerId
+        val priorityPlayerId = state.priorityPlayerId ?: activePlayerId
+
         return ClientGameState(
             viewingPlayerId = viewingPlayerId,
             cards = cards,
             zones = zones,
             players = players,
-            currentPhase = state.currentPhase,
-            currentStep = state.currentStep,
-            activePlayerId = state.activePlayerId,
-            priorityPlayerId = state.priorityPlayerId,
+            currentPhase = state.phase,
+            currentStep = state.step,
+            activePlayerId = activePlayerId,
+            priorityPlayerId = priorityPlayerId,
             turnNumber = state.turnNumber,
-            isGameOver = state.isGameOver,
-            winnerId = state.winner,
+            isGameOver = state.gameOver,
+            winnerId = state.winnerId,
             combat = combat
         )
     }
@@ -91,10 +91,10 @@ class ClientStateTransformer(
     /**
      * Check if a zone's contents should be visible to a player.
      */
-    private fun isZoneVisibleTo(zoneId: ZoneId, viewingPlayerId: EntityId): Boolean {
-        return when (zoneId.type) {
+    private fun isZoneVisibleTo(zoneKey: ZoneKey, viewingPlayerId: EntityId): Boolean {
+        return when (zoneKey.zoneType) {
             ZoneType.LIBRARY -> false
-            ZoneType.HAND -> zoneId.ownerId == viewingPlayerId
+            ZoneType.HAND -> zoneKey.ownerId == viewingPlayerId
             ZoneType.BATTLEFIELD,
             ZoneType.GRAVEYARD,
             ZoneType.STACK,
@@ -109,34 +109,30 @@ class ClientStateTransformer(
     private fun transformCard(
         state: GameState,
         entityId: EntityId,
-        zoneId: ZoneId,
-        projectionCache: ProjectionCache?
+        zoneKey: ZoneKey
     ): ClientCard? {
         val container = state.getEntity(entityId) ?: return null
         val cardComponent = container.get<CardComponent>() ?: return null
-        val definition = cardComponent.definition
 
-        // Get controller
-        val controllerId = container.get<ControllerComponent>()?.controllerId
+        // Get controller (default to owner if not set)
+        val controllerId = container.get<ControllerComponent>()?.playerId
             ?: cardComponent.ownerId
+            ?: return null
 
-        // Get projected values for battlefield cards (continuous effects)
-        val projectedView = if (zoneId.type == ZoneType.BATTLEFIELD && projectionCache != null) {
-            projectionCache.getView(state, entityId, modifierProvider)
-        } else {
-            null
-        }
+        // Get owner
+        val ownerId = cardComponent.ownerId ?: container.get<OwnerComponent>()?.playerId ?: controllerId
 
-        // Use projected values if available, otherwise use base definition
-        val power = projectedView?.power ?: definition.creatureStats?.basePower
-        val toughness = projectedView?.toughness ?: definition.creatureStats?.baseToughness
-        val keywords = projectedView?.keywords ?: definition.keywords
-        val colors = projectedView?.colors ?: definition.colors
+        // Use base values from the CardComponent
+        // TODO: When layer projection is needed, apply continuous effects here
+        val power = cardComponent.baseStats?.basePower
+        val toughness = cardComponent.baseStats?.baseToughness
+        val keywords = cardComponent.baseKeywords
+        val colors = cardComponent.colors
 
         // Get state components
         val isTapped = container.has<TappedComponent>()
         val hasSummoningSickness = container.has<SummoningSicknessComponent>()
-        val isTransformed = container.has<TransformedComponent>()
+        val isFaceDown = container.has<FaceDownComponent>()
 
         // Get damage
         val damageComponent = container.get<DamageComponent>()
@@ -151,13 +147,8 @@ class ClientStateTransformer(
         val blockingComponent = container.get<BlockingComponent>()
         val isAttacking = attackingComponent != null
         val isBlocking = blockingComponent != null
-        val attackingTarget = when (val target = attackingComponent?.target) {
-            is CombatTarget.Player -> target.playerId
-            is CombatTarget.Planeswalker -> target.planeswalkerEntityId
-            is CombatTarget.Battle -> target.battleEntityId
-            null -> null
-        }
-        val blockingTarget = blockingComponent?.attackerId
+        val attackingTarget = attackingComponent?.defenderId
+        val blockingTarget = blockingComponent?.blockedAttackerIds?.firstOrNull()
 
         // Get attachments
         val attachedToComponent = container.get<AttachedToComponent>()
@@ -165,34 +156,35 @@ class ClientStateTransformer(
 
         // Compute what's attached to this card
         val attachments = state.getBattlefield().filter { otherId ->
-            state.getComponent<AttachedToComponent>(otherId)?.targetId == entityId
+            state.getEntity(otherId)?.get<AttachedToComponent>()?.targetId == entityId
         }
 
         // Check if token
         val isToken = container.has<TokenComponent>()
 
-        // Build type line string
+        // Build type line string from TypeLine
+        val typeLine = cardComponent.typeLine
         val typeLineParts = mutableListOf<String>()
-        if (definition.typeLine.supertypes.isNotEmpty()) {
-            typeLineParts.add(definition.typeLine.supertypes.joinToString(" ") { it.displayName })
+        if (typeLine.supertypes.isNotEmpty()) {
+            typeLineParts.add(typeLine.supertypes.joinToString(" ") { it.displayName })
         }
-        typeLineParts.add(definition.typeLine.cardTypes.joinToString(" ") { it.displayName })
-        val typeLine = if (definition.typeLine.subtypes.isNotEmpty()) {
-            "${typeLineParts.joinToString(" ")} — ${definition.typeLine.subtypes.joinToString(" ") { it.value }}"
+        typeLineParts.add(typeLine.cardTypes.joinToString(" ") { it.displayName })
+        val typeLineString = if (typeLine.subtypes.isNotEmpty()) {
+            "${typeLineParts.joinToString(" ")} — ${typeLine.subtypes.joinToString(" ") { it.value }}"
         } else {
             typeLineParts.joinToString(" ")
         }
 
         return ClientCard(
             id = entityId,
-            name = definition.name,
-            manaCost = definition.manaCost.toString(),
-            manaValue = definition.cmc,
-            typeLine = typeLine,
-            cardTypes = definition.typeLine.cardTypes.map { it.name }.toSet(),
-            subtypes = definition.typeLine.subtypes.map { it.value }.toSet(),
+            name = cardComponent.name,
+            manaCost = cardComponent.manaCost.toString(),
+            manaValue = cardComponent.manaCost.cmc,
+            typeLine = typeLineString,
+            cardTypes = typeLine.cardTypes.map { it.name }.toSet(),
+            subtypes = typeLine.subtypes.map { it.value }.toSet(),
             colors = colors,
-            oracleText = definition.oracleText,
+            oracleText = cardComponent.oracleText,
             power = power,
             toughness = toughness,
             damage = damage,
@@ -200,18 +192,18 @@ class ClientStateTransformer(
             counters = counters,
             isTapped = isTapped,
             hasSummoningSickness = hasSummoningSickness,
-            isTransformed = isTransformed,
+            isTransformed = false, // TODO: Add transformed support
             isAttacking = isAttacking,
             isBlocking = isBlocking,
             attackingTarget = attackingTarget,
             blockingTarget = blockingTarget,
             controllerId = controllerId,
-            ownerId = cardComponent.ownerId,
+            ownerId = ownerId,
             isToken = isToken,
-            zone = zoneId,
+            zone = zoneKey,
             attachedTo = attachedTo,
             attachments = attachments,
-            isFaceDown = false // TODO: Add face-down support for morph
+            isFaceDown = isFaceDown
         )
     }
 
@@ -223,18 +215,36 @@ class ClientStateTransformer(
         playerId: EntityId,
         viewingPlayerId: EntityId
     ): ClientPlayer {
-        val playerComponent = state.getComponent<PlayerComponent>(playerId)
+        val container = state.getEntity(playerId)
+        val playerComponent = container?.get<PlayerComponent>()
+        val lifeTotalComponent = container?.get<LifeTotalComponent>()
+        val landDropsComponent = container?.get<LandDropsComponent>()
+        val manaPoolComponent = container?.get<ManaPoolComponent>()
+
+        // Calculate zone sizes
+        val handSize = state.getHand(playerId).size
+        val librarySize = state.getLibrary(playerId).size
+        val graveyardSize = state.getGraveyard(playerId).size
+
+        // Determine lands played this turn
+        val landsPlayed = if (landDropsComponent != null) {
+            landDropsComponent.maxPerTurn - landDropsComponent.remaining
+        } else {
+            0
+        }
+
+        // Check if player has lost (they're not the winner and game is over)
+        val hasLost = state.gameOver && state.winnerId != null && state.winnerId != playerId
 
         // Only show mana pool to the player themselves
-        val manaPool = if (playerId == viewingPlayerId) {
-            val pool = state.getManaPool(playerId)
+        val manaPool = if (playerId == viewingPlayerId && manaPoolComponent != null) {
             ClientManaPool(
-                white = pool.white,
-                blue = pool.blue,
-                black = pool.black,
-                red = pool.red,
-                green = pool.green,
-                colorless = pool.colorless
+                white = manaPoolComponent.white,
+                blue = manaPoolComponent.blue,
+                black = manaPoolComponent.black,
+                red = manaPoolComponent.red,
+                green = manaPoolComponent.green,
+                colorless = manaPoolComponent.colorless
             )
         } else {
             null
@@ -243,13 +253,13 @@ class ClientStateTransformer(
         return ClientPlayer(
             playerId = playerId,
             name = playerComponent?.name ?: "Unknown",
-            life = state.getLife(playerId),
-            poisonCounters = state.getPoisonCounters(playerId),
-            handSize = state.getHandSize(playerId),
-            librarySize = state.getLibrarySize(playerId),
-            graveyardSize = state.getGraveyardSize(playerId),
-            landsPlayedThisTurn = state.getLandsPlayed(playerId),
-            hasLost = state.hasLost(playerId),
+            life = lifeTotalComponent?.life ?: 20,
+            poisonCounters = 0, // TODO: Add poison counter component support
+            handSize = handSize,
+            librarySize = librarySize,
+            graveyardSize = graveyardSize,
+            landsPlayedThisTurn = landsPlayed,
+            hasLost = hasLost,
             manaPool = manaPool
         )
     }
@@ -258,48 +268,64 @@ class ClientStateTransformer(
      * Transform combat state if in combat.
      */
     private fun transformCombat(state: GameState): ClientCombatState? {
-        val combat = state.combat ?: return null
+        // Check if we're in a combat step
+        if (state.step.phase != Phase.COMBAT) {
+            return null
+        }
 
         val attackers = mutableListOf<ClientAttacker>()
         val blockers = mutableListOf<ClientBlocker>()
+        var attackingPlayerId: EntityId? = null
+        var defendingPlayerId: EntityId? = null
 
-        // Find all attackers
+        // Find all attackers and blockers
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue
 
             val attackingComponent = container.get<AttackingComponent>()
             if (attackingComponent != null) {
-                val blockedByComponent = container.get<BlockedByComponent>()
+                val blockedComponent = container.get<BlockedComponent>()
+
+                // Track the attacking and defending players
+                val controllerId = container.get<ControllerComponent>()?.playerId
+                if (controllerId != null) {
+                    attackingPlayerId = controllerId
+                    defendingPlayerId = attackingComponent.defenderId
+                }
+
                 attackers.add(
                     ClientAttacker(
                         creatureId = entityId,
-                        creatureName = cardComponent.definition.name,
-                        attackingTarget = when (val target = attackingComponent.target) {
-                            is CombatTarget.Player -> ClientCombatTarget.Player(target.playerId)
-                            is CombatTarget.Planeswalker -> ClientCombatTarget.Planeswalker(target.planeswalkerEntityId)
-                            is CombatTarget.Battle -> ClientCombatTarget.Player(target.battleEntityId) // Treat as player for now
-                        },
-                        blockedBy = blockedByComponent?.blockerIds ?: emptyList()
+                        creatureName = cardComponent.name,
+                        attackingTarget = ClientCombatTarget.Player(attackingComponent.defenderId),
+                        blockedBy = blockedComponent?.blockerIds ?: emptyList()
                     )
                 )
             }
 
             val blockingComponent = container.get<BlockingComponent>()
             if (blockingComponent != null) {
-                blockers.add(
-                    ClientBlocker(
-                        creatureId = entityId,
-                        creatureName = cardComponent.definition.name,
-                        blockingAttacker = blockingComponent.attackerId
+                for (attackerId in blockingComponent.blockedAttackerIds) {
+                    blockers.add(
+                        ClientBlocker(
+                            creatureId = entityId,
+                            creatureName = cardComponent.name,
+                            blockingAttacker = attackerId
+                        )
                     )
-                )
+                }
             }
         }
 
+        // If no attackers, there's no combat state to show
+        if (attackers.isEmpty()) {
+            return null
+        }
+
         return ClientCombatState(
-            attackingPlayerId = combat.attackingPlayer,
-            defendingPlayerId = combat.defendingPlayer,
+            attackingPlayerId = attackingPlayerId ?: state.activePlayerId ?: return null,
+            defendingPlayerId = defendingPlayerId ?: state.getOpponent(attackingPlayerId!!) ?: return null,
             attackers = attackers,
             blockers = blockers
         )

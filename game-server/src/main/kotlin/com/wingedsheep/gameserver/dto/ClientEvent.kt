@@ -1,14 +1,14 @@
 package com.wingedsheep.gameserver.dto
 
-import com.wingedsheep.rulesengine.ecs.EntityId
-import com.wingedsheep.rulesengine.ecs.action.GameActionEvent
+import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.engine.core.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
  * Client-facing game events.
  *
- * These are simplified versions of internal GameActionEvents that:
+ * These are simplified versions of internal GameEvents that:
  * - Only include information relevant to the client
  * - Use consistent naming conventions
  * - Are stable for client consumption
@@ -280,7 +280,7 @@ sealed interface ClientEvent {
 }
 
 /**
- * Transforms internal GameActionEvents into client-friendly ClientEvents.
+ * Transforms internal GameEvents into client-friendly ClientEvents.
  */
 object ClientEventTransformer {
 
@@ -292,156 +292,191 @@ object ClientEventTransformer {
      * @return Client-friendly events
      */
     fun transform(
-        events: List<GameActionEvent>,
+        events: List<GameEvent>,
         viewingPlayerId: EntityId
     ): List<ClientEvent> {
         return events.mapNotNull { event -> transformEvent(event, viewingPlayerId) }
     }
 
     private fun transformEvent(
-        event: GameActionEvent,
+        event: GameEvent,
         viewingPlayerId: EntityId
     ): ClientEvent? {
         return when (event) {
-            is GameActionEvent.LifeChanged -> ClientEvent.LifeChanged(
+            is LifeChangedEvent -> ClientEvent.LifeChanged(
                 playerId = event.playerId,
                 oldLife = event.oldLife,
                 newLife = event.newLife,
                 change = event.newLife - event.oldLife
             )
 
-            is GameActionEvent.DamageDealtToPlayer -> ClientEvent.DamageDealt(
+            is DamageDealtEvent -> ClientEvent.DamageDealt(
                 sourceId = event.sourceId,
                 sourceName = null, // Would need state lookup for source name
                 targetId = event.targetId,
-                targetName = "Player",
+                targetName = "Target", // Would need state lookup
                 amount = event.amount,
-                targetIsPlayer = true,
-                isCombatDamage = false
+                targetIsPlayer = false, // Would need state lookup
+                isCombatDamage = event.isCombatDamage
             )
 
-            is GameActionEvent.DamageDealtToCreature -> ClientEvent.DamageDealt(
-                sourceId = event.sourceId,
-                sourceName = null,
-                targetId = event.targetId,
-                targetName = "Creature", // Would need state lookup
-                amount = event.amount,
-                targetIsPlayer = false,
-                isCombatDamage = false
-            )
-
-            is GameActionEvent.CardDrawn -> {
-                // Mask card name if it's opponent's draw
-                val showName = event.playerId == viewingPlayerId
-                ClientEvent.CardDrawn(
-                    playerId = event.playerId,
-                    cardId = event.cardId,
-                    cardName = if (showName) event.cardName else null
-                )
+            is CardsDrawnEvent -> {
+                // For now, just create one event for each card drawn
+                // In future could batch them
+                val showNames = event.playerId == viewingPlayerId
+                if (event.cardIds.isNotEmpty()) {
+                    ClientEvent.CardDrawn(
+                        playerId = event.playerId,
+                        cardId = event.cardIds.first(),
+                        cardName = if (showNames) "Card" else null // Would need state lookup
+                    )
+                } else null
             }
 
-            is GameActionEvent.CardDiscarded -> ClientEvent.CardDiscarded(
-                playerId = event.playerId,
-                cardId = event.cardId,
-                cardName = event.cardName
-            )
+            is CardsDiscardedEvent -> {
+                if (event.cardIds.isNotEmpty()) {
+                    ClientEvent.CardDiscarded(
+                        playerId = event.playerId,
+                        cardId = event.cardIds.first(),
+                        cardName = "Card" // Would need state lookup
+                    )
+                } else null
+            }
 
-            is GameActionEvent.PermanentEnteredBattlefield -> ClientEvent.PermanentEntered(
-                cardId = event.entityId,
-                cardName = event.name,
-                controllerId = event.controllerId,
-                enteredTapped = false // Would need to check state
-            )
+            is ZoneChangeEvent -> {
+                when (event.toZone) {
+                    com.wingedsheep.sdk.core.ZoneType.BATTLEFIELD -> ClientEvent.PermanentEntered(
+                        cardId = event.entityId,
+                        cardName = event.entityName,
+                        controllerId = event.ownerId,
+                        enteredTapped = false // Would need to check state
+                    )
+                    com.wingedsheep.sdk.core.ZoneType.GRAVEYARD -> ClientEvent.PermanentLeft(
+                        cardId = event.entityId,
+                        cardName = event.entityName,
+                        destination = "graveyard"
+                    )
+                    com.wingedsheep.sdk.core.ZoneType.EXILE -> ClientEvent.PermanentLeft(
+                        cardId = event.entityId,
+                        cardName = event.entityName,
+                        destination = "exile"
+                    )
+                    com.wingedsheep.sdk.core.ZoneType.HAND -> ClientEvent.PermanentLeft(
+                        cardId = event.entityId,
+                        cardName = event.entityName,
+                        destination = "hand"
+                    )
+                    com.wingedsheep.sdk.core.ZoneType.LIBRARY -> ClientEvent.PermanentLeft(
+                        cardId = event.entityId,
+                        cardName = event.entityName,
+                        destination = "library"
+                    )
+                    else -> null
+                }
+            }
 
-            is GameActionEvent.CreatureDied -> ClientEvent.CreatureDied(
+            is CreatureDestroyedEvent -> ClientEvent.CreatureDied(
                 creatureId = event.entityId,
                 creatureName = event.name
             )
 
-            is GameActionEvent.AttackerDeclared -> ClientEvent.CreatureAttacked(
-                creatureId = event.creatureId,
-                creatureName = event.name,
-                attackingPlayerId = EntityId.of("unknown"), // Would need state
-                defendingPlayerId = EntityId.of("unknown")
-            )
-
-            is GameActionEvent.BlockerDeclared -> ClientEvent.CreatureBlocked(
-                blockerId = event.blockerId,
-                blockerName = event.name,
-                attackerId = event.attackerId,
-                attackerName = "Attacker" // Would need state lookup
-            )
-
-            is GameActionEvent.SpellCast -> ClientEvent.SpellCast(
-                spellId = event.entityId,
-                spellName = event.name,
+            is SpellCastEvent -> ClientEvent.SpellCast(
+                spellId = event.spellEntityId,
+                spellName = event.cardName,
                 casterId = event.casterId
             )
 
-            is GameActionEvent.SpellResolved -> ClientEvent.SpellResolved(
+            is ResolvedEvent -> ClientEvent.SpellResolved(
                 spellId = event.entityId,
                 spellName = event.name
             )
 
-            is GameActionEvent.SpellFizzled -> ClientEvent.SpellCountered(
-                spellId = event.entityId,
-                spellName = event.name
+            is SpellCounteredEvent -> ClientEvent.SpellCountered(
+                spellId = event.spellEntityId,
+                spellName = event.cardName
             )
 
-            is GameActionEvent.PermanentTapped -> ClientEvent.PermanentTapped(
+            is SpellFizzledEvent -> ClientEvent.SpellCountered(
+                spellId = event.spellEntityId,
+                spellName = event.cardName
+            )
+
+            is AbilityTriggeredEvent -> ClientEvent.AbilityTriggered(
+                sourceId = event.sourceId,
+                sourceName = event.sourceName,
+                abilityDescription = event.description
+            )
+
+            is AbilityActivatedEvent -> ClientEvent.AbilityActivated(
+                sourceId = event.sourceId,
+                sourceName = event.sourceName,
+                abilityDescription = "" // Description not available
+            )
+
+            is TappedEvent -> ClientEvent.PermanentTapped(
                 permanentId = event.entityId,
-                permanentName = event.name
+                permanentName = event.entityName
             )
 
-            is GameActionEvent.PermanentUntapped -> ClientEvent.PermanentUntapped(
+            is UntappedEvent -> ClientEvent.PermanentUntapped(
                 permanentId = event.entityId,
-                permanentName = event.name
+                permanentName = event.entityName
             )
 
-            is GameActionEvent.CounterAdded -> ClientEvent.CounterAdded(
+            is CountersAddedEvent -> ClientEvent.CounterAdded(
                 permanentId = event.entityId,
                 permanentName = "", // Would need state lookup
                 counterType = event.counterType,
-                count = event.count
+                count = event.amount
             )
 
-            is GameActionEvent.CounterRemoved -> ClientEvent.CounterRemoved(
+            is CountersRemovedEvent -> ClientEvent.CounterRemoved(
                 permanentId = event.entityId,
                 permanentName = "", // Would need state lookup
                 counterType = event.counterType,
-                count = event.count
+                count = event.amount
             )
 
-            is GameActionEvent.ManaAdded -> ClientEvent.ManaAdded(
+            is ManaAddedEvent -> {
+                val parts = mutableListOf<String>()
+                repeat(event.white) { parts.add("{W}") }
+                repeat(event.blue) { parts.add("{U}") }
+                repeat(event.black) { parts.add("{B}") }
+                repeat(event.red) { parts.add("{R}") }
+                repeat(event.green) { parts.add("{G}") }
+                repeat(event.colorless) { parts.add("{C}") }
+                ClientEvent.ManaAdded(
+                    playerId = event.playerId,
+                    manaString = parts.joinToString("")
+                )
+            }
+
+            is PlayerLostEvent -> ClientEvent.PlayerLost(
                 playerId = event.playerId,
-                manaString = "{${event.color}}"
+                reason = event.reason.name
             )
 
-            is GameActionEvent.PlayerLost -> ClientEvent.PlayerLost(
-                playerId = event.playerId,
-                reason = event.reason
-            )
-
-            is GameActionEvent.GameEnded -> ClientEvent.GameEnded(
+            is GameEndedEvent -> ClientEvent.GameEnded(
                 winnerId = event.winnerId
             )
 
-            // Events that don't need client representation
-            is GameActionEvent.DrawFailed,
-            is GameActionEvent.CardMoved,
-            is GameActionEvent.PermanentDestroyed,
-            is GameActionEvent.LandPlayed,
-            is GameActionEvent.Attached,
-            is GameActionEvent.Detached,
-            is GameActionEvent.CombatStarted,
-            is GameActionEvent.CombatEnded,
-            is GameActionEvent.BlockersOrdered,
-            is GameActionEvent.AbilityResolved,
-            is GameActionEvent.AbilityFizzled,
-            is GameActionEvent.DecisionSubmitted,
-            is GameActionEvent.DamageDealt,
-            is GameActionEvent.CardExiled,
-            is GameActionEvent.CardReturnedToHand -> null
+            // Events that don't need client representation or are handled differently
+            is DrawFailedEvent,
+            is LibraryShuffledEvent,
+            is AttackersDeclaredEvent,
+            is BlockersDeclaredEvent,
+            is BlockerOrderDeclaredEvent,
+            is DamageAssignedEvent,
+            is PhaseChangedEvent,
+            is StepChangedEvent,
+            is TurnChangedEvent,
+            is PriorityChangedEvent,
+            is ManaSpentEvent,
+            is DecisionRequestedEvent,
+            is DecisionSubmittedEvent,
+            is AbilityResolvedEvent,
+            is AbilityFizzledEvent,
+            is DiscardRequiredEvent -> null
         }
     }
 }

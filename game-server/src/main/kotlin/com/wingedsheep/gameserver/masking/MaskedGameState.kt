@@ -1,10 +1,10 @@
 package com.wingedsheep.gameserver.masking
 
-import com.wingedsheep.rulesengine.ecs.ComponentContainer
-import com.wingedsheep.rulesengine.ecs.EntityId
-import com.wingedsheep.rulesengine.ecs.ZoneId
-import com.wingedsheep.rulesengine.game.Phase
-import com.wingedsheep.rulesengine.game.Step
+import com.wingedsheep.engine.state.ComponentContainer
+import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.sdk.core.Phase
+import com.wingedsheep.sdk.core.Step
 import kotlinx.serialization.Serializable
 
 /**
@@ -35,7 +35,7 @@ data class MaskedGameState(
      * Zone contents.
      * For hidden zones (library), only size is provided.
      * For hand, opponent's hand shows only count.
-     * Use findZone() or getZone() to look up zones by ZoneId.
+     * Use findZone() or getZone() to look up zones by ZoneKey.
      */
     val zones: List<MaskedZone>,
 
@@ -53,12 +53,12 @@ data class MaskedGameState(
     /**
      * Whose turn it is.
      */
-    val activePlayerId: EntityId,
+    val activePlayerId: EntityId?,
 
     /**
      * Who currently has priority.
      */
-    val priorityPlayerId: EntityId,
+    val priorityPlayerId: EntityId?,
 
     /**
      * Turn number.
@@ -98,7 +98,7 @@ data class MaskedEntity(
  */
 @Serializable
 data class MaskedZone(
-    val zoneId: ZoneId,
+    val zoneKey: ZoneKey,
     /**
      * Entity IDs in this zone, in order.
      * For hidden zones, this may be empty.

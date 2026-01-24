@@ -8,6 +8,8 @@ plugins {
 
 dependencies {
     implementation(project(":rules-engine"))
+    implementation(project(":mtg-sdk"))
+    implementation(project(":mtg-sets"))
     implementation(libs.bundles.kotlinxEcosystem)
     implementation(libs.bundles.springBootWeb)
 

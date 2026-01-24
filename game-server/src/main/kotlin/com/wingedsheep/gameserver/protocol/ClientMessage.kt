@@ -1,7 +1,7 @@
 package com.wingedsheep.gameserver.protocol
 
-import com.wingedsheep.rulesengine.ecs.EntityId
-import com.wingedsheep.rulesengine.ecs.action.GameAction
+import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.engine.core.GameAction
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

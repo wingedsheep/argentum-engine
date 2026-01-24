@@ -1,9 +1,9 @@
 package com.wingedsheep.gameserver.protocol
 
 import com.wingedsheep.gameserver.dto.ClientGameState
-import com.wingedsheep.rulesengine.ecs.EntityId
-import com.wingedsheep.rulesengine.ecs.action.GameAction
-import com.wingedsheep.rulesengine.ecs.action.GameActionEvent
+import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.engine.core.GameAction
+import com.wingedsheep.engine.core.GameEvent
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -40,7 +40,7 @@ sealed interface ServerMessage {
     @SerialName("stateUpdate")
     data class StateUpdate(
         val state: ClientGameState,
-        val events: List<GameActionEvent>,
+        val events: List<GameEvent>,
         val legalActions: List<LegalActionInfo>
     ) : ServerMessage
 

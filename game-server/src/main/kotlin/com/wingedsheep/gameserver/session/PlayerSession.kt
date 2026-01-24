@@ -1,6 +1,6 @@
 package com.wingedsheep.gameserver.session
 
-import com.wingedsheep.rulesengine.ecs.EntityId
+import com.wingedsheep.sdk.model.EntityId
 import org.springframework.web.socket.WebSocketSession
 
 /**

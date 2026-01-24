@@ -5,38 +5,38 @@ import com.wingedsheep.gameserver.dto.ClientStateTransformer
 import com.wingedsheep.gameserver.protocol.GameOverReason
 import com.wingedsheep.gameserver.protocol.LegalActionInfo
 import com.wingedsheep.gameserver.protocol.ServerMessage
-import com.wingedsheep.rulesengine.ecs.DeckLoader
-import com.wingedsheep.rulesengine.ecs.EntityId
-import com.wingedsheep.rulesengine.ecs.GameEngine
-import com.wingedsheep.rulesengine.ecs.GameState
-import com.wingedsheep.rulesengine.ecs.MulliganResult
-import com.wingedsheep.rulesengine.ecs.PriorityResult
-import com.wingedsheep.rulesengine.ecs.SetupResult
-import com.wingedsheep.rulesengine.ecs.action.GameAction
-import com.wingedsheep.rulesengine.ecs.action.GameActionEvent
-import com.wingedsheep.rulesengine.ecs.action.GameActionResult
-import com.wingedsheep.rulesengine.ecs.action.LegalActionCalculator
-import com.wingedsheep.rulesengine.game.Step
-import com.wingedsheep.rulesengine.sets.portal.PortalSet
+import com.wingedsheep.engine.core.*
+import com.wingedsheep.engine.mechanics.mana.ManaSolver
+import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.player.LandDropsComponent
+import com.wingedsheep.engine.state.components.player.MulliganStateComponent
+import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.model.EntityId
 import java.util.UUID
-import kotlin.random.Random
 
 /**
  * Represents an active game session between two players.
+ *
+ * This session acts as a thin wrapper around the engine's ActionProcessor.
+ * The engine handles all game logic including mulligan state tracking.
  */
 class GameSession(
     val sessionId: String = UUID.randomUUID().toString(),
-    private val stateTransformer: ClientStateTransformer = ClientStateTransformer(),
-    private val random: Random = Random.Default
+    private val cardRegistry: CardRegistry,
+    private val stateTransformer: ClientStateTransformer = ClientStateTransformer()
 ) {
     private var gameState: GameState? = null
     private val players = mutableMapOf<EntityId, PlayerSession>()
-    private val deckLists = mutableMapOf<EntityId, Map<String, Int>>()
+    private val deckLists = mutableMapOf<EntityId, List<String>>()
 
-    // Mulligan phase tracking
-    private val mulliganCounts = mutableMapOf<EntityId, Int>()
-    private val mulliganComplete = mutableMapOf<EntityId, Boolean>()
-    private val awaitingBottomCards = mutableMapOf<EntityId, Int>()  // playerId -> cards to put on bottom
+    private val actionProcessor = ActionProcessor(cardRegistry)
+    private val gameInitializer = GameInitializer(cardRegistry)
+    private val manaSolver = ManaSolver(cardRegistry)
 
     val player1: PlayerSession? get() = players.values.firstOrNull()
     val player2: PlayerSession? get() = players.values.drop(1).firstOrNull()
@@ -44,54 +44,30 @@ class GameSession(
     val isFull: Boolean get() = players.size >= 2
     val isReady: Boolean get() = players.size == 2 && deckLists.size == 2
     val isStarted: Boolean get() = gameState != null
-    val isMulliganPhase: Boolean get() = gameState != null && !mulliganComplete.all { it.value }
-    val allMulligansComplete: Boolean get() = mulliganComplete.size == 2 && mulliganComplete.all { it.value }
 
     /**
-     * Advance the game to the first step with priority after mulligan phase completes.
-     * This runs SBAs and auto-advances through UNTAP to UPKEEP where priority is first granted.
+     * Check if we're in mulligan phase by looking at engine's mulligan state.
      */
-    fun startMainGame() {
-        val state = gameState ?: return
-        gameState = autoAdvanceToPriorityStep(state)
-    }
-
-    /**
-     * Auto-advance through non-priority steps (UNTAP, CLEANUP) until we reach a step
-     * where players can act. This is called after every action and resolution.
-     *
-     * The rules engine provides step-by-step methods. The game server orchestrates
-     * the auto-advancement through steps that don't grant priority.
-     */
-    private fun autoAdvanceToPriorityStep(state: GameState): GameState {
-        var currentState = state
-        var iterations = 0
-        val maxIterations = 10 // Safety limit to prevent infinite loops
-
-        // Loop until we reach a step with priority or game ends
-        while (!currentState.isGameOver && iterations < maxIterations) {
-            iterations++
-
-            // Run SBAs
-            val priorityResult = GameEngine.processPriority(currentState)
-            currentState = when (priorityResult) {
-                is PriorityResult.PriorityGranted -> priorityResult.state
-                is PriorityResult.GameOver -> return priorityResult.state
-            }
-
-            // Check if we're at a non-priority step with empty stack
-            val step = currentState.turnState.step
-            if (!step.hasPriority && currentState.getStack().isEmpty()) {
-                // Auto-advance through this step
-                currentState = GameEngine.resolvePassedPriority(currentState)
-            } else {
-                // We're at a step with priority, stop auto-advancing
-                break
+    val isMulliganPhase: Boolean
+        get() {
+            val state = gameState ?: return false
+            return state.turnOrder.any { playerId ->
+                val mullState = state.getEntity(playerId)?.get<MulliganStateComponent>()
+                mullState != null && !mullState.hasKept
             }
         }
 
-        return currentState
-    }
+    /**
+     * Check if all mulligans are complete.
+     */
+    val allMulligansComplete: Boolean
+        get() {
+            val state = gameState ?: return false
+            return state.turnOrder.all { playerId ->
+                val mullState = state.getEntity(playerId)?.get<MulliganStateComponent>()
+                mullState?.hasKept == true && mullState.cardsToBottom == 0
+            }
+        }
 
     /**
      * Add a player to this game session.
@@ -102,7 +78,12 @@ class GameSession(
 
         val playerId = playerSession.playerId
         players[playerId] = playerSession
-        deckLists[playerId] = deckList
+
+        // Convert deck list map to flat list of card names
+        val cards = deckList.flatMap { (cardName, count) ->
+            List(count) { cardName }
+        }
+        deckLists[playerId] = cards
         playerSession.currentGameSessionId = sessionId
 
         return playerId
@@ -131,68 +112,63 @@ class GameSession(
 
     /**
      * Start the game. Both players must have joined with deck lists.
-     * Initializes the mulligan phase - players must complete mulligans before the game begins.
+     * Initializes the game with the new engine - mulligan phase is handled by the engine.
      */
     fun startGame(): GameState {
         require(isReady) { "Game session not ready - need 2 players with deck lists" }
 
-        val playerList = players.map { (playerId, session) ->
-            playerId to session.playerName
+        val playerConfigs = players.map { (playerId, session) ->
+            PlayerConfig(
+                name = session.playerName,
+                deck = Deck(deckLists[playerId]!!),
+                playerId = playerId  // Pass existing player ID to the engine
+            )
         }
 
-        // Create game state
-        var state = GameEngine.createGame(playerList)
+        val config = GameConfig(
+            players = playerConfigs
+        )
 
-        // Load decks using DeckLoader
-        val deckLoader = DeckLoader.create(PortalSet)
-
-        val loadResult = GameEngine.loadDecks(state, deckLoader, deckLists)
-        when (loadResult) {
-            is DeckLoader.DeckLoadResult.Success -> {
-                state = loadResult.state
-            }
-            is DeckLoader.DeckLoadResult.Failure -> {
-                // If deck loading fails, continue with empty decks for now
-                // In production, we would reject the game start
-            }
-        }
-
-        // Shuffle libraries and draw initial hands (7 cards each)
-        val setupResult = GameEngine.setupGame(state, random)
-        when (setupResult) {
-            is SetupResult.Success -> {
-                state = setupResult.state
-            }
-            is SetupResult.Failure -> {
-                // Setup failed, continue with current state
-            }
-        }
-
-        gameState = state
-
-        // Initialize mulligan tracking for both players
-        for (playerId in players.keys) {
-            mulliganCounts[playerId] = 0
-            mulliganComplete[playerId] = false
-        }
-
-        return state
+        val result = gameInitializer.initializeGame(config)
+        gameState = result.state
+        return result.state
     }
 
     /**
      * Get the mulligan count for a player.
      */
-    fun getMulliganCount(playerId: EntityId): Int = mulliganCounts[playerId] ?: 0
+    fun getMulliganCount(playerId: EntityId): Int {
+        val state = gameState ?: return 0
+        val mullState = state.getEntity(playerId)?.get<MulliganStateComponent>()
+        return mullState?.mulligansTaken ?: 0
+    }
 
     /**
      * Check if a player has completed their mulligan.
      */
-    fun hasMulliganComplete(playerId: EntityId): Boolean = mulliganComplete[playerId] == true
+    fun hasMulliganComplete(playerId: EntityId): Boolean {
+        val state = gameState ?: return false
+        val mullState = state.getEntity(playerId)?.get<MulliganStateComponent>()
+        return mullState?.hasKept == true && mullState.cardsToBottom == 0
+    }
 
     /**
      * Check if a player is awaiting bottom card selection.
      */
-    fun isAwaitingBottomCards(playerId: EntityId): Boolean = awaitingBottomCards.containsKey(playerId)
+    fun isAwaitingBottomCards(playerId: EntityId): Boolean {
+        val state = gameState ?: return false
+        val mullState = state.getEntity(playerId)?.get<MulliganStateComponent>()
+        return mullState?.hasKept == true && mullState.cardsToBottom > 0
+    }
+
+    /**
+     * Get the number of cards player needs to put on bottom.
+     */
+    fun getCardsToBottom(playerId: EntityId): Int {
+        val state = gameState ?: return 0
+        val mullState = state.getEntity(playerId)?.get<MulliganStateComponent>()
+        return if (mullState?.hasKept == true) mullState.cardsToBottom else 0
+    }
 
     /**
      * Get the player's current hand for mulligan decisions.
@@ -204,80 +180,63 @@ class GameSession(
 
     /**
      * Player chooses to keep their current hand.
-     * If mulliganCount > 0, they will need to choose cards to put on bottom.
+     * Routes through the engine's action processor.
      */
     fun keepHand(playerId: EntityId): MulliganActionResult {
-        if (hasMulliganComplete(playerId)) {
-            return MulliganActionResult.Failure("Mulligan already complete for this player")
-        }
+        val state = gameState ?: return MulliganActionResult.Failure("Game not started")
 
-        val count = mulliganCounts[playerId] ?: 0
+        val action = KeepHand(playerId)
+        val result = actionProcessor.process(state, action)
 
-        if (count > 0) {
-            // Player needs to choose cards to put on bottom
-            awaitingBottomCards[playerId] = count
-            return MulliganActionResult.NeedsBottomCards(count)
+        val error = result.error
+        return if (error != null) {
+            MulliganActionResult.Failure(error)
         } else {
-            // No mulligans taken, hand is final
-            mulliganComplete[playerId] = true
-            return MulliganActionResult.Success
+            gameState = result.state
+            val mullState = result.state.getEntity(playerId)?.get<MulliganStateComponent>()
+            if (mullState?.cardsToBottom ?: 0 > 0) {
+                MulliganActionResult.NeedsBottomCards(mullState!!.cardsToBottom)
+            } else {
+                MulliganActionResult.Success
+            }
         }
     }
 
     /**
-     * Player chooses to mulligan - shuffle hand and draw 7 new cards.
+     * Player chooses to mulligan - shuffle hand and draw a new hand.
+     * Routes through the engine's action processor.
      */
     fun takeMulligan(playerId: EntityId): MulliganActionResult {
-        if (hasMulliganComplete(playerId)) {
-            return MulliganActionResult.Failure("Mulligan already complete for this player")
-        }
-
         val state = gameState ?: return MulliganActionResult.Failure("Game not started")
-        val currentCount = mulliganCounts[playerId] ?: 0
-        val newCount = currentCount + 1
 
-        // Check if player can still mulligan (can't mulligan to 0 cards)
-        if (newCount >= 7) {
-            return MulliganActionResult.Failure("Cannot mulligan - would have no cards")
-        }
+        val action = TakeMulligan(playerId)
+        val result = actionProcessor.process(state, action)
 
-        val result = GameEngine.startMulligan(state, playerId, newCount, random)
-        return when (result) {
-            is MulliganResult.Success -> {
-                gameState = result.state
-                mulliganCounts[playerId] = newCount
-                MulliganActionResult.Success
-            }
-            is MulliganResult.Failure -> {
-                MulliganActionResult.Failure(result.error)
-            }
+        val error = result.error
+        return if (error != null) {
+            MulliganActionResult.Failure(error)
+        } else {
+            gameState = result.state
+            MulliganActionResult.Success
         }
     }
 
     /**
      * Player chooses which cards to put on the bottom of their library.
+     * Routes through the engine's action processor.
      */
     fun chooseBottomCards(playerId: EntityId, cardIds: List<EntityId>): MulliganActionResult {
-        val expectedCount = awaitingBottomCards[playerId]
-            ?: return MulliganActionResult.Failure("Not awaiting bottom card selection")
-
-        if (cardIds.size != expectedCount) {
-            return MulliganActionResult.Failure("Must choose exactly $expectedCount cards, got ${cardIds.size}")
-        }
-
         val state = gameState ?: return MulliganActionResult.Failure("Game not started")
 
-        val result = GameEngine.executeMulligan(state, playerId, cardIds, random)
-        return when (result) {
-            is MulliganResult.Success -> {
-                gameState = result.state
-                awaitingBottomCards.remove(playerId)
-                mulliganComplete[playerId] = true
-                MulliganActionResult.Success
-            }
-            is MulliganResult.Failure -> {
-                MulliganActionResult.Failure(result.error)
-            }
+        val action = BottomCards(playerId, cardIds)
+        val result = actionProcessor.process(state, action)
+
+        val error = result.error
+        return if (error != null) {
+            MulliganActionResult.Failure(error)
+        } else {
+            gameState = result.state
+            MulliganActionResult.Success
         }
     }
 
@@ -286,14 +245,14 @@ class GameSession(
      */
     fun getMulliganDecision(playerId: EntityId): ServerMessage.MulliganDecision {
         val hand = getHand(playerId)
-        val count = mulliganCounts[playerId] ?: 0
+        val count = getMulliganCount(playerId)
         val state = gameState
         val cards = if (state != null) {
             hand.associateWith { entityId ->
-                val cardComponent = state.getComponent<com.wingedsheep.rulesengine.ecs.components.CardComponent>(entityId)
+                val cardComponent = state.getEntity(entityId)?.get<CardComponent>()
                 ServerMessage.MulliganCardInfo(
                     name = cardComponent?.name ?: "Unknown",
-                    imageUri = cardComponent?.definition?.metadata?.imageUri
+                    imageUri = null // TODO: Add image URI support
                 )
             }
         } else {
@@ -311,7 +270,8 @@ class GameSession(
      * Get the choose bottom cards message for a player.
      */
     fun getChooseBottomCardsMessage(playerId: EntityId): ServerMessage.ChooseBottomCards? {
-        val count = awaitingBottomCards[playerId] ?: return null
+        val count = getCardsToBottom(playerId)
+        if (count == 0) return null
         val hand = getHand(playerId)
         return ServerMessage.ChooseBottomCards(
             hand = hand,
@@ -328,43 +288,24 @@ class GameSession(
     /**
      * Execute a game action.
      *
-     * After every action:
-     * 1. Run SBAs and auto-advance through non-priority steps (UNTAP, CLEANUP)
-     * 2. Check if all players passed - resolve stack or advance
-     * 3. Run SBAs and auto-advance again after resolution
+     * Routes the action through the engine's ActionProcessor.
      */
     fun executeAction(playerId: EntityId, action: GameAction): ActionResult {
         val state = gameState ?: return ActionResult.Failure("Game not started")
 
-        // Validate it's this player's turn/priority
-        if (state.priorityPlayerId != playerId) {
-            return ActionResult.Failure("Not your priority")
-        }
+        val result = actionProcessor.process(state, action)
 
-        // Execute the action
-        val result = GameEngine.executePlayerAction(state, action)
-        return when (result) {
-            is GameActionResult.Success -> {
-                var newState = result.state
-                val allEvents = result.events.toMutableList()
-
-                // Run SBAs and auto-advance through non-priority steps
-                newState = autoAdvanceToPriorityStep(newState)
-
-                // Check if all players have passed priority
-                // If so, resolve the stack or advance the phase
-                if (newState.turnState.allPlayersPassed() && !newState.isGameOver) {
-                    newState = GameEngine.resolvePassedPriority(newState)
-
-                    // Run SBAs and auto-advance again after resolution
-                    newState = autoAdvanceToPriorityStep(newState)
-                }
-
-                gameState = newState
-                ActionResult.Success(newState, allEvents)
+        val error = result.error
+        val pendingDecision = result.pendingDecision
+        return when {
+            error != null -> ActionResult.Failure(error)
+            pendingDecision != null -> {
+                gameState = result.state
+                ActionResult.PausedForDecision(result.state, pendingDecision, result.events)
             }
-            is GameActionResult.Failure -> {
-                ActionResult.Failure(result.reason)
+            else -> {
+                gameState = result.state
+                ActionResult.Success(result.state, result.events)
             }
         }
     }
@@ -374,11 +315,11 @@ class GameSession(
      */
     fun playerConcedes(playerId: EntityId): GameState? {
         val state = gameState ?: return null
-        val opponentId = getOpponentId(playerId) ?: return null
+        val action = Concede(playerId)
+        val result = actionProcessor.process(state, action)
 
-        val newState = state.endGame(opponentId)
-        gameState = newState
-        return newState
+        gameState = result.state
+        return result.state
     }
 
     /**
@@ -390,7 +331,10 @@ class GameSession(
     }
 
     /**
-     * Get legal actions for a player using the LegalActionCalculator.
+     * Get legal actions for a player.
+     *
+     * Currently returns basic actions - in the future this could use
+     * a dedicated LegalActionCalculator from the engine.
      */
     fun getLegalActions(playerId: EntityId): List<LegalActionInfo> {
         val state = gameState ?: return emptyList()
@@ -400,65 +344,59 @@ class GameSession(
             return emptyList()
         }
 
-        // Use the LegalActionCalculator from the rules engine
-        val calculator = LegalActionCalculator()
-        val legalActions = calculator.calculateLegalActions(state, playerId)
-
-        // Convert to LegalActionInfo list
         val result = mutableListOf<LegalActionInfo>()
 
         // Pass priority is always available when you have priority
-        if (legalActions.canPassPriority) {
-            result.add(LegalActionInfo(
-                actionType = "PassPriority",
-                description = "Pass priority",
-                action = com.wingedsheep.rulesengine.ecs.action.PassPriority(playerId)
-            ))
+        result.add(LegalActionInfo(
+            actionType = "PassPriority",
+            description = "Pass priority",
+            action = PassPriority(playerId)
+        ))
+
+        // Check for playable lands (during main phase, with land drop available)
+        val landDrops = state.getEntity(playerId)?.get<LandDropsComponent>()
+        val canPlayLand = state.step.isMainPhase &&
+            state.stack.isEmpty() &&
+            state.activePlayerId == playerId &&
+            (landDrops?.canPlayLand ?: false)
+
+        if (canPlayLand) {
+            val hand = state.getHand(playerId)
+            for (cardId in hand) {
+                val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: continue
+                if (cardComponent.typeLine.isLand) {
+                    result.add(LegalActionInfo(
+                        actionType = "PlayLand",
+                        description = "Play ${cardComponent.name}",
+                        action = PlayLand(playerId, cardId)
+                    ))
+                }
+            }
         }
 
-        // Playable lands
-        for (land in legalActions.playableLands) {
-            result.add(LegalActionInfo(
-                actionType = "PlayLand",
-                description = "Play ${land.cardName}",
-                action = land.action
-            ))
-        }
+        // Check for castable spells (non-instant only at sorcery speed)
+        val canPlaySorcerySpeed = state.step.isMainPhase &&
+            state.stack.isEmpty() &&
+            state.activePlayerId == playerId
 
-        // Castable spells
-        for (spell in legalActions.castableSpells) {
-            result.add(LegalActionInfo(
-                actionType = "CastSpell",
-                description = "Cast ${spell.cardName}",
-                action = spell.action
-            ))
-        }
-
-        // Activatable abilities (mana abilities, etc.)
-        for (ability in legalActions.activatableAbilities) {
-            result.add(LegalActionInfo(
-                actionType = if (ability.isManaAbility) "ActivateManaAbility" else "ActivateAbility",
-                description = "${ability.sourceName}: ${ability.description}",
-                action = ability.action
-            ))
-        }
-
-        // Declarable attackers
-        for (attacker in legalActions.declarableAttackers) {
-            result.add(LegalActionInfo(
-                actionType = "DeclareAttacker",
-                description = "Attack with ${attacker.creatureName}",
-                action = attacker.action
-            ))
-        }
-
-        // Declarable blockers
-        for (blocker in legalActions.declarableBlockers) {
-            result.add(LegalActionInfo(
-                actionType = "DeclareBlocker",
-                description = "Block ${blocker.attackerName} with ${blocker.blockerName}",
-                action = blocker.action
-            ))
+        val hand = state.getHand(playerId)
+        for (cardId in hand) {
+            val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: continue
+            if (!cardComponent.typeLine.isLand) {
+                // Check timing - sorcery-speed spells need main phase, empty stack, your turn
+                val isInstant = cardComponent.typeLine.isInstant
+                if (isInstant || canPlaySorcerySpeed) {
+                    // Check mana affordability
+                    val canAfford = manaSolver.canPay(state, playerId, cardComponent.manaCost)
+                    if (canAfford) {
+                        result.add(LegalActionInfo(
+                            actionType = "CastSpell",
+                            description = "Cast ${cardComponent.name}",
+                            action = CastSpell(playerId, cardId)
+                        ))
+                    }
+                }
+            }
         }
 
         return result
@@ -467,7 +405,7 @@ class GameSession(
     /**
      * Create a state update message for a player.
      */
-    fun createStateUpdate(playerId: EntityId, events: List<GameActionEvent>): ServerMessage.StateUpdate? {
+    fun createStateUpdate(playerId: EntityId, events: List<GameEvent>): ServerMessage.StateUpdate? {
         val clientState = getClientState(playerId) ?: return null
         val legalActions = getLegalActions(playerId)
         return ServerMessage.StateUpdate(clientState, events, legalActions)
@@ -476,30 +414,36 @@ class GameSession(
     /**
      * Check if the game is over.
      */
-    fun isGameOver(): Boolean = gameState?.isGameOver == true
+    fun isGameOver(): Boolean = gameState?.gameOver == true
 
     /**
      * Get the winner ID if the game is over.
      */
-    fun getWinnerId(): EntityId? = gameState?.winner
+    fun getWinnerId(): EntityId? = gameState?.winnerId
 
     /**
      * Determine the reason for game over.
      */
     fun getGameOverReason(): GameOverReason? {
         val state = gameState ?: return null
-        if (!state.isGameOver) return null
+        if (!state.gameOver) return null
 
-        // TODO: Determine actual reason from game state
+        // TODO: Determine actual reason from game state events
         return GameOverReason.LIFE_ZERO
     }
 
     sealed interface ActionResult {
         data class Success(
             val state: GameState,
-            val events: List<GameActionEvent>
+            val events: List<GameEvent>
         ) : ActionResult
 
         data class Failure(val reason: String) : ActionResult
+
+        data class PausedForDecision(
+            val state: GameState,
+            val decision: PendingDecision,
+            val events: List<GameEvent>
+        ) : ActionResult
     }
 }

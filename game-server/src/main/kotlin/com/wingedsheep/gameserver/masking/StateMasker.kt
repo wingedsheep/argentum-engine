@@ -1,10 +1,12 @@
 package com.wingedsheep.gameserver.masking
 
-import com.wingedsheep.rulesengine.ecs.EntityId
-import com.wingedsheep.rulesengine.ecs.GameState
-import com.wingedsheep.rulesengine.ecs.ZoneId
-import com.wingedsheep.rulesengine.ecs.components.PlayerComponent
-import com.wingedsheep.rulesengine.zone.ZoneType
+import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.identity.PlayerComponent
+import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
+import com.wingedsheep.engine.state.components.player.LandDropsComponent
 
 /**
  * Masks game state to hide information from opponents.
@@ -20,7 +22,7 @@ class StateMasker {
      * Create a masked view of the game state for a specific player.
      */
     fun mask(state: GameState, viewingPlayerId: EntityId): MaskedGameState {
-        val playerIds = state.getPlayerIds()
+        val playerIds = state.turnOrder
 
         // Mask entities based on zone visibility
         // Only include visible entities in the entities map - hidden entities are
@@ -28,10 +30,10 @@ class StateMasker {
         val maskedEntities = mutableMapOf<EntityId, MaskedEntity>()
         val maskedZones = mutableListOf<MaskedZone>()
 
-        for ((zoneId, entityIds) in state.zones) {
-            val isVisible = isZoneVisibleTo(zoneId, viewingPlayerId)
+        for ((zoneKey, entityIds) in state.zones) {
+            val isVisible = isZoneVisibleTo(zoneKey, viewingPlayerId)
             val maskedZone = MaskedZone(
-                zoneId = zoneId,
+                zoneKey = zoneKey,
                 entityIds = if (isVisible) entityIds else emptyList(),
                 size = entityIds.size,
                 isVisible = isVisible
@@ -73,26 +75,26 @@ class StateMasker {
             entities = maskedEntities,
             zones = maskedZones,
             players = maskedPlayers,
-            currentPhase = state.currentPhase,
-            currentStep = state.currentStep,
+            currentPhase = state.phase,
+            currentStep = state.step,
             activePlayerId = state.activePlayerId,
             priorityPlayerId = state.priorityPlayerId,
             turnNumber = state.turnNumber,
-            isGameOver = state.isGameOver,
-            winnerId = state.winner
+            isGameOver = state.gameOver,
+            winnerId = state.winnerId
         )
     }
 
     /**
      * Determine if a zone's contents are visible to a player.
      */
-    private fun isZoneVisibleTo(zoneId: ZoneId, viewingPlayerId: EntityId): Boolean {
-        return when (zoneId.type) {
+    private fun isZoneVisibleTo(zoneKey: ZoneKey, viewingPlayerId: EntityId): Boolean {
+        return when (zoneKey.zoneType) {
             // Library is hidden from everyone
             ZoneType.LIBRARY -> false
 
             // Hand is only visible to its owner
-            ZoneType.HAND -> zoneId.ownerId == viewingPlayerId
+            ZoneType.HAND -> zoneKey.ownerId == viewingPlayerId
 
             // All other zones are public
             ZoneType.BATTLEFIELD,
@@ -107,18 +109,36 @@ class StateMasker {
      * Create a masked player representation with public info.
      */
     private fun createMaskedPlayer(state: GameState, playerId: EntityId): MaskedPlayer {
-        val playerComponent = state.getComponent<PlayerComponent>(playerId)
+        val container = state.getEntity(playerId)
+        val playerComponent = container?.get<PlayerComponent>()
+        val lifeTotalComponent = container?.get<LifeTotalComponent>()
+        val landDropsComponent = container?.get<LandDropsComponent>()
+
+        // Calculate zone sizes
+        val handSize = state.getHand(playerId).size
+        val librarySize = state.getLibrary(playerId).size
+        val graveyardSize = state.getGraveyard(playerId).size
+
+        // Determine lands played this turn
+        val landsPlayed = if (landDropsComponent != null) {
+            landDropsComponent.maxPerTurn - landDropsComponent.remaining
+        } else {
+            0
+        }
+
+        // Check if player has lost (they're not the winner and game is over)
+        val hasLost = state.gameOver && state.winnerId != null && state.winnerId != playerId
 
         return MaskedPlayer(
             playerId = playerId,
             name = playerComponent?.name ?: "Unknown",
-            life = state.getLife(playerId),
-            poisonCounters = state.getPoisonCounters(playerId),
-            handSize = state.getHandSize(playerId),
-            librarySize = state.getLibrarySize(playerId),
-            graveyardSize = state.getGraveyardSize(playerId),
-            landsPlayedThisTurn = state.getLandsPlayed(playerId),
-            hasLost = state.hasLost(playerId)
+            life = lifeTotalComponent?.life ?: 20,
+            poisonCounters = 0, // TODO: Add poison counter component support
+            handSize = handSize,
+            librarySize = librarySize,
+            graveyardSize = graveyardSize,
+            landsPlayedThisTurn = landsPlayed,
+            hasLost = hasLost
         )
     }
 }
