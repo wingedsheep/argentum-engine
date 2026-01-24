@@ -731,10 +731,11 @@ class PortalSetTest : DescribeSpec({
 
             it("should reveal hand and draw per Mountain/red card") {
                 card.typeLine.isSorcery shouldBe true
-                card.spellEffect.shouldBeInstanceOf<RevealHandDrawPerMatchEffect>()
-                val effect = card.spellEffect as RevealHandDrawPerMatchEffect
-                effect.landType shouldBe "Mountain"
-                effect.color shouldBe Color.RED
+                card.spellEffect.shouldBeInstanceOf<CompositeEffect>()
+                val composite = card.spellEffect as CompositeEffect
+                composite.effects shouldHaveSize 2
+                composite.effects[0].shouldBeInstanceOf<RevealHandEffect>()
+                composite.effects[1].shouldBeInstanceOf<DrawCardsEffect>()
             }
         }
 
@@ -1021,11 +1022,12 @@ class PortalSetTest : DescribeSpec({
 
             it("should look at top 3 with optional shuffle and draw") {
                 card.typeLine.isSorcery shouldBe true
-                card.spellEffect.shouldBeInstanceOf<OmenEffect>()
-                val effect = card.spellEffect as OmenEffect
-                effect.lookAtCount shouldBe 3
-                effect.mayShuffle shouldBe true
-                effect.drawAfter shouldBe 1
+                card.spellEffect.shouldBeInstanceOf<CompositeEffect>()
+                val composite = card.spellEffect as CompositeEffect
+                composite.effects shouldHaveSize 3
+                composite.effects[0].shouldBeInstanceOf<LookAtTopAndReorderEffect>()
+                composite.effects[1].shouldBeInstanceOf<MayEffect>()
+                composite.effects[2].shouldBeInstanceOf<DrawCardsEffect>()
             }
         }
 
@@ -1101,7 +1103,11 @@ class PortalSetTest : DescribeSpec({
             it("should look at opponent's hand and draw") {
                 card.manaCost.toString() shouldBe "{U}"
                 card.typeLine.isSorcery shouldBe true
-                card.spellEffect.shouldBeInstanceOf<SorcerousSightEffect>()
+                card.spellEffect.shouldBeInstanceOf<CompositeEffect>()
+                val composite = card.spellEffect as CompositeEffect
+                composite.effects shouldHaveSize 2
+                composite.effects[0].shouldBeInstanceOf<LookAtHandEffect>()
+                composite.effects[1].shouldBeInstanceOf<DrawCardsEffect>()
             }
         }
 
@@ -1237,10 +1243,11 @@ class PortalSetTest : DescribeSpec({
             it("should reveal hand and draw per Forest/green card") {
                 card.manaCost.toString() shouldBe "{2}{U}"
                 card.typeLine.isSorcery shouldBe true
-                card.spellEffect.shouldBeInstanceOf<RevealHandDrawPerMatchEffect>()
-                val effect = card.spellEffect as RevealHandDrawPerMatchEffect
-                effect.landType shouldBe "Forest"
-                effect.color shouldBe Color.GREEN
+                card.spellEffect.shouldBeInstanceOf<CompositeEffect>()
+                val composite = card.spellEffect as CompositeEffect
+                composite.effects shouldHaveSize 2
+                composite.effects[0].shouldBeInstanceOf<RevealHandEffect>()
+                composite.effects[1].shouldBeInstanceOf<DrawCardsEffect>()
             }
         }
 

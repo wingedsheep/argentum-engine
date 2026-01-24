@@ -3,7 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.RevealHandDrawPerMatchEffect
+import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.targeting.TargetOpponent
 
 /**
@@ -18,9 +18,22 @@ val BalefulStare = card("Baleful Stare") {
 
     spell {
         target = TargetOpponent()
-        effect = RevealHandDrawPerMatchEffect(
-            landType = "Mountain",
-            color = Color.RED
+        effect = CompositeEffect(
+            listOf(
+                RevealHandEffect(EffectTarget.ContextTarget(0)),
+                DrawCardsEffect(
+                    count = DynamicAmount.CountInZone(
+                        player = PlayerReference.TargetOpponent,
+                        zone = ZoneReference.Hand,
+                        filter = CountFilter.Or(
+                            listOf(
+                                CountFilter.HasSubtype("Mountain"),
+                                CountFilter.CardColor(Color.RED)
+                            )
+                        )
+                    )
+                )
+            )
         )
     }
 

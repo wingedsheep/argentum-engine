@@ -509,10 +509,279 @@ sealed interface DynamicAmount {
     /**
      * Number of tapped creatures target opponent controls.
      * Used for Theft of Dreams.
+     * @deprecated Use CountInZone with appropriate filter instead
      */
     @Serializable
     data object TappedCreaturesTargetOpponentControls : DynamicAmount {
         override val description: String = "the number of tapped creatures target opponent controls"
+    }
+
+    // =========================================================================
+    // Math Operations - Composable arithmetic on DynamicAmounts
+    // =========================================================================
+
+    /**
+     * Add two dynamic amounts.
+     * Example: Add(Fixed(2), CreaturesYouControl) = "2 + creatures you control"
+     */
+    @Serializable
+    data class Add(val left: DynamicAmount, val right: DynamicAmount) : DynamicAmount {
+        override val description: String = "(${left.description} + ${right.description})"
+    }
+
+    /**
+     * Subtract one dynamic amount from another.
+     * Example: Subtract(CardsInHand(Opponent), CardsInHand(Controller))
+     * Replaces HandSizeDifferenceFromTargetOpponent
+     */
+    @Serializable
+    data class Subtract(val left: DynamicAmount, val right: DynamicAmount) : DynamicAmount {
+        override val description: String = "(${left.description} - ${right.description})"
+    }
+
+    /**
+     * Multiply a dynamic amount by a fixed multiplier.
+     * Example: Multiply(CreaturesAttackingYou, 3) for Blessed Reversal
+     */
+    @Serializable
+    data class Multiply(val amount: DynamicAmount, val multiplier: Int) : DynamicAmount {
+        override val description: String = "$multiplier × ${amount.description}"
+    }
+
+    /**
+     * Take the maximum of zero and the amount (clamp negative to zero).
+     * Useful for difference calculations that should not go negative.
+     * Example: IfPositive(Subtract(opponentHand, yourHand))
+     */
+    @Serializable
+    data class IfPositive(val amount: DynamicAmount) : DynamicAmount {
+        override val description: String = "${amount.description} (if positive)"
+    }
+
+    /**
+     * Maximum of two amounts.
+     */
+    @Serializable
+    data class Max(val left: DynamicAmount, val right: DynamicAmount) : DynamicAmount {
+        override val description: String = "max(${left.description}, ${right.description})"
+    }
+
+    /**
+     * Minimum of two amounts.
+     */
+    @Serializable
+    data class Min(val left: DynamicAmount, val right: DynamicAmount) : DynamicAmount {
+        override val description: String = "min(${left.description}, ${right.description})"
+    }
+
+    // =========================================================================
+    // Zone-based Counting - General counting with filters
+    // =========================================================================
+
+    /**
+     * Count cards in a zone matching a filter.
+     * This is the general-purpose counting primitive that replaces many specific amounts.
+     *
+     * Examples:
+     * - CountInZone(Controller, Hand) = cards in your hand
+     * - CountInZone(Opponent, Hand) = cards in opponent's hand
+     * - CountInZone(Controller, Battlefield, PermanentFilter.Creature) = creatures you control
+     * - CountInZone(Opponent, Battlefield, PermanentFilter.TappedCreature) = tapped creatures opponent controls
+     *
+     * @param player Whose zone to count in
+     * @param zone Which zone to count
+     * @param filter Optional filter for what to count
+     */
+    @Serializable
+    data class CountInZone(
+        val player: PlayerReference,
+        val zone: ZoneReference,
+        val filter: CountFilter = CountFilter.Any
+    ) : DynamicAmount {
+        override val description: String = buildString {
+            append("the number of ")
+            if (filter != CountFilter.Any) {
+                append(filter.description)
+                append(" ")
+            }
+            append("cards in ")
+            append(player.description)
+            append("'s ")
+            append(zone.description)
+        }
+    }
+
+    /**
+     * Count permanents on battlefield matching a filter.
+     * Convenience wrapper for CountInZone with battlefield.
+     */
+    @Serializable
+    data class CountPermanents(
+        val controller: PlayerReference,
+        val filter: CountFilter = CountFilter.Any
+    ) : DynamicAmount {
+        override val description: String = buildString {
+            append("the number of ")
+            if (filter != CountFilter.Any) {
+                append(filter.description)
+                append(" ")
+            }
+            append(controller.description)
+            append(" controls")
+        }
+    }
+}
+
+// =============================================================================
+// Player Reference - Who we're referring to
+// =============================================================================
+
+/**
+ * Reference to a player in zone counting and similar contexts.
+ */
+@Serializable
+sealed interface PlayerReference {
+    val description: String
+
+    @Serializable
+    data object You : PlayerReference {
+        override val description: String = "your"
+    }
+
+    @Serializable
+    data object Opponent : PlayerReference {
+        override val description: String = "opponent"
+    }
+
+    @Serializable
+    data object TargetOpponent : PlayerReference {
+        override val description: String = "target opponent"
+    }
+
+    @Serializable
+    data object TargetPlayer : PlayerReference {
+        override val description: String = "target player"
+    }
+
+    @Serializable
+    data object Each : PlayerReference {
+        override val description: String = "each player"
+    }
+}
+
+// =============================================================================
+// Zone Reference - Which zone we're referring to
+// =============================================================================
+
+/**
+ * Reference to a game zone.
+ */
+@Serializable
+sealed interface ZoneReference {
+    val description: String
+
+    @Serializable
+    data object Hand : ZoneReference {
+        override val description: String = "hand"
+    }
+
+    @Serializable
+    data object Battlefield : ZoneReference {
+        override val description: String = "battlefield"
+    }
+
+    @Serializable
+    data object Graveyard : ZoneReference {
+        override val description: String = "graveyard"
+    }
+
+    @Serializable
+    data object Library : ZoneReference {
+        override val description: String = "library"
+    }
+
+    @Serializable
+    data object Exile : ZoneReference {
+        override val description: String = "exile"
+    }
+}
+
+// =============================================================================
+// Count Filter - What to count
+// =============================================================================
+
+/**
+ * Filter for counting cards/permanents.
+ * This is the universal filter used in CountInZone and similar.
+ */
+@Serializable
+sealed interface CountFilter {
+    val description: String
+
+    @Serializable
+    data object Any : CountFilter {
+        override val description: String = ""
+    }
+
+    @Serializable
+    data object Creatures : CountFilter {
+        override val description: String = "creature"
+    }
+
+    @Serializable
+    data object TappedCreatures : CountFilter {
+        override val description: String = "tapped creature"
+    }
+
+    @Serializable
+    data object UntappedCreatures : CountFilter {
+        override val description: String = "untapped creature"
+    }
+
+    @Serializable
+    data object Lands : CountFilter {
+        override val description: String = "land"
+    }
+
+    @Serializable
+    data class LandType(val landType: String) : CountFilter {
+        override val description: String = landType
+    }
+
+    @Serializable
+    data class CreatureColor(val color: Color) : CountFilter {
+        override val description: String = "${color.displayName.lowercase()} creature"
+    }
+
+    @Serializable
+    data class CardColor(val color: Color) : CountFilter {
+        override val description: String = "${color.displayName.lowercase()} card"
+    }
+
+    @Serializable
+    data class HasSubtype(val subtype: String) : CountFilter {
+        override val description: String = subtype
+    }
+
+    @Serializable
+    data object AttackingCreatures : CountFilter {
+        override val description: String = "attacking creature"
+    }
+
+    /**
+     * Combine multiple filters with AND logic.
+     */
+    @Serializable
+    data class And(val filters: List<CountFilter>) : CountFilter {
+        override val description: String = filters.joinToString(" ") { it.description }
+    }
+
+    /**
+     * Combine multiple filters with OR logic.
+     */
+    @Serializable
+    data class Or(val filters: List<CountFilter>) : CountFilter {
+        override val description: String = filters.joinToString(" or ") { it.description }
     }
 }
 
@@ -671,6 +940,76 @@ data class CompositeEffect(
     val effects: List<Effect>
 ) : Effect {
     override val description: String = effects.joinToString(". ") { it.description }
+}
+
+// =============================================================================
+// Atomic / Compositional Effects
+// =============================================================================
+
+/**
+ * Optional effect wrapper - the player may choose to perform or skip this effect.
+ * "You may draw a card" or "You may shuffle your library"
+ *
+ * Use this to compose optional parts of abilities rather than creating
+ * specific optional variants of each effect.
+ */
+@Serializable
+data class MayEffect(
+    val effect: Effect,
+    val description_override: String? = null
+) : Effect {
+    override val description: String = description_override ?: "You may ${effect.description.lowercase()}"
+}
+
+/**
+ * Reveal a player's hand (publicly visible to all players).
+ * This is an atomic effect that just reveals - use with CompositeEffect for
+ * "reveal and do something based on what's revealed" patterns.
+ *
+ * Example: Baleful Stare = CompositeEffect(RevealHandEffect, DrawCardsEffect(count))
+ */
+@Serializable
+data class RevealHandEffect(
+    val target: EffectTarget = EffectTarget.ContextTarget(0)
+) : Effect {
+    override val description: String = when (target) {
+        is EffectTarget.ContextTarget -> "Target opponent reveals their hand"
+        EffectTarget.Opponent -> "Target opponent reveals their hand"
+        EffectTarget.Controller -> "Reveal your hand"
+        else -> "Target player reveals their hand"
+    }
+}
+
+/**
+ * Look at a player's hand (privately visible to you only).
+ * Distinct from RevealHandEffect - "look" means only you see it.
+ *
+ * Example: Sorcerous Sight = CompositeEffect(LookAtHandEffect, DrawCardsEffect(1))
+ */
+@Serializable
+data class LookAtHandEffect(
+    val target: EffectTarget = EffectTarget.ContextTarget(0)
+) : Effect {
+    override val description: String = when (target) {
+        is EffectTarget.ContextTarget -> "Look at target opponent's hand"
+        EffectTarget.Opponent -> "Look at target opponent's hand"
+        else -> "Look at target player's hand"
+    }
+}
+
+/**
+ * Look at the top N cards of a library and put them back in any order.
+ * This is the atomic "scry-like" or "look and reorder" primitive.
+ *
+ * Use with CompositeEffect for patterns like Omen:
+ * CompositeEffect(LookAtTopAndReorderEffect(3), MayEffect(ShuffleLibraryEffect()), DrawCardsEffect(1))
+ */
+@Serializable
+data class LookAtTopAndReorderEffect(
+    val count: Int,
+    val target: EffectTarget = EffectTarget.Controller
+) : Effect {
+    override val description: String = "Look at the top $count cards of your library and put them back in any order"
 }
 
 // =============================================================================
@@ -1867,22 +2206,6 @@ data class EachPlayerMayDrawEffect(
     override val description: String = "Each player may draw up to $maxCards cards"
 }
 
-/**
- * Target opponent reveals their hand and you draw for each card matching criteria.
- * "Target opponent reveals their hand. You draw a card for each Mountain and red card in it."
- * Used for Baleful Stare.
- *
- * @property landType Land type to count (e.g., "Mountain")
- * @property color Color to count
- */
-@Serializable
-data class RevealHandDrawPerMatchEffect(
-    val landType: String,
-    val color: Color
-) : Effect {
-    override val description: String =
-        "Target opponent reveals their hand. You draw a card for each $landType and ${color.displayName.lowercase()} card in it"
-}
 
 /**
  * Look at top cards of target opponent's library, put some in graveyard, rest on top.
@@ -2207,24 +2530,6 @@ sealed interface SpellFilter {
 // =============================================================================
 
 /**
- * Look at the top X cards, reorder them, optionally shuffle, then draw.
- * Used for Omen: "Look at the top three cards of your library, then put them back
- * in any order. You may shuffle. Draw a card."
- */
-@Serializable
-data class OmenEffect(
-    val lookAtCount: Int,
-    val mayShuffle: Boolean = true,
-    val drawAfter: Int = 1
-) : Effect {
-    override val description: String = buildString {
-        append("Look at the top $lookAtCount cards of your library, then put them back in any order")
-        if (mayShuffle) append(". You may shuffle")
-        if (drawAfter > 0) append(". Draw ${if (drawAfter == 1) "a card" else "$drawAfter cards"}")
-    }
-}
-
-/**
  * Draw cards then discard cards (looting).
  * Used for Owl Familiar: "When this creature enters, draw a card, then discard a card."
  */
@@ -2250,17 +2555,6 @@ data class SearchLibraryToTopEffect(
 ) : Effect {
     override val description: String =
         "Search your library for ${filter.description}, reveal it, then shuffle and put that card on top"
-}
-
-/**
- * Look at target opponent's hand and draw a card.
- * Used for Sorcerous Sight: "Look at target opponent's hand. Draw a card."
- */
-@Serializable
-data class SorcerousSightEffect(
-    val target: EffectTarget = EffectTarget.Opponent
-) : Effect {
-    override val description: String = "Look at ${target.description}'s hand. Draw a card"
 }
 
 // =============================================================================

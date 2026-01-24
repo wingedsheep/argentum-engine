@@ -2,7 +2,7 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.OmenEffect
+import com.wingedsheep.sdk.scripting.*
 
 /**
  * Omen
@@ -16,10 +16,12 @@ val Omen = card("Omen") {
     typeLine = "Sorcery"
 
     spell {
-        effect = OmenEffect(
-            lookAtCount = 3,
-            mayShuffle = true,
-            drawAfter = 1
+        effect = CompositeEffect(
+            listOf(
+                LookAtTopAndReorderEffect(3),
+                MayEffect(ShuffleLibraryEffect()),
+                DrawCardsEffect(1)
+            )
         )
     }
 
