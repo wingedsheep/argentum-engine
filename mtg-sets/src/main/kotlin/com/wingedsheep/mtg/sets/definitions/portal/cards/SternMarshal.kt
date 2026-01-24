@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.ModifyStatsEffect
-import com.wingedsheep.sdk.scripting.TimingRestriction
+import com.wingedsheep.sdk.scripting.TimingRule
 
 /**
  * Stern Marshal
@@ -26,10 +26,10 @@ val SternMarshal = card("Stern Marshal") {
         effect = ModifyStatsEffect(
             powerModifier = 2,
             toughnessModifier = 2,
-            target = EffectTarget.TargetCreature,
+            target = EffectTaTirget.TargetCreature,
             duration = Duration.EndOfTurn
         )
-        timingRestriction = TimingRestriction.SORCERY
+        timing = TimingRule.SorcerySpeed
     }
 
     metadata {

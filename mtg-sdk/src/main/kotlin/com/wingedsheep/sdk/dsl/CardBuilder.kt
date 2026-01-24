@@ -480,14 +480,14 @@ class ActivatedAbilityBuilder {
     var cost: AbilityCost = AbilityCost.Tap
     var effect: Effect = DrawCardsEffect(0, EffectTarget.Controller)
     var manaAbility: Boolean = false
-    var timingRestriction: TimingRestriction = TimingRestriction.INSTANT
+    var timing: TimingRule = TimingRule.InstantSpeed
 
     fun build(): ActivatedAbility = ActivatedAbility(
         id = AbilityId.generate(),
         cost = cost,
         effect = effect,
         isManaAbility = manaAbility,
-        timingRestriction = timingRestriction
+        timing = timing
     )
 }
 
@@ -575,7 +575,7 @@ class LoyaltyAbilityBuilder(private val loyaltyChange: Int) {
         cost = AbilityCost.Loyalty(loyaltyChange),
         effect = effect,
         isPlaneswalkerAbility = true,
-        timingRestriction = TimingRestriction.SORCERY
+        timing = TimingRule.SorcerySpeed
     )
 }
 

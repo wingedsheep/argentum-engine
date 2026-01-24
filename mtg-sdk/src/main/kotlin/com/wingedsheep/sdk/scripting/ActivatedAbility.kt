@@ -13,24 +13,13 @@ data class ActivatedAbility(
     val id: AbilityId,
     val cost: AbilityCost,
     val effect: Effect,
-    val timingRestriction: TimingRestriction = TimingRestriction.INSTANT,
+    val timing: TimingRule = TimingRule.InstantSpeed,
     val isManaAbility: Boolean = false,
     val isPlaneswalkerAbility: Boolean = false,
     val activateFromZone: ZoneType = ZoneType.BATTLEFIELD
 ) {
     val description: String
         get() = "${cost.description}: ${effect.description}"
-}
-
-/**
- * Timing restrictions for activated abilities.
- */
-@Serializable
-enum class TimingRestriction {
-    /** Can be activated any time you could cast an instant */
-    INSTANT,
-    /** Can only be activated any time you could cast a sorcery */
-    SORCERY
 }
 
 /**

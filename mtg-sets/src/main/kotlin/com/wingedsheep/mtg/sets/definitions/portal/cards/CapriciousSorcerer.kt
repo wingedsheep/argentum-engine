@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.DealDamageEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.scripting.TimingRestriction
+import com.wingedsheep.sdk.scripting.TimingRule
 
 /**
  * Capricious Sorcerer
@@ -23,7 +23,7 @@ val CapriciousSorcerer = card("Capricious Sorcerer") {
     activatedAbility {
         cost = AbilityCost.Tap
         effect = DealDamageEffect(1, EffectTarget.AnyTarget)
-        timingRestriction = TimingRestriction.SORCERY
+        timing = TimingRule.SorcerySpeed
     }
 
     metadata {

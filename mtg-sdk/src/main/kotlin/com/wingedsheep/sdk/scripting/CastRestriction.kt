@@ -14,6 +14,17 @@ import kotlinx.serialization.Serializable
 sealed interface CastRestriction {
 
     /**
+     * Restrict casting based on timing rules (instant speed vs sorcery speed).
+     * Uses the shared [TimingRule] to ensure consistent definition of timing across
+     * both spell restrictions and activated ability timing.
+     *
+     * Example: An instant that says "Cast only as a sorcery" would use
+     * TimingRequirement(TimingRule.SorcerySpeed).
+     */
+    @Serializable
+    data class TimingRequirement(val timing: TimingRule) : CastRestriction
+
+    /**
      * Restrict casting to a specific phase.
      * Example: "Cast only during combat."
      */
