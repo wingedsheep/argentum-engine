@@ -212,6 +212,18 @@ class CardBuilder(private val name: String) {
     }
 
     // =========================================================================
+    // Additional Costs
+    // =========================================================================
+
+    /**
+     * Add an additional cost to cast this spell.
+     * Used for cards like Final Strike: "As an additional cost to cast this spell, sacrifice a creature."
+     */
+    fun additionalCost(cost: AdditionalCost) {
+        additionalCosts.add(cost)
+    }
+
+    // =========================================================================
     // Metadata
     // =========================================================================
 

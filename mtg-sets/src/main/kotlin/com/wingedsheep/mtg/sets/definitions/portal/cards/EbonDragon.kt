@@ -1,0 +1,39 @@
+package com.wingedsheep.mtg.sets.definitions.portal.cards
+
+import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.DiscardCardsEffect
+import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.OnEnterBattlefield
+import com.wingedsheep.sdk.targeting.TargetOpponent
+
+/**
+ * Ebon Dragon
+ * {5}{B}{B}
+ * Creature — Dragon
+ * 5/4
+ * Flying
+ * When Ebon Dragon enters the battlefield, you may have target opponent discard a card.
+ */
+val EbonDragon = card("Ebon Dragon") {
+    manaCost = "{5}{B}{B}"
+    typeLine = "Creature — Dragon"
+    power = 5
+    toughness = 4
+    keywords(Keyword.FLYING)
+
+    triggeredAbility {
+        trigger = OnEnterBattlefield()
+        optional = true
+        target = TargetOpponent()
+        effect = DiscardCardsEffect(1, EffectTarget.ContextTarget(0))
+    }
+
+    metadata {
+        rarity = Rarity.RARE
+        collectorNumber = "91"
+        artist = "Ron Spencer"
+        imageUri = "https://cards.scryfall.io/normal/front/f/6/f6e16893-5ca1-4b55-a60e-e7e5a50f0ffe.jpg"
+    }
+}

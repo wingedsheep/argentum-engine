@@ -1449,9 +1449,189 @@ class PortalSetTest : DescribeSpec({
         }
     }
 
+    describe("Portal Set - Cards 91-100") {
+
+        describe("Ebon Dragon") {
+            val card = EbonDragon
+
+            it("should be a 5/4 Dragon with flying") {
+                card.manaCost.toString() shouldBe "{5}{B}{B}"
+                card.cmc shouldBe 7
+                card.creatureStats?.basePower shouldBe 5
+                card.creatureStats?.baseToughness shouldBe 4
+                card.typeLine.subtypes shouldContain Subtype.DRAGON
+                card.keywords shouldContain Keyword.FLYING
+            }
+
+            it("should have optional ETB discard trigger") {
+                card.triggeredAbilities shouldHaveSize 1
+                val trigger = card.triggeredAbilities.first()
+                trigger.trigger.shouldBeInstanceOf<OnEnterBattlefield>()
+                trigger.optional shouldBe true
+                trigger.effect.shouldBeInstanceOf<DiscardCardsEffect>()
+            }
+        }
+
+        describe("Endless Cockroaches") {
+            val card = EndlessCockroaches
+
+            it("should be a 1/1 Insect") {
+                card.manaCost.toString() shouldBe "{1}{B}{B}"
+                card.cmc shouldBe 3
+                card.creatureStats?.basePower shouldBe 1
+                card.creatureStats?.baseToughness shouldBe 1
+                card.typeLine.subtypes shouldContain Subtype.INSECT
+            }
+
+            it("should have dies trigger to return to hand") {
+                card.triggeredAbilities shouldHaveSize 1
+                val trigger = card.triggeredAbilities.first()
+                trigger.trigger.shouldBeInstanceOf<OnDeath>()
+                trigger.effect.shouldBeInstanceOf<ReturnToHandEffect>()
+                val effect = trigger.effect as ReturnToHandEffect
+                effect.target shouldBe EffectTarget.Self
+            }
+        }
+
+        describe("Feral Shadow") {
+            val card = FeralShadow
+
+            it("should be a 2/1 Nightstalker with flying") {
+                card.manaCost.toString() shouldBe "{2}{B}"
+                card.cmc shouldBe 3
+                card.creatureStats?.basePower shouldBe 2
+                card.creatureStats?.baseToughness shouldBe 1
+                card.typeLine.subtypes shouldContain Subtype.NIGHTSTALKER
+                card.keywords shouldContain Keyword.FLYING
+            }
+        }
+
+        describe("Final Strike") {
+            val card = FinalStrike
+
+            it("should require sacrifice as additional cost") {
+                card.manaCost.toString() shouldBe "{2}{B}{B}"
+                card.cmc shouldBe 4
+                card.typeLine.isSorcery shouldBe true
+                card.hasAdditionalCosts shouldBe true
+            }
+
+            it("should deal dynamic damage based on sacrificed creature") {
+                card.spellEffect.shouldBeInstanceOf<DealDynamicDamageEffect>()
+                val effect = card.spellEffect as DealDynamicDamageEffect
+                effect.amount shouldBe DynamicAmount.SacrificedPermanentPower
+            }
+        }
+
+        describe("Gravedigger") {
+            val card = Gravedigger
+
+            it("should be a 2/2 Zombie") {
+                card.manaCost.toString() shouldBe "{3}{B}"
+                card.cmc shouldBe 4
+                card.creatureStats?.basePower shouldBe 2
+                card.creatureStats?.baseToughness shouldBe 2
+                card.typeLine.subtypes shouldContain Subtype.ZOMBIE
+            }
+
+            it("should have optional ETB to return creature from graveyard") {
+                card.triggeredAbilities shouldHaveSize 1
+                val trigger = card.triggeredAbilities.first()
+                trigger.trigger.shouldBeInstanceOf<OnEnterBattlefield>()
+                trigger.optional shouldBe true
+                trigger.effect.shouldBeInstanceOf<ReturnFromGraveyardEffect>()
+            }
+        }
+
+        describe("Hand of Death") {
+            val card = HandOfDeath
+
+            it("should destroy target nonblack creature") {
+                card.manaCost.toString() shouldBe "{2}{B}"
+                card.cmc shouldBe 3
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<DestroyEffect>()
+                val effect = card.spellEffect as DestroyEffect
+                effect.target shouldBe EffectTarget.TargetNonblackCreature
+            }
+        }
+
+        describe("Howling Fury") {
+            val card = HowlingFury
+
+            it("should give target creature +4/+0") {
+                card.manaCost.toString() shouldBe "{2}{B}"
+                card.cmc shouldBe 3
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<ModifyStatsEffect>()
+                val effect = card.spellEffect as ModifyStatsEffect
+                effect.powerModifier shouldBe 4
+                effect.toughnessModifier shouldBe 0
+            }
+        }
+
+        describe("King's Assassin") {
+            val card = KingsAssassin
+
+            it("should be a 1/1 Human Assassin") {
+                card.manaCost.toString() shouldBe "{1}{B}{B}"
+                card.cmc shouldBe 3
+                card.creatureStats?.basePower shouldBe 1
+                card.creatureStats?.baseToughness shouldBe 1
+                card.typeLine.subtypes shouldContain Subtype.HUMAN
+                card.typeLine.subtypes shouldContain Subtype.ASSASSIN
+            }
+
+            it("should have tap ability to destroy tapped creature with restrictions") {
+                card.activatedAbilities shouldHaveSize 1
+                val ability = card.activatedAbilities.first()
+                ability.cost shouldBe AbilityCost.Tap
+                ability.effect.shouldBeInstanceOf<DestroyEffect>()
+                ability.restrictions shouldHaveSize 1
+            }
+        }
+
+        describe("Mercenary Knight") {
+            val card = MercenaryKnight
+
+            it("should be a 4/4 Human Mercenary Knight") {
+                card.manaCost.toString() shouldBe "{2}{B}"
+                card.cmc shouldBe 3
+                card.creatureStats?.basePower shouldBe 4
+                card.creatureStats?.baseToughness shouldBe 4
+                card.typeLine.subtypes shouldContain Subtype.HUMAN
+                card.typeLine.subtypes shouldContain Subtype.MERCENARY
+                card.typeLine.subtypes shouldContain Subtype.KNIGHT
+            }
+
+            it("should have ETB sacrifice unless discard creature trigger") {
+                card.triggeredAbilities shouldHaveSize 1
+                val trigger = card.triggeredAbilities.first()
+                trigger.trigger.shouldBeInstanceOf<OnEnterBattlefield>()
+                trigger.effect.shouldBeInstanceOf<SacrificeUnlessDiscardEffect>()
+                val effect = trigger.effect as SacrificeUnlessDiscardEffect
+                effect.discardFilter shouldBe CardFilter.CreatureCard
+            }
+        }
+
+        describe("Mind Knives") {
+            val card = MindKnives
+
+            it("should make target opponent discard at random") {
+                card.manaCost.toString() shouldBe "{1}{B}"
+                card.cmc shouldBe 2
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<DiscardRandomEffect>()
+                val effect = card.spellEffect as DiscardRandomEffect
+                effect.count shouldBe 1
+                effect.target shouldBe EffectTarget.Opponent
+            }
+        }
+    }
+
     describe("PortalSet object") {
-        it("should have 90 cards in the set") {
-            PortalSet.allCards shouldHaveSize 90
+        it("should have 100 cards in the set") {
+            PortalSet.allCards shouldHaveSize 100
         }
 
         it("should have correct set code") {

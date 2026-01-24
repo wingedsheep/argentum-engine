@@ -86,6 +86,19 @@ data class DealDamageEffect(
     override val description: String = "Deal $amount damage to ${target.description}"
 }
 
+/**
+ * Deal dynamic damage to a target.
+ * "Deal damage equal to X to target"
+ * Used for effects like Final Strike where damage depends on a dynamic value.
+ */
+@Serializable
+data class DealDynamicDamageEffect(
+    val amount: DynamicAmount,
+    val target: EffectTarget
+) : Effect {
+    override val description: String = "Deal damage equal to ${amount.description} to ${target.description}"
+}
+
 // =============================================================================
 // Card Drawing Effects
 // =============================================================================
@@ -125,6 +138,23 @@ data class DiscardCardsEffect(
         EffectTarget.Controller -> "Discard ${if (count == 1) "a card" else "$count cards"}"
         EffectTarget.Opponent -> "Target opponent discards ${if (count == 1) "a card" else "$count cards"}"
         else -> "Target player discards ${if (count == 1) "a card" else "$count cards"}"
+    }
+}
+
+/**
+ * Discard cards at random effect.
+ * "Target opponent discards a card at random"
+ * Used for cards like Mind Knives.
+ */
+@Serializable
+data class DiscardRandomEffect(
+    val count: Int = 1,
+    val target: EffectTarget = EffectTarget.Opponent
+) : Effect {
+    override val description: String = when (target) {
+        EffectTarget.Controller -> "Discard ${if (count == 1) "a card" else "$count cards"} at random"
+        EffectTarget.Opponent -> "Target opponent discards ${if (count == 1) "a card" else "$count cards"} at random"
+        else -> "Target player discards ${if (count == 1) "a card" else "$count cards"} at random"
     }
 }
 
@@ -572,6 +602,27 @@ sealed interface DynamicAmount {
     @Serializable
     data class Min(val left: DynamicAmount, val right: DynamicAmount) : DynamicAmount {
         override val description: String = "min(${left.description}, ${right.description})"
+    }
+
+    // =========================================================================
+    // Context-based Values - Values from cost payment or trigger context
+    // =========================================================================
+
+    /**
+     * Power of a creature that was sacrificed as an additional cost.
+     * Used for effects like Final Strike: "Deal damage equal to that creature's power"
+     */
+    @Serializable
+    data object SacrificedPermanentPower : DynamicAmount {
+        override val description: String = "the sacrificed creature's power"
+    }
+
+    /**
+     * Toughness of a creature that was sacrificed as an additional cost.
+     */
+    @Serializable
+    data object SacrificedPermanentToughness : DynamicAmount {
+        override val description: String = "the sacrificed creature's toughness"
     }
 
     // =========================================================================
@@ -2350,18 +2401,24 @@ data class ModifyStatsForGroupEffect(
  * Triggered sacrifice effect: Sacrifice this unless you discard a card.
  * Used for cards like Thundering Wurm with ETB sacrifice triggers.
  *
- * @property landOnly If true, must discard a land card specifically
+ * @property discardFilter What type of card must be discarded (defaults to any card)
  */
 @Serializable
 data class SacrificeUnlessDiscardEffect(
-    val landOnly: Boolean = false
+    val discardFilter: CardFilter = CardFilter.AnyCard
 ) : Effect {
+    /** Legacy constructor for landOnly boolean */
+    constructor(landOnly: Boolean) : this(
+        if (landOnly) CardFilter.LandCard else CardFilter.AnyCard
+    )
+
     override val description: String = buildString {
         append("Sacrifice this permanent unless you discard ")
-        if (landOnly) {
-            append("a land card")
-        } else {
-            append("a card")
+        when (discardFilter) {
+            CardFilter.AnyCard -> append("a card")
+            CardFilter.LandCard -> append("a land card")
+            CardFilter.CreatureCard -> append("a creature card")
+            else -> append("a ${discardFilter.description}")
         }
     }
 }
