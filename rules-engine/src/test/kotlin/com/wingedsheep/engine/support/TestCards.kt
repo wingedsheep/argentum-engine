@@ -2,7 +2,14 @@ package com.wingedsheep.engine.support
 
 import com.wingedsheep.sdk.core.*
 import com.wingedsheep.sdk.model.CardDefinition
+import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.CreatureStats
+import com.wingedsheep.sdk.scripting.*
+import com.wingedsheep.sdk.targeting.AnyTarget
+import com.wingedsheep.sdk.targeting.TargetCreature
+import com.wingedsheep.sdk.targeting.TargetSpell
+import com.wingedsheep.sdk.targeting.SpellTargetFilter
+import com.wingedsheep.sdk.targeting.CreatureTargetFilter as TargetingCreatureFilter
 
 /**
  * Test card definitions for unit tests.
@@ -121,7 +128,11 @@ object TestCards {
     val LightningBolt = CardDefinition.instant(
         name = "Lightning Bolt",
         manaCost = ManaCost.parse("{R}"),
-        oracleText = "Lightning Bolt deals 3 damage to any target."
+        oracleText = "Lightning Bolt deals 3 damage to any target.",
+        script = CardScript.spell(
+            effect = DealDamageEffect(3, EffectTarget.AnyTarget),
+            AnyTarget()
+        )
     )
 
     /**
@@ -130,7 +141,11 @@ object TestCards {
     val GiantGrowth = CardDefinition.instant(
         name = "Giant Growth",
         manaCost = ManaCost.parse("{G}"),
-        oracleText = "Target creature gets +3/+3 until end of turn."
+        oracleText = "Target creature gets +3/+3 until end of turn.",
+        script = CardScript.spell(
+            effect = ModifyStatsEffect(3, 3, EffectTarget.TargetCreature, Duration.EndOfTurn),
+            TargetCreature()
+        )
     )
 
     /**
@@ -139,7 +154,11 @@ object TestCards {
     val Counterspell = CardDefinition.instant(
         name = "Counterspell",
         manaCost = ManaCost.parse("{U}{U}"),
-        oracleText = "Counter target spell."
+        oracleText = "Counter target spell.",
+        script = CardScript.spell(
+            effect = CounterSpellEffect,
+            TargetSpell()
+        )
     )
 
     /**
@@ -148,7 +167,11 @@ object TestCards {
     val SpellPierce = CardDefinition.instant(
         name = "Spell Pierce",
         manaCost = ManaCost.parse("{U}"),
-        oracleText = "Counter target noncreature spell unless its controller pays {2}."
+        oracleText = "Counter target noncreature spell unless its controller pays {2}.",
+        script = CardScript.spell(
+            effect = CounterSpellEffect,  // Simplified - no tax mechanic for now
+            TargetSpell(filter = SpellTargetFilter.Noncreature)
+        )
     )
 
     // =========================================================================
@@ -161,7 +184,11 @@ object TestCards {
     val DoomBlade = CardDefinition.sorcery(
         name = "Doom Blade",
         manaCost = ManaCost.parse("{1}{B}"),
-        oracleText = "Destroy target nonblack creature."
+        oracleText = "Destroy target nonblack creature.",
+        script = CardScript.spell(
+            effect = DestroyEffect(EffectTarget.TargetNonblackCreature),
+            TargetCreature(filter = TargetingCreatureFilter.NotColor(Color.BLACK))
+        )
     )
 
     // =========================================================================

@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.TypeLine
 import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.Effect
 import kotlinx.serialization.Serializable
 
 /**
@@ -22,7 +23,8 @@ data class CardComponent(
     val baseStats: CreatureStats? = null,
     val baseKeywords: Set<Keyword> = emptySet(),
     val colors: Set<Color> = emptySet(),
-    val ownerId: EntityId? = null  // Original owner of the card
+    val ownerId: EntityId? = null,  // Original owner of the card
+    val spellEffect: Effect? = null  // Effect for instants/sorceries
 ) : Component {
     // Convenience accessors
     val isCreature: Boolean get() = typeLine.isCreature

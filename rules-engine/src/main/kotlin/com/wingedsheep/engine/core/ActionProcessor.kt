@@ -421,51 +421,94 @@ class ActionProcessor(
             }
 
             is PaymentStrategy.AutoPay -> {
-                // Find sources to tap using the solver
-                val solution = manaSolver.solve(currentState, action.playerId, cardComponent.manaCost, xValue)
-                    ?: return ExecutionResult.error(currentState, "Not enough mana to auto-pay")
-
-                // Tap each source and generate events
-                for (source in solution.sources) {
-                    currentState = currentState.updateEntity(source.entityId) { container ->
-                        container.with(TappedComponent)
-                    }
-
-                    // Emit tapped event for client animation
-                    events.add(TappedEvent(source.entityId, source.name))
-                }
-
-                // Track mana spent for the event
-                var whiteSpent = 0
-                var blueSpent = 0
-                var blackSpent = 0
-                var redSpent = 0
-                var greenSpent = 0
-                var colorlessSpent = 0
-
-                for ((_, production) in solution.manaProduced) {
-                    when (production.color) {
-                        Color.WHITE -> whiteSpent++
-                        Color.BLUE -> blueSpent++
-                        Color.BLACK -> blackSpent++
-                        Color.RED -> redSpent++
-                        Color.GREEN -> greenSpent++
-                        null -> colorlessSpent += production.colorless
-                    }
-                }
-
-                events.add(
-                    ManaSpentEvent(
-                        playerId = action.playerId,
-                        reason = "Cast ${cardComponent.name}",
-                        white = whiteSpent,
-                        blue = blueSpent,
-                        black = blackSpent,
-                        red = redSpent,
-                        green = greenSpent,
-                        colorless = colorlessSpent
-                    )
+                // First try to pay from the mana pool
+                val poolComponent = currentState.getEntity(action.playerId)?.get<ManaPoolComponent>()
+                    ?: ManaPoolComponent()
+                val pool = ManaPool(
+                    white = poolComponent.white,
+                    blue = poolComponent.blue,
+                    black = poolComponent.black,
+                    red = poolComponent.red,
+                    green = poolComponent.green,
+                    colorless = poolComponent.colorless
                 )
+
+                val newPool = costHandler.payManaCost(pool, cardComponent.manaCost)
+
+                if (newPool != null) {
+                    // Successfully paid from pool
+                    currentState = currentState.updateEntity(action.playerId) { container ->
+                        container.with(
+                            ManaPoolComponent(
+                                white = newPool.white,
+                                blue = newPool.blue,
+                                black = newPool.black,
+                                red = newPool.red,
+                                green = newPool.green,
+                                colorless = newPool.colorless
+                            )
+                        )
+                    }
+
+                    events.add(
+                        ManaSpentEvent(
+                            playerId = action.playerId,
+                            reason = "Cast ${cardComponent.name}",
+                            white = poolComponent.white - newPool.white,
+                            blue = poolComponent.blue - newPool.blue,
+                            black = poolComponent.black - newPool.black,
+                            red = poolComponent.red - newPool.red,
+                            green = poolComponent.green - newPool.green,
+                            colorless = poolComponent.colorless - newPool.colorless
+                        )
+                    )
+                } else {
+                    // Pool didn't have enough - try tapping lands
+                    val solution = manaSolver.solve(currentState, action.playerId, cardComponent.manaCost, xValue)
+                        ?: return ExecutionResult.error(currentState, "Not enough mana to auto-pay")
+
+                    // Tap each source and generate events
+                    for (source in solution.sources) {
+                        currentState = currentState.updateEntity(source.entityId) { container ->
+                            container.with(TappedComponent)
+                        }
+
+                        // Emit tapped event for client animation
+                        events.add(TappedEvent(source.entityId, source.name))
+                    }
+
+                    // Track mana spent for the event
+                    var whiteSpent = 0
+                    var blueSpent = 0
+                    var blackSpent = 0
+                    var redSpent = 0
+                    var greenSpent = 0
+                    var colorlessSpent = 0
+
+                    for ((_, production) in solution.manaProduced) {
+                        when (production.color) {
+                            Color.WHITE -> whiteSpent++
+                            Color.BLUE -> blueSpent++
+                            Color.BLACK -> blackSpent++
+                            Color.RED -> redSpent++
+                            Color.GREEN -> greenSpent++
+                            null -> colorlessSpent += production.colorless
+                        }
+                    }
+
+                    events.add(
+                        ManaSpentEvent(
+                            playerId = action.playerId,
+                            reason = "Cast ${cardComponent.name}",
+                            white = whiteSpent,
+                            blue = blueSpent,
+                            black = blackSpent,
+                            red = redSpent,
+                            green = greenSpent,
+                            colorless = colorlessSpent
+                        )
+                    )
+                }
             }
 
             is PaymentStrategy.Explicit -> {

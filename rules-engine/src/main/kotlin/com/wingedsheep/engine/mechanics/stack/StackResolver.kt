@@ -264,9 +264,26 @@ class StackResolver(
         var newState = state
         val events = mutableListOf<GameEvent>()
 
-        // Note: Spell effects are looked up from a CardScript repository
-        // which would be injected. For now, we handle permanents and simple spells.
-        // The effect execution would be: effectHandler.execute(newState, spellEffect, context)
+        // Execute the spell effect if present
+        val spellEffect = cardComponent?.spellEffect
+        if (spellEffect != null) {
+            val context = EffectContext(
+                sourceId = spellId,
+                controllerId = spellComponent.casterId,
+                opponentId = newState.getOpponent(spellComponent.casterId),
+                targets = targets,
+                xValue = spellComponent.xValue
+            )
+
+            val effectResult = effectHandler.execute(newState, spellEffect, context)
+            if (!effectResult.isSuccess) {
+                // Effect execution failed - spell still goes to graveyard
+                events.addAll(effectResult.events)
+            } else {
+                newState = effectResult.newState
+                events.addAll(effectResult.events)
+            }
+        }
 
         // Move to graveyard
         val ownerId = cardComponent?.ownerId ?: spellComponent.casterId

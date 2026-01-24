@@ -8,6 +8,7 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
+import com.wingedsheep.engine.state.components.identity.PlayerComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -273,19 +274,74 @@ class GameTestDriver(
     }
 
     /**
-     * Cast a spell with auto-pay.
+     * Cast a spell with smart mana payment.
+     * - Uses FromPool if player has mana in pool
+     * - Falls back to AutoPay (tapping lands) otherwise
+     * Targets can be players or permanents - the method auto-detects which type each is.
      */
     fun castSpell(
         playerId: EntityId,
         cardId: EntityId,
         targets: List<EntityId> = emptyList()
     ): ExecutionResult {
+        // Check if player has mana in pool
+        val pool = state.getEntity(playerId)
+            ?.get<com.wingedsheep.engine.state.components.player.ManaPoolComponent>()
+        val hasManaInPool = pool != null &&
+            (pool.white > 0 || pool.blue > 0 || pool.black > 0 ||
+             pool.red > 0 || pool.green > 0 || pool.colorless > 0)
+
+        val paymentStrategy = if (hasManaInPool) {
+            PaymentStrategy.FromPool
+        } else {
+            PaymentStrategy.AutoPay
+        }
+
         return submit(
             CastSpell(
                 playerId = playerId,
                 cardId = cardId,
-                targets = targets.map { ChosenTarget.Permanent(it) },
-                paymentStrategy = PaymentStrategy.AutoPay
+                targets = targets.map { targetId ->
+                    // Detect if target is a player or a permanent
+                    val entity = state.getEntity(targetId)
+                    if (entity?.get<PlayerComponent>() != null) {
+                        ChosenTarget.Player(targetId)
+                    } else {
+                        ChosenTarget.Permanent(targetId)
+                    }
+                },
+                paymentStrategy = paymentStrategy
+            )
+        )
+    }
+
+    /**
+     * Cast a spell using pre-built ChosenTarget list with smart payment.
+     */
+    fun castSpellWithTargets(
+        playerId: EntityId,
+        cardId: EntityId,
+        targets: List<ChosenTarget>
+    ): ExecutionResult {
+        // Check if player has mana in pool
+        val pool = state.getEntity(playerId)
+            ?.get<com.wingedsheep.engine.state.components.player.ManaPoolComponent>()
+        val hasManaInPool = pool != null &&
+            (pool.white > 0 || pool.blue > 0 || pool.black > 0 ||
+             pool.red > 0 || pool.green > 0 || pool.colorless > 0)
+
+        val paymentStrategy = if (hasManaInPool) {
+            PaymentStrategy.FromPool
+        } else {
+            PaymentStrategy.AutoPay
+        }
+
+        return submit(
+            CastSpell(
+                playerId = playerId,
+                cardId = cardId,
+                targets = targets,
+                paymentStrategy = paymentStrategy
             )
         )
     }
@@ -383,6 +439,66 @@ class GameTestDriver(
         return getPermanents(playerId).filter { entityId ->
             state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.isLand == true
         }
+    }
+
+    /**
+     * Give a player mana directly (test helper).
+     */
+    fun giveMana(playerId: EntityId, color: com.wingedsheep.sdk.core.Color, amount: Int = 1) {
+        _state = _state.updateEntity(playerId) { container ->
+            val pool = container.get<com.wingedsheep.engine.state.components.player.ManaPoolComponent>()
+                ?: com.wingedsheep.engine.state.components.player.ManaPoolComponent()
+            container.with(pool.add(color, amount))
+        }
+    }
+
+    /**
+     * Give a player colorless mana directly (test helper).
+     */
+    fun giveColorlessMana(playerId: EntityId, amount: Int) {
+        _state = _state.updateEntity(playerId) { container ->
+            val pool = container.get<com.wingedsheep.engine.state.components.player.ManaPoolComponent>()
+                ?: com.wingedsheep.engine.state.components.player.ManaPoolComponent()
+            container.with(pool.addColorless(amount))
+        }
+    }
+
+    /**
+     * Put a specific card directly into a player's hand (test helper).
+     * Creates a new card entity from the registry and adds it to hand.
+     * This is deterministic - always succeeds if the card is registered.
+     */
+    fun putCardInHand(playerId: EntityId, cardName: String): EntityId {
+        val cardDef = cardRegistry.requireCard(cardName)
+        val cardId = EntityId.generate()
+
+        // Create card entity
+        val cardComponent = CardComponent(
+            cardDefinitionId = cardDef.name,
+            name = cardDef.name,
+            manaCost = cardDef.manaCost,
+            typeLine = cardDef.typeLine,
+            oracleText = cardDef.oracleText,
+            baseStats = cardDef.creatureStats,
+            baseKeywords = cardDef.keywords,
+            colors = cardDef.colors,
+            ownerId = playerId,
+            spellEffect = cardDef.spellEffect
+        )
+
+        val container = com.wingedsheep.engine.state.ComponentContainer.of(
+            cardComponent,
+            com.wingedsheep.engine.state.components.identity.OwnerComponent(playerId),
+            ControllerComponent(playerId)
+        )
+
+        _state = _state.withEntity(cardId, container)
+
+        // Add to hand
+        val handZone = ZoneKey(playerId, ZoneType.HAND)
+        _state = _state.addToZone(handZone, cardId)
+
+        return cardId
     }
 
     /**
@@ -504,5 +620,100 @@ class GameTestDriver(
         if (!inGraveyard) {
             throw AssertionError(message ?: "Expected $cardName in ${playerId}'s graveyard")
         }
+    }
+
+    /**
+     * Assert the stack has the expected size.
+     */
+    fun assertStackSize(expected: Int, message: String? = null) {
+        val actual = state.stack.size
+        if (actual != expected) {
+            val msg = message ?: "Stack size mismatch"
+            throw AssertionError("$msg: expected $expected but was $actual")
+        }
+    }
+
+    // =========================================================================
+    // Stack Queries
+    // =========================================================================
+
+    /**
+     * Get the stack size.
+     */
+    val stackSize: Int get() = state.stack.size
+
+    /**
+     * Get spell names on the stack (top to bottom).
+     */
+    fun getStackSpellNames(): List<String> {
+        return state.stack.reversed().mapNotNull { entityId ->
+            state.getEntity(entityId)?.get<CardComponent>()?.name
+        }
+    }
+
+    /**
+     * Get the top spell on the stack.
+     */
+    fun getTopOfStack(): EntityId? = state.getTopOfStack()
+
+    /**
+     * Get the name of the top spell on the stack.
+     */
+    fun getTopOfStackName(): String? {
+        val topId = state.getTopOfStack() ?: return null
+        return state.getEntity(topId)?.get<CardComponent>()?.name
+    }
+
+    // =========================================================================
+    // Setup Helpers
+    // =========================================================================
+
+    /**
+     * Play multiple lands for a player (advances to main phase, plays lands).
+     * Useful for setting up mana in tests.
+     *
+     * @param playerId The player to play lands for
+     * @param landName The name of the land to play
+     * @param count How many lands to play (across multiple turns if needed)
+     */
+    fun setupLands(playerId: EntityId, landName: String, count: Int) {
+        repeat(count) { i ->
+            // If not active player's turn, advance until it is
+            while (activePlayer != playerId) {
+                passPriorityUntil(Step.END)
+                bothPass()
+            }
+
+            // Advance to main phase
+            passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+            // Find and play the land
+            val land = findCardInHand(playerId, landName)
+            if (land != null) {
+                val result = playLand(playerId, land)
+                if (!result.isSuccess) {
+                    // May have already played a land this turn - advance to next turn
+                    passPriorityUntil(Step.END)
+                    bothPass()
+                    // Retry on next turn
+                    while (activePlayer != playerId) {
+                        passPriorityUntil(Step.END)
+                        bothPass()
+                    }
+                    passPriorityUntil(Step.PRECOMBAT_MAIN)
+                    val retryLand = findCardInHand(playerId, landName)
+                    if (retryLand != null) {
+                        playLand(playerId, retryLand)
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Get untapped lands controlled by a player.
+     */
+    fun getUntappedLands(playerId: EntityId): List<EntityId> {
+        return getLands(playerId).filter { !isTapped(it) }
     }
 }
