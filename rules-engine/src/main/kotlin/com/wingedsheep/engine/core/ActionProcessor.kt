@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.core
 
 import com.wingedsheep.engine.handlers.CostHandler
+import com.wingedsheep.engine.handlers.MulliganHandler
 import com.wingedsheep.engine.mechanics.combat.CombatManager
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
@@ -13,6 +14,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
+import com.wingedsheep.engine.state.components.player.MulliganStateComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ZoneType
@@ -32,7 +34,8 @@ class ActionProcessor(
     private val stackResolver: StackResolver = StackResolver(),
     private val combatManager: CombatManager = CombatManager(),
     private val manaSolver: ManaSolver = ManaSolver(),
-    private val costHandler: CostHandler = CostHandler()
+    private val costHandler: CostHandler = CostHandler(),
+    private val mulliganHandler: MulliganHandler = MulliganHandler()
 ) {
 
     /**
@@ -76,6 +79,9 @@ class ActionProcessor(
             is SelectTargets -> validateSelectTargets(state, action)
             is ChooseManaColor -> validateChooseManaColor(state, action)
             is SubmitDecision -> validateSubmitDecision(state, action)
+            is TakeMulligan -> validateTakeMulligan(state, action)
+            is KeepHand -> validateKeepHand(state, action)
+            is BottomCards -> validateBottomCards(state, action)
             is Concede -> null  // Always valid
         }
     }
@@ -265,6 +271,54 @@ class ActionProcessor(
         return null
     }
 
+    private fun validateTakeMulligan(state: GameState, action: TakeMulligan): String? {
+        val mullState = state.getEntity(action.playerId)?.get<MulliganStateComponent>()
+            ?: return "Player mulligan state not found"
+
+        if (mullState.hasKept) {
+            return "You have already kept your hand"
+        }
+
+        if (!mullState.canMulligan) {
+            return "Cannot mulligan - hand size would be 0"
+        }
+
+        return null
+    }
+
+    private fun validateKeepHand(state: GameState, action: KeepHand): String? {
+        val mullState = state.getEntity(action.playerId)?.get<MulliganStateComponent>()
+            ?: return "Player mulligan state not found"
+
+        if (mullState.hasKept) {
+            return "You have already kept your hand"
+        }
+
+        return null
+    }
+
+    private fun validateBottomCards(state: GameState, action: BottomCards): String? {
+        val mullState = state.getEntity(action.playerId)?.get<MulliganStateComponent>()
+            ?: return "Player mulligan state not found"
+
+        if (!mullState.hasKept) {
+            return "You have not kept your hand yet"
+        }
+
+        if (action.cardIds.size != mullState.cardsToBottom) {
+            return "Must put exactly ${mullState.cardsToBottom} cards on bottom, got ${action.cardIds.size}"
+        }
+
+        // Validate cards are in hand
+        val hand = state.getHand(action.playerId).toSet()
+        val invalidCards = action.cardIds.filter { it !in hand }
+        if (invalidCards.isNotEmpty()) {
+            return "Cards not in hand: $invalidCards"
+        }
+
+        return null
+    }
+
     /**
      * Execute a validated action.
      */
@@ -281,6 +335,9 @@ class ActionProcessor(
             is SelectTargets -> executeSelectTargets(state, action)
             is ChooseManaColor -> executeChooseManaColor(state, action)
             is SubmitDecision -> executeSubmitDecision(state, action)
+            is TakeMulligan -> executeTakeMulligan(state, action)
+            is KeepHand -> executeKeepHand(state, action)
+            is BottomCards -> executeBottomCards(state, action)
             is Concede -> executeConcede(state, action)
         }
     }
@@ -832,5 +889,36 @@ class ActionProcessor(
         // - YesNoDecision for may abilities -> either execute or skip the effect
 
         return ExecutionResult.success(clearedState, events)
+    }
+
+    // =========================================================================
+    // Mulligan Actions
+    // =========================================================================
+
+    private fun executeTakeMulligan(state: GameState, action: TakeMulligan): ExecutionResult {
+        return when (val result = mulliganHandler.handleTakeMulligan(state, action)) {
+            is EngineResult.Success -> ExecutionResult.success(result.newState, result.events)
+            is EngineResult.Failure -> ExecutionResult.error(result.originalState, result.message)
+            is EngineResult.PausedForDecision -> ExecutionResult.paused(result.partialState, result.decision, result.events)
+            is EngineResult.GameOver -> ExecutionResult.success(result.finalState.copy(gameOver = true, winnerId = result.winnerId), result.events)
+        }
+    }
+
+    private fun executeKeepHand(state: GameState, action: KeepHand): ExecutionResult {
+        return when (val result = mulliganHandler.handleKeepHand(state, action)) {
+            is EngineResult.Success -> ExecutionResult.success(result.newState, result.events)
+            is EngineResult.Failure -> ExecutionResult.error(result.originalState, result.message)
+            is EngineResult.PausedForDecision -> ExecutionResult.paused(result.partialState, result.decision, result.events)
+            is EngineResult.GameOver -> ExecutionResult.success(result.finalState.copy(gameOver = true, winnerId = result.winnerId), result.events)
+        }
+    }
+
+    private fun executeBottomCards(state: GameState, action: BottomCards): ExecutionResult {
+        return when (val result = mulliganHandler.handleBottomCards(state, action)) {
+            is EngineResult.Success -> ExecutionResult.success(result.newState, result.events)
+            is EngineResult.Failure -> ExecutionResult.error(result.originalState, result.message)
+            is EngineResult.PausedForDecision -> ExecutionResult.paused(result.partialState, result.decision, result.events)
+            is EngineResult.GameOver -> ExecutionResult.success(result.finalState.copy(gameOver = true, winnerId = result.winnerId), result.events)
+        }
     }
 }

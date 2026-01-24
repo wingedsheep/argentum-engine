@@ -197,6 +197,42 @@ data class SubmitDecision(
 ) : GameAction
 
 // =============================================================================
+// Mulligan Actions
+// =============================================================================
+
+/**
+ * Player takes a mulligan, shuffling their hand into their library
+ * and drawing a new hand of (7 - mulligans taken) cards.
+ */
+@Serializable
+data class TakeMulligan(
+    override val playerId: EntityId
+) : GameAction
+
+/**
+ * Player keeps their current hand.
+ *
+ * After all players have kept, each player who took mulligans
+ * puts that many cards from their hand on the bottom of their library.
+ */
+@Serializable
+data class KeepHand(
+    override val playerId: EntityId
+) : GameAction
+
+/**
+ * Player puts cards on the bottom of their library after keeping a mulligan hand.
+ * This is the "London mulligan" rule where you put cards back equal to mulligans taken.
+ *
+ * @property cardIds The cards to put on bottom (in the order they should be placed)
+ */
+@Serializable
+data class BottomCards(
+    override val playerId: EntityId,
+    val cardIds: List<EntityId>
+) : GameAction
+
+// =============================================================================
 // Concession
 // =============================================================================
 
