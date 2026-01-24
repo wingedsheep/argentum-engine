@@ -237,6 +237,29 @@ data class CantBeBlockedByColor(
 }
 
 /**
+ * This creature can't be blocked by creatures of any of the specified colors.
+ * Used for cards like Sacred Knight: "can't be blocked by black and/or red creatures."
+ *
+ * @property colors The set of colors that cannot block this creature
+ * @property target What this ability applies to
+ */
+@Serializable
+data class CantBeBlockedByColors(
+    val colors: Set<Color>,
+    val target: StaticTarget = StaticTarget.SourceCreature
+) : StaticAbility {
+    override val description: String = buildString {
+        append("can't be blocked by ")
+        val colorNames = colors.map { it.displayName.lowercase() }
+        when (colorNames.size) {
+            1 -> append("${colorNames.first()} creatures")
+            2 -> append("${colorNames[0]} and/or ${colorNames[1]} creatures")
+            else -> append(colorNames.dropLast(1).joinToString(", ") + ", and/or ${colorNames.last()} creatures")
+        }
+    }
+}
+
+/**
  * Limits the maximum number of creatures that can block this creature.
  * Used for cards like Charging Rhino/Stalking Tiger: "can't be blocked by more than one creature."
  */

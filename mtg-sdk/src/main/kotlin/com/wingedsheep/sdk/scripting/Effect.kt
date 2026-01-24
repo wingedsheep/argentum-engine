@@ -1950,6 +1950,38 @@ data class GainLifePerAttackerEffect(
     override val description: String = "You gain $lifePerAttacker life for each creature attacking you"
 }
 
+/**
+ * Gain life for each land of a specific type target opponent controls.
+ * "You gain 2 life for each Mountain target opponent controls."
+ * Used for Renewing Dawn.
+ *
+ * @property lifePerLand Amount of life gained per land
+ * @property landType The land type to count (e.g., "Mountain", "Forest")
+ */
+@Serializable
+data class GainLifePerLandTypeOpponentControlsEffect(
+    val lifePerLand: Int,
+    val landType: String
+) : Effect {
+    override val description: String = "You gain $lifePerLand life for each $landType target opponent controls"
+}
+
+/**
+ * Gain life for each creature of a specific color target opponent controls.
+ * "You gain 3 life for each black creature target opponent controls."
+ * Used for Starlight.
+ *
+ * @property lifePerCreature Amount of life gained per creature
+ * @property color The color of creatures to count
+ */
+@Serializable
+data class GainLifePerColoredCreatureOpponentControlsEffect(
+    val lifePerCreature: Int,
+    val color: Color
+) : Effect {
+    override val description: String = "You gain $lifePerCreature life for each ${color.displayName.lowercase()} creature target opponent controls"
+}
+
 // =============================================================================
 // Mass Tap Effects
 // =============================================================================

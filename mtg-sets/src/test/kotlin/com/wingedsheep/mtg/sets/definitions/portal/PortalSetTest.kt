@@ -1,6 +1,7 @@
 package com.wingedsheep.mtg.sets.definitions.portal
 
 import com.wingedsheep.mtg.sets.definitions.portal.cards.*
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
@@ -392,9 +393,166 @@ class PortalSetTest : DescribeSpec({
         }
     }
 
+    describe("Portal Set - Cards 21-30") {
+
+        describe("Path of Peace") {
+            val card = PathOfPeace
+
+            it("should be a sorcery") {
+                card.name shouldBe "Path of Peace"
+                card.manaCost.toString() shouldBe "{3}{W}"
+                card.typeLine.isSorcery shouldBe true
+            }
+
+            it("should target a creature") {
+                card.targetRequirements shouldHaveSize 1
+            }
+
+            it("should destroy and grant life to owner") {
+                card.spellEffect.shouldBeInstanceOf<CompositeEffect>()
+                val composite = card.spellEffect as CompositeEffect
+                composite.effects shouldHaveSize 2
+            }
+        }
+
+        describe("Regal Unicorn") {
+            val card = RegalUnicorn
+
+            it("should be a 2/3 vanilla Unicorn") {
+                card.creatureStats?.basePower shouldBe 2
+                card.creatureStats?.baseToughness shouldBe 3
+                card.typeLine.subtypes shouldContain Subtype.UNICORN
+                card.keywords shouldHaveSize 0
+            }
+        }
+
+        describe("Renewing Dawn") {
+            val card = RenewingDawn
+
+            it("should gain life per Mountain") {
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<GainLifePerLandTypeOpponentControlsEffect>()
+                val effect = card.spellEffect as GainLifePerLandTypeOpponentControlsEffect
+                effect.lifePerLand shouldBe 2
+                effect.landType shouldBe "Mountain"
+            }
+
+            it("should target an opponent") {
+                card.targetRequirements shouldHaveSize 1
+            }
+        }
+
+        describe("Sacred Knight") {
+            val card = SacredKnight
+
+            it("should be a 3/2 Human Knight") {
+                card.creatureStats?.basePower shouldBe 3
+                card.creatureStats?.baseToughness shouldBe 2
+                card.typeLine.subtypes shouldContain Subtype.HUMAN
+                card.typeLine.subtypes shouldContain Subtype.KNIGHT
+            }
+
+            it("should have evasion from black and red creatures") {
+                card.staticAbilities shouldHaveSize 1
+                val ability = card.staticAbilities.first()
+                ability.shouldBeInstanceOf<CantBeBlockedByColors>()
+                val evasion = ability as CantBeBlockedByColors
+                evasion.colors shouldContain Color.BLACK
+                evasion.colors shouldContain Color.RED
+            }
+        }
+
+        describe("Sacred Nectar") {
+            val card = SacredNectar
+
+            it("should gain 4 life") {
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<GainLifeEffect>()
+                val effect = card.spellEffect as GainLifeEffect
+                effect.amount shouldBe 4
+            }
+        }
+
+        describe("Seasoned Marshal") {
+            val card = SeasonedMarshal
+
+            it("should be a 2/2 Human Soldier") {
+                card.creatureStats?.basePower shouldBe 2
+                card.creatureStats?.baseToughness shouldBe 2
+                card.typeLine.subtypes shouldContain Subtype.HUMAN
+                card.typeLine.subtypes shouldContain Subtype.SOLDIER
+            }
+
+            it("should have attack trigger with optional tap") {
+                card.triggeredAbilities shouldHaveSize 1
+                val trigger = card.triggeredAbilities.first()
+                trigger.trigger.shouldBeInstanceOf<OnAttack>()
+                trigger.optional shouldBe true
+                trigger.effect.shouldBeInstanceOf<TapUntapEffect>()
+            }
+        }
+
+        describe("Spiritual Guardian") {
+            val card = SpiritualGuardian
+
+            it("should be a 3/4 Spirit") {
+                card.creatureStats?.basePower shouldBe 3
+                card.creatureStats?.baseToughness shouldBe 4
+                card.typeLine.subtypes shouldContain Subtype.SPIRIT
+            }
+
+            it("should have ETB trigger to gain life") {
+                card.triggeredAbilities shouldHaveSize 1
+                val trigger = card.triggeredAbilities.first()
+                trigger.trigger.shouldBeInstanceOf<OnEnterBattlefield>()
+                trigger.effect.shouldBeInstanceOf<GainLifeEffect>()
+                val effect = trigger.effect as GainLifeEffect
+                effect.amount shouldBe 4
+            }
+        }
+
+        describe("Spotted Griffin") {
+            val card = SpottedGriffin
+
+            it("should be a 2/3 Griffin with flying") {
+                card.creatureStats?.basePower shouldBe 2
+                card.creatureStats?.baseToughness shouldBe 3
+                card.typeLine.subtypes shouldContain Subtype.GRIFFIN
+                card.keywords shouldContain Keyword.FLYING
+            }
+        }
+
+        describe("Starlight") {
+            val card = Starlight
+
+            it("should gain life per black creature") {
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<GainLifePerColoredCreatureOpponentControlsEffect>()
+                val effect = card.spellEffect as GainLifePerColoredCreatureOpponentControlsEffect
+                effect.lifePerCreature shouldBe 3
+                effect.color shouldBe Color.BLACK
+            }
+
+            it("should target an opponent") {
+                card.targetRequirements shouldHaveSize 1
+            }
+        }
+
+        describe("Starlit Angel") {
+            val card = StarlitAngel
+
+            it("should be a 3/4 Angel with flying") {
+                card.creatureStats?.basePower shouldBe 3
+                card.creatureStats?.baseToughness shouldBe 4
+                card.typeLine.subtypes shouldContain Subtype.ANGEL
+                card.keywords shouldContain Keyword.FLYING
+            }
+        }
+    }
+
     describe("PortalSet object") {
-        it("should have 20 cards in the set") {
-            PortalSet.allCards shouldHaveSize 20
+        it("should have 30 cards in the set") {
+            PortalSet.allCards shouldHaveSize 30
         }
 
         it("should have correct set code") {
@@ -405,12 +563,14 @@ class PortalSetTest : DescribeSpec({
         it("should find cards by name") {
             PortalSet.getCard("Armageddon") shouldBe Armageddon
             PortalSet.getCard("Fleet-Footed Monk") shouldBe FleetFootedMonk
+            PortalSet.getCard("Starlit Angel") shouldBe StarlitAngel
             PortalSet.getCard("Nonexistent") shouldBe null
         }
 
         it("should find cards by collector number") {
             PortalSet.getCardByNumber("5") shouldBe Armageddon
             PortalSet.getCardByNumber("15") shouldBe FleetFootedMonk
+            PortalSet.getCardByNumber("30") shouldBe StarlitAngel
             PortalSet.getCardByNumber("999") shouldBe null
         }
 
