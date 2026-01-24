@@ -174,7 +174,18 @@ object PortalSet {
         LavaAxe,
         LavaFlow,
         LizardWarrior,
-        MinotaurWarrior
+        MinotaurWarrior,
+        // Cards 141-150
+        MountainGoat,
+        PillagingHorde,
+        Pyroclasm,
+        RagingCougar,
+        RagingGoblin,
+        RagingMinotaur,
+        RainOfSalt,
+        ScorchingSpear,
+        ScorchingWinds,
+        SpittingEarth
     )
 
     /**

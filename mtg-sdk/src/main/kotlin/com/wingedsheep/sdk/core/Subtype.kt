@@ -55,12 +55,14 @@ value class Subtype(val value: String) {
         val ZOMBIE = Subtype("Zombie")
 
         // Phase 7 subtypes
+        val BARBARIAN = Subtype("Barbarian")
         val CROCODILE = Subtype("Crocodile")
         val CYCLOPS = Subtype("Cyclops")
         val DJINN = Subtype("Djinn")
         val DRAKE = Subtype("Drake")
         val EEL = Subtype("Eel")
         val GIANT = Subtype("Giant")
+        val GOAT = Subtype("Goat")
         val GRIFFIN = Subtype("Griffin")
         val LEVIATHAN = Subtype("Leviathan")
         val LIZARD = Subtype("Lizard")

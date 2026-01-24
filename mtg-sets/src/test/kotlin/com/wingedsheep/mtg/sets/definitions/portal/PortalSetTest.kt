@@ -2247,9 +2247,159 @@ class PortalSetTest : DescribeSpec({
         }
     }
 
+    describe("Portal Set - Cards 141-150") {
+
+        describe("Mountain Goat") {
+            val card = MountainGoat
+
+            it("should be a 1/1 Goat with mountainwalk") {
+                card.manaCost.toString() shouldBe "{R}"
+                card.cmc shouldBe 1
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.GOAT
+                card.creatureStats?.basePower shouldBe 1
+                card.creatureStats?.baseToughness shouldBe 1
+                card.keywords shouldContain Keyword.MOUNTAINWALK
+            }
+        }
+
+        describe("Pillaging Horde") {
+            val card = PillagingHorde
+
+            it("should be a 5/5 Human Barbarian") {
+                card.manaCost.toString() shouldBe "{2}{R}{R}"
+                card.cmc shouldBe 4
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.HUMAN
+                card.typeLine.subtypes shouldContain Subtype.BARBARIAN
+                card.creatureStats?.basePower shouldBe 5
+                card.creatureStats?.baseToughness shouldBe 5
+            }
+
+            it("should have ETB sacrifice unless discard random") {
+                card.triggeredAbilities shouldHaveSize 1
+                val trigger = card.triggeredAbilities.first()
+                trigger.trigger.shouldBeInstanceOf<OnEnterBattlefield>()
+                trigger.effect.shouldBeInstanceOf<SacrificeUnlessDiscardEffect>()
+                val effect = trigger.effect as SacrificeUnlessDiscardEffect
+                effect.random shouldBe true
+            }
+        }
+
+        describe("Pyroclasm") {
+            val card = Pyroclasm
+
+            it("should deal 2 damage to each creature") {
+                card.manaCost.toString() shouldBe "{1}{R}"
+                card.cmc shouldBe 2
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<DealDamageToAllCreaturesEffect>()
+                val effect = card.spellEffect as DealDamageToAllCreaturesEffect
+                effect.amount shouldBe 2
+            }
+        }
+
+        describe("Raging Cougar") {
+            val card = RagingCougar
+
+            it("should be a 2/2 Cat with haste") {
+                card.manaCost.toString() shouldBe "{2}{R}"
+                card.cmc shouldBe 3
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.CAT
+                card.creatureStats?.basePower shouldBe 2
+                card.creatureStats?.baseToughness shouldBe 2
+                card.keywords shouldContain Keyword.HASTE
+            }
+        }
+
+        describe("Raging Goblin") {
+            val card = RagingGoblin
+
+            it("should be a 1/1 Goblin Berserker with haste") {
+                card.manaCost.toString() shouldBe "{R}"
+                card.cmc shouldBe 1
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.GOBLIN
+                card.typeLine.subtypes shouldContain Subtype.BERSERKER
+                card.creatureStats?.basePower shouldBe 1
+                card.creatureStats?.baseToughness shouldBe 1
+                card.keywords shouldContain Keyword.HASTE
+            }
+        }
+
+        describe("Raging Minotaur") {
+            val card = RagingMinotaur
+
+            it("should be a 3/3 Minotaur Berserker with haste") {
+                card.manaCost.toString() shouldBe "{2}{R}{R}"
+                card.cmc shouldBe 4
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.MINOTAUR
+                card.typeLine.subtypes shouldContain Subtype.BERSERKER
+                card.creatureStats?.basePower shouldBe 3
+                card.creatureStats?.baseToughness shouldBe 3
+                card.keywords shouldContain Keyword.HASTE
+            }
+        }
+
+        describe("Rain of Salt") {
+            val card = RainOfSalt
+
+            it("should destroy two target lands") {
+                card.manaCost.toString() shouldBe "{4}{R}{R}"
+                card.cmc shouldBe 6
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<CompositeEffect>()
+                card.targetRequirements shouldHaveSize 1
+            }
+        }
+
+        describe("Scorching Spear") {
+            val card = ScorchingSpear
+
+            it("should deal 1 damage to any target") {
+                card.manaCost.toString() shouldBe "{R}"
+                card.cmc shouldBe 1
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<DealDamageEffect>()
+                val effect = card.spellEffect as DealDamageEffect
+                effect.amount shouldBe 1
+                card.targetRequirements shouldHaveSize 1
+            }
+        }
+
+        describe("Scorching Winds") {
+            val card = ScorchingWinds
+
+            it("should deal 1 damage to each attacking creature") {
+                card.manaCost.toString() shouldBe "{R}"
+                card.cmc shouldBe 1
+                card.typeLine.isInstant shouldBe true
+                card.spellEffect.shouldBeInstanceOf<DealDamageToAttackingCreaturesEffect>()
+                val effect = card.spellEffect as DealDamageToAttackingCreaturesEffect
+                effect.amount shouldBe 1
+            }
+        }
+
+        describe("Spitting Earth") {
+            val card = SpittingEarth
+
+            it("should deal damage equal to Mountains you control") {
+                card.manaCost.toString() shouldBe "{1}{R}"
+                card.cmc shouldBe 2
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<DealDynamicDamageEffect>()
+                val effect = card.spellEffect as DealDynamicDamageEffect
+                effect.amount.shouldBeInstanceOf<DynamicAmount.LandsWithSubtypeYouControl>()
+                card.targetRequirements shouldHaveSize 1
+            }
+        }
+    }
+
     describe("PortalSet object") {
-        it("should have 140 cards in the set") {
-            PortalSet.allCards shouldHaveSize 140
+        it("should have 150 cards in the set") {
+            PortalSet.allCards shouldHaveSize 150
         }
 
         it("should have correct set code") {

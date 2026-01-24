@@ -2515,7 +2515,8 @@ data class ModifyStatsForGroupEffect(
  */
 @Serializable
 data class SacrificeUnlessDiscardEffect(
-    val discardFilter: CardFilter = CardFilter.AnyCard
+    val discardFilter: CardFilter = CardFilter.AnyCard,
+    val random: Boolean = false
 ) : Effect {
     /** Legacy constructor for landOnly boolean */
     constructor(landOnly: Boolean) : this(
@@ -2530,7 +2531,19 @@ data class SacrificeUnlessDiscardEffect(
             CardFilter.CreatureCard -> append("a creature card")
             else -> append("a ${discardFilter.description}")
         }
+        if (random) append(" at random")
     }
+}
+
+/**
+ * Deal damage to each attacking creature.
+ * Used for Scorching Winds: "Deal 1 damage to each attacking creature."
+ */
+@Serializable
+data class DealDamageToAttackingCreaturesEffect(
+    val amount: Int
+) : Effect {
+    override val description: String = "Deal $amount damage to each attacking creature"
 }
 
 /**
