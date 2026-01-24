@@ -550,9 +550,157 @@ class PortalSetTest : DescribeSpec({
         }
     }
 
+    describe("Portal Set - Cards 31-40") {
+
+        describe("Steadfastness") {
+            val card = Steadfastness
+
+            it("should give creatures +0/+3") {
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<ModifyStatsForGroupEffect>()
+                val effect = card.spellEffect as ModifyStatsForGroupEffect
+                effect.powerModifier shouldBe 0
+                effect.toughnessModifier shouldBe 3
+                effect.filter shouldBe CreatureGroupFilter.AllYouControl
+            }
+        }
+
+        describe("Stern Marshal") {
+            val card = SternMarshal
+
+            it("should be a 2/2 Human Soldier") {
+                card.creatureStats?.basePower shouldBe 2
+                card.creatureStats?.baseToughness shouldBe 2
+                card.typeLine.subtypes shouldContain Subtype.HUMAN
+                card.typeLine.subtypes shouldContain Subtype.SOLDIER
+            }
+
+            it("should have tap ability to pump creature") {
+                card.activatedAbilities shouldHaveSize 1
+                val ability = card.activatedAbilities.first()
+                ability.cost shouldBe AbilityCost.Tap
+                ability.effect.shouldBeInstanceOf<ModifyStatsEffect>()
+                val effect = ability.effect as ModifyStatsEffect
+                effect.powerModifier shouldBe 2
+                effect.toughnessModifier shouldBe 2
+            }
+        }
+
+        describe("Temporary Truce") {
+            val card = TemporaryTruce
+
+            it("should let each player draw up to 2 cards") {
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<EachPlayerMayDrawEffect>()
+                val effect = card.spellEffect as EachPlayerMayDrawEffect
+                effect.maxCards shouldBe 2
+            }
+        }
+
+        describe("Valorous Charge") {
+            val card = ValorousCharge
+
+            it("should give white creatures +2/+0") {
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<ModifyStatsForGroupEffect>()
+                val effect = card.spellEffect as ModifyStatsForGroupEffect
+                effect.powerModifier shouldBe 2
+                effect.toughnessModifier shouldBe 0
+            }
+        }
+
+        describe("Venerable Monk") {
+            val card = VenerableMonk
+
+            it("should be a 2/2 Human Monk Cleric") {
+                card.creatureStats?.basePower shouldBe 2
+                card.creatureStats?.baseToughness shouldBe 2
+                card.typeLine.subtypes shouldContain Subtype.HUMAN
+                card.typeLine.subtypes shouldContain Subtype.MONK
+                card.typeLine.subtypes shouldContain Subtype.CLERIC
+            }
+
+            it("should have ETB to gain 2 life") {
+                card.triggeredAbilities shouldHaveSize 1
+                val trigger = card.triggeredAbilities.first()
+                trigger.trigger.shouldBeInstanceOf<OnEnterBattlefield>()
+                trigger.effect.shouldBeInstanceOf<GainLifeEffect>()
+                val effect = trigger.effect as GainLifeEffect
+                effect.amount shouldBe 2
+            }
+        }
+
+        describe("Vengeance") {
+            val card = Vengeance
+
+            it("should destroy target tapped creature") {
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<DestroyEffect>()
+                card.targetRequirements shouldHaveSize 1
+            }
+        }
+
+        describe("Wall of Swords") {
+            val card = WallOfSwords
+
+            it("should be a 3/5 Wall with Defender and Flying") {
+                card.creatureStats?.basePower shouldBe 3
+                card.creatureStats?.baseToughness shouldBe 5
+                card.typeLine.subtypes shouldContain Subtype.WALL
+                card.keywords shouldContain Keyword.DEFENDER
+                card.keywords shouldContain Keyword.FLYING
+            }
+        }
+
+        describe("Warrior's Charge") {
+            val card = WarriorsCharge
+
+            it("should give creatures +1/+1") {
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<ModifyStatsForGroupEffect>()
+                val effect = card.spellEffect as ModifyStatsForGroupEffect
+                effect.powerModifier shouldBe 1
+                effect.toughnessModifier shouldBe 1
+                effect.filter shouldBe CreatureGroupFilter.AllYouControl
+            }
+        }
+
+        describe("Wrath of God") {
+            val card = WrathOfGod
+
+            it("should destroy all creatures") {
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect shouldBe DestroyAllCreaturesEffect
+            }
+
+            it("should cost 2WW") {
+                card.manaCost.toString() shouldBe "{2}{W}{W}"
+                card.cmc shouldBe 4
+            }
+        }
+
+        describe("Ancestral Memories") {
+            val card = AncestralMemories
+
+            it("should look at top 7 and keep 2") {
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<LookAtTopCardsEffect>()
+                val effect = card.spellEffect as LookAtTopCardsEffect
+                effect.count shouldBe 7
+                effect.keepCount shouldBe 2
+                effect.restToGraveyard shouldBe true
+            }
+
+            it("should cost 2UUU") {
+                card.manaCost.toString() shouldBe "{2}{U}{U}{U}"
+                card.cmc shouldBe 5
+            }
+        }
+    }
+
     describe("PortalSet object") {
-        it("should have 30 cards in the set") {
-            PortalSet.allCards shouldHaveSize 30
+        it("should have 40 cards in the set") {
+            PortalSet.allCards shouldHaveSize 40
         }
 
         it("should have correct set code") {

@@ -1777,6 +1777,20 @@ data class EachPlayerDrawsXEffect(
     }
 }
 
+/**
+ * Each player may draw up to a number of cards.
+ * "Each player may draw up to two cards."
+ * Used for Temporary Truce.
+ *
+ * @property maxCards Maximum number of cards each player may draw
+ */
+@Serializable
+data class EachPlayerMayDrawEffect(
+    val maxCards: Int
+) : Effect {
+    override val description: String = "Each player may draw up to $maxCards cards"
+}
+
 // =============================================================================
 // Grant Keyword to Group Effects
 // =============================================================================
