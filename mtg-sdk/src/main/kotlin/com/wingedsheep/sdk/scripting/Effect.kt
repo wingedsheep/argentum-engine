@@ -2853,14 +2853,49 @@ sealed interface CreatureTargetFilter {
 /**
  * Sacrifice this creature unless you sacrifice a permanent of a specific type.
  * Used for Thing from the Deep: "Whenever this creature attacks, sacrifice it unless you sacrifice an Island."
+ * Used for Plant Elemental: "sacrifice it unless you sacrifice a Forest."
+ * Used for Primeval Force: "sacrifice it unless you sacrifice three Forests."
+ *
+ * @param permanentType The type of permanent to sacrifice (e.g., "Forest", "Island")
+ * @param count The number of permanents to sacrifice (default 1)
  */
 @Serializable
 data class SacrificeUnlessSacrificePermanentEffect(
-    val permanentType: String
+    val permanentType: String,
+    val count: Int = 1
 ) : Effect {
-    override val description: String = "Sacrifice this creature unless you sacrifice ${
-        if (permanentType.first().lowercaseChar() in "aeiou") "an" else "a"
-    } $permanentType"
+    override val description: String = buildString {
+        append("Sacrifice this creature unless you sacrifice ")
+        if (count == 1) {
+            append(if (permanentType.first().lowercaseChar() in "aeiou") "an" else "a")
+            append(" $permanentType")
+        } else {
+            append(numberToWord(count))
+            append(" ${permanentType}s")
+        }
+    }
+
+    private fun numberToWord(n: Int): String = when (n) {
+        1 -> "one"
+        2 -> "two"
+        3 -> "three"
+        4 -> "four"
+        5 -> "five"
+        else -> n.toString()
+    }
+}
+
+/**
+ * You may play additional lands this turn.
+ * Used for Summer Bloom: "You may play up to three additional lands this turn."
+ *
+ * @param count The number of additional lands you may play
+ */
+@Serializable
+data class PlayAdditionalLandsEffect(
+    val count: Int
+) : Effect {
+    override val description: String = "You may play up to $count additional land${if (count != 1) "s" else ""} this turn"
 }
 
 // =============================================================================

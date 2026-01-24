@@ -2817,9 +2817,200 @@ class PortalSetTest : DescribeSpec({
         }
     }
 
+    describe("Portal Set - Cards 181-190") {
+
+        describe("Plant Elemental") {
+            val card = PlantElemental
+
+            it("should be a 3/4 with sacrifice trigger") {
+                card.name shouldBe "Plant Elemental"
+                card.manaCost.toString() shouldBe "{1}{G}"
+                card.cmc shouldBe 2
+                card.typeLine.isCreature shouldBe true
+                card.creatureStats?.basePower shouldBe 3
+                card.creatureStats?.baseToughness shouldBe 4
+            }
+
+            it("should have ETB sacrifice unless sacrifice Forest trigger") {
+                card.triggeredAbilities shouldHaveSize 1
+                val trigger = card.triggeredAbilities.first()
+                trigger.effect.shouldBeInstanceOf<SacrificeUnlessSacrificePermanentEffect>()
+                val effect = trigger.effect as SacrificeUnlessSacrificePermanentEffect
+                effect.permanentType shouldBe "Forest"
+                effect.count shouldBe 1
+            }
+        }
+
+        describe("Primeval Force") {
+            val card = PrimevalForce
+
+            it("should be an 8/8 for 5 mana") {
+                card.name shouldBe "Primeval Force"
+                card.manaCost.toString() shouldBe "{2}{G}{G}{G}"
+                card.cmc shouldBe 5
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.ELEMENTAL
+                card.creatureStats?.basePower shouldBe 8
+                card.creatureStats?.baseToughness shouldBe 8
+            }
+
+            it("should have ETB sacrifice unless sacrifice three Forests") {
+                card.triggeredAbilities shouldHaveSize 1
+                val trigger = card.triggeredAbilities.first()
+                trigger.effect.shouldBeInstanceOf<SacrificeUnlessSacrificePermanentEffect>()
+                val effect = trigger.effect as SacrificeUnlessSacrificePermanentEffect
+                effect.permanentType shouldBe "Forest"
+                effect.count shouldBe 3
+            }
+        }
+
+        describe("Redwood Treefolk") {
+            val card = RedwoodTreefolk
+
+            it("should be a vanilla 3/6 Treefolk") {
+                card.name shouldBe "Redwood Treefolk"
+                card.manaCost.toString() shouldBe "{4}{G}"
+                card.cmc shouldBe 5
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.TREEFOLK
+                card.creatureStats?.basePower shouldBe 3
+                card.creatureStats?.baseToughness shouldBe 6
+            }
+        }
+
+        describe("Rowan Treefolk") {
+            val card = RowanTreefolk
+
+            it("should be a vanilla 3/4 Treefolk") {
+                card.name shouldBe "Rowan Treefolk"
+                card.manaCost.toString() shouldBe "{3}{G}"
+                card.cmc shouldBe 4
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.TREEFOLK
+                card.creatureStats?.basePower shouldBe 3
+                card.creatureStats?.baseToughness shouldBe 4
+            }
+        }
+
+        describe("Spined Wurm") {
+            val card = SpinedWurm
+
+            it("should be a vanilla 5/4 Wurm") {
+                card.name shouldBe "Spined Wurm"
+                card.manaCost.toString() shouldBe "{4}{G}"
+                card.cmc shouldBe 5
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.WURM
+                card.creatureStats?.basePower shouldBe 5
+                card.creatureStats?.baseToughness shouldBe 4
+            }
+        }
+
+        describe("Stalking Tiger") {
+            val card = StalkingTiger
+
+            it("should be a 3/3 Cat") {
+                card.name shouldBe "Stalking Tiger"
+                card.manaCost.toString() shouldBe "{3}{G}"
+                card.cmc shouldBe 4
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.CAT
+                card.creatureStats?.basePower shouldBe 3
+                card.creatureStats?.baseToughness shouldBe 3
+            }
+
+            it("should have can't be blocked by more than one creature") {
+                card.script.staticAbilities shouldHaveSize 1
+                val ability = card.script.staticAbilities.first()
+                ability.shouldBeInstanceOf<CantBeBlockedByMoreThan>()
+                (ability as CantBeBlockedByMoreThan).maxBlockers shouldBe 1
+            }
+        }
+
+        describe("Summer Bloom") {
+            val card = SummerBloom
+
+            it("should allow playing three additional lands") {
+                card.name shouldBe "Summer Bloom"
+                card.manaCost.toString() shouldBe "{1}{G}"
+                card.cmc shouldBe 2
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<PlayAdditionalLandsEffect>()
+                val effect = card.spellEffect as PlayAdditionalLandsEffect
+                effect.count shouldBe 3
+            }
+        }
+
+        describe("Sylvan Tutor") {
+            val card = SylvanTutor
+
+            it("should search for a creature and put on top of library") {
+                card.name shouldBe "Sylvan Tutor"
+                card.manaCost.toString() shouldBe "{G}"
+                card.cmc shouldBe 1
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<SearchLibraryEffect>()
+                val effect = card.spellEffect as SearchLibraryEffect
+                effect.filter shouldBe CardFilter.CreatureCard
+                effect.destination shouldBe SearchDestination.TOP_OF_LIBRARY
+            }
+        }
+
+        describe("Thundering Wurm") {
+            val card = ThunderingWurm
+
+            it("should be a 4/4 Wurm") {
+                card.name shouldBe "Thundering Wurm"
+                card.manaCost.toString() shouldBe "{2}{G}"
+                card.cmc shouldBe 3
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.WURM
+                card.creatureStats?.basePower shouldBe 4
+                card.creatureStats?.baseToughness shouldBe 4
+            }
+
+            it("should have ETB sacrifice unless discard a land") {
+                card.triggeredAbilities shouldHaveSize 1
+                val trigger = card.triggeredAbilities.first()
+                trigger.effect.shouldBeInstanceOf<SacrificeUnlessDiscardEffect>()
+                val effect = trigger.effect as SacrificeUnlessDiscardEffect
+                effect.discardFilter shouldBe CardFilter.LandCard
+            }
+        }
+
+        describe("Treetop Defense") {
+            val card = TreetopDefense
+
+            it("should grant reach to all creatures you control") {
+                card.name shouldBe "Treetop Defense"
+                card.manaCost.toString() shouldBe "{1}{G}"
+                card.cmc shouldBe 2
+                card.typeLine.isInstant shouldBe true
+                card.spellEffect.shouldBeInstanceOf<GrantKeywordToGroupEffect>()
+                val effect = card.spellEffect as GrantKeywordToGroupEffect
+                effect.keyword shouldBe Keyword.REACH
+                effect.filter shouldBe CreatureGroupFilter.AllYouControl
+            }
+
+            it("should only be castable during declare attackers step") {
+                val stepRestriction = card.script.castRestrictions
+                    .filterIsInstance<CastRestriction.OnlyDuringStep>()
+                    .first()
+                stepRestriction.step shouldBe Step.DECLARE_ATTACKERS
+            }
+
+            it("should require being attacked") {
+                val conditionRestriction = card.script.castRestrictions
+                    .filterIsInstance<CastRestriction.OnlyIfCondition>()
+                    .first()
+                conditionRestriction.condition shouldBe YouWereAttackedThisStep
+            }
+        }
+    }
+
     describe("PortalSet object") {
-        it("should have 180 cards in the set") {
-            PortalSet.allCards shouldHaveSize 180
+        it("should have 190 cards in the set") {
+            PortalSet.allCards shouldHaveSize 190
         }
 
         it("should have correct set code") {
