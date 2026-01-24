@@ -166,15 +166,8 @@ export function useCardLegalActions(cardId: EntityId | null): readonly LegalActi
           return a.cardId === cardId
         case 'CastSpell':
           return a.cardId === cardId
-        case 'ActivateManaAbility':
-          return a.sourceEntityId === cardId
-        case 'Tap':
-        case 'Untap':
-          return a.entityId === cardId
-        case 'DeclareAttacker':
-          return a.creatureId === cardId
-        case 'DeclareBlocker':
-          return a.blockerId === cardId
+        case 'ActivateAbility':
+          return a.sourceId === cardId
         default:
           return false
       }
@@ -216,8 +209,9 @@ export function useBattlefieldCards(): {
       }
     }
 
-    const battlefield = gameState.zones.find((z) => z.zoneId.type === ZoneType.BATTLEFIELD)
-    if (!battlefield || !battlefield.cardIds) {
+    // Find ALL battlefield zones (there's one per player)
+    const battlefields = gameState.zones.filter((z) => z.zoneId.zoneType === ZoneType.BATTLEFIELD)
+    if (battlefields.length === 0) {
       return {
         playerLands: [],
         playerCreatures: [],
@@ -228,7 +222,9 @@ export function useBattlefieldCards(): {
       }
     }
 
-    const cards = battlefield.cardIds
+    // Aggregate all card IDs from all battlefield zones
+    const allCardIds = battlefields.flatMap((z) => z.cardIds ?? [])
+    const cards = allCardIds
       .map((id) => gameState.cards[id])
       .filter((card): card is ClientCard => card !== null && card !== undefined)
 
@@ -256,7 +252,7 @@ export function useStackCards(): readonly ClientCard[] {
   const gameState = useGameStore(selectGameState)
   return useMemo(() => {
     if (!gameState) return []
-    const stack = gameState.zones.find((z) => z.zoneId.type === ZoneType.STACK)
+    const stack = gameState.zones.find((z) => z.zoneId.zoneType === ZoneType.STACK)
     if (!stack || !stack.cardIds) return []
     return stack.cardIds
       .map((id) => gameState.cards[id])

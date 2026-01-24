@@ -311,7 +311,21 @@ class TurnManager {
         // Clean up end-of-turn effects
         val cleanedState = cleanupEndOfTurn(state)
 
-        return startTurn(cleanedState, nextPlayer)
+        // Start the new turn (sets step to UNTAP with no priority)
+        val turnResult = startTurn(cleanedState, nextPlayer)
+        if (!turnResult.isSuccess) return turnResult
+
+        // Perform the untap step
+        val untapResult = performUntapStep(turnResult.newState)
+        if (!untapResult.isSuccess) return untapResult
+
+        // Advance to upkeep (this sets priority to the active player)
+        val advanceResult = advanceStep(untapResult.newState)
+
+        return ExecutionResult.success(
+            advanceResult.newState,
+            turnResult.events + untapResult.events + advanceResult.events
+        )
     }
 
     /**
