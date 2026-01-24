@@ -1633,9 +1633,173 @@ class PortalSetTest : DescribeSpec({
         }
     }
 
+    describe("Portal Set - Cards 101-110") {
+
+        describe("Mind Rot") {
+            val card = MindRot
+
+            it("should make target player discard two cards") {
+                card.manaCost.toString() shouldBe "{2}{B}"
+                card.cmc shouldBe 3
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<DiscardCardsEffect>()
+                val effect = card.spellEffect as DiscardCardsEffect
+                effect.count shouldBe 2
+                card.targetRequirements shouldHaveSize 1
+            }
+        }
+
+        describe("Muck Rats") {
+            val card = MuckRats
+
+            it("should be a 1/1 Rat") {
+                card.manaCost.toString() shouldBe "{B}"
+                card.cmc shouldBe 1
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.RAT
+                card.creatureStats?.basePower shouldBe 1
+                card.creatureStats?.baseToughness shouldBe 1
+            }
+        }
+
+        describe("Nature's Ruin") {
+            val card = NaturesRuin
+
+            it("should destroy all green creatures") {
+                card.manaCost.toString() shouldBe "{2}{B}"
+                card.cmc shouldBe 3
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<DestroyAllCreaturesWithColorEffect>()
+                val effect = card.spellEffect as DestroyAllCreaturesWithColorEffect
+                effect.color shouldBe Color.GREEN
+            }
+        }
+
+        describe("Noxious Toad") {
+            val card = NoxiousToad
+
+            it("should be a 1/1 Frog") {
+                card.manaCost.toString() shouldBe "{2}{B}"
+                card.cmc shouldBe 3
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.FROG
+                card.creatureStats?.basePower shouldBe 1
+                card.creatureStats?.baseToughness shouldBe 1
+            }
+
+            it("should have dies trigger for each opponent to discard") {
+                card.triggeredAbilities shouldHaveSize 1
+                val trigger = card.triggeredAbilities.first()
+                trigger.trigger.shouldBeInstanceOf<OnDeath>()
+                trigger.effect.shouldBeInstanceOf<EachOpponentDiscardsEffect>()
+                val effect = trigger.effect as EachOpponentDiscardsEffect
+                effect.count shouldBe 1
+            }
+        }
+
+        describe("Python") {
+            val card = Python
+
+            it("should be a 3/2 Snake") {
+                card.manaCost.toString() shouldBe "{1}{B}{B}"
+                card.cmc shouldBe 3
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.SNAKE
+                card.creatureStats?.basePower shouldBe 3
+                card.creatureStats?.baseToughness shouldBe 2
+            }
+        }
+
+        describe("Rain of Tears") {
+            val card = RainOfTears
+
+            it("should destroy target land") {
+                card.manaCost.toString() shouldBe "{1}{B}{B}"
+                card.cmc shouldBe 3
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<DestroyEffect>()
+                card.targetRequirements shouldHaveSize 1
+            }
+        }
+
+        describe("Raise Dead") {
+            val card = RaiseDead
+
+            it("should return creature card from graveyard to hand") {
+                card.manaCost.toString() shouldBe "{B}"
+                card.cmc shouldBe 1
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<ReturnFromGraveyardEffect>()
+                val effect = card.spellEffect as ReturnFromGraveyardEffect
+                effect.destination shouldBe SearchDestination.HAND
+                card.targetRequirements shouldHaveSize 1
+            }
+        }
+
+        describe("Serpent Assassin") {
+            val card = SerpentAssassin
+
+            it("should be a 2/2 Snake Assassin") {
+                card.manaCost.toString() shouldBe "{3}{B}{B}"
+                card.cmc shouldBe 5
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.SNAKE
+                card.typeLine.subtypes shouldContain Subtype.ASSASSIN
+                card.creatureStats?.basePower shouldBe 2
+                card.creatureStats?.baseToughness shouldBe 2
+            }
+
+            it("should have optional ETB to destroy nonblack creature") {
+                card.triggeredAbilities shouldHaveSize 1
+                val trigger = card.triggeredAbilities.first()
+                trigger.trigger.shouldBeInstanceOf<OnEnterBattlefield>()
+                trigger.optional shouldBe true
+                trigger.effect.shouldBeInstanceOf<DestroyEffect>()
+            }
+        }
+
+        describe("Serpent Warrior") {
+            val card = SerpentWarrior
+
+            it("should be a 3/3 Snake Warrior") {
+                card.manaCost.toString() shouldBe "{2}{B}"
+                card.cmc shouldBe 3
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.SNAKE
+                card.typeLine.subtypes shouldContain Subtype.WARRIOR
+                card.creatureStats?.basePower shouldBe 3
+                card.creatureStats?.baseToughness shouldBe 3
+            }
+
+            it("should have ETB lose 3 life trigger") {
+                card.triggeredAbilities shouldHaveSize 1
+                val trigger = card.triggeredAbilities.first()
+                trigger.trigger.shouldBeInstanceOf<OnEnterBattlefield>()
+                trigger.effect.shouldBeInstanceOf<LoseLifeEffect>()
+                val effect = trigger.effect as LoseLifeEffect
+                effect.amount shouldBe 3
+                effect.target shouldBe EffectTarget.Controller
+            }
+        }
+
+        describe("Skeletal Crocodile") {
+            val card = SkeletalCrocodile
+
+            it("should be a 5/1 Crocodile Skeleton") {
+                card.manaCost.toString() shouldBe "{3}{B}"
+                card.cmc shouldBe 4
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.CROCODILE
+                card.typeLine.subtypes shouldContain Subtype.SKELETON
+                card.creatureStats?.basePower shouldBe 5
+                card.creatureStats?.baseToughness shouldBe 1
+            }
+        }
+    }
+
     describe("PortalSet object") {
-        it("should have 100 cards in the set") {
-            PortalSet.allCards shouldHaveSize 100
+        it("should have 110 cards in the set") {
+            PortalSet.allCards shouldHaveSize 110
         }
 
         it("should have correct set code") {

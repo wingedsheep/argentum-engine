@@ -158,6 +158,18 @@ data class DiscardRandomEffect(
     }
 }
 
+/**
+ * Each opponent discards cards.
+ * "Each opponent discards a card."
+ * Used for cards like Noxious Toad.
+ */
+@Serializable
+data class EachOpponentDiscardsEffect(
+    val count: Int = 1
+) : Effect {
+    override val description: String = "Each opponent discards ${if (count == 1) "a card" else "$count cards"}"
+}
+
 // =============================================================================
 // Creature Effects
 // =============================================================================
@@ -1377,6 +1389,18 @@ data object DestroyAllLandsEffect : Effect {
 @Serializable
 data object DestroyAllCreaturesEffect : Effect {
     override val description: String = "Destroy all creatures"
+}
+
+/**
+ * Destroy all creatures of a specific color.
+ * "Destroy all green creatures." (Nature's Ruin)
+ * "Destroy all white creatures." (Virtue's Ruin)
+ */
+@Serializable
+data class DestroyAllCreaturesWithColorEffect(
+    val color: Color
+) : Effect {
+    override val description: String = "Destroy all ${color.displayName.lowercase()} creatures"
 }
 
 /**

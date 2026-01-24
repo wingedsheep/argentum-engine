@@ -76,6 +76,8 @@ value class Subtype(val value: String) {
         val UNICORN = Subtype("Unicorn")
         val VAMPIRE = Subtype("Vampire")
         val WRAITH = Subtype("Wraith")
+        val SKELETON = Subtype("Skeleton")
+        val SNAKE = Subtype("Snake")
 
         // Basic land types
         val PLAINS = Subtype("Plains")
