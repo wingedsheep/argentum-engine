@@ -1797,9 +1797,143 @@ class PortalSetTest : DescribeSpec({
         }
     }
 
+    describe("Portal Set - Cards 111-120") {
+
+        describe("Skeletal Snake") {
+            val card = SkeletalSnake
+
+            it("should be a 2/1 Snake Skeleton") {
+                card.manaCost.toString() shouldBe "{1}{B}"
+                card.cmc shouldBe 2
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.SNAKE
+                card.typeLine.subtypes shouldContain Subtype.SKELETON
+                card.creatureStats?.basePower shouldBe 2
+                card.creatureStats?.baseToughness shouldBe 1
+            }
+        }
+
+        describe("Soul Shred") {
+            val card = SoulShred
+
+            it("should deal 3 damage to nonblack creature and gain 3 life") {
+                card.manaCost.toString() shouldBe "{3}{B}{B}"
+                card.cmc shouldBe 5
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<CompositeEffect>()
+                card.targetRequirements shouldHaveSize 1
+            }
+        }
+
+        describe("Undying Beast") {
+            val card = UndyingBeast
+
+            it("should be a 3/2 Beast") {
+                card.manaCost.toString() shouldBe "{3}{B}"
+                card.cmc shouldBe 4
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.BEAST
+                card.creatureStats?.basePower shouldBe 3
+                card.creatureStats?.baseToughness shouldBe 2
+            }
+
+            it("should have dies trigger to put on top of library") {
+                card.triggeredAbilities shouldHaveSize 1
+                val trigger = card.triggeredAbilities.first()
+                trigger.trigger.shouldBeInstanceOf<OnDeath>()
+                trigger.effect.shouldBeInstanceOf<PutOnTopOfLibraryEffect>()
+            }
+        }
+
+        describe("Vampiric Feast") {
+            val card = VampiricFeast
+
+            it("should deal 4 damage and gain 4 life") {
+                card.manaCost.toString() shouldBe "{5}{B}{B}"
+                card.cmc shouldBe 7
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<CompositeEffect>()
+                card.targetRequirements shouldHaveSize 1
+            }
+        }
+
+        describe("Vampiric Touch") {
+            val card = VampiricTouch
+
+            it("should deal 2 damage to opponent and gain 2 life") {
+                card.manaCost.toString() shouldBe "{2}{B}"
+                card.cmc shouldBe 3
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<CompositeEffect>()
+                card.targetRequirements shouldHaveSize 1
+            }
+        }
+
+        describe("Virtue's Ruin") {
+            val card = VirtuesRuin
+
+            it("should destroy all white creatures") {
+                card.manaCost.toString() shouldBe "{2}{B}"
+                card.cmc shouldBe 3
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<DestroyAllCreaturesWithColorEffect>()
+                val effect = card.spellEffect as DestroyAllCreaturesWithColorEffect
+                effect.color shouldBe Color.WHITE
+            }
+        }
+
+        describe("Wicked Pact") {
+            val card = WickedPact
+
+            it("should destroy two nonblack creatures and lose 5 life") {
+                card.manaCost.toString() shouldBe "{1}{B}{B}"
+                card.cmc shouldBe 3
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<CompositeEffect>()
+                card.targetRequirements shouldHaveSize 2
+            }
+        }
+
+        describe("Blaze") {
+            val card = Blaze
+
+            it("should deal X damage to any target") {
+                card.manaCost.toString() shouldBe "{X}{R}"
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<DealXDamageEffect>()
+                card.targetRequirements shouldHaveSize 1
+            }
+        }
+
+        describe("Boiling Seas") {
+            val card = BoilingSeas
+
+            it("should destroy all Islands") {
+                card.manaCost.toString() shouldBe "{3}{R}"
+                card.cmc shouldBe 4
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<DestroyAllLandsOfTypeEffect>()
+                val effect = card.spellEffect as DestroyAllLandsOfTypeEffect
+                effect.landType shouldBe "Island"
+            }
+        }
+
+        describe("Burning Cloak") {
+            val card = BurningCloak
+
+            it("should give +2/+0 and deal 2 damage to creature") {
+                card.manaCost.toString() shouldBe "{R}"
+                card.cmc shouldBe 1
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<CompositeEffect>()
+                card.targetRequirements shouldHaveSize 1
+            }
+        }
+    }
+
     describe("PortalSet object") {
-        it("should have 110 cards in the set") {
-            PortalSet.allCards shouldHaveSize 110
+        it("should have 120 cards in the set") {
+            PortalSet.allCards shouldHaveSize 120
         }
 
         it("should have correct set code") {

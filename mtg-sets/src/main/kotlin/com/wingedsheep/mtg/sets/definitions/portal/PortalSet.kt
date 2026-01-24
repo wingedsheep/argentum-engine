@@ -18,7 +18,7 @@ object PortalSet {
     const val SET_NAME = "Portal"
 
     /**
-     * All cards in this set (first 110 implemented).
+     * All cards in this set (first 120 implemented).
      */
     val allCards = listOf(
         // Cards 1-10
@@ -141,7 +141,18 @@ object PortalSet {
         RaiseDead,
         SerpentAssassin,
         SerpentWarrior,
-        SkeletalCrocodile
+        SkeletalCrocodile,
+        // Cards 111-120
+        SkeletalSnake,
+        SoulShred,
+        UndyingBeast,
+        VampiricFeast,
+        VampiricTouch,
+        VirtuesRuin,
+        WickedPact,
+        Blaze,
+        BoilingSeas,
+        BurningCloak
     )
 
     /**
