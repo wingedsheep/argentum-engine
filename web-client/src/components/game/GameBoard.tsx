@@ -3,8 +3,10 @@ import { useViewingPlayer, useOpponent, useZoneCards, useBattlefieldCards, useHa
 import { hand, graveyard } from '../../types'
 import type { ClientCard, ZoneId, ClientPlayer } from '../../types'
 import { PhaseIndicator } from '../ui/PhaseIndicator'
+import { CombatArrows } from '../combat/CombatArrows'
+import { DraggedCardOverlay } from './DraggedCardOverlay'
 import { useResponsive, calculateFittingCardWidth, type ResponsiveSizes } from '../../hooks/useResponsive'
-import React, { createContext, useContext } from 'react'
+import React, { createContext, useContext, useCallback, useEffect } from 'react'
 
 // Context to pass responsive sizes down the component tree
 const ResponsiveContext = createContext<ResponsiveSizes | null>(null)
@@ -22,6 +24,7 @@ export function GameBoard() {
   const gameState = useGameStore((state) => state.gameState)
   const playerId = useGameStore((state) => state.playerId)
   const submitAction = useGameStore((state) => state.submitAction)
+  const combatState = useGameStore((state) => state.combatState)
   const responsive = useResponsive()
 
   const viewingPlayer = useViewingPlayer()
@@ -32,6 +35,7 @@ export function GameBoard() {
   }
 
   const hasPriority = gameState.priorityPlayerId === viewingPlayer.playerId
+  const isInCombatMode = combatState !== null
 
   return (
     <ResponsiveContext.Provider value={responsive}>
@@ -87,11 +91,13 @@ export function GameBoard() {
             <BattlefieldArea isOpponent={false} />
 
             {/* Player hand */}
-            <CardRow
-              zoneId={hand(playerId)}
-              faceDown={false}
-              interactive
-            />
+            <div data-zone="hand">
+              <CardRow
+                zoneId={hand(playerId)}
+                faceDown={false}
+                interactive
+              />
+            </div>
 
             {/* Player info and actions */}
             <div style={styles.playerControls}>
@@ -100,7 +106,8 @@ export function GameBoard() {
                 <LifeDisplay life={viewingPlayer.life} isPlayer />
               </div>
 
-              {hasPriority && (
+              {/* Hide Pass button during combat - combat overlay handles actions */}
+              {hasPriority && !isInCombatMode && (
                 <button
                   onClick={() => {
                     submitAction({
@@ -127,6 +134,12 @@ export function GameBoard() {
 
       {/* Action menu for selected card */}
       <ActionMenu />
+
+      {/* Combat arrows for blocker assignments */}
+      <CombatArrows />
+
+      {/* Dragged card overlay */}
+      <DraggedCardOverlay />
     </div>
     </ResponsiveContext.Provider>
   )
@@ -203,6 +216,7 @@ function CardRow({
           interactive={interactive}
           small={small}
           overrideWidth={fittingWidth}
+          inHand={interactive && !faceDown}
         />
       ))}
     </div>
@@ -292,7 +306,13 @@ function BattlefieldArea({ isOpponent }: { isOpponent: boolean }) {
   const minHeight = responsive.isMobile ? 100 : responsive.isTablet ? 130 : 160
 
   return (
-    <div style={{ ...styles.battlefieldArea, gap: responsive.cardGap, minHeight }}>
+    <div
+      style={{
+        ...styles.battlefieldArea,
+        gap: responsive.cardGap,
+        minHeight,
+      }}
+    >
       {/* First row */}
       <div style={{ ...styles.battlefieldRow, gap: responsive.cardGap }}>
         {firstRow.map((card) => (
@@ -301,6 +321,7 @@ function BattlefieldArea({ isOpponent }: { isOpponent: boolean }) {
             card={card}
             interactive={!isOpponent}
             battlefield
+            isOpponentCard={isOpponent}
           />
         ))}
       </div>
@@ -313,6 +334,7 @@ function BattlefieldArea({ isOpponent }: { isOpponent: boolean }) {
             card={card}
             interactive={!isOpponent}
             battlefield
+            isOpponentCard={isOpponent}
           />
         ))}
       </div>
@@ -330,6 +352,8 @@ function GameCard({
   small = false,
   battlefield = false,
   overrideWidth,
+  isOpponentCard = false,
+  inHand = false,
 }: {
   card: ClientCard
   faceDown?: boolean
@@ -337,10 +361,24 @@ function GameCard({
   small?: boolean
   battlefield?: boolean
   overrideWidth?: number
+  isOpponentCard?: boolean
+  inHand?: boolean
 }) {
   const selectCard = useGameStore((state) => state.selectCard)
   const selectedCardId = useGameStore((state) => state.selectedCardId)
   const targetingState = useGameStore((state) => state.targetingState)
+  const combatState = useGameStore((state) => state.combatState)
+  const legalActions = useGameStore((state) => state.legalActions)
+  const submitAction = useGameStore((state) => state.submitAction)
+  const toggleAttacker = useGameStore((state) => state.toggleAttacker)
+  const assignBlocker = useGameStore((state) => state.assignBlocker)
+  const removeBlockerAssignment = useGameStore((state) => state.removeBlockerAssignment)
+  const startDraggingBlocker = useGameStore((state) => state.startDraggingBlocker)
+  const stopDraggingBlocker = useGameStore((state) => state.stopDraggingBlocker)
+  const draggingBlockerId = useGameStore((state) => state.draggingBlockerId)
+  const startDraggingCard = useGameStore((state) => state.startDraggingCard)
+  const stopDraggingCard = useGameStore((state) => state.stopDraggingCard)
+  const draggingCardId = useGameStore((state) => state.draggingCardId)
   const responsive = useResponsiveContext()
 
   // Check if card has legal actions (is playable)
@@ -349,7 +387,24 @@ function GameCard({
   const isSelected = selectedCardId === card.id
   const isInTargetingMode = targetingState !== null
   const isValidTarget = targetingState?.validTargets.includes(card.id) ?? false
-  const isPlayable = interactive && hasLegalActions && !faceDown
+
+  // Combat mode checks
+  const isInAttackerMode = combatState?.mode === 'declareAttackers'
+  const isInBlockerMode = combatState?.mode === 'declareBlockers'
+  const isInCombatMode = isInAttackerMode || isInBlockerMode
+
+  // For attacker mode: check if this is a valid attacker (own creature, untapped, no summoning sickness)
+  const isOwnCreature = !isOpponentCard && card.cardTypes.includes('CREATURE')
+  const isValidAttacker = isInAttackerMode && isOwnCreature && !card.isTapped && combatState.validCreatures.includes(card.id)
+  const isSelectedAsAttacker = isInAttackerMode && combatState.selectedAttackers.includes(card.id)
+
+  // For blocker mode: check if this is a valid blocker or an attacking creature to block
+  const isValidBlocker = isInBlockerMode && isOwnCreature && !card.isTapped && combatState.validCreatures.includes(card.id)
+  const isSelectedAsBlocker = isInBlockerMode && !!combatState?.blockerAssignments[card.id]
+  const isAttackingInBlockerMode = isInBlockerMode && isOpponentCard && combatState.attackingCreatures.includes(card.id)
+
+  // Only show playable highlight outside of combat mode (and when not targeting)
+  const isPlayable = interactive && hasLegalActions && !faceDown && !isInCombatMode
 
   const cardImageUrl = faceDown
     ? 'https://backs.scryfall.io/large/2/2/222b7a3b-2321-4d4c-af19-19338b134971.jpg?1677416389'
@@ -365,41 +420,158 @@ function GameCard({
   const cardRatio = 1.4
   const height = Math.round(width * cardRatio)
 
+  // Check if this card can be played/cast (for drag-to-play)
+  const playableAction = legalActions.find((a) => {
+    const action = a.action
+    return (action.type === 'PlayLand' && action.cardId === card.id) ||
+           (action.type === 'CastSpell' && action.cardId === card.id)
+  })
+  const canDragToPlay = inHand && playableAction && !isInCombatMode
+
+  // Handle mouse down - start dragging for blockers or hand cards
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (isInBlockerMode && isValidBlocker && !isSelectedAsBlocker) {
+      e.preventDefault()
+      startDraggingBlocker(card.id)
+      return
+    }
+    // Start dragging card from hand
+    if (canDragToPlay) {
+      e.preventDefault()
+      startDraggingCard(card.id)
+    }
+  }, [isInBlockerMode, isValidBlocker, isSelectedAsBlocker, startDraggingBlocker, canDragToPlay, startDraggingCard, card.id])
+
+  // Handle mouse up - drop blocker on attacker or cancel drag
+  const handleMouseUp = useCallback(() => {
+    if (isInBlockerMode && draggingBlockerId && isAttackingInBlockerMode) {
+      // Dropping on an attacker - assign the blocker
+      assignBlocker(draggingBlockerId, card.id)
+      stopDraggingBlocker()
+    }
+  }, [isInBlockerMode, draggingBlockerId, isAttackingInBlockerMode, assignBlocker, stopDraggingBlocker, card.id])
+
+  // Global mouse up handler for card dragging (to detect drop outside hand)
+  useEffect(() => {
+    if (draggingCardId !== card.id) return
+
+    const handleGlobalMouseUp = (e: MouseEvent) => {
+      // Check if dropped outside the hand area - if so, play the card
+      const handEl = document.querySelector('[data-zone="hand"]')
+      let isOverHand = false
+
+      if (handEl) {
+        const rect = handEl.getBoundingClientRect()
+        isOverHand = e.clientX >= rect.left && e.clientX <= rect.right &&
+                     e.clientY >= rect.top && e.clientY <= rect.bottom
+      }
+
+      if (!isOverHand && playableAction) {
+        // Play the card!
+        submitAction(playableAction.action)
+      }
+      stopDraggingCard()
+    }
+
+    window.addEventListener('mouseup', handleGlobalMouseUp)
+    return () => window.removeEventListener('mouseup', handleGlobalMouseUp)
+  }, [draggingCardId, card.id, playableAction, submitAction, stopDraggingCard])
+
+  // Global mouse up handler to cancel drag
+  useEffect(() => {
+    if (!draggingBlockerId) return
+
+    const handleGlobalMouseUp = () => {
+      stopDraggingBlocker()
+    }
+
+    window.addEventListener('mouseup', handleGlobalMouseUp)
+    return () => window.removeEventListener('mouseup', handleGlobalMouseUp)
+  }, [draggingBlockerId, stopDraggingBlocker])
+
   const handleClick = () => {
+    // Handle attacker mode clicks
+    if (isInAttackerMode) {
+      if (isValidAttacker) {
+        toggleAttacker(card.id)
+      }
+      return
+    }
+
+    // Handle blocker mode clicks - clicking an assigned blocker removes it
+    if (isInBlockerMode) {
+      if (isValidBlocker && isSelectedAsBlocker) {
+        removeBlockerAssignment(card.id)
+        return
+      }
+      // Clicking is also handled by mouseup for drag & drop
+      return
+    }
+
+    // Normal card selection (outside combat mode)
     if (interactive && !isInTargetingMode) {
-      // Normal selection
       selectCard(isSelected ? null : card.id)
     }
   }
 
-  // Determine border color based on state (priority: selected > validTarget > playable > default)
+  // Determine border color based on state
+  // Priority: attacking > blocking > selected > validTarget > validAttacker/Blocker > playable > default
   let borderStyle = '2px solid #333'
   let boxShadow = '0 2px 8px rgba(0,0,0,0.5)'
 
-  if (isSelected) {
+  if (isSelectedAsAttacker) {
+    // Red for attacking creatures
+    borderStyle = '3px solid #ff4444'
+    boxShadow = '0 0 16px rgba(255, 68, 68, 0.7), 0 0 32px rgba(255, 68, 68, 0.4)'
+  } else if (isSelectedAsBlocker) {
+    // Blue for blocking creatures
+    borderStyle = '3px solid #4488ff'
+    boxShadow = '0 0 16px rgba(68, 136, 255, 0.7), 0 0 32px rgba(68, 136, 255, 0.4)'
+  } else if (isAttackingInBlockerMode) {
+    // Orange glow for attackers that can be blocked
+    borderStyle = '3px solid #ff8800'
+    boxShadow = '0 0 12px rgba(255, 136, 0, 0.6), 0 0 24px rgba(255, 136, 0, 0.3)'
+  } else if (isSelected && !isInCombatMode) {
     borderStyle = '3px solid #ffff00'
     boxShadow = '0 8px 20px rgba(255, 255, 0, 0.4)'
   } else if (isValidTarget) {
     borderStyle = '3px solid #ff4444'
     boxShadow = '0 4px 15px rgba(255, 68, 68, 0.6)'
+  } else if (isValidAttacker || isValidBlocker) {
+    // Green highlight for valid attackers/blockers
+    borderStyle = '2px solid #00ff00'
+    boxShadow = '0 0 12px rgba(0, 255, 0, 0.5), 0 0 24px rgba(0, 255, 0, 0.3)'
   } else if (isPlayable) {
     // Green highlight for playable cards
     borderStyle = '2px solid #00ff00'
     boxShadow = '0 0 12px rgba(0, 255, 0, 0.5), 0 0 24px rgba(0, 255, 0, 0.3)'
   }
 
+  // Determine cursor
+  const canInteract = interactive || isValidTarget || isValidAttacker || isValidBlocker || isAttackingInBlockerMode || canDragToPlay
+  const baseCursor = canInteract ? 'pointer' : 'default'
+  const cursor = (isValidBlocker && !isSelectedAsBlocker) || canDragToPlay ? 'grab' : baseCursor
+
+  // Check if currently being dragged (blocker or hand card)
+  const isBeingDragged = draggingBlockerId === card.id || draggingCardId === card.id
+
   return (
     <div
+      data-card-id={card.id}
       onClick={handleClick}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
       style={{
         ...styles.card,
         width,
         height,
         borderRadius: responsive.isMobile ? 4 : 8,
-        cursor: (interactive || isValidTarget) ? 'pointer' : 'default',
+        cursor,
         border: borderStyle,
-        transform: `${card.isTapped ? 'rotate(90deg)' : ''} ${isSelected ? 'translateY(-8px)' : ''}`,
+        transform: `${card.isTapped ? 'rotate(90deg)' : ''} ${isSelected && !isInCombatMode ? 'translateY(-8px)' : ''}`,
         boxShadow,
+        opacity: isBeingDragged ? 0.6 : 1,
+        userSelect: 'none',
       }}
     >
       <img
@@ -432,7 +604,7 @@ function GameCard({
         </div>
       )}
 
-      {/* Playable indicator glow effect */}
+      {/* Playable indicator glow effect (only outside combat mode) */}
       {isPlayable && !isSelected && (
         <div style={styles.playableGlow} />
       )}
@@ -680,6 +852,7 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+    width: '100%',
   },
   battlefieldRow: {
     display: 'flex',

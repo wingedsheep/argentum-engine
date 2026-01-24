@@ -14,6 +14,10 @@ export interface CategorizedActions {
   activatedAbilities: LegalActionInfo[]
   /** Pass priority action */
   passPriority: LegalActionInfo | null
+  /** Declare attackers action (available during declare attackers step) */
+  declareAttackers: LegalActionInfo | null
+  /** Declare blockers action (available during declare blockers step) */
+  declareBlockers: LegalActionInfo | null
   /** All other actions */
   other: LegalActionInfo[]
 }
@@ -30,6 +34,8 @@ export function useCategorizedActions(): CategorizedActions {
       spellCasts: [],
       activatedAbilities: [],
       passPriority: null,
+      declareAttackers: null,
+      declareBlockers: null,
       other: [],
     }
 
@@ -46,6 +52,12 @@ export function useCategorizedActions(): CategorizedActions {
           break
         case 'PassPriority':
           result.passPriority = action
+          break
+        case 'DeclareAttackers':
+          result.declareAttackers = action
+          break
+        case 'DeclareBlockers':
+          result.declareBlockers = action
           break
         default:
           result.other.push(action)

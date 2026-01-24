@@ -5,13 +5,13 @@ import { Text } from '@react-three/drei'
 import type { ClientCard } from '../../types'
 import { useCardTexture, useCardBackTexture, getCardFrameColor } from '../../hooks/useCardTexture'
 import { useGameStore } from '../../store/gameStore'
-import { useHasLegalActions } from '../../store/selectors'
+import { useHasLegalActions, useViewingPlayer } from '../../store/selectors'
 import { CARD_WIDTH, CARD_HEIGHT, CARD_DEPTH } from '../zones/ZoneLayout'
 import { CardHighlight } from './CardHighlight'
 import { PowerToughnessDisplay } from './PowerToughnessDisplay'
 import { CounterDisplay } from './CounterDisplay'
 
-export type CardHighlightType = 'legal' | 'selected' | 'target' | 'active' | undefined
+export type CardHighlightType = 'legal' | 'selected' | 'target' | 'active' | 'attacking' | 'blocking' | undefined
 
 interface Card3DProps {
   card: ClientCard
@@ -52,10 +52,30 @@ export function Card3D({
   // Zustand actions
   const selectCard = useGameStore((state) => state.selectCard)
   const hoverCard = useGameStore((state) => state.hoverCard)
+  const toggleAttacker = useGameStore((state) => state.toggleAttacker)
   const selectedCardId = useGameStore((state) => state.selectedCardId)
+  const combatState = useGameStore((state) => state.combatState)
+
+  // Get viewing player for ownership checks
+  const viewingPlayer = useViewingPlayer()
 
   // Check if this card has legal actions
   const hasLegalActions = useHasLegalActions(card.id)
+
+  // Combat mode checks
+  const isInAttackerMode = combatState?.mode === 'declareAttackers'
+  const isInBlockerMode = combatState?.mode === 'declareBlockers'
+  const isOwnCreature = card.controllerId === viewingPlayer?.playerId && card.cardTypes.includes('CREATURE')
+  const isOpponentCreature = card.controllerId !== viewingPlayer?.playerId && card.cardTypes.includes('CREATURE')
+  const isValidAttacker = isInAttackerMode && isOwnCreature && !card.isTapped && combatState.validCreatures.includes(card.id)
+  const isSelectedAsAttacker = isInAttackerMode && combatState.selectedAttackers.includes(card.id)
+  const isValidBlocker = isInBlockerMode && isOwnCreature && !card.isTapped && combatState.validCreatures.includes(card.id)
+  const isSelectedAsBlocker = isInBlockerMode && !!combatState.blockerAssignments[card.id]
+  const isAttackingInBlockerMode = isInBlockerMode && isOpponentCreature && combatState.attackingCreatures.includes(card.id)
+
+  // Blocker assignment state
+  const assignBlocker = useGameStore((state) => state.assignBlocker)
+  const removeBlockerAssignment = useGameStore((state) => state.removeBlockerAssignment)
 
   // Load textures
   const frontTexture = useCardTexture(faceDown ? null : card.name)
@@ -64,8 +84,25 @@ export function Card3D({
   // Determine if card is selected
   const isSelected = selectedCardId === card.id
 
-  // Calculate actual highlight
-  const actualHighlight = highlight ?? (isSelected ? 'selected' : hasLegalActions ? 'legal' : undefined)
+  // Check if we're in any combat mode
+  const isInCombatMode = isInAttackerMode || isInBlockerMode
+
+  // Calculate actual highlight (combat highlights take precedence, disable normal highlights during combat)
+  const actualHighlight = (() => {
+    if (highlight) return highlight
+    // Combat-specific highlights
+    if (isSelectedAsAttacker) return 'attacking' as const
+    if (isSelectedAsBlocker) return 'blocking' as const
+    if (isValidAttacker) return 'legal' as const
+    if (isValidBlocker) return 'legal' as const
+    if (isAttackingInBlockerMode) return 'target' as const // Attackers glow as targets
+    // During combat mode, don't show normal highlights (selected/legal)
+    if (isInCombatMode) return undefined
+    // Normal highlights outside combat
+    if (isSelected) return 'selected' as const
+    if (hasLegalActions) return 'legal' as const
+    return undefined
+  })()
 
   // Hover animation
   useFrame(() => {
@@ -89,6 +126,42 @@ export function Card3D({
   const handleClick = (e: { stopPropagation: () => void }) => {
     if (!interactive) return
     e.stopPropagation()
+
+    // Handle attacker mode clicks
+    if (isInAttackerMode) {
+      if (isValidAttacker) {
+        toggleAttacker(card.id)
+      }
+      // Don't process other clicks during attacker mode
+      return
+    }
+
+    // Handle blocker mode clicks
+    if (isInBlockerMode) {
+      if (isValidBlocker) {
+        // Toggle blocker selection
+        if (isSelectedAsBlocker) {
+          // Remove existing assignment
+          removeBlockerAssignment(card.id)
+        } else {
+          // Select this blocker (will be assigned when clicking an attacker)
+          selectCard(card.id)
+        }
+        return
+      }
+      if (isAttackingInBlockerMode && selectedCardId) {
+        // Assign the selected blocker to this attacker
+        const selectedCard = combatState?.validCreatures.includes(selectedCardId)
+        if (selectedCard) {
+          assignBlocker(selectedCardId, card.id)
+          selectCard(null)
+        }
+      }
+      // Don't process other clicks during blocker mode
+      return
+    }
+
+    // Normal card selection
     selectCard(isSelected ? null : card.id)
   }
 

@@ -62,6 +62,11 @@ class CombatManager(
             }
         }
 
+        // Mark that attackers have been declared this combat (even if empty)
+        newState = newState.updateEntity(attackingPlayer) { container ->
+            container.with(AttackersDeclaredThisCombatComponent)
+        }
+
         return ExecutionResult.success(
             newState,
             listOf(AttackersDeclaredEvent(attackers.keys.toList()))
@@ -159,6 +164,11 @@ class CombatManager(
                     container.with(BlockedComponent(existing + blockerId))
                 }
             }
+        }
+
+        // Mark that blockers have been declared this combat (even if empty)
+        newState = newState.updateEntity(blockingPlayer) { container ->
+            container.with(BlockersDeclaredThisCombatComponent)
         }
 
         return ExecutionResult.success(
@@ -520,7 +530,7 @@ class CombatManager(
     fun endCombat(state: GameState): ExecutionResult {
         var newState = state
 
-        // Remove all combat-related components
+        // Remove all combat-related components from all entities (creatures and players)
         for ((entityId, _) in state.entities) {
             newState = newState.updateEntity(entityId) { container ->
                 container
@@ -531,6 +541,8 @@ class CombatManager(
                     .without<DamageAssignmentOrderComponent>()
                     .without<DealtFirstStrikeDamageComponent>()
                     .without<RequiresManualDamageAssignmentComponent>()
+                    .without<AttackersDeclaredThisCombatComponent>()
+                    .without<BlockersDeclaredThisCombatComponent>()
             }
         }
 

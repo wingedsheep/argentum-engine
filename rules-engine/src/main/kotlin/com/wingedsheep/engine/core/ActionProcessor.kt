@@ -34,9 +34,9 @@ import com.wingedsheep.sdk.model.EntityId
  */
 class ActionProcessor(
     private val cardRegistry: CardRegistry? = null,
-    private val turnManager: TurnManager = TurnManager(),
-    private val stackResolver: StackResolver = StackResolver(),
     private val combatManager: CombatManager = CombatManager(),
+    private val turnManager: TurnManager = TurnManager(combatManager),
+    private val stackResolver: StackResolver = StackResolver(),
     private val manaSolver: ManaSolver = ManaSolver(cardRegistry),
     private val costCalculator: CostCalculator = CostCalculator(cardRegistry),
     private val alternativePaymentHandler: AlternativePaymentHandler = AlternativePaymentHandler(),

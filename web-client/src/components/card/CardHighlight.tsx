@@ -18,6 +18,8 @@ const HIGHLIGHT_COLORS: Record<NonNullable<CardHighlightType>, string> = {
   selected: '#ffff00', // Yellow for selected
   target: '#ff00ff', // Magenta for valid targets
   active: '#00ffff', // Cyan for active (e.g., top of stack)
+  attacking: '#ff4444', // Red for attacking creatures
+  blocking: '#3498db', // Blue for blocking creatures
 }
 
 /**

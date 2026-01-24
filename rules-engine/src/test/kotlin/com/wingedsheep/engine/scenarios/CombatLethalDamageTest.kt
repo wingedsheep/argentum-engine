@@ -93,20 +93,23 @@ class CombatLethalDamageTest : FunSpec({
         return creatureId
     }
 
-    test("declare attackers step occurs in combat phase") {
+    test("combat phase skips declare attackers when no valid attackers") {
         val driver = createDriverWithCreatures()
 
-        // Advance to declare attackers
-        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
-
-        driver.currentStep shouldBe Step.DECLARE_ATTACKERS
+        // With no creatures on battlefield (or all with summoning sickness),
+        // declare attackers step should be skipped entirely
+        driver.passPriorityUntil(Step.BEGIN_COMBAT)
+        driver.currentStep shouldBe Step.BEGIN_COMBAT
         driver.currentPhase shouldBe Phase.COMBAT
+
+        // Should skip directly to END_COMBAT when there are no valid attackers
+        driver.passPriorityUntil(Step.END_COMBAT)
+        driver.currentStep shouldBe Step.END_COMBAT
     }
 
     test("cannot attack with creature that has summoning sickness") {
         val driver = createDriverWithCreatures()
         val activePlayer = driver.activePlayer!!
-        val opponent = driver.getOpponent(activePlayer)
 
         // Play a land first, then play a creature this turn
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
@@ -121,8 +124,8 @@ class CombatLethalDamageTest : FunSpec({
         // We can't test the full flow without spell casting, but we can verify
         // the structure is in place
 
-        // Advance to combat
-        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        // Advance to combat - since no valid attackers, should skip to END_COMBAT
+        driver.passPriorityUntil(Step.END_COMBAT)
 
         // Get creatures on battlefield (there shouldn't be any yet without casting)
         val creatures = driver.getCreatures(activePlayer)
@@ -135,35 +138,26 @@ class CombatLethalDamageTest : FunSpec({
         }
     }
 
-    test("declare no attackers advances past combat") {
+    test("combat skipped when no valid attackers") {
         val driver = createDriverWithCreatures()
 
-        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
-        driver.currentStep shouldBe Step.DECLARE_ATTACKERS
+        // With no creatures on battlefield, combat steps are skipped
+        driver.passPriorityUntil(Step.BEGIN_COMBAT)
+        driver.currentStep shouldBe Step.BEGIN_COMBAT
 
-        // Declare no attackers
-        val result = driver.declareAttackers(driver.activePlayer!!, emptyMap())
-
-        // Should succeed (no attackers is valid)
-        result.isSuccess shouldBe true
-
-        // After declaring no attackers, passing should skip to end combat
+        // After begin combat, should skip to end combat when no valid attackers
         driver.passPriorityUntil(Step.END_COMBAT)
         driver.currentStep shouldBe Step.END_COMBAT
     }
 
-    test("declaring blockers after attackers") {
+    test("declare blockers skipped when no attackers") {
         val driver = createDriverWithCreatures()
 
-        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        // Since there are no valid attackers, combat is skipped
+        driver.passPriorityUntil(Step.BEGIN_COMBAT)
 
-        // Declare no attackers (since we don't have creatures on battlefield)
-        driver.declareAttackers(driver.activePlayer!!, emptyMap())
-
-        // Try to advance to declare blockers - this should be skipped
-        // when there are no attackers
+        // Should go directly to end combat
         driver.passPriorityUntil(Step.END_COMBAT)
-
         driver.currentStep shouldBe Step.END_COMBAT
     }
 
@@ -178,8 +172,8 @@ class CombatLethalDamageTest : FunSpec({
         driver.assertLifeTotal(driver.player2, 20)
 
         // The combat damage system is in CombatManager
-        // Without creatures, we verify the phase progression is correct
-        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        // Without creatures, combat is skipped entirely
+        driver.passPriorityUntil(Step.BEGIN_COMBAT)
         driver.passPriorityUntil(Step.END_COMBAT)
 
         // Life totals should be unchanged (no combat occurred)
@@ -218,8 +212,8 @@ class CombatLethalDamageTest : FunSpec({
     test("combat ends after damage step") {
         val driver = createDriverWithCreatures()
 
-        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
-        driver.declareAttackers(driver.activePlayer!!, emptyMap())
+        // With no valid attackers, combat is skipped
+        driver.passPriorityUntil(Step.BEGIN_COMBAT)
         driver.passPriorityUntil(Step.END_COMBAT)
 
         driver.currentStep shouldBe Step.END_COMBAT
@@ -255,12 +249,12 @@ class CombatLethalDamageTest : FunSpec({
         val activePlayer = driver.activePlayer!!
         val defender = driver.getOpponent(activePlayer)
 
-        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        // With no valid attackers, combat is skipped entirely
+        driver.passPriorityUntil(Step.BEGIN_COMBAT)
+        driver.passPriorityUntil(Step.END_COMBAT)
 
-        // Declare no attackers - blockers step should be skipped
-        driver.declareAttackers(activePlayer, emptyMap())
-
-        // Without attackers, we can't test blocker declaration meaningfully
+        // Without attackers, blockers step is skipped
         // The validation is in CombatManager
+        driver.currentStep shouldBe Step.END_COMBAT
     }
 })

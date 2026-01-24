@@ -122,16 +122,13 @@ class BasicTurnCycleTest : FunSpec({
         driver.assertStep(Step.PRECOMBAT_MAIN, "Should be at Precombat Main")
         driver.assertPhase(Phase.PRECOMBAT_MAIN, "Should be in Main Phase 1")
 
-        // Pass through combat (no attackers declared)
+        // Pass through combat (no valid attackers - creatures have summoning sickness)
+        // When there are no valid attackers, DECLARE_ATTACKERS is skipped
         driver.passPriorityUntil(Step.BEGIN_COMBAT)
         driver.assertStep(Step.BEGIN_COMBAT, "Should be at Begin Combat")
         driver.assertPhase(Phase.COMBAT, "Should be in Combat Phase")
 
-        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
-        driver.assertStep(Step.DECLARE_ATTACKERS, "Should be at Declare Attackers")
-
-        // Declare no attackers - skip to end of combat
-        // When no attackers declared, should skip declare blockers and damage
+        // Since no valid attackers exist, game skips to END_COMBAT
         driver.passPriorityUntil(Step.END_COMBAT)
         driver.assertStep(Step.END_COMBAT, "Should be at End Combat")
 

@@ -399,6 +399,39 @@ class GameSession(
             }
         }
 
+        // Check for combat actions
+        if (state.step == Step.DECLARE_ATTACKERS && state.activePlayerId == playerId) {
+            // Check if attackers have already been declared this combat
+            val attackersAlreadyDeclared = state.getEntity(playerId)
+                ?.get<com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisCombatComponent>() != null
+
+            if (!attackersAlreadyDeclared) {
+                // Active player can declare attackers during declare attackers step
+                // Include empty attackers map - client will fill with selected attackers
+                result.add(LegalActionInfo(
+                    actionType = "DeclareAttackers",
+                    description = "Declare attackers",
+                    action = DeclareAttackers(playerId, emptyMap())
+                ))
+            }
+        }
+
+        if (state.step == Step.DECLARE_BLOCKERS && state.activePlayerId != playerId) {
+            // Check if blockers have already been declared this combat
+            val blockersAlreadyDeclared = state.getEntity(playerId)
+                ?.get<com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombatComponent>() != null
+
+            if (!blockersAlreadyDeclared) {
+                // Defending player (non-active player) can declare blockers during declare blockers step
+                // Include empty blockers map - client will fill with selected blockers
+                result.add(LegalActionInfo(
+                    actionType = "DeclareBlockers",
+                    description = "Declare blockers",
+                    action = DeclareBlockers(playerId, emptyMap())
+                ))
+            }
+        }
+
         return result
     }
 

@@ -78,3 +78,21 @@ enum class DamageAssignmentReason {
     /** User preference to always manually assign */
     USER_PREFERENCE
 }
+
+/**
+ * Marker component added to the active player when attackers have been declared this combat.
+ * This is used to prevent the DeclareAttackers action from being offered again,
+ * even if no creatures were selected to attack.
+ * Cleared at END_COMBAT.
+ */
+@Serializable
+data object AttackersDeclaredThisCombatComponent : Component
+
+/**
+ * Marker component added to the defending player when blockers have been declared this combat.
+ * This is used to prevent the DeclareBlockers action from being offered again,
+ * even if no creatures were selected to block.
+ * Cleared at END_COMBAT.
+ */
+@Serializable
+data object BlockersDeclaredThisCombatComponent : Component

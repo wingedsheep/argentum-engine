@@ -21,8 +21,8 @@ data class GameState(
     /** Zone contents - maps zone keys to lists of entity IDs */
     val zones: Map<ZoneKey, List<EntityId>> = emptyMap(),
 
-    /** Current turn number (starts at 1) */
-    val turnNumber: Int = 1,
+    /** Current turn number (starts at 0, becomes 1 when first player's turn starts) */
+    val turnNumber: Int = 0,
 
     /** ID of the player whose turn it is */
     val activePlayerId: EntityId? = null,

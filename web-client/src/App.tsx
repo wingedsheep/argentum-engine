@@ -2,14 +2,31 @@ import { useEffect, useRef } from 'react'
 import { GameBoard } from './components/game/GameBoard'
 import { GameUI } from './components/ui/GameUI'
 import { MulliganUI } from './components/mulligan/MulliganUI'
+import { CombatOverlay } from './components/combat/CombatOverlay'
 import { useGameStore } from './store/gameStore'
+import { useViewingPlayer, useBattlefieldCards } from './store/selectors'
+import type { EntityId } from './types'
 
 export default function App() {
   const connectionStatus = useGameStore((state) => state.connectionStatus)
   const gameState = useGameStore((state) => state.gameState)
   const mulliganState = useGameStore((state) => state.mulliganState)
+  const legalActions = useGameStore((state) => state.legalActions)
+  const combatState = useGameStore((state) => state.combatState)
+  const startCombat = useGameStore((state) => state.startCombat)
   const connect = useGameStore((state) => state.connect)
   const hasConnectedRef = useRef(false)
+
+  const viewingPlayer = useViewingPlayer()
+  const battlefieldCards = useBattlefieldCards()
+
+  // Check for combat actions in legal actions
+  const hasDeclareAttackersAction = legalActions.some(
+    (a) => a.actionType === 'DeclareAttackers' || a.action.type === 'DeclareAttackers'
+  )
+  const hasDeclareBlockersAction = legalActions.some(
+    (a) => a.actionType === 'DeclareBlockers' || a.action.type === 'DeclareBlockers'
+  )
 
   useEffect(() => {
     // Auto-connect on mount (in real app, would have login flow)
@@ -20,13 +37,80 @@ export default function App() {
     }
   }, [connectionStatus, connect])
 
+  // Get the clearCombat action
+  const clearCombat = useGameStore((state) => state.clearCombat)
+
+  // Auto-enter/exit combat mode based on available actions
+  useEffect(() => {
+    if (!gameState || !viewingPlayer) return
+
+    // Exit combat mode if the relevant action is no longer available
+    if (combatState) {
+      if (combatState.mode === 'declareAttackers' && !hasDeclareAttackersAction) {
+        // DeclareAttackers was submitted and processed - exit combat mode
+        clearCombat()
+        return
+      }
+      if (combatState.mode === 'declareBlockers' && !hasDeclareBlockersAction) {
+        // DeclareBlockers was submitted and processed - exit combat mode
+        clearCombat()
+        return
+      }
+      // Already in combat mode, don't re-enter
+      return
+    }
+
+    // Enter combat mode when action becomes available
+    if (hasDeclareAttackersAction) {
+      // Find valid attacking creatures (untapped creatures we control without summoning sickness)
+      const playerCreatures = battlefieldCards.playerCreatures
+      const validCreatures: EntityId[] = playerCreatures
+        .filter((card) => !card.isTapped && !card.hasSummoningSickness)
+        .map((card) => card.id)
+
+      // Enter combat mode
+      startCombat({
+        mode: 'declareAttackers',
+        selectedAttackers: [],
+        blockerAssignments: {},
+        validCreatures,
+        attackingCreatures: [],
+      })
+      return
+    }
+
+    if (hasDeclareBlockersAction) {
+      // Find valid blocking creatures (untapped creatures we control)
+      const playerCreatures = battlefieldCards.playerCreatures
+      const validCreatures: EntityId[] = playerCreatures
+        .filter((card) => !card.isTapped)
+        .map((card) => card.id)
+
+      // Find attacking creatures (opponent's creatures that are attacking)
+      const opponentCreatures = battlefieldCards.opponentCreatures
+      const attackingCreatures: EntityId[] = opponentCreatures
+        .filter((card) => card.isAttacking)
+        .map((card) => card.id)
+
+      // Enter combat mode
+      startCombat({
+        mode: 'declareBlockers',
+        selectedAttackers: [],
+        blockerAssignments: {},
+        validCreatures,
+        attackingCreatures,
+      })
+    }
+  }, [hasDeclareAttackersAction, hasDeclareBlockersAction, gameState, viewingPlayer, combatState, startCombat, clearCombat, battlefieldCards])
+
   // Show connection/game creation UI when not in a game
   const showLobby = connectionStatus !== 'connected' || !gameState
+  const showGame = !showLobby && !mulliganState
 
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
       {/* Main game board (2D) */}
-      {!showLobby && !mulliganState && <GameBoard />}
+      {showGame && <GameBoard />}
 
       {/* Connection/lobby UI overlay */}
       {showLobby && <GameUI />}
@@ -34,8 +118,11 @@ export default function App() {
       {/* Mulligan overlay */}
       {mulliganState && <MulliganUI />}
 
+      {/* Combat overlay (when declaring attackers/blockers) */}
+      {showGame && combatState && <CombatOverlay />}
+
       {/* Game over overlay */}
-      {!showLobby && !mulliganState && <GameOverlay />}
+      {showGame && <GameOverlay />}
     </div>
   )
 }

@@ -6,9 +6,13 @@ import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
+import com.wingedsheep.engine.mechanics.combat.CombatManager
+import com.wingedsheep.engine.mechanics.StateBasedActionChecker
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.ZoneType
@@ -25,18 +29,26 @@ import com.wingedsheep.sdk.scripting.Duration
  * - Postcombat Main Phase
  * - Ending Phase: End Step, Cleanup
  */
-class TurnManager {
+class TurnManager(
+    private val combatManager: CombatManager = CombatManager(),
+    private val sbaChecker: StateBasedActionChecker = StateBasedActionChecker()
+) {
 
     /**
      * Start a new turn for a player.
      */
     fun startTurn(state: GameState, playerId: EntityId): ExecutionResult {
-        val isFirstTurn = state.turnNumber == 1 && playerId == state.turnOrder.first()
-        val newTurnNumber = if (playerId == state.turnOrder.first()) state.turnNumber + 1 else state.turnNumber
+        // Turn number increments when the first player starts a new turn
+        // It stays the same when the second player starts their turn within the same round
+        val newTurnNumber = if (playerId == state.turnOrder.first()) {
+            state.turnNumber + 1
+        } else {
+            state.turnNumber
+        }
 
         val newState = state.copy(
             activePlayerId = playerId,
-            turnNumber = if (isFirstTurn) 1 else newTurnNumber,
+            turnNumber = newTurnNumber,
             phase = Phase.BEGINNING,
             step = Step.UNTAP,
             priorityPlayerId = null, // No priority during untap
@@ -223,12 +235,72 @@ class TurnManager {
                 newState = newState.withPriority(activePlayer)
             }
 
-            Step.BEGIN_COMBAT,
-            Step.DECLARE_ATTACKERS,
-            Step.DECLARE_BLOCKERS,
-            Step.FIRST_STRIKE_COMBAT_DAMAGE,
-            Step.COMBAT_DAMAGE,
+            Step.BEGIN_COMBAT -> {
+                newState = newState.withPriority(activePlayer)
+            }
+
+            Step.DECLARE_ATTACKERS -> {
+                // Skip declare attackers if no valid attackers exist
+                if (!hasValidAttackers(newState, activePlayer)) {
+                    // Auto-advance past declare attackers (no creatures can attack)
+                    return advanceStep(newState.copy(step = Step.DECLARE_ATTACKERS))
+                }
+                // Active player gets priority during declare attackers
+                newState = newState.withPriority(activePlayer)
+            }
+
+            Step.DECLARE_BLOCKERS -> {
+                // Skip declare blockers if no attackers were declared (CR 508.8)
+                if (!hasAttackingCreatures(newState)) {
+                    // Auto-advance past blockers step
+                    return advanceStep(newState.copy(step = Step.DECLARE_BLOCKERS))
+                }
+                // Defending player gets priority during declare blockers
+                val defendingPlayer = newState.turnOrder.firstOrNull { it != activePlayer }
+                    ?: activePlayer
+                newState = newState.withPriority(defendingPlayer)
+            }
+
+            Step.FIRST_STRIKE_COMBAT_DAMAGE -> {
+                // Skip if no attackers
+                if (!hasAttackingCreatures(newState)) {
+                    return advanceStep(newState.copy(step = Step.FIRST_STRIKE_COMBAT_DAMAGE))
+                }
+                // Apply first strike combat damage
+                val damageResult = combatManager.applyCombatDamage(newState, firstStrike = true)
+                if (!damageResult.isSuccess) return damageResult
+                newState = damageResult.newState
+                events.addAll(damageResult.events)
+                // Check state-based actions (creatures with lethal damage die)
+                val sbaResult = sbaChecker.checkAndApply(newState)
+                newState = sbaResult.newState
+                events.addAll(sbaResult.events)
+                newState = newState.withPriority(activePlayer)
+            }
+
+            Step.COMBAT_DAMAGE -> {
+                // Skip if no attackers (no combat damage to deal)
+                if (!hasAttackingCreatures(newState)) {
+                    return advanceStep(newState.copy(step = Step.COMBAT_DAMAGE))
+                }
+                // Apply regular combat damage
+                val damageResult = combatManager.applyCombatDamage(newState, firstStrike = false)
+                if (!damageResult.isSuccess) return damageResult
+                newState = damageResult.newState
+                events.addAll(damageResult.events)
+                // Check state-based actions (creatures with lethal damage die)
+                val sbaResult = sbaChecker.checkAndApply(newState)
+                newState = sbaResult.newState
+                events.addAll(sbaResult.events)
+                newState = newState.withPriority(activePlayer)
+            }
+
             Step.END_COMBAT -> {
+                // Clean up combat state (remove attacking/blocking components)
+                val endCombatResult = combatManager.endCombat(newState)
+                if (!endCombatResult.isSuccess) return endCombatResult
+                newState = endCombatResult.newState
+                events.addAll(endCombatResult.events)
                 newState = newState.withPriority(activePlayer)
             }
 
@@ -413,5 +485,54 @@ class TurnManager {
             state.priorityPlayerId == playerId &&
             state.activePlayerId == playerId &&
             state.stack.isEmpty()
+    }
+
+    /**
+     * Check if a player has any creatures that can legally attack.
+     * A creature can attack if it's:
+     * - A creature controlled by the player
+     * - Untapped
+     * - Doesn't have summoning sickness (unless it has haste)
+     * - Doesn't have defender
+     */
+    fun hasValidAttackers(state: GameState, playerId: EntityId): Boolean {
+        val battlefield = state.getBattlefield()
+        return battlefield.any { entityId ->
+            val container = state.getEntity(entityId) ?: return@any false
+            val cardComponent = container.get<CardComponent>() ?: return@any false
+            val controller = container.get<ControllerComponent>()?.playerId
+
+            // Must be a creature controlled by the player
+            if (!cardComponent.typeLine.isCreature || controller != playerId) {
+                return@any false
+            }
+
+            // Must be untapped
+            if (container.has<TappedComponent>()) {
+                return@any false
+            }
+
+            // Must not have summoning sickness (unless it has haste)
+            val hasHaste = cardComponent.baseKeywords.contains(Keyword.HASTE)
+            if (!hasHaste && container.has<SummoningSicknessComponent>()) {
+                return@any false
+            }
+
+            // Must not have defender
+            if (cardComponent.baseKeywords.contains(Keyword.DEFENDER)) {
+                return@any false
+            }
+
+            true
+        }
+    }
+
+    /**
+     * Check if there are any creatures currently attacking.
+     */
+    fun hasAttackingCreatures(state: GameState): Boolean {
+        return state.entities.any { (_, container) ->
+            container.has<AttackingComponent>()
+        }
     }
 }

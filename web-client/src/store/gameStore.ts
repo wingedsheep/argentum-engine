@@ -54,6 +54,21 @@ export interface TargetingState {
 }
 
 /**
+ * Combat mode state for declaring attackers or blockers.
+ */
+export interface CombatState {
+  mode: 'declareAttackers' | 'declareBlockers'
+  /** Selected attackers (creature IDs) */
+  selectedAttackers: readonly EntityId[]
+  /** Blocker assignments: blocker ID -> attacker ID */
+  blockerAssignments: Record<EntityId, EntityId>
+  /** Valid creatures that can participate (attackers or blockers depending on mode) */
+  validCreatures: readonly EntityId[]
+  /** For blockers mode: creatures that are attacking */
+  attackingCreatures: readonly EntityId[]
+}
+
+/**
  * Game over state when the game has ended.
  */
 export interface GameOverState {
@@ -91,7 +106,10 @@ export interface GameStore {
   // UI state (local only)
   selectedCardId: EntityId | null
   targetingState: TargetingState | null
+  combatState: CombatState | null
   hoveredCardId: EntityId | null
+  draggingBlockerId: EntityId | null
+  draggingCardId: EntityId | null
 
   // Animation queue
   pendingEvents: readonly ClientEvent[]
@@ -121,6 +139,18 @@ export interface GameStore {
   addTarget: (targetId: EntityId) => void
   cancelTargeting: () => void
   confirmTargeting: () => void
+  // Combat actions
+  startCombat: (state: CombatState) => void
+  toggleAttacker: (creatureId: EntityId) => void
+  assignBlocker: (blockerId: EntityId, attackerId: EntityId) => void
+  removeBlockerAssignment: (blockerId: EntityId) => void
+  startDraggingBlocker: (blockerId: EntityId) => void
+  stopDraggingBlocker: () => void
+  startDraggingCard: (cardId: EntityId) => void
+  stopDraggingCard: () => void
+  confirmCombat: () => void
+  cancelCombat: () => void
+  clearCombat: () => void
   clearError: () => void
   consumeEvent: () => ClientEvent | undefined
 }
@@ -296,7 +326,10 @@ export const useGameStore = create<GameStore>()(
       mulliganState: null,
       selectedCardId: null,
       targetingState: null,
+      combatState: null,
       hoveredCardId: null,
+      draggingBlockerId: null,
+      draggingCardId: null,
       pendingEvents: [],
       gameOverState: null,
       lastError: null,
@@ -445,6 +478,154 @@ export const useGameStore = create<GameStore>()(
         // Modify the action with selected targets and submit
         // Note: In practice, targets are usually pre-set in the action from legalActions
         submitAction(targetingState.action)
+      },
+
+      // Combat actions
+      startCombat: (combatState) => {
+        set({ combatState })
+      },
+
+      toggleAttacker: (creatureId) => {
+        set((state) => {
+          if (!state.combatState || state.combatState.mode !== 'declareAttackers') {
+            return state
+          }
+
+          const isSelected = state.combatState.selectedAttackers.includes(creatureId)
+          const newAttackers = isSelected
+            ? state.combatState.selectedAttackers.filter((id) => id !== creatureId)
+            : [...state.combatState.selectedAttackers, creatureId]
+
+          return {
+            combatState: {
+              ...state.combatState,
+              selectedAttackers: newAttackers,
+            },
+          }
+        })
+      },
+
+      assignBlocker: (blockerId, attackerId) => {
+        set((state) => {
+          if (!state.combatState || state.combatState.mode !== 'declareBlockers') {
+            return state
+          }
+
+          return {
+            combatState: {
+              ...state.combatState,
+              blockerAssignments: {
+                ...state.combatState.blockerAssignments,
+                [blockerId]: attackerId,
+              },
+            },
+          }
+        })
+      },
+
+      removeBlockerAssignment: (blockerId) => {
+        set((state) => {
+          if (!state.combatState || state.combatState.mode !== 'declareBlockers') {
+            return state
+          }
+
+          const { [blockerId]: _, ...remaining } = state.combatState.blockerAssignments
+          return {
+            combatState: {
+              ...state.combatState,
+              blockerAssignments: remaining,
+            },
+          }
+        })
+      },
+
+      startDraggingBlocker: (blockerId) => {
+        set({ draggingBlockerId: blockerId })
+      },
+
+      stopDraggingBlocker: () => {
+        set({ draggingBlockerId: null })
+      },
+
+      startDraggingCard: (cardId) => {
+        set({ draggingCardId: cardId })
+      },
+
+      stopDraggingCard: () => {
+        set({ draggingCardId: null })
+      },
+
+      confirmCombat: () => {
+        const { combatState, playerId } = get()
+        if (!combatState || !playerId) return
+
+        if (combatState.mode === 'declareAttackers') {
+          // Build attackers map: attacker -> defending player (opponent)
+          const { gameState } = get()
+          if (!gameState) return
+
+          const opponent = gameState.players.find((p) => p.playerId !== playerId)
+          if (!opponent) return
+
+          const attackers: Record<EntityId, EntityId> = {}
+          for (const attackerId of combatState.selectedAttackers) {
+            attackers[attackerId] = opponent.playerId
+          }
+
+          const action = {
+            type: 'DeclareAttackers' as const,
+            playerId,
+            attackers,
+          }
+          ws?.send(createSubmitActionMessage(action))
+        } else if (combatState.mode === 'declareBlockers') {
+          // Build blockers map: blocker -> [attackers]
+          const blockers: Record<EntityId, readonly EntityId[]> = {}
+          for (const [blockerIdStr, attackerId] of Object.entries(combatState.blockerAssignments)) {
+            blockers[entityId(blockerIdStr)] = [attackerId]
+          }
+
+          const action = {
+            type: 'DeclareBlockers' as const,
+            playerId,
+            blockers,
+          }
+          ws?.send(createSubmitActionMessage(action))
+        }
+
+        // Don't clear combatState here - let the server response drive state changes
+        // The useEffect in App.tsx will exit combat mode when legalActions changes
+        set({ draggingBlockerId: null })
+      },
+
+      cancelCombat: () => {
+        // Submit empty attackers/blockers to skip combat step
+        const { combatState, playerId } = get()
+        if (!combatState || !playerId) return
+
+        if (combatState.mode === 'declareAttackers') {
+          const action = {
+            type: 'DeclareAttackers' as const,
+            playerId,
+            attackers: {} as Record<EntityId, EntityId>,
+          }
+          ws?.send(createSubmitActionMessage(action))
+        } else if (combatState.mode === 'declareBlockers') {
+          const action = {
+            type: 'DeclareBlockers' as const,
+            playerId,
+            blockers: {} as Record<EntityId, readonly EntityId[]>,
+          }
+          ws?.send(createSubmitActionMessage(action))
+        }
+
+        // Don't clear combatState here - let the server response drive state changes
+        set({ draggingBlockerId: null })
+      },
+
+      clearCombat: () => {
+        // Called when server confirms combat action was processed (action no longer in legalActions)
+        set({ combatState: null, draggingBlockerId: null })
       },
 
       clearError: () => {
