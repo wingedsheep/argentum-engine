@@ -698,9 +698,163 @@ class PortalSetTest : DescribeSpec({
         }
     }
 
+    describe("Portal Set - Cards 41-50") {
+
+        describe("Balance of Power") {
+            val card = BalanceOfPower
+
+            it("should draw cards equal to hand difference") {
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<DrawCardsEqualToHandDifferenceEffect>()
+            }
+
+            it("should target an opponent") {
+                card.targetRequirements shouldHaveSize 1
+            }
+
+            it("should cost 3UU") {
+                card.manaCost.toString() shouldBe "{3}{U}{U}"
+                card.cmc shouldBe 5
+            }
+        }
+
+        describe("Baleful Stare") {
+            val card = BalefulStare
+
+            it("should reveal hand and draw per Mountain/red card") {
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<RevealHandDrawPerMatchEffect>()
+                val effect = card.spellEffect as RevealHandDrawPerMatchEffect
+                effect.landType shouldBe "Mountain"
+                effect.color shouldBe Color.RED
+            }
+        }
+
+        describe("Capricious Sorcerer") {
+            val card = CapriciousSorcerer
+
+            it("should be a 1/1 Human Wizard") {
+                card.creatureStats?.basePower shouldBe 1
+                card.creatureStats?.baseToughness shouldBe 1
+                card.typeLine.subtypes shouldContain Subtype.HUMAN
+                card.typeLine.subtypes shouldContain Subtype.WIZARD
+            }
+
+            it("should have tap ability to deal damage") {
+                card.activatedAbilities shouldHaveSize 1
+                val ability = card.activatedAbilities.first()
+                ability.cost shouldBe AbilityCost.Tap
+                ability.effect.shouldBeInstanceOf<DealDamageEffect>()
+            }
+        }
+
+        describe("Cloak of Feathers") {
+            val card = CloakOfFeathers
+
+            it("should grant flying and draw") {
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<CompositeEffect>()
+                val composite = card.spellEffect as CompositeEffect
+                composite.effects shouldHaveSize 2
+            }
+
+            it("should cost U") {
+                card.manaCost.toString() shouldBe "{U}"
+                card.cmc shouldBe 1
+            }
+        }
+
+        describe("Cloud Dragon") {
+            val card = CloudDragon
+
+            it("should be a 5/4 Illusion Dragon with flying") {
+                card.creatureStats?.basePower shouldBe 5
+                card.creatureStats?.baseToughness shouldBe 4
+                card.typeLine.subtypes shouldContain Subtype.ILLUSION
+                card.typeLine.subtypes shouldContain Subtype.DRAGON
+                card.keywords shouldContain Keyword.FLYING
+            }
+
+            it("should only block creatures with flying") {
+                card.staticAbilities shouldHaveSize 1
+                card.staticAbilities.first().shouldBeInstanceOf<CanOnlyBlockCreaturesWithKeyword>()
+            }
+        }
+
+        describe("Cloud Pirates") {
+            val card = CloudPirates
+
+            it("should be a 1/1 Human Pirate with flying") {
+                card.creatureStats?.basePower shouldBe 1
+                card.creatureStats?.baseToughness shouldBe 1
+                card.typeLine.subtypes shouldContain Subtype.HUMAN
+                card.typeLine.subtypes shouldContain Subtype.PIRATE
+                card.keywords shouldContain Keyword.FLYING
+            }
+
+            it("should only block creatures with flying") {
+                card.staticAbilities shouldHaveSize 1
+                card.staticAbilities.first().shouldBeInstanceOf<CanOnlyBlockCreaturesWithKeyword>()
+            }
+        }
+
+        describe("Cloud Spirit") {
+            val card = CloudSpirit
+
+            it("should be a 3/1 Spirit with flying") {
+                card.creatureStats?.basePower shouldBe 3
+                card.creatureStats?.baseToughness shouldBe 1
+                card.typeLine.subtypes shouldContain Subtype.SPIRIT
+                card.keywords shouldContain Keyword.FLYING
+            }
+
+            it("should only block creatures with flying") {
+                card.staticAbilities shouldHaveSize 1
+                card.staticAbilities.first().shouldBeInstanceOf<CanOnlyBlockCreaturesWithKeyword>()
+            }
+        }
+
+        describe("Command of Unsummoning") {
+            val card = CommandOfUnsummoning
+
+            it("should be an instant with cast restrictions") {
+                card.typeLine.isInstant shouldBe true
+                card.script.hasCastRestrictions shouldBe true
+            }
+
+            it("should return 1-2 attacking creatures") {
+                card.spellEffect.shouldBeInstanceOf<ReturnToHandEffect>()
+                card.targetRequirements shouldHaveSize 1
+            }
+        }
+
+        describe("Coral Eel") {
+            val card = CoralEel
+
+            it("should be a 2/1 vanilla Fish") {
+                card.creatureStats?.basePower shouldBe 2
+                card.creatureStats?.baseToughness shouldBe 1
+                card.typeLine.subtypes shouldContain Subtype.FISH
+                card.keywords shouldHaveSize 0
+            }
+        }
+
+        describe("Cruel Fate") {
+            val card = CruelFate
+
+            it("should look at top 5 and put 1 in graveyard") {
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<LookAtOpponentLibraryEffect>()
+                val effect = card.spellEffect as LookAtOpponentLibraryEffect
+                effect.count shouldBe 5
+                effect.toGraveyard shouldBe 1
+            }
+        }
+    }
+
     describe("PortalSet object") {
-        it("should have 40 cards in the set") {
-            PortalSet.allCards shouldHaveSize 40
+        it("should have 50 cards in the set") {
+            PortalSet.allCards shouldHaveSize 50
         }
 
         it("should have correct set code") {

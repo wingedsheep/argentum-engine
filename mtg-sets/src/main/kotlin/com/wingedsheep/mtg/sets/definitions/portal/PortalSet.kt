@@ -18,7 +18,7 @@ object PortalSet {
     const val SET_NAME = "Portal"
 
     /**
-     * All cards in this set (first 40 implemented).
+     * All cards in this set (first 50 implemented).
      */
     val allCards = listOf(
         // Cards 1-10
@@ -64,7 +64,18 @@ object PortalSet {
         WallOfSwords,
         WarriorsCharge,
         WrathOfGod,
-        AncestralMemories
+        AncestralMemories,
+        // Cards 41-50
+        BalanceOfPower,
+        BalefulStare,
+        CapriciousSorcerer,
+        CloakOfFeathers,
+        CloudDragon,
+        CloudPirates,
+        CloudSpirit,
+        CommandOfUnsummoning,
+        CoralEel,
+        CruelFate
     )
 
     /**

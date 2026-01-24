@@ -1791,6 +1791,57 @@ data class EachPlayerMayDrawEffect(
     override val description: String = "Each player may draw up to $maxCards cards"
 }
 
+/**
+ * Draw cards equal to the difference in hand sizes if opponent has more.
+ * "If target opponent has more cards in hand than you, draw cards equal to the difference."
+ * Used for Balance of Power.
+ */
+@Serializable
+data class DrawCardsEqualToHandDifferenceEffect(
+    val target: EffectTarget = EffectTarget.Opponent
+) : Effect {
+    override val description: String =
+        "If ${target.description} has more cards in hand than you, draw cards equal to the difference"
+}
+
+/**
+ * Target opponent reveals their hand and you draw for each card matching criteria.
+ * "Target opponent reveals their hand. You draw a card for each Mountain and red card in it."
+ * Used for Baleful Stare.
+ *
+ * @property landType Land type to count (e.g., "Mountain")
+ * @property color Color to count
+ */
+@Serializable
+data class RevealHandDrawPerMatchEffect(
+    val landType: String,
+    val color: Color
+) : Effect {
+    override val description: String =
+        "Target opponent reveals their hand. You draw a card for each $landType and ${color.displayName.lowercase()} card in it"
+}
+
+/**
+ * Look at top cards of target opponent's library, put some in graveyard, rest on top.
+ * "Look at the top five cards of target opponent's library. Put one of them into that
+ * player's graveyard and the rest back on top of their library in any order."
+ * Used for Cruel Fate.
+ *
+ * @property count Number of cards to look at
+ * @property toGraveyard Number of cards to put in graveyard
+ */
+@Serializable
+data class LookAtOpponentLibraryEffect(
+    val count: Int,
+    val toGraveyard: Int = 1
+) : Effect {
+    override val description: String = buildString {
+        append("Look at the top $count cards of target opponent's library. ")
+        append("Put ${if (toGraveyard == 1) "one of them" else "$toGraveyard of them"} ")
+        append("into that player's graveyard and the rest on top of their library in any order")
+    }
+}
+
 // =============================================================================
 // Grant Keyword to Group Effects
 // =============================================================================
