@@ -4,6 +4,9 @@ plugins {
 }
 
 dependencies {
+    // SDK dependency - the shared contract
+    implementation(project(":mtg-sdk"))
+
     implementation(libs.bundles.kotlinxEcosystem)
 
     testImplementation(libs.kotestRunner)
