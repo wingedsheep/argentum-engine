@@ -242,6 +242,16 @@ class TurnManager {
                 if (!cleanupResult.isSuccess) return cleanupResult
                 newState = cleanupResult.newState
                 events.addAll(cleanupResult.events)
+
+                // Cleanup has no priority (normally) - auto-advance to next turn
+                // unless there are triggered abilities or discard required
+                if (newState.priorityPlayerId == null && newState.pendingDecision == null) {
+                    val endTurnResult = endTurn(newState)
+                    return ExecutionResult.success(
+                        endTurnResult.newState,
+                        events + endTurnResult.events
+                    )
+                }
             }
         }
 

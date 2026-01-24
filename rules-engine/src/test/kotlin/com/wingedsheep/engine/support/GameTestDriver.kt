@@ -211,13 +211,32 @@ class GameTestDriver(
      */
     fun passPriorityUntil(targetStep: Step, maxPasses: Int = 100) {
         var passes = 0
+        var lastStep = state.step
+        var stuckCount = 0
+
         while (state.step != targetStep && passes < maxPasses) {
             if (state.gameOver) {
                 throw AssertionError("Game ended while advancing to $targetStep")
             }
             if (state.priorityPlayerId != null) {
                 passPriority(state.priorityPlayerId!!)
+                stuckCount = 0
+            } else {
+                // No priority - check if we're stuck
+                stuckCount++
+                if (stuckCount > 10) {
+                    throw AssertionError(
+                        "Stuck at step ${state.step} with no priority while trying to reach $targetStep"
+                    )
+                }
             }
+
+            // Detect if we're making progress
+            if (state.step != lastStep) {
+                lastStep = state.step
+                stuckCount = 0
+            }
+
             passes++
         }
 

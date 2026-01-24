@@ -145,20 +145,13 @@ class BasicTurnCycleTest : FunSpec({
         driver.assertStep(Step.END, "Should be at End Step")
         driver.assertPhase(Phase.ENDING, "Should be in Ending Phase")
 
-        // Pass through cleanup - turn should change
-        driver.passPriorityUntil(Step.CLEANUP)
+        // Pass through cleanup - turn should change automatically
+        // Cleanup has no priority, so after both pass from END step,
+        // the turn automatically advances to the next player's turn
+        driver.bothPass()
 
         // After cleanup, the next player's turn should start
-        // The game should auto-advance from cleanup to the next untap
-        val maxPasses = 50
-        var passes = 0
-        while (driver.activePlayer == startingPlayer && passes < maxPasses) {
-            if (driver.priorityPlayer != null) {
-                driver.passPriority(driver.priorityPlayer!!)
-            }
-            passes++
-        }
-
+        // The game auto-advances from cleanup to the next turn's untap step
         // Verify turn passed to opponent
         driver.activePlayer shouldNotBe startingPlayer
         driver.activePlayer shouldBe driver.getOpponent(startingPlayer)
@@ -166,12 +159,19 @@ class BasicTurnCycleTest : FunSpec({
 
     test("life totals remain unchanged through empty turn") {
         val driver = createDriver()
+        val startingPlayer = driver.activePlayer!!
 
         driver.assertLifeTotal(driver.player1, 20)
         driver.assertLifeTotal(driver.player2, 20)
 
-        // Pass through entire turn
-        driver.passPriorityUntil(Step.CLEANUP, maxPasses = 200)
+        // Pass through entire turn until we reach the end step
+        driver.passPriorityUntil(Step.END, maxPasses = 200)
+
+        // Pass through cleanup (turn auto-advances)
+        driver.bothPass()
+
+        // Verify turn changed
+        driver.activePlayer shouldNotBe startingPlayer
 
         // Life totals should be unchanged
         driver.assertLifeTotal(driver.player1, 20)
@@ -211,13 +211,9 @@ class BasicTurnCycleTest : FunSpec({
         val startingPlayer = driver.activePlayer!!
         val opponent = driver.getOpponent(startingPlayer)
 
-        // Advance to opponent's turn
-        driver.passPriorityUntil(Step.CLEANUP, maxPasses = 200)
-        while (driver.activePlayer == startingPlayer) {
-            if (driver.priorityPlayer != null) {
-                driver.passPriority(driver.priorityPlayer!!)
-            }
-        }
+        // Advance to opponent's turn by passing through end step and cleanup
+        driver.passPriorityUntil(Step.END, maxPasses = 200)
+        driver.bothPass() // This advances through cleanup to next turn
 
         // Now it's opponent's turn
         driver.activePlayer shouldBe opponent

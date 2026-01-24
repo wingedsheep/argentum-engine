@@ -355,10 +355,11 @@ class ActionProcessor(
             }
         }
 
-        // Pass to next player
+        // Pass to next player - use copy() to preserve priorityPassedBy
+        // (withPriority would reset the passed flags)
         val nextPlayer = state.getNextPlayer(action.playerId)
         return ExecutionResult.success(
-            newState.withPriority(nextPlayer),
+            newState.copy(priorityPlayerId = nextPlayer),
             listOf(PriorityChangedEvent(nextPlayer))
         )
     }
