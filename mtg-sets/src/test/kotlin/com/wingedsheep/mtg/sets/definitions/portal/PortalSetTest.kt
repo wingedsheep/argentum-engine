@@ -860,9 +860,151 @@ class PortalSetTest : DescribeSpec({
         }
     }
 
+    describe("Portal Set - Cards 51-60") {
+
+        describe("Deep-Sea Serpent") {
+            val card = DeepSeaSerpent
+
+            it("should be a 5/5 Serpent") {
+                card.manaCost.toString() shouldBe "{4}{U}{U}"
+                card.creatureStats?.basePower shouldBe 5
+                card.creatureStats?.baseToughness shouldBe 5
+                card.typeLine.subtypes shouldContain Subtype.SERPENT
+            }
+
+            it("should have Island attack restriction") {
+                card.staticAbilities shouldHaveSize 1
+                card.staticAbilities.first().shouldBeInstanceOf<CantAttackUnlessDefenderControlsLandType>()
+                val ability = card.staticAbilities.first() as CantAttackUnlessDefenderControlsLandType
+                ability.landType shouldBe "Island"
+            }
+        }
+
+        describe("Djinn of the Lamp") {
+            val card = DjinnOfTheLamp
+
+            it("should be a 5/6 Djinn with flying") {
+                card.manaCost.toString() shouldBe "{5}{U}{U}"
+                card.creatureStats?.basePower shouldBe 5
+                card.creatureStats?.baseToughness shouldBe 6
+                card.typeLine.subtypes shouldContain Subtype.DJINN
+                card.keywords shouldContain Keyword.FLYING
+            }
+        }
+
+        describe("Déjà Vu") {
+            val card = DejaVu
+
+            it("should return sorcery from graveyard") {
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<ReturnFromGraveyardEffect>()
+                val effect = card.spellEffect as ReturnFromGraveyardEffect
+                effect.filter shouldBe CardFilter.SorceryCard
+            }
+        }
+
+        describe("Exhaustion") {
+            val card = Exhaustion
+
+            it("should prevent untapping of creatures and lands") {
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<SkipUntapEffect>()
+                val effect = card.spellEffect as SkipUntapEffect
+                effect.affectsCreatures shouldBe true
+                effect.affectsLands shouldBe true
+            }
+        }
+
+        describe("Flux") {
+            val card = Flux
+
+            it("should have flux effect with extra draw") {
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<FluxEffect>()
+                val effect = card.spellEffect as FluxEffect
+                effect.drawExtra shouldBe 1
+            }
+        }
+
+        describe("Giant Octopus") {
+            val card = GiantOctopus
+
+            it("should be a 3/3 vanilla Octopus") {
+                card.manaCost.toString() shouldBe "{3}{U}"
+                card.creatureStats?.basePower shouldBe 3
+                card.creatureStats?.baseToughness shouldBe 3
+                card.typeLine.subtypes shouldContain Subtype.OCTOPUS
+                card.keywords shouldHaveSize 0
+            }
+        }
+
+        describe("Horned Turtle") {
+            val card = HornedTurtle
+
+            it("should be a 1/4 vanilla Turtle") {
+                card.manaCost.toString() shouldBe "{2}{U}"
+                card.creatureStats?.basePower shouldBe 1
+                card.creatureStats?.baseToughness shouldBe 4
+                card.typeLine.subtypes shouldContain Subtype.TURTLE
+                card.keywords shouldHaveSize 0
+            }
+        }
+
+        describe("Ingenious Thief") {
+            val card = IngeniousThief
+
+            it("should be a 1/1 Human Rogue with flying") {
+                card.manaCost.toString() shouldBe "{1}{U}"
+                card.creatureStats?.basePower shouldBe 1
+                card.creatureStats?.baseToughness shouldBe 1
+                card.typeLine.subtypes shouldContain Subtype.HUMAN
+                card.typeLine.subtypes shouldContain Subtype.ROGUE
+                card.keywords shouldContain Keyword.FLYING
+            }
+
+            it("should have ETB look at hand trigger") {
+                card.triggeredAbilities shouldHaveSize 1
+                val trigger = card.triggeredAbilities.first()
+                trigger.trigger.shouldBeInstanceOf<OnEnterBattlefield>()
+                trigger.effect.shouldBeInstanceOf<LookAtTargetHandEffect>()
+            }
+        }
+
+        describe("Man-o'-War") {
+            val card = ManOWar
+
+            it("should be a 2/2 Jellyfish") {
+                card.manaCost.toString() shouldBe "{2}{U}"
+                card.creatureStats?.basePower shouldBe 2
+                card.creatureStats?.baseToughness shouldBe 2
+                card.typeLine.subtypes shouldContain Subtype.JELLYFISH
+            }
+
+            it("should have ETB bounce trigger") {
+                card.triggeredAbilities shouldHaveSize 1
+                val trigger = card.triggeredAbilities.first()
+                trigger.trigger.shouldBeInstanceOf<OnEnterBattlefield>()
+                trigger.effect.shouldBeInstanceOf<ReturnToHandEffect>()
+            }
+        }
+
+        describe("Merfolk of the Pearl Trident") {
+            val card = MerfolkOfThePearlTrident
+
+            it("should be a 1/1 vanilla Merfolk") {
+                card.manaCost.toString() shouldBe "{U}"
+                card.cmc shouldBe 1
+                card.creatureStats?.basePower shouldBe 1
+                card.creatureStats?.baseToughness shouldBe 1
+                card.typeLine.subtypes shouldContain Subtype.MERFOLK
+                card.keywords shouldHaveSize 0
+            }
+        }
+    }
+
     describe("PortalSet object") {
-        it("should have 50 cards in the set") {
-            PortalSet.allCards shouldHaveSize 50
+        it("should have 60 cards in the set") {
+            PortalSet.allCards shouldHaveSize 60
         }
 
         it("should have correct set code") {

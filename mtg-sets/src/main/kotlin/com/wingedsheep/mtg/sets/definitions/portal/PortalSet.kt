@@ -18,7 +18,7 @@ object PortalSet {
     const val SET_NAME = "Portal"
 
     /**
-     * All cards in this set (first 50 implemented).
+     * All cards in this set (first 60 implemented).
      */
     val allCards = listOf(
         // Cards 1-10
@@ -75,7 +75,18 @@ object PortalSet {
         CloudSpirit,
         CommandOfUnsummoning,
         CoralEel,
-        CruelFate
+        CruelFate,
+        // Cards 51-60
+        DeepSeaSerpent,
+        DjinnOfTheLamp,
+        DejaVu,
+        Exhaustion,
+        Flux,
+        GiantOctopus,
+        HornedTurtle,
+        IngeniousThief,
+        ManOWar,
+        MerfolkOfThePearlTrident
     )
 
     /**

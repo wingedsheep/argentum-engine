@@ -338,3 +338,24 @@ data class CantBeBlockedExceptByKeyword(
 ) : StaticAbility {
     override val description: String = "can't be blocked except by creatures with ${requiredKeyword.displayName.lowercase()}"
 }
+
+// =============================================================================
+// Attack Restrictions
+// =============================================================================
+
+/**
+ * This creature can't attack unless defending player controls a land of a specific type.
+ * Used for Deep-Sea Serpent: "can't attack unless defending player controls an Island."
+ *
+ * @property landType The basic land type the defending player must control
+ * @property target What this ability applies to
+ */
+@Serializable
+data class CantAttackUnlessDefenderControlsLandType(
+    val landType: String,
+    val target: StaticTarget = StaticTarget.SourceCreature
+) : StaticAbility {
+    override val description: String = "can't attack unless defending player controls ${
+        if (landType.first().lowercaseChar() in "aeiou") "an" else "a"
+    } $landType"
+}

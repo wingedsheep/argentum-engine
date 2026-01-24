@@ -2108,3 +2108,34 @@ data class PreventCombatDamageFromEffect(
     override val description: String =
         "Prevent all combat damage that would be dealt by ${source.description.replaceFirstChar { it.lowercase() }}"
 }
+
+// =============================================================================
+// Flux/Wheel Variant Effects
+// =============================================================================
+
+/**
+ * Each player discards any number of cards, then draws that many cards. Then draw a card.
+ * Used for Flux.
+ */
+@Serializable
+data class FluxEffect(
+    val drawExtra: Int = 1
+) : Effect {
+    override val description: String = buildString {
+        append("Each player discards any number of cards, then draws that many cards")
+        if (drawExtra > 0) {
+            append(". Draw ${if (drawExtra == 1) "a card" else "$drawExtra cards"}")
+        }
+    }
+}
+
+/**
+ * Look at target player's hand.
+ * Used for Ingenious Thief and similar "peek" effects.
+ */
+@Serializable
+data class LookAtTargetHandEffect(
+    val target: EffectTarget = EffectTarget.AnyPlayer
+) : Effect {
+    override val description: String = "Look at ${target.description}'s hand"
+}
