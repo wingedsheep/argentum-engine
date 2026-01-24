@@ -84,12 +84,10 @@ function ActionButton({
         return '#00aa00'
       case 'CastSpell':
         return '#0066cc'
-      case 'ActivateManaAbility':
+      case 'ActivateAbility':
         return '#886600'
-      case 'DeclareAttacker':
-        return '#cc0000'
-      case 'DeclareBlocker':
-        return '#0088cc'
+      case 'PassPriority':
+        return '#888888'
       default:
         return '#666666'
     }

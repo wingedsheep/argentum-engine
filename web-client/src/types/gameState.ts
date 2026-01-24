@@ -269,11 +269,11 @@ export function remainingToughness(card: ClientCard): number | null {
  */
 export function findZone(
   state: ClientGameState,
-  type: ZoneType,
-  ownerId?: EntityId
+  zoneType: ZoneType,
+  ownerId: EntityId
 ): ClientZone | undefined {
   return state.zones.find(
-    (z) => z.zoneId.type === type && z.zoneId.ownerId === ownerId
+    (z) => z.zoneId.zoneType === zoneType && z.zoneId.ownerId === ownerId
   )
 }
 

@@ -976,7 +976,7 @@ class ActionProcessor(
 
     private fun executeTakeMulligan(state: GameState, action: TakeMulligan): ExecutionResult {
         return when (val result = mulliganHandler.handleTakeMulligan(state, action)) {
-            is EngineResult.Success -> ExecutionResult.success(result.newState, result.events)
+            is EngineResult.Success -> checkMulliganCompletion(result.newState, result.events)
             is EngineResult.Failure -> ExecutionResult.error(result.originalState, result.message)
             is EngineResult.PausedForDecision -> ExecutionResult.paused(result.partialState, result.decision, result.events)
             is EngineResult.GameOver -> ExecutionResult.success(result.finalState.copy(gameOver = true, winnerId = result.winnerId), result.events)
@@ -985,7 +985,7 @@ class ActionProcessor(
 
     private fun executeKeepHand(state: GameState, action: KeepHand): ExecutionResult {
         return when (val result = mulliganHandler.handleKeepHand(state, action)) {
-            is EngineResult.Success -> ExecutionResult.success(result.newState, result.events)
+            is EngineResult.Success -> checkMulliganCompletion(result.newState, result.events)
             is EngineResult.Failure -> ExecutionResult.error(result.originalState, result.message)
             is EngineResult.PausedForDecision -> ExecutionResult.paused(result.partialState, result.decision, result.events)
             is EngineResult.GameOver -> ExecutionResult.success(result.finalState.copy(gameOver = true, winnerId = result.winnerId), result.events)
@@ -994,10 +994,28 @@ class ActionProcessor(
 
     private fun executeBottomCards(state: GameState, action: BottomCards): ExecutionResult {
         return when (val result = mulliganHandler.handleBottomCards(state, action)) {
-            is EngineResult.Success -> ExecutionResult.success(result.newState, result.events)
+            is EngineResult.Success -> checkMulliganCompletion(result.newState, result.events)
             is EngineResult.Failure -> ExecutionResult.error(result.originalState, result.message)
             is EngineResult.PausedForDecision -> ExecutionResult.paused(result.partialState, result.decision, result.events)
             is EngineResult.GameOver -> ExecutionResult.success(result.finalState.copy(gameOver = true, winnerId = result.winnerId), result.events)
         }
+    }
+
+    /**
+     * Check if all mulligans are complete and advance the game to the first turn if so.
+     */
+    private fun checkMulliganCompletion(state: GameState, events: List<GameEvent>): ExecutionResult {
+        // If still in mulligan phase or someone needs to bottom cards, just return success
+        if (mulliganHandler.isInMulliganPhase(state) || mulliganHandler.needsBottomCards(state)) {
+            return ExecutionResult.success(state, events)
+        }
+
+        // All mulligans complete - start the first turn
+        // The game starts at UNTAP step, so advance to process the untap and get to upkeep
+        val advanceResult = turnManager.advanceStep(state)
+        return ExecutionResult.success(
+            advanceResult.newState,
+            events + advanceResult.events
+        )
     }
 }

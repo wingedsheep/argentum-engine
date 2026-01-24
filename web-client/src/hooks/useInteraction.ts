@@ -37,15 +37,8 @@ export function useInteraction() {
             return a.cardId === cardId
           case 'CastSpell':
             return a.cardId === cardId
-          case 'ActivateManaAbility':
-            return a.sourceEntityId === cardId
-          case 'Tap':
-          case 'Untap':
-            return a.entityId === cardId
-          case 'DeclareAttacker':
-            return a.creatureId === cardId
-          case 'DeclareBlocker':
-            return a.blockerId === cardId
+          case 'ActivateAbility':
+            return a.sourceId === cardId
           default:
             return false
         }
@@ -69,7 +62,7 @@ export function useInteraction() {
         const action = actions[0]!.action
 
         // Check if action requires targeting
-        if (action.type === 'CastSpell' && action.targets.length > 0) {
+        if (action.type === 'CastSpell' && (action.targets?.length ?? 0) > 0) {
           // For now, targets are pre-selected in legal actions
           // Future: would enter targeting mode
         }

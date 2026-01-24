@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.AlternativePaymentChoice
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
@@ -25,6 +26,7 @@ sealed interface GameAction {
  * Player passes priority.
  */
 @Serializable
+@SerialName("PassPriority")
 data class PassPriority(
     override val playerId: EntityId
 ) : GameAction
@@ -44,6 +46,7 @@ data class PassPriority(
  * @property alternativePayment Optional alternative payment choices (Delve, Convoke)
  */
 @Serializable
+@SerialName("CastSpell")
 data class CastSpell(
     override val playerId: EntityId,
     val cardId: EntityId,
@@ -67,6 +70,7 @@ sealed interface PaymentStrategy {
      * The engine will emit TappedEvents for each source used.
      */
     @Serializable
+    @SerialName("AutoPay")
     data object AutoPay : PaymentStrategy
 
     /**
@@ -74,6 +78,7 @@ sealed interface PaymentStrategy {
      * Engine verifies the ManaPool has sufficient mana and deducts it.
      */
     @Serializable
+    @SerialName("FromPool")
     data object FromPool : PaymentStrategy
 
     /**
@@ -83,6 +88,7 @@ sealed interface PaymentStrategy {
      * @property manaAbilitiesToActivate Entity IDs of permanents whose mana abilities to activate
      */
     @Serializable
+    @SerialName("Explicit")
     data class Explicit(val manaAbilitiesToActivate: List<EntityId>) : PaymentStrategy
 }
 
@@ -94,6 +100,7 @@ sealed interface PaymentStrategy {
  * Player activates an ability.
  */
 @Serializable
+@SerialName("ActivateAbility")
 data class ActivateAbility(
     override val playerId: EntityId,
     val sourceId: EntityId,
@@ -109,6 +116,7 @@ data class ActivateAbility(
  * Player plays a land.
  */
 @Serializable
+@SerialName("PlayLand")
 data class PlayLand(
     override val playerId: EntityId,
     val cardId: EntityId
@@ -122,6 +130,7 @@ data class PlayLand(
  * Player declares attackers.
  */
 @Serializable
+@SerialName("DeclareAttackers")
 data class DeclareAttackers(
     override val playerId: EntityId,
     val attackers: Map<EntityId, EntityId>  // attacker -> defending player
@@ -131,6 +140,7 @@ data class DeclareAttackers(
  * Player declares blockers.
  */
 @Serializable
+@SerialName("DeclareBlockers")
 data class DeclareBlockers(
     override val playerId: EntityId,
     val blockers: Map<EntityId, List<EntityId>>  // blocker -> list of attackers
@@ -140,6 +150,7 @@ data class DeclareBlockers(
  * Player orders blockers for an attacker.
  */
 @Serializable
+@SerialName("OrderBlockers")
 data class OrderBlockers(
     override val playerId: EntityId,
     val attackerId: EntityId,
@@ -154,6 +165,7 @@ data class OrderBlockers(
  * Player makes a choice (modal spells, may effects, etc.).
  */
 @Serializable
+@SerialName("MakeChoice")
 data class MakeChoice(
     override val playerId: EntityId,
     val decisionId: String,
@@ -164,6 +176,7 @@ data class MakeChoice(
  * Player selects targets for a triggered ability.
  */
 @Serializable
+@SerialName("SelectTargets")
 data class SelectTargets(
     override val playerId: EntityId,
     val abilityEntityId: EntityId,
@@ -178,6 +191,7 @@ data class SelectTargets(
  * Player chooses a color for "add one mana of any color" effects.
  */
 @Serializable
+@SerialName("ChooseManaColor")
 data class ChooseManaColor(
     override val playerId: EntityId,
     val color: Color
@@ -194,6 +208,7 @@ data class ChooseManaColor(
  * The response must match the type expected by the pending decision.
  */
 @Serializable
+@SerialName("SubmitDecision")
 data class SubmitDecision(
     override val playerId: EntityId,
     val response: DecisionResponse
@@ -208,6 +223,7 @@ data class SubmitDecision(
  * and drawing a new hand of (7 - mulligans taken) cards.
  */
 @Serializable
+@SerialName("TakeMulligan")
 data class TakeMulligan(
     override val playerId: EntityId
 ) : GameAction
@@ -219,6 +235,7 @@ data class TakeMulligan(
  * puts that many cards from their hand on the bottom of their library.
  */
 @Serializable
+@SerialName("KeepHand")
 data class KeepHand(
     override val playerId: EntityId
 ) : GameAction
@@ -230,6 +247,7 @@ data class KeepHand(
  * @property cardIds The cards to put on bottom (in the order they should be placed)
  */
 @Serializable
+@SerialName("BottomCards")
 data class BottomCards(
     override val playerId: EntityId,
     val cardIds: List<EntityId>
@@ -243,6 +261,7 @@ data class BottomCards(
  * Player concedes the game.
  */
 @Serializable
+@SerialName("Concede")
 data class Concede(
     override val playerId: EntityId
 ) : GameAction

@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
@@ -21,6 +22,7 @@ sealed interface GameEvent
  * An entity moved between zones.
  */
 @Serializable
+@SerialName("ZoneChangeEvent")
 data class ZoneChangeEvent(
     val entityId: EntityId,
     val entityName: String,
@@ -37,6 +39,7 @@ data class ZoneChangeEvent(
  * A player's life total changed.
  */
 @Serializable
+@SerialName("LifeChangedEvent")
 data class LifeChangedEvent(
     val playerId: EntityId,
     val oldLife: Int,
@@ -60,6 +63,7 @@ enum class LifeChangeReason {
  * Damage was dealt.
  */
 @Serializable
+@SerialName("DamageDealtEvent")
 data class DamageDealtEvent(
     val sourceId: EntityId?,
     val targetId: EntityId,
@@ -75,6 +79,7 @@ data class DamageDealtEvent(
  * A spell was cast.
  */
 @Serializable
+@SerialName("SpellCastEvent")
 data class SpellCastEvent(
     val spellEntityId: EntityId,
     val cardName: String,
@@ -85,6 +90,7 @@ data class SpellCastEvent(
  * An ability was activated.
  */
 @Serializable
+@SerialName("AbilityActivatedEvent")
 data class AbilityActivatedEvent(
     val sourceId: EntityId,
     val sourceName: String,
@@ -95,6 +101,7 @@ data class AbilityActivatedEvent(
  * An ability triggered.
  */
 @Serializable
+@SerialName("AbilityTriggeredEvent")
 data class AbilityTriggeredEvent(
     val sourceId: EntityId,
     val sourceName: String,
@@ -106,6 +113,7 @@ data class AbilityTriggeredEvent(
  * A spell or ability resolved.
  */
 @Serializable
+@SerialName("ResolvedEvent")
 data class ResolvedEvent(
     val entityId: EntityId,
     val name: String
@@ -115,6 +123,7 @@ data class ResolvedEvent(
  * A spell was countered.
  */
 @Serializable
+@SerialName("SpellCounteredEvent")
 data class SpellCounteredEvent(
     val spellEntityId: EntityId,
     val cardName: String
@@ -124,6 +133,7 @@ data class SpellCounteredEvent(
  * A spell fizzled (all targets became invalid).
  */
 @Serializable
+@SerialName("SpellFizzledEvent")
 data class SpellFizzledEvent(
     val spellEntityId: EntityId,
     val cardName: String,
@@ -134,6 +144,7 @@ data class SpellFizzledEvent(
  * An ability resolved.
  */
 @Serializable
+@SerialName("AbilityResolvedEvent")
 data class AbilityResolvedEvent(
     val sourceId: EntityId,
     val description: String
@@ -143,6 +154,7 @@ data class AbilityResolvedEvent(
  * An ability fizzled (all targets became invalid).
  */
 @Serializable
+@SerialName("AbilityFizzledEvent")
 data class AbilityFizzledEvent(
     val sourceId: EntityId,
     val description: String,
@@ -157,6 +169,7 @@ data class AbilityFizzledEvent(
  * Attackers were declared.
  */
 @Serializable
+@SerialName("AttackersDeclaredEvent")
 data class AttackersDeclaredEvent(
     val attackers: List<EntityId>
 ) : GameEvent
@@ -165,6 +178,7 @@ data class AttackersDeclaredEvent(
  * Blockers were declared.
  */
 @Serializable
+@SerialName("BlockersDeclaredEvent")
 data class BlockersDeclaredEvent(
     val blockers: Map<EntityId, List<EntityId>>  // blocker -> blocked attackers
 ) : GameEvent
@@ -173,6 +187,7 @@ data class BlockersDeclaredEvent(
  * Player ordered blockers for damage assignment.
  */
 @Serializable
+@SerialName("BlockerOrderDeclaredEvent")
 data class BlockerOrderDeclaredEvent(
     val attackerId: EntityId,
     val orderedBlockers: List<EntityId>  // First in list receives damage first
@@ -182,6 +197,7 @@ data class BlockerOrderDeclaredEvent(
  * Combat damage was assigned.
  */
 @Serializable
+@SerialName("DamageAssignedEvent")
 data class DamageAssignedEvent(
     val attackerId: EntityId,
     val assignments: Map<EntityId, Int>  // target -> damage amount
@@ -195,6 +211,7 @@ data class DamageAssignedEvent(
  * The phase changed.
  */
 @Serializable
+@SerialName("PhaseChangedEvent")
 data class PhaseChangedEvent(
     val newPhase: Phase
 ) : GameEvent
@@ -203,6 +220,7 @@ data class PhaseChangedEvent(
  * The step changed.
  */
 @Serializable
+@SerialName("StepChangedEvent")
 data class StepChangedEvent(
     val newStep: Step
 ) : GameEvent
@@ -211,6 +229,7 @@ data class StepChangedEvent(
  * The turn changed.
  */
 @Serializable
+@SerialName("TurnChangedEvent")
 data class TurnChangedEvent(
     val turnNumber: Int,
     val activePlayerId: EntityId
@@ -220,6 +239,7 @@ data class TurnChangedEvent(
  * Priority changed to a player.
  */
 @Serializable
+@SerialName("PriorityChangedEvent")
 data class PriorityChangedEvent(
     val playerId: EntityId
 ) : GameEvent
@@ -232,6 +252,7 @@ data class PriorityChangedEvent(
  * A permanent was tapped.
  */
 @Serializable
+@SerialName("TappedEvent")
 data class TappedEvent(
     val entityId: EntityId,
     val entityName: String
@@ -241,6 +262,7 @@ data class TappedEvent(
  * A permanent was untapped.
  */
 @Serializable
+@SerialName("UntappedEvent")
 data class UntappedEvent(
     val entityId: EntityId,
     val entityName: String
@@ -250,6 +272,7 @@ data class UntappedEvent(
  * Counters were added to a permanent.
  */
 @Serializable
+@SerialName("CountersAddedEvent")
 data class CountersAddedEvent(
     val entityId: EntityId,
     val counterType: String,
@@ -260,6 +283,7 @@ data class CountersAddedEvent(
  * Counters were removed from a permanent.
  */
 @Serializable
+@SerialName("CountersRemovedEvent")
 data class CountersRemovedEvent(
     val entityId: EntityId,
     val counterType: String,
@@ -274,6 +298,7 @@ data class CountersRemovedEvent(
  * Cards were drawn.
  */
 @Serializable
+@SerialName("CardsDrawnEvent")
 data class CardsDrawnEvent(
     val playerId: EntityId,
     val count: Int,
@@ -284,6 +309,7 @@ data class CardsDrawnEvent(
  * A player failed to draw (empty library).
  */
 @Serializable
+@SerialName("DrawFailedEvent")
 data class DrawFailedEvent(
     val playerId: EntityId,
     val reason: String
@@ -293,6 +319,7 @@ data class DrawFailedEvent(
  * Cards were discarded.
  */
 @Serializable
+@SerialName("CardsDiscardedEvent")
 data class CardsDiscardedEvent(
     val playerId: EntityId,
     val cardIds: List<EntityId>
@@ -302,6 +329,7 @@ data class CardsDiscardedEvent(
  * A player needs to discard cards during cleanup.
  */
 @Serializable
+@SerialName("DiscardRequiredEvent")
 data class DiscardRequiredEvent(
     val playerId: EntityId,
     val count: Int
@@ -311,6 +339,7 @@ data class DiscardRequiredEvent(
  * Library was shuffled.
  */
 @Serializable
+@SerialName("LibraryShuffledEvent")
 data class LibraryShuffledEvent(
     val playerId: EntityId
 ) : GameEvent
@@ -323,6 +352,7 @@ data class LibraryShuffledEvent(
  * The engine paused and is awaiting a decision.
  */
 @Serializable
+@SerialName("DecisionRequestedEvent")
 data class DecisionRequestedEvent(
     val decisionId: String,
     val playerId: EntityId,
@@ -334,6 +364,7 @@ data class DecisionRequestedEvent(
  * A player submitted a decision response.
  */
 @Serializable
+@SerialName("DecisionSubmittedEvent")
 data class DecisionSubmittedEvent(
     val decisionId: String,
     val playerId: EntityId
@@ -347,6 +378,7 @@ data class DecisionSubmittedEvent(
  * The game ended.
  */
 @Serializable
+@SerialName("GameEndedEvent")
 data class GameEndedEvent(
     val winnerId: EntityId?,
     val reason: GameEndReason
@@ -366,6 +398,7 @@ enum class GameEndReason {
  * A player lost the game.
  */
 @Serializable
+@SerialName("PlayerLostEvent")
 data class PlayerLostEvent(
     val playerId: EntityId,
     val reason: GameEndReason
@@ -379,6 +412,7 @@ data class PlayerLostEvent(
  * A creature was destroyed.
  */
 @Serializable
+@SerialName("CreatureDestroyedEvent")
 data class CreatureDestroyedEvent(
     val entityId: EntityId,
     val name: String,
@@ -393,6 +427,7 @@ data class CreatureDestroyedEvent(
  * Mana was added to a player's pool.
  */
 @Serializable
+@SerialName("ManaAddedEvent")
 data class ManaAddedEvent(
     val playerId: EntityId,
     val sourceId: EntityId?,
@@ -411,6 +446,7 @@ data class ManaAddedEvent(
  * Mana was spent from a player's pool.
  */
 @Serializable
+@SerialName("ManaSpentEvent")
 data class ManaSpentEvent(
     val playerId: EntityId,
     val reason: String,

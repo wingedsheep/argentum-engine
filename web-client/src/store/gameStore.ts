@@ -155,13 +155,12 @@ function shouldAutoPass(
     return false
   }
 
-  // Check if there are any meaningful actions besides PassPriority and mana abilities
-  // Meaningful actions include: PlayLand, CastSpell, ActivateAbility (non-mana), DeclareAttacker, DeclareBlocker
+  // Check if there are any meaningful actions besides PassPriority
+  // Meaningful actions include: PlayLand, CastSpell, ActivateAbility, etc.
   const hasMeaningfulActions = legalActions.some((a) => {
     const type = a.action.type
-    // PassPriority and mana abilities are not considered "meaningful" for auto-pass
+    // PassPriority is not considered "meaningful" for auto-pass
     if (type === 'PassPriority') return false
-    if (type === 'ActivateManaAbility') return false
     // Everything else is meaningful
     return true
   })

@@ -10,14 +10,8 @@ export interface CategorizedActions {
   landPlays: LegalActionInfo[]
   /** Spells that can be cast */
   spellCasts: LegalActionInfo[]
-  /** Mana abilities that can be activated */
-  manaAbilities: LegalActionInfo[]
-  /** Other activated abilities */
+  /** Activated abilities (including mana abilities) */
   activatedAbilities: LegalActionInfo[]
-  /** Attack declarations */
-  attackers: LegalActionInfo[]
-  /** Block declarations */
-  blockers: LegalActionInfo[]
   /** Pass priority action */
   passPriority: LegalActionInfo | null
   /** All other actions */
@@ -34,10 +28,7 @@ export function useCategorizedActions(): CategorizedActions {
     const result: CategorizedActions = {
       landPlays: [],
       spellCasts: [],
-      manaAbilities: [],
       activatedAbilities: [],
-      attackers: [],
-      blockers: [],
       passPriority: null,
       other: [],
     }
@@ -50,14 +41,8 @@ export function useCategorizedActions(): CategorizedActions {
         case 'CastSpell':
           result.spellCasts.push(action)
           break
-        case 'ActivateManaAbility':
-          result.manaAbilities.push(action)
-          break
-        case 'DeclareAttacker':
-          result.attackers.push(action)
-          break
-        case 'DeclareBlocker':
-          result.blockers.push(action)
+        case 'ActivateAbility':
+          result.activatedAbilities.push(action)
           break
         case 'PassPriority':
           result.passPriority = action
@@ -87,15 +72,8 @@ export function useCardActions(cardId: EntityId | null): LegalActionInfo[] {
           return a.cardId === cardId
         case 'CastSpell':
           return a.cardId === cardId
-        case 'ActivateManaAbility':
-          return a.sourceEntityId === cardId
-        case 'Tap':
-        case 'Untap':
-          return a.entityId === cardId
-        case 'DeclareAttacker':
-          return a.creatureId === cardId
-        case 'DeclareBlocker':
-          return a.blockerId === cardId
+        case 'ActivateAbility':
+          return a.sourceId === cardId
         default:
           return false
       }
@@ -117,50 +95,6 @@ export function useCanPlayLand(): boolean {
 export function useCanCastSpell(): boolean {
   const actions = useCategorizedActions()
   return actions.spellCasts.length > 0
-}
-
-/**
- * Hook to check if the player can attack.
- */
-export function useCanAttack(): boolean {
-  const actions = useCategorizedActions()
-  return actions.attackers.length > 0
-}
-
-/**
- * Hook to check if the player can block.
- */
-export function useCanBlock(): boolean {
-  const actions = useCategorizedActions()
-  return actions.blockers.length > 0
-}
-
-/**
- * Hook to get cards that can attack.
- */
-export function useAttackableCreatures(): EntityId[] {
-  const actions = useCategorizedActions()
-  return useMemo(
-    () =>
-      actions.attackers
-        .map((a) => (a.action as { creatureId: EntityId }).creatureId)
-        .filter((id): id is EntityId => id !== undefined),
-    [actions.attackers]
-  )
-}
-
-/**
- * Hook to get cards that can block.
- */
-export function useBlockableCreatures(): EntityId[] {
-  const actions = useCategorizedActions()
-  return useMemo(
-    () =>
-      actions.blockers
-        .map((a) => (a.action as { blockerId: EntityId }).blockerId)
-        .filter((id): id is EntityId => id !== undefined),
-    [actions.blockers]
-  )
 }
 
 /**
@@ -194,15 +128,8 @@ function getActionCardId(action: GameAction): EntityId | null {
       return action.cardId
     case 'CastSpell':
       return action.cardId
-    case 'ActivateManaAbility':
-      return action.sourceEntityId
-    case 'Tap':
-    case 'Untap':
-      return action.entityId
-    case 'DeclareAttacker':
-      return action.creatureId
-    case 'DeclareBlocker':
-      return action.blockerId
+    case 'ActivateAbility':
+      return action.sourceId
     default:
       return null
   }

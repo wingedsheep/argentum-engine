@@ -1,5 +1,4 @@
-import { Color, CombatDamageStep } from './enums'
-import { EntityId, ZoneId } from './entities'
+import { EntityId } from './entities'
 
 /**
  * Game actions that can be submitted to the server.
@@ -9,467 +8,122 @@ import { EntityId, ZoneId } from './entities'
  * in the legalActions list and submits them back unchanged.
  */
 export type GameAction =
-  // Life Actions
-  | GainLifeAction
-  | LoseLifeAction
-  | SetLifeAction
-  | DealDamageToPlayerAction
-  | DealDamageToCreatureAction
-  // Mana Actions
-  | AddManaAction
-  | AddColorlessManaAction
-  | EmptyManaPoolAction
-  | ActivateManaAbilityAction
-  // Card Drawing Actions
-  | DrawCardAction
-  | DiscardCardAction
-  // Zone Movement Actions
-  | MoveEntityAction
-  | PutOntoBattlefieldAction
-  | DestroyPermanentAction
-  | SacrificePermanentAction
-  | ExilePermanentAction
-  | ReturnToHandAction
-  // Tap/Untap Actions
-  | TapAction
-  | UntapAction
-  | UntapAllAction
-  // Counter Actions
-  | AddCountersAction
-  | RemoveCountersAction
-  | AddPoisonCountersAction
-  // Summoning Sickness Actions
-  | RemoveSummoningSicknessAction
-  | RemoveAllSummoningSicknessAction
-  // Land Actions
-  | PlayLandAction
-  | ResetLandsPlayedAction
-  // Library Actions
-  | ShuffleLibraryAction
-  // Combat Actions
-  | BeginCombatAction
-  | DeclareAttackerAction
-  | DeclareBlockerAction
-  | EndCombatAction
-  | OrderBlockersAction
-  | ResolveCombatDamageAction
-  // Game Flow Actions
   | PassPriorityAction
-  | EndGameAction
-  | PlayerLosesAction
-  | ResolveLegendRuleAction
-  // Stack Resolution Actions
-  | ResolveTopOfStackAction
   | CastSpellAction
-  // Attachment Actions
-  | AttachAction
-  | DetachAction
-  // State-Based Actions
-  | CheckStateBasedActionsAction
-  | ClearDamageAction
-  // Turn/Step Actions
-  | PerformCleanupStepAction
-  | ExpireEndOfCombatEffectsAction
-  | ExpireEffectsForPermanentAction
-  | ResolveCleanupDiscardAction
-  // Decision Actions
+  | ActivateAbilityAction
+  | PlayLandAction
+  | DeclareAttackersAction
+  | DeclareBlockersAction
+  | OrderBlockersAction
+  | MakeChoiceAction
+  | SelectTargetsAction
+  | ChooseManaColorAction
   | SubmitDecisionAction
+  | TakeMulliganAction
+  | KeepHandAction
+  | BottomCardsAction
+  | ConcedeAction
 
-// ============================================================================
-// Life Actions
-// ============================================================================
-
-export interface GainLifeAction {
-  readonly type: 'GainLife'
-  readonly playerId: EntityId
-  readonly amount: number
-  readonly description: string
-}
-
-export interface LoseLifeAction {
-  readonly type: 'LoseLife'
-  readonly playerId: EntityId
-  readonly amount: number
-  readonly description: string
-}
-
-export interface SetLifeAction {
-  readonly type: 'SetLife'
-  readonly playerId: EntityId
-  readonly amount: number
-  readonly description: string
-}
-
-export interface DealDamageToPlayerAction {
-  readonly type: 'DealDamageToPlayer'
-  readonly targetPlayerId: EntityId
-  readonly amount: number
-  readonly sourceEntityId: EntityId | null
-  readonly description: string
-}
-
-export interface DealDamageToCreatureAction {
-  readonly type: 'DealDamageToCreature'
-  readonly targetEntityId: EntityId
-  readonly amount: number
-  readonly sourceEntityId: EntityId | null
-  readonly description: string
-}
-
-// ============================================================================
-// Mana Actions
-// ============================================================================
-
-export interface AddManaAction {
-  readonly type: 'AddMana'
-  readonly playerId: EntityId
-  readonly color: Color
-  readonly amount: number
-  readonly description: string
-}
-
-export interface AddColorlessManaAction {
-  readonly type: 'AddColorlessMana'
-  readonly playerId: EntityId
-  readonly amount: number
-  readonly description: string
-}
-
-export interface EmptyManaPoolAction {
-  readonly type: 'EmptyManaPool'
-  readonly playerId: EntityId
-  readonly description: string
-}
-
-export interface ActivateManaAbilityAction {
-  readonly type: 'ActivateManaAbility'
-  readonly sourceEntityId: EntityId
-  readonly abilityIndex: number
-  readonly playerId: EntityId
-  readonly description: string
-}
-
-// ============================================================================
-// Card Drawing Actions
-// ============================================================================
-
-export interface DrawCardAction {
-  readonly type: 'DrawCard'
-  readonly playerId: EntityId
-  readonly count: number
-  readonly description: string
-}
-
-export interface DiscardCardAction {
-  readonly type: 'DiscardCard'
-  readonly playerId: EntityId
-  readonly cardId: EntityId
-  readonly description: string
-}
-
-// ============================================================================
-// Zone Movement Actions
-// ============================================================================
-
-export interface MoveEntityAction {
-  readonly type: 'MoveEntity'
-  readonly entityId: EntityId
-  readonly fromZone: ZoneId
-  readonly toZone: ZoneId
-  readonly toTop: boolean
-  readonly description: string
-}
-
-export interface PutOntoBattlefieldAction {
-  readonly type: 'PutOntoBattlefield'
-  readonly entityId: EntityId
-  readonly controllerId: EntityId
-  readonly tapped: boolean
-  readonly description: string
-}
-
-export interface DestroyPermanentAction {
-  readonly type: 'DestroyPermanent'
-  readonly entityId: EntityId
-  readonly description: string
-}
-
-export interface SacrificePermanentAction {
-  readonly type: 'SacrificePermanent'
-  readonly entityId: EntityId
-  readonly controllerId: EntityId
-  readonly description: string
-}
-
-export interface ExilePermanentAction {
-  readonly type: 'ExilePermanent'
-  readonly entityId: EntityId
-  readonly description: string
-}
-
-export interface ReturnToHandAction {
-  readonly type: 'ReturnToHand'
-  readonly entityId: EntityId
-  readonly description: string
-}
-
-// ============================================================================
-// Tap/Untap Actions
-// ============================================================================
-
-export interface TapAction {
-  readonly type: 'Tap'
-  readonly entityId: EntityId
-  readonly description: string
-}
-
-export interface UntapAction {
-  readonly type: 'Untap'
-  readonly entityId: EntityId
-  readonly description: string
-}
-
-export interface UntapAllAction {
-  readonly type: 'UntapAll'
-  readonly controllerId: EntityId
-  readonly description: string
-}
-
-// ============================================================================
-// Counter Actions
-// ============================================================================
-
-export interface AddCountersAction {
-  readonly type: 'AddCounters'
-  readonly entityId: EntityId
-  readonly counterType: string
-  readonly amount: number
-  readonly description: string
-}
-
-export interface RemoveCountersAction {
-  readonly type: 'RemoveCounters'
-  readonly entityId: EntityId
-  readonly counterType: string
-  readonly amount: number
-  readonly description: string
-}
-
-export interface AddPoisonCountersAction {
-  readonly type: 'AddPoisonCounters'
-  readonly playerId: EntityId
-  readonly amount: number
-  readonly description: string
-}
-
-// ============================================================================
-// Summoning Sickness Actions
-// ============================================================================
-
-export interface RemoveSummoningSicknessAction {
-  readonly type: 'RemoveSummoningSickness'
-  readonly entityId: EntityId
-  readonly description: string
-}
-
-export interface RemoveAllSummoningSicknessAction {
-  readonly type: 'RemoveAllSummoningSickness'
-  readonly controllerId: EntityId
-  readonly description: string
-}
-
-// ============================================================================
-// Land Actions
-// ============================================================================
-
-export interface PlayLandAction {
-  readonly type: 'PlayLand'
-  readonly cardId: EntityId
-  readonly playerId: EntityId
-  readonly description: string
-}
-
-export interface ResetLandsPlayedAction {
-  readonly type: 'ResetLandsPlayed'
-  readonly playerId: EntityId
-  readonly description: string
-}
-
-// ============================================================================
-// Library Actions
-// ============================================================================
-
-export interface ShuffleLibraryAction {
-  readonly type: 'ShuffleLibrary'
-  readonly playerId: EntityId
-  readonly description: string
-}
-
-// ============================================================================
-// Combat Actions
-// ============================================================================
-
-export interface BeginCombatAction {
-  readonly type: 'BeginCombat'
-  readonly attackingPlayerId: EntityId
-  readonly defendingPlayerId: EntityId
-  readonly description: string
-}
-
-export interface DeclareAttackerAction {
-  readonly type: 'DeclareAttacker'
-  readonly creatureId: EntityId
-  readonly controllerId: EntityId
-  readonly description: string
-}
-
-export interface DeclareBlockerAction {
-  readonly type: 'DeclareBlocker'
-  readonly blockerId: EntityId
-  readonly attackerId: EntityId
-  readonly controllerId: EntityId
-  readonly description: string
-}
-
-export interface EndCombatAction {
-  readonly type: 'EndCombat'
-  readonly playerId: EntityId
-  readonly description: string
-}
-
-export interface OrderBlockersAction {
-  readonly type: 'OrderBlockers'
-  readonly attackerId: EntityId
-  readonly orderedBlockerIds: readonly EntityId[]
-  readonly playerId: EntityId
-  readonly description: string
-}
-
-export interface ResolveCombatDamageAction {
-  readonly type: 'ResolveCombatDamage'
-  readonly step: CombatDamageStep
-  readonly preventionEffectIds: readonly EntityId[]
-  readonly description: string
-}
-
-// ============================================================================
-// Game Flow Actions
-// ============================================================================
+// =============================================================================
+// Priority Actions
+// =============================================================================
 
 export interface PassPriorityAction {
   readonly type: 'PassPriority'
   readonly playerId: EntityId
-  readonly description: string
 }
 
-export interface EndGameAction {
-  readonly type: 'EndGame'
-  readonly winnerId: EntityId | null
-  readonly description: string
-}
-
-export interface PlayerLosesAction {
-  readonly type: 'PlayerLoses'
-  readonly playerId: EntityId
-  readonly reason: string
-  readonly description: string
-}
-
-export interface ResolveLegendRuleAction {
-  readonly type: 'ResolveLegendRule'
-  readonly controllerId: EntityId
-  readonly legendaryName: string
-  readonly keepEntityId: EntityId
-  readonly description: string
-}
-
-// ============================================================================
-// Stack Resolution Actions
-// ============================================================================
-
-export interface ResolveTopOfStackAction {
-  readonly type: 'ResolveTopOfStack'
-  readonly description: string
-}
+// =============================================================================
+// Spell Actions
+// =============================================================================
 
 export interface ChosenTarget {
   readonly targetId: EntityId
-  readonly targetType: 'creature' | 'player' | 'permanent' | 'spell' | 'card'
+  readonly targetType: string
 }
 
 export interface CastSpellAction {
   readonly type: 'CastSpell'
+  readonly playerId: EntityId
   readonly cardId: EntityId
-  readonly casterId: EntityId
-  readonly fromZone: ZoneId
-  readonly targets: readonly ChosenTarget[]
-  readonly xValue: number | null
-  readonly description: string
+  readonly targets?: readonly ChosenTarget[]
+  readonly xValue?: number | null
+  readonly paymentStrategy?: PaymentStrategy
 }
 
-// ============================================================================
-// Attachment Actions
-// ============================================================================
+export type PaymentStrategy =
+  | { readonly type: 'AutoPay' }
+  | { readonly type: 'FromPool' }
+  | { readonly type: 'Explicit'; readonly manaAbilitiesToActivate: readonly EntityId[] }
 
-export interface AttachAction {
-  readonly type: 'Attach'
-  readonly attachmentId: EntityId
-  readonly targetId: EntityId
-  readonly description: string
-}
+// =============================================================================
+// Ability Actions
+// =============================================================================
 
-export interface DetachAction {
-  readonly type: 'Detach'
-  readonly attachmentId: EntityId
-  readonly description: string
-}
-
-// ============================================================================
-// State-Based Actions
-// ============================================================================
-
-export interface CheckStateBasedActionsAction {
-  readonly type: 'CheckStateBasedActions'
-  readonly description: string
-}
-
-export interface ClearDamageAction {
-  readonly type: 'ClearDamage'
-  readonly entityId: EntityId | null
-  readonly description: string
-}
-
-// ============================================================================
-// Turn/Step Actions
-// ============================================================================
-
-export interface PerformCleanupStepAction {
-  readonly type: 'PerformCleanupStep'
+export interface ActivateAbilityAction {
+  readonly type: 'ActivateAbility'
   readonly playerId: EntityId
-  readonly description: string
+  readonly sourceId: EntityId
+  readonly abilityId: string
+  readonly targets?: readonly ChosenTarget[]
 }
 
-export interface ExpireEndOfCombatEffectsAction {
-  readonly type: 'ExpireEndOfCombatEffects'
-  readonly description: string
-}
+// =============================================================================
+// Land Actions
+// =============================================================================
 
-export interface ExpireEffectsForPermanentAction {
-  readonly type: 'ExpireEffectsForPermanent'
-  readonly permanentId: EntityId
-  readonly description: string
-}
-
-export interface ResolveCleanupDiscardAction {
-  readonly type: 'ResolveCleanupDiscard'
+export interface PlayLandAction {
+  readonly type: 'PlayLand'
   readonly playerId: EntityId
-  readonly cardsToDiscard: readonly EntityId[]
-  readonly description: string
+  readonly cardId: EntityId
 }
 
-// ============================================================================
+// =============================================================================
+// Combat Actions
+// =============================================================================
+
+export interface DeclareAttackersAction {
+  readonly type: 'DeclareAttackers'
+  readonly playerId: EntityId
+  readonly attackers: Record<EntityId, EntityId>  // attacker -> defending player
+}
+
+export interface DeclareBlockersAction {
+  readonly type: 'DeclareBlockers'
+  readonly playerId: EntityId
+  readonly blockers: Record<EntityId, readonly EntityId[]>  // blocker -> attackers
+}
+
+export interface OrderBlockersAction {
+  readonly type: 'OrderBlockers'
+  readonly playerId: EntityId
+  readonly attackerId: EntityId
+  readonly orderedBlockers: readonly EntityId[]
+}
+
+// =============================================================================
 // Decision Actions
-// ============================================================================
+// =============================================================================
+
+export interface MakeChoiceAction {
+  readonly type: 'MakeChoice'
+  readonly playerId: EntityId
+  readonly decisionId: string
+  readonly choiceIndex: number
+}
+
+export interface SelectTargetsAction {
+  readonly type: 'SelectTargets'
+  readonly playerId: EntityId
+  readonly abilityEntityId: EntityId
+  readonly targets: readonly ChosenTarget[]
+}
+
+export interface ChooseManaColorAction {
+  readonly type: 'ChooseManaColor'
+  readonly playerId: EntityId
+  readonly color: string
+}
 
 export interface DecisionResponse {
   readonly decisionId: string
@@ -480,19 +134,48 @@ export interface DecisionResponse {
 
 export interface SubmitDecisionAction {
   readonly type: 'SubmitDecision'
+  readonly playerId: EntityId
   readonly response: DecisionResponse
-  readonly description: string
 }
 
-// ============================================================================
+// =============================================================================
+// Mulligan Actions
+// =============================================================================
+
+export interface TakeMulliganAction {
+  readonly type: 'TakeMulligan'
+  readonly playerId: EntityId
+}
+
+export interface KeepHandAction {
+  readonly type: 'KeepHand'
+  readonly playerId: EntityId
+}
+
+export interface BottomCardsAction {
+  readonly type: 'BottomCards'
+  readonly playerId: EntityId
+  readonly cardIds: readonly EntityId[]
+}
+
+// =============================================================================
+// Concession
+// =============================================================================
+
+export interface ConcedeAction {
+  readonly type: 'Concede'
+  readonly playerId: EntityId
+}
+
+// =============================================================================
 // Helper Functions
-// ============================================================================
+// =============================================================================
 
 /**
  * Get the action type for display.
  */
 export function getActionDisplayName(action: GameAction): string {
-  return action.description
+  return action.type
 }
 
 /**
@@ -500,7 +183,7 @@ export function getActionDisplayName(action: GameAction): string {
  */
 export function actionRequiresTargets(action: GameAction): boolean {
   if (action.type === 'CastSpell') {
-    return action.targets.length > 0
+    return (action.targets?.length ?? 0) > 0
   }
   return false
 }
@@ -514,15 +197,8 @@ export function getActionSubject(action: GameAction): EntityId | null {
       return action.cardId
     case 'CastSpell':
       return action.cardId
-    case 'ActivateManaAbility':
-      return action.sourceEntityId
-    case 'Tap':
-    case 'Untap':
-      return action.entityId
-    case 'DeclareAttacker':
-      return action.creatureId
-    case 'DeclareBlocker':
-      return action.blockerId
+    case 'ActivateAbility':
+      return action.sourceId
     default:
       return null
   }

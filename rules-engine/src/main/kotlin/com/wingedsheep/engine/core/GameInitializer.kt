@@ -15,11 +15,14 @@ import com.wingedsheep.sdk.model.EntityId
 
 /**
  * Configuration for a player joining a game.
+ *
+ * @property playerId Optional pre-existing player ID. If null, a new ID will be generated.
  */
 data class PlayerConfig(
     val name: String,
     val deck: Deck,
-    val startingLife: Int = 20
+    val startingLife: Int = 20,
+    val playerId: EntityId? = null
 )
 
 /**
@@ -86,7 +89,7 @@ class GameInitializer(
 
         // 1. Create player entities
         for (playerConfig in config.players) {
-            val playerId = EntityId.generate()
+            val playerId = playerConfig.playerId ?: EntityId.generate()
             playerIds.add(playerId)
 
             val playerContainer = ComponentContainer.of(
