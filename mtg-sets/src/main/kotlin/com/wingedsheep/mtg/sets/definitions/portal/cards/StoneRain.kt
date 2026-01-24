@@ -1,0 +1,32 @@
+package com.wingedsheep.mtg.sets.definitions.portal.cards
+
+import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.DestroyEffect
+import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.targeting.PermanentTargetFilter
+import com.wingedsheep.sdk.targeting.TargetPermanent
+
+/**
+ * Stone Rain
+ * {2}{R}
+ * Sorcery
+ * Destroy target land.
+ */
+val StoneRain = card("Stone Rain") {
+    manaCost = "{2}{R}"
+    typeLine = "Sorcery"
+
+    spell {
+        target = TargetPermanent(filter = PermanentTargetFilter.Land)
+        effect = DestroyEffect(EffectTarget.ContextTarget(0))
+    }
+
+    metadata {
+        rarity = Rarity.COMMON
+        collectorNumber = "151"
+        artist = "John Matson"
+        flavorText = "I cast a thousand tiny suns— Beware my many dawns."
+        imageUri = "https://cards.scryfall.io/normal/front/e/5/e5f0a1b2-c3d4-e5f6-a7b8-c9d0e1f2a3b4.jpg"
+    }
+}

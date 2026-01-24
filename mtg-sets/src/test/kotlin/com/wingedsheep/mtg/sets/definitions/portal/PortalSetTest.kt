@@ -2397,9 +2397,154 @@ class PortalSetTest : DescribeSpec({
         }
     }
 
+    describe("Portal Set - Cards 151-160") {
+
+        describe("Stone Rain") {
+            val card = StoneRain
+
+            it("should destroy target land") {
+                card.manaCost.toString() shouldBe "{2}{R}"
+                card.cmc shouldBe 3
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<DestroyEffect>()
+                card.targetRequirements shouldHaveSize 1
+            }
+        }
+
+        describe("Thundermare") {
+            val card = Thundermare
+
+            it("should be a 5/5 Elemental Horse with haste") {
+                card.manaCost.toString() shouldBe "{5}{R}"
+                card.cmc shouldBe 6
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.ELEMENTAL
+                card.typeLine.subtypes shouldContain Subtype.HORSE
+                card.creatureStats?.basePower shouldBe 5
+                card.creatureStats?.baseToughness shouldBe 5
+                card.keywords shouldContain Keyword.HASTE
+            }
+
+            it("should have ETB to tap all other creatures") {
+                card.triggeredAbilities shouldHaveSize 1
+                val trigger = card.triggeredAbilities.first()
+                trigger.trigger.shouldBeInstanceOf<OnEnterBattlefield>()
+                trigger.effect.shouldBeInstanceOf<TapAllCreaturesEffect>()
+            }
+        }
+
+        describe("Volcanic Dragon") {
+            val card = VolcanicDragon
+
+            it("should be a 4/4 Dragon with flying and haste") {
+                card.manaCost.toString() shouldBe "{4}{R}{R}"
+                card.cmc shouldBe 6
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.DRAGON
+                card.creatureStats?.basePower shouldBe 4
+                card.creatureStats?.baseToughness shouldBe 4
+                card.keywords shouldContain Keyword.FLYING
+                card.keywords shouldContain Keyword.HASTE
+            }
+        }
+
+        describe("Volcanic Hammer") {
+            val card = VolcanicHammer
+
+            it("should deal 3 damage to any target") {
+                card.manaCost.toString() shouldBe "{1}{R}"
+                card.cmc shouldBe 2
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<DealDamageEffect>()
+                val effect = card.spellEffect as DealDamageEffect
+                effect.amount shouldBe 3
+                card.targetRequirements shouldHaveSize 1
+            }
+        }
+
+        describe("Wall of Granite") {
+            val card = WallOfGranite
+
+            it("should be a 0/7 Wall with defender") {
+                card.manaCost.toString() shouldBe "{2}{R}"
+                card.cmc shouldBe 3
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.WALL
+                card.creatureStats?.basePower shouldBe 0
+                card.creatureStats?.baseToughness shouldBe 7
+                card.keywords shouldContain Keyword.DEFENDER
+            }
+        }
+
+        describe("Winds of Change") {
+            val card = WindsOfChange
+
+            it("should shuffle hands and redraw") {
+                card.manaCost.toString() shouldBe "{R}"
+                card.cmc shouldBe 1
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<WindsOfChangeEffect>()
+            }
+        }
+
+        describe("Alluring Scent") {
+            val card = AlluringScent
+
+            it("should force all creatures to block target") {
+                card.manaCost.toString() shouldBe "{1}{G}{G}"
+                card.cmc shouldBe 3
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<MustBeBlockedEffect>()
+                card.targetRequirements shouldHaveSize 1
+            }
+        }
+
+        describe("Anaconda") {
+            val card = Anaconda
+
+            it("should be a 3/3 Snake with swampwalk") {
+                card.manaCost.toString() shouldBe "{3}{G}"
+                card.cmc shouldBe 4
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.SNAKE
+                card.creatureStats?.basePower shouldBe 3
+                card.creatureStats?.baseToughness shouldBe 3
+                card.keywords shouldContain Keyword.SWAMPWALK
+            }
+        }
+
+        describe("Bee Sting") {
+            val card = BeeSting
+
+            it("should deal 2 damage to any target") {
+                card.manaCost.toString() shouldBe "{3}{G}"
+                card.cmc shouldBe 4
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<DealDamageEffect>()
+                val effect = card.spellEffect as DealDamageEffect
+                effect.amount shouldBe 2
+                card.targetRequirements shouldHaveSize 1
+            }
+        }
+
+        describe("Bull Hippo") {
+            val card = BullHippo
+
+            it("should be a 3/3 Hippo with islandwalk") {
+                card.manaCost.toString() shouldBe "{3}{G}"
+                card.cmc shouldBe 4
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.HIPPO
+                card.creatureStats?.basePower shouldBe 3
+                card.creatureStats?.baseToughness shouldBe 3
+                card.keywords shouldContain Keyword.ISLANDWALK
+            }
+        }
+    }
+
     describe("PortalSet object") {
-        it("should have 150 cards in the set") {
-            PortalSet.allCards shouldHaveSize 150
+        it("should have 160 cards in the set") {
+            PortalSet.allCards shouldHaveSize 160
         }
 
         it("should have correct set code") {

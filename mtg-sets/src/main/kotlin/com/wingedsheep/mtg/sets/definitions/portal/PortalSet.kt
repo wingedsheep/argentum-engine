@@ -185,7 +185,18 @@ object PortalSet {
         RainOfSalt,
         ScorchingSpear,
         ScorchingWinds,
-        SpittingEarth
+        SpittingEarth,
+        // Cards 151-160
+        StoneRain,
+        Thundermare,
+        VolcanicDragon,
+        VolcanicHammer,
+        WallOfGranite,
+        WindsOfChange,
+        AlluringScent,
+        Anaconda,
+        BeeSting,
+        BullHippo
     )
 
     /**

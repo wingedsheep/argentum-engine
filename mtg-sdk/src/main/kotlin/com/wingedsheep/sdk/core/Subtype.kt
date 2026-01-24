@@ -64,6 +64,8 @@ value class Subtype(val value: String) {
         val GIANT = Subtype("Giant")
         val GOAT = Subtype("Goat")
         val GRIFFIN = Subtype("Griffin")
+        val HIPPO = Subtype("Hippo")
+        val HORSE = Subtype("Horse")
         val LEVIATHAN = Subtype("Leviathan")
         val LIZARD = Subtype("Lizard")
         val MERCENARY = Subtype("Mercenary")

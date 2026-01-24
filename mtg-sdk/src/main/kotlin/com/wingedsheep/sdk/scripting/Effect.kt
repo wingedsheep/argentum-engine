@@ -2458,6 +2458,12 @@ sealed interface CreatureGroupFilter {
         override val description: String = "All creatures"
     }
 
+    /** All other creatures (except the source) */
+    @Serializable
+    data object AllOther : CreatureGroupFilter {
+        override val description: String = "All other creatures"
+    }
+
     /** Creatures you control with a specific color */
     @Serializable
     data class ColorYouControl(val color: Color) : CreatureGroupFilter {
@@ -2868,4 +2874,17 @@ data class TakeExtraTurnEffect(
             append(". At the beginning of that turn's end step, you lose the game")
         }
     }
+}
+
+// =============================================================================
+// Hand Manipulation Effects
+// =============================================================================
+
+/**
+ * Each player shuffles their hand into their library, then draws that many cards.
+ * Used for Winds of Change: "Each player shuffles the cards from their hand into their library, then draws that many cards."
+ */
+@Serializable
+data object WindsOfChangeEffect : Effect {
+    override val description: String = "Each player shuffles their hand into their library, then draws that many cards"
 }

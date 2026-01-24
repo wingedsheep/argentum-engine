@@ -1,0 +1,38 @@
+package com.wingedsheep.mtg.sets.definitions.portal.cards
+
+import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.CreatureGroupFilter
+import com.wingedsheep.sdk.scripting.OnEnterBattlefield
+import com.wingedsheep.sdk.scripting.TapAllCreaturesEffect
+
+/**
+ * Thundermare
+ * {5}{R}
+ * Creature — Elemental Horse
+ * 5/5
+ * Haste
+ * When Thundermare enters the battlefield, tap all other creatures.
+ */
+val Thundermare = card("Thundermare") {
+    manaCost = "{5}{R}"
+    typeLine = "Creature — Elemental Horse"
+    power = 5
+    toughness = 5
+
+    keywords(Keyword.HASTE)
+
+    triggeredAbility {
+        trigger = OnEnterBattlefield()
+        effect = TapAllCreaturesEffect(CreatureGroupFilter.AllOther)
+    }
+
+    metadata {
+        rarity = Rarity.RARE
+        collectorNumber = "152"
+        artist = "Una Fricker"
+        flavorText = "Thunder and lightning herald the coming storm."
+        imageUri = "https://cards.scryfall.io/normal/front/f/6/f6a1b2c3-d4e5-f6a7-b8c9-d0e1f2a3b4c5.jpg"
+    }
+}
