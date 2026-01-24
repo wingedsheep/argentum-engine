@@ -467,6 +467,15 @@ sealed interface DynamicAmount {
         override val description: String = "the number of lands you control"
     }
 
+    /**
+     * Count of lands with a specific subtype you control.
+     * "the number of Mountains you control"
+     */
+    @Serializable
+    data class LandsWithSubtypeYouControl(val subtype: Subtype) : DynamicAmount {
+        override val description: String = "the number of ${subtype.value}s you control"
+    }
+
     // =========================================================================
     // X Value and Variable References
     // =========================================================================
@@ -2248,6 +2257,83 @@ data class DealXDamageEffect(
     val target: EffectTarget
 ) : Effect {
     override val description: String = "Deal X damage to ${target.description}"
+}
+
+/**
+ * Filter for mass damage effects targeting creatures.
+ * Used with DealXDamageToAllEffect to specify which creatures are affected.
+ */
+@Serializable
+sealed interface CreatureDamageFilter {
+    val description: String
+
+    /** All creatures */
+    @Serializable
+    data object All : CreatureDamageFilter {
+        override val description: String = "each creature"
+    }
+
+    /** Creatures with a specific keyword */
+    @Serializable
+    data class WithKeyword(val keyword: Keyword) : CreatureDamageFilter {
+        override val description: String = "each creature with ${keyword.displayName.lowercase()}"
+    }
+
+    /** Creatures without a specific keyword */
+    @Serializable
+    data class WithoutKeyword(val keyword: Keyword) : CreatureDamageFilter {
+        override val description: String = "each creature without ${keyword.displayName.lowercase()}"
+    }
+
+    /** Creatures of a specific color */
+    @Serializable
+    data class OfColor(val color: Color) : CreatureDamageFilter {
+        override val description: String = "each ${color.displayName.lowercase()} creature"
+    }
+
+    /** Creatures not of a specific color */
+    @Serializable
+    data class NotOfColor(val color: Color) : CreatureDamageFilter {
+        override val description: String = "each non${color.displayName.lowercase()} creature"
+    }
+}
+
+/**
+ * Deal X damage to creatures and/or players where X is determined by the spell's X value.
+ * Used for cards like Earthquake.
+ *
+ * @param creatureFilter Which creatures are damaged (null = no creatures)
+ * @param includePlayers Whether to deal damage to players
+ */
+@Serializable
+data class DealXDamageToAllEffect(
+    val creatureFilter: CreatureDamageFilter? = CreatureDamageFilter.All,
+    val includePlayers: Boolean = true
+) : Effect {
+    override val description: String = buildString {
+        append("Deal X damage to ")
+        val parts = mutableListOf<String>()
+        if (creatureFilter != null) {
+            parts.add(creatureFilter.description)
+        }
+        if (includePlayers) {
+            parts.add("each player")
+        }
+        append(parts.joinToString(" and "))
+    }
+}
+
+/**
+ * Deal damage to multiple targets, dividing the total as you choose.
+ * Used for cards like Forked Lightning ("4 damage divided among 1-3 targets").
+ */
+@Serializable
+data class DividedDamageEffect(
+    val totalDamage: Int,
+    val minTargets: Int = 1,
+    val maxTargets: Int = 3
+) : Effect {
+    override val description: String = "Deal $totalDamage damage divided as you choose among $minTargets to $maxTargets target creatures"
 }
 
 /**

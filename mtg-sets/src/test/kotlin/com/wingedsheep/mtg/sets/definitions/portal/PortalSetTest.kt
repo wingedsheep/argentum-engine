@@ -1931,9 +1931,175 @@ class PortalSetTest : DescribeSpec({
         }
     }
 
+    describe("Portal Set - Cards 121-130") {
+
+        describe("Craven Giant") {
+            val card = CravenGiant
+
+            it("should be a 4/1 Giant") {
+                card.manaCost.toString() shouldBe "{2}{R}"
+                card.cmc shouldBe 3
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.GIANT
+                card.creatureStats?.basePower shouldBe 4
+                card.creatureStats?.baseToughness shouldBe 1
+            }
+
+            it("should not be able to block") {
+                card.staticAbilities shouldHaveSize 1
+                card.staticAbilities.first().shouldBeInstanceOf<CantBlock>()
+            }
+        }
+
+        describe("Desert Drake") {
+            val card = DesertDrake
+
+            it("should be a 2/2 Drake with flying") {
+                card.manaCost.toString() shouldBe "{3}{R}"
+                card.cmc shouldBe 4
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.DRAKE
+                card.creatureStats?.basePower shouldBe 2
+                card.creatureStats?.baseToughness shouldBe 2
+                card.keywords shouldContain Keyword.FLYING
+            }
+        }
+
+        describe("Devastation") {
+            val card = Devastation
+
+            it("should destroy all creatures and lands") {
+                card.manaCost.toString() shouldBe "{5}{R}{R}"
+                card.cmc shouldBe 7
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<CompositeEffect>()
+                val composite = card.spellEffect as CompositeEffect
+                composite.effects shouldHaveSize 2
+            }
+        }
+
+        describe("Earthquake") {
+            val card = Earthquake
+
+            it("should deal X damage to creatures without flying and players") {
+                card.manaCost.toString() shouldBe "{X}{R}"
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<DealXDamageToAllEffect>()
+                val effect = card.spellEffect as DealXDamageToAllEffect
+                effect.creatureFilter.shouldBeInstanceOf<CreatureDamageFilter.WithoutKeyword>()
+                val filter = effect.creatureFilter as CreatureDamageFilter.WithoutKeyword
+                filter.keyword shouldBe Keyword.FLYING
+                effect.includePlayers shouldBe true
+            }
+        }
+
+        describe("Fire Dragon") {
+            val card = FireDragon
+
+            it("should be a 6/6 Dragon with flying") {
+                card.manaCost.toString() shouldBe "{6}{R}{R}{R}"
+                card.cmc shouldBe 9
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.DRAGON
+                card.creatureStats?.basePower shouldBe 6
+                card.creatureStats?.baseToughness shouldBe 6
+                card.keywords shouldContain Keyword.FLYING
+            }
+
+            it("should have ETB damage trigger based on Mountains") {
+                card.triggeredAbilities shouldHaveSize 1
+                val trigger = card.triggeredAbilities.first()
+                trigger.trigger.shouldBeInstanceOf<OnEnterBattlefield>()
+                trigger.effect.shouldBeInstanceOf<DealDynamicDamageEffect>()
+            }
+        }
+
+        describe("Fire Imp") {
+            val card = FireImp
+
+            it("should be a 2/1 Imp") {
+                card.manaCost.toString() shouldBe "{2}{R}"
+                card.cmc shouldBe 3
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.IMP
+                card.creatureStats?.basePower shouldBe 2
+                card.creatureStats?.baseToughness shouldBe 1
+            }
+
+            it("should have ETB to deal 2 damage to target creature") {
+                card.triggeredAbilities shouldHaveSize 1
+                val trigger = card.triggeredAbilities.first()
+                trigger.trigger.shouldBeInstanceOf<OnEnterBattlefield>()
+                trigger.effect.shouldBeInstanceOf<DealDamageEffect>()
+                val effect = trigger.effect as DealDamageEffect
+                effect.amount shouldBe 2
+            }
+        }
+
+        describe("Fire Snake") {
+            val card = FireSnake
+
+            it("should be a 3/1 Snake") {
+                card.manaCost.toString() shouldBe "{4}{R}"
+                card.cmc shouldBe 5
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.SNAKE
+                card.creatureStats?.basePower shouldBe 3
+                card.creatureStats?.baseToughness shouldBe 1
+            }
+
+            it("should have dies trigger to destroy target land") {
+                card.triggeredAbilities shouldHaveSize 1
+                val trigger = card.triggeredAbilities.first()
+                trigger.effect.shouldBeInstanceOf<DestroyEffect>()
+            }
+        }
+
+        describe("Fire Tempest") {
+            val card = FireTempest
+
+            it("should deal 6 damage to each creature and player") {
+                card.manaCost.toString() shouldBe "{5}{R}{R}"
+                card.cmc shouldBe 7
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<DealDamageToAllEffect>()
+                val effect = card.spellEffect as DealDamageToAllEffect
+                effect.amount shouldBe 6
+            }
+        }
+
+        describe("Flashfires") {
+            val card = Flashfires
+
+            it("should destroy all Plains") {
+                card.manaCost.toString() shouldBe "{3}{R}"
+                card.cmc shouldBe 4
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<DestroyAllLandsOfTypeEffect>()
+                val effect = card.spellEffect as DestroyAllLandsOfTypeEffect
+                effect.landType shouldBe "Plains"
+            }
+        }
+
+        describe("Forked Lightning") {
+            val card = ForkedLightning
+
+            it("should deal 4 damage divided among up to 3 creatures") {
+                card.manaCost.toString() shouldBe "{3}{R}"
+                card.cmc shouldBe 4
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<DividedDamageEffect>()
+                val effect = card.spellEffect as DividedDamageEffect
+                effect.totalDamage shouldBe 4
+                effect.minTargets shouldBe 1
+                effect.maxTargets shouldBe 3
+            }
+        }
+    }
+
     describe("PortalSet object") {
-        it("should have 120 cards in the set") {
-            PortalSet.allCards shouldHaveSize 120
+        it("should have 130 cards in the set") {
+            PortalSet.allCards shouldHaveSize 130
         }
 
         it("should have correct set code") {

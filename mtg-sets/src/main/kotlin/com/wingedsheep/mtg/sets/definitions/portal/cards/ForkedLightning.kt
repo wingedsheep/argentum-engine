@@ -1,0 +1,33 @@
+package com.wingedsheep.mtg.sets.definitions.portal.cards
+
+import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.DividedDamageEffect
+
+/**
+ * Forked Lightning
+ * {3}{R}
+ * Sorcery
+ * Forked Lightning deals 4 damage divided as you choose among one, two,
+ * or three target creatures.
+ */
+val ForkedLightning = card("Forked Lightning") {
+    manaCost = "{3}{R}"
+    typeLine = "Sorcery"
+
+    spell {
+        effect = DividedDamageEffect(
+            totalDamage = 4,
+            minTargets = 1,
+            maxTargets = 3
+        )
+    }
+
+    metadata {
+        rarity = Rarity.UNCOMMON
+        collectorNumber = "130"
+        artist = "Sandra Everingham"
+        flavorText = "Lightning strikes thrice."
+        imageUri = "https://cards.scryfall.io/normal/front/4/a/4a0b1c2d-e3f4-a5b6-c7d8-e9f0a1b2c3d4.jpg"
+    }
+}
