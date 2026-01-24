@@ -3008,9 +3008,94 @@ class PortalSetTest : DescribeSpec({
         }
     }
 
+    describe("Portal Set - Cards 191-195") {
+
+        describe("Untamed Wilds") {
+            val card = UntamedWilds
+
+            it("should search for basic land to battlefield") {
+                card.name shouldBe "Untamed Wilds"
+                card.manaCost.toString() shouldBe "{2}{G}"
+                card.cmc shouldBe 3
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<SearchLibraryEffect>()
+                val effect = card.spellEffect as SearchLibraryEffect
+                effect.filter shouldBe CardFilter.BasicLandCard
+                effect.destination shouldBe SearchDestination.BATTLEFIELD
+                effect.entersTapped shouldBe false
+            }
+        }
+
+        describe("Whiptail Wurm") {
+            val card = WhiptailWurm
+
+            it("should be a vanilla 8/5 Wurm") {
+                card.name shouldBe "Whiptail Wurm"
+                card.manaCost.toString() shouldBe "{6}{G}"
+                card.cmc shouldBe 7
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.WURM
+                card.creatureStats?.basePower shouldBe 8
+                card.creatureStats?.baseToughness shouldBe 5
+            }
+        }
+
+        describe("Willow Dryad") {
+            val card = WillowDryad
+
+            it("should be a 1/1 with forestwalk") {
+                card.name shouldBe "Willow Dryad"
+                card.manaCost.toString() shouldBe "{G}"
+                card.cmc shouldBe 1
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.DRYAD
+                card.creatureStats?.basePower shouldBe 1
+                card.creatureStats?.baseToughness shouldBe 1
+                card.keywords shouldContain Keyword.FORESTWALK
+            }
+        }
+
+        describe("Winter's Grasp") {
+            val card = WintersGrasp
+
+            it("should destroy target land") {
+                card.name shouldBe "Winter's Grasp"
+                card.manaCost.toString() shouldBe "{1}{G}{G}"
+                card.cmc shouldBe 3
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<DestroyEffect>()
+                card.targetRequirements shouldHaveSize 1
+            }
+        }
+
+        describe("Wood Elves") {
+            val card = WoodElves
+
+            it("should be a 1/1 Elf Scout") {
+                card.name shouldBe "Wood Elves"
+                card.manaCost.toString() shouldBe "{2}{G}"
+                card.cmc shouldBe 3
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.ELF
+                card.typeLine.subtypes shouldContain Subtype.SCOUT
+                card.creatureStats?.basePower shouldBe 1
+                card.creatureStats?.baseToughness shouldBe 1
+            }
+
+            it("should have ETB search for Forest") {
+                card.triggeredAbilities shouldHaveSize 1
+                val trigger = card.triggeredAbilities.first()
+                trigger.effect.shouldBeInstanceOf<SearchLibraryEffect>()
+                val effect = trigger.effect as SearchLibraryEffect
+                effect.destination shouldBe SearchDestination.BATTLEFIELD
+                effect.entersTapped shouldBe false
+            }
+        }
+    }
+
     describe("PortalSet object") {
-        it("should have 190 cards in the set") {
-            PortalSet.allCards shouldHaveSize 190
+        it("should have 195 cards in the set") {
+            PortalSet.allCards shouldHaveSize 195
         }
 
         it("should have correct set code") {

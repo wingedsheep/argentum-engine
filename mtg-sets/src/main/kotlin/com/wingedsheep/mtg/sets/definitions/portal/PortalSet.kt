@@ -18,7 +18,7 @@ object PortalSet {
     const val SET_NAME = "Portal"
 
     /**
-     * All cards in this set (first 190 implemented).
+     * All cards in this set (first 195 implemented - cards 196-222 are basic lands).
      */
     val allCards = listOf(
         // Cards 1-10
@@ -229,7 +229,13 @@ object PortalSet {
         SummerBloom,
         SylvanTutor,
         ThunderingWurm,
-        TreetopDefense
+        TreetopDefense,
+        // Cards 191-195 (remaining non-land cards)
+        UntamedWilds,
+        WhiptailWurm,
+        WillowDryad,
+        WintersGrasp,
+        WoodElves
     )
 
     /**

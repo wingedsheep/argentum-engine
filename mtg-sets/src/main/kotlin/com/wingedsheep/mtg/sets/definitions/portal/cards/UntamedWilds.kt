@@ -1,0 +1,34 @@
+package com.wingedsheep.mtg.sets.definitions.portal.cards
+
+import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.CardFilter
+import com.wingedsheep.sdk.scripting.SearchDestination
+import com.wingedsheep.sdk.scripting.SearchLibraryEffect
+
+/**
+ * Untamed Wilds
+ * {2}{G}
+ * Sorcery
+ * Search your library for a basic land card, put that card onto the battlefield, then shuffle.
+ */
+val UntamedWilds = card("Untamed Wilds") {
+    manaCost = "{2}{G}"
+    typeLine = "Sorcery"
+
+    spell {
+        effect = SearchLibraryEffect(
+            filter = CardFilter.BasicLandCard,
+            destination = SearchDestination.BATTLEFIELD,
+            entersTapped = false
+        )
+    }
+
+    metadata {
+        rarity = Rarity.UNCOMMON
+        collectorNumber = "191"
+        artist = "NéNé Thomas"
+        flavorText = "The wild places hold secrets waiting to be found."
+        imageUri = "https://cards.scryfall.io/normal/front/a/8/a8e07e6c-0ca4-4c43-a3a8-f2b1f2c2e3b4.jpg"
+    }
+}
