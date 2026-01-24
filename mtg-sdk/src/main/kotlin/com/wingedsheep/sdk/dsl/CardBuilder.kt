@@ -481,13 +481,15 @@ class ActivatedAbilityBuilder {
     var effect: Effect = DrawCardsEffect(0, EffectTarget.Controller)
     var manaAbility: Boolean = false
     var timing: TimingRule = TimingRule.InstantSpeed
+    var restrictions: List<ActivationRestriction> = emptyList()
 
     fun build(): ActivatedAbility = ActivatedAbility(
         id = AbilityId.generate(),
         cost = cost,
         effect = effect,
         isManaAbility = manaAbility,
-        timing = timing
+        timing = timing,
+        restrictions = restrictions
     )
 }
 

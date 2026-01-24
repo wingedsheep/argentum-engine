@@ -14,6 +14,7 @@ data class ActivatedAbility(
     val cost: AbilityCost,
     val effect: Effect,
     val timing: TimingRule = TimingRule.InstantSpeed,
+    val restrictions: List<ActivationRestriction> = emptyList(),
     val isManaAbility: Boolean = false,
     val isPlaneswalkerAbility: Boolean = false,
     val activateFromZone: ZoneType = ZoneType.BATTLEFIELD

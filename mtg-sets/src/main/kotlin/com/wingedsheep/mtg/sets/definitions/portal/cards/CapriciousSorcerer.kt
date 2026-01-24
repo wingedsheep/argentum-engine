@@ -3,9 +3,9 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityCost
+import com.wingedsheep.sdk.scripting.ActivationRestriction
 import com.wingedsheep.sdk.scripting.DealDamageEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.scripting.TimingRule
 
 /**
  * Capricious Sorcerer
@@ -23,7 +23,7 @@ val CapriciousSorcerer = card("Capricious Sorcerer") {
     activatedAbility {
         cost = AbilityCost.Tap
         effect = DealDamageEffect(1, EffectTarget.AnyTarget)
-        timing = TimingRule.SorcerySpeed
+        restrictions = listOf(ActivationRestriction.OnlyDuringYourTurn)
     }
 
     metadata {

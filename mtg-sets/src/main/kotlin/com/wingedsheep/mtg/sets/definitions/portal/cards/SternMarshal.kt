@@ -1,19 +1,21 @@
 package com.wingedsheep.mtg.sets.definitions.portal.cards
 
+import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityCost
+import com.wingedsheep.sdk.scripting.ActivationRestriction
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.ModifyStatsEffect
-import com.wingedsheep.sdk.scripting.TimingRule
 
 /**
  * Stern Marshal
  * {2}{W}
  * Creature - Human Soldier
  * 2/2
- * {T}: Target creature gets +2/+2 until end of turn.
+ * {T}: Target creature gets +2/+2 until end of turn. Activate only during your turn,
+ * before attackers are declared.
  */
 val SternMarshal = card("Stern Marshal") {
     manaCost = "{2}{W}"
@@ -26,10 +28,13 @@ val SternMarshal = card("Stern Marshal") {
         effect = ModifyStatsEffect(
             powerModifier = 2,
             toughnessModifier = 2,
-            target = EffectTaTirget.TargetCreature,
+            target = EffectTarget.TargetCreature,
             duration = Duration.EndOfTurn
         )
-        timing = TimingRule.SorcerySpeed
+        restrictions = listOf(
+            ActivationRestriction.OnlyDuringYourTurn,
+            ActivationRestriction.BeforeStep(Step.DECLARE_ATTACKERS)
+        )
     }
 
     metadata {
