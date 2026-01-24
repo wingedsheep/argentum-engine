@@ -48,10 +48,9 @@ import com.wingedsheep.sdk.model.EntityId
  * driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
  * ```
  */
-class GameTestDriver(
-    private val processor: ActionProcessor = ActionProcessor()
-) {
+class GameTestDriver {
     private val cardRegistry = CardRegistry()
+    private val processor: ActionProcessor = ActionProcessor(cardRegistry)
     private var _state: GameState = GameState()
     private val _events = mutableListOf<GameEvent>()
 

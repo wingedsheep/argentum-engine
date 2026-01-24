@@ -3,9 +3,12 @@ package com.wingedsheep.engine.core
 import com.wingedsheep.engine.handlers.CostHandler
 import com.wingedsheep.engine.handlers.MulliganHandler
 import com.wingedsheep.engine.mechanics.combat.CombatManager
+import com.wingedsheep.engine.mechanics.mana.AlternativePaymentHandler
+import com.wingedsheep.engine.mechanics.mana.CostCalculator
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.mechanics.stack.StackResolver
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
@@ -30,10 +33,13 @@ import com.wingedsheep.sdk.model.EntityId
  * (GameState, GameAction) -> ExecutionResult(GameState, Events)
  */
 class ActionProcessor(
+    private val cardRegistry: CardRegistry? = null,
     private val turnManager: TurnManager = TurnManager(),
     private val stackResolver: StackResolver = StackResolver(),
     private val combatManager: CombatManager = CombatManager(),
-    private val manaSolver: ManaSolver = ManaSolver(),
+    private val manaSolver: ManaSolver = ManaSolver(cardRegistry),
+    private val costCalculator: CostCalculator = CostCalculator(cardRegistry),
+    private val alternativePaymentHandler: AlternativePaymentHandler = AlternativePaymentHandler(),
     private val costHandler: CostHandler = CostHandler(),
     private val mulliganHandler: MulliganHandler = MulliganHandler()
 ) {
@@ -121,12 +127,19 @@ class ActionProcessor(
 
         // Check mana cost can be paid
         val xValue = action.xValue ?: 0
-        val manaCost = cardComponent.manaCost
+
+        // Calculate effective cost after applying cost reductions
+        val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId)
+        val effectiveCost = if (cardDef != null) {
+            costCalculator.calculateEffectiveCost(state, cardDef, action.playerId)
+        } else {
+            cardComponent.manaCost
+        }
 
         when (action.paymentStrategy) {
             is PaymentStrategy.AutoPay -> {
                 // Check if auto-pay can find a solution
-                if (!manaSolver.canPay(state, action.playerId, manaCost, xValue)) {
+                if (!manaSolver.canPay(state, action.playerId, effectiveCost, xValue)) {
                     return "Not enough mana to cast this spell"
                 }
             }
@@ -142,7 +155,7 @@ class ActionProcessor(
                     green = poolComponent.green,
                     colorless = poolComponent.colorless
                 )
-                if (!costHandler.canPayManaCost(pool, manaCost)) {
+                if (!costHandler.canPayManaCost(pool, effectiveCost)) {
                     return "Insufficient mana in pool to cast this spell"
                 }
             }
@@ -374,6 +387,28 @@ class ActionProcessor(
 
         val xValue = action.xValue ?: 0
 
+        // Calculate effective cost after applying cost reductions
+        val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId)
+        var effectiveCost = if (cardDef != null) {
+            costCalculator.calculateEffectiveCost(currentState, cardDef, action.playerId)
+        } else {
+            cardComponent.manaCost
+        }
+
+        // Apply alternative payment (Delve/Convoke) if specified
+        if (action.alternativePayment != null && !action.alternativePayment.isEmpty && cardDef != null) {
+            val altPaymentResult = alternativePaymentHandler.apply(
+                currentState,
+                effectiveCost,
+                action.alternativePayment,
+                action.playerId,
+                cardDef
+            )
+            effectiveCost = altPaymentResult.reducedCost
+            currentState = altPaymentResult.newState
+            events.addAll(altPaymentResult.events)
+        }
+
         // Handle mana payment based on strategy
         when (action.paymentStrategy) {
             is PaymentStrategy.FromPool -> {
@@ -389,7 +424,7 @@ class ActionProcessor(
                     colorless = poolComponent.colorless
                 )
 
-                val newPool = costHandler.payManaCost(pool, cardComponent.manaCost)
+                val newPool = costHandler.payManaCost(pool, effectiveCost)
                     ?: return ExecutionResult.error(currentState, "Insufficient mana in pool")
 
                 // Update the player's mana pool component
@@ -433,7 +468,7 @@ class ActionProcessor(
                     colorless = poolComponent.colorless
                 )
 
-                val newPool = costHandler.payManaCost(pool, cardComponent.manaCost)
+                val newPool = costHandler.payManaCost(pool, effectiveCost)
 
                 if (newPool != null) {
                     // Successfully paid from pool
@@ -464,7 +499,7 @@ class ActionProcessor(
                     )
                 } else {
                     // Pool didn't have enough - try tapping lands
-                    val solution = manaSolver.solve(currentState, action.playerId, cardComponent.manaCost, xValue)
+                    val solution = manaSolver.solve(currentState, action.playerId, effectiveCost, xValue)
                         ?: return ExecutionResult.error(currentState, "Not enough mana to auto-pay")
 
                     // Tap each source and generate events

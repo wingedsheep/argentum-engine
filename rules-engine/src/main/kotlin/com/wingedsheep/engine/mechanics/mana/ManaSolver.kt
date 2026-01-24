@@ -1,16 +1,23 @@
 package com.wingedsheep.engine.mechanics.mana
 
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.ManaSymbol
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.AbilityCost
+import com.wingedsheep.sdk.scripting.AddAnyColorManaEffect
+import com.wingedsheep.sdk.scripting.AddColorlessManaEffect
+import com.wingedsheep.sdk.scripting.AddManaEffect
 
 /**
  * Represents the mana production capability of a source.
@@ -52,8 +59,13 @@ data class ManaProduction(
  * 3. Pay generic costs with any remaining sources
  *
  * This heuristic preserves flexibility by saving multi-color lands for later.
+ *
+ * @param cardRegistry Optional registry to look up card definitions for mana abilities.
+ *                     When provided, non-land permanents with mana abilities can be used as sources.
  */
-class ManaSolver {
+class ManaSolver(
+    private val cardRegistry: CardRegistry? = null
+) {
 
     /**
      * Finds a valid set of mana sources to pay the cost.
@@ -157,10 +169,10 @@ class ManaSolver {
 
     /**
      * Finds all untapped mana sources controlled by a player.
-     * Currently supports basic lands and lands with land subtypes.
-     *
-     * TODO: Support non-land mana sources (mana dorks, artifacts)
-     * TODO: Support explicit mana abilities from CardScript
+     * Supports:
+     * - Basic lands and lands with basic land subtypes
+     * - Non-land permanents with explicit tap mana abilities (mana dorks, mana rocks)
+     * - Respects summoning sickness for creatures (unless they have haste)
      */
     private fun findAvailableManaSources(state: GameState, playerId: EntityId): List<ManaSource> {
         val battlefieldZone = ZoneKey(playerId, ZoneType.BATTLEFIELD)
@@ -178,7 +190,50 @@ class ManaSolver {
 
             val card = container.get<CardComponent>() ?: return@mapNotNull null
 
-            // Check if it's a land that can produce mana
+            // Check for explicit mana abilities via CardRegistry
+            val cardDef = cardRegistry?.getCard(card.cardDefinitionId)
+            val manaAbilities = cardDef?.script?.activatedAbilities?.filter { it.isManaAbility } ?: emptyList()
+
+            // Try to find a tap-based mana ability
+            for (ability in manaAbilities) {
+                // Only consider tap abilities for auto-pay
+                if (ability.cost != AbilityCost.Tap) continue
+
+                // Check summoning sickness for creatures (non-lands)
+                if (!card.typeLine.isLand && card.typeLine.isCreature) {
+                    val hasSummoningSickness = container.has<SummoningSicknessComponent>()
+                    val hasHaste = cardDef?.keywords?.contains(Keyword.HASTE) == true ||
+                            card.baseKeywords.contains(Keyword.HASTE)
+                    if (hasSummoningSickness && !hasHaste) {
+                        continue // Can't use this ability due to summoning sickness
+                    }
+                }
+
+                // Extract production from effect
+                return@mapNotNull when (val effect = ability.effect) {
+                    is AddManaEffect -> ManaSource(
+                        entityId = entityId,
+                        name = card.name,
+                        producesColors = setOf(effect.color),
+                        producesColorless = false
+                    )
+                    is AddColorlessManaEffect -> ManaSource(
+                        entityId = entityId,
+                        name = card.name,
+                        producesColors = emptySet(),
+                        producesColorless = true
+                    )
+                    is AddAnyColorManaEffect -> ManaSource(
+                        entityId = entityId,
+                        name = card.name,
+                        producesColors = Color.entries.toSet(),
+                        producesColorless = false
+                    )
+                    else -> null // Unknown effect type, skip this ability
+                }
+            }
+
+            // Fall back to land subtype logic for lands without explicit abilities
             if (!card.typeLine.isLand) return@mapNotNull null
 
             // Determine what colors this land produces based on subtypes
@@ -192,10 +247,9 @@ class ManaSolver {
             if (subtypes.contains(Subtype.MOUNTAIN)) producesColors.add(Color.RED)
             if (subtypes.contains(Subtype.FOREST)) producesColors.add(Color.GREEN)
 
-            // TODO: Check for explicit mana abilities in the card's script
-            // For now, treat lands without basic land types as colorless producers
+            // Treat lands without basic land types as colorless producers
             // This handles generic lands, Wastes, and similar cases
-            val producesColorless = card.typeLine.isLand && producesColors.isEmpty()
+            val producesColorless = producesColors.isEmpty()
 
             if (producesColors.isEmpty() && !producesColorless) {
                 return@mapNotNull null

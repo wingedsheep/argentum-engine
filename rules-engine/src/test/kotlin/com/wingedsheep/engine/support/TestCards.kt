@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.targeting.TargetCreature
 import com.wingedsheep.sdk.targeting.TargetSpell
 import com.wingedsheep.sdk.targeting.SpellTargetFilter
 import com.wingedsheep.sdk.targeting.CreatureTargetFilter as TargetingCreatureFilter
+import java.util.UUID
 
 /**
  * Test card definitions for unit tests.
@@ -192,6 +193,167 @@ object TestCards {
     )
 
     // =========================================================================
+    // Mana Dorks (Creatures with Tap: Add mana abilities)
+    // =========================================================================
+
+    /**
+     * 1/1 for {G} with "{T}: Add {G}"
+     * The classic mana dork.
+     */
+    val LlanowarElves = CardDefinition(
+        name = "Llanowar Elves",
+        manaCost = ManaCost.parse("{G}"),
+        typeLine = TypeLine.creature(setOf(Subtype("Elf"), Subtype("Druid"))),
+        oracleText = "{T}: Add {G}.",
+        creatureStats = CreatureStats(1, 1),
+        script = CardScript.permanent(
+            ActivatedAbility(
+                id = AbilityId(UUID.randomUUID().toString()),
+                cost = AbilityCost.Tap,
+                effect = AddManaEffect(Color.GREEN),
+                isManaAbility = true
+            )
+        )
+    )
+
+    /**
+     * 0/2 for {2} with "{T}: Add {C}{C}"
+     * A colorless mana rock creature.
+     */
+    val PalladiumMyr = CardDefinition(
+        name = "Palladium Myr",
+        manaCost = ManaCost.parse("{3}"),
+        typeLine = TypeLine.artifactCreature(setOf(Subtype("Myr"))),
+        oracleText = "{T}: Add {C}{C}.",
+        creatureStats = CreatureStats(2, 2),
+        script = CardScript.permanent(
+            ActivatedAbility(
+                id = AbilityId(UUID.randomUUID().toString()),
+                cost = AbilityCost.Tap,
+                effect = AddColorlessManaEffect(2),
+                isManaAbility = true
+            )
+        )
+    )
+
+    /**
+     * 1/1 for {G} with "{T}: Add one mana of any color"
+     */
+    val BirdsOfParadise = CardDefinition(
+        name = "Birds of Paradise",
+        manaCost = ManaCost.parse("{G}"),
+        typeLine = TypeLine.creature(setOf(Subtype("Bird"))),
+        oracleText = "Flying\n{T}: Add one mana of any color.",
+        keywords = setOf(Keyword.FLYING),
+        creatureStats = CreatureStats(0, 1),
+        script = CardScript.permanent(
+            ActivatedAbility(
+                id = AbilityId(UUID.randomUUID().toString()),
+                cost = AbilityCost.Tap,
+                effect = AddAnyColorManaEffect(1),
+                isManaAbility = true
+            )
+        )
+    )
+
+    /**
+     * 1/1 Haste for {R} with "{T}: Add {R}"
+     * A hasty mana dork that can tap immediately.
+     */
+    val RagavanNimblePilferer = CardDefinition(
+        name = "Ragavan, Nimble Pilferer",
+        manaCost = ManaCost.parse("{R}"),
+        typeLine = TypeLine(
+            supertypes = setOf(Supertype.LEGENDARY),
+            cardTypes = setOf(CardType.CREATURE),
+            subtypes = setOf(Subtype("Monkey"), Subtype("Pirate"))
+        ),
+        oracleText = "Haste\n{T}: Add {R}.",
+        keywords = setOf(Keyword.HASTE),
+        creatureStats = CreatureStats(2, 1),
+        script = CardScript.permanent(
+            ActivatedAbility(
+                id = AbilityId(UUID.randomUUID().toString()),
+                cost = AbilityCost.Tap,
+                effect = AddManaEffect(Color.RED),
+                isManaAbility = true
+            )
+        )
+    )
+
+    // =========================================================================
+    // Cost Reduction Cards
+    // =========================================================================
+
+    /**
+     * 12/12 Trample for {10}{G}{G}
+     * "This spell costs {X} less to cast, where X is the total power of creatures you control."
+     */
+    val GhaltaPrimalHunger = CardDefinition(
+        name = "Ghalta, Primal Hunger",
+        manaCost = ManaCost.parse("{10}{G}{G}"),
+        typeLine = TypeLine(
+            supertypes = setOf(Supertype.LEGENDARY),
+            cardTypes = setOf(CardType.CREATURE),
+            subtypes = setOf(Subtype("Elder"), Subtype("Dinosaur"))
+        ),
+        oracleText = "This spell costs {X} less to cast, where X is the total power of creatures you control.\nTrample",
+        keywords = setOf(Keyword.TRAMPLE),
+        creatureStats = CreatureStats(12, 12),
+        script = CardScript(
+            staticAbilities = listOf(
+                SpellCostReduction(CostReductionSource.TotalPowerYouControl)
+            )
+        )
+    )
+
+    /**
+     * 4/4 for {6} with Affinity for artifacts.
+     * Costs {1} less for each artifact you control.
+     */
+    val FrogmiteTestCard = CardDefinition(
+        name = "Frogmite",
+        manaCost = ManaCost.parse("{4}"),
+        typeLine = TypeLine.artifactCreature(setOf(Subtype("Frog"))),
+        oracleText = "Affinity for artifacts",
+        creatureStats = CreatureStats(2, 2),
+        keywordAbilities = listOf(KeywordAbility.Affinity(CardType.ARTIFACT))
+    )
+
+    // =========================================================================
+    // Alternative Payment Cards (Delve/Convoke)
+    // =========================================================================
+
+    /**
+     * 4/4 for {7}{B} with Delve.
+     * Can exile cards from graveyard to pay generic costs.
+     */
+    val GurmagAngler = CardDefinition(
+        name = "Gurmag Angler",
+        manaCost = ManaCost.parse("{6}{B}"),
+        typeLine = TypeLine.creature(setOf(Subtype("Zombie"), Subtype("Fish"))),
+        oracleText = "Delve",
+        keywords = setOf(Keyword.DELVE),
+        creatureStats = CreatureStats(5, 5)
+    )
+
+    /**
+     * 8/8 for {8} with Convoke.
+     * Can tap creatures to pay mana costs.
+     */
+    val StokeBrillianceToken = CardDefinition(
+        name = "Stoke the Flames",
+        manaCost = ManaCost.parse("{2}{R}{R}"),
+        typeLine = TypeLine.instant(),
+        oracleText = "Convoke\nStoke the Flames deals 4 damage to any target.",
+        keywords = setOf(Keyword.CONVOKE),
+        script = CardScript.spell(
+            effect = DealDamageEffect(4, EffectTarget.AnyTarget),
+            AnyTarget()
+        )
+    )
+
+    // =========================================================================
     // All Test Cards
     // =========================================================================
 
@@ -210,6 +372,17 @@ object TestCards {
         SavannahLions,
         WindDrake,
         BladeOfTheNinthWatch,
+        // Mana Dorks
+        LlanowarElves,
+        PalladiumMyr,
+        BirdsOfParadise,
+        RagavanNimblePilferer,
+        // Cost Reduction Cards
+        GhaltaPrimalHunger,
+        FrogmiteTestCard,
+        // Alternative Payment Cards
+        GurmagAngler,
+        StokeBrillianceToken,
         // Instants
         LightningBolt,
         GiantGrowth,

@@ -4,6 +4,7 @@ import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityId
+import com.wingedsheep.sdk.scripting.AlternativePaymentChoice
 import kotlinx.serialization.Serializable
 
 /**
@@ -40,6 +41,7 @@ data class PassPriority(
  * @property targets Chosen targets for the spell
  * @property xValue The value of X for X-cost spells
  * @property paymentStrategy How the player intends to pay the mana cost
+ * @property alternativePayment Optional alternative payment choices (Delve, Convoke)
  */
 @Serializable
 data class CastSpell(
@@ -47,7 +49,8 @@ data class CastSpell(
     val cardId: EntityId,
     val targets: List<ChosenTarget> = emptyList(),
     val xValue: Int? = null,
-    val paymentStrategy: PaymentStrategy = PaymentStrategy.AutoPay
+    val paymentStrategy: PaymentStrategy = PaymentStrategy.AutoPay,
+    val alternativePayment: AlternativePaymentChoice? = null
 ) : GameAction
 
 /**

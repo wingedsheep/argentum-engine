@@ -48,6 +48,8 @@ enum class Keyword(val displayName: String) {
     CHANGELING("Changeling"),
     PROWESS("Prowess"),
     CONVOKE("Convoke"),
+    DELVE("Delve"),
+    AFFINITY("Affinity"),
     CANT_BE_BLOCKED("Can't be blocked"),
     CANT_UNTAP("Can't untap"),
     CANT_BE_BLOCKED_BY_MORE_THAN_ONE("Can't be blocked by more than one creature");

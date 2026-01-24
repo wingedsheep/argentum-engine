@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting
 
+import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
@@ -260,6 +261,19 @@ sealed interface KeywordAbility {
     @Serializable
     data class Tribute(val count: Int) : KeywordAbility {
         override val description: String = "Tribute $count"
+    }
+
+    // =========================================================================
+    // Cost Reduction Keywords
+    // =========================================================================
+
+    /**
+     * Affinity for a card type.
+     * "Affinity for artifacts" - This spell costs {1} less to cast for each artifact you control.
+     */
+    @Serializable
+    data class Affinity(val forType: CardType) : KeywordAbility {
+        override val description: String = "Affinity for ${forType.displayName.lowercase()}s"
     }
 
     // =========================================================================

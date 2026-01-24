@@ -218,6 +218,24 @@ sealed interface CostReductionSource {
     data object CreaturesYouControl : CostReductionSource {
         override val description: String = "the number of creatures you control"
     }
+
+    /**
+     * Reduces cost by total power of creatures you control.
+     * Used for Ghalta, Primal Hunger.
+     */
+    @Serializable
+    data object TotalPowerYouControl : CostReductionSource {
+        override val description: String = "the total power of creatures you control"
+    }
+
+    /**
+     * Reduces cost by number of artifacts you control.
+     * Used for Affinity for artifacts.
+     */
+    @Serializable
+    data object ArtifactsYouControl : CostReductionSource {
+        override val description: String = "the number of artifacts you control"
+    }
 }
 
 // =============================================================================
