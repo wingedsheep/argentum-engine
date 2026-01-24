@@ -1,5 +1,5 @@
 import { useGameStore } from '../../store/gameStore'
-import { useViewingPlayer, useOpponent, useZoneCards, useBattlefieldCards, useHasLegalActions } from '../../store/selectors'
+import { useViewingPlayer, useOpponent, useZoneCards, useBattlefieldCards, useHasLegalActions, useStackCards } from '../../store/selectors'
 import { hand, graveyard } from '../../types'
 import type { ClientCard, ZoneId, ClientPlayer } from '../../types'
 import { PhaseIndicator } from '../ui/PhaseIndicator'
@@ -81,6 +81,7 @@ export function GameBoard() {
           isActivePlayer={gameState.activePlayerId === viewingPlayer.playerId}
           hasPriority={hasPriority}
         />
+        <StackDisplay />
       </div>
 
       {/* Player area (bottom) */}
@@ -166,6 +167,52 @@ function LifeDisplay({ life, isPlayer = false }: { life: number; isPlayer?: bool
       }}
     >
       <span style={{ color: life <= 5 ? '#ff4444' : '#ffffff' }}>{life}</span>
+    </div>
+  )
+}
+
+/**
+ * Stack display - shows spells/abilities waiting to resolve.
+ */
+function StackDisplay() {
+  const stackCards = useStackCards()
+  const responsive = useResponsiveContext()
+
+  if (stackCards.length === 0) return null
+
+  return (
+    <div style={styles.stackContainer}>
+      <div style={{
+        ...styles.stackHeader,
+        fontSize: responsive.fontSize.small,
+      }}>
+        Stack ({stackCards.length})
+      </div>
+      <div style={styles.stackItems}>
+        {stackCards.map((card, index) => (
+          <div
+            key={card.id}
+            style={{
+              ...styles.stackItem,
+              zIndex: stackCards.length - index,
+              transform: `translateY(${index * 4}px)`,
+            }}
+          >
+            <img
+              src={`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(card.name)}&format=image&version=small`}
+              alt={card.name}
+              style={styles.stackItemImage}
+              title={`${card.name}\n${card.oracleText || ''}`}
+            />
+            <div style={{
+              ...styles.stackItemName,
+              fontSize: responsive.fontSize.small,
+            }}>
+              {card.name}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
@@ -998,5 +1045,52 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: 6,
     cursor: 'pointer',
     marginTop: 8,
+  },
+  stackContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    marginLeft: 24,
+    padding: '8px 12px',
+    backgroundColor: 'rgba(100, 50, 150, 0.2)',
+    borderRadius: 8,
+    border: '1px solid rgba(150, 100, 200, 0.4)',
+  },
+  stackHeader: {
+    color: '#b088d0',
+    fontWeight: 600,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 8,
+  },
+  stackItems: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  stackItem: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    position: 'relative',
+    cursor: 'pointer',
+    transition: 'transform 0.15s',
+  },
+  stackItemImage: {
+    width: 60,
+    height: 84,
+    objectFit: 'cover',
+    borderRadius: 4,
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.5)',
+  },
+  stackItemName: {
+    color: '#ccc',
+    marginTop: 4,
+    maxWidth: 80,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    textAlign: 'center',
   },
 }

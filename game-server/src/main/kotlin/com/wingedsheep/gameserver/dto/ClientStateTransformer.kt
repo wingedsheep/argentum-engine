@@ -60,6 +60,27 @@ class ClientStateTransformer {
             }
         }
 
+        // Add the stack as a zone (stack is stored separately in GameState)
+        if (state.stack.isNotEmpty()) {
+            val stackZoneKey = ZoneKey(viewingPlayerId, ZoneType.STACK)
+            zones.add(
+                ClientZone(
+                    zoneId = stackZoneKey,
+                    cardIds = state.stack,
+                    size = state.stack.size,
+                    isVisible = true
+                )
+            )
+
+            // Include card details for stack items
+            for (entityId in state.stack) {
+                val clientCard = transformCard(state, entityId, stackZoneKey)
+                if (clientCard != null) {
+                    cards[entityId] = clientCard
+                }
+            }
+        }
+
         // Build player information
         val players = state.turnOrder.map { playerId ->
             transformPlayer(state, playerId, viewingPlayerId)
