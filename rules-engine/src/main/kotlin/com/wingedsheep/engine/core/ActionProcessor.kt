@@ -1,0 +1,563 @@
+package com.wingedsheep.engine.core
+
+import com.wingedsheep.engine.handlers.CostHandler
+import com.wingedsheep.engine.mechanics.combat.CombatManager
+import com.wingedsheep.engine.mechanics.mana.ManaPool
+import com.wingedsheep.engine.mechanics.mana.ManaSolver
+import com.wingedsheep.engine.mechanics.stack.StackResolver
+import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.player.LandDropsComponent
+import com.wingedsheep.engine.state.components.player.ManaPoolComponent
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.model.EntityId
+
+/**
+ * The central action processor for the game engine.
+ *
+ * This is the main entry point for all game actions. It validates actions,
+ * executes them against the game state, and returns the result.
+ *
+ * The processor is stateless - it's a pure function:
+ * (GameState, GameAction) -> ExecutionResult(GameState, Events)
+ */
+class ActionProcessor(
+    private val turnManager: TurnManager = TurnManager(),
+    private val stackResolver: StackResolver = StackResolver(),
+    private val combatManager: CombatManager = CombatManager(),
+    private val manaSolver: ManaSolver = ManaSolver(),
+    private val costHandler: CostHandler = CostHandler()
+) {
+
+    /**
+     * Process a game action and return the result.
+     */
+    fun process(state: GameState, action: GameAction): ExecutionResult {
+        // Validate the action
+        val validationError = validate(state, action)
+        if (validationError != null) {
+            return ExecutionResult.error(state, validationError)
+        }
+
+        // Execute the action
+        return execute(state, action)
+    }
+
+    /**
+     * Validate that an action is legal.
+     * Returns an error message if invalid, null if valid.
+     */
+    private fun validate(state: GameState, action: GameAction): String? {
+        // Check game is not over
+        if (state.gameOver) {
+            return "Game is already over"
+        }
+
+        // Check player exists
+        if (!state.turnOrder.contains(action.playerId)) {
+            return "Unknown player: ${action.playerId}"
+        }
+
+        return when (action) {
+            is PassPriority -> validatePassPriority(state, action)
+            is CastSpell -> validateCastSpell(state, action)
+            is ActivateAbility -> validateActivateAbility(state, action)
+            is PlayLand -> validatePlayLand(state, action)
+            is DeclareAttackers -> validateDeclareAttackers(state, action)
+            is DeclareBlockers -> validateDeclareBlockers(state, action)
+            is OrderBlockers -> validateOrderBlockers(state, action)
+            is MakeChoice -> validateMakeChoice(state, action)
+            is SelectTargets -> validateSelectTargets(state, action)
+            is ChooseManaColor -> validateChooseManaColor(state, action)
+            is Concede -> null  // Always valid
+        }
+    }
+
+    private fun validatePassPriority(state: GameState, action: PassPriority): String? {
+        if (state.priorityPlayerId != action.playerId) {
+            return "You don't have priority"
+        }
+        return null
+    }
+
+    private fun validateCastSpell(state: GameState, action: CastSpell): String? {
+        if (state.priorityPlayerId != action.playerId) {
+            return "You don't have priority"
+        }
+
+        // Check the card exists and is in hand
+        val container = state.getEntity(action.cardId)
+            ?: return "Card not found: ${action.cardId}"
+
+        val cardComponent = container.get<CardComponent>()
+            ?: return "Not a card: ${action.cardId}"
+
+        // Check card is in a zone it can be cast from (typically hand)
+        val handZone = ZoneKey(action.playerId, ZoneType.HAND)
+        if (action.cardId !in state.getZone(handZone)) {
+            return "Card is not in your hand"
+        }
+
+        // Check timing (sorcery speed vs instant speed)
+        if (!cardComponent.typeLine.isInstant) {
+            // Non-instants require sorcery timing
+            if (!turnManager.canPlaySorcerySpeed(state, action.playerId)) {
+                return "You can only cast sorcery-speed spells during your main phase with an empty stack"
+            }
+        }
+
+        // Check mana cost can be paid
+        val xValue = action.xValue ?: 0
+        val manaCost = cardComponent.manaCost
+
+        when (action.paymentStrategy) {
+            is PaymentStrategy.AutoPay -> {
+                // Check if auto-pay can find a solution
+                if (!manaSolver.canPay(state, action.playerId, manaCost, xValue)) {
+                    return "Not enough mana to cast this spell"
+                }
+            }
+            is PaymentStrategy.FromPool -> {
+                // Check if the mana pool has enough
+                val poolComponent = state.getEntity(action.playerId)?.get<ManaPoolComponent>()
+                    ?: ManaPoolComponent()
+                val pool = ManaPool(
+                    white = poolComponent.white,
+                    blue = poolComponent.blue,
+                    black = poolComponent.black,
+                    red = poolComponent.red,
+                    green = poolComponent.green,
+                    colorless = poolComponent.colorless
+                )
+                if (!costHandler.canPayManaCost(pool, manaCost)) {
+                    return "Insufficient mana in pool to cast this spell"
+                }
+            }
+            is PaymentStrategy.Explicit -> {
+                // Validate that the specified sources exist and can produce enough mana
+                // For now, just check that all sources exist and are untapped
+                for (sourceId in action.paymentStrategy.manaAbilitiesToActivate) {
+                    val sourceContainer = state.getEntity(sourceId)
+                        ?: return "Mana source not found: $sourceId"
+                    if (sourceContainer.has<TappedComponent>()) {
+                        return "Mana source is already tapped: $sourceId"
+                    }
+                }
+                // TODO: Full validation that explicit sources produce enough mana
+            }
+        }
+
+        // TODO: Check targets are valid
+
+        return null
+    }
+
+    private fun validateActivateAbility(state: GameState, action: ActivateAbility): String? {
+        if (state.priorityPlayerId != action.playerId) {
+            return "You don't have priority"
+        }
+
+        // Check the source exists
+        val container = state.getEntity(action.sourceId)
+            ?: return "Source not found: ${action.sourceId}"
+
+        // Check player controls the source
+        val controller = container.get<ControllerComponent>()?.playerId
+        if (controller != action.playerId) {
+            return "You don't control this permanent"
+        }
+
+        // TODO: Check ability exists and can be activated
+        // TODO: Check costs can be paid
+
+        return null
+    }
+
+    private fun validatePlayLand(state: GameState, action: PlayLand): String? {
+        if (state.activePlayerId != action.playerId) {
+            return "You can only play lands on your turn"
+        }
+        if (!state.step.isMainPhase) {
+            return "You can only play lands during a main phase"
+        }
+        if (state.stack.isNotEmpty()) {
+            return "You can only play lands when the stack is empty"
+        }
+
+        // Check land drop availability
+        val landDrops = state.getEntity(action.playerId)?.get<LandDropsComponent>()
+            ?: LandDropsComponent()
+        if (!landDrops.canPlayLand) {
+            return "You have already played a land this turn"
+        }
+
+        // Check card exists and is a land
+        val container = state.getEntity(action.cardId)
+            ?: return "Card not found: ${action.cardId}"
+
+        val cardComponent = container.get<CardComponent>()
+            ?: return "Not a card: ${action.cardId}"
+
+        if (!cardComponent.typeLine.isLand) {
+            return "You can only play land cards as lands"
+        }
+
+        // Check card is in hand
+        val handZone = ZoneKey(action.playerId, ZoneType.HAND)
+        if (action.cardId !in state.getZone(handZone)) {
+            return "Land is not in your hand"
+        }
+
+        return null
+    }
+
+    private fun validateDeclareAttackers(state: GameState, action: DeclareAttackers): String? {
+        if (state.activePlayerId != action.playerId) {
+            return "You can only declare attackers on your turn"
+        }
+        if (state.step != com.wingedsheep.sdk.core.Step.DECLARE_ATTACKERS) {
+            return "You can only declare attackers during the declare attackers step"
+        }
+        // Additional validation is done by CombatManager
+        return null
+    }
+
+    private fun validateDeclareBlockers(state: GameState, action: DeclareBlockers): String? {
+        if (state.activePlayerId == action.playerId) {
+            return "You cannot declare blockers on your turn"
+        }
+        if (state.step != com.wingedsheep.sdk.core.Step.DECLARE_BLOCKERS) {
+            return "You can only declare blockers during the declare blockers step"
+        }
+        // Additional validation is done by CombatManager
+        return null
+    }
+
+    private fun validateOrderBlockers(state: GameState, action: OrderBlockers): String? {
+        if (state.activePlayerId != action.playerId) {
+            return "You can only order blockers on your turn"
+        }
+        if (state.step != com.wingedsheep.sdk.core.Step.DECLARE_BLOCKERS) {
+            return "You can only order blockers during the declare blockers step"
+        }
+        return null
+    }
+
+    private fun validateMakeChoice(state: GameState, action: MakeChoice): String? {
+        // TODO: Validate choice context
+        return null
+    }
+
+    private fun validateSelectTargets(state: GameState, action: SelectTargets): String? {
+        // TODO: Validate target selection
+        return null
+    }
+
+    private fun validateChooseManaColor(state: GameState, action: ChooseManaColor): String? {
+        // TODO: Validate mana color choice
+        return null
+    }
+
+    /**
+     * Execute a validated action.
+     */
+    private fun execute(state: GameState, action: GameAction): ExecutionResult {
+        return when (action) {
+            is PassPriority -> executePassPriority(state, action)
+            is CastSpell -> executeCastSpell(state, action)
+            is ActivateAbility -> executeActivateAbility(state, action)
+            is PlayLand -> executePlayLand(state, action)
+            is DeclareAttackers -> executeDeclareAttackers(state, action)
+            is DeclareBlockers -> executeDeclareBlockers(state, action)
+            is OrderBlockers -> executeOrderBlockers(state, action)
+            is MakeChoice -> executeMakeChoice(state, action)
+            is SelectTargets -> executeSelectTargets(state, action)
+            is ChooseManaColor -> executeChooseManaColor(state, action)
+            is Concede -> executeConcede(state, action)
+        }
+    }
+
+    private fun executePassPriority(state: GameState, action: PassPriority): ExecutionResult {
+        val newState = state.withPriorityPassed(action.playerId)
+
+        // Check if all players passed
+        if (newState.allPlayersPassed()) {
+            // Either resolve top of stack or advance game
+            return if (newState.stack.isNotEmpty()) {
+                resolveTopOfStack(newState)
+            } else {
+                advanceGame(newState)
+            }
+        }
+
+        // Pass to next player
+        val nextPlayer = state.getNextPlayer(action.playerId)
+        return ExecutionResult.success(
+            newState.withPriority(nextPlayer),
+            listOf(PriorityChangedEvent(nextPlayer))
+        )
+    }
+
+    private fun executeCastSpell(state: GameState, action: CastSpell): ExecutionResult {
+        var currentState = state
+        val events = mutableListOf<GameEvent>()
+
+        // Get the card being cast
+        val cardComponent = state.getEntity(action.cardId)?.get<CardComponent>()
+            ?: return ExecutionResult.error(state, "Card not found")
+
+        val xValue = action.xValue ?: 0
+
+        // Handle mana payment based on strategy
+        when (action.paymentStrategy) {
+            is PaymentStrategy.FromPool -> {
+                // Player has already floated mana - deduct from pool
+                val poolComponent = currentState.getEntity(action.playerId)?.get<ManaPoolComponent>()
+                    ?: ManaPoolComponent()
+                val pool = ManaPool(
+                    white = poolComponent.white,
+                    blue = poolComponent.blue,
+                    black = poolComponent.black,
+                    red = poolComponent.red,
+                    green = poolComponent.green,
+                    colorless = poolComponent.colorless
+                )
+
+                val newPool = costHandler.payManaCost(pool, cardComponent.manaCost)
+                    ?: return ExecutionResult.error(currentState, "Insufficient mana in pool")
+
+                // Update the player's mana pool component
+                currentState = currentState.updateEntity(action.playerId) { container ->
+                    container.with(
+                        ManaPoolComponent(
+                            white = newPool.white,
+                            blue = newPool.blue,
+                            black = newPool.black,
+                            red = newPool.red,
+                            green = newPool.green,
+                            colorless = newPool.colorless
+                        )
+                    )
+                }
+
+                // Emit mana spent event
+                val spent = ManaSpentEvent(
+                    playerId = action.playerId,
+                    reason = "Cast ${cardComponent.name}",
+                    white = poolComponent.white - newPool.white,
+                    blue = poolComponent.blue - newPool.blue,
+                    black = poolComponent.black - newPool.black,
+                    red = poolComponent.red - newPool.red,
+                    green = poolComponent.green - newPool.green,
+                    colorless = poolComponent.colorless - newPool.colorless
+                )
+                events.add(spent)
+            }
+
+            is PaymentStrategy.AutoPay -> {
+                // Find sources to tap using the solver
+                val solution = manaSolver.solve(currentState, action.playerId, cardComponent.manaCost, xValue)
+                    ?: return ExecutionResult.error(currentState, "Not enough mana to auto-pay")
+
+                // Tap each source and generate events
+                for (source in solution.sources) {
+                    currentState = currentState.updateEntity(source.entityId) { container ->
+                        container.with(TappedComponent)
+                    }
+
+                    // Emit tapped event for client animation
+                    events.add(TappedEvent(source.entityId, source.name))
+                }
+
+                // Track mana spent for the event
+                var whiteSpent = 0
+                var blueSpent = 0
+                var blackSpent = 0
+                var redSpent = 0
+                var greenSpent = 0
+                var colorlessSpent = 0
+
+                for ((_, production) in solution.manaProduced) {
+                    when (production.color) {
+                        Color.WHITE -> whiteSpent++
+                        Color.BLUE -> blueSpent++
+                        Color.BLACK -> blackSpent++
+                        Color.RED -> redSpent++
+                        Color.GREEN -> greenSpent++
+                        null -> colorlessSpent += production.colorless
+                    }
+                }
+
+                events.add(
+                    ManaSpentEvent(
+                        playerId = action.playerId,
+                        reason = "Cast ${cardComponent.name}",
+                        white = whiteSpent,
+                        blue = blueSpent,
+                        black = blackSpent,
+                        red = redSpent,
+                        green = greenSpent,
+                        colorless = colorlessSpent
+                    )
+                )
+            }
+
+            is PaymentStrategy.Explicit -> {
+                // Tap the specified sources
+                for (sourceId in action.paymentStrategy.manaAbilitiesToActivate) {
+                    val sourceName = currentState.getEntity(sourceId)
+                        ?.get<CardComponent>()?.name ?: "Unknown"
+
+                    currentState = currentState.updateEntity(sourceId) { container ->
+                        container.with(TappedComponent)
+                    }
+
+                    events.add(TappedEvent(sourceId, sourceName))
+                }
+
+                // For explicit payment, we trust that the client sent valid sources
+                // TODO: More sophisticated tracking of exactly which mana was produced
+            }
+        }
+
+        // Cast the spell using StackResolver
+        val castResult = stackResolver.castSpell(
+            currentState,
+            action.cardId,
+            action.playerId,
+            action.targets,
+            action.xValue
+        )
+
+        if (!castResult.isSuccess) {
+            return castResult
+        }
+
+        // Combine our events with cast events
+        val allEvents = events + castResult.events
+
+        // After casting, active player gets priority
+        return ExecutionResult.success(
+            castResult.newState.withPriority(state.activePlayerId),
+            allEvents
+        )
+    }
+
+    private fun executeActivateAbility(state: GameState, action: ActivateAbility): ExecutionResult {
+        // TODO: Look up the ability from the source
+        // TODO: Pay costs
+        // TODO: Put ability on stack
+
+        // For now, return success with unchanged state
+        return ExecutionResult.success(state)
+    }
+
+    private fun executePlayLand(state: GameState, action: PlayLand): ExecutionResult {
+        val container = state.getEntity(action.cardId)
+            ?: return ExecutionResult.error(state, "Card not found")
+
+        val cardComponent = container.get<CardComponent>()
+            ?: return ExecutionResult.error(state, "Not a card")
+
+        var newState = state
+
+        // Remove from hand
+        val handZone = ZoneKey(action.playerId, ZoneType.HAND)
+        newState = newState.removeFromZone(handZone, action.cardId)
+
+        // Add to battlefield
+        val battlefieldZone = ZoneKey(action.playerId, ZoneType.BATTLEFIELD)
+        newState = newState.addToZone(battlefieldZone, action.cardId)
+
+        // Add controller component
+        newState = newState.updateEntity(action.cardId) { c ->
+            c.with(ControllerComponent(action.playerId))
+        }
+
+        // Use up a land drop
+        newState = newState.updateEntity(action.playerId) { c ->
+            val landDrops = c.get<LandDropsComponent>() ?: LandDropsComponent()
+            c.with(landDrops.use())
+        }
+
+        return ExecutionResult.success(
+            newState.tick(),
+            listOf(
+                ZoneChangeEvent(
+                    action.cardId,
+                    cardComponent.name,
+                    ZoneType.HAND,
+                    ZoneType.BATTLEFIELD,
+                    action.playerId
+                )
+            )
+        )
+    }
+
+    private fun executeDeclareAttackers(state: GameState, action: DeclareAttackers): ExecutionResult {
+        return combatManager.declareAttackers(state, action.playerId, action.attackers)
+    }
+
+    private fun executeDeclareBlockers(state: GameState, action: DeclareBlockers): ExecutionResult {
+        return combatManager.declareBlockers(state, action.playerId, action.blockers)
+    }
+
+    private fun executeOrderBlockers(state: GameState, action: OrderBlockers): ExecutionResult {
+        // TODO: Store blocker damage assignment order
+        return ExecutionResult.success(state)
+    }
+
+    private fun executeMakeChoice(state: GameState, action: MakeChoice): ExecutionResult {
+        // TODO: Handle modal choices, card selections, etc.
+        return ExecutionResult.success(state)
+    }
+
+    private fun executeSelectTargets(state: GameState, action: SelectTargets): ExecutionResult {
+        // TODO: Handle target selection for triggered abilities
+        return ExecutionResult.success(state)
+    }
+
+    private fun executeChooseManaColor(state: GameState, action: ChooseManaColor): ExecutionResult {
+        // Add mana of the chosen color to the player's mana pool
+        var newState = state.updateEntity(action.playerId) { c ->
+            val manaPool = c.get<ManaPoolComponent>() ?: ManaPoolComponent()
+            c.with(manaPool.add(action.color))
+        }
+        return ExecutionResult.success(newState)
+    }
+
+    private fun executeConcede(state: GameState, action: Concede): ExecutionResult {
+        val opponent = state.getOpponent(action.playerId)
+        return ExecutionResult.success(
+            state.copy(gameOver = true, winnerId = opponent),
+            listOf(
+                PlayerLostEvent(action.playerId, GameEndReason.CONCESSION),
+                GameEndedEvent(opponent, GameEndReason.CONCESSION)
+            )
+        )
+    }
+
+    private fun resolveTopOfStack(state: GameState): ExecutionResult {
+        val result = stackResolver.resolveTop(state)
+
+        if (!result.isSuccess) {
+            return result
+        }
+
+        // After resolution, active player gets priority
+        return ExecutionResult.success(
+            result.newState.withPriority(state.activePlayerId),
+            result.events
+        )
+    }
+
+    private fun advanceGame(state: GameState): ExecutionResult {
+        return turnManager.advanceStep(state)
+    }
+}
