@@ -27,6 +27,86 @@ fun card(name: String, init: CardBuilder.() -> Unit): CardDefinition {
 }
 
 /**
+ * DSL entry point for defining basic land cards with art variants.
+ *
+ * Basic lands have an intrinsic mana ability that taps for one mana of their color.
+ * This helper creates a basic land with the specified metadata for art variants.
+ *
+ * Usage:
+ * ```kotlin
+ * val plains196 = basicLand("Plains") {
+ *     collectorNumber = "196"
+ *     artist = "Douglas Shuler"
+ *     imageUri = "https://cards.scryfall.io/..."
+ * }
+ * ```
+ *
+ * @param landType The basic land type: "Plains", "Island", "Swamp", "Mountain", or "Forest"
+ * @param init Metadata configuration for this art variant
+ */
+fun basicLand(landType: String, init: BasicLandBuilder.() -> Unit): CardDefinition {
+    val builder = BasicLandBuilder(landType)
+    builder.init()
+    return builder.build()
+}
+
+/**
+ * Builder class for constructing basic land CardDefinition instances.
+ */
+@CardDsl
+class BasicLandBuilder(private val landType: String) {
+    var collectorNumber: String? = null
+    var artist: String? = null
+    var flavorText: String? = null
+    var imageUri: String? = null
+    var rarity: Rarity = Rarity.COMMON
+
+    private val manaColor: Color = when (landType) {
+        "Plains" -> Color.WHITE
+        "Island" -> Color.BLUE
+        "Swamp" -> Color.BLACK
+        "Mountain" -> Color.RED
+        "Forest" -> Color.GREEN
+        else -> throw IllegalArgumentException("Unknown basic land type: $landType")
+    }
+
+    fun build(): CardDefinition {
+        val typeLine = TypeLine.parse("Basic Land — $landType")
+
+        // Basic lands have an intrinsic mana ability: "{T}: Add {color}."
+        // Mana abilities don't use the stack and resolve immediately.
+        val manaAbility = ActivatedAbility(
+            id = AbilityId.generate(),
+            cost = AbilityCost.Tap,
+            effect = AddManaEffect(manaColor),
+            isManaAbility = true,
+            timing = TimingRule.ManaAbility
+        )
+
+        val script = CardScript(
+            activatedAbilities = listOf(manaAbility)
+        )
+
+        val metadata = ScryfallMetadata(
+            collectorNumber = collectorNumber,
+            rarity = rarity,
+            artist = artist,
+            flavorText = flavorText,
+            imageUri = imageUri
+        )
+
+        return CardDefinition(
+            name = landType,
+            manaCost = ManaCost.ZERO,
+            typeLine = typeLine,
+            oracleText = "({T}: Add {${manaColor.symbol}}.)",
+            script = script,
+            metadata = metadata
+        )
+    }
+}
+
+/**
  * Builder class for constructing CardDefinition instances using DSL syntax.
  */
 @DslMarker

@@ -18,7 +18,7 @@ object PortalSet {
     const val SET_NAME = "Portal"
 
     /**
-     * All cards in this set (first 195 implemented - cards 196-222 are basic lands).
+     * All cards in this set (complete: 195 spells/creatures + 20 basic lands = 215 cards).
      */
     val allCards = listOf(
         // Cards 1-10
@@ -235,17 +235,38 @@ object PortalSet {
         WhiptailWurm,
         WillowDryad,
         WintersGrasp,
-        WoodElves
+        WoodElves,
+        // Cards 196-215 (basic lands - 4 art variants each)
+        Plains196, Plains197, Plains198, Plains199,
+        Island200, Island201, Island202, Island203,
+        Swamp204, Swamp205, Swamp206, Swamp207,
+        Mountain208, Mountain209, Mountain210, Mountain211,
+        Forest212, Forest213, Forest214, Forest215
     )
 
     /**
-     * Get a card by name.
+     * Get a card by name (returns first match for basic lands with multiple art variants).
      */
     fun getCard(name: String) = allCards.find { it.name == name }
+
+    /**
+     * Get all cards with a given name (useful for basic lands with multiple art variants).
+     */
+    fun getCardsByName(name: String) = allCards.filter { it.name == name }
 
     /**
      * Get a card by collector number.
      */
     fun getCardByNumber(collectorNumber: String) =
         allCards.find { it.metadata.collectorNumber == collectorNumber }
+
+    /**
+     * All basic land variants in this set.
+     */
+    val basicLands = PortalBasicLands
+
+    /**
+     * Get all basic lands of a specific type.
+     */
+    fun getBasicLandsByType(type: String) = basicLands.filter { it.name == type }
 }

@@ -3093,9 +3093,66 @@ class PortalSetTest : DescribeSpec({
         }
     }
 
+    describe("Portal Set - Basic Lands (Cards 196-215)") {
+
+        describe("Plains variants") {
+            it("should have 4 art variants") {
+                PortalSet.getBasicLandsByType("Plains") shouldHaveSize 4
+            }
+
+            it("should be proper basic lands") {
+                val plains = Plains196
+                plains.name shouldBe "Plains"
+                plains.typeLine.isLand shouldBe true
+                plains.typeLine.isBasicLand shouldBe true
+                plains.manaCost.cmc shouldBe 0
+            }
+
+            it("should have different collector numbers") {
+                val numbers = listOf(Plains196, Plains197, Plains198, Plains199)
+                    .map { it.metadata.collectorNumber }
+                numbers shouldBe listOf("196", "197", "198", "199")
+            }
+        }
+
+        describe("Island variants") {
+            it("should have 4 art variants") {
+                PortalSet.getBasicLandsByType("Island") shouldHaveSize 4
+            }
+
+            it("should have mana ability") {
+                val island = Island200
+                island.script.activatedAbilities shouldHaveSize 1
+                island.script.activatedAbilities.first().isManaAbility shouldBe true
+            }
+        }
+
+        describe("Swamp variants") {
+            it("should have 4 art variants") {
+                PortalSet.getBasicLandsByType("Swamp") shouldHaveSize 4
+            }
+        }
+
+        describe("Mountain variants") {
+            it("should have 4 art variants") {
+                PortalSet.getBasicLandsByType("Mountain") shouldHaveSize 4
+            }
+        }
+
+        describe("Forest variants") {
+            it("should have 4 art variants") {
+                PortalSet.getBasicLandsByType("Forest") shouldHaveSize 4
+            }
+        }
+    }
+
     describe("PortalSet object") {
-        it("should have 195 cards in the set") {
-            PortalSet.allCards shouldHaveSize 195
+        it("should have 215 cards in the set (195 spells/creatures + 20 basic lands)") {
+            PortalSet.allCards shouldHaveSize 215
+        }
+
+        it("should have 20 basic lands") {
+            PortalSet.basicLands shouldHaveSize 20
         }
 
         it("should have correct set code") {
@@ -3110,10 +3167,18 @@ class PortalSetTest : DescribeSpec({
             PortalSet.getCard("Nonexistent") shouldBe null
         }
 
+        it("should find all cards with a given name") {
+            PortalSet.getCardsByName("Plains") shouldHaveSize 4
+            PortalSet.getCardsByName("Forest") shouldHaveSize 4
+            PortalSet.getCardsByName("Armageddon") shouldHaveSize 1
+        }
+
         it("should find cards by collector number") {
             PortalSet.getCardByNumber("5") shouldBe Armageddon
             PortalSet.getCardByNumber("15") shouldBe FleetFootedMonk
             PortalSet.getCardByNumber("30") shouldBe StarlitAngel
+            PortalSet.getCardByNumber("196") shouldBe Plains196
+            PortalSet.getCardByNumber("212") shouldBe Forest212
             PortalSet.getCardByNumber("999") shouldBe null
         }
 

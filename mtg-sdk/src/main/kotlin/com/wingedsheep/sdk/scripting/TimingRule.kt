@@ -33,4 +33,26 @@ sealed interface TimingRule {
      */
     @Serializable
     data object SorcerySpeed : TimingRule
+
+    /**
+     * Mana ability: Special timing that does NOT use the stack.
+     *
+     * MTG Rules 605.1: A mana ability is either:
+     * - An activated ability without a target that could add mana to a player's mana pool
+     * - A triggered ability without a target that triggers from a mana ability
+     *
+     * Key characteristics:
+     * - Does NOT go on the stack (Rule 605.3a)
+     * - Resolves immediately when activated
+     * - Cannot be responded to or countered (no Stifle, Disallow, etc.)
+     * - Can be activated during mana payment even without priority
+     * - Can be activated any time the player has priority
+     *
+     * Examples:
+     * - Tapping a basic land for mana
+     * - Llanowar Elves' "{T}: Add {G}"
+     * - Black Lotus' "{T}, Sacrifice: Add three mana of any one color"
+     */
+    @Serializable
+    data object ManaAbility : TimingRule
 }
