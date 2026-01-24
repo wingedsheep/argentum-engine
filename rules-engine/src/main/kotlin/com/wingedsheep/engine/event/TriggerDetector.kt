@@ -1,6 +1,15 @@
 package com.wingedsheep.engine.event
 
-import com.wingedsheep.engine.core.*
+import com.wingedsheep.engine.core.AttackersDeclaredEvent
+import com.wingedsheep.engine.core.BlockersDeclaredEvent
+import com.wingedsheep.engine.core.CardsDrawnEvent
+import com.wingedsheep.engine.core.DamageDealtEvent
+import com.wingedsheep.engine.core.LifeChangedEvent
+import com.wingedsheep.engine.core.SpellCastEvent
+import com.wingedsheep.engine.core.TappedEvent
+import com.wingedsheep.engine.core.UntappedEvent
+import com.wingedsheep.engine.core.ZoneChangeEvent
+import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
@@ -27,7 +36,7 @@ class TriggerDetector(
      */
     fun detectTriggers(
         state: GameState,
-        events: List<GameEvent>
+        events: List<EngineGameEvent>
     ): List<PendingTrigger> {
         val triggers = mutableListOf<PendingTrigger>()
 
@@ -77,7 +86,7 @@ class TriggerDetector(
 
     private fun detectTriggersForEvent(
         state: GameState,
-        event: GameEvent
+        event: EngineGameEvent
     ): List<PendingTrigger> {
         val triggers = mutableListOf<PendingTrigger>()
 
@@ -161,8 +170,8 @@ class TriggerDetector(
         val abilities = abilityRegistry.getTriggeredAbilities(sourceId, cardComponent.cardDefinitionId)
 
         for (ability in abilities) {
-            if (ability.trigger is OnDealsDamage) {
-                val trigger = ability.trigger
+            val trigger = ability.trigger
+            if (trigger is OnDealsDamage) {
                 if (matchesDealsDamageTrigger(trigger, event)) {
                     triggers.add(
                         PendingTrigger(
@@ -180,7 +189,7 @@ class TriggerDetector(
 
     private fun matchesTrigger(
         trigger: Trigger,
-        event: GameEvent,
+        event: EngineGameEvent,
         sourceId: EntityId,
         controllerId: EntityId,
         state: GameState
@@ -311,7 +320,7 @@ class TriggerDetector(
             }
 
             is OnBeginCombat -> {
-                step == Step.BEGINNING_OF_COMBAT &&
+                step == Step.BEGIN_COMBAT &&
                     (!trigger.controllerOnly || controllerId == activePlayerId)
             }
 
@@ -391,7 +400,7 @@ data class TriggerContext(
     val step: Step? = null
 ) {
     companion object {
-        fun fromEvent(event: GameEvent): TriggerContext {
+        fun fromEvent(event: EngineGameEvent): TriggerContext {
             return when (event) {
                 is ZoneChangeEvent -> TriggerContext(triggeringEntityId = event.entityId)
                 is DamageDealtEvent -> TriggerContext(

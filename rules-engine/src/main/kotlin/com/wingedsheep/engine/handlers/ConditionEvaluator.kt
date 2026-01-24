@@ -57,10 +57,16 @@ class ConditionEvaluator {
             is SourceIsBlocking -> evaluateSourceBlocking(state, context)
             is SourceIsTapped -> evaluateSourceTapped(state, context)
             is SourceIsUntapped -> evaluateSourceUntapped(state, context)
+            is SourceEnteredThisTurn -> evaluateSourceEnteredThisTurn(state, context)
+            is SourceHasDealtDamage -> evaluateSourceHasDealtDamage(state, context)
+            is SourceHasDealtCombatDamageToPlayer -> evaluateSourceHasDealtCombatDamageToPlayer(state, context)
 
             // Turn conditions
             is IsYourTurn -> evaluateIsYourTurn(state, context)
             is IsNotYourTurn -> !evaluateIsYourTurn(state, context)
+            is YouAttackedThisTurn -> evaluateYouAttackedThisTurn(state, context)
+            is YouWereAttackedThisStep -> evaluateYouWereAttackedThisStep(state, context)
+            is YouWereDealtCombatDamageThisTurn -> evaluateYouWereDealtCombatDamageThisTurn(state, context)
 
             // Composite conditions
             is AllConditions -> condition.conditions.all { evaluate(state, it, context) }
@@ -230,6 +236,42 @@ class ConditionEvaluator {
 
     private fun evaluateIsYourTurn(state: GameState, context: EffectContext): Boolean {
         return state.activePlayerId == context.controllerId
+    }
+
+    private fun evaluateSourceEnteredThisTurn(state: GameState, context: EffectContext): Boolean {
+        // TODO: Track when permanents entered the battlefield
+        // For now, return false as we don't have this tracking yet
+        return false
+    }
+
+    private fun evaluateSourceHasDealtDamage(state: GameState, context: EffectContext): Boolean {
+        // TODO: Track damage dealt by source this turn
+        // For now, return false as we don't have this tracking yet
+        return false
+    }
+
+    private fun evaluateSourceHasDealtCombatDamageToPlayer(state: GameState, context: EffectContext): Boolean {
+        // TODO: Track combat damage dealt to players
+        // For now, return false as we don't have this tracking yet
+        return false
+    }
+
+    private fun evaluateYouAttackedThisTurn(state: GameState, context: EffectContext): Boolean {
+        // TODO: Track if player attacked this turn
+        // For now, return false as we don't have this tracking yet
+        return false
+    }
+
+    private fun evaluateYouWereAttackedThisStep(state: GameState, context: EffectContext): Boolean {
+        // TODO: Track if player was attacked this step
+        // For now, return false as we don't have this tracking yet
+        return false
+    }
+
+    private fun evaluateYouWereDealtCombatDamageThisTurn(state: GameState, context: EffectContext): Boolean {
+        // TODO: Track if player was dealt combat damage this turn
+        // For now, return false as we don't have this tracking yet
+        return false
     }
 
     // Helper functions

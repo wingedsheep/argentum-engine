@@ -1,6 +1,19 @@
 package com.wingedsheep.engine.handlers
 
-import com.wingedsheep.engine.core.*
+import com.wingedsheep.engine.core.CardsDiscardedEvent
+import com.wingedsheep.engine.core.CardsDrawnEvent
+import com.wingedsheep.engine.core.CountersAddedEvent
+import com.wingedsheep.engine.core.CountersRemovedEvent
+import com.wingedsheep.engine.core.DamageDealtEvent
+import com.wingedsheep.engine.core.DrawFailedEvent
+import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.LifeChangedEvent
+import com.wingedsheep.engine.core.LifeChangeReason
+import com.wingedsheep.engine.core.LibraryShuffledEvent
+import com.wingedsheep.engine.core.TappedEvent
+import com.wingedsheep.engine.core.UntappedEvent
+import com.wingedsheep.engine.core.ZoneChangeEvent
+import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
@@ -23,7 +36,9 @@ import com.wingedsheep.sdk.scripting.*
  * This is the bridge between the "dumb" effect data and the "smart" engine logic.
  * Each effect type maps to a specific execution function.
  */
-class EffectHandler {
+class EffectHandler(
+    private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator()
+) {
 
     /**
      * Execute an effect and return the result.
@@ -108,7 +123,8 @@ class EffectHandler {
         val currentLife = state.getEntity(targetId)?.get<LifeTotalComponent>()?.life
             ?: return ExecutionResult.error(state, "Target has no life total")
 
-        val newLife = currentLife + effect.amount
+        val amount = amountEvaluator.evaluate(state, effect.amount, context)
+        val newLife = currentLife + amount
         val newState = state.updateEntity(targetId) { container ->
             container.with(LifeTotalComponent(newLife))
         }
@@ -204,7 +220,7 @@ class EffectHandler {
     ): ExecutionResult {
         if (amount <= 0) return ExecutionResult.success(state)
 
-        val events = mutableListOf<GameEvent>()
+        val events = mutableListOf<EngineGameEvent>()
         var newState = state
 
         // Check if target is a player or creature
@@ -235,7 +251,7 @@ class EffectHandler {
         context: EffectContext
     ): ExecutionResult {
         var newState = state
-        val events = mutableListOf<GameEvent>()
+        val events = mutableListOf<EngineGameEvent>()
 
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
@@ -262,7 +278,7 @@ class EffectHandler {
         context: EffectContext
     ): ExecutionResult {
         var newState = state
-        val events = mutableListOf<GameEvent>()
+        val events = mutableListOf<EngineGameEvent>()
 
         // Damage to creatures
         for (entityId in state.getBattlefield()) {
@@ -335,8 +351,9 @@ class EffectHandler {
 
         val libraryZone = ZoneKey(playerId, ZoneType.LIBRARY)
         val handZone = ZoneKey(playerId, ZoneType.HAND)
+        val count = amountEvaluator.evaluate(state, effect.count, context)
 
-        repeat(effect.count) {
+        repeat(count) {
             val library = newState.getZone(libraryZone)
             if (library.isEmpty()) {
                 // Failed to draw - game loss condition
@@ -413,7 +430,7 @@ class EffectHandler {
         context: EffectContext
     ): ExecutionResult {
         var newState = state
-        val events = mutableListOf<GameEvent>()
+        val events = mutableListOf<EngineGameEvent>()
 
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
@@ -434,7 +451,7 @@ class EffectHandler {
         context: EffectContext
     ): ExecutionResult {
         var newState = state
-        val events = mutableListOf<GameEvent>()
+        val events = mutableListOf<EngineGameEvent>()
 
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
