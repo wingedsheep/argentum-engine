@@ -1279,9 +1279,179 @@ class PortalSetTest : DescribeSpec({
         }
     }
 
+    describe("Portal Set - Cards 81-90") {
+
+        describe("Bog Imp") {
+            val card = BogImp
+
+            it("should be a 1/1 Imp with flying") {
+                card.manaCost.toString() shouldBe "{1}{B}"
+                card.cmc shouldBe 2
+                card.creatureStats?.basePower shouldBe 1
+                card.creatureStats?.baseToughness shouldBe 1
+                card.typeLine.subtypes shouldContain Subtype.IMP
+                card.keywords shouldContain Keyword.FLYING
+            }
+        }
+
+        describe("Bog Raiders") {
+            val card = BogRaiders
+
+            it("should be a 2/2 Zombie with swampwalk") {
+                card.manaCost.toString() shouldBe "{2}{B}"
+                card.cmc shouldBe 3
+                card.creatureStats?.basePower shouldBe 2
+                card.creatureStats?.baseToughness shouldBe 2
+                card.typeLine.subtypes shouldContain Subtype.ZOMBIE
+                card.keywords shouldContain Keyword.SWAMPWALK
+            }
+        }
+
+        describe("Bog Wraith") {
+            val card = BogWraith
+
+            it("should be a 3/3 Wraith with swampwalk") {
+                card.manaCost.toString() shouldBe "{3}{B}"
+                card.cmc shouldBe 4
+                card.creatureStats?.basePower shouldBe 3
+                card.creatureStats?.baseToughness shouldBe 3
+                card.typeLine.subtypes shouldContain Subtype.WRAITH
+                card.keywords shouldContain Keyword.SWAMPWALK
+            }
+        }
+
+        describe("Charging Bandits") {
+            val card = ChargingBandits
+
+            it("should be a 3/3 Human Rogue") {
+                card.manaCost.toString() shouldBe "{4}{B}"
+                card.cmc shouldBe 5
+                card.creatureStats?.basePower shouldBe 3
+                card.creatureStats?.baseToughness shouldBe 3
+                card.typeLine.subtypes shouldContain Subtype.HUMAN
+                card.typeLine.subtypes shouldContain Subtype.ROGUE
+            }
+
+            it("should have attack trigger that gives +2/+0") {
+                card.triggeredAbilities shouldHaveSize 1
+                val trigger = card.triggeredAbilities.first()
+                trigger.trigger.shouldBeInstanceOf<OnAttack>()
+                trigger.effect.shouldBeInstanceOf<ModifyStatsEffect>()
+                val effect = trigger.effect as ModifyStatsEffect
+                effect.powerModifier shouldBe 2
+                effect.toughnessModifier shouldBe 0
+            }
+        }
+
+        describe("Craven Knight") {
+            val card = CravenKnight
+
+            it("should be a 2/2 Human Knight") {
+                card.manaCost.toString() shouldBe "{1}{B}"
+                card.cmc shouldBe 2
+                card.creatureStats?.basePower shouldBe 2
+                card.creatureStats?.baseToughness shouldBe 2
+                card.typeLine.subtypes shouldContain Subtype.HUMAN
+                card.typeLine.subtypes shouldContain Subtype.KNIGHT
+            }
+
+            it("should not be able to block") {
+                card.staticAbilities shouldHaveSize 1
+                card.staticAbilities.first().shouldBeInstanceOf<CantBlock>()
+            }
+        }
+
+        describe("Cruel Bargain") {
+            val card = CruelBargain
+
+            it("should draw 4 cards and lose half life") {
+                card.manaCost.toString() shouldBe "{B}{B}{B}"
+                card.cmc shouldBe 3
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<CompositeEffect>()
+                val composite = card.spellEffect as CompositeEffect
+                composite.effects shouldHaveSize 2
+                composite.effects[0].shouldBeInstanceOf<DrawCardsEffect>()
+                val drawEffect = composite.effects[0] as DrawCardsEffect
+                drawEffect.count shouldBe DynamicAmount.Fixed(4)
+                composite.effects[1].shouldBeInstanceOf<LoseHalfLifeEffect>()
+                val loseEffect = composite.effects[1] as LoseHalfLifeEffect
+                loseEffect.roundUp shouldBe true
+            }
+        }
+
+        describe("Cruel Tutor") {
+            val card = CruelTutor
+
+            it("should search for any card and put on top, then lose 2 life") {
+                card.manaCost.toString() shouldBe "{2}{B}"
+                card.cmc shouldBe 3
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<CompositeEffect>()
+                val composite = card.spellEffect as CompositeEffect
+                composite.effects shouldHaveSize 2
+                composite.effects[0].shouldBeInstanceOf<SearchLibraryToTopEffect>()
+                val searchEffect = composite.effects[0] as SearchLibraryToTopEffect
+                searchEffect.filter shouldBe CardFilter.AnyCard
+                composite.effects[1].shouldBeInstanceOf<LoseLifeEffect>()
+                val loseEffect = composite.effects[1] as LoseLifeEffect
+                loseEffect.amount shouldBe 2
+            }
+        }
+
+        describe("Dread Charge") {
+            val card = DreadCharge
+
+            it("should make black creatures unblockable except by black") {
+                card.manaCost.toString() shouldBe "{3}{B}"
+                card.cmc shouldBe 4
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<GrantCantBeBlockedExceptByColorEffect>()
+                val effect = card.spellEffect as GrantCantBeBlockedExceptByColorEffect
+                effect.filter shouldBe CreatureGroupFilter.ColorYouControl(Color.BLACK)
+                effect.canOnlyBeBlockedByColor shouldBe Color.BLACK
+            }
+        }
+
+        describe("Dread Reaper") {
+            val card = DreadReaper
+
+            it("should be a 6/5 Horror with flying") {
+                card.manaCost.toString() shouldBe "{3}{B}{B}{B}"
+                card.cmc shouldBe 6
+                card.creatureStats?.basePower shouldBe 6
+                card.creatureStats?.baseToughness shouldBe 5
+                card.typeLine.subtypes shouldContain Subtype.HORROR
+                card.keywords shouldContain Keyword.FLYING
+            }
+
+            it("should have ETB trigger to lose 5 life") {
+                card.triggeredAbilities shouldHaveSize 1
+                val trigger = card.triggeredAbilities.first()
+                trigger.trigger.shouldBeInstanceOf<OnEnterBattlefield>()
+                trigger.effect.shouldBeInstanceOf<LoseLifeEffect>()
+                val effect = trigger.effect as LoseLifeEffect
+                effect.amount shouldBe 5
+            }
+        }
+
+        describe("Dry Spell") {
+            val card = DrySpell
+
+            it("should deal 1 damage to each creature and player") {
+                card.manaCost.toString() shouldBe "{1}{B}"
+                card.cmc shouldBe 2
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<DealDamageToAllEffect>()
+                val effect = card.spellEffect as DealDamageToAllEffect
+                effect.amount shouldBe 1
+            }
+        }
+    }
+
     describe("PortalSet object") {
-        it("should have 80 cards in the set") {
-            PortalSet.allCards shouldHaveSize 80
+        it("should have 90 cards in the set") {
+            PortalSet.allCards shouldHaveSize 90
         }
 
         it("should have correct set code") {

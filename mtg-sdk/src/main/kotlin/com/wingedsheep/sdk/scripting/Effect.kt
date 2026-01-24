@@ -2252,6 +2252,27 @@ data class GrantKeywordToGroupEffect(
 }
 
 /**
+ * Grant evasion to a group of creatures until end of turn.
+ * "Black creatures you control can't be blocked this turn except by black creatures."
+ * Used for Dread Charge.
+ *
+ * @property filter Which creatures gain the evasion
+ * @property canOnlyBeBlockedByColor The color of creatures that can block them
+ */
+@Serializable
+data class GrantCantBeBlockedExceptByColorEffect(
+    val filter: CreatureGroupFilter,
+    val canOnlyBeBlockedByColor: Color,
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    override val description: String = buildString {
+        append("${filter.description} can't be blocked")
+        if (duration.description.isNotEmpty()) append(" ${duration.description}")
+        append(" except by ${canOnlyBeBlockedByColor.displayName.lowercase()} creatures")
+    }
+}
+
+/**
  * Filter for groups of creatures affected by mass effects.
  */
 @Serializable
