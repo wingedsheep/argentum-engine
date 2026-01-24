@@ -2680,9 +2680,146 @@ class PortalSetTest : DescribeSpec({
         }
     }
 
+    describe("Portal Set - Cards 171-180") {
+        describe("Jungle Lion") {
+            val card = JungleLion
+
+            it("should be a 2/1 Cat that can't block") {
+                card.manaCost.toString() shouldBe "{G}"
+                card.cmc shouldBe 1
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.CAT
+                card.creatureStats?.basePower shouldBe 2
+                card.creatureStats?.baseToughness shouldBe 1
+                card.script.staticAbilities shouldHaveSize 1
+                card.script.staticAbilities.first().shouldBeInstanceOf<CantBlock>()
+            }
+        }
+
+        describe("Mobilize") {
+            val card = Mobilize
+
+            it("should untap all creatures you control") {
+                card.manaCost.toString() shouldBe "{G}"
+                card.cmc shouldBe 1
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<UntapAllCreaturesYouControlEffect>()
+            }
+        }
+
+        describe("Monstrous Growth") {
+            val card = MonstrousGrowth
+
+            it("should give +4/+4 until end of turn") {
+                card.manaCost.toString() shouldBe "{1}{G}"
+                card.cmc shouldBe 2
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<ModifyStatsEffect>()
+                val effect = card.spellEffect as ModifyStatsEffect
+                effect.powerModifier shouldBe 4
+                effect.toughnessModifier shouldBe 4
+            }
+        }
+
+        describe("Moon Sprite") {
+            val card = MoonSprite
+
+            it("should be a 1/1 Faerie with flying") {
+                card.manaCost.toString() shouldBe "{1}{G}"
+                card.cmc shouldBe 2
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.FAERIE
+                card.creatureStats?.basePower shouldBe 1
+                card.creatureStats?.baseToughness shouldBe 1
+                card.keywords shouldContain Keyword.FLYING
+            }
+        }
+
+        describe("Natural Order") {
+            val card = NaturalOrder
+
+            it("should have sacrifice cost and search effect") {
+                card.manaCost.toString() shouldBe "{2}{G}{G}"
+                card.cmc shouldBe 4
+                card.typeLine.isSorcery shouldBe true
+                card.script.additionalCosts shouldHaveSize 1
+                card.script.additionalCosts.first().shouldBeInstanceOf<AdditionalCost.SacrificePermanent>()
+                card.spellEffect.shouldBeInstanceOf<SearchLibraryEffect>()
+            }
+        }
+
+        describe("Natural Spring") {
+            val card = NaturalSpring
+
+            it("should give target player 8 life") {
+                card.manaCost.toString() shouldBe "{3}{G}{G}"
+                card.cmc shouldBe 5
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<GainLifeEffect>()
+                val effect = card.spellEffect as GainLifeEffect
+                effect.amount shouldBe DynamicAmount.Fixed(8)
+            }
+        }
+
+        describe("Nature's Cloak") {
+            val card = NaturesCloak
+
+            it("should grant forestwalk to green creatures") {
+                card.manaCost.toString() shouldBe "{2}{G}"
+                card.cmc shouldBe 3
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<GrantKeywordToGroupEffect>()
+                val effect = card.spellEffect as GrantKeywordToGroupEffect
+                effect.keyword shouldBe Keyword.FORESTWALK
+            }
+        }
+
+        describe("Nature's Lore") {
+            val card = NaturesLore
+
+            it("should search for a Forest and put it on battlefield") {
+                card.manaCost.toString() shouldBe "{1}{G}"
+                card.cmc shouldBe 2
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<SearchLibraryEffect>()
+                val effect = card.spellEffect as SearchLibraryEffect
+                effect.destination shouldBe SearchDestination.BATTLEFIELD
+                effect.entersTapped shouldBe false
+            }
+        }
+
+        describe("Needle Storm") {
+            val card = NeedleStorm
+
+            it("should deal 4 damage to each creature with flying") {
+                card.manaCost.toString() shouldBe "{2}{G}"
+                card.cmc shouldBe 3
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<DealDamageToAllCreaturesEffect>()
+                val effect = card.spellEffect as DealDamageToAllCreaturesEffect
+                effect.amount shouldBe 4
+                effect.onlyFlying shouldBe true
+            }
+        }
+
+        describe("Panther Warriors") {
+            val card = PantherWarriors
+
+            it("should be a 6/3 Cat Warrior") {
+                card.manaCost.toString() shouldBe "{4}{G}"
+                card.cmc shouldBe 5
+                card.typeLine.isCreature shouldBe true
+                card.typeLine.subtypes shouldContain Subtype.CAT
+                card.typeLine.subtypes shouldContain Subtype.WARRIOR
+                card.creatureStats?.basePower shouldBe 6
+                card.creatureStats?.baseToughness shouldBe 3
+            }
+        }
+    }
+
     describe("PortalSet object") {
-        it("should have 170 cards in the set") {
-            PortalSet.allCards shouldHaveSize 170
+        it("should have 180 cards in the set") {
+            PortalSet.allCards shouldHaveSize 180
         }
 
         it("should have correct set code") {

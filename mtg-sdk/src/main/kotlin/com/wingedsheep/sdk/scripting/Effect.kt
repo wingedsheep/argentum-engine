@@ -2612,6 +2612,15 @@ data class TapAllCreaturesEffect(
     override val description: String = "Tap ${filter.description.replaceFirstChar { it.lowercase() }}"
 }
 
+/**
+ * Untap all creatures you control.
+ * Used for Mobilize: "Untap all creatures you control."
+ */
+@Serializable
+data object UntapAllCreaturesYouControlEffect : Effect {
+    override val description: String = "Untap all creatures you control"
+}
+
 // =============================================================================
 // Combat Damage Effects
 // =============================================================================
