@@ -1002,9 +1002,137 @@ class PortalSetTest : DescribeSpec({
         }
     }
 
+    describe("Portal Set - Cards 61-70") {
+
+        describe("Mystic Denial") {
+            val card = MysticDenial
+
+            it("should be an instant that counters creature or sorcery spells") {
+                card.manaCost.toString() shouldBe "{1}{U}{U}"
+                card.typeLine.isInstant shouldBe true
+                card.spellEffect.shouldBeInstanceOf<CounterSpellWithFilterEffect>()
+                val effect = card.spellEffect as CounterSpellWithFilterEffect
+                effect.filter.shouldBeInstanceOf<SpellFilter.CreatureOrSorcery>()
+            }
+        }
+
+        describe("Omen") {
+            val card = Omen
+
+            it("should look at top 3 with optional shuffle and draw") {
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<OmenEffect>()
+                val effect = card.spellEffect as OmenEffect
+                effect.lookAtCount shouldBe 3
+                effect.mayShuffle shouldBe true
+                effect.drawAfter shouldBe 1
+            }
+        }
+
+        describe("Owl Familiar") {
+            val card = OwlFamiliar
+
+            it("should be a 1/1 Bird with flying") {
+                card.manaCost.toString() shouldBe "{1}{U}"
+                card.creatureStats?.basePower shouldBe 1
+                card.creatureStats?.baseToughness shouldBe 1
+                card.typeLine.subtypes shouldContain Subtype.BIRD
+                card.keywords shouldContain Keyword.FLYING
+            }
+
+            it("should have ETB loot trigger") {
+                card.triggeredAbilities shouldHaveSize 1
+                val trigger = card.triggeredAbilities.first()
+                trigger.trigger.shouldBeInstanceOf<OnEnterBattlefield>()
+                trigger.effect.shouldBeInstanceOf<LootEffect>()
+            }
+        }
+
+        describe("Personal Tutor") {
+            val card = PersonalTutor
+
+            it("should search for sorcery and put on top") {
+                card.manaCost.toString() shouldBe "{U}"
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<SearchLibraryToTopEffect>()
+                val effect = card.spellEffect as SearchLibraryToTopEffect
+                effect.filter shouldBe CardFilter.SorceryCard
+            }
+        }
+
+        describe("Phantom Warrior") {
+            val card = PhantomWarrior
+
+            it("should be a 2/2 unblockable Illusion Warrior") {
+                card.manaCost.toString() shouldBe "{1}{U}{U}"
+                card.creatureStats?.basePower shouldBe 2
+                card.creatureStats?.baseToughness shouldBe 2
+                card.typeLine.subtypes shouldContain Subtype.ILLUSION
+                card.typeLine.subtypes shouldContain Subtype.WARRIOR
+                card.keywords shouldContain Keyword.UNBLOCKABLE
+            }
+        }
+
+        describe("Prosperity") {
+            val card = Prosperity
+
+            it("should be an X spell that draws for all players") {
+                card.manaCost.toString() shouldBe "{X}{U}"
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<EachPlayerDrawsXEffect>()
+            }
+        }
+
+        describe("Snapping Drake") {
+            val card = SnappingDrake
+
+            it("should be a 3/2 Drake with flying") {
+                card.manaCost.toString() shouldBe "{3}{U}"
+                card.creatureStats?.basePower shouldBe 3
+                card.creatureStats?.baseToughness shouldBe 2
+                card.typeLine.subtypes shouldContain Subtype.DRAKE
+                card.keywords shouldContain Keyword.FLYING
+            }
+        }
+
+        describe("Sorcerous Sight") {
+            val card = SorcerousSight
+
+            it("should look at opponent's hand and draw") {
+                card.manaCost.toString() shouldBe "{U}"
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<SorcerousSightEffect>()
+            }
+        }
+
+        describe("Storm Crow") {
+            val card = StormCrow
+
+            it("should be a 1/2 Bird with flying") {
+                card.manaCost.toString() shouldBe "{1}{U}"
+                card.creatureStats?.basePower shouldBe 1
+                card.creatureStats?.baseToughness shouldBe 2
+                card.typeLine.subtypes shouldContain Subtype.BIRD
+                card.keywords shouldContain Keyword.FLYING
+            }
+        }
+
+        describe("Symbol of Unsummoning") {
+            val card = SymbolOfUnsummoning
+
+            it("should bounce creature and draw a card") {
+                card.manaCost.toString() shouldBe "{2}{U}"
+                card.typeLine.isSorcery shouldBe true
+                card.spellEffect.shouldBeInstanceOf<CompositeEffect>()
+                val composite = card.spellEffect as CompositeEffect
+                composite.effects shouldHaveSize 2
+            }
+        }
+    }
+
     describe("PortalSet object") {
-        it("should have 60 cards in the set") {
-            PortalSet.allCards shouldHaveSize 60
+        it("should have 70 cards in the set") {
+            PortalSet.allCards shouldHaveSize 70
         }
 
         it("should have correct set code") {

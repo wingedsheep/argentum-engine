@@ -18,7 +18,7 @@ object PortalSet {
     const val SET_NAME = "Portal"
 
     /**
-     * All cards in this set (first 60 implemented).
+     * All cards in this set (first 70 implemented).
      */
     val allCards = listOf(
         // Cards 1-10
@@ -86,7 +86,18 @@ object PortalSet {
         HornedTurtle,
         IngeniousThief,
         ManOWar,
-        MerfolkOfThePearlTrident
+        MerfolkOfThePearlTrident,
+        // Cards 61-70
+        MysticDenial,
+        Omen,
+        OwlFamiliar,
+        PersonalTutor,
+        PhantomWarrior,
+        Prosperity,
+        SnappingDrake,
+        SorcerousSight,
+        StormCrow,
+        SymbolOfUnsummoning
     )
 
     /**

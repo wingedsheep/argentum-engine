@@ -2139,3 +2139,117 @@ data class LookAtTargetHandEffect(
 ) : Effect {
     override val description: String = "Look at ${target.description}'s hand"
 }
+
+// =============================================================================
+// Counter Spell Effects
+// =============================================================================
+
+/**
+ * Counter target spell that matches a filter.
+ * Used for Mystic Denial: "Counter target creature or sorcery spell."
+ */
+@Serializable
+data class CounterSpellWithFilterEffect(
+    val filter: SpellFilter
+) : Effect {
+    override val description: String = "Counter target ${filter.description} spell"
+}
+
+/**
+ * Filter for spell types that can be countered.
+ */
+@Serializable
+sealed interface SpellFilter {
+    val description: String
+
+    @Serializable
+    data object AnySpell : SpellFilter {
+        override val description: String = ""
+    }
+
+    @Serializable
+    data object CreatureSpell : SpellFilter {
+        override val description: String = "creature"
+    }
+
+    @Serializable
+    data object NonCreatureSpell : SpellFilter {
+        override val description: String = "noncreature"
+    }
+
+    @Serializable
+    data object SorcerySpell : SpellFilter {
+        override val description: String = "sorcery"
+    }
+
+    @Serializable
+    data object InstantSpell : SpellFilter {
+        override val description: String = "instant"
+    }
+
+    @Serializable
+    data class CreatureOrSorcery(val dummy: Unit = Unit) : SpellFilter {
+        override val description: String = "creature or sorcery"
+    }
+}
+
+// =============================================================================
+// Library Manipulation Effects
+// =============================================================================
+
+/**
+ * Look at the top X cards, reorder them, optionally shuffle, then draw.
+ * Used for Omen: "Look at the top three cards of your library, then put them back
+ * in any order. You may shuffle. Draw a card."
+ */
+@Serializable
+data class OmenEffect(
+    val lookAtCount: Int,
+    val mayShuffle: Boolean = true,
+    val drawAfter: Int = 1
+) : Effect {
+    override val description: String = buildString {
+        append("Look at the top $lookAtCount cards of your library, then put them back in any order")
+        if (mayShuffle) append(". You may shuffle")
+        if (drawAfter > 0) append(". Draw ${if (drawAfter == 1) "a card" else "$drawAfter cards"}")
+    }
+}
+
+/**
+ * Draw cards then discard cards (looting).
+ * Used for Owl Familiar: "When this creature enters, draw a card, then discard a card."
+ */
+@Serializable
+data class LootEffect(
+    val drawCount: Int = 1,
+    val discardCount: Int = 1
+) : Effect {
+    override val description: String = buildString {
+        append("Draw ${if (drawCount == 1) "a card" else "$drawCount cards"}")
+        append(", then discard ${if (discardCount == 1) "a card" else "$discardCount cards"}")
+    }
+}
+
+/**
+ * Search library for a card type and put it on top.
+ * Used for Personal Tutor: "Search your library for a sorcery card, reveal it,
+ * then shuffle and put that card on top."
+ */
+@Serializable
+data class SearchLibraryToTopEffect(
+    val filter: CardFilter
+) : Effect {
+    override val description: String =
+        "Search your library for ${filter.description}, reveal it, then shuffle and put that card on top"
+}
+
+/**
+ * Look at target opponent's hand and draw a card.
+ * Used for Sorcerous Sight: "Look at target opponent's hand. Draw a card."
+ */
+@Serializable
+data class SorcerousSightEffect(
+    val target: EffectTarget = EffectTarget.Opponent
+) : Effect {
+    override val description: String = "Look at ${target.description}'s hand. Draw a card"
+}
