@@ -10,8 +10,8 @@ state transitions.
 
 **Tech Stack:**
 
-- **Backend:** Kotlin 2.2, Gradle 8.7, JDK 21, Kotest (testing), Spring Boot 4.x
-- **Frontend:** React 18+, TypeScript 5, Zustand (state), React-Three-Fiber, Vite (build)
+- **Backend:** Kotlin 2.2.20, Gradle 8.13, JDK 21, Kotest 5.9.1 (testing), Spring Boot 3.4.3
+- **Frontend:** React 18.3, TypeScript 5.6, Zustand 5.0 (state), Vite 5.4 (build)
 
 ## Build Commands
 
@@ -20,8 +20,8 @@ Using `just` (recommended):
 ```bash
 just build          # Build entire project
 just test           # Run all tests
-just test-rules     # Run mtg-engine tests only
-just test-server    # Run mtg-api tests only
+just test-rules     # Run rules-engine tests only
+just test-server    # Run game-server tests only
 just test-class CreatureStatsTest  # Run specific test class
 just server         # Start game server
 just client         # Start web client dev server
@@ -34,9 +34,9 @@ Using Gradle directly:
 ```bash
 ./gradlew build
 ./gradlew test
-./gradlew :mtg-engine:test
-./gradlew :mtg-engine:test --tests "CreatureStatsTest"
-./gradlew :mtg-api:bootRun
+./gradlew :rules-engine:test
+./gradlew :rules-engine:test --tests "CreatureStatsTest"
+./gradlew :game-server:bootRun
 ```
 
 Web client:
@@ -54,13 +54,13 @@ cd web-client && npm run typecheck  # Type checking
 
 The project follows a strict **Domain-Driven Design (DDD)** with clear separation of concerns:
 
-| Module         | Type            | Purpose                                            | Dependencies    |
-|----------------|-----------------|----------------------------------------------------|-----------------|
-| **mtg-sdk**    | Kotlin Library  | Shared contract - DSLs, data models, primitives    | None            |
-| **mtg-sets**   | Kotlin Library  | Card definitions using SDK (Portal, Alpha, Custom) | mtg-sdk         |
-| **mtg-engine** | Kotlin Library  | Core MTG rules engine (zero server dependencies)   | mtg-sdk         |
-| **mtg-api**    | Spring Boot App | Game orchestration, WebSocket, state masking       | mtg-engine, sdk |
-| **web-client** | React App       | Browser UI (dumb terminal, no game logic)          | None            |
+| Module           | Type            | Purpose                                            | Dependencies       |
+|------------------|-----------------|----------------------------------------------------|--------------------|
+| **mtg-sdk**      | Kotlin Library  | Shared contract - DSLs, data models, primitives    | None               |
+| **mtg-sets**     | Kotlin Library  | Card definitions using SDK (Portal, Alpha, Custom) | mtg-sdk            |
+| **rules-engine** | Kotlin Library  | Core MTG rules engine (zero server dependencies)   | mtg-sdk            |
+| **game-server**  | Spring Boot App | Game orchestration, WebSocket, state masking       | rules-engine, sdk  |
+| **web-client**   | React App       | Browser UI (dumb terminal, no game logic)          | None               |
 
 **Key Principle:** The engine is "pure" (no card-specific code), content is "data-driven" (no execution logic), and the
 API provides an "anti-corruption layer" between engine internals and external clients.
@@ -97,18 +97,21 @@ The `StateProjector` applies effects and handles **dependencies** (Rule 613.8) u
 the same layer are sorted by checking if applying one changes the outcome of another, before falling back to timestamp
 ordering.
 
-### Key Files (mtg-engine)
+### Key Files (rules-engine)
 
-| File                                     | Purpose                                       |
-|------------------------------------------|-----------------------------------------------|
-| `state/GameState.kt`                     | Immutable game state data class               |
-| `core/ActionProcessor.kt`                | Processes GameActions, produces new state     |
-| `action/GameAction.kt`                   | Sealed interface of all action types          |
-| `mechanics/layers/StateProjector.kt`     | Rule 613 continuous effect projection         |
-| `mechanics/layers/DependencyResolver.kt` | Rule 613.8 dependency sorting                 |
-| `event/TriggerDetector.kt`               | Detects triggered abilities from events       |
-| `state/components/`                      | All component types (identity, state, combat) |
-| `handlers/`                              | Effect/Cost/Condition executors               |
+| File                                        | Purpose                                       |
+|---------------------------------------------|-----------------------------------------------|
+| `state/GameState.kt`                        | Immutable game state data class               |
+| `core/ActionProcessor.kt`                   | Processes GameActions, produces new state     |
+| `core/GameAction.kt`                        | Sealed interface of all action types          |
+| `core/GameInitializer.kt`                   | Sets up initial game state                    |
+| `core/TurnManager.kt`                       | Turn and phase progression                    |
+| `mechanics/layers/StateProjector.kt`        | Rule 613 continuous effect projection         |
+| `event/TriggerDetector.kt`                  | Detects triggered abilities from events       |
+| `event/TriggerProcessor.kt`                 | Processes detected triggers                   |
+| `state/components/`                         | All component types (identity, state, combat) |
+| `handlers/effects/EffectExecutorRegistry.kt`| Registry mapping effects to executors         |
+| `handlers/effects/*/`                       | Effect executors (damage, life, drawing, etc.)|
 
 ### Key Files (mtg-sdk)
 
@@ -129,14 +132,19 @@ ordering.
 | `definitions/portal/PortalSet.kt` | Portal card definitions      |
 | `definitions/alpha/AlphaSet.kt`   | Alpha card definitions       |
 
-### Key Files (mtg-api)
+### Key Files (game-server)
 
-| File                                | Purpose                                  |
-|-------------------------------------|------------------------------------------|
-| `service/GameService.kt`            | Runtime game management                  |
-| `service/CardCatalogService.kt`     | Static data for deckbuilding             |
-| `view/GameStateView.kt`             | Sanitized state for clients (Fog of War) |
-| `websocket/GameWebSocketHandler.kt` | WebSocket message handling               |
+| File                                | Purpose                                     |
+|-------------------------------------|---------------------------------------------|
+| `session/GameSession.kt`            | Runtime game management and state           |
+| `session/PlayerSession.kt`          | Per-player connection and session state     |
+| `masking/StateMasker.kt`            | Hides private information (Fog of War)      |
+| `masking/MaskedGameState.kt`        | Sanitized state for clients                 |
+| `websocket/GameWebSocketHandler.kt` | WebSocket message handling                  |
+| `protocol/ServerMessage.kt`         | Server-to-client message types              |
+| `protocol/ClientMessage.kt`         | Client-to-server message types              |
+| `dto/ClientDTO.kt`                  | Data transfer objects for client            |
+| `dto/ClientStateTransformer.kt`     | Transforms engine state to client format    |
 
 ## Card Implementation Pattern
 
@@ -203,7 +211,7 @@ triggeredAbility {
 
 - **ComponentContainer:** Immutable map holding entity's components, accessed via `container.get<TappedComponent>()`
 - **Tag Components:** Data objects for binary state (e.g., `data object TappedComponent : Component`)
-- **Effect Handlers:** In `handlers/`, execute specific effects (damage, draw, destroy, etc.)
+- **Effect Executors:** In `handlers/effects/`, execute specific effects (damage, draw, destroy, etc.)
 - **Continuous Effects:** Floating modifiers created by spells/abilities, applied during state projection
 - **CompositeEffect:** Chain effects with `then` operator for multi-step abilities
 - **Replacement Effects:** Interceptors that modify actions before execution (e.g., Doubling Season)
@@ -218,26 +226,32 @@ The web client follows the **dumb terminal** pattern:
 - **No state computation** - Server sends complete game state
 - **Intent capture only** - Client sends player clicks/selections
 
-**Tech Stack:** React-Three-Fiber, Zustand (state management), WebSocket (networking)
+**Tech Stack:** React 18.3, Zustand 5.0 (state management), WebSocket (networking)
 
 **Data Flow:**
 
 1. Server sends `stateUpdate` with game state, events, and legal actions
-2. Client renders scene with card positions
-3. User clicks card → Client checks legal actions
+2. Client renders game board with card positions
+3. User clicks card → Client checks legal actions via hooks
 4. Client sends `submitAction` with GameAction
 5. Server validates, updates state, broadcasts new state
 
 **Key Files (web-client):**
 
-| File                             | Purpose                                 |
-|----------------------------------|-----------------------------------------|
-| `store/gameStore.ts`             | Zustand store for game state            |
-| `network/websocket.ts`           | WebSocket connection management         |
-| `components/scene/GameScene.tsx` | Main scene with R3F Canvas              |
-| `components/zones/`              | Zone layouts (Hand, Battlefield, etc.)  |
-| `components/card/Card3D.tsx`     | 3D card component                       |
-| `animation/EventProcessor.tsx`   | Processes server events into animations |
+| File                              | Purpose                                 |
+|-----------------------------------|-----------------------------------------|
+| `store/gameStore.ts`              | Zustand store for game state            |
+| `store/selectors.ts`              | Derived state selectors                 |
+| `network/websocket.ts`            | WebSocket connection management         |
+| `network/messageHandlers.ts`      | Server message processing               |
+| `components/game/GameBoard.tsx`   | Main game board layout                  |
+| `components/ui/GameUI.tsx`        | HUD elements (life, mana, phases)       |
+| `components/decisions/`           | Decision UI (scry, library search, etc.)|
+| `components/combat/`              | Combat UI (arrows, blockers)            |
+| `components/targeting/`           | Targeting arrows and overlays           |
+| `hooks/useInteraction.ts`         | Card interaction logic                  |
+| `hooks/useTargeting.ts`           | Targeting flow management               |
+| `hooks/useLegalActions.ts`        | Legal action queries                    |
 
 ## Adding New Content
 
@@ -284,8 +298,8 @@ object SetRegistry {
 ### Adding a New Mechanic
 
 1. **SDK:** Add effect type to `mtg-sdk/.../scripting/effect/Effect.kt`
-2. **Engine:** Create handler in `mtg-engine/.../handlers/` implementing `EffectHandler<YourEffect>`
-3. **Engine:** Register handler in `EffectHandlerRegistry.kt`
+2. **Engine:** Create executor in `rules-engine/.../handlers/effects/` implementing `EffectExecutor`
+3. **Engine:** Register executor in `EffectExecutorRegistry.kt`
 4. **Sets:** Use it in card scripts
 
 Example (Scry):
@@ -298,16 +312,17 @@ sealed interface Effect {
     data class Scry(val amount: Int) : Effect
 }
 
-// 2. In mtg-engine/handlers/ScryHandler.kt
-class ScryHandler : EffectHandler<Effects.Scry> {
-    override fun execute(state: GameState, effect: Effects.Scry, context: ExecutionContext): ExecutionResult {
+// 2. In rules-engine/handlers/effects/library/ScryExecutor.kt
+class ScryExecutor : EffectExecutor {
+    override fun execute(state: GameState, effect: Effect, context: EffectContext): ExecutionResult {
+        val scry = effect as Effects.Scry
         // Implementation
     }
 }
 
-// 3. In mtg-engine/handlers/EffectHandlerRegistry.kt
-val registry = mapOf(
-    Effects.Scry::class to ScryHandler()
+// 3. In rules-engine/handlers/effects/EffectExecutorRegistry.kt
+val executors = mapOf(
+    Effects.Scry::class to ScryExecutor()
 )
 
 // 4. In mtg-sets card definition
@@ -355,7 +370,7 @@ just test-class CardInteractionTest
 ## Development Workflow
 
 1. **Add Card:** Define in `mtg-sets` using DSL
-2. **New Effect?** Add to `mtg-sdk`, implement handler in `mtg-engine`
+2. **New Effect?** Add to `mtg-sdk`, implement executor in `rules-engine`
 3. **Test:** Write scenario test for card interaction
 4. **Run:** Start server (`just server`) and client (`just client`)
 5. **Play:** Connect at http://localhost:5173
