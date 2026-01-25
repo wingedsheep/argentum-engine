@@ -1,0 +1,210 @@
+package com.wingedsheep.engine.handlers.effects
+
+import com.wingedsheep.engine.core.DamageDealtEvent
+import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.LifeChangedEvent
+import com.wingedsheep.engine.core.LifeChangeReason
+import com.wingedsheep.engine.core.ZoneChangeEvent
+import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
+import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.battlefield.DamageComponent
+import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.EffectTarget
+
+/**
+ * Utility functions shared across effect executors.
+ */
+object EffectExecutorUtils {
+
+    /**
+     * Resolve a target from the effect target definition and context.
+     */
+    fun resolveTarget(effectTarget: EffectTarget, context: EffectContext): EntityId? {
+        return when (effectTarget) {
+            is EffectTarget.Self -> context.sourceId
+            is EffectTarget.Controller -> context.controllerId
+            is EffectTarget.ContextTarget -> context.targets.getOrNull(effectTarget.index)?.toEntityId()
+            is EffectTarget.TargetCreature,
+            is EffectTarget.TargetPermanent,
+            is EffectTarget.AnyTarget -> context.targets.firstOrNull()?.toEntityId()
+            else -> null
+        }
+    }
+
+    /**
+     * Resolve a player target from the effect target definition and context.
+     */
+    fun resolvePlayerTarget(effectTarget: EffectTarget, context: EffectContext): EntityId? {
+        return when (effectTarget) {
+            is EffectTarget.Controller -> context.controllerId
+            is EffectTarget.Opponent -> context.opponentId
+            is EffectTarget.AnyPlayer -> context.targets.firstOrNull()?.toEntityId()
+            else -> null
+        }
+    }
+
+    /**
+     * Convert a ChosenTarget to an EntityId.
+     */
+    fun ChosenTarget.toEntityId(): EntityId = when (this) {
+        is ChosenTarget.Player -> playerId
+        is ChosenTarget.Permanent -> entityId
+        is ChosenTarget.Card -> cardId
+        is ChosenTarget.Spell -> spellEntityId
+    }
+
+    /**
+     * Deal damage to a target (player or creature).
+     *
+     * @param state The current game state
+     * @param targetId The entity to deal damage to
+     * @param amount The amount of damage
+     * @param sourceId The source of the damage
+     * @return The execution result with updated state and events
+     */
+    fun dealDamageToTarget(
+        state: GameState,
+        targetId: EntityId,
+        amount: Int,
+        sourceId: EntityId?
+    ): ExecutionResult {
+        if (amount <= 0) return ExecutionResult.success(state)
+
+        val events = mutableListOf<EngineGameEvent>()
+        var newState = state
+
+        // Check if target is a player or creature
+        val lifeComponent = state.getEntity(targetId)?.get<LifeTotalComponent>()
+        if (lifeComponent != null) {
+            // It's a player - reduce life
+            val newLife = lifeComponent.life - amount
+            newState = newState.updateEntity(targetId) { container ->
+                container.with(LifeTotalComponent(newLife))
+            }
+            events.add(LifeChangedEvent(targetId, lifeComponent.life, newLife, LifeChangeReason.DAMAGE))
+        } else {
+            // It's a creature - mark damage
+            val currentDamage = state.getEntity(targetId)?.get<DamageComponent>()?.amount ?: 0
+            newState = newState.updateEntity(targetId) { container ->
+                container.with(DamageComponent(currentDamage + amount))
+            }
+        }
+
+        events.add(DamageDealtEvent(sourceId, targetId, amount, false))
+
+        return ExecutionResult.success(newState, events)
+    }
+
+    /**
+     * Destroy a permanent (move to graveyard).
+     *
+     * @param state The current game state
+     * @param entityId The entity to destroy
+     * @return The execution result with updated state and events
+     */
+    fun destroyPermanent(state: GameState, entityId: EntityId): ExecutionResult {
+        val container = state.getEntity(entityId)
+            ?: return ExecutionResult.error(state, "Entity not found: $entityId")
+
+        val cardComponent = container.get<CardComponent>()
+            ?: return ExecutionResult.error(state, "Not a card: $entityId")
+
+        // TODO: Check for indestructible
+
+        // Find which player's battlefield it's on
+        val controllerId = container.get<ControllerComponent>()?.playerId
+            ?: cardComponent.ownerId
+            ?: return ExecutionResult.error(state, "Cannot determine owner")
+
+        val ownerId = cardComponent.ownerId ?: controllerId
+
+        // Move to graveyard
+        val battlefieldZone = ZoneKey(controllerId, ZoneType.BATTLEFIELD)
+        val graveyardZone = ZoneKey(ownerId, ZoneType.GRAVEYARD)
+
+        var newState = state.removeFromZone(battlefieldZone, entityId)
+        newState = newState.addToZone(graveyardZone, entityId)
+
+        // Remove permanent-only components
+        newState = newState.updateEntity(entityId) { c ->
+            c.without<ControllerComponent>()
+                .without<TappedComponent>()
+                .without<SummoningSicknessComponent>()
+                .without<DamageComponent>()
+                .without<CountersComponent>()
+        }
+
+        return ExecutionResult.success(
+            newState,
+            listOf(
+                ZoneChangeEvent(
+                    entityId,
+                    cardComponent.name,
+                    ZoneType.BATTLEFIELD,
+                    ZoneType.GRAVEYARD,
+                    ownerId
+                )
+            )
+        )
+    }
+
+    /**
+     * Move a permanent from battlefield to another zone, cleaning up permanent-only components.
+     *
+     * @param state The current game state
+     * @param entityId The entity to move
+     * @param targetZoneType The destination zone type
+     * @return The execution result with updated state and events
+     */
+    fun movePermanentToZone(state: GameState, entityId: EntityId, targetZoneType: ZoneType): ExecutionResult {
+        val container = state.getEntity(entityId)
+            ?: return ExecutionResult.error(state, "Entity not found")
+
+        val cardComponent = container.get<CardComponent>()
+            ?: return ExecutionResult.error(state, "Not a card")
+
+        val controllerId = container.get<ControllerComponent>()?.playerId
+            ?: cardComponent.ownerId
+            ?: return ExecutionResult.error(state, "Cannot determine owner")
+
+        val ownerId = cardComponent.ownerId ?: controllerId
+
+        // Move to target zone
+        val battlefieldZone = ZoneKey(controllerId, ZoneType.BATTLEFIELD)
+        val targetZone = ZoneKey(ownerId, targetZoneType)
+
+        var newState = state.removeFromZone(battlefieldZone, entityId)
+        newState = newState.addToZone(targetZone, entityId)
+
+        // Remove permanent-only components
+        newState = newState.updateEntity(entityId) { c ->
+            c.without<ControllerComponent>()
+                .without<TappedComponent>()
+                .without<SummoningSicknessComponent>()
+                .without<DamageComponent>()
+        }
+
+        return ExecutionResult.success(
+            newState,
+            listOf(
+                ZoneChangeEvent(
+                    entityId,
+                    cardComponent.name,
+                    ZoneType.BATTLEFIELD,
+                    targetZoneType,
+                    ownerId
+                )
+            )
+        )
+    }
+}
