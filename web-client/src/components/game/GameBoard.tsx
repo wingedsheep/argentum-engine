@@ -1,7 +1,7 @@
 import { useGameStore } from '../../store/gameStore'
 import { useViewingPlayer, useOpponent, useZoneCards, useBattlefieldCards, useHasLegalActions, useStackCards } from '../../store/selectors'
 import { hand, graveyard } from '../../types'
-import type { ClientCard, ZoneId, ClientPlayer } from '../../types'
+import type { ClientCard, ZoneId, ClientPlayer, LegalActionInfo } from '../../types'
 import { PhaseIndicator } from '../ui/PhaseIndicator'
 import { CombatArrows } from '../combat/CombatArrows'
 import { DraggedCardOverlay } from './DraggedCardOverlay'
@@ -414,6 +414,8 @@ function GameCard({
   const selectCard = useGameStore((state) => state.selectCard)
   const selectedCardId = useGameStore((state) => state.selectedCardId)
   const targetingState = useGameStore((state) => state.targetingState)
+  const addTarget = useGameStore((state) => state.addTarget)
+  const confirmTargeting = useGameStore((state) => state.confirmTargeting)
   const combatState = useGameStore((state) => state.combatState)
   const legalActions = useGameStore((state) => state.legalActions)
   const submitAction = useGameStore((state) => state.submitAction)
@@ -537,6 +539,19 @@ function GameCard({
   }, [draggingBlockerId, stopDraggingBlocker])
 
   const handleClick = () => {
+    // Handle targeting mode clicks
+    if (isInTargetingMode && isValidTarget) {
+      addTarget(card.id)
+      // Auto-confirm if we have selected enough targets
+      const newTargetCount = (targetingState?.selectedTargets.length ?? 0) + 1
+      const requiredCount = targetingState?.requiredCount ?? 1
+      if (newTargetCount >= requiredCount) {
+        // Need to wait a tick for state to update before confirming
+        setTimeout(() => confirmTargeting(), 0)
+      }
+      return
+    }
+
     // Handle attacker mode clicks
     if (isInAttackerMode) {
       if (isValidAttacker) {
@@ -670,17 +685,23 @@ function ActionMenu() {
   const selectCard = useGameStore((state) => state.selectCard)
   const targetingState = useGameStore((state) => state.targetingState)
   const cancelTargeting = useGameStore((state) => state.cancelTargeting)
+  const startTargeting = useGameStore((state) => state.startTargeting)
   const responsive = useResponsiveContext()
 
   // If in targeting mode, show targeting UI instead
   if (targetingState) {
+    const selectedCount = targetingState.selectedTargets.length
+    const requiredCount = targetingState.requiredCount
     return (
       <div style={{
         ...styles.targetingOverlay,
         padding: responsive.isMobile ? '12px 16px' : '16px 24px',
       }}>
         <div style={{ ...styles.targetingPrompt, fontSize: responsive.fontSize.normal }}>
-          Select an attacker to block
+          Select a target ({selectedCount}/{requiredCount})
+        </div>
+        <div style={{ color: '#aaa', fontSize: responsive.fontSize.small, marginTop: 4 }}>
+          Click a highlighted creature
         </div>
         <button onClick={cancelTargeting} style={{
           ...styles.cancelButton,
@@ -712,6 +733,24 @@ function ActionMenu() {
 
   if (cardActions.length === 0) return null
 
+  const handleActionClick = (info: LegalActionInfo) => {
+    // Check if action requires targeting
+    if (info.requiresTargets && info.validTargets && info.validTargets.length > 0) {
+      // Enter targeting mode
+      startTargeting({
+        action: info.action,
+        validTargets: info.validTargets,
+        selectedTargets: [],
+        requiredCount: info.targetCount ?? 1,
+      })
+      selectCard(null)
+    } else {
+      // Submit action directly
+      submitAction(info.action)
+      selectCard(null)
+    }
+  }
+
   return (
     <div style={styles.actionMenuOverlay} onClick={() => selectCard(null)}>
       <div style={{
@@ -728,10 +767,7 @@ function ActionMenu() {
         {cardActions.map((info, index) => (
           <button
             key={index}
-            onClick={() => {
-              submitAction(info.action)
-              selectCard(null)
-            }}
+            onClick={() => handleActionClick(info)}
             style={{
               ...styles.actionButton,
               padding: responsive.isMobile ? '10px 12px' : '12px 16px',
@@ -739,6 +775,7 @@ function ActionMenu() {
             }}
           >
             {info.description}
+            {info.requiresTargets && <span style={{ color: '#888', marginLeft: 8 }}>(select target)</span>}
           </button>
         ))}
 

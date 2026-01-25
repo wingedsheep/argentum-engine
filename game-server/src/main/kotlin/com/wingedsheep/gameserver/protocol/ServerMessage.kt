@@ -119,7 +119,15 @@ sealed interface ServerMessage {
 data class LegalActionInfo(
     val actionType: String,
     val description: String,
-    val action: GameAction
+    val action: GameAction,
+    /** Valid target IDs if this action requires targeting */
+    val validTargets: List<EntityId>? = null,
+    /** Whether this action requires selecting targets before submission */
+    val requiresTargets: Boolean = false,
+    /** Number of targets required (default 1) */
+    val targetCount: Int = 1,
+    /** Description of the target requirement */
+    val targetDescription: String? = null
 )
 
 /**

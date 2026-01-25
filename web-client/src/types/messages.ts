@@ -64,6 +64,14 @@ export interface LegalActionInfo {
   readonly actionType: string
   readonly description: string
   readonly action: GameAction
+  /** Valid target IDs if this action requires targeting */
+  readonly validTargets?: readonly EntityId[]
+  /** Whether this action requires selecting targets before submission */
+  readonly requiresTargets?: boolean
+  /** Number of targets required (default 1) */
+  readonly targetCount?: number
+  /** Description of the target requirement */
+  readonly targetDescription?: string
 }
 
 /**

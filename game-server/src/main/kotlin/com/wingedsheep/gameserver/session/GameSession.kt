@@ -17,6 +17,9 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.targeting.*
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import java.util.UUID
 
 /**
@@ -389,11 +392,35 @@ class GameSession(
                     // Check mana affordability
                     val canAfford = manaSolver.canPay(state, playerId, cardComponent.manaCost)
                     if (canAfford) {
-                        result.add(LegalActionInfo(
-                            actionType = "CastSpell",
-                            description = "Cast ${cardComponent.name}",
-                            action = CastSpell(playerId, cardId)
-                        ))
+                        // Look up card definition for target requirements
+                        val cardDef = cardRegistry.getCard(cardComponent.name)
+                        val targetReqs = cardDef?.script?.targetRequirements ?: emptyList()
+
+                        if (targetReqs.isNotEmpty()) {
+                            // Spell requires targets - find valid targets
+                            val firstReq = targetReqs.first()
+                            val validTargets = findValidTargets(state, playerId, firstReq)
+
+                            // Only add the action if there are valid targets
+                            if (validTargets.isNotEmpty() || firstReq.effectiveMinCount == 0) {
+                                result.add(LegalActionInfo(
+                                    actionType = "CastSpell",
+                                    description = "Cast ${cardComponent.name}",
+                                    action = CastSpell(playerId, cardId),
+                                    validTargets = validTargets,
+                                    requiresTargets = true,
+                                    targetCount = firstReq.count,
+                                    targetDescription = firstReq.description
+                                ))
+                            }
+                        } else {
+                            // No targets required
+                            result.add(LegalActionInfo(
+                                actionType = "CastSpell",
+                                description = "Cast ${cardComponent.name}",
+                                action = CastSpell(playerId, cardId)
+                            ))
+                        }
                     }
                 }
             }
@@ -463,6 +490,90 @@ class GameSession(
 
         // TODO: Determine actual reason from game state events
         return GameOverReason.LIFE_ZERO
+    }
+
+    /**
+     * Find valid targets based on a target requirement.
+     */
+    private fun findValidTargets(
+        state: GameState,
+        playerId: EntityId,
+        requirement: TargetRequirement
+    ): List<EntityId> {
+        return when (requirement) {
+            is TargetCreature -> findValidCreatureTargets(state, playerId, requirement.filter)
+            is TargetPlayer -> state.turnOrder.toList()
+            is TargetOpponent -> state.turnOrder.filter { it != playerId }
+            is AnyTarget -> {
+                // Any target = creatures + players
+                val creatures = findValidCreatureTargets(state, playerId, CreatureTargetFilter.Any)
+                val players = state.turnOrder.toList()
+                creatures + players
+            }
+            is TargetCreatureOrPlayer -> {
+                val creatures = findValidCreatureTargets(state, playerId, CreatureTargetFilter.Any)
+                val players = state.turnOrder.toList()
+                creatures + players
+            }
+            is TargetPermanent -> findValidPermanentTargets(state, playerId, requirement.filter)
+            else -> emptyList() // Other target types not yet implemented
+        }
+    }
+
+    /**
+     * Find valid creature targets based on a filter.
+     */
+    private fun findValidCreatureTargets(
+        state: GameState,
+        playerId: EntityId,
+        filter: CreatureTargetFilter
+    ): List<EntityId> {
+        val battlefield = state.getBattlefield()
+        return battlefield.filter { entityId ->
+            val container = state.getEntity(entityId) ?: return@filter false
+            val cardComponent = container.get<CardComponent>() ?: return@filter false
+
+            // Must be a creature
+            if (!cardComponent.typeLine.isCreature) return@filter false
+
+            // Apply filter
+            val controllerId = container.get<ControllerComponent>()?.playerId
+            when (filter) {
+                CreatureTargetFilter.Any -> true
+                CreatureTargetFilter.YouControl -> controllerId == playerId
+                CreatureTargetFilter.OpponentControls -> controllerId != playerId
+                CreatureTargetFilter.Tapped -> container.has<TappedComponent>()
+                CreatureTargetFilter.Untapped -> !container.has<TappedComponent>()
+                else -> true // Other filters not yet implemented
+            }
+        }
+    }
+
+    /**
+     * Find valid permanent targets based on a filter.
+     */
+    private fun findValidPermanentTargets(
+        state: GameState,
+        playerId: EntityId,
+        filter: PermanentTargetFilter
+    ): List<EntityId> {
+        val battlefield = state.getBattlefield()
+        return battlefield.filter { entityId ->
+            val container = state.getEntity(entityId) ?: return@filter false
+            val cardComponent = container.get<CardComponent>() ?: return@filter false
+            val controllerId = container.get<ControllerComponent>()?.playerId
+
+            when (filter) {
+                PermanentTargetFilter.Any -> true
+                PermanentTargetFilter.YouControl -> controllerId == playerId
+                PermanentTargetFilter.OpponentControls -> controllerId != playerId
+                PermanentTargetFilter.Creature -> cardComponent.typeLine.isCreature
+                PermanentTargetFilter.Land -> cardComponent.typeLine.isLand
+                PermanentTargetFilter.NonCreature -> !cardComponent.typeLine.isCreature
+                PermanentTargetFilter.NonLand -> !cardComponent.typeLine.isLand
+                else -> true // Other filters not yet implemented
+            }
+        }
     }
 
     sealed interface ActionResult {

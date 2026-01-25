@@ -476,8 +476,22 @@ export const useGameStore = create<GameStore>()(
         if (!targetingState) return
 
         // Modify the action with selected targets and submit
-        // Note: In practice, targets are usually pre-set in the action from legalActions
-        submitAction(targetingState.action)
+        const action = targetingState.action
+        if (action.type === 'CastSpell') {
+          // Convert selected targets to ChosenTarget format
+          const targets = targetingState.selectedTargets.map((targetId) => ({
+            targetId,
+            targetType: 'Permanent', // Server will interpret based on what it is
+          }))
+          const modifiedAction = {
+            ...action,
+            targets,
+          }
+          submitAction(modifiedAction)
+        } else {
+          submitAction(action)
+        }
+        set({ targetingState: null })
       },
 
       // Combat actions
