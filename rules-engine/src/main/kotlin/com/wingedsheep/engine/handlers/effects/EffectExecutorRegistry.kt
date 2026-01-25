@@ -24,6 +24,7 @@ import com.wingedsheep.engine.handlers.effects.mana.AddManaExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.AddCountersExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.ModifyStatsExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.RemoveCountersExecutor
+import com.wingedsheep.engine.handlers.effects.permanent.TapAllCreaturesExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.TapUntapExecutor
 import com.wingedsheep.engine.handlers.effects.removal.DestroyAllCreaturesExecutor
 import com.wingedsheep.engine.handlers.effects.removal.DestroyAllLandsExecutor
@@ -71,6 +72,7 @@ class EffectExecutorRegistry(
 
     // Permanent executors
     private val tapUntapExecutor = TapUntapExecutor()
+    private val tapAllCreaturesExecutor = TapAllCreaturesExecutor()
     private val modifyStatsExecutor = ModifyStatsExecutor()
     private val addCountersExecutor = AddCountersExecutor()
     private val removeCountersExecutor = RemoveCountersExecutor()
@@ -130,6 +132,7 @@ class EffectExecutorRegistry(
 
             // Permanent effects
             is TapUntapEffect -> tapUntapExecutor.execute(state, effect, context)
+            is TapAllCreaturesEffect -> tapAllCreaturesExecutor.execute(state, effect, context)
             is ModifyStatsEffect -> modifyStatsExecutor.execute(state, effect, context)
             is AddCountersEffect -> addCountersExecutor.execute(state, effect, context)
             is RemoveCountersEffect -> removeCountersExecutor.execute(state, effect, context)

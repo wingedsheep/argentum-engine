@@ -119,8 +119,8 @@ class MulliganHandler {
             container.with(newMullState)
         }
 
-        // 4. Draw new hand (7 - mulligans taken)
-        val drawCount = newMullState.handSize
+        // 4. Draw new hand of 7 cards (London Mulligan always draws 7)
+        val drawCount = MulliganStateComponent.STARTING_HAND_SIZE
         val drawnCardIds = mutableListOf<EntityId>()
 
         repeat(drawCount) {
@@ -256,11 +256,16 @@ class MulliganHandler {
     fun createMulliganDecision(state: GameState, playerId: EntityId): SelectCardsDecision {
         val mullState = getMulliganState(state, playerId)
         val hand = state.getHand(playerId)
+        val bottomCount = mullState.mulligansTaken + 1
 
         return SelectCardsDecision(
             id = "mulligan-${playerId.value}",
             playerId = playerId,
-            prompt = "Mulligan (draw ${mullState.handSize - 1} cards) or keep?",
+            prompt = if (mullState.mulligansTaken == 0) {
+                "Keep hand or mulligan?"
+            } else {
+                "Keep hand (bottom $bottomCount) or mulligan?"
+            },
             context = DecisionContext(phase = DecisionPhase.CASTING),
             options = hand,
             minSelections = 0,  // 0 = keep, hand.size = mulligan

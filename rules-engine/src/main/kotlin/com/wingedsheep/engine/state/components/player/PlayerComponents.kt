@@ -109,10 +109,11 @@ data class LandDropsComponent(
 /**
  * Tracks mulligan state for a player during game setup.
  *
- * Per CR 103.4: A player may mulligan any number of times. After taking a mulligan,
- * the player draws a new hand of starting hand size minus the number of mulligans taken.
- * After all players have kept, each player who took mulligans puts that many cards
- * from their hand on the bottom of their library.
+ * Per CR 103.4 (London Mulligan): A player may mulligan any number of times.
+ * After taking a mulligan, the player shuffles their hand into their library
+ * and draws a new hand of 7 cards. After all players have kept, each player
+ * who took mulligans puts that many cards from their hand on the bottom of
+ * their library in any order.
  */
 @Serializable
 data class MulliganStateComponent(
@@ -121,11 +122,9 @@ data class MulliganStateComponent(
     /** Whether the player has decided to keep their current hand */
     val hasKept: Boolean = false
 ) : Component {
-    /**
-     * The number of cards this player should draw for their opening hand.
-     * Starting hand is 7, reduced by mulligans taken.
-     */
-    val handSize: Int get() = maxOf(0, 7 - mulligansTaken)
+    companion object {
+        const val STARTING_HAND_SIZE = 7
+    }
 
     /**
      * The number of cards this player must put on the bottom after keeping.
@@ -133,9 +132,10 @@ data class MulliganStateComponent(
     val cardsToBottom: Int get() = mulligansTaken
 
     /**
-     * Check if the player can still mulligan (they can always mulligan until hand size would be 0).
+     * Check if the player can still mulligan (they can always mulligan until
+     * they would have to bottom more cards than they drew).
      */
-    val canMulligan: Boolean get() = handSize > 0 && !hasKept
+    val canMulligan: Boolean get() = mulligansTaken < STARTING_HAND_SIZE && !hasKept
 
     /**
      * Record a mulligan taken.
