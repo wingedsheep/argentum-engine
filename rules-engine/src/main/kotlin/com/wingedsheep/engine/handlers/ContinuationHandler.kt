@@ -50,6 +50,8 @@ class ContinuationHandler(
             is ResolveSpellContinuation -> resumeSpellResolution(stateAfterPop, continuation, response)
             is SacrificeContinuation -> resumeSacrifice(stateAfterPop, continuation, response)
             is MayAbilityContinuation -> resumeMayAbility(stateAfterPop, continuation, response)
+            is HandSizeDiscardContinuation -> resumeHandSizeDiscard(stateAfterPop, continuation, response)
+            else -> ExecutionResult.success(stateAfterPop) // Other continuations handled by other agents
         }
     }
 
@@ -264,6 +266,39 @@ class ContinuationHandler(
             PermanentsSacrificedEvent(playerId, selectedPermanents)
         )
 
+        return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume after player selected cards to discard for hand size during cleanup.
+     */
+    private fun resumeHandSizeDiscard(
+        state: GameState,
+        continuation: HandSizeDiscardContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for hand size discard")
+        }
+
+        val playerId = continuation.playerId
+        val selectedCards = response.selectedCards
+
+        // Move selected cards from hand to graveyard
+        var newState = state
+        val handZone = ZoneKey(playerId, ZoneType.HAND)
+        val graveyardZone = ZoneKey(playerId, ZoneType.GRAVEYARD)
+
+        for (cardId in selectedCards) {
+            newState = newState.removeFromZone(handZone, cardId)
+            newState = newState.addToZone(graveyardZone, cardId)
+        }
+
+        val events = listOf(
+            CardsDiscardedEvent(playerId, selectedCards)
+        )
+
+        // Check if there are more continuations to process
         return checkForMoreContinuations(newState, events)
     }
 

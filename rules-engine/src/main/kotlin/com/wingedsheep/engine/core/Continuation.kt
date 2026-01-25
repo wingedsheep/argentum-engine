@@ -165,3 +165,51 @@ data class MayAbilityContinuation(
         xValue = xValue
     )
 }
+
+/**
+ * Resume after player selects cards to discard for hand size (cleanup step).
+ *
+ * This is separate from DiscardContinuation to distinguish hand size
+ * discards from spell/ability-caused discards.
+ *
+ * @property playerId The player who is discarding
+ */
+@Serializable
+data class HandSizeDiscardContinuation(
+    override val decisionId: String,
+    val playerId: EntityId
+) : ContinuationFrame
+
+/**
+ * Resume after a player selects cards for "each player selects, then draws" effects.
+ *
+ * Used for effects like Flux, Windfall, etc. where each player selects cards
+ * (which get discarded when processed) and then draws based on how many they selected.
+ *
+ * The continuation tracks pending draws and remaining players. When a player's
+ * selection is processed, their cards are discarded and their draw count is recorded.
+ * After all players have selected, draws are executed.
+ *
+ * @property sourceId The spell/ability causing the effect
+ * @property sourceName Name for display
+ * @property controllerId The controller of the effect
+ * @property remainingPlayers Players who still need to make their selection (APNAP order)
+ * @property drawAmounts How many cards each completed player will draw
+ * @property controllerBonusDraw Extra cards the controller draws after the effect
+ * @property minSelection Minimum cards each player must select (0 for "any number")
+ * @property maxSelection Maximum cards each player can select (null means up to hand size)
+ * @property selectionPrompt Prompt to show players when selecting
+ */
+@Serializable
+data class EachPlayerSelectsThenDrawsContinuation(
+    override val decisionId: String,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val controllerId: EntityId,
+    val remainingPlayers: List<EntityId>,
+    val drawAmounts: Map<EntityId, Int>,
+    val controllerBonusDraw: Int,
+    val minSelection: Int,
+    val maxSelection: Int?,
+    val selectionPrompt: String
+) : ContinuationFrame

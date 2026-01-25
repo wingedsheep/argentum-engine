@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.core
 
+import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
@@ -31,7 +32,8 @@ import com.wingedsheep.sdk.scripting.Duration
  */
 class TurnManager(
     private val combatManager: CombatManager = CombatManager(),
-    private val sbaChecker: StateBasedActionChecker = StateBasedActionChecker()
+    private val sbaChecker: StateBasedActionChecker = StateBasedActionChecker(),
+    private val decisionHandler: DecisionHandler = DecisionHandler()
 ) {
 
     /**
@@ -345,13 +347,41 @@ class TurnManager(
 
         // Check if player needs to discard
         val handKey = ZoneKey(activePlayer, ZoneType.HAND)
-        val handSize = newState.getZone(handKey).size
+        val hand = newState.getZone(handKey)
         val maxHandSize = 7
+        val cardsToDiscard = hand.size - maxHandSize
 
-        if (handSize > maxHandSize) {
-            // Player needs to discard - this would require a decision
-            // For now, mark that a decision is needed
-            events.add(DiscardRequiredEvent(activePlayer, handSize - maxHandSize))
+        if (cardsToDiscard > 0) {
+            // Player needs to discard - create a decision
+            events.add(DiscardRequiredEvent(activePlayer, cardsToDiscard))
+
+            // Create the card selection decision
+            val decisionResult = decisionHandler.createCardSelectionDecision(
+                state = newState,
+                playerId = activePlayer,
+                sourceId = null,
+                sourceName = null,
+                prompt = "Discard down to $maxHandSize cards (choose $cardsToDiscard to discard)",
+                options = hand,
+                minSelections = cardsToDiscard,
+                maxSelections = cardsToDiscard,
+                ordered = false,
+                phase = DecisionPhase.STATE_BASED
+            )
+
+            // Push continuation to handle the response
+            val continuation = HandSizeDiscardContinuation(
+                decisionId = decisionResult.pendingDecision!!.id,
+                playerId = activePlayer
+            )
+
+            val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
+
+            return ExecutionResult.paused(
+                stateWithContinuation,
+                decisionResult.pendingDecision,
+                events + decisionResult.events
+            )
         }
 
         // Remove damage from all creatures

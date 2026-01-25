@@ -23,6 +23,7 @@ import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.player.MulliganStateComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
 
@@ -976,6 +977,21 @@ class ActionProcessor(
         if (hasContinuation) {
             // Resume execution using the continuation handler
             val result = continuationHandler.resume(clearedState, action.response)
+
+            // If successful and we're in cleanup step with no more decisions,
+            // advance to complete cleanup and end the turn
+            if (result.isSuccess && !result.isPaused &&
+                result.state.step == Step.CLEANUP &&
+                result.state.pendingDecision == null
+            ) {
+                val cleanupAdvanceResult = advanceGame(result.state)
+                return ExecutionResult(
+                    state = cleanupAdvanceResult.state,
+                    events = listOf(submittedEvent) + result.events + cleanupAdvanceResult.events,
+                    error = cleanupAdvanceResult.error,
+                    pendingDecision = cleanupAdvanceResult.pendingDecision
+                )
+            }
 
             // Prepend the decision submitted event
             return if (result.isSuccess || result.isPaused) {

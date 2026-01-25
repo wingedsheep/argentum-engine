@@ -111,7 +111,8 @@ class GameInitializer(
         state = state.copy(
             turnOrder = shuffledOrder,
             activePlayerId = shuffledOrder.first(),
-            priorityPlayerId = shuffledOrder.first()
+            priorityPlayerId = shuffledOrder.first(),
+            turnNumber = 1  // First turn is turn 1, not turn 0
         )
 
         // 3. Instantiate cards and place in libraries
