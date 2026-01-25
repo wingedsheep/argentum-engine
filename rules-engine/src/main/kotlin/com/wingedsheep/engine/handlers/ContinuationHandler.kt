@@ -3,9 +3,12 @@ package com.wingedsheep.engine.handlers
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.effects.EffectExecutorRegistry
 import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerDiscardsDrawsExecutor
+import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
 
@@ -17,7 +20,8 @@ import com.wingedsheep.sdk.model.EntityId
  * this handler pops the frame and resumes execution based on the frame type.
  */
 class ContinuationHandler(
-    private val effectExecutorRegistry: EffectExecutorRegistry
+    private val effectExecutorRegistry: EffectExecutorRegistry,
+    private val stackResolver: StackResolver = StackResolver()
 ) {
 
     /**
@@ -196,16 +200,58 @@ class ContinuationHandler(
     }
 
     /**
-     * Resume a triggered ability after target selection.
+     * Resume placing a triggered ability on the stack after target selection.
+     *
+     * The player has selected targets for a triggered ability. Now we can
+     * actually put the ability on the stack with those targets.
      */
     private fun resumeTriggeredAbility(
         state: GameState,
         continuation: TriggeredAbilityContinuation,
         response: DecisionResponse
     ): ExecutionResult {
-        // TODO: Implement triggered ability resumption
-        // This would need to store the selected targets and continue resolution
-        return ExecutionResult.success(state)
+        if (response !is TargetsResponse) {
+            return ExecutionResult.error(state, "Expected target selection response for triggered ability")
+        }
+
+        // Convert the selected targets into ChosenTarget objects
+        // The response contains a map of requirement index -> selected entity IDs
+        // For most triggered abilities, there's a single requirement at index 0
+        val selectedTargets = response.selectedTargets.flatMap { (_, targetIds) ->
+            targetIds.map { entityId ->
+                // Determine what kind of target this is based on the entity
+                val container = state.getEntity(entityId)
+                when {
+                    // Check if it's a player
+                    entityId in state.turnOrder -> ChosenTarget.Player(entityId)
+                    // Check if it's on the battlefield (permanent)
+                    entityId in state.getBattlefield() -> ChosenTarget.Permanent(entityId)
+                    // Check if it's on the stack (spell)
+                    entityId in state.stack -> ChosenTarget.Spell(entityId)
+                    // Default to permanent (could be improved with more context)
+                    else -> ChosenTarget.Permanent(entityId)
+                }
+            }
+        }
+
+        // Create the triggered ability component to put on stack
+        val abilityComponent = TriggeredAbilityOnStackComponent(
+            sourceId = continuation.sourceId,
+            sourceName = continuation.sourceName,
+            controllerId = continuation.controllerId,
+            effect = continuation.effect,
+            description = continuation.description
+        )
+
+        // Put the ability on the stack with the selected targets
+        val stackResult = stackResolver.putTriggeredAbility(state, abilityComponent, selectedTargets)
+
+        if (!stackResult.isSuccess) {
+            return stackResult
+        }
+
+        // After putting the ability on stack, check for more continuations
+        return checkForMoreContinuations(stackResult.newState, stackResult.events.toList())
     }
 
     /**

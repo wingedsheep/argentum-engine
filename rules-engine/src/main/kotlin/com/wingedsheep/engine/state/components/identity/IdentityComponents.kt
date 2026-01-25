@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.state.components.identity
 
 import com.wingedsheep.engine.state.Component
+import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
@@ -31,6 +32,8 @@ data class CardComponent(
     val isLand: Boolean get() = typeLine.isLand
     val isPermanent: Boolean get() = typeLine.isPermanent
     val isAura: Boolean get() = typeLine.isAura
+    val isPlaneswalker: Boolean get() = CardType.PLANESWALKER in typeLine.cardTypes
+    val manaValue: Int get() = manaCost.cmc
 }
 
 /**

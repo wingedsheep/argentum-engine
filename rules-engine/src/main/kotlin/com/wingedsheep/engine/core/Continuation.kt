@@ -82,18 +82,26 @@ data class EffectContinuation(
 }
 
 /**
- * Resume a triggered ability after target selection.
+ * Resume placing a triggered ability on the stack after targets have been selected.
  *
- * @property triggeredAbilityId The entity ID of the triggered ability on the stack
+ * When a triggered ability requires targets (like Fire Imp's "deal 1 damage to any target"),
+ * we cannot put it directly on the stack. Instead, we pause to ask the player for targets,
+ * storing this continuation to remember which ability we're processing.
+ *
  * @property sourceId The permanent that has the triggered ability
- * @property controllerId The controller of the triggered ability
+ * @property sourceName Name of the source card for display
+ * @property controllerId The player who controls the triggered ability
+ * @property effect The effect to execute when the ability resolves
+ * @property description Human-readable description of the ability
  */
 @Serializable
 data class TriggeredAbilityContinuation(
     override val decisionId: String,
-    val triggeredAbilityId: EntityId,
     val sourceId: EntityId,
-    val controllerId: EntityId
+    val sourceName: String,
+    val controllerId: EntityId,
+    val effect: Effect,
+    val description: String
 ) : ContinuationFrame
 
 /**

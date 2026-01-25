@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.core
 
+import com.wingedsheep.engine.event.TriggerDetector
+import com.wingedsheep.engine.event.TriggerProcessor
 import com.wingedsheep.engine.handlers.ContinuationHandler
 import com.wingedsheep.engine.handlers.CostHandler
 import com.wingedsheep.engine.handlers.MulliganHandler
@@ -48,7 +50,9 @@ class ActionProcessor(
     private val mulliganHandler: MulliganHandler = MulliganHandler(),
     effectExecutorRegistry: EffectExecutorRegistry = EffectExecutorRegistry(),
     private val continuationHandler: ContinuationHandler = ContinuationHandler(effectExecutorRegistry),
-    private val sbaChecker: StateBasedActionChecker = StateBasedActionChecker()
+    private val sbaChecker: StateBasedActionChecker = StateBasedActionChecker(),
+    private val triggerDetector: TriggerDetector = TriggerDetector(),
+    private val triggerProcessor: TriggerProcessor = TriggerProcessor()
 ) {
 
     /**
@@ -585,7 +589,30 @@ class ActionProcessor(
         }
 
         // Combine our events with cast events
-        val allEvents = events + castResult.events
+        var allEvents = events + castResult.events
+
+        // Detect and process triggers from casting (e.g., "when you cast a spell")
+        val triggers = triggerDetector.detectTriggers(castResult.newState, castResult.events)
+        if (triggers.isNotEmpty()) {
+            val triggerResult = triggerProcessor.processTriggers(castResult.newState, triggers)
+
+            if (triggerResult.isPaused) {
+                // A trigger requires target selection
+                return ExecutionResult.paused(
+                    triggerResult.state.withPriority(state.activePlayerId),
+                    triggerResult.pendingDecision!!,
+                    allEvents + triggerResult.events
+                )
+            }
+
+            allEvents = allEvents + triggerResult.events
+
+            // After casting and triggers, active player gets priority
+            return ExecutionResult.success(
+                triggerResult.newState.withPriority(state.activePlayerId),
+                allEvents
+            )
+        }
 
         // After casting, active player gets priority
         return ExecutionResult.success(
@@ -631,26 +658,96 @@ class ActionProcessor(
             c.with(landDrops.use())
         }
 
-        return ExecutionResult.success(
-            newState.tick(),
-            listOf(
-                ZoneChangeEvent(
-                    action.cardId,
-                    cardComponent.name,
-                    ZoneType.HAND,
-                    ZoneType.BATTLEFIELD,
-                    action.playerId
-                )
-            )
+        val zoneChangeEvent = ZoneChangeEvent(
+            action.cardId,
+            cardComponent.name,
+            ZoneType.HAND,
+            ZoneType.BATTLEFIELD,
+            action.playerId
         )
+
+        val events = listOf(zoneChangeEvent)
+        newState = newState.tick()
+
+        // Detect and process any triggers from the land entering (e.g., landfall)
+        val triggers = triggerDetector.detectTriggers(newState, events)
+        if (triggers.isNotEmpty()) {
+            val triggerResult = triggerProcessor.processTriggers(newState, triggers)
+
+            if (triggerResult.isPaused) {
+                // A trigger requires target selection
+                return ExecutionResult.paused(
+                    triggerResult.state,
+                    triggerResult.pendingDecision!!,
+                    events + triggerResult.events
+                )
+            }
+
+            return ExecutionResult.success(
+                triggerResult.newState,
+                events + triggerResult.events
+            )
+        }
+
+        return ExecutionResult.success(newState, events)
     }
 
     private fun executeDeclareAttackers(state: GameState, action: DeclareAttackers): ExecutionResult {
-        return combatManager.declareAttackers(state, action.playerId, action.attackers)
+        val result = combatManager.declareAttackers(state, action.playerId, action.attackers)
+
+        if (!result.isSuccess) {
+            return result
+        }
+
+        // Detect and process attack triggers (e.g., "when this creature attacks")
+        val triggers = triggerDetector.detectTriggers(result.newState, result.events)
+        if (triggers.isNotEmpty()) {
+            val triggerResult = triggerProcessor.processTriggers(result.newState, triggers)
+
+            if (triggerResult.isPaused) {
+                return ExecutionResult.paused(
+                    triggerResult.state,
+                    triggerResult.pendingDecision!!,
+                    result.events + triggerResult.events
+                )
+            }
+
+            return ExecutionResult.success(
+                triggerResult.newState,
+                result.events + triggerResult.events
+            )
+        }
+
+        return result
     }
 
     private fun executeDeclareBlockers(state: GameState, action: DeclareBlockers): ExecutionResult {
-        return combatManager.declareBlockers(state, action.playerId, action.blockers)
+        val result = combatManager.declareBlockers(state, action.playerId, action.blockers)
+
+        if (!result.isSuccess) {
+            return result
+        }
+
+        // Detect and process block triggers (e.g., "when this creature blocks")
+        val triggers = triggerDetector.detectTriggers(result.newState, result.events)
+        if (triggers.isNotEmpty()) {
+            val triggerResult = triggerProcessor.processTriggers(result.newState, triggers)
+
+            if (triggerResult.isPaused) {
+                return ExecutionResult.paused(
+                    triggerResult.state,
+                    triggerResult.pendingDecision!!,
+                    result.events + triggerResult.events
+                )
+            }
+
+            return ExecutionResult.success(
+                triggerResult.newState,
+                result.events + triggerResult.events
+            )
+        }
+
+        return result
     }
 
     private fun executeOrderBlockers(state: GameState, action: OrderBlockers): ExecutionResult {
@@ -729,11 +826,34 @@ class ActionProcessor(
         // Check state-based actions after resolution (Rule 704.3)
         // This handles lethal damage, life <= 0, etc.
         val sbaResult = sbaChecker.checkAndApply(result.newState)
-        val combinedEvents = result.events + sbaResult.events
+        var combinedEvents = result.events + sbaResult.events
 
         // If game is over, don't give priority
         if (sbaResult.newState.gameOver) {
             return ExecutionResult.success(sbaResult.newState, combinedEvents)
+        }
+
+        // Detect and process triggers from the resolution events (Rule 603.2)
+        val triggers = triggerDetector.detectTriggers(sbaResult.newState, result.events)
+        if (triggers.isNotEmpty()) {
+            val triggerResult = triggerProcessor.processTriggers(sbaResult.newState, triggers)
+
+            if (triggerResult.isPaused) {
+                // A trigger requires target selection - return paused result
+                return ExecutionResult.paused(
+                    triggerResult.state,
+                    triggerResult.pendingDecision!!,
+                    combinedEvents + triggerResult.events
+                )
+            }
+
+            combinedEvents = combinedEvents + triggerResult.events
+
+            // After triggers are on stack, active player gets priority
+            return ExecutionResult.success(
+                triggerResult.newState.withPriority(state.activePlayerId),
+                combinedEvents
+            )
         }
 
         // After resolution, active player gets priority
