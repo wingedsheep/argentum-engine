@@ -37,17 +37,12 @@ function ConnectionOverlay({
   const [joinSessionId, setJoinSessionId] = useState('')
   const responsive = useResponsive()
 
-  // Simple test deck using cards from PortalSet
-  const testDeck = {
-    'Forest': 24,
-    'Grizzly Bears': 16,
-    'Monstrous Growth': 10,
-    'Gorilla Warrior': 10,
-  }
+  // Empty deck triggers server-side random deck generation from Portal set
+  const randomDeck = {}
 
   const handleJoin = () => {
     if (joinSessionId.trim()) {
-      joinGame(joinSessionId.trim(), testDeck)
+      joinGame(joinSessionId.trim(), randomDeck)
     }
   }
 
@@ -81,7 +76,7 @@ function ConnectionOverlay({
       {status === 'connected' && !sessionId && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: responsive.isMobile ? 16 : 24, alignItems: 'center', width: '100%', maxWidth: 400 }}>
           <button
-            onClick={() => createGame(testDeck)}
+            onClick={() => createGame(randomDeck)}
             style={{
               padding: responsive.isMobile ? '10px 20px' : '12px 24px',
               fontSize: responsive.fontSize.large,

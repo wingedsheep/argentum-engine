@@ -1,5 +1,6 @@
 package com.wingedsheep.gameserver.websocket
 
+import com.wingedsheep.gameserver.deck.RandomDeckGenerator
 import com.wingedsheep.gameserver.protocol.ClientMessage
 import com.wingedsheep.gameserver.protocol.ErrorCode
 import com.wingedsheep.gameserver.protocol.GameOverReason
@@ -46,6 +47,9 @@ class GameWebSocketHandler : TextWebSocketHandler() {
     private val cardRegistry = CardRegistry().apply {
         register(PortalSet.allCards)
     }
+
+    // Random deck generator using Portal set cards
+    private val deckGenerator = RandomDeckGenerator(PortalSet.allCards)
 
     // Connected players indexed by WebSocket session ID
     private val playerSessions = ConcurrentHashMap<String, PlayerSession>()
@@ -121,15 +125,18 @@ class GameWebSocketHandler : TextWebSocketHandler() {
             return
         }
 
-        // Validate deck (basic validation for now)
-        if (message.deckList.isEmpty()) {
-            sendError(session, ErrorCode.INVALID_DECK, "Deck list cannot be empty")
-            return
+        // If client sends empty deck, generate a random one from Portal set
+        val deckList = if (message.deckList.isEmpty()) {
+            val randomDeck = deckGenerator.generate()
+            logger.info("Generated random deck for ${playerSession.playerName}: ${randomDeck.entries.take(5)}... (${randomDeck.values.sum()} cards)")
+            randomDeck
+        } else {
+            message.deckList
         }
 
         // Create new game session with CardRegistry
         val gameSession = GameSession(cardRegistry = cardRegistry)
-        gameSession.addPlayer(playerSession, message.deckList)
+        gameSession.addPlayer(playerSession, deckList)
 
         gameSessions[gameSession.sessionId] = gameSession
         waitingGameSession = gameSession
@@ -159,14 +166,17 @@ class GameWebSocketHandler : TextWebSocketHandler() {
             return
         }
 
-        // Validate deck
-        if (message.deckList.isEmpty()) {
-            sendError(session, ErrorCode.INVALID_DECK, "Deck list cannot be empty")
-            return
+        // If client sends empty deck, generate a random one from Portal set
+        val deckList = if (message.deckList.isEmpty()) {
+            val randomDeck = deckGenerator.generate()
+            logger.info("Generated random deck for ${playerSession.playerName}: ${randomDeck.entries.take(5)}... (${randomDeck.values.sum()} cards)")
+            randomDeck
+        } else {
+            message.deckList
         }
 
         // Add player to game
-        gameSession.addPlayer(playerSession, message.deckList)
+        gameSession.addPlayer(playerSession, deckList)
 
         // Clear waiting game if this was it
         if (waitingGameSession?.sessionId == gameSession.sessionId) {

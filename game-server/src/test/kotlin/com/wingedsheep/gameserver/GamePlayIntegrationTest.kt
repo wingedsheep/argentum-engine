@@ -458,17 +458,19 @@ class GamePlayIntegrationTest(
             error.message.isNotEmpty() shouldBe true
         }
 
-        test("creating game with empty deck returns INVALID_DECK error") {
+        test("creating game with empty deck generates random deck from Portal set") {
             val client = createClient()
             client.connectAs("Alice")
 
+            // Empty deck triggers server-side random deck generation
             client.send(ClientMessage.CreateGame(emptyMap()))
 
             eventually(5.seconds) {
-                client.allErrors().isNotEmpty() shouldBe true
+                client.messages.any { it is ServerMessage.GameCreated } shouldBe true
             }
 
-            client.latestError()?.code shouldBe ErrorCode.INVALID_DECK
+            val gameCreated = client.messages.filterIsInstance<ServerMessage.GameCreated>().first()
+            gameCreated.sessionId.isNotEmpty() shouldBe true
         }
 
         test("connecting twice returns ALREADY_CONNECTED error") {
