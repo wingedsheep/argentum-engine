@@ -1078,6 +1078,21 @@ class ActionProcessor(
                 }
                 null
             }
+            is SearchLibraryDecision -> {
+                if (response !is CardsSelectedResponse) {
+                    return "Expected card selection response for library search"
+                }
+                // Validate selected cards are in the options
+                for (cardId in response.selectedCards) {
+                    if (cardId !in decision.options) {
+                        return "Invalid selection: $cardId is not a valid option"
+                    }
+                }
+                if (response.selectedCards.size > decision.maxSelections) {
+                    return "Too many cards selected: maximum is ${decision.maxSelections}"
+                }
+                null
+            }
         }
     }
 

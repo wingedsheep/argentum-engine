@@ -2,9 +2,10 @@ import { useState } from 'react'
 import { useGameStore } from '../../store/gameStore'
 import type { EntityId, SelectCardsDecision } from '../../types'
 import { useResponsive, calculateFittingCardWidth, type ResponsiveSizes } from '../../hooks/useResponsive'
+import { LibrarySearchUI } from './LibrarySearchUI'
 
 /**
- * Decision UI overlay for pending decisions (e.g., discard to hand size).
+ * Decision UI overlay for pending decisions (e.g., discard to hand size, library search).
  */
 export function DecisionUI() {
   const pendingDecision = useGameStore((state) => state.pendingDecision)
@@ -12,31 +13,39 @@ export function DecisionUI() {
 
   if (!pendingDecision) return null
 
-  // Only handle SelectCardsDecision for now
-  if (pendingDecision.type !== 'SelectCardsDecision') return null
+  // Handle SearchLibraryDecision with dedicated UI
+  if (pendingDecision.type === 'SearchLibraryDecision') {
+    return <LibrarySearchUI decision={pendingDecision} responsive={responsive} />
+  }
 
-  return (
-    <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.85)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: responsive.isMobile ? 12 : 24,
-        padding: responsive.containerPadding,
-        pointerEvents: 'auto',
-        zIndex: 1000,
-      }}
-    >
-      <CardSelectionDecision decision={pendingDecision} responsive={responsive} />
-    </div>
-  )
+  // Handle SelectCardsDecision
+  if (pendingDecision.type === 'SelectCardsDecision') {
+    return (
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.85)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: responsive.isMobile ? 12 : 24,
+          padding: responsive.containerPadding,
+          pointerEvents: 'auto',
+          zIndex: 1000,
+        }}
+      >
+        <CardSelectionDecision decision={pendingDecision} responsive={responsive} />
+      </div>
+    )
+  }
+
+  // Other decision types not yet implemented
+  return null
 }
 
 /**

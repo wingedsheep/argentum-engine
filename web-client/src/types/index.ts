@@ -164,6 +164,8 @@ export type {
   YesNoDecision,
   ChooseTargetsDecision,
   TargetRequirementInfo,
+  SearchLibraryDecision,
+  SearchCardInfo,
 } from './messages'
 export {
   isConnectedMessage,

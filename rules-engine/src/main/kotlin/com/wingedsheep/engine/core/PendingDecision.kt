@@ -270,6 +270,44 @@ data class AssignDamageDecision(
     val hasDeathtouch: Boolean
 ) : PendingDecision
 
+/**
+ * Information about a card available for selection during library search.
+ * This is embedded in the decision because library cards are normally hidden.
+ */
+@Serializable
+data class SearchCardInfo(
+    val name: String,
+    val manaCost: String,
+    val typeLine: String,
+    val imageUri: String? = null
+)
+
+/**
+ * Player must select cards from their library.
+ *
+ * Unlike SelectCardsDecision, this includes embedded card info because
+ * library contents are normally hidden from the client. The client needs
+ * the card metadata to display the search UI.
+ *
+ * @property options The entity IDs of cards matching the filter
+ * @property minSelections Minimum cards to select (0 allows "fail to find")
+ * @property maxSelections Maximum cards to select
+ * @property cards Map of entity ID to card info for UI display
+ * @property filterDescription Human-readable description of the filter
+ */
+@Serializable
+data class SearchLibraryDecision(
+    override val id: String,
+    override val playerId: EntityId,
+    override val prompt: String,
+    override val context: DecisionContext,
+    val options: List<EntityId>,
+    val minSelections: Int,
+    val maxSelections: Int,
+    val cards: Map<EntityId, SearchCardInfo>,
+    val filterDescription: String
+) : PendingDecision
+
 // =============================================================================
 // Decision Responses
 // =============================================================================

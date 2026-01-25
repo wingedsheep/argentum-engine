@@ -7,10 +7,12 @@ import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.SearchDestination
 
 /**
  * Handles resumption of execution after a player decision.
@@ -58,6 +60,7 @@ class ContinuationHandler(
             is MayAbilityContinuation -> resumeMayAbility(stateAfterPop, continuation, response)
             is HandSizeDiscardContinuation -> resumeHandSizeDiscard(stateAfterPop, continuation, response)
             is EachPlayerSelectsThenDrawsContinuation -> resumeEachPlayerSelectsThenDraws(stateAfterPop, continuation, response)
+            is SearchLibraryContinuation -> resumeSearchLibrary(stateAfterPop, continuation, response)
         }
     }
 
@@ -283,6 +286,108 @@ class ContinuationHandler(
         // TODO: Implement spell resolution resumption
         // This would store targets/modes and continue resolution
         return ExecutionResult.success(state)
+    }
+
+    /**
+     * Resume after player selected cards from library search.
+     *
+     * Handles:
+     * 1. "Fail to find" (0 cards selected) - just shuffle if configured
+     * 2. Move selected cards from library to destination zone
+     * 3. Apply tapped status if entering battlefield tapped
+     * 4. Emit reveal events if configured
+     * 5. Shuffle library if configured
+     */
+    private fun resumeSearchLibrary(
+        state: GameState,
+        continuation: SearchLibraryContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for library search")
+        }
+
+        val playerId = continuation.playerId
+        val selectedCards = response.selectedCards
+        val libraryZone = ZoneKey(playerId, ZoneType.LIBRARY)
+        val events = mutableListOf<GameEvent>()
+
+        var newState = state
+
+        // Handle "fail to find" case - just shuffle and return
+        if (selectedCards.isEmpty()) {
+            if (continuation.shuffleAfter) {
+                val library = newState.getZone(libraryZone).shuffled()
+                newState = newState.copy(zones = newState.zones + (libraryZone to library))
+                events.add(LibraryShuffledEvent(playerId))
+            }
+            return checkForMoreContinuations(newState, events)
+        }
+
+        // Remove selected cards from library
+        for (cardId in selectedCards) {
+            newState = newState.removeFromZone(libraryZone, cardId)
+        }
+
+        // Move cards to destination zone
+        val destinationZone = when (continuation.destination) {
+            SearchDestination.HAND -> ZoneKey(playerId, ZoneType.HAND)
+            SearchDestination.BATTLEFIELD -> ZoneKey(playerId, ZoneType.BATTLEFIELD)
+            SearchDestination.GRAVEYARD -> ZoneKey(playerId, ZoneType.GRAVEYARD)
+            SearchDestination.TOP_OF_LIBRARY -> libraryZone
+        }
+
+        for (cardId in selectedCards) {
+            // For TOP_OF_LIBRARY, add to the front
+            if (continuation.destination == SearchDestination.TOP_OF_LIBRARY) {
+                val currentLibrary = newState.getZone(libraryZone)
+                newState = newState.copy(
+                    zones = newState.zones + (libraryZone to listOf(cardId) + currentLibrary)
+                )
+            } else {
+                newState = newState.addToZone(destinationZone, cardId)
+            }
+
+            // Apply tapped status for battlefield with entersTapped
+            if (continuation.destination == SearchDestination.BATTLEFIELD && continuation.entersTapped) {
+                val container = newState.getEntity(cardId)
+                if (container != null) {
+                    val newContainer = container.with(TappedComponent)
+                    newState = newState.copy(
+                        entities = newState.entities + (cardId to newContainer)
+                    )
+                }
+            }
+
+            // Emit zone change event
+            val cardName = newState.getEntity(cardId)?.get<CardComponent>()?.name ?: "Unknown"
+            events.add(
+                ZoneChangeEvent(
+                    entityId = cardId,
+                    entityName = cardName,
+                    fromZone = ZoneType.LIBRARY,
+                    toZone = when (continuation.destination) {
+                        SearchDestination.HAND -> ZoneType.HAND
+                        SearchDestination.BATTLEFIELD -> ZoneType.BATTLEFIELD
+                        SearchDestination.GRAVEYARD -> ZoneType.GRAVEYARD
+                        SearchDestination.TOP_OF_LIBRARY -> ZoneType.LIBRARY
+                    },
+                    ownerId = playerId
+                )
+            )
+        }
+
+        // Reveal cards if configured (could emit a CardsRevealedEvent in the future)
+        // For now, the zone change events serve as implicit reveal
+
+        // Shuffle library after search if configured
+        if (continuation.shuffleAfter) {
+            val library = newState.getZone(libraryZone).shuffled()
+            newState = newState.copy(zones = newState.zones + (libraryZone to library))
+            events.add(LibraryShuffledEvent(playerId))
+        }
+
+        return checkForMoreContinuations(newState, events)
     }
 
     /**

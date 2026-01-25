@@ -16,6 +16,7 @@ import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerDiscardsDrawsEx
 import com.wingedsheep.engine.handlers.effects.player.PlayAdditionalLandsExecutor
 import com.wingedsheep.engine.handlers.effects.library.MillExecutor
 import com.wingedsheep.engine.handlers.effects.library.ScryExecutor
+import com.wingedsheep.engine.handlers.effects.library.SearchLibraryExecutor
 import com.wingedsheep.engine.handlers.effects.library.ShuffleLibraryExecutor
 import com.wingedsheep.engine.handlers.effects.life.GainLifeExecutor
 import com.wingedsheep.engine.handlers.effects.life.LoseHalfLifeExecutor
@@ -90,6 +91,7 @@ class EffectExecutorRegistry(
     private val scryExecutor = ScryExecutor()
     private val millExecutor = MillExecutor()
     private val shuffleLibraryExecutor = ShuffleLibraryExecutor()
+    private val searchLibraryExecutor = SearchLibraryExecutor()
 
     // Stack executors
     private val counterSpellExecutor = CounterSpellExecutor()
@@ -153,6 +155,7 @@ class EffectExecutorRegistry(
             is ScryEffect -> scryExecutor.execute(state, effect, context)
             is MillEffect -> millExecutor.execute(state, effect, context)
             is ShuffleLibraryEffect -> shuffleLibraryExecutor.execute(state, effect, context)
+            is SearchLibraryEffect -> searchLibraryExecutor.execute(state, effect, context)
 
             // Composite effects
             is CompositeEffect -> compositeEffectExecutor.execute(state, effect, context)
