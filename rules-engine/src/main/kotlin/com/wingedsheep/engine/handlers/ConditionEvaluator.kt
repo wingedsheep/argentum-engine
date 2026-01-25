@@ -263,9 +263,11 @@ class ConditionEvaluator {
     }
 
     private fun evaluateYouWereAttackedThisStep(state: GameState, context: EffectContext): Boolean {
-        // TODO: Track if player was attacked this step
-        // For now, return false as we don't have this tracking yet
-        return false
+        // Check if any creature is attacking the player (has AttackingComponent with defenderId = player)
+        return state.entities.any { (_, container) ->
+            val attacking = container.get<AttackingComponent>()
+            attacking != null && attacking.defenderId == context.controllerId
+        }
     }
 
     private fun evaluateYouWereDealtCombatDamageThisTurn(state: GameState, context: EffectContext): Boolean {

@@ -20,6 +20,9 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.targeting.*
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.handlers.ConditionEvaluator
+import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.sdk.scripting.CastRestriction
 import org.slf4j.LoggerFactory
 import java.util.UUID
 
@@ -36,6 +39,10 @@ class GameSession(
     private val cardRegistry: CardRegistry,
     private val stateTransformer: ClientStateTransformer = ClientStateTransformer()
 ) {
+    // Lock for synchronizing state modifications to prevent lost updates
+    private val stateLock = Any()
+
+    @Volatile
     private var gameState: GameState? = null
     private val players = mutableMapOf<EntityId, PlayerSession>()
     private val deckLists = mutableMapOf<EntityId, List<String>>()
@@ -43,6 +50,7 @@ class GameSession(
     private val actionProcessor = ActionProcessor(cardRegistry)
     private val gameInitializer = GameInitializer(cardRegistry)
     private val manaSolver = ManaSolver(cardRegistry)
+    private val conditionEvaluator = ConditionEvaluator()
 
     val player1: PlayerSession? get() = players.values.firstOrNull()
     val player2: PlayerSession? get() = players.values.drop(1).firstOrNull()
@@ -187,15 +195,16 @@ class GameSession(
     /**
      * Player chooses to keep their current hand.
      * Routes through the engine's action processor.
+     * Synchronized to prevent lost updates when multiple players act simultaneously.
      */
-    fun keepHand(playerId: EntityId): MulliganActionResult {
+    fun keepHand(playerId: EntityId): MulliganActionResult = synchronized(stateLock) {
         val state = gameState ?: return MulliganActionResult.Failure("Game not started")
 
         val action = KeepHand(playerId)
         val result = actionProcessor.process(state, action)
 
         val error = result.error
-        return if (error != null) {
+        if (error != null) {
             MulliganActionResult.Failure(error)
         } else {
             gameState = result.state
@@ -211,15 +220,16 @@ class GameSession(
     /**
      * Player chooses to mulligan - shuffle hand and draw a new hand.
      * Routes through the engine's action processor.
+     * Synchronized to prevent lost updates when multiple players act simultaneously.
      */
-    fun takeMulligan(playerId: EntityId): MulliganActionResult {
+    fun takeMulligan(playerId: EntityId): MulliganActionResult = synchronized(stateLock) {
         val state = gameState ?: return MulliganActionResult.Failure("Game not started")
 
         val action = TakeMulligan(playerId)
         val result = actionProcessor.process(state, action)
 
         val error = result.error
-        return if (error != null) {
+        if (error != null) {
             MulliganActionResult.Failure(error)
         } else {
             gameState = result.state
@@ -230,15 +240,16 @@ class GameSession(
     /**
      * Player chooses which cards to put on the bottom of their library.
      * Routes through the engine's action processor.
+     * Synchronized to prevent lost updates when multiple players act simultaneously.
      */
-    fun chooseBottomCards(playerId: EntityId, cardIds: List<EntityId>): MulliganActionResult {
+    fun chooseBottomCards(playerId: EntityId, cardIds: List<EntityId>): MulliganActionResult = synchronized(stateLock) {
         val state = gameState ?: return MulliganActionResult.Failure("Game not started")
 
         val action = BottomCards(playerId, cardIds)
         val result = actionProcessor.process(state, action)
 
         val error = result.error
-        return if (error != null) {
+        if (error != null) {
             MulliganActionResult.Failure(error)
         } else {
             gameState = result.state
@@ -295,15 +306,16 @@ class GameSession(
      * Execute a game action.
      *
      * Routes the action through the engine's ActionProcessor.
+     * Synchronized to prevent lost updates when multiple players act simultaneously.
      */
-    fun executeAction(playerId: EntityId, action: GameAction): ActionResult {
+    fun executeAction(playerId: EntityId, action: GameAction): ActionResult = synchronized(stateLock) {
         val state = gameState ?: return ActionResult.Failure("Game not started")
 
         val result = actionProcessor.process(state, action)
 
         val error = result.error
         val pendingDecision = result.pendingDecision
-        return when {
+        when {
             error != null -> ActionResult.Failure(error)
             pendingDecision != null -> {
                 gameState = result.state
@@ -318,14 +330,15 @@ class GameSession(
 
     /**
      * Handle player concession.
+     * Synchronized to prevent lost updates.
      */
-    fun playerConcedes(playerId: EntityId): GameState? {
+    fun playerConcedes(playerId: EntityId): GameState? = synchronized(stateLock) {
         val state = gameState ?: return null
         val action = Concede(playerId)
         val result = actionProcessor.process(state, action)
 
         gameState = result.state
-        return result.state
+        result.state
     }
 
     /**
@@ -389,17 +402,24 @@ class GameSession(
         for (cardId in hand) {
             val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: continue
             if (!cardComponent.typeLine.isLand) {
+                // Look up card definition for target requirements and cast restrictions
+                val cardDef = cardRegistry.getCard(cardComponent.name)
+                if (cardDef == null) {
+                    logger.warn("Card definition not found in registry: '${cardComponent.name}'. Registry has ${cardRegistry.size} cards.")
+                }
+
+                // Check cast restrictions first
+                val castRestrictions = cardDef?.script?.castRestrictions ?: emptyList()
+                if (!checkCastRestrictions(state, playerId, castRestrictions)) {
+                    continue // Skip this card if cast restrictions are not met
+                }
+
                 // Check timing - sorcery-speed spells need main phase, empty stack, your turn
                 val isInstant = cardComponent.typeLine.isInstant
                 if (isInstant || canPlaySorcerySpeed) {
                     // Check mana affordability
                     val canAfford = manaSolver.canPay(state, playerId, cardComponent.manaCost)
                     if (canAfford) {
-                        // Look up card definition for target requirements
-                        val cardDef = cardRegistry.getCard(cardComponent.name)
-                        if (cardDef == null) {
-                            logger.warn("Card definition not found in registry: '${cardComponent.name}'. Registry has ${cardRegistry.size} cards.")
-                        }
                         val targetReqs = cardDef?.script?.targetRequirements ?: emptyList()
 
                         logger.debug("Card '${cardComponent.name}': cardDef=${cardDef != null}, targetReqs=${targetReqs.size}")
@@ -589,6 +609,45 @@ class GameSession(
                 else -> true // Other filters not yet implemented
             }
         }
+    }
+
+    /**
+     * Check if cast restrictions are satisfied for a spell.
+     * Returns true if all restrictions are met, false otherwise.
+     */
+    private fun checkCastRestrictions(
+        state: GameState,
+        playerId: EntityId,
+        restrictions: List<CastRestriction>
+    ): Boolean {
+        if (restrictions.isEmpty()) return true
+
+        // Create an EffectContext for condition evaluation
+        val opponentId = state.turnOrder.firstOrNull { it != playerId }
+        val context = EffectContext(
+            sourceId = null,
+            controllerId = playerId,
+            opponentId = opponentId,
+            targets = emptyList(),
+            xValue = 0
+        )
+
+        for (restriction in restrictions) {
+            val satisfied = when (restriction) {
+                is CastRestriction.OnlyDuringStep -> state.step == restriction.step
+                is CastRestriction.OnlyDuringPhase -> state.phase == restriction.phase
+                is CastRestriction.OnlyIfCondition -> conditionEvaluator.evaluate(state, restriction.condition, context)
+                is CastRestriction.TimingRequirement -> {
+                    // TimingRequirement is handled separately in the main timing check
+                    true
+                }
+                is CastRestriction.All -> restriction.restrictions.all { subRestriction ->
+                    checkCastRestrictions(state, playerId, listOf(subRestriction))
+                }
+            }
+            if (!satisfied) return false
+        }
+        return true
     }
 
     sealed interface ActionResult {
