@@ -1,7 +1,7 @@
 import { useGameStore } from '../../store/gameStore'
 import { useViewingPlayer, useOpponent, useZoneCards, useBattlefieldCards, useHasLegalActions, useStackCards } from '../../store/selectors'
 import { hand, graveyard } from '../../types'
-import type { ClientCard, ZoneId, ClientPlayer, LegalActionInfo } from '../../types'
+import type { ClientCard, ZoneId, ClientPlayer, LegalActionInfo, EntityId } from '../../types'
 import { PhaseIndicator } from '../ui/PhaseIndicator'
 import { CombatArrows } from '../combat/CombatArrows'
 import { DraggedCardOverlay } from './DraggedCardOverlay'
@@ -84,7 +84,7 @@ export function GameBoard() {
             {/* Opponent info */}
             <div style={styles.playerInfo}>
               <span style={{ ...styles.playerName, fontSize: responsive.fontSize.normal }}>{opponent?.name ?? 'Opponent'}</span>
-              <LifeDisplay life={opponent?.life ?? 0} />
+              {opponent && <LifeDisplay life={opponent.life} playerId={opponent.playerId} />}
             </div>
 
             {/* Opponent hand (face down) */}
@@ -137,7 +137,7 @@ export function GameBoard() {
             <div style={styles.playerControls}>
               <div style={styles.playerInfo}>
                 <span style={{ ...styles.playerName, fontSize: responsive.fontSize.normal }}>{viewingPlayer.name}</span>
-                <LifeDisplay life={viewingPlayer.life} isPlayer />
+                <LifeDisplay life={viewingPlayer.life} isPlayer playerId={viewingPlayer.playerId} />
               </div>
 
               {/* Hide Pass button during combat - combat overlay handles actions */}
@@ -181,16 +181,59 @@ export function GameBoard() {
 }
 
 /**
- * Life total display.
+ * Life total display - interactive when in targeting mode.
  */
-function LifeDisplay({ life, isPlayer = false }: { life: number; isPlayer?: boolean }) {
+function LifeDisplay({
+  life,
+  isPlayer = false,
+  playerId
+}: {
+  life: number
+  isPlayer?: boolean
+  playerId: EntityId
+}) {
   const responsive = useResponsiveContext()
-  const bgColor = isPlayer ? '#1a3a5a' : '#3a1a4a'
-  const borderColor = isPlayer ? '#3a7aba' : '#7a3a9a'
+  const targetingState = useGameStore((state) => state.targetingState)
+  const addTarget = useGameStore((state) => state.addTarget)
+  const confirmTargeting = useGameStore((state) => state.confirmTargeting)
+
+  // Check if this player is a valid target in current targeting mode
+  const isValidTarget = targetingState?.validTargets.includes(playerId) ?? false
+  const isSelected = targetingState?.selectedTargets.includes(playerId) ?? false
+
+  const handleClick = () => {
+    if (targetingState && isValidTarget && !isSelected) {
+      addTarget(playerId)
+
+      // Auto-confirm if we have selected enough targets
+      const newTargetCount = (targetingState.selectedTargets.length) + 1
+      const requiredCount = targetingState.requiredCount
+      if (newTargetCount >= requiredCount) {
+        setTimeout(() => confirmTargeting(), 0)
+      }
+    }
+  }
+
   const size = responsive.isMobile ? 36 : responsive.isTablet ? 42 : 48
+
+  // Dynamic styling based on targeting state
+  const bgColor = isPlayer ? '#1a3a5a' : '#3a1a4a'
+  const borderColor = isSelected
+    ? '#ffff00' // Yellow if selected as target
+    : isValidTarget
+      ? '#ff4444' // Red glow if valid target
+      : isPlayer ? '#3a7aba' : '#7a3a9a'
+
+  const cursor = isValidTarget ? 'pointer' : 'default'
+  const boxShadow = isSelected
+    ? '0 0 20px rgba(255, 255, 0, 0.8)'
+    : isValidTarget
+      ? '0 0 15px rgba(255, 68, 68, 0.6)'
+      : 'none'
 
   return (
     <div
+      onClick={handleClick}
       style={{
         ...styles.lifeDisplay,
         width: size,
@@ -198,6 +241,9 @@ function LifeDisplay({ life, isPlayer = false }: { life: number; isPlayer?: bool
         fontSize: responsive.fontSize.large,
         backgroundColor: bgColor,
         borderColor: borderColor,
+        cursor,
+        boxShadow,
+        transition: 'all 0.2s ease-in-out',
       }}
     >
       <span style={{ color: life <= 5 ? '#ff4444' : '#ffffff' }}>{life}</span>
@@ -885,7 +931,7 @@ function ActionMenu() {
           Select a target ({selectedCount}/{requiredCount})
         </div>
         <div style={{ color: '#aaa', fontSize: responsive.fontSize.small, marginTop: 4 }}>
-          Click a highlighted creature
+          Click a highlighted target
         </div>
         <button onClick={cancelTargeting} style={{
           ...styles.cancelButton,
