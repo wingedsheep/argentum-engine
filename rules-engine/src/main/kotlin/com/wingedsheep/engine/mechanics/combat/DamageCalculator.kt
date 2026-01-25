@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.combat
 
+import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.combat.BlockedComponent
@@ -19,6 +20,8 @@ import com.wingedsheep.sdk.model.EntityId
  * - CR 702.19: Trample - excess damage can be assigned to defending player.
  */
 class DamageCalculator {
+
+    private val stateProjector = StateProjector()
 
     /**
      * Result of calculating lethal damage for a creature.
@@ -60,15 +63,14 @@ class DamageCalculator {
         sourceId: EntityId
     ): LethalDamageInfo {
         val creatureContainer = state.getEntity(creatureId)
-        val creatureCard = creatureContainer?.get<CardComponent>()
-
-        val toughness = creatureCard?.baseStats?.baseToughness ?: 0
         val damageMarked = creatureContainer?.get<DamageComponent>()?.amount ?: 0
 
-        // Check if source has deathtouch
-        val sourceContainer = state.getEntity(sourceId)
-        val sourceCard = sourceContainer?.get<CardComponent>()
-        val hasDeathtouch = sourceCard?.baseKeywords?.contains(Keyword.DEATHTOUCH) == true
+        // Use projected values for toughness (includes floating effects like +4/+4)
+        val projected = stateProjector.project(state)
+        val toughness = projected.getToughness(creatureId) ?: 0
+
+        // Check if source has deathtouch (using projected keywords)
+        val hasDeathtouch = projected.hasKeyword(sourceId, Keyword.DEATHTOUCH)
 
         // With deathtouch, 1 damage is lethal. Otherwise, need to reach toughness.
         val lethalAmount = if (hasDeathtouch) {
@@ -106,13 +108,14 @@ class DamageCalculator {
         val attackerCard = attackerContainer.get<CardComponent>()
             ?: return DamageDistribution(emptyMap(), 0, 0)
 
-        val attackerPower = attackerCard.baseStats?.basePower ?: 0
+        // Use projected values for power and keywords (includes floating effects like +4/+4)
+        val projected = stateProjector.project(state)
+        val attackerPower = projected.getPower(attackerId) ?: 0
         if (attackerPower <= 0) {
             return DamageDistribution(emptyMap(), 0, 0)
         }
 
-        val attackerKeywords = attackerCard.baseKeywords
-        val hasTrample = attackerKeywords.contains(Keyword.TRAMPLE)
+        val hasTrample = projected.hasKeyword(attackerId, Keyword.TRAMPLE)
 
         // Get blockers in damage assignment order
         val blockedComponent = attackerContainer.get<BlockedComponent>()
@@ -183,9 +186,10 @@ class DamageCalculator {
         val attackerCard = attackerContainer.get<CardComponent>()
             ?: return "Attacker is not a card"
 
-        val attackerPower = attackerCard.baseStats?.basePower ?: 0
-        val attackerKeywords = attackerCard.baseKeywords
-        val hasTrample = attackerKeywords.contains(Keyword.TRAMPLE)
+        // Use projected values for power and keywords (includes floating effects like +4/+4)
+        val projected = stateProjector.project(state)
+        val attackerPower = projected.getPower(attackerId) ?: 0
+        val hasTrample = projected.hasKeyword(attackerId, Keyword.TRAMPLE)
 
         // Get blockers in damage assignment order
         val orderedBlockers = attackerContainer.get<DamageAssignmentOrderComponent>()?.orderedBlockers
@@ -257,23 +261,26 @@ class DamageCalculator {
         if (userPreference) return true
 
         val attackerContainer = state.getEntity(attackerId) ?: return false
-        val attackerCard = attackerContainer.get<CardComponent>() ?: return false
+        attackerContainer.get<CardComponent>() ?: return false
 
         val blockedComponent = attackerContainer.get<BlockedComponent>()
         val blockerIds = blockedComponent?.blockerIds ?: return false
 
+        // Use projected values for keywords and power (includes floating effects like +4/+4)
+        val projected = stateProjector.project(state)
+
         // Single blocker without trample = no choice needed
-        if (blockerIds.size <= 1 && !attackerCard.baseKeywords.contains(Keyword.TRAMPLE)) {
+        if (blockerIds.size <= 1 && !projected.hasKeyword(attackerId, Keyword.TRAMPLE)) {
             return false
         }
 
         // Has trample = always has a choice for excess damage
-        if (attackerCard.baseKeywords.contains(Keyword.TRAMPLE)) {
+        if (projected.hasKeyword(attackerId, Keyword.TRAMPLE)) {
             return true
         }
 
         // Multiple blockers - check if there's excess damage to distribute
-        val attackerPower = attackerCard.baseStats?.basePower ?: 0
+        val attackerPower = projected.getPower(attackerId) ?: 0
         var totalLethalNeeded = 0
 
         for (blockerId in blockerIds) {

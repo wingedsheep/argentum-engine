@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.mechanics.combat
 
 import com.wingedsheep.engine.core.*
+import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
@@ -23,7 +24,8 @@ import com.wingedsheep.sdk.model.EntityId
  * 5. End of combat step
  */
 class CombatManager(
-    private val damageCalculator: DamageCalculator = DamageCalculator()
+    private val damageCalculator: DamageCalculator = DamageCalculator(),
+    private val stateProjector: StateProjector = StateProjector()
 ) {
 
     // =========================================================================
@@ -50,11 +52,12 @@ class CombatManager(
 
         // Apply attacker components and tap attacking creatures
         var newState = state
+        val projected = stateProjector.project(state)
         for ((attackerId, defenderId) in attackers) {
             newState = newState.updateEntity(attackerId) { container ->
                 var updated = container.with(AttackingComponent(defenderId))
                 // Tap attacking creatures (unless they have vigilance)
-                val hasVigilance = container.get<CardComponent>()?.baseKeywords?.contains(Keyword.VIGILANCE) == true
+                val hasVigilance = projected.hasKeyword(attackerId, Keyword.VIGILANCE)
                 if (!hasVigilance) {
                     updated = updated.with(TappedComponent)
                 }
@@ -103,14 +106,17 @@ class CombatManager(
             return "${cardComponent.name} is tapped and cannot attack"
         }
 
+        // Use projected keywords (includes floating effects)
+        val projected = stateProjector.project(state)
+
         // Cannot have summoning sickness (unless it has haste)
-        val hasHaste = cardComponent.baseKeywords.contains(Keyword.HASTE)
+        val hasHaste = projected.hasKeyword(attackerId, Keyword.HASTE)
         if (!hasHaste && container.has<SummoningSicknessComponent>()) {
             return "${cardComponent.name} has summoning sickness"
         }
 
         // Cannot have defender
-        if (cardComponent.baseKeywords.contains(Keyword.DEFENDER)) {
+        if (projected.hasKeyword(attackerId, Keyword.DEFENDER)) {
             return "${cardComponent.name} has defender and cannot attack"
         }
 
@@ -240,28 +246,28 @@ class CombatManager(
         val attackerCard = attackerContainer.get<CardComponent>()
             ?: return "Not a card: $attackerId"
 
-        val blockerKeywords = blockerCard.baseKeywords
-        val attackerKeywords = attackerCard.baseKeywords
+        // Use projected keywords (includes floating effects)
+        val projected = stateProjector.project(state)
 
         // Flying: Can only be blocked by creatures with flying or reach
-        if (attackerKeywords.contains(Keyword.FLYING)) {
-            val canBlockFlying = blockerKeywords.contains(Keyword.FLYING) ||
-                blockerKeywords.contains(Keyword.REACH)
+        if (projected.hasKeyword(attackerId, Keyword.FLYING)) {
+            val canBlockFlying = projected.hasKeyword(blockerId, Keyword.FLYING) ||
+                projected.hasKeyword(blockerId, Keyword.REACH)
             if (!canBlockFlying) {
                 return "${blockerCard.name} cannot block ${attackerCard.name} (flying)"
             }
         }
 
         // Horsemanship: Can only be blocked by creatures with horsemanship
-        if (attackerKeywords.contains(Keyword.HORSEMANSHIP)) {
-            if (!blockerKeywords.contains(Keyword.HORSEMANSHIP)) {
+        if (projected.hasKeyword(attackerId, Keyword.HORSEMANSHIP)) {
+            if (!projected.hasKeyword(blockerId, Keyword.HORSEMANSHIP)) {
                 return "${blockerCard.name} cannot block ${attackerCard.name} (horsemanship)"
             }
         }
 
         // Shadow: Can only be blocked by creatures with shadow
-        if (attackerKeywords.contains(Keyword.SHADOW)) {
-            if (!blockerKeywords.contains(Keyword.SHADOW)) {
+        if (projected.hasKeyword(attackerId, Keyword.SHADOW)) {
+            if (!projected.hasKeyword(blockerId, Keyword.SHADOW)) {
                 return "${blockerCard.name} cannot block ${attackerCard.name} (shadow)"
             }
         }
@@ -290,12 +296,15 @@ class CombatManager(
             }
         }
 
+        // Use projected keywords (includes floating effects)
+        val projected = stateProjector.project(state)
+
         // Check each attacker with menace
         for ((attackerId, blockerList) in attackerToBlockers) {
             val attackerContainer = state.getEntity(attackerId) ?: continue
             val attackerCard = attackerContainer.get<CardComponent>() ?: continue
 
-            if (attackerCard.baseKeywords.contains(Keyword.MENACE)) {
+            if (projected.hasKeyword(attackerId, Keyword.MENACE)) {
                 if (blockerList.size < 2) {
                     return "${attackerCard.name} has menace and must be blocked by 2 or more creatures"
                 }
@@ -318,17 +327,19 @@ class CombatManager(
         var newState = state
         val events = mutableListOf<GameEvent>()
 
+        // Use projected values for power and keywords (includes floating effects like +4/+4)
+        val projected = stateProjector.project(state)
+
         // Find all attackers
         val attackers = state.findEntitiesWith<AttackingComponent>()
 
         for ((attackerId, attackingComponent) in attackers) {
             val attackerContainer = state.getEntity(attackerId) ?: continue
-            val attackerCard = attackerContainer.get<CardComponent>() ?: continue
-            val attackerKeywords = attackerCard.baseKeywords
+            attackerContainer.get<CardComponent>() ?: continue
 
             // Check if this attacker deals damage in this step
-            val hasFirstStrike = attackerKeywords.contains(Keyword.FIRST_STRIKE)
-            val hasDoubleStrike = attackerKeywords.contains(Keyword.DOUBLE_STRIKE)
+            val hasFirstStrike = projected.hasKeyword(attackerId, Keyword.FIRST_STRIKE)
+            val hasDoubleStrike = projected.hasKeyword(attackerId, Keyword.DOUBLE_STRIKE)
 
             val dealsDamageThisStep = if (firstStrike) {
                 hasFirstStrike || hasDoubleStrike
@@ -338,8 +349,8 @@ class CombatManager(
 
             if (!dealsDamageThisStep) continue
 
-            // Get attacker's power
-            val power = attackerCard.baseStats?.basePower ?: 0
+            // Get attacker's power (projected value includes buffs like +4/+4)
+            val power = projected.getPower(attackerId) ?: 0
             if (power <= 0) continue
 
             // Check if blocked
@@ -416,10 +427,12 @@ class CombatManager(
         val events = mutableListOf<GameEvent>()
 
         val attackerContainer = newState.getEntity(attackerId) ?: return newState to events
-        val attackerCard = attackerContainer.get<CardComponent>() ?: return newState to events
-        val attackerPower = attackerCard.baseStats?.basePower ?: 0
-        val attackerKeywords = attackerCard.baseKeywords
-        val hasTrample = attackerKeywords.contains(Keyword.TRAMPLE)
+        attackerContainer.get<CardComponent>() ?: return newState to events
+
+        // Use projected values for power and keywords (includes floating effects like +4/+4)
+        val projected = stateProjector.project(newState)
+        val attackerPower = projected.getPower(attackerId) ?: 0
+        val hasTrample = projected.hasKeyword(attackerId, Keyword.TRAMPLE)
 
         // Get blockers in damage assignment order (or default order)
         val orderedBlockers = attackerContainer.get<DamageAssignmentOrderComponent>()?.orderedBlockers
@@ -468,12 +481,11 @@ class CombatManager(
         // Each blocker deals damage to attacker
         for (blockerId in orderedBlockers) {
             val blockerContainer = newState.getEntity(blockerId) ?: continue
-            val blockerCard = blockerContainer.get<CardComponent>() ?: continue
-            val blockerKeywords = blockerCard.baseKeywords
+            blockerContainer.get<CardComponent>() ?: continue
 
-            // Check if blocker deals damage in this step
-            val hasFirstStrike = blockerKeywords.contains(Keyword.FIRST_STRIKE)
-            val hasDoubleStrike = blockerKeywords.contains(Keyword.DOUBLE_STRIKE)
+            // Check if blocker deals damage in this step (using projected keywords)
+            val hasFirstStrike = projected.hasKeyword(blockerId, Keyword.FIRST_STRIKE)
+            val hasDoubleStrike = projected.hasKeyword(blockerId, Keyword.DOUBLE_STRIKE)
 
             val dealsDamageThisStep = if (firstStrike) {
                 hasFirstStrike || hasDoubleStrike
@@ -483,7 +495,7 @@ class CombatManager(
 
             if (!dealsDamageThisStep) continue
 
-            val blockerPower = blockerCard.baseStats?.basePower ?: 0
+            val blockerPower = projected.getPower(blockerId) ?: 0
             if (blockerPower > 0) {
                 val currentDamage = newState.getEntity(attackerId)?.get<DamageComponent>()?.amount ?: 0
                 newState = newState.updateEntity(attackerId) { container ->
@@ -503,12 +515,15 @@ class CombatManager(
         var newState = state
         val events = mutableListOf<GameEvent>()
 
+        // Use projected toughness (includes floating effects like +4/+4)
+        val projected = stateProjector.project(state)
+
         for ((entityId, container) in state.entities) {
             val cardComponent = container.get<CardComponent>() ?: continue
             if (!cardComponent.typeLine.isCreature) continue
 
             val damage = container.get<DamageComponent>()?.amount ?: 0
-            val toughness = cardComponent.baseStats?.baseToughness ?: 0
+            val toughness = projected.getToughness(entityId) ?: 0
 
             if (damage >= toughness) {
                 // Creature has lethal damage - would be destroyed by state-based actions

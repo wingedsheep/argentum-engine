@@ -73,11 +73,17 @@ export interface ClientCard {
   /** Oracle text / rules text (for display in card details) */
   readonly oracleText: string
 
-  /** Power for creatures (null if not a creature) */
+  /** Power for creatures (null if not a creature) - projected/modified value */
   readonly power: number | null
 
-  /** Toughness for creatures (null if not a creature) */
+  /** Toughness for creatures (null if not a creature) - projected/modified value */
   readonly toughness: number | null
+
+  /** Base power before modifications (for buff indicators) */
+  readonly basePower: number | null
+
+  /** Base toughness before modifications (for buff indicators) */
+  readonly baseToughness: number | null
 
   /** Current damage on creature (only present on battlefield) */
   readonly damage: number | null

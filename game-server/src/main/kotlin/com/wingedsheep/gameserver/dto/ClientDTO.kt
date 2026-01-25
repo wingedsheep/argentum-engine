@@ -94,11 +94,17 @@ data class ClientCard(
     /** Oracle text / rules text (for display in card details) */
     val oracleText: String,
 
-    /** Power for creatures (null if not a creature) */
+    /** Power for creatures (null if not a creature) - this is the projected/modified value */
     val power: Int?,
 
-    /** Toughness for creatures (null if not a creature) */
+    /** Toughness for creatures (null if not a creature) - this is the projected/modified value */
     val toughness: Int?,
+
+    /** Base power (before modifications) - for displaying buff indicators */
+    val basePower: Int?,
+
+    /** Base toughness (before modifications) - for displaying buff indicators */
+    val baseToughness: Int?,
 
     /** Current damage on creature (only present on battlefield) */
     val damage: Int?,

@@ -9,6 +9,8 @@ import com.wingedsheep.engine.state.components.identity.*
 import com.wingedsheep.engine.state.components.battlefield.*
 import com.wingedsheep.engine.state.components.combat.*
 import com.wingedsheep.engine.state.components.player.*
+import com.wingedsheep.engine.mechanics.layers.ProjectedState
+import com.wingedsheep.engine.mechanics.layers.StateProjector
 
 /**
  * Transforms internal game state into client-facing DTOs.
@@ -20,6 +22,9 @@ import com.wingedsheep.engine.state.components.player.*
  * - Prevents information leakage by only including relevant data
  */
 class ClientStateTransformer {
+
+    private val stateProjector = StateProjector()
+
     /**
      * Transform the game state for a specific player's view.
      *
@@ -31,6 +36,9 @@ class ClientStateTransformer {
         state: GameState,
         viewingPlayerId: EntityId
     ): ClientGameState {
+        // Project the game state to apply continuous effects (Rule 613)
+        val projectedState = stateProjector.project(state)
+
         // Build visible cards map
         val cards = mutableMapOf<EntityId, ClientCard>()
 
@@ -52,7 +60,7 @@ class ClientStateTransformer {
             // Only include card details for visible zones
             if (isVisible) {
                 for (entityId in entityIds) {
-                    val clientCard = transformCard(state, entityId, zoneKey)
+                    val clientCard = transformCard(state, entityId, zoneKey, projectedState)
                     if (clientCard != null) {
                         cards[entityId] = clientCard
                     }
@@ -74,7 +82,7 @@ class ClientStateTransformer {
 
             // Include card details for stack items
             for (entityId in state.stack) {
-                val clientCard = transformCard(state, entityId, stackZoneKey)
+                val clientCard = transformCard(state, entityId, stackZoneKey, projectedState)
                 if (clientCard != null) {
                     cards[entityId] = clientCard
                 }
@@ -130,7 +138,8 @@ class ClientStateTransformer {
     private fun transformCard(
         state: GameState,
         entityId: EntityId,
-        zoneKey: ZoneKey
+        zoneKey: ZoneKey,
+        projectedState: ProjectedState
     ): ClientCard? {
         val container = state.getEntity(entityId) ?: return null
         val cardComponent = container.get<CardComponent>() ?: return null
@@ -143,12 +152,22 @@ class ClientStateTransformer {
         // Get owner
         val ownerId = cardComponent.ownerId ?: container.get<OwnerComponent>()?.playerId ?: controllerId
 
-        // Use base values from the CardComponent
-        // TODO: When layer projection is needed, apply continuous effects here
-        val power = cardComponent.baseStats?.basePower
-        val toughness = cardComponent.baseStats?.baseToughness
-        val keywords = cardComponent.baseKeywords
-        val colors = cardComponent.colors
+        // For battlefield permanents, use projected values from the layer system (Rule 613)
+        // For cards in other zones, use base values
+        val projectedValues = if (zoneKey.zoneType == ZoneType.BATTLEFIELD) {
+            projectedState.getProjectedValues(entityId)
+        } else {
+            null
+        }
+
+        val power = projectedValues?.power ?: cardComponent.baseStats?.basePower
+        val toughness = projectedValues?.toughness ?: cardComponent.baseStats?.baseToughness
+        val keywords = projectedValues?.keywords?.mapNotNull {
+            try { com.wingedsheep.sdk.core.Keyword.valueOf(it) } catch (_: Exception) { null }
+        }?.toSet() ?: cardComponent.baseKeywords
+        val colors = projectedValues?.colors?.mapNotNull {
+            try { com.wingedsheep.sdk.core.Color.valueOf(it) } catch (_: Exception) { null }
+        }?.toSet() ?: cardComponent.colors
 
         // Get state components
         val isTapped = container.has<TappedComponent>()
@@ -208,6 +227,8 @@ class ClientStateTransformer {
             oracleText = cardComponent.oracleText,
             power = power,
             toughness = toughness,
+            basePower = cardComponent.baseStats?.basePower,
+            baseToughness = cardComponent.baseStats?.baseToughness,
             damage = damage,
             keywords = keywords,
             counters = counters,

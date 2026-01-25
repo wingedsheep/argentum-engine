@@ -71,6 +71,7 @@ export type {
   ClientEvent,
   LifeChangedEvent,
   DamageDealtEvent,
+  StatsModifiedEvent,
   CardDrawnEvent,
   CardDiscardedEvent,
   PermanentEnteredEvent,
@@ -94,6 +95,7 @@ export type {
 export {
   isLifeChangedEvent,
   isDamageDealtEvent,
+  isStatsModifiedEvent,
   isCardDrawnEvent,
   isPermanentEnteredEvent,
   isCreatureDiedEvent,

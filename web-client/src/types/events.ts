@@ -250,6 +250,10 @@ export function isDamageDealtEvent(event: ClientEvent): event is DamageDealtEven
   return event.type === 'damageDealt'
 }
 
+export function isStatsModifiedEvent(event: ClientEvent): event is StatsModifiedEvent {
+  return event.type === 'statsModified'
+}
+
 export function isCardDrawnEvent(event: ClientEvent): event is CardDrawnEvent {
   return event.type === 'cardDrawn'
 }

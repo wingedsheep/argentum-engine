@@ -18,6 +18,39 @@ function useResponsiveContext(): ResponsiveSizes {
 }
 
 /**
+ * Get color for P/T display based on modifications.
+ * Green = buffed, Red = debuffed, White = normal
+ */
+function getPTColor(
+  power: number | null,
+  toughness: number | null,
+  basePower: number | null,
+  baseToughness: number | null
+): string {
+  if (power === null || toughness === null || basePower === null || baseToughness === null) {
+    return 'white'
+  }
+
+  const powerDiff = power - basePower
+  const toughnessDiff = toughness - baseToughness
+
+  // If both are increased or both are unchanged, and at least one is increased
+  if (powerDiff >= 0 && toughnessDiff >= 0 && (powerDiff > 0 || toughnessDiff > 0)) {
+    return '#00ff00' // Green for buffed
+  }
+  // If both are decreased or both are unchanged, and at least one is decreased
+  if (powerDiff <= 0 && toughnessDiff <= 0 && (powerDiff < 0 || toughnessDiff < 0)) {
+    return '#ff4444' // Red for debuffed
+  }
+  // Mixed buff/debuff - show yellow
+  if (powerDiff !== 0 || toughnessDiff !== 0) {
+    return '#ffff00' // Yellow for mixed
+  }
+
+  return 'white'
+}
+
+/**
  * 2D Game board layout - MTG Arena style.
  */
 export function GameBoard() {
@@ -141,6 +174,7 @@ export function GameBoard() {
 
       {/* Dragged card overlay */}
       <DraggedCardOverlay />
+      <CardPreview />
     </div>
     </ResponsiveContext.Provider>
   )
@@ -212,6 +246,103 @@ function StackDisplay() {
             </div>
           </div>
         ))}
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Card preview overlay - shows enlarged card when hovering.
+ */
+function CardPreview() {
+  const hoveredCardId = useGameStore((state) => state.hoveredCardId)
+  const gameState = useGameStore((state) => state.gameState)
+  const responsive = useResponsiveContext()
+
+  if (!hoveredCardId || !gameState) return null
+
+  const card = gameState.cards[hoveredCardId]
+  if (!card) return null
+
+  const cardImageUrl = `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(card.name)}&format=image&version=large`
+
+  // Calculate preview size - larger than normal cards
+  const previewWidth = responsive.isMobile ? 200 : 280
+  const previewHeight = Math.round(previewWidth * 1.4)
+
+  // Determine if stats are modified
+  const isPowerBuffed = card.power !== null && card.basePower !== null && card.power > card.basePower
+  const isPowerDebuffed = card.power !== null && card.basePower !== null && card.power < card.basePower
+  const isToughnessBuffed = card.toughness !== null && card.baseToughness !== null && card.toughness > card.baseToughness
+  const isToughnessDebuffed = card.toughness !== null && card.baseToughness !== null && card.toughness < card.baseToughness
+  const hasStatModifications = isPowerBuffed || isPowerDebuffed || isToughnessBuffed || isToughnessDebuffed
+
+  return (
+    <div style={styles.cardPreviewOverlay}>
+      <div style={{
+        ...styles.cardPreviewContainer,
+        width: previewWidth,
+      }}>
+        {/* Card image */}
+        <div style={{
+          ...styles.cardPreviewCard,
+          width: previewWidth,
+          height: previewHeight,
+        }}>
+          <img
+            src={cardImageUrl}
+            alt={card.name}
+            style={styles.cardPreviewImage}
+          />
+        </div>
+
+        {/* Stats box (for creatures with modifications) */}
+        {card.power !== null && card.toughness !== null && (
+          <div style={{
+            ...styles.cardPreviewStats,
+            backgroundColor: hasStatModifications ? 'rgba(0, 0, 0, 0.9)' : 'transparent',
+          }}>
+            {hasStatModifications && (
+              <>
+                <span style={{
+                  color: isPowerBuffed ? '#00ff00' : isPowerDebuffed ? '#ff4444' : '#ffffff',
+                  fontWeight: 700,
+                  fontSize: responsive.isMobile ? 18 : 24,
+                }}>
+                  {card.power}
+                </span>
+                <span style={{ color: '#ffffff', fontSize: responsive.isMobile ? 18 : 24 }}>/</span>
+                <span style={{
+                  color: isToughnessBuffed ? '#00ff00' : isToughnessDebuffed ? '#ff4444' : '#ffffff',
+                  fontWeight: 700,
+                  fontSize: responsive.isMobile ? 18 : 24,
+                }}>
+                  {card.toughness}
+                </span>
+                {(card.basePower !== null && card.baseToughness !== null) && (
+                  <span style={{
+                    color: '#888888',
+                    fontSize: responsive.isMobile ? 12 : 14,
+                    marginLeft: 8,
+                  }}>
+                    (base: {card.basePower}/{card.baseToughness})
+                  </span>
+                )}
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Keywords/abilities info panel */}
+        {card.keywords.length > 0 && (
+          <div style={styles.cardPreviewKeywords}>
+            {card.keywords.map((keyword) => (
+              <div key={keyword} style={styles.cardPreviewKeyword}>
+                <span style={styles.cardPreviewKeywordName}>{keyword}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -413,6 +544,7 @@ function GameCard({
 }) {
   const selectCard = useGameStore((state) => state.selectCard)
   const selectedCardId = useGameStore((state) => state.selectedCardId)
+  const hoverCard = useGameStore((state) => state.hoverCard)
   const targetingState = useGameStore((state) => state.targetingState)
   const addTarget = useGameStore((state) => state.addTarget)
   const confirmTargeting = useGameStore((state) => state.confirmTargeting)
@@ -430,6 +562,17 @@ function GameCard({
   const draggingCardId = useGameStore((state) => state.draggingCardId)
   const startTargeting = useGameStore((state) => state.startTargeting)
   const responsive = useResponsiveContext()
+
+  // Hover handlers for card preview
+  const handleMouseEnter = useCallback(() => {
+    if (!faceDown) {
+      hoverCard(card.id)
+    }
+  }, [card.id, faceDown, hoverCard])
+
+  const handleMouseLeave = useCallback(() => {
+    hoverCard(null)
+  }, [hoverCard])
 
   // Check if card has legal actions (is playable)
   const hasLegalActions = useHasLegalActions(card.id)
@@ -635,6 +778,8 @@ function GameCard({
       onClick={handleClick}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       style={{
         ...styles.card,
         width,
@@ -662,7 +807,13 @@ function GameCard({
       <div style={styles.cardFallback}>
         <span style={{ ...styles.cardName, fontSize: responsive.fontSize.small }}>{faceDown ? '' : card.name}</span>
         {!faceDown && card.power !== null && card.toughness !== null && (
-          <span style={{ ...styles.cardPT, fontSize: responsive.fontSize.normal }}>{card.power}/{card.toughness}</span>
+          <span style={{
+            ...styles.cardPT,
+            fontSize: responsive.fontSize.normal,
+            color: getPTColor(card.power, card.toughness, card.basePower, card.baseToughness)
+          }}>
+            {card.power}/{card.toughness}
+          </span>
         )}
       </div>
 
@@ -675,6 +826,24 @@ function GameCard({
       {battlefield && card.hasSummoningSickness && card.cardTypes.includes('CREATURE') && (
         <div style={styles.summoningSicknessOverlay}>
           <div style={{ ...styles.summoningSicknessIcon, fontSize: responsive.isMobile ? 16 : 24 }}>💤</div>
+        </div>
+      )}
+
+      {/* P/T overlay for creatures on battlefield */}
+      {battlefield && !faceDown && card.power !== null && card.toughness !== null && (
+        <div style={{
+          ...styles.ptOverlay,
+          backgroundColor: getPTColor(card.power, card.toughness, card.basePower, card.baseToughness) !== 'white'
+            ? 'rgba(0, 0, 0, 0.85)'
+            : 'rgba(0, 0, 0, 0.7)',
+        }}>
+          <span style={{
+            color: getPTColor(card.power, card.toughness, card.basePower, card.baseToughness),
+            fontWeight: 700,
+            fontSize: responsive.isMobile ? 10 : 12,
+          }}>
+            {card.power}/{card.toughness}
+          </span>
         </div>
       )}
 
@@ -990,6 +1159,14 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: 700,
     marginTop: 4,
   },
+  ptOverlay: {
+    position: 'absolute',
+    bottom: 4,
+    right: 4,
+    padding: '2px 6px',
+    borderRadius: 4,
+    border: '1px solid rgba(255, 255, 255, 0.3)',
+  } as React.CSSProperties,
   tappedOverlay: {
     position: 'absolute',
     top: 0,
@@ -1142,4 +1319,54 @@ const styles: Record<string, React.CSSProperties> = {
     whiteSpace: 'nowrap',
     textAlign: 'center',
   },
+  // Card preview styles
+  cardPreviewOverlay: {
+    position: 'fixed',
+    top: 20,
+    left: 20,
+    zIndex: 1000,
+    pointerEvents: 'none',
+  } as React.CSSProperties,
+  cardPreviewContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 8,
+  } as React.CSSProperties,
+  cardPreviewCard: {
+    borderRadius: 12,
+    overflow: 'hidden',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.8), 0 0 0 2px rgba(255, 255, 255, 0.1)',
+  } as React.CSSProperties,
+  cardPreviewImage: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+  } as React.CSSProperties,
+  cardPreviewStats: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '8px 16px',
+    borderRadius: 8,
+    gap: 2,
+  } as React.CSSProperties,
+  cardPreviewKeywords: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 4,
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    padding: 12,
+    borderRadius: 8,
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+  } as React.CSSProperties,
+  cardPreviewKeyword: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 2,
+  } as React.CSSProperties,
+  cardPreviewKeywordName: {
+    color: '#ffcc00',
+    fontWeight: 600,
+    fontSize: 14,
+  } as React.CSSProperties,
 }
