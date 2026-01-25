@@ -1,9 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.portal.cards
 
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.LootEffect
 import com.wingedsheep.sdk.scripting.OnEnterBattlefield
 
 /**
@@ -24,7 +24,7 @@ val OwlFamiliar = card("Owl Familiar") {
 
     triggeredAbility {
         trigger = OnEnterBattlefield()
-        effect = LootEffect(drawCount = 1, discardCount = 1)
+        effect = Effects.Loot()
     }
 
     metadata {

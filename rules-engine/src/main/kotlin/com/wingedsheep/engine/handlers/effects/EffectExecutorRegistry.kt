@@ -10,9 +10,9 @@ import com.wingedsheep.engine.handlers.effects.damage.DealDamageExecutor
 import com.wingedsheep.engine.handlers.effects.damage.DealDamageToAllCreaturesExecutor
 import com.wingedsheep.engine.handlers.effects.damage.DealDamageToAllExecutor
 import com.wingedsheep.engine.handlers.effects.damage.DealXDamageExecutor
-import com.wingedsheep.engine.handlers.effects.damage.DrainExecutor
 import com.wingedsheep.engine.handlers.effects.drawing.DiscardCardsExecutor
 import com.wingedsheep.engine.handlers.effects.drawing.DrawCardsExecutor
+import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerDiscardsDrawsExecutor
 import com.wingedsheep.engine.handlers.effects.library.MillExecutor
 import com.wingedsheep.engine.handlers.effects.library.ScryExecutor
 import com.wingedsheep.engine.handlers.effects.library.ShuffleLibraryExecutor
@@ -56,11 +56,11 @@ class EffectExecutorRegistry(
     private val dealXDamageExecutor = DealXDamageExecutor()
     private val dealDamageToAllCreaturesExecutor = DealDamageToAllCreaturesExecutor()
     private val dealDamageToAllExecutor = DealDamageToAllExecutor()
-    private val drainExecutor = DrainExecutor()
 
     // Drawing executors
     private val drawCardsExecutor = DrawCardsExecutor(amountEvaluator)
     private val discardCardsExecutor = DiscardCardsExecutor(decisionHandler)
+    private val eachPlayerDiscardsDrawsExecutor = EachPlayerDiscardsDrawsExecutor(decisionHandler)
 
     // Removal executors
     private val destroyExecutor = DestroyExecutor()
@@ -115,11 +115,11 @@ class EffectExecutorRegistry(
             is DealXDamageEffect -> dealXDamageExecutor.execute(state, effect, context)
             is DealDamageToAllCreaturesEffect -> dealDamageToAllCreaturesExecutor.execute(state, effect, context)
             is DealDamageToAllEffect -> dealDamageToAllExecutor.execute(state, effect, context)
-            is DrainEffect -> drainExecutor.execute(state, effect, context)
 
             // Drawing effects
             is DrawCardsEffect -> drawCardsExecutor.execute(state, effect, context)
             is DiscardCardsEffect -> discardCardsExecutor.execute(state, effect, context)
+            is EachPlayerDiscardsDrawsEffect -> eachPlayerDiscardsDrawsExecutor.execute(state, effect, context)
 
             // Removal effects
             is DestroyEffect -> destroyExecutor.execute(state, effect, context)

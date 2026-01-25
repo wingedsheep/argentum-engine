@@ -919,11 +919,13 @@ class PortalSetTest : DescribeSpec({
         describe("Flux") {
             val card = Flux
 
-            it("should have flux effect with extra draw") {
+            it("should have each player discards/draws effect with bonus draw") {
                 card.typeLine.isSorcery shouldBe true
-                card.spellEffect.shouldBeInstanceOf<FluxEffect>()
-                val effect = card.spellEffect as FluxEffect
-                effect.drawExtra shouldBe 1
+                card.spellEffect.shouldBeInstanceOf<EachPlayerDiscardsDrawsEffect>()
+                val effect = card.spellEffect as EachPlayerDiscardsDrawsEffect
+                effect.controllerBonusDraw shouldBe 1
+                effect.minDiscard shouldBe 0  // "any number"
+                effect.discardEntireHand shouldBe false
             }
         }
 
@@ -1046,7 +1048,11 @@ class PortalSetTest : DescribeSpec({
                 card.triggeredAbilities shouldHaveSize 1
                 val trigger = card.triggeredAbilities.first()
                 trigger.trigger.shouldBeInstanceOf<OnEnterBattlefield>()
-                trigger.effect.shouldBeInstanceOf<LootEffect>()
+                // Loot effect is now a composite of draw + discard
+                val composite = trigger.effect.shouldBeInstanceOf<CompositeEffect>()
+                composite.effects shouldHaveSize 2
+                composite.effects[0].shouldBeInstanceOf<DrawCardsEffect>()
+                composite.effects[1].shouldBeInstanceOf<DiscardCardsEffect>()
             }
         }
 
@@ -2483,7 +2489,8 @@ class PortalSetTest : DescribeSpec({
                 card.manaCost.toString() shouldBe "{R}"
                 card.cmc shouldBe 1
                 card.typeLine.isSorcery shouldBe true
-                card.spellEffect.shouldBeInstanceOf<WindsOfChangeEffect>()
+                val wheel = card.spellEffect.shouldBeInstanceOf<WheelEffect>()
+                wheel.target shouldBe EffectTarget.EachPlayer
             }
         }
 

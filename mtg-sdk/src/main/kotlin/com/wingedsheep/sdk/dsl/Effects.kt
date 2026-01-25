@@ -243,4 +243,36 @@ object Effects {
      */
     fun SeparatePermanentsIntoPiles(target: EffectTarget = EffectTarget.AnyPlayer): Effect =
         SeparatePermanentsIntoPilesEffect(target)
+
+    // =========================================================================
+    // Composite Effect Helpers
+    // =========================================================================
+
+    /**
+     * Draw cards then discard cards (looting).
+     * "Draw a card, then discard a card."
+     */
+    fun Loot(draw: Int = 1, discard: Int = 1): Effect = CompositeEffect(
+        listOf(
+            DrawCardsEffect(draw, EffectTarget.Controller),
+            DiscardCardsEffect(discard, EffectTarget.Controller)
+        )
+    )
+
+    /**
+     * Deal damage to target and gain that much life.
+     * "Deal X damage to target and you gain X life."
+     */
+    fun Drain(amount: Int, target: EffectTarget = EffectTarget.AnyTarget): Effect = CompositeEffect(
+        listOf(
+            DealDamageEffect(amount, target),
+            GainLifeEffect(amount, EffectTarget.Controller)
+        )
+    )
+
+    /**
+     * Each player shuffles their hand into their library, then draws that many cards.
+     * "Each player shuffles the cards from their hand into their library, then draws that many cards."
+     */
+    fun WindsOfChange(): Effect = WheelEffect(target = EffectTarget.EachPlayer)
 }

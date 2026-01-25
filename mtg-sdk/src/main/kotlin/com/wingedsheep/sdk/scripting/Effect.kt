@@ -1479,18 +1479,6 @@ data class DealDamageToAllEffect(
     }
 }
 
-/**
- * Drain effect - deal damage and gain that much life.
- * "Deal X damage to target and you gain X life."
- */
-@Serializable
-data class DrainEffect(
-    val amount: Int,
-    val target: EffectTarget
-) : Effect {
-    override val description: String = "Deal $amount damage to ${target.description} and you gain $amount life"
-}
-
 // =============================================================================
 // Stack Effects
 // =============================================================================
@@ -2662,20 +2650,41 @@ data class PreventCombatDamageFromEffect(
 // =============================================================================
 
 /**
- * Each player discards any number of cards, then draws that many cards. Then draw a card.
- * Used for Flux.
+ * Each player discards cards, then draws that many cards.
+ * Used for Flux, Windfall, and similar effects.
+ *
+ * @param minDiscard Minimum cards to discard (0 for "any number")
+ * @param maxDiscard Maximum cards to discard (null means up to hand size)
+ * @param discardEntireHand If true, each player must discard their entire hand
+ * @param controllerBonusDraw Extra cards the controller draws after the effect
  */
 @Serializable
-data class FluxEffect(
-    val drawExtra: Int = 1
+data class EachPlayerDiscardsDrawsEffect(
+    val minDiscard: Int = 0,
+    val maxDiscard: Int? = null,
+    val discardEntireHand: Boolean = false,
+    val controllerBonusDraw: Int = 0
 ) : Effect {
     override val description: String = buildString {
-        append("Each player discards any number of cards, then draws that many cards")
-        if (drawExtra > 0) {
-            append(". Draw ${if (drawExtra == 1) "a card" else "$drawExtra cards"}")
+        if (discardEntireHand) {
+            append("Each player discards their hand, then draws that many cards")
+        } else if (minDiscard == 0 && maxDiscard == null) {
+            append("Each player discards any number of cards, then draws that many cards")
+        } else {
+            append("Each player discards ")
+            if (minDiscard == maxDiscard) {
+                append("$minDiscard card${if (minDiscard != 1) "s" else ""}")
+            } else {
+                append("$minDiscard to ${maxDiscard ?: "any number of"} cards")
+            }
+            append(", then draws that many cards")
+        }
+        if (controllerBonusDraw > 0) {
+            append(". Draw ${if (controllerBonusDraw == 1) "a card" else "$controllerBonusDraw cards"}")
         }
     }
 }
+
 
 /**
  * Look at target player's hand.
@@ -2744,21 +2753,6 @@ sealed interface SpellFilter {
 // =============================================================================
 // Library Manipulation Effects
 // =============================================================================
-
-/**
- * Draw cards then discard cards (looting).
- * Used for Owl Familiar: "When this creature enters, draw a card, then discard a card."
- */
-@Serializable
-data class LootEffect(
-    val drawCount: Int = 1,
-    val discardCount: Int = 1
-) : Effect {
-    override val description: String = buildString {
-        append("Draw ${if (drawCount == 1) "a card" else "$drawCount cards"}")
-        append(", then discard ${if (discardCount == 1) "a card" else "$discardCount cards"}")
-    }
-}
 
 /**
  * Search library for a card type and put it on top.
@@ -2918,19 +2912,6 @@ data class TakeExtraTurnEffect(
             append(". At the beginning of that turn's end step, you lose the game")
         }
     }
-}
-
-// =============================================================================
-// Hand Manipulation Effects
-// =============================================================================
-
-/**
- * Each player shuffles their hand into their library, then draws that many cards.
- * Used for Winds of Change: "Each player shuffles the cards from their hand into their library, then draws that many cards."
- */
-@Serializable
-data object WindsOfChangeEffect : Effect {
-    override val description: String = "Each player shuffles their hand into their library, then draws that many cards"
 }
 
 // =============================================================================
