@@ -13,6 +13,7 @@ import com.wingedsheep.engine.handlers.effects.damage.DealXDamageExecutor
 import com.wingedsheep.engine.handlers.effects.drawing.DiscardCardsExecutor
 import com.wingedsheep.engine.handlers.effects.drawing.DrawCardsExecutor
 import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerDiscardsDrawsExecutor
+import com.wingedsheep.engine.handlers.effects.player.PlayAdditionalLandsExecutor
 import com.wingedsheep.engine.handlers.effects.library.MillExecutor
 import com.wingedsheep.engine.handlers.effects.library.ScryExecutor
 import com.wingedsheep.engine.handlers.effects.library.ShuffleLibraryExecutor
@@ -93,6 +94,9 @@ class EffectExecutorRegistry(
     // Stack executors
     private val counterSpellExecutor = CounterSpellExecutor()
 
+    // Player executors
+    private val playAdditionalLandsExecutor = PlayAdditionalLandsExecutor()
+
     // Composite executors (initialized lazily with reference to execute function)
     private val compositeEffectExecutor by lazy { CompositeEffectExecutor(::execute) }
     private val conditionalEffectExecutor by lazy { ConditionalEffectExecutor(::execute) }
@@ -156,6 +160,9 @@ class EffectExecutorRegistry(
 
             // Stack effects
             is CounterSpellEffect -> counterSpellExecutor.execute(state, effect, context)
+
+            // Player effects
+            is PlayAdditionalLandsEffect -> playAdditionalLandsExecutor.execute(state, effect, context)
 
             // Default handler for unimplemented effects
             else -> {

@@ -262,6 +262,18 @@ object TestCards {
         )
     )
 
+    /**
+     * {1}{G} - You may play up to three additional lands this turn.
+     */
+    val SummerBloom = CardDefinition.sorcery(
+        name = "Summer Bloom",
+        manaCost = ManaCost.parse("{1}{G}"),
+        oracleText = "You may play up to three additional lands this turn.",
+        script = CardScript.spell(
+            effect = PlayAdditionalLandsEffect(count = 3)
+        )
+    )
+
     // =========================================================================
     // Mana Dorks (Creatures with Tap: Add mana abilities)
     // =========================================================================
@@ -464,6 +476,7 @@ object TestCards {
         DoomBlade,
         MindRot,
         CarefulStudy,
-        Flux
+        Flux,
+        SummerBloom
     )
 }
