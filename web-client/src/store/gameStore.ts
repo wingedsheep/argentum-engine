@@ -200,7 +200,7 @@ function getTopOfStack(gameState: ClientGameState): ClientCard | null {
  * - It's our priority (implied by receiving legalActions)
  * - The only meaningful legal actions are PassPriority and/or mana abilities
  *   (mana abilities without anything to spend them on are not useful)
- * - We're not in a main phase where player might want to hold priority
+ * - We're not in a main phase where player might want to hold priority (unless stack is non-empty)
  * - OR the top of the stack is our own spell/ability (we rarely want to respond to ourselves)
  *
  * This skips through steps like UNTAP, UPKEEP, DRAW, BEGIN_COMBAT, etc.
@@ -246,8 +246,16 @@ function shouldAutoPass(
     return false
   }
 
-  // Skip auto-pass during main phases - player might be thinking or waiting
-  // (Even if they only have mana abilities, they might want to hold priority)
+  // If there's something on the stack (e.g., opponent's triggered ability) and we have
+  // no meaningful actions, auto-pass to let it resolve - even during main phases
+  const stackZone = gameState.zones.find((z) => z.zoneId.zoneType === 'STACK')
+  const stackHasItems = stackZone && stackZone.cardIds && stackZone.cardIds.length > 0
+  if (stackHasItems) {
+    return true
+  }
+
+  // Skip auto-pass during main phases when stack is empty - player might be thinking
+  // about what to do or waiting to tap lands
   const step = gameState.currentStep
   if (step === 'PRECOMBAT_MAIN' || step === 'POSTCOMBAT_MAIN') {
     return false
