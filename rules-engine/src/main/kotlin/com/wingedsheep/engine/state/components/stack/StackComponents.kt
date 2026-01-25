@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.Effect
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
@@ -70,12 +71,15 @@ data class TargetsComponent(
 @Serializable
 sealed interface ChosenTarget {
     @Serializable
+    @SerialName("Player")
     data class Player(val playerId: EntityId) : ChosenTarget
 
     @Serializable
+    @SerialName("Permanent")
     data class Permanent(val entityId: EntityId) : ChosenTarget
 
     @Serializable
+    @SerialName("Card")
     data class Card(
         val cardId: EntityId,
         val ownerId: EntityId,
@@ -83,6 +87,7 @@ sealed interface ChosenTarget {
     ) : ChosenTarget
 
     @Serializable
+    @SerialName("Spell")
     data class Spell(val spellEntityId: EntityId) : ChosenTarget
 }
 
