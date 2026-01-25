@@ -321,6 +321,27 @@ data class SearchLibraryDecision(
     val filterDescription: String
 ) : PendingDecision
 
+/**
+ * Player must reorder cards from the top of their library.
+ *
+ * Used for "look at the top N cards and put them back in any order" effects
+ * like Omen. The client displays the cards with drag-and-drop reordering,
+ * with a clear indication of which end is the top of the library.
+ *
+ * @property cards List of entity IDs in their current order (first = top of library)
+ * @property cardInfo Map of entity ID to card info for UI display
+ */
+@Serializable
+@SerialName("ReorderLibraryDecision")
+data class ReorderLibraryDecision(
+    override val id: String,
+    override val playerId: EntityId,
+    override val prompt: String,
+    override val context: DecisionContext,
+    val cards: List<EntityId>,
+    val cardInfo: Map<EntityId, SearchCardInfo>
+) : PendingDecision
+
 // =============================================================================
 // Decision Responses
 // =============================================================================

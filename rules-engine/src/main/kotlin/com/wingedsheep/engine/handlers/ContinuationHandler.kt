@@ -61,6 +61,7 @@ class ContinuationHandler(
             is HandSizeDiscardContinuation -> resumeHandSizeDiscard(stateAfterPop, continuation, response)
             is EachPlayerSelectsThenDrawsContinuation -> resumeEachPlayerSelectsThenDraws(stateAfterPop, continuation, response)
             is SearchLibraryContinuation -> resumeSearchLibrary(stateAfterPop, continuation, response)
+            is ReorderLibraryContinuation -> resumeReorderLibrary(stateAfterPop, continuation, response)
         }
     }
 
@@ -150,44 +151,40 @@ class ContinuationHandler(
         continuation: EffectContinuation,
         response: DecisionResponse
     ): ExecutionResult {
-        // First, process any inner continuation that was awaiting this decision
-        // The response was already handled by a nested handler
-
-        // Now continue with remaining effects
         val context = continuation.toEffectContext()
         var currentState = state
         val allEvents = mutableListOf<GameEvent>()
 
-        for (effect in continuation.remainingEffects) {
-            val result = effectExecutorRegistry.execute(currentState, effect, context)
+        for ((index, effect) in continuation.remainingEffects.withIndex()) {
+            val stillRemaining = continuation.remainingEffects.drop(index + 1)
+
+            // Pre-push EffectContinuation for remaining effects BEFORE executing.
+            // This ensures that if the sub-effect pushes its own continuation,
+            // that continuation ends up on TOP (to be processed first when the response comes).
+            val stateForExecution = if (stillRemaining.isNotEmpty()) {
+                val remainingContinuation = EffectContinuation(
+                    decisionId = "pending", // Will be found by checkForMoreContinuations
+                    remainingEffects = stillRemaining,
+                    sourceId = continuation.sourceId,
+                    controllerId = continuation.controllerId,
+                    opponentId = continuation.opponentId,
+                    xValue = continuation.xValue
+                )
+                currentState.pushContinuation(remainingContinuation)
+            } else {
+                currentState
+            }
+
+            val result = effectExecutorRegistry.execute(stateForExecution, effect, context)
 
             if (!result.isSuccess) {
                 return result
             }
 
             if (result.isPaused) {
-                // Another effect needs a decision - update the continuation with remaining effects
-                val remainingIndex = continuation.remainingEffects.indexOf(effect)
-                val stillRemaining = continuation.remainingEffects.drop(remainingIndex + 1)
-
-                if (stillRemaining.isNotEmpty()) {
-                    val newContinuation = EffectContinuation(
-                        decisionId = result.pendingDecision!!.id,
-                        remainingEffects = stillRemaining,
-                        sourceId = continuation.sourceId,
-                        controllerId = continuation.controllerId,
-                        opponentId = continuation.opponentId,
-                        xValue = continuation.xValue
-                    )
-                    val stateWithCont = result.state.pushContinuation(newContinuation)
-                    return ExecutionResult.paused(
-                        stateWithCont,
-                        result.pendingDecision,
-                        allEvents + result.events
-                    )
-                }
-
-                // No more effects after this one
+                // Sub-effect paused. Its continuation is on top.
+                // Our pre-pushed EffectContinuation is underneath, ready to be
+                // processed by checkForMoreContinuations after the sub-effect resolves.
                 return ExecutionResult.paused(
                     result.state,
                     result.pendingDecision!!,
@@ -195,7 +192,13 @@ class ContinuationHandler(
                 )
             }
 
-            currentState = result.state
+            // Effect succeeded - pop the pre-pushed continuation (it wasn't needed)
+            currentState = if (stillRemaining.isNotEmpty()) {
+                val (_, stateWithoutCont) = result.state.popContinuation()
+                stateWithoutCont
+            } else {
+                result.state
+            }
             allEvents.addAll(result.events)
         }
 
@@ -386,6 +389,51 @@ class ContinuationHandler(
             newState = newState.copy(zones = newState.zones + (libraryZone to library))
             events.add(LibraryShuffledEvent(playerId))
         }
+
+        return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume after player reordered cards on top of their library.
+     *
+     * The response contains the card IDs in the new order (first = new top of library).
+     * We replace the top N cards in the library with this new order.
+     */
+    private fun resumeReorderLibrary(
+        state: GameState,
+        continuation: ReorderLibraryContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is OrderedResponse) {
+            return ExecutionResult.error(state, "Expected ordered response for library reorder")
+        }
+
+        val playerId = continuation.playerId
+        val orderedCards = response.orderedObjects
+        val libraryZone = ZoneKey(playerId, ZoneType.LIBRARY)
+
+        // Get current library
+        val currentLibrary = state.getZone(libraryZone).toMutableList()
+
+        // Remove the reordered cards from the library (they were at the top)
+        val cardsSet = orderedCards.toSet()
+        val remainingLibrary = currentLibrary.filter { it !in cardsSet }
+
+        // Place the cards back on top in the new order
+        val newLibrary = orderedCards + remainingLibrary
+
+        // Update the library zone
+        val newState = state.copy(
+            zones = state.zones + (libraryZone to newLibrary)
+        )
+
+        val events = listOf(
+            LibraryReorderedEvent(
+                playerId = playerId,
+                cardCount = orderedCards.size,
+                source = continuation.sourceName
+            )
+        )
 
         return checkForMoreContinuations(newState, events)
     }

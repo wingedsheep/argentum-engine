@@ -920,6 +920,18 @@ class GameTestDriver {
     }
 
     /**
+     * Submit an ordered response (for reorder effects like look at top N and reorder).
+     */
+    fun submitOrderedResponse(playerId: EntityId, orderedObjects: List<EntityId>): ExecutionResult {
+        val decision = pendingDecision as? ReorderLibraryDecision
+            ?: throw IllegalStateException("No pending ReorderLibraryDecision")
+        return submitDecision(
+            playerId,
+            OrderedResponse(decision.id, orderedObjects)
+        )
+    }
+
+    /**
      * Get a player's graveyard.
      */
     fun getGraveyard(playerId: EntityId): List<EntityId> {

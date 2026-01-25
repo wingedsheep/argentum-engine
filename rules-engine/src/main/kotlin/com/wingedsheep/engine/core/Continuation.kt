@@ -252,3 +252,22 @@ data class SearchLibraryContinuation(
     val shuffleAfter: Boolean,
     val reveal: Boolean
 ) : ContinuationFrame
+
+/**
+ * Resume after player reorders cards on top of their library.
+ *
+ * Used for "look at the top N cards and put them back in any order" effects.
+ * The response contains the cards in the new order (first = new top of library).
+ *
+ * @property playerId The player who looked at the cards
+ * @property sourceId The spell/ability that caused this
+ * @property sourceName Name of the source for event messages
+ * @property originalCards The card IDs that were being reordered (for validation)
+ */
+@Serializable
+data class ReorderLibraryContinuation(
+    override val decisionId: String,
+    val playerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?
+) : ContinuationFrame

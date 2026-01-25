@@ -531,7 +531,9 @@ object ClientEventTransformer {
             is AbilityFizzledEvent,
             is DiscardRequiredEvent,
             is ScryCompletedEvent,
-            is PermanentsSacrificedEvent -> null
+            is PermanentsSacrificedEvent,
+            is LookedAtCardsEvent,
+            is LibraryReorderedEvent -> null
         }
     }
 }

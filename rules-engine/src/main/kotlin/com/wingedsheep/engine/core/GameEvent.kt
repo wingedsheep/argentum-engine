@@ -509,3 +509,27 @@ data class HandLookedAtEvent(
     val targetPlayerId: EntityId,
     val cardIds: List<EntityId>
 ) : GameEvent
+
+/**
+ * A player looked at cards (from library, etc.).
+ * Used for "look at the top N cards" effects.
+ */
+@Serializable
+@SerialName("LookedAtCardsEvent")
+data class LookedAtCardsEvent(
+    val playerId: EntityId,
+    val cardIds: List<EntityId>,
+    val source: String? = null
+) : GameEvent
+
+/**
+ * A player reordered cards on top of their library.
+ * Used for effects like Omen ("put them back in any order").
+ */
+@Serializable
+@SerialName("LibraryReorderedEvent")
+data class LibraryReorderedEvent(
+    val playerId: EntityId,
+    val cardCount: Int,
+    val source: String? = null
+) : GameEvent

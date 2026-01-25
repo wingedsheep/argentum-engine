@@ -167,6 +167,7 @@ export type {
   TargetRequirementInfo,
   SearchLibraryDecision,
   SearchCardInfo,
+  ReorderLibraryDecision,
 } from './messages'
 export {
   isConnectedMessage,

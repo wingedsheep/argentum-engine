@@ -19,6 +19,7 @@ class CompositeExecutors : ExecutorModule {
 
     private val compositeEffectExecutor by lazy { CompositeEffectExecutor(effectExecutor) }
     private val conditionalEffectExecutor by lazy { ConditionalEffectExecutor(effectExecutor) }
+    private val mayEffectExecutor by lazy { MayEffectExecutor(effectExecutor) }
 
     /**
      * Initialize the module with the parent registry's execute function.
@@ -30,6 +31,7 @@ class CompositeExecutors : ExecutorModule {
 
     override fun executors(): List<EffectExecutor<*>> = listOf(
         compositeEffectExecutor,
-        conditionalEffectExecutor
+        conditionalEffectExecutor,
+        mayEffectExecutor
     )
 }
