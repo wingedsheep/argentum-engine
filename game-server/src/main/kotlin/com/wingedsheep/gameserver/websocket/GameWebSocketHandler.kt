@@ -21,6 +21,7 @@ import org.springframework.web.socket.TextMessage
 import org.springframework.web.socket.WebSocketSession
 import org.springframework.web.socket.handler.TextWebSocketHandler
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * WebSocket handler for game communication.
@@ -60,6 +61,12 @@ class GameWebSocketHandler : TextWebSocketHandler() {
     // Waiting game (single game session waiting for second player)
     @Volatile
     private var waitingGameSession: GameSession? = null
+
+    // Per-session locks for thread-safe WebSocket writes
+    private val sessionLocks = ConcurrentHashMap<String, Any>()
+
+    // Track which games have already sent the mulligan-complete broadcast
+    private val mulliganBroadcastSent = ConcurrentHashMap<String, AtomicBoolean>()
 
     override fun afterConnectionEstablished(session: WebSocketSession) {
         logger.info("WebSocket connection established: ${session.id}")
@@ -348,10 +355,14 @@ class GameWebSocketHandler : TextWebSocketHandler() {
 
     private fun checkMulliganPhaseComplete(gameSession: GameSession) {
         if (gameSession.allMulligansComplete) {
-            logger.info("Mulligan phase complete for game ${gameSession.sessionId}")
-            // The engine handles advancing out of mulligan phase automatically
-            // Send initial state updates to both players
-            broadcastStateUpdate(gameSession, emptyList())
+            // Use atomic flag to ensure only one thread broadcasts the state update
+            val broadcastFlag = mulliganBroadcastSent.computeIfAbsent(gameSession.sessionId) { AtomicBoolean(false) }
+            if (broadcastFlag.compareAndSet(false, true)) {
+                logger.info("Mulligan phase complete for game ${gameSession.sessionId}")
+                // The engine handles advancing out of mulligan phase automatically
+                // Send initial state updates to both players
+                broadcastStateUpdate(gameSession, emptyList())
+            }
         }
     }
 
@@ -429,6 +440,9 @@ class GameWebSocketHandler : TextWebSocketHandler() {
     }
 
     private fun handleDisconnect(session: WebSocketSession) {
+        // Clean up session lock
+        sessionLocks.remove(session.id)
+
         val playerSession = playerSessions.remove(session.id) ?: return
 
         logger.info("Player disconnected: ${playerSession.playerName}")
@@ -452,6 +466,7 @@ class GameWebSocketHandler : TextWebSocketHandler() {
 
                 // Clean up game session
                 gameSessions.remove(gameSessionId)
+                mulliganBroadcastSent.remove(gameSessionId)
                 if (waitingGameSession?.sessionId == gameSessionId) {
                     waitingGameSession = null
                 }
@@ -502,18 +517,23 @@ class GameWebSocketHandler : TextWebSocketHandler() {
 
         // Clean up
         gameSessions.remove(gameSession.sessionId)
+        mulliganBroadcastSent.remove(gameSession.sessionId)
     }
 
     private fun send(session: WebSocketSession, message: ServerMessage) {
-        try {
-            if (session.isOpen) {
-                val jsonText = json.encodeToString(message)
-                session.sendMessage(TextMessage(jsonText))
-            } else {
-                logger.warn("Cannot send message - session ${session.id} is closed")
+        // Get or create a lock object for this session to prevent concurrent writes
+        val lock = sessionLocks.computeIfAbsent(session.id) { Any() }
+        synchronized(lock) {
+            try {
+                if (session.isOpen) {
+                    val jsonText = json.encodeToString(message)
+                    session.sendMessage(TextMessage(jsonText))
+                } else {
+                    logger.warn("Cannot send message - session ${session.id} is closed")
+                }
+            } catch (e: Exception) {
+                logger.error("Failed to send message to ${session.id}", e)
             }
-        } catch (e: Exception) {
-            logger.error("Failed to send message to ${session.id}", e)
         }
     }
 
