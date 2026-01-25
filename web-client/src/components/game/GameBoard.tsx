@@ -428,6 +428,7 @@ function GameCard({
   const startDraggingCard = useGameStore((state) => state.startDraggingCard)
   const stopDraggingCard = useGameStore((state) => state.stopDraggingCard)
   const draggingCardId = useGameStore((state) => state.draggingCardId)
+  const startTargeting = useGameStore((state) => state.startTargeting)
   const responsive = useResponsiveContext()
 
   // Check if card has legal actions (is playable)
@@ -516,15 +517,26 @@ function GameCard({
       }
 
       if (!isOverHand && playableAction) {
-        // Play the card!
-        submitAction(playableAction.action)
+        // Check if action requires targeting
+        if (playableAction.requiresTargets && playableAction.validTargets && playableAction.validTargets.length > 0) {
+          // Enter targeting mode
+          startTargeting({
+            action: playableAction.action,
+            validTargets: playableAction.validTargets,
+            selectedTargets: [],
+            requiredCount: playableAction.targetCount ?? 1,
+          })
+        } else {
+          // Play the card directly
+          submitAction(playableAction.action)
+        }
       }
       stopDraggingCard()
     }
 
     window.addEventListener('mouseup', handleGlobalMouseUp)
     return () => window.removeEventListener('mouseup', handleGlobalMouseUp)
-  }, [draggingCardId, card.id, playableAction, submitAction, stopDraggingCard])
+  }, [draggingCardId, card.id, playableAction, submitAction, stopDraggingCard, startTargeting])
 
   // Global mouse up handler to cancel drag
   useEffect(() => {

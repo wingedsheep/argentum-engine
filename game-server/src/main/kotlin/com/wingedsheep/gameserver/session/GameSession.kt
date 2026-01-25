@@ -20,7 +20,10 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.targeting.*
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import org.slf4j.LoggerFactory
 import java.util.UUID
+
+private val logger = LoggerFactory.getLogger(GameSession::class.java)
 
 /**
  * Represents an active game session between two players.
@@ -394,12 +397,19 @@ class GameSession(
                     if (canAfford) {
                         // Look up card definition for target requirements
                         val cardDef = cardRegistry.getCard(cardComponent.name)
+                        if (cardDef == null) {
+                            logger.warn("Card definition not found in registry: '${cardComponent.name}'. Registry has ${cardRegistry.size} cards.")
+                        }
                         val targetReqs = cardDef?.script?.targetRequirements ?: emptyList()
+
+                        logger.debug("Card '${cardComponent.name}': cardDef=${cardDef != null}, targetReqs=${targetReqs.size}")
 
                         if (targetReqs.isNotEmpty()) {
                             // Spell requires targets - find valid targets
                             val firstReq = targetReqs.first()
                             val validTargets = findValidTargets(state, playerId, firstReq)
+
+                            logger.debug("Card '${cardComponent.name}': firstReq=$firstReq, validTargets=${validTargets.size}")
 
                             // Only add the action if there are valid targets
                             if (validTargets.isNotEmpty() || firstReq.effectiveMinCount == 0) {

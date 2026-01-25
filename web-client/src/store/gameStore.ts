@@ -472,17 +472,23 @@ export const useGameStore = create<GameStore>()(
       },
 
       confirmTargeting: () => {
-        const { targetingState, submitAction } = get()
-        if (!targetingState) return
+        const { targetingState, submitAction, gameState } = get()
+        if (!targetingState || !gameState) return
 
         // Modify the action with selected targets and submit
         const action = targetingState.action
         if (action.type === 'CastSpell') {
           // Convert selected targets to ChosenTarget format
-          const targets = targetingState.selectedTargets.map((targetId) => ({
-            targetId,
-            targetType: 'Permanent', // Server will interpret based on what it is
-          }))
+          // Check if target is a player or permanent
+          const targets = targetingState.selectedTargets.map((targetId) => {
+            // Check if this is a player ID
+            const isPlayer = gameState.players.some(p => p.playerId === targetId)
+            if (isPlayer) {
+              return { type: 'Player' as const, playerId: targetId }
+            } else {
+              return { type: 'Permanent' as const, entityId: targetId }
+            }
+          })
           const modifiedAction = {
             ...action,
             targets,

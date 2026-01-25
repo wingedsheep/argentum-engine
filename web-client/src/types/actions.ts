@@ -37,10 +37,14 @@ export interface PassPriorityAction {
 // Spell Actions
 // =============================================================================
 
-export interface ChosenTarget {
-  readonly targetId: EntityId
-  readonly targetType: string
-}
+/**
+ * Polymorphic target types matching server's sealed interface.
+ * The 'type' field is the class discriminator for kotlinx.serialization.
+ */
+export type ChosenTarget =
+  | { readonly type: 'Player'; readonly playerId: EntityId }
+  | { readonly type: 'Permanent'; readonly entityId: EntityId }
+  | { readonly type: 'Spell'; readonly spellEntityId: EntityId }
 
 export interface CastSpellAction {
   readonly type: 'CastSpell'
