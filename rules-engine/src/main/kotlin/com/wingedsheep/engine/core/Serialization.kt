@@ -122,5 +122,6 @@ val engineSerializersModule = SerializersModule {
         subclass(SearchLibraryContinuation::class)
         subclass(ReorderLibraryContinuation::class)
         subclass(BlockerOrderContinuation::class)
+        subclass(SacrificeUnlessSacrificeContinuation::class)
     }
 }

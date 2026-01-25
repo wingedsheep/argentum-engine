@@ -63,6 +63,7 @@ class ContinuationHandler(
             is SearchLibraryContinuation -> resumeSearchLibrary(stateAfterPop, continuation, response)
             is ReorderLibraryContinuation -> resumeReorderLibrary(stateAfterPop, continuation, response)
             is BlockerOrderContinuation -> resumeBlockerOrder(stateAfterPop, continuation, response)
+            is SacrificeUnlessSacrificeContinuation -> resumeSacrificeUnlessSacrifice(stateAfterPop, continuation, response)
         }
     }
 
@@ -816,6 +817,79 @@ class ContinuationHandler(
             decisionResult.pendingDecision,
             priorEvents + decisionResult.events
         )
+    }
+
+    /**
+     * Resume after player selected permanents for "sacrifice unless you sacrifice" effect.
+     *
+     * If the player selected exactly the required count, sacrifice those permanents.
+     * If the player selected 0 (or fewer than required), sacrifice the source instead.
+     */
+    private fun resumeSacrificeUnlessSacrifice(
+        state: GameState,
+        continuation: SacrificeUnlessSacrificeContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for sacrifice unless")
+        }
+
+        val playerId = continuation.playerId
+        val sourceId = continuation.sourceId
+        val sourceName = continuation.sourceName
+        val selectedPermanents = response.selectedCards
+
+        val battlefieldZone = ZoneKey(playerId, ZoneType.BATTLEFIELD)
+        val graveyardZone = ZoneKey(playerId, ZoneType.GRAVEYARD)
+
+        // Check if the source is still on the battlefield
+        if (sourceId !in state.getZone(battlefieldZone)) {
+            // Source was already removed (e.g., by another effect) - nothing to do
+            return checkForMoreContinuations(state, emptyList())
+        }
+
+        // If player selected exactly the required count, sacrifice those permanents
+        if (selectedPermanents.size == continuation.requiredCount) {
+            var newState = state
+            val events = mutableListOf<GameEvent>()
+
+            for (permanentId in selectedPermanents) {
+                newState = newState.removeFromZone(battlefieldZone, permanentId)
+                newState = newState.addToZone(graveyardZone, permanentId)
+
+                val permanentName = newState.getEntity(permanentId)?.get<CardComponent>()?.name ?: "Unknown"
+                events.add(
+                    ZoneChangeEvent(
+                        entityId = permanentId,
+                        entityName = permanentName,
+                        fromZone = ZoneType.BATTLEFIELD,
+                        toZone = ZoneType.GRAVEYARD,
+                        ownerId = playerId
+                    )
+                )
+            }
+
+            events.add(0, PermanentsSacrificedEvent(playerId, selectedPermanents))
+
+            return checkForMoreContinuations(newState, events)
+        }
+
+        // Player didn't select enough - sacrifice the source
+        var newState = state.removeFromZone(battlefieldZone, sourceId)
+        newState = newState.addToZone(graveyardZone, sourceId)
+
+        val events = listOf(
+            PermanentsSacrificedEvent(playerId, listOf(sourceId)),
+            ZoneChangeEvent(
+                entityId = sourceId,
+                entityName = sourceName,
+                fromZone = ZoneType.BATTLEFIELD,
+                toZone = ZoneType.GRAVEYARD,
+                ownerId = playerId
+            )
+        )
+
+        return checkForMoreContinuations(newState, events)
     }
 
     /**

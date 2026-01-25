@@ -12,6 +12,7 @@ class RemovalExecutors : ExecutorModule {
         DestroyAllCreaturesExecutor(),
         DestroyAllLandsExecutor(),
         ExileExecutor(),
-        ReturnToHandExecutor()
+        ReturnToHandExecutor(),
+        SacrificeUnlessSacrificePermanentExecutor()
     )
 }

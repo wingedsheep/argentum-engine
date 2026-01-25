@@ -292,3 +292,25 @@ data class BlockerOrderContinuation(
     val attackerName: String,
     val remainingAttackers: List<EntityId>
 ) : ContinuationFrame
+
+/**
+ * Resume after player selects permanents for "sacrifice unless you sacrifice" effects.
+ *
+ * Used for cards like Plant Elemental: "When ~ enters the battlefield, sacrifice it
+ * unless you sacrifice a Forest."
+ *
+ * @property playerId The player who controls the source permanent
+ * @property sourceId The permanent that will be sacrificed if the player doesn't pay
+ * @property sourceName Name of the source for event messages
+ * @property permanentType The type of permanent required (e.g., "Forest")
+ * @property requiredCount Number of permanents that must be sacrificed to keep the source
+ */
+@Serializable
+data class SacrificeUnlessSacrificeContinuation(
+    override val decisionId: String,
+    val playerId: EntityId,
+    val sourceId: EntityId,
+    val sourceName: String,
+    val permanentType: String,
+    val requiredCount: Int
+) : ContinuationFrame
