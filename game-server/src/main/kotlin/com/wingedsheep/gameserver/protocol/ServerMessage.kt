@@ -140,7 +140,9 @@ data class LegalActionInfo(
     /** Maximum X value the player can afford (null if not X cost spell) */
     val maxAffordableX: Int? = null,
     /** Minimum X value (usually 0) */
-    val minX: Int = 0
+    val minX: Int = 0,
+    /** Whether this is a mana ability (doesn't highlight card as playable) */
+    val isManaAbility: Boolean = false
 )
 
 /**

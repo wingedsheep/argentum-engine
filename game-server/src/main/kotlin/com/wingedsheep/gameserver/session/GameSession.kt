@@ -19,9 +19,12 @@ import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.targeting.*
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.CastRestriction
 import org.slf4j.LoggerFactory
 import java.util.UUID
@@ -466,6 +469,49 @@ class GameSession(
                         }
                     }
                 }
+            }
+        }
+
+        // Check for mana abilities on battlefield permanents
+        val playerBattlefieldZone = ZoneKey(playerId, ZoneType.BATTLEFIELD)
+        val battlefieldPermanents = state.getZone(playerBattlefieldZone)
+        for (entityId in battlefieldPermanents) {
+            val container = state.getEntity(entityId) ?: continue
+            val cardComponent = container.get<CardComponent>() ?: continue
+
+            // Must be controlled by the player
+            val controllerId = container.get<ControllerComponent>()?.playerId
+            if (controllerId != playerId) continue
+
+            // Look up card definition for mana abilities
+            val cardDef = cardRegistry.getCard(cardComponent.name) ?: continue
+            val manaAbilities = cardDef.script.activatedAbilities.filter { it.isManaAbility }
+
+            for (ability in manaAbilities) {
+                // Check if the ability can be activated
+                when (ability.cost) {
+                    is AbilityCost.Tap -> {
+                        // Must be untapped
+                        if (container.has<TappedComponent>()) continue
+
+                        // Check summoning sickness for creatures (non-lands)
+                        if (!cardComponent.typeLine.isLand && cardComponent.typeLine.isCreature) {
+                            val hasSummoningSickness = container.has<SummoningSicknessComponent>()
+                            val hasHaste = cardComponent.baseKeywords.contains(Keyword.HASTE)
+                            if (hasSummoningSickness && !hasHaste) continue
+                        }
+                    }
+                    else -> {
+                        // Other cost types - allow for now, engine will validate
+                    }
+                }
+
+                result.add(LegalActionInfo(
+                    actionType = "ActivateAbility",
+                    description = ability.description,
+                    action = ActivateAbility(playerId, entityId, ability.id),
+                    isManaAbility = true
+                ))
             }
         }
 

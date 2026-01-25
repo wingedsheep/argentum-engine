@@ -4,6 +4,7 @@ import { hand, graveyard } from '../../types'
 import type { ClientCard, ZoneId, ClientPlayer, LegalActionInfo, EntityId, Keyword, ClientPlayerEffect } from '../../types'
 import { keywordIcons, genericKeywordIcon, displayableKeywords } from '../../assets/icons/keywords'
 import { PhaseIndicator } from '../ui/PhaseIndicator'
+import { ManaPool } from '../ui/ManaPool'
 import { CombatArrows } from '../combat/CombatArrows'
 import { TargetingArrows } from '../targeting/TargetingArrows'
 import { DraggedCardOverlay } from './DraggedCardOverlay'
@@ -172,6 +173,9 @@ export function GameBoard() {
                 <LifeDisplay life={viewingPlayer.life} isPlayer playerId={viewingPlayer.playerId} />
                 <ActiveEffectsBadges effects={viewingPlayer.activeEffects} />
               </div>
+
+              {/* Mana pool display */}
+              {viewingPlayer.manaPool && <ManaPool manaPool={viewingPlayer.manaPool} />}
 
               {/* Hide Pass button during combat - combat overlay handles actions */}
               {hasPriority && !isInCombatMode && (

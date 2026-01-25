@@ -176,11 +176,14 @@ export function useCardLegalActions(cardId: EntityId | null): readonly LegalActi
 }
 
 /**
- * Hook to check if a card has any legal actions.
+ * Hook to check if a card has any legal actions (excluding mana abilities).
+ * Mana abilities are always available but shouldn't cause cards to be highlighted.
  */
 export function useHasLegalActions(cardId: EntityId | null): boolean {
   const actions = useCardLegalActions(cardId)
-  return actions.length > 0
+  // Filter out mana abilities - they shouldn't cause highlighting
+  const nonManaActions = actions.filter((a) => !a.isManaAbility)
+  return nonManaActions.length > 0
 }
 
 /**

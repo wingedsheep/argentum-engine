@@ -24,10 +24,15 @@ import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.player.MulliganStateComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.AbilityCost
+import com.wingedsheep.sdk.scripting.AddManaEffect
+import com.wingedsheep.sdk.scripting.AddColorlessManaEffect
 
 /**
  * The central action processor for the game engine.
@@ -48,7 +53,7 @@ class ActionProcessor(
     private val alternativePaymentHandler: AlternativePaymentHandler = AlternativePaymentHandler(),
     private val costHandler: CostHandler = CostHandler(),
     private val mulliganHandler: MulliganHandler = MulliganHandler(),
-    effectExecutorRegistry: EffectExecutorRegistry = EffectExecutorRegistry(),
+    private val effectExecutorRegistry: EffectExecutorRegistry = EffectExecutorRegistry(),
     private val continuationHandler: ContinuationHandler = ContinuationHandler(effectExecutorRegistry),
     private val sbaChecker: StateBasedActionChecker = StateBasedActionChecker(),
     private val triggerDetector: TriggerDetector = TriggerDetector(cardRegistry),
@@ -204,8 +209,38 @@ class ActionProcessor(
             return "You don't control this permanent"
         }
 
-        // TODO: Check ability exists and can be activated
-        // TODO: Check costs can be paid
+        val cardComponent = container.get<CardComponent>()
+            ?: return "Source is not a card"
+
+        // Look up the card definition to find the ability
+        val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId)
+            ?: return "Card definition not found"
+
+        val ability = cardDef.script.activatedAbilities.find { it.id == action.abilityId }
+            ?: return "Ability not found on this card"
+
+        // Check cost requirements
+        when (ability.cost) {
+            is AbilityCost.Tap -> {
+                // Must be untapped to pay tap cost
+                if (container.has<TappedComponent>()) {
+                    return "This permanent is already tapped"
+                }
+
+                // Check summoning sickness for creatures (non-lands)
+                if (!cardComponent.typeLine.isLand && cardComponent.typeLine.isCreature) {
+                    val hasSummoningSickness = container.has<SummoningSicknessComponent>()
+                    // Check for haste keyword (note: this doesn't check granted haste, future enhancement)
+                    val hasHaste = cardComponent.baseKeywords.contains(Keyword.HASTE)
+                    if (hasSummoningSickness && !hasHaste) {
+                        return "This creature has summoning sickness"
+                    }
+                }
+            }
+            else -> {
+                // Other cost types - TODO: validate when implemented
+            }
+        }
 
         return null
     }
@@ -622,12 +657,89 @@ class ActionProcessor(
     }
 
     private fun executeActivateAbility(state: GameState, action: ActivateAbility): ExecutionResult {
-        // TODO: Look up the ability from the source
-        // TODO: Pay costs
-        // TODO: Put ability on stack
+        val container = state.getEntity(action.sourceId)
+            ?: return ExecutionResult.error(state, "Source not found")
 
-        // For now, return success with unchanged state
-        return ExecutionResult.success(state)
+        val cardComponent = container.get<CardComponent>()
+            ?: return ExecutionResult.error(state, "Source is not a card")
+
+        // Look up the card definition to find the ability
+        val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId)
+            ?: return ExecutionResult.error(state, "Card definition not found")
+
+        val ability = cardDef.script.activatedAbilities.find { it.id == action.abilityId }
+            ?: return ExecutionResult.error(state, "Ability not found")
+
+        var currentState = state
+        val events = mutableListOf<GameEvent>()
+
+        // Pay the cost
+        when (ability.cost) {
+            is AbilityCost.Tap -> {
+                // Tap the permanent
+                currentState = currentState.updateEntity(action.sourceId) { c ->
+                    c.with(TappedComponent)
+                }
+                events.add(TappedEvent(action.sourceId, cardComponent.name))
+            }
+            else -> {
+                // TODO: Handle other cost types (mana, sacrifice, etc.)
+            }
+        }
+
+        // Handle mana abilities - they don't use the stack
+        if (ability.isManaAbility) {
+            // Create effect context
+            val opponentId = state.turnOrder.firstOrNull { it != action.playerId }
+            val context = EffectContext(
+                sourceId = action.sourceId,
+                controllerId = action.playerId,
+                opponentId = opponentId,
+                targets = action.targets,
+                xValue = null
+            )
+
+            // Execute the effect
+            val effectResult = effectExecutorRegistry.execute(currentState, ability.effect, context)
+            if (!effectResult.isSuccess) {
+                return effectResult
+            }
+
+            currentState = effectResult.newState
+
+            // Emit ManaAddedEvent based on the effect type
+            val manaEvent = when (val effect = ability.effect) {
+                is AddManaEffect -> ManaAddedEvent(
+                    playerId = action.playerId,
+                    sourceId = action.sourceId,
+                    sourceName = cardComponent.name,
+                    white = if (effect.color == Color.WHITE) effect.amount else 0,
+                    blue = if (effect.color == Color.BLUE) effect.amount else 0,
+                    black = if (effect.color == Color.BLACK) effect.amount else 0,
+                    red = if (effect.color == Color.RED) effect.amount else 0,
+                    green = if (effect.color == Color.GREEN) effect.amount else 0,
+                    colorless = 0
+                )
+                is AddColorlessManaEffect -> ManaAddedEvent(
+                    playerId = action.playerId,
+                    sourceId = action.sourceId,
+                    sourceName = cardComponent.name,
+                    colorless = effect.amount
+                )
+                else -> null // Other mana effects might need different handling
+            }
+
+            if (manaEvent != null) {
+                events.add(manaEvent)
+            }
+
+            // Combine events and return (mana abilities don't change priority)
+            return ExecutionResult.success(currentState, events + effectResult.events)
+        }
+
+        // TODO: Non-mana abilities go on the stack
+        // For now, just return success with the cost paid
+        return ExecutionResult.success(currentState, events)
     }
 
     private fun executePlayLand(state: GameState, action: PlayLand): ExecutionResult {
@@ -1090,6 +1202,21 @@ class ActionProcessor(
                 }
                 if (response.selectedCards.size > decision.maxSelections) {
                     return "Too many cards selected: maximum is ${decision.maxSelections}"
+                }
+                null
+            }
+            is ReorderLibraryDecision -> {
+                if (response !is OrderedResponse) {
+                    return "Expected ordered response for library reorder"
+                }
+                // Validate the response contains exactly the same cards
+                val expectedSet = decision.cards.toSet()
+                val responseSet = response.orderedObjects.toSet()
+                if (expectedSet != responseSet) {
+                    return "Invalid reorder: response must contain the same cards"
+                }
+                if (response.orderedObjects.size != decision.cards.size) {
+                    return "Invalid reorder: response must contain exactly ${decision.cards.size} cards"
                 }
                 null
             }

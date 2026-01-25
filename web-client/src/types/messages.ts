@@ -155,6 +155,19 @@ export interface SearchLibraryDecision extends PendingDecisionBase {
 }
 
 /**
+ * Player must reorder cards from the top of their library.
+ *
+ * Used for "look at the top N cards and put them back in any order" effects
+ * like Omen. The client displays the cards with drag-and-drop reordering,
+ * with a clear indication of which end is the top of the library.
+ */
+export interface ReorderLibraryDecision extends PendingDecisionBase {
+  readonly type: 'ReorderLibraryDecision'
+  readonly cards: readonly EntityId[]
+  readonly cardInfo: Record<EntityId, SearchCardInfo>
+}
+
+/**
  * Union of all pending decision types.
  */
 export type PendingDecision =
@@ -162,6 +175,7 @@ export type PendingDecision =
   | YesNoDecision
   | ChooseTargetsDecision
   | SearchLibraryDecision
+  | ReorderLibraryDecision
 
 /**
  * Information about a legal action the player can take.
@@ -188,6 +202,8 @@ export interface LegalActionInfo {
   readonly maxAffordableX?: number
   /** Minimum X value (usually 0) */
   readonly minX?: number
+  /** Whether this is a mana ability (doesn't highlight card as playable) */
+  readonly isManaAbility?: boolean
 }
 
 /**
