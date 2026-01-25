@@ -51,6 +51,7 @@ class GameSession(
     private val gameInitializer = GameInitializer(cardRegistry)
     private val manaSolver = ManaSolver(cardRegistry)
     private val conditionEvaluator = ConditionEvaluator()
+    private val turnManager = TurnManager()
 
     val player1: PlayerSession? get() = players.values.firstOrNull()
     val player2: PlayerSession? get() = players.values.drop(1).firstOrNull()
@@ -463,12 +464,15 @@ class GameSession(
                 ?.get<com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisCombatComponent>() != null
 
             if (!attackersAlreadyDeclared) {
+                // Get valid attackers using the engine's TurnManager (handles haste, defender, etc.)
+                val validAttackers = turnManager.getValidAttackers(state, playerId)
+
                 // Active player can declare attackers during declare attackers step
-                // Include empty attackers map - client will fill with selected attackers
                 result.add(LegalActionInfo(
                     actionType = "DeclareAttackers",
                     description = "Declare attackers",
-                    action = DeclareAttackers(playerId, emptyMap())
+                    action = DeclareAttackers(playerId, emptyMap()),
+                    validAttackers = validAttackers
                 ))
             }
         }
@@ -479,12 +483,15 @@ class GameSession(
                 ?.get<com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombatComponent>() != null
 
             if (!blockersAlreadyDeclared) {
+                // Get valid blockers using the engine's TurnManager
+                val validBlockers = turnManager.getValidBlockers(state, playerId)
+
                 // Defending player (non-active player) can declare blockers during declare blockers step
-                // Include empty blockers map - client will fill with selected blockers
                 result.add(LegalActionInfo(
                     actionType = "DeclareBlockers",
                     description = "Declare blockers",
-                    action = DeclareBlockers(playerId, emptyMap())
+                    action = DeclareBlockers(playerId, emptyMap()),
+                    validBlockers = validBlockers
                 ))
             }
         }

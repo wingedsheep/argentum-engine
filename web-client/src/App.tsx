@@ -63,11 +63,14 @@ export default function App() {
 
     // Enter combat mode when action becomes available
     if (hasDeclareAttackersAction) {
-      // Find valid attacking creatures (untapped creatures we control without summoning sickness)
-      const playerCreatures = battlefieldCards.playerCreatures
-      const validCreatures: EntityId[] = playerCreatures
-        .filter((card) => !card.isTapped && !card.hasSummoningSickness)
-        .map((card) => card.id)
+      // Find the DeclareAttackers action to get valid attackers from server
+      const attackersAction = legalActions.find(
+        (a) => a.actionType === 'DeclareAttackers' || a.action.type === 'DeclareAttackers'
+      )
+      // Use server-provided valid attackers (handles haste, defender, etc.)
+      const validCreatures: EntityId[] = attackersAction?.validAttackers
+        ? [...attackersAction.validAttackers]
+        : []
 
       // Enter combat mode
       startCombat({
@@ -81,11 +84,14 @@ export default function App() {
     }
 
     if (hasDeclareBlockersAction) {
-      // Find valid blocking creatures (untapped creatures we control)
-      const playerCreatures = battlefieldCards.playerCreatures
-      const validCreatures: EntityId[] = playerCreatures
-        .filter((card) => !card.isTapped)
-        .map((card) => card.id)
+      // Find the DeclareBlockers action to get valid blockers from server
+      const blockersAction = legalActions.find(
+        (a) => a.actionType === 'DeclareBlockers' || a.action.type === 'DeclareBlockers'
+      )
+      // Use server-provided valid blockers
+      const validCreatures: EntityId[] = blockersAction?.validBlockers
+        ? [...blockersAction.validBlockers]
+        : []
 
       // Find attacking creatures (opponent's creatures that are attacking)
       const opponentCreatures = battlefieldCards.opponentCreatures
@@ -102,7 +108,7 @@ export default function App() {
         attackingCreatures,
       })
     }
-  }, [hasDeclareAttackersAction, hasDeclareBlockersAction, gameState, viewingPlayer, combatState, startCombat, clearCombat, battlefieldCards])
+  }, [hasDeclareAttackersAction, hasDeclareBlockersAction, gameState, viewingPlayer, combatState, startCombat, clearCombat, battlefieldCards, legalActions])
 
   // Show connection/game creation UI when not in a game
   const showLobby = connectionStatus !== 'connected' || !gameState

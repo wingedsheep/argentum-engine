@@ -130,7 +130,11 @@ data class LegalActionInfo(
     /** Number of targets required (default 1) */
     val targetCount: Int = 1,
     /** Description of the target requirement */
-    val targetDescription: String? = null
+    val targetDescription: String? = null,
+    /** Valid attacker IDs for DeclareAttackers action */
+    val validAttackers: List<EntityId>? = null,
+    /** Valid blocker IDs for DeclareBlockers action */
+    val validBlockers: List<EntityId>? = null
 )
 
 /**

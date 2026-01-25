@@ -202,7 +202,10 @@ class ClientStateTransformer {
 
         // Get state components
         val isTapped = container.has<TappedComponent>()
-        val hasSummoningSickness = container.has<SummoningSicknessComponent>()
+        // Summoning sickness doesn't affect creatures with haste
+        val hasSummoningSicknessComponent = container.has<SummoningSicknessComponent>()
+        val hasHaste = keywords.contains(com.wingedsheep.sdk.core.Keyword.HASTE)
+        val hasSummoningSickness = hasSummoningSicknessComponent && !hasHaste
         val isFaceDown = container.has<FaceDownComponent>()
 
         // Get damage

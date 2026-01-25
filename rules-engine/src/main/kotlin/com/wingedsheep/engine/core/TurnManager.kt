@@ -567,6 +567,81 @@ class TurnManager(
     }
 
     /**
+     * Get all creatures that can legally attack for a player.
+     * A creature can attack if it's:
+     * - A creature controlled by the player
+     * - Untapped
+     * - Doesn't have summoning sickness (unless it has haste)
+     * - Doesn't have defender
+     */
+    fun getValidAttackers(state: GameState, playerId: EntityId): List<EntityId> {
+        val battlefield = state.getBattlefield()
+
+        // Project state once to get all keywords (including granted abilities)
+        val projected = stateProjector.project(state)
+
+        return battlefield.filter { entityId ->
+            val container = state.getEntity(entityId) ?: return@filter false
+            val cardComponent = container.get<CardComponent>() ?: return@filter false
+            val controller = container.get<ControllerComponent>()?.playerId
+
+            // Must be a creature controlled by the player
+            if (!cardComponent.typeLine.isCreature || controller != playerId) {
+                return@filter false
+            }
+
+            // Must be untapped
+            if (container.has<TappedComponent>()) {
+                return@filter false
+            }
+
+            // Check projected keywords for Haste/Defender
+            val hasHaste = projected.hasKeyword(entityId, Keyword.HASTE)
+            val hasDefender = projected.hasKeyword(entityId, Keyword.DEFENDER)
+
+            // Must not have summoning sickness (unless it has haste)
+            if (!hasHaste && container.has<SummoningSicknessComponent>()) {
+                return@filter false
+            }
+
+            // Must not have defender
+            if (hasDefender) {
+                return@filter false
+            }
+
+            true
+        }
+    }
+
+    /**
+     * Get all creatures that can legally block for a player.
+     * A creature can block if it's:
+     * - A creature controlled by the player
+     * - Untapped
+     */
+    fun getValidBlockers(state: GameState, playerId: EntityId): List<EntityId> {
+        val battlefield = state.getBattlefield()
+
+        return battlefield.filter { entityId ->
+            val container = state.getEntity(entityId) ?: return@filter false
+            val cardComponent = container.get<CardComponent>() ?: return@filter false
+            val controller = container.get<ControllerComponent>()?.playerId
+
+            // Must be a creature controlled by the player
+            if (!cardComponent.typeLine.isCreature || controller != playerId) {
+                return@filter false
+            }
+
+            // Must be untapped
+            if (container.has<TappedComponent>()) {
+                return@filter false
+            }
+
+            true
+        }
+    }
+
+    /**
      * Check if there are any creatures currently attacking.
      */
     fun hasAttackingCreatures(state: GameState): Boolean {

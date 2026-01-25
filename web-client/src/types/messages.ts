@@ -129,12 +129,39 @@ export interface TargetRequirementInfo {
 }
 
 /**
+ * Information about a card available for selection during library search.
+ * This is embedded in the decision because library cards are normally hidden.
+ */
+export interface SearchCardInfo {
+  readonly name: string
+  readonly manaCost: string
+  readonly typeLine: string
+  readonly imageUri: string | null
+}
+
+/**
+ * Player must select cards from their library.
+ *
+ * Unlike SelectCardsDecision, this includes embedded card info because
+ * library contents are normally hidden from the client.
+ */
+export interface SearchLibraryDecision extends PendingDecisionBase {
+  readonly type: 'SearchLibraryDecision'
+  readonly options: readonly EntityId[]
+  readonly minSelections: number
+  readonly maxSelections: number
+  readonly cards: Record<EntityId, SearchCardInfo>
+  readonly filterDescription: string
+}
+
+/**
  * Union of all pending decision types.
  */
 export type PendingDecision =
   | SelectCardsDecision
   | YesNoDecision
   | ChooseTargetsDecision
+  | SearchLibraryDecision
 
 /**
  * Information about a legal action the player can take.
@@ -151,6 +178,10 @@ export interface LegalActionInfo {
   readonly targetCount?: number
   /** Description of the target requirement */
   readonly targetDescription?: string
+  /** Valid attacker IDs for DeclareAttackers action */
+  readonly validAttackers?: readonly EntityId[]
+  /** Valid blocker IDs for DeclareBlockers action */
+  readonly validBlockers?: readonly EntityId[]
 }
 
 /**
