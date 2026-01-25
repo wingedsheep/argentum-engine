@@ -1,7 +1,9 @@
 package com.wingedsheep.engine.core
 
+import com.wingedsheep.engine.handlers.ContinuationHandler
 import com.wingedsheep.engine.handlers.CostHandler
 import com.wingedsheep.engine.handlers.MulliganHandler
+import com.wingedsheep.engine.handlers.effects.EffectExecutorRegistry
 import com.wingedsheep.engine.mechanics.combat.CombatManager
 import com.wingedsheep.engine.mechanics.mana.AlternativePaymentHandler
 import com.wingedsheep.engine.mechanics.mana.CostCalculator
@@ -41,7 +43,9 @@ class ActionProcessor(
     private val costCalculator: CostCalculator = CostCalculator(cardRegistry),
     private val alternativePaymentHandler: AlternativePaymentHandler = AlternativePaymentHandler(),
     private val costHandler: CostHandler = CostHandler(),
-    private val mulliganHandler: MulliganHandler = MulliganHandler()
+    private val mulliganHandler: MulliganHandler = MulliganHandler(),
+    effectExecutorRegistry: EffectExecutorRegistry = EffectExecutorRegistry(),
+    private val continuationHandler: ContinuationHandler = ContinuationHandler(effectExecutorRegistry)
 ) {
 
     /**
@@ -952,22 +956,31 @@ class ActionProcessor(
         val clearedState = state.clearPendingDecision()
 
         // Emit event that decision was submitted
-        val events = mutableListOf<GameEvent>(
-            DecisionSubmittedEvent(pending.id, action.playerId)
-        )
+        val submittedEvent = DecisionSubmittedEvent(pending.id, action.playerId)
 
-        // Process the decision response based on type
-        // For now, just return success with cleared state
-        // In a full implementation, this would resume the paused execution
-        // by looking up the continuation context and calling the appropriate handler
+        // Check if there's a continuation frame to process
+        val hasContinuation = clearedState.peekContinuation() != null
 
-        // TODO: Implement decision handlers that resume execution based on the context
-        // For example:
-        // - ChooseTargetsDecision during casting -> finish putting spell on stack
-        // - SelectCardsDecision during discard -> actually discard the selected cards
-        // - YesNoDecision for may abilities -> either execute or skip the effect
+        if (hasContinuation) {
+            // Resume execution using the continuation handler
+            val result = continuationHandler.resume(clearedState, action.response)
 
-        return ExecutionResult.success(clearedState, events)
+            // Prepend the decision submitted event
+            return if (result.isSuccess || result.isPaused) {
+                ExecutionResult(
+                    state = result.state,
+                    events = listOf(submittedEvent) + result.events,
+                    error = result.error,
+                    pendingDecision = result.pendingDecision
+                )
+            } else {
+                result
+            }
+        }
+
+        // No continuation - just return with cleared state
+        // This handles legacy decisions that don't use the continuation system yet
+        return ExecutionResult.success(clearedState, listOf(submittedEvent))
     }
 
     // =========================================================================

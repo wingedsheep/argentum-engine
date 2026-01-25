@@ -276,6 +276,36 @@ class StackResolver(
             )
 
             val effectResult = effectHandler.execute(newState, spellEffect, context)
+
+            // If effect is paused awaiting a decision, we still need to move the spell
+            // to graveyard (it has already resolved from the stack). The decision only
+            // determines how the effect completes.
+            if (effectResult.isPaused) {
+                val ownerId = cardComponent?.ownerId ?: spellComponent.casterId
+                val graveyardZone = ZoneKey(ownerId, ZoneType.GRAVEYARD)
+
+                // Move spell to graveyard even though effect is paused
+                var pausedState = effectResult.state.updateEntity(spellId) { c ->
+                    c.without<SpellOnStackComponent>().without<TargetsComponent>()
+                }
+                pausedState = pausedState.addToZone(graveyardZone, spellId)
+
+                // Include the zone change event along with effect events
+                val allEvents = events + effectResult.events + ZoneChangeEvent(
+                    spellId,
+                    cardComponent?.name ?: "Unknown",
+                    null,
+                    ZoneType.GRAVEYARD,
+                    ownerId
+                )
+
+                return ExecutionResult.paused(
+                    pausedState,
+                    effectResult.pendingDecision!!,
+                    allEvents
+                )
+            }
+
             if (!effectResult.isSuccess) {
                 // Effect execution failed - spell still goes to graveyard
                 events.addAll(effectResult.events)

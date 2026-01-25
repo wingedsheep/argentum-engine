@@ -715,4 +715,72 @@ class GameTestDriver {
     fun getUntappedLands(playerId: EntityId): List<EntityId> {
         return getLands(playerId).filter { !isTapped(it) }
     }
+
+    // =========================================================================
+    // Decision Handling
+    // =========================================================================
+
+    /**
+     * Get the pending decision (if any).
+     */
+    val pendingDecision: PendingDecision? get() = state.pendingDecision
+
+    /**
+     * Check if the engine is paused awaiting a decision.
+     */
+    val isPaused: Boolean get() = state.isPaused()
+
+    /**
+     * Submit a decision response.
+     */
+    fun submitDecision(playerId: EntityId, response: DecisionResponse): ExecutionResult {
+        return submit(SubmitDecision(playerId, response))
+    }
+
+    /**
+     * Submit a card selection response (for discard, sacrifice, etc.).
+     */
+    fun submitCardSelection(playerId: EntityId, selectedCards: List<EntityId>): ExecutionResult {
+        val decision = pendingDecision as? SelectCardsDecision
+            ?: throw IllegalStateException("No pending SelectCardsDecision")
+        return submitDecision(
+            playerId,
+            CardsSelectedResponse(decision.id, selectedCards)
+        )
+    }
+
+    /**
+     * Submit a yes/no response.
+     */
+    fun submitYesNo(playerId: EntityId, choice: Boolean): ExecutionResult {
+        val decision = pendingDecision as? YesNoDecision
+            ?: throw IllegalStateException("No pending YesNoDecision")
+        return submitDecision(
+            playerId,
+            YesNoResponse(decision.id, choice)
+        )
+    }
+
+    /**
+     * Get a player's graveyard.
+     */
+    fun getGraveyard(playerId: EntityId): List<EntityId> {
+        return state.getGraveyard(playerId)
+    }
+
+    /**
+     * Get the card names in a player's graveyard.
+     */
+    fun getGraveyardCardNames(playerId: EntityId): List<String> {
+        return getGraveyard(playerId).mapNotNull { entityId ->
+            state.getEntity(entityId)?.get<CardComponent>()?.name
+        }
+    }
+
+    /**
+     * Get hand size for a player.
+     */
+    fun getHandSize(playerId: EntityId): Int {
+        return getHand(playerId).size
+    }
 }

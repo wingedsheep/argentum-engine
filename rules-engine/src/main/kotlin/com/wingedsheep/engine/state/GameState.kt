@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.state
 
+import com.wingedsheep.engine.core.ContinuationFrame
 import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -58,7 +59,10 @@ data class GameState(
     val pendingDecision: com.wingedsheep.engine.core.PendingDecision? = null,
 
     /** Active floating effects (temporary effects from spells like Giant Growth) */
-    val floatingEffects: List<ActiveFloatingEffect> = emptyList()
+    val floatingEffects: List<ActiveFloatingEffect> = emptyList(),
+
+    /** Continuation stack for resuming after player decisions */
+    val continuationStack: List<ContinuationFrame> = emptyList()
 ) {
     // =========================================================================
     // Entity Operations
@@ -291,6 +295,28 @@ data class GameState(
      */
     fun clearPendingDecision(): GameState =
         copy(pendingDecision = null)
+
+    /**
+     * Push a continuation frame onto the stack.
+     * Used when pausing for a decision to remember how to resume.
+     */
+    fun pushContinuation(frame: ContinuationFrame): GameState =
+        copy(continuationStack = continuationStack + frame)
+
+    /**
+     * Pop the top continuation frame from the stack.
+     * Returns the frame and the new state, or null if stack is empty.
+     */
+    fun popContinuation(): Pair<ContinuationFrame?, GameState> {
+        if (continuationStack.isEmpty()) return null to this
+        val top = continuationStack.last()
+        return top to copy(continuationStack = continuationStack.dropLast(1))
+    }
+
+    /**
+     * Peek at the top continuation frame without removing it.
+     */
+    fun peekContinuation(): ContinuationFrame? = continuationStack.lastOrNull()
 
     /**
      * Get the next player in turn order after the given player.

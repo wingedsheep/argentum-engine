@@ -502,7 +502,9 @@ object ClientEventTransformer {
             is DecisionSubmittedEvent,
             is AbilityResolvedEvent,
             is AbilityFizzledEvent,
-            is DiscardRequiredEvent -> null
+            is DiscardRequiredEvent,
+            is ScryCompletedEvent,
+            is PermanentsSacrificedEvent -> null
         }
     }
 }

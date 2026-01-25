@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers.effects
 
 import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.composite.CompositeEffectExecutor
@@ -42,7 +43,8 @@ import com.wingedsheep.sdk.scripting.*
  * its own dedicated executor class while providing a unified dispatch mechanism.
  */
 class EffectExecutorRegistry(
-    private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator()
+    private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator(),
+    private val decisionHandler: DecisionHandler = DecisionHandler()
 ) {
     // Life executors
     private val gainLifeExecutor = GainLifeExecutor(amountEvaluator)
@@ -58,7 +60,7 @@ class EffectExecutorRegistry(
 
     // Drawing executors
     private val drawCardsExecutor = DrawCardsExecutor(amountEvaluator)
-    private val discardCardsExecutor = DiscardCardsExecutor()
+    private val discardCardsExecutor = DiscardCardsExecutor(decisionHandler)
 
     // Removal executors
     private val destroyExecutor = DestroyExecutor()

@@ -357,6 +357,27 @@ data class LibraryShuffledEvent(
     val playerId: EntityId
 ) : GameEvent
 
+/**
+ * Scry completed - cards were put on top/bottom of library.
+ */
+@Serializable
+@SerialName("ScryCompletedEvent")
+data class ScryCompletedEvent(
+    val playerId: EntityId,
+    val cardsOnTop: Int,
+    val cardsOnBottom: Int
+) : GameEvent
+
+/**
+ * Permanents were sacrificed.
+ */
+@Serializable
+@SerialName("PermanentsSacrificedEvent")
+data class PermanentsSacrificedEvent(
+    val playerId: EntityId,
+    val permanentIds: List<EntityId>
+) : GameEvent
+
 // =============================================================================
 // Decision Events
 // =============================================================================

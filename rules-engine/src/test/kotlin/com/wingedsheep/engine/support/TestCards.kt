@@ -192,6 +192,35 @@ object TestCards {
         )
     )
 
+    /**
+     * {1}{B}{B} - Target player discards two cards.
+     */
+    val MindRot = CardDefinition.sorcery(
+        name = "Mind Rot",
+        manaCost = ManaCost.parse("{1}{B}{B}"),
+        oracleText = "Target player discards two cards.",
+        script = CardScript.spell(
+            effect = DiscardCardsEffect(2, EffectTarget.Opponent)
+        )
+    )
+
+    /**
+     * {B} - Draw a card, then discard a card.
+     */
+    val CarefulStudy = CardDefinition.sorcery(
+        name = "Careful Study",
+        manaCost = ManaCost.parse("{B}"),
+        oracleText = "Draw a card, then discard a card.",
+        script = CardScript.spell(
+            effect = CompositeEffect(
+                listOf(
+                    DrawCardsEffect(1, EffectTarget.Controller),
+                    DiscardCardsEffect(1, EffectTarget.Controller)
+                )
+            )
+        )
+    )
+
     // =========================================================================
     // Mana Dorks (Creatures with Tap: Add mana abilities)
     // =========================================================================
@@ -389,6 +418,8 @@ object TestCards {
         Counterspell,
         SpellPierce,
         // Sorceries
-        DoomBlade
+        DoomBlade,
+        MindRot,
+        CarefulStudy
     )
 }
