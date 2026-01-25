@@ -75,4 +75,35 @@ val engineSerializersModule = SerializersModule {
         subclass(ManaAddedEvent::class)
         subclass(ManaSpentEvent::class)
     }
+
+    // PendingDecision hierarchy
+    polymorphic(PendingDecision::class) {
+        subclass(ChooseTargetsDecision::class)
+        subclass(SelectCardsDecision::class)
+        subclass(YesNoDecision::class)
+        subclass(ChooseModeDecision::class)
+        subclass(ChooseColorDecision::class)
+        subclass(ChooseNumberDecision::class)
+        subclass(DistributeDecision::class)
+        subclass(OrderObjectsDecision::class)
+        subclass(SplitPilesDecision::class)
+        subclass(ChooseOptionDecision::class)
+        subclass(AssignDamageDecision::class)
+        subclass(SearchLibraryDecision::class)
+    }
+
+    // DecisionResponse hierarchy
+    polymorphic(DecisionResponse::class) {
+        subclass(TargetsResponse::class)
+        subclass(CardsSelectedResponse::class)
+        subclass(YesNoResponse::class)
+        subclass(ModesChosenResponse::class)
+        subclass(ColorChosenResponse::class)
+        subclass(NumberChosenResponse::class)
+        subclass(DistributionResponse::class)
+        subclass(OrderedResponse::class)
+        subclass(PilesSplitResponse::class)
+        subclass(OptionChosenResponse::class)
+        subclass(DamageAssignmentResponse::class)
+    }
 }

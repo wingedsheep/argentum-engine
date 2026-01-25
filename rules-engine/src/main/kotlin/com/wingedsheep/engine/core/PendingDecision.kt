@@ -2,6 +2,7 @@ package com.wingedsheep.engine.core
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
@@ -75,6 +76,7 @@ enum class DecisionPhase {
  * @property legalTargets Map of requirement index to list of valid target IDs
  */
 @Serializable
+@SerialName("ChooseTargetsDecision")
 data class ChooseTargetsDecision(
     override val id: String,
     override val playerId: EntityId,
@@ -103,6 +105,7 @@ data class TargetRequirementInfo(
  * @property maxSelections Maximum number that can be selected
  */
 @Serializable
+@SerialName("SelectCardsDecision")
 data class SelectCardsDecision(
     override val id: String,
     override val playerId: EntityId,
@@ -119,6 +122,7 @@ data class SelectCardsDecision(
  * Player must make a yes/no decision (may abilities).
  */
 @Serializable
+@SerialName("YesNoDecision")
 data class YesNoDecision(
     override val id: String,
     override val playerId: EntityId,
@@ -138,6 +142,7 @@ data class YesNoDecision(
  * @property maxModes Maximum modes to select
  */
 @Serializable
+@SerialName("ChooseModeDecision")
 data class ChooseModeDecision(
     override val id: String,
     override val playerId: EntityId,
@@ -162,6 +167,7 @@ data class ModeOption(
  * Player must choose a color (e.g., protection from color of your choice).
  */
 @Serializable
+@SerialName("ChooseColorDecision")
 data class ChooseColorDecision(
     override val id: String,
     override val playerId: EntityId,
@@ -174,6 +180,7 @@ data class ChooseColorDecision(
  * Player must choose a number (e.g., X value, divide damage).
  */
 @Serializable
+@SerialName("ChooseNumberDecision")
 data class ChooseNumberDecision(
     override val id: String,
     override val playerId: EntityId,
@@ -191,6 +198,7 @@ data class ChooseNumberDecision(
  * @property minPerTarget Minimum each target must receive (usually 1 for damage)
  */
 @Serializable
+@SerialName("DistributeDecision")
 data class DistributeDecision(
     override val id: String,
     override val playerId: EntityId,
@@ -205,6 +213,7 @@ data class DistributeDecision(
  * Player must order objects (e.g., damage assignment order, scry).
  */
 @Serializable
+@SerialName("OrderObjectsDecision")
 data class OrderObjectsDecision(
     override val id: String,
     override val playerId: EntityId,
@@ -217,6 +226,7 @@ data class OrderObjectsDecision(
  * Player must split cards into piles (e.g., Fact or Fiction).
  */
 @Serializable
+@SerialName("SplitPilesDecision")
 data class SplitPilesDecision(
     override val id: String,
     override val playerId: EntityId,
@@ -232,6 +242,7 @@ data class SplitPilesDecision(
  * Player must choose from a fixed set of options (generic choice).
  */
 @Serializable
+@SerialName("ChooseOptionDecision")
 data class ChooseOptionDecision(
     override val id: String,
     override val playerId: EntityId,
@@ -256,6 +267,7 @@ data class ChooseOptionDecision(
  * @property hasDeathtouch If true, 1 damage is lethal to any creature
  */
 @Serializable
+@SerialName("AssignDamageDecision")
 data class AssignDamageDecision(
     override val id: String,
     override val playerId: EntityId,
@@ -296,6 +308,7 @@ data class SearchCardInfo(
  * @property filterDescription Human-readable description of the filter
  */
 @Serializable
+@SerialName("SearchLibraryDecision")
 data class SearchLibraryDecision(
     override val id: String,
     override val playerId: EntityId,
@@ -325,6 +338,7 @@ sealed interface DecisionResponse {
  * Response to ChooseTargetsDecision.
  */
 @Serializable
+@SerialName("TargetsResponse")
 data class TargetsResponse(
     override val decisionId: String,
     /** Map of requirement index to chosen target IDs */
@@ -335,6 +349,7 @@ data class TargetsResponse(
  * Response to SelectCardsDecision.
  */
 @Serializable
+@SerialName("CardsSelectedResponse")
 data class CardsSelectedResponse(
     override val decisionId: String,
     val selectedCards: List<EntityId>
@@ -344,6 +359,7 @@ data class CardsSelectedResponse(
  * Response to YesNoDecision.
  */
 @Serializable
+@SerialName("YesNoResponse")
 data class YesNoResponse(
     override val decisionId: String,
     val choice: Boolean
@@ -353,6 +369,7 @@ data class YesNoResponse(
  * Response to ChooseModeDecision.
  */
 @Serializable
+@SerialName("ModesChosenResponse")
 data class ModesChosenResponse(
     override val decisionId: String,
     val selectedModes: List<Int>
@@ -362,6 +379,7 @@ data class ModesChosenResponse(
  * Response to ChooseColorDecision.
  */
 @Serializable
+@SerialName("ColorChosenResponse")
 data class ColorChosenResponse(
     override val decisionId: String,
     val color: Color
@@ -371,6 +389,7 @@ data class ColorChosenResponse(
  * Response to ChooseNumberDecision.
  */
 @Serializable
+@SerialName("NumberChosenResponse")
 data class NumberChosenResponse(
     override val decisionId: String,
     val number: Int
@@ -380,6 +399,7 @@ data class NumberChosenResponse(
  * Response to DistributeDecision.
  */
 @Serializable
+@SerialName("DistributionResponse")
 data class DistributionResponse(
     override val decisionId: String,
     /** Map of target ID to amount assigned */
@@ -390,6 +410,7 @@ data class DistributionResponse(
  * Response to OrderObjectsDecision.
  */
 @Serializable
+@SerialName("OrderedResponse")
 data class OrderedResponse(
     override val decisionId: String,
     val orderedObjects: List<EntityId>
@@ -399,6 +420,7 @@ data class OrderedResponse(
  * Response to SplitPilesDecision.
  */
 @Serializable
+@SerialName("PilesSplitResponse")
 data class PilesSplitResponse(
     override val decisionId: String,
     /** List of piles, each containing entity IDs */
@@ -409,6 +431,7 @@ data class PilesSplitResponse(
  * Response to ChooseOptionDecision.
  */
 @Serializable
+@SerialName("OptionChosenResponse")
 data class OptionChosenResponse(
     override val decisionId: String,
     val optionIndex: Int
@@ -418,6 +441,7 @@ data class OptionChosenResponse(
  * Response to AssignDamageDecision.
  */
 @Serializable
+@SerialName("DamageAssignmentResponse")
 data class DamageAssignmentResponse(
     override val decisionId: String,
     /** Map of target ID (creature or player) to damage amount */
