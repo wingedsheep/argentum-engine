@@ -142,6 +142,7 @@ export interface GameStore {
   submitAction: (action: GameAction) => void
   submitDecision: (selectedCards: readonly EntityId[]) => void
   submitTargetsDecision: (selectedTargets: Record<number, readonly EntityId[]>) => void
+  submitOrderedDecision: (orderedObjects: readonly EntityId[]) => void
   keepHand: () => void
   mulligan: () => void
   chooseBottomCards: (cardIds: readonly EntityId[]) => void
@@ -207,11 +208,13 @@ function shouldAutoPass(
   }
 
   // Check if there are any meaningful actions besides PassPriority
-  // Meaningful actions include: PlayLand, CastSpell, ActivateAbility, etc.
+  // Meaningful actions include: PlayLand, CastSpell, non-mana ActivateAbility, etc.
   const hasMeaningfulActions = legalActions.some((a) => {
     const type = a.action.type
     // PassPriority is not considered "meaningful" for auto-pass
     if (type === 'PassPriority') return false
+    // Mana abilities are not meaningful for auto-pass (they're always available)
+    if (a.isManaAbility) return false
     // Everything else is meaningful
     return true
   })
@@ -456,6 +459,22 @@ export const useGameStore = create<GameStore>()(
             type: 'TargetsResponse' as const,
             decisionId: pendingDecision.id,
             selectedTargets,
+          },
+        }
+        ws?.send(createSubmitActionMessage(action))
+      },
+
+      submitOrderedDecision: (orderedObjects) => {
+        const { pendingDecision, playerId } = get()
+        if (!pendingDecision || !playerId) return
+
+        const action = {
+          type: 'SubmitDecision' as const,
+          playerId,
+          response: {
+            type: 'OrderedResponse' as const,
+            decisionId: pendingDecision.id,
+            orderedObjects: [...orderedObjects],
           },
         }
         ws?.send(createSubmitActionMessage(action))
