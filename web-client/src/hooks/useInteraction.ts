@@ -130,13 +130,29 @@ export function useInteraction() {
 
   /**
    * Execute a specific action from the action menu.
+   * This checks for X cost spells and enters X selection mode if needed.
    */
   const executeAction = useCallback(
-    (action: GameAction) => {
+    (actionInfo: LegalActionInfo) => {
+      const action = actionInfo.action
+
+      // Check if spell has X cost - needs X selection first
+      if (action.type === 'CastSpell' && actionInfo.hasXCost) {
+        startXSelection({
+          actionInfo,
+          cardName: actionInfo.description.replace('Cast ', ''),
+          minX: actionInfo.minX ?? 0,
+          maxX: actionInfo.maxAffordableX ?? 0,
+          selectedX: actionInfo.maxAffordableX ?? 0,
+        })
+        selectCard(null)
+        return
+      }
+
       submitAction(action)
       selectCard(null)
     },
-    [submitAction, selectCard]
+    [submitAction, selectCard, startXSelection]
   )
 
   /**

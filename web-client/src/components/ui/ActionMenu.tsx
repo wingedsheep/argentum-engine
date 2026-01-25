@@ -46,7 +46,7 @@ export function ActionMenu() {
         <ActionButton
           key={index}
           action={action}
-          onClick={() => executeAction(action.action)}
+          onClick={() => executeAction(action)}
         />
       ))}
 
