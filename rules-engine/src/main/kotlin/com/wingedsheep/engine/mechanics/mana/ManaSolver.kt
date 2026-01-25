@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.mana
 
+import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
@@ -64,7 +65,8 @@ data class ManaProduction(
  *                     When provided, non-land permanents with mana abilities can be used as sources.
  */
 class ManaSolver(
-    private val cardRegistry: CardRegistry? = null
+    private val cardRegistry: CardRegistry? = null,
+    private val stateProjector: StateProjector = StateProjector()
 ) {
 
     /**
@@ -178,6 +180,9 @@ class ManaSolver(
         val battlefieldZone = ZoneKey(playerId, ZoneType.BATTLEFIELD)
         val battlefieldCards = state.getZone(battlefieldZone)
 
+        // Project state once to get all keywords (including granted abilities)
+        val projected = stateProjector.project(state)
+
         return battlefieldCards.mapNotNull { entityId ->
             val container = state.getEntity(entityId) ?: return@mapNotNull null
 
@@ -202,8 +207,8 @@ class ManaSolver(
                 // Check summoning sickness for creatures (non-lands)
                 if (!card.typeLine.isLand && card.typeLine.isCreature) {
                     val hasSummoningSickness = container.has<SummoningSicknessComponent>()
-                    val hasHaste = cardDef?.keywords?.contains(Keyword.HASTE) == true ||
-                            card.baseKeywords.contains(Keyword.HASTE)
+                    // Use projected keywords to check for Haste (includes granted abilities)
+                    val hasHaste = projected.hasKeyword(entityId, Keyword.HASTE)
                     if (hasSummoningSickness && !hasHaste) {
                         continue // Can't use this ability due to summoning sickness
                     }

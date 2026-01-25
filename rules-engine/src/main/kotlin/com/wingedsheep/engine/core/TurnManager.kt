@@ -1,18 +1,19 @@
 package com.wingedsheep.engine.core
 
 import com.wingedsheep.engine.handlers.DecisionHandler
+import com.wingedsheep.engine.mechanics.combat.CombatManager
+import com.wingedsheep.engine.mechanics.layers.StateProjector
+import com.wingedsheep.engine.mechanics.StateBasedActionChecker
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
-import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
-import com.wingedsheep.engine.mechanics.combat.CombatManager
-import com.wingedsheep.engine.mechanics.StateBasedActionChecker
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -33,7 +34,8 @@ import com.wingedsheep.sdk.scripting.Duration
 class TurnManager(
     private val combatManager: CombatManager = CombatManager(),
     private val sbaChecker: StateBasedActionChecker = StateBasedActionChecker(),
-    private val decisionHandler: DecisionHandler = DecisionHandler()
+    private val decisionHandler: DecisionHandler = DecisionHandler(),
+    private val stateProjector: StateProjector = StateProjector()
 ) {
 
     /**
@@ -527,6 +529,10 @@ class TurnManager(
      */
     fun hasValidAttackers(state: GameState, playerId: EntityId): Boolean {
         val battlefield = state.getBattlefield()
+
+        // Project state once to get all keywords (including granted abilities)
+        val projected = stateProjector.project(state)
+
         return battlefield.any { entityId ->
             val container = state.getEntity(entityId) ?: return@any false
             val cardComponent = container.get<CardComponent>() ?: return@any false
@@ -542,14 +548,17 @@ class TurnManager(
                 return@any false
             }
 
+            // Check projected keywords for Haste/Defender
+            val hasHaste = projected.hasKeyword(entityId, Keyword.HASTE)
+            val hasDefender = projected.hasKeyword(entityId, Keyword.DEFENDER)
+
             // Must not have summoning sickness (unless it has haste)
-            val hasHaste = cardComponent.baseKeywords.contains(Keyword.HASTE)
             if (!hasHaste && container.has<SummoningSicknessComponent>()) {
                 return@any false
             }
 
             // Must not have defender
-            if (cardComponent.baseKeywords.contains(Keyword.DEFENDER)) {
+            if (hasDefender) {
                 return@any false
             }
 
