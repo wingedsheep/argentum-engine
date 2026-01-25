@@ -107,6 +107,26 @@ object TestCards {
         )
     )
 
+    /**
+     * 2/2 for {3}{B}{B} with "When Serpent Assassin enters the battlefield, you may destroy target nonblack creature."
+     */
+    val SerpentAssassin = CardDefinition.creature(
+        name = "Serpent Assassin",
+        manaCost = ManaCost.parse("{3}{B}{B}"),
+        subtypes = setOf(Subtype("Snake"), Subtype("Assassin")),
+        power = 2,
+        toughness = 2,
+        oracleText = "When Serpent Assassin enters the battlefield, you may destroy target nonblack creature.",
+        script = CardScript.creature(
+            TriggeredAbility.create(
+                trigger = OnEnterBattlefield(),
+                effect = DestroyEffect(EffectTarget.ContextTarget(0)),
+                optional = true,
+                targetRequirement = TargetCreature(filter = TargetingCreatureFilter.NotColor(Color.BLACK))
+            )
+        )
+    )
+
     // =========================================================================
     // Creatures with Keywords
     // =========================================================================
@@ -471,6 +491,7 @@ object TestCards {
         GoblinGuide,
         SavannahLions,
         VenerableMonk,
+        SerpentAssassin,
         WindDrake,
         ForestWalker,
         IslandWalker,

@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.support
 
 import com.wingedsheep.engine.core.*
+import com.wingedsheep.engine.core.ChooseTargetsDecision
+import com.wingedsheep.engine.core.TargetsResponse
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
@@ -861,6 +863,19 @@ class GameTestDriver {
         return submitDecision(
             playerId,
             YesNoResponse(decision.id, choice)
+        )
+    }
+
+    /**
+     * Submit a target selection response (for targeted spells/abilities).
+     */
+    fun submitTargetSelection(playerId: EntityId, targets: List<EntityId>): ExecutionResult {
+        val decision = pendingDecision as? ChooseTargetsDecision
+            ?: throw IllegalStateException("No pending ChooseTargetsDecision")
+        // Most abilities have a single target requirement at index 0
+        return submitDecision(
+            playerId,
+            TargetsResponse(decision.id, mapOf(0 to targets))
         )
     }
 

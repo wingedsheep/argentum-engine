@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useGameStore } from '../../store/gameStore'
-import type { EntityId, SelectCardsDecision } from '../../types'
+import type { EntityId, SelectCardsDecision, ChooseTargetsDecision } from '../../types'
 import { useResponsive, calculateFittingCardWidth, type ResponsiveSizes } from '../../hooks/useResponsive'
 import { LibrarySearchUI } from './LibrarySearchUI'
 
@@ -44,8 +44,284 @@ export function DecisionUI() {
     )
   }
 
+  // Handle ChooseTargetsDecision
+  if (pendingDecision.type === 'ChooseTargetsDecision') {
+    return (
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.85)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: responsive.isMobile ? 12 : 24,
+          padding: responsive.containerPadding,
+          pointerEvents: 'auto',
+          zIndex: 1000,
+        }}
+      >
+        <TargetSelectionDecision decision={pendingDecision} responsive={responsive} />
+      </div>
+    )
+  }
+
   // Other decision types not yet implemented
   return null
+}
+
+/**
+ * Target selection decision - choose targets for a spell or ability.
+ */
+function TargetSelectionDecision({
+  decision,
+  responsive,
+}: {
+  decision: ChooseTargetsDecision
+  responsive: ResponsiveSizes
+}) {
+  const [selectedTargets, setSelectedTargets] = useState<EntityId[]>([])
+  const submitTargetsDecision = useGameStore((s) => s.submitTargetsDecision)
+  const gameState = useGameStore((s) => s.gameState)
+
+  // For now, we only support single-target requirements (index 0)
+  const targetReq = decision.targetRequirements[0]
+  const legalTargets = decision.legalTargets[0] ?? []
+
+  // Handle case where no target requirements exist
+  if (!targetReq) {
+    return <div style={{ color: 'white' }}>No target requirements specified</div>
+  }
+
+  const canConfirm =
+    selectedTargets.length >= targetReq.minTargets &&
+    selectedTargets.length <= targetReq.maxTargets
+
+  // Calculate card size that fits all targets
+  const availableWidth = responsive.viewportWidth - responsive.containerPadding * 2 - 32
+  const gap = responsive.isMobile ? 4 : 8
+  const maxCardWidth = responsive.isMobile ? 90 : 130
+  const cardWidth = calculateFittingCardWidth(
+    legalTargets.length,
+    availableWidth,
+    gap,
+    maxCardWidth,
+    45
+  )
+
+  const toggleTarget = (targetId: EntityId) => {
+    setSelectedTargets((prev) => {
+      if (prev.includes(targetId)) {
+        return prev.filter((id) => id !== targetId)
+      }
+      // Don't allow selecting more than max
+      if (prev.length >= targetReq.maxTargets) {
+        return prev
+      }
+      return [...prev, targetId]
+    })
+  }
+
+  const handleConfirm = () => {
+    // Submit targets as a map of index -> selected targets
+    submitTargetsDecision({ 0: selectedTargets })
+    setSelectedTargets([])
+  }
+
+  // Get card name for display
+  const getTargetName = (targetId: EntityId): string => {
+    // Check if it's a card
+    const card = gameState?.cards[targetId]
+    if (card) return card.name
+
+    // Check if it's a player
+    const player = gameState?.players.find((p) => p.playerId === targetId)
+    if (player) return player.name
+
+    return 'Unknown'
+  }
+
+  // Check if target is a player
+  const isPlayerTarget = (targetId: EntityId): boolean => {
+    return gameState?.players.some((p) => p.playerId === targetId) ?? false
+  }
+
+  return (
+    <>
+      <h2
+        style={{
+          color: 'white',
+          margin: 0,
+          fontSize: responsive.isMobile ? 18 : 24,
+          textAlign: 'center',
+        }}
+      >
+        {decision.prompt}
+      </h2>
+
+      {decision.context.sourceName && (
+        <p style={{ color: '#aaa', margin: 0, fontSize: responsive.fontSize.normal }}>
+          {decision.context.sourceName}
+        </p>
+      )}
+
+      <p style={{ color: '#888', margin: 0, fontSize: responsive.fontSize.normal }}>
+        {targetReq.description} - Select {targetReq.minTargets}
+        {targetReq.minTargets !== targetReq.maxTargets && ` - ${targetReq.maxTargets}`} target
+        {targetReq.maxTargets !== 1 && 's'}
+      </p>
+
+      {/* Target options */}
+      <div
+        style={{
+          display: 'flex',
+          gap,
+          padding: responsive.isMobile ? 8 : 16,
+          justifyContent: 'center',
+          flexWrap: 'wrap',
+          maxWidth: '100%',
+        }}
+      >
+        {legalTargets.map((targetId) => {
+          const isPlayer = isPlayerTarget(targetId)
+          return isPlayer ? (
+            <PlayerTargetCard
+              key={targetId}
+              playerId={targetId}
+              playerName={getTargetName(targetId)}
+              isSelected={selectedTargets.includes(targetId)}
+              onClick={() => toggleTarget(targetId)}
+              cardWidth={cardWidth}
+              isMobile={responsive.isMobile}
+            />
+          ) : (
+            <DecisionCard
+              key={targetId}
+              cardId={targetId}
+              cardName={getTargetName(targetId)}
+              isSelected={selectedTargets.includes(targetId)}
+              onClick={() => toggleTarget(targetId)}
+              cardWidth={cardWidth}
+              isMobile={responsive.isMobile}
+            />
+          )
+        })}
+      </div>
+
+      {/* Confirm button */}
+      <button
+        onClick={handleConfirm}
+        disabled={!canConfirm}
+        style={{
+          padding: responsive.isMobile ? '10px 20px' : '12px 32px',
+          fontSize: responsive.fontSize.large,
+          backgroundColor: canConfirm ? '#00aa00' : '#444',
+          color: canConfirm ? 'white' : '#888',
+          border: 'none',
+          borderRadius: 8,
+          cursor: canConfirm ? 'pointer' : 'not-allowed',
+        }}
+      >
+        Confirm Target
+      </button>
+    </>
+  )
+}
+
+/**
+ * Player target display for target selection.
+ */
+function PlayerTargetCard({
+  playerId: _playerId,
+  playerName,
+  isSelected,
+  onClick,
+  cardWidth = 130,
+  isMobile = false,
+}: {
+  playerId: EntityId
+  playerName: string
+  isSelected: boolean
+  onClick: () => void
+  cardWidth?: number
+  isMobile?: boolean
+}) {
+  const cardRatio = 1.4
+  const cardHeight = Math.round(cardWidth * cardRatio)
+
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        width: cardWidth,
+        height: cardHeight,
+        backgroundColor: isSelected ? '#330000' : '#1a1a2a',
+        border: isSelected ? '3px solid #ff4444' : '2px solid #444',
+        borderRadius: isMobile ? 6 : 10,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: 'pointer',
+        transition: 'all 0.15s',
+        transform: isSelected ? 'translateY(-8px) scale(1.05)' : 'none',
+        boxShadow: isSelected
+          ? '0 8px 20px rgba(255, 68, 68, 0.3)'
+          : '0 4px 8px rgba(0, 0, 0, 0.5)',
+        flexShrink: 0,
+        position: 'relative',
+      }}
+    >
+      {/* Player icon */}
+      <div
+        style={{
+          fontSize: cardWidth * 0.4,
+          marginBottom: 8,
+        }}
+      >
+        👤
+      </div>
+
+      {/* Player name */}
+      <span
+        style={{
+          color: 'white',
+          fontSize: isMobile ? 11 : 14,
+          fontWeight: 500,
+          textAlign: 'center',
+        }}
+      >
+        {playerName}
+      </span>
+
+      {/* Selection indicator */}
+      {isSelected && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 4,
+            right: 4,
+            width: 20,
+            height: 20,
+            backgroundColor: '#ff4444',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            fontWeight: 'bold',
+            fontSize: 12,
+          }}
+        >
+          ✓
+        </div>
+      )}
+    </div>
+  )
 }
 
 /**
