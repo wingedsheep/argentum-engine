@@ -3,6 +3,7 @@ import { subscribeWithSelector } from 'zustand/middleware'
 import type {
   EntityId,
   ClientGameState,
+  ClientCard,
   ClientEvent,
   GameAction,
   LegalActionInfo,
@@ -181,12 +182,26 @@ export interface GameStore {
 let ws: GameWebSocket | null = null
 
 /**
+ * Gets the top item on the stack (the most recently added spell/ability).
+ */
+function getTopOfStack(gameState: ClientGameState): ClientCard | null {
+  const stackZone = gameState.zones.find((z) => z.zoneId.zoneType === 'STACK')
+  if (!stackZone || !stackZone.cardIds || stackZone.cardIds.length === 0) {
+    return null
+  }
+  // Stack is ordered with newest at end (last in, first out)
+  const topId = stackZone.cardIds[stackZone.cardIds.length - 1]
+  return topId ? (gameState.cards[topId] ?? null) : null
+}
+
+/**
  * Determines if we should auto-pass priority.
  * Auto-passes when:
  * - It's our priority (implied by receiving legalActions)
  * - The only meaningful legal actions are PassPriority and/or mana abilities
  *   (mana abilities without anything to spend them on are not useful)
  * - We're not in a main phase where player might want to hold priority
+ * - OR the top of the stack is our own spell/ability (we rarely want to respond to ourselves)
  *
  * This skips through steps like UNTAP, UPKEEP, DRAW, BEGIN_COMBAT, etc.
  * when there are no meaningful actions available.
@@ -205,6 +220,13 @@ function shouldAutoPass(
   const hasPassPriority = legalActions.some((a) => a.action.type === 'PassPriority')
   if (!hasPassPriority) {
     return false
+  }
+
+  // Auto-pass when responding to our own spell/ability on the stack
+  // (99% of the time, players want their spell to resolve, not counter it themselves)
+  const topOfStack = getTopOfStack(gameState)
+  if (topOfStack && topOfStack.controllerId === playerId) {
+    return true
   }
 
   // Check if there are any meaningful actions besides PassPriority
