@@ -6,13 +6,14 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.PlayerComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
+import com.wingedsheep.engine.state.components.identity.RevealedToComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 
 /**
  * Masks game state to hide information from opponents.
  *
  * Masking rules follow MTG rules for hidden information:
- * - Hand: Only visible to owner
+ * - Hand: Only visible to owner (unless cards have been revealed via "look at hand" effects)
  * - Library: Hidden from all players (only size visible)
  * - Graveyard, Battlefield, Stack, Exile: Visible to all
  */
@@ -31,26 +32,33 @@ class StateMasker {
         val maskedZones = mutableListOf<MaskedZone>()
 
         for ((zoneKey, entityIds) in state.zones) {
-            val isVisible = isZoneVisibleTo(zoneKey, viewingPlayerId)
+            val isZoneVisible = isZoneVisibleTo(zoneKey, viewingPlayerId)
+
+            // For hidden zones (opponent's hand), check if individual cards are revealed
+            val visibleEntityIds = if (isZoneVisible) {
+                entityIds
+            } else {
+                // Check each entity for RevealedToComponent
+                entityIds.filter { entityId ->
+                    isEntityRevealedTo(state, entityId, viewingPlayerId)
+                }
+            }
+
             val maskedZone = MaskedZone(
                 zoneKey = zoneKey,
-                entityIds = if (isVisible) entityIds else emptyList(),
+                entityIds = visibleEntityIds,
                 size = entityIds.size,
-                isVisible = isVisible
+                isVisible = isZoneVisible || visibleEntityIds.isNotEmpty()
             )
             maskedZones.add(maskedZone)
 
-            // Only include entities from visible zones in the entities map.
-            // Hidden zone entities (like library cards) are omitted to reduce
-            // message size - the client only needs the zone size for these.
-            if (isVisible) {
-                for (entityId in entityIds) {
-                    maskedEntities[entityId] = MaskedEntity(
-                        id = entityId,
-                        isVisible = true,
-                        components = null  // Components not serialized to client
-                    )
-                }
+            // Include visible entities in the entities map
+            for (entityId in visibleEntityIds) {
+                maskedEntities[entityId] = MaskedEntity(
+                    id = entityId,
+                    isVisible = true,
+                    components = null  // Components not serialized to client
+                )
             }
         }
 
@@ -103,6 +111,16 @@ class StateMasker {
             ZoneType.EXILE,
             ZoneType.COMMAND -> true
         }
+    }
+
+    /**
+     * Check if an entity has been revealed to a specific player.
+     * This is used for "look at hand" effects where the viewing player
+     * can see cards that have been revealed to them.
+     */
+    private fun isEntityRevealedTo(state: GameState, entityId: EntityId, viewingPlayerId: EntityId): Boolean {
+        val revealedComponent = state.getEntity(entityId)?.get<RevealedToComponent>()
+        return revealedComponent?.isRevealedTo(viewingPlayerId) == true
     }
 
     /**

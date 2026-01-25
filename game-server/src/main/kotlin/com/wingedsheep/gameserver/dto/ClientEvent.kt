@@ -295,6 +295,20 @@ sealed interface ClientEvent {
             "Game ended in a draw"
         }
     }
+
+    // =========================================================================
+    // Information Events
+    // =========================================================================
+
+    @Serializable
+    @SerialName("handLookedAt")
+    data class HandLookedAt(
+        val viewingPlayerId: EntityId,
+        val targetPlayerId: EntityId,
+        val cardIds: List<EntityId>
+    ) : ClientEvent {
+        override val description: String = "Looked at opponent's hand (${cardIds.size} cards)"
+    }
 }
 
 /**
@@ -485,6 +499,19 @@ object ClientEventTransformer {
             is GameEndedEvent -> ClientEvent.GameEnded(
                 winnerId = event.winnerId
             )
+
+            is HandLookedAtEvent -> {
+                // Only send this event to the player who looked at the hand
+                if (event.viewingPlayerId == viewingPlayerId) {
+                    ClientEvent.HandLookedAt(
+                        viewingPlayerId = event.viewingPlayerId,
+                        targetPlayerId = event.targetPlayerId,
+                        cardIds = event.cardIds
+                    )
+                } else {
+                    null  // Don't reveal to other players that their hand was looked at
+                }
+            }
 
             // Events that don't need client representation or are handled differently
             is DrawFailedEvent,

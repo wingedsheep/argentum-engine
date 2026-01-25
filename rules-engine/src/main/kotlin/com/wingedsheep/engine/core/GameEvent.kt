@@ -493,3 +493,19 @@ data class ManaSpentEvent(
 ) : GameEvent {
     val total: Int get() = white + blue + black + red + green + colorless
 }
+
+// =============================================================================
+// Information Events
+// =============================================================================
+
+/**
+ * A player looked at another player's hand.
+ * The cards in the hand are now revealed to the viewing player.
+ */
+@Serializable
+@SerialName("HandLookedAtEvent")
+data class HandLookedAtEvent(
+    val viewingPlayerId: EntityId,
+    val targetPlayerId: EntityId,
+    val cardIds: List<EntityId>
+) : GameEvent

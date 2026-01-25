@@ -80,3 +80,32 @@ data object TokenComponent : Component
  */
 @Serializable
 data object FaceDownComponent : Component
+
+/**
+ * Tracks which players have been revealed this card's identity.
+ * Used for "look at opponent's hand" effects where the viewing player
+ * should continue to see those cards even though they're in a hidden zone.
+ */
+@Serializable
+data class RevealedToComponent(
+    val playerIds: Set<EntityId>
+) : Component {
+    /**
+     * Add a player who can see this card.
+     */
+    fun withPlayer(playerId: EntityId): RevealedToComponent =
+        copy(playerIds = playerIds + playerId)
+
+    /**
+     * Check if a player can see this card.
+     */
+    fun isRevealedTo(playerId: EntityId): Boolean = playerId in playerIds
+
+    companion object {
+        /**
+         * Create a component revealing the card to a single player.
+         */
+        fun to(playerId: EntityId): RevealedToComponent =
+            RevealedToComponent(setOf(playerId))
+    }
+}

@@ -6,6 +6,7 @@ import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.composite.CompositeEffectExecutor
 import com.wingedsheep.engine.handlers.effects.composite.ConditionalEffectExecutor
+import com.wingedsheep.engine.handlers.effects.information.LookAtTargetHandExecutor
 import com.wingedsheep.engine.handlers.effects.damage.DealDamageExecutor
 import com.wingedsheep.engine.handlers.effects.damage.DealDamageToAllCreaturesExecutor
 import com.wingedsheep.engine.handlers.effects.damage.DealDamageToAllExecutor
@@ -101,6 +102,9 @@ class EffectExecutorRegistry(
     private val playAdditionalLandsExecutor = PlayAdditionalLandsExecutor()
     private val skipCombatPhasesExecutor = SkipCombatPhasesExecutor()
 
+    // Information executors
+    private val lookAtTargetHandExecutor = LookAtTargetHandExecutor()
+
     // Composite executors (initialized lazily with reference to execute function)
     private val compositeEffectExecutor by lazy { CompositeEffectExecutor(::execute) }
     private val conditionalEffectExecutor by lazy { ConditionalEffectExecutor(::execute) }
@@ -169,6 +173,9 @@ class EffectExecutorRegistry(
             // Player effects
             is PlayAdditionalLandsEffect -> playAdditionalLandsExecutor.execute(state, effect, context)
             is SkipCombatPhasesEffect -> skipCombatPhasesExecutor.execute(state, effect, context)
+
+            // Information effects
+            is LookAtTargetHandEffect -> lookAtTargetHandExecutor.execute(state, effect, context)
 
             // Default handler for unimplemented effects
             else -> {
