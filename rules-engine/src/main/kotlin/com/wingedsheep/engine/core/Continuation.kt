@@ -193,7 +193,8 @@ data class HandSizeDiscardContinuation(
  * @property sourceId The spell/ability causing the effect
  * @property sourceName Name for display
  * @property controllerId The controller of the effect
- * @property remainingPlayers Players who still need to make their selection (APNAP order)
+ * @property currentPlayerId The player whose selection we are waiting for
+ * @property remainingPlayers Players who still need to make their selection after current (APNAP order)
  * @property drawAmounts How many cards each completed player will draw
  * @property controllerBonusDraw Extra cards the controller draws after the effect
  * @property minSelection Minimum cards each player must select (0 for "any number")
@@ -206,6 +207,7 @@ data class EachPlayerSelectsThenDrawsContinuation(
     val sourceId: EntityId?,
     val sourceName: String?,
     val controllerId: EntityId,
+    val currentPlayerId: EntityId,
     val remainingPlayers: List<EntityId>,
     val drawAmounts: Map<EntityId, Int>,
     val controllerBonusDraw: Int,

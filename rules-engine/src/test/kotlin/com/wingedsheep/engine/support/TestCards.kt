@@ -221,6 +221,19 @@ object TestCards {
         )
     )
 
+    /**
+     * {2}{U} - Each player discards any number of cards, then draws that many cards.
+     * Draw a card.
+     */
+    val Flux = CardDefinition.sorcery(
+        name = "Flux",
+        manaCost = ManaCost.parse("{2}{U}"),
+        oracleText = "Each player discards any number of cards, then draws that many cards. Draw a card.",
+        script = CardScript.spell(
+            effect = EachPlayerDiscardsDrawsEffect(controllerBonusDraw = 1)
+        )
+    )
+
     // =========================================================================
     // Mana Dorks (Creatures with Tap: Add mana abilities)
     // =========================================================================
@@ -420,6 +433,7 @@ object TestCards {
         // Sorceries
         DoomBlade,
         MindRot,
-        CarefulStudy
+        CarefulStudy,
+        Flux
     )
 }

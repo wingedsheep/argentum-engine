@@ -2,8 +2,10 @@ package com.wingedsheep.engine.handlers
 
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.effects.EffectExecutorRegistry
+import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerDiscardsDrawsExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
 
@@ -51,7 +53,7 @@ class ContinuationHandler(
             is SacrificeContinuation -> resumeSacrifice(stateAfterPop, continuation, response)
             is MayAbilityContinuation -> resumeMayAbility(stateAfterPop, continuation, response)
             is HandSizeDiscardContinuation -> resumeHandSizeDiscard(stateAfterPop, continuation, response)
-            else -> ExecutionResult.success(stateAfterPop) // Other continuations handled by other agents
+            is EachPlayerSelectsThenDrawsContinuation -> resumeEachPlayerSelectsThenDraws(stateAfterPop, continuation, response)
         }
     }
 
@@ -334,6 +336,195 @@ class ContinuationHandler(
         }
 
         return checkForMoreContinuations(result.state, result.events.toList())
+    }
+
+    /**
+     * Resume after a player selected cards for "each player selects, then draws" effects.
+     * Handles effects like Flux where each player discards, then draws that many.
+     */
+    private fun resumeEachPlayerSelectsThenDraws(
+        state: GameState,
+        continuation: EachPlayerSelectsThenDrawsContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response")
+        }
+
+        val selectedCards = response.selectedCards
+
+        // Get current player from the continuation
+        val currentPlayerId = continuation.currentPlayerId
+
+        // Discard the selected cards
+        var newState = state
+        val handZone = ZoneKey(currentPlayerId, ZoneType.HAND)
+        val graveyardZone = ZoneKey(currentPlayerId, ZoneType.GRAVEYARD)
+
+        for (cardId in selectedCards) {
+            newState = newState.removeFromZone(handZone, cardId)
+            newState = newState.addToZone(graveyardZone, cardId)
+        }
+
+        val discardEvents = if (selectedCards.isNotEmpty()) {
+            listOf(CardsDiscardedEvent(currentPlayerId, selectedCards))
+        } else {
+            emptyList()
+        }
+
+        // Update draw amounts with this player's count
+        val newDrawAmounts = continuation.drawAmounts + (currentPlayerId to selectedCards.size)
+
+        // Check if there are more players
+        if (continuation.remainingPlayers.isNotEmpty()) {
+            // Ask next player
+            val nextPlayer = continuation.remainingPlayers.first()
+            val nextRemainingPlayers = continuation.remainingPlayers.drop(1)
+
+            val nextHandZone = ZoneKey(nextPlayer, ZoneType.HAND)
+            val nextHand = newState.getZone(nextHandZone)
+
+            // Determine selection bounds for next player
+            val minSelection = continuation.minSelection
+            val maxSelection = (continuation.maxSelection ?: nextHand.size).coerceAtMost(nextHand.size)
+
+            // If next player has empty hand or must select 0, skip them
+            if (nextHand.isEmpty() || (minSelection == 0 && maxSelection == 0)) {
+                // Skip this player, add 0 to their draw amount
+                val skippedDrawAmounts = newDrawAmounts + (nextPlayer to 0)
+
+                // Recursively check remaining players
+                return continueEachPlayerSelection(
+                    newState,
+                    continuation.copy(
+                        remainingPlayers = nextRemainingPlayers,
+                        drawAmounts = skippedDrawAmounts
+                    ),
+                    discardEvents
+                )
+            }
+
+            // Create decision for next player
+            val decisionHandler = DecisionHandler()
+            val decisionResult = decisionHandler.createCardSelectionDecision(
+                state = newState,
+                playerId = nextPlayer,
+                sourceId = continuation.sourceId,
+                sourceName = continuation.sourceName,
+                prompt = continuation.selectionPrompt,
+                options = nextHand,
+                minSelections = minSelection,
+                maxSelections = maxSelection,
+                ordered = false,
+                phase = DecisionPhase.RESOLUTION
+            )
+
+            // Push updated continuation
+            val newContinuation = continuation.copy(
+                decisionId = decisionResult.pendingDecision!!.id,
+                currentPlayerId = nextPlayer,
+                remainingPlayers = nextRemainingPlayers,
+                drawAmounts = newDrawAmounts
+            )
+
+            val stateWithContinuation = decisionResult.state.pushContinuation(newContinuation)
+
+            return ExecutionResult.paused(
+                stateWithContinuation,
+                decisionResult.pendingDecision,
+                discardEvents + decisionResult.events
+            )
+        }
+
+        // All players have selected - execute draws
+        val drawResult = EachPlayerDiscardsDrawsExecutor.executeDraws(
+            newState,
+            newDrawAmounts,
+            continuation.controllerBonusDraw,
+            continuation.controllerId
+        )
+
+        return ExecutionResult(
+            drawResult.state,
+            discardEvents + drawResult.events,
+            drawResult.error
+        )
+    }
+
+    /**
+     * Continue processing remaining players for each-player selection effects.
+     * Handles skipping players with empty hands.
+     */
+    private fun continueEachPlayerSelection(
+        state: GameState,
+        continuation: EachPlayerSelectsThenDrawsContinuation,
+        priorEvents: List<GameEvent>
+    ): ExecutionResult {
+        if (continuation.remainingPlayers.isEmpty()) {
+            // All done - execute draws
+            val drawResult = EachPlayerDiscardsDrawsExecutor.executeDraws(
+                state,
+                continuation.drawAmounts,
+                continuation.controllerBonusDraw,
+                continuation.controllerId
+            )
+            return ExecutionResult(
+                drawResult.state,
+                priorEvents + drawResult.events,
+                drawResult.error
+            )
+        }
+
+        val nextPlayer = continuation.remainingPlayers.first()
+        val nextRemainingPlayers = continuation.remainingPlayers.drop(1)
+
+        val nextHandZone = ZoneKey(nextPlayer, ZoneType.HAND)
+        val nextHand = state.getZone(nextHandZone)
+
+        val minSelection = continuation.minSelection
+        val maxSelection = (continuation.maxSelection ?: nextHand.size).coerceAtMost(nextHand.size)
+
+        // If next player has empty hand or must select 0, skip them
+        if (nextHand.isEmpty() || (minSelection == 0 && maxSelection == 0)) {
+            val skippedDrawAmounts = continuation.drawAmounts + (nextPlayer to 0)
+            return continueEachPlayerSelection(
+                state,
+                continuation.copy(
+                    remainingPlayers = nextRemainingPlayers,
+                    drawAmounts = skippedDrawAmounts
+                ),
+                priorEvents
+            )
+        }
+
+        // Create decision for next player
+        val decisionHandler = DecisionHandler()
+        val decisionResult = decisionHandler.createCardSelectionDecision(
+            state = state,
+            playerId = nextPlayer,
+            sourceId = continuation.sourceId,
+            sourceName = continuation.sourceName,
+            prompt = continuation.selectionPrompt,
+            options = nextHand,
+            minSelections = minSelection,
+            maxSelections = maxSelection,
+            ordered = false,
+            phase = DecisionPhase.RESOLUTION
+        )
+
+        val newContinuation = continuation.copy(
+            decisionId = decisionResult.pendingDecision!!.id,
+            currentPlayerId = nextPlayer,
+            remainingPlayers = nextRemainingPlayers
+        )
+
+        val stateWithContinuation = decisionResult.state.pushContinuation(newContinuation)
+
+        return ExecutionResult.paused(
+            stateWithContinuation,
+            decisionResult.pendingDecision,
+            priorEvents + decisionResult.events
+        )
     }
 
     /**

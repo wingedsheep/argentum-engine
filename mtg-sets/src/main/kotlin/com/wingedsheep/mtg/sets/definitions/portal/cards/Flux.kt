@@ -2,7 +2,7 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.FluxEffect
+import com.wingedsheep.sdk.scripting.EachPlayerDiscardsDrawsEffect
 
 /**
  * Flux
@@ -15,7 +15,7 @@ val Flux = card("Flux") {
     typeLine = "Sorcery"
 
     spell {
-        effect = FluxEffect(drawExtra = 1)
+        effect = EachPlayerDiscardsDrawsEffect(controllerBonusDraw = 1)
     }
 
     metadata {
