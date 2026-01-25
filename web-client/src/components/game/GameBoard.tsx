@@ -493,9 +493,14 @@ function CardRow({
   small?: boolean
 }) {
   const cards = useZoneCards(zoneId)
+  const zone = useZone(zoneId)
   const responsive = useResponsiveContext()
 
-  if (cards.length === 0) {
+  // For hidden zones (like opponent's hand), use zone size to show face-down placeholders
+  const zoneSize = zone?.size ?? 0
+  const showPlaceholders = faceDown && cards.length === 0 && zoneSize > 0
+
+  if (cards.length === 0 && !showPlaceholders) {
     return <div style={{ ...styles.emptyZone, fontSize: responsive.fontSize.small }}>No cards</div>
   }
 
@@ -504,15 +509,45 @@ function CardRow({
   const availableWidth = responsive.viewportWidth - (responsive.containerPadding * 2) - (sideZoneWidth * 2)
 
   // Calculate card width that fits all cards
+  const cardCount = showPlaceholders ? zoneSize : cards.length
   const baseWidth = small ? responsive.smallCardWidth : responsive.cardWidth
   const minWidth = small ? 30 : 45
   const fittingWidth = calculateFittingCardWidth(
-    cards.length,
+    cardCount,
     availableWidth,
     responsive.cardGap,
     baseWidth,
     minWidth
   )
+
+  // Render face-down placeholders for hidden zones
+  if (showPlaceholders) {
+    const cardRatio = 1.4
+    const height = Math.round(fittingWidth * cardRatio)
+    return (
+      <div style={{ ...styles.cardRow, gap: responsive.cardGap, padding: responsive.cardGap }}>
+        {Array.from({ length: zoneSize }).map((_, index) => (
+          <div
+            key={`placeholder-${index}`}
+            style={{
+              ...styles.card,
+              width: fittingWidth,
+              height,
+              borderRadius: responsive.isMobile ? 4 : 8,
+              border: '2px solid #333',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
+            }}
+          >
+            <img
+              src="https://backs.scryfall.io/large/2/2/222b7a3b-2321-4d4c-af19-19338b134971.jpg?1677416389"
+              alt="Card back"
+              style={styles.cardImage}
+            />
+          </div>
+        ))}
+      </div>
+    )
+  }
 
   return (
     <div style={{ ...styles.cardRow, gap: responsive.cardGap, padding: responsive.cardGap }}>
