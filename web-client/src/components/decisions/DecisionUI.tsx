@@ -3,12 +3,23 @@ import { useGameStore } from '../../store/gameStore'
 import type { EntityId, SelectCardsDecision, ChooseTargetsDecision } from '../../types'
 import { useResponsive, calculateFittingCardWidth, type ResponsiveSizes } from '../../hooks/useResponsive'
 import { LibrarySearchUI } from './LibrarySearchUI'
+import { ReorderCardsUI } from './ReorderCardsUI'
+
+/**
+ * Check if all legal targets in a ChooseTargetsDecision are players.
+ */
+function isPlayerOnlyTargeting(decision: ChooseTargetsDecision, playerIds: EntityId[]): boolean {
+  const legalTargets = decision.legalTargets[0] ?? []
+  if (legalTargets.length === 0) return false
+  return legalTargets.every((targetId) => playerIds.includes(targetId))
+}
 
 /**
  * Decision UI overlay for pending decisions (e.g., discard to hand size, library search).
  */
 export function DecisionUI() {
   const pendingDecision = useGameStore((state) => state.pendingDecision)
+  const gameState = useGameStore((state) => state.gameState)
   const responsive = useResponsive()
 
   if (!pendingDecision) return null
@@ -16,6 +27,11 @@ export function DecisionUI() {
   // Handle SearchLibraryDecision with dedicated UI
   if (pendingDecision.type === 'SearchLibraryDecision') {
     return <LibrarySearchUI decision={pendingDecision} responsive={responsive} />
+  }
+
+  // Handle ReorderLibraryDecision with dedicated UI
+  if (pendingDecision.type === 'ReorderLibraryDecision') {
+    return <ReorderCardsUI decision={pendingDecision} responsive={responsive} />
   }
 
   // Handle SelectCardsDecision
@@ -46,6 +62,39 @@ export function DecisionUI() {
 
   // Handle ChooseTargetsDecision
   if (pendingDecision.type === 'ChooseTargetsDecision') {
+    const playerIds = gameState?.players.map((p) => p.playerId) ?? []
+
+    // If all targets are players, show a simple prompt instead of overlay
+    // The user can click on life totals on the game board
+    if (isPlayerOnlyTargeting(pendingDecision, playerIds)) {
+      return (
+        <div
+          style={{
+            position: 'fixed',
+            top: responsive.isMobile ? 60 : 80,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            padding: responsive.isMobile ? '12px 20px' : '16px 32px',
+            borderRadius: 12,
+            border: '2px solid #ff4444',
+            boxShadow: '0 4px 20px rgba(255, 68, 68, 0.3)',
+            zIndex: 1000,
+            textAlign: 'center',
+            pointerEvents: 'none',
+          }}
+        >
+          <div style={{ color: 'white', fontSize: responsive.fontSize.large, fontWeight: 600 }}>
+            {pendingDecision.prompt}
+          </div>
+          <div style={{ color: '#aaa', fontSize: responsive.fontSize.normal, marginTop: 4 }}>
+            Click a player's life total to target them
+          </div>
+        </div>
+      )
+    }
+
+    // For non-player targets, show the full overlay
     return (
       <div
         style={{

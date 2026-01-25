@@ -261,7 +261,7 @@ function getEffectIcon(icon: string): string {
 }
 
 /**
- * Life total display - interactive when in targeting mode.
+ * Life total display - interactive when in targeting mode or when a pending decision requires player targeting.
  */
 function LifeDisplay({
   life,
@@ -274,15 +274,29 @@ function LifeDisplay({
 }) {
   const responsive = useResponsiveContext()
   const targetingState = useGameStore((state) => state.targetingState)
+  const pendingDecision = useGameStore((state) => state.pendingDecision)
   const addTarget = useGameStore((state) => state.addTarget)
   const confirmTargeting = useGameStore((state) => state.confirmTargeting)
+  const submitTargetsDecision = useGameStore((state) => state.submitTargetsDecision)
 
   // Check if this player is a valid target in current targeting mode
-  const isValidTarget = targetingState?.validTargets.includes(playerId) ?? false
-  const isSelected = targetingState?.selectedTargets.includes(playerId) ?? false
+  const isValidTargetingTarget = targetingState?.validTargets.includes(playerId) ?? false
+  const isTargetingSelected = targetingState?.selectedTargets.includes(playerId) ?? false
+
+  // Check if this player is a valid target in a pending ChooseTargetsDecision
+  const isChooseTargetsDecision = pendingDecision?.type === 'ChooseTargetsDecision'
+  const decisionLegalTargets = isChooseTargetsDecision
+    ? (pendingDecision.legalTargets[0] ?? [])
+    : []
+  const isValidDecisionTarget = decisionLegalTargets.includes(playerId)
+
+  // Combine both targeting modes
+  const isValidTarget = isValidTargetingTarget || isValidDecisionTarget
+  const isSelected = isTargetingSelected
 
   const handleClick = () => {
-    if (targetingState && isValidTarget && !isSelected) {
+    // Handle regular targeting state
+    if (targetingState && isValidTargetingTarget && !isTargetingSelected) {
       addTarget(playerId)
 
       // Auto-confirm if we have selected enough targets
@@ -291,6 +305,13 @@ function LifeDisplay({
       if (newTargetCount >= requiredCount) {
         setTimeout(() => confirmTargeting(), 0)
       }
+      return
+    }
+
+    // Handle pending decision targeting
+    if (isChooseTargetsDecision && isValidDecisionTarget) {
+      // Submit the decision with this player as the target
+      submitTargetsDecision({ 0: [playerId] })
     }
   }
 
