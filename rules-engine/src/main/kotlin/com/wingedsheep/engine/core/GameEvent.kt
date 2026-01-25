@@ -84,6 +84,18 @@ data class StatsModifiedEvent(
     val sourceName: String
 ) : GameEvent
 
+/**
+ * A keyword was granted (e.g., "gains flying until end of turn").
+ */
+@Serializable
+@SerialName("KeywordGrantedEvent")
+data class KeywordGrantedEvent(
+    val targetId: EntityId,
+    val targetName: String,
+    val keyword: String,
+    val sourceName: String
+) : GameEvent
+
 // =============================================================================
 // Spell/Ability Events
 // =============================================================================
