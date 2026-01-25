@@ -51,7 +51,7 @@ class ActionProcessor(
     effectExecutorRegistry: EffectExecutorRegistry = EffectExecutorRegistry(),
     private val continuationHandler: ContinuationHandler = ContinuationHandler(effectExecutorRegistry),
     private val sbaChecker: StateBasedActionChecker = StateBasedActionChecker(),
-    private val triggerDetector: TriggerDetector = TriggerDetector(),
+    private val triggerDetector: TriggerDetector = TriggerDetector(cardRegistry),
     private val triggerProcessor: TriggerProcessor = TriggerProcessor()
 ) {
 

@@ -89,6 +89,24 @@ object TestCards {
         toughness = 1
     )
 
+    /**
+     * 2/2 for {2}{W} with "When Venerable Monk enters the battlefield, you gain 2 life."
+     */
+    val VenerableMonk = CardDefinition.creature(
+        name = "Venerable Monk",
+        manaCost = ManaCost.parse("{2}{W}"),
+        subtypes = setOf(Subtype("Human"), Subtype("Monk"), Subtype("Cleric")),
+        power = 2,
+        toughness = 2,
+        oracleText = "When Venerable Monk enters the battlefield, you gain 2 life.",
+        script = CardScript.creature(
+            TriggeredAbility.create(
+                trigger = OnEnterBattlefield(),
+                effect = GainLifeEffect(2)
+            )
+        )
+    )
+
     // =========================================================================
     // Creatures with Keywords
     // =========================================================================
@@ -452,6 +470,7 @@ object TestCards {
         ForceOfNature,
         GoblinGuide,
         SavannahLions,
+        VenerableMonk,
         WindDrake,
         ForestWalker,
         IslandWalker,

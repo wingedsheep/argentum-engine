@@ -10,6 +10,7 @@ import com.wingedsheep.engine.core.TappedEvent
 import com.wingedsheep.engine.core.UntappedEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
@@ -24,8 +25,24 @@ import com.wingedsheep.sdk.scripting.*
  * proper stack placement.
  */
 class TriggerDetector(
+    private val cardRegistry: CardRegistry? = null,
     private val abilityRegistry: AbilityRegistry = AbilityRegistry()
 ) {
+
+    /**
+     * Get triggered abilities for a card, checking both the AbilityRegistry
+     * and falling back to the CardRegistry for card definitions.
+     */
+    private fun getTriggeredAbilities(entityId: EntityId, cardDefinitionId: String): List<TriggeredAbility> {
+        // First check the AbilityRegistry (for manually registered abilities)
+        val registryAbilities = abilityRegistry.getTriggeredAbilities(entityId, cardDefinitionId)
+        if (registryAbilities.isNotEmpty()) {
+            return registryAbilities
+        }
+
+        // Fall back to looking up from CardRegistry
+        return cardRegistry?.getCard(cardDefinitionId)?.triggeredAbilities ?: emptyList()
+    }
 
     /**
      * Detect all triggers that should fire based on the given events.
@@ -64,7 +81,7 @@ class TriggerDetector(
             val cardComponent = container.get<CardComponent>() ?: continue
             val controllerId = container.get<ControllerComponent>()?.playerId ?: continue
 
-            val abilities = abilityRegistry.getTriggeredAbilities(entityId, cardComponent.cardDefinitionId)
+            val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId)
 
             for (ability in abilities) {
                 if (matchesStepTrigger(ability.trigger, step, controllerId, activePlayerId)) {
@@ -96,7 +113,7 @@ class TriggerDetector(
             val cardComponent = container.get<CardComponent>() ?: continue
             val controllerId = container.get<ControllerComponent>()?.playerId ?: continue
 
-            val abilities = abilityRegistry.getTriggeredAbilities(entityId, cardComponent.cardDefinitionId)
+            val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId)
 
             for (ability in abilities) {
                 if (matchesTrigger(ability.trigger, event, entityId, controllerId, state)) {
@@ -138,7 +155,7 @@ class TriggerDetector(
 
         // For "When this creature dies" - the creature might be in graveyard now
         // Look up abilities by card definition
-        val abilities = abilityRegistry.getTriggeredAbilities(entityId, cardComponent.cardDefinitionId)
+        val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId)
         val controllerId = event.ownerId
 
         for (ability in abilities) {
@@ -167,7 +184,7 @@ class TriggerDetector(
         val cardComponent = container.get<CardComponent>() ?: return
         val controllerId = container.get<ControllerComponent>()?.playerId ?: return
 
-        val abilities = abilityRegistry.getTriggeredAbilities(sourceId, cardComponent.cardDefinitionId)
+        val abilities = getTriggeredAbilities(sourceId, cardComponent.cardDefinitionId)
 
         for (ability in abilities) {
             val trigger = ability.trigger
