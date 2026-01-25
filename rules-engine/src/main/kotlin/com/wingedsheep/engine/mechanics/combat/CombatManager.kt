@@ -221,7 +221,7 @@ class CombatManager(
 
         // Check evasion abilities of each attacker
         for (attackerId in attackerIds) {
-            val evasionValidation = validateCanBlock(state, blockerId, attackerId)
+            val evasionValidation = validateCanBlock(state, blockerId, attackerId, blockingPlayer)
             if (evasionValidation != null) {
                 return evasionValidation
             }
@@ -236,7 +236,8 @@ class CombatManager(
     private fun validateCanBlock(
         state: GameState,
         blockerId: EntityId,
-        attackerId: EntityId
+        attackerId: EntityId,
+        blockingPlayer: EntityId
     ): String? {
         val blockerContainer = state.getEntity(blockerId)!!
         val attackerContainer = state.getEntity(attackerId)
@@ -272,6 +273,12 @@ class CombatManager(
             }
         }
 
+        // Landwalk: Cannot be blocked if defending player controls land of that type
+        val landwalkValidation = validateLandwalk(state, attackerId, attackerCard, blockingPlayer, projected)
+        if (landwalkValidation != null) {
+            return landwalkValidation
+        }
+
         // Skulk: Cannot be blocked by creatures with greater power
         // TODO: Implement skulk
 
@@ -279,6 +286,57 @@ class CombatManager(
         // TODO: Implement intimidate/fear
 
         return null
+    }
+
+    /**
+     * Check if attacker has landwalk and defending player controls the corresponding land type.
+     * Returns an error message if the attacker cannot be blocked due to landwalk, null otherwise.
+     */
+    private fun validateLandwalk(
+        state: GameState,
+        attackerId: EntityId,
+        attackerCard: CardComponent,
+        blockingPlayer: EntityId,
+        projected: com.wingedsheep.engine.mechanics.layers.ProjectedState
+    ): String? {
+        // Map of landwalk keywords to their corresponding land subtypes
+        val landwalkToSubtype = mapOf(
+            Keyword.FORESTWALK to com.wingedsheep.sdk.core.Subtype.FOREST,
+            Keyword.SWAMPWALK to com.wingedsheep.sdk.core.Subtype.SWAMP,
+            Keyword.ISLANDWALK to com.wingedsheep.sdk.core.Subtype.ISLAND,
+            Keyword.MOUNTAINWALK to com.wingedsheep.sdk.core.Subtype.MOUNTAIN,
+            Keyword.PLAINSWALK to com.wingedsheep.sdk.core.Subtype.PLAINS
+        )
+
+        for ((landwalkKeyword, landSubtype) in landwalkToSubtype) {
+            if (projected.hasKeyword(attackerId, landwalkKeyword)) {
+                // Check if defending player controls a land with this subtype
+                if (playerControlsLandWithSubtype(state, blockingPlayer, landSubtype)) {
+                    return "${attackerCard.name} has ${landwalkKeyword.displayName} and cannot be blocked"
+                }
+            }
+        }
+
+        return null
+    }
+
+    /**
+     * Check if a player controls a land with the given subtype.
+     */
+    private fun playerControlsLandWithSubtype(
+        state: GameState,
+        playerId: EntityId,
+        landSubtype: com.wingedsheep.sdk.core.Subtype
+    ): Boolean {
+        return state.getBattlefield().any { entityId ->
+            val container = state.getEntity(entityId) ?: return@any false
+            val cardComponent = container.get<CardComponent>() ?: return@any false
+            val controller = container.get<ControllerComponent>()?.playerId
+
+            controller == playerId &&
+                cardComponent.typeLine.isLand &&
+                cardComponent.typeLine.hasSubtype(landSubtype)
+        }
     }
 
     /**

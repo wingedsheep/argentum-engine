@@ -557,6 +557,53 @@ class GameTestDriver {
     }
 
     /**
+     * Remove summoning sickness from a creature (test helper).
+     * This allows the creature to attack/tap immediately.
+     */
+    fun removeSummoningSickness(entityId: EntityId) {
+        _state = _state.updateEntity(entityId) { container ->
+            container.without<com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent>()
+        }
+    }
+
+    /**
+     * Put a land directly onto the battlefield (test helper).
+     * Creates a new card entity from the registry and adds it to battlefield.
+     */
+    fun putLandOnBattlefield(playerId: EntityId, cardName: String): EntityId {
+        val cardDef = cardRegistry.requireCard(cardName)
+        val cardId = EntityId.generate()
+
+        // Create card entity
+        val cardComponent = CardComponent(
+            cardDefinitionId = cardDef.name,
+            name = cardDef.name,
+            manaCost = cardDef.manaCost,
+            typeLine = cardDef.typeLine,
+            oracleText = cardDef.oracleText,
+            baseStats = cardDef.creatureStats,
+            baseKeywords = cardDef.keywords,
+            colors = cardDef.colors,
+            ownerId = playerId,
+            spellEffect = cardDef.spellEffect
+        )
+
+        val container = com.wingedsheep.engine.state.ComponentContainer.of(
+            cardComponent,
+            com.wingedsheep.engine.state.components.identity.OwnerComponent(playerId),
+            ControllerComponent(playerId)
+        )
+
+        _state = _state.withEntity(cardId, container)
+
+        // Add to battlefield
+        val battlefieldZone = ZoneKey(playerId, ZoneType.BATTLEFIELD)
+        _state = _state.addToZone(battlefieldZone, cardId)
+
+        return cardId
+    }
+
+    /**
      * Get a player's hand.
      */
     fun getHand(playerId: EntityId): List<EntityId> {

@@ -107,6 +107,34 @@ object TestCards {
     )
 
     /**
+     * 2/2 Forestwalk for {1}{G}
+     * Test card for landwalk evasion.
+     */
+    val ForestWalker = CardDefinition.creature(
+        name = "Forest Walker",
+        manaCost = ManaCost.parse("{1}{G}"),
+        subtypes = setOf(Subtype("Dryad")),
+        power = 2,
+        toughness = 2,
+        oracleText = "Forestwalk",
+        keywords = setOf(Keyword.FORESTWALK)
+    )
+
+    /**
+     * 2/2 Islandwalk for {1}{U}
+     * Test card for landwalk evasion.
+     */
+    val IslandWalker = CardDefinition.creature(
+        name = "Island Walker",
+        manaCost = ManaCost.parse("{1}{U}"),
+        subtypes = setOf(Subtype("Merfolk")),
+        power = 2,
+        toughness = 2,
+        oracleText = "Islandwalk",
+        keywords = setOf(Keyword.ISLANDWALK)
+    )
+
+    /**
      * 2/1 First Strike for {1}{R}
      */
     val BladeOfTheNinthWatch = CardDefinition.creature(
@@ -413,6 +441,8 @@ object TestCards {
         GoblinGuide,
         SavannahLions,
         WindDrake,
+        ForestWalker,
+        IslandWalker,
         BladeOfTheNinthWatch,
         // Mana Dorks
         LlanowarElves,
