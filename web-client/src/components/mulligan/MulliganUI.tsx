@@ -1,4 +1,5 @@
-import { useGameStore, type MulliganState } from '../../store/gameStore'
+import { useState } from 'react'
+import { useGameStore, type MulliganState, type MulliganCardInfo } from '../../store/gameStore'
 import type { EntityId } from '../../types'
 import { useResponsive, calculateFittingCardWidth, type ResponsiveSizes } from '../../hooks/useResponsive'
 
@@ -8,8 +9,11 @@ import { useResponsive, calculateFittingCardWidth, type ResponsiveSizes } from '
 export function MulliganUI() {
   const mulliganState = useGameStore((state) => state.mulliganState)
   const responsive = useResponsive()
+  const [hoveredCardId, setHoveredCardId] = useState<EntityId | null>(null)
 
   if (!mulliganState) return null
+
+  const hoveredCardInfo = hoveredCardId ? mulliganState.cards[hoveredCardId] : null
 
   return (
     <div
@@ -31,9 +35,14 @@ export function MulliganUI() {
       }}
     >
       {mulliganState.phase === 'deciding' ? (
-        <MulliganDecision state={mulliganState} responsive={responsive} />
+        <MulliganDecision state={mulliganState} responsive={responsive} onHoverCard={setHoveredCardId} />
       ) : (
-        <ChooseBottomCards state={mulliganState} responsive={responsive} />
+        <ChooseBottomCards state={mulliganState} responsive={responsive} onHoverCard={setHoveredCardId} />
+      )}
+
+      {/* Card preview on hover */}
+      {hoveredCardInfo && !responsive.isMobile && (
+        <MulliganCardPreview cardInfo={hoveredCardInfo} />
       )}
     </div>
   )
@@ -42,7 +51,7 @@ export function MulliganUI() {
 /**
  * Mulligan decision phase - keep or mulligan.
  */
-function MulliganDecision({ state, responsive }: { state: MulliganState; responsive: ResponsiveSizes }) {
+function MulliganDecision({ state, responsive, onHoverCard }: { state: MulliganState; responsive: ResponsiveSizes; onHoverCard: (cardId: EntityId | null) => void }) {
   const keepHand = useGameStore((s) => s.keepHand)
   const mulligan = useGameStore((s) => s.mulligan)
 
@@ -87,6 +96,8 @@ function MulliganDecision({ state, responsive }: { state: MulliganState; respons
               selectable={false}
               cardWidth={cardWidth}
               isMobile={responsive.isMobile}
+              onMouseEnter={() => onHoverCard(cardId)}
+              onMouseLeave={() => onHoverCard(null)}
             />
           )
         })}
@@ -131,7 +142,7 @@ function MulliganDecision({ state, responsive }: { state: MulliganState; respons
 /**
  * Choose cards to put on bottom after keeping.
  */
-function ChooseBottomCards({ state, responsive }: { state: MulliganState; responsive: ResponsiveSizes }) {
+function ChooseBottomCards({ state, responsive, onHoverCard }: { state: MulliganState; responsive: ResponsiveSizes; onHoverCard: (cardId: EntityId | null) => void }) {
   const chooseBottomCards = useGameStore((s) => s.chooseBottomCards)
   const toggleMulliganCard = useGameStore((s) => s.toggleMulliganCard)
 
@@ -178,6 +189,8 @@ function ChooseBottomCards({ state, responsive }: { state: MulliganState; respon
               onClick={() => toggleMulliganCard(cardId)}
               cardWidth={cardWidth}
               isMobile={responsive.isMobile}
+              onMouseEnter={() => onHoverCard(cardId)}
+              onMouseLeave={() => onHoverCard(null)}
             />
           )
         })}
@@ -216,6 +229,8 @@ function MulliganCard({
   onClick,
   cardWidth = 130,
   isMobile = false,
+  onMouseEnter,
+  onMouseLeave,
 }: {
   cardId: EntityId
   cardName: string
@@ -225,6 +240,8 @@ function MulliganCard({
   onClick?: () => void
   cardWidth?: number
   isMobile?: boolean
+  onMouseEnter?: () => void
+  onMouseLeave?: () => void
 }) {
   // Use provided imageUri or fall back to Scryfall API
   const cardImageUrl = imageUri || `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&format=image&version=normal`
@@ -235,6 +252,8 @@ function MulliganCard({
   return (
     <div
       onClick={selectable ? onClick : undefined}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
       style={{
         width: cardWidth,
         height: cardHeight,
@@ -287,6 +306,48 @@ function MulliganCard({
         >
           {cardName}
         </span>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Card preview overlay - shows enlarged card when hovering.
+ */
+function MulliganCardPreview({ cardInfo }: { cardInfo: MulliganCardInfo }) {
+  const cardImageUrl = cardInfo.imageUri || `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardInfo.name)}&format=image&version=large`
+
+  const previewWidth = 280
+  const previewHeight = Math.round(previewWidth * 1.4)
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        top: 20,
+        right: 20,
+        pointerEvents: 'none',
+        zIndex: 1001,
+      }}
+    >
+      <div
+        style={{
+          width: previewWidth,
+          height: previewHeight,
+          borderRadius: 12,
+          overflow: 'hidden',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6)',
+        }}
+      >
+        <img
+          src={cardImageUrl}
+          alt={cardInfo.name}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+          }}
+        />
       </div>
     </div>
   )
