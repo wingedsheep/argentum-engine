@@ -68,8 +68,34 @@ class ClientStateTransformer {
             }
         }
 
-        // Add the stack as a zone (stack is stored separately in GameState)
-        if (state.stack.isNotEmpty()) {
+        // --- FIX START: Ensure Battlefield is always present ---
+        if (zones.none { it.zoneId.zoneType == ZoneType.BATTLEFIELD }) {
+            val bfZoneKey = ZoneKey(viewingPlayerId, ZoneType.BATTLEFIELD)
+            val bfEntities = state.getBattlefield()
+
+            zones.add(
+                ClientZone(
+                    zoneId = bfZoneKey,
+                    cardIds = bfEntities,
+                    size = bfEntities.size,
+                    isVisible = true
+                )
+            )
+
+            // Add cards if they happen to exist (rare if zone was missing from map, but good for safety)
+            for (entityId in bfEntities) {
+                if (entityId !in cards) {
+                    val clientCard = transformCard(state, entityId, bfZoneKey, projectedState)
+                    if (clientCard != null) {
+                        cards[entityId] = clientCard
+                    }
+                }
+            }
+        }
+        // --- FIX END ---
+
+        // --- FIX START: Ensure Stack is always present ---
+        if (zones.none { it.zoneId.zoneType == ZoneType.STACK }) {
             val stackZoneKey = ZoneKey(viewingPlayerId, ZoneType.STACK)
             zones.add(
                 ClientZone(
@@ -82,12 +108,15 @@ class ClientStateTransformer {
 
             // Include card details for stack items
             for (entityId in state.stack) {
-                val clientCard = transformCard(state, entityId, stackZoneKey, projectedState)
-                if (clientCard != null) {
-                    cards[entityId] = clientCard
+                if (entityId !in cards) {
+                    val clientCard = transformCard(state, entityId, stackZoneKey, projectedState)
+                    if (clientCard != null) {
+                        cards[entityId] = clientCard
+                    }
                 }
             }
         }
+        // --- FIX END ---
 
         // Build player information
         val players = state.turnOrder.map { playerId ->
