@@ -71,6 +71,19 @@ data class DamageDealtEvent(
     val isCombatDamage: Boolean
 ) : GameEvent
 
+/**
+ * Stats were modified (e.g., +3/+3 until end of turn).
+ */
+@Serializable
+@SerialName("StatsModifiedEvent")
+data class StatsModifiedEvent(
+    val targetId: EntityId,
+    val targetName: String,
+    val powerChange: Int,
+    val toughnessChange: Int,
+    val sourceName: String
+) : GameEvent
+
 // =============================================================================
 // Spell/Ability Events
 // =============================================================================

@@ -59,6 +59,24 @@ sealed interface ClientEvent {
         }
     }
 
+    @Serializable
+    @SerialName("statsModified")
+    data class StatsModified(
+        val targetId: EntityId,
+        val targetName: String,
+        val powerChange: Int,
+        val toughnessChange: Int,
+        val sourceName: String
+    ) : ClientEvent {
+        override val description: String = buildString {
+            append("$sourceName gave $targetName ")
+            if (powerChange >= 0) append("+")
+            append("$powerChange/")
+            if (toughnessChange >= 0) append("+")
+            append("$toughnessChange")
+        }
+    }
+
     // =========================================================================
     // Card Movement Events
     // =========================================================================
@@ -435,6 +453,14 @@ object ClientEventTransformer {
                 permanentName = "", // Would need state lookup
                 counterType = event.counterType,
                 count = event.amount
+            )
+
+            is StatsModifiedEvent -> ClientEvent.StatsModified(
+                targetId = event.targetId,
+                targetName = event.targetName,
+                powerChange = event.powerChange,
+                toughnessChange = event.toughnessChange,
+                sourceName = event.sourceName
             )
 
             is ManaAddedEvent -> {

@@ -6,6 +6,7 @@ import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.core.CountersRemovedEvent
 import com.wingedsheep.engine.core.DamageDealtEvent
 import com.wingedsheep.engine.core.DrawFailedEvent
+import com.wingedsheep.engine.core.StatsModifiedEvent
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.LifeChangedEvent
 import com.wingedsheep.engine.core.LifeChangeReason
@@ -21,6 +22,11 @@ import com.wingedsheep.engine.state.components.battlefield.*
 import com.wingedsheep.engine.state.components.identity.*
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
+import com.wingedsheep.engine.mechanics.layers.FloatingEffectData
+import com.wingedsheep.engine.mechanics.layers.Layer
+import com.wingedsheep.engine.mechanics.layers.SerializableModification
+import com.wingedsheep.engine.mechanics.layers.Sublayer
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.ManaCost
@@ -651,9 +657,56 @@ class EffectHandler(
         effect: ModifyStatsEffect,
         context: EffectContext
     ): ExecutionResult {
-        // TODO: Create continuous effect for temporary modification via StateProjector
-        // For now, this is a placeholder
-        return ExecutionResult.success(state)
+        // Resolve the target creature
+        val targetId = resolveTarget(effect.target, context)
+            ?: return ExecutionResult.error(state, "No valid target for stat modification")
+
+        // Verify target exists and is a creature
+        val targetContainer = state.getEntity(targetId)
+            ?: return ExecutionResult.error(state, "Target creature no longer exists")
+        val cardComponent = targetContainer.get<CardComponent>()
+            ?: return ExecutionResult.error(state, "Target is not a card")
+        if (!cardComponent.typeLine.isCreature) {
+            return ExecutionResult.error(state, "Target is not a creature")
+        }
+
+        // Create a floating effect for the stat modification
+        val floatingEffect = ActiveFloatingEffect(
+            id = EntityId.generate(),
+            effect = FloatingEffectData(
+                layer = Layer.POWER_TOUGHNESS,
+                sublayer = Sublayer.MODIFICATIONS,
+                modification = SerializableModification.ModifyPowerToughness(
+                    powerMod = effect.powerModifier,
+                    toughnessMod = effect.toughnessModifier
+                ),
+                affectedEntities = setOf(targetId)
+            ),
+            duration = effect.duration,
+            sourceId = context.sourceId,
+            sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name },
+            controllerId = context.controllerId,
+            timestamp = System.currentTimeMillis()
+        )
+
+        // Add the floating effect to game state
+        val newState = state.copy(
+            floatingEffects = state.floatingEffects + floatingEffect
+        )
+
+        // Emit event for visualization
+        val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name } ?: "Unknown"
+        val events = listOf(
+            StatsModifiedEvent(
+                targetId = targetId,
+                targetName = cardComponent.name,
+                powerChange = effect.powerModifier,
+                toughnessChange = effect.toughnessModifier,
+                sourceName = sourceName
+            )
+        )
+
+        return ExecutionResult.success(newState, events)
     }
 
     private fun executeAddCounters(

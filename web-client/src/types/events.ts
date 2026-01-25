@@ -10,6 +10,7 @@ import { EntityId } from './entities'
 export type ClientEvent =
   | LifeChangedEvent
   | DamageDealtEvent
+  | StatsModifiedEvent
   | CardDrawnEvent
   | CardDiscardedEvent
   | PermanentEnteredEvent
@@ -52,6 +53,16 @@ export interface DamageDealtEvent {
   readonly amount: number
   readonly targetIsPlayer: boolean
   readonly isCombatDamage: boolean
+  readonly description: string
+}
+
+export interface StatsModifiedEvent {
+  readonly type: 'statsModified'
+  readonly targetId: EntityId
+  readonly targetName: string
+  readonly powerChange: number
+  readonly toughnessChange: number
+  readonly sourceName: string
   readonly description: string
 }
 
