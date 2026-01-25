@@ -155,6 +155,15 @@ export type {
   MulliganMessage,
   ClientChooseBottomCardsMessage,
   ConcedeMessage,
+  // Pending Decision types
+  PendingDecision,
+  PendingDecisionBase,
+  DecisionContext,
+  DecisionPhase,
+  SelectCardsDecision,
+  YesNoDecision,
+  ChooseTargetsDecision,
+  TargetRequirementInfo,
 } from './messages'
 export {
   isConnectedMessage,

@@ -4,6 +4,7 @@ import com.wingedsheep.gameserver.dto.ClientGameState
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.engine.core.GameAction
 import com.wingedsheep.engine.core.GameEvent
+import com.wingedsheep.engine.core.PendingDecision
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -41,7 +42,9 @@ sealed interface ServerMessage {
     data class StateUpdate(
         val state: ClientGameState,
         val events: List<GameEvent>,
-        val legalActions: List<LegalActionInfo>
+        val legalActions: List<LegalActionInfo>,
+        /** Pending decision that requires player input (e.g., discard to hand size) */
+        val pendingDecision: PendingDecision? = null
     ) : ServerMessage
 
     /**

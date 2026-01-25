@@ -55,7 +55,86 @@ export interface StateUpdateMessage {
   readonly state: ClientGameState
   readonly events: readonly ClientEvent[]
   readonly legalActions: readonly LegalActionInfo[]
+  /** Pending decision that requires player input (e.g., discard to hand size) */
+  readonly pendingDecision?: PendingDecision
 }
+
+// ============================================================================
+// Pending Decision Types
+// ============================================================================
+
+/**
+ * Base interface for pending decisions.
+ */
+export interface PendingDecisionBase {
+  readonly id: string
+  readonly playerId: EntityId
+  readonly prompt: string
+  readonly context: DecisionContext
+}
+
+/**
+ * Context information about the decision.
+ */
+export interface DecisionContext {
+  readonly phase: DecisionPhase
+  readonly sourceId?: EntityId
+  readonly sourceName?: string
+}
+
+/**
+ * Phase/reason for the decision.
+ */
+export type DecisionPhase =
+  | 'CASTING'
+  | 'RESOLUTION'
+  | 'STATE_BASED'
+  | 'COMBAT'
+  | 'TRIGGER'
+
+/**
+ * Player must select cards from a list.
+ */
+export interface SelectCardsDecision extends PendingDecisionBase {
+  readonly type: 'SelectCardsDecision'
+  readonly options: readonly EntityId[]
+  readonly minSelections: number
+  readonly maxSelections: number
+  readonly ordered: boolean
+}
+
+/**
+ * Player must make a yes/no decision.
+ */
+export interface YesNoDecision extends PendingDecisionBase {
+  readonly type: 'YesNoDecision'
+  readonly yesText: string
+  readonly noText: string
+}
+
+/**
+ * Player must choose targets.
+ */
+export interface ChooseTargetsDecision extends PendingDecisionBase {
+  readonly type: 'ChooseTargetsDecision'
+  readonly targetRequirements: readonly TargetRequirementInfo[]
+  readonly legalTargets: Record<number, readonly EntityId[]>
+}
+
+export interface TargetRequirementInfo {
+  readonly index: number
+  readonly minTargets: number
+  readonly maxTargets: number
+  readonly description: string
+}
+
+/**
+ * Union of all pending decision types.
+ */
+export type PendingDecision =
+  | SelectCardsDecision
+  | YesNoDecision
+  | ChooseTargetsDecision
 
 /**
  * Information about a legal action the player can take.

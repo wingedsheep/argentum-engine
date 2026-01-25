@@ -8,6 +8,7 @@ import type {
   LegalActionInfo,
   GameOverReason,
   ErrorCode,
+  PendingDecision,
 } from '../types'
 import {
   entityId,
@@ -99,6 +100,7 @@ export interface GameStore {
   // Game state (from server)
   gameState: ClientGameState | null
   legalActions: readonly LegalActionInfo[]
+  pendingDecision: PendingDecision | null
 
   // Mulligan state
   mulliganState: MulliganState | null
@@ -126,6 +128,7 @@ export interface GameStore {
   createGame: (deckList: Record<string, number>) => void
   joinGame: (sessionId: string, deckList: Record<string, number>) => void
   submitAction: (action: GameAction) => void
+  submitDecision: (selectedCards: readonly EntityId[]) => void
   keepHand: () => void
   mulligan: () => void
   chooseBottomCards: (cardIds: readonly EntityId[]) => void
@@ -240,6 +243,7 @@ export const useGameStore = create<GameStore>()(
         set((state) => ({
           gameState: msg.state,
           legalActions: msg.legalActions,
+          pendingDecision: msg.pendingDecision ?? null,
           pendingEvents: [...state.pendingEvents, ...msg.events],
         }))
 
@@ -323,6 +327,7 @@ export const useGameStore = create<GameStore>()(
       opponentName: null,
       gameState: null,
       legalActions: [],
+      pendingDecision: null,
       mulliganState: null,
       selectedCardId: null,
       targetingState: null,
@@ -385,6 +390,7 @@ export const useGameStore = create<GameStore>()(
           opponentName: null,
           gameState: null,
           legalActions: [],
+          pendingDecision: null,
           mulliganState: null,
           gameOverState: null,
         })
@@ -402,6 +408,22 @@ export const useGameStore = create<GameStore>()(
         ws?.send(createSubmitActionMessage(action))
         // Clear selection after submitting
         set({ selectedCardId: null, targetingState: null })
+      },
+
+      submitDecision: (selectedCards) => {
+        const { pendingDecision, playerId } = get()
+        if (!pendingDecision || !playerId) return
+
+        const action = {
+          type: 'SubmitDecision' as const,
+          playerId,
+          response: {
+            type: 'CardsSelectedResponse' as const,
+            decisionId: pendingDecision.id,
+            selectedCards: [...selectedCards],
+          },
+        }
+        ws?.send(createSubmitActionMessage(action))
       },
 
       keepHand: () => {

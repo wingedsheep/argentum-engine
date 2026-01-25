@@ -476,9 +476,14 @@ class GameSession(
      * Create a state update message for a player.
      */
     fun createStateUpdate(playerId: EntityId, events: List<GameEvent>): ServerMessage.StateUpdate? {
+        val state = gameState ?: return null
         val clientState = getClientState(playerId) ?: return null
         val legalActions = getLegalActions(playerId)
-        return ServerMessage.StateUpdate(clientState, events, legalActions)
+
+        // Include pending decision only for the player who needs to make it
+        val pendingDecision = state.pendingDecision?.takeIf { it.playerId == playerId }
+
+        return ServerMessage.StateUpdate(clientState, events, legalActions, pendingDecision)
     }
 
     /**
