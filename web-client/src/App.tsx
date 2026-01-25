@@ -4,6 +4,7 @@ import { GameUI } from './components/ui/GameUI'
 import { MulliganUI } from './components/mulligan/MulliganUI'
 import { CombatOverlay } from './components/combat/CombatOverlay'
 import { DecisionUI } from './components/decisions/DecisionUI'
+import { XCostSelector } from './components/ui/XCostSelector'
 import { useGameStore } from './store/gameStore'
 import { useViewingPlayer, useBattlefieldCards } from './store/selectors'
 import type { EntityId } from './types'
@@ -127,6 +128,9 @@ export default function App() {
 
       {/* Combat overlay (when declaring attackers/blockers) */}
       {showGame && combatState && <CombatOverlay />}
+
+      {/* X cost selection overlay (when casting spells with X in cost) */}
+      {showGame && <XCostSelector />}
 
       {/* Decision overlay (for pending decisions like discard to hand size) */}
       {showGame && <DecisionUI />}

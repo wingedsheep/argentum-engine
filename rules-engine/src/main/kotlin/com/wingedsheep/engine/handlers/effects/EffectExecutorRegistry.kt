@@ -11,6 +11,7 @@ import com.wingedsheep.engine.handlers.effects.damage.DealDamageExecutor
 import com.wingedsheep.engine.handlers.effects.damage.DealDamageToAllCreaturesExecutor
 import com.wingedsheep.engine.handlers.effects.damage.DealDamageToAllExecutor
 import com.wingedsheep.engine.handlers.effects.damage.DealXDamageExecutor
+import com.wingedsheep.engine.handlers.effects.damage.DealXDamageToAllExecutor
 import com.wingedsheep.engine.handlers.effects.drawing.DiscardCardsExecutor
 import com.wingedsheep.engine.handlers.effects.drawing.DrawCardsExecutor
 import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerDiscardsDrawsExecutor
@@ -59,6 +60,7 @@ class EffectExecutorRegistry(
     // Damage executors
     private val dealDamageExecutor = DealDamageExecutor()
     private val dealXDamageExecutor = DealXDamageExecutor()
+    private val dealXDamageToAllExecutor = DealXDamageToAllExecutor()
     private val dealDamageToAllCreaturesExecutor = DealDamageToAllCreaturesExecutor()
     private val dealDamageToAllExecutor = DealDamageToAllExecutor()
 
@@ -127,6 +129,7 @@ class EffectExecutorRegistry(
             // Damage effects
             is DealDamageEffect -> dealDamageExecutor.execute(state, effect, context)
             is DealXDamageEffect -> dealXDamageExecutor.execute(state, effect, context)
+            is DealXDamageToAllEffect -> dealXDamageToAllExecutor.execute(state, effect, context)
             is DealDamageToAllCreaturesEffect -> dealDamageToAllCreaturesExecutor.execute(state, effect, context)
             is DealDamageToAllEffect -> dealDamageToAllExecutor.execute(state, effect, context)
 

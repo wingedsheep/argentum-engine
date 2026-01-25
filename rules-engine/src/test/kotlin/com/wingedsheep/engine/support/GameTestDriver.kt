@@ -348,6 +348,46 @@ class GameTestDriver {
     }
 
     /**
+     * Cast a spell with an X value (for X-cost spells like Hurricane).
+     */
+    fun castXSpell(
+        playerId: EntityId,
+        cardId: EntityId,
+        xValue: Int,
+        targets: List<EntityId> = emptyList()
+    ): ExecutionResult {
+        // Check if player has mana in pool
+        val pool = state.getEntity(playerId)
+            ?.get<com.wingedsheep.engine.state.components.player.ManaPoolComponent>()
+        val hasManaInPool = pool != null &&
+            (pool.white > 0 || pool.blue > 0 || pool.black > 0 ||
+             pool.red > 0 || pool.green > 0 || pool.colorless > 0)
+
+        val paymentStrategy = if (hasManaInPool) {
+            PaymentStrategy.FromPool
+        } else {
+            PaymentStrategy.AutoPay
+        }
+
+        return submit(
+            CastSpell(
+                playerId = playerId,
+                cardId = cardId,
+                targets = targets.map { targetId ->
+                    val entity = state.getEntity(targetId)
+                    if (entity?.get<PlayerComponent>() != null) {
+                        ChosenTarget.Player(targetId)
+                    } else {
+                        ChosenTarget.Permanent(targetId)
+                    }
+                },
+                xValue = xValue,
+                paymentStrategy = paymentStrategy
+            )
+        )
+    }
+
+    /**
      * Declare attackers.
      */
     fun declareAttackers(playerId: EntityId, attackers: Map<EntityId, EntityId>): ExecutionResult {

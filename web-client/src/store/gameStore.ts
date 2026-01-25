@@ -88,6 +88,17 @@ export interface ErrorState {
 }
 
 /**
+ * X cost selection state when casting spells with X in their mana cost.
+ */
+export interface XSelectionState {
+  actionInfo: LegalActionInfo
+  cardName: string
+  minX: number
+  maxX: number
+  selectedX: number
+}
+
+/**
  * Main game store interface.
  */
 export interface GameStore {
@@ -109,6 +120,7 @@ export interface GameStore {
   selectedCardId: EntityId | null
   targetingState: TargetingState | null
   combatState: CombatState | null
+  xSelectionState: XSelectionState | null
   hoveredCardId: EntityId | null
   draggingBlockerId: EntityId | null
   draggingCardId: EntityId | null
@@ -155,6 +167,11 @@ export interface GameStore {
   confirmCombat: () => void
   cancelCombat: () => void
   clearCombat: () => void
+  // X cost selection actions
+  startXSelection: (state: XSelectionState) => void
+  updateXValue: (x: number) => void
+  cancelXSelection: () => void
+  confirmXSelection: () => void
   clearError: () => void
   consumeEvent: () => ClientEvent | undefined
 }
@@ -333,6 +350,7 @@ export const useGameStore = create<GameStore>()(
       selectedCardId: null,
       targetingState: null,
       combatState: null,
+      xSelectionState: null,
       hoveredCardId: null,
       draggingBlockerId: null,
       draggingCardId: null,
@@ -685,6 +703,63 @@ export const useGameStore = create<GameStore>()(
       clearCombat: () => {
         // Called when server confirms combat action was processed (action no longer in legalActions)
         set({ combatState: null, draggingBlockerId: null })
+      },
+
+      // X cost selection actions
+      startXSelection: (xSelectionState) => {
+        set({ xSelectionState })
+      },
+
+      updateXValue: (x) => {
+        set((state) => {
+          if (!state.xSelectionState) return state
+          return {
+            xSelectionState: {
+              ...state.xSelectionState,
+              selectedX: x,
+            },
+          }
+        })
+      },
+
+      cancelXSelection: () => {
+        set({ xSelectionState: null })
+      },
+
+      confirmXSelection: () => {
+        const { xSelectionState, startTargeting, playerId, gameState } = get()
+        if (!xSelectionState || !playerId || !gameState) return
+
+        const { actionInfo, selectedX } = xSelectionState
+
+        // Build the CastSpell action with the selected X value
+        if (actionInfo.action.type === 'CastSpell') {
+          const baseAction = actionInfo.action
+
+          // Check if the spell also requires targets
+          if (actionInfo.requiresTargets && actionInfo.validTargets && actionInfo.validTargets.length > 0) {
+            // Need to enter targeting mode with the X value baked in
+            const actionWithX = {
+              ...baseAction,
+              xValue: selectedX,
+            }
+            startTargeting({
+              action: actionWithX,
+              validTargets: [...actionInfo.validTargets],
+              selectedTargets: [],
+              requiredCount: actionInfo.targetCount ?? 1,
+            })
+          } else {
+            // No targets needed, submit directly
+            const actionWithX = {
+              ...baseAction,
+              xValue: selectedX,
+            }
+            ws?.send(createSubmitActionMessage(actionWithX))
+          }
+        }
+
+        set({ xSelectionState: null })
       },
 
       clearError: () => {

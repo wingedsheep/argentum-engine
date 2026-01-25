@@ -134,7 +134,13 @@ data class LegalActionInfo(
     /** Valid attacker IDs for DeclareAttackers action */
     val validAttackers: List<EntityId>? = null,
     /** Valid blocker IDs for DeclareBlockers action */
-    val validBlockers: List<EntityId>? = null
+    val validBlockers: List<EntityId>? = null,
+    /** Whether this spell has X in its mana cost */
+    val hasXCost: Boolean = false,
+    /** Maximum X value the player can afford (null if not X cost spell) */
+    val maxAffordableX: Int? = null,
+    /** Minimum X value (usually 0) */
+    val minX: Int = 0
 )
 
 /**

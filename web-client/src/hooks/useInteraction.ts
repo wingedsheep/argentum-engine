@@ -10,6 +10,7 @@ export type CardClickResult =
   | { type: 'singleAction'; action: GameAction }
   | { type: 'multipleActions'; actions: LegalActionInfo[] }
   | { type: 'requiresTargeting'; action: GameAction; requiredTargets: number }
+  | { type: 'requiresXSelection'; actionInfo: LegalActionInfo }
 
 /**
  * Hook for handling card interactions.
@@ -24,6 +25,7 @@ export function useInteraction() {
   const selectCard = useGameStore((state) => state.selectCard)
   const selectedCardId = useGameStore((state) => state.selectedCardId)
   const legalActions = useGameStore((state) => state.legalActions)
+  const startXSelection = useGameStore((state) => state.startXSelection)
 
   /**
    * Get legal actions for a card.
@@ -59,7 +61,13 @@ export function useInteraction() {
       }
 
       if (actions.length === 1) {
-        const action = actions[0]!.action
+        const actionInfo = actions[0]!
+        const action = actionInfo.action
+
+        // Check if spell has X cost - needs X selection first
+        if (action.type === 'CastSpell' && actionInfo.hasXCost) {
+          return { type: 'requiresXSelection', actionInfo }
+        }
 
         // Check if action requires targeting
         if (action.type === 'CastSpell' && (action.targets?.length ?? 0) > 0) {
@@ -104,9 +112,20 @@ export function useInteraction() {
           // For now, select the card
           selectCard(cardId)
           break
+
+        case 'requiresXSelection':
+          // Enter X selection mode
+          startXSelection({
+            actionInfo: result.actionInfo,
+            cardName: result.actionInfo.description.replace('Cast ', ''),
+            minX: result.actionInfo.minX ?? 0,
+            maxX: result.actionInfo.maxAffordableX ?? 0,
+            selectedX: result.actionInfo.maxAffordableX ?? 0,
+          })
+          break
       }
     },
-    [processCardClick, submitAction, selectCard]
+    [processCardClick, submitAction, selectCard, startXSelection]
   )
 
   /**

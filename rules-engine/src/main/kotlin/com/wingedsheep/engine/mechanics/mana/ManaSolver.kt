@@ -295,4 +295,12 @@ class ManaSolver(
     ): Boolean {
         return solve(state, playerId, cost, xValue) != null
     }
+
+    /**
+     * Gets the count of available mana sources for a player.
+     * This is the total number of untapped mana-producing permanents they control.
+     */
+    fun getAvailableManaCount(state: GameState, playerId: EntityId): Int {
+        return findAvailableManaSources(state, playerId).size
+    }
 }

@@ -425,6 +425,14 @@ class GameSession(
 
                         logger.debug("Card '${cardComponent.name}': cardDef=${cardDef != null}, targetReqs=${targetReqs.size}")
 
+                        // Calculate X cost info if the spell has X in its cost
+                        val hasXCost = cardComponent.manaCost.hasX
+                        val maxAffordableX: Int? = if (hasXCost) {
+                            val availableSources = manaSolver.getAvailableManaCount(state, playerId)
+                            val fixedCost = cardComponent.manaCost.cmc  // X contributes 0 to CMC
+                            (availableSources - fixedCost).coerceAtLeast(0)
+                        } else null
+
                         if (targetReqs.isNotEmpty()) {
                             // Spell requires targets - find valid targets
                             val firstReq = targetReqs.first()
@@ -441,7 +449,9 @@ class GameSession(
                                     validTargets = validTargets,
                                     requiresTargets = true,
                                     targetCount = firstReq.count,
-                                    targetDescription = firstReq.description
+                                    targetDescription = firstReq.description,
+                                    hasXCost = hasXCost,
+                                    maxAffordableX = maxAffordableX
                                 ))
                             }
                         } else {
@@ -449,7 +459,9 @@ class GameSession(
                             result.add(LegalActionInfo(
                                 actionType = "CastSpell",
                                 description = "Cast ${cardComponent.name}",
-                                action = CastSpell(playerId, cardId)
+                                action = CastSpell(playerId, cardId),
+                                hasXCost = hasXCost,
+                                maxAffordableX = maxAffordableX
                             ))
                         }
                     }
