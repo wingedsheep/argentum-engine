@@ -4,6 +4,7 @@ import com.wingedsheep.engine.handlers.ContinuationHandler
 import com.wingedsheep.engine.handlers.CostHandler
 import com.wingedsheep.engine.handlers.MulliganHandler
 import com.wingedsheep.engine.handlers.effects.EffectExecutorRegistry
+import com.wingedsheep.engine.mechanics.StateBasedActionChecker
 import com.wingedsheep.engine.mechanics.combat.CombatManager
 import com.wingedsheep.engine.mechanics.mana.AlternativePaymentHandler
 import com.wingedsheep.engine.mechanics.mana.CostCalculator
@@ -45,7 +46,8 @@ class ActionProcessor(
     private val costHandler: CostHandler = CostHandler(),
     private val mulliganHandler: MulliganHandler = MulliganHandler(),
     effectExecutorRegistry: EffectExecutorRegistry = EffectExecutorRegistry(),
-    private val continuationHandler: ContinuationHandler = ContinuationHandler(effectExecutorRegistry)
+    private val continuationHandler: ContinuationHandler = ContinuationHandler(effectExecutorRegistry),
+    private val sbaChecker: StateBasedActionChecker = StateBasedActionChecker()
 ) {
 
     /**
@@ -723,10 +725,20 @@ class ActionProcessor(
             return result
         }
 
+        // Check state-based actions after resolution (Rule 704.3)
+        // This handles lethal damage, life <= 0, etc.
+        val sbaResult = sbaChecker.checkAndApply(result.newState)
+        val combinedEvents = result.events + sbaResult.events
+
+        // If game is over, don't give priority
+        if (sbaResult.newState.gameOver) {
+            return ExecutionResult.success(sbaResult.newState, combinedEvents)
+        }
+
         // After resolution, active player gets priority
         return ExecutionResult.success(
-            result.newState.withPriority(state.activePlayerId),
-            result.events
+            sbaResult.newState.withPriority(state.activePlayerId),
+            combinedEvents
         )
     }
 
