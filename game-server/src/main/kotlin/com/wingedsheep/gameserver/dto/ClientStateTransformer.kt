@@ -9,6 +9,8 @@ import com.wingedsheep.engine.state.components.identity.*
 import com.wingedsheep.engine.state.components.battlefield.*
 import com.wingedsheep.engine.state.components.combat.*
 import com.wingedsheep.engine.state.components.player.*
+import com.wingedsheep.engine.state.components.stack.TargetsComponent
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 
@@ -231,6 +233,17 @@ class ClientStateTransformer {
         // Check if token
         val isToken = container.has<TokenComponent>()
 
+        // Get targets for spells/abilities on stack (for targeting arrows)
+        val targetsComponent = container.get<TargetsComponent>()
+        val targets = targetsComponent?.targets?.mapNotNull { chosenTarget ->
+            when (chosenTarget) {
+                is ChosenTarget.Player -> ClientChosenTarget.Player(chosenTarget.playerId)
+                is ChosenTarget.Permanent -> ClientChosenTarget.Permanent(chosenTarget.entityId)
+                is ChosenTarget.Spell -> ClientChosenTarget.Spell(chosenTarget.spellEntityId)
+                is ChosenTarget.Card -> null // Cards in zones not displayed as targets
+            }
+        } ?: emptyList()
+
         // Build type line string from TypeLine
         val typeLine = cardComponent.typeLine
         val typeLineParts = mutableListOf<String>()
@@ -274,7 +287,8 @@ class ClientStateTransformer {
             zone = zoneKey,
             attachedTo = attachedTo,
             attachments = attachments,
-            isFaceDown = isFaceDown
+            isFaceDown = isFaceDown,
+            targets = targets
         )
     }
 

@@ -145,7 +145,10 @@ data class ClientCard(
     val attachments: List<EntityId>,
 
     /** Whether this card is face-down (for morph, manifest, hidden info) */
-    val isFaceDown: Boolean
+    val isFaceDown: Boolean,
+
+    /** Targets for spells/abilities on the stack (for targeting arrows) */
+    val targets: List<ClientChosenTarget> = emptyList()
 )
 
 /**
@@ -250,3 +253,19 @@ data class ClientBlocker(
     val creatureName: String,
     val blockingAttacker: EntityId
 )
+
+/**
+ * Represents a chosen target for a spell or ability on the stack.
+ * Used to draw targeting arrows in the UI.
+ */
+@Serializable
+sealed interface ClientChosenTarget {
+    @Serializable
+    data class Player(val playerId: EntityId) : ClientChosenTarget
+
+    @Serializable
+    data class Permanent(val entityId: EntityId) : ClientChosenTarget
+
+    @Serializable
+    data class Spell(val spellEntityId: EntityId) : ClientChosenTarget
+}

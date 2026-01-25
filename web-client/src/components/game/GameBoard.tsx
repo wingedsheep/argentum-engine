@@ -5,6 +5,7 @@ import type { ClientCard, ZoneId, ClientPlayer, LegalActionInfo, EntityId, Keywo
 import { keywordIcons, genericKeywordIcon, displayableKeywords } from '../../assets/icons/keywords'
 import { PhaseIndicator } from '../ui/PhaseIndicator'
 import { CombatArrows } from '../combat/CombatArrows'
+import { TargetingArrows } from '../targeting/TargetingArrows'
 import { DraggedCardOverlay } from './DraggedCardOverlay'
 import { useResponsive, calculateFittingCardWidth, type ResponsiveSizes } from '../../hooks/useResponsive'
 import React, { createContext, useContext, useCallback, useEffect } from 'react'
@@ -202,6 +203,9 @@ export function GameBoard() {
       {/* Combat arrows for blocker assignments */}
       <CombatArrows />
 
+      {/* Targeting arrows for spells on the stack */}
+      <TargetingArrows />
+
       {/* Dragged card overlay */}
       <DraggedCardOverlay />
       <CardPreview />
@@ -263,6 +267,7 @@ function LifeDisplay({
 
   return (
     <div
+      data-player-id={playerId}
       onClick={handleClick}
       style={{
         ...styles.lifeDisplay,

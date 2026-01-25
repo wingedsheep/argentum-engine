@@ -125,6 +125,9 @@ export interface ClientCard {
 
   /** Whether this card is face-down (for morph, manifest, hidden info) */
   readonly isFaceDown: boolean
+
+  /** Targets for spells/abilities on the stack (for targeting arrows) */
+  readonly targets: readonly ClientChosenTarget[]
 }
 
 /**
@@ -233,6 +236,15 @@ export interface ClientBlocker {
   readonly creatureName: string
   readonly blockingAttacker: EntityId
 }
+
+/**
+ * Represents a chosen target for a spell or ability on the stack.
+ * Matches backend ClientChosenTarget.kt
+ */
+export type ClientChosenTarget =
+  | { readonly type: 'Player'; readonly playerId: EntityId }
+  | { readonly type: 'Permanent'; readonly entityId: EntityId }
+  | { readonly type: 'Spell'; readonly spellEntityId: EntityId }
 
 /**
  * Helper to check if a card is a creature.

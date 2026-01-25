@@ -50,6 +50,7 @@ export type {
   ClientAttacker,
   ClientCombatTarget,
   ClientBlocker,
+  ClientChosenTarget,
 } from './gameState'
 export {
   totalMana,
