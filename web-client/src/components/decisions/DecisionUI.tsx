@@ -4,6 +4,7 @@ import type { EntityId, SelectCardsDecision, ChooseTargetsDecision } from '../..
 import { useResponsive, calculateFittingCardWidth, type ResponsiveSizes } from '../../hooks/useResponsive'
 import { LibrarySearchUI } from './LibrarySearchUI'
 import { ReorderCardsUI } from './ReorderCardsUI'
+import { OrderBlockersUI } from './OrderBlockersUI'
 
 /**
  * Check if all legal targets in a ChooseTargetsDecision are players.
@@ -32,6 +33,16 @@ export function DecisionUI() {
   // Handle ReorderLibraryDecision with dedicated UI
   if (pendingDecision.type === 'ReorderLibraryDecision') {
     return <ReorderCardsUI decision={pendingDecision} responsive={responsive} />
+  }
+
+  // Handle OrderObjectsDecision (e.g., damage assignment order for blockers)
+  if (pendingDecision.type === 'OrderObjectsDecision') {
+    // Combat phase ordering uses dedicated blocker ordering UI
+    if (pendingDecision.context.phase === 'COMBAT') {
+      return <OrderBlockersUI decision={pendingDecision} responsive={responsive} />
+    }
+    // Other ordering decisions could use a generic ordering UI (not yet implemented)
+    return null
   }
 
   // Handle SelectCardsDecision

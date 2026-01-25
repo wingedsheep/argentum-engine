@@ -1,24 +1,29 @@
 import { useState, useCallback } from 'react'
 import { useGameStore } from '../../store/gameStore'
-import type { EntityId, ReorderLibraryDecision, SearchCardInfo } from '../../types'
+import type { EntityId, OrderObjectsDecision, SearchCardInfo } from '../../types'
 import { calculateFittingCardWidth, type ResponsiveSizes } from '../../hooks/useResponsive'
 
-interface ReorderCardsUIProps {
-  decision: ReorderLibraryDecision
+interface OrderBlockersUIProps {
+  decision: OrderObjectsDecision
   responsive: ResponsiveSizes
 }
 
 /**
- * UI for reordering cards on top of the library.
+ * UI for ordering blockers for damage assignment.
+ *
+ * Per MTG CR 509.2, when an attacker is blocked by multiple creatures,
+ * the attacking player must declare the order in which blockers receive damage.
+ * The first creature in the order receives damage first, and must receive
+ * lethal damage before the next can receive any.
  *
  * Features:
  * - Full-screen dark overlay
- * - Horizontal arrangement of cards with clear "TOP" indicator
- * - Drag and drop to reorder cards
- * - "Confirm Order" button to submit the new arrangement
+ * - Horizontal arrangement of blockers with clear FIRST/LAST indicators
+ * - Drag and drop to reorder
+ * - "Confirm Order" button to submit the arrangement
  */
-export function ReorderCardsUI({ decision, responsive }: ReorderCardsUIProps) {
-  const [orderedCards, setOrderedCards] = useState<EntityId[]>([...decision.cards])
+export function OrderBlockersUI({ decision, responsive }: OrderBlockersUIProps) {
+  const [orderedBlockers, setOrderedBlockers] = useState<EntityId[]>([...decision.objects])
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
   const submitOrderedDecision = useGameStore((s) => s.submitOrderedDecision)
@@ -28,7 +33,7 @@ export function ReorderCardsUI({ decision, responsive }: ReorderCardsUIProps) {
   const gap = responsive.isMobile ? 12 : 16
   const maxCardWidth = responsive.isMobile ? 100 : 140
   const cardWidth = calculateFittingCardWidth(
-    Math.min(orderedCards.length, 6),
+    Math.min(orderedBlockers.length, 6),
     availableWidth,
     gap,
     maxCardWidth,
@@ -57,7 +62,7 @@ export function ReorderCardsUI({ decision, responsive }: ReorderCardsUIProps) {
       return
     }
 
-    setOrderedCards(prev => {
+    setOrderedBlockers(prev => {
       const newOrder = [...prev]
       const [draggedCard] = newOrder.splice(draggedIndex, 1) as [EntityId]
       newOrder.splice(targetIndex, 0, draggedCard)
@@ -76,19 +81,22 @@ export function ReorderCardsUI({ decision, responsive }: ReorderCardsUIProps) {
   // Move card left or right (for non-drag interaction)
   const moveCard = useCallback((index: number, direction: 'left' | 'right') => {
     const newIndex = direction === 'left' ? index - 1 : index + 1
-    if (newIndex < 0 || newIndex >= orderedCards.length) return
+    if (newIndex < 0 || newIndex >= orderedBlockers.length) return
 
-    setOrderedCards(prev => {
+    setOrderedBlockers(prev => {
       const newOrder = [...prev]
       const [card] = newOrder.splice(index, 1) as [EntityId]
       newOrder.splice(newIndex, 0, card)
       return newOrder
     })
-  }, [orderedCards.length])
+  }, [orderedBlockers.length])
 
   const handleConfirm = () => {
-    submitOrderedDecision(orderedCards)
+    submitOrderedDecision(orderedBlockers)
   }
+
+  // Get attacker name from decision context
+  const attackerName = decision.context.sourceName || 'your attacker'
 
   return (
     <div
@@ -119,16 +127,17 @@ export function ReorderCardsUI({ decision, responsive }: ReorderCardsUIProps) {
             fontWeight: 600,
           }}
         >
-          Reorder Cards
+          Order Damage Assignment
         </h2>
         <p
           style={{
-            color: '#aaa',
+            color: '#fbbf24',
             margin: '8px 0 0',
-            fontSize: responsive.fontSize.normal,
+            fontSize: responsive.fontSize.large,
+            fontWeight: 500,
           }}
         >
-          {decision.prompt}
+          for {attackerName}
         </p>
       </div>
 
@@ -139,12 +148,13 @@ export function ReorderCardsUI({ decision, responsive }: ReorderCardsUIProps) {
           margin: 0,
           fontSize: responsive.fontSize.small,
           textAlign: 'center',
+          maxWidth: 500,
         }}
       >
-        Drag cards to reorder, or use the arrow buttons. The leftmost card will be on top of your library.
+        Drag to reorder. The leftmost creature receives damage first and must receive lethal damage before the next can be assigned any.
       </p>
 
-      {/* Card arrangement with TOP indicator */}
+      {/* Card arrangement with FIRST/LAST indicators */}
       <div
         style={{
           display: 'flex',
@@ -153,13 +163,13 @@ export function ReorderCardsUI({ decision, responsive }: ReorderCardsUIProps) {
           gap: 8,
         }}
       >
-        {/* TOP indicator */}
+        {/* FIRST indicator */}
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: 8,
-            color: '#4ade80',
+            color: '#f87171',
             fontSize: responsive.fontSize.normal,
             fontWeight: 600,
           }}
@@ -170,22 +180,22 @@ export function ReorderCardsUI({ decision, responsive }: ReorderCardsUIProps) {
               height: 0,
               borderLeft: '8px solid transparent',
               borderRight: '8px solid transparent',
-              borderBottom: '12px solid #4ade80',
+              borderBottom: '12px solid #f87171',
             }}
           />
-          TOP OF LIBRARY
+          FIRST TO RECEIVE DAMAGE
           <div
             style={{
               width: 0,
               height: 0,
               borderLeft: '8px solid transparent',
               borderRight: '8px solid transparent',
-              borderBottom: '12px solid #4ade80',
+              borderBottom: '12px solid #f87171',
             }}
           />
         </div>
 
-        {/* Cards */}
+        {/* Blockers */}
         <div
           style={{
             display: 'flex',
@@ -195,14 +205,14 @@ export function ReorderCardsUI({ decision, responsive }: ReorderCardsUIProps) {
             alignItems: 'flex-end',
           }}
         >
-          {orderedCards.map((cardId, index) => {
-            const cardInfo = decision.cardInfo[cardId]
+          {orderedBlockers.map((blockerId, index) => {
+            const cardInfo = decision.cardInfo?.[blockerId]
             const isDragging = draggedIndex === index
             const isDragOver = dragOverIndex === index
 
             return (
               <div
-                key={cardId}
+                key={blockerId}
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
@@ -213,16 +223,16 @@ export function ReorderCardsUI({ decision, responsive }: ReorderCardsUIProps) {
                 {/* Position indicator */}
                 <div
                   style={{
-                    color: index === 0 ? '#4ade80' : '#666',
+                    color: index === 0 ? '#f87171' : '#666',
                     fontSize: responsive.fontSize.small,
                     fontWeight: index === 0 ? 600 : 400,
                   }}
                 >
-                  {index === 0 ? '1st (Top)' : `${index + 1}${getOrdinalSuffix(index + 1)}`}
+                  {index === 0 ? '1st' : `${index + 1}${getOrdinalSuffix(index + 1)}`}
                 </div>
 
-                <ReorderCard
-                  cardId={cardId}
+                <BlockerCard
+                  blockerId={blockerId}
                   cardInfo={cardInfo}
                   index={index}
                   cardWidth={cardWidth}
@@ -230,7 +240,7 @@ export function ReorderCardsUI({ decision, responsive }: ReorderCardsUIProps) {
                   isDragging={isDragging}
                   isDragOver={isDragOver}
                   canMoveLeft={index > 0}
-                  canMoveRight={index < orderedCards.length - 1}
+                  canMoveRight={index < orderedBlockers.length - 1}
                   onDragStart={() => handleDragStart(index)}
                   onDragOver={(e) => handleDragOver(e, index)}
                   onDragLeave={handleDragLeave}
@@ -244,7 +254,7 @@ export function ReorderCardsUI({ decision, responsive }: ReorderCardsUIProps) {
           })}
         </div>
 
-        {/* BOTTOM indicator */}
+        {/* LAST indicator */}
         <div
           style={{
             display: 'flex',
@@ -254,7 +264,7 @@ export function ReorderCardsUI({ decision, responsive }: ReorderCardsUIProps) {
             fontSize: responsive.fontSize.small,
           }}
         >
-          (rightmost = bottom)
+          (rightmost = last to receive damage)
         </div>
       </div>
 
@@ -264,7 +274,7 @@ export function ReorderCardsUI({ decision, responsive }: ReorderCardsUIProps) {
         style={{
           padding: responsive.isMobile ? '10px 24px' : '12px 36px',
           fontSize: responsive.fontSize.large,
-          backgroundColor: '#16a34a',
+          backgroundColor: '#dc2626',
           color: 'white',
           border: 'none',
           borderRadius: 8,
@@ -280,10 +290,10 @@ export function ReorderCardsUI({ decision, responsive }: ReorderCardsUIProps) {
 }
 
 /**
- * Individual card in the reorder UI with drag-and-drop support.
+ * Individual blocker card with drag-and-drop support.
  */
-function ReorderCard({
-  cardId: _cardId,
+function BlockerCard({
+  blockerId: _blockerId,
   cardInfo,
   index: _index,
   cardWidth,
@@ -300,7 +310,7 @@ function ReorderCard({
   onMoveLeft,
   onMoveRight,
 }: {
-  cardId: EntityId
+  blockerId: EntityId
   cardInfo: SearchCardInfo | undefined
   index: number
   cardWidth: number
@@ -355,7 +365,7 @@ function ReorderCard({
             alignItems: 'center',
             justifyContent: 'center',
           }}
-          title="Move left (towards top)"
+          title="Move left (receives damage earlier)"
         >
           &#8592;
         </button>
@@ -375,7 +385,7 @@ function ReorderCard({
             alignItems: 'center',
             justifyContent: 'center',
           }}
-          title="Move right (towards bottom)"
+          title="Move right (receives damage later)"
         >
           &#8594;
         </button>
@@ -393,7 +403,7 @@ function ReorderCard({
           width: cardWidth,
           height: cardHeight,
           backgroundColor: '#1a1a1a',
-          border: isDragOver ? '3px solid #fbbf24' : '2px solid #333',
+          border: isDragOver ? '3px solid #f87171' : '2px solid #333',
           borderRadius: isMobile ? 6 : 10,
           display: 'flex',
           flexDirection: 'column',
@@ -403,7 +413,7 @@ function ReorderCard({
           transform: isDragging ? 'scale(1.05)' : isDragOver ? 'translateX(8px)' : 'none',
           opacity: isDragging ? 0.7 : 1,
           boxShadow: isDragOver
-            ? '0 0 20px rgba(251, 191, 36, 0.5)'
+            ? '0 0 20px rgba(248, 113, 113, 0.5)'
             : '0 4px 12px rgba(0, 0, 0, 0.6)',
           flexShrink: 0,
           position: 'relative',

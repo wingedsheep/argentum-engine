@@ -62,6 +62,7 @@ class ContinuationHandler(
             is EachPlayerSelectsThenDrawsContinuation -> resumeEachPlayerSelectsThenDraws(stateAfterPop, continuation, response)
             is SearchLibraryContinuation -> resumeSearchLibrary(stateAfterPop, continuation, response)
             is ReorderLibraryContinuation -> resumeReorderLibrary(stateAfterPop, continuation, response)
+            is BlockerOrderContinuation -> resumeBlockerOrder(stateAfterPop, continuation, response)
         }
     }
 
@@ -435,6 +436,97 @@ class ContinuationHandler(
             )
         )
 
+        return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume after attacking player declared damage assignment order for blockers.
+     *
+     * Per MTG CR 509.2, the attacking player must order blockers for each attacker
+     * blocked by 2+ creatures. This determines the order damage is assigned.
+     */
+    private fun resumeBlockerOrder(
+        state: GameState,
+        continuation: BlockerOrderContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is OrderedResponse) {
+            return ExecutionResult.error(state, "Expected ordered response for blocker ordering")
+        }
+
+        // Add DamageAssignmentOrderComponent to the attacker
+        var newState = state.updateEntity(continuation.attackerId) { container ->
+            container.with(
+                com.wingedsheep.engine.state.components.combat.DamageAssignmentOrderComponent(
+                    response.orderedObjects
+                )
+            )
+        }
+
+        val events = mutableListOf<GameEvent>(
+            BlockerOrderDeclaredEvent(continuation.attackerId, response.orderedObjects)
+        )
+
+        // Check if there are more attackers that need ordering
+        if (continuation.remainingAttackers.isNotEmpty()) {
+            val nextAttacker = continuation.remainingAttackers.first()
+            val nextRemaining = continuation.remainingAttackers.drop(1)
+
+            // Create decision for next attacker
+            val attackerContainer = newState.getEntity(nextAttacker)!!
+            val attackerCard = attackerContainer.get<CardComponent>()!!
+            val blockedComponent = attackerContainer.get<com.wingedsheep.engine.state.components.combat.BlockedComponent>()!!
+            val blockerIds = blockedComponent.blockerIds
+
+            // Build card info for blockers
+            val cardInfo = blockerIds.associateWith { blockerId ->
+                val blockerCard = newState.getEntity(blockerId)?.get<CardComponent>()
+                SearchCardInfo(
+                    name = blockerCard?.name ?: "Unknown",
+                    manaCost = blockerCard?.manaCost?.toString() ?: "",
+                    typeLine = blockerCard?.typeLine?.toString() ?: ""
+                )
+            }
+
+            val decisionId = java.util.UUID.randomUUID().toString()
+            val decision = OrderObjectsDecision(
+                id = decisionId,
+                playerId = continuation.attackingPlayerId,
+                prompt = "Order damage assignment for ${attackerCard.name}",
+                context = DecisionContext(
+                    sourceId = nextAttacker,
+                    sourceName = attackerCard.name,
+                    phase = DecisionPhase.COMBAT
+                ),
+                objects = blockerIds,
+                cardInfo = cardInfo
+            )
+
+            val nextContinuation = BlockerOrderContinuation(
+                decisionId = decisionId,
+                attackingPlayerId = continuation.attackingPlayerId,
+                attackerId = nextAttacker,
+                attackerName = attackerCard.name,
+                remainingAttackers = nextRemaining
+            )
+
+            newState = newState
+                .withPendingDecision(decision)
+                .pushContinuation(nextContinuation)
+
+            events.add(
+                DecisionRequestedEvent(
+                    decisionId = decision.id,
+                    playerId = continuation.attackingPlayerId,
+                    decisionType = "ORDER_BLOCKERS",
+                    prompt = decision.prompt
+                )
+            )
+
+            return ExecutionResult.paused(newState, decision, events)
+        }
+
+        // All attackers have been ordered - continue with game flow
         return checkForMoreContinuations(newState, events)
     }
 

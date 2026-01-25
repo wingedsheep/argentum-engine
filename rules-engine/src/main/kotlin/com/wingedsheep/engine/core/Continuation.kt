@@ -271,3 +271,24 @@ data class ReorderLibraryContinuation(
     val sourceId: EntityId?,
     val sourceName: String?
 ) : ContinuationFrame
+
+/**
+ * Resume after attacking player declares damage assignment order for blockers.
+ *
+ * Per MTG CR 509.2, after the defending player declares blockers, the attacking
+ * player must declare the damage assignment order for each attacking creature
+ * that's blocked by multiple creatures.
+ *
+ * @property attackingPlayerId The attacking player who must order the blockers
+ * @property attackerId The attacking creature whose blockers are being ordered
+ * @property attackerName Name of the attacker for display
+ * @property remainingAttackers List of attackers that still need ordering after this one
+ */
+@Serializable
+data class BlockerOrderContinuation(
+    override val decisionId: String,
+    val attackingPlayerId: EntityId,
+    val attackerId: EntityId,
+    val attackerName: String,
+    val remainingAttackers: List<EntityId>
+) : ContinuationFrame

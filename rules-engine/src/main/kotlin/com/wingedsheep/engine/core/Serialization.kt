@@ -106,4 +106,21 @@ val engineSerializersModule = SerializersModule {
         subclass(OptionChosenResponse::class)
         subclass(DamageAssignmentResponse::class)
     }
+
+    // ContinuationFrame hierarchy
+    polymorphic(ContinuationFrame::class) {
+        subclass(DiscardContinuation::class)
+        subclass(ScryContinuation::class)
+        subclass(EffectContinuation::class)
+        subclass(TriggeredAbilityContinuation::class)
+        subclass(DamageAssignmentContinuation::class)
+        subclass(ResolveSpellContinuation::class)
+        subclass(SacrificeContinuation::class)
+        subclass(MayAbilityContinuation::class)
+        subclass(HandSizeDiscardContinuation::class)
+        subclass(EachPlayerSelectsThenDrawsContinuation::class)
+        subclass(SearchLibraryContinuation::class)
+        subclass(ReorderLibraryContinuation::class)
+        subclass(BlockerOrderContinuation::class)
+    }
 }

@@ -168,6 +168,7 @@ export type {
   SearchLibraryDecision,
   SearchCardInfo,
   ReorderLibraryDecision,
+  OrderObjectsDecision,
 } from './messages'
 export {
   isConnectedMessage,

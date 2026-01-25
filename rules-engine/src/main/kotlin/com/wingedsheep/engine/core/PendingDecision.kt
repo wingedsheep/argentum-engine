@@ -211,6 +211,9 @@ data class DistributeDecision(
 
 /**
  * Player must order objects (e.g., damage assignment order, scry).
+ *
+ * @property objects The entity IDs that need to be ordered
+ * @property cardInfo Optional card info for UI display (used for blocker ordering in combat)
  */
 @Serializable
 @SerialName("OrderObjectsDecision")
@@ -219,7 +222,8 @@ data class OrderObjectsDecision(
     override val playerId: EntityId,
     override val prompt: String,
     override val context: DecisionContext,
-    val objects: List<EntityId>
+    val objects: List<EntityId>,
+    val cardInfo: Map<EntityId, SearchCardInfo>? = null
 ) : PendingDecision
 
 /**

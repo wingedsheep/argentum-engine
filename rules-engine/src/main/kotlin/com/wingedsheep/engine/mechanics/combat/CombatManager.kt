@@ -12,6 +12,7 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
+import java.util.UUID
 
 /**
  * Manages combat flow: attackers, blockers, damage.
@@ -177,9 +178,105 @@ class CombatManager(
             container.with(BlockersDeclaredThisCombatComponent)
         }
 
+        val blockersEvent = BlockersDeclaredEvent(blockers)
+
+        // Per MTG CR 509.2: After blockers are declared, the attacking player must
+        // declare damage assignment order for each attacker blocked by 2+ creatures
+        val attackersNeedingOrder = findAttackersWithMultipleBlockers(newState)
+        if (attackersNeedingOrder.isNotEmpty()) {
+            // The active player is always the attacking player during combat
+            val attackingPlayer = state.activePlayerId!!
+            return createBlockerOrderDecision(
+                newState,
+                attackingPlayer = attackingPlayer,
+                firstAttacker = attackersNeedingOrder.first(),
+                remainingAttackers = attackersNeedingOrder.drop(1),
+                precedingEvents = listOf(blockersEvent)
+            )
+        }
+
         return ExecutionResult.success(
             newState,
-            listOf(BlockersDeclaredEvent(blockers))
+            listOf(blockersEvent)
+        )
+    }
+
+    /**
+     * Find all attackers that are blocked by 2 or more creatures.
+     * These attackers need damage assignment order to be declared.
+     */
+    private fun findAttackersWithMultipleBlockers(state: GameState): List<EntityId> {
+        return state.findEntitiesWith<BlockedComponent>()
+            .filter { (_, blocked) -> blocked.blockerIds.size >= 2 }
+            .map { it.first }
+    }
+
+    /**
+     * Create a pending decision for the attacking player to order blockers.
+     *
+     * Per MTG CR 509.2, after blockers are declared, the attacking player must
+     * declare the damage assignment order for each attacking creature that's
+     * blocked by multiple creatures.
+     */
+    private fun createBlockerOrderDecision(
+        state: GameState,
+        attackingPlayer: EntityId,
+        firstAttacker: EntityId,
+        remainingAttackers: List<EntityId>,
+        precedingEvents: List<GameEvent>
+    ): ExecutionResult {
+        val attackerContainer = state.getEntity(firstAttacker)!!
+        val attackerCard = attackerContainer.get<CardComponent>()!!
+        val blockedComponent = attackerContainer.get<BlockedComponent>()!!
+        val blockerIds = blockedComponent.blockerIds
+
+        // Build card info for blockers (for UI display)
+        val cardInfo = blockerIds.associateWith { blockerId ->
+            val blockerCard = state.getEntity(blockerId)?.get<CardComponent>()
+            SearchCardInfo(
+                name = blockerCard?.name ?: "Unknown",
+                manaCost = blockerCard?.manaCost?.toString() ?: "",
+                typeLine = blockerCard?.typeLine?.toString() ?: ""
+            )
+        }
+
+        val decisionId = UUID.randomUUID().toString()
+        val decision = OrderObjectsDecision(
+            id = decisionId,
+            playerId = attackingPlayer,
+            prompt = "Order damage assignment for ${attackerCard.name}",
+            context = DecisionContext(
+                sourceId = firstAttacker,
+                sourceName = attackerCard.name,
+                phase = DecisionPhase.COMBAT
+            ),
+            objects = blockerIds,
+            cardInfo = cardInfo
+        )
+
+        val continuation = BlockerOrderContinuation(
+            decisionId = decisionId,
+            attackingPlayerId = attackingPlayer,
+            attackerId = firstAttacker,
+            attackerName = attackerCard.name,
+            remainingAttackers = remainingAttackers
+        )
+
+        val newState = state
+            .withPendingDecision(decision)
+            .pushContinuation(continuation)
+
+        return ExecutionResult.paused(
+            newState,
+            decision,
+            precedingEvents + listOf(
+                DecisionRequestedEvent(
+                    decisionId = decision.id,
+                    playerId = attackingPlayer,
+                    decisionType = "ORDER_BLOCKERS",
+                    prompt = decision.prompt
+                )
+            )
         )
     }
 

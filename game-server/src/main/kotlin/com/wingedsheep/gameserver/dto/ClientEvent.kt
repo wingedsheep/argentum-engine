@@ -533,7 +533,8 @@ object ClientEventTransformer {
             is ScryCompletedEvent,
             is PermanentsSacrificedEvent,
             is LookedAtCardsEvent,
-            is LibraryReorderedEvent -> null
+            is LibraryReorderedEvent,
+            is KeywordGrantedEvent -> null
         }
     }
 }

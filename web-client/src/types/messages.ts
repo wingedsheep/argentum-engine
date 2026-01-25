@@ -168,6 +168,18 @@ export interface ReorderLibraryDecision extends PendingDecisionBase {
 }
 
 /**
+ * Player must order objects (e.g., damage assignment order for blockers).
+ *
+ * Used when an attacker is blocked by multiple creatures and the attacking
+ * player must declare the order in which blockers receive damage.
+ */
+export interface OrderObjectsDecision extends PendingDecisionBase {
+  readonly type: 'OrderObjectsDecision'
+  readonly objects: readonly EntityId[]
+  readonly cardInfo?: Record<EntityId, SearchCardInfo>
+}
+
+/**
  * Union of all pending decision types.
  */
 export type PendingDecision =
@@ -176,6 +188,7 @@ export type PendingDecision =
   | ChooseTargetsDecision
   | SearchLibraryDecision
   | ReorderLibraryDecision
+  | OrderObjectsDecision
 
 /**
  * Information about a legal action the player can take.
