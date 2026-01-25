@@ -211,6 +211,7 @@ function LifeDisplay({ life, isPlayer = false }: { life: number; isPlayer?: bool
 function StackDisplay() {
   const stackCards = useStackCards()
   const responsive = useResponsiveContext()
+  const hoverCard = useGameStore((state) => state.hoverCard)
 
   if (stackCards.length === 0) return null
 
@@ -231,6 +232,8 @@ function StackDisplay() {
               zIndex: stackCards.length - index,
               transform: `translateY(${index * 4}px)`,
             }}
+            onMouseEnter={() => hoverCard(card.id)}
+            onMouseLeave={() => hoverCard(null)}
           >
             <img
               src={`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(card.name)}&format=image&version=small`}
