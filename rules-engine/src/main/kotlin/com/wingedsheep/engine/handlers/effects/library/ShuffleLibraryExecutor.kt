@@ -9,12 +9,15 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.scripting.ShuffleLibraryEffect
+import kotlin.reflect.KClass
 
 /**
  * Executor for ShuffleLibraryEffect.
  * "Shuffle your library" or "Target player shuffles their library"
  */
 class ShuffleLibraryExecutor : EffectExecutor<ShuffleLibraryEffect> {
+
+    override val effectType: KClass<ShuffleLibraryEffect> = ShuffleLibraryEffect::class
 
     override fun execute(
         state: GameState,

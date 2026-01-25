@@ -13,12 +13,15 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CreatureGroupFilter
 import com.wingedsheep.sdk.scripting.TapAllCreaturesEffect
+import kotlin.reflect.KClass
 
 /**
  * Executor for TapAllCreaturesEffect.
  * "Tap all creatures" with various filters (nonwhite, opponents', etc.)
  */
 class TapAllCreaturesExecutor : EffectExecutor<TapAllCreaturesEffect> {
+
+    override val effectType: KClass<TapAllCreaturesEffect> = TapAllCreaturesEffect::class
 
     override fun execute(
         state: GameState,

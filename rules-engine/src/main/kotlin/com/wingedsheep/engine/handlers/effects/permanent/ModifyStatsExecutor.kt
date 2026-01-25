@@ -14,12 +14,15 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ModifyStatsEffect
+import kotlin.reflect.KClass
 
 /**
  * Executor for ModifyStatsEffect.
  * "Target creature gets +X/+Y until end of turn"
  */
 class ModifyStatsExecutor : EffectExecutor<ModifyStatsEffect> {
+
+    override val effectType: KClass<ModifyStatsEffect> = ModifyStatsEffect::class
 
     override fun execute(
         state: GameState,

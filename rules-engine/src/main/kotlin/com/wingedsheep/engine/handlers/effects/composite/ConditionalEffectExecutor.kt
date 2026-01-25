@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.sdk.scripting.ConditionalEffect
 import com.wingedsheep.sdk.scripting.Effect
+import kotlin.reflect.KClass
 
 /**
  * Executor for ConditionalEffect.
@@ -17,6 +18,8 @@ import com.wingedsheep.sdk.scripting.Effect
 class ConditionalEffectExecutor(
     private val effectExecutor: (GameState, Effect, EffectContext) -> ExecutionResult
 ) : EffectExecutor<ConditionalEffect> {
+
+    override val effectType: KClass<ConditionalEffect> = ConditionalEffect::class
 
     private val conditionEvaluator = ConditionEvaluator()
 

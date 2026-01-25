@@ -8,12 +8,15 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolveTarget
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.scripting.ExileEffect
+import kotlin.reflect.KClass
 
 /**
  * Executor for ExileEffect.
  * "Exile target creature/permanent"
  */
 class ExileExecutor : EffectExecutor<ExileEffect> {
+
+    override val effectType: KClass<ExileEffect> = ExileEffect::class
 
     override fun execute(
         state: GameState,

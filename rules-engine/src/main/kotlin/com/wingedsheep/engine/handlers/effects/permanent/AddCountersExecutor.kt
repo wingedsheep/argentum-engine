@@ -9,12 +9,15 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.scripting.AddCountersEffect
+import kotlin.reflect.KClass
 
 /**
  * Executor for AddCountersEffect.
  * "Put X +1/+1 counters on target creature"
  */
 class AddCountersExecutor : EffectExecutor<AddCountersEffect> {
+
+    override val effectType: KClass<AddCountersEffect> = AddCountersEffect::class
 
     override fun execute(
         state: GameState,

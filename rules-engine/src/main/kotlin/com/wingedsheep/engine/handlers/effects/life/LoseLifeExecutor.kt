@@ -9,12 +9,15 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolvePlayer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.sdk.scripting.LoseLifeEffect
+import kotlin.reflect.KClass
 
 /**
  * Executor for LoseLifeEffect.
  * "You lose X life" or "Target player loses X life"
  */
 class LoseLifeExecutor : EffectExecutor<LoseLifeEffect> {
+
+    override val effectType: KClass<LoseLifeEffect> = LoseLifeEffect::class
 
     override fun execute(
         state: GameState,

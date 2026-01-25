@@ -8,12 +8,15 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.destroyPerman
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.scripting.DestroyAllLandsEffect
+import kotlin.reflect.KClass
 
 /**
  * Executor for DestroyAllLandsEffect.
  * "Destroy all lands"
  */
 class DestroyAllLandsExecutor : EffectExecutor<DestroyAllLandsEffect> {
+
+    override val effectType: KClass<DestroyAllLandsEffect> = DestroyAllLandsEffect::class
 
     override fun execute(
         state: GameState,

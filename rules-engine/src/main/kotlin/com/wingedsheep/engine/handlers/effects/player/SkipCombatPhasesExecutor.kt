@@ -7,6 +7,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.player.SkipCombatPhasesComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.scripting.SkipCombatPhasesEffect
+import kotlin.reflect.KClass
 
 /**
  * Executor for SkipCombatPhasesEffect.
@@ -17,6 +18,8 @@ import com.wingedsheep.sdk.scripting.SkipCombatPhasesEffect
  * component is removed.
  */
 class SkipCombatPhasesExecutor : EffectExecutor<SkipCombatPhasesEffect> {
+
+    override val effectType: KClass<SkipCombatPhasesEffect> = SkipCombatPhasesEffect::class
 
     override fun execute(
         state: GameState,

@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.sdk.scripting.Effect
+import kotlin.reflect.KClass
 
 /**
  * Interface for effect executors.
@@ -14,6 +15,12 @@ import com.wingedsheep.sdk.scripting.Effect
  * @param T The specific effect type this executor handles
  */
 interface EffectExecutor<T : Effect> {
+    /**
+     * The effect type this executor handles.
+     * Used for automatic registration in the executor registry.
+     */
+    val effectType: KClass<T>
+
     /**
      * Execute the effect against the game state.
      *

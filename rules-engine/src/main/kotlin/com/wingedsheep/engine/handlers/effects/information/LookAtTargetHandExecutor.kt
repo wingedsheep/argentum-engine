@@ -8,6 +8,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolveTarget
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.RevealedToComponent
 import com.wingedsheep.sdk.scripting.LookAtTargetHandEffect
+import kotlin.reflect.KClass
 
 /**
  * Executor for LookAtTargetHandEffect.
@@ -18,6 +19,8 @@ import com.wingedsheep.sdk.scripting.LookAtTargetHandEffect
  * rest of the game (tracked via RevealedToComponent).
  */
 class LookAtTargetHandExecutor : EffectExecutor<LookAtTargetHandEffect> {
+
+    override val effectType: KClass<LookAtTargetHandEffect> = LookAtTargetHandEffect::class
 
     override fun execute(
         state: GameState,

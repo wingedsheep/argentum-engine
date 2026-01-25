@@ -5,6 +5,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.sdk.scripting.ScryEffect
+import kotlin.reflect.KClass
 
 /**
  * Executor for ScryEffect.
@@ -12,6 +13,8 @@ import com.wingedsheep.sdk.scripting.ScryEffect
  * on the bottom of your library and the rest on top in any order.
  */
 class ScryExecutor : EffectExecutor<ScryEffect> {
+
+    override val effectType: KClass<ScryEffect> = ScryEffect::class
 
     override fun execute(
         state: GameState,

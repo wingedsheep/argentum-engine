@@ -14,6 +14,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.DiscardCardsEffect
+import kotlin.reflect.KClass
 
 /**
  * Executor for DiscardCardsEffect.
@@ -26,6 +27,8 @@ import com.wingedsheep.sdk.scripting.DiscardCardsEffect
 class DiscardCardsExecutor(
     private val decisionHandler: DecisionHandler = DecisionHandler()
 ) : EffectExecutor<DiscardCardsEffect> {
+
+    override val effectType: KClass<DiscardCardsEffect> = DiscardCardsEffect::class
 
     override fun execute(
         state: GameState,

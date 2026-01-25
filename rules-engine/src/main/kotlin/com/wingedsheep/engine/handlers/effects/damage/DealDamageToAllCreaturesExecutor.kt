@@ -8,12 +8,15 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.dealDamageToT
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.scripting.DealDamageToAllCreaturesEffect
+import kotlin.reflect.KClass
 
 /**
  * Executor for DealDamageToAllCreaturesEffect.
  * "Deal X damage to each creature"
  */
 class DealDamageToAllCreaturesExecutor : EffectExecutor<DealDamageToAllCreaturesEffect> {
+
+    override val effectType: KClass<DealDamageToAllCreaturesEffect> = DealDamageToAllCreaturesEffect::class
 
     override fun execute(
         state: GameState,

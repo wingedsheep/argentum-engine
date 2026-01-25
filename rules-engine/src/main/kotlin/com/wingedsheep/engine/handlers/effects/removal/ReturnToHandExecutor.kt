@@ -8,12 +8,15 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolveTarget
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.scripting.ReturnToHandEffect
+import kotlin.reflect.KClass
 
 /**
  * Executor for ReturnToHandEffect.
  * "Return target creature to its owner's hand"
  */
 class ReturnToHandExecutor : EffectExecutor<ReturnToHandEffect> {
+
+    override val effectType: KClass<ReturnToHandEffect> = ReturnToHandEffect::class
 
     override fun execute(
         state: GameState,

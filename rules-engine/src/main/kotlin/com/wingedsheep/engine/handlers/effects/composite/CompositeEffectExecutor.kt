@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.sdk.scripting.CompositeEffect
 import com.wingedsheep.sdk.scripting.Effect
+import kotlin.reflect.KClass
 
 /**
  * Executor for CompositeEffect.
@@ -20,6 +21,8 @@ import com.wingedsheep.sdk.scripting.Effect
 class CompositeEffectExecutor(
     private val effectExecutor: (GameState, Effect, EffectContext) -> ExecutionResult
 ) : EffectExecutor<CompositeEffect> {
+
+    override val effectType: KClass<CompositeEffect> = CompositeEffect::class
 
     override fun execute(
         state: GameState,

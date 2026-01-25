@@ -10,6 +10,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.CreatureDamageFilter
 import com.wingedsheep.sdk.scripting.DealXDamageToAllEffect
+import kotlin.reflect.KClass
 
 /**
  * Executor for DealXDamageToAllEffect.
@@ -17,6 +18,8 @@ import com.wingedsheep.sdk.scripting.DealXDamageToAllEffect
  * Used for cards like Hurricane and Earthquake.
  */
 class DealXDamageToAllExecutor : EffectExecutor<DealXDamageToAllEffect> {
+
+    override val effectType: KClass<DealXDamageToAllEffect> = DealXDamageToAllEffect::class
 
     override fun execute(
         state: GameState,

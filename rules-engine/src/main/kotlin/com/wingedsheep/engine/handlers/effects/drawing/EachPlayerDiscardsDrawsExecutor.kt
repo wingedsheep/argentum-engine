@@ -11,6 +11,7 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.scripting.EachPlayerDiscardsDrawsEffect
+import kotlin.reflect.KClass
 
 /**
  * Executor for EachPlayerDiscardsDrawsEffect.
@@ -24,6 +25,8 @@ import com.wingedsheep.sdk.scripting.EachPlayerDiscardsDrawsEffect
 class EachPlayerDiscardsDrawsExecutor(
     private val decisionHandler: DecisionHandler = DecisionHandler()
 ) : EffectExecutor<EachPlayerDiscardsDrawsEffect> {
+
+    override val effectType: KClass<EachPlayerDiscardsDrawsEffect> = EachPlayerDiscardsDrawsEffect::class
 
     override fun execute(
         state: GameState,

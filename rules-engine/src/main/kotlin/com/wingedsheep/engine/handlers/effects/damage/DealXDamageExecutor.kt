@@ -7,12 +7,15 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.dealDamageToT
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolveTarget
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.sdk.scripting.DealXDamageEffect
+import kotlin.reflect.KClass
 
 /**
  * Executor for DealXDamageEffect.
  * "Deal X damage to target creature/player" where X is the spell's X value
  */
 class DealXDamageExecutor : EffectExecutor<DealXDamageEffect> {
+
+    override val effectType: KClass<DealXDamageEffect> = DealXDamageEffect::class
 
     override fun execute(
         state: GameState,

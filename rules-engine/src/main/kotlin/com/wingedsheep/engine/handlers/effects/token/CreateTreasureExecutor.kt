@@ -14,12 +14,15 @@ import com.wingedsheep.sdk.core.TypeLine
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CreateTreasureTokensEffect
+import kotlin.reflect.KClass
 
 /**
  * Executor for CreateTreasureTokensEffect.
  * Creates Treasure artifact tokens.
  */
 class CreateTreasureExecutor : EffectExecutor<CreateTreasureTokensEffect> {
+
+    override val effectType: KClass<CreateTreasureTokensEffect> = CreateTreasureTokensEffect::class
 
     override fun execute(
         state: GameState,

@@ -6,6 +6,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.sdk.scripting.PlayAdditionalLandsEffect
+import kotlin.reflect.KClass
 
 /**
  * Executor for PlayAdditionalLandsEffect.
@@ -15,6 +16,8 @@ import com.wingedsheep.sdk.scripting.PlayAdditionalLandsEffect
  * The effect does not persist to future turns.
  */
 class PlayAdditionalLandsExecutor : EffectExecutor<PlayAdditionalLandsEffect> {
+
+    override val effectType: KClass<PlayAdditionalLandsEffect> = PlayAdditionalLandsEffect::class
 
     override fun execute(
         state: GameState,

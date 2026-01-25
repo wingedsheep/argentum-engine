@@ -9,12 +9,15 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.scripting.RemoveCountersEffect
+import kotlin.reflect.KClass
 
 /**
  * Executor for RemoveCountersEffect.
  * "Remove X -1/-1 counters from target creature"
  */
 class RemoveCountersExecutor : EffectExecutor<RemoveCountersEffect> {
+
+    override val effectType: KClass<RemoveCountersEffect> = RemoveCountersEffect::class
 
     override fun execute(
         state: GameState,

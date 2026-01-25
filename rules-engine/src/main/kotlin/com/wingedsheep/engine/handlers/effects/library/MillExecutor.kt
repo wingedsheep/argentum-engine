@@ -9,12 +9,15 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.MillEffect
+import kotlin.reflect.KClass
 
 /**
  * Executor for MillEffect.
  * "Mill X" - Put the top X cards of a player's library into their graveyard.
  */
 class MillExecutor : EffectExecutor<MillEffect> {
+
+    override val effectType: KClass<MillEffect> = MillEffect::class
 
     override fun execute(
         state: GameState,

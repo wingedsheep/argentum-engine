@@ -16,12 +16,15 @@ import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CreateTokenEffect
+import kotlin.reflect.KClass
 
 /**
  * Executor for CreateTokenEffect.
  * "Create a 1/1 white Soldier creature token"
  */
 class CreateTokenExecutor : EffectExecutor<CreateTokenEffect> {
+
+    override val effectType: KClass<CreateTokenEffect> = CreateTokenEffect::class
 
     override fun execute(
         state: GameState,

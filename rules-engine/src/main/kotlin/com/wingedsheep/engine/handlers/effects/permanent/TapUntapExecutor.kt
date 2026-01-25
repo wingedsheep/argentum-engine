@@ -10,12 +10,15 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.scripting.TapUntapEffect
+import kotlin.reflect.KClass
 
 /**
  * Executor for TapUntapEffect.
  * "Tap target creature" or "Untap target creature"
  */
 class TapUntapExecutor : EffectExecutor<TapUntapEffect> {
+
+    override val effectType: KClass<TapUntapEffect> = TapUntapEffect::class
 
     override fun execute(
         state: GameState,

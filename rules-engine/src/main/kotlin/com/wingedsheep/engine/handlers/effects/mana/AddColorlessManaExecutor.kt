@@ -6,12 +6,15 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.sdk.scripting.AddColorlessManaEffect
+import kotlin.reflect.KClass
 
 /**
  * Executor for AddColorlessManaEffect.
  * "Add {C}{C}"
  */
 class AddColorlessManaExecutor : EffectExecutor<AddColorlessManaEffect> {
+
+    override val effectType: KClass<AddColorlessManaEffect> = AddColorlessManaEffect::class
 
     override fun execute(
         state: GameState,

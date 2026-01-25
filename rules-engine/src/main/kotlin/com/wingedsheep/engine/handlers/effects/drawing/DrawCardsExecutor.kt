@@ -12,6 +12,7 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.DrawCardsEffect
+import kotlin.reflect.KClass
 
 /**
  * Executor for DrawCardsEffect.
@@ -20,6 +21,8 @@ import com.wingedsheep.sdk.scripting.DrawCardsEffect
 class DrawCardsExecutor(
     private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator()
 ) : EffectExecutor<DrawCardsEffect> {
+
+    override val effectType: KClass<DrawCardsEffect> = DrawCardsEffect::class
 
     override fun execute(
         state: GameState,

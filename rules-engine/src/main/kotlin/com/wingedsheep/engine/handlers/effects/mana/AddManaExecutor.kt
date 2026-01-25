@@ -6,12 +6,15 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.sdk.scripting.AddManaEffect
+import kotlin.reflect.KClass
 
 /**
  * Executor for AddManaEffect.
  * "Add {G}" or "Add {R}{R}"
  */
 class AddManaExecutor : EffectExecutor<AddManaEffect> {
+
+    override val effectType: KClass<AddManaEffect> = AddManaEffect::class
 
     override fun execute(
         state: GameState,

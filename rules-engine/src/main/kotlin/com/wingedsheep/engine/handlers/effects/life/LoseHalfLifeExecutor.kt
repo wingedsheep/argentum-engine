@@ -9,12 +9,15 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolvePlayer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.sdk.scripting.LoseHalfLifeEffect
+import kotlin.reflect.KClass
 
 /**
  * Executor for LoseHalfLifeEffect.
  * "Target player loses half their life, rounded up/down"
  */
 class LoseHalfLifeExecutor : EffectExecutor<LoseHalfLifeEffect> {
+
+    override val effectType: KClass<LoseHalfLifeEffect> = LoseHalfLifeEffect::class
 
     override fun execute(
         state: GameState,

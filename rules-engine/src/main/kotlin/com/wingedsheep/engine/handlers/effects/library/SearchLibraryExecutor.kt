@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CardFilter
 import com.wingedsheep.sdk.scripting.SearchLibraryEffect
 import java.util.UUID
+import kotlin.reflect.KClass
 
 /**
  * Executor for SearchLibraryEffect.
@@ -29,6 +30,8 @@ import java.util.UUID
  * - Fewer matches than count: maxSelections = min(count, matchingCards.size)
  */
 class SearchLibraryExecutor : EffectExecutor<SearchLibraryEffect> {
+
+    override val effectType: KClass<SearchLibraryEffect> = SearchLibraryEffect::class
 
     override fun execute(
         state: GameState,

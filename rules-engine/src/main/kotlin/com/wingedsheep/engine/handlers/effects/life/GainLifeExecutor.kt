@@ -10,6 +10,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolvePlayer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.sdk.scripting.GainLifeEffect
+import kotlin.reflect.KClass
 
 /**
  * Executor for GainLifeEffect.
@@ -18,6 +19,8 @@ import com.wingedsheep.sdk.scripting.GainLifeEffect
 class GainLifeExecutor(
     private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator()
 ) : EffectExecutor<GainLifeEffect> {
+
+    override val effectType: KClass<GainLifeEffect> = GainLifeEffect::class
 
     override fun execute(
         state: GameState,

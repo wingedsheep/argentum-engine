@@ -7,12 +7,15 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.destroyPerman
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolveTarget
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.sdk.scripting.DestroyEffect
+import kotlin.reflect.KClass
 
 /**
  * Executor for DestroyEffect.
  * "Destroy target creature/permanent"
  */
 class DestroyExecutor : EffectExecutor<DestroyEffect> {
+
+    override val effectType: KClass<DestroyEffect> = DestroyEffect::class
 
     override fun execute(
         state: GameState,
