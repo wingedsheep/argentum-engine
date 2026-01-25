@@ -1,7 +1,8 @@
 import { useGameStore } from '../../store/gameStore'
 import { useViewingPlayer, useOpponent, useZoneCards, useBattlefieldCards, useHasLegalActions, useStackCards } from '../../store/selectors'
 import { hand, graveyard } from '../../types'
-import type { ClientCard, ZoneId, ClientPlayer, LegalActionInfo, EntityId } from '../../types'
+import type { ClientCard, ZoneId, ClientPlayer, LegalActionInfo, EntityId, Keyword } from '../../types'
+import { keywordIcons, genericKeywordIcon, displayableKeywords } from '../../assets/icons/keywords'
 import { PhaseIndicator } from '../ui/PhaseIndicator'
 import { CombatArrows } from '../combat/CombatArrows'
 import { DraggedCardOverlay } from './DraggedCardOverlay'
@@ -48,6 +49,35 @@ function getPTColor(
   }
 
   return 'white'
+}
+
+/**
+ * Container component for keyword ability icons on a card.
+ * Uses SVG icons from assets/icons/keywords.
+ */
+const KeywordIcons = ({ keywords, size }: { keywords: readonly Keyword[]; size: number }) => {
+  const filteredKeywords = keywords.filter(k => displayableKeywords.has(k))
+
+  if (filteredKeywords.length === 0) return null
+
+  return (
+    <div style={styles.keywordIconsContainer}>
+      {filteredKeywords.map((keyword) => (
+        <div key={keyword} style={styles.keywordIconWrapper} title={keyword.replace(/_/g, ' ')}>
+          <img
+            src={keywordIcons[keyword] ?? genericKeywordIcon}
+            alt={keyword}
+            style={{
+              width: size,
+              height: size,
+              display: 'block',
+              filter: 'brightness(0) invert(1)', // Make SVG white
+            }}
+          />
+        </div>
+      ))}
+    </div>
+  )
 }
 
 /**
@@ -896,6 +926,11 @@ function GameCard({
         </div>
       )}
 
+      {/* Keyword ability icons */}
+      {battlefield && !faceDown && card.keywords.length > 0 && (
+        <KeywordIcons keywords={card.keywords} size={responsive.isMobile ? 14 : 18} />
+      )}
+
       {/* Playable indicator glow effect (only outside combat mode) */}
       {isPlayable && !isSelected && (
         <div style={styles.playableGlow} />
@@ -1215,6 +1250,24 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '2px 6px',
     borderRadius: 4,
     border: '1px solid rgba(255, 255, 255, 0.3)',
+  } as React.CSSProperties,
+  keywordIconsContainer: {
+    position: 'absolute',
+    top: 4,
+    left: 4,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 2,
+    pointerEvents: 'none',
+  } as React.CSSProperties,
+  keywordIconWrapper: {
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    borderRadius: 4,
+    padding: 2,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
   } as React.CSSProperties,
   tappedOverlay: {
     position: 'absolute',
