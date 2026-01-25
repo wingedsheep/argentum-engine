@@ -14,6 +14,7 @@ import com.wingedsheep.engine.handlers.effects.drawing.DiscardCardsExecutor
 import com.wingedsheep.engine.handlers.effects.drawing.DrawCardsExecutor
 import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerDiscardsDrawsExecutor
 import com.wingedsheep.engine.handlers.effects.player.PlayAdditionalLandsExecutor
+import com.wingedsheep.engine.handlers.effects.player.SkipCombatPhasesExecutor
 import com.wingedsheep.engine.handlers.effects.library.MillExecutor
 import com.wingedsheep.engine.handlers.effects.library.ScryExecutor
 import com.wingedsheep.engine.handlers.effects.library.SearchLibraryExecutor
@@ -98,6 +99,7 @@ class EffectExecutorRegistry(
 
     // Player executors
     private val playAdditionalLandsExecutor = PlayAdditionalLandsExecutor()
+    private val skipCombatPhasesExecutor = SkipCombatPhasesExecutor()
 
     // Composite executors (initialized lazily with reference to execute function)
     private val compositeEffectExecutor by lazy { CompositeEffectExecutor(::execute) }
@@ -166,6 +168,7 @@ class EffectExecutorRegistry(
 
             // Player effects
             is PlayAdditionalLandsEffect -> playAdditionalLandsExecutor.execute(state, effect, context)
+            is SkipCombatPhasesEffect -> skipCombatPhasesExecutor.execute(state, effect, context)
 
             // Default handler for unimplemented effects
             else -> {

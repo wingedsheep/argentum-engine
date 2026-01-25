@@ -14,6 +14,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
+import com.wingedsheep.engine.state.components.player.SkipCombatPhasesComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -240,6 +241,24 @@ class TurnManager(
             }
 
             Step.BEGIN_COMBAT -> {
+                // Check if the active player should skip combat phases (e.g., False Peace)
+                val playerEntity = newState.getEntity(activePlayer)
+                if (playerEntity?.has<SkipCombatPhasesComponent>() == true) {
+                    // Remove the skip combat component (it's been used)
+                    newState = newState.updateEntity(activePlayer) { container ->
+                        container.without<SkipCombatPhasesComponent>()
+                    }
+                    // Skip directly to postcombat main phase
+                    newState = newState.copy(
+                        step = Step.POSTCOMBAT_MAIN,
+                        phase = Phase.POSTCOMBAT_MAIN,
+                        priorityPlayerId = activePlayer,
+                        priorityPassedBy = emptySet()
+                    )
+                    events.add(PhaseChangedEvent(Phase.POSTCOMBAT_MAIN))
+                    events.add(StepChangedEvent(Step.POSTCOMBAT_MAIN))
+                    return ExecutionResult.success(newState, events)
+                }
                 newState = newState.withPriority(activePlayer)
             }
 

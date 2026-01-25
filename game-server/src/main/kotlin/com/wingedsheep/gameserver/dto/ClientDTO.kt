@@ -184,7 +184,25 @@ data class ClientPlayer(
     val hasLost: Boolean,
 
     /** Mana in mana pool (only visible for own player) */
-    val manaPool: ClientManaPool?
+    val manaPool: ClientManaPool?,
+
+    /** Active effects on this player (e.g., "Skip Combat" from False Peace) */
+    val activeEffects: List<ClientPlayerEffect> = emptyList()
+)
+
+/**
+ * An active effect on a player that should be displayed as a badge.
+ */
+@Serializable
+data class ClientPlayerEffect(
+    /** Unique identifier for the effect type */
+    val effectId: String,
+    /** Human-readable name for display */
+    val name: String,
+    /** Optional description/tooltip text */
+    val description: String? = null,
+    /** Optional icon identifier for UI rendering */
+    val icon: String? = null
 )
 
 /**

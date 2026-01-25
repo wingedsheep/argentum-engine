@@ -45,6 +45,7 @@ export type {
   ClientCard,
   ClientZone,
   ClientPlayer,
+  ClientPlayerEffect,
   ClientManaPool,
   ClientCombatState,
   ClientAttacker,

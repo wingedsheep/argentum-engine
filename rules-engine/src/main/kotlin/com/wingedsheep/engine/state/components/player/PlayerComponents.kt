@@ -147,3 +147,13 @@ data class MulliganStateComponent(
      */
     fun keep(): MulliganStateComponent = copy(hasKept = true)
 }
+
+/**
+ * Marker component indicating that a player should skip all combat phases
+ * during their next turn. Applied by effects like False Peace.
+ *
+ * This component is consumed (removed) at the start of the combat phase
+ * when the turn is skipped.
+ */
+@Serializable
+data object SkipCombatPhasesComponent : Component

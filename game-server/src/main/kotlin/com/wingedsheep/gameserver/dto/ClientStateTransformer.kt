@@ -338,6 +338,9 @@ class ClientStateTransformer {
             null
         }
 
+        // Build active effects list
+        val activeEffects = buildActiveEffects(container)
+
         return ClientPlayer(
             playerId = playerId,
             name = playerComponent?.name ?: "Unknown",
@@ -348,8 +351,37 @@ class ClientStateTransformer {
             graveyardSize = graveyardSize,
             landsPlayedThisTurn = landsPlayed,
             hasLost = hasLost,
-            manaPool = manaPool
+            manaPool = manaPool,
+            activeEffects = activeEffects
         )
+    }
+
+    /**
+     * Build a list of active effects on a player for display as badges.
+     */
+    private fun buildActiveEffects(
+        container: com.wingedsheep.engine.state.ComponentContainer?
+    ): List<ClientPlayerEffect> {
+        if (container == null) return emptyList()
+
+        val effects = mutableListOf<ClientPlayerEffect>()
+
+        // Check for SkipCombatPhasesComponent (False Peace effect)
+        if (container.has<SkipCombatPhasesComponent>()) {
+            effects.add(
+                ClientPlayerEffect(
+                    effectId = "skip_combat",
+                    name = "Skip Combat",
+                    description = "Combat phases will be skipped on your next turn",
+                    icon = "shield-off"
+                )
+            )
+        }
+
+        // Add more effect checks here as they are implemented
+        // e.g., can't untap, can't draw, extra turns, etc.
+
+        return effects
     }
 
     /**

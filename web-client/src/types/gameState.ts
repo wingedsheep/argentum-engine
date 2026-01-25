@@ -149,7 +149,7 @@ export interface ClientZone {
 
 /**
  * Player information for client display.
- * Matches backend MaskedPlayer.kt
+ * Matches backend ClientPlayer.kt
  */
 export interface ClientPlayer {
   readonly playerId: EntityId
@@ -161,6 +161,23 @@ export interface ClientPlayer {
   readonly graveyardSize: number
   readonly landsPlayedThisTurn: number
   readonly hasLost: boolean
+  readonly manaPool?: ClientManaPool
+  readonly activeEffects?: readonly ClientPlayerEffect[]
+}
+
+/**
+ * An active effect on a player that should be displayed as a badge.
+ * Matches backend ClientPlayerEffect.kt
+ */
+export interface ClientPlayerEffect {
+  /** Unique identifier for the effect type */
+  readonly effectId: string
+  /** Human-readable name for display */
+  readonly name: string
+  /** Optional description/tooltip text */
+  readonly description?: string
+  /** Optional icon identifier for UI rendering */
+  readonly icon?: string
 }
 
 /**

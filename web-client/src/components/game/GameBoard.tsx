@@ -1,7 +1,7 @@
 import { useGameStore } from '../../store/gameStore'
-import { useViewingPlayer, useOpponent, useZoneCards, useBattlefieldCards, useHasLegalActions, useStackCards } from '../../store/selectors'
+import { useViewingPlayer, useOpponent, useZoneCards, useZone, useBattlefieldCards, useHasLegalActions, useStackCards } from '../../store/selectors'
 import { hand, graveyard } from '../../types'
-import type { ClientCard, ZoneId, ClientPlayer, LegalActionInfo, EntityId, Keyword } from '../../types'
+import type { ClientCard, ZoneId, ClientPlayer, LegalActionInfo, EntityId, Keyword, ClientPlayerEffect } from '../../types'
 import { keywordIcons, genericKeywordIcon, displayableKeywords } from '../../assets/icons/keywords'
 import { PhaseIndicator } from '../ui/PhaseIndicator'
 import { CombatArrows } from '../combat/CombatArrows'
@@ -116,6 +116,7 @@ export function GameBoard() {
             <div style={styles.playerInfo}>
               <span style={{ ...styles.playerName, fontSize: responsive.fontSize.normal }}>{opponent?.name ?? 'Opponent'}</span>
               {opponent && <LifeDisplay life={opponent.life} playerId={opponent.playerId} />}
+              {opponent && <ActiveEffectsBadges effects={opponent.activeEffects} />}
             </div>
 
             {/* Opponent hand (face down) */}
@@ -169,6 +170,7 @@ export function GameBoard() {
               <div style={styles.playerInfo}>
                 <span style={{ ...styles.playerName, fontSize: responsive.fontSize.normal }}>{viewingPlayer.name}</span>
                 <LifeDisplay life={viewingPlayer.life} isPlayer playerId={viewingPlayer.playerId} />
+                <ActiveEffectsBadges effects={viewingPlayer.activeEffects} />
               </div>
 
               {/* Hide Pass button during combat - combat overlay handles actions */}
@@ -212,6 +214,50 @@ export function GameBoard() {
     </div>
     </ResponsiveContext.Provider>
   )
+}
+
+/**
+ * Active effects badges - shows status effects on a player.
+ */
+function ActiveEffectsBadges({ effects }: { effects: readonly ClientPlayerEffect[] | undefined }) {
+  const responsive = useResponsiveContext()
+
+  if (!effects || effects.length === 0) return null
+
+  return (
+    <div style={styles.effectBadgesContainer}>
+      {effects.map((effect) => (
+        <div
+          key={effect.effectId}
+          style={{
+            ...styles.effectBadge,
+            padding: responsive.isMobile ? '2px 6px' : '4px 8px',
+            fontSize: responsive.fontSize.small,
+          }}
+          title={effect.description ?? effect.name}
+        >
+          {effect.icon && <span style={styles.effectBadgeIcon}>{getEffectIcon(effect.icon)}</span>}
+          <span style={styles.effectBadgeName}>{effect.name}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/**
+ * Get an emoji or icon for an effect based on its icon identifier.
+ */
+function getEffectIcon(icon: string): string {
+  switch (icon) {
+    case 'shield-off':
+      return '🛡️'
+    case 'skip':
+      return '⏭️'
+    case 'lock':
+      return '🔒'
+    default:
+      return '⚡'
+  }
 }
 
 /**
@@ -1475,5 +1521,28 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#ffcc00',
     fontWeight: 600,
     fontSize: 14,
+  } as React.CSSProperties,
+  // Active effect badge styles
+  effectBadgesContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    gap: 4,
+    flexWrap: 'wrap',
+  } as React.CSSProperties,
+  effectBadge: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(255, 100, 100, 0.2)',
+    border: '1px solid rgba(255, 100, 100, 0.5)',
+    borderRadius: 4,
+    color: '#ff8888',
+  } as React.CSSProperties,
+  effectBadgeIcon: {
+    fontSize: 12,
+  } as React.CSSProperties,
+  effectBadgeName: {
+    fontWeight: 500,
+    whiteSpace: 'nowrap',
   } as React.CSSProperties,
 }
