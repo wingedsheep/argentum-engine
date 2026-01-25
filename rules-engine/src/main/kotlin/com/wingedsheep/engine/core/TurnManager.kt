@@ -298,7 +298,12 @@ class TurnManager(
                 val sbaResult = sbaChecker.checkAndApply(newState)
                 newState = sbaResult.newState
                 events.addAll(sbaResult.events)
-                newState = newState.withPriority(activePlayer)
+                // Only give priority if the game is not over
+                if (newState.gameOver) {
+                    newState = newState.copy(priorityPlayerId = null)
+                } else {
+                    newState = newState.withPriority(activePlayer)
+                }
             }
 
             Step.COMBAT_DAMAGE -> {
@@ -315,7 +320,12 @@ class TurnManager(
                 val sbaResult = sbaChecker.checkAndApply(newState)
                 newState = sbaResult.newState
                 events.addAll(sbaResult.events)
-                newState = newState.withPriority(activePlayer)
+                // Only give priority if the game is not over
+                if (newState.gameOver) {
+                    newState = newState.copy(priorityPlayerId = null)
+                } else {
+                    newState = newState.withPriority(activePlayer)
+                }
             }
 
             Step.END_COMBAT -> {

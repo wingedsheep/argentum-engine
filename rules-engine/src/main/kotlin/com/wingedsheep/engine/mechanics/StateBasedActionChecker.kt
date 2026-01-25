@@ -123,6 +123,11 @@ class StateBasedActionChecker {
      * 704.5a - A player with 0 or less life loses the game.
      */
     private fun checkPlayerLifeLoss(state: GameState): ExecutionResult {
+        // Skip if game is already over (prevents infinite loop in SBA checking)
+        if (state.gameOver) {
+            return ExecutionResult.success(state)
+        }
+
         var newState = state
         val events = mutableListOf<GameEvent>()
 
@@ -468,6 +473,11 @@ class StateBasedActionChecker {
      * Check if the game should end.
      */
     private fun checkGameEnd(state: GameState): ExecutionResult {
+        // Skip if game is already over (prevents infinite loop in SBA checking)
+        if (state.gameOver) {
+            return ExecutionResult.success(state)
+        }
+
         // Count players who haven't lost
         val activePlayers = state.turnOrder.filter { playerId ->
             val life = state.getEntity(playerId)?.get<LifeTotalComponent>()?.life ?: 0

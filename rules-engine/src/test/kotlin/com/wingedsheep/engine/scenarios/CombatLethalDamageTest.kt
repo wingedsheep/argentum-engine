@@ -257,4 +257,60 @@ class CombatLethalDamageTest : FunSpec({
         // The validation is in CombatManager
         driver.currentStep shouldBe Step.END_COMBAT
     }
+
+    test("game ends when combat damage reduces player to zero life") {
+        val driver = GameTestDriver()
+        driver.registerCards(TestCards.all)
+
+        // Initialize with low starting life for player 2
+        driver.initGame(
+            deck1 = Deck.of("Forest" to 20, "Grizzly Bears" to 20),
+            deck2 = Deck.of("Forest" to 20, "Grizzly Bears" to 20),
+            skipMulligans = true,
+            startingLife = 2  // Both players start at 2 life
+        )
+
+        val attacker = driver.player1
+        val defender = driver.player2
+
+        // Put a creature on the battlefield for player 1
+        val creatureId = driver.putCreatureOnBattlefield(attacker, "Grizzly Bears")
+        driver.removeSummoningSickness(creatureId)
+
+        // Verify initial life totals
+        driver.assertLifeTotal(attacker, 2)
+        driver.assertLifeTotal(defender, 2)
+
+        // Advance to declare attackers step
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.currentStep shouldBe Step.DECLARE_ATTACKERS
+
+        // Declare the creature attacking the defender
+        driver.declareAttackers(attacker, listOf(creatureId), defender)
+
+        // Pass priority through declare attackers
+        driver.bothPass()
+
+        // Advance to declare blockers
+        driver.currentStep shouldBe Step.DECLARE_BLOCKERS
+
+        // Defender declares no blockers
+        driver.declareNoBlockers(defender)
+
+        // Pass priority through declare blockers to advance to first strike damage
+        driver.bothPass()
+        driver.currentStep shouldBe Step.FIRST_STRIKE_COMBAT_DAMAGE
+
+        // Pass through first strike (no first strike creatures)
+        driver.bothPass()
+        driver.currentStep shouldBe Step.COMBAT_DAMAGE
+
+        // At this point, combat damage was dealt when entering COMBAT_DAMAGE step
+        // Defender's life should be 0 and game should be over
+
+        // Verify the game is over and attacker wins
+        driver.state.gameOver shouldBe true
+        driver.state.winnerId shouldBe attacker
+        driver.assertLifeTotal(defender, 0)
+    }
 })
