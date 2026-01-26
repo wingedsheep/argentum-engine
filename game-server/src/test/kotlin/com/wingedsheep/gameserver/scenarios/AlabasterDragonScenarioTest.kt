@@ -1,5 +1,6 @@
-package com.wingedsheep.gameserver
+package com.wingedsheep.gameserver.scenarios
 
+import com.wingedsheep.gameserver.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue

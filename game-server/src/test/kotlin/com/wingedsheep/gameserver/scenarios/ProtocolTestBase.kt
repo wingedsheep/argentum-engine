@@ -1,4 +1,4 @@
-package com.wingedsheep.gameserver
+package com.wingedsheep.gameserver.scenarios
 
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.registry.CardRegistry
@@ -14,23 +14,22 @@ import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.state.components.identity.PlayerComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
-import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.gameserver.dto.ClientCard
 import com.wingedsheep.gameserver.dto.ClientGameState
-import com.wingedsheep.gameserver.dto.ClientStateTransformer
 import com.wingedsheep.gameserver.protocol.ClientMessage
 import com.wingedsheep.gameserver.protocol.LegalActionInfo
 import com.wingedsheep.gameserver.protocol.ServerMessage
-import com.wingedsheep.gameserver.session.GameSession
-import com.wingedsheep.gameserver.session.PlayerSession
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
 import io.kotest.assertions.nondeterministic.eventually
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.core.test.TestCase
+import io.kotest.core.test.TestResult
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
+import jakarta.websocket.WebSocketContainer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
@@ -48,8 +47,10 @@ import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.time.Duration.Companion.seconds
+import org.apache.tomcat.websocket.WsWebSocketContainer
 
 /**
  * Base class for protocol-level integration tests.
@@ -76,7 +77,7 @@ abstract class ProtocolTestBase : FunSpec() {
 
     protected val activeClients = mutableListOf<TestClient>()
 
-    override suspend fun afterTest(testCase: io.kotest.core.test.TestCase, result: io.kotest.core.test.TestResult) {
+    override suspend fun afterTest(testCase: TestCase, result: TestResult) {
         activeClients.forEach { it.close() }
         activeClients.clear()
         super.afterTest(testCase, result)
@@ -84,7 +85,7 @@ abstract class ProtocolTestBase : FunSpec() {
 
     protected fun wsUrl(): String = "ws://localhost:$port/game"
 
-    private fun createWsContainer() = org.apache.tomcat.websocket.WsWebSocketContainer().apply {
+    private fun createWsContainer() = WsWebSocketContainer().apply {
         defaultMaxSessionIdleTimeout = 300_000L
         defaultMaxTextMessageBufferSize = 1024 * 1024
         defaultMaxBinaryMessageBufferSize = 1024 * 1024
@@ -384,14 +385,14 @@ abstract class ProtocolTestBase : FunSpec() {
 
     class TestClient(
         private val json: Json,
-        private val container: jakarta.websocket.WebSocketContainer,
+        private val container: WebSocketContainer,
         private val url: String
     ) {
         private var session: WebSocketSession? = null
         val messages = CopyOnWriteArrayList<ServerMessage>()
         private val connectLatch = CountDownLatch(1)
         private val closed = AtomicBoolean(false)
-        private val stateUpdateCounter = java.util.concurrent.atomic.AtomicInteger(0)
+        private val stateUpdateCounter = AtomicInteger(0)
 
         val isOpen: Boolean get() = session?.isOpen == true && !closed.get()
 
