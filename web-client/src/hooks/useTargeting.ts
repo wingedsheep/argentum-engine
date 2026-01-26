@@ -34,28 +34,40 @@ export function useTargeting() {
   const isTargeting = targetingState !== null
 
   /**
-   * Get the number of remaining targets needed.
+   * Get the number of remaining targets needed to reach minimum.
    */
   const targetsRemaining = useMemo(() => {
     if (!targetingState) return 0
-    return targetingState.requiredCount - targetingState.selectedTargets.length
+    return Math.max(0, targetingState.minTargets - targetingState.selectedTargets.length)
   }, [targetingState])
 
   /**
-   * Check if enough targets have been selected.
+   * Check if enough targets have been selected (at least minTargets).
    */
-  const hasEnoughTargets = targetsRemaining <= 0
+  const hasEnoughTargets = useMemo(() => {
+    if (!targetingState) return false
+    return targetingState.selectedTargets.length >= targetingState.minTargets
+  }, [targetingState])
+
+  /**
+   * Check if maximum targets have been selected.
+   */
+  const hasMaxTargets = useMemo(() => {
+    if (!targetingState) return false
+    return targetingState.selectedTargets.length >= targetingState.maxTargets
+  }, [targetingState])
 
   /**
    * Enter targeting mode for an action.
    */
   const enterTargetingMode = useCallback(
-    (action: GameAction, validTargets: EntityId[], requiredCount: number) => {
+    (action: GameAction, validTargets: EntityId[], minTargets: number, maxTargets: number) => {
       startTargeting({
         action,
         validTargets,
         selectedTargets: [],
-        requiredCount,
+        minTargets,
+        maxTargets,
       })
     },
     [startTargeting]
@@ -80,9 +92,9 @@ export function useTargeting() {
         return
       }
 
-      // Check if we already have enough targets
-      if (targetingState.selectedTargets.length >= targetingState.requiredCount) {
-        console.warn('Already have enough targets')
+      // Check if we already have maximum targets
+      if (targetingState.selectedTargets.length >= targetingState.maxTargets) {
+        console.warn('Already have maximum targets')
         return
       }
 
@@ -144,6 +156,7 @@ export function useTargeting() {
     targetingState,
     targetsRemaining,
     hasEnoughTargets,
+    hasMaxTargets,
     enterTargetingMode,
     selectTarget,
     cancelTargeting,

@@ -321,10 +321,10 @@ function LifeDisplay({
     if (targetingState && isValidTargetingTarget && !isTargetingSelected) {
       addTarget(playerId)
 
-      // Auto-confirm if we have selected enough targets
+      // Auto-confirm if we have selected maximum targets
       const newTargetCount = (targetingState.selectedTargets.length) + 1
-      const requiredCount = targetingState.requiredCount
-      if (newTargetCount >= requiredCount) {
+      const maxTargets = targetingState.maxTargets
+      if (newTargetCount >= maxTargets) {
         setTimeout(() => confirmTargeting(), 0)
       }
       return
@@ -887,7 +887,8 @@ function GameCard({
             action: playableAction.action,
             validTargets: playableAction.validTargets,
             selectedTargets: [],
-            requiredCount: playableAction.targetCount ?? 1,
+            minTargets: playableAction.minTargets ?? playableAction.targetCount ?? 1,
+            maxTargets: playableAction.targetCount ?? 1,
           })
         } else {
           // Play the card directly
@@ -917,10 +918,10 @@ function GameCard({
     // Handle targeting mode clicks
     if (isInTargetingMode && isValidTarget) {
       addTarget(card.id)
-      // Auto-confirm if we have selected enough targets
+      // Auto-confirm if we have selected maximum targets
       const newTargetCount = (targetingState?.selectedTargets.length ?? 0) + 1
-      const requiredCount = targetingState?.requiredCount ?? 1
-      if (newTargetCount >= requiredCount) {
+      const maxTargets = targetingState?.maxTargets ?? 1
+      if (newTargetCount >= maxTargets) {
         // Need to wait a tick for state to update before confirming
         setTimeout(() => confirmTargeting(), 0)
       }
@@ -1108,6 +1109,7 @@ function ActionMenu() {
   const selectCard = useGameStore((state) => state.selectCard)
   const targetingState = useGameStore((state) => state.targetingState)
   const cancelTargeting = useGameStore((state) => state.cancelTargeting)
+  const confirmTargeting = useGameStore((state) => state.confirmTargeting)
   const startTargeting = useGameStore((state) => state.startTargeting)
   const startXSelection = useGameStore((state) => state.startXSelection)
   const responsive = useResponsiveContext()
@@ -1115,25 +1117,49 @@ function ActionMenu() {
   // If in targeting mode, show targeting UI instead
   if (targetingState) {
     const selectedCount = targetingState.selectedTargets.length
-    const requiredCount = targetingState.requiredCount
+    const minTargets = targetingState.minTargets
+    const maxTargets = targetingState.maxTargets
+    const hasEnoughTargets = selectedCount >= minTargets
+    const hasMaxTargets = selectedCount >= maxTargets
+
+    // Build the target count display
+    const targetDisplay = minTargets === maxTargets
+      ? `${selectedCount}/${maxTargets}`
+      : `${selectedCount} (${minTargets}-${maxTargets})`
+
     return (
       <div style={{
         ...styles.targetingOverlay,
         padding: responsive.isMobile ? '12px 16px' : '16px 24px',
       }}>
         <div style={{ ...styles.targetingPrompt, fontSize: responsive.fontSize.normal }}>
-          Select a target ({selectedCount}/{requiredCount})
+          Select targets ({targetDisplay})
         </div>
         <div style={{ color: '#aaa', fontSize: responsive.fontSize.small, marginTop: 4 }}>
-          Click a highlighted target
+          {hasMaxTargets
+            ? 'Maximum targets selected'
+            : hasEnoughTargets
+              ? 'Click Confirm or select more targets'
+              : 'Click a highlighted target'}
         </div>
-        <button onClick={cancelTargeting} style={{
-          ...styles.cancelButton,
-          padding: responsive.isMobile ? '8px 12px' : '10px 16px',
-          fontSize: responsive.fontSize.normal,
-        }}>
-          Cancel
-        </button>
+        <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+          {hasEnoughTargets && !hasMaxTargets && (
+            <button onClick={confirmTargeting} style={{
+              ...styles.actionButton,
+              padding: responsive.isMobile ? '8px 12px' : '10px 16px',
+              fontSize: responsive.fontSize.normal,
+            }}>
+              Confirm ({selectedCount})
+            </button>
+          )}
+          <button onClick={cancelTargeting} style={{
+            ...styles.cancelButton,
+            padding: responsive.isMobile ? '8px 12px' : '10px 16px',
+            fontSize: responsive.fontSize.normal,
+          }}>
+            Cancel
+          </button>
+        </div>
       </div>
     )
   }
@@ -1178,7 +1204,8 @@ function ActionMenu() {
         action: info.action,
         validTargets: info.validTargets,
         selectedTargets: [],
-        requiredCount: info.targetCount ?? 1,
+        minTargets: info.minTargets ?? info.targetCount ?? 1,
+        maxTargets: info.targetCount ?? 1,
       })
       selectCard(null)
     } else {

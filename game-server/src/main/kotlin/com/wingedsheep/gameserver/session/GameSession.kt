@@ -454,6 +454,7 @@ class GameSession(
                                     validTargets = validTargets,
                                     requiresTargets = true,
                                     targetCount = firstReq.count,
+                                    minTargets = firstReq.effectiveMinCount,
                                     targetDescription = firstReq.description,
                                     hasXCost = hasXCost,
                                     maxAffordableX = maxAffordableX
