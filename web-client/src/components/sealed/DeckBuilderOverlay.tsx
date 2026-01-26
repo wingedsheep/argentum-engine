@@ -96,7 +96,7 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
   const submitSealedDeck = useGameStore((s) => s.submitSealedDeck)
 
   const [hoveredCard, setHoveredCard] = useState<SealedCardInfo | null>(null)
-  const [sortBy, setSortBy] = useState<'color' | 'cmc' | 'rarity'>('color')
+  const [sortBy, setSortBy] = useState<'color' | 'cmc' | 'rarity'>('rarity')
 
   // Count cards in deck (non-land cards + lands)
   const nonLandCount = state.deck.length
@@ -104,51 +104,70 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
   const totalCount = nonLandCount + landCount
   const isValidDeck = totalCount >= 40
 
-  // Sort and organize pool cards
-  const sortedPool = useMemo(() => {
-    // Cards not in deck (available to add)
+  // Group and sort pool cards (cards not yet in deck)
+  const poolCardGroups = useMemo(() => {
+    // Count cards in deck
     const deckCardCounts = state.deck.reduce<Record<string, number>>((acc, name) => {
       acc[name] = (acc[name] || 0) + 1
       return acc
     }, {})
 
-    const availableCards = state.cardPool.filter((card) => {
-      const inDeckCount = deckCardCounts[card.name] || 0
-      const inPoolCount = state.cardPool.filter((c) => c.name === card.name).length
-      // Show card if there are more copies in pool than in deck
-      return inPoolCount > inDeckCount || !deckCardCounts[card.name]
-    })
-
-    return [...availableCards].sort((a, b) => {
-      if (sortBy === 'color') {
-        return getColorOrder(a) - getColorOrder(b) || getCmc(a) - getCmc(b)
-      } else if (sortBy === 'cmc') {
-        return getCmc(a) - getCmc(b)
+    // Count cards in pool
+    const poolCardCounts: Record<string, { card: SealedCardInfo; totalCount: number }> = {}
+    for (const card of state.cardPool) {
+      const existing = poolCardCounts[card.name]
+      if (existing) {
+        existing.totalCount++
       } else {
-        return getRarityOrder(a) - getRarityOrder(b) || getCmc(a) - getCmc(b)
+        poolCardCounts[card.name] = { card, totalCount: 1 }
+      }
+    }
+
+    // Calculate available count (pool count - deck count)
+    const groups: { card: SealedCardInfo; availableCount: number }[] = []
+    for (const [name, { card, totalCount }] of Object.entries(poolCardCounts)) {
+      const inDeckCount = deckCardCounts[name] || 0
+      const availableCount = totalCount - inDeckCount
+      if (availableCount > 0) {
+        groups.push({ card, availableCount })
+      }
+    }
+
+    // Sort by selected criteria
+    return groups.sort((a, b) => {
+      if (sortBy === 'color') {
+        return getColorOrder(a.card) - getColorOrder(b.card) || getCmc(a.card) - getCmc(b.card)
+      } else if (sortBy === 'cmc') {
+        return getCmc(a.card) - getCmc(b.card)
+      } else {
+        return getRarityOrder(a.card) - getRarityOrder(b.card) || getCmc(a.card) - getCmc(b.card)
       }
     })
   }, [state.cardPool, state.deck, sortBy])
+
+  // Total unique cards available in pool
+  const totalPoolCards = poolCardGroups.reduce((sum, g) => sum + g.availableCount, 0)
 
   // Group cards by rarity for display with separators
   const poolByRarity = useMemo(() => {
     if (sortBy !== 'rarity') return null
 
-    const mythic: SealedCardInfo[] = []
-    const rare: SealedCardInfo[] = []
-    const uncommon: SealedCardInfo[] = []
-    const common: SealedCardInfo[] = []
+    type PoolGroup = { card: SealedCardInfo; availableCount: number }
+    const mythic: PoolGroup[] = []
+    const rare: PoolGroup[] = []
+    const uncommon: PoolGroup[] = []
+    const common: PoolGroup[] = []
 
-    for (const card of sortedPool) {
-      const rarity = card.rarity.toUpperCase()
-      if (rarity === 'MYTHIC') mythic.push(card)
-      else if (rarity === 'RARE') rare.push(card)
-      else if (rarity === 'UNCOMMON') uncommon.push(card)
-      else common.push(card)
+    for (const group of poolCardGroups) {
+      const rarity = group.card.rarity.toUpperCase()
+      if (rarity === 'MYTHIC') mythic.push(group)
+      else if (rarity === 'RARE') rare.push(group)
+      else if (rarity === 'UNCOMMON') uncommon.push(group)
+      else common.push(group)
     }
 
     return { MYTHIC: mythic, RARE: rare, UNCOMMON: uncommon, COMMON: common }
-  }, [sortedPool, sortBy])
+  }, [poolCardGroups, sortBy])
 
   // Group deck cards by name
   const deckCardGroups = useMemo(() => {
@@ -298,7 +317,7 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
               </button>
             ))}
             <span style={{ color: '#666', fontSize: responsive.fontSize.small, marginLeft: 'auto' }}>
-              Pool: {sortedPool.length} cards
+              Pool: {totalPoolCards} cards
             </span>
           </div>
 
@@ -314,11 +333,12 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
               // Grouped by rarity with separators
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 {(['MYTHIC', 'RARE', 'UNCOMMON', 'COMMON'] as const).map((rarity) => {
-                  const cards = poolByRarity[rarity] ?? []
-                  if (cards.length === 0) return null
+                  const groups = poolByRarity[rarity] ?? []
+                  if (groups.length === 0) return null
+                  const totalInSection = groups.reduce((sum, g) => sum + g.availableCount, 0)
                   return (
                     <div key={rarity}>
-                      <RaritySectionHeader rarity={rarity} count={cards.length} />
+                      <RaritySectionHeader rarity={rarity} count={totalInSection} />
                       <div
                         style={{
                           display: 'flex',
@@ -327,10 +347,11 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
                           justifyContent: 'flex-start',
                         }}
                       >
-                        {cards.map((card, index) => (
+                        {groups.map(({ card, availableCount }) => (
                           <PoolCard
-                            key={`${card.name}-${index}`}
+                            key={card.name}
                             card={card}
+                            count={availableCount}
                             onClick={() => !isSubmitted && addCardToDeck(card.name)}
                             onHover={setHoveredCard}
                             disabled={isSubmitted}
@@ -351,10 +372,11 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
                   justifyContent: 'flex-start',
                 }}
               >
-                {sortedPool.map((card, index) => (
+                {poolCardGroups.map(({ card, availableCount }) => (
                   <PoolCard
-                    key={`${card.name}-${index}`}
+                    key={card.name}
                     card={card}
+                    count={availableCount}
                     onClick={() => !isSubmitted && addCardToDeck(card.name)}
                     onHover={setHoveredCard}
                     disabled={isSubmitted}
@@ -470,11 +492,13 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
  */
 function PoolCard({
   card,
+  count,
   onClick,
   onHover,
   disabled,
 }: {
   card: SealedCardInfo
+  count: number
   onClick: () => void
   onHover: (card: SealedCardInfo | null) => void
   disabled: boolean
@@ -489,6 +513,7 @@ function PoolCard({
       onMouseEnter={() => onHover(card)}
       onMouseLeave={() => onHover(null)}
       style={{
+        position: 'relative',
         width: cardWidth,
         height: cardHeight,
         borderRadius: 6,
@@ -518,6 +543,23 @@ function PoolCard({
           objectFit: 'cover',
         }}
       />
+      {count > 1 && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 4,
+            right: 4,
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            color: '#4fc3f7',
+            borderRadius: 4,
+            padding: '2px 6px',
+            fontSize: 12,
+            fontWeight: 600,
+          }}
+        >
+          ×{count}
+        </div>
+      )}
     </div>
   )
 }
