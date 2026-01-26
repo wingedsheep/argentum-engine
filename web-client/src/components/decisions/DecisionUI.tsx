@@ -171,8 +171,11 @@ function TargetSelectionDecision({
   responsive: ResponsiveSizes
 }) {
   const [selectedTargets, setSelectedTargets] = useState<EntityId[]>([])
+  const [hoveredCardId, setHoveredCardId] = useState<EntityId | null>(null)
   const submitTargetsDecision = useGameStore((s) => s.submitTargetsDecision)
   const gameState = useGameStore((s) => s.gameState)
+
+  const hoveredCard = hoveredCardId ? gameState?.cards[hoveredCardId] : null
 
   // For now, we only support single-target requirements (index 0)
   const targetReq = decision.targetRequirements[0]
@@ -293,6 +296,8 @@ function TargetSelectionDecision({
               onClick={() => toggleTarget(targetId)}
               cardWidth={cardWidth}
               isMobile={responsive.isMobile}
+              onMouseEnter={() => setHoveredCardId(targetId)}
+              onMouseLeave={() => setHoveredCardId(null)}
             />
           )
         })}
@@ -314,6 +319,11 @@ function TargetSelectionDecision({
       >
         Confirm Target
       </button>
+
+      {/* Card preview on hover */}
+      {hoveredCard && !responsive.isMobile && (
+        <DecisionCardPreview cardName={hoveredCard.name} />
+      )}
     </>
   )
 }
@@ -505,8 +515,11 @@ function CardSelectionDecision({
   responsive: ResponsiveSizes
 }) {
   const [selectedCards, setSelectedCards] = useState<EntityId[]>([])
+  const [hoveredCardId, setHoveredCardId] = useState<EntityId | null>(null)
   const submitDecision = useGameStore((s) => s.submitDecision)
   const gameState = useGameStore((s) => s.gameState)
+
+  const hoveredCard = hoveredCardId ? gameState?.cards[hoveredCardId] : null
 
   const canConfirm =
     selectedCards.length >= decision.minSelections &&
@@ -583,6 +596,8 @@ function CardSelectionDecision({
               onClick={() => toggleCard(cardId)}
               cardWidth={cardWidth}
               isMobile={responsive.isMobile}
+              onMouseEnter={() => setHoveredCardId(cardId)}
+              onMouseLeave={() => setHoveredCardId(null)}
             />
           )
         })}
@@ -604,7 +619,54 @@ function CardSelectionDecision({
       >
         Confirm
       </button>
+
+      {/* Card preview on hover */}
+      {hoveredCard && !responsive.isMobile && (
+        <DecisionCardPreview cardName={hoveredCard.name} />
+      )}
     </>
+  )
+}
+
+/**
+ * Card preview overlay - shows enlarged card when hovering.
+ */
+function DecisionCardPreview({ cardName }: { cardName: string }) {
+  const cardImageUrl = `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&format=image&version=large`
+
+  const previewWidth = 280
+  const previewHeight = Math.round(previewWidth * 1.4)
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        top: 20,
+        right: 20,
+        pointerEvents: 'none',
+        zIndex: 1001,
+      }}
+    >
+      <div
+        style={{
+          width: previewWidth,
+          height: previewHeight,
+          borderRadius: 12,
+          overflow: 'hidden',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6)',
+        }}
+      >
+        <img
+          src={cardImageUrl}
+          alt={cardName}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+          }}
+        />
+      </div>
+    </div>
   )
 }
 
@@ -618,6 +680,8 @@ function DecisionCard({
   onClick,
   cardWidth = 130,
   isMobile = false,
+  onMouseEnter,
+  onMouseLeave,
 }: {
   cardId: EntityId
   cardName: string
@@ -625,6 +689,8 @@ function DecisionCard({
   onClick: () => void
   cardWidth?: number
   isMobile?: boolean
+  onMouseEnter?: () => void
+  onMouseLeave?: () => void
 }) {
   const cardImageUrl = `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&format=image&version=normal`
 
@@ -634,6 +700,8 @@ function DecisionCard({
   return (
     <div
       onClick={onClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
       style={{
         width: cardWidth,
         height: cardHeight,
