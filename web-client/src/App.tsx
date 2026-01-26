@@ -6,6 +6,7 @@ import { CombatOverlay } from './components/combat/CombatOverlay'
 import { DecisionUI } from './components/decisions/DecisionUI'
 import { RevealedHandUI } from './components/decisions/RevealedHandUI'
 import { XCostSelector } from './components/ui/XCostSelector'
+import { DeckBuilderOverlay } from './components/sealed/DeckBuilderOverlay'
 import { useGameStore } from './store/gameStore'
 import { useViewingPlayer, useBattlefieldCards } from './store/selectors'
 import type { EntityId } from './types'
@@ -16,6 +17,7 @@ export default function App() {
   const mulliganState = useGameStore((state) => state.mulliganState)
   const legalActions = useGameStore((state) => state.legalActions)
   const combatState = useGameStore((state) => state.combatState)
+  const deckBuildingState = useGameStore((state) => state.deckBuildingState)
   const startCombat = useGameStore((state) => state.startCombat)
   const connect = useGameStore((state) => state.connect)
   const hasConnectedRef = useRef(false)
@@ -122,6 +124,7 @@ export default function App() {
   // Show connection/game creation UI when not in a game
   const showLobby = connectionStatus !== 'connected' || !gameState
   const showGame = !showLobby && !mulliganState
+  const showDeckBuilder = deckBuildingState?.phase === 'building' || deckBuildingState?.phase === 'submitted'
 
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
@@ -130,6 +133,9 @@ export default function App() {
 
       {/* Connection/lobby UI overlay */}
       {showLobby && <GameUI />}
+
+      {/* Deck building overlay (sealed draft) */}
+      {showDeckBuilder && <DeckBuilderOverlay />}
 
       {/* Mulligan overlay */}
       {mulliganState && <MulliganUI />}

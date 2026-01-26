@@ -113,6 +113,70 @@ sealed interface ServerMessage {
         /** Player's final hand size after putting cards on bottom */
         val finalHandSize: Int
     ) : ServerMessage
+
+    // =========================================================================
+    // Sealed Draft Messages
+    // =========================================================================
+
+    /**
+     * Card information for sealed deck building UI.
+     */
+    @Serializable
+    data class SealedCardInfo(
+        val name: String,
+        val manaCost: String?,
+        val typeLine: String,
+        val rarity: String,
+        val imageUri: String?,
+        val power: Int? = null,
+        val toughness: Int? = null,
+        val oracleText: String? = null
+    )
+
+    /**
+     * Sealed game created successfully, waiting for opponent.
+     */
+    @Serializable
+    @SerialName("sealedGameCreated")
+    data class SealedGameCreated(
+        val sessionId: String,
+        val setCode: String,
+        val setName: String
+    ) : ServerMessage
+
+    /**
+     * Sealed pool has been generated for the player.
+     * Sent when both players have joined and pools are ready.
+     */
+    @Serializable
+    @SerialName("sealedPoolGenerated")
+    data class SealedPoolGenerated(
+        /** 90 cards from 6 boosters */
+        val cardPool: List<SealedCardInfo>,
+        /** 5 basic land types available for deck building */
+        val basicLands: List<SealedCardInfo>
+    ) : ServerMessage
+
+    /**
+     * Opponent has submitted their sealed deck.
+     */
+    @Serializable
+    @SerialName("opponentDeckSubmitted")
+    data object OpponentDeckSubmitted : ServerMessage
+
+    /**
+     * Waiting for opponent to submit their deck.
+     */
+    @Serializable
+    @SerialName("waitingForOpponent")
+    data object WaitingForOpponent : ServerMessage
+
+    /**
+     * Deck submission was successful.
+     */
+    @Serializable
+    @SerialName("deckSubmitted")
+    data class DeckSubmitted(val deckSize: Int) : ServerMessage
 }
 
 /**

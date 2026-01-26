@@ -5,8 +5,11 @@ import com.wingedsheep.gameserver.protocol.ClientMessage
 import com.wingedsheep.gameserver.protocol.ErrorCode
 import com.wingedsheep.gameserver.protocol.GameOverReason
 import com.wingedsheep.gameserver.protocol.ServerMessage
+import com.wingedsheep.gameserver.sealed.BoosterGenerator
+import com.wingedsheep.gameserver.sealed.SealedSession
 import com.wingedsheep.gameserver.session.GameSession
 import com.wingedsheep.gameserver.session.PlayerSession
+import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.engineSerializersModule
@@ -63,9 +66,16 @@ class GameWebSocketHandler : TextWebSocketHandler() {
     // Active game sessions indexed by session ID
     private val gameSessions = ConcurrentHashMap<String, GameSession>()
 
+    // Active sealed sessions indexed by session ID
+    private val sealedSessions = ConcurrentHashMap<String, SealedSession>()
+
     // Waiting game (single game session waiting for second player)
     @Volatile
     private var waitingGameSession: GameSession? = null
+
+    // Waiting sealed game (single sealed session waiting for second player)
+    @Volatile
+    private var waitingSealedSession: SealedSession? = null
 
     // Per-session locks for thread-safe WebSocket writes
     private val sessionLocks = ConcurrentHashMap<String, Any>()
@@ -91,6 +101,10 @@ class GameWebSocketHandler : TextWebSocketHandler() {
                 is ClientMessage.KeepHand -> handleKeepHand(session)
                 is ClientMessage.Mulligan -> handleMulligan(session)
                 is ClientMessage.ChooseBottomCards -> handleChooseBottomCards(session, clientMessage)
+                // Sealed draft messages
+                is ClientMessage.CreateSealedGame -> handleCreateSealedGame(session, clientMessage)
+                is ClientMessage.JoinSealedGame -> handleJoinSealedGame(session, clientMessage)
+                is ClientMessage.SubmitSealedDeck -> handleSubmitSealedDeck(session, clientMessage)
             }
         } catch (e: Exception) {
             logger.error("Error handling message from ${session.id}", e)
@@ -444,6 +458,184 @@ class GameWebSocketHandler : TextWebSocketHandler() {
         broadcastGameOver(gameSession, GameOverReason.CONCESSION)
     }
 
+    // =========================================================================
+    // Sealed Draft Handlers
+    // =========================================================================
+
+    private fun handleCreateSealedGame(session: WebSocketSession, message: ClientMessage.CreateSealedGame) {
+        val playerSession = playerSessions[session.id]
+        if (playerSession == null) {
+            sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        // Validate set code
+        val setConfig = BoosterGenerator.getSetConfig(message.setCode)
+        if (setConfig == null) {
+            sendError(session, ErrorCode.INVALID_ACTION, "Unknown set code: ${message.setCode}")
+            return
+        }
+
+        // Create new sealed session
+        val sealedSession = SealedSession(
+            setCode = setConfig.setCode,
+            setName = setConfig.setName
+        )
+        sealedSession.addPlayer(playerSession)
+
+        sealedSessions[sealedSession.sessionId] = sealedSession
+        waitingSealedSession = sealedSession
+
+        logger.info("Sealed game created: ${sealedSession.sessionId} by ${playerSession.playerName} (set: ${setConfig.setName})")
+
+        // Send confirmation
+        send(session, ServerMessage.SealedGameCreated(
+            sessionId = sealedSession.sessionId,
+            setCode = setConfig.setCode,
+            setName = setConfig.setName
+        ))
+    }
+
+    private fun handleJoinSealedGame(session: WebSocketSession, message: ClientMessage.JoinSealedGame) {
+        val playerSession = playerSessions[session.id]
+        if (playerSession == null) {
+            sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        // Find sealed session
+        val sealedSession = sealedSessions[message.sessionId]
+        if (sealedSession == null) {
+            sendError(session, ErrorCode.GAME_NOT_FOUND, "Sealed game not found: ${message.sessionId}")
+            return
+        }
+
+        if (sealedSession.isFull) {
+            sendError(session, ErrorCode.GAME_FULL, "Sealed game is full")
+            return
+        }
+
+        // Add player to sealed session
+        sealedSession.addPlayer(playerSession)
+
+        // Clear waiting session if this was it
+        if (waitingSealedSession?.sessionId == sealedSession.sessionId) {
+            waitingSealedSession = null
+        }
+
+        logger.info("Player ${playerSession.playerName} joined sealed game ${sealedSession.sessionId}")
+
+        // Generate pools for both players
+        sealedSession.generatePools()
+
+        // Send pool information to both players
+        sendSealedPoolToAllPlayers(sealedSession)
+    }
+
+    private fun handleSubmitSealedDeck(session: WebSocketSession, message: ClientMessage.SubmitSealedDeck) {
+        val playerSession = playerSessions[session.id]
+        if (playerSession == null) {
+            sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        val sealedSessionId = playerSession.currentGameSessionId
+        if (sealedSessionId == null) {
+            sendError(session, ErrorCode.GAME_NOT_FOUND, "Not in a sealed game")
+            return
+        }
+
+        val sealedSession = sealedSessions[sealedSessionId]
+        if (sealedSession == null) {
+            sendError(session, ErrorCode.GAME_NOT_FOUND, "Sealed game not found")
+            return
+        }
+
+        // Submit the deck
+        val result = sealedSession.submitDeck(playerSession.playerId, message.deckList)
+        when (result) {
+            is SealedSession.DeckSubmissionResult.Success -> {
+                val deckSize = message.deckList.values.sum()
+                logger.info("Player ${playerSession.playerName} submitted deck ($deckSize cards)")
+
+                // Notify this player their deck was accepted
+                send(session, ServerMessage.DeckSubmitted(deckSize))
+
+                if (result.bothReady) {
+                    // Both players ready - start the actual game
+                    startGameFromSealed(sealedSession)
+                } else {
+                    // Notify this player they're waiting
+                    send(session, ServerMessage.WaitingForOpponent)
+
+                    // Notify opponent that this player submitted
+                    val opponentId = sealedSession.getOpponentId(playerSession.playerId)
+                    if (opponentId != null) {
+                        val opponentSession = sealedSession.getPlayerSession(opponentId)
+                        if (opponentSession != null) {
+                            send(opponentSession.webSocketSession, ServerMessage.OpponentDeckSubmitted)
+                        }
+                    }
+                }
+            }
+            is SealedSession.DeckSubmissionResult.Error -> {
+                sendError(session, ErrorCode.INVALID_DECK, result.message)
+            }
+        }
+    }
+
+    private fun sendSealedPoolToAllPlayers(sealedSession: SealedSession) {
+        val basicLandInfos = sealedSession.basicLands.values.map { cardToSealedCardInfo(it) }
+
+        sealedSession.players.forEach { (playerId, playerState) ->
+            val poolInfos = playerState.cardPool.map { cardToSealedCardInfo(it) }
+
+            send(
+                playerState.session.webSocketSession,
+                ServerMessage.SealedPoolGenerated(
+                    cardPool = poolInfos,
+                    basicLands = basicLandInfos
+                )
+            )
+        }
+    }
+
+    private fun cardToSealedCardInfo(card: CardDefinition): ServerMessage.SealedCardInfo {
+        return ServerMessage.SealedCardInfo(
+            name = card.name,
+            manaCost = if (card.manaCost.symbols.isEmpty()) null else card.manaCost.toString(),
+            typeLine = card.typeLine.toString(),
+            rarity = card.metadata.rarity.name,
+            imageUri = card.metadata.imageUri,
+            power = card.creatureStats?.basePower,
+            toughness = card.creatureStats?.baseToughness,
+            oracleText = if (card.oracleText.isBlank()) null else card.oracleText
+        )
+    }
+
+    private fun startGameFromSealed(sealedSession: SealedSession) {
+        logger.info("Starting game from sealed session: ${sealedSession.sessionId}")
+
+        // Create a new game session
+        val gameSession = GameSession(cardRegistry = cardRegistry)
+
+        // Add both players with their submitted decks
+        sealedSession.players.forEach { (playerId, playerState) ->
+            val deck = playerState.submittedDeck
+                ?: throw IllegalStateException("Player $playerId has no submitted deck")
+            gameSession.addPlayer(playerState.session, deck)
+        }
+
+        // Register the game session
+        gameSessions[gameSession.sessionId] = gameSession
+
+        // Clean up sealed session
+        sealedSessions.remove(sealedSession.sessionId)
+
+        // Start the game
+        startGame(gameSession)
+    }
+
     private fun handleDisconnect(session: WebSocketSession) {
         // Clean up session lock
         sessionLocks.remove(session.id)
@@ -455,6 +647,7 @@ class GameWebSocketHandler : TextWebSocketHandler() {
         // Handle game cleanup
         val gameSessionId = playerSession.currentGameSessionId
         if (gameSessionId != null) {
+            // Check if it's a regular game session
             val gameSession = gameSessions[gameSessionId]
             if (gameSession != null) {
                 // Notify opponent and end game
@@ -474,6 +667,28 @@ class GameWebSocketHandler : TextWebSocketHandler() {
                 mulliganBroadcastSent.remove(gameSessionId)
                 if (waitingGameSession?.sessionId == gameSessionId) {
                     waitingGameSession = null
+                }
+            }
+
+            // Check if it's a sealed session
+            val sealedSession = sealedSessions[gameSessionId]
+            if (sealedSession != null) {
+                // Notify opponent if present
+                val opponentId = sealedSession.getOpponentId(playerSession.playerId)
+                if (opponentId != null) {
+                    val opponentPlayerSession = sealedSession.getPlayerSession(opponentId)
+                    if (opponentPlayerSession?.isConnected == true) {
+                        send(
+                            opponentPlayerSession.webSocketSession,
+                            ServerMessage.Error(ErrorCode.GAME_NOT_FOUND, "Opponent disconnected")
+                        )
+                    }
+                }
+
+                // Clean up sealed session
+                sealedSessions.remove(gameSessionId)
+                if (waitingSealedSession?.sessionId == gameSessionId) {
+                    waitingSealedSession = null
                 }
             }
         }

@@ -22,6 +22,12 @@ export type ServerMessage =
   | MulliganCompleteMessage
   | GameOverMessage
   | ErrorMessage
+  // Sealed Draft Messages
+  | SealedGameCreatedMessage
+  | SealedPoolGeneratedMessage
+  | OpponentDeckSubmittedMessage
+  | WaitingForOpponentMessage
+  | DeckSubmittedMessage
 
 /**
  * Connection confirmed with assigned player ID.
@@ -289,6 +295,65 @@ export interface ErrorMessage {
 }
 
 // ============================================================================
+// Sealed Draft Server Messages
+// ============================================================================
+
+/**
+ * Card information for sealed deck building UI.
+ */
+export interface SealedCardInfo {
+  readonly name: string
+  readonly manaCost: string | null
+  readonly typeLine: string
+  readonly rarity: string
+  readonly imageUri: string | null
+  readonly power?: number | null
+  readonly toughness?: number | null
+  readonly oracleText?: string | null
+}
+
+/**
+ * Sealed game created successfully, waiting for opponent.
+ */
+export interface SealedGameCreatedMessage {
+  readonly type: 'sealedGameCreated'
+  readonly sessionId: string
+  readonly setCode: string
+  readonly setName: string
+}
+
+/**
+ * Sealed pool has been generated for the player.
+ */
+export interface SealedPoolGeneratedMessage {
+  readonly type: 'sealedPoolGenerated'
+  readonly cardPool: readonly SealedCardInfo[]
+  readonly basicLands: readonly SealedCardInfo[]
+}
+
+/**
+ * Opponent has submitted their sealed deck.
+ */
+export interface OpponentDeckSubmittedMessage {
+  readonly type: 'opponentDeckSubmitted'
+}
+
+/**
+ * Waiting for opponent to submit their deck.
+ */
+export interface WaitingForOpponentMessage {
+  readonly type: 'waitingForOpponent'
+}
+
+/**
+ * Deck submission was successful.
+ */
+export interface DeckSubmittedMessage {
+  readonly type: 'deckSubmitted'
+  readonly deckSize: number
+}
+
+// ============================================================================
 // Client Messages (sent to server)
 // ============================================================================
 
@@ -305,6 +370,10 @@ export type ClientMessage =
   | MulliganMessage
   | ClientChooseBottomCardsMessage
   | ConcedeMessage
+  // Sealed Draft Messages
+  | CreateSealedGameMessage
+  | JoinSealedGameMessage
+  | SubmitSealedDeckMessage
 
 /**
  * Connect to the server with a player name.
@@ -369,6 +438,34 @@ export interface ConcedeMessage {
 }
 
 // ============================================================================
+// Sealed Draft Client Messages
+// ============================================================================
+
+/**
+ * Create a new sealed game with a specific set.
+ */
+export interface CreateSealedGameMessage {
+  readonly type: 'createSealedGame'
+  readonly setCode: string
+}
+
+/**
+ * Join an existing sealed game session.
+ */
+export interface JoinSealedGameMessage {
+  readonly type: 'joinSealedGame'
+  readonly sessionId: string
+}
+
+/**
+ * Submit the built deck for a sealed game.
+ */
+export interface SubmitSealedDeckMessage {
+  readonly type: 'submitSealedDeck'
+  readonly deckList: Record<string, number>
+}
+
+// ============================================================================
 // Type Guards
 // ============================================================================
 
@@ -408,6 +505,27 @@ export function isErrorMessage(msg: ServerMessage): msg is ErrorMessage {
   return msg.type === 'error'
 }
 
+// Sealed Draft Type Guards
+export function isSealedGameCreatedMessage(msg: ServerMessage): msg is SealedGameCreatedMessage {
+  return msg.type === 'sealedGameCreated'
+}
+
+export function isSealedPoolGeneratedMessage(msg: ServerMessage): msg is SealedPoolGeneratedMessage {
+  return msg.type === 'sealedPoolGenerated'
+}
+
+export function isOpponentDeckSubmittedMessage(msg: ServerMessage): msg is OpponentDeckSubmittedMessage {
+  return msg.type === 'opponentDeckSubmitted'
+}
+
+export function isWaitingForOpponentMessage(msg: ServerMessage): msg is WaitingForOpponentMessage {
+  return msg.type === 'waitingForOpponent'
+}
+
+export function isDeckSubmittedMessage(msg: ServerMessage): msg is DeckSubmittedMessage {
+  return msg.type === 'deckSubmitted'
+}
+
 // ============================================================================
 // Message Factories
 // ============================================================================
@@ -442,4 +560,17 @@ export function createChooseBottomCardsMessage(cardIds: readonly EntityId[]): Cl
 
 export function createConcedeMessage(): ConcedeMessage {
   return { type: 'concede' }
+}
+
+// Sealed Draft Message Factories
+export function createCreateSealedGameMessage(setCode: string): CreateSealedGameMessage {
+  return { type: 'createSealedGame', setCode }
+}
+
+export function createJoinSealedGameMessage(sessionId: string): JoinSealedGameMessage {
+  return { type: 'joinSealedGame', sessionId }
+}
+
+export function createSubmitSealedDeckMessage(deckList: Record<string, number>): SubmitSealedDeckMessage {
+  return { type: 'submitSealedDeck', deckList }
 }

@@ -9,6 +9,11 @@ import type {
   MulliganCompleteMessage,
   GameOverMessage,
   ErrorMessage,
+  SealedGameCreatedMessage,
+  SealedPoolGeneratedMessage,
+  OpponentDeckSubmittedMessage,
+  WaitingForOpponentMessage,
+  DeckSubmittedMessage,
 } from '../types'
 
 /**
@@ -24,6 +29,12 @@ export interface MessageHandlers {
   onMulliganComplete: (message: MulliganCompleteMessage) => void
   onGameOver: (message: GameOverMessage) => void
   onError: (message: ErrorMessage) => void
+  // Sealed draft handlers
+  onSealedGameCreated: (message: SealedGameCreatedMessage) => void
+  onSealedPoolGenerated: (message: SealedPoolGeneratedMessage) => void
+  onOpponentDeckSubmitted: (message: OpponentDeckSubmittedMessage) => void
+  onWaitingForOpponent: (message: WaitingForOpponentMessage) => void
+  onDeckSubmitted: (message: DeckSubmittedMessage) => void
 }
 
 /**
@@ -57,6 +68,22 @@ export function handleServerMessage(message: ServerMessage, handlers: MessageHan
       break
     case 'error':
       handlers.onError(message)
+      break
+    // Sealed draft messages
+    case 'sealedGameCreated':
+      handlers.onSealedGameCreated(message)
+      break
+    case 'sealedPoolGenerated':
+      handlers.onSealedPoolGenerated(message)
+      break
+    case 'opponentDeckSubmitted':
+      handlers.onOpponentDeckSubmitted(message)
+      break
+    case 'waitingForOpponent':
+      handlers.onWaitingForOpponent(message)
+      break
+    case 'deckSubmitted':
+      handlers.onDeckSubmitted(message)
       break
     default: {
       // TypeScript exhaustiveness check
@@ -106,6 +133,27 @@ export function createLoggingHandlers(handlers: MessageHandlers): MessageHandler
     onError: (msg) => {
       console.error('[Server] Error:', msg)
       handlers.onError(msg)
+    },
+    // Sealed draft handlers
+    onSealedGameCreated: (msg) => {
+      console.log('[Server] Sealed game created:', msg)
+      handlers.onSealedGameCreated(msg)
+    },
+    onSealedPoolGenerated: (msg) => {
+      console.log('[Server] Sealed pool generated:', msg)
+      handlers.onSealedPoolGenerated(msg)
+    },
+    onOpponentDeckSubmitted: (msg) => {
+      console.log('[Server] Opponent deck submitted:', msg)
+      handlers.onOpponentDeckSubmitted(msg)
+    },
+    onWaitingForOpponent: (msg) => {
+      console.log('[Server] Waiting for opponent:', msg)
+      handlers.onWaitingForOpponent(msg)
+    },
+    onDeckSubmitted: (msg) => {
+      console.log('[Server] Deck submitted:', msg)
+      handlers.onDeckSubmitted(msg)
     },
   }
 }

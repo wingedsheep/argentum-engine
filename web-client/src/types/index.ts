@@ -171,6 +171,17 @@ export type {
   SearchCardInfo,
   ReorderLibraryDecision,
   OrderObjectsDecision,
+  ChooseNumberDecision,
+  // Sealed Draft types
+  SealedCardInfo,
+  SealedGameCreatedMessage,
+  SealedPoolGeneratedMessage,
+  OpponentDeckSubmittedMessage,
+  WaitingForOpponentMessage,
+  DeckSubmittedMessage,
+  CreateSealedGameMessage,
+  JoinSealedGameMessage,
+  SubmitSealedDeckMessage,
 } from './messages'
 export {
   isConnectedMessage,
@@ -190,4 +201,14 @@ export {
   createMulliganMessage,
   createChooseBottomCardsMessage,
   createConcedeMessage,
+  // Sealed Draft message factories
+  createCreateSealedGameMessage,
+  createJoinSealedGameMessage,
+  createSubmitSealedDeckMessage,
+  // Sealed Draft type guards
+  isSealedGameCreatedMessage,
+  isSealedPoolGeneratedMessage,
+  isOpponentDeckSubmittedMessage,
+  isWaitingForOpponentMessage,
+  isDeckSubmittedMessage,
 } from './messages'

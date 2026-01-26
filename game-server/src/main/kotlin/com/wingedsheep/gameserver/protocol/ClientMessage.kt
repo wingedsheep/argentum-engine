@@ -70,4 +70,30 @@ sealed interface ClientMessage {
     @Serializable
     @SerialName("chooseBottomCards")
     data class ChooseBottomCards(val cardIds: List<EntityId>) : ClientMessage
+
+    // =========================================================================
+    // Sealed Draft Messages
+    // =========================================================================
+
+    /**
+     * Create a new sealed game with a specific set.
+     */
+    @Serializable
+    @SerialName("createSealedGame")
+    data class CreateSealedGame(val setCode: String) : ClientMessage
+
+    /**
+     * Join an existing sealed game session.
+     */
+    @Serializable
+    @SerialName("joinSealedGame")
+    data class JoinSealedGame(val sessionId: String) : ClientMessage
+
+    /**
+     * Submit the built deck for a sealed game.
+     * Deck list maps card name to count.
+     */
+    @Serializable
+    @SerialName("submitSealedDeck")
+    data class SubmitSealedDeck(val deckList: Map<String, Int>) : ClientMessage
 }

@@ -21,6 +21,10 @@ import {
   createMulliganMessage,
   createChooseBottomCardsMessage,
   createConcedeMessage,
+  createCreateSealedGameMessage,
+  createJoinSealedGameMessage,
+  createSubmitSealedDeckMessage,
+  SealedCardInfo,
 } from '../types'
 import { GameWebSocket, getWebSocketUrl, type ConnectionStatus } from '../network/websocket'
 import { handleServerMessage, createLoggingHandlers, type MessageHandlers } from '../network/messageHandlers'
@@ -102,6 +106,22 @@ export interface XSelectionState {
 }
 
 /**
+ * Deck building state during sealed draft.
+ */
+export interface DeckBuildingState {
+  phase: 'waiting' | 'building' | 'submitted'
+  setCode: string
+  setName: string
+  cardPool: readonly SealedCardInfo[]
+  basicLands: readonly SealedCardInfo[]
+  /** Card names currently in the deck */
+  deck: readonly string[]
+  /** Basic land counts by land name */
+  landCounts: Record<string, number>
+  opponentReady: boolean
+}
+
+/**
  * Main game store interface.
  */
 export interface GameStore {
@@ -138,6 +158,9 @@ export interface GameStore {
   // Error state
   lastError: ErrorState | null
 
+  // Deck building state (sealed draft)
+  deckBuildingState: DeckBuildingState | null
+
   // Actions
   connect: (playerName: string) => void
   disconnect: () => void
@@ -153,6 +176,13 @@ export interface GameStore {
   mulligan: () => void
   chooseBottomCards: (cardIds: readonly EntityId[]) => void
   concede: () => void
+  // Sealed draft actions
+  createSealedGame: (setCode: string) => void
+  joinSealedGame: (sessionId: string) => void
+  addCardToDeck: (cardName: string) => void
+  removeCardFromDeck: (cardName: string) => void
+  setLandCount: (landType: string, count: number) => void
+  submitSealedDeck: () => void
 
   // UI actions
   selectCard: (cardId: EntityId | null) => void
@@ -294,6 +324,7 @@ export const useGameStore = create<GameStore>()(
         set({
           opponentName: msg.opponentName,
           mulliganState: null,
+          deckBuildingState: null, // Clear deck building state when game starts
         })
       },
 
@@ -377,6 +408,68 @@ export const useGameStore = create<GameStore>()(
           },
         })
       },
+
+      // Sealed draft handlers
+      onSealedGameCreated: (msg) => {
+        set({
+          sessionId: msg.sessionId,
+          deckBuildingState: {
+            phase: 'waiting',
+            setCode: msg.setCode,
+            setName: msg.setName,
+            cardPool: [],
+            basicLands: [],
+            deck: [],
+            landCounts: {
+              Plains: 0,
+              Island: 0,
+              Swamp: 0,
+              Mountain: 0,
+              Forest: 0,
+            },
+            opponentReady: false,
+          },
+        })
+      },
+
+      onSealedPoolGenerated: (msg) => {
+        set((state) => ({
+          deckBuildingState: state.deckBuildingState
+            ? {
+                ...state.deckBuildingState,
+                phase: 'building',
+                cardPool: msg.cardPool,
+                basicLands: msg.basicLands,
+              }
+            : null,
+        }))
+      },
+
+      onOpponentDeckSubmitted: () => {
+        set((state) => ({
+          deckBuildingState: state.deckBuildingState
+            ? {
+                ...state.deckBuildingState,
+                opponentReady: true,
+              }
+            : null,
+        }))
+      },
+
+      onWaitingForOpponent: () => {
+        // Already in submitted state, no additional update needed
+      },
+
+      onDeckSubmitted: () => {
+        set((state) => ({
+          deckBuildingState: state.deckBuildingState
+            ? {
+                ...state.deckBuildingState,
+                phase: 'submitted',
+              }
+            : null,
+        }))
+      },
     }
 
     // Wrap handlers with logging in development
@@ -405,6 +498,7 @@ export const useGameStore = create<GameStore>()(
       pendingEvents: [],
       gameOverState: null,
       lastError: null,
+      deckBuildingState: null,
 
       // Connection actions
       connect: (playerName) => {
@@ -460,6 +554,7 @@ export const useGameStore = create<GameStore>()(
           pendingDecision: null,
           mulliganState: null,
           gameOverState: null,
+          deckBuildingState: null,
         })
       },
 
@@ -571,6 +666,86 @@ export const useGameStore = create<GameStore>()(
 
       concede: () => {
         ws?.send(createConcedeMessage())
+      },
+
+      // Sealed draft actions
+      createSealedGame: (setCode) => {
+        ws?.send(createCreateSealedGameMessage(setCode))
+      },
+
+      joinSealedGame: (sessionId) => {
+        ws?.send(createJoinSealedGameMessage(sessionId))
+      },
+
+      addCardToDeck: (cardName) => {
+        set((state) => {
+          if (!state.deckBuildingState) return state
+
+          return {
+            deckBuildingState: {
+              ...state.deckBuildingState,
+              deck: [...state.deckBuildingState.deck, cardName],
+            },
+          }
+        })
+      },
+
+      removeCardFromDeck: (cardName) => {
+        set((state) => {
+          if (!state.deckBuildingState) return state
+
+          // Remove first occurrence of the card name
+          const index = state.deckBuildingState.deck.indexOf(cardName)
+          if (index === -1) return state
+
+          const newDeck = [...state.deckBuildingState.deck]
+          newDeck.splice(index, 1)
+
+          return {
+            deckBuildingState: {
+              ...state.deckBuildingState,
+              deck: newDeck,
+            },
+          }
+        })
+      },
+
+      setLandCount: (landType, count) => {
+        set((state) => {
+          if (!state.deckBuildingState) return state
+
+          return {
+            deckBuildingState: {
+              ...state.deckBuildingState,
+              landCounts: {
+                ...state.deckBuildingState.landCounts,
+                [landType]: Math.max(0, count),
+              },
+            },
+          }
+        })
+      },
+
+      submitSealedDeck: () => {
+        const { deckBuildingState } = get()
+        if (!deckBuildingState) return
+
+        // Build the deck list from deck cards + land counts
+        const deckList: Record<string, number> = {}
+
+        // Count non-land cards
+        for (const cardName of deckBuildingState.deck) {
+          deckList[cardName] = (deckList[cardName] || 0) + 1
+        }
+
+        // Add basic lands
+        for (const [landType, count] of Object.entries(deckBuildingState.landCounts)) {
+          if (count > 0) {
+            deckList[landType] = count
+          }
+        }
+
+        ws?.send(createSubmitSealedDeckMessage(deckList))
       },
 
       // UI actions
