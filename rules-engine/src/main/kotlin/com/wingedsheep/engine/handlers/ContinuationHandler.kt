@@ -238,8 +238,20 @@ class ContinuationHandler(
                     entityId in state.getBattlefield() -> ChosenTarget.Permanent(entityId)
                     // Check if it's on the stack (spell)
                     entityId in state.stack -> ChosenTarget.Spell(entityId)
-                    // Default to permanent (could be improved with more context)
-                    else -> ChosenTarget.Permanent(entityId)
+                    // Check if it's in a graveyard (card)
+                    else -> {
+                        // Look through all graveyards to find which player owns this card
+                        val graveyardOwner = state.turnOrder.find { playerId ->
+                            val graveyardZone = ZoneKey(playerId, ZoneType.GRAVEYARD)
+                            entityId in state.getZone(graveyardZone)
+                        }
+                        if (graveyardOwner != null) {
+                            ChosenTarget.Card(entityId, graveyardOwner, ZoneType.GRAVEYARD)
+                        } else {
+                            // Default to permanent (fallback for unknown cases)
+                            ChosenTarget.Permanent(entityId)
+                        }
+                    }
                 }
             }
         }

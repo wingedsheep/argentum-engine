@@ -503,5 +503,34 @@ abstract class ScenarioTestBase : FunSpec() {
             val playerId = if (playerNumber == 1) player1Id else player2Id
             return state.getEntity(playerId)?.get<LifeTotalComponent>()?.life ?: 0
         }
+
+        /**
+         * Find cards in a player's graveyard by name.
+         */
+        fun findCardsInGraveyard(playerNumber: Int, cardName: String): List<EntityId> {
+            val playerId = if (playerNumber == 1) player1Id else player2Id
+            return state.getGraveyard(playerId).filter { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.name == cardName
+            }
+        }
+
+        /**
+         * Submit a target selection for a triggered ability (e.g., Gravedigger's ETB).
+         * @param targets List of entity IDs to select as targets
+         */
+        fun selectTargets(targets: List<EntityId>): ExecutionResult {
+            val decisionId = state.pendingDecision?.id
+                ?: error("No pending decision to respond to")
+            return submitDecision(TargetsResponse(decisionId, mapOf(0 to targets)))
+        }
+
+        /**
+         * Submit a "skip targets" decision (select no targets for optional ability).
+         */
+        fun skipTargets(): ExecutionResult {
+            val decisionId = state.pendingDecision?.id
+                ?: error("No pending decision to respond to")
+            return submitDecision(TargetsResponse(decisionId, mapOf(0 to emptyList())))
+        }
     }
 }
