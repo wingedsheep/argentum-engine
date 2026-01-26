@@ -52,24 +52,31 @@ class ClientStateTransformer(
         val zones = mutableListOf<ClientZone>()
 
         for ((zoneKey, entityIds) in state.zones) {
-            val isVisible = isZoneVisibleTo(zoneKey, viewingPlayerId)
+            val isZoneVisible = isZoneVisibleTo(zoneKey, viewingPlayerId)
+
+            // For hidden zones (like opponent's hand), check which individual cards are revealed
+            val visibleCardIds = if (isZoneVisible) {
+                entityIds
+            } else {
+                entityIds.filter { entityId ->
+                    isCardRevealedTo(state, entityId, viewingPlayerId)
+                }
+            }
 
             zones.add(
                 ClientZone(
                     zoneId = zoneKey,
-                    cardIds = if (isVisible) entityIds else emptyList(),
+                    cardIds = visibleCardIds,
                     size = entityIds.size,
-                    isVisible = isVisible
+                    isVisible = isZoneVisible || visibleCardIds.isNotEmpty()
                 )
             )
 
-            // Only include card details for visible zones
-            if (isVisible) {
-                for (entityId in entityIds) {
-                    val clientCard = transformCard(state, entityId, zoneKey, projectedState)
-                    if (clientCard != null) {
-                        cards[entityId] = clientCard
-                    }
+            // Include card details for visible cards (either whole zone visible, or individually revealed)
+            for (entityId in visibleCardIds) {
+                val clientCard = transformCard(state, entityId, zoneKey, projectedState)
+                if (clientCard != null) {
+                    cards[entityId] = clientCard
                 }
             }
         }
@@ -165,6 +172,16 @@ class ClientStateTransformer(
             ZoneType.EXILE,
             ZoneType.COMMAND -> true
         }
+    }
+
+    /**
+     * Check if an individual card has been revealed to a specific player.
+     * This is used for "look at hand" or "reveal hand" effects where the viewing player
+     * can see specific cards in an otherwise hidden zone.
+     */
+    private fun isCardRevealedTo(state: GameState, entityId: EntityId, viewingPlayerId: EntityId): Boolean {
+        val revealedComponent = state.getEntity(entityId)?.get<RevealedToComponent>()
+        return revealedComponent?.isRevealedTo(viewingPlayerId) == true
     }
 
     /**

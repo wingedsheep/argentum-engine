@@ -309,6 +309,15 @@ sealed interface ClientEvent {
     ) : ClientEvent {
         override val description: String = "Looked at opponent's hand (${cardIds.size} cards)"
     }
+
+    @Serializable
+    @SerialName("handRevealed")
+    data class HandRevealed(
+        val revealingPlayerId: EntityId,
+        val cardIds: List<EntityId>
+    ) : ClientEvent {
+        override val description: String = "Hand revealed (${cardIds.size} cards)"
+    }
 }
 
 /**
@@ -511,6 +520,14 @@ object ClientEventTransformer {
                 } else {
                     null  // Don't reveal to other players that their hand was looked at
                 }
+            }
+
+            is HandRevealedEvent -> {
+                // Public reveal - all players see this event
+                ClientEvent.HandRevealed(
+                    revealingPlayerId = event.revealingPlayerId,
+                    cardIds = event.cardIds
+                )
             }
 
             // Events that don't need client representation or are handled differently

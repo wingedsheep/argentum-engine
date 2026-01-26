@@ -523,6 +523,17 @@ data class HandLookedAtEvent(
 ) : GameEvent
 
 /**
+ * A player revealed their hand to all players.
+ * Unlike HandLookedAtEvent, this reveals cards publicly to everyone.
+ */
+@Serializable
+@SerialName("HandRevealedEvent")
+data class HandRevealedEvent(
+    val revealingPlayerId: EntityId,
+    val cardIds: List<EntityId>
+) : GameEvent
+
+/**
  * A player looked at cards (from library, etc.).
  * Used for "look at the top N cards" effects.
  */

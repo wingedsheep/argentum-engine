@@ -284,7 +284,7 @@ abstract class ScenarioTestBase : FunSpec() {
         }
 
         /**
-         * Cast a spell by name from a player's hand, optionally targeting an entity.
+         * Cast a spell by name from a player's hand, optionally targeting an entity (permanent).
          */
         fun castSpell(
             playerNumber: Int,
@@ -303,6 +303,25 @@ abstract class ScenarioTestBase : FunSpec() {
                 emptyList()
             }
 
+            return execute(CastSpell(playerId, cardId, targets))
+        }
+
+        /**
+         * Cast a spell by name from a player's hand, targeting a player.
+         */
+        fun castSpellTargetingPlayer(
+            playerNumber: Int,
+            spellName: String,
+            targetPlayerNumber: Int
+        ): ExecutionResult {
+            val playerId = if (playerNumber == 1) player1Id else player2Id
+            val targetPlayerId = if (targetPlayerNumber == 1) player1Id else player2Id
+            val hand = state.getHand(playerId)
+            val cardId = hand.find { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.name == spellName
+            } ?: error("Card '$spellName' not found in player $playerNumber's hand")
+
+            val targets = listOf(ChosenTarget.Player(targetPlayerId))
             return execute(CastSpell(playerId, cardId, targets))
         }
 
