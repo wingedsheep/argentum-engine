@@ -157,3 +157,18 @@ data class MulliganStateComponent(
  */
 @Serializable
 data object SkipCombatPhasesComponent : Component
+
+/**
+ * Component indicating that a player's creatures and/or lands don't untap
+ * during their next untap step. Applied by effects like Exhaustion.
+ *
+ * This component is consumed (removed) after the untap step is processed.
+ *
+ * @param affectsCreatures If true, creatures controlled by this player don't untap
+ * @param affectsLands If true, lands controlled by this player don't untap
+ */
+@Serializable
+data class SkipUntapComponent(
+    val affectsCreatures: Boolean = true,
+    val affectsLands: Boolean = true
+) : Component

@@ -15,6 +15,7 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.player.SkipCombatPhasesComponent
+import com.wingedsheep.engine.state.components.player.SkipUntapComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -69,6 +70,7 @@ class TurnManager(
     /**
      * Perform the untap step.
      * - Untap all permanents controlled by the active player
+     * - Respects SkipUntapComponent which prevents certain permanents from untapping
      * - No priority is given during untap step
      */
     fun performUntapStep(state: GameState): ExecutionResult {
@@ -78,17 +80,42 @@ class TurnManager(
         val events = mutableListOf<GameEvent>()
         var newState = state
 
+        // Check if the player has a SkipUntapComponent
+        val skipUntap = newState.getEntity(activePlayer)?.get<SkipUntapComponent>()
+
         // Find all tapped permanents controlled by the active player
         val permanentsToUntap = state.entities.filter { (_, container) ->
             container.get<ControllerComponent>()?.playerId == activePlayer &&
                 container.has<TappedComponent>()
-        }.keys
+        }.keys.filter { entityId ->
+            // If there's a skip untap component, check if this permanent should be skipped
+            if (skipUntap != null) {
+                val cardComponent = state.getEntity(entityId)?.get<CardComponent>()
+                val typeLine = cardComponent?.typeLine
+                val isCreature = typeLine?.isCreature == true
+                val isLand = typeLine?.isLand == true
+
+                // Skip this permanent if it matches the skip criteria
+                val shouldSkip = (skipUntap.affectsCreatures && isCreature) ||
+                    (skipUntap.affectsLands && isLand)
+                !shouldSkip
+            } else {
+                true
+            }
+        }
 
         // Untap them
         for (entityId in permanentsToUntap) {
             val cardName = newState.getEntity(entityId)?.get<CardComponent>()?.name ?: "Permanent"
             newState = newState.updateEntity(entityId) { it.without<TappedComponent>() }
             events.add(UntappedEvent(entityId, cardName))
+        }
+
+        // Remove the SkipUntapComponent after processing (it's been consumed)
+        if (skipUntap != null) {
+            newState = newState.updateEntity(activePlayer) { container ->
+                container.without<SkipUntapComponent>()
+            }
         }
 
         // Remove summoning sickness from all creatures the player controls
