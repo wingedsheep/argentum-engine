@@ -729,4 +729,34 @@ class GameSession(
             val events: List<GameEvent>
         ) : ActionResult
     }
+
+    // =========================================================================
+    // Test Support (for scenario-based testing)
+    // =========================================================================
+
+    /**
+     * Inject a pre-built game state for testing purposes.
+     * This allows tests to set up specific game scenarios without playing through.
+     *
+     * **WARNING:** This method is for testing only. Do not use in production code.
+     *
+     * @param state The game state to inject
+     * @param testPlayers Map of player IDs to PlayerSession instances
+     */
+    fun injectStateForTesting(state: GameState, testPlayers: Map<EntityId, PlayerSession>) {
+        synchronized(stateLock) {
+            gameState = state
+            players.clear()
+            players.putAll(testPlayers)
+            testPlayers.forEach { (_, session) ->
+                session.currentGameSessionId = sessionId
+            }
+        }
+    }
+
+    /**
+     * Get the raw game state for testing assertions.
+     * **WARNING:** This method is for testing only.
+     */
+    fun getStateForTesting(): GameState? = gameState
 }
