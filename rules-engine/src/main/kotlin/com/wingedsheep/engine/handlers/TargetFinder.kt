@@ -46,7 +46,7 @@ class TargetFinder(
             is AnyTarget -> findAnyTargets(state, controllerId, sourceId)
             is TargetCreatureOrPlayer -> findCreatureOrPlayerTargets(state, controllerId, sourceId)
             is TargetCreatureOrPlaneswalker -> findCreatureOrPlaneswalkerTargets(state, controllerId, sourceId)
-            is TargetCardInGraveyard -> findGraveyardTargets(state, requirement)
+            is TargetCardInGraveyard -> findGraveyardTargets(state, requirement, controllerId)
             is TargetSpell -> findSpellTargets(state, requirement)
             is TargetOther -> {
                 // For TargetOther, find targets for the base requirement but exclude the source
@@ -302,7 +302,8 @@ class TargetFinder(
 
     private fun findGraveyardTargets(
         state: GameState,
-        requirement: TargetCardInGraveyard
+        requirement: TargetCardInGraveyard,
+        controllerId: EntityId
     ): List<EntityId> {
         val targets = mutableListOf<EntityId>()
 
@@ -324,8 +325,8 @@ class TargetFinder(
                     is GraveyardCardFilter.InstantOrSorcery ->
                         cardComponent.typeLine.isInstant || cardComponent.typeLine.isSorcery
                     is GraveyardCardFilter.CreatureInYourGraveyard -> {
-                        // This filter implies "your" graveyard - handle via context
-                        cardComponent.typeLine.isCreature
+                        // Only match creatures in the controller's graveyard
+                        playerId == controllerId && cardComponent.typeLine.isCreature
                     }
                 }
 
