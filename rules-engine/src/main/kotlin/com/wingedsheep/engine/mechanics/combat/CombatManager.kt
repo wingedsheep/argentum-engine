@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.StateProjector
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
@@ -14,6 +15,7 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.CantBeBlockedByPower
 import java.util.UUID
 
 /**
@@ -27,6 +29,7 @@ import java.util.UUID
  * 5. End of combat step
  */
 class CombatManager(
+    private val cardRegistry: CardRegistry? = null,
     private val damageCalculator: DamageCalculator = DamageCalculator(),
     private val stateProjector: StateProjector = StateProjector()
 ) {
@@ -384,6 +387,14 @@ class CombatManager(
             return landwalkValidation
         }
 
+        // CantBeBlockedByPower: Cannot be blocked by creatures with power >= N
+        val powerRestrictionValidation = validateCantBeBlockedByPower(
+            attackerId, attackerCard, blockerId, blockerCard, projected
+        )
+        if (powerRestrictionValidation != null) {
+            return powerRestrictionValidation
+        }
+
         // Skulk: Cannot be blocked by creatures with greater power
         // TODO: Implement skulk
 
@@ -442,6 +453,57 @@ class CombatManager(
                 cardComponent.typeLine.isLand &&
                 cardComponent.typeLine.hasSubtype(landSubtype)
         }
+    }
+
+    /**
+     * Check if attacker has CantBeBlockedByPower restriction and blocker's power meets/exceeds it.
+     * Returns an error message if the blocker cannot block due to power restriction, null otherwise.
+     *
+     * Uses projected power to account for spells that modify power (e.g., Giant Growth).
+     */
+    private fun validateCantBeBlockedByPower(
+        attackerId: EntityId,
+        attackerCard: CardComponent,
+        blockerId: EntityId,
+        blockerCard: CardComponent,
+        projected: ProjectedState
+    ): String? {
+        // Get attacker's static abilities from card definition
+        val cardDef = cardRegistry?.getCard(attackerCard.cardDefinitionId) ?: return null
+        val powerRestriction = cardDef.staticAbilities.filterIsInstance<CantBeBlockedByPower>().firstOrNull()
+            ?: return null
+
+        // Get blocker's projected power (includes buffs from spells like Giant Growth)
+        val blockerPower = projected.getPower(blockerId) ?: 0
+
+        if (blockerPower >= powerRestriction.minPower) {
+            return "${blockerCard.name} cannot block ${attackerCard.name} (power $blockerPower or greater)"
+        }
+
+        return null
+    }
+
+    /**
+     * Check if attacker has CantBeBlockedByPower restriction and blocker's power meets/exceeds it.
+     * Returns false if the blocker cannot block due to power restriction.
+     *
+     * Uses projected power to account for spells that modify power.
+     */
+    private fun canBlockDespitePowerRestriction(
+        attackerId: EntityId,
+        attackerCard: CardComponent,
+        blockerId: EntityId,
+        projected: ProjectedState
+    ): Boolean {
+        // Get attacker's static abilities from card definition
+        val cardDef = cardRegistry?.getCard(attackerCard.cardDefinitionId) ?: return true
+        val powerRestriction = cardDef.staticAbilities.filterIsInstance<CantBeBlockedByPower>().firstOrNull()
+            ?: return true
+
+        // Get blocker's projected power (includes buffs from spells like Giant Growth)
+        val blockerPower = projected.getPower(blockerId) ?: 0
+
+        return blockerPower < powerRestriction.minPower
     }
 
     /**
@@ -922,6 +984,11 @@ class CombatManager(
                     return false
                 }
             }
+        }
+
+        // CantBeBlockedByPower: Cannot be blocked by creatures with power >= N
+        if (!canBlockDespitePowerRestriction(attackerId, attackerCard, blockerId, projected)) {
+            return false
         }
 
         return true

@@ -53,7 +53,7 @@ class BlockerOrderScenarioTest : ScenarioTestBase() {
                 }
 
                 // Advance to declare blockers
-                game.advanceToPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
 
                 // Declare both creatures as blockers for the Hill Giant
                 val blockResult = game.execute(
@@ -108,7 +108,7 @@ class BlockerOrderScenarioTest : ScenarioTestBase() {
                     DeclareAttackers(game.player1Id, mapOf(hillGiantId to game.player2Id))
                 )
 
-                game.advanceToPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
 
                 // Declare both blockers
                 game.execute(
@@ -164,7 +164,7 @@ class BlockerOrderScenarioTest : ScenarioTestBase() {
                     DeclareAttackers(game.player1Id, mapOf(hillGiantId to game.player2Id))
                 )
 
-                game.advanceToPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
 
                 // Declare single blocker
                 val blockResult = game.execute(
@@ -215,7 +215,7 @@ class BlockerOrderScenarioTest : ScenarioTestBase() {
                     )
                 )
 
-                game.advanceToPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
 
                 // Block Hill Giant with blockers 0 and 1, Grizzly Bears with blockers 2 and 3
                 game.execute(
@@ -300,7 +300,7 @@ class BlockerOrderScenarioTest : ScenarioTestBase() {
                     DeclareAttackers(game.player1Id, mapOf(hillGiantId to game.player2Id))
                 )
 
-                game.advanceToPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
 
                 // Declare both blockers
                 game.execute(
@@ -357,7 +357,7 @@ class BlockerOrderScenarioTest : ScenarioTestBase() {
                     DeclareAttackers(game.player1Id, mapOf(hillGiantId to game.player2Id))
                 )
 
-                game.advanceToPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
 
                 // Declare both blockers
                 game.execute(

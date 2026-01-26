@@ -45,7 +45,7 @@ import com.wingedsheep.sdk.scripting.AddColorlessManaEffect
  */
 class ActionProcessor(
     private val cardRegistry: CardRegistry? = null,
-    private val combatManager: CombatManager = CombatManager(),
+    private val combatManager: CombatManager = CombatManager(cardRegistry),
     private val turnManager: TurnManager = TurnManager(combatManager),
     private val stackResolver: StackResolver = StackResolver(),
     private val manaSolver: ManaSolver = ManaSolver(cardRegistry),

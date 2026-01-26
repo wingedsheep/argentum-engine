@@ -50,7 +50,7 @@ class AlluringScentScenarioTest : ScenarioTestBase() {
                 game.resolveStack()
 
                 // Advance to declare attackers step
-                game.advanceToPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
 
                 // Declare Grizzly Bears as attacker
                 val attackResult = game.declareAttackers(mapOf("Grizzly Bears" to 2))
@@ -59,7 +59,7 @@ class AlluringScentScenarioTest : ScenarioTestBase() {
                 }
 
                 // Advance to declare blockers step
-                game.advanceToPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
 
                 // Try to declare no blockers - this should FAIL
                 val noBlockResult = game.declareNoBlockers()
@@ -98,9 +98,9 @@ class AlluringScentScenarioTest : ScenarioTestBase() {
                 game.resolveStack()
 
                 // Advance to combat
-                game.advanceToPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
                 game.declareAttackers(mapOf("Grizzly Bears" to 2))
-                game.advanceToPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
 
                 // Declare BOTH vanguards as blockers - this should succeed
                 // We need to use the entity IDs since both have the same name
@@ -154,7 +154,7 @@ class AlluringScentScenarioTest : ScenarioTestBase() {
                 game.resolveStack()
 
                 // Advance to combat
-                game.advanceToPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
 
                 // Declare both as attackers
                 val attackResult = game.execute(
@@ -170,7 +170,7 @@ class AlluringScentScenarioTest : ScenarioTestBase() {
                     attackResult.error shouldBe null
                 }
 
-                game.advanceToPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
 
                 // Try to declare no blockers - this should FAIL
                 val noBlockResult = game.declareNoBlockers()
@@ -217,7 +217,7 @@ class AlluringScentScenarioTest : ScenarioTestBase() {
                 game.resolveStack()
 
                 // Advance to combat
-                game.advanceToPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
                 game.execute(
                     com.wingedsheep.engine.core.DeclareAttackers(
                         game.player1Id,
@@ -228,7 +228,7 @@ class AlluringScentScenarioTest : ScenarioTestBase() {
                     )
                 )
 
-                game.advanceToPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
 
                 // Both blockers blocking only one attacker - should FAIL
                 // (The other blocker isn't blocking anything)
@@ -288,9 +288,9 @@ class AlluringScentScenarioTest : ScenarioTestBase() {
                 game.resolveStack()
 
                 // Advance to combat
-                game.advanceToPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
                 game.declareAttackers(mapOf("Cloud Spirit" to 2))
-                game.advanceToPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
 
                 // Declare no blockers - should SUCCEED because Grizzly Bears can't block flying
                 val noBlockResult = game.declareNoBlockers()

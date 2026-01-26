@@ -451,10 +451,39 @@ abstract class ScenarioTestBase : FunSpec() {
         }
 
         /**
-         * Advance the game to a specific phase and step.
+         * Advance the game to a specific phase and step by directly setting the state.
+         * Use this when you need to "jump" to a specific step for testing.
+         * For tests that need to go through normal priority flow, use passUntilPhase() instead.
          */
         fun advanceToPhase(phase: Phase, step: Step): GameState {
             state = state.copy(phase = phase, step = step)
+            return state
+        }
+
+        /**
+         * Advance the game to a specific phase and step by passing priority.
+         * Both players pass priority repeatedly until the target phase/step is reached.
+         * This goes through the actual game flow including combat damage processing.
+         */
+        fun passUntilPhase(phase: Phase, step: Step): GameState {
+            var iterations = 0
+            val maxIterations = 100
+
+            while ((state.phase != phase || state.step != step) && iterations < maxIterations) {
+                val priorityPlayer = state.priorityPlayerId
+                if (priorityPlayer != null) {
+                    execute(PassPriority(priorityPlayer))
+                } else {
+                    // No priority player - might be in a step transition, try advancing
+                    break
+                }
+                iterations++
+            }
+
+            if (iterations >= maxIterations) {
+                error("Failed to advance to $phase/$step after $maxIterations iterations. Current: ${state.phase}/${state.step}")
+            }
+
             return state
         }
 

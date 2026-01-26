@@ -75,7 +75,7 @@ class DeepWoodScenarioTest : ScenarioTestBase() {
                 }
 
                 // Advance to declare blockers
-                game.advanceToPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
 
                 // Player 2 declares no blockers
                 val blockResult = game.execute(DeclareBlockers(game.player2Id, emptyMap()))
@@ -123,7 +123,7 @@ class DeepWoodScenarioTest : ScenarioTestBase() {
                 )
 
                 // Advance to declare blockers
-                game.advanceToPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
 
                 // Player 2 declares no blockers
                 game.execute(DeclareBlockers(game.player2Id, emptyMap()))
@@ -172,7 +172,7 @@ class DeepWoodScenarioTest : ScenarioTestBase() {
                 game.resolveStack()
 
                 // Advance through combat
-                game.advanceToPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
                 game.execute(DeclareBlockers(game.player2Id, emptyMap()))
                 game.advanceToPhase(Phase.COMBAT, Step.COMBAT_DAMAGE)
 
@@ -223,7 +223,7 @@ class DeepWoodScenarioTest : ScenarioTestBase() {
                 game.resolveStack()
 
                 // Advance through combat
-                game.advanceToPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
                 game.execute(DeclareBlockers(game.player1Id, emptyMap()))
                 game.advanceToPhase(Phase.COMBAT, Step.COMBAT_DAMAGE)
 

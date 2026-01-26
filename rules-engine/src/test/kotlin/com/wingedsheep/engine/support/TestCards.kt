@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.scripting.*
+import com.wingedsheep.sdk.scripting.CantBeBlockedByPower
 import com.wingedsheep.sdk.targeting.AnyTarget
 import com.wingedsheep.sdk.targeting.TargetCreature
 import com.wingedsheep.sdk.targeting.TargetSpell
@@ -189,6 +190,23 @@ object TestCards {
         toughness = 2,
         oracleText = "Islandwalk",
         keywords = setOf(Keyword.ISLANDWALK)
+    )
+
+    /**
+     * 1/1 for {1}{W} - Can't be blocked by creatures with power 2 or greater.
+     * Test card for power-based blocking restriction (like Fleet-Footed Monk).
+     */
+    val FleetFootedMonk = CardDefinition(
+        name = "Fleet-Footed Monk",
+        manaCost = ManaCost.parse("{1}{W}"),
+        typeLine = TypeLine.creature(setOf(Subtype("Human"), Subtype("Monk"))),
+        oracleText = "Fleet-Footed Monk can't be blocked by creatures with power 2 or greater.",
+        creatureStats = CreatureStats(1, 1),
+        script = CardScript(
+            staticAbilities = listOf(
+                CantBeBlockedByPower(minPower = 2)
+            )
+        )
     )
 
     /**
@@ -515,6 +533,7 @@ object TestCards {
         WindDrake,
         ForestWalker,
         IslandWalker,
+        FleetFootedMonk,
         BladeOfTheNinthWatch,
         // Mana Dorks
         LlanowarElves,
