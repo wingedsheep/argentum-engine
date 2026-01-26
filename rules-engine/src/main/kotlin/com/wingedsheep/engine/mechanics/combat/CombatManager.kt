@@ -522,9 +522,15 @@ class CombatManager(
             if (blockedBy == null || blockedBy.blockerIds.isEmpty()) {
                 // Unblocked - deal damage to defending player/planeswalker
                 val defenderId = attackingComponent.defenderId
-                val damageResult = dealDamageToPlayer(newState, defenderId, power, attackerId)
-                newState = damageResult.newState
-                events.addAll(damageResult.events)
+
+                // Check if the defending player is protected from combat damage by attacking creatures
+                val isProtected = isProtectedFromAttackingCreatureDamage(newState, defenderId)
+                if (!isProtected) {
+                    val damageResult = dealDamageToPlayer(newState, defenderId, power, attackerId)
+                    newState = damageResult.newState
+                    events.addAll(damageResult.events)
+                }
+                // If protected, damage is prevented - no events emitted
             } else {
                 // Blocked - deal damage to blockers and receive damage from them
                 val (attackerDamageState, attackerEvents) = dealCombatDamageBetweenCreatures(
@@ -819,6 +825,17 @@ class CombatManager(
         }
 
         return null
+    }
+
+    /**
+     * Check if a player is protected from combat damage by attacking creatures.
+     * This is used by Deep Wood and similar effects.
+     */
+    private fun isProtectedFromAttackingCreatureDamage(state: GameState, playerId: EntityId): Boolean {
+        return state.floatingEffects.any { floatingEffect ->
+            floatingEffect.effect.modification is SerializableModification.PreventDamageFromAttackingCreatures &&
+                playerId in floatingEffect.effect.affectedEntities
+        }
     }
 
     /**

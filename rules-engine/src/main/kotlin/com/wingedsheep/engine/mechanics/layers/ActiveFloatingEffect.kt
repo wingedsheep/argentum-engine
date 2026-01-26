@@ -112,6 +112,14 @@ sealed interface SerializableModification {
      */
     @Serializable
     data object MustBeBlockedByAll : SerializableModification
+
+    /**
+     * Damage prevention: prevent all combat damage that would be dealt to a player
+     * by attacking creatures this turn.
+     * Used by Deep Wood and similar effects.
+     */
+    @Serializable
+    data object PreventDamageFromAttackingCreatures : SerializableModification
 }
 
 /**
@@ -130,4 +138,6 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.ChangeController -> Modification.ChangeController(newControllerId)
     // MustBeBlockedByAll doesn't map to a layer modification - it's checked by CombatManager directly
     is SerializableModification.MustBeBlockedByAll -> Modification.NoOp
+    // PreventDamageFromAttackingCreatures doesn't map to a layer modification - it's checked by CombatManager directly
+    is SerializableModification.PreventDamageFromAttackingCreatures -> Modification.NoOp
 }
