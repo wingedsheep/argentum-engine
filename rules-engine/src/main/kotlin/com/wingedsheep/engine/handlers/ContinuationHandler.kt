@@ -545,8 +545,16 @@ class ContinuationHandler(
             return ExecutionResult.paused(newState, decision, events)
         }
 
-        // All attackers have been ordered - continue with game flow
-        return checkForMoreContinuations(newState, events)
+        // All attackers have been ordered - give priority back to the active player
+        // Per MTG CR 509.4, after blockers are declared (and ordered), players get priority
+        // in the declare blockers step before combat damage happens
+        val activePlayer = newState.activePlayerId
+        val stateWithPriority = if (activePlayer != null) {
+            newState.withPriority(activePlayer)
+        } else {
+            newState
+        }
+        return checkForMoreContinuations(stateWithPriority, events)
     }
 
     /**
