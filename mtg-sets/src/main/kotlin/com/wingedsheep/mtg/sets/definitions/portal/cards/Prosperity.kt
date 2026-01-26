@@ -25,6 +25,6 @@ val Prosperity = card("Prosperity") {
         rarity = Rarity.RARE
         collectorNumber = "66"
         artist = "Phil Foglio"
-        imageUri = "https://cards.scryfall.io/normal/front/6/9/69ebc3a4-94b8-45aa-a3bf-21cd435ff5cf.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/2/6/269bb4fc-9d8f-42cc-8f71-6a658e41533c.jpg"
     }
 }

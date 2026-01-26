@@ -31,6 +31,6 @@ val ElvenCache = card("Elven Cache") {
         collectorNumber = "164"
         artist = "Randy Gallegos"
         flavorText = "The elves never forget where they buried their treasures."
-        imageUri = "https://cards.scryfall.io/normal/front/0/2/023e40fb-91aa-4b88-ae2f-0e7192f5b8f3.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/6/8/68939020-eb6a-4d77-a850-4df96cf01918.jpg"
     }
 }

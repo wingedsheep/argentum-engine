@@ -24,6 +24,6 @@ val RagingMinotaur = card("Raging Minotaur") {
         collectorNumber = "146"
         artist = "Randy Gallegos"
         flavorText = "In a rage, the minotaur knows no friend from foe."
-        imageUri = "https://cards.scryfall.io/normal/front/9/0/90a6b7c8-d9e0-f1a2-b3c4-d5e6f7a8b9c0.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/2/e/2ea4be95-8147-431c-8bb8-8fe7e5a2ad53.jpg"
     }
 }

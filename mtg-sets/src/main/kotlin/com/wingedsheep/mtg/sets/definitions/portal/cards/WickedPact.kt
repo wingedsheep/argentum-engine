@@ -32,6 +32,6 @@ val WickedPact = card("Wicked Pact") {
         collectorNumber = "117"
         artist = "Ron Spencer"
         flavorText = "Power demands sacrifice."
-        imageUri = "https://cards.scryfall.io/normal/front/7/e/7e0f1a2b-8c9d-0e1f-2a3b-4c5d6e7f8a9b.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/e/4/e4d7c251-cb65-4ffc-8bf0-5e9692004a87.jpg"
     }
 }

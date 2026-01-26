@@ -24,6 +24,6 @@ val NaturesRuin = card("Nature's Ruin") {
         collectorNumber = "103"
         artist = "Jeff Miracola"
         flavorText = "The forest withers and dies as darkness spreads."
-        imageUri = "https://cards.scryfall.io/normal/front/9/f/9f3c7d8f-4a07-4b3c-8c4a-6b9e8c2f5a1d.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/5/9/5950f52a-493e-432e-9175-0272c0edb232.jpg"
     }
 }

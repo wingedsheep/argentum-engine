@@ -23,6 +23,6 @@ val FireTempest = card("Fire Tempest") {
         collectorNumber = "128"
         artist = "Dan Frazier"
         flavorText = "A storm of fire consumes all in its path."
-        imageUri = "https://cards.scryfall.io/normal/front/2/8/28a9b0c1-d2e3-f4a5-b6c7-d8e9f0a1b2c3.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/9/2/92334ebe-3d7a-46de-8b91-931e5d56a5a5.jpg"
     }
 }

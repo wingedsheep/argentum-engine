@@ -27,6 +27,6 @@ val CravenGiant = card("Craven Giant") {
         collectorNumber = "121"
         artist = "Greg Staples"
         flavorText = "Size does not equal courage."
-        imageUri = "https://cards.scryfall.io/normal/front/b/1/b1c2d3e4-f5a6-7b8c-9d0e-1f2a3b4c5d6e.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/4/a/4a2e1c12-f848-43b4-9505-851c66a509f1.jpg"
     }
 }

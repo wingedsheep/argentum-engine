@@ -23,6 +23,6 @@ val Flashfires = card("Flashfires") {
         collectorNumber = "129"
         artist = "Dameon Willich"
         flavorText = "The prairies burn bright and fast."
-        imageUri = "https://cards.scryfall.io/normal/front/3/9/39a0b1c2-d3e4-f5a6-b7c8-d9e0f1a2b3c4.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/a/9/a9e88867-6acb-43f8-806b-21480aaa1afc.jpg"
     }
 }

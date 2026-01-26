@@ -27,6 +27,6 @@ val HulkingGoblin = card("Hulking Goblin") {
         collectorNumber = "135"
         artist = "Kev Walker"
         flavorText = "Bigger goblins don't flee from danger—they just can't turn around."
-        imageUri = "https://cards.scryfall.io/normal/front/e/5/e5f6a7b8-c9d0-e1f2-a3b4-c5d6e7f8a9b0.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/8/e/8e3eead8-7e07-4463-9e67-c396d2d7931e.jpg"
     }
 }

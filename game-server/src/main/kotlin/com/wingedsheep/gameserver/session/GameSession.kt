@@ -40,7 +40,7 @@ private val logger = LoggerFactory.getLogger(GameSession::class.java)
 class GameSession(
     val sessionId: String = UUID.randomUUID().toString(),
     private val cardRegistry: CardRegistry,
-    private val stateTransformer: ClientStateTransformer = ClientStateTransformer()
+    private val stateTransformer: ClientStateTransformer = ClientStateTransformer(cardRegistry)
 ) {
     // Lock for synchronizing state modifications to prevent lost updates
     private val stateLock = Any()

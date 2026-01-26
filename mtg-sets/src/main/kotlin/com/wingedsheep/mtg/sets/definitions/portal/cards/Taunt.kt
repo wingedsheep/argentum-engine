@@ -25,6 +25,6 @@ val Taunt = card("Taunt") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "71"
         artist = "Jeff Miracola"
-        imageUri = "https://cards.scryfall.io/normal/front/3/d/3d7ec7c0-cd22-4f92-8e41-16be49ab1adb.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/f/4/f4d87322-aba4-4187-9655-1da1f18615f8.jpg"
     }
 }

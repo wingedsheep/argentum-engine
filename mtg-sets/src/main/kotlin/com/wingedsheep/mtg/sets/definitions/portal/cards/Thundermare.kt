@@ -33,6 +33,6 @@ val Thundermare = card("Thundermare") {
         collectorNumber = "152"
         artist = "Una Fricker"
         flavorText = "Thunder and lightning herald the coming storm."
-        imageUri = "https://cards.scryfall.io/normal/front/f/6/f6a1b2c3-d4e5-f6a7-b8c9-d0e1f2a3b4c5.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/5/9/59a9f3f5-c80f-47a4-bf84-b7262437017f.jpg"
     }
 }

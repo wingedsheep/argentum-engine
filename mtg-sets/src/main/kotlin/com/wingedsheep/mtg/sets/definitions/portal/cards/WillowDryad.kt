@@ -24,6 +24,6 @@ val WillowDryad = card("Willow Dryad") {
         collectorNumber = "193"
         artist = "Rebecca Guay"
         flavorText = "She dances among the willows, unseen by mortal eyes."
-        imageUri = "https://cards.scryfall.io/normal/front/c/6/c6d7e8f9-a0b1-4c2d-3e4f-5a6b7c8d9e0f.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/1/d/1def835b-aabb-4a9d-8fb9-460452de0d79.jpg"
     }
 }

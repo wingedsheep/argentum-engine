@@ -26,6 +26,6 @@ val AlluringScent = card("Alluring Scent") {
         collectorNumber = "157"
         artist = "Heather Hudson"
         flavorText = "None can resist the call."
-        imageUri = "https://cards.scryfall.io/normal/front/4/b/4bc6f7a8-c9d0-e1f2-a3b4-c5d6e7f8a9b0.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/8/7/8726242e-bfd8-4ed5-a016-ac0c82e4762b.jpg"
     }
 }

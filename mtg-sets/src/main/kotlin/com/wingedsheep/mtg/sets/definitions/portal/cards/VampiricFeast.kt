@@ -28,6 +28,6 @@ val VampiricFeast = card("Vampiric Feast") {
         collectorNumber = "114"
         artist = "Pete Venters"
         flavorText = "The vampire's hunger knows no bounds."
-        imageUri = "https://cards.scryfall.io/normal/front/4/b/4b0c1d2e-5f6a-7b8c-9d0e-1f2a3b4c5d6e.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/1/9/19500ffb-bfad-46d6-8a6e-d134405959c0.jpg"
     }
 }

@@ -30,6 +30,6 @@ val SoulShred = card("Soul Shred") {
         collectorNumber = "112"
         artist = "Brom"
         flavorText = "Life flows from one to another."
-        imageUri = "https://cards.scryfall.io/normal/front/2/9/29a0b1c2-3d4e-5f6a-7b8c-9d0e1f2a3b4c.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/9/9/990902d2-9594-4963-807c-48a90324d487.jpg"
     }
 }

@@ -20,6 +20,6 @@ val ElvishRanger = card("Elvish Ranger") {
         collectorNumber = "165"
         artist = "Randy Gallegos"
         flavorText = "Swift and sure, the ranger finds her mark."
-        imageUri = "https://cards.scryfall.io/normal/front/0/3/03b67c92-7a67-4b14-b24f-e51e7b8e7fc0.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/2/6/26caff65-3a96-46f2-8f0b-e5091b632a2e.jpg"
     }
 }

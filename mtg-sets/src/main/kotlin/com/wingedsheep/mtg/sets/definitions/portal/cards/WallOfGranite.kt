@@ -24,6 +24,6 @@ val WallOfGranite = card("Wall of Granite") {
         collectorNumber = "155"
         artist = "John Matson"
         flavorText = "Solid as the mountain from which it came."
-        imageUri = "https://cards.scryfall.io/normal/front/2/9/29d4e5f6-a7b8-c9d0-e1f2-a3b4c5d6e7f8.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/7/0/70c5ac71-bf45-4b99-8184-36ce88dd728a.jpg"
     }
 }

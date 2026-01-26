@@ -21,6 +21,6 @@ val SpinedWurm = card("Spined Wurm") {
         collectorNumber = "185"
         artist = "Richard Kane Ferguson"
         flavorText = "Towering over the treetops, the wurm cares not for the smaller creatures beneath."
-        imageUri = "https://cards.scryfall.io/normal/front/f/a/fa68af36-4fe1-4ca4-821a-4b9f4e2b4a87.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/0/0/0053bd00-90fd-48c2-8f79-952d5d1e3e74.jpg"
     }
 }

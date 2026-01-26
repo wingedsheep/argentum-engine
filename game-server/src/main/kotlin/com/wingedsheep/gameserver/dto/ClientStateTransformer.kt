@@ -14,6 +14,7 @@ import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.StateProjector
+import com.wingedsheep.engine.registry.CardRegistry
 
 /**
  * Transforms internal game state into client-facing DTOs.
@@ -24,7 +25,9 @@ import com.wingedsheep.engine.mechanics.layers.StateProjector
  * - Applies continuous effects to show "true" card state
  * - Prevents information leakage by only including relevant data
  */
-class ClientStateTransformer {
+class ClientStateTransformer(
+    private val cardRegistry: CardRegistry
+) {
 
     private val stateProjector = StateProjector()
 
@@ -292,7 +295,8 @@ class ClientStateTransformer {
             attachedTo = attachedTo,
             attachments = attachments,
             isFaceDown = isFaceDown,
-            targets = targets
+            targets = targets,
+            imageUri = cardRegistry.getCard(cardComponent.cardDefinitionId)?.metadata?.imageUri
         )
     }
 

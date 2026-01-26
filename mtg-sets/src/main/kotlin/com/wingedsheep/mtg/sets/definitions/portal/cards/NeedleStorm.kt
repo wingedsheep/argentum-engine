@@ -26,6 +26,6 @@ val NeedleStorm = card("Needle Storm") {
         collectorNumber = "179"
         artist = "Charles Gillespie"
         flavorText = "The forest defends its domain against all who soar above."
-        imageUri = "https://cards.scryfall.io/normal/front/8/5/85eaec29-7a16-4e0e-aeaf-e2c70c0d4d3a.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/2/9/29a44e44-94b1-4bd2-8e00-6bd2ec07ee4c.jpg"
     }
 }

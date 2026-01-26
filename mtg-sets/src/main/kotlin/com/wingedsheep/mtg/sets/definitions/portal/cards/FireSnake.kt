@@ -32,6 +32,6 @@ val FireSnake = card("Fire Snake") {
         collectorNumber = "127"
         artist = "Andrew Robinson"
         flavorText = "Its death leaves scorched earth behind."
-        imageUri = "https://cards.scryfall.io/normal/front/1/7/17a8b9c0-d1e2-f3a4-b5c6-d7e8f9a0b1c2.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/d/4/d4c36e32-59e8-4e3d-903e-a264211f2a82.jpg"
     }
 }

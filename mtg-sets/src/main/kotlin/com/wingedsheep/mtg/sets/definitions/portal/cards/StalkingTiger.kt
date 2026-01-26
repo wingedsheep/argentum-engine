@@ -26,6 +26,6 @@ val StalkingTiger = card("Stalking Tiger") {
         collectorNumber = "186"
         artist = "Una Fricker"
         flavorText = "Silent as a shadow, patient as stone."
-        imageUri = "https://cards.scryfall.io/normal/front/2/d/2de80a15-06f8-4f46-9ad6-fb6ddc3b3346.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/c/b/cbc78337-2d1a-4a1d-8630-fcf7a7f6abce.jpg"
     }
 }

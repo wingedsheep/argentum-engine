@@ -47,10 +47,15 @@ class GameWebSocketHandler : TextWebSocketHandler() {
     // Card registry for loading card definitions
     private val cardRegistry = CardRegistry().apply {
         register(PortalSet.allCards)
+        // Also register basic land variants
+        register(PortalSet.basicLands)
     }
 
-    // Random deck generator using Portal set cards
-    private val deckGenerator = RandomDeckGenerator(PortalSet.allCards)
+    // Random deck generator using Portal set cards with land variants for varied art
+    private val deckGenerator = RandomDeckGenerator(
+        cardPool = PortalSet.allCards,
+        basicLandVariants = PortalSet.basicLands
+    )
 
     // Connected players indexed by WebSocket session ID
     private val playerSessions = ConcurrentHashMap<String, PlayerSession>()

@@ -32,6 +32,6 @@ val SymbolOfUnsummoning = card("Symbol of Unsummoning") {
         rarity = Rarity.COMMON
         collectorNumber = "70"
         artist = "Adam Rex"
-        imageUri = "https://cards.scryfall.io/normal/front/c/6/c652c8e4-6b4e-4fae-8b68-e3e30efd4193.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/5/5/55811106-9f30-4e34-924e-2c9401b49574.jpg"
     }
 }

@@ -24,6 +24,6 @@ val Devastation = card("Devastation") {
         collectorNumber = "123"
         artist = "Eric Peterson"
         flavorText = "Nothing remains."
-        imageUri = "https://cards.scryfall.io/normal/front/d/3/d3e4f5a6-b7c8-9d0e-1f2a-3b4c5d6e7f8a.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/7/1/71cce019-162c-4969-89ac-1cf94148a032.jpg"
     }
 }

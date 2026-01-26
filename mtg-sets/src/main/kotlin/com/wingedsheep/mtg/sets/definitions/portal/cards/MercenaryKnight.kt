@@ -30,6 +30,6 @@ val MercenaryKnight = card("Mercenary Knight") {
         collectorNumber = "99"
         artist = "Paolo Parente"
         flavorText = "A mercenary's loyalty lasts only as long as the coin."
-        imageUri = "https://cards.scryfall.io/normal/front/3/a/3a6e09d8-1b84-4c8a-8e35-b7d6a9c3f0a2.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/e/c/ec9f97a2-b04e-418b-89c7-1c019288f27a.jpg"
     }
 }

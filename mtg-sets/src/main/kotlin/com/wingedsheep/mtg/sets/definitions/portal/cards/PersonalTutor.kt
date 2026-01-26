@@ -23,6 +23,6 @@ val PersonalTutor = card("Personal Tutor") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "64"
         artist = "D. Alexander Gregory"
-        imageUri = "https://cards.scryfall.io/normal/front/5/5/55c23f51-9683-4d20-afd8-c4f7ad6eb352.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/1/e/1edc3917-fded-4773-8f8d-62bd861c1131.jpg"
     }
 }

@@ -20,6 +20,6 @@ val HillGiant = card("Hill Giant") {
         collectorNumber = "133"
         artist = "Dan Frazier"
         flavorText = "Hill giants are mostly just big. Of course, that does count for a lot!"
-        imageUri = "https://cards.scryfall.io/normal/front/c/3/c3d4e5f6-a7b8-c9d0-e1f2-a3b4c5d6e7f8.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/7/c/7cd36579-c108-40c0-bce4-38ab837a8c65.jpg"
     }
 }

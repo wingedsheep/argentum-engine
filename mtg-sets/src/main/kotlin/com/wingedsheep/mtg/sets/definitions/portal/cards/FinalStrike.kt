@@ -35,6 +35,6 @@ val FinalStrike = card("Final Strike") {
         rarity = Rarity.RARE
         collectorNumber = "94"
         artist = "Andrew Robinson"
-        imageUri = "https://cards.scryfall.io/normal/front/0/f/0f947e25-fba6-4fea-a9c1-f5bf25f2dc35.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/e/c/ecdfcb03-2f77-4f54-af62-3012cd3efd4f.jpg"
     }
 }

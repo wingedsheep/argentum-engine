@@ -35,6 +35,6 @@ val WoodElves = card("Wood Elves") {
         collectorNumber = "195"
         artist = "Quinton Hoover"
         flavorText = "They know every path through the forest, even the ones yet unmade."
-        imageUri = "https://cards.scryfall.io/normal/front/e/8/e8f9a0b1-c2d3-4e5f-6a7b-8c9d0e1f2a3b.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/b/7/b7f1fb90-5c85-46a5-802d-248cc0250921.jpg"
     }
 }

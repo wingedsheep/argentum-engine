@@ -30,6 +30,6 @@ val DreadReaper = card("Dread Reaper") {
         rarity = Rarity.RARE
         collectorNumber = "89"
         artist = "rk post"
-        imageUri = "https://cards.scryfall.io/normal/front/f/9/f9d7d2c5-96cf-4d1a-b5e6-0e0b8c53f8a6.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/e/b/eb25d674-11f3-42d2-ba2f-e9a5d55a7852.jpg"
     }
 }

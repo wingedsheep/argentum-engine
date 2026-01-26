@@ -31,6 +31,6 @@ val MonstrousGrowth = card("Monstrous Growth") {
         collectorNumber = "173"
         artist = "Dan Frazier"
         flavorText = "Size does matter."
-        imageUri = "https://cards.scryfall.io/normal/front/8/6/86d56826-b75a-4c61-8fd3-62f20f8d8bd3.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/1/f/1fd2edb9-0b53-432e-bb3b-171d2a85439d.jpg"
     }
 }

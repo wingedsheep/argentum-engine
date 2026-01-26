@@ -23,6 +23,6 @@ val WindsOfChange = card("Winds of Change") {
         collectorNumber = "156"
         artist = "NéNé Thomas"
         flavorText = "Change comes like the wind—swift and unpredictable."
-        imageUri = "https://cards.scryfall.io/normal/front/3/a/3ae5f6a7-b8c9-d0e1-f2a3-b4c5d6e7f8a9.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/7/3/735b8aec-62d4-46db-9a68-a6c69cb6fd98.jpg"
     }
 }

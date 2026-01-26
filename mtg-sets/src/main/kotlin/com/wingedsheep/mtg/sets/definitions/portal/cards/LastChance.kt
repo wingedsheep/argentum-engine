@@ -23,6 +23,6 @@ val LastChance = card("Last Chance") {
         collectorNumber = "136"
         artist = "David A. Cherry"
         flavorText = "One final chance to seize victory—or embrace defeat."
-        imageUri = "https://cards.scryfall.io/normal/front/f/6/f6a7b8c9-d0e1-f2a3-b4c5-d6e7f8a9b0c1.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/8/6/86f2c423-1694-466e-9a7d-4ec99e53578d.jpg"
     }
 }

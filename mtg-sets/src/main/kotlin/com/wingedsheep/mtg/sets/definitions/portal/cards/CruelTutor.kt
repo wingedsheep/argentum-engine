@@ -31,6 +31,6 @@ val CruelTutor = card("Cruel Tutor") {
         rarity = Rarity.RARE
         collectorNumber = "87"
         artist = "Brian Snoddy"
-        imageUri = "https://cards.scryfall.io/normal/front/2/5/255c66db-f3ef-4d1f-979c-8c0c0d6c8e76.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/6/c/6c05bfb5-dd36-44c5-a60d-43f7f8c68a6b.jpg"
     }
 }

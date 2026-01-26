@@ -28,6 +28,6 @@ val HandOfDeath = card("Hand of Death") {
         collectorNumber = "96"
         artist = "Brian Snoddy"
         flavorText = "Reach out your hand and touch the dead."
-        imageUri = "https://cards.scryfall.io/normal/front/2/0/20e8acd4-5a75-4591-8f51-1e3a8e8e2a3e.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/2/7/27f136b8-52be-49b9-919b-2b9785254350.jpg"
     }
 }

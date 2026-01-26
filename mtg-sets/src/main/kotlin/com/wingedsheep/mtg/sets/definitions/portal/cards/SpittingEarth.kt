@@ -31,6 +31,6 @@ val SpittingEarth = card("Spitting Earth") {
         collectorNumber = "150"
         artist = "Adrian Smith"
         flavorText = "The mountains themselves rise to defend their domain."
-        imageUri = "https://cards.scryfall.io/normal/front/d/4/d4e0f1a2-b3c4-d5e6-f7a8-b9c0d1e2f3a4.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/e/b/eb16998c-cfa4-49cc-8e37-2dfc33fa2f1e.jpg"
     }
 }

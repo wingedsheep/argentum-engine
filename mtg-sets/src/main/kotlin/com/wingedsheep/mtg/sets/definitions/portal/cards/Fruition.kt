@@ -26,6 +26,6 @@ val Fruition = card("Fruition") {
         collectorNumber = "166"
         artist = "Kev Walker"
         flavorText = "The forest gives life to those who respect it."
-        imageUri = "https://cards.scryfall.io/normal/front/0/4/04a28f42-aef5-41f1-b1f9-1b11e88e8e22.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/1/4/147082a3-1408-44f9-ab39-f069cee5c710.jpg"
     }
 }

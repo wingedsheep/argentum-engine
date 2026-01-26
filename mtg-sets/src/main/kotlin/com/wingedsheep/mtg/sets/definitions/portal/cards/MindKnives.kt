@@ -26,6 +26,6 @@ val MindKnives = card("Mind Knives") {
         collectorNumber = "100"
         artist = "Andrew Robinson"
         flavorText = "The mind can cut deeper than any blade."
-        imageUri = "https://cards.scryfall.io/normal/front/c/4/c4e92e13-b8cc-4d8a-a9f3-1e3c50b76cca.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/d/1/d17e23a6-6313-416d-b826-5df5833371dc.jpg"
     }
 }

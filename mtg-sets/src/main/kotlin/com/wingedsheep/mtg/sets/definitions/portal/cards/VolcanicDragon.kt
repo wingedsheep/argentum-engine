@@ -24,6 +24,6 @@ val VolcanicDragon = card("Volcanic Dragon") {
         collectorNumber = "153"
         artist = "Tom Wänerstrand"
         flavorText = "Speed and fire make a deadly combination."
-        imageUri = "https://cards.scryfall.io/normal/front/0/7/07b2c3d4-e5f6-a7b8-c9d0-e1f2a3b4c5d6.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/d/9/d99c5c70-7568-42d3-939c-b6ee1ed94b9f.jpg"
     }
 }

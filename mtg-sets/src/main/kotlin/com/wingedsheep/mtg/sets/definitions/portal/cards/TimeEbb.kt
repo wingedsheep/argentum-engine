@@ -25,6 +25,6 @@ val TimeEbb = card("Time Ebb") {
         rarity = Rarity.COMMON
         collectorNumber = "75"
         artist = "Randy Gallegos"
-        imageUri = "https://cards.scryfall.io/normal/front/6/e/6e227c8e-cf40-4e8f-a56d-d30e4adf0f3c.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/e/5/e5fd26ca-dc7d-453d-8653-7f967e8f6dc7.jpg"
     }
 }

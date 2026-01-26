@@ -24,6 +24,6 @@ val VirtuesRuin = card("Virtue's Ruin") {
         collectorNumber = "116"
         artist = "Adam Rex"
         flavorText = "Virtue crumbles before the relentless march of darkness."
-        imageUri = "https://cards.scryfall.io/normal/front/6/d/6d0e1f2a-7b8c-9d0e-1f2a-3b4c5d6e7f8a.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/7/8/7854928a-d467-4616-b96b-de7e5fe7303e.jpg"
     }
 }

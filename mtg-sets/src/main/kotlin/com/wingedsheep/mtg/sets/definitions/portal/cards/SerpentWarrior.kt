@@ -29,6 +29,6 @@ val SerpentWarrior = card("Serpent Warrior") {
         collectorNumber = "109"
         artist = "Andrew Robinson"
         flavorText = "Its venom courses through your veins even as you command it."
-        imageUri = "https://cards.scryfall.io/normal/front/f/6/f6a7b8c9-0d1e-2f3a-4b5c-6d7e8f9a0b1c.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/c/3/c364fd06-64c5-45f6-8ed5-64f44a1e8bda.jpg"
     }
 }

@@ -148,7 +148,10 @@ data class ClientCard(
     val isFaceDown: Boolean,
 
     /** Targets for spells/abilities on the stack (for targeting arrows) */
-    val targets: List<ClientChosenTarget> = emptyList()
+    val targets: List<ClientChosenTarget> = emptyList(),
+
+    /** Image URI from card metadata (for rendering card images) */
+    val imageUri: String? = null
 )
 
 /**

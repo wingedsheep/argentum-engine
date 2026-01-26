@@ -24,6 +24,6 @@ val EliteCatWarrior = card("Elite Cat Warrior") {
         collectorNumber = "163"
         artist = "Mark Zug"
         flavorText = "She walks where she wills, and her claws find their marks."
-        imageUri = "https://cards.scryfall.io/normal/front/0/1/01a04e26-6103-4fd3-a6d5-3c12a38dd8e8.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/7/3/7396c4e9-b0d8-4b8f-8c17-6f913a967b17.jpg"
     }
 }

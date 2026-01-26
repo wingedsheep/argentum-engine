@@ -28,6 +28,6 @@ val PlantElemental = card("Plant Elemental") {
         collectorNumber = "181"
         artist = "Donato Giancola"
         flavorText = "Rooted in the forest's magic, it draws life from the land itself."
-        imageUri = "https://cards.scryfall.io/normal/front/d/3/d3aa60ba-3741-4e43-8b90-c84e63bcf7c4.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/8/9/892594db-1d66-4c45-bd54-608a9972ca77.jpg"
     }
 }

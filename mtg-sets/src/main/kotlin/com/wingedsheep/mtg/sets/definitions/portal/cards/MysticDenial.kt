@@ -23,6 +23,6 @@ val MysticDenial = card("Mystic Denial") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "61"
         artist = "Hannibal King"
-        imageUri = "https://cards.scryfall.io/normal/front/7/c/7c93d4e9-7fd6-4814-b86b-89b92d1dad3b.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/5/2/52d60f29-6da0-4ce6-9c92-96f313007271.jpg"
     }
 }

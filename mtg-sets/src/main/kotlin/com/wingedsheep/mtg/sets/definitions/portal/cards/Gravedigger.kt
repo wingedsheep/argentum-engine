@@ -38,6 +38,6 @@ val Gravedigger = card("Gravedigger") {
         collectorNumber = "95"
         artist = "Dermot Power"
         flavorText = "\"A grave is merely a grave if you disturb it only once.\""
-        imageUri = "https://cards.scryfall.io/normal/front/0/f/0fc5f3fd-b1e3-4f15-a9e8-61a0c2c4e5ea.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/b/9/b979d70e-d514-420f-886c-f60e2bb1861f.jpg"
     }
 }

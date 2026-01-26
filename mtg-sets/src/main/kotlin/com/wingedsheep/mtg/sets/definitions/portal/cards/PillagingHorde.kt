@@ -28,6 +28,6 @@ val PillagingHorde = card("Pillaging Horde") {
         collectorNumber = "142"
         artist = "Tom Wänerstrand"
         flavorText = "They take what they want and burn the rest."
-        imageUri = "https://cards.scryfall.io/normal/front/5/c/5cd2e3f4-a5b6-c7d8-e9f0-a1b2c3d4e5f6.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/1/d/1daad744-e6b2-4bd8-83df-2e97e9e60d16.jpg"
     }
 }

@@ -26,6 +26,6 @@ val ScorchingSpear = card("Scorching Spear") {
         collectorNumber = "148"
         artist = "Dan Frazier"
         flavorText = "A single point of flame can pierce the mightiest armor."
-        imageUri = "https://cards.scryfall.io/normal/front/b/2/b2c9d0e1-f2a3-b4c5-d6e7-f8a9b0c1d2e3.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/9/e/9e4817bd-68e8-4a85-983a-ee6dda2bbf33.jpg"
     }
 }

@@ -27,6 +27,6 @@ val LavaFlow = card("Lava Flow") {
         collectorNumber = "138"
         artist = "John Coulthart"
         flavorText = "Nothing stands before the river of fire."
-        imageUri = "https://cards.scryfall.io/normal/front/1/8/18a9b0c1-d2e3-f4a5-b6c7-d8e9f0a1b2c3.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/8/9/89e825e4-98be-49f0-bc5e-c8988118dcef.jpg"
     }
 }

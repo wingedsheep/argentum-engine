@@ -41,6 +41,6 @@ val WitheringGaze = card("Withering Gaze") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "78"
         artist = "Anthony S. Waters"
-        imageUri = "https://cards.scryfall.io/normal/front/1/9/194d94d2-3e1f-4e1b-8e49-4d2b27e10fe0.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/0/e/0e952a48-9e60-4fce-8423-7f0bafd29bb1.jpg"
     }
 }

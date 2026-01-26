@@ -23,6 +23,6 @@ val PhantomWarrior = card("Phantom Warrior") {
         rarity = Rarity.RARE
         collectorNumber = "65"
         artist = "Dan Frazier"
-        imageUri = "https://cards.scryfall.io/normal/front/8/a/8a375a88-1cbc-4a9b-b1d0-ef90f12c2a08.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/6/d/6dbcb0df-d1cc-4718-ba1e-b590852cce20.jpg"
     }
 }

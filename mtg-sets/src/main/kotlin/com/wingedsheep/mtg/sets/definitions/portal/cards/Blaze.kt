@@ -26,6 +26,6 @@ val Blaze = card("Blaze") {
         collectorNumber = "118"
         artist = "Michael Sutfin"
         flavorText = "Fire answers to no one."
-        imageUri = "https://cards.scryfall.io/normal/front/8/f/8f0a1b2c-9d0e-1f2a-3b4c-5d6e7f8a9b0c.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/f/1/f175c959-3b5d-46a3-9194-fad2359bbff9.jpg"
     }
 }

@@ -24,6 +24,6 @@ val Anaconda = card("Anaconda") {
         collectorNumber = "158"
         artist = "Una Fricker"
         flavorText = "Silent death glides through the murky waters."
-        imageUri = "https://cards.scryfall.io/normal/front/5/c/5cd7e8a9-b0e1-f2a3-b4c5-d6e7f8a9b0c1.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/0/a/0a2012ad-6425-4935-83af-fc7309ec2ece.jpg"
     }
 }

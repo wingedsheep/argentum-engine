@@ -26,6 +26,6 @@ val MindRot = card("Mind Rot") {
         collectorNumber = "101"
         artist = "Brian Snoddy"
         flavorText = "The mind is a fragile thing, easily shattered."
-        imageUri = "https://cards.scryfall.io/normal/front/8/1/81c7c75b-2c3c-4c93-8a8f-a21d0f14b9e7.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/b/9/b91d355d-8409-4f0b-87ce-7590a8b9ebc0.jpg"
     }
 }

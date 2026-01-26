@@ -24,6 +24,6 @@ val MountainGoat = card("Mountain Goat") {
         collectorNumber = "141"
         artist = "Heather Hudson"
         flavorText = "The mountain is as much its domain as the sky is the eagle's."
-        imageUri = "https://cards.scryfall.io/normal/front/4/b/4bc1d2e3-f4a5-b6c7-d8e9-f0a1b2c3d4e5.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/3/2/325100f1-d424-4db0-bfa9-24877156c0ba.jpg"
     }
 }

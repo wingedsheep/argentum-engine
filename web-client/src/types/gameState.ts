@@ -128,6 +128,9 @@ export interface ClientCard {
 
   /** Targets for spells/abilities on the stack (for targeting arrows) */
   readonly targets: readonly ClientChosenTarget[]
+
+  /** Image URI from card metadata (for rendering card images) */
+  readonly imageUri?: string | null
 }
 
 /**

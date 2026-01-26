@@ -31,6 +31,6 @@ val FireImp = card("Fire Imp") {
         collectorNumber = "126"
         artist = "Pete Venters"
         flavorText = "Small but deadly."
-        imageUri = "https://cards.scryfall.io/normal/front/0/6/06a7b8c9-d0e1-f2a3-b4c5-d6e7f8a9b0c1.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/e/a/ea7edaf3-7941-4085-bdbc-e5c9832b6444.jpg"
     }
 }

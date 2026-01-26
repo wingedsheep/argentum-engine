@@ -23,6 +23,6 @@ val SnappingDrake = card("Snapping Drake") {
         rarity = Rarity.COMMON
         collectorNumber = "67"
         artist = "Christopher Rush"
-        imageUri = "https://cards.scryfall.io/normal/front/c/6/c66d8a68-b0e1-4e22-9381-8c1d1a4ad65d.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/7/b/7b49dd4c-ead6-4d94-9acb-0518d1f6426e.jpg"
     }
 }

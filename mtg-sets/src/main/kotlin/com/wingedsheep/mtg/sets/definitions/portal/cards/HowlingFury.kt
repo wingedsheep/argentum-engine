@@ -32,6 +32,6 @@ val HowlingFury = card("Howling Fury") {
         collectorNumber = "97"
         artist = "Clyde Caldwell"
         flavorText = "The rage of the cursed can be harnessed but never controlled."
-        imageUri = "https://cards.scryfall.io/normal/front/8/2/821de8a5-2c8f-4a8d-a7a2-df7b2e2f7a9e.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/a/4/a49a7c61-8696-4bab-9c96-05028db3a9f9.jpg"
     }
 }

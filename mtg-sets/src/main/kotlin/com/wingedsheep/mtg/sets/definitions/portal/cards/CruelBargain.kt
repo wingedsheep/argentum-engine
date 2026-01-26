@@ -29,6 +29,6 @@ val CruelBargain = card("Cruel Bargain") {
         rarity = Rarity.RARE
         collectorNumber = "86"
         artist = "Kev Walker"
-        imageUri = "https://cards.scryfall.io/normal/front/7/9/79e0e2c6-4e7e-4a0f-8c36-d3cdff77ed1a.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/9/6/96837a9e-dd68-4ce8-b760-0e1c22837164.jpg"
     }
 }

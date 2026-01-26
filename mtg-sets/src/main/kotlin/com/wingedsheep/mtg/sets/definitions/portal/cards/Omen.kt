@@ -29,6 +29,6 @@ val Omen = card("Omen") {
         rarity = Rarity.COMMON
         collectorNumber = "62"
         artist = "Eric Peterson"
-        imageUri = "https://cards.scryfall.io/normal/front/c/a/ca5c8e94-5b3a-4bc1-a91b-6bec6c62a3a7.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/6/b/6be1956e-c43e-4a6c-950a-5be6e6ca013f.jpg"
     }
 }

@@ -28,6 +28,6 @@ val NoxiousToad = card("Noxious Toad") {
         collectorNumber = "104"
         artist = "Ron Spencer"
         flavorText = "Even in death, its poison lingers."
-        imageUri = "https://cards.scryfall.io/normal/front/a/1/a1e5b0e7-8c2d-4e3a-9f4b-5c6d7e8f9a0b.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/b/5/b5ec75ba-bae2-4ccc-b18b-ad4639cfb548.jpg"
     }
 }

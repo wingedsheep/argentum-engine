@@ -22,6 +22,6 @@ val BogRaiders = card("Bog Raiders") {
         rarity = Rarity.COMMON
         collectorNumber = "82"
         artist = "Chippy"
-        imageUri = "https://cards.scryfall.io/normal/front/5/4/54d5e5c3-456a-4ccf-9d06-3f968b1c5d53.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/e/b/eb7bbb7a-b59a-4a01-b1cb-66eef881ffcd.jpg"
     }
 }

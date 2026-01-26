@@ -27,6 +27,6 @@ val ThingFromTheDeep = card("Thing from the Deep") {
         rarity = Rarity.RARE
         collectorNumber = "73"
         artist = "Pete Venters"
-        imageUri = "https://cards.scryfall.io/normal/front/b/0/b0a5a7a6-0e7e-4a3f-8b26-dbf9862f0fce.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/c/b/cb3b9682-7f3a-4857-9ecf-01f3530659fc.jpg"
     }
 }

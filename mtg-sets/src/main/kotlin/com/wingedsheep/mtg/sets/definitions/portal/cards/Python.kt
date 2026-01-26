@@ -20,6 +20,6 @@ val Python = card("Python") {
         collectorNumber = "105"
         artist = "Una Fricker"
         flavorText = "Silent and deadly, it strikes without warning."
-        imageUri = "https://cards.scryfall.io/normal/front/b/2/b2c3d4e5-6f7a-8b9c-0d1e-2f3a4b5c6d7e.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/8/2/82c552a1-6245-4caf-8249-765ce7ea80d2.jpg"
     }
 }

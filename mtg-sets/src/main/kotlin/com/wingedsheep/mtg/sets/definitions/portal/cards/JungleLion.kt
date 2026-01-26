@@ -27,6 +27,6 @@ val JungleLion = card("Jungle Lion") {
         collectorNumber = "171"
         artist = "Janine Johnston"
         flavorText = "The lion lurks in the deepest jungle, waiting for unwary prey."
-        imageUri = "https://cards.scryfall.io/normal/front/f/3/f3f0a586-d65a-4da6-a6bb-88a29c6ea6d8.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/6/1/613ceee3-92c7-46f1-8267-d6229ab15df5.jpg"
     }
 }

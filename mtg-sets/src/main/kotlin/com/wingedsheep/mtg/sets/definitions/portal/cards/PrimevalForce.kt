@@ -28,6 +28,6 @@ val PrimevalForce = card("Primeval Force") {
         collectorNumber = "182"
         artist = "John Avon"
         flavorText = "The raw power of nature personified, demanding tribute from the land."
-        imageUri = "https://cards.scryfall.io/normal/front/1/b/1b3d5fb8-1ee9-45ad-b2e0-b33f7fb1f0ea.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/1/c/1ce7fc51-0ed8-49d9-bdba-ba5a89e1e852.jpg"
     }
 }

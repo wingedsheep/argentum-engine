@@ -28,6 +28,6 @@ val DeepWood = card("Deep Wood") {
         collectorNumber = "162"
         artist = "Terese Nielsen"
         flavorText = "In the deep wood, the trees themselves offer protection."
-        imageUri = "https://cards.scryfall.io/normal/front/0/0/004eb8ea-8e9a-4aff-8f41-e7f2c2f0d68c.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/4/2/4216c5aa-9df0-4e7c-b3e9-a3f712b17ce7.jpg"
     }
 }

@@ -23,6 +23,6 @@ val Mobilize = card("Mobilize") {
         collectorNumber = "172"
         artist = "Rebecca Guay"
         flavorText = "Rise, warriors! The battle awaits!"
-        imageUri = "https://cards.scryfall.io/normal/front/4/a/4a20c68d-f6b8-415f-9d62-ce0dc5aea69c.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/9/7/9712ecaa-4059-44ba-98b7-07bfe7411b5b.jpg"
     }
 }

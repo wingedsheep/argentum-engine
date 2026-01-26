@@ -20,6 +20,6 @@ val GrizzlyBears = card("Grizzly Bears") {
         collectorNumber = "169"
         artist = "Jeff A. Menges"
         flavorText = "Don't try to outrun one of Dominaria's grizzlies; it'll catch you, knock you down, and eat you."
-        imageUri = "https://cards.scryfall.io/normal/front/0/7/07095b44-e26a-47d5-a8c6-2e45a066fbc8.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/4/8/48e1b99c-97d0-48f2-bfdf-faa65bc0b608.jpg"
     }
 }

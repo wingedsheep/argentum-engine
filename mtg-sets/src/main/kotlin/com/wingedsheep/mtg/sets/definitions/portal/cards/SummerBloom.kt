@@ -23,6 +23,6 @@ val SummerBloom = card("Summer Bloom") {
         collectorNumber = "187"
         artist = "Alan Rabinowitz"
         flavorText = "In summer's warmth, the land yields its bounty freely."
-        imageUri = "https://cards.scryfall.io/normal/front/f/e/fe651c3f-c753-4f67-b7c0-e3fe6e8f18bd.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/5/e/5e86abcc-272e-4959-90ee-343b9f546ea7.jpg"
     }
 }

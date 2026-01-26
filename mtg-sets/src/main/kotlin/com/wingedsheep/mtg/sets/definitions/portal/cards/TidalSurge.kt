@@ -26,6 +26,6 @@ val TidalSurge = card("Tidal Surge") {
         rarity = Rarity.COMMON
         collectorNumber = "74"
         artist = "Drew Tucker"
-        imageUri = "https://cards.scryfall.io/normal/front/9/1/91d4d5e5-67de-4fa1-bb7e-5f48e2b10587.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/a/0/a027c31d-c662-4ce1-a0d1-a32e62f6a724.jpg"
     }
 }

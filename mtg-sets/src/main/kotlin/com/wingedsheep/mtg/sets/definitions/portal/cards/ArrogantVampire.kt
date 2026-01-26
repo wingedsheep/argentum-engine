@@ -22,6 +22,6 @@ val ArrogantVampire = card("Arrogant Vampire") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "79"
         artist = "Pete Venters"
-        imageUri = "https://cards.scryfall.io/normal/front/6/2/6228f6a5-6f6e-465b-870b-86b2a2ccb3f4.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/e/7/e7342875-d49b-4fa7-a2fb-8dfc5e3d6e4f.jpg"
     }
 }

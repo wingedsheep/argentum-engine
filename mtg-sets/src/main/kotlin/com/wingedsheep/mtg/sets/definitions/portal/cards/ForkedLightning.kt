@@ -28,6 +28,6 @@ val ForkedLightning = card("Forked Lightning") {
         collectorNumber = "130"
         artist = "Sandra Everingham"
         flavorText = "Lightning strikes thrice."
-        imageUri = "https://cards.scryfall.io/normal/front/4/a/4a0b1c2d-e3f4-a5b6-c7d8-e9f0a1b2c3d4.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/8/5/85883197-fd55-4e82-862f-87be4f789493.jpg"
     }
 }

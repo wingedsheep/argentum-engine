@@ -21,6 +21,6 @@ val RowanTreefolk = card("Rowan Treefolk") {
         collectorNumber = "184"
         artist = "Randy Gallegos"
         flavorText = "The rowan tree is said to protect against evil spirits."
-        imageUri = "https://cards.scryfall.io/normal/front/3/f/3fb5a13b-ef46-4b5d-890e-9eb8abe0e7a0.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/8/5/852a0956-8558-4754-ab57-6f1cc4de740e.jpg"
     }
 }

@@ -29,6 +29,6 @@ val UntamedWilds = card("Untamed Wilds") {
         collectorNumber = "191"
         artist = "NéNé Thomas"
         flavorText = "The wild places hold secrets waiting to be found."
-        imageUri = "https://cards.scryfall.io/normal/front/a/8/a8e07e6c-0ca4-4c43-a3a8-f2b1f2c2e3b4.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/1/f/1f4fd77e-ee43-4de7-9ee8-1075ff70b5e7.jpg"
     }
 }

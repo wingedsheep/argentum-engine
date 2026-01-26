@@ -23,6 +23,6 @@ val BogWraith = card("Bog Wraith") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "83"
         artist = "Jeff A. Menges"
-        imageUri = "https://cards.scryfall.io/normal/front/7/e/7e8e4194-d8a3-4dd3-a7ab-ae2c5c6cc0e2.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/4/4/4487d7d0-d5a5-4b0c-bf30-e0ec511e9aa4.jpg"
     }
 }

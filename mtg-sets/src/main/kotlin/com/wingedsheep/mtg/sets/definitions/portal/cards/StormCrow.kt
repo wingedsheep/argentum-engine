@@ -23,6 +23,6 @@ val StormCrow = card("Storm Crow") {
         rarity = Rarity.COMMON
         collectorNumber = "69"
         artist = "Una Fricker"
-        imageUri = "https://cards.scryfall.io/normal/front/0/3/036ef8c9-72ac-46ce-af07-83b79d736538.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/d/f/dfe87b59-b456-4532-a695-0dea3110d878.jpg"
     }
 }

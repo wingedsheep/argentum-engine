@@ -20,6 +20,6 @@ val LizardWarrior = card("Lizard Warrior") {
         collectorNumber = "139"
         artist = "Tony Szczudlo"
         flavorText = "Don't let its appearance frighten you. Let its claws and teeth do that."
-        imageUri = "https://cards.scryfall.io/normal/front/2/9/29a0b1c2-d3e4-f5a6-b7c8-d9e0f1a2b3c4.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/0/5/053cd970-5b79-410b-8420-82d9a490b897.jpg"
     }
 }

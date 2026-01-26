@@ -27,6 +27,6 @@ val HulkingCyclops = card("Hulking Cyclops") {
         collectorNumber = "134"
         artist = "Randy Gallegos"
         flavorText = "Sometimes a foe's greatest weakness is itself."
-        imageUri = "https://cards.scryfall.io/normal/front/d/4/d4e5f6a7-b8c9-d0e1-f2a3-b4c5d6e7f8a9.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/f/2/f20ae982-8a70-4dd3-8254-0d447954f580.jpg"
     }
 }

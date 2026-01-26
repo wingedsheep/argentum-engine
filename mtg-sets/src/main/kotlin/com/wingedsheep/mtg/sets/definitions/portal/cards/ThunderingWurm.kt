@@ -29,6 +29,6 @@ val ThunderingWurm = card("Thundering Wurm") {
         collectorNumber = "189"
         artist = "Greg Staples"
         flavorText = "Its passage shakes the earth like thunder."
-        imageUri = "https://cards.scryfall.io/normal/front/e/2/e2e15b39-8afc-483c-8c0c-3a8e7e5e60c3.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/8/b/8b0ba623-d17f-4f0e-b914-da139a3971df.jpg"
     }
 }

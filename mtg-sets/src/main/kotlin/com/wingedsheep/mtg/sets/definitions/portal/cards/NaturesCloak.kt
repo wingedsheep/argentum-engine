@@ -29,6 +29,6 @@ val NaturesCloak = card("Nature's Cloak") {
         collectorNumber = "177"
         artist = "Rebecca Guay"
         flavorText = "The forest cloaks its children in leaves and shadow."
-        imageUri = "https://cards.scryfall.io/normal/front/7/0/70a6b656-4b5f-4d5d-be5d-d0d6d3b7c6c1.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/1/d/1dfaba58-d0ab-4d1d-91dd-48543c862165.jpg"
     }
 }

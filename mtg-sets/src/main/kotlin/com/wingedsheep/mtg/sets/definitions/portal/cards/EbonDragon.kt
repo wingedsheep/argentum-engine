@@ -34,6 +34,6 @@ val EbonDragon = card("Ebon Dragon") {
         rarity = Rarity.RARE
         collectorNumber = "91"
         artist = "Ron Spencer"
-        imageUri = "https://cards.scryfall.io/normal/front/f/6/f6e16893-5ca1-4b55-a60e-e7e5a50f0ffe.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/4/f/4f10cf69-d3dc-43a4-9595-0f7d245c5efa.jpg"
     }
 }

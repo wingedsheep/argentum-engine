@@ -26,6 +26,6 @@ val BeeSting = card("Bee Sting") {
         collectorNumber = "159"
         artist = "Thomas M. Baxa"
         flavorText = "Nature's smallest warriors pack a powerful punch."
-        imageUri = "https://cards.scryfall.io/normal/front/6/d/6de8f9a0-b1c2-d3e4-f5a6-b7c8d9e0f1a2.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/2/3/23bcf64a-ae3d-4abb-acc7-81bba237f37b.jpg"
     }
 }

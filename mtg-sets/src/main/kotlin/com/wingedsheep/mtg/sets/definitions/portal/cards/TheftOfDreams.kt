@@ -29,6 +29,6 @@ val TheftOfDreams = card("Theft of Dreams") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "72"
         artist = "Brian Snoddy"
-        imageUri = "https://cards.scryfall.io/normal/front/1/c/1c0d8c1f-a8d7-4d75-b276-d15b2c49b4d0.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/2/9/29019e28-4ef8-4732-9972-0a47305fe303.jpg"
     }
 }

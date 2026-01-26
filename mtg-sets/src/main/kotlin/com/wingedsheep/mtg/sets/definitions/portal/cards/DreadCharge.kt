@@ -27,6 +27,6 @@ val DreadCharge = card("Dread Charge") {
         rarity = Rarity.RARE
         collectorNumber = "88"
         artist = "Kev Walker"
-        imageUri = "https://cards.scryfall.io/normal/front/d/d/dd69eb4b-5c8f-459f-9b20-4e1a0f48b3c7.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/e/d/ed0ca934-6989-415b-8816-7c66d22b4707.jpg"
     }
 }

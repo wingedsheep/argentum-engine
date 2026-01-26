@@ -27,6 +27,6 @@ val StoneRain = card("Stone Rain") {
         collectorNumber = "151"
         artist = "John Matson"
         flavorText = "I cast a thousand tiny suns— Beware my many dawns."
-        imageUri = "https://cards.scryfall.io/normal/front/e/5/e5f0a1b2-c3d4-e5f6-a7b8-c9d0e1f2a3b4.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/5/7/57f84a13-d7dc-491b-a77c-1b99b6797d7e.jpg"
     }
 }

@@ -29,6 +29,6 @@ val NaturalSpring = card("Natural Spring") {
         collectorNumber = "176"
         artist = "Janine Johnston"
         flavorText = "The spring's waters carry the healing essence of the forest."
-        imageUri = "https://cards.scryfall.io/normal/front/4/e/4e73e4a1-6f33-4c8f-b5e6-c5c48feeac8b.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/8/d/8ddfc1cc-5c13-443c-a0ae-0bcc931923e7.jpg"
     }
 }

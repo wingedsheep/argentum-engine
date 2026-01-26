@@ -24,6 +24,6 @@ val DesertDrake = card("Desert Drake") {
         collectorNumber = "122"
         artist = "Roger Raupp"
         flavorText = "It hunts the scorching winds."
-        imageUri = "https://cards.scryfall.io/normal/front/c/2/c2d3e4f5-a6b7-8c9d-0e1f-2a3b4c5d6e7f.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/2/4/24673b35-aed2-40c0-a4ae-93bc4d392562.jpg"
     }
 }

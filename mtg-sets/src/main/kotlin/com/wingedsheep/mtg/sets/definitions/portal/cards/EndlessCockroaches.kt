@@ -28,6 +28,6 @@ val EndlessCockroaches = card("Endless Cockroaches") {
         rarity = Rarity.RARE
         collectorNumber = "92"
         artist = "Ron Spencer"
-        imageUri = "https://cards.scryfall.io/normal/front/d/e/de1cd0c0-3f86-4474-ad92-8a8fb0e2f53b.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/0/d/0d3d18b9-ad59-435b-934b-703e10287e32.jpg"
     }
 }

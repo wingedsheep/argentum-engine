@@ -20,6 +20,6 @@ val SkeletalSnake = card("Skeletal Snake") {
         collectorNumber = "111"
         artist = "Heather Hudson"
         flavorText = "Bones slither through the darkness."
-        imageUri = "https://cards.scryfall.io/normal/front/1/8/18a9b0c1-2d3e-4f5a-6b7c-8d9e0f1a2b3c.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/4/2/42bd4896-4191-4479-be57-070753f8725c.jpg"
     }
 }

@@ -22,6 +22,6 @@ val WindDrake = card("Wind Drake") {
         rarity = Rarity.COMMON
         collectorNumber = "77"
         artist = "Clyde Caldwell"
-        imageUri = "https://cards.scryfall.io/normal/front/a/d/ad80fab9-d356-4d72-a9b9-a2b1a7f0ab7f.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/5/4/5486d2dc-9a5d-4f58-a5ec-d94de54b852f.jpg"
     }
 }

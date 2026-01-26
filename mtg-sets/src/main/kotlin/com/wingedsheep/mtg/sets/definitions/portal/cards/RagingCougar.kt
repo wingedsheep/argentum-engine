@@ -24,6 +24,6 @@ val RagingCougar = card("Raging Cougar") {
         collectorNumber = "144"
         artist = "Una Fricker"
         flavorText = "Swift as thought, deadly as action."
-        imageUri = "https://cards.scryfall.io/normal/front/7/e/7ef4a5b6-c7d8-e9f0-a1b2-c3d4e5f6a7b8.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/f/d/fd9d126a-9db9-4adc-9cf6-11408c63201d.jpg"
     }
 }

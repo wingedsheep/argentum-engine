@@ -24,6 +24,6 @@ val GiantSpider = card("Giant Spider") {
         collectorNumber = "167"
         artist = "Rob Alexander"
         flavorText = "Its web spans the gap between two ancient trees, catching anything foolish enough to fly through."
-        imageUri = "https://cards.scryfall.io/normal/front/0/5/058de00f-6ece-46a1-b9a9-84d25e7e0e2e.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/2/9/2995530c-16bd-4dcb-99c2-008bba00052c.jpg"
     }
 }

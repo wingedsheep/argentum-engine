@@ -20,6 +20,6 @@ val HighlandGiant = card("Highland Giant") {
         collectorNumber = "132"
         artist = "Randy Gallegos"
         flavorText = "Though slow-witted and slow-moving, they are quick to anger."
-        imageUri = "https://cards.scryfall.io/normal/front/b/2/b2c3d4e5-f6a7-b8c9-d0e1-f2a3b4c5d6e7.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/3/2/32f49716-1522-4f36-92c9-63ef2059c4ef.jpg"
     }
 }

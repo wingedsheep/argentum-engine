@@ -32,6 +32,6 @@ val SorcerousSight = card("Sorcerous Sight") {
         rarity = Rarity.COMMON
         collectorNumber = "68"
         artist = "Kaja Foglio"
-        imageUri = "https://cards.scryfall.io/normal/front/9/4/9424e0e9-4fda-4b5b-9dd0-f3c1d7fb2a08.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/e/c/ecfd43dc-e5fd-43bc-babb-fe7ecb6ccd00.jpg"
     }
 }

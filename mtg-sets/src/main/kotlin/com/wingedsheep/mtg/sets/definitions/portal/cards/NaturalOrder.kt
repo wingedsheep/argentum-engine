@@ -41,6 +41,6 @@ val NaturalOrder = card("Natural Order") {
         collectorNumber = "175"
         artist = "Alan Rabinowitz"
         flavorText = "Nature's cycle continues: from life, life springs forth."
-        imageUri = "https://cards.scryfall.io/normal/front/b/f/bfe3329c-7faa-4925-b9d2-075a1ab27e80.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/c/e/cecb34f8-6961-4c27-9368-26d156714d7b.jpg"
     }
 }

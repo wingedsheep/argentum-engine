@@ -41,6 +41,6 @@ val FireDragon = card("Fire Dragon") {
         collectorNumber = "125"
         artist = "Edward Beard, Jr."
         flavorText = "Its breath carries the fury of the mountains themselves."
-        imageUri = "https://cards.scryfall.io/normal/front/f/5/f5a6b7c8-d9e0-1f2a-3b4c-5d6e7f8a9b0c.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/b/f/bf1f26d1-4381-470a-bfbf-ef226f980597.jpg"
     }
 }

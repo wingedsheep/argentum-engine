@@ -20,6 +20,6 @@ val MuckRats = card("Muck Rats") {
         collectorNumber = "102"
         artist = "Heather Hudson"
         flavorText = "They scurry through the darkness, leaving only disease in their wake."
-        imageUri = "https://cards.scryfall.io/normal/front/b/b/bb3e6e58-8ac0-4e64-b01b-d26c4c8c1a5c.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/d/4/d4041226-7ce2-46d1-8844-20fa50b6568a.jpg"
     }
 }

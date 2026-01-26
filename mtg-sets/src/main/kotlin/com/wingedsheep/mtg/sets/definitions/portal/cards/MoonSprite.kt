@@ -24,6 +24,6 @@ val MoonSprite = card("Moon Sprite") {
         collectorNumber = "174"
         artist = "Terese Nielsen"
         flavorText = "Dancing in the moonlight, she weaves dreams into the night."
-        imageUri = "https://cards.scryfall.io/normal/front/0/8/08e43fa5-7a78-4986-87a0-75c4aec4b0db.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/f/0/f0944759-ee9f-4ae0-9d1b-2533ff6791a2.jpg"
     }
 }

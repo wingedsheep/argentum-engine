@@ -22,6 +22,6 @@ val DrySpell = card("Dry Spell") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "90"
         artist = "Quinton Hoover"
-        imageUri = "https://cards.scryfall.io/normal/front/5/d/5db37eb4-8c71-4d77-9a7d-fd4e09a20e0a.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/a/1/a142f369-8fdd-4dc8-b5d9-3493455cc588.jpg"
     }
 }

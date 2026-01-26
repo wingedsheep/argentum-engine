@@ -34,6 +34,6 @@ val SerpentAssassin = card("Serpent Assassin") {
         collectorNumber = "108"
         artist = "Ron Spencer"
         flavorText = "Swift, silent, and utterly lethal."
-        imageUri = "https://cards.scryfall.io/normal/front/e/5/e5f6a7b8-9c0d-1e2f-3a4b-5c6d7e8f9a0b.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/1/0/1018f6ff-5eaa-4fe1-ba20-544df799f5b2.jpg"
     }
 }

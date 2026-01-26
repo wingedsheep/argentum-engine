@@ -23,6 +23,6 @@ val Pyroclasm = card("Pyroclasm") {
         collectorNumber = "143"
         artist = "John Avon"
         flavorText = "A wave of fire sweeps across the land."
-        imageUri = "https://cards.scryfall.io/normal/front/6/d/6de3f4a5-b6c7-d8e9-f0a1-b2c3d4e5f6a7.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/d/e/de214247-e5e3-4d8f-935a-797218416be1.jpg"
     }
 }

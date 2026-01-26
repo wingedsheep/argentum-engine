@@ -28,6 +28,6 @@ val ScorchingWinds = card("Scorching Winds") {
         collectorNumber = "149"
         artist = "D. Alexander Gregory"
         flavorText = "The desert wind carries fire in its breath."
-        imageUri = "https://cards.scryfall.io/normal/front/c/3/c3d0e1f2-a3b4-c5d6-e7f8-a9b0c1d2e3f4.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/5/f/5fec371e-d4ba-439f-b1b8-2aac3f5b36bf.jpg"
     }
 }

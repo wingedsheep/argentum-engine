@@ -31,6 +31,6 @@ val OwlFamiliar = card("Owl Familiar") {
         rarity = Rarity.COMMON
         collectorNumber = "63"
         artist = "Janine Johnston"
-        imageUri = "https://cards.scryfall.io/normal/front/b/8/b8a7e16e-a5f8-4c47-b6d8-e3d8bd8db46f.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/d/9/d9587bcb-0ece-4b36-85dc-76899e403b08.jpg"
     }
 }

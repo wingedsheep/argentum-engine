@@ -27,6 +27,6 @@ val RainOfTears = card("Rain of Tears") {
         collectorNumber = "106"
         artist = "Jim Nelson"
         flavorText = "The land weeps as corruption takes hold."
-        imageUri = "https://cards.scryfall.io/normal/front/c/3/c3d4e5f6-7a8b-9c0d-1e2f-3a4b5c6d7e8f.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/8/0/803ba4ef-24ed-4f45-aed8-f9442322e31e.jpg"
     }
 }

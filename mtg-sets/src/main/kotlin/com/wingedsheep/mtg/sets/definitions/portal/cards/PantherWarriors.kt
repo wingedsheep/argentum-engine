@@ -20,6 +20,6 @@ val PantherWarriors = card("Panther Warriors") {
         collectorNumber = "180"
         artist = "Eric Peterson"
         flavorText = "Swift and deadly, they strike from the shadows."
-        imageUri = "https://cards.scryfall.io/normal/front/b/7/b7dba5c6-70aa-4a59-8f1f-e45f3cae1d08.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/8/b/8be610ce-5b84-416e-b427-98887642ff01.jpg"
     }
 }

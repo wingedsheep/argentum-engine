@@ -27,6 +27,6 @@ val WintersGrasp = card("Winter's Grasp") {
         collectorNumber = "194"
         artist = "Rebecca Guay"
         flavorText = "Winter's cold grip claims all, even the land itself."
-        imageUri = "https://cards.scryfall.io/normal/front/d/7/d7e8f9a0-b1c2-3d4e-5f6a-7b8c9d0e1f2a.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/b/2/b2215de4-da49-4270-aec7-5e16a938bae4.jpg"
     }
 }

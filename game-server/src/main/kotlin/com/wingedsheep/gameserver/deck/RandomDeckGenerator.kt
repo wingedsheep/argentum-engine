@@ -12,9 +12,11 @@ import kotlin.random.Random
  * - Selects cards matching those colors
  * - Ensures good mana curve (more 2-3 drops, fewer high-cost cards)
  * - Adds appropriate basic lands based on color distribution
+ * - Uses random art variants for basic lands
  */
 class RandomDeckGenerator(
     private val cardPool: List<CardDefinition>,
+    private val basicLandVariants: List<CardDefinition> = emptyList(),
     private val random: Random = Random.Default
 ) {
     companion object {
@@ -46,10 +48,15 @@ class RandomDeckGenerator(
         )
     }
 
+    // Group land variants by land type for easy random selection
+    private val landVariantsByType: Map<String, List<CardDefinition>> = basicLandVariants
+        .groupBy { it.name }
+
     /**
      * Generates a random deck.
      *
-     * @return A map of card names to counts
+     * @return A map of card names/identifiers to counts.
+     *         Land variants use "Name#CollectorNumber" format (e.g., "Plains#196")
      */
     fun generate(): Map<String, Int> {
         // Step 1: Pick 1-2 colors randomly
@@ -64,10 +71,13 @@ class RandomDeckGenerator(
         val selectedSpells = selectSpellsWithCurve(availableSpells)
 
         // Step 4: Calculate land distribution based on color weight
-        val lands = calculateLands(selectedSpells, colors)
+        val landCounts = calculateLandCounts(selectedSpells, colors)
 
-        // Step 5: Combine into deck map
-        return buildDeckMap(selectedSpells, lands)
+        // Step 5: Pick random land variants
+        val landVariants = pickLandVariants(landCounts)
+
+        // Step 6: Combine into deck map
+        return buildDeckMap(selectedSpells, landVariants)
     }
 
     /**
@@ -187,8 +197,9 @@ class RandomDeckGenerator(
 
     /**
      * Calculates land distribution based on color weight in selected spells.
+     * Returns a map of land type name to count needed.
      */
-    private fun calculateLands(spells: List<CardDefinition>, colors: Set<Color>): Map<String, Int> {
+    private fun calculateLandCounts(spells: List<CardDefinition>, colors: Set<Color>): Map<String, Int> {
         if (colors.size == 1) {
             // Mono-color: all lands of that color
             val landName = COLOR_TO_LAND[colors.first()]!!
@@ -242,9 +253,42 @@ class RandomDeckGenerator(
     }
 
     /**
-     * Builds the final deck map from selected spells and lands.
+     * Picks random land variants for the given land counts.
+     * Returns a list of land identifiers in "Name#CollectorNumber" format if variants are available,
+     * otherwise just the land name.
      */
-    private fun buildDeckMap(spells: List<CardDefinition>, lands: Map<String, Int>): Map<String, Int> {
+    private fun pickLandVariants(landCounts: Map<String, Int>): List<String> {
+        val result = mutableListOf<String>()
+
+        for ((landName, count) in landCounts) {
+            val variants = landVariantsByType[landName]
+
+            if (variants.isNullOrEmpty()) {
+                // No variants available, use plain land name
+                repeat(count) { result.add(landName) }
+            } else {
+                // Pick random variants for each land
+                repeat(count) {
+                    val variant = variants[random.nextInt(variants.size)]
+                    val collectorNumber = variant.metadata.collectorNumber
+                    // Use "Name#CollectorNumber" format if collector number is available
+                    val identifier = if (collectorNumber != null) {
+                        "$landName#$collectorNumber"
+                    } else {
+                        landName
+                    }
+                    result.add(identifier)
+                }
+            }
+        }
+
+        return result
+    }
+
+    /**
+     * Builds the final deck map from selected spells and land variants.
+     */
+    private fun buildDeckMap(spells: List<CardDefinition>, landVariants: List<String>): Map<String, Int> {
         val deckMap = mutableMapOf<String, Int>()
 
         // Count spells
@@ -252,9 +296,9 @@ class RandomDeckGenerator(
             deckMap[spell.name] = (deckMap[spell.name] ?: 0) + 1
         }
 
-        // Add lands
-        for ((landName, count) in lands) {
-            deckMap[landName] = (deckMap[landName] ?: 0) + count
+        // Add land variants (each might be unique like "Plains#196")
+        for (land in landVariants) {
+            deckMap[land] = (deckMap[land] ?: 0) + 1
         }
 
         return deckMap

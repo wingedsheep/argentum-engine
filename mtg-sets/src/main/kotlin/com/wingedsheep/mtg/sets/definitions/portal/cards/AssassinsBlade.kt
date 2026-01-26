@@ -35,6 +35,6 @@ val AssassinsBlade = card("Assassin's Blade") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "80"
         artist = "Mark Poole"
-        imageUri = "https://cards.scryfall.io/normal/front/7/9/79e0d68b-5c76-4d41-a5c8-3b34f0d7ac24.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/b/8/b80e8fe0-eccb-4268-a6ce-1365c68e6b13.jpg"
     }
 }

@@ -26,6 +26,6 @@ val VolcanicHammer = card("Volcanic Hammer") {
         collectorNumber = "154"
         artist = "Brian Snoddy"
         flavorText = "Forged in the heart of a volcano."
-        imageUri = "https://cards.scryfall.io/normal/front/1/8/18c3d4e5-f6a7-b8c9-d0e1-f2a3b4c5d6e7.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/9/5/9563d7c1-4ed1-4919-b0b8-ea1ec9d4bbf6.jpg"
     }
 }

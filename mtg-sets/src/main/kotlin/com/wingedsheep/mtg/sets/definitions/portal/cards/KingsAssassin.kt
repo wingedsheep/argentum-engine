@@ -41,6 +41,6 @@ val KingsAssassin = card("King's Assassin") {
         collectorNumber = "98"
         artist = "Ron Spencer"
         flavorText = "The king rules by day, but the assassin rules by night."
-        imageUri = "https://cards.scryfall.io/normal/front/f/7/f7e1a15f-9e0c-4e0f-9a7c-1b4ab6d8f8c8.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/6/7/670a3149-54fb-4fd2-bc66-3ee9bcc3519d.jpg"
     }
 }

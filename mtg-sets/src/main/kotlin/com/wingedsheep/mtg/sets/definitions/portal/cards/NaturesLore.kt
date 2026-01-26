@@ -29,6 +29,6 @@ val NaturesLore = card("Nature's Lore") {
         collectorNumber = "178"
         artist = "Terese Nielsen"
         flavorText = "The forest reveals its secrets to those who listen."
-        imageUri = "https://cards.scryfall.io/normal/front/5/3/53a41f15-4bf1-4b08-8d06-ca0be86e4163.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/d/5/d5242227-d033-4e03-b1e6-b334b17bb158.jpg"
     }
 }

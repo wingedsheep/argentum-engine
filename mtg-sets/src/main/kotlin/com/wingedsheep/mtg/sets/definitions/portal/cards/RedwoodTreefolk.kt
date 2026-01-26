@@ -21,6 +21,6 @@ val RedwoodTreefolk = card("Redwood Treefolk") {
         collectorNumber = "183"
         artist = "Randy Gallegos"
         flavorText = "The mightiest redwoods outlive whole civilizations."
-        imageUri = "https://cards.scryfall.io/normal/front/2/3/232f1f17-6755-4ab7-9772-dbc0d5a36e93.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/e/9/e9399667-ae2a-4b64-84dd-8f97f3e5fe79.jpg"
     }
 }

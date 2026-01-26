@@ -24,6 +24,6 @@ val FeralShadow = card("Feral Shadow") {
         collectorNumber = "93"
         artist = "Andrew Robinson"
         flavorText = "\"We are the shadow on the sun, the thorn on the rose, the pain that sharpens the blade.\" —Nightstalker's oath"
-        imageUri = "https://cards.scryfall.io/normal/front/9/1/91568f1c-a28f-425f-88e0-e11ffdf1e98e.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/c/4/c46f4c00-6bf8-440b-9761-b17a0e36c27e.jpg"
     }
 }

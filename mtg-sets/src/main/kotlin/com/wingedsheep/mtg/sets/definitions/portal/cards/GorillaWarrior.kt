@@ -20,6 +20,6 @@ val GorillaWarrior = card("Gorilla Warrior") {
         collectorNumber = "168"
         artist = "Paolo Parente"
         flavorText = "The great apes fight with fury and purpose."
-        imageUri = "https://cards.scryfall.io/normal/front/0/6/06073ac7-0c8c-424c-9c7d-66e8fb34e5e3.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/3/8/38f9c3f3-0d4d-4eec-bd14-9be3233178dc.jpg"
     }
 }

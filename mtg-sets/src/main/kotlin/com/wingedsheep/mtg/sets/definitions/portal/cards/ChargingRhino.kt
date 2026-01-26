@@ -26,6 +26,6 @@ val ChargingRhino = card("Charging Rhino") {
         collectorNumber = "161"
         artist = "Una Fricker"
         flavorText = "Physical and mental might are like thunder and lightning. One comes from the other."
-        imageUri = "https://cards.scryfall.io/normal/front/d/5/d5461a48-d1a8-4116-8a9c-de5223cb5e02.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/4/9/49e47248-051c-4ee6-aad2-352ebd1f38ca.jpg"
     }
 }

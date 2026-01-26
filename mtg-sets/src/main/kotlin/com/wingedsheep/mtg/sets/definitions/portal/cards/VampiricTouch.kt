@@ -28,6 +28,6 @@ val VampiricTouch = card("Vampiric Touch") {
         collectorNumber = "115"
         artist = "Mike Raabe"
         flavorText = "A gentle caress that drains the soul."
-        imageUri = "https://cards.scryfall.io/normal/front/5/c/5c0d1e2f-6a7b-8c9d-0e1f-2a3b4c5d6e7f.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/2/3/231f7598-8c47-4828-8240-e2a545a7ac5b.jpg"
     }
 }

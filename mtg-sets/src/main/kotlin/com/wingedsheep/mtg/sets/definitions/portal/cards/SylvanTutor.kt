@@ -29,6 +29,6 @@ val SylvanTutor = card("Sylvan Tutor") {
         collectorNumber = "188"
         artist = "Terese Nielsen"
         flavorText = "The forest knows where its children hide."
-        imageUri = "https://cards.scryfall.io/normal/front/9/d/9d8bb6e9-c7be-43d7-8d58-97c3f7b23cc7.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/2/8/287ba07e-6434-4850-940f-454fcab3f535.jpg"
     }
 }

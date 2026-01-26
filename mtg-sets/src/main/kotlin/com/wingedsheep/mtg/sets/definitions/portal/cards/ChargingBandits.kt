@@ -34,6 +34,6 @@ val ChargingBandits = card("Charging Bandits") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "84"
         artist = "Michael Sutfin"
-        imageUri = "https://cards.scryfall.io/normal/front/6/0/60db8f75-0e6d-449e-94aa-e0a9dc4bce1a.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/1/7/1721ee11-c7ee-4878-b2ab-4f090e0c5def.jpg"
     }
 }

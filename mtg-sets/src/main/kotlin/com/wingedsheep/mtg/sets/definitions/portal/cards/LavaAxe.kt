@@ -26,6 +26,6 @@ val LavaAxe = card("Lava Axe") {
         collectorNumber = "137"
         artist = "Brian Snoddy"
         flavorText = "The axe comes down, and the enemy goes up—in flames."
-        imageUri = "https://cards.scryfall.io/normal/front/0/7/07a8b9c0-d1e2-f3a4-b5c6-d7e8f9a0b1c2.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/f/2/f2bebbad-76aa-4388-891a-583e8af9509d.jpg"
     }
 }

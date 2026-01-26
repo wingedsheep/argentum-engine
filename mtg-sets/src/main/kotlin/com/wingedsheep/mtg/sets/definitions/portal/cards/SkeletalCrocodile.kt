@@ -20,6 +20,6 @@ val SkeletalCrocodile = card("Skeletal Crocodile") {
         collectorNumber = "110"
         artist = "Heather Hudson"
         flavorText = "Animated bones given a hunger for living flesh."
-        imageUri = "https://cards.scryfall.io/normal/front/0/7/07a8b9c0-1d2e-3f4a-5b6c-7d8e9f0a1b2c.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/e/b/ebcbbd6f-2915-4b4c-85d3-1d9b55d36c11.jpg"
     }
 }

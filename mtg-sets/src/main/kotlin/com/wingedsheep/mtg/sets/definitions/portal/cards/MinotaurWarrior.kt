@@ -20,6 +20,6 @@ val MinotaurWarrior = card("Minotaur Warrior") {
         collectorNumber = "140"
         artist = "Scott M. Fischer"
         flavorText = "The herd's patience, the stampede's fury."
-        imageUri = "https://cards.scryfall.io/normal/front/3/a/3ab1c2d3-e4f5-a6b7-c8d9-e0f1a2b3c4d5.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/c/6/c694f5db-a4ad-4abd-acff-d6b340d2387c.jpg"
     }
 }

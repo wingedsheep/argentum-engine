@@ -31,6 +31,6 @@ val RaiseDead = card("Raise Dead") {
         collectorNumber = "107"
         artist = "Jeff A. Menges"
         flavorText = "\"The dead serve as well as the living.\""
-        imageUri = "https://cards.scryfall.io/normal/front/d/4/d4e5f6a7-8b9c-0d1e-2f3a-4b5c6d7e8f9a.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/e/0/e0584553-a25e-4030-ab39-53550cba3f0b.jpg"
     }
 }

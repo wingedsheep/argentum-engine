@@ -33,6 +33,6 @@ val BurningCloak = card("Burning Cloak") {
         collectorNumber = "120"
         artist = "Roger Raupp"
         flavorText = "Power comes at a price."
-        imageUri = "https://cards.scryfall.io/normal/front/a/1/a1b2c3d4-e0f1-2a3b-4c5d-6e7f8a9b0c1d.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/e/2/e2b8f443-dba5-45a5-bb2e-f57b4fdd1d01.jpg"
     }
 }

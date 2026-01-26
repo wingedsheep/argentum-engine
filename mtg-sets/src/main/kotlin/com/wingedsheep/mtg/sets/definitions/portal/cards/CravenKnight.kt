@@ -25,6 +25,6 @@ val CravenKnight = card("Craven Knight") {
         rarity = Rarity.COMMON
         collectorNumber = "85"
         artist = "Dan Frazier"
-        imageUri = "https://cards.scryfall.io/normal/front/3/9/39a5a4c8-d40b-45e2-8f2c-9e2e0d0a5f1d.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/d/4/d4cbae27-4a1a-4e16-8876-9a2925c45302.jpg"
     }
 }

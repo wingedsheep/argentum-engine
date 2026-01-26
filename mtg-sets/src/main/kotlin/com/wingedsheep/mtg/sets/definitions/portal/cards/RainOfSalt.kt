@@ -28,6 +28,6 @@ val RainOfSalt = card("Rain of Salt") {
         collectorNumber = "147"
         artist = "Allen Williams"
         flavorText = "It pelts the land with its fury, spoiling what was once sweet."
-        imageUri = "https://cards.scryfall.io/normal/front/a/1/a1b8c9d0-e1f2-a3b4-c5d6-e7f8a9b0c1d2.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/6/6/661ffab2-9cf5-492d-874f-de73d7a13e2b.jpg"
     }
 }

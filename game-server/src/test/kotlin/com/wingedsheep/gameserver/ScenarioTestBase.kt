@@ -37,7 +37,7 @@ abstract class ScenarioTestBase : FunSpec() {
         register(PortalSet.allCards)
     }
     protected val actionProcessor = ActionProcessor(cardRegistry)
-    protected val stateTransformer = ClientStateTransformer()
+    protected val stateTransformer = ClientStateTransformer(cardRegistry)
 
     /**
      * Builder for constructing test scenarios with specific game states.

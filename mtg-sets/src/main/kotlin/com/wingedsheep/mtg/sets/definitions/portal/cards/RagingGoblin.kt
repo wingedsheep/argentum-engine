@@ -24,6 +24,6 @@ val RagingGoblin = card("Raging Goblin") {
         collectorNumber = "145"
         artist = "Pete Venters"
         flavorText = "Charging alone takes uncommon daring or uncommon stupidity. Or both."
-        imageUri = "https://cards.scryfall.io/normal/front/8/f/8f05a6b7-c8d9-e0f1-a2b3-c4d5e6f7a8b9.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/f/e/fed57a17-7847-4e60-bc40-4452880f12a3.jpg"
     }
 }

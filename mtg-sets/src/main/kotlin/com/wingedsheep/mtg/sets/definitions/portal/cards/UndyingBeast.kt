@@ -29,6 +29,6 @@ val UndyingBeast = card("Undying Beast") {
         collectorNumber = "113"
         artist = "Scott Kirschner"
         flavorText = "It returns, again and again, never truly vanquished."
-        imageUri = "https://cards.scryfall.io/normal/front/3/a/3a0b1c2d-4e5f-6a7b-8c9d-0e1f2a3b4c5d.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/9/c/9c95c752-3add-4830-8159-036b8689f40a.jpg"
     }
 }

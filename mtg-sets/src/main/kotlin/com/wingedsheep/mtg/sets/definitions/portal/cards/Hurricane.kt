@@ -28,6 +28,6 @@ val Hurricane = card("Hurricane") {
         collectorNumber = "170"
         artist = "Cornelius Brudi"
         flavorText = "The wind knows no master but the sky."
-        imageUri = "https://cards.scryfall.io/normal/front/0/8/08a77e61-45ae-4d16-9fbe-8d5e93f8f8fb.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/7/b/7b97904e-80ba-4d65-808a-a528200430f8.jpg"
     }
 }
