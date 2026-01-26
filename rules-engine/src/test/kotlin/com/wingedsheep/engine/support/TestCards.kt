@@ -90,6 +90,25 @@ object TestCards {
     )
 
     /**
+     * 1/1 for {2}{B} with "When this creature dies, you gain 3 life."
+     * Test card for death triggers.
+     */
+    val DeathTriggerTestCreature = CardDefinition.creature(
+        name = "Death Trigger Test Creature",
+        manaCost = ManaCost.parse("{2}{B}"),
+        subtypes = setOf(Subtype("Test")),
+        power = 1,
+        toughness = 1,
+        oracleText = "When this creature dies, you gain 3 life.",
+        script = CardScript.creature(
+            TriggeredAbility.create(
+                trigger = OnDeath(selfOnly = true),
+                effect = GainLifeEffect(3)
+            )
+        )
+    )
+
+    /**
      * 2/2 for {2}{W} with "When Venerable Monk enters the battlefield, you gain 2 life."
      */
     val VenerableMonk = CardDefinition.creature(
@@ -490,6 +509,7 @@ object TestCards {
         ForceOfNature,
         GoblinGuide,
         SavannahLions,
+        DeathTriggerTestCreature,
         VenerableMonk,
         SerpentAssassin,
         WindDrake,

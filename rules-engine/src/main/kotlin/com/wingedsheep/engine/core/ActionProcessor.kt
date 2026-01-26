@@ -945,8 +945,9 @@ class ActionProcessor(
             return ExecutionResult.success(sbaResult.newState, combinedEvents)
         }
 
-        // Detect and process triggers from the resolution events (Rule 603.2)
-        val triggers = triggerDetector.detectTriggers(sbaResult.newState, result.events)
+        // Detect and process triggers from the resolution events AND SBA events (Rule 603.2)
+        // SBA events include death triggers when creatures die from lethal damage
+        val triggers = triggerDetector.detectTriggers(sbaResult.newState, combinedEvents)
         if (triggers.isNotEmpty()) {
             val triggerResult = triggerProcessor.processTriggers(sbaResult.newState, triggers)
 
