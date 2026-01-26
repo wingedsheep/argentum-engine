@@ -56,7 +56,8 @@ export interface TargetingState {
   action: GameAction
   validTargets: readonly EntityId[]
   selectedTargets: readonly EntityId[]
-  requiredCount: number
+  minTargets: number
+  maxTargets: number
 }
 
 /**
@@ -434,14 +435,23 @@ export const useGameStore = create<GameStore>()(
 
       onSealedPoolGenerated: (msg) => {
         set((state) => ({
-          deckBuildingState: state.deckBuildingState
-            ? {
-                ...state.deckBuildingState,
-                phase: 'building',
-                cardPool: msg.cardPool,
-                basicLands: msg.basicLands,
-              }
-            : null,
+          deckBuildingState: {
+            phase: 'building',
+            setCode: msg.setCode,
+            setName: msg.setName,
+            cardPool: msg.cardPool,
+            basicLands: msg.basicLands,
+            // Preserve existing deck/lands if already set, otherwise initialize
+            deck: state.deckBuildingState?.deck ?? [],
+            landCounts: state.deckBuildingState?.landCounts ?? {
+              Plains: 0,
+              Island: 0,
+              Swamp: 0,
+              Mountain: 0,
+              Forest: 0,
+            },
+            opponentReady: state.deckBuildingState?.opponentReady ?? false,
+          },
         }))
       },
 
@@ -1018,7 +1028,8 @@ export const useGameStore = create<GameStore>()(
               action: actionWithX,
               validTargets: [...actionInfo.validTargets],
               selectedTargets: [],
-              requiredCount: actionInfo.targetCount ?? 1,
+              minTargets: actionInfo.minTargets ?? actionInfo.targetCount ?? 1,
+              maxTargets: actionInfo.targetCount ?? 1,
             })
           } else {
             // No targets needed, submit directly

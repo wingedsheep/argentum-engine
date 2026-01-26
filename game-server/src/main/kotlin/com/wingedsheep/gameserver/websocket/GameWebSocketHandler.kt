@@ -608,6 +608,8 @@ class GameWebSocketHandler : TextWebSocketHandler() {
             send(
                 playerState.session.webSocketSession,
                 ServerMessage.SealedPoolGenerated(
+                    setCode = sealedSession.setCode,
+                    setName = sealedSession.setName,
                     cardPool = poolInfos,
                     basicLands = basicLandInfos
                 )

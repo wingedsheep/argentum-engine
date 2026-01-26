@@ -222,8 +222,10 @@ export interface LegalActionInfo {
   readonly validTargets?: readonly EntityId[]
   /** Whether this action requires selecting targets before submission */
   readonly requiresTargets?: boolean
-  /** Number of targets required (default 1) */
+  /** Maximum number of targets (default 1) */
   readonly targetCount?: number
+  /** Minimum number of targets required (default = targetCount) */
+  readonly minTargets?: number
   /** Description of the target requirement */
   readonly targetDescription?: string
   /** Valid attacker IDs for DeclareAttackers action */
@@ -327,6 +329,8 @@ export interface SealedGameCreatedMessage {
  */
 export interface SealedPoolGeneratedMessage {
   readonly type: 'sealedPoolGenerated'
+  readonly setCode: string
+  readonly setName: string
   readonly cardPool: readonly SealedCardInfo[]
   readonly basicLands: readonly SealedCardInfo[]
 }

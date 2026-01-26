@@ -151,6 +151,10 @@ sealed interface ServerMessage {
     @Serializable
     @SerialName("sealedPoolGenerated")
     data class SealedPoolGenerated(
+        /** Set code (e.g., "POR") */
+        val setCode: String,
+        /** Set name (e.g., "Portal") */
+        val setName: String,
         /** 90 cards from 6 boosters */
         val cardPool: List<SealedCardInfo>,
         /** 5 basic land types available for deck building */
@@ -191,8 +195,10 @@ data class LegalActionInfo(
     val validTargets: List<EntityId>? = null,
     /** Whether this action requires selecting targets before submission */
     val requiresTargets: Boolean = false,
-    /** Number of targets required (default 1) */
+    /** Maximum number of targets (default 1) */
     val targetCount: Int = 1,
+    /** Minimum number of targets required (default = targetCount) */
+    val minTargets: Int = targetCount,
     /** Description of the target requirement */
     val targetDescription: String? = null,
     /** Valid attacker IDs for DeclareAttackers action */
