@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useGameStore } from '../../store/gameStore'
-import type { EntityId, SelectCardsDecision, ChooseTargetsDecision } from '../../types'
+import type { EntityId, SelectCardsDecision, ChooseTargetsDecision, YesNoDecision } from '../../types'
 import { useResponsive, calculateFittingCardWidth, type ResponsiveSizes } from '../../hooks/useResponsive'
 import { LibrarySearchUI } from './LibrarySearchUI'
 import { ReorderCardsUI } from './ReorderCardsUI'
@@ -43,6 +43,32 @@ export function DecisionUI() {
     }
     // Other ordering decisions could use a generic ordering UI (not yet implemented)
     return null
+  }
+
+  // Handle YesNoDecision (e.g., "You may shuffle your library")
+  if (pendingDecision.type === 'YesNoDecision') {
+    return (
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.85)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: responsive.isMobile ? 12 : 24,
+          padding: responsive.containerPadding,
+          pointerEvents: 'auto',
+          zIndex: 1000,
+        }}
+      >
+        <YesNoDecisionUI decision={pendingDecision} responsive={responsive} />
+      </div>
+    )
   }
 
   // Handle SelectCardsDecision
@@ -381,6 +407,90 @@ function PlayerTargetCard({
         </div>
       )}
     </div>
+  )
+}
+
+/**
+ * Yes/No decision - make a binary choice.
+ */
+function YesNoDecisionUI({
+  decision,
+  responsive,
+}: {
+  decision: YesNoDecision
+  responsive: ResponsiveSizes
+}) {
+  const submitYesNoDecision = useGameStore((s) => s.submitYesNoDecision)
+
+  const handleYes = () => {
+    submitYesNoDecision(true)
+  }
+
+  const handleNo = () => {
+    submitYesNoDecision(false)
+  }
+
+  return (
+    <>
+      <h2
+        style={{
+          color: 'white',
+          margin: 0,
+          fontSize: responsive.isMobile ? 18 : 24,
+          textAlign: 'center',
+        }}
+      >
+        {decision.prompt}
+      </h2>
+
+      {decision.context.sourceName && (
+        <p style={{ color: '#aaa', margin: 0, fontSize: responsive.fontSize.normal }}>
+          {decision.context.sourceName}
+        </p>
+      )}
+
+      {/* Yes/No buttons */}
+      <div
+        style={{
+          display: 'flex',
+          gap: responsive.isMobile ? 16 : 24,
+          marginTop: responsive.isMobile ? 16 : 24,
+        }}
+      >
+        <button
+          onClick={handleYes}
+          style={{
+            padding: responsive.isMobile ? '12px 32px' : '16px 48px',
+            fontSize: responsive.fontSize.large,
+            backgroundColor: '#00aa00',
+            color: 'white',
+            border: 'none',
+            borderRadius: 8,
+            cursor: 'pointer',
+            fontWeight: 600,
+            minWidth: responsive.isMobile ? 100 : 120,
+          }}
+        >
+          {decision.yesText}
+        </button>
+        <button
+          onClick={handleNo}
+          style={{
+            padding: responsive.isMobile ? '12px 32px' : '16px 48px',
+            fontSize: responsive.fontSize.large,
+            backgroundColor: '#666',
+            color: 'white',
+            border: 'none',
+            borderRadius: 8,
+            cursor: 'pointer',
+            fontWeight: 600,
+            minWidth: responsive.isMobile ? 100 : 120,
+          }}
+        >
+          {decision.noText}
+        </button>
+      </div>
+    </>
   )
 }
 

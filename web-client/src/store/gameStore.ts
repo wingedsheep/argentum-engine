@@ -144,6 +144,7 @@ export interface GameStore {
   submitDecision: (selectedCards: readonly EntityId[]) => void
   submitTargetsDecision: (selectedTargets: Record<number, readonly EntityId[]>) => void
   submitOrderedDecision: (orderedObjects: readonly EntityId[]) => void
+  submitYesNoDecision: (choice: boolean) => void
   keepHand: () => void
   mulligan: () => void
   chooseBottomCards: (cardIds: readonly EntityId[]) => void
@@ -505,6 +506,22 @@ export const useGameStore = create<GameStore>()(
             type: 'OrderedResponse' as const,
             decisionId: pendingDecision.id,
             orderedObjects: [...orderedObjects],
+          },
+        }
+        ws?.send(createSubmitActionMessage(action))
+      },
+
+      submitYesNoDecision: (choice) => {
+        const { pendingDecision, playerId } = get()
+        if (!pendingDecision || !playerId) return
+
+        const action = {
+          type: 'SubmitDecision' as const,
+          playerId,
+          response: {
+            type: 'YesNoResponse' as const,
+            decisionId: pendingDecision.id,
+            choice,
           },
         }
         ws?.send(createSubmitActionMessage(action))

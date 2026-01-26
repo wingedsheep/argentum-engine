@@ -408,6 +408,18 @@ class StackResolver(
         )
 
         val effectResult = effectHandler.execute(state, abilityComponent.effect, context)
+
+        // If effect is paused awaiting a decision, return paused state
+        // The ability entity stays removed (it's off the stack), but the decision must resolve
+        if (effectResult.isPaused) {
+            val pausedState = effectResult.state.removeEntity(abilityId)
+            return ExecutionResult.paused(
+                pausedState,
+                effectResult.pendingDecision!!,
+                effectResult.events
+            )
+        }
+
         var newState = effectResult.newState
 
         // Remove the ability entity
@@ -460,6 +472,18 @@ class StackResolver(
         )
 
         val effectResult = effectHandler.execute(state, abilityComponent.effect, context)
+
+        // If effect is paused awaiting a decision, return paused state
+        // The ability entity stays removed (it's off the stack), but the decision must resolve
+        if (effectResult.isPaused) {
+            val pausedState = effectResult.state.removeEntity(abilityId)
+            return ExecutionResult.paused(
+                pausedState,
+                effectResult.pendingDecision!!,
+                effectResult.events
+            )
+        }
+
         var newState = effectResult.newState
 
         // Remove the ability entity
