@@ -49,6 +49,7 @@ object EffectExecutorUtils {
             is EffectTarget.Controller -> context.controllerId
             is EffectTarget.Opponent -> context.opponentId
             is EffectTarget.AnyPlayer -> context.targets.firstOrNull()?.toEntityId()
+            is EffectTarget.ContextTarget -> context.targets.getOrNull(effectTarget.index)?.toEntityId()
             else -> null
         }
     }

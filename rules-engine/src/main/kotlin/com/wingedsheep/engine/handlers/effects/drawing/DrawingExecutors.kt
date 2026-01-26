@@ -15,6 +15,7 @@ class DrawingExecutors(
     override fun executors(): List<EffectExecutor<*>> = listOf(
         DrawCardsExecutor(amountEvaluator),
         DiscardCardsExecutor(decisionHandler),
+        DiscardRandomExecutor(),
         EachPlayerDiscardsDrawsExecutor(decisionHandler),
         EachPlayerDrawsXExecutor()
     )
