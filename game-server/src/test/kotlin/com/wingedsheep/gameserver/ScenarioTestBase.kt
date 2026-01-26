@@ -425,6 +425,15 @@ abstract class ScenarioTestBase : FunSpec() {
         }
 
         /**
+         * Submit a number choice decision.
+         */
+        fun chooseNumber(number: Int): ExecutionResult {
+            val decisionId = state.pendingDecision?.id
+                ?: error("No pending decision to respond to")
+            return submitDecision(NumberChosenResponse(decisionId, number))
+        }
+
+        /**
          * Find cards in a player's hand by name.
          */
         fun findCardsInHand(playerNumber: Int, cardName: String): List<EntityId> {

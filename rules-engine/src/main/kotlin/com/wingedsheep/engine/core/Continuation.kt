@@ -360,3 +360,37 @@ data class SearchLibraryToTopContinuation(
     val sourceName: String?,
     val filter: CardFilter
 ) : ContinuationFrame
+
+/**
+ * Resume after a player chooses how many cards to draw for "each player may draw" effects.
+ *
+ * Used for effects like Temporary Truce where each player chooses how many cards (0-N)
+ * to draw, and gains life for each card not drawn.
+ *
+ * The continuation tracks pending draws/life gains and remaining players. When a player's
+ * choice is processed, their draw count and life gain are recorded. After all players
+ * have chosen, draws and life gains are executed.
+ *
+ * @property sourceId The spell/ability causing the effect
+ * @property sourceName Name for display
+ * @property controllerId The controller of the effect
+ * @property currentPlayerId The player whose choice we are waiting for
+ * @property remainingPlayers Players who still need to choose after current (APNAP order)
+ * @property drawAmounts How many cards each completed player will draw
+ * @property lifeGainAmounts How much life each completed player will gain
+ * @property maxCards Maximum cards each player may choose to draw
+ * @property lifePerCardNotDrawn Life gained for each card not drawn (0 to disable)
+ */
+@Serializable
+data class EachPlayerChoosesDrawContinuation(
+    override val decisionId: String,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val controllerId: EntityId,
+    val currentPlayerId: EntityId,
+    val remainingPlayers: List<EntityId>,
+    val drawAmounts: Map<EntityId, Int>,
+    val lifeGainAmounts: Map<EntityId, Int>,
+    val maxCards: Int,
+    val lifePerCardNotDrawn: Int
+) : ContinuationFrame

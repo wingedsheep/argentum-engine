@@ -2342,17 +2342,25 @@ data class EachPlayerDrawsXEffect(
 }
 
 /**
- * Each player may draw up to a number of cards.
- * "Each player may draw up to two cards."
+ * Each player may draw up to a number of cards, gaining life for each card not drawn.
+ * "Each player may draw up to two cards. For each card less than two a player draws
+ * this way, that player gains 2 life."
  * Used for Temporary Truce.
  *
  * @property maxCards Maximum number of cards each player may draw
+ * @property lifePerCardNotDrawn Life gained for each card fewer than maxCards drawn (0 to disable)
  */
 @Serializable
 data class EachPlayerMayDrawEffect(
-    val maxCards: Int
+    val maxCards: Int,
+    val lifePerCardNotDrawn: Int = 0
 ) : Effect {
-    override val description: String = "Each player may draw up to $maxCards cards"
+    override val description: String = buildString {
+        append("Each player may draw up to $maxCards cards")
+        if (lifePerCardNotDrawn > 0) {
+            append(". For each card less than $maxCards a player draws this way, that player gains $lifePerCardNotDrawn life")
+        }
+    }
 }
 
 

@@ -8,14 +8,15 @@ import com.wingedsheep.sdk.scripting.EachPlayerMayDrawEffect
  * Temporary Truce
  * {1}{W}
  * Sorcery
- * Each player may draw up to two cards.
+ * Each player may draw up to two cards. For each card less than two a player
+ * draws this way, that player gains 2 life.
  */
 val TemporaryTruce = card("Temporary Truce") {
     manaCost = "{1}{W}"
     typeLine = "Sorcery"
 
     spell {
-        effect = EachPlayerMayDrawEffect(maxCards = 2)
+        effect = EachPlayerMayDrawEffect(maxCards = 2, lifePerCardNotDrawn = 2)
     }
 
     metadata {

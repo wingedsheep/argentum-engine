@@ -346,5 +346,46 @@ class DecisionHandler {
         )
     }
 
+    /**
+     * Creates a number choice decision.
+     */
+    fun createNumberDecision(
+        state: GameState,
+        playerId: EntityId,
+        sourceId: EntityId?,
+        sourceName: String?,
+        prompt: String,
+        minValue: Int,
+        maxValue: Int,
+        phase: DecisionPhase = DecisionPhase.RESOLUTION
+    ): ExecutionResult {
+        val decision = ChooseNumberDecision(
+            id = generateDecisionId(),
+            playerId = playerId,
+            prompt = prompt,
+            context = DecisionContext(
+                sourceId = sourceId,
+                sourceName = sourceName,
+                phase = phase
+            ),
+            minValue = minValue,
+            maxValue = maxValue
+        )
+
+        val newState = state.withPendingDecision(decision)
+        return ExecutionResult.paused(
+            newState,
+            decision,
+            listOf(
+                DecisionRequestedEvent(
+                    decisionId = decision.id,
+                    playerId = playerId,
+                    decisionType = "CHOOSE_NUMBER",
+                    prompt = decision.prompt
+                )
+            )
+        )
+    }
+
     private fun generateDecisionId(): String = UUID.randomUUID().toString()
 }
