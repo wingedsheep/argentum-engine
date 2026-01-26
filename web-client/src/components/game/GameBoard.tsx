@@ -1092,6 +1092,7 @@ function ActionMenu() {
   const targetingState = useGameStore((state) => state.targetingState)
   const cancelTargeting = useGameStore((state) => state.cancelTargeting)
   const startTargeting = useGameStore((state) => state.startTargeting)
+  const startXSelection = useGameStore((state) => state.startXSelection)
   const responsive = useResponsiveContext()
 
   // If in targeting mode, show targeting UI instead
@@ -1140,6 +1141,19 @@ function ActionMenu() {
   if (cardActions.length === 0) return null
 
   const handleActionClick = (info: LegalActionInfo) => {
+    // Check if spell has X cost - needs X selection first
+    if (info.action.type === 'CastSpell' && info.hasXCost) {
+      startXSelection({
+        actionInfo: info,
+        cardName: info.description.replace('Cast ', ''),
+        minX: info.minX ?? 0,
+        maxX: info.maxAffordableX ?? 0,
+        selectedX: info.maxAffordableX ?? 0,
+      })
+      selectCard(null)
+      return
+    }
+
     // Check if action requires targeting
     if (info.requiresTargets && info.validTargets && info.validTargets.length > 0) {
       // Enter targeting mode

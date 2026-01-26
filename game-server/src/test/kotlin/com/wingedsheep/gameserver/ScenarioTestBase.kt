@@ -307,6 +307,34 @@ abstract class ScenarioTestBase : FunSpec() {
         }
 
         /**
+         * Cast a spell with X in its mana cost.
+         * @param playerNumber The player casting the spell (1 or 2)
+         * @param spellName The name of the spell to cast
+         * @param xValue The value chosen for X
+         * @param targetId Optional target for targeted spells
+         */
+        fun castXSpell(
+            playerNumber: Int,
+            spellName: String,
+            xValue: Int,
+            targetId: EntityId? = null
+        ): ExecutionResult {
+            val playerId = if (playerNumber == 1) player1Id else player2Id
+            val hand = state.getHand(playerId)
+            val cardId = hand.find { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.name == spellName
+            } ?: error("Card '$spellName' not found in player $playerNumber's hand")
+
+            val targets = if (targetId != null) {
+                listOf(ChosenTarget.Permanent(targetId))
+            } else {
+                emptyList()
+            }
+
+            return execute(CastSpell(playerId, cardId, targets, xValue))
+        }
+
+        /**
          * Pass priority for the player who currently has it.
          */
         fun passPriority(): ExecutionResult {
