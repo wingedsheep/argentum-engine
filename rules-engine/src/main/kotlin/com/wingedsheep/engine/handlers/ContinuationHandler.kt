@@ -64,6 +64,7 @@ class ContinuationHandler(
             is ReorderLibraryContinuation -> resumeReorderLibrary(stateAfterPop, continuation, response)
             is BlockerOrderContinuation -> resumeBlockerOrder(stateAfterPop, continuation, response)
             is SacrificeUnlessSacrificeContinuation -> resumeSacrificeUnlessSacrifice(stateAfterPop, continuation, response)
+            is SacrificeUnlessDiscardContinuation -> resumeSacrificeUnlessDiscard(stateAfterPop, continuation, response)
         }
     }
 
@@ -870,6 +871,80 @@ class ContinuationHandler(
             }
 
             events.add(0, PermanentsSacrificedEvent(playerId, selectedPermanents))
+
+            return checkForMoreContinuations(newState, events)
+        }
+
+        // Player didn't select enough - sacrifice the source
+        var newState = state.removeFromZone(battlefieldZone, sourceId)
+        newState = newState.addToZone(graveyardZone, sourceId)
+
+        val events = listOf(
+            PermanentsSacrificedEvent(playerId, listOf(sourceId)),
+            ZoneChangeEvent(
+                entityId = sourceId,
+                entityName = sourceName,
+                fromZone = ZoneType.BATTLEFIELD,
+                toZone = ZoneType.GRAVEYARD,
+                ownerId = playerId
+            )
+        )
+
+        return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume after player selected a card to discard for "sacrifice unless you discard" effect.
+     *
+     * If the player selected exactly the required count, discard those cards.
+     * If the player selected 0 (or fewer than required), sacrifice the source instead.
+     */
+    private fun resumeSacrificeUnlessDiscard(
+        state: GameState,
+        continuation: SacrificeUnlessDiscardContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for sacrifice unless discard")
+        }
+
+        val playerId = continuation.playerId
+        val sourceId = continuation.sourceId
+        val sourceName = continuation.sourceName
+        val selectedCards = response.selectedCards
+
+        val battlefieldZone = ZoneKey(playerId, ZoneType.BATTLEFIELD)
+        val graveyardZone = ZoneKey(playerId, ZoneType.GRAVEYARD)
+        val handZone = ZoneKey(playerId, ZoneType.HAND)
+
+        // Check if the source is still on the battlefield
+        if (sourceId !in state.getZone(battlefieldZone)) {
+            // Source was already removed (e.g., by another effect) - nothing to do
+            return checkForMoreContinuations(state, emptyList())
+        }
+
+        // If player selected exactly the required count, discard those cards
+        if (selectedCards.size == continuation.requiredCount) {
+            var newState = state
+            val events = mutableListOf<GameEvent>()
+
+            for (cardId in selectedCards) {
+                newState = newState.removeFromZone(handZone, cardId)
+                newState = newState.addToZone(graveyardZone, cardId)
+
+                val cardName = newState.getEntity(cardId)?.get<CardComponent>()?.name ?: "Unknown"
+                events.add(
+                    ZoneChangeEvent(
+                        entityId = cardId,
+                        entityName = cardName,
+                        fromZone = ZoneType.HAND,
+                        toZone = ZoneType.GRAVEYARD,
+                        ownerId = playerId
+                    )
+                )
+            }
+
+            events.add(0, CardsDiscardedEvent(playerId, selectedCards))
 
             return checkForMoreContinuations(newState, events)
         }

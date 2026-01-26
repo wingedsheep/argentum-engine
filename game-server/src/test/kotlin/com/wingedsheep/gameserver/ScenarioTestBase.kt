@@ -378,5 +378,67 @@ abstract class ScenarioTestBase : FunSpec() {
             val playerId = if (playerNumber == 1) player1Id else player2Id
             return state.getGraveyard(playerId).size
         }
+
+        /**
+         * Get a player's hand size.
+         */
+        fun handSize(playerNumber: Int): Int {
+            val playerId = if (playerNumber == 1) player1Id else player2Id
+            return state.getHand(playerId).size
+        }
+
+        /**
+         * Check if there's a pending decision.
+         */
+        fun hasPendingDecision(): Boolean = state.pendingDecision != null
+
+        /**
+         * Get the pending decision, if any.
+         */
+        fun getPendingDecision(): PendingDecision? = state.pendingDecision
+
+        /**
+         * Submit a decision response.
+         */
+        fun submitDecision(response: DecisionResponse): ExecutionResult {
+            val playerId = state.pendingDecision?.playerId
+                ?: error("No pending decision to respond to")
+            return execute(SubmitDecision(playerId, response))
+        }
+
+        /**
+         * Submit a card selection decision (select specific cards).
+         */
+        fun selectCards(cardIds: List<EntityId>): ExecutionResult {
+            val decisionId = state.pendingDecision?.id
+                ?: error("No pending decision to respond to")
+            return submitDecision(CardsSelectedResponse(decisionId, cardIds))
+        }
+
+        /**
+         * Submit a "skip" decision (select no cards).
+         */
+        fun skipSelection(): ExecutionResult {
+            val decisionId = state.pendingDecision?.id
+                ?: error("No pending decision to respond to")
+            return submitDecision(CardsSelectedResponse(decisionId, emptyList()))
+        }
+
+        /**
+         * Find cards in a player's hand by name.
+         */
+        fun findCardsInHand(playerNumber: Int, cardName: String): List<EntityId> {
+            val playerId = if (playerNumber == 1) player1Id else player2Id
+            return state.getHand(playerId).filter { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.name == cardName
+            }
+        }
+
+        /**
+         * Check if a card with the given name is in a player's hand.
+         */
+        fun isInHand(playerNumber: Int, cardName: String): Boolean {
+            return findCardsInHand(playerNumber, cardName).isNotEmpty()
+        }
     }
 }

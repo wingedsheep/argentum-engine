@@ -314,3 +314,25 @@ data class SacrificeUnlessSacrificeContinuation(
     val permanentType: String,
     val requiredCount: Int
 ) : ContinuationFrame
+
+/**
+ * Resume after player selects a card to discard for "sacrifice unless you discard" effects.
+ *
+ * Used for cards like Mercenary Knight: "When ~ enters the battlefield, sacrifice it
+ * unless you discard a creature card."
+ *
+ * @property playerId The player who controls the source permanent
+ * @property sourceId The permanent that will be sacrificed if the player doesn't discard
+ * @property sourceName Name of the source for event messages
+ * @property discardFilter The type of card required to be discarded
+ * @property requiredCount Number of cards that must be discarded to keep the source
+ */
+@Serializable
+data class SacrificeUnlessDiscardContinuation(
+    override val decisionId: String,
+    val playerId: EntityId,
+    val sourceId: EntityId,
+    val sourceName: String,
+    val discardFilter: CardFilter,
+    val requiredCount: Int
+) : ContinuationFrame
