@@ -483,12 +483,15 @@ class GameWebSocketHandler : TextWebSocketHandler() {
         gameSession: GameSession,
         events: List<GameEvent>
     ) {
+        // First, process any auto-passes and accumulate events
+        val allEvents = processAutoPassLoop(gameSession, events)
+
         val player1 = gameSession.player1
         val player2 = gameSession.player2
 
         try {
             player1?.let { session ->
-                val update = gameSession.createStateUpdate(session.playerId, events)
+                val update = gameSession.createStateUpdate(session.playerId, allEvents)
                 if (update != null) {
                     send(session.webSocketSession, update)
                 } else {
@@ -497,7 +500,7 @@ class GameWebSocketHandler : TextWebSocketHandler() {
             }
 
             player2?.let { session ->
-                val update = gameSession.createStateUpdate(session.playerId, events)
+                val update = gameSession.createStateUpdate(session.playerId, allEvents)
                 if (update != null) {
                     send(session.webSocketSession, update)
                 } else {
@@ -507,6 +510,69 @@ class GameWebSocketHandler : TextWebSocketHandler() {
         } catch (e: Exception) {
             logger.error("Error broadcasting state update", e)
         }
+    }
+
+    /**
+     * Process auto-pass loop until a player needs to make a decision.
+     *
+     * This implements Arena-style smart priority passing:
+     * - If the player with priority should auto-pass, execute PassPriority automatically
+     * - Continue until a player needs to make a real decision
+     * - Accumulate all events from auto-passes to send to clients
+     *
+     * @param gameSession The game session
+     * @param initialEvents Events from the original action
+     * @return All accumulated events (initial + auto-pass events)
+     */
+    private fun processAutoPassLoop(
+        gameSession: GameSession,
+        initialEvents: List<GameEvent>
+    ): List<GameEvent> {
+        val allEvents = initialEvents.toMutableList()
+        var loopCount = 0
+        val maxLoops = 100 // Safety limit to prevent infinite loops
+
+        while (loopCount < maxLoops) {
+            // Check if game is over
+            if (gameSession.isGameOver()) {
+                break
+            }
+
+            // Check if there's a player that should auto-pass
+            val autoPassPlayer = gameSession.getAutoPassPlayer()
+            if (autoPassPlayer == null) {
+                // No auto-pass needed, stop the loop
+                break
+            }
+
+            logger.debug("Auto-passing for player: ${autoPassPlayer.value}")
+
+            // Execute the auto-pass
+            val result = gameSession.executeAutoPass(autoPassPlayer)
+            when (result) {
+                is GameSession.ActionResult.Success -> {
+                    allEvents.addAll(result.events)
+                }
+                is GameSession.ActionResult.PausedForDecision -> {
+                    // A decision is needed, stop auto-passing
+                    allEvents.addAll(result.events)
+                    break
+                }
+                is GameSession.ActionResult.Failure -> {
+                    // Something went wrong, stop auto-passing
+                    logger.warn("Auto-pass failed: ${result.reason}")
+                    break
+                }
+            }
+
+            loopCount++
+        }
+
+        if (loopCount >= maxLoops) {
+            logger.warn("Auto-pass loop hit safety limit!")
+        }
+
+        return allEvents
     }
 
     private fun broadcastGameOver(

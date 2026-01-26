@@ -26,6 +26,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.CastRestriction
+import com.wingedsheep.gameserver.priority.AutoPassManager
 import org.slf4j.LoggerFactory
 import java.util.UUID
 
@@ -55,6 +56,7 @@ class GameSession(
     private val manaSolver = ManaSolver(cardRegistry)
     private val conditionEvaluator = ConditionEvaluator()
     private val turnManager = TurnManager()
+    private val autoPassManager = AutoPassManager()
 
     val player1: PlayerSession? get() = players.values.firstOrNull()
     val player2: PlayerSession? get() = players.values.drop(1).firstOrNull()
@@ -569,6 +571,63 @@ class GameSession(
         val pendingDecision = state.pendingDecision?.takeIf { it.playerId == playerId }
 
         return ServerMessage.StateUpdate(clientState, events, legalActions, pendingDecision)
+    }
+
+    /**
+     * Check if the player with priority should automatically pass.
+     * Returns the player ID that should auto-pass, or null if no auto-pass should occur.
+     *
+     * This implements Arena-style smart priority passing.
+     */
+    fun getAutoPassPlayer(): EntityId? = synchronized(stateLock) {
+        val state = gameState ?: return null
+
+        // Can't auto-pass if game is over
+        if (state.gameOver) return null
+
+        // Get the player with priority
+        val priorityPlayer = state.priorityPlayerId ?: return null
+
+        // Get legal actions for that player
+        val legalActions = getLegalActions(priorityPlayer)
+
+        // Check if they should auto-pass
+        return if (autoPassManager.shouldAutoPass(state, priorityPlayer, legalActions)) {
+            priorityPlayer
+        } else {
+            null
+        }
+    }
+
+    /**
+     * Execute auto-pass for a player.
+     * Returns the result of the PassPriority action.
+     */
+    fun executeAutoPass(playerId: EntityId): ActionResult = synchronized(stateLock) {
+        val state = gameState ?: return ActionResult.Failure("Game not started")
+
+        // Verify this player has priority
+        if (state.priorityPlayerId != playerId) {
+            return ActionResult.Failure("Player does not have priority")
+        }
+
+        // Execute the PassPriority action
+        val action = PassPriority(playerId)
+        val result = actionProcessor.process(state, action)
+
+        val error = result.error
+        val pendingDecision = result.pendingDecision
+        when {
+            error != null -> ActionResult.Failure(error)
+            pendingDecision != null -> {
+                gameState = result.state
+                ActionResult.PausedForDecision(result.state, pendingDecision, result.events)
+            }
+            else -> {
+                gameState = result.state
+                ActionResult.Success(result.state, result.events)
+            }
+        }
     }
 
     /**
