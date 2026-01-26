@@ -16,6 +16,8 @@ import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CantBeBlockedByPower
+import com.wingedsheep.sdk.scripting.CantBlock
+import com.wingedsheep.sdk.scripting.StaticTarget
 import java.util.UUID
 
 /**
@@ -327,6 +329,12 @@ class CombatManager(
             return "${cardComponent.name} is already blocking"
         }
 
+        // Check if the blocker has "can't block" restriction (e.g., Craven Giant, Jungle Lion)
+        val cantBlockValidation = validateCantBlock(cardComponent)
+        if (cantBlockValidation != null) {
+            return cantBlockValidation
+        }
+
         // Check evasion abilities of each attacker
         for (attackerId in attackerIds) {
             val evasionValidation = validateCanBlock(state, blockerId, attackerId, blockingPlayer)
@@ -504,6 +512,35 @@ class CombatManager(
         val blockerPower = projected.getPower(blockerId) ?: 0
 
         return blockerPower < powerRestriction.minPower
+    }
+
+    /**
+     * Check if a creature has "can't block" ability (e.g., Craven Giant, Jungle Lion).
+     * Returns an error message if the creature cannot block, null otherwise.
+     */
+    private fun validateCantBlock(blockerCard: CardComponent): String? {
+        val cardDef = cardRegistry?.getCard(blockerCard.cardDefinitionId) ?: return null
+        val cantBlockAbility = cardDef.staticAbilities.filterIsInstance<CantBlock>().firstOrNull()
+            ?: return null
+
+        // CantBlock with StaticTarget.SourceCreature means this creature can't block
+        if (cantBlockAbility.target == StaticTarget.SourceCreature) {
+            return "${blockerCard.name} can't block"
+        }
+
+        return null
+    }
+
+    /**
+     * Check if a creature has "can't block" ability.
+     * Returns false if the creature cannot block.
+     */
+    private fun hasCantBlockAbility(blockerCard: CardComponent): Boolean {
+        val cardDef = cardRegistry?.getCard(blockerCard.cardDefinitionId) ?: return false
+        val cantBlockAbility = cardDef.staticAbilities.filterIsInstance<CantBlock>().firstOrNull()
+            ?: return false
+
+        return cantBlockAbility.target == StaticTarget.SourceCreature
     }
 
     /**
@@ -951,6 +988,11 @@ class CombatManager(
 
         val blockerCard = blockerContainer.get<CardComponent>() ?: return false
         val attackerCard = attackerContainer.get<CardComponent>() ?: return false
+
+        // Check if blocker has "can't block" restriction
+        if (hasCantBlockAbility(blockerCard)) {
+            return false
+        }
 
         // Flying: Can only be blocked by creatures with flying or reach
         if (projected.hasKeyword(attackerId, Keyword.FLYING)) {
