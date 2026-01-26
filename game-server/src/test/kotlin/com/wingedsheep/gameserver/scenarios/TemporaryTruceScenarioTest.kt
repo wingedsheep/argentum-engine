@@ -277,6 +277,45 @@ class TemporaryTruceScenarioTest : ScenarioTestBase() {
                     game.getLifeTotal(2) shouldBe 22
                 }
             }
+
+            test("cannot pass priority while decision is pending") {
+                // Setup
+                val game = scenario()
+                    .withPlayers("Caster", "Opponent")
+                    .withCardInHand(1, "Temporary Truce")
+                    .withLandsOnBattlefield(1, "Plains", 2)
+                    .withCardInLibrary(1, "Forest")
+                    .withCardInLibrary(1, "Forest")
+                    .withCardInLibrary(2, "Mountain")
+                    .withCardInLibrary(2, "Mountain")
+                    .withLifeTotal(1, 20)
+                    .withLifeTotal(2, 20)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                // Cast and resolve
+                game.castSpell(1, "Temporary Truce")
+                game.resolveStack()
+
+                // Verify there's a pending decision
+                withClue("There should be a pending decision for player 1") {
+                    game.hasPendingDecision() shouldBe true
+                    game.getPendingDecision().shouldBeInstanceOf<ChooseNumberDecision>()
+                }
+
+                // Try to pass priority - this should fail because there's a pending decision
+                val passResult = game.passPriority()
+
+                withClue("Passing priority should fail when there's a pending decision") {
+                    passResult.error shouldBe "Cannot pass priority while there's a pending decision - please respond to: Choose how many cards to draw (0-2). Gain 2 life for each card not drawn."
+                }
+
+                // Decision should still be pending
+                withClue("Decision should still be pending after failed pass") {
+                    game.hasPendingDecision() shouldBe true
+                }
+            }
         }
     }
 }

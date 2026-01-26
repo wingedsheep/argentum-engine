@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useGameStore } from '../../store/gameStore'
-import type { EntityId, SelectCardsDecision, ChooseTargetsDecision, YesNoDecision } from '../../types'
+import type { EntityId, SelectCardsDecision, ChooseTargetsDecision, YesNoDecision, ChooseNumberDecision } from '../../types'
 import { useResponsive, calculateFittingCardWidth, type ResponsiveSizes } from '../../hooks/useResponsive'
 import { LibrarySearchUI } from './LibrarySearchUI'
 import { ReorderCardsUI } from './ReorderCardsUI'
@@ -68,6 +68,32 @@ export function DecisionUI() {
         }}
       >
         <YesNoDecisionUI decision={pendingDecision} responsive={responsive} />
+      </div>
+    )
+  }
+
+  // Handle ChooseNumberDecision (e.g., "Choose how many cards to draw")
+  if (pendingDecision.type === 'ChooseNumberDecision') {
+    return (
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.85)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: responsive.isMobile ? 12 : 24,
+          padding: responsive.containerPadding,
+          pointerEvents: 'auto',
+          zIndex: 1000,
+        }}
+      >
+        <ChooseNumberDecisionUI decision={pendingDecision} responsive={responsive} />
       </div>
     )
   }
@@ -503,6 +529,101 @@ function YesNoDecisionUI({
           {decision.noText}
         </button>
       </div>
+    </>
+  )
+}
+
+/**
+ * Choose number decision - select a number from a range.
+ */
+function ChooseNumberDecisionUI({
+  decision,
+  responsive,
+}: {
+  decision: ChooseNumberDecision
+  responsive: ResponsiveSizes
+}) {
+  const [selectedNumber, setSelectedNumber] = useState(decision.minValue)
+  const submitNumberDecision = useGameStore((s) => s.submitNumberDecision)
+
+  const handleConfirm = () => {
+    submitNumberDecision(selectedNumber)
+  }
+
+  // Generate number options
+  const numbers = []
+  for (let i = decision.minValue; i <= decision.maxValue; i++) {
+    numbers.push(i)
+  }
+
+  return (
+    <>
+      <h2
+        style={{
+          color: 'white',
+          margin: 0,
+          fontSize: responsive.isMobile ? 18 : 24,
+          textAlign: 'center',
+        }}
+      >
+        {decision.prompt}
+      </h2>
+
+      {decision.context.sourceName && (
+        <p style={{ color: '#aaa', margin: 0, fontSize: responsive.fontSize.normal }}>
+          {decision.context.sourceName}
+        </p>
+      )}
+
+      {/* Number selection buttons */}
+      <div
+        style={{
+          display: 'flex',
+          gap: responsive.isMobile ? 8 : 12,
+          marginTop: responsive.isMobile ? 16 : 24,
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+        }}
+      >
+        {numbers.map((num) => (
+          <button
+            key={num}
+            onClick={() => setSelectedNumber(num)}
+            style={{
+              padding: responsive.isMobile ? '12px 20px' : '16px 28px',
+              fontSize: responsive.fontSize.large,
+              backgroundColor: selectedNumber === num ? '#0066cc' : '#444',
+              color: 'white',
+              border: selectedNumber === num ? '3px solid #66aaff' : '2px solid #666',
+              borderRadius: 8,
+              cursor: 'pointer',
+              fontWeight: 600,
+              minWidth: responsive.isMobile ? 50 : 60,
+              transition: 'all 0.15s',
+            }}
+          >
+            {num}
+          </button>
+        ))}
+      </div>
+
+      {/* Confirm button */}
+      <button
+        onClick={handleConfirm}
+        style={{
+          padding: responsive.isMobile ? '12px 32px' : '16px 48px',
+          fontSize: responsive.fontSize.large,
+          backgroundColor: '#00aa00',
+          color: 'white',
+          border: 'none',
+          borderRadius: 8,
+          cursor: 'pointer',
+          fontWeight: 600,
+          marginTop: responsive.isMobile ? 16 : 24,
+        }}
+      >
+        Confirm
+      </button>
     </>
   )
 }

@@ -344,14 +344,23 @@ abstract class ScenarioTestBase : FunSpec() {
 
         /**
          * Pass priority for both players to resolve the stack.
+         * Note: This stops when a pending decision is created (the caller should handle it).
          */
         fun resolveStack(): List<ExecutionResult> {
             val results = mutableListOf<ExecutionResult>()
             var iterations = 0
-            while (state.stack.isNotEmpty() && iterations++ < 20) {
-                results.add(passPriority())
-                if (state.stack.isNotEmpty()) {
-                    results.add(passPriority())
+            while (state.stack.isNotEmpty() && state.pendingDecision == null && iterations++ < 20) {
+                val result = passPriority()
+                results.add(result)
+                if (result.error != null) {
+                    break  // Stop on error
+                }
+                if (state.stack.isNotEmpty() && state.pendingDecision == null) {
+                    val result2 = passPriority()
+                    results.add(result2)
+                    if (result2.error != null) {
+                        break  // Stop on error
+                    }
                 }
             }
             return results

@@ -117,6 +117,11 @@ class ActionProcessor(
         if (state.priorityPlayerId != action.playerId) {
             return "You don't have priority"
         }
+        // Cannot pass priority while there's a pending decision - must submit decision first
+        val pendingDecision = state.pendingDecision
+        if (pendingDecision != null) {
+            return "Cannot pass priority while there's a pending decision - please respond to: ${pendingDecision.prompt}"
+        }
         return null
     }
 

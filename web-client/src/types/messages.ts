@@ -185,6 +185,15 @@ export interface OrderObjectsDecision extends PendingDecisionBase {
 }
 
 /**
+ * Player must choose a number (e.g., how many cards to draw).
+ */
+export interface ChooseNumberDecision extends PendingDecisionBase {
+  readonly type: 'ChooseNumberDecision'
+  readonly minValue: number
+  readonly maxValue: number
+}
+
+/**
  * Union of all pending decision types.
  */
 export type PendingDecision =
@@ -194,6 +203,7 @@ export type PendingDecision =
   | SearchLibraryDecision
   | ReorderLibraryDecision
   | OrderObjectsDecision
+  | ChooseNumberDecision
 
 /**
  * Information about a legal action the player can take.
