@@ -94,6 +94,9 @@ export type DecisionPhase =
 
 /**
  * Player must select cards from a list.
+ *
+ * For hidden cards (e.g., opponent's library during Cruel Fate), the cardInfo
+ * field provides information about the cards since they're not in gameState.cards.
  */
 export interface SelectCardsDecision extends PendingDecisionBase {
   readonly type: 'SelectCardsDecision'
@@ -101,6 +104,8 @@ export interface SelectCardsDecision extends PendingDecisionBase {
   readonly minSelections: number
   readonly maxSelections: number
   readonly ordered: boolean
+  /** Card info for hidden cards (null/undefined if cards are visible in gameState) */
+  readonly cardInfo?: Record<EntityId, SearchCardInfo> | null
 }
 
 /**

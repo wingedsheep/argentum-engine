@@ -15,6 +15,7 @@ class LibraryExecutors : ExecutorModule {
         PutOnTopOfLibraryExecutor(),
         SearchLibraryExecutor(),
         SearchLibraryToTopExecutor(),
-        LookAtTopAndReorderExecutor()
+        LookAtTopAndReorderExecutor(),
+        LookAtOpponentLibraryExecutor()
     )
 }

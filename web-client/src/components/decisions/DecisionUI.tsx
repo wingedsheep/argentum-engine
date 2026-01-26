@@ -5,6 +5,7 @@ import { useResponsive, calculateFittingCardWidth, type ResponsiveSizes } from '
 import { LibrarySearchUI } from './LibrarySearchUI'
 import { ReorderCardsUI } from './ReorderCardsUI'
 import { OrderBlockersUI } from './OrderBlockersUI'
+import { getCardImageUrl } from '../../utils/cardImages'
 
 /**
  * Check if all legal targets in a ChooseTargetsDecision are players.
@@ -277,6 +278,7 @@ function TargetSelectionDecision({
       >
         {legalTargets.map((targetId) => {
           const isPlayer = isPlayerTarget(targetId)
+          const card = gameState?.cards[targetId]
           return isPlayer ? (
             <PlayerTargetCard
               key={targetId}
@@ -292,6 +294,7 @@ function TargetSelectionDecision({
               key={targetId}
               cardId={targetId}
               cardName={getTargetName(targetId)}
+              imageUri={card?.imageUri}
               isSelected={selectedTargets.includes(targetId)}
               onClick={() => toggleTarget(targetId)}
               cardWidth={cardWidth}
@@ -322,7 +325,7 @@ function TargetSelectionDecision({
 
       {/* Card preview on hover */}
       {hoveredCard && !responsive.isMobile && (
-        <DecisionCardPreview cardName={hoveredCard.name} />
+        <DecisionCardPreview cardName={hoveredCard.name} imageUri={hoveredCard.imageUri} />
       )}
     </>
   )
@@ -519,7 +522,13 @@ function CardSelectionDecision({
   const submitDecision = useGameStore((s) => s.submitDecision)
   const gameState = useGameStore((s) => s.gameState)
 
-  const hoveredCard = hoveredCardId ? gameState?.cards[hoveredCardId] : null
+  // Get hovered card info from either decision cardInfo (hidden cards) or gameState (visible cards)
+  const hoveredCardInfo = hoveredCardId
+    ? {
+        name: decision.cardInfo?.[hoveredCardId]?.name || gameState?.cards[hoveredCardId]?.name,
+        imageUri: decision.cardInfo?.[hoveredCardId]?.imageUri || gameState?.cards[hoveredCardId]?.imageUri
+      }
+    : null
 
   const canConfirm =
     selectedCards.length >= decision.minSelections &&
@@ -586,12 +595,18 @@ function CardSelectionDecision({
         }}
       >
         {decision.options.map((cardId) => {
-          const card = gameState?.cards[cardId]
+          // For hidden cards (e.g., opponent's library), use cardInfo from decision
+          // For visible cards (e.g., own hand for discard), use gameState.cards
+          const cardInfoFromDecision = decision.cardInfo?.[cardId]
+          const cardFromState = gameState?.cards[cardId]
+          const cardName = cardInfoFromDecision?.name || cardFromState?.name || 'Unknown Card'
+          const imageUri = cardInfoFromDecision?.imageUri || cardFromState?.imageUri
           return (
             <DecisionCard
               key={cardId}
               cardId={cardId}
-              cardName={card?.name || 'Unknown Card'}
+              cardName={cardName}
+              imageUri={imageUri}
               isSelected={selectedCards.includes(cardId)}
               onClick={() => toggleCard(cardId)}
               cardWidth={cardWidth}
@@ -621,8 +636,8 @@ function CardSelectionDecision({
       </button>
 
       {/* Card preview on hover */}
-      {hoveredCard && !responsive.isMobile && (
-        <DecisionCardPreview cardName={hoveredCard.name} />
+      {hoveredCardInfo?.name && !responsive.isMobile && (
+        <DecisionCardPreview cardName={hoveredCardInfo.name} imageUri={hoveredCardInfo.imageUri} />
       )}
     </>
   )
@@ -631,8 +646,8 @@ function CardSelectionDecision({
 /**
  * Card preview overlay - shows enlarged card when hovering.
  */
-function DecisionCardPreview({ cardName }: { cardName: string }) {
-  const cardImageUrl = `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&format=image&version=large`
+function DecisionCardPreview({ cardName, imageUri }: { cardName: string; imageUri?: string | null | undefined }) {
+  const cardImageUrl = getCardImageUrl(cardName, imageUri, 'large')
 
   const previewWidth = 280
   const previewHeight = Math.round(previewWidth * 1.4)
@@ -676,6 +691,7 @@ function DecisionCardPreview({ cardName }: { cardName: string }) {
 function DecisionCard({
   cardId: _cardId,
   cardName,
+  imageUri,
   isSelected,
   onClick,
   cardWidth = 130,
@@ -685,6 +701,7 @@ function DecisionCard({
 }: {
   cardId: EntityId
   cardName: string
+  imageUri?: string | null | undefined
   isSelected: boolean
   onClick: () => void
   cardWidth?: number
@@ -692,7 +709,7 @@ function DecisionCard({
   onMouseEnter?: () => void
   onMouseLeave?: () => void
 }) {
-  const cardImageUrl = `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&format=image&version=normal`
+  const cardImageUrl = getCardImageUrl(cardName, imageUri)
 
   const cardRatio = 1.4
   const cardHeight = Math.round(cardWidth * cardRatio)

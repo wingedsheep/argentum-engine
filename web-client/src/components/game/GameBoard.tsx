@@ -9,6 +9,7 @@ import { CombatArrows } from '../combat/CombatArrows'
 import { TargetingArrows } from '../targeting/TargetingArrows'
 import { DraggedCardOverlay } from './DraggedCardOverlay'
 import { useResponsive, calculateFittingCardWidth, type ResponsiveSizes } from '../../hooks/useResponsive'
+import { getCardImageUrl, getScryfallFallbackUrl } from '../../utils/cardImages'
 import React, { createContext, useContext, useCallback, useEffect } from 'react'
 
 // Context to pass responsive sizes down the component tree
@@ -18,28 +19,6 @@ function useResponsiveContext(): ResponsiveSizes {
   const ctx = useContext(ResponsiveContext)
   if (!ctx) throw new Error('ResponsiveContext not provided')
   return ctx
-}
-
-/**
- * Get the Scryfall API fallback URL for a card (always uses name lookup).
- */
-function getScryfallFallbackUrl(cardName: string, version: 'small' | 'normal' | 'large' = 'normal'): string {
-  return `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&format=image&version=${version}`
-}
-
-/**
- * Get the image URL for a card, preferring imageUri from metadata if available,
- * falling back to Scryfall API lookup by card name.
- */
-function getCardImageUrl(card: ClientCard, version: 'small' | 'normal' | 'large' = 'normal'): string {
-  if (card.imageUri) {
-    // If we have a direct image URI, use it (possibly adjusting for size)
-    // Scryfall URIs contain the version in the path, e.g., /normal/ or /large/
-    // We can try to swap it if needed, but for now just use the provided URI
-    return card.imageUri
-  }
-  // Fallback to Scryfall API lookup by name
-  return getScryfallFallbackUrl(card.name, version)
 }
 
 /**
@@ -426,7 +405,7 @@ function StackDisplay() {
             onMouseLeave={() => hoverCard(null)}
           >
             <img
-              src={getCardImageUrl(card, 'small')}
+              src={getCardImageUrl(card.name, card.imageUri, 'small')}
               alt={card.name}
               style={styles.stackItemImage}
               title={`${card.name}\n${card.oracleText || ''}`}
@@ -458,7 +437,7 @@ function CardPreview() {
   const card = gameState.cards[hoveredCardId]
   if (!card) return null
 
-  const cardImageUrl = getCardImageUrl(card, 'large')
+  const cardImageUrl = getCardImageUrl(card.name, card.imageUri, 'large')
 
   // Calculate preview size - larger than normal cards
   const previewWidth = responsive.isMobile ? 200 : 280
@@ -669,7 +648,7 @@ function ZonePile({ player }: { player: ClientPlayer }) {
         <div style={{ ...styles.graveyardPile, ...pileStyle }}>
           {topGraveyardCard ? (
             <img
-              src={getCardImageUrl(topGraveyardCard, 'normal')}
+              src={getCardImageUrl(topGraveyardCard.name, topGraveyardCard.imageUri, 'normal')}
               alt={topGraveyardCard.name}
               style={{ ...styles.pileImage, opacity: 0.8 }}
               onError={(e) => handleImageError(e, topGraveyardCard.name, 'normal')}
@@ -830,7 +809,7 @@ function GameCard({
 
   const cardImageUrl = faceDown
     ? 'https://backs.scryfall.io/large/2/2/222b7a3b-2321-4d4c-af19-19338b134971.jpg?1677416389'
-    : getCardImageUrl(card, 'normal')
+    : getCardImageUrl(card.name, card.imageUri, 'normal')
 
   // Use responsive sizes, but allow override for fitting cards in hand
   const baseWidth = small

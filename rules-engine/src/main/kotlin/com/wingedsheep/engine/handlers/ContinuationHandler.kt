@@ -68,6 +68,8 @@ class ContinuationHandler(
             is SacrificeUnlessDiscardContinuation -> resumeSacrificeUnlessDiscard(stateAfterPop, continuation, response)
             is SearchLibraryToTopContinuation -> resumeSearchLibraryToTop(stateAfterPop, continuation, response)
             is EachPlayerChoosesDrawContinuation -> resumeEachPlayerChoosesDraw(stateAfterPop, continuation, response)
+            is LookAtOpponentLibraryContinuation -> resumeLookAtOpponentLibrary(stateAfterPop, continuation, response)
+            is ReorderOpponentLibraryContinuation -> resumeReorderOpponentLibrary(stateAfterPop, continuation, response)
         }
     }
 
@@ -1129,6 +1131,163 @@ class ContinuationHandler(
         )
 
         return checkForMoreContinuations(result.state, result.events.toList())
+    }
+
+    /**
+     * Resume after player selected cards to put in opponent's graveyard.
+     *
+     * This is the first step of LookAtOpponentLibraryEffect:
+     * 1. Move selected cards to opponent's graveyard
+     * 2. If there are remaining cards, ask player to reorder them
+     * 3. Put remaining cards back on top of opponent's library in the chosen order
+     */
+    private fun resumeLookAtOpponentLibrary(
+        state: GameState,
+        continuation: LookAtOpponentLibraryContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for look at opponent library")
+        }
+
+        val selectedForGraveyard = response.selectedCards
+        val opponentId = continuation.opponentId
+        val playerId = continuation.playerId
+
+        // Validate selection count
+        if (selectedForGraveyard.size != continuation.toGraveyard) {
+            return ExecutionResult.error(
+                state,
+                "Expected ${continuation.toGraveyard} cards for graveyard, got ${selectedForGraveyard.size}"
+            )
+        }
+
+        val libraryZone = ZoneKey(opponentId, ZoneType.LIBRARY)
+        val graveyardZone = ZoneKey(opponentId, ZoneType.GRAVEYARD)
+        val events = mutableListOf<GameEvent>()
+
+        var newState = state
+
+        // Move selected cards from library to graveyard
+        for (cardId in selectedForGraveyard) {
+            newState = newState.removeFromZone(libraryZone, cardId)
+            newState = newState.addToZone(graveyardZone, cardId)
+
+            val cardName = newState.getEntity(cardId)?.get<CardComponent>()?.name ?: "Unknown"
+            events.add(
+                ZoneChangeEvent(
+                    entityId = cardId,
+                    entityName = cardName,
+                    fromZone = ZoneType.LIBRARY,
+                    toZone = ZoneType.GRAVEYARD,
+                    ownerId = opponentId
+                )
+            )
+        }
+
+        // Calculate remaining cards that need to be reordered
+        val remainingCards = continuation.allCards.filter { it !in selectedForGraveyard }
+
+        // If only 0 or 1 cards remain, no reordering needed
+        if (remainingCards.size <= 1) {
+            // Cards are already in the correct position at the top of the library
+            // (they haven't been moved, just the graveyard cards were removed)
+            return checkForMoreContinuations(newState, events)
+        }
+
+        // Need to reorder remaining cards - create a ReorderLibraryDecision
+        val cardInfoMap = remainingCards.associateWith { cardId ->
+            val container = newState.getEntity(cardId)
+            val cardComponent = container?.get<CardComponent>()
+            SearchCardInfo(
+                name = cardComponent?.name ?: "Unknown",
+                manaCost = cardComponent?.manaCost?.toString() ?: "",
+                typeLine = cardComponent?.typeLine?.toString() ?: "",
+                imageUri = null
+            )
+        }
+
+        val decisionId = java.util.UUID.randomUUID().toString()
+        val decision = ReorderLibraryDecision(
+            id = decisionId,
+            playerId = playerId,
+            prompt = "Put the remaining ${remainingCards.size} cards on top of opponent's library in any order.",
+            context = DecisionContext(
+                sourceId = continuation.sourceId,
+                sourceName = continuation.sourceName,
+                phase = DecisionPhase.RESOLUTION
+            ),
+            cards = remainingCards,
+            cardInfo = cardInfoMap
+        )
+
+        val reorderContinuation = ReorderOpponentLibraryContinuation(
+            decisionId = decisionId,
+            playerId = playerId,
+            opponentId = opponentId,
+            sourceId = continuation.sourceId,
+            sourceName = continuation.sourceName
+        )
+
+        newState = newState
+            .withPendingDecision(decision)
+            .pushContinuation(reorderContinuation)
+
+        events.add(
+            DecisionRequestedEvent(
+                decisionId = decisionId,
+                playerId = playerId,
+                decisionType = "REORDER_LIBRARY",
+                prompt = decision.prompt
+            )
+        )
+
+        return ExecutionResult.paused(newState, decision, events)
+    }
+
+    /**
+     * Resume after player reordered the remaining cards for opponent's library.
+     *
+     * This is the second step of LookAtOpponentLibraryEffect:
+     * Put the cards back on top of opponent's library in the chosen order.
+     */
+    private fun resumeReorderOpponentLibrary(
+        state: GameState,
+        continuation: ReorderOpponentLibraryContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is OrderedResponse) {
+            return ExecutionResult.error(state, "Expected ordered response for reorder opponent library")
+        }
+
+        val opponentId = continuation.opponentId
+        val orderedCards = response.orderedObjects
+        val libraryZone = ZoneKey(opponentId, ZoneType.LIBRARY)
+
+        // Get current library
+        val currentLibrary = state.getZone(libraryZone).toMutableList()
+
+        // Remove the reordered cards from the library (they should be at the top)
+        val cardsSet = orderedCards.toSet()
+        val remainingLibrary = currentLibrary.filter { it !in cardsSet }
+
+        // Place the cards back on top in the new order
+        val newLibrary = orderedCards + remainingLibrary
+
+        // Update the library zone
+        val newState = state.copy(
+            zones = state.zones + (libraryZone to newLibrary)
+        )
+
+        val events = listOf(
+            LibraryReorderedEvent(
+                playerId = opponentId,
+                cardCount = orderedCards.size,
+                source = continuation.sourceName
+            )
+        )
+
+        return checkForMoreContinuations(newState, events)
     }
 
     /**

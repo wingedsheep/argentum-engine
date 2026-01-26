@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useGameStore, type MulliganState, type MulliganCardInfo } from '../../store/gameStore'
 import type { EntityId } from '../../types'
 import { useResponsive, calculateFittingCardWidth, type ResponsiveSizes } from '../../hooks/useResponsive'
+import { getCardImageUrl } from '../../utils/cardImages'
 
 /**
  * Mulligan UI overlay.
@@ -244,7 +245,7 @@ function MulliganCard({
   onMouseLeave?: () => void
 }) {
   // Use provided imageUri or fall back to Scryfall API
-  const cardImageUrl = imageUri || `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&format=image&version=normal`
+  const cardImageUrl = getCardImageUrl(cardName, imageUri)
 
   const cardRatio = 1.4
   const cardHeight = Math.round(cardWidth * cardRatio)
@@ -315,7 +316,7 @@ function MulliganCard({
  * Card preview overlay - shows enlarged card when hovering.
  */
 function MulliganCardPreview({ cardInfo }: { cardInfo: MulliganCardInfo }) {
-  const cardImageUrl = cardInfo.imageUri || `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardInfo.name)}&format=image&version=large`
+  const cardImageUrl = getCardImageUrl(cardInfo.name, cardInfo.imageUri, 'large')
 
   const previewWidth = 280
   const previewHeight = Math.round(previewWidth * 1.4)

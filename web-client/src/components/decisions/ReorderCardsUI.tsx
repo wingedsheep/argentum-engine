@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react'
 import { useGameStore } from '../../store/gameStore'
 import type { EntityId, ReorderLibraryDecision, SearchCardInfo } from '../../types'
 import { calculateFittingCardWidth, type ResponsiveSizes } from '../../hooks/useResponsive'
+import { getCardImageUrl } from '../../utils/cardImages'
 
 interface ReorderCardsUIProps {
   decision: ReorderLibraryDecision
@@ -318,7 +319,7 @@ function ReorderCard({
   onMoveRight: () => void
 }) {
   const cardName = cardInfo?.name || 'Unknown Card'
-  const cardImageUrl = `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&format=image&version=normal`
+  const cardImageUrl = getCardImageUrl(cardName, cardInfo?.imageUri)
 
   const cardRatio = 1.4
   const cardHeight = Math.round(cardWidth * cardRatio)

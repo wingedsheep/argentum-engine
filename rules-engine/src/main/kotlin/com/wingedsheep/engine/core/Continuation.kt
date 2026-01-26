@@ -394,3 +394,51 @@ data class EachPlayerChoosesDrawContinuation(
     val maxCards: Int,
     val lifePerCardNotDrawn: Int
 ) : ContinuationFrame
+
+/**
+ * Resume after player selected cards to put in opponent's graveyard from their library.
+ *
+ * Used for effects like Cruel Fate: "Look at the top N cards of target opponent's library.
+ * Put X of them into that player's graveyard and the rest on top of their library in any order."
+ *
+ * This is a two-step continuation:
+ * 1. First, player selects which cards go to graveyard (this continuation handles that response)
+ * 2. Then, if there are remaining cards, player reorders them for the top of library
+ *
+ * @property playerId The player making the selections (controller of the effect)
+ * @property opponentId The opponent whose library is being manipulated
+ * @property sourceId The spell/ability that caused this
+ * @property sourceName Name of the source for event messages
+ * @property allCards All the cards that were looked at (for validation)
+ * @property toGraveyard Number of cards that must go to graveyard
+ */
+@Serializable
+data class LookAtOpponentLibraryContinuation(
+    override val decisionId: String,
+    val playerId: EntityId,
+    val opponentId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val allCards: List<EntityId>,
+    val toGraveyard: Int
+) : ContinuationFrame
+
+/**
+ * Resume after player reordered the remaining cards to put back on opponent's library.
+ *
+ * Second step of LookAtOpponentLibraryEffect - after selecting cards for graveyard,
+ * the remaining cards need to be reordered and put back on top.
+ *
+ * @property playerId The player making the reorder decision
+ * @property opponentId The opponent whose library is being manipulated
+ * @property sourceId The spell/ability that caused this
+ * @property sourceName Name of the source for event messages
+ */
+@Serializable
+data class ReorderOpponentLibraryContinuation(
+    override val decisionId: String,
+    val playerId: EntityId,
+    val opponentId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?
+) : ContinuationFrame

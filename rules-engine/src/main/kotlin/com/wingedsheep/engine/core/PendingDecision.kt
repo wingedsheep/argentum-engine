@@ -103,6 +103,7 @@ data class TargetRequirementInfo(
  * @property options The entity IDs that can be selected
  * @property minSelections Minimum number that must be selected
  * @property maxSelections Maximum number that can be selected
+ * @property cardInfo Optional card info for displaying hidden cards (e.g., opponent's library)
  */
 @Serializable
 @SerialName("SelectCardsDecision")
@@ -115,7 +116,9 @@ data class SelectCardsDecision(
     val minSelections: Int,
     val maxSelections: Int,
     /** Whether the order of selection matters */
-    val ordered: Boolean = false
+    val ordered: Boolean = false,
+    /** Card info for displaying hidden cards (null if cards are visible to the player) */
+    val cardInfo: Map<EntityId, SearchCardInfo>? = null
 ) : PendingDecision
 
 /**
