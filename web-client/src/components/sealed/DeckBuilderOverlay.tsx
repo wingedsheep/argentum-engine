@@ -125,10 +125,30 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
       } else if (sortBy === 'cmc') {
         return getCmc(a) - getCmc(b)
       } else {
-        return getRarityOrder(a) - getRarityOrder(b)
+        return getRarityOrder(a) - getRarityOrder(b) || getCmc(a) - getCmc(b)
       }
     })
   }, [state.cardPool, state.deck, sortBy])
+
+  // Group cards by rarity for display with separators
+  const poolByRarity = useMemo(() => {
+    if (sortBy !== 'rarity') return null
+
+    const mythic: SealedCardInfo[] = []
+    const rare: SealedCardInfo[] = []
+    const uncommon: SealedCardInfo[] = []
+    const common: SealedCardInfo[] = []
+
+    for (const card of sortedPool) {
+      const rarity = card.rarity.toUpperCase()
+      if (rarity === 'MYTHIC') mythic.push(card)
+      else if (rarity === 'RARE') rare.push(card)
+      else if (rarity === 'UNCOMMON') uncommon.push(card)
+      else common.push(card)
+    }
+
+    return { MYTHIC: mythic, RARE: rare, UNCOMMON: uncommon, COMMON: common }
+  }, [sortedPool, sortBy])
 
   // Group deck cards by name
   const deckCardGroups = useMemo(() => {
@@ -290,24 +310,58 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
               padding: 8,
             }}
           >
-            <div
-              style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: 6,
-                justifyContent: 'flex-start',
-              }}
-            >
-              {sortedPool.map((card, index) => (
-                <PoolCard
-                  key={`${card.name}-${index}`}
-                  card={card}
-                  onClick={() => !isSubmitted && addCardToDeck(card.name)}
-                  onHover={setHoveredCard}
-                  disabled={isSubmitted}
-                />
-              ))}
-            </div>
+            {sortBy === 'rarity' && poolByRarity ? (
+              // Grouped by rarity with separators
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {(['MYTHIC', 'RARE', 'UNCOMMON', 'COMMON'] as const).map((rarity) => {
+                  const cards = poolByRarity[rarity] ?? []
+                  if (cards.length === 0) return null
+                  return (
+                    <div key={rarity}>
+                      <RaritySectionHeader rarity={rarity} count={cards.length} />
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexWrap: 'wrap',
+                          gap: 6,
+                          justifyContent: 'flex-start',
+                        }}
+                      >
+                        {cards.map((card, index) => (
+                          <PoolCard
+                            key={`${card.name}-${index}`}
+                            card={card}
+                            onClick={() => !isSubmitted && addCardToDeck(card.name)}
+                            onHover={setHoveredCard}
+                            disabled={isSubmitted}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            ) : (
+              // Flat list (color or cmc sorting)
+              <div
+                style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: 6,
+                  justifyContent: 'flex-start',
+                }}
+              >
+                {sortedPool.map((card, index) => (
+                  <PoolCard
+                    key={`${card.name}-${index}`}
+                    card={card}
+                    onClick={() => !isSubmitted && addCardToDeck(card.name)}
+                    onHover={setHoveredCard}
+                    disabled={isSubmitted}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -464,6 +518,43 @@ function PoolCard({
           objectFit: 'cover',
         }}
       />
+    </div>
+  )
+}
+
+/**
+ * Section header for rarity grouping.
+ */
+function RaritySectionHeader({ rarity, count }: { rarity: string; count: number }) {
+  const colors: Record<string, string> = {
+    MYTHIC: '#ff8b00',
+    RARE: '#ffd700',
+    UNCOMMON: '#c0c0c0',
+    COMMON: '#888888',
+  }
+
+  const labels: Record<string, string> = {
+    MYTHIC: 'Mythic Rare',
+    RARE: 'Rare',
+    UNCOMMON: 'Uncommon',
+    COMMON: 'Common',
+  }
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        marginBottom: 8,
+        paddingBottom: 4,
+        borderBottom: `2px solid ${colors[rarity] || '#888'}`,
+      }}
+    >
+      <span style={{ color: colors[rarity] || '#888', fontWeight: 600, fontSize: 14 }}>
+        {labels[rarity] || rarity}
+      </span>
+      <span style={{ color: '#666', fontSize: 12 }}>({count})</span>
     </div>
   )
 }
