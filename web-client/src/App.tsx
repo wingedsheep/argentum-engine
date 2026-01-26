@@ -4,6 +4,7 @@ import { GameUI } from './components/ui/GameUI'
 import { MulliganUI } from './components/mulligan/MulliganUI'
 import { CombatOverlay } from './components/combat/CombatOverlay'
 import { DecisionUI } from './components/decisions/DecisionUI'
+import { RevealedHandUI } from './components/decisions/RevealedHandUI'
 import { XCostSelector } from './components/ui/XCostSelector'
 import { useGameStore } from './store/gameStore'
 import { useViewingPlayer, useBattlefieldCards } from './store/selectors'
@@ -134,6 +135,9 @@ export default function App() {
 
       {/* Decision overlay (for pending decisions like discard to hand size) */}
       {showGame && <DecisionUI />}
+
+      {/* Revealed hand overlay (when looking at opponent's hand) */}
+      {showGame && <RevealedHandUI />}
 
       {/* Game over overlay */}
       {showGame && <GameOverlay />}

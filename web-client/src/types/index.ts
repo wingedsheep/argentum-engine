@@ -93,6 +93,7 @@ export type {
   ManaAddedEvent,
   PlayerLostEvent,
   GameEndedEvent,
+  HandLookedAtEvent,
 } from './events'
 export {
   isLifeChangedEvent,
@@ -104,6 +105,7 @@ export {
   isSpellCastEvent,
   isPermanentTappedEvent,
   isPermanentUntappedEvent,
+  isHandLookedAtEvent,
 } from './events'
 
 // Actions

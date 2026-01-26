@@ -125,6 +125,7 @@ export interface GameStore {
   hoveredCardId: EntityId | null
   draggingBlockerId: EntityId | null
   draggingCardId: EntityId | null
+  revealedHandCardIds: readonly EntityId[] | null
 
   // Animation queue
   pendingEvents: readonly ClientEvent[]
@@ -177,6 +178,8 @@ export interface GameStore {
   confirmXSelection: () => void
   clearError: () => void
   consumeEvent: () => ClientEvent | undefined
+  showRevealedHand: (cardIds: readonly EntityId[]) => void
+  dismissRevealedHand: () => void
 }
 
 // WebSocket instance (singleton)
@@ -292,11 +295,18 @@ export const useGameStore = create<GameStore>()(
       },
 
       onStateUpdate: (msg) => {
+        // Check for handLookedAt event and show the revealed hand overlay
+        const handLookedAtEvent = msg.events.find(
+          (e) => e.type === 'handLookedAt'
+        ) as { type: 'handLookedAt'; cardIds: readonly EntityId[] } | undefined
+
         set((state) => ({
           gameState: msg.state,
           legalActions: msg.legalActions,
           pendingDecision: msg.pendingDecision ?? null,
           pendingEvents: [...state.pendingEvents, ...msg.events],
+          // Show revealed hand overlay if handLookedAt event received
+          revealedHandCardIds: handLookedAtEvent?.cardIds ?? state.revealedHandCardIds,
         }))
 
         // Auto-pass when the only action available is PassPriority
@@ -388,6 +398,7 @@ export const useGameStore = create<GameStore>()(
       hoveredCardId: null,
       draggingBlockerId: null,
       draggingCardId: null,
+      revealedHandCardIds: null,
       pendingEvents: [],
       gameOverState: null,
       lastError: null,
@@ -839,6 +850,14 @@ export const useGameStore = create<GameStore>()(
         const [event, ...rest] = pendingEvents
         set({ pendingEvents: rest })
         return event
+      },
+
+      showRevealedHand: (cardIds) => {
+        set({ revealedHandCardIds: cardIds })
+      },
+
+      dismissRevealedHand: () => {
+        set({ revealedHandCardIds: null })
       },
     }
   })

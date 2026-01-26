@@ -30,6 +30,7 @@ export type ClientEvent =
   | ManaAddedEvent
   | PlayerLostEvent
   | GameEndedEvent
+  | HandLookedAtEvent
 
 // ============================================================================
 // Life/Damage Events
@@ -239,6 +240,18 @@ export interface GameEndedEvent {
 }
 
 // ============================================================================
+// Information Events
+// ============================================================================
+
+export interface HandLookedAtEvent {
+  readonly type: 'handLookedAt'
+  readonly viewingPlayerId: EntityId
+  readonly targetPlayerId: EntityId
+  readonly cardIds: readonly EntityId[]
+  readonly description: string
+}
+
+// ============================================================================
 // Type Guards
 // ============================================================================
 
@@ -276,4 +289,8 @@ export function isPermanentTappedEvent(event: ClientEvent): event is PermanentTa
 
 export function isPermanentUntappedEvent(event: ClientEvent): event is PermanentUntappedEvent {
   return event.type === 'permanentUntapped'
+}
+
+export function isHandLookedAtEvent(event: ClientEvent): event is HandLookedAtEvent {
+  return event.type === 'handLookedAt'
 }
