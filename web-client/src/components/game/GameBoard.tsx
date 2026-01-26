@@ -10,6 +10,7 @@ import { TargetingArrows } from '../targeting/TargetingArrows'
 import { DraggedCardOverlay } from './DraggedCardOverlay'
 import { useResponsive, calculateFittingCardWidth, type ResponsiveSizes } from '../../hooks/useResponsive'
 import { getCardImageUrl, getScryfallFallbackUrl } from '../../utils/cardImages'
+import { useInteraction } from '../../hooks/useInteraction'
 import React, { createContext, useContext, useCallback, useEffect } from 'react'
 
 // Context to pass responsive sizes down the component tree
@@ -768,7 +769,9 @@ function GameCard({
   const stopDraggingCard = useGameStore((state) => state.stopDraggingCard)
   const draggingCardId = useGameStore((state) => state.draggingCardId)
   const startTargeting = useGameStore((state) => state.startTargeting)
+  const startXSelection = useGameStore((state) => state.startXSelection)
   const responsive = useResponsiveContext()
+  const { handleCardClick } = useInteraction()
 
   // Hover handlers for card preview
   const handleMouseEnter = useCallback(() => {
@@ -868,8 +871,17 @@ function GameCard({
       }
 
       if (!isOverHand && playableAction) {
-        // Check if action requires targeting
-        if (playableAction.requiresTargets && playableAction.validTargets && playableAction.validTargets.length > 0) {
+        // Check if spell has X cost - needs X selection first
+        if (playableAction.hasXCost) {
+          startXSelection({
+            actionInfo: playableAction,
+            cardName: playableAction.description.replace('Cast ', ''),
+            minX: playableAction.minX ?? 0,
+            maxX: playableAction.maxAffordableX ?? 0,
+            selectedX: playableAction.maxAffordableX ?? 0,
+          })
+        } else if (playableAction.requiresTargets && playableAction.validTargets && playableAction.validTargets.length > 0) {
+          // Check if action requires targeting
           // Enter targeting mode
           startTargeting({
             action: playableAction.action,
@@ -887,7 +899,7 @@ function GameCard({
 
     window.addEventListener('mouseup', handleGlobalMouseUp)
     return () => window.removeEventListener('mouseup', handleGlobalMouseUp)
-  }, [draggingCardId, card.id, playableAction, submitAction, stopDraggingCard, startTargeting])
+  }, [draggingCardId, card.id, playableAction, submitAction, stopDraggingCard, startTargeting, startXSelection])
 
   // Global mouse up handler to cancel drag
   useEffect(() => {
@@ -934,8 +946,13 @@ function GameCard({
     }
 
     // Normal card selection (outside combat mode)
+    // Use handleCardClick which handles X cost spells, targeting, and single-action auto-execute
     if (interactive && !isInTargetingMode) {
-      selectCard(isSelected ? null : card.id)
+      if (isSelected) {
+        selectCard(null)
+      } else {
+        handleCardClick(card.id)
+      }
     }
   }
 
