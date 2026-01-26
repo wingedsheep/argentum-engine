@@ -21,6 +21,13 @@ function useResponsiveContext(): ResponsiveSizes {
 }
 
 /**
+ * Get the Scryfall API fallback URL for a card (always uses name lookup).
+ */
+function getScryfallFallbackUrl(cardName: string, version: 'small' | 'normal' | 'large' = 'normal'): string {
+  return `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&format=image&version=${version}`
+}
+
+/**
  * Get the image URL for a card, preferring imageUri from metadata if available,
  * falling back to Scryfall API lookup by card name.
  */
@@ -32,7 +39,23 @@ function getCardImageUrl(card: ClientCard, version: 'small' | 'normal' | 'large'
     return card.imageUri
   }
   // Fallback to Scryfall API lookup by name
-  return `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(card.name)}&format=image&version=${version}`
+  return getScryfallFallbackUrl(card.name, version)
+}
+
+/**
+ * Handle image load error by falling back to Scryfall API.
+ */
+function handleImageError(
+  e: React.SyntheticEvent<HTMLImageElement>,
+  cardName: string,
+  version: 'small' | 'normal' | 'large' = 'normal'
+): void {
+  const img = e.currentTarget
+  const fallbackUrl = getScryfallFallbackUrl(cardName, version)
+  // Only switch to fallback if not already using it (prevent infinite loop)
+  if (!img.src.includes('api.scryfall.com')) {
+    img.src = fallbackUrl
+  }
 }
 
 /**
@@ -407,6 +430,7 @@ function StackDisplay() {
               alt={card.name}
               style={styles.stackItemImage}
               title={`${card.name}\n${card.oracleText || ''}`}
+              onError={(e) => handleImageError(e, card.name, 'small')}
             />
             <div style={{
               ...styles.stackItemName,
@@ -463,6 +487,7 @@ function CardPreview() {
             src={cardImageUrl}
             alt={card.name}
             style={styles.cardPreviewImage}
+            onError={(e) => handleImageError(e, card.name, 'large')}
           />
         </div>
 
@@ -647,9 +672,7 @@ function ZonePile({ player }: { player: ClientPlayer }) {
               src={getCardImageUrl(topGraveyardCard, 'normal')}
               alt={topGraveyardCard.name}
               style={{ ...styles.pileImage, opacity: 0.8 }}
-              onError={(e) => {
-                e.currentTarget.style.display = 'none'
-              }}
+              onError={(e) => handleImageError(e, topGraveyardCard.name, 'normal')}
             />
           ) : (
             <div style={styles.emptyPile} />
@@ -1008,9 +1031,17 @@ function GameCard({
         alt={faceDown ? 'Card back' : card.name}
         style={styles.cardImage}
         onError={(e) => {
-          e.currentTarget.style.display = 'none'
-          const fallback = e.currentTarget.nextElementSibling as HTMLElement
-          if (fallback) fallback.style.display = 'flex'
+          const img = e.currentTarget
+          const fallbackUrl = getScryfallFallbackUrl(card.name, 'normal')
+          // Try Scryfall API fallback if not already using it
+          if (!faceDown && !img.src.includes('api.scryfall.com')) {
+            img.src = fallbackUrl
+          } else {
+            // Both imageUri and Scryfall failed, show text fallback
+            img.style.display = 'none'
+            const fallback = img.nextElementSibling as HTMLElement
+            if (fallback) fallback.style.display = 'flex'
+          }
         }}
       />
       {/* Fallback when image fails */}

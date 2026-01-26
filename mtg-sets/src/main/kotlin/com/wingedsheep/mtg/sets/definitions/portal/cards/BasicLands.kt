@@ -28,13 +28,13 @@ val Plains197 = basicLand("Plains") {
 val Plains198 = basicLand("Plains") {
     collectorNumber = "198"
     artist = "Douglas Shuler"
-    imageUri = "https://cards.scryfall.io/normal/front/0/e/0e98ac03-b838-4f05-b139-2e83d0cdd098.jpg"
+    imageUri = "https://cards.scryfall.io/normal/front/3/a/3a48c07b-ddbe-4251-b9e7-38ea60d66e72.jpg"
 }
 
 val Plains199 = basicLand("Plains") {
     collectorNumber = "199"
     artist = "Douglas Shuler"
-    imageUri = "https://cards.scryfall.io/normal/front/c/9/c9860344-acf0-413a-a56a-7c22acd8d46c.jpg"
+    imageUri = "https://cards.scryfall.io/normal/front/3/e/3e511581-2739-445e-b486-c2b2d15c9be4.jpg"
 }
 
 // =============================================================================
@@ -78,19 +78,19 @@ val Swamp204 = basicLand("Swamp") {
 val Swamp205 = basicLand("Swamp") {
     collectorNumber = "205"
     artist = "Romas Kukalis"
-    imageUri = "https://cards.scryfall.io/normal/front/1/c/1c3e8cc2-5b2c-4c47-8de4-5ca3bc0e49b0.jpg"
+    imageUri = "https://cards.scryfall.io/normal/front/d/d/dd6c1c8d-dd83-4dbe-b022-495edd1a909f.jpg"
 }
 
 val Swamp206 = basicLand("Swamp") {
     collectorNumber = "206"
     artist = "Romas Kukalis"
-    imageUri = "https://cards.scryfall.io/normal/front/b/7/b7a37012-d9e0-453c-a532-611a6d10f645.jpg"
+    imageUri = "https://cards.scryfall.io/normal/front/2/c/2c0c5cf6-f91d-45eb-a5c1-5aacec9cda69.jpg"
 }
 
 val Swamp207 = basicLand("Swamp") {
     collectorNumber = "207"
     artist = "Romas Kukalis"
-    imageUri = "https://cards.scryfall.io/normal/front/8/a/8a1c61ce-b8af-4c3e-9a75-869f6c3ab1e6.jpg"
+    imageUri = "https://cards.scryfall.io/normal/front/5/f/5fd26e01-cbd2-4787-bc01-aff58c13840f.jpg"
 }
 
 // =============================================================================
