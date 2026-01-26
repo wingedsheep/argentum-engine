@@ -598,5 +598,14 @@ abstract class ScenarioTestBase : FunSpec() {
                 ?: error("No pending decision to respond to")
             return submitDecision(TargetsResponse(decisionId, mapOf(0 to emptyList())))
         }
+
+        /**
+         * Submit a yes/no response (for may abilities and similar choices).
+         */
+        fun answerYesNo(choice: Boolean): ExecutionResult {
+            val decisionId = state.pendingDecision?.id
+                ?: error("No pending decision to respond to")
+            return submitDecision(YesNoResponse(decisionId, choice))
+        }
     }
 }

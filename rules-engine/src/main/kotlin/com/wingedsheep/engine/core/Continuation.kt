@@ -442,3 +442,26 @@ data class ReorderOpponentLibraryContinuation(
     val sourceId: EntityId?,
     val sourceName: String?
 ) : ContinuationFrame
+
+/**
+ * Resume after player makes a yes/no choice for "sacrifice unless you discard at random" effect.
+ *
+ * Used for cards like Pillaging Horde: "When ~ enters the battlefield, sacrifice it
+ * unless you discard a card at random."
+ *
+ * If the player says yes, a random card is discarded and the source survives.
+ * If the player says no, the source is sacrificed.
+ *
+ * @property playerId The player who controls the source permanent
+ * @property sourceId The permanent that will be sacrificed if the player doesn't discard
+ * @property sourceName Name of the source for event messages
+ * @property discardFilter The type of card that can be discarded (usually AnyCard for random)
+ */
+@Serializable
+data class SacrificeUnlessRandomDiscardContinuation(
+    override val decisionId: String,
+    val playerId: EntityId,
+    val sourceId: EntityId,
+    val sourceName: String,
+    val discardFilter: CardFilter
+) : ContinuationFrame

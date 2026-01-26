@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CardFilter
 import com.wingedsheep.sdk.scripting.SacrificeUnlessDiscardEffect
+import java.util.UUID
 import kotlin.reflect.KClass
 
 /**
@@ -109,6 +110,7 @@ class SacrificeUnlessDiscardExecutor(
 
     /**
      * Handle random discard variant (e.g., Pillaging Horde).
+     * Prompts the player with a yes/no choice: "Discard a card at random to keep [source]?"
      */
     private fun handleRandomDiscard(
         state: GameState,
@@ -119,7 +121,74 @@ class SacrificeUnlessDiscardExecutor(
     ): ExecutionResult {
         val validCards = findValidCards(state, playerId, discardFilter)
 
-        // If no valid cards, sacrifice the source
+        // If no valid cards, sacrifice the source automatically
+        if (validCards.isEmpty()) {
+            return sacrificeSource(state, playerId, sourceId, sourceName)
+        }
+
+        // Create a yes/no decision asking if the player wants to discard
+        val decisionId = UUID.randomUUID().toString()
+        val prompt = "Discard a card at random to keep $sourceName?"
+
+        val decision = YesNoDecision(
+            id = decisionId,
+            playerId = playerId,
+            prompt = prompt,
+            context = DecisionContext(
+                sourceId = sourceId,
+                sourceName = sourceName,
+                phase = DecisionPhase.RESOLUTION
+            ),
+            yesText = "Discard",
+            noText = "Sacrifice"
+        )
+
+        val continuation = SacrificeUnlessRandomDiscardContinuation(
+            decisionId = decisionId,
+            playerId = playerId,
+            sourceId = sourceId,
+            sourceName = sourceName,
+            discardFilter = discardFilter
+        )
+
+        val stateWithDecision = state.withPendingDecision(decision)
+        val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
+
+        return ExecutionResult.paused(
+            stateWithContinuation,
+            decision,
+            listOf(
+                DecisionRequestedEvent(
+                    decisionId = decisionId,
+                    playerId = playerId,
+                    decisionType = "YES_NO",
+                    prompt = prompt
+                )
+            )
+        )
+    }
+
+    /**
+     * Execute the random discard after player confirmed.
+     * Called from ContinuationHandler after yes/no response.
+     */
+    fun executeRandomDiscard(
+        state: GameState,
+        playerId: EntityId,
+        sourceId: EntityId,
+        sourceName: String,
+        discardFilter: CardFilter
+    ): ExecutionResult {
+        val battlefieldZone = ZoneKey(playerId, ZoneType.BATTLEFIELD)
+
+        // Check if the source is still on the battlefield
+        if (sourceId !in state.getZone(battlefieldZone)) {
+            return ExecutionResult.success(state)
+        }
+
+        val validCards = findValidCards(state, playerId, discardFilter)
+
+        // If no valid cards (somehow), sacrifice the source
         if (validCards.isEmpty()) {
             return sacrificeSource(state, playerId, sourceId, sourceName)
         }

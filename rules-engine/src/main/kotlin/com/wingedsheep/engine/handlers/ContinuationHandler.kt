@@ -70,6 +70,7 @@ class ContinuationHandler(
             is EachPlayerChoosesDrawContinuation -> resumeEachPlayerChoosesDraw(stateAfterPop, continuation, response)
             is LookAtOpponentLibraryContinuation -> resumeLookAtOpponentLibrary(stateAfterPop, continuation, response)
             is ReorderOpponentLibraryContinuation -> resumeReorderOpponentLibrary(stateAfterPop, continuation, response)
+            is SacrificeUnlessRandomDiscardContinuation -> resumeSacrificeUnlessRandomDiscard(stateAfterPop, continuation, response)
         }
     }
 
@@ -1296,6 +1297,65 @@ class ContinuationHandler(
         )
 
         return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume after player made a yes/no choice for random discard effect.
+     *
+     * If yes: discard a random card, source survives.
+     * If no: sacrifice the source.
+     */
+    private fun resumeSacrificeUnlessRandomDiscard(
+        state: GameState,
+        continuation: SacrificeUnlessRandomDiscardContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is YesNoResponse) {
+            return ExecutionResult.error(state, "Expected yes/no response for random discard")
+        }
+
+        val playerId = continuation.playerId
+        val sourceId = continuation.sourceId
+        val sourceName = continuation.sourceName
+
+        val battlefieldZone = ZoneKey(playerId, ZoneType.BATTLEFIELD)
+
+        // Check if the source is still on the battlefield
+        if (sourceId !in state.getZone(battlefieldZone)) {
+            return checkForMoreContinuations(state, emptyList())
+        }
+
+        if (response.choice) {
+            // Player chose to discard - execute random discard
+            val executor = com.wingedsheep.engine.handlers.effects.removal.SacrificeUnlessDiscardExecutor()
+            val result = executor.executeRandomDiscard(
+                state,
+                playerId,
+                sourceId,
+                sourceName,
+                continuation.discardFilter
+            )
+            return checkForMoreContinuations(result.state, result.events.toList())
+        } else {
+            // Player declined - sacrifice the source
+            val graveyardZone = ZoneKey(playerId, ZoneType.GRAVEYARD)
+
+            var newState = state.removeFromZone(battlefieldZone, sourceId)
+            newState = newState.addToZone(graveyardZone, sourceId)
+
+            val events = listOf(
+                PermanentsSacrificedEvent(playerId, listOf(sourceId)),
+                ZoneChangeEvent(
+                    entityId = sourceId,
+                    entityName = sourceName,
+                    fromZone = ZoneType.BATTLEFIELD,
+                    toZone = ZoneType.GRAVEYARD,
+                    ownerId = playerId
+                )
+            )
+
+            return checkForMoreContinuations(newState, events)
+        }
     }
 
     /**
