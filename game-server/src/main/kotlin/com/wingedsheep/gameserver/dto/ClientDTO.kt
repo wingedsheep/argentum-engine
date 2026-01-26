@@ -247,7 +247,9 @@ data class ClientAttacker(
     val creatureId: EntityId,
     val creatureName: String,
     val attackingTarget: ClientCombatTarget,
-    val blockedBy: List<EntityId>
+    val blockedBy: List<EntityId>,
+    /** True if all creatures that can block this creature must do so (Alluring Scent) */
+    val mustBeBlockedByAll: Boolean = false
 )
 
 /**

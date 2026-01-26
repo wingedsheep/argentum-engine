@@ -81,6 +81,7 @@ export default function App() {
         blockerAssignments: {},
         validCreatures,
         attackingCreatures: [],
+        mustBeBlockedAttackers: [],
       })
       return
     }
@@ -101,6 +102,11 @@ export default function App() {
         .filter((card) => card.isAttacking)
         .map((card) => card.id)
 
+      // Find attackers that must be blocked by all (from combat state in game state)
+      const mustBeBlockedAttackers: EntityId[] = gameState?.combat?.attackers
+        .filter((a) => a.mustBeBlockedByAll)
+        .map((a) => a.creatureId) ?? []
+
       // Enter combat mode
       startCombat({
         mode: 'declareBlockers',
@@ -108,6 +114,7 @@ export default function App() {
         blockerAssignments: {},
         validCreatures,
         attackingCreatures,
+        mustBeBlockedAttackers,
       })
     }
   }, [hasDeclareAttackersAction, hasDeclareBlockersAction, gameState, viewingPlayer, combatState, startCombat, clearCombat, battlefieldCards, legalActions])

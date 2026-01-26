@@ -785,6 +785,7 @@ function GameCard({
   const isValidBlocker = isInBlockerMode && isOwnCreature && !card.isTapped && combatState.validCreatures.includes(card.id)
   const isSelectedAsBlocker = isInBlockerMode && !!combatState?.blockerAssignments[card.id]
   const isAttackingInBlockerMode = isInBlockerMode && isOpponentCard && combatState.attackingCreatures.includes(card.id)
+  const isMustBeBlocked = isInBlockerMode && isOpponentCard && combatState.mustBeBlockedAttackers.includes(card.id)
 
   // Only show playable highlight outside of combat mode (and when not targeting)
   const isPlayable = interactive && hasLegalActions && !faceDown && !isInCombatMode
@@ -934,6 +935,10 @@ function GameCard({
     // Blue for blocking creatures
     borderStyle = '3px solid #4488ff'
     boxShadow = '0 0 16px rgba(68, 136, 255, 0.7), 0 0 32px rgba(68, 136, 255, 0.4)'
+  } else if (isMustBeBlocked) {
+    // Red pulsing glow for must-be-blocked attackers (Alluring Scent)
+    borderStyle = '3px solid #ff3333'
+    boxShadow = '0 0 16px rgba(255, 51, 51, 0.8), 0 0 32px rgba(255, 51, 51, 0.5), 0 0 48px rgba(255, 51, 51, 0.3)'
   } else if (isAttackingInBlockerMode) {
     // Orange glow for attackers that can be blocked
     borderStyle = '3px solid #ff8800'

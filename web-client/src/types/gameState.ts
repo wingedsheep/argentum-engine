@@ -234,6 +234,8 @@ export interface ClientAttacker {
   readonly creatureName: string
   readonly attackingTarget: ClientCombatTarget
   readonly blockedBy: readonly EntityId[]
+  /** True if all creatures that can block this creature must do so (Alluring Scent) */
+  readonly mustBeBlockedByAll?: boolean
 }
 
 /**

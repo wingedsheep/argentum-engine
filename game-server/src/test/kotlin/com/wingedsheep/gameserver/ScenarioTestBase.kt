@@ -440,5 +440,68 @@ abstract class ScenarioTestBase : FunSpec() {
         fun isInHand(playerNumber: Int, cardName: String): Boolean {
             return findCardsInHand(playerNumber, cardName).isNotEmpty()
         }
+
+        /**
+         * Advance the game to a specific phase and step.
+         */
+        fun advanceToPhase(phase: Phase, step: Step): GameState {
+            state = state.copy(phase = phase, step = step)
+            return state
+        }
+
+        /**
+         * Declare attackers.
+         * @param attackers Map of permanent names to the player number being attacked (1 or 2)
+         */
+        fun declareAttackers(attackers: Map<String, Int>): ExecutionResult {
+            val attackingPlayer = state.activePlayerId!!
+            val attackerMap = attackers.mapNotNull { (name, targetPlayerNum) ->
+                val attackerId = findPermanent(name)
+                val targetPlayerId = if (targetPlayerNum == 1) player1Id else player2Id
+                if (attackerId != null) attackerId to targetPlayerId else null
+            }.toMap()
+
+            return execute(DeclareAttackers(attackingPlayer, attackerMap))
+        }
+
+        /**
+         * Declare blockers.
+         * @param blockers Map of blocker permanent names to list of attacker permanent names being blocked
+         */
+        fun declareBlockers(blockers: Map<String, List<String>>): ExecutionResult {
+            val blockingPlayer = state.turnOrder.first { it != state.activePlayerId }
+            val blockerMap = blockers.mapNotNull { (blockerName, attackerNames) ->
+                val blockerId = findPermanent(blockerName)
+                val attackerIds = attackerNames.mapNotNull { findPermanent(it) }
+                if (blockerId != null && attackerIds.isNotEmpty()) blockerId to attackerIds else null
+            }.toMap()
+
+            return execute(DeclareBlockers(blockingPlayer, blockerMap))
+        }
+
+        /**
+         * Declare no blockers (empty blocker declaration).
+         */
+        fun declareNoBlockers(): ExecutionResult {
+            val blockingPlayer = state.turnOrder.first { it != state.activePlayerId }
+            return execute(DeclareBlockers(blockingPlayer, emptyMap()))
+        }
+
+        /**
+         * Find all permanents on the battlefield with a given name.
+         */
+        fun findAllPermanents(name: String): List<EntityId> {
+            return state.getBattlefield().filter { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.name == name
+            }
+        }
+
+        /**
+         * Get a player's life total.
+         */
+        fun getLifeTotal(playerNumber: Int): Int {
+            val playerId = if (playerNumber == 1) player1Id else player2Id
+            return state.getEntity(playerId)?.get<LifeTotalComponent>()?.life ?: 0
+        }
     }
 }

@@ -20,6 +20,7 @@ export function CombatOverlay() {
   const isAttacking = combatState.mode === 'declareAttackers'
   const hasValidCreatures = combatState.validCreatures.length > 0
   const hasAttackers = combatState.attackingCreatures.length > 0
+  const hasMustBeBlocked = combatState.mustBeBlockedAttackers.length > 0
 
   // Count selections
   const numAttackers = combatState.selectedAttackers.length
@@ -113,8 +114,32 @@ export function CombatOverlay() {
         {getInstructions()}
       </p>
 
+      {/* Must-be-blocked warning */}
+      {!isAttacking && hasMustBeBlocked && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            backgroundColor: 'rgba(231, 76, 60, 0.2)',
+            border: '1px solid #e74c3c',
+            borderRadius: 6,
+            padding: '8px 12px',
+            color: '#ff9999',
+            fontSize: responsive.fontSize.small,
+          }}
+        >
+          <span style={{ fontSize: 16 }}>⚠️</span>
+          <span>
+            {combatState.mustBeBlockedAttackers.length === 1
+              ? 'Your creatures must block the highlighted attacker if able'
+              : 'Your creatures must block one of the highlighted attackers if able'}
+          </span>
+        </div>
+      )}
+
       {/* Drag hint for blockers */}
-      {!isAttacking && hasValidCreatures && hasAttackers && !draggingBlockerId && numBlockers === 0 && (
+      {!isAttacking && hasValidCreatures && hasAttackers && !draggingBlockerId && numBlockers === 0 && !hasMustBeBlocked && (
         <div
           style={{
             display: 'flex',

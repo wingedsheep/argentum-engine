@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.effects.combat.CombatExecutors
 import com.wingedsheep.engine.handlers.effects.composite.CompositeExecutors
 import com.wingedsheep.engine.handlers.effects.damage.DamageExecutors
 import com.wingedsheep.engine.handlers.effects.drawing.DrawingExecutors
@@ -50,6 +51,7 @@ class EffectExecutorRegistry(
         registerModule(StackExecutors())
         registerModule(PlayerExecutors())
         registerModule(InformationExecutors())
+        registerModule(CombatExecutors())
 
         // Deferred initialization for recursive executors
         compositeExecutors.initialize(::execute)

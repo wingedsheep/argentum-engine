@@ -105,6 +105,13 @@ sealed interface SerializableModification {
 
     @Serializable
     data class ChangeController(val newControllerId: EntityId) : SerializableModification
+
+    /**
+     * Combat restriction: this creature must be blocked by all creatures able to block it.
+     * Used by Alluring Scent and similar effects.
+     */
+    @Serializable
+    data object MustBeBlockedByAll : SerializableModification
 }
 
 /**
@@ -121,4 +128,6 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.AddType -> Modification.AddType(type)
     is SerializableModification.RemoveType -> Modification.RemoveType(type)
     is SerializableModification.ChangeController -> Modification.ChangeController(newControllerId)
+    // MustBeBlockedByAll doesn't map to a layer modification - it's checked by CombatManager directly
+    is SerializableModification.MustBeBlockedByAll -> Modification.NoOp
 }

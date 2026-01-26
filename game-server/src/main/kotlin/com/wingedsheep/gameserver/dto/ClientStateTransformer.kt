@@ -12,6 +12,7 @@ import com.wingedsheep.engine.state.components.player.*
 import com.wingedsheep.engine.state.components.stack.TargetsComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
+import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 
 /**
@@ -393,6 +394,9 @@ class ClientStateTransformer {
             return null
         }
 
+        // Find all creatures with "must be blocked by all" requirement
+        val mustBeBlockedCreatures = findMustBeBlockedCreatures(state)
+
         val attackers = mutableListOf<ClientAttacker>()
         val blockers = mutableListOf<ClientBlocker>()
         var attackingPlayerId: EntityId? = null
@@ -419,7 +423,8 @@ class ClientStateTransformer {
                         creatureId = entityId,
                         creatureName = cardComponent.name,
                         attackingTarget = ClientCombatTarget.Player(attackingComponent.defenderId),
-                        blockedBy = blockedComponent?.blockerIds ?: emptyList()
+                        blockedBy = blockedComponent?.blockerIds ?: emptyList(),
+                        mustBeBlockedByAll = entityId in mustBeBlockedCreatures
                     )
                 )
             }
@@ -449,5 +454,15 @@ class ClientStateTransformer {
             attackers = attackers,
             blockers = blockers
         )
+    }
+
+    /**
+     * Find all creatures that have "must be blocked by all" requirement from floating effects.
+     */
+    private fun findMustBeBlockedCreatures(state: GameState): Set<EntityId> {
+        return state.floatingEffects
+            .filter { it.effect.modification is SerializableModification.MustBeBlockedByAll }
+            .flatMap { it.effect.affectedEntities }
+            .toSet()
     }
 }

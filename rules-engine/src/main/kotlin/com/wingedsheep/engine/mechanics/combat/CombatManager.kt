@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.mechanics.combat
 
 import com.wingedsheep.engine.core.*
+import com.wingedsheep.engine.mechanics.layers.ProjectedState
+import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
@@ -155,6 +157,12 @@ class CombatManager(
         val menaceValidation = validateMenaceRequirements(state, blockers)
         if (menaceValidation != null) {
             return ExecutionResult.error(state, menaceValidation)
+        }
+
+        // Check "must be blocked" requirements (Alluring Scent, etc.)
+        val mustBeBlockedValidation = validateMustBeBlockedRequirements(state, blockingPlayer, blockers)
+        if (mustBeBlockedValidation != null) {
+            return ExecutionResult.error(state, mustBeBlockedValidation)
         }
 
         // Apply blocker components
@@ -742,5 +750,163 @@ class CombatManager(
      */
     fun hasAttackers(state: GameState): Boolean {
         return state.findEntitiesWith<AttackingComponent>().isNotEmpty()
+    }
+
+    // =========================================================================
+    // Must Be Blocked Requirements
+    // =========================================================================
+
+    /**
+     * Validate "must be blocked" requirements.
+     *
+     * Per MTG rules, when multiple creatures have "must be blocked by all" effects:
+     * - Each creature that can block must block at least one of them
+     * - The defending player chooses which one each blocker blocks
+     *
+     * @return Error message if requirements not met, null if valid
+     */
+    private fun validateMustBeBlockedRequirements(
+        state: GameState,
+        blockingPlayer: EntityId,
+        blockers: Map<EntityId, List<EntityId>>
+    ): String? {
+        // Find all attackers with "must be blocked by all" requirement
+        val mustBeBlockedAttackers = findMustBeBlockedAttackers(state)
+        if (mustBeBlockedAttackers.isEmpty()) {
+            return null  // No "must be blocked" requirements
+        }
+
+        val projected = stateProjector.project(state)
+
+        // Find all potential blockers (untapped creatures controlled by blocking player)
+        val potentialBlockers = findPotentialBlockers(state, blockingPlayer)
+
+        // Build a map of blockers to the attackers they ARE blocking
+        val blockerToAttackers = blockers.mapValues { it.value.toSet() }
+
+        // For each potential blocker, check if they must block a "must be blocked" attacker
+        for (blockerId in potentialBlockers) {
+            // Find which "must be blocked" attackers this creature CAN legally block
+            val canBlockThese = mustBeBlockedAttackers.filter { attackerId ->
+                canCreatureBlockAttacker(state, blockerId, attackerId, blockingPlayer, projected)
+            }
+
+            if (canBlockThese.isEmpty()) {
+                // This creature can't block any of the "must be blocked" attackers - that's fine
+                continue
+            }
+
+            // This creature CAN block at least one "must be blocked" attacker,
+            // so it MUST block one of them
+            val actuallyBlocking = blockerToAttackers[blockerId] ?: emptySet()
+            val blockingMustBeBlocked = actuallyBlocking.intersect(mustBeBlockedAttackers.toSet())
+
+            if (blockingMustBeBlocked.isEmpty()) {
+                val blockerCard = state.getEntity(blockerId)?.get<CardComponent>()
+                val blockerName = blockerCard?.name ?: "Creature"
+
+                // Build a helpful error message
+                val attackerNames = canBlockThese.mapNotNull { attackerId ->
+                    state.getEntity(attackerId)?.get<CardComponent>()?.name
+                }
+
+                return if (canBlockThese.size == 1) {
+                    "$blockerName must block ${attackerNames.first()}"
+                } else {
+                    "$blockerName must block one of: ${attackerNames.joinToString(", ")}"
+                }
+            }
+        }
+
+        return null
+    }
+
+    /**
+     * Find all attackers that have "must be blocked by all" requirement active.
+     */
+    private fun findMustBeBlockedAttackers(state: GameState): List<EntityId> {
+        // Get all attacking creatures
+        val attackers = state.findEntitiesWith<AttackingComponent>().map { it.first }.toSet()
+
+        // Find floating effects with MustBeBlockedByAll modification
+        return state.floatingEffects
+            .filter { floatingEffect ->
+                floatingEffect.effect.modification is SerializableModification.MustBeBlockedByAll
+            }
+            .flatMap { floatingEffect ->
+                floatingEffect.effect.affectedEntities.filter { it in attackers }
+            }
+            .distinct()
+    }
+
+    /**
+     * Find all potential blockers (untapped creatures controlled by the blocking player).
+     */
+    private fun findPotentialBlockers(state: GameState, blockingPlayer: EntityId): List<EntityId> {
+        return state.getBattlefield()
+            .filter { entityId ->
+                val container = state.getEntity(entityId) ?: return@filter false
+                val cardComponent = container.get<CardComponent>() ?: return@filter false
+                val controller = container.get<ControllerComponent>()?.playerId
+
+                // Must be a creature controlled by blocking player and untapped
+                cardComponent.typeLine.isCreature &&
+                    controller == blockingPlayer &&
+                    !container.has<TappedComponent>()
+            }
+    }
+
+    /**
+     * Check if a creature can legally block an attacker.
+     * This re-uses the evasion checking logic from validateCanBlock.
+     */
+    private fun canCreatureBlockAttacker(
+        state: GameState,
+        blockerId: EntityId,
+        attackerId: EntityId,
+        blockingPlayer: EntityId,
+        projected: ProjectedState
+    ): Boolean {
+        val blockerContainer = state.getEntity(blockerId) ?: return false
+        val attackerContainer = state.getEntity(attackerId) ?: return false
+
+        val blockerCard = blockerContainer.get<CardComponent>() ?: return false
+        val attackerCard = attackerContainer.get<CardComponent>() ?: return false
+
+        // Flying: Can only be blocked by creatures with flying or reach
+        if (projected.hasKeyword(attackerId, Keyword.FLYING)) {
+            val canBlockFlying = projected.hasKeyword(blockerId, Keyword.FLYING) ||
+                projected.hasKeyword(blockerId, Keyword.REACH)
+            if (!canBlockFlying) return false
+        }
+
+        // Horsemanship: Can only be blocked by creatures with horsemanship
+        if (projected.hasKeyword(attackerId, Keyword.HORSEMANSHIP)) {
+            if (!projected.hasKeyword(blockerId, Keyword.HORSEMANSHIP)) return false
+        }
+
+        // Shadow: Can only be blocked by creatures with shadow
+        if (projected.hasKeyword(attackerId, Keyword.SHADOW)) {
+            if (!projected.hasKeyword(blockerId, Keyword.SHADOW)) return false
+        }
+
+        // Landwalk: Cannot be blocked if defending player controls land of that type
+        val landwalkToSubtype = mapOf(
+            Keyword.FORESTWALK to com.wingedsheep.sdk.core.Subtype.FOREST,
+            Keyword.SWAMPWALK to com.wingedsheep.sdk.core.Subtype.SWAMP,
+            Keyword.ISLANDWALK to com.wingedsheep.sdk.core.Subtype.ISLAND,
+            Keyword.MOUNTAINWALK to com.wingedsheep.sdk.core.Subtype.MOUNTAIN,
+            Keyword.PLAINSWALK to com.wingedsheep.sdk.core.Subtype.PLAINS
+        )
+
+        for ((landwalkKeyword, landSubtype) in landwalkToSubtype) {
+            if (projected.hasKeyword(attackerId, landwalkKeyword)) {
+                if (playerControlsLandWithSubtype(state, blockingPlayer, landSubtype)) {
+                    return false
+                }
+            }
+        }
+
+        return true
     }
 }
