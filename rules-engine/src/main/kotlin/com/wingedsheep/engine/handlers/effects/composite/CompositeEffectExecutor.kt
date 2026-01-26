@@ -33,7 +33,29 @@ class CompositeEffectExecutor(
         val allEvents = mutableListOf<com.wingedsheep.engine.core.GameEvent>()
 
         for ((index, subEffect) in effect.effects.withIndex()) {
-            val result = effectExecutor(currentState, subEffect, context)
+            // Calculate remaining effects (everything after current one)
+            val remainingEffects = effect.effects.drop(index + 1)
+
+            // Pre-push EffectContinuation for remaining effects BEFORE executing.
+            // This ensures that if the sub-effect pushes its own continuation,
+            // that continuation ends up on TOP (to be processed first when the response comes).
+            // The EffectContinuation will be below it, and checkForMoreContinuations will
+            // process it after the sub-effect's continuation is handled.
+            val stateForExecution = if (remainingEffects.isNotEmpty()) {
+                val continuation = EffectContinuation(
+                    decisionId = "pending", // Will be found by checkForMoreContinuations
+                    remainingEffects = remainingEffects,
+                    sourceId = context.sourceId,
+                    controllerId = context.controllerId,
+                    opponentId = context.opponentId,
+                    xValue = context.xValue
+                )
+                currentState.pushContinuation(continuation)
+            } else {
+                currentState
+            }
+
+            val result = effectExecutor(stateForExecution, subEffect, context)
 
             if (!result.isSuccess && !result.isPaused) {
                 // Error occurred - return it with accumulated events
@@ -45,33 +67,24 @@ class CompositeEffectExecutor(
             }
 
             if (result.isPaused) {
-                // Sub-effect needs a decision
-                // Calculate remaining effects (everything after current one)
-                val remainingEffects = effect.effects.drop(index + 1)
-
-                // If there are more effects, push a continuation
-                var stateForPause = result.state
-                if (remainingEffects.isNotEmpty()) {
-                    val continuation = EffectContinuation(
-                        decisionId = result.pendingDecision!!.id,
-                        remainingEffects = remainingEffects,
-                        sourceId = context.sourceId,
-                        controllerId = context.controllerId,
-                        opponentId = context.opponentId,
-                        xValue = context.xValue
-                    )
-                    stateForPause = stateForPause.pushContinuation(continuation)
-                }
-
+                // Sub-effect needs a decision.
+                // Its continuation is on top of the stack.
+                // Our pre-pushed EffectContinuation is underneath, ready to be
+                // processed by checkForMoreContinuations after the sub-effect resolves.
                 return ExecutionResult.paused(
-                    stateForPause,
+                    result.state,
                     result.pendingDecision!!,
                     allEvents + result.events
                 )
             }
 
-            // Effect succeeded - continue to next
-            currentState = result.state
+            // Effect succeeded - pop our pre-pushed continuation (it wasn't needed)
+            currentState = if (remainingEffects.isNotEmpty()) {
+                val (_, stateWithoutCont) = result.state.popContinuation()
+                stateWithoutCont
+            } else {
+                result.state
+            }
             allEvents.addAll(result.events)
         }
 

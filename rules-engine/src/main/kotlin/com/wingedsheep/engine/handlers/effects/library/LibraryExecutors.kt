@@ -14,6 +14,7 @@ class LibraryExecutors : ExecutorModule {
         ShuffleIntoLibraryExecutor(),
         PutOnTopOfLibraryExecutor(),
         SearchLibraryExecutor(),
+        SearchLibraryToTopExecutor(),
         LookAtTopAndReorderExecutor()
     )
 }

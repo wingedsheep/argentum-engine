@@ -65,6 +65,7 @@ class ContinuationHandler(
             is BlockerOrderContinuation -> resumeBlockerOrder(stateAfterPop, continuation, response)
             is SacrificeUnlessSacrificeContinuation -> resumeSacrificeUnlessSacrifice(stateAfterPop, continuation, response)
             is SacrificeUnlessDiscardContinuation -> resumeSacrificeUnlessDiscard(stateAfterPop, continuation, response)
+            is SearchLibraryToTopContinuation -> resumeSearchLibraryToTop(stateAfterPop, continuation, response)
         }
     }
 
@@ -968,6 +969,71 @@ class ContinuationHandler(
     }
 
     /**
+     * Resume after player selected a card from library for "search and put on top" effect.
+     *
+     * This handles the tutor pattern where:
+     * 1. Remove selected card from library
+     * 2. Shuffle library FIRST
+     * 3. Put selected card on top of library
+     *
+     * This ensures the tutored card stays on top after the shuffle, which is the
+     * correct behavior for cards like Cruel Tutor and Personal Tutor.
+     */
+    private fun resumeSearchLibraryToTop(
+        state: GameState,
+        continuation: SearchLibraryToTopContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for library search")
+        }
+
+        val playerId = continuation.playerId
+        val selectedCards = response.selectedCards
+        val libraryZone = ZoneKey(playerId, ZoneType.LIBRARY)
+        val events = mutableListOf<GameEvent>()
+
+        var newState = state
+
+        // Handle "fail to find" case - just shuffle and return
+        if (selectedCards.isEmpty()) {
+            val library = newState.getZone(libraryZone).shuffled()
+            newState = newState.copy(zones = newState.zones + (libraryZone to library))
+            events.add(LibraryShuffledEvent(playerId))
+            return checkForMoreContinuations(newState, events)
+        }
+
+        // Get the selected card (there should be exactly 1)
+        val selectedCard = selectedCards.first()
+
+        // Step 1: Remove selected card from library
+        newState = newState.removeFromZone(libraryZone, selectedCard)
+
+        // Step 2: Shuffle library FIRST (without the selected card)
+        val shuffledLibrary = newState.getZone(libraryZone).shuffled()
+        newState = newState.copy(zones = newState.zones + (libraryZone to shuffledLibrary))
+        events.add(LibraryShuffledEvent(playerId))
+
+        // Step 3: Put selected card on TOP of library (after shuffle)
+        val libraryWithCardOnTop = listOf(selectedCard) + newState.getZone(libraryZone)
+        newState = newState.copy(zones = newState.zones + (libraryZone to libraryWithCardOnTop))
+
+        // Emit zone change event (card moved within library to top)
+        val cardName = newState.getEntity(selectedCard)?.get<CardComponent>()?.name ?: "Unknown"
+        events.add(
+            ZoneChangeEvent(
+                entityId = selectedCard,
+                entityName = cardName,
+                fromZone = ZoneType.LIBRARY,
+                toZone = ZoneType.LIBRARY,
+                ownerId = playerId
+            )
+        )
+
+        return checkForMoreContinuations(newState, events)
+    }
+
+    /**
      * Check if there are more continuation frames to process.
      * If there's an EffectContinuation waiting, process it.
      */
@@ -984,39 +1050,50 @@ class ContinuationHandler(
             var currentState = stateAfterPop
             val allEvents = events.toMutableList()
 
-            for (effect in nextContinuation.remainingEffects) {
-                val result = effectExecutorRegistry.execute(currentState, effect, context)
+            for ((index, effect) in nextContinuation.remainingEffects.withIndex()) {
+                val stillRemaining = nextContinuation.remainingEffects.drop(index + 1)
+
+                // Pre-push EffectContinuation for remaining effects BEFORE executing.
+                // This ensures that if the sub-effect pushes its own continuation,
+                // that continuation ends up on TOP (to be processed first when the response comes).
+                val stateForExecution = if (stillRemaining.isNotEmpty()) {
+                    val remainingContinuation = EffectContinuation(
+                        decisionId = "pending", // Will be found by checkForMoreContinuations
+                        remainingEffects = stillRemaining,
+                        sourceId = nextContinuation.sourceId,
+                        controllerId = nextContinuation.controllerId,
+                        opponentId = nextContinuation.opponentId,
+                        xValue = nextContinuation.xValue
+                    )
+                    currentState.pushContinuation(remainingContinuation)
+                } else {
+                    currentState
+                }
+
+                val result = effectExecutorRegistry.execute(stateForExecution, effect, context)
 
                 if (!result.isSuccess) {
                     return ExecutionResult(result.state, allEvents + result.events, result.error)
                 }
 
                 if (result.isPaused) {
-                    // Push remaining effects as new continuation
-                    val remainingIndex = nextContinuation.remainingEffects.indexOf(effect)
-                    val stillRemaining = nextContinuation.remainingEffects.drop(remainingIndex + 1)
-
-                    var finalState = result.state
-                    if (stillRemaining.isNotEmpty()) {
-                        val newContinuation = EffectContinuation(
-                            decisionId = result.pendingDecision!!.id,
-                            remainingEffects = stillRemaining,
-                            sourceId = nextContinuation.sourceId,
-                            controllerId = nextContinuation.controllerId,
-                            opponentId = nextContinuation.opponentId,
-                            xValue = nextContinuation.xValue
-                        )
-                        finalState = finalState.pushContinuation(newContinuation)
-                    }
-
+                    // Sub-effect paused. Its continuation is on top.
+                    // Our pre-pushed EffectContinuation is underneath, ready to be
+                    // processed by checkForMoreContinuations after the sub-effect resolves.
                     return ExecutionResult.paused(
-                        finalState,
+                        result.state,
                         result.pendingDecision!!,
                         allEvents + result.events
                     )
                 }
 
-                currentState = result.state
+                // Effect succeeded - pop our pre-pushed continuation (it wasn't needed)
+                currentState = if (stillRemaining.isNotEmpty()) {
+                    val (_, stateWithoutCont) = result.state.popContinuation()
+                    stateWithoutCont
+                } else {
+                    result.state
+                }
                 allEvents.addAll(result.events)
             }
 

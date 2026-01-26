@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CardFilter
 import com.wingedsheep.sdk.scripting.CompositeEffect
+import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.SearchLibraryToTopEffect
 
@@ -21,7 +22,7 @@ val CruelTutor = card("Cruel Tutor") {
         effect = CompositeEffect(
             listOf(
                 SearchLibraryToTopEffect(CardFilter.AnyCard),
-                LoseLifeEffect(2)
+                LoseLifeEffect(2, EffectTarget.Controller)
             )
         )
     }
