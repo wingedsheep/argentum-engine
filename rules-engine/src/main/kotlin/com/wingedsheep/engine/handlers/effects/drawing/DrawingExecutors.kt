@@ -16,6 +16,7 @@ class DrawingExecutors(
         DrawCardsExecutor(amountEvaluator),
         DiscardCardsExecutor(decisionHandler),
         DiscardRandomExecutor(),
+        EachOpponentDiscardsExecutor(decisionHandler),
         EachPlayerDiscardsDrawsExecutor(decisionHandler),
         EachPlayerDrawsXExecutor(),
         EachPlayerMayDrawExecutor(decisionHandler)
