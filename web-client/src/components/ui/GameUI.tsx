@@ -19,8 +19,8 @@ export function GameUI() {
   const lastError = useGameStore((state) => state.lastError)
   const deckBuildingState = useGameStore((state) => state.deckBuildingState)
 
-  // Don't show connection overlay if in deck building mode
-  if (deckBuildingState) return null
+  // Don't show connection overlay if actively building deck (but show during 'waiting' phase)
+  if (deckBuildingState && deckBuildingState.phase !== 'waiting') return null
 
   return (
     <ConnectionOverlay
@@ -235,11 +235,7 @@ function ConnectionOverlay({
       )}
 
       {sessionId && (
-        <div style={{ textAlign: 'center' }}>
-          <p style={{ fontSize: responsive.fontSize.normal }}>Game Created!</p>
-          <p style={{ fontSize: responsive.isMobile ? 16 : 24, fontFamily: 'monospace', wordBreak: 'break-all' }}>{sessionId}</p>
-          <p style={{ color: '#888', fontSize: responsive.fontSize.normal }}>Waiting for opponent...</p>
-        </div>
+        <WaitingForOpponent sessionId={sessionId} responsive={responsive} />
       )}
     </div>
   )
@@ -276,5 +272,38 @@ function ModeButton({
     >
       {label}
     </button>
+  )
+}
+
+/**
+ * Waiting for opponent display.
+ */
+function WaitingForOpponent({
+  sessionId,
+  responsive,
+}: {
+  sessionId: string
+  responsive: ReturnType<typeof useResponsive>
+}) {
+  const deckBuildingState = useGameStore((state) => state.deckBuildingState)
+  const isSealed = deckBuildingState?.phase === 'waiting'
+
+  return (
+    <div style={{ textAlign: 'center' }}>
+      <p style={{ fontSize: responsive.fontSize.normal }}>
+        {isSealed ? `Sealed Game Created (${deckBuildingState.setName})` : 'Game Created!'}
+      </p>
+      <p style={{ fontSize: responsive.isMobile ? 16 : 24, fontFamily: 'monospace', wordBreak: 'break-all' }}>
+        {sessionId}
+      </p>
+      <p style={{ color: '#888', fontSize: responsive.fontSize.normal }}>
+        Waiting for opponent to join...
+      </p>
+      {isSealed && (
+        <p style={{ color: '#666', fontSize: responsive.fontSize.small, marginTop: 8 }}>
+          Once they join, you'll both receive your card pools
+        </p>
+      )}
+    </div>
   )
 }

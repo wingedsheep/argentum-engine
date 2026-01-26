@@ -180,6 +180,14 @@ class GameWebSocketHandler : TextWebSocketHandler() {
             return
         }
 
+        // Check if this is a sealed session (auto-detect)
+        val sealedSession = sealedSessions[message.sessionId]
+        if (sealedSession != null) {
+            // Redirect to sealed join handler
+            handleJoinSealedGame(session, ClientMessage.JoinSealedGame(message.sessionId))
+            return
+        }
+
         // Find game session
         val gameSession = gameSessions[message.sessionId]
         if (gameSession == null) {
@@ -506,7 +514,14 @@ class GameWebSocketHandler : TextWebSocketHandler() {
         // Find sealed session
         val sealedSession = sealedSessions[message.sessionId]
         if (sealedSession == null) {
-            sendError(session, ErrorCode.GAME_NOT_FOUND, "Sealed game not found: ${message.sessionId}")
+            // Check if this is a regular game (auto-detect)
+            val gameSession = gameSessions[message.sessionId]
+            if (gameSession != null) {
+                // Redirect to regular join handler
+                handleJoinGame(session, ClientMessage.JoinGame(message.sessionId, emptyMap()))
+                return
+            }
+            sendError(session, ErrorCode.GAME_NOT_FOUND, "Game not found: ${message.sessionId}")
             return
         }
 
