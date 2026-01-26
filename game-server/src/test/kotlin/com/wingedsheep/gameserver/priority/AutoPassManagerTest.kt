@@ -9,6 +9,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.gameserver.protocol.LegalActionInfo
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.model.EntityId
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -56,7 +57,7 @@ class AutoPassManagerTest : FunSpec({
     fun manaAbilityAction(playerId: EntityId) = LegalActionInfo(
         actionType = "ActivateAbility",
         description = "Tap for mana",
-        action = ActivateAbility(playerId, EntityId.generate(), "mana"),
+        action = ActivateAbility(playerId, EntityId.generate(), AbilityId("mana")),
         isManaAbility = true
     )
 

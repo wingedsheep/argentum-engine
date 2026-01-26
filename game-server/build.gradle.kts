@@ -18,4 +18,5 @@ dependencies {
     testImplementation(libs.kotestAssertions)
     testImplementation(libs.kotestExtensionsSpring)
     testImplementation(libs.kotlinxCoroutinesTest)
+    testImplementation(libs.mockk)
 }

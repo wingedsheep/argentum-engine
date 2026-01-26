@@ -1,10 +1,12 @@
 package com.wingedsheep.mtg.sets.definitions.portal.cards
 
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.DestroyEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.YouWereAttackedThisStep
 import com.wingedsheep.sdk.targeting.CreatureTargetFilter
 import com.wingedsheep.sdk.targeting.TargetCreature
 
@@ -20,6 +22,10 @@ val AssassinsBlade = card("Assassin's Blade") {
     typeLine = "Instant"
 
     spell {
+        // Cast restrictions
+        castOnlyDuring(Step.DECLARE_ATTACKERS)
+        castOnlyIf(YouWereAttackedThisStep)
+
         target = TargetCreature(
             filter = CreatureTargetFilter.And(
                 listOf(

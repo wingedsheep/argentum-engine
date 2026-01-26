@@ -8,6 +8,7 @@ kotlinxDatetime = "0.6.1"
 kotlinxSerializationJSON = "1.7.3"
 kotlinxCoroutines = "1.9.0"
 kotest = "5.9.1"
+mockk = "1.13.12"
 springBoot = "3.4.3"
 
 [libraries]
@@ -20,6 +21,7 @@ kotestAssertions = { module = "io.kotest:kotest-assertions-core", version.ref = 
 kotestProperty = { module = "io.kotest:kotest-property", version.ref = "kotest" }
 kotestExtensionsSpring = { module = "io.kotest.extensions:kotest-extensions-spring", version = "1.3.0" }
 kotlinxCoroutinesTest = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 
 # Spring Boot dependencies
 springBootStarterWeb = { module = "org.springframework.boot:spring-boot-starter-web", version.ref = "springBoot" }

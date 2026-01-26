@@ -2,6 +2,7 @@ package com.wingedsheep.engine.core
 
 import com.wingedsheep.engine.event.TriggerDetector
 import com.wingedsheep.engine.event.TriggerProcessor
+import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.ContinuationHandler
 import com.wingedsheep.engine.handlers.CostHandler
 import com.wingedsheep.engine.handlers.MulliganHandler
@@ -13,6 +14,7 @@ import com.wingedsheep.engine.mechanics.mana.CostCalculator
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.mechanics.stack.StackResolver
+import com.wingedsheep.engine.mechanics.targeting.TargetValidator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
@@ -33,6 +35,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.AddManaEffect
 import com.wingedsheep.sdk.scripting.AddColorlessManaEffect
+import com.wingedsheep.sdk.scripting.CastRestriction
 
 /**
  * The central action processor for the game engine.
@@ -57,7 +60,9 @@ class ActionProcessor(
     private val continuationHandler: ContinuationHandler = ContinuationHandler(effectExecutorRegistry),
     private val sbaChecker: StateBasedActionChecker = StateBasedActionChecker(),
     private val triggerDetector: TriggerDetector = TriggerDetector(cardRegistry),
-    private val triggerProcessor: TriggerProcessor = TriggerProcessor()
+    private val triggerProcessor: TriggerProcessor = TriggerProcessor(),
+    private val conditionEvaluator: ConditionEvaluator = ConditionEvaluator(),
+    private val targetValidator: TargetValidator = TargetValidator(cardRegistry)
 ) {
 
     /**
@@ -141,11 +146,21 @@ class ActionProcessor(
             }
         }
 
+        // Get card definition for cast restrictions and cost calculation
+        val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId)
+
+        // Check cast restrictions from card definition
+        if (cardDef != null && cardDef.script.castRestrictions.isNotEmpty()) {
+            val restrictionError = validateCastRestrictions(state, cardDef.script.castRestrictions, action.playerId)
+            if (restrictionError != null) {
+                return restrictionError
+            }
+        }
+
         // Check mana cost can be paid
         val xValue = action.xValue ?: 0
 
         // Calculate effective cost after applying cost reductions
-        val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId)
         val effectiveCost = if (cardDef != null) {
             costCalculator.calculateEffectiveCost(state, cardDef, action.playerId)
         } else {
@@ -189,9 +204,86 @@ class ActionProcessor(
             }
         }
 
-        // TODO: Check targets are valid
+        // Validate targets against target requirements
+        if (cardDef != null && action.targets.isNotEmpty()) {
+            val targetRequirements = cardDef.script.targetRequirements
+            if (targetRequirements.isNotEmpty()) {
+                val targetError = targetValidator.validateTargets(
+                    state,
+                    action.targets,
+                    targetRequirements,
+                    action.playerId
+                )
+                if (targetError != null) {
+                    return targetError
+                }
+            }
+        }
 
         return null
+    }
+
+    /**
+     * Validate cast restrictions from the card script.
+     * Returns an error message if any restriction is violated, null if all pass.
+     */
+    private fun validateCastRestrictions(
+        state: GameState,
+        restrictions: List<CastRestriction>,
+        playerId: EntityId
+    ): String? {
+        // Get opponent ID for condition evaluation
+        val opponentId = state.turnOrder.firstOrNull { it != playerId }
+
+        // Create context for condition evaluation
+        val context = EffectContext(
+            sourceId = null,
+            controllerId = playerId,
+            opponentId = opponentId,
+            targets = emptyList(),
+            xValue = 0
+        )
+
+        for (restriction in restrictions) {
+            val error = validateSingleRestriction(state, restriction, context)
+            if (error != null) return error
+        }
+        return null
+    }
+
+    private fun validateSingleRestriction(
+        state: GameState,
+        restriction: CastRestriction,
+        context: EffectContext
+    ): String? {
+        return when (restriction) {
+            is CastRestriction.OnlyDuringStep -> {
+                if (state.step != restriction.step) {
+                    "Can only be cast during the ${restriction.step.name.lowercase().replace('_', ' ')} step"
+                } else null
+            }
+            is CastRestriction.OnlyDuringPhase -> {
+                if (state.phase != restriction.phase) {
+                    "Can only be cast during the ${restriction.phase.name.lowercase().replace('_', ' ')} phase"
+                } else null
+            }
+            is CastRestriction.OnlyIfCondition -> {
+                if (!conditionEvaluator.evaluate(state, restriction.condition, context)) {
+                    "Casting condition not met"
+                } else null
+            }
+            is CastRestriction.TimingRequirement -> {
+                // TODO: Handle timing requirements (sorcery/instant speed overrides)
+                null
+            }
+            is CastRestriction.All -> {
+                for (subRestriction in restriction.restrictions) {
+                    val error = validateSingleRestriction(state, subRestriction, context)
+                    if (error != null) return error
+                }
+                null
+            }
+        }
     }
 
     private fun validateActivateAbility(state: GameState, action: ActivateAbility): String? {
