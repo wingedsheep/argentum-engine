@@ -1,8 +1,9 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { useGameStore, type DeckBuildingState } from '../../store/gameStore'
 import type { SealedCardInfo } from '../../types'
 import { useResponsive } from '../../hooks/useResponsive'
 import { getCardImageUrl } from '../../utils/cardImages'
+import { ManaSymbol, ManaCost } from '../ui/ManaSymbols'
 
 /**
  * Deck Builder overlay for sealed draft mode.
@@ -96,23 +97,88 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
   const submitSealedDeck = useGameStore((s) => s.submitSealedDeck)
 
   const [hoveredCard, setHoveredCard] = useState<SealedCardInfo | null>(null)
+  const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(null)
   const [sortBy, setSortBy] = useState<'color' | 'cmc' | 'rarity'>('rarity')
+  const [colorFilter, setColorFilter] = useState<Set<string>>(new Set())
+  const [typeFilter, setTypeFilter] = useState<string | null>(null)
 
-  // Count cards in deck (non-land cards + lands)
+  const handleHover = useCallback((card: SealedCardInfo | null, e?: React.MouseEvent) => {
+    setHoveredCard(card)
+    if (card && e) {
+      setHoverPos({ x: e.clientX, y: e.clientY })
+    } else {
+      setHoverPos(null)
+    }
+  }, [])
+
+  // Count cards in deck
   const nonLandCount = state.deck.length
   const landCount = Object.values(state.landCounts).reduce((a, b) => a + b, 0)
   const totalCount = nonLandCount + landCount
   const isValidDeck = totalCount >= 40
 
-  // Group and sort pool cards (cards not yet in deck)
+  // Deck analytics
+  const deckAnalytics = useMemo(() => {
+    const cardInfos: SealedCardInfo[] = []
+    for (const cardName of state.deck) {
+      const info = state.cardPool.find((c) => c.name === cardName)
+      if (info) cardInfos.push(info)
+    }
+
+    let creatureCount = 0
+    let nonCreatureCount = 0
+    for (const card of cardInfos) {
+      if (card.typeLine.toLowerCase().includes('creature')) {
+        creatureCount++
+      } else {
+        nonCreatureCount++
+      }
+    }
+
+    // Mana curve
+    const curve: Record<number, number> = {}
+    for (const card of cardInfos) {
+      const cmc = Math.min(getCmc(card), 7)
+      curve[cmc] = (curve[cmc] || 0) + 1
+    }
+
+    // Color symbol counts in deck (for mana distribution)
+    const colorSymbols: Record<string, number> = { W: 0, U: 0, B: 0, R: 0, G: 0 }
+    for (const card of cardInfos) {
+      const cost = card.manaCost || ''
+      const matches = cost.match(/\{([^}]+)\}/g) || []
+      for (const match of matches) {
+        const inner = match.slice(1, -1)
+        if (inner in colorSymbols) {
+          colorSymbols[inner] = (colorSymbols[inner] ?? 0) + 1
+        }
+      }
+    }
+
+    // Land color counts
+    const landColors: Record<string, number> = { W: 0, U: 0, B: 0, R: 0, G: 0 }
+    const landColorMap: Record<string, string[]> = {
+      Plains: ['W'], Island: ['U'], Swamp: ['B'], Mountain: ['R'], Forest: ['G'],
+    }
+    for (const [landName, count] of Object.entries(state.landCounts)) {
+      const colors = landColorMap[landName]
+      if (colors) {
+        for (const c of colors) {
+          landColors[c] = (landColors[c] ?? 0) + count
+        }
+      }
+    }
+
+    return { creatureCount, nonCreatureCount, curve, colorSymbols, landColors }
+  }, [state.deck, state.cardPool, state.landCounts])
+
+  // Group and sort pool cards
   const poolCardGroups = useMemo(() => {
-    // Count cards in deck
     const deckCardCounts = state.deck.reduce<Record<string, number>>((acc, name) => {
       acc[name] = (acc[name] || 0) + 1
       return acc
     }, {})
 
-    // Count cards in pool
     const poolCardCounts: Record<string, { card: SealedCardInfo; totalCount: number }> = {}
     for (const card of state.cardPool) {
       const existing = poolCardCounts[card.name]
@@ -123,17 +189,31 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
       }
     }
 
-    // Calculate available count (pool count - deck count)
     const groups: { card: SealedCardInfo; availableCount: number }[] = []
     for (const [name, { card, totalCount }] of Object.entries(poolCardCounts)) {
       const inDeckCount = deckCardCounts[name] || 0
       const availableCount = totalCount - inDeckCount
       if (availableCount > 0) {
+        if (colorFilter.size > 0) {
+          const cardColors = getCardColors(card)
+          let matches = false
+          if (colorFilter.has('C')) {
+            matches = matches || cardColors.size === 0
+          }
+          for (const c of ['W', 'U', 'B', 'R', 'G']) {
+            if (colorFilter.has(c) && cardColors.has(c)) {
+              matches = true
+            }
+          }
+          if (!matches) continue
+        }
+        if (typeFilter) {
+          if (!matchesTypeFilter(card, typeFilter)) continue
+        }
         groups.push({ card, availableCount })
       }
     }
 
-    // Sort by selected criteria
     return groups.sort((a, b) => {
       if (sortBy === 'color') {
         return getColorOrder(a.card) - getColorOrder(b.card) || getCmc(a.card) - getCmc(b.card)
@@ -143,12 +223,10 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
         return getRarityOrder(a.card) - getRarityOrder(b.card) || getCmc(a.card) - getCmc(b.card)
       }
     })
-  }, [state.cardPool, state.deck, sortBy])
+  }, [state.cardPool, state.deck, sortBy, colorFilter, typeFilter])
 
-  // Total unique cards available in pool
   const totalPoolCards = poolCardGroups.reduce((sum, g) => sum + g.availableCount, 0)
 
-  // Group cards by rarity for display with separators
   const poolByRarity = useMemo(() => {
     if (sortBy !== 'rarity') return null
 
@@ -169,7 +247,7 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
     return { MYTHIC: mythic, RARE: rare, UNCOMMON: uncommon, COMMON: common }
   }, [poolCardGroups, sortBy])
 
-  // Group deck cards by name
+  // Group deck cards by name for vertical list
   const deckCardGroups = useMemo(() => {
     const groups: Record<string, { card: SealedCardInfo; count: number }> = {}
     for (const cardName of state.deck) {
@@ -183,10 +261,14 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
         groups[cardName].count++
       }
     }
-    return Object.values(groups).sort((a, b) => getColorOrder(a.card) - getColorOrder(b.card) || getCmc(a.card) - getCmc(b.card))
+    return Object.values(groups).sort((a, b) => getCmc(a.card) - getCmc(b.card) || a.card.name.localeCompare(b.card.name))
   }, [state.deck, state.cardPool])
 
   const isSubmitted = state.phase === 'submitted'
+
+  // Max bar height for mana curve
+  const maxCurveCount = Math.max(1, ...Object.values(deckAnalytics.curve))
+  const totalColorSymbols = Object.values(deckAnalytics.colorSymbols).reduce((a, b) => a + b, 0)
 
   return (
     <div
@@ -206,37 +288,32 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
       {/* Header */}
       <div
         style={{
-          padding: responsive.isMobile ? '8px 12px' : '12px 24px',
+          padding: responsive.isMobile ? '6px 12px' : '8px 24px',
           backgroundColor: '#222',
           borderBottom: '1px solid #444',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
-          gap: 12,
+          gap: 8,
         }}
       >
         <div>
-          <h2 style={{ color: 'white', margin: 0, fontSize: responsive.isMobile ? 16 : 22 }}>
+          <h2 style={{ color: 'white', margin: 0, fontSize: responsive.isMobile ? 16 : 20 }}>
             Deck Builder - {state.setName}
           </h2>
-          <p style={{ color: '#888', margin: 0, fontSize: responsive.fontSize.small }}>
-            Build a deck with at least 40 cards
-          </p>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          {/* Status indicators */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           {state.opponentReady && (
             <span style={{ color: '#4caf50', fontSize: responsive.fontSize.small }}>
               Opponent ready
             </span>
           )}
 
-          {/* Deck count */}
           <div
             style={{
-              padding: '8px 16px',
+              padding: '6px 14px',
               backgroundColor: isValidDeck ? '#2e7d32' : '#555',
               borderRadius: 6,
               color: 'white',
@@ -247,12 +324,11 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
             {totalCount} / 40
           </div>
 
-          {/* Submit button */}
           <button
             onClick={submitSealedDeck}
             disabled={!isValidDeck || isSubmitted}
             style={{
-              padding: responsive.isMobile ? '8px 16px' : '10px 24px',
+              padding: responsive.isMobile ? '6px 14px' : '8px 20px',
               fontSize: responsive.fontSize.normal,
               backgroundColor: isValidDeck && !isSubmitted ? '#4caf50' : '#555',
               color: 'white',
@@ -267,7 +343,7 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
         </div>
       </div>
 
-      {/* Main content area */}
+      {/* Main content: Pool (left ~70%) | Deck (right ~30%) */}
       <div
         style={{
           flex: 1,
@@ -276,35 +352,38 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
           overflow: 'hidden',
         }}
       >
-        {/* Card Pool (left/top) */}
+        {/* Card Pool (left) */}
         <div
           style={{
-            flex: responsive.isMobile ? 1 : 0.6,
+            flex: responsive.isMobile ? 1 : 7,
             display: 'flex',
             flexDirection: 'column',
             borderRight: responsive.isMobile ? 'none' : '1px solid #444',
             borderBottom: responsive.isMobile ? '1px solid #444' : 'none',
+            minHeight: 0,
+            minWidth: 0,
           }}
         >
-          {/* Sort controls */}
+          {/* Sort + Filter toolbar */}
           <div
             style={{
-              padding: '8px 12px',
+              padding: '6px 12px',
               backgroundColor: '#2a2a2a',
               borderBottom: '1px solid #333',
               display: 'flex',
               alignItems: 'center',
               gap: 8,
+              flexWrap: 'wrap',
             }}
           >
-            <span style={{ color: '#888', fontSize: responsive.fontSize.small }}>Sort:</span>
+            <span style={{ color: '#888', fontSize: 12 }}>Sort:</span>
             {(['color', 'cmc', 'rarity'] as const).map((option) => (
               <button
                 key={option}
                 onClick={() => setSortBy(option)}
                 style={{
-                  padding: '4px 12px',
-                  fontSize: responsive.fontSize.small,
+                  padding: '3px 10px',
+                  fontSize: 12,
                   backgroundColor: sortBy === option ? '#4fc3f7' : '#444',
                   color: sortBy === option ? '#000' : '#ccc',
                   border: 'none',
@@ -316,8 +395,83 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
                 {option}
               </button>
             ))}
-            <span style={{ color: '#666', fontSize: responsive.fontSize.small, marginLeft: 'auto' }}>
-              Pool: {totalPoolCards} cards
+
+            <div style={{ width: 1, height: 18, backgroundColor: '#444', margin: '0 4px' }} />
+
+            <span style={{ color: '#888', fontSize: 12 }}>Filter:</span>
+            {COLOR_FILTER_OPTIONS.map(({ key, label }) => {
+              const active = colorFilter.has(key)
+              return (
+                <button
+                  key={key}
+                  onClick={() => {
+                    setColorFilter((prev) => {
+                      const next = new Set(prev)
+                      if (next.has(key)) next.delete(key)
+                      else next.add(key)
+                      return next
+                    })
+                  }}
+                  title={label}
+                  style={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: '50%',
+                    border: active ? '2px solid #4fc3f7' : '2px solid transparent',
+                    backgroundColor: active ? 'rgba(79, 195, 247, 0.15)' : 'transparent',
+                    cursor: 'pointer',
+                    opacity: active ? 1 : 0.5,
+                    transition: 'all 0.15s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: 0,
+                  }}
+                >
+                  <ManaSymbol symbol={key === 'M' ? 'WUBRG' : key} size={20} />
+                </button>
+              )
+            })}
+            {colorFilter.size > 0 && (
+              <button
+                onClick={() => setColorFilter(new Set())}
+                style={{
+                  padding: '2px 8px',
+                  fontSize: 11,
+                  backgroundColor: 'transparent',
+                  color: '#888',
+                  border: '1px solid #555',
+                  borderRadius: 4,
+                  cursor: 'pointer',
+                }}
+              >
+                Clear
+              </button>
+            )}
+
+            <div style={{ width: 1, height: 18, backgroundColor: '#444', margin: '0 4px' }} />
+
+            <span style={{ color: '#888', fontSize: 12 }}>Type:</span>
+            {TYPE_FILTER_OPTIONS.map(({ key, label }) => (
+              <button
+                key={key}
+                onClick={() => setTypeFilter(typeFilter === key ? null : key)}
+                style={{
+                  padding: '3px 10px',
+                  fontSize: 11,
+                  backgroundColor: typeFilter === key ? '#4fc3f7' : '#444',
+                  color: typeFilter === key ? '#000' : '#ccc',
+                  border: 'none',
+                  borderRadius: 4,
+                  cursor: 'pointer',
+                }}
+              >
+                {label}
+              </button>
+            ))}
+
+            <span style={{ color: '#666', fontSize: 12, marginLeft: 'auto' }}>
+              Pool: {totalPoolCards}
             </span>
           </div>
 
@@ -330,8 +484,7 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
             }}
           >
             {sortBy === 'rarity' && poolByRarity ? (
-              // Grouped by rarity with separators
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {(['MYTHIC', 'RARE', 'UNCOMMON', 'COMMON'] as const).map((rarity) => {
                   const groups = poolByRarity[rarity] ?? []
                   if (groups.length === 0) return null
@@ -353,7 +506,7 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
                             card={card}
                             count={availableCount}
                             onClick={() => !isSubmitted && addCardToDeck(card.name)}
-                            onHover={setHoveredCard}
+                            onHover={handleHover}
                             disabled={isSubmitted}
                           />
                         ))}
@@ -363,7 +516,6 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
                 })}
               </div>
             ) : (
-              // Flat list (color or cmc sorting)
               <div
                 style={{
                   display: 'flex',
@@ -378,7 +530,7 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
                     card={card}
                     count={availableCount}
                     onClick={() => !isSubmitted && addCardToDeck(card.name)}
-                    onHover={setHoveredCard}
+                    onHover={handleHover}
                     disabled={isSubmitted}
                   />
                 ))}
@@ -387,81 +539,189 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
           </div>
         </div>
 
-        {/* Deck (right/bottom) */}
+        {/* Deck Panel (right) */}
         <div
           style={{
-            flex: responsive.isMobile ? 1 : 0.4,
+            flex: responsive.isMobile ? 1 : 3,
             display: 'flex',
             flexDirection: 'column',
-            backgroundColor: '#222',
+            backgroundColor: '#1e1e1e',
+            minHeight: 0,
+            minWidth: 0,
           }}
         >
-          {/* Deck header */}
+          {/* Deck Analytics */}
           <div
             style={{
               padding: '8px 12px',
-              backgroundColor: '#2a2a2a',
+              backgroundColor: '#252525',
+              borderBottom: '1px solid #333',
+            }}
+          >
+            {/* Live counters */}
+            <div style={{ display: 'flex', gap: 12, marginBottom: 8, flexWrap: 'wrap' }}>
+              <DeckStat label="Creatures" value={deckAnalytics.creatureCount} color="#8bc34a" />
+              <DeckStat label="Spells" value={deckAnalytics.nonCreatureCount} color="#4fc3f7" />
+              <DeckStat label="Lands" value={landCount} color="#a1887f" />
+            </div>
+
+            {/* Mana curve histogram */}
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 48 }}>
+              {[0, 1, 2, 3, 4, 5, 6, 7].map((cmc) => {
+                const count = deckAnalytics.curve[cmc] || 0
+                const height = maxCurveCount > 0 ? (count / maxCurveCount) * 40 : 0
+                return (
+                  <div key={cmc} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, minWidth: 0 }}>
+                    {count > 0 && (
+                      <span style={{ color: '#aaa', fontSize: 9, marginBottom: 2 }}>{count}</span>
+                    )}
+                    <div
+                      style={{
+                        width: '100%',
+                        maxWidth: 24,
+                        height: Math.max(height, count > 0 ? 3 : 0),
+                        backgroundColor: count > 0 ? '#4fc3f7' : 'transparent',
+                        borderRadius: '2px 2px 0 0',
+                        transition: 'height 0.2s',
+                      }}
+                    />
+                    <span style={{ color: '#666', fontSize: 9, marginTop: 2 }}>
+                      {cmc >= 7 ? '7+' : cmc}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Color distribution vs lands */}
+            {totalColorSymbols > 0 && (
+              <div style={{ marginTop: 8 }}>
+                <div style={{ display: 'flex', gap: 1, height: 6, borderRadius: 3, overflow: 'hidden' }}>
+                  {(['W', 'U', 'B', 'R', 'G'] as const).map((c) => {
+                    const pct = ((deckAnalytics.colorSymbols[c] ?? 0) / totalColorSymbols) * 100
+                    if (pct === 0) return null
+                    return (
+                      <div
+                        key={c}
+                        style={{
+                          flex: pct,
+                          backgroundColor: MANA_COLORS[c],
+                          transition: 'flex 0.2s',
+                        }}
+                        title={`${c}: ${deckAnalytics.colorSymbols[c]} symbols (${Math.round(pct)}%)`}
+                      />
+                    )
+                  })}
+                </div>
+                <div style={{ display: 'flex', gap: 1, height: 6, borderRadius: 3, overflow: 'hidden', marginTop: 2 }}>
+                  {(['W', 'U', 'B', 'R', 'G'] as const).map((c) => {
+                    const count = deckAnalytics.landColors[c] ?? 0
+                    if (count === 0) return null
+                    return (
+                      <div
+                        key={c}
+                        style={{
+                          flex: count,
+                          backgroundColor: MANA_COLORS[c],
+                          opacity: 0.5,
+                          transition: 'flex 0.2s',
+                        }}
+                        title={`${c} lands: ${count}`}
+                      />
+                    )
+                  })}
+                  {Object.values(deckAnalytics.landColors).every((v) => v === 0) && (
+                    <div style={{ flex: 1, backgroundColor: '#333' }} />
+                  )}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
+                  <span style={{ color: '#555', fontSize: 9 }}>Spells</span>
+                  <span style={{ color: '#555', fontSize: 9 }}>Lands</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Deck header */}
+          <div
+            style={{
+              padding: '6px 12px',
+              backgroundColor: '#222',
               borderBottom: '1px solid #333',
               display: 'flex',
               alignItems: 'center',
               gap: 8,
             }}
           >
-            <span style={{ color: '#ccc', fontSize: responsive.fontSize.normal, fontWeight: 600 }}>
+            <span style={{ color: '#ccc', fontSize: 13, fontWeight: 600 }}>
               Your Deck
             </span>
-            <span style={{ color: '#888', fontSize: responsive.fontSize.small }}>
+            <span style={{ color: '#888', fontSize: 11 }}>
               ({nonLandCount} spells + {landCount} lands)
             </span>
           </div>
 
-          {/* Deck cards */}
+          {/* Deck card list (vertical) */}
           <div
             style={{
               flex: 1,
               overflow: 'auto',
-              padding: 8,
+              padding: '4px 0',
             }}
           >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {deckCardGroups.map(({ card, count }) => (
-                <DeckCard
-                  key={card.name}
-                  card={card}
-                  count={count}
-                  onClick={() => !isSubmitted && removeCardFromDeck(card.name)}
-                  onHover={setHoveredCard}
+            {deckCardGroups.map(({ card, count }) => (
+              <DeckListRow
+                key={card.name}
+                card={card}
+                count={count}
+                onClick={() => !isSubmitted && removeCardFromDeck(card.name)}
+                onHover={handleHover}
+                disabled={isSubmitted}
+              />
+            ))}
+
+            {/* Basic lands */}
+            <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid #333' }}>
+              <div style={{ padding: '0 12px 4px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ color: '#666', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>
+                  Basic Lands
+                </span>
+                {!isSubmitted && nonLandCount > 0 && (
+                  <button
+                    onClick={() => suggestLands(state, nonLandCount, setLandCount)}
+                    style={{
+                      padding: '2px 8px',
+                      fontSize: 10,
+                      backgroundColor: '#444',
+                      color: '#4fc3f7',
+                      border: '1px solid #555',
+                      borderRadius: 4,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Suggest
+                  </button>
+                )}
+              </div>
+              {state.basicLands.map((land) => (
+                <LandRow
+                  key={land.name}
+                  land={land}
+                  count={state.landCounts[land.name] || 0}
+                  onIncrement={() => !isSubmitted && setLandCount(land.name, (state.landCounts[land.name] || 0) + 1)}
+                  onDecrement={() => !isSubmitted && setLandCount(land.name, (state.landCounts[land.name] || 0) - 1)}
+                  onHover={handleHover}
                   disabled={isSubmitted}
                 />
               ))}
-            </div>
-
-            {/* Basic lands */}
-            <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid #444' }}>
-              <h4 style={{ color: '#888', margin: '0 0 12px 0', fontSize: responsive.fontSize.small }}>
-                Basic Lands
-              </h4>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {state.basicLands.map((land) => (
-                  <LandCounter
-                    key={land.name}
-                    land={land}
-                    count={state.landCounts[land.name] || 0}
-                    onIncrement={() => !isSubmitted && setLandCount(land.name, (state.landCounts[land.name] || 0) + 1)}
-                    onDecrement={() => !isSubmitted && setLandCount(land.name, (state.landCounts[land.name] || 0) - 1)}
-                    onHover={setHoveredCard}
-                    disabled={isSubmitted}
-                  />
-                ))}
-              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Card preview on hover (desktop only) */}
+      {/* Card preview on hover - positioned near cursor */}
       {hoveredCard && !responsive.isMobile && (
-        <CardPreview card={hoveredCard} />
+        <CardPreview card={hoveredCard} pos={hoverPos} />
       )}
 
       {/* Submitted overlay */}
@@ -488,6 +748,18 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
 }
 
 /**
+ * Small stat display for deck analytics.
+ */
+function DeckStat({ label, value, color }: { label: string; value: number; color: string }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+      <span style={{ color, fontSize: 14, fontWeight: 700 }}>{value}</span>
+      <span style={{ color: '#888', fontSize: 10 }}>{label}</span>
+    </div>
+  )
+}
+
+/**
  * Card in the pool (available to add to deck).
  */
 function PoolCard({
@@ -500,17 +772,18 @@ function PoolCard({
   card: SealedCardInfo
   count: number
   onClick: () => void
-  onHover: (card: SealedCardInfo | null) => void
+  onHover: (card: SealedCardInfo | null, e?: React.MouseEvent) => void
   disabled: boolean
 }) {
-  const cardWidth = 80
+  const cardWidth = 110
   const cardHeight = Math.round(cardWidth * 1.4)
   const imageUrl = getCardImageUrl(card.name, card.imageUri, 'small')
 
   return (
     <div
       onClick={disabled ? undefined : onClick}
-      onMouseEnter={() => onHover(card)}
+      onMouseEnter={(e) => onHover(card, e)}
+      onMouseMove={(e) => onHover(card, e)}
       onMouseLeave={() => onHover(null)}
       style={{
         position: 'relative',
@@ -557,9 +830,169 @@ function PoolCard({
             fontWeight: 600,
           }}
         >
-          ×{count}
+          x{count}
         </div>
       )}
+    </div>
+  )
+}
+
+/**
+ * Compact deck list row with card image strip.
+ */
+function DeckListRow({
+  card,
+  count,
+  onClick,
+  onHover,
+  disabled,
+}: {
+  card: SealedCardInfo
+  count: number
+  onClick: () => void
+  onHover: (card: SealedCardInfo | null, e?: React.MouseEvent) => void
+  disabled: boolean
+}) {
+  const cmc = getCmc(card)
+
+  return (
+    <div
+      onClick={disabled ? undefined : onClick}
+      onMouseEnter={(e) => onHover(card, e)}
+      onMouseMove={(e) => onHover(card, e)}
+      onMouseLeave={() => onHover(null)}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        height: 28,
+        padding: '0 8px 0 0',
+        cursor: disabled ? 'default' : 'pointer',
+        opacity: disabled ? 0.8 : 1,
+        position: 'relative',
+        overflow: 'hidden',
+        borderBottom: '1px solid #2a2a2a',
+      }}
+      onMouseOver={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = 'rgba(79, 195, 247, 0.1)'
+      }}
+      onMouseOut={(e) => {
+        e.currentTarget.style.backgroundColor = 'transparent'
+      }}
+    >
+      {/* Count */}
+      <span
+        style={{
+          width: 28,
+          textAlign: 'center',
+          color: '#4fc3f7',
+          fontWeight: 600,
+          fontSize: 12,
+          flexShrink: 0,
+        }}
+      >
+        {count}
+      </span>
+      {/* Card name */}
+      <span style={{
+        color: '#ddd',
+        fontSize: 12,
+        flex: 1,
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+      }}>
+        {card.name}
+      </span>
+      {/* Mana cost */}
+      <span style={{ marginLeft: 4, flexShrink: 0 }}>
+        {card.manaCost ? <ManaCost cost={card.manaCost} size={12} /> : <span style={{ color: '#666', fontSize: 10 }}>({cmc})</span>}
+      </span>
+    </div>
+  )
+}
+
+/**
+ * Land row in the deck list with +/- buttons.
+ */
+function LandRow({
+  land,
+  count,
+  onIncrement,
+  onDecrement,
+  onHover,
+  disabled,
+}: {
+  land: SealedCardInfo
+  count: number
+  onIncrement: () => void
+  onDecrement: () => void
+  onHover: (card: SealedCardInfo | null, e?: React.MouseEvent) => void
+  disabled: boolean
+}) {
+  return (
+    <div
+      onMouseEnter={(e) => onHover(land, e)}
+      onMouseMove={(e) => onHover(land, e)}
+      onMouseLeave={() => onHover(null)}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        height: 28,
+        padding: '0 8px',
+        borderBottom: '1px solid #2a2a2a',
+      }}
+    >
+      {/* Count */}
+      <span style={{ width: 28, textAlign: 'center', color: '#a1887f', fontWeight: 600, fontSize: 12, flexShrink: 0 }}>
+        {count}
+      </span>
+      {/* Name */}
+      <span style={{ color: '#aaa', fontSize: 12, flex: 1 }}>{land.name}</span>
+      {/* Buttons */}
+      <div style={{ display: 'flex', gap: 2, flexShrink: 0 }}>
+        <button
+          onClick={disabled ? undefined : onDecrement}
+          disabled={disabled || count <= 0}
+          style={{
+            width: 20,
+            height: 20,
+            borderRadius: 3,
+            border: 'none',
+            backgroundColor: count > 0 && !disabled ? '#555' : '#333',
+            color: count > 0 && !disabled ? 'white' : '#555',
+            cursor: count > 0 && !disabled ? 'pointer' : 'not-allowed',
+            fontWeight: 600,
+            fontSize: 12,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 0,
+          }}
+        >
+          -
+        </button>
+        <button
+          onClick={disabled ? undefined : onIncrement}
+          disabled={disabled}
+          style={{
+            width: 20,
+            height: 20,
+            borderRadius: 3,
+            border: 'none',
+            backgroundColor: disabled ? '#333' : '#4caf50',
+            color: disabled ? '#555' : 'white',
+            cursor: disabled ? 'not-allowed' : 'pointer',
+            fontWeight: 600,
+            fontSize: 12,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 0,
+          }}
+        >
+          +
+        </button>
+      </div>
     </div>
   )
 }
@@ -588,197 +1021,51 @@ function RaritySectionHeader({ rarity, count }: { rarity: string; count: number 
         display: 'flex',
         alignItems: 'center',
         gap: 8,
-        marginBottom: 8,
+        marginBottom: 6,
         paddingBottom: 4,
         borderBottom: `2px solid ${colors[rarity] || '#888'}`,
       }}
     >
-      <span style={{ color: colors[rarity] || '#888', fontWeight: 600, fontSize: 14 }}>
+      <span style={{ color: colors[rarity] || '#888', fontWeight: 600, fontSize: 13 }}>
         {labels[rarity] || rarity}
       </span>
-      <span style={{ color: '#666', fontSize: 12 }}>({count})</span>
+      <span style={{ color: '#666', fontSize: 11 }}>({count})</span>
     </div>
   )
 }
 
 /**
- * Card entry in the deck list.
+ * Card preview on hover, positioned near the cursor.
  */
-function DeckCard({
-  card,
-  count,
-  onClick,
-  onHover,
-  disabled,
-}: {
-  card: SealedCardInfo
-  count: number
-  onClick: () => void
-  onHover: (card: SealedCardInfo | null) => void
-  disabled: boolean
-}) {
-  return (
-    <div
-      onClick={disabled ? undefined : onClick}
-      onMouseEnter={() => onHover(card)}
-      onMouseLeave={() => onHover(null)}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 8,
-        padding: '6px 8px',
-        backgroundColor: '#333',
-        borderRadius: 4,
-        cursor: disabled ? 'default' : 'pointer',
-        opacity: disabled ? 0.8 : 1,
-      }}
-      onMouseOver={(e) => {
-        if (!disabled) {
-          e.currentTarget.style.backgroundColor = '#444'
-        }
-      }}
-      onMouseOut={(e) => {
-        e.currentTarget.style.backgroundColor = '#333'
-      }}
-    >
-      <span
-        style={{
-          width: 24,
-          textAlign: 'center',
-          color: '#4fc3f7',
-          fontWeight: 600,
-          fontSize: 14,
-        }}
-      >
-        {count}x
-      </span>
-      <span style={{ color: '#ccc', fontSize: 13, flex: 1 }}>{card.name}</span>
-      <span style={{ color: '#888', fontSize: 11 }}>{card.manaCost || ''}</span>
-    </div>
-  )
-}
-
-/**
- * Basic land counter with +/- buttons.
- */
-function LandCounter({
-  land,
-  count,
-  onIncrement,
-  onDecrement,
-  onHover,
-  disabled,
-}: {
-  land: SealedCardInfo
-  count: number
-  onIncrement: () => void
-  onDecrement: () => void
-  onHover: (card: SealedCardInfo | null) => void
-  disabled: boolean
-}) {
-  const imageUrl = getCardImageUrl(land.name, land.imageUri, 'small')
-
-  return (
-    <div
-      onMouseEnter={() => onHover(land)}
-      onMouseLeave={() => onHover(null)}
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 4,
-        padding: 8,
-        backgroundColor: '#333',
-        borderRadius: 6,
-        opacity: disabled ? 0.8 : 1,
-      }}
-    >
-      <div
-        style={{
-          width: 50,
-          height: 70,
-          borderRadius: 4,
-          overflow: 'hidden',
-        }}
-      >
-        <img
-          src={imageUrl}
-          alt={land.name}
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-          }}
-        />
-      </div>
-      <span style={{ color: '#aaa', fontSize: 11 }}>{land.name}</span>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-        <button
-          onClick={disabled ? undefined : onDecrement}
-          disabled={disabled || count <= 0}
-          style={{
-            width: 24,
-            height: 24,
-            borderRadius: 4,
-            border: 'none',
-            backgroundColor: count > 0 && !disabled ? '#666' : '#444',
-            color: count > 0 && !disabled ? 'white' : '#666',
-            cursor: count > 0 && !disabled ? 'pointer' : 'not-allowed',
-            fontWeight: 600,
-            fontSize: 14,
-          }}
-        >
-          -
-        </button>
-        <span
-          style={{
-            width: 24,
-            textAlign: 'center',
-            color: 'white',
-            fontWeight: 600,
-            fontSize: 14,
-          }}
-        >
-          {count}
-        </span>
-        <button
-          onClick={disabled ? undefined : onIncrement}
-          disabled={disabled}
-          style={{
-            width: 24,
-            height: 24,
-            borderRadius: 4,
-            border: 'none',
-            backgroundColor: disabled ? '#444' : '#4caf50',
-            color: disabled ? '#666' : 'white',
-            cursor: disabled ? 'not-allowed' : 'pointer',
-            fontWeight: 600,
-            fontSize: 14,
-          }}
-        >
-          +
-        </button>
-      </div>
-    </div>
-  )
-}
-
-/**
- * Card preview on hover (desktop).
- */
-function CardPreview({ card }: { card: SealedCardInfo }) {
+function CardPreview({ card, pos }: { card: SealedCardInfo; pos: { x: number; y: number } | null }) {
   const imageUrl = getCardImageUrl(card.name, card.imageUri, 'large')
   const previewWidth = 250
   const previewHeight = Math.round(previewWidth * 1.4)
+
+  // Position the preview near the cursor but keep it on screen
+  let top = 80
+  let left = 20
+  if (pos) {
+    // Place to the right of cursor, or to the left if too close to right edge
+    const margin = 20
+    if (pos.x + previewWidth + margin + 20 < window.innerWidth) {
+      left = pos.x + margin
+    } else {
+      left = pos.x - previewWidth - margin
+    }
+    // Vertically centered on cursor, clamped to viewport
+    top = Math.max(10, Math.min(pos.y - previewHeight / 2, window.innerHeight - previewHeight - 10))
+  }
 
   return (
     <div
       style={{
         position: 'fixed',
-        top: 80,
-        right: 20,
+        top,
+        left,
         pointerEvents: 'none',
         zIndex: 1001,
+        transition: 'top 0.05s, left 0.05s',
       }}
     >
       <div
@@ -787,7 +1074,7 @@ function CardPreview({ card }: { card: SealedCardInfo }) {
           height: previewHeight,
           borderRadius: 12,
           overflow: 'hidden',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.8)',
         }}
       >
         <img
@@ -804,7 +1091,117 @@ function CardPreview({ card }: { card: SealedCardInfo }) {
   )
 }
 
+// Constants
+
+const COLOR_FILTER_OPTIONS = [
+  { key: 'W', label: 'White' },
+  { key: 'U', label: 'Blue' },
+  { key: 'B', label: 'Black' },
+  { key: 'R', label: 'Red' },
+  { key: 'G', label: 'Green' },
+  { key: 'C', label: 'Colorless' },
+]
+
+const TYPE_FILTER_OPTIONS = [
+  { key: 'creature', label: 'Creature' },
+  { key: 'instant', label: 'Instant' },
+  { key: 'sorcery', label: 'Sorcery' },
+  { key: 'enchantment', label: 'Enchantment' },
+  { key: 'artifact', label: 'Artifact' },
+]
+
+const MANA_COLORS: Record<string, string> = {
+  W: '#f9faf4',
+  U: '#0e68ab',
+  B: '#6a6a6a',
+  R: '#d32f2f',
+  G: '#388e3c',
+}
+
 // Helper functions
+
+function getCardColors(card: SealedCardInfo): Set<string> {
+  const cost = card.manaCost || ''
+  const colors = new Set<string>()
+  if (cost.includes('W')) colors.add('W')
+  if (cost.includes('U')) colors.add('U')
+  if (cost.includes('B')) colors.add('B')
+  if (cost.includes('R')) colors.add('R')
+  if (cost.includes('G')) colors.add('G')
+  return colors
+}
+
+function suggestLands(
+  state: DeckBuildingState,
+  spellCount: number,
+  setLandCount: (name: string, count: number) => void,
+) {
+  // Target 40 cards total
+  const targetLands = Math.max(0, 40 - spellCount)
+  if (targetLands === 0) return
+
+  // Count color symbols in deck spells
+  const symbols: Record<string, number> = { W: 0, U: 0, B: 0, R: 0, G: 0 }
+  for (const cardName of state.deck) {
+    const info = state.cardPool.find((c) => c.name === cardName)
+    if (!info) continue
+    const cost = info.manaCost || ''
+    const matches = cost.match(/\{([^}]+)\}/g) || []
+    for (const match of matches) {
+      const inner = match.slice(1, -1)
+      if (inner in symbols) {
+        symbols[inner] = (symbols[inner] ?? 0) + 1
+      }
+    }
+  }
+
+  const colorToLand: Record<string, string> = { W: 'Plains', U: 'Island', B: 'Swamp', R: 'Mountain', G: 'Forest' }
+  const totalSymbols = Object.values(symbols).reduce((a, b) => a + b, 0)
+
+  if (totalSymbols === 0) {
+    // No colored spells — split evenly across available land types or just give all one type
+    const availableLands = state.basicLands.map((l) => l.name)
+    for (const land of availableLands) {
+      setLandCount(land, 0)
+    }
+    if (availableLands.length > 0) {
+      setLandCount(availableLands[0]!, targetLands)
+    }
+    return
+  }
+
+  // Distribute lands proportionally to color symbols, with rounding
+  const landCounts: Record<string, number> = {}
+  let assigned = 0
+  const entries = Object.entries(symbols).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1])
+
+  for (const [color, count] of entries) {
+    const landName = colorToLand[color]
+    if (!landName) continue
+    const share = Math.round((count / totalSymbols) * targetLands)
+    landCounts[landName] = share
+    assigned += share
+  }
+
+  // Fix rounding errors — adjust the largest share
+  if (assigned !== targetLands && entries.length > 0) {
+    const topColor = entries[0]?.[0]
+    const topLand = topColor ? colorToLand[topColor] : undefined
+    if (topLand && landCounts[topLand] != null) {
+      landCounts[topLand] = (landCounts[topLand] ?? 0) + targetLands - assigned
+    }
+  }
+
+  // Apply — reset all to 0 first, then set computed values
+  for (const land of state.basicLands) {
+    setLandCount(land.name, landCounts[land.name] ?? 0)
+  }
+}
+
+function matchesTypeFilter(card: SealedCardInfo, filter: string): boolean {
+  const typeLine = card.typeLine.toLowerCase()
+  return typeLine.includes(filter)
+}
 
 function getColorOrder(card: SealedCardInfo): number {
   const cost = card.manaCost || ''
@@ -813,8 +1210,8 @@ function getColorOrder(card: SealedCardInfo): number {
   if (cost.includes('B')) return 3
   if (cost.includes('R')) return 4
   if (cost.includes('G')) return 5
-  if (cost === '' || cost.match(/^\{[0-9X]+\}$/)) return 6 // Colorless/artifacts
-  return 7 // Multi-color
+  if (cost === '' || cost.match(/^\{[0-9X]+\}$/)) return 6
+  return 7
 }
 
 function getCmc(card: SealedCardInfo): number {
