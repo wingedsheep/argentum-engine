@@ -1,3 +1,4 @@
+import { trackEvent } from '../utils/analytics'
 import { create } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import type {
@@ -164,6 +165,15 @@ export interface TournamentState {
 /**
  * Main game store interface.
  */
+/**
+ * A log entry for the game log panel.
+ */
+export interface LogEntry {
+  description: string
+  playerId: EntityId | null
+  timestamp: number
+}
+
 export interface GameStore {
   // Connection state
   connectionStatus: ConnectionStatus
@@ -192,6 +202,9 @@ export interface GameStore {
 
   // Animation queue
   pendingEvents: readonly ClientEvent[]
+
+  // Event log
+  eventLog: readonly LogEntry[]
 
   // Game over state
   gameOverState: GameOverState | null
@@ -391,6 +404,7 @@ export const useGameStore = create<GameStore>()(
       },
 
       onGameStarted: (msg) => {
+        trackEvent('game_started', { opponent_name: msg.opponentName })
         set({
           opponentName: msg.opponentName,
           mulliganState: null,
@@ -465,6 +479,10 @@ export const useGameStore = create<GameStore>()(
 
       onGameOver: (msg) => {
         const { playerId } = get()
+        trackEvent('game_over', {
+          result: msg.winnerId === playerId ? 'win' : 'loss',
+          reason: msg.reason,
+        })
         set({
           gameOverState: {
             winnerId: msg.winnerId,
@@ -508,6 +526,11 @@ export const useGameStore = create<GameStore>()(
       },
 
       onSealedPoolGenerated: (msg) => {
+        trackEvent('sealed_pool_opened', {
+          set_code: msg.setCode,
+          set_name: msg.setName,
+          pool_size: msg.cardPool.length,
+        })
         set((state) => ({
           deckBuildingState: {
             phase: 'building',
@@ -871,11 +894,13 @@ export const useGameStore = create<GameStore>()(
       },
 
       concede: () => {
+        trackEvent('player_conceded')
         ws?.send(createConcedeMessage())
       },
 
       // Sealed draft actions
       createSealedGame: (setCode) => {
+        trackEvent('sealed_game_created', { set_code: setCode })
         ws?.send(createCreateSealedGameMessage(setCode))
       },
 
@@ -951,19 +976,28 @@ export const useGameStore = create<GameStore>()(
           }
         }
 
+        const landCount = Object.values(deckBuildingState.landCounts).reduce((a, b) => a + b, 0)
+        trackEvent('sealed_deck_submitted', {
+          deck_size: deckBuildingState.deck.length + landCount,
+          land_count: landCount,
+          nonland_count: deckBuildingState.deck.length,
+        })
         ws?.send(createSubmitSealedDeckMessage(deckList))
       },
 
       // Lobby actions
       createSealedLobby: (setCode, boosterCount = 6, maxPlayers = 8) => {
+        trackEvent('sealed_lobby_created', { set_code: setCode, booster_count: boosterCount, max_players: maxPlayers })
         ws?.send(createCreateSealedLobbyMessage(setCode, boosterCount, maxPlayers))
       },
 
       joinLobby: (lobbyId) => {
+        trackEvent('sealed_lobby_joined')
         ws?.send(createJoinLobbyMessage(lobbyId))
       },
 
       startSealedLobby: () => {
+        trackEvent('sealed_lobby_started')
         ws?.send(createStartSealedLobbyMessage())
       },
 
