@@ -33,6 +33,7 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityCost
+import com.wingedsheep.sdk.scripting.ActivationRestriction
 import com.wingedsheep.sdk.scripting.AddManaEffect
 import com.wingedsheep.sdk.scripting.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.CastRestriction
@@ -339,7 +340,59 @@ class ActionProcessor(
             }
         }
 
+        // Check activation restrictions
+        for (restriction in ability.restrictions) {
+            val error = checkActivationRestriction(state, action.playerId, restriction)
+            if (error != null) return error
+        }
+
         return null
+    }
+
+    private fun checkActivationRestriction(
+        state: GameState,
+        playerId: EntityId,
+        restriction: ActivationRestriction
+    ): String? {
+        return when (restriction) {
+            is ActivationRestriction.OnlyDuringYourTurn -> {
+                if (state.activePlayerId != playerId) "This ability can only be activated during your turn"
+                else null
+            }
+            is ActivationRestriction.BeforeStep -> {
+                if (state.step.ordinal >= restriction.step.ordinal)
+                    "This ability can only be activated before ${restriction.step.displayName}"
+                else null
+            }
+            is ActivationRestriction.DuringPhase -> {
+                if (state.phase != restriction.phase)
+                    "This ability can only be activated during ${restriction.phase.displayName}"
+                else null
+            }
+            is ActivationRestriction.DuringStep -> {
+                if (state.step != restriction.step)
+                    "This ability can only be activated during ${restriction.step.displayName}"
+                else null
+            }
+            is ActivationRestriction.OnlyIfCondition -> {
+                val opponentId = state.turnOrder.firstOrNull { it != playerId }
+                val context = EffectContext(
+                    sourceId = null,
+                    controllerId = playerId,
+                    opponentId = opponentId,
+                    targets = emptyList(),
+                    xValue = 0
+                )
+                if (!conditionEvaluator.evaluate(state, restriction.condition, context))
+                    "Activation condition not met"
+                else null
+            }
+            is ActivationRestriction.All -> {
+                restriction.restrictions.firstNotNullOfOrNull {
+                    checkActivationRestriction(state, playerId, it)
+                }
+            }
+        }
     }
 
     private fun validatePlayLand(state: GameState, action: PlayLand): String? {

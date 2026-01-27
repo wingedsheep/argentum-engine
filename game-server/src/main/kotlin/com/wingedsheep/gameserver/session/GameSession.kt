@@ -25,6 +25,7 @@ import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.AbilityCost
+import com.wingedsheep.sdk.scripting.ActivationRestriction
 import com.wingedsheep.sdk.scripting.CastRestriction
 import com.wingedsheep.gameserver.priority.AutoPassManager
 import org.slf4j.LoggerFactory
@@ -531,6 +532,68 @@ class GameSession(
             }
         }
 
+        // Check for non-mana activated abilities on battlefield permanents
+        for (entityId in battlefieldPermanents) {
+            val container = state.getEntity(entityId) ?: continue
+            val cardComponent = container.get<CardComponent>() ?: continue
+
+            // Must be controlled by the player
+            val controllerId = container.get<ControllerComponent>()?.playerId
+            if (controllerId != playerId) continue
+
+            val cardDef = cardRegistry.getCard(cardComponent.name) ?: continue
+            val nonManaAbilities = cardDef.script.activatedAbilities.filter { !it.isManaAbility }
+
+            for (ability in nonManaAbilities) {
+                // Check cost requirements
+                when (ability.cost) {
+                    is AbilityCost.Tap -> {
+                        if (container.has<TappedComponent>()) continue
+                        if (!cardComponent.typeLine.isLand && cardComponent.typeLine.isCreature) {
+                            val hasSummoningSickness = container.has<SummoningSicknessComponent>()
+                            val hasHaste = cardComponent.baseKeywords.contains(Keyword.HASTE)
+                            if (hasSummoningSickness && !hasHaste) continue
+                        }
+                    }
+                    else -> {}
+                }
+
+                // Check activation restrictions
+                var restrictionsMet = true
+                for (restriction in ability.restrictions) {
+                    if (!checkActivationRestriction(state, playerId, restriction)) {
+                        restrictionsMet = false
+                        break
+                    }
+                }
+                if (!restrictionsMet) continue
+
+                // Check for target requirements
+                val targetReq = ability.targetRequirement
+                if (targetReq != null) {
+                    val validTargets = findValidTargets(state, playerId, targetReq)
+                    if (validTargets.isEmpty()) continue
+
+                    result.add(LegalActionInfo(
+                        actionType = "ActivateAbility",
+                        description = ability.description,
+                        action = ActivateAbility(playerId, entityId, ability.id),
+                        validTargets = validTargets,
+                        requiresTargets = true,
+                        targetCount = targetReq.count,
+                        minTargets = targetReq.effectiveMinCount,
+                        targetDescription = targetReq.description
+                    ))
+                } else {
+                    result.add(LegalActionInfo(
+                        actionType = "ActivateAbility",
+                        description = ability.description,
+                        action = ActivateAbility(playerId, entityId, ability.id)
+                    ))
+                }
+            }
+        }
+
         // Check for combat actions
         if (state.step == Step.DECLARE_ATTACKERS && state.activePlayerId == playerId) {
             // Check if attackers have already been declared this combat
@@ -745,6 +808,36 @@ class GameSession(
                 PermanentTargetFilter.NonCreature -> !cardComponent.typeLine.isCreature
                 PermanentTargetFilter.NonLand -> !cardComponent.typeLine.isLand
                 else -> true // Other filters not yet implemented
+            }
+        }
+    }
+
+    /**
+     * Check if an activation restriction is satisfied.
+     */
+    private fun checkActivationRestriction(
+        state: GameState,
+        playerId: EntityId,
+        restriction: ActivationRestriction
+    ): Boolean {
+        return when (restriction) {
+            is ActivationRestriction.OnlyDuringYourTurn -> state.activePlayerId == playerId
+            is ActivationRestriction.BeforeStep -> state.step.ordinal < restriction.step.ordinal
+            is ActivationRestriction.DuringPhase -> state.phase == restriction.phase
+            is ActivationRestriction.DuringStep -> state.step == restriction.step
+            is ActivationRestriction.OnlyIfCondition -> {
+                val opponentId = state.turnOrder.firstOrNull { it != playerId }
+                val context = EffectContext(
+                    sourceId = null,
+                    controllerId = playerId,
+                    opponentId = opponentId,
+                    targets = emptyList(),
+                    xValue = 0
+                )
+                conditionEvaluator.evaluate(state, restriction.condition, context)
+            }
+            is ActivationRestriction.All -> restriction.restrictions.all {
+                checkActivationRestriction(state, playerId, it)
             }
         }
     }
