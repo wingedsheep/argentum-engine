@@ -185,9 +185,13 @@ class AutoPassManager {
                 false
             }
             Step.FIRST_STRIKE_COMBAT_DAMAGE, Step.COMBAT_DAMAGE, Step.END_COMBAT -> {
-                // Usually auto-pass through damage steps
-                logger.debug("AUTO-PASS: My combat damage/end combat")
-                true
+                if (meaningfulActions.isNotEmpty()) {
+                    logger.debug("STOP: My combat damage/end combat with meaningful actions")
+                    false
+                } else {
+                    logger.debug("AUTO-PASS: My combat damage/end combat")
+                    true
+                }
             }
 
             // End Step - DON'T auto-pass (might want to use abilities)
@@ -248,9 +252,13 @@ class AutoPassManager {
                 false
             }
             Step.FIRST_STRIKE_COMBAT_DAMAGE, Step.COMBAT_DAMAGE, Step.END_COMBAT -> {
-                // Usually auto-pass through damage (can't prevent damage easily)
-                logger.debug("AUTO-PASS: Opponent's combat damage/end combat")
-                true
+                if (meaningfulActions.isNotEmpty()) {
+                    logger.debug("STOP: Opponent's combat damage/end combat with meaningful actions")
+                    false
+                } else {
+                    logger.debug("AUTO-PASS: Opponent's combat damage/end combat")
+                    true
+                }
             }
 
             // End Step - ALWAYS STOP (golden rule)
