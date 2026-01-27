@@ -1,0 +1,7 @@
+web-client/node_modules
+web-client/dist
+.git
+.github
+.idea
+*.md
+docs/

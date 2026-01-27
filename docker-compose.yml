@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  backend:
+    image: ${IMAGE_REPO}/backend:latest
+    restart: always
+    networks:
+      - app_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend-${PROJECT_NAME}.rule=Host(`${APP_DOMAIN}`) && PathPrefix(`/game`)"
+      - "traefik.http.routers.backend-${PROJECT_NAME}.entrypoints=websecure"
+      - "traefik.http.routers.backend-${PROJECT_NAME}.tls=true"
+      - "traefik.http.routers.backend-${PROJECT_NAME}.tls.certresolver=lets-encrypt"
+      - "traefik.http.services.backend-${PROJECT_NAME}.loadbalancer.server.port=8080"
+      - "traefik.docker.network=traefik-wingedsheep"
+
+  frontend:
+    image: ${IMAGE_REPO}/frontend:latest
+    restart: always
+    depends_on:
+      - backend
+    networks:
+      - app_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend-${PROJECT_NAME}.rule=Host(`${APP_DOMAIN}`)"
+      - "traefik.http.routers.frontend-${PROJECT_NAME}.entrypoints=websecure"
+      - "traefik.http.routers.frontend-${PROJECT_NAME}.tls=true"
+      - "traefik.http.routers.frontend-${PROJECT_NAME}.tls.certresolver=lets-encrypt"
+      - "traefik.http.services.frontend-${PROJECT_NAME}.loadbalancer.server.port=80"
+      - "traefik.docker.network=traefik-wingedsheep"
+
+networks:
+  app_network:
+    external: true
+    name: traefik-wingedsheep
