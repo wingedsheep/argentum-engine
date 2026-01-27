@@ -103,19 +103,28 @@ export function useResponsive(): ResponsiveSizes {
     const baseCardWidth = isMobile ? 70 : isTablet ? 90 : 120
     const cardRatio = 1.4 // MTG card aspect ratio
 
-    const cardWidth = baseCardWidth
+    // Scale down card sizes when viewport height is limited.
+    // The board needs to fit: opponent info + opponent hand + 2 battlefield rows (opponent) +
+    // center area + 2 battlefield rows (player) + player hand + player controls.
+    // On short screens, reduce card sizes proportionally.
+    const heightScale = height < 900 ? Math.max(0.6, height / 900) : 1
+
+    const cardWidth = Math.round(baseCardWidth * heightScale)
     const cardHeight = Math.round(cardWidth * cardRatio)
 
     // Small cards (opponent hand)
-    const smallCardWidth = isMobile ? 40 : isTablet ? 50 : 60
+    const baseSmallCardWidth = isMobile ? 40 : isTablet ? 50 : 60
+    const smallCardWidth = Math.round(baseSmallCardWidth * heightScale)
     const smallCardHeight = Math.round(smallCardWidth * cardRatio)
 
     // Battlefield cards - slightly smaller than hand cards
-    const battlefieldCardWidth = isMobile ? 60 : isTablet ? 80 : 100
+    const baseBattlefieldCardWidth = isMobile ? 60 : isTablet ? 80 : 100
+    const battlefieldCardWidth = Math.round(baseBattlefieldCardWidth * heightScale)
     const battlefieldCardHeight = Math.round(battlefieldCardWidth * cardRatio)
 
     // Pile sizes (deck/graveyard)
-    const pileWidth = isMobile ? 50 : isTablet ? 60 : 70
+    const basePileWidth = isMobile ? 50 : isTablet ? 60 : 70
+    const pileWidth = Math.round(basePileWidth * heightScale)
     const pileHeight = Math.round(pileWidth * cardRatio)
 
     // Spacing scales with screen size

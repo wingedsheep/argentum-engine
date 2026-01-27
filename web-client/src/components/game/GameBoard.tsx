@@ -750,7 +750,7 @@ function BattlefieldArea({ isOpponent }: { isOpponent: boolean }) {
   const firstRow = isOpponent ? lands : creatures
   const secondRow = isOpponent ? creatures : lands
 
-  const minHeight = responsive.isMobile ? 100 : responsive.isTablet ? 130 : 160
+  const minHeight = responsive.battlefieldCardHeight + responsive.cardGap * 2
 
   return (
     <div
@@ -1374,6 +1374,9 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+    flexShrink: 1,
+    minHeight: 0,
+    overflow: 'hidden',
   },
   centerArea: {
     display: 'flex',
@@ -1388,6 +1391,9 @@ const styles: Record<string, React.CSSProperties> = {
     flexDirection: 'column',
     alignItems: 'center',
     marginTop: 'auto',
+    flexShrink: 1,
+    minHeight: 0,
+    overflow: 'hidden',
   },
   playerRowWithZones: {
     display: 'flex',
@@ -1547,6 +1553,8 @@ const styles: Record<string, React.CSSProperties> = {
     flexDirection: 'column',
     alignItems: 'center',
     width: '100%',
+    flexShrink: 1,
+    minHeight: 0,
   },
   battlefieldRow: {
     display: 'flex',
