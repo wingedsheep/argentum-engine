@@ -127,6 +127,9 @@ export function GameBoard() {
       padding: responsive.containerPadding,
       gap: responsive.sectionGap,
     }}>
+      {/* Concede button (top-right) */}
+      <ConcedeButton />
+
       {/* Opponent area (top) */}
       <div style={styles.opponentArea}>
         <div style={styles.playerRowWithZones}>
@@ -195,7 +198,6 @@ export function GameBoard() {
               {/* Mana pool display */}
               {viewingPlayer.manaPool && <ManaPool manaPool={viewingPlayer.manaPool} />}
 
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               {/* Hide Pass button during combat - combat overlay handles actions */}
               {hasPriority && !isInCombatMode && (
                 <button
@@ -214,8 +216,6 @@ export function GameBoard() {
                   Pass
                 </button>
               )}
-              <ConcedeButton />
-              </div>
             </div>
           </div>
 
@@ -1803,16 +1803,25 @@ const styles: Record<string, React.CSSProperties> = {
 }
 
 /**
- * Concede button with confirmation.
+ * Concede button with confirmation, positioned top-right.
  */
 function ConcedeButton() {
   const concede = useGameStore((state) => state.concede)
   const [confirming, setConfirming] = useState(false)
   const responsive = useResponsiveContext()
 
+  const base: React.CSSProperties = {
+    position: 'absolute',
+    top: responsive.isMobile ? 8 : 12,
+    right: responsive.isMobile ? 8 : 12,
+    zIndex: 100,
+    display: 'flex',
+    gap: 4,
+  }
+
   if (confirming) {
     return (
-      <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+      <div style={base}>
         <button
           onClick={() => { concede(); setConfirming(false) }}
           style={{
@@ -1823,6 +1832,7 @@ function ConcedeButton() {
             border: 'none',
             borderRadius: 6,
             cursor: 'pointer',
+            fontWeight: 600,
           }}
         >
           Confirm
@@ -1832,9 +1842,9 @@ function ConcedeButton() {
           style={{
             padding: responsive.isMobile ? '6px 10px' : '8px 14px',
             fontSize: responsive.fontSize.small,
-            backgroundColor: '#333',
+            backgroundColor: '#222',
             color: '#aaa',
-            border: 'none',
+            border: '1px solid #333',
             borderRadius: 6,
             cursor: 'pointer',
           }}
@@ -1846,19 +1856,21 @@ function ConcedeButton() {
   }
 
   return (
-    <button
-      onClick={() => setConfirming(true)}
-      style={{
-        padding: responsive.isMobile ? '6px 10px' : '8px 14px',
-        fontSize: responsive.fontSize.small,
-        backgroundColor: 'transparent',
-        color: '#888',
-        border: '1px solid #444',
-        borderRadius: 6,
-        cursor: 'pointer',
-      }}
-    >
-      Concede
-    </button>
+    <div style={base}>
+      <button
+        onClick={() => setConfirming(true)}
+        style={{
+          padding: responsive.isMobile ? '6px 10px' : '8px 14px',
+          fontSize: responsive.fontSize.small,
+          backgroundColor: 'transparent',
+          color: '#cc0000',
+          border: '1px solid #cc0000',
+          borderRadius: 6,
+          cursor: 'pointer',
+        }}
+      >
+        Concede
+      </button>
+    </div>
   )
 }
