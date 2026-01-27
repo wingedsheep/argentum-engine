@@ -1,6 +1,6 @@
 # Argentum Engine
 
-<img src="argentum-engine-white.jpeg" alt="Argentum Engine" width="400px">
+<img src="assets/argentum-engine-white.jpeg" alt="Argentum Engine" width="400px">
 
 *Before the oil. Before the corruption. There was only perfection.*
 
@@ -22,6 +22,20 @@ Argentum Engine is a modular MTG implementation consisting of:
 - Spring Boot 4.x
 - WebGL (frontend)
 - Keycloak (OAuth/authentication)
+
+## Features
+
+### Drafting
+
+<img src="assets/drafting.png" alt="Drafting" width="900px">
+
+Host booster drafts with up to 8 players. Create a draft lobby, invite friends, and build your deck from freshly opened packs.
+
+### Play
+
+<img src="assets/play.png" alt="Play" width="900px">
+
+Play Magic against friends with fully implemented MTG rules. The engine automatically handles the stack, priority, combat, triggers, and state-based actions—so you can focus on the game.
 
 ## Architecture
 
