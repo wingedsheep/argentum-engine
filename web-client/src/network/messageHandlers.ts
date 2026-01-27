@@ -1,6 +1,7 @@
 import type {
   ServerMessage,
   ConnectedMessage,
+  ReconnectedMessage,
   GameCreatedMessage,
   GameStartedMessage,
   StateUpdateMessage,
@@ -14,6 +15,13 @@ import type {
   OpponentDeckSubmittedMessage,
   WaitingForOpponentMessage,
   DeckSubmittedMessage,
+  LobbyCreatedMessage,
+  LobbyUpdateMessage,
+  TournamentStartedMessage,
+  TournamentMatchStartingMessage,
+  TournamentByeMessage,
+  RoundCompleteMessage,
+  TournamentCompleteMessage,
 } from '../types'
 
 /**
@@ -21,6 +29,7 @@ import type {
  */
 export interface MessageHandlers {
   onConnected: (message: ConnectedMessage) => void
+  onReconnected: (message: ReconnectedMessage) => void
   onGameCreated: (message: GameCreatedMessage) => void
   onGameStarted: (message: GameStartedMessage) => void
   onStateUpdate: (message: StateUpdateMessage) => void
@@ -35,6 +44,15 @@ export interface MessageHandlers {
   onOpponentDeckSubmitted: (message: OpponentDeckSubmittedMessage) => void
   onWaitingForOpponent: (message: WaitingForOpponentMessage) => void
   onDeckSubmitted: (message: DeckSubmittedMessage) => void
+  // Lobby handlers
+  onLobbyCreated: (message: LobbyCreatedMessage) => void
+  onLobbyUpdate: (message: LobbyUpdateMessage) => void
+  // Tournament handlers
+  onTournamentStarted: (message: TournamentStartedMessage) => void
+  onTournamentMatchStarting: (message: TournamentMatchStartingMessage) => void
+  onTournamentBye: (message: TournamentByeMessage) => void
+  onRoundComplete: (message: RoundCompleteMessage) => void
+  onTournamentComplete: (message: TournamentCompleteMessage) => void
 }
 
 /**
@@ -44,6 +62,9 @@ export function handleServerMessage(message: ServerMessage, handlers: MessageHan
   switch (message.type) {
     case 'connected':
       handlers.onConnected(message)
+      break
+    case 'reconnected':
+      handlers.onReconnected(message)
       break
     case 'gameCreated':
       handlers.onGameCreated(message)
@@ -85,6 +106,29 @@ export function handleServerMessage(message: ServerMessage, handlers: MessageHan
     case 'deckSubmitted':
       handlers.onDeckSubmitted(message)
       break
+    // Lobby messages
+    case 'lobbyCreated':
+      handlers.onLobbyCreated(message)
+      break
+    case 'lobbyUpdate':
+      handlers.onLobbyUpdate(message)
+      break
+    // Tournament messages
+    case 'tournamentStarted':
+      handlers.onTournamentStarted(message)
+      break
+    case 'tournamentMatchStarting':
+      handlers.onTournamentMatchStarting(message)
+      break
+    case 'tournamentBye':
+      handlers.onTournamentBye(message)
+      break
+    case 'roundComplete':
+      handlers.onRoundComplete(message)
+      break
+    case 'tournamentComplete':
+      handlers.onTournamentComplete(message)
+      break
     default: {
       // TypeScript exhaustiveness check
       const _exhaustive: never = message
@@ -101,6 +145,10 @@ export function createLoggingHandlers(handlers: MessageHandlers): MessageHandler
     onConnected: (msg) => {
       console.log('[Server] Connected:', msg)
       handlers.onConnected(msg)
+    },
+    onReconnected: (msg) => {
+      console.log('[Server] Reconnected:', msg)
+      handlers.onReconnected(msg)
     },
     onGameCreated: (msg) => {
       console.log('[Server] Game created:', msg)
@@ -154,6 +202,36 @@ export function createLoggingHandlers(handlers: MessageHandlers): MessageHandler
     onDeckSubmitted: (msg) => {
       console.log('[Server] Deck submitted:', msg)
       handlers.onDeckSubmitted(msg)
+    },
+    // Lobby handlers
+    onLobbyCreated: (msg) => {
+      console.log('[Server] Lobby created:', msg)
+      handlers.onLobbyCreated(msg)
+    },
+    onLobbyUpdate: (msg) => {
+      console.log('[Server] Lobby update:', msg)
+      handlers.onLobbyUpdate(msg)
+    },
+    // Tournament handlers
+    onTournamentStarted: (msg) => {
+      console.log('[Server] Tournament started:', msg)
+      handlers.onTournamentStarted(msg)
+    },
+    onTournamentMatchStarting: (msg) => {
+      console.log('[Server] Tournament match starting:', msg)
+      handlers.onTournamentMatchStarting(msg)
+    },
+    onTournamentBye: (msg) => {
+      console.log('[Server] Tournament bye:', msg)
+      handlers.onTournamentBye(msg)
+    },
+    onRoundComplete: (msg) => {
+      console.log('[Server] Round complete:', msg)
+      handlers.onRoundComplete(msg)
+    },
+    onTournamentComplete: (msg) => {
+      console.log('[Server] Tournament complete:', msg)
+      handlers.onTournamentComplete(msg)
     },
   }
 }

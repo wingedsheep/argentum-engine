@@ -182,6 +182,27 @@ export type {
   CreateSealedGameMessage,
   JoinSealedGameMessage,
   SubmitSealedDeckMessage,
+  // Reconnect types
+  ReconnectedMessage,
+  // Lobby types
+  LobbyPlayerInfo,
+  LobbySettings,
+  LobbyCreatedMessage,
+  LobbyUpdateMessage,
+  CreateSealedLobbyMessage,
+  JoinLobbyMessage,
+  StartSealedLobbyMessage,
+  LeaveLobbyMessage,
+  UpdateLobbySettingsMessage,
+  // Tournament types
+  PlayerStandingInfo,
+  MatchResultInfo,
+  TournamentStartedMessage,
+  TournamentMatchStartingMessage,
+  TournamentByeMessage,
+  RoundCompleteMessage,
+  TournamentCompleteMessage,
+  ReadyForNextRoundMessage,
 } from './messages'
 export {
   isConnectedMessage,
@@ -211,4 +232,21 @@ export {
   isOpponentDeckSubmittedMessage,
   isWaitingForOpponentMessage,
   isDeckSubmittedMessage,
+  // Reconnect
+  isReconnectedMessage,
+  // Lobby message factories & guards
+  createCreateSealedLobbyMessage,
+  createJoinLobbyMessage,
+  createStartSealedLobbyMessage,
+  createLeaveLobbyMessage,
+  createUpdateLobbySettingsMessage,
+  isLobbyCreatedMessage,
+  isLobbyUpdateMessage,
+  // Tournament message factories & guards
+  createReadyForNextRoundMessage,
+  isTournamentStartedMessage,
+  isTournamentMatchStartingMessage,
+  isTournamentByeMessage,
+  isRoundCompleteMessage,
+  isTournamentCompleteMessage,
 } from './messages'

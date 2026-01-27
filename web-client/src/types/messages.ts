@@ -14,6 +14,7 @@ import { ClientGameState } from './gameState'
  */
 export type ServerMessage =
   | ConnectedMessage
+  | ReconnectedMessage
   | GameCreatedMessage
   | GameStartedMessage
   | StateUpdateMessage
@@ -28,6 +29,15 @@ export type ServerMessage =
   | OpponentDeckSubmittedMessage
   | WaitingForOpponentMessage
   | DeckSubmittedMessage
+  // Lobby Messages
+  | LobbyCreatedMessage
+  | LobbyUpdateMessage
+  // Tournament Messages
+  | TournamentStartedMessage
+  | TournamentMatchStartingMessage
+  | TournamentByeMessage
+  | RoundCompleteMessage
+  | TournamentCompleteMessage
 
 /**
  * Connection confirmed with assigned player ID.
@@ -35,6 +45,18 @@ export type ServerMessage =
 export interface ConnectedMessage {
   readonly type: 'connected'
   readonly playerId: string
+  readonly token: string
+}
+
+/**
+ * Reconnection confirmed — previous session restored.
+ */
+export interface ReconnectedMessage {
+  readonly type: 'reconnected'
+  readonly playerId: string
+  readonly token: string
+  readonly context: 'lobby' | 'deckBuilding' | 'game' | 'tournament' | null
+  readonly contextId: string | null
 }
 
 /**
@@ -358,6 +380,96 @@ export interface DeckSubmittedMessage {
 }
 
 // ============================================================================
+// Lobby Server Messages
+// ============================================================================
+
+export interface LobbyPlayerInfo {
+  readonly playerId: string
+  readonly playerName: string
+  readonly isHost: boolean
+  readonly isConnected: boolean
+  readonly deckSubmitted: boolean
+}
+
+export interface LobbySettings {
+  readonly setCode: string
+  readonly setName: string
+  readonly boosterCount: number
+  readonly maxPlayers: number
+}
+
+export interface LobbyCreatedMessage {
+  readonly type: 'lobbyCreated'
+  readonly lobbyId: string
+}
+
+export interface LobbyUpdateMessage {
+  readonly type: 'lobbyUpdate'
+  readonly lobbyId: string
+  readonly state: string
+  readonly players: readonly LobbyPlayerInfo[]
+  readonly settings: LobbySettings
+  readonly isHost: boolean
+}
+
+// ============================================================================
+// Tournament Server Messages
+// ============================================================================
+
+export interface PlayerStandingInfo {
+  readonly playerId: string
+  readonly playerName: string
+  readonly wins: number
+  readonly losses: number
+  readonly draws: number
+  readonly points: number
+  readonly isConnected: boolean
+}
+
+export interface MatchResultInfo {
+  readonly player1Name: string
+  readonly player2Name: string
+  readonly winnerId: string | null
+  readonly isDraw: boolean
+  readonly isBye: boolean
+}
+
+export interface TournamentStartedMessage {
+  readonly type: 'tournamentStarted'
+  readonly lobbyId: string
+  readonly totalRounds: number
+  readonly standings: readonly PlayerStandingInfo[]
+}
+
+export interface TournamentMatchStartingMessage {
+  readonly type: 'tournamentMatchStarting'
+  readonly lobbyId: string
+  readonly round: number
+  readonly gameSessionId: string
+  readonly opponentName: string
+}
+
+export interface TournamentByeMessage {
+  readonly type: 'tournamentBye'
+  readonly lobbyId: string
+  readonly round: number
+}
+
+export interface RoundCompleteMessage {
+  readonly type: 'roundComplete'
+  readonly lobbyId: string
+  readonly round: number
+  readonly results: readonly MatchResultInfo[]
+  readonly standings: readonly PlayerStandingInfo[]
+}
+
+export interface TournamentCompleteMessage {
+  readonly type: 'tournamentComplete'
+  readonly lobbyId: string
+  readonly finalStandings: readonly PlayerStandingInfo[]
+}
+
+// ============================================================================
 // Client Messages (sent to server)
 // ============================================================================
 
@@ -378,6 +490,14 @@ export type ClientMessage =
   | CreateSealedGameMessage
   | JoinSealedGameMessage
   | SubmitSealedDeckMessage
+  // Lobby Messages
+  | CreateSealedLobbyMessage
+  | JoinLobbyMessage
+  | StartSealedLobbyMessage
+  | LeaveLobbyMessage
+  | UpdateLobbySettingsMessage
+  // Tournament Messages
+  | ReadyForNextRoundMessage
 
 /**
  * Connect to the server with a player name.
@@ -385,6 +505,7 @@ export type ClientMessage =
 export interface ConnectMessage {
   readonly type: 'connect'
   readonly playerName: string
+  readonly token?: string
 }
 
 /**
@@ -534,8 +655,8 @@ export function isDeckSubmittedMessage(msg: ServerMessage): msg is DeckSubmitted
 // Message Factories
 // ============================================================================
 
-export function createConnectMessage(playerName: string): ConnectMessage {
-  return { type: 'connect', playerName }
+export function createConnectMessage(playerName: string, token?: string): ConnectMessage {
+  return token ? { type: 'connect', playerName, token } : { type: 'connect', playerName }
 }
 
 export function createCreateGameMessage(deckList: Record<string, number>): CreateGameMessage {
@@ -577,4 +698,104 @@ export function createJoinSealedGameMessage(sessionId: string): JoinSealedGameMe
 
 export function createSubmitSealedDeckMessage(deckList: Record<string, number>): SubmitSealedDeckMessage {
   return { type: 'submitSealedDeck', deckList }
+}
+
+// ============================================================================
+// Lobby Client Messages
+// ============================================================================
+
+export interface CreateSealedLobbyMessage {
+  readonly type: 'createSealedLobby'
+  readonly setCode: string
+  readonly boosterCount: number
+  readonly maxPlayers: number
+}
+
+export interface JoinLobbyMessage {
+  readonly type: 'joinLobby'
+  readonly lobbyId: string
+}
+
+export interface StartSealedLobbyMessage {
+  readonly type: 'startSealedLobby'
+}
+
+export interface LeaveLobbyMessage {
+  readonly type: 'leaveLobby'
+}
+
+export interface UpdateLobbySettingsMessage {
+  readonly type: 'updateLobbySettings'
+  readonly boosterCount?: number
+  readonly maxPlayers?: number
+}
+
+// Tournament Client Messages
+
+export interface ReadyForNextRoundMessage {
+  readonly type: 'readyForNextRound'
+}
+
+// Lobby Message Factories
+export function createCreateSealedLobbyMessage(
+  setCode: string,
+  boosterCount: number = 6,
+  maxPlayers: number = 8
+): CreateSealedLobbyMessage {
+  return { type: 'createSealedLobby', setCode, boosterCount, maxPlayers }
+}
+
+export function createJoinLobbyMessage(lobbyId: string): JoinLobbyMessage {
+  return { type: 'joinLobby', lobbyId }
+}
+
+export function createStartSealedLobbyMessage(): StartSealedLobbyMessage {
+  return { type: 'startSealedLobby' }
+}
+
+export function createLeaveLobbyMessage(): LeaveLobbyMessage {
+  return { type: 'leaveLobby' }
+}
+
+export function createUpdateLobbySettingsMessage(
+  settings: { boosterCount?: number; maxPlayers?: number }
+): UpdateLobbySettingsMessage {
+  return { type: 'updateLobbySettings', ...settings }
+}
+
+export function createReadyForNextRoundMessage(): ReadyForNextRoundMessage {
+  return { type: 'readyForNextRound' }
+}
+
+// Lobby/Tournament Type Guards
+export function isReconnectedMessage(msg: ServerMessage): msg is ReconnectedMessage {
+  return msg.type === 'reconnected'
+}
+
+export function isLobbyCreatedMessage(msg: ServerMessage): msg is LobbyCreatedMessage {
+  return msg.type === 'lobbyCreated'
+}
+
+export function isLobbyUpdateMessage(msg: ServerMessage): msg is LobbyUpdateMessage {
+  return msg.type === 'lobbyUpdate'
+}
+
+export function isTournamentStartedMessage(msg: ServerMessage): msg is TournamentStartedMessage {
+  return msg.type === 'tournamentStarted'
+}
+
+export function isTournamentMatchStartingMessage(msg: ServerMessage): msg is TournamentMatchStartingMessage {
+  return msg.type === 'tournamentMatchStarting'
+}
+
+export function isTournamentByeMessage(msg: ServerMessage): msg is TournamentByeMessage {
+  return msg.type === 'tournamentBye'
+}
+
+export function isRoundCompleteMessage(msg: ServerMessage): msg is RoundCompleteMessage {
+  return msg.type === 'roundComplete'
+}
+
+export function isTournamentCompleteMessage(msg: ServerMessage): msg is TournamentCompleteMessage {
+  return msg.type === 'tournamentComplete'
 }

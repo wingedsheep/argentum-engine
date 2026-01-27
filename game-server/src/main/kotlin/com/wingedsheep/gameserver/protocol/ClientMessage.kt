@@ -15,7 +15,7 @@ sealed interface ClientMessage {
      */
     @Serializable
     @SerialName("connect")
-    data class Connect(val playerName: String) : ClientMessage
+    data class Connect(val playerName: String, val token: String? = null) : ClientMessage
 
     /**
      * Create a new game with a deck list.
@@ -96,4 +96,58 @@ sealed interface ClientMessage {
     @Serializable
     @SerialName("submitSealedDeck")
     data class SubmitSealedDeck(val deckList: Map<String, Int>) : ClientMessage
+
+    // =========================================================================
+    // Sealed Lobby Messages
+    // =========================================================================
+
+    /**
+     * Create a new sealed lobby for up to 8 players.
+     */
+    @Serializable
+    @SerialName("createSealedLobby")
+    data class CreateSealedLobby(
+        val setCode: String,
+        val boosterCount: Int = 6,
+        val maxPlayers: Int = 8
+    ) : ClientMessage
+
+    /**
+     * Join an existing sealed lobby.
+     */
+    @Serializable
+    @SerialName("joinLobby")
+    data class JoinLobby(val lobbyId: String) : ClientMessage
+
+    /**
+     * Host starts the sealed lobby (generates pools, begins deck building).
+     */
+    @Serializable
+    @SerialName("startSealedLobby")
+    data object StartSealedLobby : ClientMessage
+
+    /**
+     * Leave the current lobby.
+     */
+    @Serializable
+    @SerialName("leaveLobby")
+    data object LeaveLobby : ClientMessage
+
+    /**
+     * Update lobby settings (host only).
+     */
+    @Serializable
+    @SerialName("updateLobbySettings")
+    data class UpdateLobbySettings(val boosterCount: Int? = null, val maxPlayers: Int? = null) : ClientMessage
+
+    // =========================================================================
+    // Tournament Messages
+    // =========================================================================
+
+    /**
+     * Player signals readiness for the next tournament round.
+     */
+    @Serializable
+    @SerialName("readyForNextRound")
+    data object ReadyForNextRound : ClientMessage
 }

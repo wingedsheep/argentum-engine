@@ -11,6 +11,12 @@ import type {
   ErrorCode,
   PendingDecision,
 } from '../types'
+import type {
+  LobbyPlayerInfo,
+  LobbySettings,
+  PlayerStandingInfo,
+  MatchResultInfo,
+} from '../types'
 import {
   entityId,
   createConnectMessage,
@@ -24,6 +30,12 @@ import {
   createCreateSealedGameMessage,
   createJoinSealedGameMessage,
   createSubmitSealedDeckMessage,
+  createCreateSealedLobbyMessage,
+  createJoinLobbyMessage,
+  createStartSealedLobbyMessage,
+  createLeaveLobbyMessage,
+  createUpdateLobbySettingsMessage,
+  createReadyForNextRoundMessage,
   SealedCardInfo,
 } from '../types'
 import { GameWebSocket, getWebSocketUrl, type ConnectionStatus } from '../network/websocket'
@@ -123,6 +135,33 @@ export interface DeckBuildingState {
 }
 
 /**
+ * Lobby state for sealed lobbies.
+ */
+export interface LobbyState {
+  lobbyId: string
+  state: string
+  players: readonly LobbyPlayerInfo[]
+  settings: LobbySettings
+  isHost: boolean
+}
+
+/**
+ * Tournament state.
+ */
+export interface TournamentState {
+  lobbyId: string
+  totalRounds: number
+  currentRound: number
+  standings: readonly PlayerStandingInfo[]
+  lastRoundResults: readonly MatchResultInfo[] | null
+  currentMatchGameSessionId: string | null
+  currentMatchOpponentName: string | null
+  isBye: boolean
+  isComplete: boolean
+  finalStandings: readonly PlayerStandingInfo[] | null
+}
+
+/**
  * Main game store interface.
  */
 export interface GameStore {
@@ -162,6 +201,12 @@ export interface GameStore {
   // Deck building state (sealed draft)
   deckBuildingState: DeckBuildingState | null
 
+  // Lobby state
+  lobbyState: LobbyState | null
+
+  // Tournament state
+  tournamentState: TournamentState | null
+
   // Actions
   connect: (playerName: string) => void
   disconnect: () => void
@@ -184,6 +229,16 @@ export interface GameStore {
   removeCardFromDeck: (cardName: string) => void
   setLandCount: (landType: string, count: number) => void
   submitSealedDeck: () => void
+
+  // Lobby actions
+  createSealedLobby: (setCode: string, boosterCount?: number, maxPlayers?: number) => void
+  joinLobby: (lobbyId: string) => void
+  startSealedLobby: () => void
+  leaveLobby: () => void
+  updateLobbySettings: (settings: { boosterCount?: number; maxPlayers?: number }) => void
+
+  // Tournament actions
+  readyForNextRound: () => void
 
   // UI actions
   selectCard: (cardId: EntityId | null) => void
@@ -210,6 +265,7 @@ export interface GameStore {
   updateXValue: (x: number) => void
   cancelXSelection: () => void
   confirmXSelection: () => void
+  returnToMenu: () => void
   clearError: () => void
   consumeEvent: () => ClientEvent | undefined
   showRevealedHand: (cardIds: readonly EntityId[]) => void
@@ -311,10 +367,22 @@ export const useGameStore = create<GameStore>()(
     // Message handlers that update the store
     const handlers: MessageHandlers = {
       onConnected: (msg) => {
+        // Store token for reconnection
+        sessionStorage.setItem('argentum-token', msg.token)
         set({
           connectionStatus: 'connected',
           playerId: entityId(msg.playerId),
         })
+      },
+
+      onReconnected: (msg) => {
+        sessionStorage.setItem('argentum-token', msg.token)
+        set({
+          connectionStatus: 'connected',
+          playerId: entityId(msg.playerId),
+        })
+        // Navigation based on context is handled by the router in App.tsx
+        // The server will re-send appropriate state messages after reconnection
       },
 
       onGameCreated: (msg) => {
@@ -480,6 +548,119 @@ export const useGameStore = create<GameStore>()(
             : null,
         }))
       },
+
+      // Lobby handlers
+      onLobbyCreated: (msg) => {
+        set({
+          lobbyState: {
+            lobbyId: msg.lobbyId,
+            state: 'WAITING_FOR_PLAYERS',
+            players: [],
+            settings: { setCode: '', setName: '', boosterCount: 6, maxPlayers: 8 },
+            isHost: true,
+          },
+        })
+      },
+
+      onLobbyUpdate: (msg) => {
+        set({
+          lobbyState: {
+            lobbyId: msg.lobbyId,
+            state: msg.state,
+            players: msg.players,
+            settings: msg.settings,
+            isHost: msg.isHost,
+          },
+        })
+      },
+
+      // Tournament handlers
+      onTournamentStarted: (msg) => {
+        set({
+          tournamentState: {
+            lobbyId: msg.lobbyId,
+            totalRounds: msg.totalRounds,
+            currentRound: 0,
+            standings: msg.standings,
+            lastRoundResults: null,
+            currentMatchGameSessionId: null,
+            currentMatchOpponentName: null,
+            isBye: false,
+            isComplete: false,
+            finalStandings: null,
+          },
+          // Clear deck building state since tournament is starting
+          deckBuildingState: null,
+        })
+      },
+
+      onTournamentMatchStarting: (msg) => {
+        set((state) => ({
+          tournamentState: state.tournamentState
+            ? {
+                ...state.tournamentState,
+                currentRound: msg.round,
+                currentMatchGameSessionId: msg.gameSessionId,
+                currentMatchOpponentName: msg.opponentName,
+                isBye: false,
+              }
+            : null,
+          sessionId: msg.gameSessionId,
+          opponentName: msg.opponentName,
+        }))
+      },
+
+      onTournamentBye: (msg) => {
+        set((state) => ({
+          tournamentState: state.tournamentState
+            ? {
+                ...state.tournamentState,
+                currentRound: msg.round,
+                currentMatchGameSessionId: null,
+                currentMatchOpponentName: null,
+                isBye: true,
+              }
+            : null,
+        }))
+      },
+
+      onRoundComplete: (msg) => {
+        set((state) => ({
+          tournamentState: state.tournamentState
+            ? {
+                ...state.tournamentState,
+                currentRound: msg.round,
+                standings: msg.standings,
+                lastRoundResults: msg.results,
+                currentMatchGameSessionId: null,
+                currentMatchOpponentName: null,
+                isBye: false,
+              }
+            : null,
+          // Clear game state for between rounds
+          gameState: null,
+          gameOverState: null,
+          mulliganState: null,
+          legalActions: [],
+        }))
+      },
+
+      onTournamentComplete: (msg) => {
+        set((state) => ({
+          tournamentState: state.tournamentState
+            ? {
+                ...state.tournamentState,
+                isComplete: true,
+                finalStandings: msg.finalStandings,
+                standings: msg.finalStandings,
+                currentMatchGameSessionId: null,
+                currentMatchOpponentName: null,
+              }
+            : null,
+          gameState: null,
+          gameOverState: null,
+        }))
+      },
     }
 
     // Wrap handlers with logging in development
@@ -509,6 +690,8 @@ export const useGameStore = create<GameStore>()(
       gameOverState: null,
       lastError: null,
       deckBuildingState: null,
+      lobbyState: null,
+      tournamentState: null,
 
       // Connection actions
       connect: (playerName) => {
@@ -539,12 +722,13 @@ export const useGameStore = create<GameStore>()(
 
         ws.connect()
 
-        // Send connect message once connected
+        // Send connect message once connected (include token for reconnection)
         const unsubscribe = useGameStore.subscribe(
           (state) => state.connectionStatus,
           (status) => {
             if (status === 'connected' && ws) {
-              ws.send(createConnectMessage(playerName))
+              const token = sessionStorage.getItem('argentum-token') ?? undefined
+              ws.send(createConnectMessage(playerName, token))
               unsubscribe()
             }
           }
@@ -554,6 +738,7 @@ export const useGameStore = create<GameStore>()(
       disconnect: () => {
         ws?.disconnect()
         ws = null
+        sessionStorage.removeItem('argentum-token')
         set({
           connectionStatus: 'disconnected',
           playerId: null,
@@ -565,6 +750,8 @@ export const useGameStore = create<GameStore>()(
           mulliganState: null,
           gameOverState: null,
           deckBuildingState: null,
+          lobbyState: null,
+          tournamentState: null,
         })
       },
 
@@ -756,6 +943,33 @@ export const useGameStore = create<GameStore>()(
         }
 
         ws?.send(createSubmitSealedDeckMessage(deckList))
+      },
+
+      // Lobby actions
+      createSealedLobby: (setCode, boosterCount = 6, maxPlayers = 8) => {
+        ws?.send(createCreateSealedLobbyMessage(setCode, boosterCount, maxPlayers))
+      },
+
+      joinLobby: (lobbyId) => {
+        ws?.send(createJoinLobbyMessage(lobbyId))
+      },
+
+      startSealedLobby: () => {
+        ws?.send(createStartSealedLobbyMessage())
+      },
+
+      leaveLobby: () => {
+        ws?.send(createLeaveLobbyMessage())
+        set({ lobbyState: null })
+      },
+
+      updateLobbySettings: (settings) => {
+        ws?.send(createUpdateLobbySettingsMessage(settings))
+      },
+
+      // Tournament actions
+      readyForNextRound: () => {
+        ws?.send(createReadyForNextRoundMessage())
       },
 
       // UI actions
@@ -1042,6 +1256,31 @@ export const useGameStore = create<GameStore>()(
         }
 
         set({ xSelectionState: null })
+      },
+
+      returnToMenu: () => {
+        set({
+          sessionId: null,
+          opponentName: null,
+          gameState: null,
+          legalActions: [],
+          pendingDecision: null,
+          mulliganState: null,
+          selectedCardId: null,
+          targetingState: null,
+          combatState: null,
+          xSelectionState: null,
+          hoveredCardId: null,
+          draggingBlockerId: null,
+          draggingCardId: null,
+          revealedHandCardIds: null,
+          pendingEvents: [],
+          gameOverState: null,
+          lastError: null,
+          deckBuildingState: null,
+          lobbyState: null,
+          tournamentState: null,
+        })
       },
 
       clearError: () => {

@@ -34,11 +34,12 @@ export default function App() {
   )
 
   useEffect(() => {
-    // Auto-connect on mount (in real app, would have login flow)
-    // Use ref to prevent multiple connection attempts from Strict Mode
-    if (connectionStatus === 'disconnected' && !hasConnectedRef.current) {
+    // Only auto-connect if we already have a stored player name (returning user)
+    // Otherwise, GameUI will show the name entry screen first
+    const storedName = sessionStorage.getItem('argentum-player-name')
+    if (storedName && connectionStatus === 'disconnected' && !hasConnectedRef.current) {
       hasConnectedRef.current = true
-      connect('Player')
+      connect(storedName)
     }
   }, [connectionStatus, connect])
 
@@ -165,6 +166,7 @@ function GameOverlay() {
   const gameOverState = useGameStore((state) => state.gameOverState)
   const lastError = useGameStore((state) => state.lastError)
   const clearError = useGameStore((state) => state.clearError)
+  const returnToMenu = useGameStore((state) => state.returnToMenu)
 
   if (gameOverState) {
     return (
@@ -177,10 +179,10 @@ function GameOverlay() {
         </h1>
         <p style={overlayStyles.subtitle}>{gameOverState.reason}</p>
         <button
-          onClick={() => window.location.reload()}
+          onClick={returnToMenu}
           style={overlayStyles.button}
         >
-          Play Again
+          Return to Menu
         </button>
       </div>
     )

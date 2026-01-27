@@ -18,7 +18,21 @@ sealed interface ServerMessage {
      */
     @Serializable
     @SerialName("connected")
-    data class Connected(val playerId: String) : ServerMessage
+    data class Connected(val playerId: String, val token: String) : ServerMessage
+
+    /**
+     * Reconnection confirmed — client's previous session has been restored.
+     */
+    @Serializable
+    @SerialName("reconnected")
+    data class Reconnected(
+        val playerId: String,
+        val token: String,
+        /** Current context: "lobby", "deckBuilding", "game", "tournament", or null */
+        val context: String? = null,
+        /** Session/lobby ID the player is currently in */
+        val contextId: String? = null
+    ) : ServerMessage
 
     /**
      * Game created successfully, waiting for opponent.
@@ -181,6 +195,138 @@ sealed interface ServerMessage {
     @Serializable
     @SerialName("deckSubmitted")
     data class DeckSubmitted(val deckSize: Int) : ServerMessage
+
+    // =========================================================================
+    // Sealed Lobby Messages
+    // =========================================================================
+
+    /**
+     * Info about a player in a lobby.
+     */
+    @Serializable
+    data class LobbyPlayerInfo(
+        val playerId: String,
+        val playerName: String,
+        val isHost: Boolean,
+        val isConnected: Boolean,
+        val deckSubmitted: Boolean = false
+    )
+
+    /**
+     * Lobby settings.
+     */
+    @Serializable
+    data class LobbySettings(
+        val setCode: String,
+        val setName: String,
+        val boosterCount: Int,
+        val maxPlayers: Int
+    )
+
+    /**
+     * Sealed lobby created successfully.
+     */
+    @Serializable
+    @SerialName("lobbyCreated")
+    data class LobbyCreated(val lobbyId: String) : ServerMessage
+
+    /**
+     * Lobby state update — sent whenever lobby state changes.
+     */
+    @Serializable
+    @SerialName("lobbyUpdate")
+    data class LobbyUpdate(
+        val lobbyId: String,
+        val state: String,
+        val players: List<LobbyPlayerInfo>,
+        val settings: LobbySettings,
+        val isHost: Boolean
+    ) : ServerMessage
+
+    // =========================================================================
+    // Tournament Messages
+    // =========================================================================
+
+    /**
+     * Player standing in the tournament.
+     */
+    @Serializable
+    data class PlayerStandingInfo(
+        val playerId: String,
+        val playerName: String,
+        val wins: Int,
+        val losses: Int,
+        val draws: Int,
+        val points: Int,
+        val isConnected: Boolean = true
+    )
+
+    /**
+     * Match result info.
+     */
+    @Serializable
+    data class MatchResultInfo(
+        val player1Name: String,
+        val player2Name: String,
+        val winnerId: String?,
+        val isDraw: Boolean = false,
+        val isBye: Boolean = false
+    )
+
+    /**
+     * Tournament has started.
+     */
+    @Serializable
+    @SerialName("tournamentStarted")
+    data class TournamentStarted(
+        val lobbyId: String,
+        val totalRounds: Int,
+        val standings: List<PlayerStandingInfo>
+    ) : ServerMessage
+
+    /**
+     * A tournament match is starting for this player.
+     */
+    @Serializable
+    @SerialName("tournamentMatchStarting")
+    data class TournamentMatchStarting(
+        val lobbyId: String,
+        val round: Int,
+        val gameSessionId: String,
+        val opponentName: String
+    ) : ServerMessage
+
+    /**
+     * A tournament match is a bye for this player.
+     */
+    @Serializable
+    @SerialName("tournamentBye")
+    data class TournamentBye(
+        val lobbyId: String,
+        val round: Int
+    ) : ServerMessage
+
+    /**
+     * A tournament round has completed.
+     */
+    @Serializable
+    @SerialName("roundComplete")
+    data class RoundComplete(
+        val lobbyId: String,
+        val round: Int,
+        val results: List<MatchResultInfo>,
+        val standings: List<PlayerStandingInfo>
+    ) : ServerMessage
+
+    /**
+     * Tournament is complete with final standings.
+     */
+    @Serializable
+    @SerialName("tournamentComplete")
+    data class TournamentComplete(
+        val lobbyId: String,
+        val finalStandings: List<PlayerStandingInfo>
+    ) : ServerMessage
 }
 
 /**
