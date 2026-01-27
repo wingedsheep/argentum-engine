@@ -11,6 +11,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
+import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
@@ -29,6 +30,8 @@ import com.wingedsheep.sdk.model.EntityId
  * SBAs are checked repeatedly until none apply.
  */
 class StateBasedActionChecker {
+
+    private val stateProjector = StateProjector()
 
     /**
      * Check and apply all state-based actions until none apply.
@@ -173,16 +176,7 @@ class StateBasedActionChecker {
 
             if (!cardComponent.typeLine.isCreature) continue
 
-            // Get base toughness (TODO: Use StateProjector for modified toughness)
-            val baseToughness = cardComponent.baseStats?.baseToughness ?: 0
-
-            // Add counter modifications
-            val counters = container.get<CountersComponent>()
-            val plusCounters = counters?.getCount(CounterType.PLUS_ONE_PLUS_ONE) ?: 0
-            val minusCounters = counters?.getCount(CounterType.MINUS_ONE_MINUS_ONE) ?: 0
-            val netCounters = plusCounters - minusCounters
-
-            val effectiveToughness = baseToughness + netCounters
+            val effectiveToughness = stateProjector.getProjectedToughness(state, entityId)
 
             if (effectiveToughness <= 0) {
                 val result = putCreatureInGraveyard(newState, entityId, cardComponent, "zero toughness")
@@ -208,16 +202,7 @@ class StateBasedActionChecker {
 
             if (!cardComponent.typeLine.isCreature) continue
 
-            // Get base toughness (TODO: Use StateProjector for modified toughness)
-            val baseToughness = cardComponent.baseStats?.baseToughness ?: 0
-
-            // Add counter modifications
-            val counters = container.get<CountersComponent>()
-            val plusCounters = counters?.getCount(CounterType.PLUS_ONE_PLUS_ONE) ?: 0
-            val minusCounters = counters?.getCount(CounterType.MINUS_ONE_MINUS_ONE) ?: 0
-            val netCounters = plusCounters - minusCounters
-
-            val effectiveToughness = baseToughness + netCounters
+            val effectiveToughness = stateProjector.getProjectedToughness(state, entityId)
 
             if (damageComponent.amount >= effectiveToughness) {
                 val result = putCreatureInGraveyard(newState, entityId, cardComponent, "lethal damage")
