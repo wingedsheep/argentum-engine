@@ -831,6 +831,8 @@ function GameCard({
   const draggingCardId = useGameStore((state) => state.draggingCardId)
   const startTargeting = useGameStore((state) => state.startTargeting)
   const startXSelection = useGameStore((state) => state.startXSelection)
+  const pendingDecision = useGameStore((state) => state.pendingDecision)
+  const submitTargetsDecision = useGameStore((state) => state.submitTargetsDecision)
   const responsive = useResponsiveContext()
   const { handleCardClick } = useInteraction()
   const dragStartPos = useRef<{ x: number; y: number } | null>(null)
@@ -853,6 +855,11 @@ function GameCard({
   const isSelected = selectedCardId === card.id
   const isInTargetingMode = targetingState !== null
   const isValidTarget = targetingState?.validTargets.includes(card.id) ?? false
+
+  // Check if this card is a valid target in a pending ChooseTargetsDecision
+  const isChooseTargetsDecision = pendingDecision?.type === 'ChooseTargetsDecision'
+  const decisionLegalTargets = isChooseTargetsDecision ? (pendingDecision.legalTargets[0] ?? []) : []
+  const isValidDecisionTarget = decisionLegalTargets.includes(card.id)
 
   // Combat mode checks
   const isInAttackerMode = combatState?.mode === 'declareAttackers'
@@ -1015,6 +1022,12 @@ function GameCard({
       return
     }
 
+    // Handle pending ChooseTargetsDecision clicks
+    if (isChooseTargetsDecision && isValidDecisionTarget) {
+      submitTargetsDecision({ 0: [card.id] })
+      return
+    }
+
     // Handle attacker mode clicks
     if (isInAttackerMode) {
       if (isValidAttacker) {
@@ -1068,7 +1081,7 @@ function GameCard({
   } else if (isSelected && !isInCombatMode) {
     borderStyle = '3px solid #ffff00'
     boxShadow = '0 8px 20px rgba(255, 255, 0, 0.4)'
-  } else if (isValidTarget) {
+  } else if (isValidTarget || isValidDecisionTarget) {
     borderStyle = '3px solid #ff4444'
     boxShadow = '0 4px 15px rgba(255, 68, 68, 0.6)'
   } else if (isValidAttacker || isValidBlocker) {
@@ -1082,7 +1095,7 @@ function GameCard({
   }
 
   // Determine cursor
-  const canInteract = interactive || isValidTarget || isValidAttacker || isValidBlocker || isAttackingInBlockerMode || canDragToPlay
+  const canInteract = interactive || isValidTarget || isValidDecisionTarget || isValidAttacker || isValidBlocker || isAttackingInBlockerMode || canDragToPlay
   const baseCursor = canInteract ? 'pointer' : 'default'
   const cursor = (isValidBlocker && !isSelectedAsBlocker) || canDragToPlay ? 'grab' : baseCursor
 
