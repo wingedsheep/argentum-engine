@@ -12,11 +12,11 @@ pushes them to GitHub Container Registry (GHCR), then deploys via SSH.
 2. **Traefik** must be running as a reverse proxy with:
     - An entrypoint called `websecure` (HTTPS on port 443)
     - A certificate resolver called `lets-encrypt`
-    - A Docker network called `traefik-wingedsheep`
+    - A Docker network called `traefik-proxy`
 
    If the Traefik network doesn't exist yet:
    ```bash
-   docker network create traefik-wingedsheep
+   docker network create traefik-proxy
    ```
 
 3. **SSH access** — generate a deploy key pair (on your local machine):
@@ -66,7 +66,7 @@ before nginx is reached.
 ## First deploy
 
 1. Configure all GitHub Secrets listed above.
-2. Make sure Traefik and the `traefik-wingedsheep` network exist on the server.
+2. Make sure Traefik and the `traefik-proxy` network exist on the server.
 3. Push to `main`. The workflow triggers automatically.
 4. Check the Actions tab for build/deploy logs.
 
@@ -84,8 +84,8 @@ docker compose up -d --remove-orphans
 
 - **Images not pulling** — Make sure the GitHub package visibility is set correctly. Go to the package settings in GHCR
   and ensure your server user (or the repo) has read access.
-- **Traefik not routing** — Verify the containers are on the `traefik-wingedsheep` network:
-  `docker network inspect traefik-wingedsheep`
+- **Traefik not routing** — Verify the containers are on the `traefik-proxy` network:
+  `docker network inspect traefik-proxy`
 - **WebSocket not connecting** — Check that Traefik's entrypoint supports WebSocket upgrades (it does by default).
 - **502 Bad Gateway** — The backend container may still be starting. Spring Boot takes a few seconds to initialize.
   Check `docker compose logs backend`.
