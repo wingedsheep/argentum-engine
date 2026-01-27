@@ -183,6 +183,11 @@ object Targets {
     val NoncreatureSpell: TargetRequirement = TargetSpell(filter = SpellTargetFilter.Noncreature)
 
     /**
+     * Target creature or sorcery spell.
+     */
+    val CreatureOrSorcerySpell: TargetRequirement = TargetSpell(filter = SpellTargetFilter.CreatureOrSorcery())
+
+    /**
      * Target spell with mana value N or less.
      */
     fun SpellWithManaValueAtMost(manaValue: Int): TargetRequirement =

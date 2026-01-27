@@ -303,6 +303,20 @@ data object YouAttackedThisTurn : Condition {
 }
 
 // =============================================================================
+// Stack Conditions
+// =============================================================================
+
+/**
+ * Condition: "If an opponent has cast a spell (it's on the stack)"
+ * Used for Portal counterspells like Mystic Denial that can only be cast
+ * in response to an opponent's spell.
+ */
+@Serializable
+data object OpponentSpellOnStack : Condition {
+    override val description: String = "if an opponent has cast a spell"
+}
+
+// =============================================================================
 // Composite Conditions
 // =============================================================================
 

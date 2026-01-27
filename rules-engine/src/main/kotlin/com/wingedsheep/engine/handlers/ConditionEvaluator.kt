@@ -68,6 +68,9 @@ class ConditionEvaluator {
             is YouWereAttackedThisStep -> evaluateYouWereAttackedThisStep(state, context)
             is YouWereDealtCombatDamageThisTurn -> evaluateYouWereDealtCombatDamageThisTurn(state, context)
 
+            // Stack conditions
+            is OpponentSpellOnStack -> evaluateOpponentSpellOnStack(state, context)
+
             // Composite conditions
             is AllConditions -> condition.conditions.all { evaluate(state, it, context) }
             is AnyCondition -> condition.conditions.any { evaluate(state, it, context) }
@@ -274,6 +277,14 @@ class ConditionEvaluator {
         // TODO: Track if player was dealt combat damage this turn
         // For now, return false as we don't have this tracking yet
         return false
+    }
+
+    private fun evaluateOpponentSpellOnStack(state: GameState, context: EffectContext): Boolean {
+        val opponentId = context.opponentId ?: return false
+        return state.stack.any { entityId ->
+            val container = state.getEntity(entityId) ?: return@any false
+            container.get<com.wingedsheep.engine.state.components.stack.SpellOnStackComponent>()?.casterId == opponentId
+        }
     }
 
     // Helper functions

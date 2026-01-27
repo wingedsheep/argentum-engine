@@ -1,14 +1,17 @@
 package com.wingedsheep.mtg.sets.definitions.portal.cards
 
+import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CounterSpellWithFilterEffect
+import com.wingedsheep.sdk.scripting.OpponentSpellOnStack
 import com.wingedsheep.sdk.scripting.SpellFilter
 
 /**
  * Mystic Denial
  * {1}{U}{U}
  * Instant
+ * Cast this spell only after an opponent casts a creature or sorcery spell.
  * Counter target creature or sorcery spell.
  */
 val MysticDenial = card("Mystic Denial") {
@@ -16,6 +19,8 @@ val MysticDenial = card("Mystic Denial") {
     typeLine = "Instant"
 
     spell {
+        castOnlyIf(OpponentSpellOnStack)
+        target = Targets.CreatureOrSorcerySpell
         effect = CounterSpellWithFilterEffect(SpellFilter.CreatureOrSorcery())
     }
 

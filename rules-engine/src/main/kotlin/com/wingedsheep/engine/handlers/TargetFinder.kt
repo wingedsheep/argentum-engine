@@ -358,6 +358,7 @@ class TargetFinder(
                 is SpellTargetFilter.WithManaValue -> cardComponent.manaValue == filter.manaValue
                 is SpellTargetFilter.WithManaValueAtMost -> cardComponent.manaValue <= filter.manaValue
                 is SpellTargetFilter.WithManaValueAtLeast -> cardComponent.manaValue >= filter.manaValue
+                is SpellTargetFilter.CreatureOrSorcery -> cardComponent.typeLine.isCreature || cardComponent.typeLine.isSorcery
             }
         }
     }

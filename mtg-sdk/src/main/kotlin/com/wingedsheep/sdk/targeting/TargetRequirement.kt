@@ -450,6 +450,11 @@ sealed interface SpellTargetFilter {
         override val description: String = "sorcery"
     }
 
+    @Serializable
+    data class CreatureOrSorcery(val dummy: Unit = Unit) : SpellTargetFilter {
+        override val description: String = "creature or sorcery"
+    }
+
     /**
      * Target spell with a specific mana value.
      * "spell with mana value 2"
