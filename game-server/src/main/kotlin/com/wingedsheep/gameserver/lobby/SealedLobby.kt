@@ -40,7 +40,8 @@ class SealedLobby(
     val setCode: String,
     val setName: String,
     var boosterCount: Int = 6,
-    var maxPlayers: Int = 8
+    var maxPlayers: Int = 8,
+    var gamesPerMatch: Int = 1
 ) {
     private val boosterGenerator = BoosterGenerator()
 
@@ -195,7 +196,8 @@ class SealedLobby(
                 setCode = setCode,
                 setName = setName,
                 boosterCount = boosterCount,
-                maxPlayers = maxPlayers
+                maxPlayers = maxPlayers,
+                gamesPerMatch = gamesPerMatch
             ),
             isHost = isHost(forPlayerId)
         )

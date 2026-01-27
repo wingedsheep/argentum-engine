@@ -428,6 +428,7 @@ function LobbyOverlay({
           </h1>
           <p style={{ color: '#555', fontSize: responsive.fontSize.small, margin: 0 }}>
             {lobbyState.settings.boosterCount} boosters per player
+            {(lobbyState.settings.gamesPerMatch ?? 1) > 1 && ` · ${lobbyState.settings.gamesPerMatch} games per matchup`}
           </p>
         </div>
 
@@ -475,34 +476,70 @@ function LobbyOverlay({
         {isWaiting && lobbyState.isHost && (
           <div style={{
             display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '12px 16px',
+            flexDirection: 'column',
+            gap: 0,
             backgroundColor: 'rgba(255, 255, 255, 0.03)',
             border: '1px solid rgba(255, 255, 255, 0.08)',
             borderRadius: 10,
+            overflow: 'hidden',
           }}>
-            <span style={{ color: '#888', fontSize: responsive.fontSize.small }}>
-              Boosters per player
-            </span>
-            <select
-              value={lobbyState.settings.boosterCount}
-              onChange={(e) => updateLobbySettings({ boosterCount: Number(e.target.value) })}
-              style={{
-                padding: '5px 10px',
-                fontSize: responsive.fontSize.small,
-                backgroundColor: '#1a1a24',
-                color: 'white',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: 6,
-                cursor: 'pointer',
-                outline: 'none',
-              }}
-            >
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => (
-                <option key={n} value={n}>{n}</option>
-              ))}
-            </select>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '12px 16px',
+              borderBottom: '1px solid rgba(255, 255, 255, 0.04)',
+            }}>
+              <span style={{ color: '#888', fontSize: responsive.fontSize.small }}>
+                Boosters per player
+              </span>
+              <select
+                value={lobbyState.settings.boosterCount}
+                onChange={(e) => updateLobbySettings({ boosterCount: Number(e.target.value) })}
+                style={{
+                  padding: '5px 10px',
+                  fontSize: responsive.fontSize.small,
+                  backgroundColor: '#1a1a24',
+                  color: 'white',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: 6,
+                  cursor: 'pointer',
+                  outline: 'none',
+                }}
+              >
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => (
+                  <option key={n} value={n}>{n}</option>
+                ))}
+              </select>
+            </div>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '12px 16px',
+            }}>
+              <span style={{ color: '#888', fontSize: responsive.fontSize.small }}>
+                Games per matchup
+              </span>
+              <select
+                value={lobbyState.settings.gamesPerMatch ?? 1}
+                onChange={(e) => updateLobbySettings({ gamesPerMatch: Number(e.target.value) })}
+                style={{
+                  padding: '5px 10px',
+                  fontSize: responsive.fontSize.small,
+                  backgroundColor: '#1a1a24',
+                  color: 'white',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: 6,
+                  cursor: 'pointer',
+                  outline: 'none',
+                }}
+              >
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <option key={n} value={n}>{n}</option>
+                ))}
+              </select>
+            </div>
           </div>
         )}
 

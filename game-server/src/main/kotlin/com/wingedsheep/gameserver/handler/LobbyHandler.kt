@@ -377,6 +377,7 @@ class LobbyHandler(
 
         message.boosterCount?.let { lobby.boosterCount = it.coerceIn(1, 12) }
         message.maxPlayers?.let { lobby.maxPlayers = it.coerceIn(2, 8) }
+        message.gamesPerMatch?.let { lobby.gamesPerMatch = it.coerceIn(1, 5) }
 
         broadcastLobbyUpdate(lobby)
     }
@@ -429,7 +430,7 @@ class LobbyHandler(
             ps.identity.playerId to ps.identity.playerName
         }
 
-        val tournament = TournamentManager(lobby.lobbyId, players)
+        val tournament = TournamentManager(lobby.lobbyId, players, lobby.gamesPerMatch)
         lobbyRepository.saveTournament(lobby.lobbyId, tournament)
 
         val connectedIds = lobby.players.values

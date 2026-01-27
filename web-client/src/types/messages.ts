@@ -403,6 +403,7 @@ export interface LobbySettings {
   readonly setCode: string
   readonly setName: string
   readonly boosterCount: number
+  readonly gamesPerMatch: number
   readonly maxPlayers: number
 }
 
@@ -740,6 +741,7 @@ export interface UpdateLobbySettingsMessage {
   readonly type: 'updateLobbySettings'
   readonly boosterCount?: number
   readonly maxPlayers?: number
+  readonly gamesPerMatch?: number
 }
 
 // Tournament Client Messages
@@ -770,7 +772,7 @@ export function createLeaveLobbyMessage(): LeaveLobbyMessage {
 }
 
 export function createUpdateLobbySettingsMessage(
-  settings: { boosterCount?: number; maxPlayers?: number }
+  settings: { boosterCount?: number; maxPlayers?: number; gamesPerMatch?: number }
 ): UpdateLobbySettingsMessage {
   return { type: 'updateLobbySettings', ...settings }
 }

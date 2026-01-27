@@ -236,7 +236,7 @@ export interface GameStore {
   joinLobby: (lobbyId: string) => void
   startSealedLobby: () => void
   leaveLobby: () => void
-  updateLobbySettings: (settings: { boosterCount?: number; maxPlayers?: number }) => void
+  updateLobbySettings: (settings: { boosterCount?: number; maxPlayers?: number; gamesPerMatch?: number }) => void
 
   // Tournament actions
   readyForNextRound: () => void
@@ -562,7 +562,7 @@ export const useGameStore = create<GameStore>()(
             lobbyId: msg.lobbyId,
             state: 'WAITING_FOR_PLAYERS',
             players: [],
-            settings: { setCode: '', setName: '', boosterCount: 6, maxPlayers: 8 },
+            settings: { setCode: '', setName: '', boosterCount: 6, maxPlayers: 8, gamesPerMatch: 1 },
             isHost: true,
           },
         })

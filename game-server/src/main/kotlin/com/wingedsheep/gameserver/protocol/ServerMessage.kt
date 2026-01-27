@@ -227,7 +227,8 @@ sealed interface ServerMessage {
         val setCode: String,
         val setName: String,
         val boosterCount: Int,
-        val maxPlayers: Int
+        val maxPlayers: Int,
+        val gamesPerMatch: Int = 1
     )
 
     /**

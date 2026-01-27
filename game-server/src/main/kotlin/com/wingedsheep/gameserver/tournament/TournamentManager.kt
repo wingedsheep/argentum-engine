@@ -51,7 +51,8 @@ data class TournamentRound(
  */
 class TournamentManager(
     private val lobbyId: String,
-    players: List<Pair<EntityId, String>> // (playerId, playerName)
+    players: List<Pair<EntityId, String>>, // (playerId, playerName)
+    private val gamesPerMatch: Int = 1
 ) {
     private val standings = players.associate { (id, name) ->
         id to PlayerStanding(id, name)
@@ -65,9 +66,10 @@ class TournamentManager(
 
     init {
         val n = players.size
-        totalRounds = if (n <= 1) 0 else n - 1 + (if (n % 2 != 0) 1 else 0)
+        val baseRounds = if (n <= 1) 0 else n - 1 + (if (n % 2 != 0) 1 else 0)
+        totalRounds = baseRounds * gamesPerMatch
 
-        // Generate full round-robin schedule using circle method
+        // Generate full round-robin schedule, repeated gamesPerMatch times
         generateSchedule(players.map { it.first })
     }
 
@@ -96,39 +98,48 @@ class TournamentManager(
         }
 
         val n = paddedIds.size
-        val numRounds = n - 1
+        val numBaseRounds = n - 1
 
-        for (round in 0 until numRounds) {
-            val matches = mutableListOf<TournamentMatch>()
+        // Generate the base round-robin, then repeat it gamesPerMatch times
+        var roundNumber = 0
+        for (repetition in 0 until gamesPerMatch) {
+            // Reset rotation for each repetition
+            val rotatedIds: MutableList<EntityId?> = ids.map<EntityId, EntityId?> { it }.toMutableList()
+            if (hasBye) rotatedIds.add(null)
 
-            for (i in 0 until n / 2) {
-                val p1 = paddedIds[i]
-                val p2 = paddedIds[n - 1 - i]
+            for (round in 0 until numBaseRounds) {
+                roundNumber++
+                val matches = mutableListOf<TournamentMatch>()
 
-                if (p1 != null) {
-                    matches.add(TournamentMatch(
-                        player1Id = p1,
-                        player2Id = p2
-                    ))
-                } else if (p2 != null) {
-                    // BYE is always player2 (null)
-                    matches.add(TournamentMatch(
-                        player1Id = p2,
-                        player2Id = null
-                    ))
+                for (i in 0 until n / 2) {
+                    val p1 = rotatedIds[i]
+                    val p2 = rotatedIds[n - 1 - i]
+
+                    if (p1 != null) {
+                        matches.add(TournamentMatch(
+                            player1Id = p1,
+                            player2Id = p2
+                        ))
+                    } else if (p2 != null) {
+                        // BYE is always player2 (null)
+                        matches.add(TournamentMatch(
+                            player1Id = p2,
+                            player2Id = null
+                        ))
+                    }
                 }
-            }
 
-            rounds.add(TournamentRound(roundNumber = round + 1, matches = matches))
+                rounds.add(TournamentRound(roundNumber = roundNumber, matches = matches))
 
-            // Rotate: keep paddedIds[0] fixed, rotate the rest
-            if (n > 2) {
-                val last = paddedIds.removeAt(n - 1)
-                paddedIds.add(1, last)
+                // Rotate: keep rotatedIds[0] fixed, rotate the rest
+                if (n > 2) {
+                    val last = rotatedIds.removeAt(n - 1)
+                    rotatedIds.add(1, last)
+                }
             }
         }
 
-        logger.info("Generated $numRounds rounds for ${playerIds.size} players in lobby $lobbyId")
+        logger.info("Generated $roundNumber rounds ($gamesPerMatch game(s) per match) for ${playerIds.size} players in lobby $lobbyId")
     }
 
     /**

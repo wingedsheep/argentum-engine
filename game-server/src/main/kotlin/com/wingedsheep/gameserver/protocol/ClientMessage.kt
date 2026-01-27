@@ -138,7 +138,7 @@ sealed interface ClientMessage {
      */
     @Serializable
     @SerialName("updateLobbySettings")
-    data class UpdateLobbySettings(val boosterCount: Int? = null, val maxPlayers: Int? = null) : ClientMessage
+    data class UpdateLobbySettings(val boosterCount: Int? = null, val maxPlayers: Int? = null, val gamesPerMatch: Int? = null) : ClientMessage
 
     // =========================================================================
     // Tournament Messages
