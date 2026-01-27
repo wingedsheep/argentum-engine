@@ -16,7 +16,7 @@ val PersonalTutor = card("Personal Tutor") {
     typeLine = "Sorcery"
 
     spell {
-        effect = SearchLibraryToTopEffect(CardFilter.SorceryCard)
+        effect = SearchLibraryToTopEffect(CardFilter.SorceryCard, reveal = true)
     }
 
     metadata {

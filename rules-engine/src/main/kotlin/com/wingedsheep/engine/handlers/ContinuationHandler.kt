@@ -1055,6 +1055,18 @@ class ContinuationHandler(
             )
         )
 
+        // Reveal the chosen card to all players if configured
+        if (continuation.reveal) {
+            events.add(
+                CardsRevealedEvent(
+                    revealingPlayerId = playerId,
+                    cardIds = listOf(selectedCard),
+                    cardNames = listOf(cardName),
+                    source = continuation.sourceName
+                )
+            )
+        }
+
         return checkForMoreContinuations(newState, events)
     }
 

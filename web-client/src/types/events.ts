@@ -31,6 +31,7 @@ export type ClientEvent =
   | PlayerLostEvent
   | GameEndedEvent
   | HandLookedAtEvent
+  | CardsRevealedEvent
 
 // ============================================================================
 // Life/Damage Events
@@ -248,6 +249,15 @@ export interface HandLookedAtEvent {
   readonly viewingPlayerId: EntityId
   readonly targetPlayerId: EntityId
   readonly cardIds: readonly EntityId[]
+  readonly description: string
+}
+
+export interface CardsRevealedEvent {
+  readonly type: 'cardsRevealed'
+  readonly revealingPlayerId: EntityId
+  readonly cardIds: readonly EntityId[]
+  readonly cardNames: readonly string[]
+  readonly source: string | null
   readonly description: string
 }
 

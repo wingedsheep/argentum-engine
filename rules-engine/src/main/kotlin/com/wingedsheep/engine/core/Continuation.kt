@@ -358,7 +358,8 @@ data class SearchLibraryToTopContinuation(
     val playerId: EntityId,
     val sourceId: EntityId?,
     val sourceName: String?,
-    val filter: CardFilter
+    val filter: CardFilter,
+    val reveal: Boolean = false
 ) : ContinuationFrame
 
 /**

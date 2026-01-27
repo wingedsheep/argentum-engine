@@ -96,7 +96,8 @@ class SearchLibraryToTopExecutor : EffectExecutor<SearchLibraryToTopEffect> {
             playerId = playerId,
             sourceId = context.sourceId,
             sourceName = sourceName,
-            filter = effect.filter
+            filter = effect.filter,
+            reveal = effect.reveal
         )
 
         // Push continuation and return paused state

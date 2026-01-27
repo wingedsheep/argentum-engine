@@ -2769,10 +2769,11 @@ sealed interface SpellFilter {
  */
 @Serializable
 data class SearchLibraryToTopEffect(
-    val filter: CardFilter
+    val filter: CardFilter,
+    val reveal: Boolean = false
 ) : Effect {
     override val description: String =
-        "Search your library for ${filter.description}, reveal it, then shuffle and put that card on top"
+        "Search your library for ${filter.description}${if (reveal) ", reveal it," else ","} then shuffle and put that card on top"
 }
 
 // =============================================================================

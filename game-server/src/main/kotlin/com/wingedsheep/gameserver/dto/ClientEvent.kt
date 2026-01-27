@@ -318,6 +318,17 @@ sealed interface ClientEvent {
     ) : ClientEvent {
         override val description: String = "Hand revealed (${cardIds.size} cards)"
     }
+
+    @Serializable
+    @SerialName("cardsRevealed")
+    data class CardsRevealed(
+        val revealingPlayerId: EntityId,
+        val cardIds: List<EntityId>,
+        val cardNames: List<String>,
+        val source: String? = null
+    ) : ClientEvent {
+        override val description: String = "Revealed ${cardNames.joinToString(", ")}${source?.let { " ($it)" } ?: ""}"
+    }
 }
 
 /**
@@ -527,6 +538,16 @@ object ClientEventTransformer {
                 ClientEvent.HandRevealed(
                     revealingPlayerId = event.revealingPlayerId,
                     cardIds = event.cardIds
+                )
+            }
+
+            is CardsRevealedEvent -> {
+                // Public reveal - all players see this event
+                ClientEvent.CardsRevealed(
+                    revealingPlayerId = event.revealingPlayerId,
+                    cardIds = event.cardIds,
+                    cardNames = event.cardNames,
+                    source = event.source
                 )
             }
 

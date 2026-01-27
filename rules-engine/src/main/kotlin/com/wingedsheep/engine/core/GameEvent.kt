@@ -534,6 +534,19 @@ data class HandRevealedEvent(
 ) : GameEvent
 
 /**
+ * A player revealed specific cards to all players.
+ * Used for tutor effects that require revealing the chosen card.
+ */
+@Serializable
+@SerialName("CardsRevealedEvent")
+data class CardsRevealedEvent(
+    val revealingPlayerId: EntityId,
+    val cardIds: List<EntityId>,
+    val cardNames: List<String>,
+    val source: String? = null
+) : GameEvent
+
+/**
  * A player looked at cards (from library, etc.).
  * Used for "look at the top N cards" effects.
  */
