@@ -693,6 +693,11 @@ class TurnManager(
                 return@filter false
             }
 
+            // Must be able to block at least one attacker
+            if (!combatManager.canCreatureBlockAnyAttacker(state, entityId, playerId)) {
+                return@filter false
+            }
+
             true
         }
     }

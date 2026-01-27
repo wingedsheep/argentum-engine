@@ -973,6 +973,24 @@ class CombatManager(
     }
 
     /**
+     * Check if a creature can legally block at least one of the current attackers.
+     */
+    fun canCreatureBlockAnyAttacker(state: GameState, blockerId: EntityId, blockingPlayer: EntityId): Boolean {
+        val blockerContainer = state.getEntity(blockerId) ?: return false
+        val blockerCard = blockerContainer.get<CardComponent>() ?: return false
+
+        // Check if blocker has "can't block" restriction
+        if (hasCantBlockAbility(blockerCard)) return false
+
+        val projected = stateProjector.project(state)
+        val attackers = state.entities.filter { (_, container) -> container.has<AttackingComponent>() }.keys
+
+        return attackers.any { attackerId ->
+            canCreatureBlockAttacker(state, blockerId, attackerId, blockingPlayer, projected)
+        }
+    }
+
+    /**
      * Check if a creature can legally block an attacker.
      * This re-uses the evasion checking logic from validateCanBlock.
      */
