@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.LoseLifeEffect
 
 /**
@@ -23,7 +24,7 @@ val DreadReaper = card("Dread Reaper") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = LoseLifeEffect(5)
+        effect = LoseLifeEffect(5, EffectTarget.Controller)
     }
 
     metadata {
