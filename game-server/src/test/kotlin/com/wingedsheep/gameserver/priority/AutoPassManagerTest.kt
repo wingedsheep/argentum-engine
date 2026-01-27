@@ -84,14 +84,15 @@ class AutoPassManagerTest : FunSpec({
 
     context("Rule 1: Meaningful Action Filter") {
         test("PassPriority is not a meaningful action") {
-            val state = createMockState(player1, player1, Step.PRECOMBAT_MAIN)
+            // Use a non-main-phase step to test meaningful action filtering
+            val state = createMockState(player1, player1, Step.END_COMBAT)
             val actions = listOf(passPriorityAction(player1))
 
             autoPassManager.shouldAutoPass(state, player1, actions) shouldBe true
         }
 
         test("Mana abilities are not meaningful actions") {
-            val state = createMockState(player1, player1, Step.PRECOMBAT_MAIN)
+            val state = createMockState(player1, player1, Step.END_COMBAT)
             val actions = listOf(
                 passPriorityAction(player1),
                 manaAbilityAction(player1)
@@ -101,7 +102,7 @@ class AutoPassManagerTest : FunSpec({
         }
 
         test("Spells with no valid targets are not meaningful") {
-            val state = createMockState(player1, player1, Step.PRECOMBAT_MAIN)
+            val state = createMockState(player1, player1, Step.END_COMBAT)
             val actions = listOf(
                 passPriorityAction(player1),
                 instantSpellAction(player1, hasTargets = false) // No valid targets
@@ -266,14 +267,15 @@ class AutoPassManagerTest : FunSpec({
             autoPassManager.shouldAutoPass(state, player2, actions) shouldBe false
         }
 
-        test("Auto-pass when stack is non-empty but no responses available") {
+        test("STOP when stack is non-empty even with no responses available") {
             val state = createMockState(player1, player1, Step.PRECOMBAT_MAIN, stackEmpty = false)
             val actions = listOf(
                 passPriorityAction(player1),
                 manaAbilityAction(player1) // Only mana ability, not a response
             )
 
-            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe true
+            // Always stop when stack is non-empty so player can see what was cast
+            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe false
         }
     }
 
@@ -298,11 +300,18 @@ class AutoPassManagerTest : FunSpec({
             autoPassManager.shouldAutoPass(state, player1, actions) shouldBe false
         }
 
-        test("Auto-pass with only PassPriority available") {
-            val state = createMockState(player1, player1, Step.PRECOMBAT_MAIN)
+        test("Auto-pass with only PassPriority available (non-main phase)") {
+            val state = createMockState(player1, player1, Step.END_COMBAT)
             val actions = listOf(passPriorityAction(player1))
 
             autoPassManager.shouldAutoPass(state, player1, actions) shouldBe true
+        }
+
+        test("Never auto-pass own main phase even with no meaningful actions") {
+            val state = createMockState(player1, player1, Step.PRECOMBAT_MAIN)
+            val actions = listOf(passPriorityAction(player1))
+
+            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe false
         }
     }
 })
