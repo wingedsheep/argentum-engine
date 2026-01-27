@@ -25,6 +25,7 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.player.MulliganStateComponent
+import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.sdk.core.Color
@@ -977,9 +978,15 @@ class ActionProcessor(
             return ExecutionResult.success(currentState, events + effectResult.events)
         }
 
-        // TODO: Non-mana abilities go on the stack
-        // For now, just return success with the cost paid
-        return ExecutionResult.success(currentState, events)
+        // Non-mana abilities go on the stack
+        val abilityOnStack = ActivatedAbilityOnStackComponent(
+            sourceId = action.sourceId,
+            sourceName = cardComponent.name,
+            controllerId = action.playerId,
+            effect = ability.effect
+        )
+        val stackResult = stackResolver.putActivatedAbility(currentState, abilityOnStack, action.targets)
+        return ExecutionResult.success(stackResult.newState, events + stackResult.events)
     }
 
     private fun executePlayLand(state: GameState, action: PlayLand): ExecutionResult {
