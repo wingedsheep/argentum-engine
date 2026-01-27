@@ -50,7 +50,6 @@ jobs:
 
     environment:
       name: production
-      url: https://${{ secrets.APP_DOMAIN }}
 
     steps:
       - name: Checkout repository
