@@ -1180,7 +1180,18 @@ function GameCard({
             fontWeight: 700,
             fontSize: responsive.isMobile ? 10 : 12,
           }}>
-            {card.power}/{card.toughness}
+            {card.power}/
+          </span>
+          <span style={{
+            color: card.damage != null && card.damage > 0
+              ? '#ff4444'
+              : getPTColor(card.power, card.toughness, card.basePower, card.baseToughness),
+            fontWeight: 700,
+            fontSize: responsive.isMobile ? 10 : 12,
+          }}>
+            {card.damage != null && card.damage > 0
+              ? card.toughness - card.damage
+              : card.toughness}
           </span>
         </div>
       )}
