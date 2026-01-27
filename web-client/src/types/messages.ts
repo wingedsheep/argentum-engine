@@ -21,6 +21,7 @@ export type ServerMessage =
   | MulliganDecisionMessage
   | ChooseBottomCardsMessage
   | MulliganCompleteMessage
+  | WaitingForOpponentMulliganMessage
   | GameOverMessage
   | ErrorMessage
   // Sealed Draft Messages
@@ -298,6 +299,13 @@ export interface ChooseBottomCardsMessage {
 export interface MulliganCompleteMessage {
   readonly type: 'mulliganComplete'
   readonly finalHandSize: number
+}
+
+/**
+ * Waiting for opponent to complete their mulligan.
+ */
+export interface WaitingForOpponentMulliganMessage {
+  readonly type: 'waitingForOpponentMulligan'
 }
 
 /**
@@ -620,6 +628,10 @@ export function isChooseBottomCardsMessage(msg: ServerMessage): msg is ChooseBot
 
 export function isMulliganCompleteMessage(msg: ServerMessage): msg is MulliganCompleteMessage {
   return msg.type === 'mulliganComplete'
+}
+
+export function isWaitingForOpponentMulliganMessage(msg: ServerMessage): msg is WaitingForOpponentMulliganMessage {
+  return msg.type === 'waitingForOpponentMulligan'
 }
 
 export function isGameOverMessage(msg: ServerMessage): msg is GameOverMessage {

@@ -36,6 +36,7 @@ export interface MessageHandlers {
   onMulliganDecision: (message: MulliganDecisionMessage) => void
   onChooseBottomCards: (message: ChooseBottomCardsMessage) => void
   onMulliganComplete: (message: MulliganCompleteMessage) => void
+  onWaitingForOpponentMulligan: () => void
   onGameOver: (message: GameOverMessage) => void
   onError: (message: ErrorMessage) => void
   // Sealed draft handlers
@@ -83,6 +84,9 @@ export function handleServerMessage(message: ServerMessage, handlers: MessageHan
       break
     case 'mulliganComplete':
       handlers.onMulliganComplete(message)
+      break
+    case 'waitingForOpponentMulligan':
+      handlers.onWaitingForOpponentMulligan()
       break
     case 'gameOver':
       handlers.onGameOver(message)
@@ -173,6 +177,10 @@ export function createLoggingHandlers(handlers: MessageHandlers): MessageHandler
     onMulliganComplete: (msg) => {
       console.log('[Server] Mulligan complete:', msg)
       handlers.onMulliganComplete(msg)
+    },
+    onWaitingForOpponentMulligan: () => {
+      console.log('[Server] Waiting for opponent mulligan')
+      handlers.onWaitingForOpponentMulligan()
     },
     onGameOver: (msg) => {
       console.log('[Server] Game over:', msg)

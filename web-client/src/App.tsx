@@ -16,6 +16,7 @@ export default function App() {
   const connectionStatus = useGameStore((state) => state.connectionStatus)
   const gameState = useGameStore((state) => state.gameState)
   const mulliganState = useGameStore((state) => state.mulliganState)
+  const waitingForOpponentMulligan = useGameStore((state) => state.waitingForOpponentMulligan)
   const legalActions = useGameStore((state) => state.legalActions)
   const combatState = useGameStore((state) => state.combatState)
   const deckBuildingState = useGameStore((state) => state.deckBuildingState)
@@ -141,6 +142,9 @@ export default function App() {
 
       {/* Mulligan overlay */}
       {mulliganState && <MulliganUI />}
+
+      {/* Waiting for opponent mulligan overlay */}
+      {!mulliganState && waitingForOpponentMulligan && <WaitingForMulliganOverlay />}
 
       {/* Combat overlay (when declaring attackers/blockers) */}
       {showGame && combatState && <CombatOverlay />}
@@ -274,4 +278,43 @@ const overlayStyles: Record<string, React.CSSProperties> = {
     fontSize: 18,
     cursor: 'pointer',
   },
+}
+
+function WaitingForMulliganOverlay() {
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 16,
+        zIndex: 1000,
+      }}
+    >
+      <div
+        style={{
+          width: 40,
+          height: 40,
+          border: '3px solid #333',
+          borderTopColor: '#888',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite',
+        }}
+      />
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <h2 style={{ color: 'white', margin: 0, fontSize: 22 }}>
+        Waiting for opponent...
+      </h2>
+      <p style={{ color: '#666', margin: 0, fontSize: 14 }}>
+        Your opponent is choosing their opening hand
+      </p>
+    </div>
+  )
 }

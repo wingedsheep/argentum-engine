@@ -178,6 +178,7 @@ export interface GameStore {
 
   // Mulligan state
   mulliganState: MulliganState | null
+  waitingForOpponentMulligan: boolean
 
   // UI state (local only)
   selectedCardId: EntityId | null
@@ -408,6 +409,7 @@ export const useGameStore = create<GameStore>()(
           legalActions: msg.legalActions,
           pendingDecision: msg.pendingDecision ?? null,
           pendingEvents: [...state.pendingEvents, ...msg.events],
+          waitingForOpponentMulligan: false,
           // Show revealed hand overlay if handLookedAt event received
           revealedHandCardIds: handLookedAtEvent?.cardIds ?? state.revealedHandCardIds,
         }))
@@ -455,6 +457,10 @@ export const useGameStore = create<GameStore>()(
 
       onMulliganComplete: () => {
         set({ mulliganState: null })
+      },
+
+      onWaitingForOpponentMulligan: () => {
+        set({ waitingForOpponentMulligan: true })
       },
 
       onGameOver: (msg) => {
@@ -641,6 +647,7 @@ export const useGameStore = create<GameStore>()(
           gameState: null,
           gameOverState: null,
           mulliganState: null,
+          waitingForOpponentMulligan: false,
           legalActions: [],
         }))
       },
@@ -678,6 +685,7 @@ export const useGameStore = create<GameStore>()(
       legalActions: [],
       pendingDecision: null,
       mulliganState: null,
+      waitingForOpponentMulligan: false,
       selectedCardId: null,
       targetingState: null,
       combatState: null,
@@ -748,6 +756,7 @@ export const useGameStore = create<GameStore>()(
           legalActions: [],
           pendingDecision: null,
           mulliganState: null,
+          waitingForOpponentMulligan: false,
           gameOverState: null,
           deckBuildingState: null,
           lobbyState: null,
@@ -1266,6 +1275,7 @@ export const useGameStore = create<GameStore>()(
           legalActions: [],
           pendingDecision: null,
           mulliganState: null,
+          waitingForOpponentMulligan: false,
           selectedCardId: null,
           targetingState: null,
           combatState: null,

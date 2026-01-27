@@ -387,7 +387,7 @@ function LobbyOverlay({
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: '#0a0a0f',
+        background: 'linear-gradient(135deg, #0a0a12 0%, #12101e 50%, #0a0a12 100%)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -398,23 +398,36 @@ function LobbyOverlay({
     >
       <div style={{
         width: '100%',
-        maxWidth: 480,
+        maxWidth: 500,
         display: 'flex',
         flexDirection: 'column',
-        gap: 20,
+        gap: 16,
       }}>
         {/* Header */}
-        <div style={{ textAlign: 'center' }}>
+        <div style={{ textAlign: 'center', marginBottom: 8 }}>
+          <div style={{
+            fontSize: 11,
+            fontWeight: 600,
+            color: '#e65100',
+            textTransform: 'uppercase',
+            letterSpacing: '0.12em',
+            marginBottom: 8,
+          }}>
+            Sealed Draft
+          </div>
           <h1 style={{
-            margin: '0 0 4px 0',
-            fontSize: responsive.fontSize.xlarge,
+            margin: '0 0 6px 0',
+            fontSize: responsive.isMobile ? 26 : 32,
             fontWeight: 700,
             letterSpacing: '-0.02em',
+            background: 'linear-gradient(180deg, #fff 0%, #aaa 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
           }}>
-            Sealed Lobby
+            {lobbyState.settings.setName || 'Sealed Lobby'}
           </h1>
-          <p style={{ color: '#666', fontSize: responsive.fontSize.small, margin: 0 }}>
-            {lobbyState.settings.setName} &middot; {lobbyState.settings.boosterCount} boosters per player
+          <p style={{ color: '#555', fontSize: responsive.fontSize.small, margin: 0 }}>
+            {lobbyState.settings.boosterCount} boosters per player
           </p>
         </div>
 
@@ -425,24 +438,36 @@ function LobbyOverlay({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            padding: '10px 16px',
-            backgroundColor: '#161620',
-            border: '1px solid #2a2a3a',
-            borderRadius: 8,
+            padding: '12px 16px',
+            backgroundColor: copied ? 'rgba(79, 195, 247, 0.08)' : 'rgba(255, 255, 255, 0.03)',
+            border: copied ? '1px solid rgba(79, 195, 247, 0.3)' : '1px solid rgba(255, 255, 255, 0.08)',
+            borderRadius: 10,
             cursor: 'pointer',
-            transition: 'border-color 0.15s',
+            transition: 'all 0.2s',
           }}
         >
           <div>
-            <div style={{ color: '#555', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>
-              Lobby Code
+            <div style={{ color: '#666', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 3 }}>
+              Invite Code
             </div>
-            <div style={{ fontFamily: 'monospace', fontSize: responsive.isMobile ? 14 : 16, color: '#ccc' }}>
+            <div style={{
+              fontFamily: 'monospace',
+              fontSize: responsive.isMobile ? 15 : 18,
+              color: '#ddd',
+              fontWeight: 500,
+              letterSpacing: '0.04em',
+            }}>
               {lobbyState.lobbyId}
             </div>
           </div>
-          <span style={{ color: copied ? '#4fc3f7' : '#555', fontSize: 12, flexShrink: 0, marginLeft: 12 }}>
-            {copied ? 'Copied' : 'Click to copy'}
+          <span style={{
+            color: copied ? '#4fc3f7' : '#555',
+            fontSize: 12,
+            flexShrink: 0,
+            marginLeft: 12,
+            transition: 'color 0.2s',
+          }}>
+            {copied ? 'Copied!' : 'Copy'}
           </span>
         </div>
 
@@ -452,10 +477,10 @@ function LobbyOverlay({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            padding: '10px 16px',
-            backgroundColor: '#161620',
-            border: '1px solid #2a2a3a',
-            borderRadius: 8,
+            padding: '12px 16px',
+            backgroundColor: 'rgba(255, 255, 255, 0.03)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            borderRadius: 10,
           }}>
             <span style={{ color: '#888', fontSize: responsive.fontSize.small }}>
               Boosters per player
@@ -464,13 +489,14 @@ function LobbyOverlay({
               value={lobbyState.settings.boosterCount}
               onChange={(e) => updateLobbySettings({ boosterCount: Number(e.target.value) })}
               style={{
-                padding: '4px 8px',
+                padding: '5px 10px',
                 fontSize: responsive.fontSize.small,
-                backgroundColor: '#222',
+                backgroundColor: '#1a1a24',
                 color: 'white',
-                border: '1px solid #3a3a4a',
-                borderRadius: 4,
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: 6,
                 cursor: 'pointer',
+                outline: 'none',
               }}
             >
               {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => (
@@ -482,21 +508,21 @@ function LobbyOverlay({
 
         {/* Player list */}
         <div style={{
-          backgroundColor: '#161620',
-          border: '1px solid #2a2a3a',
-          borderRadius: 8,
+          backgroundColor: 'rgba(255, 255, 255, 0.03)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          borderRadius: 10,
           overflow: 'hidden',
         }}>
           <div style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            padding: '10px 16px',
-            borderBottom: '1px solid #2a2a3a',
+            padding: '12px 16px',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
           }}>
-            <span style={{ fontSize: responsive.fontSize.normal, fontWeight: 600 }}>Players</span>
-            <span style={{ color: '#555', fontSize: responsive.fontSize.small }}>
-              {lobbyState.players.length} / 8
+            <span style={{ fontSize: responsive.fontSize.normal, fontWeight: 600, color: '#ccc' }}>Players</span>
+            <span style={{ color: '#444', fontSize: responsive.fontSize.small }}>
+              {lobbyState.players.length} / {lobbyState.settings.maxPlayers || 8}
             </span>
           </div>
           {lobbyState.players.map((player, i) => (
@@ -506,37 +532,43 @@ function LobbyOverlay({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                padding: '10px 16px',
-                borderBottom: i < lobbyState.players.length - 1 ? '1px solid #1e1e2a' : 'none',
+                padding: '11px 16px',
+                borderBottom: i < lobbyState.players.length - 1 ? '1px solid rgba(255, 255, 255, 0.04)' : 'none',
+                transition: 'background-color 0.15s',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{
                   width: 8,
                   height: 8,
                   borderRadius: '50%',
                   backgroundColor: !player.isConnected ? '#ff4444' : '#00cc44',
+                  boxShadow: !player.isConnected ? '0 0 6px rgba(255, 68, 68, 0.4)' : '0 0 6px rgba(0, 204, 68, 0.4)',
                   flexShrink: 0,
                 }} />
-                <span style={{ fontSize: responsive.fontSize.normal }}>
+                <span style={{ fontSize: responsive.fontSize.normal, color: '#ddd' }}>
                   {player.playerName}
                 </span>
                 {player.isHost && (
                   <span style={{
-                    fontSize: 10,
-                    fontWeight: 600,
+                    fontSize: 9,
+                    fontWeight: 700,
                     color: '#e65100',
-                    backgroundColor: 'rgba(230, 81, 0, 0.15)',
-                    padding: '2px 6px',
+                    backgroundColor: 'rgba(230, 81, 0, 0.12)',
+                    padding: '2px 7px',
                     borderRadius: 4,
                     textTransform: 'uppercase',
-                    letterSpacing: '0.04em',
+                    letterSpacing: '0.06em',
                   }}>
                     Host
                   </span>
                 )}
               </div>
-              <span style={{ fontSize: responsive.fontSize.small, color: '#555' }}>
+              <span style={{
+                fontSize: responsive.fontSize.small,
+                color: !player.isConnected ? '#ff4444' : player.deckSubmitted ? '#4caf50' : '#555',
+                fontWeight: player.deckSubmitted ? 500 : 400,
+              }}>
                 {!player.isConnected
                   ? 'Disconnected'
                   : player.deckSubmitted
@@ -546,29 +578,32 @@ function LobbyOverlay({
             </div>
           ))}
           {lobbyState.players.length === 0 && (
-            <div style={{ padding: '20px 16px', textAlign: 'center', color: '#444', fontSize: responsive.fontSize.small }}>
-              No players yet
+            <div style={{ padding: '24px 16px', textAlign: 'center', color: '#333', fontSize: responsive.fontSize.small }}>
+              Waiting for players to join...
             </div>
           )}
         </div>
 
         {/* Actions */}
-        <div style={{ display: 'flex', gap: 10 }}>
+        <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
           {isWaiting && lobbyState.isHost && (
             <button
               onClick={startSealedLobby}
               disabled={!canStart}
               style={{
                 flex: 1,
-                padding: '12px 20px',
+                padding: '13px 20px',
                 fontSize: responsive.fontSize.normal,
                 fontWeight: 600,
-                backgroundColor: canStart ? '#e65100' : '#1a1a24',
+                background: canStart
+                  ? 'linear-gradient(180deg, #e65100 0%, #bf4300 100%)'
+                  : '#1a1a24',
                 color: canStart ? 'white' : '#444',
-                border: canStart ? 'none' : '1px solid #2a2a3a',
-                borderRadius: 8,
+                border: canStart ? 'none' : '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: 10,
                 cursor: canStart ? 'pointer' : 'not-allowed',
-                transition: 'background-color 0.15s',
+                transition: 'all 0.15s',
+                boxShadow: canStart ? '0 2px 12px rgba(230, 81, 0, 0.3)' : 'none',
               }}
             >
               Start Game
@@ -577,14 +612,14 @@ function LobbyOverlay({
           <button
             onClick={leaveLobby}
             style={{
-              padding: '12px 20px',
+              padding: '13px 20px',
               fontSize: responsive.fontSize.normal,
               backgroundColor: 'transparent',
-              color: '#888',
-              border: '1px solid #2a2a3a',
-              borderRadius: 8,
+              color: '#666',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              borderRadius: 10,
               cursor: 'pointer',
-              transition: 'border-color 0.15s',
+              transition: 'all 0.15s',
             }}
           >
             Leave
@@ -592,7 +627,7 @@ function LobbyOverlay({
         </div>
 
         {isWaiting && !lobbyState.isHost && (
-          <p style={{ color: '#555', fontSize: responsive.fontSize.small, textAlign: 'center', margin: 0 }}>
+          <p style={{ color: '#444', fontSize: responsive.fontSize.small, textAlign: 'center', margin: 0 }}>
             Waiting for host to start the game...
           </p>
         )}

@@ -128,6 +128,13 @@ sealed interface ServerMessage {
         val finalHandSize: Int
     ) : ServerMessage
 
+    /**
+     * Sent to a player when they have completed their mulligan but the opponent hasn't yet.
+     */
+    @Serializable
+    @SerialName("waitingForOpponentMulligan")
+    data object WaitingForOpponentMulligan : ServerMessage
+
     // =========================================================================
     // Sealed Draft Messages
     // =========================================================================

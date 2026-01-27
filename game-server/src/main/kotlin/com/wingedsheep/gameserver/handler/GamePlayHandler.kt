@@ -263,6 +263,13 @@ class GamePlayHandler(
                 logger.info("Mulligan phase complete for game ${gameSession.sessionId}")
                 broadcastStateUpdate(gameSession, emptyList())
             }
+        } else {
+            // Notify players who have completed their mulligan that they're waiting
+            listOfNotNull(gameSession.player1, gameSession.player2).forEach { player ->
+                if (gameSession.hasMulliganComplete(player.playerId)) {
+                    sender.send(player.webSocketSession, ServerMessage.WaitingForOpponentMulligan)
+                }
+            }
         }
     }
 
