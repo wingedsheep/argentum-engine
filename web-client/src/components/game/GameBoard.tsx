@@ -11,7 +11,7 @@ import { DraggedCardOverlay } from './DraggedCardOverlay'
 import { useResponsive, calculateFittingCardWidth, type ResponsiveSizes } from '../../hooks/useResponsive'
 import { getCardImageUrl, getScryfallFallbackUrl } from '../../utils/cardImages'
 import { useInteraction } from '../../hooks/useInteraction'
-import React, { createContext, useContext, useCallback, useEffect, useState } from 'react'
+import React, { createContext, useContext, useCallback, useEffect, useRef, useState } from 'react'
 
 // Context to pass responsive sizes down the component tree
 const ResponsiveContext = createContext<ResponsiveSizes | null>(null)
@@ -833,6 +833,8 @@ function GameCard({
   const startXSelection = useGameStore((state) => state.startXSelection)
   const responsive = useResponsiveContext()
   const { handleCardClick } = useInteraction()
+  const dragStartPos = useRef<{ x: number; y: number } | null>(null)
+  const handledByDrag = useRef(false)
 
   // Hover handlers for card preview
   const handleMouseEnter = useCallback(() => {
@@ -903,6 +905,7 @@ function GameCard({
     // Start dragging card from hand
     if (canDragToPlay) {
       e.preventDefault()
+      dragStartPos.current = { x: e.clientX, y: e.clientY }
       startDraggingCard(card.id)
     }
   }, [isInBlockerMode, isValidBlocker, isSelectedAsBlocker, startDraggingBlocker, canDragToPlay, startDraggingCard, card.id])
@@ -921,6 +924,13 @@ function GameCard({
     if (draggingCardId !== card.id) return
 
     const handleGlobalMouseUp = (e: MouseEvent) => {
+      // Require minimum drag distance to prevent accidental casts
+      const MIN_DRAG_DISTANCE = 30
+      const start = dragStartPos.current
+      const draggedFarEnough = start != null &&
+        Math.hypot(e.clientX - start.x, e.clientY - start.y) >= MIN_DRAG_DISTANCE
+      dragStartPos.current = null
+
       // Check if dropped outside the hand area - if so, play the card
       const handEl = document.querySelector('[data-zone="hand"]')
       let isOverHand = false
@@ -929,6 +939,16 @@ function GameCard({
         const rect = handEl.getBoundingClientRect()
         isOverHand = e.clientX >= rect.left && e.clientX <= rect.right &&
                      e.clientY >= rect.top && e.clientY <= rect.bottom
+      }
+
+      // Mark that drag handled this interaction to prevent duplicate click
+      handledByDrag.current = true
+
+      if (!draggedFarEnough) {
+        // Short drag = click: open action menu
+        stopDraggingCard()
+        handleCardClick(card.id)
+        return
       }
 
       if (!isOverHand && playableAction) {
@@ -961,7 +981,7 @@ function GameCard({
 
     window.addEventListener('mouseup', handleGlobalMouseUp)
     return () => window.removeEventListener('mouseup', handleGlobalMouseUp)
-  }, [draggingCardId, card.id, playableAction, submitAction, stopDraggingCard, startTargeting, startXSelection])
+  }, [draggingCardId, card.id, playableAction, submitAction, stopDraggingCard, startTargeting, startXSelection, handleCardClick])
 
   // Global mouse up handler to cancel drag
   useEffect(() => {
@@ -976,6 +996,12 @@ function GameCard({
   }, [draggingBlockerId, stopDraggingBlocker])
 
   const handleClick = () => {
+    // If the drag handler already processed this interaction, skip
+    if (handledByDrag.current) {
+      handledByDrag.current = false
+      return
+    }
+
     // Handle targeting mode clicks
     if (isInTargetingMode && isValidTarget) {
       addTarget(card.id)

@@ -97,31 +97,11 @@ export function useInteraction() {
           break
 
         case 'singleAction':
-          // Execute immediately
-          submitAction(result.action)
-          selectCard(null)
-          break
-
         case 'multipleActions':
-          // Select the card to show action menu
-          selectCard(cardId)
-          break
-
         case 'requiresTargeting':
-          // Would enter targeting mode here
-          // For now, select the card
-          selectCard(cardId)
-          break
-
         case 'requiresXSelection':
-          // Enter X selection mode
-          startXSelection({
-            actionInfo: result.actionInfo,
-            cardName: result.actionInfo.description.replace('Cast ', ''),
-            minX: result.actionInfo.minX ?? 0,
-            maxX: result.actionInfo.maxAffordableX ?? 0,
-            selectedX: result.actionInfo.maxAffordableX ?? 0,
-          })
+          // Always open action menu so the player can see available actions
+          selectCard(cardId)
           break
       }
     },
