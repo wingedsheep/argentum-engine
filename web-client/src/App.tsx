@@ -10,6 +10,7 @@ import { DeckBuilderOverlay } from './components/sealed/DeckBuilderOverlay'
 import { useGameStore } from './store/gameStore'
 import { useViewingPlayer, useBattlefieldCards } from './store/selectors'
 import type { EntityId } from './types'
+import { GameOverReason } from './types'
 
 export default function App() {
   const connectionStatus = useGameStore((state) => state.connectionStatus)
@@ -159,6 +160,24 @@ export default function App() {
   )
 }
 
+function formatGameOverReason(reason: GameOverReason, isWinner: boolean): string {
+  const winMessages: Record<GameOverReason, string> = {
+    [GameOverReason.LIFE_ZERO]: "Your opponent's life total reached zero.",
+    [GameOverReason.DECK_OUT]: 'Your opponent had no cards left to draw.',
+    [GameOverReason.CONCESSION]: 'Your opponent conceded the game.',
+    [GameOverReason.POISON_COUNTERS]: 'Your opponent received ten poison counters.',
+    [GameOverReason.DISCONNECTION]: 'Your opponent disconnected.',
+  }
+  const loseMessages: Record<GameOverReason, string> = {
+    [GameOverReason.LIFE_ZERO]: 'Your life total reached zero.',
+    [GameOverReason.DECK_OUT]: 'You had no cards left to draw.',
+    [GameOverReason.CONCESSION]: 'You conceded the game.',
+    [GameOverReason.POISON_COUNTERS]: 'You received ten poison counters.',
+    [GameOverReason.DISCONNECTION]: 'You disconnected from the game.',
+  }
+  return isWinner ? winMessages[reason] : loseMessages[reason]
+}
+
 /**
  * Game over and error overlays.
  */
@@ -177,7 +196,7 @@ function GameOverlay() {
         }}>
           {gameOverState.isWinner ? 'Victory!' : 'Defeat'}
         </h1>
-        <p style={overlayStyles.subtitle}>{gameOverState.reason}</p>
+        <p style={overlayStyles.subtitle}>{formatGameOverReason(gameOverState.reason, gameOverState.isWinner)}</p>
         <button
           onClick={returnToMenu}
           style={overlayStyles.button}
