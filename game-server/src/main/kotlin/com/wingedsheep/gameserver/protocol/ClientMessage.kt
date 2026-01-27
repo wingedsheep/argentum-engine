@@ -40,7 +40,7 @@ sealed interface ClientMessage {
      */
     @Serializable
     @SerialName("submitAction")
-    data class SubmitAction(val action: GameAction) : ClientMessage
+    data class SubmitAction(val action: GameAction, val messageId: String? = null) : ClientMessage
 
     /**
      * Concede the current game.

@@ -1,0 +1,409 @@
+package com.wingedsheep.gameserver.handler
+
+import com.wingedsheep.gameserver.deck.RandomDeckGenerator
+import com.wingedsheep.gameserver.protocol.ClientMessage
+import com.wingedsheep.gameserver.protocol.ErrorCode
+import com.wingedsheep.gameserver.protocol.GameOverReason
+import com.wingedsheep.gameserver.protocol.ServerMessage
+import com.wingedsheep.gameserver.repository.GameRepository
+import com.wingedsheep.gameserver.repository.LobbyRepository
+import com.wingedsheep.gameserver.session.GameSession
+import com.wingedsheep.gameserver.session.PlayerSession
+import com.wingedsheep.gameserver.session.SessionRegistry
+import com.wingedsheep.engine.core.GameEvent
+import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.sdk.model.EntityId
+import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Component
+import org.springframework.web.socket.WebSocketSession
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicBoolean
+
+@Component
+class GamePlayHandler(
+    private val sessionRegistry: SessionRegistry,
+    private val gameRepository: GameRepository,
+    private val lobbyRepository: LobbyRepository,
+    private val sender: MessageSender,
+    private val cardRegistry: CardRegistry,
+    private val deckGenerator: RandomDeckGenerator
+) {
+    private val logger = LoggerFactory.getLogger(GamePlayHandler::class.java)
+
+    @Volatile
+    var waitingGameSession: GameSession? = null
+
+    private val mulliganBroadcastSent = ConcurrentHashMap<String, AtomicBoolean>()
+
+    // Callback for tournament round complete
+    var handleRoundCompleteCallback: ((String) -> Unit)? = null
+
+    fun handle(session: WebSocketSession, message: ClientMessage) {
+        when (message) {
+            is ClientMessage.CreateGame -> handleCreateGame(session, message)
+            is ClientMessage.JoinGame -> handleJoinGame(session, message)
+            is ClientMessage.SubmitAction -> handleSubmitAction(session, message)
+            is ClientMessage.Concede -> handleConcede(session)
+            is ClientMessage.KeepHand -> handleKeepHand(session)
+            is ClientMessage.Mulligan -> handleMulligan(session)
+            is ClientMessage.ChooseBottomCards -> handleChooseBottomCards(session, message)
+            else -> {}
+        }
+    }
+
+    private fun handleCreateGame(session: WebSocketSession, message: ClientMessage.CreateGame) {
+        val playerSession = sessionRegistry.getPlayerSession(session.id)
+        if (playerSession == null) {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        val deckList = if (message.deckList.isEmpty()) {
+            val randomDeck = deckGenerator.generate()
+            logger.info("Generated random deck for ${playerSession.playerName}: ${randomDeck.entries.take(5)}... (${randomDeck.values.sum()} cards)")
+            randomDeck
+        } else {
+            message.deckList
+        }
+
+        val gameSession = GameSession(cardRegistry = cardRegistry)
+        gameSession.addPlayer(playerSession, deckList)
+
+        gameRepository.save(gameSession)
+        waitingGameSession = gameSession
+
+        val token = sessionRegistry.getTokenByWsId(session.id)
+        if (token != null) {
+            sessionRegistry.getIdentityByToken(token)?.currentGameSessionId = gameSession.sessionId
+        }
+
+        logger.info("Game created: ${gameSession.sessionId} by ${playerSession.playerName}")
+        sender.send(session, ServerMessage.GameCreated(gameSession.sessionId))
+    }
+
+    fun handleJoinGame(session: WebSocketSession, message: ClientMessage.JoinGame) {
+        val playerSession = sessionRegistry.getPlayerSession(session.id)
+        if (playerSession == null) {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        // Check if this is a sealed session (auto-detect)
+        val sealedSession = lobbyRepository.findSealedSessionById(message.sessionId)
+        if (sealedSession != null) {
+            // Delegate to lobby handler via callback
+            joinSealedGameCallback?.invoke(session, ClientMessage.JoinSealedGame(message.sessionId))
+            return
+        }
+
+        // Check if this is a lobby (auto-detect)
+        val lobby = lobbyRepository.findLobbyById(message.sessionId)
+        if (lobby != null) {
+            joinLobbyCallback?.invoke(session, ClientMessage.JoinLobby(message.sessionId))
+            return
+        }
+
+        val gameSession = gameRepository.findById(message.sessionId)
+        if (gameSession == null) {
+            sender.sendError(session, ErrorCode.GAME_NOT_FOUND, "Game not found: ${message.sessionId}")
+            return
+        }
+
+        if (gameSession.isFull) {
+            sender.sendError(session, ErrorCode.GAME_FULL, "Game is full")
+            return
+        }
+
+        val deckList = if (message.deckList.isEmpty()) {
+            val randomDeck = deckGenerator.generate()
+            logger.info("Generated random deck for ${playerSession.playerName}: ${randomDeck.entries.take(5)}... (${randomDeck.values.sum()} cards)")
+            randomDeck
+        } else {
+            message.deckList
+        }
+
+        gameSession.addPlayer(playerSession, deckList)
+
+        if (waitingGameSession?.sessionId == gameSession.sessionId) {
+            waitingGameSession = null
+        }
+
+        val token = sessionRegistry.getTokenByWsId(session.id)
+        if (token != null) {
+            sessionRegistry.getIdentityByToken(token)?.currentGameSessionId = gameSession.sessionId
+        }
+
+        logger.info("Player ${playerSession.playerName} joined game ${gameSession.sessionId}")
+
+        if (gameSession.isReady) {
+            startGame(gameSession)
+        }
+    }
+
+    fun startGame(gameSession: GameSession) {
+        logger.info("Starting game: ${gameSession.sessionId}")
+        gameSession.startGame()
+
+        val player1 = gameSession.player1
+        val player2 = gameSession.player2
+
+        if (player1 != null && player2 != null) {
+            sender.send(player1.webSocketSession, ServerMessage.GameStarted(player2.playerName))
+            sender.send(player2.webSocketSession, ServerMessage.GameStarted(player1.playerName))
+
+            sendMulliganDecision(gameSession, player1)
+            sendMulliganDecision(gameSession, player2)
+        }
+    }
+
+    private fun sendMulliganDecision(gameSession: GameSession, playerSession: PlayerSession) {
+        val decision = gameSession.getMulliganDecision(playerSession.playerId)
+        sender.send(playerSession.webSocketSession, decision)
+    }
+
+    private fun handleKeepHand(session: WebSocketSession) {
+        val playerSession = sessionRegistry.getPlayerSession(session.id)
+        if (playerSession == null) {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        val gameSession = getGameSession(session, playerSession) ?: return
+
+        if (!gameSession.isMulliganPhase) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "Not in mulligan phase")
+            return
+        }
+
+        val result = gameSession.keepHand(playerSession.playerId)
+        when (result) {
+            is GameSession.MulliganActionResult.Success -> {
+                logger.info("Player ${playerSession.playerName} kept hand")
+                val finalHandSize = gameSession.getHand(playerSession.playerId).size
+                sender.send(session, ServerMessage.MulliganComplete(finalHandSize))
+                checkMulliganPhaseComplete(gameSession)
+            }
+            is GameSession.MulliganActionResult.NeedsBottomCards -> {
+                logger.info("Player ${playerSession.playerName} kept hand, needs to choose ${result.count} cards for bottom")
+                val msg = gameSession.getChooseBottomCardsMessage(playerSession.playerId)
+                if (msg != null) sender.send(session, msg)
+            }
+            is GameSession.MulliganActionResult.Failure -> {
+                sender.sendError(session, ErrorCode.INVALID_ACTION, result.reason)
+            }
+        }
+    }
+
+    private fun handleMulligan(session: WebSocketSession) {
+        val playerSession = sessionRegistry.getPlayerSession(session.id)
+        if (playerSession == null) {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        val gameSession = getGameSession(session, playerSession) ?: return
+
+        if (!gameSession.isMulliganPhase) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "Not in mulligan phase")
+            return
+        }
+
+        val result = gameSession.takeMulligan(playerSession.playerId)
+        when (result) {
+            is GameSession.MulliganActionResult.Success -> {
+                val count = gameSession.getMulliganCount(playerSession.playerId)
+                logger.info("Player ${playerSession.playerName} mulliganed (count: $count)")
+                sendMulliganDecision(gameSession, playerSession)
+            }
+            is GameSession.MulliganActionResult.NeedsBottomCards -> {
+                val msg = gameSession.getChooseBottomCardsMessage(playerSession.playerId)
+                if (msg != null) sender.send(session, msg)
+            }
+            is GameSession.MulliganActionResult.Failure -> {
+                sender.sendError(session, ErrorCode.INVALID_ACTION, result.reason)
+            }
+        }
+    }
+
+    private fun handleChooseBottomCards(session: WebSocketSession, message: ClientMessage.ChooseBottomCards) {
+        val playerSession = sessionRegistry.getPlayerSession(session.id)
+        if (playerSession == null) {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        val gameSession = getGameSession(session, playerSession) ?: return
+
+        if (!gameSession.isAwaitingBottomCards(playerSession.playerId)) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "Not awaiting bottom card selection")
+            return
+        }
+
+        val result = gameSession.chooseBottomCards(playerSession.playerId, message.cardIds)
+        when (result) {
+            is GameSession.MulliganActionResult.Success -> {
+                logger.info("Player ${playerSession.playerName} completed mulligan")
+                val finalHandSize = gameSession.getHand(playerSession.playerId).size
+                sender.send(session, ServerMessage.MulliganComplete(finalHandSize))
+                checkMulliganPhaseComplete(gameSession)
+            }
+            is GameSession.MulliganActionResult.NeedsBottomCards -> {
+                sender.sendError(session, ErrorCode.INTERNAL_ERROR, "Unexpected state")
+            }
+            is GameSession.MulliganActionResult.Failure -> {
+                sender.sendError(session, ErrorCode.INVALID_ACTION, result.reason)
+            }
+        }
+    }
+
+    private fun checkMulliganPhaseComplete(gameSession: GameSession) {
+        if (gameSession.allMulligansComplete) {
+            val broadcastFlag = mulliganBroadcastSent.computeIfAbsent(gameSession.sessionId) { AtomicBoolean(false) }
+            if (broadcastFlag.compareAndSet(false, true)) {
+                logger.info("Mulligan phase complete for game ${gameSession.sessionId}")
+                broadcastStateUpdate(gameSession, emptyList())
+            }
+        }
+    }
+
+    private fun handleSubmitAction(session: WebSocketSession, message: ClientMessage.SubmitAction) {
+        val playerSession = sessionRegistry.getPlayerSession(session.id)
+        if (playerSession == null) {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        val gameSession = getGameSession(session, playerSession) ?: return
+
+        if (gameSession.isMulliganPhase) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "Mulligan phase not complete")
+            return
+        }
+
+        val result = gameSession.executeAction(playerSession.playerId, message.action, message.messageId)
+        when (result) {
+            is GameSession.ActionResult.Success -> {
+                logger.debug("Action executed successfully")
+                broadcastStateUpdate(gameSession, result.events)
+                if (gameSession.isGameOver()) handleGameOver(gameSession)
+            }
+            is GameSession.ActionResult.PausedForDecision -> {
+                logger.debug("Action paused for decision: ${result.decision}")
+                broadcastStateUpdate(gameSession, result.events)
+            }
+            is GameSession.ActionResult.Failure -> {
+                sender.sendError(session, ErrorCode.INVALID_ACTION, result.reason)
+            }
+        }
+    }
+
+    private fun handleConcede(session: WebSocketSession) {
+        val playerSession = sessionRegistry.getPlayerSession(session.id)
+        if (playerSession == null) {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        val gameSession = getGameSession(session, playerSession) ?: return
+
+        logger.info("Player ${playerSession.playerName} conceded game ${gameSession.sessionId}")
+        gameSession.playerConcedes(playerSession.playerId)
+        handleGameOver(gameSession, GameOverReason.CONCESSION)
+    }
+
+    fun handleGameOver(gameSession: GameSession, reason: GameOverReason? = null) {
+        val winnerId = gameSession.getWinnerId()
+        val gameOverReason = reason ?: gameSession.getGameOverReason() ?: GameOverReason.LIFE_ZERO
+        val message = ServerMessage.GameOver(winnerId, gameOverReason)
+
+        gameSession.player1?.let { sender.send(it.webSocketSession, message) }
+        gameSession.player2?.let { sender.send(it.webSocketSession, message) }
+
+        val gameSessionId = gameSession.sessionId
+
+        val lobbyId = gameRepository.getLobbyForGame(gameSessionId)
+        if (lobbyId != null) {
+            val tournament = lobbyRepository.findTournamentById(lobbyId)
+            if (tournament != null) {
+                tournament.reportMatchResult(gameSessionId, winnerId)
+                gameRepository.removeLobbyLink(gameSessionId)
+
+                if (tournament.isRoundComplete()) {
+                    handleRoundCompleteCallback?.invoke(lobbyId)
+                }
+            }
+        }
+
+        gameRepository.remove(gameSessionId)
+        mulliganBroadcastSent.remove(gameSessionId)
+    }
+
+    fun broadcastStateUpdate(gameSession: GameSession, events: List<GameEvent>) {
+        val allEvents = processAutoPassLoop(gameSession, events)
+
+        val player1 = gameSession.player1
+        val player2 = gameSession.player2
+
+        try {
+            player1?.let { session ->
+                val update = gameSession.createStateUpdate(session.playerId, allEvents)
+                if (update != null) sender.send(session.webSocketSession, update)
+                else logger.warn("createStateUpdate returned null for player1")
+            }
+            player2?.let { session ->
+                val update = gameSession.createStateUpdate(session.playerId, allEvents)
+                if (update != null) sender.send(session.webSocketSession, update)
+                else logger.warn("createStateUpdate returned null for player2")
+            }
+        } catch (e: Exception) {
+            logger.error("Error broadcasting state update", e)
+        }
+    }
+
+    private fun processAutoPassLoop(gameSession: GameSession, initialEvents: List<GameEvent>): List<GameEvent> {
+        val allEvents = initialEvents.toMutableList()
+        var loopCount = 0
+        val maxLoops = 100
+
+        while (loopCount < maxLoops) {
+            if (gameSession.isGameOver()) break
+            val autoPassPlayer = gameSession.getAutoPassPlayer() ?: break
+            logger.debug("Auto-passing for player: ${autoPassPlayer.value}")
+
+            val result = gameSession.executeAutoPass(autoPassPlayer)
+            when (result) {
+                is GameSession.ActionResult.Success -> allEvents.addAll(result.events)
+                is GameSession.ActionResult.PausedForDecision -> {
+                    allEvents.addAll(result.events)
+                    break
+                }
+                is GameSession.ActionResult.Failure -> {
+                    logger.warn("Auto-pass failed: ${result.reason}")
+                    break
+                }
+            }
+            loopCount++
+        }
+
+        if (loopCount >= maxLoops) logger.warn("Auto-pass loop hit safety limit!")
+        return allEvents
+    }
+
+    private fun getGameSession(session: WebSocketSession, playerSession: PlayerSession): GameSession? {
+        val gameSessionId = playerSession.currentGameSessionId
+        if (gameSessionId == null) {
+            sender.sendError(session, ErrorCode.GAME_NOT_FOUND, "Not in a game")
+            return null
+        }
+        val gameSession = gameRepository.findById(gameSessionId)
+        if (gameSession == null) {
+            sender.sendError(session, ErrorCode.GAME_NOT_FOUND, "Game not found")
+            return null
+        }
+        return gameSession
+    }
+
+    // Callbacks to avoid circular dependencies with LobbyHandler
+    var joinSealedGameCallback: ((WebSocketSession, ClientMessage.JoinSealedGame) -> Unit)? = null
+    var joinLobbyCallback: ((WebSocketSession, ClientMessage.JoinLobby) -> Unit)? = null
+}

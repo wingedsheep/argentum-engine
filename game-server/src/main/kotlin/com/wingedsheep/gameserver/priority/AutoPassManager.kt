@@ -59,29 +59,30 @@ class AutoPassManager {
             return false
         }
 
-        // Rule 4: Stack Response - ALWAYS STOP if stack is non-empty and we have responses
+        // Rule 4: Stack Response - ALWAYS STOP if stack is non-empty
+        // This gives the player a chance to see what the opponent cast
         if (state.stack.isNotEmpty()) {
-            val meaningfulActions = getMeaningfulActions(legalActions, state)
-            if (meaningfulActions.isNotEmpty()) {
-                logger.debug("STOP: Stack non-empty with meaningful actions available")
-                return false
-            }
-            // No meaningful responses - auto-pass
-            logger.debug("AUTO-PASS: Stack non-empty but no meaningful responses")
-            return true
+            logger.debug("STOP: Stack non-empty")
+            return false
         }
 
         // Get meaningful actions (Rule 1)
         val meaningfulActions = getMeaningfulActions(legalActions, state)
+
+        // Determine if this is our turn or opponent's turn
+        val isMyTurn = state.activePlayerId == playerId
+
+        // Never auto-pass the active player's own main phases
+        if (isMyTurn && (state.step == Step.PRECOMBAT_MAIN || state.step == Step.POSTCOMBAT_MAIN)) {
+            logger.debug("STOP: My main phase (always stop)")
+            return false
+        }
 
         // If no meaningful actions, auto-pass
         if (meaningfulActions.isEmpty()) {
             logger.debug("AUTO-PASS: No meaningful actions available")
             return true
         }
-
-        // Determine if this is our turn or opponent's turn
-        val isMyTurn = state.activePlayerId == playerId
 
         return if (isMyTurn) {
             shouldAutoPassOnMyTurn(state.step, meaningfulActions)

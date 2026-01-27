@@ -58,6 +58,9 @@ class GameSession(
     private val turnManager = TurnManager()
     private val autoPassManager = AutoPassManager()
 
+    /** Tracks the last processed messageId per player for idempotency */
+    private val lastProcessedMessageId = java.util.concurrent.ConcurrentHashMap<EntityId, String>()
+
     val player1: PlayerSession? get() = players.values.firstOrNull()
     val player2: PlayerSession? get() = players.values.drop(1).firstOrNull()
 
@@ -314,8 +317,16 @@ class GameSession(
      * Routes the action through the engine's ActionProcessor.
      * Synchronized to prevent lost updates when multiple players act simultaneously.
      */
-    fun executeAction(playerId: EntityId, action: GameAction): ActionResult = synchronized(stateLock) {
+    fun executeAction(playerId: EntityId, action: GameAction, messageId: String? = null): ActionResult = synchronized(stateLock) {
         val state = gameState ?: return ActionResult.Failure("Game not started")
+
+        // Idempotency check: if this messageId was already processed, skip
+        if (messageId != null) {
+            val lastId = lastProcessedMessageId[playerId]
+            if (lastId == messageId) {
+                return ActionResult.Failure("Duplicate message")
+            }
+        }
 
         val result = actionProcessor.process(state, action)
 
@@ -325,10 +336,12 @@ class GameSession(
             error != null -> ActionResult.Failure(error)
             pendingDecision != null -> {
                 gameState = result.state
+                if (messageId != null) lastProcessedMessageId[playerId] = messageId
                 ActionResult.PausedForDecision(result.state, pendingDecision, result.events)
             }
             else -> {
                 gameState = result.state
+                if (messageId != null) lastProcessedMessageId[playerId] = messageId
                 ActionResult.Success(result.state, result.events)
             }
         }

@@ -1,0 +1,593 @@
+package com.wingedsheep.gameserver.handler
+
+import com.wingedsheep.gameserver.handler.ConnectionHandler.Companion.cardToSealedCardInfo
+import com.wingedsheep.gameserver.lobby.LobbyState
+import com.wingedsheep.gameserver.lobby.SealedLobby
+import com.wingedsheep.gameserver.protocol.ClientMessage
+import com.wingedsheep.gameserver.protocol.ErrorCode
+import com.wingedsheep.gameserver.protocol.ServerMessage
+import com.wingedsheep.gameserver.repository.GameRepository
+import com.wingedsheep.gameserver.repository.LobbyRepository
+import com.wingedsheep.gameserver.sealed.BoosterGenerator
+import com.wingedsheep.gameserver.sealed.SealedSession
+import com.wingedsheep.gameserver.session.PlayerIdentity
+import com.wingedsheep.gameserver.session.PlayerSession
+import com.wingedsheep.gameserver.session.SessionRegistry
+import com.wingedsheep.gameserver.session.GameSession
+import com.wingedsheep.gameserver.tournament.TournamentManager
+import com.wingedsheep.engine.registry.CardRegistry
+import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Component
+import org.springframework.web.socket.WebSocketSession
+
+@Component
+class LobbyHandler(
+    private val sessionRegistry: SessionRegistry,
+    private val gameRepository: GameRepository,
+    private val lobbyRepository: LobbyRepository,
+    private val sender: MessageSender,
+    private val cardRegistry: CardRegistry,
+    private val gamePlayHandler: GamePlayHandler
+) {
+    private val logger = LoggerFactory.getLogger(LobbyHandler::class.java)
+
+    @Volatile
+    var waitingSealedSession: SealedSession? = null
+
+    fun handle(session: WebSocketSession, message: ClientMessage) {
+        when (message) {
+            is ClientMessage.CreateSealedGame -> handleCreateSealedGame(session, message)
+            is ClientMessage.JoinSealedGame -> handleJoinSealedGame(session, message)
+            is ClientMessage.SubmitSealedDeck -> handleSubmitSealedDeck(session, message)
+            is ClientMessage.CreateSealedLobby -> handleCreateSealedLobby(session, message)
+            is ClientMessage.JoinLobby -> handleJoinLobby(session, message)
+            is ClientMessage.StartSealedLobby -> handleStartSealedLobby(session)
+            is ClientMessage.LeaveLobby -> handleLeaveLobby(session)
+            is ClientMessage.UpdateLobbySettings -> handleUpdateLobbySettings(session, message)
+            else -> {}
+        }
+    }
+
+    private fun handleCreateSealedGame(session: WebSocketSession, message: ClientMessage.CreateSealedGame) {
+        val playerSession = sessionRegistry.getPlayerSession(session.id)
+        if (playerSession == null) {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        val setConfig = BoosterGenerator.getSetConfig(message.setCode)
+        if (setConfig == null) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "Unknown set code: ${message.setCode}")
+            return
+        }
+
+        val sealedSession = SealedSession(setCode = setConfig.setCode, setName = setConfig.setName)
+        sealedSession.addPlayer(playerSession)
+
+        lobbyRepository.saveSealedSession(sealedSession)
+        waitingSealedSession = sealedSession
+
+        logger.info("Sealed game created: ${sealedSession.sessionId} by ${playerSession.playerName} (set: ${setConfig.setName})")
+        sender.send(session, ServerMessage.SealedGameCreated(
+            sessionId = sealedSession.sessionId,
+            setCode = setConfig.setCode,
+            setName = setConfig.setName
+        ))
+    }
+
+    fun handleJoinSealedGame(session: WebSocketSession, message: ClientMessage.JoinSealedGame) {
+        val playerSession = sessionRegistry.getPlayerSession(session.id)
+        if (playerSession == null) {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        val sealedSession = lobbyRepository.findSealedSessionById(message.sessionId)
+        if (sealedSession == null) {
+            val gameSession = gameRepository.findById(message.sessionId)
+            if (gameSession != null) {
+                gamePlayHandler.handleJoinGame(session, ClientMessage.JoinGame(message.sessionId, emptyMap()))
+                return
+            }
+            val lobby = lobbyRepository.findLobbyById(message.sessionId)
+            if (lobby != null) {
+                handleJoinLobby(session, ClientMessage.JoinLobby(message.sessionId))
+                return
+            }
+            sender.sendError(session, ErrorCode.GAME_NOT_FOUND, "Game not found: ${message.sessionId}")
+            return
+        }
+
+        if (sealedSession.isFull) {
+            sender.sendError(session, ErrorCode.GAME_FULL, "Sealed game is full")
+            return
+        }
+
+        sealedSession.addPlayer(playerSession)
+
+        if (waitingSealedSession?.sessionId == sealedSession.sessionId) {
+            waitingSealedSession = null
+        }
+
+        logger.info("Player ${playerSession.playerName} joined sealed game ${sealedSession.sessionId}")
+        sealedSession.generatePools()
+        sendSealedPoolToAllPlayers(sealedSession)
+    }
+
+    private fun handleSubmitSealedDeck(session: WebSocketSession, message: ClientMessage.SubmitSealedDeck) {
+        val playerSession = sessionRegistry.getPlayerSession(session.id)
+        if (playerSession == null) {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        val token = sessionRegistry.getTokenByWsId(session.id)
+        val identity = token?.let { sessionRegistry.getIdentityByToken(it) }
+        val lobbyId = identity?.currentLobbyId
+        if (lobbyId != null) {
+            handleLobbyDeckSubmit(session, playerSession, identity, lobbyId, message.deckList)
+            return
+        }
+
+        // Legacy 2-player sealed
+        val sealedSessionId = playerSession.currentGameSessionId
+        if (sealedSessionId == null) {
+            sender.sendError(session, ErrorCode.GAME_NOT_FOUND, "Not in a sealed game")
+            return
+        }
+
+        val sealedSession = lobbyRepository.findSealedSessionById(sealedSessionId)
+        if (sealedSession == null) {
+            sender.sendError(session, ErrorCode.GAME_NOT_FOUND, "Sealed game not found")
+            return
+        }
+
+        val result = sealedSession.submitDeck(playerSession.playerId, message.deckList)
+        when (result) {
+            is SealedSession.DeckSubmissionResult.Success -> {
+                val deckSize = message.deckList.values.sum()
+                logger.info("Player ${playerSession.playerName} submitted deck ($deckSize cards)")
+                sender.send(session, ServerMessage.DeckSubmitted(deckSize))
+
+                if (result.bothReady) {
+                    startGameFromSealed(sealedSession)
+                } else {
+                    sender.send(session, ServerMessage.WaitingForOpponent)
+                    val opponentId = sealedSession.getOpponentId(playerSession.playerId)
+                    if (opponentId != null) {
+                        val opponentSession = sealedSession.getPlayerSession(opponentId)
+                        if (opponentSession != null) {
+                            sender.send(opponentSession.webSocketSession, ServerMessage.OpponentDeckSubmitted)
+                        }
+                    }
+                }
+            }
+            is SealedSession.DeckSubmissionResult.Error -> {
+                sender.sendError(session, ErrorCode.INVALID_DECK, result.message)
+            }
+        }
+    }
+
+    private fun sendSealedPoolToAllPlayers(sealedSession: SealedSession) {
+        val basicLandInfos = sealedSession.basicLands.values.map { cardToSealedCardInfo(it) }
+        sealedSession.players.forEach { (_, playerState) ->
+            val poolInfos = playerState.cardPool.map { cardToSealedCardInfo(it) }
+            sender.send(
+                playerState.session.webSocketSession,
+                ServerMessage.SealedPoolGenerated(
+                    setCode = sealedSession.setCode,
+                    setName = sealedSession.setName,
+                    cardPool = poolInfos,
+                    basicLands = basicLandInfos
+                )
+            )
+        }
+    }
+
+    private fun startGameFromSealed(sealedSession: SealedSession) {
+        logger.info("Starting game from sealed session: ${sealedSession.sessionId}")
+        val gameSession = GameSession(cardRegistry = cardRegistry)
+
+        sealedSession.players.forEach { (playerId, playerState) ->
+            val deck = playerState.submittedDeck
+                ?: throw IllegalStateException("Player $playerId has no submitted deck")
+            gameSession.addPlayer(playerState.session, deck)
+        }
+
+        gameRepository.save(gameSession)
+        lobbyRepository.removeSealedSession(sealedSession.sessionId)
+
+        gamePlayHandler.startGame(gameSession)
+    }
+
+    private fun handleCreateSealedLobby(session: WebSocketSession, message: ClientMessage.CreateSealedLobby) {
+        val playerSession = sessionRegistry.getPlayerSession(session.id)
+        if (playerSession == null) {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        val setConfig = BoosterGenerator.getSetConfig(message.setCode)
+        if (setConfig == null) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "Unknown set code: ${message.setCode}")
+            return
+        }
+
+        val token = sessionRegistry.getTokenByWsId(session.id)
+        val identity = token?.let { sessionRegistry.getIdentityByToken(it) }
+        if (identity == null) {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Identity not found")
+            return
+        }
+
+        val lobby = SealedLobby(
+            setCode = setConfig.setCode,
+            setName = setConfig.setName,
+            boosterCount = message.boosterCount.coerceIn(1, 12),
+            maxPlayers = message.maxPlayers.coerceIn(2, 8)
+        )
+        lobby.addPlayer(identity)
+        lobbyRepository.saveLobby(lobby)
+
+        logger.info("Sealed lobby created: ${lobby.lobbyId} by ${identity.playerName} (set: ${setConfig.setName})")
+        sender.send(session, ServerMessage.LobbyCreated(lobby.lobbyId))
+        broadcastLobbyUpdate(lobby)
+    }
+
+    fun handleJoinLobby(session: WebSocketSession, message: ClientMessage.JoinLobby) {
+        val playerSession = sessionRegistry.getPlayerSession(session.id)
+        if (playerSession == null) {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        val token = sessionRegistry.getTokenByWsId(session.id)
+        val identity = token?.let { sessionRegistry.getIdentityByToken(it) }
+        if (identity == null) {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Identity not found")
+            return
+        }
+
+        val lobby = lobbyRepository.findLobbyById(message.lobbyId)
+        if (lobby == null) {
+            sender.sendError(session, ErrorCode.GAME_NOT_FOUND, "Lobby not found: ${message.lobbyId}")
+            return
+        }
+
+        if (lobby.isFull) {
+            sender.sendError(session, ErrorCode.GAME_FULL, "Lobby is full")
+            return
+        }
+
+        if (lobby.state != LobbyState.WAITING_FOR_PLAYERS) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "Lobby not accepting players")
+            return
+        }
+
+        lobby.addPlayer(identity)
+        logger.info("Player ${identity.playerName} joined lobby ${lobby.lobbyId}")
+        broadcastLobbyUpdate(lobby)
+    }
+
+    private fun handleStartSealedLobby(session: WebSocketSession) {
+        val token = sessionRegistry.getTokenByWsId(session.id)
+        val identity = token?.let { sessionRegistry.getIdentityByToken(it) }
+        if (identity == null) {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        val lobbyId = identity.currentLobbyId
+        if (lobbyId == null) {
+            sender.sendError(session, ErrorCode.GAME_NOT_FOUND, "Not in a lobby")
+            return
+        }
+
+        val lobby = lobbyRepository.findLobbyById(lobbyId)
+        if (lobby == null) {
+            sender.sendError(session, ErrorCode.GAME_NOT_FOUND, "Lobby not found")
+            return
+        }
+
+        if (!lobby.isHost(identity.playerId)) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "Only the host can start")
+            return
+        }
+
+        if (lobby.playerCount < 2) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "Need at least 2 players")
+            return
+        }
+
+        val started = lobby.startDeckBuilding(identity.playerId)
+        if (!started) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "Failed to start lobby")
+            return
+        }
+
+        logger.info("Lobby ${lobby.lobbyId} started deck building (${lobby.playerCount} players)")
+
+        val basicLandInfos = lobby.basicLands.values.map { cardToSealedCardInfo(it) }
+        lobby.players.forEach { (_, playerState) ->
+            val poolInfos = playerState.cardPool.map { cardToSealedCardInfo(it) }
+            val ws = playerState.identity.webSocketSession
+            if (ws != null) {
+                sender.send(ws, ServerMessage.SealedPoolGenerated(
+                    setCode = lobby.setCode,
+                    setName = lobby.setName,
+                    cardPool = poolInfos,
+                    basicLands = basicLandInfos
+                ))
+            }
+        }
+
+        broadcastLobbyUpdate(lobby)
+    }
+
+    private fun handleLeaveLobby(session: WebSocketSession) {
+        val token = sessionRegistry.getTokenByWsId(session.id)
+        val identity = token?.let { sessionRegistry.getIdentityByToken(it) }
+        if (identity == null) return
+
+        val lobbyId = identity.currentLobbyId ?: return
+        val lobby = lobbyRepository.findLobbyById(lobbyId) ?: return
+
+        lobby.removePlayer(identity.playerId)
+        identity.currentLobbyId = null
+
+        logger.info("Player ${identity.playerName} left lobby $lobbyId")
+
+        if (lobby.playerCount == 0) {
+            lobbyRepository.removeLobby(lobbyId)
+            logger.info("Lobby $lobbyId removed (empty)")
+        } else {
+            broadcastLobbyUpdate(lobby)
+        }
+    }
+
+    private fun handleUpdateLobbySettings(session: WebSocketSession, message: ClientMessage.UpdateLobbySettings) {
+        val token = sessionRegistry.getTokenByWsId(session.id)
+        val identity = token?.let { sessionRegistry.getIdentityByToken(it) }
+        if (identity == null) {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        val lobbyId = identity.currentLobbyId
+        if (lobbyId == null) {
+            sender.sendError(session, ErrorCode.GAME_NOT_FOUND, "Not in a lobby")
+            return
+        }
+
+        val lobby = lobbyRepository.findLobbyById(lobbyId)
+        if (lobby == null) {
+            sender.sendError(session, ErrorCode.GAME_NOT_FOUND, "Lobby not found")
+            return
+        }
+
+        if (!lobby.isHost(identity.playerId)) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "Only the host can change settings")
+            return
+        }
+
+        if (lobby.state != LobbyState.WAITING_FOR_PLAYERS) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "Cannot change settings after start")
+            return
+        }
+
+        message.boosterCount?.let { lobby.boosterCount = it.coerceIn(1, 12) }
+        message.maxPlayers?.let { lobby.maxPlayers = it.coerceIn(2, 8) }
+
+        broadcastLobbyUpdate(lobby)
+    }
+
+    private fun handleLobbyDeckSubmit(
+        session: WebSocketSession,
+        playerSession: PlayerSession,
+        identity: PlayerIdentity,
+        lobbyId: String,
+        deckList: Map<String, Int>
+    ) {
+        val lobby = lobbyRepository.findLobbyById(lobbyId)
+        if (lobby == null) {
+            sender.sendError(session, ErrorCode.GAME_NOT_FOUND, "Lobby not found")
+            return
+        }
+
+        val result = lobby.submitDeck(identity.playerId, deckList)
+        when (result) {
+            is SealedLobby.DeckSubmissionResult.Success -> {
+                val deckSize = deckList.values.sum()
+                logger.info("Player ${identity.playerName} submitted deck ($deckSize cards) in lobby $lobbyId")
+                sender.send(session, ServerMessage.DeckSubmitted(deckSize))
+                broadcastLobbyUpdate(lobby)
+
+                if (result.allReady) {
+                    startTournament(lobby)
+                }
+            }
+            is SealedLobby.DeckSubmissionResult.Error -> {
+                sender.sendError(session, ErrorCode.INVALID_DECK, result.message)
+            }
+        }
+    }
+
+    fun broadcastLobbyUpdate(lobby: SealedLobby) {
+        lobby.players.forEach { (playerId, playerState) ->
+            val ws = playerState.identity.webSocketSession
+            if (ws != null && ws.isOpen) {
+                sender.send(ws, lobby.buildLobbyUpdate(playerId))
+            }
+        }
+    }
+
+    fun startTournament(lobby: SealedLobby) {
+        logger.info("Starting tournament for lobby ${lobby.lobbyId} with ${lobby.playerCount} players")
+        lobby.startTournament()
+
+        val players = lobby.players.values.map { ps ->
+            ps.identity.playerId to ps.identity.playerName
+        }
+
+        val tournament = TournamentManager(lobby.lobbyId, players)
+        lobbyRepository.saveTournament(lobby.lobbyId, tournament)
+
+        val connectedIds = lobby.players.values
+            .filter { it.identity.isConnected }
+            .map { it.identity.playerId }
+            .toSet()
+
+        lobby.players.forEach { (_, playerState) ->
+            val ws = playerState.identity.webSocketSession
+            if (ws != null && ws.isOpen) {
+                sender.send(ws, ServerMessage.TournamentStarted(
+                    lobbyId = lobby.lobbyId,
+                    totalRounds = tournament.totalRounds,
+                    standings = tournament.getStandingsInfo(connectedIds)
+                ))
+            }
+        }
+
+        startNextTournamentRound(lobby.lobbyId)
+    }
+
+    fun startNextTournamentRound(lobbyId: String) {
+        val lobby = lobbyRepository.findLobbyById(lobbyId) ?: return
+        val tournament = lobbyRepository.findTournamentById(lobbyId) ?: return
+
+        val round = tournament.startNextRound()
+        if (round == null) {
+            completeTournament(lobbyId)
+            return
+        }
+
+        logger.info("Starting round ${round.roundNumber} for tournament $lobbyId")
+
+        val gameMatches = tournament.getCurrentRoundGameMatches()
+
+        for (match in gameMatches) {
+            val player1State = lobby.players[match.player1Id] ?: continue
+            val player2State = lobby.players[match.player2Id ?: continue] ?: continue
+
+            val deck1 = lobby.getSubmittedDeck(match.player1Id) ?: continue
+            val deck2 = lobby.getSubmittedDeck(match.player2Id!!) ?: continue
+
+            val gameSession = GameSession(cardRegistry = cardRegistry)
+            val ps1 = player1State.identity.toPlayerSession()
+            val ps2 = player2State.identity.toPlayerSession()
+
+            gameSession.addPlayer(ps1, deck1)
+            gameSession.addPlayer(ps2, deck2)
+
+            gameRepository.save(gameSession)
+            gameRepository.linkToLobby(gameSession.sessionId, lobbyId)
+            match.gameSessionId = gameSession.sessionId
+
+            player1State.identity.currentGameSessionId = gameSession.sessionId
+            player2State.identity.currentGameSessionId = gameSession.sessionId
+
+            val ws1 = player1State.identity.webSocketSession
+            val ws2 = player2State.identity.webSocketSession
+            if (ws1 != null) {
+                sessionRegistry.getPlayerSession(ws1.id)?.currentGameSessionId = gameSession.sessionId
+            }
+            if (ws2 != null) {
+                sessionRegistry.getPlayerSession(ws2.id)?.currentGameSessionId = gameSession.sessionId
+            }
+
+            if (ws1 != null && ws1.isOpen) {
+                sender.send(ws1, ServerMessage.TournamentMatchStarting(
+                    lobbyId = lobbyId,
+                    round = round.roundNumber,
+                    gameSessionId = gameSession.sessionId,
+                    opponentName = player2State.identity.playerName
+                ))
+            }
+            if (ws2 != null && ws2.isOpen) {
+                sender.send(ws2, ServerMessage.TournamentMatchStarting(
+                    lobbyId = lobbyId,
+                    round = round.roundNumber,
+                    gameSessionId = gameSession.sessionId,
+                    opponentName = player1State.identity.playerName
+                ))
+            }
+
+            gamePlayHandler.startGame(gameSession)
+        }
+
+        for (match in round.matches) {
+            if (match.isBye) {
+                val playerState = lobby.players[match.player1Id]
+                val ws = playerState?.identity?.webSocketSession
+                if (ws != null && ws.isOpen) {
+                    sender.send(ws, ServerMessage.TournamentBye(
+                        lobbyId = lobbyId,
+                        round = round.roundNumber
+                    ))
+                }
+            }
+        }
+    }
+
+    fun handleRoundComplete(lobbyId: String) {
+        val lobby = lobbyRepository.findLobbyById(lobbyId) ?: return
+        val tournament = lobbyRepository.findTournamentById(lobbyId) ?: return
+        val round = tournament.currentRound ?: return
+
+        logger.info("Round ${round.roundNumber} complete for tournament $lobbyId")
+
+        val connectedIds = lobby.players.values
+            .filter { it.identity.isConnected }
+            .map { it.identity.playerId }
+            .toSet()
+
+        val roundComplete = ServerMessage.RoundComplete(
+            lobbyId = lobbyId,
+            round = round.roundNumber,
+            results = tournament.getCurrentRoundResults(),
+            standings = tournament.getStandingsInfo(connectedIds)
+        )
+
+        lobby.players.forEach { (_, playerState) ->
+            playerState.identity.currentGameSessionId = null
+        }
+
+        lobby.players.forEach { (_, playerState) ->
+            val ws = playerState.identity.webSocketSession
+            if (ws != null && ws.isOpen) {
+                sender.send(ws, roundComplete)
+            }
+        }
+
+        if (tournament.isComplete) {
+            completeTournament(lobbyId)
+        } else {
+            startNextTournamentRound(lobbyId)
+        }
+    }
+
+    private fun completeTournament(lobbyId: String) {
+        val lobby = lobbyRepository.findLobbyById(lobbyId) ?: return
+        val tournament = lobbyRepository.findTournamentById(lobbyId) ?: return
+
+        logger.info("Tournament complete for lobby $lobbyId")
+        lobby.completeTournament()
+
+        val connectedIds = lobby.players.values
+            .filter { it.identity.isConnected }
+            .map { it.identity.playerId }
+            .toSet()
+
+        val message = ServerMessage.TournamentComplete(
+            lobbyId = lobbyId,
+            finalStandings = tournament.getStandingsInfo(connectedIds)
+        )
+
+        lobby.players.forEach { (_, playerState) ->
+            val ws = playerState.identity.webSocketSession
+            if (ws != null && ws.isOpen) {
+                sender.send(ws, message)
+            }
+        }
+    }
+}
