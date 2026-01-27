@@ -11,7 +11,7 @@ import { DraggedCardOverlay } from './DraggedCardOverlay'
 import { useResponsive, calculateFittingCardWidth, type ResponsiveSizes } from '../../hooks/useResponsive'
 import { getCardImageUrl, getScryfallFallbackUrl } from '../../utils/cardImages'
 import { useInteraction } from '../../hooks/useInteraction'
-import React, { createContext, useContext, useCallback, useEffect } from 'react'
+import React, { createContext, useContext, useCallback, useEffect, useState } from 'react'
 
 // Context to pass responsive sizes down the component tree
 const ResponsiveContext = createContext<ResponsiveSizes | null>(null)
@@ -617,7 +617,9 @@ function CardRow({
 function ZonePile({ player }: { player: ClientPlayer }) {
   const graveyardCards = useZoneCards(graveyard(player.playerId))
   const topGraveyardCard = graveyardCards[graveyardCards.length - 1]
+  const hoverCard = useGameStore((state) => state.hoverCard)
   const responsive = useResponsiveContext()
+  const [browsingGraveyard, setBrowsingGraveyard] = useState(false)
 
   const pileStyle = {
     width: responsive.pileWidth,
@@ -646,7 +648,12 @@ function ZonePile({ player }: { player: ClientPlayer }) {
 
       {/* Graveyard */}
       <div style={styles.zoneStack}>
-        <div style={{ ...styles.graveyardPile, ...pileStyle }}>
+        <div
+          style={{ ...styles.graveyardPile, ...pileStyle, cursor: graveyardCards.length > 0 ? 'pointer' : 'default' }}
+          onClick={() => { if (graveyardCards.length > 0) setBrowsingGraveyard(true) }}
+          onMouseEnter={() => { if (topGraveyardCard) hoverCard(topGraveyardCard.id) }}
+          onMouseLeave={() => hoverCard(null)}
+        >
           {topGraveyardCard ? (
             <img
               src={getCardImageUrl(topGraveyardCard.name, topGraveyardCard.imageUri, 'normal')}
@@ -662,6 +669,57 @@ function ZonePile({ player }: { player: ClientPlayer }) {
           )}
         </div>
         <span style={{ ...styles.zoneLabel, fontSize: responsive.isMobile ? 8 : 10 }}>Graveyard</span>
+      </div>
+
+      {browsingGraveyard && (
+        <GraveyardBrowser cards={graveyardCards} onClose={() => setBrowsingGraveyard(false)} />
+      )}
+    </div>
+  )
+}
+
+/**
+ * Full-screen overlay for browsing graveyard cards.
+ */
+function GraveyardBrowser({ cards, onClose }: { cards: readonly ClientCard[], onClose: () => void }) {
+  const hoverCard = useGameStore((state) => state.hoverCard)
+  const responsive = useResponsiveContext()
+
+  const cardWidth = responsive.isMobile ? 120 : 160
+  const cardHeight = Math.round(cardWidth * 1.4)
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [onClose])
+
+  return (
+    <div style={styles.graveyardOverlay} onClick={onClose}>
+      <div style={styles.graveyardBrowserContent} onClick={(e) => e.stopPropagation()}>
+        <div style={styles.graveyardBrowserHeader}>
+          <h2 style={styles.graveyardBrowserTitle}>Graveyard ({cards.length})</h2>
+          <button style={styles.graveyardCloseButton} onClick={onClose}>✕</button>
+        </div>
+        <div style={styles.graveyardCardGrid}>
+          {cards.map((card) => (
+            <div
+              key={card.id}
+              style={{ width: cardWidth, height: cardHeight, borderRadius: 6, overflow: 'hidden', flexShrink: 0 }}
+              onMouseEnter={() => hoverCard(card.id)}
+              onMouseLeave={() => hoverCard(null)}
+            >
+              <img
+                src={getCardImageUrl(card.name, card.imageUri, 'normal')}
+                alt={card.name}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                onError={(e) => handleImageError(e, card.name, 'normal')}
+              />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )
@@ -1355,6 +1413,52 @@ const styles: Record<string, React.CSSProperties> = {
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
+  graveyardOverlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 2000,
+  } as React.CSSProperties,
+  graveyardBrowserContent: {
+    maxWidth: '90vw',
+    maxHeight: '80vh',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 16,
+  } as React.CSSProperties,
+  graveyardBrowserHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  } as React.CSSProperties,
+  graveyardBrowserTitle: {
+    color: '#ccc',
+    margin: 0,
+    fontSize: 18,
+    fontWeight: 600,
+  } as React.CSSProperties,
+  graveyardCloseButton: {
+    background: 'none',
+    border: '1px solid #555',
+    color: '#aaa',
+    fontSize: 18,
+    cursor: 'pointer',
+    padding: '4px 10px',
+    borderRadius: 4,
+  } as React.CSSProperties,
+  graveyardCardGrid: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: 10,
+    overflowY: 'auto',
+    justifyContent: 'center',
+  } as React.CSSProperties,
   playerInfo: {
     display: 'flex',
     alignItems: 'center',
