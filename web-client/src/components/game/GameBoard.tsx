@@ -8,6 +8,7 @@ import { ManaPool } from '../ui/ManaPool'
 import { CombatArrows } from '../combat/CombatArrows'
 import { TargetingArrows } from '../targeting/TargetingArrows'
 import { DraggedCardOverlay } from './DraggedCardOverlay'
+import { GameLog } from './GameLog'
 import { useResponsive, calculateFittingCardWidth, type ResponsiveSizes } from '../../hooks/useResponsive'
 import { getCardImageUrl, getScryfallFallbackUrl } from '../../utils/cardImages'
 import { useInteraction } from '../../hooks/useInteraction'
@@ -236,6 +237,7 @@ export function GameBoard() {
       {/* Dragged card overlay */}
       <DraggedCardOverlay />
       <CardPreview />
+      <GameLog />
     </div>
     </ResponsiveContext.Provider>
   )

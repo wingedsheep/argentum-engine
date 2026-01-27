@@ -56,7 +56,10 @@ data class ClientGameState(
     val winnerId: EntityId?,
 
     /** Combat state, if in combat */
-    val combat: ClientCombatState?
+    val combat: ClientCombatState?,
+
+    /** Accumulated game log entries for this player */
+    val gameLog: List<ClientEvent> = emptyList()
 )
 
 /**

@@ -29,14 +29,9 @@ sealed interface ClientEvent {
         val playerId: EntityId,
         val oldLife: Int,
         val newLife: Int,
-        val change: Int
-    ) : ClientEvent {
-        override val description: String = if (change > 0) {
-            "Player gained $change life"
-        } else {
-            "Player lost ${-change} life"
-        }
-    }
+        val change: Int,
+        override val description: String = if (change > 0) "Player gained $change life" else "Player lost ${-change} life"
+    ) : ClientEvent
 
     @Serializable
     @SerialName("damageDealt")
@@ -47,17 +42,9 @@ sealed interface ClientEvent {
         val targetName: String,
         val amount: Int,
         val targetIsPlayer: Boolean,
-        val isCombatDamage: Boolean
-    ) : ClientEvent {
-        override val description: String = buildString {
-            if (sourceName != null) {
-                append("$sourceName dealt ")
-            } else {
-                append("Dealt ")
-            }
-            append("$amount damage to $targetName")
-        }
-    }
+        val isCombatDamage: Boolean,
+        override val description: String = "${sourceName?.let { "$it dealt " } ?: "Dealt "}$amount damage to $targetName"
+    ) : ClientEvent
 
     @Serializable
     @SerialName("statsModified")
@@ -66,16 +53,9 @@ sealed interface ClientEvent {
         val targetName: String,
         val powerChange: Int,
         val toughnessChange: Int,
-        val sourceName: String
-    ) : ClientEvent {
-        override val description: String = buildString {
-            append("$sourceName gave $targetName ")
-            if (powerChange >= 0) append("+")
-            append("$powerChange/")
-            if (toughnessChange >= 0) append("+")
-            append("$toughnessChange")
-        }
-    }
+        val sourceName: String,
+        override val description: String = "$sourceName gave $targetName ${if (powerChange >= 0) "+" else ""}$powerChange/${if (toughnessChange >= 0) "+" else ""}$toughnessChange"
+    ) : ClientEvent
 
     // =========================================================================
     // Card Movement Events
@@ -86,24 +66,18 @@ sealed interface ClientEvent {
     data class CardDrawn(
         val playerId: EntityId,
         val cardId: EntityId,
-        val cardName: String?  // Null if hidden from viewing player
-    ) : ClientEvent {
-        override val description: String = if (cardName != null) {
-            "Drew $cardName"
-        } else {
-            "Drew a card"
-        }
-    }
+        val cardName: String?,
+        override val description: String = if (cardName != null) "Drew $cardName" else "Drew a card"
+    ) : ClientEvent
 
     @Serializable
     @SerialName("cardDiscarded")
     data class CardDiscarded(
         val playerId: EntityId,
         val cardId: EntityId,
-        val cardName: String
-    ) : ClientEvent {
+        val cardName: String,
         override val description: String = "Discarded $cardName"
-    }
+    ) : ClientEvent
 
     @Serializable
     @SerialName("permanentEntered")
@@ -111,21 +85,18 @@ sealed interface ClientEvent {
         val cardId: EntityId,
         val cardName: String,
         val controllerId: EntityId,
-        val enteredTapped: Boolean
-    ) : ClientEvent {
-        override val description: String = "$cardName entered the battlefield" +
-            if (enteredTapped) " tapped" else ""
-    }
+        val enteredTapped: Boolean,
+        override val description: String = "$cardName entered the battlefield${if (enteredTapped) " tapped" else ""}"
+    ) : ClientEvent
 
     @Serializable
     @SerialName("permanentLeft")
     data class PermanentLeft(
         val cardId: EntityId,
         val cardName: String,
-        val destination: String  // "graveyard", "exile", "hand", "library"
-    ) : ClientEvent {
+        val destination: String,
         override val description: String = "$cardName went to $destination"
-    }
+    ) : ClientEvent
 
     // =========================================================================
     // Combat Events
@@ -137,10 +108,9 @@ sealed interface ClientEvent {
         val creatureId: EntityId,
         val creatureName: String,
         val attackingPlayerId: EntityId,
-        val defendingPlayerId: EntityId
-    ) : ClientEvent {
+        val defendingPlayerId: EntityId,
         override val description: String = "$creatureName attacked"
-    }
+    ) : ClientEvent
 
     @Serializable
     @SerialName("creatureBlocked")
@@ -148,19 +118,17 @@ sealed interface ClientEvent {
         val blockerId: EntityId,
         val blockerName: String,
         val attackerId: EntityId,
-        val attackerName: String
-    ) : ClientEvent {
+        val attackerName: String,
         override val description: String = "$blockerName blocked $attackerName"
-    }
+    ) : ClientEvent
 
     @Serializable
     @SerialName("creatureDied")
     data class CreatureDied(
         val creatureId: EntityId,
-        val creatureName: String
-    ) : ClientEvent {
+        val creatureName: String,
         override val description: String = "$creatureName died"
-    }
+    ) : ClientEvent
 
     // =========================================================================
     // Spell/Ability Events
@@ -171,48 +139,43 @@ sealed interface ClientEvent {
     data class SpellCast(
         val spellId: EntityId,
         val spellName: String,
-        val casterId: EntityId
-    ) : ClientEvent {
+        val casterId: EntityId,
         override val description: String = "Cast $spellName"
-    }
+    ) : ClientEvent
 
     @Serializable
     @SerialName("spellResolved")
     data class SpellResolved(
         val spellId: EntityId,
-        val spellName: String
-    ) : ClientEvent {
+        val spellName: String,
         override val description: String = "$spellName resolved"
-    }
+    ) : ClientEvent
 
     @Serializable
     @SerialName("spellCountered")
     data class SpellCountered(
         val spellId: EntityId,
-        val spellName: String
-    ) : ClientEvent {
+        val spellName: String,
         override val description: String = "$spellName was countered"
-    }
+    ) : ClientEvent
 
     @Serializable
     @SerialName("abilityTriggered")
     data class AbilityTriggered(
         val sourceId: EntityId,
         val sourceName: String,
-        val abilityDescription: String
-    ) : ClientEvent {
+        val abilityDescription: String,
         override val description: String = "$sourceName: $abilityDescription"
-    }
+    ) : ClientEvent
 
     @Serializable
     @SerialName("abilityActivated")
     data class AbilityActivated(
         val sourceId: EntityId,
         val sourceName: String,
-        val abilityDescription: String
-    ) : ClientEvent {
+        val abilityDescription: String,
         override val description: String = "Activated $sourceName: $abilityDescription"
-    }
+    ) : ClientEvent
 
     // =========================================================================
     // State Change Events
@@ -222,19 +185,17 @@ sealed interface ClientEvent {
     @SerialName("permanentTapped")
     data class PermanentTapped(
         val permanentId: EntityId,
-        val permanentName: String
-    ) : ClientEvent {
+        val permanentName: String,
         override val description: String = "Tapped $permanentName"
-    }
+    ) : ClientEvent
 
     @Serializable
     @SerialName("permanentUntapped")
     data class PermanentUntapped(
         val permanentId: EntityId,
-        val permanentName: String
-    ) : ClientEvent {
+        val permanentName: String,
         override val description: String = "Untapped $permanentName"
-    }
+    ) : ClientEvent
 
     @Serializable
     @SerialName("counterAdded")
@@ -242,10 +203,9 @@ sealed interface ClientEvent {
         val permanentId: EntityId,
         val permanentName: String,
         val counterType: String,
-        val count: Int
-    ) : ClientEvent {
+        val count: Int,
         override val description: String = "Put $count $counterType counter(s) on $permanentName"
-    }
+    ) : ClientEvent
 
     @Serializable
     @SerialName("counterRemoved")
@@ -253,10 +213,9 @@ sealed interface ClientEvent {
         val permanentId: EntityId,
         val permanentName: String,
         val counterType: String,
-        val count: Int
-    ) : ClientEvent {
+        val count: Int,
         override val description: String = "Removed $count $counterType counter(s) from $permanentName"
-    }
+    ) : ClientEvent
 
     // =========================================================================
     // Mana Events
@@ -266,10 +225,9 @@ sealed interface ClientEvent {
     @SerialName("manaAdded")
     data class ManaAdded(
         val playerId: EntityId,
-        val manaString: String  // e.g., "{G}{G}" or "{R}"
-    ) : ClientEvent {
+        val manaString: String,
         override val description: String = "Added $manaString"
-    }
+    ) : ClientEvent
 
     // =========================================================================
     // Game State Events
@@ -279,22 +237,16 @@ sealed interface ClientEvent {
     @SerialName("playerLost")
     data class PlayerLost(
         val playerId: EntityId,
-        val reason: String
-    ) : ClientEvent {
+        val reason: String,
         override val description: String = "Player lost: $reason"
-    }
+    ) : ClientEvent
 
     @Serializable
     @SerialName("gameEnded")
     data class GameEnded(
-        val winnerId: EntityId?
-    ) : ClientEvent {
-        override val description: String = if (winnerId != null) {
-            "Game ended - player won"
-        } else {
-            "Game ended in a draw"
-        }
-    }
+        val winnerId: EntityId?,
+        override val description: String = if (winnerId != null) "Game ended - player won" else "Game ended in a draw"
+    ) : ClientEvent
 
     // =========================================================================
     // Information Events
@@ -305,19 +257,17 @@ sealed interface ClientEvent {
     data class HandLookedAt(
         val viewingPlayerId: EntityId,
         val targetPlayerId: EntityId,
-        val cardIds: List<EntityId>
-    ) : ClientEvent {
+        val cardIds: List<EntityId>,
         override val description: String = "Looked at opponent's hand (${cardIds.size} cards)"
-    }
+    ) : ClientEvent
 
     @Serializable
     @SerialName("handRevealed")
     data class HandRevealed(
         val revealingPlayerId: EntityId,
-        val cardIds: List<EntityId>
-    ) : ClientEvent {
+        val cardIds: List<EntityId>,
         override val description: String = "Hand revealed (${cardIds.size} cards)"
-    }
+    ) : ClientEvent
 
     @Serializable
     @SerialName("cardsRevealed")
@@ -325,10 +275,39 @@ sealed interface ClientEvent {
         val revealingPlayerId: EntityId,
         val cardIds: List<EntityId>,
         val cardNames: List<String>,
-        val source: String? = null
-    ) : ClientEvent {
+        val source: String? = null,
         override val description: String = "Revealed ${cardNames.joinToString(", ")}${source?.let { " ($it)" } ?: ""}"
-    }
+    ) : ClientEvent
+
+    // =========================================================================
+    // Player Choice Events
+    // =========================================================================
+
+    @Serializable
+    @SerialName("scryCompleted")
+    data class ScryCompleted(
+        val playerId: EntityId,
+        val cardsOnTop: Int,
+        val cardsOnBottom: Int,
+        override val description: String = "Scried: put $cardsOnTop on top, $cardsOnBottom on bottom"
+    ) : ClientEvent
+
+    @Serializable
+    @SerialName("permanentsSacrificed")
+    data class PermanentsSacrificed(
+        val playerId: EntityId,
+        val permanentNames: List<String>,
+        override val description: String = "Sacrificed ${permanentNames.joinToString(", ")}"
+    ) : ClientEvent
+
+    @Serializable
+    @SerialName("libraryReordered")
+    data class LibraryReordered(
+        val playerId: EntityId,
+        val cardCount: Int,
+        val source: String? = null,
+        override val description: String = "Reordered top $cardCount cards${source?.let { " ($it)" } ?: ""}"
+    ) : ClientEvent
 }
 
 /**

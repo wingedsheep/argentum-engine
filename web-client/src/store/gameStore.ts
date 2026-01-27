@@ -441,21 +441,16 @@ export const useGameStore = create<GameStore>()(
           (e) => e.type === 'handLookedAt'
         ) as { type: 'handLookedAt'; cardIds: readonly EntityId[] } | undefined
 
-        const now = Date.now()
-        const newLogEntries: LogEntry[] = msg.events
-          .filter((e) => e.type !== 'permanentTapped' && e.type !== 'permanentUntapped' && e.type !== 'manaAdded')
-          .map((e) => ({
-            description: e.description,
-            playerId: getEventPlayerId(e),
-            timestamp: now,
-          }))
-
         set((state) => ({
           gameState: msg.state,
           legalActions: msg.legalActions,
           pendingDecision: msg.pendingDecision ?? null,
           pendingEvents: [...state.pendingEvents, ...msg.events],
-          eventLog: [...state.eventLog, ...newLogEntries],
+          eventLog: (msg.state.gameLog ?? []).map((e: ClientEvent) => ({
+            description: e.description,
+            playerId: getEventPlayerId(e),
+            timestamp: Date.now(),
+          })),
           waitingForOpponentMulligan: false,
           // Show revealed hand overlay if handLookedAt event received
           revealedHandCardIds: handLookedAtEvent?.cardIds ?? state.revealedHandCardIds,

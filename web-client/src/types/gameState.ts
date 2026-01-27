@@ -1,5 +1,6 @@
 import { Color, CounterType, Keyword, Phase, Step, ZoneType } from './enums'
 import { EntityId, ZoneId } from './entities'
+import { ClientEvent } from './events'
 
 /**
  * Client-facing game state DTO.
@@ -39,6 +40,9 @@ export interface ClientGameState {
 
   /** Combat state, if in combat */
   readonly combat: ClientCombatState | null
+
+  /** Accumulated game log entries from the server */
+  readonly gameLog?: readonly ClientEvent[]
 }
 
 /**

@@ -1,5 +1,7 @@
 package com.wingedsheep.gameserver.session
 
+import com.wingedsheep.gameserver.dto.ClientEvent
+import com.wingedsheep.gameserver.dto.ClientEventTransformer
 import com.wingedsheep.gameserver.dto.ClientGameState
 import com.wingedsheep.gameserver.dto.ClientStateTransformer
 import com.wingedsheep.gameserver.protocol.GameOverReason
@@ -62,6 +64,9 @@ class GameSession(
 
     /** Tracks the last processed messageId per player for idempotency */
     private val lastProcessedMessageId = java.util.concurrent.ConcurrentHashMap<EntityId, String>()
+
+    /** Accumulated game log per player (player-specific due to masking) */
+    private val gameLogs = java.util.concurrent.ConcurrentHashMap<EntityId, MutableList<ClientEvent>>()
 
     val player1: PlayerSession? get() = players.values.firstOrNull()
     val player2: PlayerSession? get() = players.values.drop(1).firstOrNull()
@@ -676,10 +681,19 @@ class GameSession(
         val clientState = getClientState(playerId) ?: return null
         val legalActions = getLegalActions(playerId)
 
+        // Transform raw engine events to client events
+        val clientEvents = ClientEventTransformer.transform(events, playerId)
+
+        // Accumulate into persistent game log (filter noisy events)
+        val logEntries = clientEvents.filter { it !is ClientEvent.PermanentTapped && it !is ClientEvent.PermanentUntapped && it !is ClientEvent.ManaAdded }
+        val playerLog = gameLogs.getOrPut(playerId) { mutableListOf() }
+        playerLog.addAll(logEntries)
+
         // Include pending decision only for the player who needs to make it
         val pendingDecision = state.pendingDecision?.takeIf { it.playerId == playerId }
 
-        return ServerMessage.StateUpdate(clientState, events, legalActions, pendingDecision)
+        val stateWithLog = clientState.copy(gameLog = playerLog.toList())
+        return ServerMessage.StateUpdate(stateWithLog, clientEvents, legalActions, pendingDecision)
     }
 
     /**
