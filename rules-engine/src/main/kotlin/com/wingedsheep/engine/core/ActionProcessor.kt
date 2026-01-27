@@ -614,7 +614,27 @@ class ActionProcessor(
             return if (newState.stack.isNotEmpty()) {
                 resolveTopOfStack(newState)
             } else {
-                advanceGame(newState)
+                val advanceResult = advanceGame(newState)
+                if (!advanceResult.isSuccess || advanceResult.events.isEmpty()) {
+                    return advanceResult
+                }
+                // Detect triggers from step transition events (e.g., death triggers from combat damage SBAs)
+                val triggers = triggerDetector.detectTriggers(advanceResult.newState, advanceResult.events)
+                if (triggers.isNotEmpty()) {
+                    val triggerResult = triggerProcessor.processTriggers(advanceResult.newState, triggers)
+                    if (triggerResult.isPaused) {
+                        return ExecutionResult.paused(
+                            triggerResult.state,
+                            triggerResult.pendingDecision!!,
+                            advanceResult.events + triggerResult.events
+                        )
+                    }
+                    return ExecutionResult.success(
+                        triggerResult.newState.withPriority(state.activePlayerId),
+                        advanceResult.events + triggerResult.events
+                    )
+                }
+                advanceResult
             }
         }
 
