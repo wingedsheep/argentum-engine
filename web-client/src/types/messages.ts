@@ -263,6 +263,18 @@ export interface LegalActionInfo {
   readonly minX?: number
   /** Whether this is a mana ability (doesn't highlight card as playable) */
   readonly isManaAbility?: boolean
+  /** Additional cost info (sacrifice, etc.) */
+  readonly additionalCostInfo?: AdditionalCostInfo
+}
+
+/**
+ * Information about additional costs for a spell.
+ */
+export interface AdditionalCostInfo {
+  readonly description: string
+  readonly costType: string
+  readonly validSacrificeTargets?: readonly EntityId[]
+  readonly sacrificeCount?: number
 }
 
 /**

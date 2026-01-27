@@ -26,6 +26,7 @@ export function useInteraction() {
   const selectedCardId = useGameStore((state) => state.selectedCardId)
   const legalActions = useGameStore((state) => state.legalActions)
   const startXSelection = useGameStore((state) => state.startXSelection)
+  const startTargeting = useGameStore((state) => state.startTargeting)
 
   /**
    * Get legal actions for a card.
@@ -129,10 +130,26 @@ export function useInteraction() {
         return
       }
 
+      // Check if spell requires sacrifice as additional cost
+      if (action.type === 'CastSpell' && actionInfo.additionalCostInfo?.costType === 'SacrificePermanent') {
+        const costInfo = actionInfo.additionalCostInfo
+        startTargeting({
+          action,
+          validTargets: [...(costInfo.validSacrificeTargets ?? [])],
+          selectedTargets: [],
+          minTargets: costInfo.sacrificeCount ?? 1,
+          maxTargets: costInfo.sacrificeCount ?? 1,
+          isSacrificeSelection: true,
+          pendingActionInfo: actionInfo,
+        })
+        selectCard(null)
+        return
+      }
+
       submitAction(action)
       selectCard(null)
     },
-    [submitAction, selectCard, startXSelection]
+    [submitAction, selectCard, startXSelection, startTargeting]
   )
 
   /**

@@ -16,7 +16,8 @@ data class SpellOnStackComponent(
     val casterId: EntityId,
     val xValue: Int? = null,  // For X spells
     val wasKicked: Boolean = false,  // For kicker costs
-    val chosenModes: List<Int> = emptyList()  // For modal spells
+    val chosenModes: List<Int> = emptyList(),  // For modal spells
+    val sacrificedPermanents: List<EntityId> = emptyList()  // For additional costs
 ) : Component
 
 /**

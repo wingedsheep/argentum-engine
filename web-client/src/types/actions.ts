@@ -46,6 +46,14 @@ export type ChosenTarget =
   | { readonly type: 'Permanent'; readonly entityId: EntityId }
   | { readonly type: 'Spell'; readonly spellEntityId: EntityId }
 
+export interface AdditionalCostPayment {
+  readonly sacrificedPermanents?: readonly EntityId[]
+  readonly discardedCards?: readonly EntityId[]
+  readonly lifePaid?: number
+  readonly exiledCards?: readonly EntityId[]
+  readonly tappedPermanents?: readonly EntityId[]
+}
+
 export interface CastSpellAction {
   readonly type: 'CastSpell'
   readonly playerId: EntityId
@@ -53,6 +61,7 @@ export interface CastSpellAction {
   readonly targets?: readonly ChosenTarget[]
   readonly xValue?: number | null
   readonly paymentStrategy?: PaymentStrategy
+  readonly additionalCostPayment?: AdditionalCostPayment
 }
 
 export type PaymentStrategy =

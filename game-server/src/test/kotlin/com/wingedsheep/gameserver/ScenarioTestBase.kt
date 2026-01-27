@@ -307,6 +307,35 @@ abstract class ScenarioTestBase : FunSpec() {
         }
 
         /**
+         * Cast a spell by name, sacrificing a creature and targeting a player.
+         */
+        fun castSpellWithSacrifice(
+            playerNumber: Int,
+            spellName: String,
+            sacrificeCreatureName: String,
+            targetPlayerNumber: Int
+        ): ExecutionResult {
+            val playerId = if (playerNumber == 1) player1Id else player2Id
+            val targetPlayerId = if (targetPlayerNumber == 1) player1Id else player2Id
+            val hand = state.getHand(playerId)
+            val cardId = hand.find { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.name == spellName
+            } ?: error("Card '$spellName' not found in player $playerNumber's hand")
+
+            val sacrificeId = state.getBattlefield().find { entityId ->
+                val container = state.getEntity(entityId) ?: return@find false
+                container.get<CardComponent>()?.name == sacrificeCreatureName &&
+                    container.get<ControllerComponent>()?.playerId == playerId
+            } ?: error("Creature '$sacrificeCreatureName' not found on player $playerNumber's battlefield")
+
+            val targets = listOf(ChosenTarget.Player(targetPlayerId))
+            val payment = com.wingedsheep.sdk.scripting.AdditionalCostPayment(
+                sacrificedPermanents = listOf(sacrificeId)
+            )
+            return execute(CastSpell(playerId, cardId, targets, additionalCostPayment = payment))
+        }
+
+        /**
          * Cast a spell by name from a player's hand, targeting a player.
          */
         fun castSpellTargetingPlayer(

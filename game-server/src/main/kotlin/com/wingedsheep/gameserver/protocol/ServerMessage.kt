@@ -1,9 +1,9 @@
 package com.wingedsheep.gameserver.protocol
 
+import com.wingedsheep.gameserver.dto.ClientEvent
 import com.wingedsheep.gameserver.dto.ClientGameState
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.engine.core.GameAction
-import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.PendingDecision
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -55,7 +55,7 @@ sealed interface ServerMessage {
     @SerialName("stateUpdate")
     data class StateUpdate(
         val state: ClientGameState,
-        val events: List<GameEvent>,
+        val events: List<ClientEvent>,
         val legalActions: List<LegalActionInfo>,
         /** Pending decision that requires player input (e.g., discard to hand size) */
         val pendingDecision: PendingDecision? = null
@@ -366,7 +366,24 @@ data class LegalActionInfo(
     /** Minimum X value (usually 0) */
     val minX: Int = 0,
     /** Whether this is a mana ability (doesn't highlight card as playable) */
-    val isManaAbility: Boolean = false
+    val isManaAbility: Boolean = false,
+    /** Additional cost info - sacrifice targets, etc. */
+    val additionalCostInfo: AdditionalCostInfo? = null
+)
+
+/**
+ * Information about additional costs for a spell.
+ */
+@Serializable
+data class AdditionalCostInfo(
+    /** Description of the additional cost */
+    val description: String,
+    /** Type of additional cost */
+    val costType: String,
+    /** Valid targets for sacrifice costs */
+    val validSacrificeTargets: List<EntityId> = emptyList(),
+    /** Number of permanents to sacrifice */
+    val sacrificeCount: Int = 1
 )
 
 /**

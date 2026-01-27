@@ -41,7 +41,8 @@ class StackResolver(
         cardId: EntityId,
         casterId: EntityId,
         targets: List<ChosenTarget> = emptyList(),
-        xValue: Int? = null
+        xValue: Int? = null,
+        sacrificedPermanents: List<EntityId> = emptyList()
     ): ExecutionResult {
         val container = state.getEntity(cardId)
             ?: return ExecutionResult.error(state, "Card not found: $cardId")
@@ -54,7 +55,7 @@ class StackResolver(
 
         // Add spell components
         newState = newState.updateEntity(cardId) { c ->
-            var updated = c.with(SpellOnStackComponent(casterId, xValue))
+            var updated = c.with(SpellOnStackComponent(casterId, xValue, sacrificedPermanents = sacrificedPermanents))
             if (targets.isNotEmpty()) {
                 updated = updated.with(TargetsComponent(targets))
             }
@@ -272,7 +273,8 @@ class StackResolver(
                 controllerId = spellComponent.casterId,
                 opponentId = newState.getOpponent(spellComponent.casterId),
                 targets = targets,
-                xValue = spellComponent.xValue
+                xValue = spellComponent.xValue,
+                sacrificedPermanents = spellComponent.sacrificedPermanents
             )
 
             val effectResult = effectHandler.execute(newState, spellEffect, context)

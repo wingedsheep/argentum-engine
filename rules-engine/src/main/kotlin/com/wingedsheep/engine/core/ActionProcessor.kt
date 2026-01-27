@@ -36,6 +36,7 @@ import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.ActivationRestriction
 import com.wingedsheep.sdk.scripting.AddManaEffect
 import com.wingedsheep.sdk.scripting.AddColorlessManaEffect
+import com.wingedsheep.sdk.scripting.CardFilter
 import com.wingedsheep.sdk.scripting.CastRestriction
 
 /**
@@ -160,6 +161,39 @@ class ActionProcessor(
             val restrictionError = validateCastRestrictions(state, cardDef.script.castRestrictions, action.playerId)
             if (restrictionError != null) {
                 return restrictionError
+            }
+        }
+
+        // Validate additional costs
+        if (cardDef != null) {
+            for (additionalCost in cardDef.script.additionalCosts) {
+                when (additionalCost) {
+                    is com.wingedsheep.sdk.scripting.AdditionalCost.SacrificePermanent -> {
+                        val sacrificed = action.additionalCostPayment?.sacrificedPermanents ?: emptyList()
+                        if (sacrificed.size < additionalCost.count) {
+                            return "You must sacrifice ${additionalCost.count} ${additionalCost.filter.description} to cast this spell"
+                        }
+                        for (permId in sacrificed) {
+                            val permContainer = state.getEntity(permId)
+                                ?: return "Sacrificed permanent not found: $permId"
+                            val permCard = permContainer.get<CardComponent>()
+                                ?: return "Sacrificed entity is not a card: $permId"
+                            val permController = permContainer.get<ControllerComponent>()
+                            if (permController?.playerId != action.playerId) {
+                                return "You can only sacrifice permanents you control"
+                            }
+                            if (permId !in state.getBattlefield()) {
+                                return "Sacrificed permanent is not on the battlefield: $permId"
+                            }
+                            if (!matchesCardFilter(permCard, additionalCost.filter)) {
+                                return "${permCard.name} doesn't match the required filter: ${additionalCost.filter.description}"
+                            }
+                        }
+                    }
+                    else -> {
+                        // Other additional cost types not yet validated
+                    }
+                }
             }
         }
 
@@ -289,6 +323,25 @@ class ActionProcessor(
                 }
                 null
             }
+        }
+    }
+
+    private fun matchesCardFilter(card: CardComponent, filter: CardFilter): Boolean {
+        return when (filter) {
+            is CardFilter.AnyCard -> true
+            is CardFilter.CreatureCard -> card.typeLine.isCreature
+            is CardFilter.LandCard -> card.typeLine.isLand
+            is CardFilter.BasicLandCard -> card.typeLine.isBasicLand
+            is CardFilter.SorceryCard -> card.typeLine.isSorcery
+            is CardFilter.InstantCard -> card.typeLine.isInstant
+            is CardFilter.HasSubtype -> card.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(filter.subtype))
+            is CardFilter.HasColor -> card.colors.contains(filter.color)
+            is CardFilter.And -> filter.filters.all { matchesCardFilter(card, it) }
+            is CardFilter.Or -> filter.filters.any { matchesCardFilter(card, it) }
+            is CardFilter.PermanentCard -> card.typeLine.isPermanent
+            is CardFilter.NonlandPermanentCard -> card.typeLine.isPermanent && !card.typeLine.isLand
+            is CardFilter.ManaValueAtMost -> card.manaCost.cmc <= filter.maxManaValue
+            is CardFilter.Not -> !matchesCardFilter(card, filter.filter)
         }
     }
 
@@ -591,6 +644,42 @@ class ActionProcessor(
             cardComponent.manaCost
         }
 
+        // Process additional costs (sacrifice, discard, etc.)
+        val sacrificedPermanentIds = mutableListOf<EntityId>()
+        if (cardDef != null && action.additionalCostPayment != null) {
+            for (additionalCost in cardDef.script.additionalCosts) {
+                when (additionalCost) {
+                    is com.wingedsheep.sdk.scripting.AdditionalCost.SacrificePermanent -> {
+                        for (permId in action.additionalCostPayment.sacrificedPermanents) {
+                            val permContainer = currentState.getEntity(permId) ?: continue
+                            val permCard = permContainer.get<CardComponent>() ?: continue
+                            val controllerId = permContainer.get<ControllerComponent>()?.playerId ?: action.playerId
+                            val ownerId = permCard.ownerId ?: action.playerId
+                            val battlefieldZone = ZoneKey(controllerId, ZoneType.BATTLEFIELD)
+                            val graveyardZone = ZoneKey(ownerId, ZoneType.GRAVEYARD)
+
+                            currentState = currentState.removeFromZone(battlefieldZone, permId)
+                            currentState = currentState.addToZone(graveyardZone, permId)
+
+                            sacrificedPermanentIds.add(permId)
+
+                            events.add(PermanentsSacrificedEvent(action.playerId, listOf(permId)))
+                            events.add(ZoneChangeEvent(
+                                entityId = permId,
+                                entityName = permCard.name,
+                                fromZone = ZoneType.BATTLEFIELD,
+                                toZone = ZoneType.GRAVEYARD,
+                                ownerId = ownerId
+                            ))
+                        }
+                    }
+                    else -> {
+                        // Other additional cost types not yet implemented
+                    }
+                }
+            }
+        }
+
         // Apply alternative payment (Delve/Convoke) if specified
         if (action.alternativePayment != null && !action.alternativePayment.isEmpty && cardDef != null) {
             val altPaymentResult = alternativePaymentHandler.apply(
@@ -766,7 +855,8 @@ class ActionProcessor(
             action.cardId,
             action.playerId,
             action.targets,
-            action.xValue
+            action.xValue,
+            sacrificedPermanentIds
         )
 
         if (!castResult.isSuccess) {

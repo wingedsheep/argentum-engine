@@ -11,5 +11,6 @@ data class EffectContext(
     val controllerId: EntityId,
     val opponentId: EntityId?,
     val targets: List<ChosenTarget> = emptyList(),
-    val xValue: Int? = null
+    val xValue: Int? = null,
+    val sacrificedPermanents: List<EntityId> = emptyList()
 )

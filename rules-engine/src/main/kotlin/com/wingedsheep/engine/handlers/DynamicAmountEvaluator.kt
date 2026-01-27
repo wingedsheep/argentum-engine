@@ -131,6 +131,28 @@ class DynamicAmountEvaluator {
                 min(evaluate(state, amount.left, context), evaluate(state, amount.right, context))
             }
 
+            is DynamicAmount.SacrificedPermanentPower -> {
+                val sacrificedId = context.sacrificedPermanents.firstOrNull() ?: return 0
+                val card = state.getEntity(sacrificedId)?.get<CardComponent>() ?: return 0
+                when (val power = card.baseStats?.power) {
+                    is com.wingedsheep.sdk.model.CharacteristicValue.Fixed -> power.value
+                    is com.wingedsheep.sdk.model.CharacteristicValue.Dynamic -> evaluate(state, power.source, context)
+                    is com.wingedsheep.sdk.model.CharacteristicValue.DynamicWithOffset -> evaluate(state, power.source, context) + power.offset
+                    null -> 0
+                }
+            }
+
+            is DynamicAmount.SacrificedPermanentToughness -> {
+                val sacrificedId = context.sacrificedPermanents.firstOrNull() ?: return 0
+                val card = state.getEntity(sacrificedId)?.get<CardComponent>() ?: return 0
+                when (val toughness = card.baseStats?.toughness) {
+                    is com.wingedsheep.sdk.model.CharacteristicValue.Fixed -> toughness.value
+                    is com.wingedsheep.sdk.model.CharacteristicValue.Dynamic -> evaluate(state, toughness.source, context)
+                    is com.wingedsheep.sdk.model.CharacteristicValue.DynamicWithOffset -> evaluate(state, toughness.source, context) + toughness.offset
+                    null -> 0
+                }
+            }
+
             // Other types - return 0 for unimplemented
             is DynamicAmount.CardTypesInAllGraveyards -> {
                 // TODO: Count unique card types across all graveyards

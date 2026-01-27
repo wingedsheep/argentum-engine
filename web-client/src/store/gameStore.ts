@@ -71,6 +71,10 @@ export interface TargetingState {
   selectedTargets: readonly EntityId[]
   minTargets: number
   maxTargets: number
+  /** If set, this targeting phase is for sacrifice selection, not spell targets */
+  isSacrificeSelection?: boolean
+  /** The original action info, used to chain sacrifice -> spell targeting */
+  pendingActionInfo?: LegalActionInfo
 }
 
 /**
@@ -374,6 +378,25 @@ function shouldAutoPass(
 }
 
 /**
+ * Extract the relevant player ID from an event for log coloring.
+ */
+function getEventPlayerId(event: ClientEvent): EntityId | null {
+  switch (event.type) {
+    case 'lifeChanged': return event.playerId
+    case 'cardDrawn': return event.playerId
+    case 'cardDiscarded': return event.playerId
+    case 'manaAdded': return event.playerId
+    case 'playerLost': return event.playerId
+    case 'spellCast': return event.casterId
+    case 'permanentEntered': return event.controllerId
+    case 'creatureAttacked': return event.attackingPlayerId
+    case 'handLookedAt': return event.viewingPlayerId
+    case 'cardsRevealed': return event.revealingPlayerId
+    default: return null
+  }
+}
+
+/**
  * Main Zustand store for game state.
  */
 export const useGameStore = create<GameStore>()(
@@ -418,11 +441,21 @@ export const useGameStore = create<GameStore>()(
           (e) => e.type === 'handLookedAt'
         ) as { type: 'handLookedAt'; cardIds: readonly EntityId[] } | undefined
 
+        const now = Date.now()
+        const newLogEntries: LogEntry[] = msg.events
+          .filter((e) => e.type !== 'permanentTapped' && e.type !== 'permanentUntapped' && e.type !== 'manaAdded')
+          .map((e) => ({
+            description: e.description,
+            playerId: getEventPlayerId(e),
+            timestamp: now,
+          }))
+
         set((state) => ({
           gameState: msg.state,
           legalActions: msg.legalActions,
           pendingDecision: msg.pendingDecision ?? null,
           pendingEvents: [...state.pendingEvents, ...msg.events],
+          eventLog: [...state.eventLog, ...newLogEntries],
           waitingForOpponentMulligan: false,
           // Show revealed hand overlay if handLookedAt event received
           revealedHandCardIds: handLookedAtEvent?.cardIds ?? state.revealedHandCardIds,
@@ -718,6 +751,7 @@ export const useGameStore = create<GameStore>()(
       draggingCardId: null,
       revealedHandCardIds: null,
       pendingEvents: [],
+      eventLog: [],
       gameOverState: null,
       lastError: null,
       deckBuildingState: null,
@@ -1067,10 +1101,42 @@ export const useGameStore = create<GameStore>()(
       },
 
       confirmTargeting: () => {
-        const { targetingState, submitAction, gameState } = get()
+        const { targetingState, submitAction, gameState, startTargeting } = get()
         if (!targetingState || !gameState) return
 
-        // Modify the action with selected targets and submit
+        // Handle sacrifice selection phase
+        if (targetingState.isSacrificeSelection && targetingState.pendingActionInfo) {
+          const actionInfo = targetingState.pendingActionInfo
+          const action = targetingState.action
+          if (action.type === 'CastSpell') {
+            const actionWithCost = {
+              ...action,
+              additionalCostPayment: {
+                sacrificedPermanents: [...targetingState.selectedTargets],
+              },
+            }
+
+            // Check if the spell also requires spell targets
+            if (actionInfo.requiresTargets && actionInfo.validTargets && actionInfo.validTargets.length > 0) {
+              // Chain to spell targeting phase
+              set({ targetingState: null })
+              startTargeting({
+                action: actionWithCost,
+                validTargets: [...actionInfo.validTargets],
+                selectedTargets: [],
+                minTargets: actionInfo.minTargets ?? actionInfo.targetCount ?? 1,
+                maxTargets: actionInfo.targetCount ?? 1,
+              })
+              return
+            } else {
+              submitAction(actionWithCost)
+              set({ targetingState: null })
+              return
+            }
+          }
+        }
+
+        // Normal targeting flow
         const action = targetingState.action
         if (action.type === 'CastSpell') {
           // Convert selected targets to ChosenTarget format
@@ -1319,6 +1385,7 @@ export const useGameStore = create<GameStore>()(
           draggingCardId: null,
           revealedHandCardIds: null,
           pendingEvents: [],
+          eventLog: [],
           gameOverState: null,
           lastError: null,
           deckBuildingState: null,

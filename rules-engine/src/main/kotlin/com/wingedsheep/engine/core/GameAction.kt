@@ -4,6 +4,7 @@ import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityId
+import com.wingedsheep.sdk.scripting.AdditionalCostPayment
 import com.wingedsheep.sdk.scripting.AlternativePaymentChoice
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -53,7 +54,8 @@ data class CastSpell(
     val targets: List<ChosenTarget> = emptyList(),
     val xValue: Int? = null,
     val paymentStrategy: PaymentStrategy = PaymentStrategy.AutoPay,
-    val alternativePayment: AlternativePaymentChoice? = null
+    val alternativePayment: AlternativePaymentChoice? = null,
+    val additionalCostPayment: AdditionalCostPayment? = null
 ) : GameAction
 
 /**

@@ -3,6 +3,7 @@ package com.wingedsheep.gameserver.session
 import com.wingedsheep.gameserver.dto.ClientGameState
 import com.wingedsheep.gameserver.dto.ClientStateTransformer
 import com.wingedsheep.gameserver.protocol.GameOverReason
+import com.wingedsheep.gameserver.protocol.AdditionalCostInfo
 import com.wingedsheep.gameserver.protocol.LegalActionInfo
 import com.wingedsheep.gameserver.protocol.ServerMessage
 import com.wingedsheep.engine.core.*
@@ -437,12 +438,41 @@ class GameSession(
                 // Check timing - sorcery-speed spells need main phase, empty stack, your turn
                 val isInstant = cardComponent.typeLine.isInstant
                 if (isInstant || canPlaySorcerySpeed) {
+                    // Check additional cost payability
+                    val additionalCosts = cardDef?.script?.additionalCosts ?: emptyList()
+                    val sacrificeTargets = mutableListOf<EntityId>()
+                    var canPayAdditionalCosts = true
+                    for (cost in additionalCosts) {
+                        when (cost) {
+                            is com.wingedsheep.sdk.scripting.AdditionalCost.SacrificePermanent -> {
+                                val validSacTargets = findSacrificeTargets(state, playerId, cost)
+                                if (validSacTargets.size < cost.count) {
+                                    canPayAdditionalCosts = false
+                                }
+                                sacrificeTargets.addAll(validSacTargets)
+                            }
+                            else -> {}
+                        }
+                    }
+                    if (!canPayAdditionalCosts) continue
+
                     // Check mana affordability
                     val canAfford = manaSolver.canPay(state, playerId, cardComponent.manaCost)
                     if (canAfford) {
                         val targetReqs = cardDef?.script?.targetRequirements ?: emptyList()
 
                         logger.debug("Card '${cardComponent.name}': cardDef=${cardDef != null}, targetReqs=${targetReqs.size}")
+
+                        // Build additional cost info for the client
+                        val costInfo = if (sacrificeTargets.isNotEmpty()) {
+                            val sacCost = additionalCosts.filterIsInstance<com.wingedsheep.sdk.scripting.AdditionalCost.SacrificePermanent>().firstOrNull()
+                            AdditionalCostInfo(
+                                description = sacCost?.description ?: "Sacrifice a creature",
+                                costType = "SacrificePermanent",
+                                validSacrificeTargets = sacrificeTargets,
+                                sacrificeCount = sacCost?.count ?: 1
+                            )
+                        } else null
 
                         // Calculate X cost info if the spell has X in its cost
                         val hasXCost = cardComponent.manaCost.hasX
@@ -471,7 +501,8 @@ class GameSession(
                                     minTargets = firstReq.effectiveMinCount,
                                     targetDescription = firstReq.description,
                                     hasXCost = hasXCost,
-                                    maxAffordableX = maxAffordableX
+                                    maxAffordableX = maxAffordableX,
+                                    additionalCostInfo = costInfo
                                 ))
                             }
                         } else {
@@ -481,7 +512,8 @@ class GameSession(
                                 description = "Cast ${cardComponent.name}",
                                 action = CastSpell(playerId, cardId),
                                 hasXCost = hasXCost,
-                                maxAffordableX = maxAffordableX
+                                maxAffordableX = maxAffordableX,
+                                additionalCostInfo = costInfo
                             ))
                         }
                     }
@@ -879,6 +911,46 @@ class GameSession(
             if (!satisfied) return false
         }
         return true
+    }
+
+    /**
+     * Find valid sacrifice targets for an additional cost.
+     */
+    private fun findSacrificeTargets(
+        state: GameState,
+        playerId: EntityId,
+        cost: com.wingedsheep.sdk.scripting.AdditionalCost.SacrificePermanent
+    ): List<EntityId> {
+        val playerBattlefield = ZoneKey(playerId, ZoneType.BATTLEFIELD)
+        return state.getZone(playerBattlefield).filter { entityId ->
+            val container = state.getEntity(entityId) ?: return@filter false
+            val cardComponent = container.get<CardComponent>() ?: return@filter false
+            val controllerId = container.get<ControllerComponent>()?.playerId
+            if (controllerId != playerId) return@filter false
+            matchesCardFilter(cardComponent, cost.filter)
+        }
+    }
+
+    /**
+     * Check if a card matches a CardFilter.
+     */
+    private fun matchesCardFilter(card: CardComponent, filter: com.wingedsheep.sdk.scripting.CardFilter): Boolean {
+        return when (filter) {
+            is com.wingedsheep.sdk.scripting.CardFilter.AnyCard -> true
+            is com.wingedsheep.sdk.scripting.CardFilter.CreatureCard -> card.typeLine.isCreature
+            is com.wingedsheep.sdk.scripting.CardFilter.LandCard -> card.typeLine.isLand
+            is com.wingedsheep.sdk.scripting.CardFilter.BasicLandCard -> card.typeLine.isBasicLand
+            is com.wingedsheep.sdk.scripting.CardFilter.SorceryCard -> card.typeLine.isSorcery
+            is com.wingedsheep.sdk.scripting.CardFilter.InstantCard -> card.typeLine.isInstant
+            is com.wingedsheep.sdk.scripting.CardFilter.HasSubtype -> card.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(filter.subtype))
+            is com.wingedsheep.sdk.scripting.CardFilter.HasColor -> card.colors.contains(filter.color)
+            is com.wingedsheep.sdk.scripting.CardFilter.And -> filter.filters.all { matchesCardFilter(card, it) }
+            is com.wingedsheep.sdk.scripting.CardFilter.Or -> filter.filters.any { matchesCardFilter(card, it) }
+            is com.wingedsheep.sdk.scripting.CardFilter.PermanentCard -> card.typeLine.isPermanent
+            is com.wingedsheep.sdk.scripting.CardFilter.NonlandPermanentCard -> card.typeLine.isPermanent && !card.typeLine.isLand
+            is com.wingedsheep.sdk.scripting.CardFilter.ManaValueAtMost -> card.manaCost.cmc <= filter.maxManaValue
+            is com.wingedsheep.sdk.scripting.CardFilter.Not -> !matchesCardFilter(card, filter.filter)
+        }
     }
 
     sealed interface ActionResult {
