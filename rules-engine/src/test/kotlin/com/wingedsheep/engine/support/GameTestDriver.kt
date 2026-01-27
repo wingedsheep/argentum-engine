@@ -220,7 +220,11 @@ class GameTestDriver {
             if (state.gameOver) {
                 throw AssertionError("Game ended while advancing to $targetStep")
             }
-            if (state.priorityPlayerId != null) {
+            if (state.pendingDecision != null) {
+                // Auto-resolve pending decisions (e.g., discard to hand size at cleanup)
+                autoResolveDecision()
+                stuckCount = 0
+            } else if (state.priorityPlayerId != null) {
                 passPriority(state.priorityPlayerId!!)
                 stuckCount = 0
             } else {
@@ -256,7 +260,9 @@ class GameTestDriver {
             if (state.gameOver) {
                 throw AssertionError("Game ended while advancing to $targetPhase")
             }
-            if (state.priorityPlayerId != null) {
+            if (state.pendingDecision != null) {
+                autoResolveDecision()
+            } else if (state.priorityPlayerId != null) {
                 passPriority(state.priorityPlayerId!!)
             }
             passes++
@@ -874,6 +880,31 @@ class GameTestDriver {
      * Check if the engine is paused awaiting a decision.
      */
     val isPaused: Boolean get() = state.isPaused()
+
+    /**
+     * Auto-resolve a pending decision by picking the first valid option.
+     * Used by passPriorityUntil to handle cleanup discard and similar automatic decisions.
+     */
+    fun autoResolveDecision() {
+        val decision = state.pendingDecision
+            ?: throw IllegalStateException("No pending decision to auto-resolve")
+        when (decision) {
+            is SelectCardsDecision -> {
+                // Pick the first N options (e.g., discard to hand size)
+                val selected = decision.options.take(decision.minSelections)
+                submitCardSelection(decision.playerId, selected)
+            }
+            is YesNoDecision -> {
+                submitYesNo(decision.playerId, false)
+            }
+            is ReorderLibraryDecision -> {
+                submitOrderedResponse(decision.playerId, decision.cards)
+            }
+            else -> throw IllegalStateException(
+                "Cannot auto-resolve decision of type ${decision::class.simpleName}"
+            )
+        }
+    }
 
     /**
      * Submit a decision response.

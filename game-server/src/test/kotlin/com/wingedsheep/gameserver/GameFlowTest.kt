@@ -2,8 +2,8 @@ package com.wingedsheep.gameserver
 
 import com.wingedsheep.gameserver.protocol.LegalActionInfo
 import com.wingedsheep.gameserver.protocol.ClientMessage
-import com.wingedsheep.engine.core.PlayLand
-import com.wingedsheep.engine.core.PassPriority
+import com.wingedsheep.gameserver.protocol.ServerMessage
+import com.wingedsheep.engine.core.*
 import com.wingedsheep.sdk.core.Phase
 import io.kotest.assertions.nondeterministic.eventually
 import io.kotest.matchers.shouldBe
@@ -23,10 +23,26 @@ class GameFlowTest : GameServerTestBase() {
 
     private suspend fun GameContext.safePassPriority() {
         val countBefore1 = player1.client.stateUpdateCount()
-        val state = player1.client.requireLatestState()
-        val priorityPlayer = if (state.priorityPlayerId == player1.id) player1 else player2
 
-        priorityPlayer.client.send(ClientMessage.SubmitAction(PassPriority(priorityPlayer.id)))
+        // Check if either player has a pending decision (e.g., discard to hand size at cleanup)
+        // Decisions are only visible to the player who must resolve them
+        val p1Decision = player1.client.messages.filterIsInstance<ServerMessage.StateUpdate>().lastOrNull()?.pendingDecision
+        val p2Decision = player2.client.messages.filterIsInstance<ServerMessage.StateUpdate>().lastOrNull()?.pendingDecision
+        val pendingDecision = p1Decision ?: p2Decision
+
+        if (pendingDecision is SelectCardsDecision) {
+            val selected = pendingDecision.options.take(pendingDecision.minSelections)
+            val decisionPlayer = if (pendingDecision.playerId == player1.id) player1 else player2
+            decisionPlayer.client.send(
+                ClientMessage.SubmitAction(
+                    SubmitDecision(pendingDecision.playerId, CardsSelectedResponse(pendingDecision.id, selected))
+                )
+            )
+        } else {
+            val state = player1.client.requireLatestState()
+            val priorityPlayer = if (state.priorityPlayerId == player1.id) player1 else player2
+            priorityPlayer.client.send(ClientMessage.SubmitAction(PassPriority(priorityPlayer.id)))
+        }
 
         eventually(5.seconds) {
             player1.client.stateUpdateCount() shouldBeGreaterThan countBefore1

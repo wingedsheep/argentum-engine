@@ -133,7 +133,9 @@ class AdditionalLandPlaysTest : FunSpec({
         // This handles any number of turn transitions
         var passes = 0
         while ((driver.activePlayer != startingPlayer || driver.currentStep != Step.PRECOMBAT_MAIN) && passes < 50) {
-            if (driver.state.priorityPlayerId != null) {
+            if (driver.state.pendingDecision != null) {
+                driver.autoResolveDecision()
+            } else if (driver.state.priorityPlayerId != null) {
                 driver.passPriority(driver.state.priorityPlayerId!!)
             }
             passes++

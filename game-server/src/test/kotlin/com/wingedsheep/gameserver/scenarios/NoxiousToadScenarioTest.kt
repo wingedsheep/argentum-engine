@@ -12,7 +12,7 @@ import io.kotest.matchers.shouldBe
  * Card reference:
  * - Noxious Toad (2B): Creature - Frog, 1/1
  *   "When Noxious Toad dies, each opponent discards a card."
- * - Hand of Death (2B): "Destroy target nonblack creature."
+ * - Path of Peace (3W): "Destroy target creature. Its owner gains 4 life."
  *
  * Test scenarios:
  * 1. Opponent discards when Noxious Toad dies and has cards in hand
@@ -26,32 +26,32 @@ class NoxiousToadScenarioTest : ScenarioTestBase() {
             test("opponent is prompted to discard when toad dies") {
                 // Setup:
                 // - Player 1 controls Noxious Toad
-                // - Player 2 has Hand of Death and multiple cards in hand
-                // - Player 2 casts Hand of Death to destroy the toad
+                // - Player 2 has Path of Peace and multiple cards in hand
+                // - Player 2 casts Path of Peace to destroy the toad
                 // - After resolution, Player 2 (opponent of toad's controller) should discard
                 val game = scenario()
                     .withPlayers("ToadPlayer", "Opponent")
                     .withCardOnBattlefield(1, "Noxious Toad")
-                    .withCardInHand(2, "Hand of Death")
+                    .withCardInHand(2, "Path of Peace")
                     .withCardInHand(2, "Forest")      // Card to potentially discard
                     .withCardInHand(2, "Mountain")    // Another card
-                    .withLandsOnBattlefield(2, "Swamp", 3)
+                    .withLandsOnBattlefield(2, "Plains", 4)
                     .withActivePlayer(2)
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
 
-                val initialHandSize = game.handSize(2) - 1  // -1 for casting Hand of Death
+                val initialHandSize = game.handSize(2) - 1  // -1 for casting Path of Peace
 
-                // Player 2 casts Hand of Death targeting Noxious Toad
+                // Player 2 casts Path of Peace targeting Noxious Toad
                 val toadId = game.findPermanent("Noxious Toad")
                     ?: error("Noxious Toad should be on battlefield")
 
-                val castResult = game.castSpell(2, "Hand of Death", toadId)
-                withClue("Hand of Death should be cast successfully") {
+                val castResult = game.castSpell(2, "Path of Peace", toadId)
+                withClue("Path of Peace should be cast successfully") {
                     castResult.error shouldBe null
                 }
 
-                // Resolve the stack (Hand of Death resolves, destroying Noxious Toad)
+                // Resolve the stack (Path of Peace resolves, destroying Noxious Toad)
                 // This should trigger the death trigger
                 game.resolveStack()
 
@@ -93,20 +93,20 @@ class NoxiousToadScenarioTest : ScenarioTestBase() {
             test("opponent with one card automatically discards when toad dies") {
                 // Setup:
                 // - Player 1 controls Noxious Toad
-                // - Player 2 has Hand of Death and only one other card in hand
+                // - Player 2 has Path of Peace and only one other card in hand
                 val game = scenario()
                     .withPlayers("ToadPlayer", "Opponent")
                     .withCardOnBattlefield(1, "Noxious Toad")
-                    .withCardInHand(2, "Hand of Death")
+                    .withCardInHand(2, "Path of Peace")
                     .withCardInHand(2, "Forest")  // Only card to discard
-                    .withLandsOnBattlefield(2, "Swamp", 3)
+                    .withLandsOnBattlefield(2, "Plains", 4)
                     .withActivePlayer(2)
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
 
-                // Player 2 casts Hand of Death
+                // Player 2 casts Path of Peace
                 val toadId = game.findPermanent("Noxious Toad")!!
-                game.castSpell(2, "Hand of Death", toadId)
+                game.castSpell(2, "Path of Peace", toadId)
 
                 // Resolve the stack
                 game.resolveStack()
@@ -125,19 +125,19 @@ class NoxiousToadScenarioTest : ScenarioTestBase() {
             test("nothing happens when opponent has empty hand") {
                 // Setup:
                 // - Player 1 controls Noxious Toad
-                // - Player 2 has only Hand of Death (empty hand after casting)
+                // - Player 2 has only Path of Peace (empty hand after casting)
                 val game = scenario()
                     .withPlayers("ToadPlayer", "Opponent")
                     .withCardOnBattlefield(1, "Noxious Toad")
-                    .withCardInHand(2, "Hand of Death")
-                    .withLandsOnBattlefield(2, "Swamp", 3)
+                    .withCardInHand(2, "Path of Peace")
+                    .withLandsOnBattlefield(2, "Plains", 4)
                     .withActivePlayer(2)
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
 
-                // Player 2 casts Hand of Death
+                // Player 2 casts Path of Peace
                 val toadId = game.findPermanent("Noxious Toad")!!
-                game.castSpell(2, "Hand of Death", toadId)
+                game.castSpell(2, "Path of Peace", toadId)
 
                 // Resolve the stack
                 game.resolveStack()
@@ -157,9 +157,9 @@ class NoxiousToadScenarioTest : ScenarioTestBase() {
                     game.handSize(2) shouldBe 0
                 }
 
-                withClue("Player 2's graveyard should only have Hand of Death") {
+                withClue("Player 2's graveyard should only have Path of Peace") {
                     game.graveyardSize(2) shouldBe 1
-                    game.isInGraveyard(2, "Hand of Death") shouldBe true
+                    game.isInGraveyard(2, "Path of Peace") shouldBe true
                 }
             }
         }
