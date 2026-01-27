@@ -400,6 +400,7 @@ function StackDisplay() {
         {stackCards.map((card, index) => (
           <div
             key={card.id}
+            data-card-id={card.id}
             style={{
               ...styles.stackItem,
               zIndex: stackCards.length - index,
