@@ -316,7 +316,7 @@ function LifeDisplay({
   const targetingState = useGameStore((state) => state.targetingState)
   const pendingDecision = useGameStore((state) => state.pendingDecision)
   const addTarget = useGameStore((state) => state.addTarget)
-  const confirmTargeting = useGameStore((state) => state.confirmTargeting)
+  const removeTarget = useGameStore((state) => state.removeTarget)
   const submitTargetsDecision = useGameStore((state) => state.submitTargetsDecision)
 
   // Check if this player is a valid target in current targeting mode
@@ -335,17 +335,16 @@ function LifeDisplay({
   const isSelected = isTargetingSelected
 
   const handleClick = () => {
-    // Handle regular targeting state
-    if (targetingState && isValidTargetingTarget && !isTargetingSelected) {
-      addTarget(playerId)
-
-      // Auto-confirm if we have selected maximum targets
-      const newTargetCount = (targetingState.selectedTargets.length) + 1
-      const maxTargets = targetingState.maxTargets
-      if (newTargetCount >= maxTargets) {
-        setTimeout(() => confirmTargeting(), 0)
+    // Handle regular targeting state - click to select, click again to unselect
+    if (targetingState) {
+      if (isTargetingSelected) {
+        removeTarget(playerId)
+        return
       }
-      return
+      if (isValidTargetingTarget) {
+        addTarget(playerId)
+        return
+      }
     }
 
     // Handle pending decision targeting
@@ -857,7 +856,7 @@ function GameCard({
   const hoverCard = useGameStore((state) => state.hoverCard)
   const targetingState = useGameStore((state) => state.targetingState)
   const addTarget = useGameStore((state) => state.addTarget)
-  const confirmTargeting = useGameStore((state) => state.confirmTargeting)
+  const removeTarget = useGameStore((state) => state.removeTarget)
   const combatState = useGameStore((state) => state.combatState)
   const legalActions = useGameStore((state) => state.legalActions)
   const submitAction = useGameStore((state) => state.submitAction)
@@ -896,6 +895,7 @@ function GameCard({
   const isSelected = selectedCardId === card.id
   const isInTargetingMode = targetingState !== null
   const isValidTarget = targetingState?.validTargets.includes(card.id) ?? false
+  const isSelectedTarget = targetingState?.selectedTargets.includes(card.id) ?? false
 
   // Check if this card is a valid target in a pending ChooseTargetsDecision
   const isChooseTargetsDecision = pendingDecision?.type === 'ChooseTargetsDecision'
@@ -1050,17 +1050,16 @@ function GameCard({
       return
     }
 
-    // Handle targeting mode clicks
-    if (isInTargetingMode && isValidTarget) {
-      addTarget(card.id)
-      // Auto-confirm if we have selected maximum targets
-      const newTargetCount = (targetingState?.selectedTargets.length ?? 0) + 1
-      const maxTargets = targetingState?.maxTargets ?? 1
-      if (newTargetCount >= maxTargets) {
-        // Need to wait a tick for state to update before confirming
-        setTimeout(() => confirmTargeting(), 0)
+    // Handle targeting mode clicks - click to select, click again to unselect
+    if (isInTargetingMode) {
+      if (isSelectedTarget) {
+        removeTarget(card.id)
+        return
       }
-      return
+      if (isValidTarget) {
+        addTarget(card.id)
+        return
+      }
     }
 
     // Handle pending ChooseTargetsDecision clicks
@@ -1119,6 +1118,10 @@ function GameCard({
     // Orange glow for attackers that can be blocked
     borderStyle = '3px solid #ff8800'
     boxShadow = '0 0 12px rgba(255, 136, 0, 0.6), 0 0 24px rgba(255, 136, 0, 0.3)'
+  } else if (isSelectedTarget) {
+    // Yellow highlight for selected targets (already chosen in targeting mode)
+    borderStyle = '3px solid #ffff00'
+    boxShadow = '0 0 20px rgba(255, 255, 0, 0.8), 0 0 40px rgba(255, 255, 0, 0.4)'
   } else if (isSelected && !isInCombatMode) {
     borderStyle = '3px solid #ffff00'
     boxShadow = '0 8px 20px rgba(255, 255, 0, 0.4)'
@@ -1319,7 +1322,7 @@ function ActionMenu() {
               : 'Click a highlighted target'}
         </div>
         <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-          {hasEnoughTargets && !hasMaxTargets && (
+          {hasEnoughTargets && (
             <button onClick={confirmTargeting} style={{
               ...styles.actionButton,
               padding: responsive.isMobile ? '8px 12px' : '10px 16px',

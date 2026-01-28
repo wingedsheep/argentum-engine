@@ -271,6 +271,7 @@ export interface GameStore {
   toggleMulliganCard: (cardId: EntityId) => void
   startTargeting: (state: TargetingState) => void
   addTarget: (targetId: EntityId) => void
+  removeTarget: (targetId: EntityId) => void
   cancelTargeting: () => void
   confirmTargeting: () => void
   // Combat actions
@@ -1105,6 +1106,20 @@ export const useGameStore = create<GameStore>()(
           if (!state.targetingState) return state
 
           const newTargets = [...state.targetingState.selectedTargets, targetId]
+          return {
+            targetingState: {
+              ...state.targetingState,
+              selectedTargets: newTargets,
+            },
+          }
+        })
+      },
+
+      removeTarget: (targetId) => {
+        set((state) => {
+          if (!state.targetingState) return state
+
+          const newTargets = state.targetingState.selectedTargets.filter((id) => id !== targetId)
           return {
             targetingState: {
               ...state.targetingState,
