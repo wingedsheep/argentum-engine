@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CompositeEffect
 import com.wingedsheep.sdk.scripting.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.scripting.LookAtHandEffect
+import com.wingedsheep.sdk.scripting.LookAtTargetHandEffect
 import com.wingedsheep.sdk.targeting.TargetOpponent
 
 /**
@@ -22,7 +22,7 @@ val SorcerousSight = card("Sorcerous Sight") {
         target = TargetOpponent()
         effect = CompositeEffect(
             listOf(
-                LookAtHandEffect(EffectTarget.ContextTarget(0)),
+                LookAtTargetHandEffect(EffectTarget.ContextTarget(0)),
                 DrawCardsEffect(1)
             )
         )
