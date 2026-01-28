@@ -57,6 +57,53 @@ export const StepDisplayNames: Record<Step, string> = {
   [Step.CLEANUP]: 'Cleanup Step',
 }
 
+/**
+ * Short step names for compact UI elements like the pass button.
+ */
+export const StepShortNames: Record<Step, string> = {
+  [Step.UNTAP]: 'Untap',
+  [Step.UPKEEP]: 'Upkeep',
+  [Step.DRAW]: 'Draw',
+  [Step.PRECOMBAT_MAIN]: 'Main 1',
+  [Step.BEGIN_COMBAT]: 'Combat',
+  [Step.DECLARE_ATTACKERS]: 'Attackers',
+  [Step.DECLARE_BLOCKERS]: 'Blockers',
+  [Step.FIRST_STRIKE_COMBAT_DAMAGE]: 'First Strike',
+  [Step.COMBAT_DAMAGE]: 'Damage',
+  [Step.END_COMBAT]: 'End Combat',
+  [Step.POSTCOMBAT_MAIN]: 'Main 2',
+  [Step.END]: 'End Step',
+  [Step.CLEANUP]: 'Cleanup',
+}
+
+/**
+ * Get the next step after the given step.
+ * Returns null if we're at cleanup (which would go to opponent's turn).
+ */
+export function getNextStep(currentStep: Step): Step | null {
+  const stepOrder: Step[] = [
+    Step.UNTAP,
+    Step.UPKEEP,
+    Step.DRAW,
+    Step.PRECOMBAT_MAIN,
+    Step.BEGIN_COMBAT,
+    Step.DECLARE_ATTACKERS,
+    Step.DECLARE_BLOCKERS,
+    Step.FIRST_STRIKE_COMBAT_DAMAGE,
+    Step.COMBAT_DAMAGE,
+    Step.END_COMBAT,
+    Step.POSTCOMBAT_MAIN,
+    Step.END,
+    Step.CLEANUP,
+  ]
+
+  const currentIndex = stepOrder.indexOf(currentStep)
+  if (currentIndex === -1 || currentIndex === stepOrder.length - 1) {
+    return null
+  }
+  return stepOrder[currentIndex + 1] ?? null
+}
+
 export function isMainPhaseStep(step: Step): boolean {
   return step === Step.PRECOMBAT_MAIN || step === Step.POSTCOMBAT_MAIN
 }

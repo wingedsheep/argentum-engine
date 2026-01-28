@@ -4,6 +4,8 @@ export {
   PhaseDisplayNames,
   Step,
   StepDisplayNames,
+  StepShortNames,
+  getNextStep,
   isMainPhaseStep,
   Color,
   ColorSymbols,

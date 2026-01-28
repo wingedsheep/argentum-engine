@@ -1,6 +1,6 @@
 import { useGameStore } from '../../store/gameStore'
 import { useViewingPlayer, useOpponent, useZoneCards, useZone, useBattlefieldCards, useHasLegalActions, useStackCards, useGroupedZoneCards, groupCards } from '../../store/selectors'
-import { hand, graveyard } from '../../types'
+import { hand, graveyard, getNextStep, StepShortNames } from '../../types'
 import type { ClientCard, ZoneId, ClientPlayer, LegalActionInfo, EntityId, Keyword, ClientPlayerEffect } from '../../types'
 import { keywordIcons, genericKeywordIcon, displayableKeywords } from '../../assets/icons/keywords'
 import { PhaseIndicator } from '../ui/PhaseIndicator'
@@ -113,6 +113,7 @@ export function GameBoard() {
 
   const viewingPlayer = useViewingPlayer()
   const opponent = useOpponent()
+  const stackCards = useStackCards()
 
   if (!gameState || !playerId || !viewingPlayer) {
     return null
@@ -120,6 +121,18 @@ export function GameBoard() {
 
   const hasPriority = gameState.priorityPlayerId === viewingPlayer.playerId
   const isInCombatMode = combatState !== null
+
+  // Compute pass button label - show next step if stack is empty
+  const getPassButtonLabel = () => {
+    if (stackCards.length > 0) {
+      return 'Pass'
+    }
+    const nextStep = getNextStep(gameState.currentStep)
+    if (nextStep) {
+      return `Pass to ${StepShortNames[nextStep]}`
+    }
+    return 'Pass'
+  }
 
   return (
     <ResponsiveContext.Provider value={responsive}>
@@ -214,7 +227,7 @@ export function GameBoard() {
                     fontSize: responsive.fontSize.normal,
                   }}
                 >
-                  Pass
+                  {getPassButtonLabel()}
                 </button>
               )}
             </div>
