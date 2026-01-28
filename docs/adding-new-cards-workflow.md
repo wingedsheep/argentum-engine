@@ -1,6 +1,7 @@
 # Adding New Cards: Complete Workflow Guide
 
-This guide provides a practical, step-by-step workflow for implementing new cards in Argentum Engine. It focuses on the decision-making process at each stage, helping you identify what can be reused versus what needs to be created.
+This guide provides a practical, step-by-step workflow for implementing new cards in Argentum Engine. It focuses on the
+decision-making process at each stage, helping you identify what can be reused versus what needs to be created.
 
 ---
 
@@ -14,7 +15,7 @@ Adding a card follows this general flow:
 4. **Implement backend** - Add any new effects/mechanics
 5. **Define the card** - Write the card definition
 6. **Handle UI needs** - Add frontend components if needed
-7. **Test** - Write scenario tests
+7. **Test** - Write scenario tests if it does something interesting / new
 
 ---
 
@@ -26,10 +27,10 @@ Before writing any code, fully understand what the card does.
 
 1. **What type is it?** (Creature, Instant, Sorcery, Enchantment, etc.)
 2. **What are its abilities?**
-   - Spell effect (one-time when cast)?
-   - Triggered ability (when X happens, do Y)?
-   - Activated ability (pay cost, get effect)?
-   - Static ability (continuous effect)?
+    - Spell effect (one-time when cast)?
+    - Triggered ability (when X happens, do Y)?
+    - Activated ability (pay cost, get effect)?
+    - Static ability (continuous effect)?
 3. **Does it target?** What can be targeted?
 4. **Does it require player decisions?** (choosing modes, dividing damage, ordering, etc.)
 5. **Are there timing restrictions?** (only during combat, only on your turn, etc.)
@@ -57,13 +58,13 @@ Before implementing anything new, search for existing effects that can be reused
 
 ### Where to Look
 
-| Component | Location | What to Find |
-|-----------|----------|--------------|
-| Effects | `mtg-sdk/src/main/kotlin/.../scripting/Effect.kt` | Effect data classes |
-| Executors | `rules-engine/src/main/kotlin/.../handlers/effects/` | Effect implementations |
-| Decisions | `rules-engine/src/main/kotlin/.../core/PendingDecision.kt` | Decision types |
-| Continuations | `rules-engine/src/main/kotlin/.../core/Continuation.kt` | Resume handlers |
-| Target Types | `mtg-sdk/src/main/kotlin/.../targeting/TargetRequirement.kt` | Targeting options |
+| Component     | Location                                                     | What to Find           |
+|---------------|--------------------------------------------------------------|------------------------|
+| Effects       | `mtg-sdk/src/main/kotlin/.../scripting/Effect.kt`            | Effect data classes    |
+| Executors     | `rules-engine/src/main/kotlin/.../handlers/effects/`         | Effect implementations |
+| Decisions     | `rules-engine/src/main/kotlin/.../core/PendingDecision.kt`   | Decision types         |
+| Continuations | `rules-engine/src/main/kotlin/.../core/Continuation.kt`      | Resume handlers        |
+| Target Types  | `mtg-sdk/src/main/kotlin/.../targeting/TargetRequirement.kt` | Targeting options      |
 
 ### Search Commands
 
@@ -83,30 +84,30 @@ grep -r "DealDamage\|Divide" mtg-sets/src/main/kotlin/
 
 ### Common Reusable Effects
 
-| Effect | Description | Example Cards |
-|--------|-------------|---------------|
-| `DealDamageEffect` | Deal fixed damage to target | Lightning Bolt |
-| `DealDynamicDamageEffect` | Deal variable damage | Blaze (X damage) |
-| `DestroyEffect` | Destroy target permanent | Murder, Assassin's Blade |
-| `DrawCardsEffect` | Draw cards | Divination |
-| `DiscardEffect` | Discard cards | Mind Rot |
-| `GainLifeEffect` | Gain life | Healing Salve |
-| `ModifyStatsEffect` | +X/+Y until end of turn | Giant Growth |
-| `ReturnToHandEffect` | Bounce permanent | Unsummon |
-| `SearchLibraryEffect` | Tutor for cards | Demonic Tutor |
+| Effect                    | Description                 | Example Cards            |
+|---------------------------|-----------------------------|--------------------------|
+| `DealDamageEffect`        | Deal fixed damage to target | Lightning Bolt           |
+| `DealDynamicDamageEffect` | Deal variable damage        | Blaze (X damage)         |
+| `DestroyEffect`           | Destroy target permanent    | Murder, Assassin's Blade |
+| `DrawCardsEffect`         | Draw cards                  | Divination               |
+| `DiscardEffect`           | Discard cards               | Mind Rot                 |
+| `GainLifeEffect`          | Gain life                   | Healing Salve            |
+| `ModifyStatsEffect`       | +X/+Y until end of turn     | Giant Growth             |
+| `ReturnToHandEffect`      | Bounce permanent            | Unsummon                 |
+| `SearchLibraryEffect`     | Tutor for cards             | Demonic Tutor            |
 
 ### Common Reusable Decisions
 
-| Decision | Use Case | UI Component |
-|----------|----------|--------------|
-| `SelectCardsDecision` | Choose cards from a set | `ZoneSelectionUI` |
-| `YesNoDecision` | May abilities | `YesNoDecisionUI` |
-| `ChooseTargetsDecision` | Multi-target selection | `TargetingUI` |
-| `SearchLibraryDecision` | Library search | `LibrarySearchUI` |
-| `ReorderLibraryDecision` | Scry, ordering | `ReorderCardsUI` |
-| `OrderObjectsDecision` | Blocker order | `OrderBlockersUI` |
-| `ChooseNumberDecision` | Choose X value | `ChooseNumberDecisionUI` |
-| `DistributeDecision` | Divide damage/counters | `DistributeDecisionUI` |
+| Decision                 | Use Case                | UI Component             |
+|--------------------------|-------------------------|--------------------------|
+| `SelectCardsDecision`    | Choose cards from a set | `ZoneSelectionUI`        |
+| `YesNoDecision`          | May abilities           | `YesNoDecisionUI`        |
+| `ChooseTargetsDecision`  | Multi-target selection  | `TargetingUI`            |
+| `SearchLibraryDecision`  | Library search          | `LibrarySearchUI`        |
+| `ReorderLibraryDecision` | Scry, ordering          | `ReorderCardsUI`         |
+| `OrderObjectsDecision`   | Blocker order           | `OrderBlockersUI`        |
+| `ChooseNumberDecision`   | Choose X value          | `ChooseNumberDecisionUI` |
+| `DistributeDecision`     | Divide damage/counters  | `DistributeDecisionUI`   |
 
 ---
 
@@ -164,6 +165,7 @@ data class MyNewEffect(
 ```
 
 **Considerations:**
+
 - Keep effects as pure data (no logic)
 - Use `@Serializable` for network transport
 - Parameters should be immutable
@@ -182,6 +184,7 @@ data class MyNewContinuation(
 ```
 
 **Considerations:**
+
 - Store everything needed to resume execution
 - Include `decisionId` to match with response
 - Keep serializable for state persistence
@@ -218,6 +221,7 @@ class MyNewExecutor(
 ```
 
 **Considerations:**
+
 - Return `ExecutionResult.success()` for immediate completion
 - Return `ExecutionResult.paused()` when needing player input
 - Push continuation BEFORE returning paused result
@@ -243,11 +247,13 @@ class DamageExecutors(
 **File:** `rules-engine/src/main/kotlin/.../handlers/ContinuationHandler.kt`
 
 Add case in `resume()`:
+
 ```kotlin
 is MyNewContinuation -> resumeMyNewEffect(stateAfterPop, continuation, response)
 ```
 
 Add handler function:
+
 ```kotlin
 private fun resumeMyNewEffect(
     state: GameState,
@@ -267,7 +273,8 @@ private fun resumeMyNewEffect(
 }
 ```
 
-**Important:** If the effect causes damage or other state changes that could kill creatures, state-based actions are checked automatically after `SubmitDecision` completes (as of the Forked Lightning implementation).
+**Important:** If the effect causes damage or other state changes that could kill creatures, state-based actions are
+checked automatically after `SubmitDecision` completes (as of the Forked Lightning implementation).
 
 ---
 
@@ -319,15 +326,15 @@ val PortalSet = cardSet("POR", "Portal") {
 
 ### Targeting Options Reference
 
-| Requirement | Use Case |
-|-------------|----------|
-| `TargetCreature()` | Single creature |
-| `TargetCreature(count = 3)` | Exactly 3 creatures |
-| `TargetCreature(count = 3, minCount = 1)` | 1 to 3 creatures |
-| `TargetCreature(optional = true)` | Up to 1 creature |
-| `TargetPermanent(filter = ...)` | Filtered permanents |
-| `TargetPlayer()` | Target player |
-| `TargetCreatureOrPlayer()` | Any target |
+| Requirement                               | Use Case            |
+|-------------------------------------------|---------------------|
+| `TargetCreature()`                        | Single creature     |
+| `TargetCreature(count = 3)`               | Exactly 3 creatures |
+| `TargetCreature(count = 3, minCount = 1)` | 1 to 3 creatures    |
+| `TargetCreature(optional = true)`         | Up to 1 creature    |
+| `TargetPermanent(filter = ...)`           | Filtered permanents |
+| `TargetPlayer()`                          | Target player       |
+| `TargetCreatureOrPlayer()`                | Any target          |
 
 ---
 
@@ -341,17 +348,20 @@ If a new decision type was added, create UI components.
 
 ```typescript
 export interface MyNewDecision extends PendingDecisionBase {
-  readonly type: 'MyNewDecision'
-  readonly customField: number
-  readonly options: readonly EntityId[]
+    readonly type: 'MyNewDecision'
+    readonly customField: number
+    readonly options: readonly EntityId[]
 }
 ```
 
 Add to union:
+
 ```typescript
 export type PendingDecision =
-  | ...
-  | MyNewDecision
+    |
+...
+|
+MyNewDecision
 ```
 
 ### 6.2 Export Type
@@ -367,26 +377,28 @@ export type PendingDecision =
 **File:** `web-client/src/store/gameStore.ts`
 
 Interface:
+
 ```typescript
 submitMyNewDecision: (data: MyResponseData) => void
 ```
 
 Implementation:
+
 ```typescript
 submitMyNewDecision: (data) => {
-  const { pendingDecision, playerId } = get()
-  if (!pendingDecision || !playerId) return
+    const {pendingDecision, playerId} = get()
+    if (!pendingDecision || !playerId) return
 
-  const action = {
-    type: 'SubmitDecision' as const,
-    playerId,
-    response: {
-      type: 'MyNewResponse' as const,
-      decisionId: pendingDecision.id,
-      ...data,
-    },
-  }
-  ws?.send(createSubmitActionMessage(action))
+    const action = {
+        type: 'SubmitDecision' as const,
+        playerId,
+        response: {
+            type: 'MyNewResponse' as const,
+            decisionId: pendingDecision.id,
+            ...data,
+        },
+    }
+    ws?.send(createSubmitActionMessage(action))
 },
 ```
 
@@ -395,34 +407,39 @@ submitMyNewDecision: (data) => {
 **File:** `web-client/src/components/decisions/MyNewDecisionUI.tsx`
 
 ```typescript
-import { useState } from 'react'
-import { useGameStore } from '../../store/gameStore'
-import type { MyNewDecision } from '../../types'
-import type { ResponsiveSizes } from '../../hooks/useResponsive'
+import {useState} from 'react'
+import {useGameStore} from '../../store/gameStore'
+import type {MyNewDecision} from '../../types'
+import type {ResponsiveSizes} from '../../hooks/useResponsive'
 
 interface Props {
-  decision: MyNewDecision
-  responsive: ResponsiveSizes
+    decision: MyNewDecision
+    responsive: ResponsiveSizes
 }
 
-export function MyNewDecisionUI({ decision, responsive }: Props) {
-  const submitMyNewDecision = useGameStore((s) => s.submitMyNewDecision)
-  const [selection, setSelection] = useState(...)
+export function MyNewDecisionUI({decision, responsive}: Props) {
+    const submitMyNewDecision = useGameStore((s) => s.submitMyNewDecision)
+    const [selection, setSelection] = useState(...)
 
-  const handleConfirm = () => {
-    submitMyNewDecision(selection)
-  }
+    const handleConfirm = () => {
+        submitMyNewDecision(selection)
+    }
 
-  return (
-    <div style={{ /* full-screen overlay */ }}>
-      {/* UI for making the decision */}
-      <button onClick={handleConfirm}>Confirm</button>
-    </div>
-  )
+    return (
+        <div style = {
+    { /* full-screen overlay */
+    }
+}>
+    {/* UI for making the decision */
+    }
+    <button onClick = {handleConfirm} > Confirm < /button>
+        < /div>
+)
 }
 ```
 
 **Reusable UI Components:**
+
 - `ZoneSelectionUI` - Card grid with selection
 - `getCardImageUrl()` - Fetch card images
 - `ResponsiveSizes` - Responsive sizing
@@ -432,11 +449,13 @@ export function MyNewDecisionUI({ decision, responsive }: Props) {
 **File:** `web-client/src/components/decisions/DecisionUI.tsx`
 
 ```typescript
-import { MyNewDecisionUI } from './MyNewDecisionUI'
+import {MyNewDecisionUI} from './MyNewDecisionUI'
 
 // In the component:
 if (pendingDecision.type === 'MyNewDecision') {
-  return <MyNewDecisionUI decision={pendingDecision} responsive={responsive} />
+    return <MyNewDecisionUI decision = {pendingDecision}
+    responsive = {responsive}
+    />
 }
 ```
 
@@ -522,11 +541,12 @@ just client
 ## Quick Reference Checklist
 
 ### Simple Card (existing effects only)
+
 - [ ] Create card file in `mtg-sets/.../cards/`
 - [ ] Add to set file
-- [ ] Write scenario test
 
 ### Card with New Effect (no decisions)
+
 - [ ] Add effect type to `mtg-sdk/.../Effect.kt`
 - [ ] Create executor in `rules-engine/.../handlers/effects/`
 - [ ] Register in appropriate `*Executors.kt` module
@@ -534,6 +554,7 @@ just client
 - [ ] Write scenario test
 
 ### Card with New Decision
+
 - [ ] Add effect type to `mtg-sdk`
 - [ ] Add decision type to `rules-engine/.../PendingDecision.kt`
 - [ ] Add continuation type to `rules-engine/.../Continuation.kt`
@@ -553,11 +574,13 @@ just client
 
 ## Common Pitfalls
 
-1. **Forgetting to check SBAs**: State-based actions (creature death from damage) are checked after spell resolution and after decision submission. If adding a new entry point, ensure SBAs are checked.
+1. **Forgetting to check SBAs**: State-based actions (creature death from damage) are checked after spell resolution and
+   after decision submission. If adding a new entry point, ensure SBAs are checked.
 
 2. **Not validating decision response type**: Always check `response !is ExpectedType` before casting.
 
-3. **Missing continuation data**: Store all context needed to resume in the continuation. You can't access the original effect or context after pausing.
+3. **Missing continuation data**: Store all context needed to resume in the continuation. You can't access the original
+   effect or context after pausing.
 
 4. **TypeScript export**: Remember to export new types from `types/index.ts`.
 

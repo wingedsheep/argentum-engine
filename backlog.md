@@ -7,5 +7,5 @@
 
 ## Features
 
-- [ ] Add persistence. If the game server restarts, keep games that are in progress. Maybe Redis or PostgreSQL?
+- [x] Add persistence. If the game server restarts, keep games that are in progress. Maybe Redis or PostgreSQL?
 
