@@ -7,6 +7,7 @@ import com.wingedsheep.gameserver.dto.ClientStateTransformer
 import com.wingedsheep.gameserver.protocol.GameOverReason
 import com.wingedsheep.gameserver.protocol.AdditionalCostInfo
 import com.wingedsheep.gameserver.protocol.LegalActionInfo
+import com.wingedsheep.gameserver.protocol.LegalActionTargetInfo
 import com.wingedsheep.gameserver.protocol.ServerMessage
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
@@ -488,23 +489,40 @@ class GameSession(
                         } else null
 
                         if (targetReqs.isNotEmpty()) {
-                            // Spell requires targets - find valid targets
+                            // Spell requires targets - find valid targets for all requirements
+                            val targetReqInfos = targetReqs.mapIndexed { index, req ->
+                                val validTargets = findValidTargets(state, playerId, req)
+                                LegalActionTargetInfo(
+                                    index = index,
+                                    description = req.description,
+                                    minTargets = req.effectiveMinCount,
+                                    maxTargets = req.count,
+                                    validTargets = validTargets
+                                )
+                            }
+
+                            // Check if all requirements can be satisfied
+                            val allRequirementsSatisfied = targetReqInfos.all { reqInfo ->
+                                reqInfo.validTargets.isNotEmpty() || reqInfo.minTargets == 0
+                            }
+
                             val firstReq = targetReqs.first()
-                            val validTargets = findValidTargets(state, playerId, firstReq)
+                            val firstReqInfo = targetReqInfos.first()
 
-                            logger.debug("Card '${cardComponent.name}': firstReq=$firstReq, validTargets=${validTargets.size}")
+                            logger.debug("Card '${cardComponent.name}': targetReqs=${targetReqs.size}, firstReqValidTargets=${firstReqInfo.validTargets.size}")
 
-                            // Only add the action if there are valid targets
-                            if (validTargets.isNotEmpty() || firstReq.effectiveMinCount == 0) {
+                            // Only add the action if all requirements can be satisfied
+                            if (allRequirementsSatisfied) {
                                 result.add(LegalActionInfo(
                                     actionType = "CastSpell",
                                     description = "Cast ${cardComponent.name}",
                                     action = CastSpell(playerId, cardId),
-                                    validTargets = validTargets,
+                                    validTargets = firstReqInfo.validTargets,
                                     requiresTargets = true,
                                     targetCount = firstReq.count,
                                     minTargets = firstReq.effectiveMinCount,
                                     targetDescription = firstReq.description,
+                                    targetRequirements = if (targetReqInfos.size > 1) targetReqInfos else null,
                                     hasXCost = hasXCost,
                                     maxAffordableX = maxAffordableX,
                                     additionalCostInfo = costInfo

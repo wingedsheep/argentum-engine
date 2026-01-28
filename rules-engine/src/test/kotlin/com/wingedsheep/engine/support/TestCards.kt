@@ -308,6 +308,25 @@ object TestCards {
     )
 
     /**
+     * {1}{B}{B} - Destroy two target nonblack creatures. You lose 5 life.
+     * Test card for multi-target spells.
+     */
+    val WickedPact = CardDefinition.sorcery(
+        name = "Wicked Pact",
+        manaCost = ManaCost.parse("{1}{B}{B}"),
+        oracleText = "Destroy two target nonblack creatures. You lose 5 life.",
+        script = CardScript.spell(
+            effect = CompositeEffect(listOf(
+                DestroyEffect(EffectTarget.ContextTarget(0)),
+                DestroyEffect(EffectTarget.ContextTarget(1)),
+                LoseLifeEffect(5, EffectTarget.Controller)
+            )),
+            TargetCreature(filter = TargetingCreatureFilter.NotColor(Color.BLACK)),
+            TargetCreature(filter = TargetingCreatureFilter.NotColor(Color.BLACK))
+        )
+    )
+
+    /**
      * {B} - Draw a card, then discard a card.
      */
     val CarefulStudy = CardDefinition.sorcery(
@@ -556,6 +575,7 @@ object TestCards {
         MindRot,
         CarefulStudy,
         Flux,
-        SummerBloom
+        SummerBloom,
+        WickedPact
     )
 }

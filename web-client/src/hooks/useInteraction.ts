@@ -148,13 +148,28 @@ export function useInteraction() {
 
       // Check if action requires targeting (for spells or activated abilities)
       if (actionInfo.requiresTargets && actionInfo.validTargets && actionInfo.validTargets.length > 0) {
-        startTargeting({
-          action,
-          validTargets: [...actionInfo.validTargets],
-          selectedTargets: [],
-          minTargets: actionInfo.minTargets ?? actionInfo.targetCount ?? 1,
-          maxTargets: actionInfo.targetCount ?? 1,
-        })
+        // Check for multi-target spells (e.g., Wicked Pact)
+        if (actionInfo.targetRequirements && actionInfo.targetRequirements.length > 1) {
+          const firstReq = actionInfo.targetRequirements[0]!
+          startTargeting({
+            action,
+            validTargets: [...firstReq.validTargets],
+            selectedTargets: [],
+            minTargets: firstReq.minTargets,
+            maxTargets: firstReq.maxTargets,
+            currentRequirementIndex: 0,
+            allSelectedTargets: [],
+            targetRequirements: actionInfo.targetRequirements,
+          })
+        } else {
+          startTargeting({
+            action,
+            validTargets: [...actionInfo.validTargets],
+            selectedTargets: [],
+            minTargets: actionInfo.minTargets ?? actionInfo.targetCount ?? 1,
+            maxTargets: actionInfo.targetCount ?? 1,
+          })
+        }
         selectCard(null)
         return
       }

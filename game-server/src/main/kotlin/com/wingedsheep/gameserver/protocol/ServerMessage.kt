@@ -338,6 +338,19 @@ sealed interface ServerMessage {
 }
 
 /**
+ * Information about a single target requirement for legal actions.
+ * Includes valid targets so the client knows which entities can be selected.
+ */
+@Serializable
+data class LegalActionTargetInfo(
+    val index: Int,
+    val description: String,
+    val minTargets: Int,
+    val maxTargets: Int,
+    val validTargets: List<EntityId>
+)
+
+/**
  * Information about a legal action the player can take.
  */
 @Serializable
@@ -355,6 +368,8 @@ data class LegalActionInfo(
     val minTargets: Int = targetCount,
     /** Description of the target requirement */
     val targetDescription: String? = null,
+    /** Multiple target requirements for spells with multiple distinct targets */
+    val targetRequirements: List<LegalActionTargetInfo>? = null,
     /** Valid attacker IDs for DeclareAttackers action */
     val validAttackers: List<EntityId>? = null,
     /** Valid blocker IDs for DeclareBlockers action */

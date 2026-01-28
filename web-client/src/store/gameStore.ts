@@ -75,6 +75,12 @@ export interface TargetingState {
   isSacrificeSelection?: boolean
   /** The original action info, used to chain sacrifice -> spell targeting */
   pendingActionInfo?: LegalActionInfo
+  /** Current target requirement index for multi-target spells (0-indexed) */
+  currentRequirementIndex?: number
+  /** All selected targets for each requirement (for multi-target spells) */
+  allSelectedTargets?: readonly (readonly EntityId[])[]
+  /** All target requirements (for multi-target spells) */
+  targetRequirements?: LegalActionInfo['targetRequirements']
 }
 
 /**
@@ -1133,6 +1139,63 @@ export const useGameStore = create<GameStore>()(
 
         // Normal targeting flow
         const action = targetingState.action
+
+        // Handle multi-target spells (e.g., Wicked Pact with two target creatures)
+        if (targetingState.targetRequirements && targetingState.targetRequirements.length > 1) {
+          const currentIndex = targetingState.currentRequirementIndex ?? 0
+          const nextIndex = currentIndex + 1
+
+          // Collect all selected targets so far, including current selection
+          const allSelected = targetingState.allSelectedTargets
+            ? [...targetingState.allSelectedTargets, targetingState.selectedTargets]
+            : [targetingState.selectedTargets]
+
+          // Check if there are more requirements to fill
+          const nextReq = targetingState.targetRequirements[nextIndex]
+          if (nextReq) {
+            // Filter out already-selected targets from valid targets for the next requirement
+            const alreadySelected = allSelected.flat()
+            const filteredValidTargets = nextReq.validTargets.filter(
+              (t) => !alreadySelected.includes(t)
+            )
+
+            // Chain to next targeting phase
+            startTargeting({
+              action,
+              validTargets: filteredValidTargets,
+              selectedTargets: [],
+              minTargets: nextReq.minTargets,
+              maxTargets: nextReq.maxTargets,
+              currentRequirementIndex: nextIndex,
+              allSelectedTargets: allSelected,
+              targetRequirements: targetingState.targetRequirements,
+            })
+            return
+          }
+
+          // All requirements filled - submit with all targets
+          if (action.type === 'CastSpell' || action.type === 'ActivateAbility') {
+            const targets = allSelected.flat().map((targetId) => {
+              const isPlayer = gameState.players.some(p => p.playerId === targetId)
+              if (isPlayer) {
+                return { type: 'Player' as const, playerId: targetId }
+              } else {
+                return { type: 'Permanent' as const, entityId: targetId }
+              }
+            })
+            const modifiedAction = {
+              ...action,
+              targets,
+            }
+            submitAction(modifiedAction)
+          } else {
+            submitAction(action)
+          }
+          set({ targetingState: null })
+          return
+        }
+
+        // Single target requirement flow
         if (action.type === 'CastSpell' || action.type === 'ActivateAbility') {
           // Convert selected targets to ChosenTarget format
           // Check if target is a player or permanent

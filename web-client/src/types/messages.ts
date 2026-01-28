@@ -235,6 +235,18 @@ export type PendingDecision =
   | ChooseNumberDecision
 
 /**
+ * Information about a single target requirement for legal actions.
+ * Includes valid targets so the client knows which entities can be selected.
+ */
+export interface LegalActionTargetInfo {
+  readonly index: number
+  readonly description: string
+  readonly minTargets: number
+  readonly maxTargets: number
+  readonly validTargets: readonly EntityId[]
+}
+
+/**
  * Information about a legal action the player can take.
  */
 export interface LegalActionInfo {
@@ -251,6 +263,8 @@ export interface LegalActionInfo {
   readonly minTargets?: number
   /** Description of the target requirement */
   readonly targetDescription?: string
+  /** Multiple target requirements for spells with multiple distinct targets */
+  readonly targetRequirements?: readonly LegalActionTargetInfo[]
   /** Valid attacker IDs for DeclareAttackers action */
   readonly validAttackers?: readonly EntityId[]
   /** Valid blocker IDs for DeclareBlockers action */

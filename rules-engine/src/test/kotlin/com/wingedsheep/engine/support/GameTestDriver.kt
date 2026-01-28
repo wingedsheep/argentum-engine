@@ -951,6 +951,19 @@ class GameTestDriver {
     }
 
     /**
+     * Submit a multi-target selection response (for spells with multiple target requirements).
+     * @param targetsPerRequirement Map of requirement index to list of targets for that requirement
+     */
+    fun submitMultiTargetSelection(playerId: EntityId, targetsPerRequirement: Map<Int, List<EntityId>>): ExecutionResult {
+        val decision = pendingDecision as? ChooseTargetsDecision
+            ?: throw IllegalStateException("No pending ChooseTargetsDecision")
+        return submitDecision(
+            playerId,
+            TargetsResponse(decision.id, targetsPerRequirement)
+        )
+    }
+
+    /**
      * Submit an ordered response (for reorder effects like look at top N and reorder).
      */
     fun submitOrderedResponse(playerId: EntityId, orderedObjects: List<EntityId>): ExecutionResult {
