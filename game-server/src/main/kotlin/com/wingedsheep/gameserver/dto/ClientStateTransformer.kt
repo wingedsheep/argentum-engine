@@ -11,6 +11,8 @@ import com.wingedsheep.engine.state.components.combat.*
 import com.wingedsheep.engine.state.components.player.*
 import com.wingedsheep.engine.state.components.stack.TargetsComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
+import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.StateProjector
@@ -123,6 +125,7 @@ class ClientStateTransformer(
             for (entityId in state.stack) {
                 if (entityId !in cards) {
                     val clientCard = transformCard(state, entityId, stackZoneKey, projectedState)
+                        ?: transformAbilityOnStack(state, entityId)
                     if (clientCard != null) {
                         cards[entityId] = clientCard
                     }
@@ -182,6 +185,120 @@ class ClientStateTransformer(
     private fun isCardRevealedTo(state: GameState, entityId: EntityId, viewingPlayerId: EntityId): Boolean {
         val revealedComponent = state.getEntity(entityId)?.get<RevealedToComponent>()
         return revealedComponent?.isRevealedTo(viewingPlayerId) == true
+    }
+
+    /**
+     * Transform an activated or triggered ability on the stack into a ClientCard DTO.
+     * These don't have CardComponent, so we create a synthetic card representation.
+     */
+    private fun transformAbilityOnStack(state: GameState, entityId: EntityId): ClientCard? {
+        val container = state.getEntity(entityId) ?: return null
+
+        // Helper to transform targets
+        fun transformTargets(targetsComponent: TargetsComponent?): List<ClientChosenTarget> {
+            return targetsComponent?.targets?.mapNotNull { chosenTarget ->
+                when (chosenTarget) {
+                    is ChosenTarget.Player -> ClientChosenTarget.Player(chosenTarget.playerId)
+                    is ChosenTarget.Permanent -> ClientChosenTarget.Permanent(chosenTarget.entityId)
+                    is ChosenTarget.Spell -> ClientChosenTarget.Spell(chosenTarget.spellEntityId)
+                    is ChosenTarget.Card -> null
+                }
+            } ?: emptyList()
+        }
+
+        // Check for activated ability
+        val activatedAbility = container.get<ActivatedAbilityOnStackComponent>()
+        if (activatedAbility != null) {
+            // Get the source card's info to display
+            val sourceCard = state.getEntity(activatedAbility.sourceId)?.get<CardComponent>()
+            val cardDef = cardRegistry.getCard(activatedAbility.sourceName)
+
+            // Get targets for this ability
+            val targetsComponent = container.get<TargetsComponent>()
+            val targets = transformTargets(targetsComponent)
+
+            return ClientCard(
+                id = entityId,
+                name = "${activatedAbility.sourceName} ability",
+                manaCost = "",
+                manaValue = 0,
+                typeLine = "Ability",
+                cardTypes = setOf("Ability"),
+                subtypes = emptySet(),
+                colors = sourceCard?.colors ?: emptySet(),
+                oracleText = activatedAbility.effect.description,
+                power = null,
+                toughness = null,
+                basePower = null,
+                baseToughness = null,
+                damage = null,
+                keywords = emptySet(),
+                counters = emptyMap(),
+                isTapped = false,
+                hasSummoningSickness = false,
+                isTransformed = false,
+                isAttacking = false,
+                isBlocking = false,
+                attackingTarget = null,
+                blockingTarget = null,
+                controllerId = activatedAbility.controllerId,
+                ownerId = activatedAbility.controllerId,
+                isToken = false,
+                zone = null,
+                attachedTo = null,
+                attachments = emptyList(),
+                isFaceDown = false,
+                targets = targets,
+                imageUri = cardDef?.metadata?.imageUri
+            )
+        }
+
+        // Check for triggered ability
+        val triggeredAbility = container.get<TriggeredAbilityOnStackComponent>()
+        if (triggeredAbility != null) {
+            val sourceCard = state.getEntity(triggeredAbility.sourceId)?.get<CardComponent>()
+            val cardDef = cardRegistry.getCard(triggeredAbility.sourceName)
+
+            val targetsComponent = container.get<TargetsComponent>()
+            val targets = transformTargets(targetsComponent)
+
+            return ClientCard(
+                id = entityId,
+                name = "${triggeredAbility.sourceName} trigger",
+                manaCost = "",
+                manaValue = 0,
+                typeLine = "Triggered Ability",
+                cardTypes = setOf("Ability"),
+                subtypes = emptySet(),
+                colors = sourceCard?.colors ?: emptySet(),
+                oracleText = triggeredAbility.description,
+                power = null,
+                toughness = null,
+                basePower = null,
+                baseToughness = null,
+                damage = null,
+                keywords = emptySet(),
+                counters = emptyMap(),
+                isTapped = false,
+                hasSummoningSickness = false,
+                isTransformed = false,
+                isAttacking = false,
+                isBlocking = false,
+                attackingTarget = null,
+                blockingTarget = null,
+                controllerId = triggeredAbility.controllerId,
+                ownerId = triggeredAbility.controllerId,
+                isToken = false,
+                zone = null,
+                attachedTo = null,
+                attachments = emptyList(),
+                isFaceDown = false,
+                targets = targets,
+                imageUri = cardDef?.metadata?.imageUri
+            )
+        }
+
+        return null
     }
 
     /**

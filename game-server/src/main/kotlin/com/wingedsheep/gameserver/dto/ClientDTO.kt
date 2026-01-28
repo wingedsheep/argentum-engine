@@ -287,11 +287,14 @@ data class ClientBlocker(
 @Serializable
 sealed interface ClientChosenTarget {
     @Serializable
+    @kotlinx.serialization.SerialName("Player")
     data class Player(val playerId: EntityId) : ClientChosenTarget
 
     @Serializable
+    @kotlinx.serialization.SerialName("Permanent")
     data class Permanent(val entityId: EntityId) : ClientChosenTarget
 
     @Serializable
+    @kotlinx.serialization.SerialName("Spell")
     data class Spell(val spellEntityId: EntityId) : ClientChosenTarget
 }
