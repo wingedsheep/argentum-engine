@@ -72,6 +72,7 @@ class ContinuationHandler(
             is ReorderOpponentLibraryContinuation -> resumeReorderOpponentLibrary(stateAfterPop, continuation, response)
             is PayOrSufferContinuation -> resumePayOrSuffer(stateAfterPop, continuation, response)
             is DistributeDamageContinuation -> resumeDistributeDamage(stateAfterPop, continuation, response)
+            is LookAtTopCardsContinuation -> resumeLookAtTopCards(stateAfterPop, continuation, response)
         }
     }
 
@@ -1446,6 +1447,81 @@ class ContinuationHandler(
                 newState = result.state
                 events.addAll(result.events)
             }
+        }
+
+        return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume after player selected cards to keep from looking at top cards of library.
+     *
+     * The player has selected which cards to put into their hand. The remaining
+     * cards from the looked-at set go to graveyard (if restToGraveyard is true)
+     * or stay on top of the library (if false).
+     */
+    private fun resumeLookAtTopCards(
+        state: GameState,
+        continuation: LookAtTopCardsContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for look at top cards")
+        }
+
+        val playerId = continuation.playerId
+        val selectedCards = response.selectedCards.toSet()
+        val libraryZone = ZoneKey(playerId, ZoneType.LIBRARY)
+        val handZone = ZoneKey(playerId, ZoneType.HAND)
+        val graveyardZone = ZoneKey(playerId, ZoneType.GRAVEYARD)
+        val events = mutableListOf<GameEvent>()
+
+        var newState = state
+
+        // Process all looked-at cards
+        for (cardId in continuation.allCards) {
+            val cardName = newState.getEntity(cardId)?.get<CardComponent>()?.name ?: "Unknown"
+
+            // Remove from library first
+            newState = newState.removeFromZone(libraryZone, cardId)
+
+            if (cardId in selectedCards) {
+                // Selected cards go to hand
+                newState = newState.addToZone(handZone, cardId)
+                events.add(
+                    ZoneChangeEvent(
+                        entityId = cardId,
+                        entityName = cardName,
+                        fromZone = ZoneType.LIBRARY,
+                        toZone = ZoneType.HAND,
+                        ownerId = playerId
+                    )
+                )
+            } else {
+                // Non-selected cards go to graveyard or stay on top of library
+                if (continuation.restToGraveyard) {
+                    newState = newState.addToZone(graveyardZone, cardId)
+                    events.add(
+                        ZoneChangeEvent(
+                            entityId = cardId,
+                            entityName = cardName,
+                            fromZone = ZoneType.LIBRARY,
+                            toZone = ZoneType.GRAVEYARD,
+                            ownerId = playerId
+                        )
+                    )
+                } else {
+                    // Put back on top of library
+                    val currentLibrary = newState.getZone(libraryZone)
+                    newState = newState.copy(
+                        zones = newState.zones + (libraryZone to listOf(cardId) + currentLibrary)
+                    )
+                }
+            }
+        }
+
+        // Add a cards drawn event for the selected cards
+        if (selectedCards.isNotEmpty()) {
+            events.add(0, CardsDrawnEvent(playerId, selectedCards.size, selectedCards.toList()))
         }
 
         return checkForMoreContinuations(newState, events)

@@ -477,3 +477,27 @@ data class DistributeDamageContinuation(
     val controllerId: EntityId,
     val targets: List<EntityId>
 ) : ContinuationFrame
+
+/**
+ * Resume after player selects cards to keep from looking at top cards of library.
+ *
+ * Used for effects like Ancestral Memories: "Look at the top N cards of your library.
+ * Put X of them into your hand and the rest into your graveyard."
+ *
+ * @property playerId The player who is looking at and selecting cards
+ * @property sourceId The spell/ability that caused this effect
+ * @property sourceName Name of the source for event messages
+ * @property allCards All the cards that were looked at (for validation and moving non-selected)
+ * @property keepCount Number of cards the player must keep (put in hand)
+ * @property restToGraveyard If true, non-selected cards go to graveyard; if false, they stay on top of library
+ */
+@Serializable
+data class LookAtTopCardsContinuation(
+    override val decisionId: String,
+    val playerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val allCards: List<EntityId>,
+    val keepCount: Int,
+    val restToGraveyard: Boolean
+) : ContinuationFrame
