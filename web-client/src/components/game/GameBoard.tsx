@@ -1,5 +1,5 @@
 import { useGameStore } from '../../store/gameStore'
-import { useViewingPlayer, useOpponent, useZoneCards, useZone, useBattlefieldCards, useHasLegalActions, useStackCards } from '../../store/selectors'
+import { useViewingPlayer, useOpponent, useZoneCards, useZone, useBattlefieldCards, useHasLegalActions, useStackCards, useGroupedZoneCards } from '../../store/selectors'
 import { hand, graveyard } from '../../types'
 import type { ClientCard, ZoneId, ClientPlayer, LegalActionInfo, EntityId, Keyword, ClientPlayerEffect } from '../../types'
 import { keywordIcons, genericKeywordIcon, displayableKeywords } from '../../assets/icons/keywords'
@@ -543,15 +543,15 @@ function CardRow({
   interactive?: boolean
   small?: boolean
 }) {
-  const cards = useZoneCards(zoneId)
+  const groupedCards = useGroupedZoneCards(zoneId)
   const zone = useZone(zoneId)
   const responsive = useResponsiveContext()
 
   // For hidden zones (like opponent's hand), use zone size to show face-down placeholders
   const zoneSize = zone?.size ?? 0
-  const showPlaceholders = faceDown && cards.length === 0 && zoneSize > 0
+  const showPlaceholders = faceDown && groupedCards.length === 0 && zoneSize > 0
 
-  if (cards.length === 0 && !showPlaceholders) {
+  if (groupedCards.length === 0 && !showPlaceholders) {
     return <div style={{ ...styles.emptyZone, fontSize: responsive.fontSize.small }}>No cards</div>
   }
 
@@ -559,8 +559,8 @@ function CardRow({
   const sideZoneWidth = responsive.pileWidth + 20 // pile + margin
   const availableWidth = responsive.viewportWidth - (responsive.containerPadding * 2) - (sideZoneWidth * 2)
 
-  // Calculate card width that fits all cards
-  const cardCount = showPlaceholders ? zoneSize : cards.length
+  // Calculate card width that fits all cards (use grouped count for sizing)
+  const cardCount = showPlaceholders ? zoneSize : groupedCards.length
   const baseWidth = small ? responsive.smallCardWidth : responsive.cardWidth
   const minWidth = small ? 30 : 45
   const fittingWidth = calculateFittingCardWidth(
@@ -602,10 +602,11 @@ function CardRow({
 
   return (
     <div style={{ ...styles.cardRow, gap: responsive.cardGap, padding: responsive.cardGap }}>
-      {cards.map((card) => (
+      {groupedCards.map((group) => (
         <GameCard
-          key={card.id}
-          card={card}
+          key={group.card.id}
+          card={group.card}
+          count={group.count}
           faceDown={faceDown}
           interactive={interactive}
           small={small}
@@ -797,6 +798,7 @@ function BattlefieldArea({ isOpponent }: { isOpponent: boolean }) {
  */
 function GameCard({
   card,
+  count = 1,
   faceDown = false,
   interactive = false,
   small = false,
@@ -806,6 +808,7 @@ function GameCard({
   inHand = false,
 }: {
   card: ClientCard
+  count?: number
   faceDown?: boolean
   interactive?: boolean
   small?: boolean
@@ -1207,6 +1210,30 @@ function GameCard({
       {/* Playable indicator glow effect (only outside combat mode) */}
       {isPlayable && !isSelected && (
         <div style={styles.playableGlow} />
+      )}
+
+      {/* Count badge for grouped cards */}
+      {count > 1 && !faceDown && (
+        <div style={{
+          position: 'absolute',
+          top: responsive.isMobile ? 2 : 4,
+          right: responsive.isMobile ? 2 : 4,
+          backgroundColor: 'rgba(0, 0, 0, 0.85)',
+          color: '#fff',
+          borderRadius: '50%',
+          width: responsive.isMobile ? 18 : 22,
+          height: responsive.isMobile ? 18 : 22,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: responsive.isMobile ? 10 : 12,
+          fontWeight: 700,
+          border: '1px solid rgba(255, 255, 255, 0.3)',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.5)',
+          zIndex: 10,
+        }}>
+          {count}
+        </div>
       )}
     </div>
   )
@@ -1673,9 +1700,9 @@ const styles: Record<string, React.CSSProperties> = {
   },
   targetingOverlay: {
     position: 'absolute',
-    bottom: 20,
+    top: '50%',
     left: '50%',
-    transform: 'translateX(-50%)',
+    transform: 'translate(-50%, -50%)',
     backgroundColor: 'rgba(0, 0, 0, 0.9)',
     padding: '16px 24px',
     borderRadius: 12,

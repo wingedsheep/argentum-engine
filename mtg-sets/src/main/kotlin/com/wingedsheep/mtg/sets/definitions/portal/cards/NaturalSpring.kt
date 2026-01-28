@@ -2,26 +2,20 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.GainLifeEffect
-import com.wingedsheep.sdk.targeting.TargetPlayer
 
 /**
  * Natural Spring
  * {3}{G}{G}
  * Sorcery
- * Target player gains 8 life.
+ * You gain 8 life.
  */
 val NaturalSpring = card("Natural Spring") {
     manaCost = "{3}{G}{G}"
     typeLine = "Sorcery"
 
     spell {
-        target = TargetPlayer()
-        effect = GainLifeEffect(
-            amount = 8,
-            target = EffectTarget.ContextTarget(0)
-        )
+        effect = GainLifeEffect(amount = 8)
     }
 
     metadata {
