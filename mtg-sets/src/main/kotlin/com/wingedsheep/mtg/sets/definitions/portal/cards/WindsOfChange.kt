@@ -3,6 +3,8 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.WheelEffect
 
 /**
  * Winds of Change
@@ -15,7 +17,7 @@ val WindsOfChange = card("Winds of Change") {
     typeLine = "Sorcery"
 
     spell {
-        effect = Effects.WindsOfChange()
+        effect = WheelEffect(target = EffectTarget.EachPlayer)
     }
 
     metadata {

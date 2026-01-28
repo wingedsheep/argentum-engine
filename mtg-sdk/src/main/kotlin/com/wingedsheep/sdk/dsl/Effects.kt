@@ -270,9 +270,4 @@ object Effects {
         )
     )
 
-    /**
-     * Each player shuffles their hand into their library, then draws that many cards.
-     * "Each player shuffles the cards from their hand into their library, then draws that many cards."
-     */
-    fun WindsOfChange(): Effect = WheelEffect(target = EffectTarget.EachPlayer)
 }
