@@ -10,6 +10,7 @@ import com.wingedsheep.engine.state.components.identity.*
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.gameserver.dto.ClientStateTransformer
+import com.wingedsheep.gameserver.handler.GamePlayHandler
 import com.wingedsheep.gameserver.repository.GameRepository
 import com.wingedsheep.gameserver.session.GameSession
 import com.wingedsheep.gameserver.session.PlayerIdentity
@@ -48,7 +49,8 @@ private val logger = LoggerFactory.getLogger(DevScenarioController::class.java)
 class DevScenarioController(
     private val cardRegistry: CardRegistry,
     private val gameRepository: GameRepository,
-    private val sessionRegistry: SessionRegistry
+    private val sessionRegistry: SessionRegistry,
+    private val gamePlayHandler: GamePlayHandler
 ) {
     private val stateTransformer = ClientStateTransformer(cardRegistry)
 
@@ -248,6 +250,138 @@ class DevScenarioController(
     fun listCards(): ResponseEntity<List<String>> {
         val cardNames = cardRegistry.allCardNames().sorted()
         return ResponseEntity.ok(cardNames)
+    }
+
+    /**
+     * Reset an existing game session with a new scenario configuration.
+     *
+     * POST /api/dev/scenarios/{sessionId}/reset
+     *
+     * This preserves the same player IDs and tokens, allowing connected clients
+     * to continue playing without reconnecting.
+     */
+    @PostMapping("/{sessionId}/reset")
+    @Operation(
+        summary = "Reset a scenario",
+        description = """
+            Resets an existing game session with a new board state while preserving player IDs and tokens.
+
+            Connected clients will automatically receive the updated game state.
+            This is useful for quickly iterating on test scenarios without reconnecting.
+        """,
+        responses = [
+            ApiResponse(responseCode = "200", description = "Scenario reset successfully"),
+            ApiResponse(responseCode = "404", description = "Session not found"),
+            ApiResponse(responseCode = "400", description = "Invalid scenario configuration")
+        ]
+    )
+    fun resetScenario(
+        @PathVariable sessionId: String,
+        @RequestBody request: ScenarioRequest
+    ): ResponseEntity<ScenarioResponse> {
+        logger.info("Resetting dev scenario: sessionId=$sessionId")
+
+        val gameSession = gameRepository.findById(sessionId)
+        if (gameSession == null) {
+            return ResponseEntity.notFound().build()
+        }
+
+        // Find existing player identities for this session
+        val identities = sessionRegistry.getAllIdentities()
+            .filter { it.currentGameSessionId == sessionId }
+            .toList()
+
+        if (identities.size != 2) {
+            logger.warn("Expected 2 identities for session $sessionId, found ${identities.size}")
+        }
+
+        // Sort by player ID to ensure consistent ordering (player-1, player-2)
+        val sortedIdentities = identities.sortedBy { it.playerId.value }
+        val identity1 = sortedIdentities.getOrNull(0)
+        val identity2 = sortedIdentities.getOrNull(1)
+
+        try {
+            val builder = ScenarioBuilder(cardRegistry)
+
+            // Use existing player names if available, otherwise use request names
+            val player1Name = identity1?.playerName ?: request.player1Name
+            val player2Name = identity2?.playerName ?: request.player2Name
+
+            // Initialize players with fixed IDs
+            builder.withPlayers(player1Name, player2Name)
+
+            // Set up player 1
+            request.player1?.let { config ->
+                config.lifeTotal?.let { builder.withLifeTotal(1, it) }
+                config.hand.forEach { builder.withCardInHand(1, it) }
+                config.battlefield.forEach { card ->
+                    builder.withCardOnBattlefield(
+                        1, card.name,
+                        tapped = card.tapped,
+                        summoningSickness = card.summoningSickness
+                    )
+                }
+                config.graveyard.forEach { builder.withCardInGraveyard(1, it) }
+                config.library.forEach { builder.withCardInLibrary(1, it) }
+            }
+
+            // Set up player 2
+            request.player2?.let { config ->
+                config.lifeTotal?.let { builder.withLifeTotal(2, it) }
+                config.hand.forEach { builder.withCardInHand(2, it) }
+                config.battlefield.forEach { card ->
+                    builder.withCardOnBattlefield(
+                        2, card.name,
+                        tapped = card.tapped,
+                        summoningSickness = card.summoningSickness
+                    )
+                }
+                config.graveyard.forEach { builder.withCardInGraveyard(2, it) }
+                config.library.forEach { builder.withCardInLibrary(2, it) }
+            }
+
+            // Set game state
+            request.phase?.let { phase ->
+                val step = request.step ?: phaseToDefaultStep(phase)
+                builder.inPhase(phase, step)
+            }
+            request.activePlayer?.let { builder.withActivePlayer(it) }
+            request.priorityPlayer?.let { builder.withPriorityPlayer(it) }
+
+            // Build the new scenario state
+            val (state, player1Id, player2Id) = builder.build()
+
+            // Reset the game state (preserves connected player sessions)
+            gameSession.resetStateForDevScenario(state)
+
+            // Broadcast the new state to connected players
+            gamePlayHandler.broadcastStateUpdate(gameSession, emptyList())
+
+            logger.info("Reset scenario session $sessionId")
+
+            return ResponseEntity.ok(ScenarioResponse(
+                sessionId = sessionId,
+                player1 = PlayerInfo(
+                    name = player1Name,
+                    token = identity1?.token ?: "",
+                    playerId = player1Id.value
+                ),
+                player2 = PlayerInfo(
+                    name = player2Name,
+                    token = identity2?.token ?: "",
+                    playerId = player2Id.value
+                ),
+                message = "Scenario reset. Connected clients will receive the updated game state."
+            ))
+        } catch (e: Exception) {
+            logger.error("Failed to reset scenario", e)
+            return ResponseEntity.badRequest().body(ScenarioResponse(
+                sessionId = sessionId,
+                player1 = PlayerInfo("", "", ""),
+                player2 = PlayerInfo("", "", ""),
+                message = "Failed to reset scenario: ${e.message}"
+            ))
+        }
     }
 
     private fun phaseToDefaultStep(phase: Phase): Step {

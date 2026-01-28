@@ -1072,6 +1072,23 @@ class GameSession(
     }
 
     /**
+     * Reset the game state for dev scenario testing while preserving connected player sessions.
+     * This allows resetting to a new scenario without requiring players to reconnect.
+     *
+     * **WARNING:** This method is for development testing only.
+     *
+     * @param state The new game state to inject
+     */
+    fun resetStateForDevScenario(state: GameState) {
+        synchronized(stateLock) {
+            gameState = state
+            gameLogs.clear()
+            lastProcessedMessageId.clear()
+            // Players map is preserved so connected sessions remain valid
+        }
+    }
+
+    /**
      * Get the raw game state for testing assertions.
      * **WARNING:** This method is for testing only.
      */
