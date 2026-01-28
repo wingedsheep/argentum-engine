@@ -20,10 +20,12 @@ val WickedPact = card("Wicked Pact") {
     typeLine = "Sorcery"
 
     spell {
-        val creature1 = target("first creature", TargetCreature(filter = CreatureTargetFilter.NotColor(Color.BLACK)))
-        val creature2 = target("second creature", TargetCreature(filter = CreatureTargetFilter.NotColor(Color.BLACK)))
-        effect = DestroyEffect(creature1) then
-                DestroyEffect(creature2) then
+        val creatures = target("two target nonblack creatures", TargetCreature(
+            count = 2,
+            filter = CreatureTargetFilter.NotColor(Color.BLACK)
+        ))
+
+        effect = DestroyEffect(creatures) then
                 LoseLifeEffect(5, EffectTarget.Controller)
     }
 

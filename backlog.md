@@ -4,6 +4,7 @@
 
 - [ ] Wicked pact should allow me to target two creatures in the UI, but only allows me to target one
 - [ ] King's Assassin can choose a target, but the target is not destroyed
+- [ ] Mulligan and deck search style is not correct (not portal)
 
 ## Features
 
