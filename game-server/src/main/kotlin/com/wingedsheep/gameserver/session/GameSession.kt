@@ -16,7 +16,9 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
+import com.wingedsheep.engine.state.components.player.LossReason
 import com.wingedsheep.engine.state.components.player.MulliganStateComponent
+import com.wingedsheep.engine.state.components.player.PlayerLostComponent
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.Deck
@@ -788,8 +790,17 @@ class GameSession(
         val state = gameState ?: return null
         if (!state.gameOver) return null
 
-        // TODO: Determine actual reason from game state events
-        return GameOverReason.LIFE_ZERO
+        // Find the losing player (the one who is not the winner)
+        val loserId = state.turnOrder.find { it != state.winnerId }
+        val lossComponent = loserId?.let { state.getEntity(it)?.get<PlayerLostComponent>() }
+
+        return when (lossComponent?.reason) {
+            LossReason.LIFE_ZERO -> GameOverReason.LIFE_ZERO
+            LossReason.EMPTY_LIBRARY -> GameOverReason.DECK_OUT
+            LossReason.POISON_COUNTERS -> GameOverReason.POISON_COUNTERS
+            LossReason.CONCESSION -> GameOverReason.CONCESSION
+            null -> GameOverReason.LIFE_ZERO // Fallback
+        }
     }
 
     /**
