@@ -2010,6 +2010,17 @@ data class SacrificeEffect(
 }
 
 /**
+ * Sacrifice the source permanent (self).
+ * "Sacrifice this creature" or "Sacrifice this permanent"
+ *
+ * Used primarily as the suffer effect in PayOrSufferEffect for punisher mechanics.
+ */
+@Serializable
+data object SacrificeSelfEffect : Effect {
+    override val description: String = "sacrifice this permanent"
+}
+
+/**
  * Reflexive trigger - "When you do, [effect]."
  *
  * Used for abilities that trigger from the resolution of another effect.
@@ -3008,4 +3019,122 @@ data class GainLifeForEachLandOnBattlefieldEffect(
     val lifePerLand: Int = 1
 ) : Effect {
     override val description: String = "You gain $lifePerLand life for each $landType on the battlefield"
+}
+
+// =============================================================================
+// Unless Effects (Punisher Mechanics)
+// =============================================================================
+
+/**
+ * Represents a cost that can be paid to avoid a consequence.
+ * Used by PayOrSufferEffect to unify "unless" mechanics.
+ */
+@Serializable
+sealed interface PayCost {
+    val description: String
+
+    /**
+     * Discard one or more cards matching a filter to avoid the consequence.
+     * "...unless you discard a land card"
+     *
+     * @property filter What type of card must be discarded
+     * @property count How many cards must be discarded (default 1)
+     * @property random If true, the discard is random (e.g., Pillaging Horde)
+     */
+    @Serializable
+    data class Discard(
+        val filter: CardFilter = CardFilter.AnyCard,
+        val count: Int = 1,
+        val random: Boolean = false
+    ) : PayCost {
+        override val description: String = buildString {
+            append("discard ")
+            if (count == 1) {
+                when (filter) {
+                    CardFilter.AnyCard -> append("a card")
+                    CardFilter.LandCard -> append("a land card")
+                    CardFilter.CreatureCard -> append("a creature card")
+                    else -> append("a ${filter.description}")
+                }
+            } else {
+                append("$count ")
+                when (filter) {
+                    CardFilter.AnyCard -> append("cards")
+                    CardFilter.LandCard -> append("land cards")
+                    CardFilter.CreatureCard -> append("creature cards")
+                    else -> append("${filter.description}s")
+                }
+            }
+            if (random) append(" at random")
+        }
+    }
+
+    /**
+     * Sacrifice one or more permanents matching a filter to avoid the consequence.
+     * "...unless you sacrifice three Forests"
+     *
+     * @property filter What type of permanent must be sacrificed
+     * @property count How many permanents must be sacrificed (default 1)
+     */
+    @Serializable
+    data class Sacrifice(
+        val filter: CardFilter,
+        val count: Int = 1
+    ) : PayCost {
+        override val description: String = buildString {
+            append("sacrifice ")
+            if (count == 1) {
+                val desc = filter.description
+                append(if (desc.first().lowercaseChar() in "aeiou") "an" else "a")
+                append(" $desc")
+            } else {
+                append(numberToWord(count))
+                append(" ${filter.description}s")
+            }
+        }
+
+        private fun numberToWord(n: Int): String = when (n) {
+            1 -> "one"
+            2 -> "two"
+            3 -> "three"
+            4 -> "four"
+            5 -> "five"
+            else -> n.toString()
+        }
+    }
+
+    /**
+     * Pay life to avoid the consequence.
+     * "...unless you pay 3 life"
+     *
+     * @property amount How much life to pay
+     */
+    @Serializable
+    data class PayLife(
+        val amount: Int
+    ) : PayCost {
+        override val description: String = "pay $amount life"
+    }
+}
+
+/**
+ * Generic "unless" effect for punisher mechanics.
+ * "Do [suffer], unless you [cost]."
+ *
+ * This is a unified effect that handles:
+ * - "Sacrifice this unless you discard a land card" (Thundering Wurm)
+ * - "Sacrifice this unless you sacrifice three Forests" (Primeval Force)
+ * - Similar punisher-style effects
+ *
+ * @property cost The cost that can be paid to avoid the consequence
+ * @property suffer The consequence if the cost is not paid
+ * @property player Who must make the choice (defaults to controller)
+ */
+@Serializable
+data class PayOrSufferEffect(
+    val cost: PayCost,
+    val suffer: Effect,
+    val player: EffectTarget = EffectTarget.Controller
+) : Effect {
+    override val description: String = "${suffer.description} unless you ${cost.description}"
 }

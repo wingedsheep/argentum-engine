@@ -4,7 +4,9 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CardFilter
 import com.wingedsheep.sdk.scripting.OnEnterBattlefield
-import com.wingedsheep.sdk.scripting.SacrificeUnlessDiscardEffect
+import com.wingedsheep.sdk.scripting.PayCost
+import com.wingedsheep.sdk.scripting.PayOrSufferEffect
+import com.wingedsheep.sdk.scripting.SacrificeSelfEffect
 
 /**
  * Mercenary Knight
@@ -22,7 +24,10 @@ val MercenaryKnight = card("Mercenary Knight") {
 
     triggeredAbility {
         trigger = OnEnterBattlefield()
-        effect = SacrificeUnlessDiscardEffect(CardFilter.CreatureCard)
+        effect = PayOrSufferEffect(
+            cost = PayCost.Discard(filter = CardFilter.CreatureCard),
+            suffer = SacrificeSelfEffect
+        )
     }
 
     metadata {

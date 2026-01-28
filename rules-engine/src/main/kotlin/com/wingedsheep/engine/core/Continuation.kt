@@ -488,3 +488,40 @@ data class SacrificeUnlessRandomDiscardContinuation(
     val sourceName: String,
     val discardFilter: CardFilter
 ) : ContinuationFrame
+
+/**
+ * Resume after player selects cards/permanents for a generic "pay or suffer" effect.
+ *
+ * Used for unified "unless" mechanics like PayOrSufferEffect.
+ *
+ * @property playerId The player who must make the choice
+ * @property sourceId The source that triggered this effect
+ * @property sourceName Name of the source for event messages
+ * @property costType The type of cost being paid (for dispatch to appropriate handler)
+ * @property sufferEffect The effect to execute if the player doesn't pay
+ * @property requiredCount Number of items required (cards to discard, permanents to sacrifice)
+ * @property filter The filter for valid selections
+ * @property random Whether the selection should be random (for Discard costs)
+ */
+@Serializable
+data class PayOrSufferContinuation(
+    override val decisionId: String,
+    val playerId: EntityId,
+    val sourceId: EntityId,
+    val sourceName: String,
+    val costType: PayOrSufferCostType,
+    val sufferEffect: Effect,
+    val requiredCount: Int,
+    val filter: CardFilter,
+    val random: Boolean = false
+) : ContinuationFrame
+
+/**
+ * Discriminator for the cost type in PayOrSufferContinuation.
+ */
+@Serializable
+enum class PayOrSufferCostType {
+    DISCARD,
+    SACRIFICE,
+    PAY_LIFE
+}

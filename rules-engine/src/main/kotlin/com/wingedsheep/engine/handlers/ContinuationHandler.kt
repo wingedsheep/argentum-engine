@@ -72,6 +72,7 @@ class ContinuationHandler(
             is LookAtOpponentLibraryContinuation -> resumeLookAtOpponentLibrary(stateAfterPop, continuation, response)
             is ReorderOpponentLibraryContinuation -> resumeReorderOpponentLibrary(stateAfterPop, continuation, response)
             is SacrificeUnlessRandomDiscardContinuation -> resumeSacrificeUnlessRandomDiscard(stateAfterPop, continuation, response)
+            is PayOrSufferContinuation -> resumePayOrSuffer(stateAfterPop, continuation, response)
         }
     }
 
@@ -1430,6 +1431,220 @@ class ContinuationHandler(
             )
 
             return checkForMoreContinuations(newState, events)
+        }
+    }
+
+    /**
+     * Resume after player made a choice for a generic pay or suffer effect.
+     *
+     * Handles both card selection responses (for discard/sacrifice costs)
+     * and yes/no responses (for random discard and pay life costs).
+     */
+    private fun resumePayOrSuffer(
+        state: GameState,
+        continuation: PayOrSufferContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        val playerId = continuation.playerId
+        val sourceId = continuation.sourceId
+        val sourceName = continuation.sourceName
+
+        return when (continuation.costType) {
+            PayOrSufferCostType.DISCARD -> {
+                if (continuation.random) {
+                    resumePayOrSufferRandomDiscard(state, continuation, response)
+                } else {
+                    resumePayOrSufferDiscard(state, continuation, response)
+                }
+            }
+            PayOrSufferCostType.SACRIFICE -> resumePayOrSufferSacrifice(state, continuation, response)
+            PayOrSufferCostType.PAY_LIFE -> resumePayOrSufferPayLife(state, continuation, response)
+        }
+    }
+
+    /**
+     * Handle discard cost selection for pay or suffer.
+     */
+    private fun resumePayOrSufferDiscard(
+        state: GameState,
+        continuation: PayOrSufferContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for pay or suffer discard")
+        }
+
+        val playerId = continuation.playerId
+        val sourceId = continuation.sourceId
+        val selectedCards = response.selectedCards
+
+        // If player didn't select enough cards, execute the suffer effect
+        if (selectedCards.size < continuation.requiredCount) {
+            return executePayOrSufferConsequence(state, continuation)
+        }
+
+        // Player paid the cost - discard the selected cards
+        val handZone = ZoneKey(playerId, ZoneType.HAND)
+        val graveyardZone = ZoneKey(playerId, ZoneType.GRAVEYARD)
+        var newState = state
+        val events = mutableListOf<GameEvent>()
+
+        for (cardId in selectedCards) {
+            val cardName = newState.getEntity(cardId)?.get<CardComponent>()?.name ?: "Unknown"
+            newState = newState.removeFromZone(handZone, cardId)
+            newState = newState.addToZone(graveyardZone, cardId)
+            events.add(
+                ZoneChangeEvent(
+                    entityId = cardId,
+                    entityName = cardName,
+                    fromZone = ZoneType.HAND,
+                    toZone = ZoneType.GRAVEYARD,
+                    ownerId = playerId
+                )
+            )
+        }
+
+        events.add(0, CardsDiscardedEvent(playerId, selectedCards))
+        return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Handle random discard yes/no choice for pay or suffer.
+     */
+    private fun resumePayOrSufferRandomDiscard(
+        state: GameState,
+        continuation: PayOrSufferContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is YesNoResponse) {
+            return ExecutionResult.error(state, "Expected yes/no response for pay or suffer random discard")
+        }
+
+        if (!response.choice) {
+            // Player declined - execute suffer effect
+            return executePayOrSufferConsequence(state, continuation)
+        }
+
+        // Player chose to pay - execute random discard
+        val result = com.wingedsheep.engine.handlers.effects.removal.PayOrSufferExecutor.executeRandomDiscard(
+            state,
+            continuation.playerId,
+            continuation.filter,
+            continuation.requiredCount
+        )
+        return checkForMoreContinuations(result.state, result.events.toList())
+    }
+
+    /**
+     * Handle sacrifice cost selection for pay or suffer.
+     */
+    private fun resumePayOrSufferSacrifice(
+        state: GameState,
+        continuation: PayOrSufferContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for pay or suffer sacrifice")
+        }
+
+        val playerId = continuation.playerId
+        val selectedPermanents = response.selectedCards
+
+        // If player didn't select enough permanents, execute the suffer effect
+        if (selectedPermanents.size < continuation.requiredCount) {
+            return executePayOrSufferConsequence(state, continuation)
+        }
+
+        // Player paid the cost - sacrifice the selected permanents
+        val battlefieldZone = ZoneKey(playerId, ZoneType.BATTLEFIELD)
+        val graveyardZone = ZoneKey(playerId, ZoneType.GRAVEYARD)
+        var newState = state
+        val events = mutableListOf<GameEvent>()
+
+        for (permanentId in selectedPermanents) {
+            val permanentName = newState.getEntity(permanentId)?.get<CardComponent>()?.name ?: "Unknown"
+            newState = newState.removeFromZone(battlefieldZone, permanentId)
+            newState = newState.addToZone(graveyardZone, permanentId)
+            events.add(
+                ZoneChangeEvent(
+                    entityId = permanentId,
+                    entityName = permanentName,
+                    fromZone = ZoneType.BATTLEFIELD,
+                    toZone = ZoneType.GRAVEYARD,
+                    ownerId = playerId
+                )
+            )
+        }
+
+        events.add(0, PermanentsSacrificedEvent(playerId, selectedPermanents))
+        return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Handle pay life yes/no choice for pay or suffer.
+     */
+    private fun resumePayOrSufferPayLife(
+        state: GameState,
+        continuation: PayOrSufferContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is YesNoResponse) {
+            return ExecutionResult.error(state, "Expected yes/no response for pay or suffer pay life")
+        }
+
+        if (!response.choice) {
+            // Player declined - execute suffer effect
+            return executePayOrSufferConsequence(state, continuation)
+        }
+
+        // Player chose to pay life
+        val playerId = continuation.playerId
+        val lifeToPay = continuation.requiredCount
+        val playerContainer = state.getEntity(playerId)
+        val currentLife = playerContainer?.get<com.wingedsheep.engine.state.components.identity.LifeTotalComponent>()?.life ?: 0
+        val newLife = currentLife - lifeToPay
+
+        val newState = state.updateEntity(playerId) {
+            it.with(com.wingedsheep.engine.state.components.identity.LifeTotalComponent(newLife))
+        }
+
+        val events = listOf(
+            LifeChangedEvent(
+                playerId = playerId,
+                oldLife = currentLife,
+                newLife = newLife,
+                reason = LifeChangeReason.PAYMENT
+            )
+        )
+
+        return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Execute the suffer effect for pay or suffer.
+     */
+    private fun executePayOrSufferConsequence(
+        state: GameState,
+        continuation: PayOrSufferContinuation
+    ): ExecutionResult {
+        val sourceId = continuation.sourceId
+        val playerId = continuation.playerId
+        val sufferEffect = continuation.sufferEffect
+
+        // Create context for executing the suffer effect
+        val context = EffectContext(
+            sourceId = sourceId,
+            controllerId = playerId,
+            opponentId = null
+        )
+
+        // Execute the suffer effect using the registry
+        val result = effectExecutorRegistry.execute(state, sufferEffect, context)
+
+        return if (result.isPaused) {
+            result
+        } else {
+            checkForMoreContinuations(result.state, result.events.toList())
         }
     }
 

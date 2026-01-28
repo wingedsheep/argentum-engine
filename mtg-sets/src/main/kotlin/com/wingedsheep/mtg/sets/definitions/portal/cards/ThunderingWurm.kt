@@ -4,7 +4,9 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CardFilter
-import com.wingedsheep.sdk.scripting.SacrificeUnlessDiscardEffect
+import com.wingedsheep.sdk.scripting.PayCost
+import com.wingedsheep.sdk.scripting.PayOrSufferEffect
+import com.wingedsheep.sdk.scripting.SacrificeSelfEffect
 
 /**
  * Thundering Wurm
@@ -21,7 +23,10 @@ val ThunderingWurm = card("Thundering Wurm") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = SacrificeUnlessDiscardEffect(discardFilter = CardFilter.LandCard)
+        effect = PayOrSufferEffect(
+            cost = PayCost.Discard(filter = CardFilter.LandCard),
+            suffer = SacrificeSelfEffect
+        )
     }
 
     metadata {
