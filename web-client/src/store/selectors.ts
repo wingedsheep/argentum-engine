@@ -293,3 +293,97 @@ export function useCombatState() {
   // TODO: Server doesn't send combat state in MaskedGameState yet
   return null
 }
+
+/**
+ * Represents a group of identical cards for display purposes.
+ */
+export interface GroupedCard {
+  /** The representative card to display */
+  card: ClientCard
+  /** Number of cards in this group */
+  count: number
+  /** All card IDs in this group (for action handling) */
+  cardIds: readonly EntityId[]
+}
+
+/**
+ * Computes a grouping key for a card based on properties that make cards "different".
+ * Cards with different keys should NOT be grouped together.
+ */
+export function computeCardGroupKey(card: ClientCard): string {
+  const parts: string[] = [card.name]
+
+  // Cards with counters are different
+  const counterEntries = Object.entries(card.counters).filter(([, count]) => count && count > 0)
+  if (counterEntries.length > 0) {
+    const sortedCounters = counterEntries.sort(([a], [b]) => a.localeCompare(b))
+    parts.push(`counters:${JSON.stringify(sortedCounters)}`)
+  }
+
+  // Cards with modified P/T are different
+  if (card.power !== card.basePower || card.toughness !== card.baseToughness) {
+    parts.push(`pt:${card.power}/${card.toughness}`)
+  }
+
+  // Cards with attachments are different
+  if (card.attachments.length > 0) {
+    parts.push(`attached:${card.attachments.length}`)
+  }
+
+  // Cards with damage are different (for battlefield creatures)
+  if (card.damage != null && card.damage > 0) {
+    parts.push(`damage:${card.damage}`)
+  }
+
+  // Tapped cards are different from untapped
+  if (card.isTapped) {
+    parts.push('tapped')
+  }
+
+  // Transformed cards are different
+  if (card.isTransformed) {
+    parts.push('transformed')
+  }
+
+  // Face-down cards are different
+  if (card.isFaceDown) {
+    parts.push('facedown')
+  }
+
+  return parts.join('|')
+}
+
+/**
+ * Groups an array of cards by identical properties.
+ * Cards are grouped if they have the same name and no distinguishing modifiers.
+ */
+export function groupCards(cards: readonly ClientCard[]): readonly GroupedCard[] {
+  if (cards.length === 0) return []
+
+  const groups = new Map<string, { card: ClientCard; cardIds: EntityId[] }>()
+
+  for (const card of cards) {
+    const key = computeCardGroupKey(card)
+    const existing = groups.get(key)
+    if (existing) {
+      existing.cardIds.push(card.id)
+    } else {
+      groups.set(key, { card, cardIds: [card.id] })
+    }
+  }
+
+  return Array.from(groups.values()).map(({ card, cardIds }) => ({
+    card,
+    count: cardIds.length,
+    cardIds,
+  }))
+}
+
+/**
+ * Hook to get cards in a zone, grouped by identical properties.
+ * Cards are grouped if they have the same name and no distinguishing modifiers.
+ */
+export function useGroupedZoneCards(zoneId: ZoneId): readonly GroupedCard[] {
+  const cards = useZoneCards(zoneId)
+  return useMemo(() => groupCards(cards), [cards])
+}

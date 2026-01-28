@@ -1,5 +1,5 @@
 import { useGameStore } from '../../store/gameStore'
-import { useViewingPlayer, useOpponent, useZoneCards, useZone, useBattlefieldCards, useHasLegalActions, useStackCards, useGroupedZoneCards } from '../../store/selectors'
+import { useViewingPlayer, useOpponent, useZoneCards, useZone, useBattlefieldCards, useHasLegalActions, useStackCards, useGroupedZoneCards, groupCards } from '../../store/selectors'
 import { hand, graveyard } from '../../types'
 import type { ClientCard, ZoneId, ClientPlayer, LegalActionInfo, EntityId, Keyword, ClientPlayerEffect } from '../../types'
 import { keywordIcons, genericKeywordIcon, displayableKeywords } from '../../assets/icons/keywords'
@@ -749,10 +749,14 @@ function BattlefieldArea({ isOpponent }: { isOpponent: boolean }) {
   const lands = isOpponent ? opponentLands : playerLands
   const creatures = isOpponent ? opponentCreatures : playerCreatures
 
+  // Group identical cards
+  const groupedLands = groupCards(lands)
+  const groupedCreatures = groupCards(creatures)
+
   // For opponent: lands first (top), creatures second (bottom/closer to center)
   // For player: creatures first (top/closer to center), lands second (bottom/closer to player)
-  const firstRow = isOpponent ? lands : creatures
-  const secondRow = isOpponent ? creatures : lands
+  const firstRow = isOpponent ? groupedLands : groupedCreatures
+  const secondRow = isOpponent ? groupedCreatures : groupedLands
 
   const minHeight = responsive.battlefieldCardHeight + responsive.cardGap * 2
 
@@ -766,10 +770,11 @@ function BattlefieldArea({ isOpponent }: { isOpponent: boolean }) {
     >
       {/* First row */}
       <div style={{ ...styles.battlefieldRow, gap: responsive.cardGap }}>
-        {firstRow.map((card) => (
+        {firstRow.map((group) => (
           <GameCard
-            key={card.id}
-            card={card}
+            key={group.card.id}
+            card={group.card}
+            count={group.count}
             interactive={!isOpponent}
             battlefield
             isOpponentCard={isOpponent}
@@ -779,10 +784,11 @@ function BattlefieldArea({ isOpponent }: { isOpponent: boolean }) {
 
       {/* Second row */}
       <div style={{ ...styles.battlefieldRow, gap: responsive.cardGap }}>
-        {secondRow.map((card) => (
+        {secondRow.map((group) => (
           <GameCard
-            key={card.id}
-            card={card}
+            key={group.card.id}
+            card={group.card}
+            count={group.count}
             interactive={!isOpponent}
             battlefield
             isOpponentCard={isOpponent}
