@@ -11,13 +11,13 @@ import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.redis.serializer.StringRedisSerializer
 
 //@ConfigurationProperties(prefix = "cache.redis")
-//data class RedisProperties(
-//    val enabled: Boolean = false,
-//    val host: String = "localhost",
-//    val port: Int = 6379,
-//    val ttlMinutes: Long = 1440,
-//    val keyPrefix: String = "argentum:"
-//)
+data class RedisProperties(
+    val enabled: Boolean = false,
+    val host: String = "localhost",
+    val port: Int = 6379,
+    val ttlMinutes: Long = 1440,
+    val keyPrefix: String = "argentum:"
+)
 
 @Configuration
 @ConditionalOnProperty(name = ["cache.redis.enabled"], havingValue = "true")
