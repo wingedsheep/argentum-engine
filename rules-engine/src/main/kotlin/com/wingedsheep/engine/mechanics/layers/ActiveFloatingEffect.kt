@@ -120,6 +120,13 @@ sealed interface SerializableModification {
      */
     @Serializable
     data object PreventDamageFromAttackingCreatures : SerializableModification
+
+    /**
+     * Blocking restriction: creature can only be blocked by creatures of a specific color.
+     * Used by Dread Charge and similar effects.
+     */
+    @Serializable
+    data class CantBeBlockedExceptByColor(val color: String) : SerializableModification
 }
 
 /**
@@ -140,4 +147,6 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.MustBeBlockedByAll -> Modification.NoOp
     // PreventDamageFromAttackingCreatures doesn't map to a layer modification - it's checked by CombatManager directly
     is SerializableModification.PreventDamageFromAttackingCreatures -> Modification.NoOp
+    // CantBeBlockedExceptByColor doesn't map to a layer modification - it's checked by CombatManager directly
+    is SerializableModification.CantBeBlockedExceptByColor -> Modification.NoOp
 }

@@ -403,6 +403,14 @@ class CombatManager(
             return powerRestrictionValidation
         }
 
+        // CantBeBlockedExceptByColor: Can only be blocked by creatures of the specified color
+        val colorRestrictionValidation = validateCantBeBlockedExceptByColor(
+            state, attackerId, attackerCard, blockerId, blockerCard
+        )
+        if (colorRestrictionValidation != null) {
+            return colorRestrictionValidation
+        }
+
         // Skulk: Cannot be blocked by creatures with greater power
         // TODO: Implement skulk
 
@@ -512,6 +520,62 @@ class CombatManager(
         val blockerPower = projected.getPower(blockerId) ?: 0
 
         return blockerPower < powerRestriction.minPower
+    }
+
+    /**
+     * Check if attacker has CantBeBlockedExceptByColor restriction from a floating effect.
+     * Returns an error message if the blocker cannot block due to color restriction, null otherwise.
+     */
+    private fun validateCantBeBlockedExceptByColor(
+        state: GameState,
+        attackerId: EntityId,
+        attackerCard: CardComponent,
+        blockerId: EntityId,
+        blockerCard: CardComponent
+    ): String? {
+        // Find floating effects with CantBeBlockedExceptByColor that affect this attacker
+        val colorRestriction = state.floatingEffects
+            .filter { floatingEffect ->
+                floatingEffect.effect.modification is SerializableModification.CantBeBlockedExceptByColor &&
+                    attackerId in floatingEffect.effect.affectedEntities
+            }
+            .map { it.effect.modification as SerializableModification.CantBeBlockedExceptByColor }
+            .firstOrNull()
+            ?: return null
+
+        // Check if blocker has the required color
+        val requiredColor = com.wingedsheep.sdk.core.Color.valueOf(colorRestriction.color)
+        if (!blockerCard.colors.contains(requiredColor)) {
+            return "${blockerCard.name} cannot block ${attackerCard.name} (can only be blocked by ${requiredColor.displayName.lowercase()} creatures)"
+        }
+
+        return null
+    }
+
+    /**
+     * Check if blocker has the required color to block an attacker with CantBeBlockedExceptByColor.
+     * Returns true if the blocker can block despite the color restriction.
+     */
+    private fun canBlockDespiteColorRestriction(
+        state: GameState,
+        attackerId: EntityId,
+        blockerId: EntityId
+    ): Boolean {
+        val blockerCard = state.getEntity(blockerId)?.get<CardComponent>() ?: return true
+
+        // Find floating effects with CantBeBlockedExceptByColor that affect this attacker
+        val colorRestriction = state.floatingEffects
+            .filter { floatingEffect ->
+                floatingEffect.effect.modification is SerializableModification.CantBeBlockedExceptByColor &&
+                    attackerId in floatingEffect.effect.affectedEntities
+            }
+            .map { it.effect.modification as SerializableModification.CantBeBlockedExceptByColor }
+            .firstOrNull()
+            ?: return true
+
+        // Check if blocker has the required color
+        val requiredColor = com.wingedsheep.sdk.core.Color.valueOf(colorRestriction.color)
+        return blockerCard.colors.contains(requiredColor)
     }
 
     /**
@@ -1048,6 +1112,11 @@ class CombatManager(
 
         // CantBeBlockedByPower: Cannot be blocked by creatures with power >= N
         if (!canBlockDespitePowerRestriction(attackerId, attackerCard, blockerId, projected)) {
+            return false
+        }
+
+        // CantBeBlockedExceptByColor: Can only be blocked by creatures of the specified color
+        if (!canBlockDespiteColorRestriction(state, attackerId, blockerId)) {
             return false
         }
 

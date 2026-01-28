@@ -9,6 +9,7 @@ import com.wingedsheep.engine.handlers.effects.ExecutorModule
 class CombatExecutors : ExecutorModule {
     override fun executors(): List<EffectExecutor<*>> = listOf(
         MustBeBlockedExecutor(),
-        PreventDamageFromAttackingCreaturesExecutor()
+        PreventDamageFromAttackingCreaturesExecutor(),
+        GrantCantBeBlockedExceptByColorExecutor()
     )
 }
