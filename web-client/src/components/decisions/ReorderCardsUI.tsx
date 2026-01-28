@@ -23,6 +23,7 @@ export function ReorderCardsUI({ decision, responsive }: ReorderCardsUIProps) {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
   const submitOrderedDecision = useGameStore((s) => s.submitOrderedDecision)
+  const hoverCard = useGameStore((s) => s.hoverCard)
 
   // Calculate card size that fits available width
   const availableWidth = responsive.viewportWidth - responsive.containerPadding * 2 - 64
@@ -90,6 +91,14 @@ export function ReorderCardsUI({ decision, responsive }: ReorderCardsUIProps) {
   const handleConfirm = () => {
     submitOrderedDecision(orderedCards)
   }
+
+  const handleMouseEnter = useCallback((cardId: EntityId) => {
+    hoverCard(cardId)
+  }, [hoverCard])
+
+  const handleMouseLeave = useCallback(() => {
+    hoverCard(null)
+  }, [hoverCard])
 
   return (
     <div
@@ -239,6 +248,8 @@ export function ReorderCardsUI({ decision, responsive }: ReorderCardsUIProps) {
                   onDragEnd={handleDragEnd}
                   onMoveLeft={() => moveCard(index, 'left')}
                   onMoveRight={() => moveCard(index, 'right')}
+                  onMouseEnter={() => handleMouseEnter(cardId)}
+                  onMouseLeave={handleMouseLeave}
                 />
               </div>
             )
@@ -300,6 +311,8 @@ function ReorderCard({
   onDragEnd,
   onMoveLeft,
   onMoveRight,
+  onMouseEnter,
+  onMouseLeave,
 }: {
   cardId: EntityId
   cardInfo: SearchCardInfo | undefined
@@ -317,6 +330,8 @@ function ReorderCard({
   onDragEnd: () => void
   onMoveLeft: () => void
   onMoveRight: () => void
+  onMouseEnter: () => void
+  onMouseLeave: () => void
 }) {
   const cardName = cardInfo?.name || 'Unknown Card'
   const cardImageUrl = getCardImageUrl(cardName, cardInfo?.imageUri)
@@ -390,6 +405,8 @@ function ReorderCard({
         onDragLeave={onDragLeave}
         onDrop={onDrop}
         onDragEnd={onDragEnd}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
         style={{
           width: cardWidth,
           height: cardHeight,

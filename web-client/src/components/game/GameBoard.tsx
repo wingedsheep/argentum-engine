@@ -762,9 +762,13 @@ function BattlefieldArea({ isOpponent }: { isOpponent: boolean }) {
   const lands = isOpponent ? opponentLands : playerLands
   const creatures = isOpponent ? opponentCreatures : playerCreatures
 
-  // Group identical cards
+  // Group identical lands, but display creatures individually
   const groupedLands = groupCards(lands)
-  const groupedCreatures = groupCards(creatures)
+  const groupedCreatures = creatures.map((card) => ({
+    card,
+    count: 1,
+    cardIds: [card.id] as const,
+  }))
 
   // For opponent: lands first (top), creatures second (bottom/closer to center)
   // For player: creatures first (top/closer to center), lands second (bottom/closer to player)
