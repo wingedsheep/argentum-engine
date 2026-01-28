@@ -210,6 +210,20 @@ object TestCards {
     )
 
     /**
+     * 2/2 Unblockable for {1}{U}{U}
+     * Phantom Warrior can't be blocked.
+     */
+    val PhantomWarrior = CardDefinition.creature(
+        name = "Phantom Warrior",
+        manaCost = ManaCost.parse("{1}{U}{U}"),
+        subtypes = setOf(Subtype("Illusion"), Subtype("Warrior")),
+        power = 2,
+        toughness = 2,
+        oracleText = "Phantom Warrior can't be blocked.",
+        keywords = setOf(Keyword.UNBLOCKABLE)
+    )
+
+    /**
      * 2/1 First Strike for {1}{R}
      */
     val BladeOfTheNinthWatch = CardDefinition.creature(
@@ -553,6 +567,7 @@ object TestCards {
         ForestWalker,
         IslandWalker,
         FleetFootedMonk,
+        PhantomWarrior,
         BladeOfTheNinthWatch,
         // Mana Dorks
         LlanowarElves,

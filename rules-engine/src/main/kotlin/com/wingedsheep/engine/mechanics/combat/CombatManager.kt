@@ -366,6 +366,11 @@ class CombatManager(
         // Use projected keywords (includes floating effects)
         val projected = stateProjector.project(state)
 
+        // Unblockable: Cannot be blocked at all
+        if (projected.hasKeyword(attackerId, Keyword.UNBLOCKABLE)) {
+            return "${attackerCard.name} can't be blocked"
+        }
+
         // Flying: Can only be blocked by creatures with flying or reach
         if (projected.hasKeyword(attackerId, Keyword.FLYING)) {
             val canBlockFlying = projected.hasKeyword(blockerId, Keyword.FLYING) ||
@@ -1073,6 +1078,11 @@ class CombatManager(
 
         // Check if blocker has "can't block" restriction
         if (hasCantBlockAbility(blockerCard)) {
+            return false
+        }
+
+        // Unblockable: Cannot be blocked at all
+        if (projected.hasKeyword(attackerId, Keyword.UNBLOCKABLE)) {
             return false
         }
 
