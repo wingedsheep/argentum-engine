@@ -458,3 +458,22 @@ enum class PayOrSufferCostType {
     SACRIFICE,
     PAY_LIFE
 }
+
+/**
+ * Resume after player has distributed damage among targets.
+ *
+ * Used for effects like Forked Lightning where the player divides damage
+ * among multiple targets. The continuation is pushed when there are multiple
+ * targets, and the response contains the damage distribution.
+ *
+ * @property sourceId The spell/ability that is dealing the damage
+ * @property controllerId The player who controls the effect
+ * @property targets The targets that damage can be distributed among
+ */
+@Serializable
+data class DistributeDamageContinuation(
+    override val decisionId: String,
+    val sourceId: EntityId?,
+    val controllerId: EntityId,
+    val targets: List<EntityId>
+) : ContinuationFrame

@@ -172,6 +172,7 @@ export type {
   ReorderLibraryDecision,
   OrderObjectsDecision,
   ChooseNumberDecision,
+  DistributeDecision,
   // Sealed Draft types
   SealedCardInfo,
   SealedGameCreatedMessage,

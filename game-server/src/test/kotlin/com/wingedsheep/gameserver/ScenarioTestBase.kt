@@ -1,6 +1,7 @@
 package com.wingedsheep.gameserver
 
 import com.wingedsheep.engine.core.*
+import com.wingedsheep.engine.core.DistributionResponse
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.mtg.sets.definitions.portal.PortalSet
 import com.wingedsheep.engine.state.ComponentContainer
@@ -687,6 +688,16 @@ abstract class ScenarioTestBase : FunSpec() {
             val decisionId = state.pendingDecision?.id
                 ?: error("No pending decision to respond to")
             return submitDecision(YesNoResponse(decisionId, choice))
+        }
+
+        /**
+         * Submit a distribution response (for divided damage, etc.).
+         * @param distribution Map of target ID to amount assigned
+         */
+        fun submitDistribution(distribution: Map<EntityId, Int>): ExecutionResult {
+            val decisionId = state.pendingDecision?.id
+                ?: error("No pending decision to respond to")
+            return submitDecision(DistributionResponse(decisionId, distribution))
         }
     }
 }

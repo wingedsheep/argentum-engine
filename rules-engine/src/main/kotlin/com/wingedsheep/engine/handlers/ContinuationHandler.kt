@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers
 
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.effects.EffectExecutorRegistry
+import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
 import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerDiscardsDrawsExecutor
 import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerMayDrawExecutor
 import com.wingedsheep.engine.mechanics.stack.StackResolver
@@ -70,6 +71,7 @@ class ContinuationHandler(
             is LookAtOpponentLibraryContinuation -> resumeLookAtOpponentLibrary(stateAfterPop, continuation, response)
             is ReorderOpponentLibraryContinuation -> resumeReorderOpponentLibrary(stateAfterPop, continuation, response)
             is PayOrSufferContinuation -> resumePayOrSuffer(stateAfterPop, continuation, response)
+            is DistributeDamageContinuation -> resumeDistributeDamage(stateAfterPop, continuation, response)
         }
     }
 
@@ -1407,6 +1409,44 @@ class ContinuationHandler(
                 reason = LifeChangeReason.PAYMENT
             )
         )
+
+        return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume after player distributed damage among targets.
+     */
+    private fun resumeDistributeDamage(
+        state: GameState,
+        continuation: DistributeDamageContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is DistributionResponse) {
+            return ExecutionResult.error(state, "Expected distribution response for divided damage")
+        }
+
+        val distribution = response.distribution
+        val events = mutableListOf<GameEvent>()
+        var newState = state
+
+        // Deal damage to each target according to the distribution
+        for ((targetId, damageAmount) in distribution) {
+            if (damageAmount > 0) {
+                val result = EffectExecutorUtils.dealDamageToTarget(
+                    newState,
+                    targetId,
+                    damageAmount,
+                    continuation.sourceId
+                )
+
+                if (!result.isSuccess) {
+                    return ExecutionResult(newState, events, result.error)
+                }
+
+                newState = result.state
+                events.addAll(result.events)
+            }
+        }
 
         return checkForMoreContinuations(newState, events)
     }

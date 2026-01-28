@@ -41,7 +41,7 @@ class EffectExecutorRegistry(
     init {
         // Register all effect executors by module
         registerModule(LifeExecutors(amountEvaluator))
-        registerModule(DamageExecutors(amountEvaluator))
+        registerModule(DamageExecutors(amountEvaluator, decisionHandler))
         registerModule(DrawingExecutors(amountEvaluator, decisionHandler))
         registerModule(RemovalExecutors())
         registerModule(PermanentExecutors())

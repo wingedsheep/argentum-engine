@@ -7,6 +7,7 @@ import { LibrarySearchUI } from './LibrarySearchUI'
 import { ReorderCardsUI } from './ReorderCardsUI'
 import { OrderBlockersUI } from './OrderBlockersUI'
 import { ZoneSelectionUI, type ZoneCardInfo } from './ZoneSelectionUI'
+import { DistributeDecisionUI } from './DistributeDecisionUI'
 import { getCardImageUrl } from '../../utils/cardImages'
 
 /**
@@ -118,6 +119,11 @@ export function DecisionUI() {
         <ChooseNumberDecisionUI decision={pendingDecision} responsive={responsive} />
       </div>
     )
+  }
+
+  // Handle DistributeDecision (e.g., "Divide 4 damage among targets")
+  if (pendingDecision.type === 'DistributeDecision') {
+    return <DistributeDecisionUI decision={pendingDecision} responsive={responsive} />
   }
 
   // Handle SelectCardsDecision

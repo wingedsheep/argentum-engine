@@ -223,6 +223,17 @@ export interface ChooseNumberDecision extends PendingDecisionBase {
 }
 
 /**
+ * Player must distribute an amount (e.g., damage) among targets.
+ * Used for effects like Forked Lightning that deal divided damage.
+ */
+export interface DistributeDecision extends PendingDecisionBase {
+  readonly type: 'DistributeDecision'
+  readonly totalAmount: number
+  readonly targets: readonly EntityId[]
+  readonly minPerTarget: number
+}
+
+/**
  * Union of all pending decision types.
  */
 export type PendingDecision =
@@ -233,6 +244,7 @@ export type PendingDecision =
   | ReorderLibraryDecision
   | OrderObjectsDecision
   | ChooseNumberDecision
+  | DistributeDecision
 
 /**
  * Information about a single target requirement for legal actions.

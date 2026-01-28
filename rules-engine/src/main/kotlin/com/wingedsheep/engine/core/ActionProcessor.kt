@@ -1523,6 +1523,45 @@ class ActionProcessor(
                 )
             }
 
+            // If successful and not paused, check state-based actions (Rule 704.3)
+            // This handles lethal damage, life <= 0, etc. that may have resulted
+            // from the continuation's effects (e.g., divided damage)
+            if (result.isSuccess && !result.isPaused) {
+                val sbaResult = sbaChecker.checkAndApply(result.state)
+                var combinedEvents = listOf(submittedEvent) + result.events + sbaResult.events
+
+                // If game is over, return immediately
+                if (sbaResult.newState.gameOver) {
+                    return ExecutionResult.success(sbaResult.newState, combinedEvents)
+                }
+
+                // Detect and process triggers from the continuation and SBA events
+                val triggers = triggerDetector.detectTriggers(sbaResult.newState, combinedEvents)
+                if (triggers.isNotEmpty()) {
+                    val triggerResult = triggerProcessor.processTriggers(sbaResult.newState, triggers)
+
+                    if (triggerResult.isPaused) {
+                        return ExecutionResult.paused(
+                            triggerResult.state,
+                            triggerResult.pendingDecision!!,
+                            combinedEvents + triggerResult.events
+                        )
+                    }
+
+                    combinedEvents = combinedEvents + triggerResult.events
+                    return ExecutionResult.success(
+                        triggerResult.newState.withPriority(state.activePlayerId),
+                        combinedEvents
+                    )
+                }
+
+                // Give priority back to active player
+                return ExecutionResult.success(
+                    sbaResult.newState.withPriority(state.activePlayerId),
+                    combinedEvents
+                )
+            }
+
             // Prepend the decision submitted event
             return if (result.isSuccess || result.isPaused) {
                 ExecutionResult(
