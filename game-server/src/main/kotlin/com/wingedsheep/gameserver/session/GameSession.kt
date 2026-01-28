@@ -286,9 +286,12 @@ class GameSession(
         val cards = if (state != null) {
             hand.associateWith { entityId ->
                 val cardComponent = state.getEntity(entityId)?.get<CardComponent>()
+                val imageUri = cardComponent?.cardDefinitionId?.let { defId ->
+                    cardRegistry.getCard(defId)?.metadata?.imageUri
+                }
                 ServerMessage.MulliganCardInfo(
                     name = cardComponent?.name ?: "Unknown",
-                    imageUri = null // TODO: Add image URI support
+                    imageUri = imageUri
                 )
             }
         } else {
@@ -710,7 +713,10 @@ class GameSession(
         playerLog.addAll(logEntries)
 
         // Include pending decision only for the player who needs to make it
-        val pendingDecision = state.pendingDecision?.takeIf { it.playerId == playerId }
+        // Enrich with imageUri from card registry since engine doesn't have access to metadata
+        val pendingDecision = state.pendingDecision?.takeIf { it.playerId == playerId }?.let {
+            enrichDecision(it, state)
+        }
 
         val stateWithLog = clientState.copy(gameLog = playerLog.toList())
         return ServerMessage.StateUpdate(stateWithLog, clientEvents, legalActions, pendingDecision)
@@ -1022,6 +1028,56 @@ class GameSession(
             is com.wingedsheep.sdk.scripting.CardFilter.NonlandPermanentCard -> card.typeLine.isPermanent && !card.typeLine.isLand
             is com.wingedsheep.sdk.scripting.CardFilter.ManaValueAtMost -> card.manaCost.cmc <= filter.maxManaValue
             is com.wingedsheep.sdk.scripting.CardFilter.Not -> !matchesCardFilter(card, filter.filter)
+        }
+    }
+
+    /**
+     * Enrich a PendingDecision with imageUri data from the card registry.
+     * The engine creates SearchCardInfo with null imageUri because it doesn't have access
+     * to card metadata. This function populates the imageUri using the card registry.
+     */
+    private fun enrichDecision(decision: PendingDecision, state: GameState): PendingDecision {
+        return when (decision) {
+            is SearchLibraryDecision -> decision.copy(
+                cards = decision.cards.mapValues { (entityId, cardInfo) ->
+                    val cardComponent = state.getEntity(entityId)?.get<CardComponent>()
+                    val imageUri = cardComponent?.cardDefinitionId?.let { defId ->
+                        cardRegistry.getCard(defId)?.metadata?.imageUri
+                    }
+                    cardInfo.copy(imageUri = imageUri)
+                }
+            )
+            is ReorderLibraryDecision -> decision.copy(
+                cardInfo = decision.cardInfo.mapValues { (entityId, cardInfo) ->
+                    val cardComponent = state.getEntity(entityId)?.get<CardComponent>()
+                    val imageUri = cardComponent?.cardDefinitionId?.let { defId ->
+                        cardRegistry.getCard(defId)?.metadata?.imageUri
+                    }
+                    cardInfo.copy(imageUri = imageUri)
+                }
+            )
+            is SelectCardsDecision -> {
+                val enrichedCardInfo = decision.cardInfo?.mapValues { (entityId, cardInfo) ->
+                    val cardComponent = state.getEntity(entityId)?.get<CardComponent>()
+                    val imageUri = cardComponent?.cardDefinitionId?.let { defId ->
+                        cardRegistry.getCard(defId)?.metadata?.imageUri
+                    }
+                    cardInfo.copy(imageUri = imageUri)
+                }
+                decision.copy(cardInfo = enrichedCardInfo)
+            }
+            is OrderObjectsDecision -> {
+                val enrichedCardInfo = decision.cardInfo?.mapValues { (entityId, cardInfo) ->
+                    val cardComponent = state.getEntity(entityId)?.get<CardComponent>()
+                    val imageUri = cardComponent?.cardDefinitionId?.let { defId ->
+                        cardRegistry.getCard(defId)?.metadata?.imageUri
+                    }
+                    cardInfo.copy(imageUri = imageUri)
+                }
+                decision.copy(cardInfo = enrichedCardInfo)
+            }
+            // Other decision types don't have card info to enrich
+            else -> decision
         }
     }
 
