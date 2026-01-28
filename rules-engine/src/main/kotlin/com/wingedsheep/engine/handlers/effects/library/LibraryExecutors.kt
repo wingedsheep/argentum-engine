@@ -17,6 +17,7 @@ class LibraryExecutors : ExecutorModule {
         SearchLibraryToTopExecutor(),
         LookAtTopAndReorderExecutor(),
         LookAtOpponentLibraryExecutor(),
-        LookAtTopCardsExecutor()
+        LookAtTopCardsExecutor(),
+        WheelEffectExecutor()
     )
 }
