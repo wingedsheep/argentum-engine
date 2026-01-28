@@ -1,0 +1,466 @@
+package com.wingedsheep.gameserver.controller
+
+import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.state.ComponentContainer
+import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.identity.*
+import com.wingedsheep.engine.state.components.player.LandDropsComponent
+import com.wingedsheep.engine.state.components.player.ManaPoolComponent
+import com.wingedsheep.gameserver.dto.ClientStateTransformer
+import com.wingedsheep.gameserver.repository.GameRepository
+import com.wingedsheep.gameserver.session.GameSession
+import com.wingedsheep.gameserver.session.PlayerIdentity
+import com.wingedsheep.gameserver.session.SessionRegistry
+import com.wingedsheep.sdk.core.Phase
+import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.model.EntityId
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.ExampleObject
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.tags.Tag
+import org.slf4j.LoggerFactory
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.*
+import java.util.concurrent.atomic.AtomicLong
+
+private val logger = LoggerFactory.getLogger(DevScenarioController::class.java)
+
+/**
+ * Development-only REST controller for creating test scenarios.
+ *
+ * This allows manual testing of the UI against specific game states
+ * without needing to play through an entire game to reach that state.
+ *
+ * **WARNING:** This endpoint should NEVER be enabled in production.
+ * Enable with: game.dev-endpoints.enabled=true
+ */
+@RestController
+@RequestMapping("/api/dev/scenarios")
+@ConditionalOnProperty(name = ["game.dev-endpoints.enabled"], havingValue = "true")
+@Tag(name = "Dev Scenarios", description = "Development-only endpoints for creating test game scenarios")
+class DevScenarioController(
+    private val cardRegistry: CardRegistry,
+    private val gameRepository: GameRepository,
+    private val sessionRegistry: SessionRegistry
+) {
+    private val stateTransformer = ClientStateTransformer(cardRegistry)
+
+    /**
+     * Create a new game session with a pre-configured scenario.
+     *
+     * POST /api/dev/scenarios
+     *
+     * After creating the scenario, connect to the WebSocket at /game
+     * and send a Connect message with the token returned in the response.
+     */
+    @PostMapping
+    @Operation(
+        summary = "Create a test scenario",
+        description = """
+            Creates a new game session with a pre-configured board state.
+
+            After creating the scenario:
+            1. Copy the token for the player you want to play as
+            2. Open the web client
+            3. Connect via WebSocket using the token
+
+            The game will be in the specified phase with all cards already in place.
+        """,
+        requestBody = io.swagger.v3.oas.annotations.parameters.RequestBody(
+            content = [Content(
+                mediaType = "application/json",
+                examples = [
+                    ExampleObject(
+                        name = "Combat scenario",
+                        summary = "Player 1 attacking with creatures",
+                        value = """
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Giant Growth", "Lightning Bolt"],
+    "battlefield": [
+      {"name": "Forest"},
+      {"name": "Mountain"},
+      {"name": "Grizzly Bears"}
+    ],
+    "library": ["Island", "Plains", "Swamp"]
+  },
+  "player2": {
+    "lifeTotal": 18,
+    "hand": ["Terror"],
+    "battlefield": [
+      {"name": "Swamp"},
+      {"name": "Swamp"}
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1
+}
+                        """
+                    ),
+                    ExampleObject(
+                        name = "Minimal scenario",
+                        summary = "Empty board, just lands",
+                        value = """
+{
+  "player1": {
+    "battlefield": [{"name": "Forest"}, {"name": "Forest"}]
+  },
+  "player2": {
+    "battlefield": [{"name": "Swamp"}]
+  }
+}
+                        """
+                    )
+                ]
+            )]
+        ),
+        responses = [
+            ApiResponse(responseCode = "200", description = "Scenario created successfully"),
+            ApiResponse(responseCode = "400", description = "Invalid scenario configuration (e.g., unknown card name)")
+        ]
+    )
+    fun createScenario(@RequestBody request: ScenarioRequest): ResponseEntity<ScenarioResponse> {
+        logger.info("Creating dev scenario: player1=${request.player1Name}, player2=${request.player2Name}")
+
+        try {
+            val builder = ScenarioBuilder(cardRegistry)
+
+            // Initialize players
+            builder.withPlayers(request.player1Name, request.player2Name)
+
+            // Set up player 1
+            request.player1?.let { config ->
+                config.lifeTotal?.let { builder.withLifeTotal(1, it) }
+                config.hand.forEach { builder.withCardInHand(1, it) }
+                config.battlefield.forEach { card ->
+                    builder.withCardOnBattlefield(
+                        1, card.name,
+                        tapped = card.tapped,
+                        summoningSickness = card.summoningSickness
+                    )
+                }
+                config.graveyard.forEach { builder.withCardInGraveyard(1, it) }
+                config.library.forEach { builder.withCardInLibrary(1, it) }
+            }
+
+            // Set up player 2
+            request.player2?.let { config ->
+                config.lifeTotal?.let { builder.withLifeTotal(2, it) }
+                config.hand.forEach { builder.withCardInHand(2, it) }
+                config.battlefield.forEach { card ->
+                    builder.withCardOnBattlefield(
+                        2, card.name,
+                        tapped = card.tapped,
+                        summoningSickness = card.summoningSickness
+                    )
+                }
+                config.graveyard.forEach { builder.withCardInGraveyard(2, it) }
+                config.library.forEach { builder.withCardInLibrary(2, it) }
+            }
+
+            // Set game state
+            request.phase?.let { phase ->
+                val step = request.step ?: phaseToDefaultStep(phase)
+                builder.inPhase(phase, step)
+            }
+            request.activePlayer?.let { builder.withActivePlayer(it) }
+            request.priorityPlayer?.let { builder.withPriorityPlayer(it) }
+
+            // Build the scenario
+            val (state, player1Id, player2Id) = builder.build()
+
+            // Create the game session
+            val gameSession = GameSession(
+                cardRegistry = cardRegistry,
+                stateTransformer = stateTransformer
+            )
+
+            // Inject the pre-built state (without player sessions - they'll connect later)
+            gameSession.injectStateForDevScenario(state)
+
+            // Save the session
+            gameRepository.save(gameSession)
+
+            // Create player identities with matching player IDs from the scenario
+            val identity1 = PlayerIdentity(
+                playerId = player1Id,
+                playerName = request.player1Name
+            ).apply {
+                currentGameSessionId = gameSession.sessionId
+            }
+
+            val identity2 = PlayerIdentity(
+                playerId = player2Id,
+                playerName = request.player2Name
+            ).apply {
+                currentGameSessionId = gameSession.sessionId
+            }
+
+            // Pre-register identities so players can connect with their tokens
+            sessionRegistry.preRegisterIdentity(identity1)
+            sessionRegistry.preRegisterIdentity(identity2)
+
+            logger.info("Created scenario session ${gameSession.sessionId}")
+
+            return ResponseEntity.ok(ScenarioResponse(
+                sessionId = gameSession.sessionId,
+                player1 = PlayerInfo(
+                    name = request.player1Name,
+                    token = identity1.token,
+                    playerId = player1Id.value
+                ),
+                player2 = PlayerInfo(
+                    name = request.player2Name,
+                    token = identity2.token,
+                    playerId = player2Id.value
+                ),
+                message = "Scenario created. Connect via WebSocket at /game and send Connect message with your token."
+            ))
+        } catch (e: Exception) {
+            logger.error("Failed to create scenario", e)
+            return ResponseEntity.badRequest().body(ScenarioResponse(
+                sessionId = "",
+                player1 = PlayerInfo("", "", ""),
+                player2 = PlayerInfo("", "", ""),
+                message = "Failed to create scenario: ${e.message}"
+            ))
+        }
+    }
+
+    /**
+     * List available cards for scenario building.
+     */
+    @GetMapping("/cards")
+    @Operation(
+        summary = "List available cards",
+        description = "Returns a sorted list of all card names that can be used in scenarios."
+    )
+    fun listCards(): ResponseEntity<List<String>> {
+        val cardNames = cardRegistry.allCardNames().sorted()
+        return ResponseEntity.ok(cardNames)
+    }
+
+    private fun phaseToDefaultStep(phase: Phase): Step {
+        return when (phase) {
+            Phase.BEGINNING -> Step.UNTAP
+            Phase.PRECOMBAT_MAIN -> Step.PRECOMBAT_MAIN
+            Phase.COMBAT -> Step.BEGIN_COMBAT
+            Phase.POSTCOMBAT_MAIN -> Step.POSTCOMBAT_MAIN
+            Phase.ENDING -> Step.END
+        }
+    }
+
+    /**
+     * Internal scenario builder (similar to ScenarioTestBase.ScenarioBuilder).
+     */
+    private inner class ScenarioBuilder(private val cardRegistry: CardRegistry) {
+        private val entityIdCounter = AtomicLong(1000)
+        private var state = GameState()
+
+        private var player1Id: EntityId? = null
+        private var player2Id: EntityId? = null
+
+        fun withPlayers(player1Name: String, player2Name: String): ScenarioBuilder {
+            player1Id = EntityId.of("player-1")
+            player2Id = EntityId.of("player-2")
+
+            val p1Container = ComponentContainer.of(
+                PlayerComponent(player1Name),
+                LifeTotalComponent(20),
+                ManaPoolComponent(),
+                LandDropsComponent(remaining = 1, maxPerTurn = 1)
+            )
+
+            val p2Container = ComponentContainer.of(
+                PlayerComponent(player2Name),
+                LifeTotalComponent(20),
+                ManaPoolComponent(),
+                LandDropsComponent(remaining = 1, maxPerTurn = 1)
+            )
+
+            state = state
+                .withEntity(player1Id!!, p1Container)
+                .withEntity(player2Id!!, p2Container)
+                .copy(
+                    turnOrder = listOf(player1Id!!, player2Id!!),
+                    activePlayerId = player1Id,
+                    priorityPlayerId = player1Id,
+                    phase = Phase.PRECOMBAT_MAIN,
+                    step = Step.PRECOMBAT_MAIN,
+                    turnNumber = 1
+                )
+
+            // Initialize empty zones for both players
+            for (playerId in listOf(player1Id!!, player2Id!!)) {
+                for (zoneType in listOf(ZoneType.HAND, ZoneType.LIBRARY, ZoneType.GRAVEYARD, ZoneType.BATTLEFIELD)) {
+                    val zoneKey = ZoneKey(playerId, zoneType)
+                    state = state.copy(zones = state.zones + (zoneKey to emptyList()))
+                }
+            }
+
+            return this
+        }
+
+        fun withCardInHand(playerNumber: Int, cardName: String): ScenarioBuilder {
+            val playerId = if (playerNumber == 1) player1Id!! else player2Id!!
+            val cardId = createCard(cardName, playerId)
+            state = state.addToZone(ZoneKey(playerId, ZoneType.HAND), cardId)
+            return this
+        }
+
+        fun withCardOnBattlefield(
+            playerNumber: Int,
+            cardName: String,
+            tapped: Boolean = false,
+            summoningSickness: Boolean = false
+        ): ScenarioBuilder {
+            val playerId = if (playerNumber == 1) player1Id!! else player2Id!!
+            val cardId = createCard(cardName, playerId)
+
+            state = state.addToZone(ZoneKey(playerId, ZoneType.BATTLEFIELD), cardId)
+
+            var container = state.getEntity(cardId)!!
+            container = container.with(ControllerComponent(playerId))
+
+            if (tapped) {
+                container = container.with(TappedComponent)
+            }
+
+            if (summoningSickness) {
+                container = container.with(SummoningSicknessComponent)
+            }
+
+            state = state.withEntity(cardId, container)
+            return this
+        }
+
+        fun withCardInGraveyard(playerNumber: Int, cardName: String): ScenarioBuilder {
+            val playerId = if (playerNumber == 1) player1Id!! else player2Id!!
+            val cardId = createCard(cardName, playerId)
+            state = state.addToZone(ZoneKey(playerId, ZoneType.GRAVEYARD), cardId)
+            return this
+        }
+
+        fun withCardInLibrary(playerNumber: Int, cardName: String): ScenarioBuilder {
+            val playerId = if (playerNumber == 1) player1Id!! else player2Id!!
+            val cardId = createCard(cardName, playerId)
+            state = state.addToZone(ZoneKey(playerId, ZoneType.LIBRARY), cardId)
+            return this
+        }
+
+        fun withLifeTotal(playerNumber: Int, life: Int): ScenarioBuilder {
+            val playerId = if (playerNumber == 1) player1Id!! else player2Id!!
+            state = state.updateEntity(playerId) { container ->
+                container.with(LifeTotalComponent(life))
+            }
+            return this
+        }
+
+        fun inPhase(phase: Phase, step: Step): ScenarioBuilder {
+            state = state.copy(phase = phase, step = step)
+            return this
+        }
+
+        fun withActivePlayer(playerNumber: Int): ScenarioBuilder {
+            val playerId = if (playerNumber == 1) player1Id!! else player2Id!!
+            state = state.copy(activePlayerId = playerId, priorityPlayerId = playerId)
+            return this
+        }
+
+        fun withPriorityPlayer(playerNumber: Int): ScenarioBuilder {
+            val playerId = if (playerNumber == 1) player1Id!! else player2Id!!
+            state = state.copy(priorityPlayerId = playerId)
+            return this
+        }
+
+        fun build(): Triple<GameState, EntityId, EntityId> {
+            return Triple(state, player1Id!!, player2Id!!)
+        }
+
+        private fun createCard(cardName: String, ownerId: EntityId): EntityId {
+            val cardDef = cardRegistry.getCard(cardName)
+                ?: error("Card not found in registry: $cardName")
+
+            val cardId = EntityId.of("card-${entityIdCounter.incrementAndGet()}")
+
+            val cardComponent = CardComponent(
+                cardDefinitionId = cardDef.name,
+                name = cardDef.name,
+                manaCost = cardDef.manaCost,
+                typeLine = cardDef.typeLine,
+                oracleText = cardDef.oracleText,
+                colors = cardDef.colors,
+                baseKeywords = cardDef.keywords,
+                baseStats = cardDef.creatureStats,
+                ownerId = ownerId,
+                spellEffect = cardDef.spellEffect
+            )
+
+            val container = ComponentContainer.of(
+                cardComponent,
+                OwnerComponent(ownerId),
+                ControllerComponent(ownerId)
+            )
+
+            state = state.withEntity(cardId, container)
+            return cardId
+        }
+    }
+}
+
+// ============================================================================
+// Request/Response DTOs
+// ============================================================================
+
+data class ScenarioRequest(
+    val player1Name: String = "Player1",
+    val player2Name: String = "Player2",
+    val player1: PlayerConfig? = null,
+    val player2: PlayerConfig? = null,
+    val phase: Phase? = null,
+    val step: Step? = null,
+    val activePlayer: Int? = null,
+    val priorityPlayer: Int? = null
+)
+
+data class PlayerConfig(
+    val lifeTotal: Int? = null,
+    val hand: List<String> = emptyList(),
+    val battlefield: List<BattlefieldCardConfig> = emptyList(),
+    val graveyard: List<String> = emptyList(),
+    val library: List<String> = emptyList()
+)
+
+/**
+ * Configuration for a card on the battlefield.
+ * For simple cases, just provide the name.
+ * For detailed setup, also specify tapped/summoningSickness state.
+ */
+data class BattlefieldCardConfig(
+    val name: String,
+    val tapped: Boolean = false,
+    val summoningSickness: Boolean = false
+)
+
+data class ScenarioResponse(
+    val sessionId: String,
+    val player1: PlayerInfo,
+    val player2: PlayerInfo,
+    val message: String
+)
+
+data class PlayerInfo(
+    val name: String,
+    val token: String,
+    val playerId: String
+)
