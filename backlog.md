@@ -10,8 +10,8 @@
 - [x] King's Assassin can choose a target, but the target is not destroyed
 - [x] Mulligan and deck search style is not correct (not portal)
 - [x] Winds of change doesn't do anything
-- [ ] Sorcerous sight doesn't show opponent's hand
-- [ ] Renewing Dawn doesn't work
+- [x] Sorcerous sight doesn't show opponent's hand
+- [x] Renewing Dawn doesn't work
 
 ## Features
 

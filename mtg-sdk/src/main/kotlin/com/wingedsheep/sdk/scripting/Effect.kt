@@ -1054,23 +1054,6 @@ data class RevealHandEffect(
 }
 
 /**
- * Look at a player's hand (privately visible to you only).
- * Distinct from RevealHandEffect - "look" means only you see it.
- *
- * Example: Sorcerous Sight = CompositeEffect(LookAtHandEffect, DrawCardsEffect(1))
- */
-@Serializable
-data class LookAtHandEffect(
-    val target: EffectTarget = EffectTarget.ContextTarget(0)
-) : Effect {
-    override val description: String = when (target) {
-        is EffectTarget.ContextTarget -> "Look at target opponent's hand"
-        EffectTarget.Opponent -> "Look at target opponent's hand"
-        else -> "Look at target player's hand"
-    }
-}
-
-/**
  * Look at the top N cards of a library and put them back in any order.
  * This is the atomic "scry-like" or "look and reorder" primitive.
  *
