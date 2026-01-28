@@ -5,6 +5,14 @@ spring:
   application:
     name: argentum-game-server
 
+cache:
+  redis:
+    enabled: ${CACHE_REDIS_ENABLED:false}
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    ttl-minutes: ${REDIS_TTL_MINUTES:1440}
+    key-prefix: "argentum:"
+
 logging:
   level:
     com.wingedsheep.gameserver: DEBUG

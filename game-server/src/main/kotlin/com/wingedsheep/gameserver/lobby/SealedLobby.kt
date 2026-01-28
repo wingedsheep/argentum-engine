@@ -236,4 +236,30 @@ class SealedLobby(
         data class Success(val allReady: Boolean) : DeckSubmissionResult
         data class Error(val message: String) : DeckSubmissionResult
     }
+
+    // =========================================================================
+    // Persistence Support (for Redis caching)
+    // =========================================================================
+
+    /**
+     * Restore lobby state from persistence.
+     * Called when loading a lobby from Redis after server restart.
+     *
+     * Note: Players map should be populated before calling this.
+     */
+    internal fun restoreFromPersistence(
+        state: LobbyState,
+        hostPlayerId: EntityId?
+    ) {
+        this.state = state
+        this.hostPlayerId = hostPlayerId
+    }
+
+    /**
+     * Associate a player identity with this lobby (for reconnection after restore).
+     */
+    fun associatePlayer(identity: PlayerIdentity, playerState: LobbyPlayerState) {
+        players[identity.playerId] = playerState
+        identity.currentLobbyId = lobbyId
+    }
 }

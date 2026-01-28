@@ -3,6 +3,7 @@ package com.wingedsheep.gameserver.repository
 import com.wingedsheep.gameserver.lobby.SealedLobby
 import com.wingedsheep.gameserver.sealed.SealedSession
 import com.wingedsheep.gameserver.tournament.TournamentManager
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
 import java.util.concurrent.ConcurrentHashMap
 
@@ -22,6 +23,7 @@ interface LobbyRepository {
 }
 
 @Component
+@ConditionalOnProperty(name = ["cache.redis.enabled"], havingValue = "false", matchIfMissing = true)
 class InMemoryLobbyRepository : LobbyRepository {
 
     private val sealedLobbies = ConcurrentHashMap<String, SealedLobby>()

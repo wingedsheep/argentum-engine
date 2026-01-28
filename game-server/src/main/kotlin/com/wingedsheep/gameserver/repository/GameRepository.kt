@@ -1,6 +1,7 @@
 package com.wingedsheep.gameserver.repository
 
 import com.wingedsheep.gameserver.session.GameSession
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
 import java.util.concurrent.ConcurrentHashMap
 
@@ -15,6 +16,7 @@ interface GameRepository {
 }
 
 @Component
+@ConditionalOnProperty(name = ["cache.redis.enabled"], havingValue = "false", matchIfMissing = true)
 class InMemoryGameRepository : GameRepository {
 
     private val gameSessions = ConcurrentHashMap<String, GameSession>()

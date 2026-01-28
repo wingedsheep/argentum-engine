@@ -269,4 +269,44 @@ class TournamentManager(
         val round = currentRound ?: return emptyList()
         return round.matches.filter { !it.isBye && !it.isComplete }
     }
+
+    // =========================================================================
+    // Persistence Support (for Redis caching)
+    // =========================================================================
+
+    /**
+     * Get standings for persistence.
+     */
+    internal fun getStandingsForPersistence(): Map<EntityId, PlayerStanding> = standings.toMap()
+
+    /**
+     * Get rounds for persistence.
+     */
+    internal fun getRoundsForPersistence(): List<TournamentRound> = rounds.toList()
+
+    /**
+     * Get current round index for persistence.
+     */
+    internal fun getCurrentRoundIndexForPersistence(): Int = currentRoundIndex
+
+    /**
+     * Get games per match for persistence.
+     */
+    internal fun getGamesPerMatchForPersistence(): Int = gamesPerMatch
+
+    /**
+     * Restore tournament state from persistence.
+     * Called when loading a tournament from Redis after server restart.
+     */
+    internal fun restoreFromPersistence(
+        rounds: List<TournamentRound>,
+        standings: Map<EntityId, PlayerStanding>,
+        currentRoundIndex: Int
+    ) {
+        this.rounds.clear()
+        this.rounds.addAll(rounds)
+        this.standings.clear()
+        this.standings.putAll(standings)
+        this.currentRoundIndex = currentRoundIndex
+    }
 }

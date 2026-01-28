@@ -1,9 +1,25 @@
 version: '3.8'
 
 services:
+  redis:
+    image: redis:7-alpine
+    restart: always
+    networks:
+      - app_network
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
   backend:
     image: ${IMAGE_REPO}/backend:latest
     restart: always
+    depends_on:
+      - redis
+    environment:
+      - CACHE_REDIS_ENABLED=${CACHE_REDIS_ENABLED:-true}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_TTL_MINUTES=${REDIS_TTL_MINUTES:-1440}
     networks:
       - app_network
     labels:
@@ -35,3 +51,6 @@ networks:
   app_network:
     external: true
     name: traefik-wingedsheep
+
+volumes:
+  redis_data:

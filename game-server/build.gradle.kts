@@ -12,6 +12,7 @@ dependencies {
     implementation(project(":mtg-sets"))
     implementation(libs.bundles.kotlinxEcosystem)
     implementation(libs.bundles.springBootWeb)
+    implementation(libs.springBootStarterDataRedis)
 
     testImplementation(libs.springBootStarterTest)
     testImplementation(libs.kotestRunner)

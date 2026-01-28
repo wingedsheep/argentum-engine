@@ -1058,4 +1058,62 @@ class GameSession(
      * **WARNING:** This method is for testing only.
      */
     fun getStateForTesting(): GameState? = gameState
+
+    // =========================================================================
+    // Persistence Support (for Redis caching)
+    // =========================================================================
+
+    /**
+     * Get the current game state for persistence.
+     */
+    internal fun getStateForPersistence(): GameState? = gameState
+
+    /**
+     * Get the deck lists for persistence.
+     */
+    internal fun getDeckListsForPersistence(): Map<EntityId, List<String>> = deckLists.toMap()
+
+    /**
+     * Get the game logs for persistence.
+     */
+    internal fun getLogsForPersistence(): Map<EntityId, List<ClientEvent>> =
+        gameLogs.mapValues { it.value.toList() }
+
+    /**
+     * Get the last processed message IDs for persistence.
+     */
+    internal fun getLastMessageIdsForPersistence(): Map<EntityId, String> =
+        lastProcessedMessageId.toMap()
+
+    /**
+     * Restore session state from persistence.
+     * Called when loading a session from Redis after server restart.
+     *
+     * Note: Player sessions are NOT restored here. Players reconnect and
+     * re-associate with their identity via token.
+     */
+    internal fun restoreFromPersistence(
+        state: GameState?,
+        decks: Map<EntityId, List<String>>,
+        logs: Map<EntityId, MutableList<ClientEvent>>,
+        lastIds: Map<EntityId, String>
+    ) {
+        synchronized(stateLock) {
+            gameState = state
+            deckLists.clear()
+            deckLists.putAll(decks)
+            gameLogs.clear()
+            gameLogs.putAll(logs)
+            lastProcessedMessageId.clear()
+            lastProcessedMessageId.putAll(lastIds)
+        }
+    }
+
+    /**
+     * Associate a player identity with this session (for reconnection after restore).
+     */
+    fun associatePlayer(playerSession: PlayerSession) {
+        players[playerSession.playerId] = playerSession
+        playerSession.currentGameSessionId = sessionId
+    }
 }
