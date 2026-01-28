@@ -13,6 +13,7 @@ class LifeExecutors(
     override fun executors(): List<EffectExecutor<*>> = listOf(
         GainLifeExecutor(amountEvaluator),
         LoseLifeExecutor(),
-        LoseHalfLifeExecutor()
+        LoseHalfLifeExecutor(),
+        OwnerGainsLifeExecutor()
     )
 }
