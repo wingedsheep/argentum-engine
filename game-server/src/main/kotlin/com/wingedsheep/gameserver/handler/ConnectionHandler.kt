@@ -129,10 +129,12 @@ class ConnectionHandler(
             "game" -> {
                 val gameSession = gameRepository.findById(gameSessionId!!)
                 if (gameSession != null) {
-                    gameSession.getPlayerSession(identity.playerId)?.let {
+                    // Remove old player session if exists, then associate new one
+                    if (gameSession.getPlayerSession(identity.playerId) != null) {
                         gameSession.removePlayer(identity.playerId)
-                        gameSession.addPlayer(playerSession, emptyMap())
                     }
+                    gameSession.associatePlayer(playerSession)
+
                     if (gameSession.isStarted) {
                         if (gameSession.isMulliganPhase) {
                             val decision = gameSession.getMulliganDecision(identity.playerId)

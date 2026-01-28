@@ -1054,6 +1054,24 @@ class GameSession(
     }
 
     /**
+     * Inject a pre-built game state for dev scenario testing.
+     * Unlike injectStateForTesting, this doesn't require PlayerSession objects,
+     * allowing scenarios to be created before players connect via WebSocket.
+     *
+     * Players will be associated when they connect using associatePlayer().
+     *
+     * **WARNING:** This method is for development testing only.
+     *
+     * @param state The game state to inject
+     */
+    fun injectStateForDevScenario(state: GameState) {
+        synchronized(stateLock) {
+            gameState = state
+            players.clear()
+        }
+    }
+
+    /**
      * Get the raw game state for testing assertions.
      * **WARNING:** This method is for testing only.
      */

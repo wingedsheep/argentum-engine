@@ -71,6 +71,14 @@ class SessionRegistry {
 
     fun getSessionLock(wsId: String): Any = sessionLocks.computeIfAbsent(wsId) { Any() }
 
+    /**
+     * Pre-register a player identity for dev scenario testing.
+     * The identity will be associated with a WebSocket session when the player connects.
+     */
+    fun preRegisterIdentity(identity: PlayerIdentity) {
+        playerIdentities[identity.token] = identity
+    }
+
     fun removeOldWsMapping(token: String) {
         val oldWsId = wsToToken.entries.find { it.value == token }?.key
         if (oldWsId != null) {

@@ -13,6 +13,8 @@ dependencies {
     implementation(libs.bundles.kotlinxEcosystem)
     implementation(libs.bundles.springBootWeb)
     implementation(libs.springBootStarterDataRedis)
+    implementation(libs.springdocOpenapi)
+    implementation(kotlin("reflect"))
 
     testImplementation(libs.springBootStarterTest)
     testImplementation(libs.kotestRunner)

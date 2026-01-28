@@ -13,6 +13,19 @@ cache:
     ttl-minutes: ${REDIS_TTL_MINUTES:1440}
     key-prefix: "argentum:"
 
+game:
+  dev-endpoints:
+    # Enable development endpoints for manual testing. NEVER enable in production.
+    enabled: ${GAME_DEV_ENDPOINTS_ENABLED:false}
+
+# Swagger UI - only enabled when dev endpoints are enabled
+springdoc:
+  api-docs:
+    enabled: ${GAME_DEV_ENDPOINTS_ENABLED:false}
+  swagger-ui:
+    enabled: ${GAME_DEV_ENDPOINTS_ENABLED:false}
+    path: /swagger-ui.html
+
 logging:
   level:
     com.wingedsheep.gameserver: DEBUG

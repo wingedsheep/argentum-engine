@@ -10,6 +10,7 @@ kotlinxCoroutines = "1.9.0"
 kotest = "5.9.1"
 mockk = "1.13.12"
 springBoot = "3.4.3"
+springdocOpenapi = "2.8.4"
 
 [libraries]
 kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -28,6 +29,9 @@ springBootStarterWeb = { module = "org.springframework.boot:spring-boot-starter-
 springBootStarterWebsocket = { module = "org.springframework.boot:spring-boot-starter-websocket", version.ref = "springBoot" }
 springBootStarterTest = { module = "org.springframework.boot:spring-boot-starter-test", version.ref = "springBoot" }
 springBootStarterDataRedis = { module = "org.springframework.boot:spring-boot-starter-data-redis", version.ref = "springBoot" }
+
+# SpringDoc OpenAPI (Swagger UI)
+springdocOpenapi = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdocOpenapi" }
 
 # Libraries can be bundled together for easier import
 [bundles]

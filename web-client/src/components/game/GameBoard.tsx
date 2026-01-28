@@ -758,12 +758,24 @@ function BattlefieldArea({ isOpponent }: { isOpponent: boolean }) {
     opponentCreatures,
   } = useBattlefieldCards()
   const responsive = useResponsiveContext()
+  const targetingState = useGameStore((state) => state.targetingState)
+  const pendingDecision = useGameStore((state) => state.pendingDecision)
 
   const lands = isOpponent ? opponentLands : playerLands
   const creatures = isOpponent ? opponentCreatures : playerCreatures
 
-  // Group identical lands, but display creatures individually
-  const groupedLands = groupCards(lands)
+  // Check if any land is a valid target - if so, don't stack lands
+  const validTargets = targetingState?.validTargets ?? []
+  const decisionTargets = pendingDecision?.type === 'ChooseTargetsDecision'
+    ? Object.values(pendingDecision.legalTargets).flat()
+    : []
+  const allValidTargets = [...validTargets, ...decisionTargets]
+  const anyLandIsTarget = lands.some((land) => allValidTargets.includes(land.id))
+
+  // Group identical lands (unless targeting mode needs individual lands), display creatures individually
+  const groupedLands = anyLandIsTarget
+    ? lands.map((card) => ({ card, count: 1, cardIds: [card.id] as const }))
+    : groupCards(lands)
   const groupedCreatures = creatures.map((card) => ({
     card,
     count: 1,
