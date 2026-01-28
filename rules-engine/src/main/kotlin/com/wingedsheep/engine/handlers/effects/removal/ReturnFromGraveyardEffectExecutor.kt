@@ -1,7 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.removal
 
-import com.wingedsheep.engine.core.ExecutionResult
-import com.wingedsheep.engine.core.ZoneChangeEvent
+import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
@@ -10,10 +9,13 @@ import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComp
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.CardFilter
 import com.wingedsheep.sdk.scripting.ReturnFromGraveyardEffect
 import com.wingedsheep.sdk.scripting.SearchDestination
+import java.util.UUID
 import kotlin.reflect.KClass
 
 /**
@@ -24,6 +26,10 @@ import kotlin.reflect.KClass
  * Handles returning cards from graveyard to:
  * - Hand (Gravedigger, Raise Dead)
  * - Battlefield (Breath of Life, Reanimate)
+ *
+ * Two modes:
+ * 1. Pre-targeted (Gravedigger ETB): context.targets has the chosen card
+ * 2. Decision-based (Elven Cache, Déjà Vu): no targets, shows card selection overlay
  */
 class ReturnFromGraveyardEffectExecutor : EffectExecutor<ReturnFromGraveyardEffect> {
 
@@ -34,10 +40,14 @@ class ReturnFromGraveyardEffectExecutor : EffectExecutor<ReturnFromGraveyardEffe
         effect: ReturnFromGraveyardEffect,
         context: EffectContext
     ): ExecutionResult {
-        // Get the targeted card from context
         val target = context.targets.firstOrNull()
-            ?: return ExecutionResult.error(state, "No target for return from graveyard")
 
+        // If no target provided, use decision-based flow
+        if (target == null) {
+            return executeWithDecision(state, effect, context)
+        }
+
+        // Pre-targeted flow (e.g. Gravedigger ETB)
         val (cardId, ownerId) = when (target) {
             is ChosenTarget.Card -> target.cardId to target.ownerId
             is ChosenTarget.Permanent -> target.entityId to context.controllerId
@@ -50,7 +60,6 @@ class ReturnFromGraveyardEffectExecutor : EffectExecutor<ReturnFromGraveyardEffe
         val cardComponent = container.get<CardComponent>()
             ?: return ExecutionResult.error(state, "Not a card: $cardId")
 
-        // Find which graveyard the card is in
         val graveyardZone = ZoneKey(ownerId, ZoneType.GRAVEYARD)
         if (cardId !in state.getZone(graveyardZone)) {
             return ExecutionResult.error(state, "Card not in graveyard")
@@ -64,8 +73,108 @@ class ReturnFromGraveyardEffectExecutor : EffectExecutor<ReturnFromGraveyardEffe
     }
 
     /**
-     * Move a card from graveyard to hand.
+     * Decision-based flow: show graveyard cards to the player for selection.
      */
+    private fun executeWithDecision(
+        state: GameState,
+        effect: ReturnFromGraveyardEffect,
+        context: EffectContext
+    ): ExecutionResult {
+        val playerId = context.controllerId
+        val graveyardZone = ZoneKey(playerId, ZoneType.GRAVEYARD)
+        val graveyard = state.getZone(graveyardZone)
+
+        // Filter cards matching the criteria
+        val matchingCards = graveyard.filter { cardId ->
+            val container = state.getEntity(cardId)
+            val cardComponent = container?.get<CardComponent>()
+            matchesFilter(cardComponent, effect.filter)
+        }
+
+        // No matches — spell resolves with no effect
+        if (matchingCards.isEmpty()) {
+            return ExecutionResult.success(state)
+        }
+
+        // Build card info map for the UI
+        val cardInfoMap = matchingCards.associateWith { cardId ->
+            val container = state.getEntity(cardId)
+            val cardComponent = container?.get<CardComponent>()
+            SearchCardInfo(
+                name = cardComponent?.name ?: "Unknown",
+                manaCost = cardComponent?.manaCost?.toString() ?: "",
+                typeLine = cardComponent?.typeLine?.toString() ?: "",
+                imageUri = null
+            )
+        }
+
+        val decisionId = UUID.randomUUID().toString()
+        val sourceName = context.sourceId?.let { sourceId ->
+            state.getEntity(sourceId)?.get<CardComponent>()?.name
+        }
+
+        val decision = SearchLibraryDecision(
+            id = decisionId,
+            playerId = playerId,
+            prompt = "Choose ${if (effect.filter == CardFilter.AnyCard) "a card" else "a ${effect.filter.description}"} from your graveyard to return to your hand",
+            context = DecisionContext(
+                sourceId = context.sourceId,
+                sourceName = sourceName,
+                phase = DecisionPhase.RESOLUTION
+            ),
+            options = matchingCards,
+            minSelections = 1,
+            maxSelections = 1,
+            cards = cardInfoMap,
+            filterDescription = if (effect.filter == CardFilter.AnyCard) "any card" else effect.filter.description
+        )
+
+        val continuation = ReturnFromGraveyardContinuation(
+            decisionId = decisionId,
+            playerId = playerId,
+            sourceId = context.sourceId,
+            sourceName = sourceName,
+            destination = effect.destination,
+            filter = effect.filter
+        )
+
+        val stateWithDecision = state.withPendingDecision(decision)
+        val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
+
+        return ExecutionResult.paused(
+            stateWithContinuation,
+            decision,
+            listOf(
+                DecisionRequestedEvent(
+                    decisionId = decisionId,
+                    playerId = playerId,
+                    decisionType = "SEARCH_GRAVEYARD",
+                    prompt = decision.prompt
+                )
+            )
+        )
+    }
+
+    private fun matchesFilter(card: CardComponent?, filter: CardFilter): Boolean {
+        if (card == null) return false
+        return when (filter) {
+            is CardFilter.AnyCard -> true
+            is CardFilter.CreatureCard -> card.typeLine.isCreature
+            is CardFilter.LandCard -> card.typeLine.isLand
+            is CardFilter.BasicLandCard -> card.typeLine.isBasicLand
+            is CardFilter.SorceryCard -> card.typeLine.isSorcery
+            is CardFilter.InstantCard -> card.typeLine.isInstant
+            is CardFilter.HasSubtype -> card.typeLine.hasSubtype(Subtype(filter.subtype))
+            is CardFilter.HasColor -> card.colors.contains(filter.color)
+            is CardFilter.And -> filter.filters.all { matchesFilter(card, it) }
+            is CardFilter.Or -> filter.filters.any { matchesFilter(card, it) }
+            is CardFilter.PermanentCard -> card.typeLine.isPermanent
+            is CardFilter.NonlandPermanentCard -> card.typeLine.isPermanent && !card.typeLine.isLand
+            is CardFilter.ManaValueAtMost -> card.manaCost.cmc <= filter.maxManaValue
+            is CardFilter.Not -> !matchesFilter(card, filter.filter)
+        }
+    }
+
     private fun moveToHand(
         state: GameState,
         cardId: EntityId,
@@ -74,7 +183,6 @@ class ReturnFromGraveyardEffectExecutor : EffectExecutor<ReturnFromGraveyardEffe
         controllerId: EntityId
     ): ExecutionResult {
         val graveyardZone = ZoneKey(ownerId, ZoneType.GRAVEYARD)
-        // Card goes to owner's hand (not controller's)
         val handZone = ZoneKey(ownerId, ZoneType.HAND)
 
         var newState = state.removeFromZone(graveyardZone, cardId)
@@ -94,9 +202,6 @@ class ReturnFromGraveyardEffectExecutor : EffectExecutor<ReturnFromGraveyardEffe
         )
     }
 
-    /**
-     * Move a card from graveyard to battlefield under controller's control.
-     */
     private fun moveToBattlefield(
         state: GameState,
         cardId: EntityId,
@@ -110,7 +215,6 @@ class ReturnFromGraveyardEffectExecutor : EffectExecutor<ReturnFromGraveyardEffe
         var newState = state.removeFromZone(graveyardZone, cardId)
         newState = newState.addToZone(battlefieldZone, cardId)
 
-        // Add permanent components - creature enters with summoning sickness
         newState = newState.updateEntity(cardId) { c ->
             c.with(ControllerComponent(controllerId))
                 .with(SummoningSicknessComponent)

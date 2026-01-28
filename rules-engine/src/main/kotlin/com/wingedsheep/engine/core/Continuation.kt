@@ -227,6 +227,28 @@ data class EachPlayerSelectsThenDrawsContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after player selects a card from their graveyard.
+ *
+ * Used for spells like Elven Cache and Déjà Vu that let the player
+ * choose a card from their graveyard to return to hand/battlefield.
+ *
+ * @property playerId The player who is searching their graveyard
+ * @property sourceId The spell/ability that caused the search
+ * @property sourceName Name of the source for event messages
+ * @property destination Where to put the selected card (HAND or BATTLEFIELD)
+ * @property filter The card filter that was used
+ */
+@Serializable
+data class ReturnFromGraveyardContinuation(
+    override val decisionId: String,
+    val playerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val destination: SearchDestination,
+    val filter: CardFilter
+) : ContinuationFrame
+
+/**
  * Resume after player selects cards from library search.
  *
  * @property playerId The player who is searching

@@ -61,6 +61,7 @@ class ContinuationHandler(
             is MayAbilityContinuation -> resumeMayAbility(stateAfterPop, continuation, response)
             is HandSizeDiscardContinuation -> resumeHandSizeDiscard(stateAfterPop, continuation, response)
             is EachPlayerSelectsThenDrawsContinuation -> resumeEachPlayerSelectsThenDraws(stateAfterPop, continuation, response)
+            is ReturnFromGraveyardContinuation -> resumeReturnFromGraveyard(stateAfterPop, continuation, response)
             is SearchLibraryContinuation -> resumeSearchLibrary(stateAfterPop, continuation, response)
             is ReorderLibraryContinuation -> resumeReorderLibrary(stateAfterPop, continuation, response)
             is BlockerOrderContinuation -> resumeBlockerOrder(stateAfterPop, continuation, response)
@@ -310,6 +311,68 @@ class ContinuationHandler(
         // TODO: Implement spell resolution resumption
         // This would store targets/modes and continue resolution
         return ExecutionResult.success(state)
+    }
+
+    /**
+     * Resume after player selected a card from their graveyard.
+     */
+    private fun resumeReturnFromGraveyard(
+        state: GameState,
+        continuation: ReturnFromGraveyardContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for graveyard search")
+        }
+
+        val playerId = continuation.playerId
+        val selectedCards = response.selectedCards
+
+        // Empty selection — no card returned
+        if (selectedCards.isEmpty()) {
+            return checkForMoreContinuations(state, emptyList())
+        }
+
+        val cardId = selectedCards.first()
+        val graveyardZone = ZoneKey(playerId, ZoneType.GRAVEYARD)
+
+        // Validate card is still in graveyard
+        if (cardId !in state.getZone(graveyardZone)) {
+            return checkForMoreContinuations(state, emptyList())
+        }
+
+        val cardName = state.getEntity(cardId)?.get<CardComponent>()?.name ?: "Unknown"
+        var newState = state.removeFromZone(graveyardZone, cardId)
+
+        val toZone = when (continuation.destination) {
+            SearchDestination.HAND -> {
+                val handZone = ZoneKey(playerId, ZoneType.HAND)
+                newState = newState.addToZone(handZone, cardId)
+                ZoneType.HAND
+            }
+            SearchDestination.BATTLEFIELD -> {
+                val battlefieldZone = ZoneKey(playerId, ZoneType.BATTLEFIELD)
+                newState = newState.addToZone(battlefieldZone, cardId)
+                newState = newState.updateEntity(cardId) { c ->
+                    c.with(com.wingedsheep.engine.state.components.identity.ControllerComponent(playerId))
+                        .with(com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent)
+                }
+                ZoneType.BATTLEFIELD
+            }
+            else -> return ExecutionResult.error(state, "Unsupported destination: ${continuation.destination}")
+        }
+
+        val events = listOf(
+            ZoneChangeEvent(
+                entityId = cardId,
+                entityName = cardName,
+                fromZone = ZoneType.GRAVEYARD,
+                toZone = toZone,
+                ownerId = playerId
+            )
+        )
+
+        return checkForMoreContinuations(newState, events)
     }
 
     /**

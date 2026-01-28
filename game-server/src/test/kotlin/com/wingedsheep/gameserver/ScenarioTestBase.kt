@@ -648,6 +648,30 @@ abstract class ScenarioTestBase : FunSpec() {
         }
 
         /**
+         * Cast a spell by name from a player's hand, targeting a card in a graveyard.
+         */
+        fun castSpellTargetingGraveyardCard(
+            playerNumber: Int,
+            spellName: String,
+            graveyardOwnerNumber: Int,
+            targetCardName: String
+        ): ExecutionResult {
+            val playerId = if (playerNumber == 1) player1Id else player2Id
+            val graveyardOwnerId = if (graveyardOwnerNumber == 1) player1Id else player2Id
+            val hand = state.getHand(playerId)
+            val cardId = hand.find { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.name == spellName
+            } ?: error("Card '$spellName' not found in player $playerNumber's hand")
+
+            val targetCardId = state.getGraveyard(graveyardOwnerId).find { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.name == targetCardName
+            } ?: error("Card '$targetCardName' not found in player $graveyardOwnerNumber's graveyard")
+
+            val targets = listOf(ChosenTarget.Card(targetCardId, graveyardOwnerId, ZoneType.GRAVEYARD))
+            return execute(CastSpell(playerId, cardId, targets))
+        }
+
+        /**
          * Submit a "skip targets" decision (select no targets for optional ability).
          */
         fun skipTargets(): ExecutionResult {

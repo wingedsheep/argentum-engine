@@ -798,6 +798,7 @@ class GameSession(
                 creatures + players
             }
             is TargetPermanent -> findValidPermanentTargets(state, playerId, requirement.filter)
+            is TargetCardInGraveyard -> findValidGraveyardTargets(state, playerId, requirement.filter)
             else -> emptyList() // Other target types not yet implemented
         }
     }
@@ -854,6 +855,34 @@ class GameSession(
                 PermanentTargetFilter.NonCreature -> !cardComponent.typeLine.isCreature
                 PermanentTargetFilter.NonLand -> !cardComponent.typeLine.isLand
                 else -> true // Other filters not yet implemented
+            }
+        }
+    }
+
+    /**
+     * Find valid graveyard card targets based on a filter.
+     */
+    private fun findValidGraveyardTargets(
+        state: GameState,
+        playerId: EntityId,
+        filter: GraveyardCardFilter
+    ): List<EntityId> {
+        val playerIds = when (filter) {
+            is GraveyardCardFilter.CreatureInYourGraveyard -> listOf(playerId)
+            else -> state.turnOrder.toList()
+        }
+        return playerIds.flatMap { pid ->
+            state.getGraveyard(pid).filter { entityId ->
+                val container = state.getEntity(entityId) ?: return@filter false
+                val cardComponent = container.get<CardComponent>() ?: return@filter false
+                when (filter) {
+                    GraveyardCardFilter.Any -> true
+                    GraveyardCardFilter.Creature -> cardComponent.typeLine.isCreature
+                    GraveyardCardFilter.CreatureInYourGraveyard -> cardComponent.typeLine.isCreature
+                    GraveyardCardFilter.Instant -> cardComponent.typeLine.isInstant
+                    GraveyardCardFilter.Sorcery -> cardComponent.typeLine.isSorcery
+                    GraveyardCardFilter.InstantOrSorcery -> cardComponent.typeLine.isInstant || cardComponent.typeLine.isSorcery
+                }
             }
         }
     }

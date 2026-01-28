@@ -5,8 +5,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CardFilter
 import com.wingedsheep.sdk.scripting.ReturnFromGraveyardEffect
 import com.wingedsheep.sdk.scripting.SearchDestination
-import com.wingedsheep.sdk.targeting.GraveyardCardFilter
-import com.wingedsheep.sdk.targeting.TargetCardInGraveyard
 
 /**
  * Elven Cache
@@ -19,7 +17,6 @@ val ElvenCache = card("Elven Cache") {
     typeLine = "Sorcery"
 
     spell {
-        target = TargetCardInGraveyard(filter = GraveyardCardFilter.Any)
         effect = ReturnFromGraveyardEffect(
             filter = CardFilter.AnyCard,
             destination = SearchDestination.HAND
