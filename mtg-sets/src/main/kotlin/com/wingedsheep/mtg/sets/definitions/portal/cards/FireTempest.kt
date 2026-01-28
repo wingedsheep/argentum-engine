@@ -2,7 +2,8 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DealDamageToAllEffect
+import com.wingedsheep.sdk.scripting.DealDamageToGroupEffect
+import com.wingedsheep.sdk.scripting.DealDamageToPlayersEffect
 
 /**
  * Fire Tempest
@@ -15,7 +16,7 @@ val FireTempest = card("Fire Tempest") {
     typeLine = "Sorcery"
 
     spell {
-        effect = DealDamageToAllEffect(6)
+        effect = DealDamageToGroupEffect(6) then DealDamageToPlayersEffect(6)
     }
 
     metadata {

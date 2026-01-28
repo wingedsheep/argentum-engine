@@ -1432,7 +1432,10 @@ data class WheelEffect(
 /**
  * Deal damage to all creatures.
  * "Deal X damage to each creature."
+ *
+ * @deprecated Use DealDamageToGroupEffect instead.
  */
+@Deprecated("Use DealDamageToGroupEffect instead", ReplaceWith("DealDamageToGroupEffect(amount)"))
 @Serializable
 data class DealDamageToAllCreaturesEffect(
     val amount: Int,
@@ -1452,7 +1455,10 @@ data class DealDamageToAllCreaturesEffect(
 /**
  * Deal damage to each creature and each player.
  * Used for effects like Earthquake, Dry Spell, Fire Tempest.
+ *
+ * @deprecated Use DealDamageToGroupEffect instead.
  */
+@Deprecated("Use DealDamageToGroupEffect instead", ReplaceWith("DealDamageToGroupEffect(amount, CreatureDamageFilter.All, includePlayers = true)"))
 @Serializable
 data class DealDamageToAllEffect(
     val amount: Int,
@@ -1467,6 +1473,61 @@ data class DealDamageToAllEffect(
             else -> append("creature")
         }
         append(" and each player")
+    }
+}
+
+/**
+ * Deal damage to a group of creatures matching a filter.
+ * Use with .then(DealDamageToPlayersEffect) for effects that also damage players.
+ *
+ * Examples:
+ * - Pyroclasm: DealDamageToGroupEffect(2)
+ * - Needle Storm: DealDamageToGroupEffect(4, CreatureDamageFilter.WithKeyword(Keyword.FLYING))
+ * - Earthquake: DealDamageToGroupEffect(DynamicAmount.XValue, CreatureDamageFilter.WithoutKeyword(Keyword.FLYING))
+ *                  .then(DealDamageToPlayersEffect(DynamicAmount.XValue))
+ *
+ * @param amount The amount of damage to deal (can be fixed or dynamic like X)
+ * @param filter Which creatures are damaged (All = all creatures)
+ */
+@Serializable
+data class DealDamageToGroupEffect(
+    val amount: DynamicAmount,
+    val filter: CreatureDamageFilter = CreatureDamageFilter.All
+) : Effect {
+    constructor(
+        amount: Int,
+        filter: CreatureDamageFilter = CreatureDamageFilter.All
+    ) : this(DynamicAmount.Fixed(amount), filter)
+
+    override val description: String = "Deal ${amount.description} damage to ${filter.description}"
+}
+
+/**
+ * Deal damage to players.
+ * Can target each player, controller only, opponent only, or each opponent.
+ * Often composed with DealDamageToGroupEffect for effects like Earthquake.
+ *
+ * Examples:
+ * - Earthquake: DealDamageToGroupEffect(...).then(DealDamageToPlayersEffect(DynamicAmount.XValue))
+ * - Fire Tempest: DealDamageToGroupEffect(6).then(DealDamageToPlayersEffect(6))
+ * - Flame Rift: DealDamageToPlayersEffect(4) (just players, no creatures)
+ *
+ * @param amount The amount of damage to deal (can be fixed or dynamic like X)
+ * @param target Which players to damage (EachPlayer, Controller, Opponent, EachOpponent)
+ */
+@Serializable
+data class DealDamageToPlayersEffect(
+    val amount: DynamicAmount,
+    val target: EffectTarget = EffectTarget.EachPlayer
+) : Effect {
+    constructor(amount: Int, target: EffectTarget = EffectTarget.EachPlayer) : this(DynamicAmount.Fixed(amount), target)
+
+    override val description: String = when (target) {
+        EffectTarget.EachPlayer -> "Deal ${amount.description} damage to each player"
+        EffectTarget.Controller -> "Deal ${amount.description} damage to you"
+        EffectTarget.Opponent -> "Deal ${amount.description} damage to target opponent"
+        EffectTarget.EachOpponent -> "Deal ${amount.description} damage to each opponent"
+        else -> "Deal ${amount.description} damage to ${target.description}"
     }
 }
 
@@ -2283,7 +2344,10 @@ sealed interface CreatureDamageFilter {
  *
  * @param creatureFilter Which creatures are damaged (null = no creatures)
  * @param includePlayers Whether to deal damage to players
+ *
+ * @deprecated Use DealDamageToGroupEffect with DynamicAmount.XValue instead.
  */
+@Deprecated("Use DealDamageToGroupEffect with DynamicAmount.XValue instead", ReplaceWith("DealDamageToGroupEffect(DynamicAmount.XValue, creatureFilter, includePlayers)"))
 @Serializable
 data class DealXDamageToAllEffect(
     val creatureFilter: CreatureDamageFilter? = CreatureDamageFilter.All,

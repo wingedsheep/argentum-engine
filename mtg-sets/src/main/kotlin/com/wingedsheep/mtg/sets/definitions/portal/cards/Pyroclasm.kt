@@ -2,7 +2,7 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DealDamageToAllCreaturesEffect
+import com.wingedsheep.sdk.scripting.DealDamageToGroupEffect
 
 /**
  * Pyroclasm
@@ -15,7 +15,7 @@ val Pyroclasm = card("Pyroclasm") {
     typeLine = "Sorcery"
 
     spell {
-        effect = DealDamageToAllCreaturesEffect(2)
+        effect = DealDamageToGroupEffect(2)
     }
 
     metadata {

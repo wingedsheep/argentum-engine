@@ -4,7 +4,9 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CreatureDamageFilter
-import com.wingedsheep.sdk.scripting.DealXDamageToAllEffect
+import com.wingedsheep.sdk.scripting.DealDamageToGroupEffect
+import com.wingedsheep.sdk.scripting.DealDamageToPlayersEffect
+import com.wingedsheep.sdk.scripting.DynamicAmount
 
 /**
  * Hurricane
@@ -17,10 +19,8 @@ val Hurricane = card("Hurricane") {
     typeLine = "Sorcery"
 
     spell {
-        effect = DealXDamageToAllEffect(
-            creatureFilter = CreatureDamageFilter.WithKeyword(Keyword.FLYING),
-            includePlayers = true
-        )
+        effect = DealDamageToGroupEffect(DynamicAmount.XValue, CreatureDamageFilter.WithKeyword(Keyword.FLYING)) then
+            DealDamageToPlayersEffect(DynamicAmount.XValue)
     }
 
     metadata {

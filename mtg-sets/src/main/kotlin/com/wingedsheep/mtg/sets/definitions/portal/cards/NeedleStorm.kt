@@ -1,8 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.portal.cards
 
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DealDamageToAllCreaturesEffect
+import com.wingedsheep.sdk.scripting.CreatureDamageFilter
+import com.wingedsheep.sdk.scripting.DealDamageToGroupEffect
 
 /**
  * Needle Storm
@@ -15,9 +17,9 @@ val NeedleStorm = card("Needle Storm") {
     typeLine = "Sorcery"
 
     spell {
-        effect = DealDamageToAllCreaturesEffect(
+        effect = DealDamageToGroupEffect(
             amount = 4,
-            onlyFlying = true
+            filter = CreatureDamageFilter.WithKeyword(Keyword.FLYING)
         )
     }
 

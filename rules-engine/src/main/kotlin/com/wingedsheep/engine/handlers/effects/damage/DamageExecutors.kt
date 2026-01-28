@@ -10,12 +10,15 @@ import com.wingedsheep.engine.handlers.effects.ExecutorModule
 class DamageExecutors(
     private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator()
 ) : ExecutorModule {
+    @Suppress("DEPRECATION")
     override fun executors(): List<EffectExecutor<*>> = listOf(
         DealDamageExecutor(),
         DealDynamicDamageExecutor(amountEvaluator),
         DealXDamageExecutor(),
         DealXDamageToAllExecutor(),
         DealDamageToAllCreaturesExecutor(),
-        DealDamageToAllExecutor()
+        DealDamageToAllExecutor(),
+        DealDamageToGroupExecutor(amountEvaluator),
+        DealDamageToPlayersExecutor(amountEvaluator)
     )
 }
