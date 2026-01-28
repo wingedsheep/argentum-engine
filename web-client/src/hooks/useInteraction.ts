@@ -146,6 +146,19 @@ export function useInteraction() {
         return
       }
 
+      // Check if action requires targeting (for spells or activated abilities)
+      if (actionInfo.requiresTargets && actionInfo.validTargets && actionInfo.validTargets.length > 0) {
+        startTargeting({
+          action,
+          validTargets: [...actionInfo.validTargets],
+          selectedTargets: [],
+          minTargets: actionInfo.minTargets ?? actionInfo.targetCount ?? 1,
+          maxTargets: actionInfo.targetCount ?? 1,
+        })
+        selectCard(null)
+        return
+      }
+
       submitAction(action)
       selectCard(null)
     },

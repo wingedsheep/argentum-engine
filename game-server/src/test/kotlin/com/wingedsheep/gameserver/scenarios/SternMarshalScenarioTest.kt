@@ -39,6 +39,15 @@ class SternMarshalScenarioTest : ScenarioTestBase() {
                 val marshalId = game.findPermanent("Stern Marshal")!!
                 val heroId = game.findPermanent("Devoted Hero")!!
 
+                // Verify Devoted Hero starts at 1/2 (base stats)
+                val initialClientState = game.getClientState(1)
+                val initialHeroInfo = initialClientState.cards[heroId]
+                withClue("Devoted Hero should start as 1/2") {
+                    initialHeroInfo shouldNotBe null
+                    initialHeroInfo!!.power shouldBe 1
+                    initialHeroInfo.toughness shouldBe 2
+                }
+
                 // Find Stern Marshal's activated ability
                 val cardDef = cardRegistry.getCard("Stern Marshal")!!
                 val ability = cardDef.script.activatedAbilities.first()
@@ -61,6 +70,18 @@ class SternMarshalScenarioTest : ScenarioTestBase() {
                 val marshalContainer = game.state.getEntity(marshalId)!!
                 withClue("Stern Marshal should be tapped after activating tap ability") {
                     marshalContainer.has<com.wingedsheep.engine.state.components.battlefield.TappedComponent>() shouldBe true
+                }
+
+                // Resolve the ability by both players passing priority
+                game.resolveStack()
+
+                // Verify Devoted Hero is now 3/4 (+2/+2 from base 1/2)
+                val finalClientState = game.getClientState(1)
+                val finalHeroInfo = finalClientState.cards[heroId]
+                withClue("Devoted Hero should be 3/4 after Stern Marshal's ability resolves") {
+                    finalHeroInfo shouldNotBe null
+                    finalHeroInfo!!.power shouldBe 3
+                    finalHeroInfo.toughness shouldBe 4
                 }
             }
 

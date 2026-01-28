@@ -1133,7 +1133,7 @@ export const useGameStore = create<GameStore>()(
 
         // Normal targeting flow
         const action = targetingState.action
-        if (action.type === 'CastSpell') {
+        if (action.type === 'CastSpell' || action.type === 'ActivateAbility') {
           // Convert selected targets to ChosenTarget format
           // Check if target is a player or permanent
           const targets = targetingState.selectedTargets.map((targetId) => {
