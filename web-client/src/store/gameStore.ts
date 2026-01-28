@@ -366,12 +366,12 @@ function shouldAutoPass(
     return false
   }
 
-  // If there's something on the stack (e.g., opponent's triggered ability) and we have
-  // no meaningful actions, auto-pass to let it resolve - even during main phases
+  // If there's something on the stack (opponent's spell/ability), STOP to let the player
+  // see what was cast - even if they have no responses
   const stackZone = gameState.zones.find((z) => z.zoneId.zoneType === 'STACK')
   const stackHasItems = stackZone && stackZone.cardIds && stackZone.cardIds.length > 0
   if (stackHasItems) {
-    return true
+    return false
   }
 
   // Skip auto-pass during main phases when stack is empty - player might be thinking
