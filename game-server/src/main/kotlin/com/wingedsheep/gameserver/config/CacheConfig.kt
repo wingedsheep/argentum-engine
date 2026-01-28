@@ -22,22 +22,22 @@ data class RedisProperties(
 @Configuration
 @ConditionalOnProperty(name = ["cache.redis.enabled"], havingValue = "true")
 class CacheConfig(
-    private val redisProperties: RedisProperties
+//    private val redisProperties: RedisProperties
 ) {
-    @Bean
-    fun redisConnectionFactory(): RedisConnectionFactory {
-        val config = RedisStandaloneConfiguration(redisProperties.host, redisProperties.port)
-        return LettuceConnectionFactory(config)
-    }
-
-    @Bean
-    fun redisTemplate(connectionFactory: RedisConnectionFactory): RedisTemplate<String, String> {
-        val template = RedisTemplate<String, String>()
-        template.connectionFactory = connectionFactory
-        template.keySerializer = StringRedisSerializer()
-        template.valueSerializer = StringRedisSerializer()
-        template.hashKeySerializer = StringRedisSerializer()
-        template.hashValueSerializer = StringRedisSerializer()
-        return template
-    }
+//    @Bean
+//    fun redisConnectionFactory(): RedisConnectionFactory {
+//        val config = RedisStandaloneConfiguration(redisProperties.host, redisProperties.port)
+//        return LettuceConnectionFactory(config)
+//    }
+//
+//    @Bean
+//    fun redisTemplate(connectionFactory: RedisConnectionFactory): RedisTemplate<String, String> {
+//        val template = RedisTemplate<String, String>()
+//        template.connectionFactory = connectionFactory
+//        template.keySerializer = StringRedisSerializer()
+//        template.valueSerializer = StringRedisSerializer()
+//        template.hashKeySerializer = StringRedisSerializer()
+//        template.hashValueSerializer = StringRedisSerializer()
+//        return template
+//    }
 }
