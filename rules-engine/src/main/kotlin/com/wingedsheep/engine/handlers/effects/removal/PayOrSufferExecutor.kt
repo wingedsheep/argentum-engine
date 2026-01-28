@@ -145,7 +145,7 @@ class PayOrSufferExecutor(
 
         // Create a yes/no decision
         val decisionId = UUID.randomUUID().toString()
-        val prompt = "Discard ${if (cost.count == 1) "a card" else "${cost.count} cards"} at random to avoid ${effect.suffer.description}?"
+        val prompt = "Discard ${if (cost.count == 1) "a card" else "${cost.count} cards"} at random to keep $sourceName?"
 
         val decision = YesNoDecision(
             id = decisionId,

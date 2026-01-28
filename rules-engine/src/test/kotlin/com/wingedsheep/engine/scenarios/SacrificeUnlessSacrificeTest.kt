@@ -8,8 +8,11 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.scripting.CardFilter
 import com.wingedsheep.sdk.scripting.OnEnterBattlefield
-import com.wingedsheep.sdk.scripting.SacrificeUnlessSacrificePermanentEffect
+import com.wingedsheep.sdk.scripting.PayCost
+import com.wingedsheep.sdk.scripting.PayOrSufferEffect
+import com.wingedsheep.sdk.scripting.SacrificeSelfEffect
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
@@ -37,7 +40,10 @@ class SacrificeUnlessSacrificeTest : FunSpec({
         script = CardScript.creature(
             TriggeredAbility.create(
                 trigger = OnEnterBattlefield(),
-                effect = SacrificeUnlessSacrificePermanentEffect(permanentType = "Forest")
+                effect = PayOrSufferEffect(
+                    cost = PayCost.Sacrifice(filter = CardFilter.HasSubtype("Forest")),
+                    suffer = SacrificeSelfEffect
+                )
             )
         )
     )
@@ -52,7 +58,10 @@ class SacrificeUnlessSacrificeTest : FunSpec({
         script = CardScript.creature(
             TriggeredAbility.create(
                 trigger = OnEnterBattlefield(),
-                effect = SacrificeUnlessSacrificePermanentEffect(permanentType = "Forest", count = 3)
+                effect = PayOrSufferEffect(
+                    cost = PayCost.Sacrifice(filter = CardFilter.HasSubtype("Forest"), count = 3),
+                    suffer = SacrificeSelfEffect
+                )
             )
         )
     )

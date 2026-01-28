@@ -13,8 +13,7 @@ class RemovalExecutors : ExecutorModule {
         ExileExecutor(),
         ReturnToHandExecutor(),
         ReturnFromGraveyardEffectExecutor(),
-        SacrificeUnlessSacrificePermanentExecutor(),
-        SacrificeUnlessDiscardExecutor(),
-        PayOrSufferExecutor()
+        PayOrSufferExecutor(),
+        SacrificeSelfExecutor()
     )
 }

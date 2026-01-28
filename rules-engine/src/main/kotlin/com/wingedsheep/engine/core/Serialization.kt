@@ -122,8 +122,6 @@ val engineSerializersModule = SerializersModule {
         subclass(SearchLibraryContinuation::class)
         subclass(ReorderLibraryContinuation::class)
         subclass(BlockerOrderContinuation::class)
-        subclass(SacrificeUnlessSacrificeContinuation::class)
-        subclass(SacrificeUnlessDiscardContinuation::class)
         subclass(SearchLibraryToTopContinuation::class)
         subclass(EachPlayerChoosesDrawContinuation::class)
         subclass(PayOrSufferContinuation::class)

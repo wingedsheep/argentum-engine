@@ -316,50 +316,6 @@ data class BlockerOrderContinuation(
 ) : ContinuationFrame
 
 /**
- * Resume after player selects permanents for "sacrifice unless you sacrifice" effects.
- *
- * Used for cards like Plant Elemental: "When ~ enters the battlefield, sacrifice it
- * unless you sacrifice a Forest."
- *
- * @property playerId The player who controls the source permanent
- * @property sourceId The permanent that will be sacrificed if the player doesn't pay
- * @property sourceName Name of the source for event messages
- * @property permanentType The type of permanent required (e.g., "Forest")
- * @property requiredCount Number of permanents that must be sacrificed to keep the source
- */
-@Serializable
-data class SacrificeUnlessSacrificeContinuation(
-    override val decisionId: String,
-    val playerId: EntityId,
-    val sourceId: EntityId,
-    val sourceName: String,
-    val permanentType: String,
-    val requiredCount: Int
-) : ContinuationFrame
-
-/**
- * Resume after player selects a card to discard for "sacrifice unless you discard" effects.
- *
- * Used for cards like Mercenary Knight: "When ~ enters the battlefield, sacrifice it
- * unless you discard a creature card."
- *
- * @property playerId The player who controls the source permanent
- * @property sourceId The permanent that will be sacrificed if the player doesn't discard
- * @property sourceName Name of the source for event messages
- * @property discardFilter The type of card required to be discarded
- * @property requiredCount Number of cards that must be discarded to keep the source
- */
-@Serializable
-data class SacrificeUnlessDiscardContinuation(
-    override val decisionId: String,
-    val playerId: EntityId,
-    val sourceId: EntityId,
-    val sourceName: String,
-    val discardFilter: CardFilter,
-    val requiredCount: Int
-) : ContinuationFrame
-
-/**
  * Resume after player selects a card from library for "search and put on top" effects.
  *
  * Used for tutor effects like Cruel Tutor and Personal Tutor where the card is
@@ -464,29 +420,6 @@ data class ReorderOpponentLibraryContinuation(
     val opponentId: EntityId,
     val sourceId: EntityId?,
     val sourceName: String?
-) : ContinuationFrame
-
-/**
- * Resume after player makes a yes/no choice for "sacrifice unless you discard at random" effect.
- *
- * Used for cards like Pillaging Horde: "When ~ enters the battlefield, sacrifice it
- * unless you discard a card at random."
- *
- * If the player says yes, a random card is discarded and the source survives.
- * If the player says no, the source is sacrificed.
- *
- * @property playerId The player who controls the source permanent
- * @property sourceId The permanent that will be sacrificed if the player doesn't discard
- * @property sourceName Name of the source for event messages
- * @property discardFilter The type of card that can be discarded (usually AnyCard for random)
- */
-@Serializable
-data class SacrificeUnlessRandomDiscardContinuation(
-    override val decisionId: String,
-    val playerId: EntityId,
-    val sourceId: EntityId,
-    val sourceName: String,
-    val discardFilter: CardFilter
 ) : ContinuationFrame
 
 /**

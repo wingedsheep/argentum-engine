@@ -1770,35 +1770,6 @@ data class TransformEffect(
 // Sacrifice Effects
 // =============================================================================
 
-/**
- * Represents a sacrifice cost - a number of permanents matching a filter.
- * "sacrifice three Forests"
- */
-@Serializable
-data class SacrificeCost(
-    val filter: CardFilter,
-    val count: Int = 1
-) {
-    val description: String = if (count == 1) {
-        "sacrifice a ${filter.description}"
-    } else {
-        "sacrifice $count ${filter.description}s"
-    }
-}
-
-/**
- * Sacrifice a permanent unless a cost is paid.
- * "Sacrifice this creature unless you sacrifice three Forests."
- */
-@Serializable
-data class SacrificeUnlessEffect(
-    val permanentToSacrifice: EffectTarget,
-    val cost: SacrificeCost
-) : Effect {
-    override val description:
-            String = "Sacrifice ${permanentToSacrifice.description} unless you ${cost.description}"
-}
-
 // =============================================================================
 // Exile and Replace Effects
 // =============================================================================
@@ -2576,34 +2547,6 @@ data class ModifyStatsForGroupEffect(
 }
 
 /**
- * Triggered sacrifice effect: Sacrifice this unless you discard a card.
- * Used for cards like Thundering Wurm with ETB sacrifice triggers.
- *
- * @property discardFilter What type of card must be discarded (defaults to any card)
- */
-@Serializable
-data class SacrificeUnlessDiscardEffect(
-    val discardFilter: CardFilter = CardFilter.AnyCard,
-    val random: Boolean = false
-) : Effect {
-    /** Legacy constructor for landOnly boolean */
-    constructor(landOnly: Boolean) : this(
-        if (landOnly) CardFilter.LandCard else CardFilter.AnyCard
-    )
-
-    override val description: String = buildString {
-        append("Sacrifice this permanent unless you discard ")
-        when (discardFilter) {
-            CardFilter.AnyCard -> append("a card")
-            CardFilter.LandCard -> append("a land card")
-            CardFilter.CreatureCard -> append("a creature card")
-            else -> append("a ${discardFilter.description}")
-        }
-        if (random) append(" at random")
-    }
-}
-
-/**
  * Deal damage to each attacking creature.
  * Used for Scorching Winds: "Deal 1 damage to each attacking creature."
  */
@@ -2916,41 +2859,6 @@ sealed interface CreatureTargetFilter {
     @Serializable
     data object Nonblack : CreatureTargetFilter {
         override val description: String = "nonblack"
-    }
-}
-
-/**
- * Sacrifice this creature unless you sacrifice a permanent of a specific type.
- * Used for Thing from the Deep: "Whenever this creature attacks, sacrifice it unless you sacrifice an Island."
- * Used for Plant Elemental: "sacrifice it unless you sacrifice a Forest."
- * Used for Primeval Force: "sacrifice it unless you sacrifice three Forests."
- *
- * @param permanentType The type of permanent to sacrifice (e.g., "Forest", "Island")
- * @param count The number of permanents to sacrifice (default 1)
- */
-@Serializable
-data class SacrificeUnlessSacrificePermanentEffect(
-    val permanentType: String,
-    val count: Int = 1
-) : Effect {
-    override val description: String = buildString {
-        append("Sacrifice this creature unless you sacrifice ")
-        if (count == 1) {
-            append(if (permanentType.first().lowercaseChar() in "aeiou") "an" else "a")
-            append(" $permanentType")
-        } else {
-            append(numberToWord(count))
-            append(" ${permanentType}s")
-        }
-    }
-
-    private fun numberToWord(n: Int): String = when (n) {
-        1 -> "one"
-        2 -> "two"
-        3 -> "three"
-        4 -> "four"
-        5 -> "five"
-        else -> n.toString()
     }
 }
 
