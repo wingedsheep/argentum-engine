@@ -13,7 +13,9 @@ import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
+import com.wingedsheep.engine.state.components.player.LossReason
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
+import com.wingedsheep.engine.state.components.player.PlayerLostComponent
 import com.wingedsheep.engine.state.components.player.SkipCombatPhasesComponent
 import com.wingedsheep.engine.state.components.player.SkipUntapComponent
 import com.wingedsheep.sdk.core.Keyword
@@ -191,9 +193,11 @@ class TurnManager(
         repeat(count) {
             val library = newState.getZone(libraryKey)
             if (library.isEmpty()) {
-                // Player tries to draw from empty library - they lose
+                // Player tries to draw from empty library - they lose (Rule 704.5c)
+                newState = newState.updateEntity(playerId) { container ->
+                    container.with(PlayerLostComponent(LossReason.EMPTY_LIBRARY))
+                }
                 events.add(DrawFailedEvent(playerId, "Library is empty"))
-                // Mark player as losing (will be handled by state-based actions)
                 return ExecutionResult.success(newState, events)
             }
 

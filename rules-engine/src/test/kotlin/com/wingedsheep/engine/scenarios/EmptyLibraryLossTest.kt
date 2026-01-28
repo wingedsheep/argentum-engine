@@ -249,4 +249,41 @@ class EmptyLibraryLossTest : FunSpec({
         // Hand = starting + 1 (put divination) - 1 (cast) + 1 (drew 1 before fail)
         driver.state.getHand(activePlayer).size shouldBe startingHandSize + 1
     }
+
+    test("TurnManager.drawCards marks player as lost when library is empty") {
+        val driver = GameTestDriver()
+        driver.registerCards(TestCards.all)
+
+        driver.initMirrorMatch(
+            deck = Deck.of(
+                "Island" to 20
+            ),
+            skipMulligans = true,
+            startingLife = 20
+        )
+
+        val player1 = driver.activePlayer!!
+
+        // Empty the player's library
+        driver.emptyLibrary(player1)
+        driver.state.getLibrary(player1).size shouldBe 0
+
+        // Use TurnManager.drawCards directly (this is what performDrawStep calls)
+        val turnManager = com.wingedsheep.engine.core.TurnManager()
+        val result = turnManager.drawCards(driver.state, player1, 1)
+
+        // The draw should succeed (return success) but mark the player as lost
+        result.isSuccess.shouldBeTrue()
+
+        // Check that player is marked as lost due to empty library
+        val lostComponent = result.newState.getEntity(player1)?.get<PlayerLostComponent>()
+        lostComponent shouldNotBe null
+        lostComponent!!.reason shouldBe LossReason.EMPTY_LIBRARY
+
+        // Check that DrawFailedEvent was emitted
+        val drawFailedEvent = result.events.filterIsInstance<DrawFailedEvent>()
+            .find { it.playerId == player1 }
+        drawFailedEvent shouldNotBe null
+        drawFailedEvent!!.reason shouldBe "Library is empty"
+    }
 })
