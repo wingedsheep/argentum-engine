@@ -9,7 +9,10 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.CountFilter
 import com.wingedsheep.sdk.scripting.DynamicAmount
+import com.wingedsheep.sdk.scripting.PlayerReference
+import com.wingedsheep.sdk.scripting.ZoneReference
 import kotlin.math.max
 import kotlin.math.min
 
@@ -179,18 +182,26 @@ class DynamicAmountEvaluator {
 
             is DynamicAmount.LandsOfTypeTargetOpponentControls -> {
                 val opponentId = context.opponentId ?: return 0
-                // TODO: Filter by land type
-                countLandsControlledBy(state, opponentId) * amount.multiplier
+                countLandsOfTypeControlledBy(state, opponentId, amount.landType) * amount.multiplier
             }
 
             is DynamicAmount.CreaturesOfColorTargetOpponentControls -> {
-                // TODO: Count creatures of specific color
-                0
+                val opponentId = context.opponentId ?: return 0
+                countCreaturesOfColorControlledBy(state, opponentId, amount.color) * amount.multiplier
             }
 
             is DynamicAmount.CountInZone -> {
-                // TODO: Count entities matching filter in zone
-                0
+                evaluateCountInZone(state, amount, context)
+            }
+
+            is DynamicAmount.CountPermanents -> {
+                // Convenience wrapper for CountInZone with battlefield
+                val countInZone = DynamicAmount.CountInZone(
+                    player = amount.controller,
+                    zone = ZoneReference.Battlefield,
+                    filter = amount.filter
+                )
+                evaluateCountInZone(state, countInZone, context)
             }
 
             else -> 0
@@ -213,6 +224,30 @@ class DynamicAmountEvaluator {
         }
     }
 
+    private fun countLandsOfTypeControlledBy(state: GameState, playerId: EntityId, landType: String): Int {
+        return state.getBattlefield().count { entityId ->
+            val container = state.getEntity(entityId) ?: return@count false
+            container.get<ControllerComponent>()?.playerId == playerId &&
+                container.get<CardComponent>()?.typeLine?.let { typeLine ->
+                    typeLine.isLand && typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(landType))
+                } == true
+        }
+    }
+
+    private fun countCreaturesOfColorControlledBy(
+        state: GameState,
+        playerId: EntityId,
+        color: com.wingedsheep.sdk.core.Color
+    ): Int {
+        return state.getBattlefield().count { entityId ->
+            val container = state.getEntity(entityId) ?: return@count false
+            container.get<ControllerComponent>()?.playerId == playerId &&
+                container.get<CardComponent>()?.let { card ->
+                    card.typeLine.isCreature && color in card.colors
+                } == true
+        }
+    }
+
     private fun countCreaturesWithSubtype(state: GameState, playerId: EntityId, subtype: String): Int {
         return state.getBattlefield().count { entityId ->
             val container = state.getEntity(entityId) ?: return@count false
@@ -227,5 +262,113 @@ class DynamicAmountEvaluator {
         return state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.hasSubtype(
             com.wingedsheep.sdk.core.Subtype(subtype)
         ) == true
+    }
+
+    private fun evaluateCountInZone(
+        state: GameState,
+        amount: DynamicAmount.CountInZone,
+        context: EffectContext
+    ): Int {
+        val playerIds = resolvePlayerIds(state, amount.player, context)
+        val zoneType = resolveZoneType(amount.zone)
+
+        return playerIds.sumOf { playerId ->
+            val entities = if (zoneType == ZoneType.BATTLEFIELD) {
+                // Battlefield is shared, filter by controller
+                state.getBattlefield().filter { entityId ->
+                    state.getEntity(entityId)?.get<ControllerComponent>()?.playerId == playerId
+                }
+            } else {
+                state.getZone(ZoneKey(playerId, zoneType))
+            }
+
+            entities.count { entityId ->
+                matchesCountFilter(state, entityId, amount.filter)
+            }
+        }
+    }
+
+    private fun resolvePlayerIds(
+        state: GameState,
+        player: PlayerReference,
+        context: EffectContext
+    ): List<EntityId> {
+        return when (player) {
+            is PlayerReference.You -> listOf(context.controllerId)
+            is PlayerReference.Opponent -> {
+                state.turnOrder.filter { it != context.controllerId }
+            }
+            is PlayerReference.TargetOpponent -> {
+                listOfNotNull(context.opponentId)
+            }
+            is PlayerReference.TargetPlayer -> {
+                // TargetPlayer uses the targeted player from context
+                // Falls back to opponentId if no specific target
+                listOfNotNull(context.opponentId)
+            }
+            is PlayerReference.Each -> {
+                state.turnOrder
+            }
+        }
+    }
+
+    private fun resolveZoneType(zone: ZoneReference): ZoneType {
+        return when (zone) {
+            is ZoneReference.Hand -> ZoneType.HAND
+            is ZoneReference.Battlefield -> ZoneType.BATTLEFIELD
+            is ZoneReference.Graveyard -> ZoneType.GRAVEYARD
+            is ZoneReference.Library -> ZoneType.LIBRARY
+            is ZoneReference.Exile -> ZoneType.EXILE
+        }
+    }
+
+    private fun matchesCountFilter(state: GameState, entityId: EntityId, filter: CountFilter): Boolean {
+        val container = state.getEntity(entityId) ?: return false
+        val card = container.get<CardComponent>() ?: return false
+
+        return when (filter) {
+            is CountFilter.Any -> true
+
+            is CountFilter.Creatures -> card.typeLine.isCreature
+
+            is CountFilter.TappedCreatures -> {
+                card.typeLine.isCreature && container.has<TappedComponent>()
+            }
+
+            is CountFilter.UntappedCreatures -> {
+                card.typeLine.isCreature && !container.has<TappedComponent>()
+            }
+
+            is CountFilter.Lands -> card.typeLine.isLand
+
+            is CountFilter.LandType -> {
+                card.typeLine.isLand &&
+                    card.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(filter.landType))
+            }
+
+            is CountFilter.CreatureColor -> {
+                card.typeLine.isCreature && filter.color in card.colors
+            }
+
+            is CountFilter.CardColor -> {
+                filter.color in card.colors
+            }
+
+            is CountFilter.HasSubtype -> {
+                card.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(filter.subtype))
+            }
+
+            is CountFilter.AttackingCreatures -> {
+                card.typeLine.isCreature && container.has<AttackingComponent>()
+            }
+
+            is CountFilter.And -> {
+                filter.filters.all { matchesCountFilter(state, entityId, it) }
+            }
+
+            is CountFilter.Or -> {
+                filter.filters.any { matchesCountFilter(state, entityId, it) }
+            }
+        }
     }
 }
