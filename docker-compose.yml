@@ -17,9 +17,9 @@ services:
       - redis
     environment:
       - CACHE_REDIS_ENABLED=${CACHE_REDIS_ENABLED:-true}
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - REDIS_TTL_MINUTES=${REDIS_TTL_MINUTES:-1440}
+      - CACHE_REDIS_HOST=redis
+      - CACHE_REDIS_PORT=6379
+      - CACHE_REDIS_TTL_MINUTES=${CACHE_REDIS_TTL_MINUTES:-1440}
     networks:
       - app_network
     labels:
