@@ -265,6 +265,15 @@ class TargetValidator(
             return "Target must be on the battlefield"
         }
 
+        return validatePermanentFilter(cardComponent, container, filter, casterId)
+    }
+
+    private fun validatePermanentFilter(
+        cardComponent: CardComponent,
+        container: com.wingedsheep.engine.state.ComponentContainer,
+        filter: PermanentTargetFilter,
+        casterId: EntityId
+    ): String? {
         return when (filter) {
             is PermanentTargetFilter.Any -> null
             is PermanentTargetFilter.YouControl -> {
@@ -297,6 +306,23 @@ class TargetValidator(
                 if (!cardComponent.typeLine.isCreature && !cardComponent.typeLine.isLand) {
                     "Target must be a creature or land"
                 } else null
+            }
+            is PermanentTargetFilter.WithColor -> {
+                if (!cardComponent.colors.contains(filter.color)) {
+                    "Target must be ${filter.color.displayName.lowercase()}"
+                } else null
+            }
+            is PermanentTargetFilter.WithSubtype -> {
+                if (!cardComponent.typeLine.hasSubtype(filter.subtype)) {
+                    "Target must be a ${filter.subtype.value}"
+                } else null
+            }
+            is PermanentTargetFilter.And -> {
+                for (subFilter in filter.filters) {
+                    val error = validatePermanentFilter(cardComponent, container, subFilter, casterId)
+                    if (error != null) return error
+                }
+                null
             }
         }
     }

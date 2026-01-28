@@ -287,6 +287,21 @@ sealed interface PermanentTargetFilter {
     data object CreatureOrLand : PermanentTargetFilter {
         override val description: String = "creature or land"
     }
+
+    @Serializable
+    data class WithColor(val color: Color) : PermanentTargetFilter {
+        override val description: String = color.displayName.lowercase()
+    }
+
+    @Serializable
+    data class WithSubtype(val subtype: Subtype) : PermanentTargetFilter {
+        override val description: String = subtype.value
+    }
+
+    @Serializable
+    data class And(val filters: List<PermanentTargetFilter>) : PermanentTargetFilter {
+        override val description: String = filters.joinToString(" ") { it.description }
+    }
 }
 
 // =============================================================================

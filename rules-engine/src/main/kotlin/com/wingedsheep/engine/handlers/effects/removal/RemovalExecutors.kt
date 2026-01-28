@@ -9,8 +9,7 @@ import com.wingedsheep.engine.handlers.effects.ExecutorModule
 class RemovalExecutors : ExecutorModule {
     override fun executors(): List<EffectExecutor<*>> = listOf(
         DestroyExecutor(),
-        DestroyAllCreaturesExecutor(),
-        DestroyAllLandsExecutor(),
+        DestroyAllExecutor(),
         ExileExecutor(),
         ReturnToHandExecutor(),
         ReturnFromGraveyardEffectExecutor(),

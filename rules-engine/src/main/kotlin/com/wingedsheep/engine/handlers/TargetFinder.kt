@@ -214,6 +214,11 @@ class TargetFinder(
             is PermanentTargetFilter.NonCreature -> !cardComponent.typeLine.isCreature
             is PermanentTargetFilter.NonLand -> !cardComponent.typeLine.isLand
             is PermanentTargetFilter.CreatureOrLand -> cardComponent.typeLine.isCreature || cardComponent.typeLine.isLand
+            is PermanentTargetFilter.WithColor -> cardComponent.colors.contains(filter.color)
+            is PermanentTargetFilter.WithSubtype -> cardComponent.typeLine.hasSubtype(filter.subtype)
+            is PermanentTargetFilter.And -> filter.filters.all {
+                matchesPermanentFilter(it, cardComponent, entityController, controllerId)
+            }
         }
     }
 

@@ -3,7 +3,8 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DestroyAllCreaturesWithColorEffect
+import com.wingedsheep.sdk.scripting.DestroyAllEffect
+import com.wingedsheep.sdk.targeting.PermanentTargetFilter
 
 /**
  * Virtue's Ruin
@@ -16,7 +17,11 @@ val VirtuesRuin = card("Virtue's Ruin") {
     typeLine = "Sorcery"
 
     spell {
-        effect = DestroyAllCreaturesWithColorEffect(Color.WHITE)
+        effect = DestroyAllEffect(
+            PermanentTargetFilter.And(
+                listOf(PermanentTargetFilter.Creature, PermanentTargetFilter.WithColor(Color.WHITE))
+            )
+        )
     }
 
     metadata {

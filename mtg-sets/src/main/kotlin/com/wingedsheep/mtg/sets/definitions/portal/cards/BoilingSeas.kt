@@ -1,8 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.portal.cards
 
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DestroyAllLandsOfTypeEffect
+import com.wingedsheep.sdk.scripting.DestroyAllEffect
+import com.wingedsheep.sdk.targeting.PermanentTargetFilter
 
 /**
  * Boiling Seas
@@ -15,7 +17,11 @@ val BoilingSeas = card("Boiling Seas") {
     typeLine = "Sorcery"
 
     spell {
-        effect = DestroyAllLandsOfTypeEffect("Island")
+        effect = DestroyAllEffect(
+            PermanentTargetFilter.And(
+                listOf(PermanentTargetFilter.Land, PermanentTargetFilter.WithSubtype(Subtype.ISLAND))
+            )
+        )
     }
 
     metadata {

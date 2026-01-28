@@ -2,7 +2,8 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DestroyAllCreaturesEffect
+import com.wingedsheep.sdk.scripting.DestroyAllEffect
+import com.wingedsheep.sdk.targeting.PermanentTargetFilter
 
 /**
  * Wrath of God
@@ -15,7 +16,7 @@ val WrathOfGod = card("Wrath of God") {
     typeLine = "Sorcery"
 
     spell {
-        effect = DestroyAllCreaturesEffect
+        effect = DestroyAllEffect(PermanentTargetFilter.Creature, noRegenerate = true)
     }
 
     metadata {

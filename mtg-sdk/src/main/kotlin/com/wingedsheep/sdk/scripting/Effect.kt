@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.targeting.PermanentTargetFilter
 import com.wingedsheep.sdk.targeting.TargetRequirement
 import kotlinx.serialization.Serializable
 
@@ -1383,44 +1384,34 @@ data class GrantKeywordUntilEndOfTurnEffect(
 // =============================================================================
 
 /**
- * Destroy all lands.
- * "Destroy all lands."
+ * Destroy all permanents matching a filter.
+ * Unified effect that handles all "destroy all X" patterns.
+ *
+ * Examples:
+ * - DestroyAllEffect(PermanentTargetFilter.Land) -> "Destroy all lands"
+ * - DestroyAllEffect(PermanentTargetFilter.Creature, noRegenerate = true) -> Wrath of God
+ * - DestroyAllEffect(PermanentTargetFilter.And(listOf(Creature, WithColor(WHITE)))) -> Virtue's Ruin
+ * - DestroyAllEffect(PermanentTargetFilter.And(listOf(Land, WithSubtype(ISLAND)))) -> Boiling Seas
+ *
+ * @param filter Which permanents to destroy (defaults to Any = all permanents)
+ * @param noRegenerate If true, destroyed permanents can't be regenerated (for future regeneration support)
  */
 @Serializable
-data object DestroyAllLandsEffect : Effect {
-    override val description: String = "Destroy all lands"
-}
-
-/**
- * Destroy all creatures.
- * "Destroy all creatures."
- */
-@Serializable
-data object DestroyAllCreaturesEffect : Effect {
-    override val description: String = "Destroy all creatures"
-}
-
-/**
- * Destroy all creatures of a specific color.
- * "Destroy all green creatures." (Nature's Ruin)
- * "Destroy all white creatures." (Virtue's Ruin)
- */
-@Serializable
-data class DestroyAllCreaturesWithColorEffect(
-    val color: Color
+data class DestroyAllEffect(
+    val filter: PermanentTargetFilter = PermanentTargetFilter.Any,
+    val noRegenerate: Boolean = false
 ) : Effect {
-    override val description: String = "Destroy all ${color.displayName.lowercase()} creatures"
-}
-
-/**
- * Destroy all lands of a specific type.
- * "Destroy all Plains." / "Destroy all Islands."
- */
-@Serializable
-data class DestroyAllLandsOfTypeEffect(
-    val landType: String
-) : Effect {
-    override val description: String = "Destroy all ${landType}s"
+    override val description: String = buildString {
+        append("Destroy all ")
+        when (filter) {
+            is PermanentTargetFilter.Any -> append("permanents")
+            is PermanentTargetFilter.Creature -> append("creatures")
+            is PermanentTargetFilter.Land -> append("lands")
+            is PermanentTargetFilter.CreatureOrLand -> append("creatures and lands")
+            else -> append(filter.description).append("s")
+        }
+        if (noRegenerate) append(". They can't be regenerated")
+    }
 }
 
 /**

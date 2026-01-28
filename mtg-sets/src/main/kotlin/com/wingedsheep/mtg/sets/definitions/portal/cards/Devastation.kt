@@ -2,8 +2,8 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DestroyAllCreaturesEffect
-import com.wingedsheep.sdk.scripting.DestroyAllLandsEffect
+import com.wingedsheep.sdk.scripting.DestroyAllEffect
+import com.wingedsheep.sdk.targeting.PermanentTargetFilter
 
 /**
  * Devastation
@@ -16,7 +16,7 @@ val Devastation = card("Devastation") {
     typeLine = "Sorcery"
 
     spell {
-        effect = DestroyAllCreaturesEffect then DestroyAllLandsEffect
+        effect = DestroyAllEffect(PermanentTargetFilter.CreatureOrLand)
     }
 
     metadata {
