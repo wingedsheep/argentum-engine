@@ -11,6 +11,8 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
+import com.wingedsheep.engine.state.components.player.LossReason
+import com.wingedsheep.engine.state.components.player.PlayerLostComponent
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.ZoneType
@@ -71,7 +73,7 @@ class StateBasedActionChecker {
         events.addAll(poisonResults.events)
 
         // 704.5c - Player who attempted to draw from empty library loses
-        // (This is tracked via DrawFailedEvent, handled elsewhere)
+        // (Handled in DrawCardsExecutor which adds PlayerLostComponent)
 
         // 704.5f - Creature with toughness 0 or less goes to graveyard
         val zeroToughnessResults = checkZeroToughness(newState)
@@ -135,10 +137,16 @@ class StateBasedActionChecker {
         val events = mutableListOf<GameEvent>()
 
         for (playerId in state.turnOrder) {
-            val lifeComponent = state.getEntity(playerId)?.get<LifeTotalComponent>() ?: continue
+            val container = state.getEntity(playerId) ?: continue
+            // Skip if player already marked as lost
+            if (container.has<PlayerLostComponent>()) continue
+
+            val lifeComponent = container.get<LifeTotalComponent>() ?: continue
             if (lifeComponent.life <= 0) {
+                newState = newState.updateEntity(playerId) { c ->
+                    c.with(PlayerLostComponent(LossReason.LIFE_ZERO))
+                }
                 events.add(PlayerLostEvent(playerId, GameEndReason.LIFE_ZERO))
-                // Mark player as lost (would need a component for this)
             }
         }
 
@@ -153,9 +161,16 @@ class StateBasedActionChecker {
         val events = mutableListOf<GameEvent>()
 
         for (playerId in state.turnOrder) {
-            val counters = state.getEntity(playerId)?.get<CountersComponent>() ?: continue
+            val container = state.getEntity(playerId) ?: continue
+            // Skip if player already marked as lost
+            if (container.has<PlayerLostComponent>()) continue
+
+            val counters = container.get<CountersComponent>() ?: continue
             val poisonCount = counters.getCount(CounterType.POISON)
             if (poisonCount >= 10) {
+                newState = newState.updateEntity(playerId) { c ->
+                    c.with(PlayerLostComponent(LossReason.POISON_COUNTERS))
+                }
                 events.add(PlayerLostEvent(playerId, GameEndReason.POISON_COUNTERS))
             }
         }
@@ -463,24 +478,34 @@ class StateBasedActionChecker {
             return ExecutionResult.success(state)
         }
 
-        // Count players who haven't lost
+        // Count players who haven't lost (no PlayerLostComponent)
         val activePlayers = state.turnOrder.filter { playerId ->
-            val life = state.getEntity(playerId)?.get<LifeTotalComponent>()?.life ?: 0
-            life > 0
+            val container = state.getEntity(playerId) ?: return@filter false
+            !container.has<PlayerLostComponent>()
         }
 
         if (activePlayers.size == 1) {
             // One player remaining - they win
             val winner = activePlayers.first()
+            // Determine the reason from the losing player
+            val losingPlayer = state.turnOrder.find { it != winner }
+            val lossComponent = losingPlayer?.let { state.getEntity(it)?.get<PlayerLostComponent>() }
+            val reason = when (lossComponent?.reason) {
+                LossReason.LIFE_ZERO -> GameEndReason.LIFE_ZERO
+                LossReason.POISON_COUNTERS -> GameEndReason.POISON_COUNTERS
+                LossReason.EMPTY_LIBRARY -> GameEndReason.DECK_EMPTY
+                LossReason.CONCESSION -> GameEndReason.CONCESSION
+                null -> GameEndReason.UNKNOWN
+            }
             return ExecutionResult.success(
                 state.copy(gameOver = true, winnerId = winner),
-                listOf(GameEndedEvent(winner, GameEndReason.LIFE_ZERO))
+                listOf(GameEndedEvent(winner, reason))
             )
         } else if (activePlayers.isEmpty()) {
             // No players remaining - draw
             return ExecutionResult.success(
                 state.copy(gameOver = true, winnerId = null),
-                listOf(GameEndedEvent(null, GameEndReason.LIFE_ZERO))
+                listOf(GameEndedEvent(null, GameEndReason.UNKNOWN))
             )
         }
 

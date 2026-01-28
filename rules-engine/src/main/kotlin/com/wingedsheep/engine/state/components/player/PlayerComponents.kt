@@ -172,3 +172,30 @@ data class SkipUntapComponent(
     val affectsCreatures: Boolean = true,
     val affectsLands: Boolean = true
 ) : Component
+
+/**
+ * Component marking that a player has lost the game.
+ *
+ * This is added when a player loses due to various game rules:
+ * - 704.5a: Life total 0 or less
+ * - 704.5b: 10 or more poison counters
+ * - 704.5c: Attempted to draw from empty library
+ * - Concession
+ *
+ * The checkGameEnd SBA uses this to determine when the game ends.
+ */
+@Serializable
+data class PlayerLostComponent(
+    val reason: LossReason
+) : Component
+
+/**
+ * Reason why a player lost the game.
+ */
+@Serializable
+enum class LossReason {
+    LIFE_ZERO,
+    POISON_COUNTERS,
+    EMPTY_LIBRARY,
+    CONCESSION
+}

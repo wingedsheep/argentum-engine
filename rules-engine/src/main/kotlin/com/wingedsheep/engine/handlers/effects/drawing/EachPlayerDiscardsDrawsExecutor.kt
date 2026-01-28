@@ -9,6 +9,8 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.player.LossReason
+import com.wingedsheep.engine.state.components.player.PlayerLostComponent
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.scripting.EachPlayerDiscardsDrawsEffect
 import kotlin.reflect.KClass
@@ -231,7 +233,10 @@ class EachPlayerDiscardsDrawsExecutor(
             repeat(count) {
                 val library = newState.getZone(libraryZone)
                 if (library.isEmpty()) {
-                    // Failed to draw - loss condition
+                    // Failed to draw - game loss condition (Rule 704.5c)
+                    newState = newState.updateEntity(playerId) { container ->
+                        container.with(PlayerLostComponent(LossReason.EMPTY_LIBRARY))
+                    }
                     return ExecutionResult.success(
                         newState,
                         listOf(com.wingedsheep.engine.core.DrawFailedEvent(playerId, "Empty library"))

@@ -8,6 +8,8 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.player.LossReason
+import com.wingedsheep.engine.state.components.player.PlayerLostComponent
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EachPlayerDrawsXEffect
@@ -58,7 +60,10 @@ class EachPlayerDrawsXExecutor : EffectExecutor<EachPlayerDrawsXEffect> {
             repeat(xValue) {
                 val library = newState.getZone(libraryZone)
                 if (library.isEmpty()) {
-                    // Failed to draw - this will trigger a game loss check
+                    // Failed to draw - game loss condition (Rule 704.5c)
+                    newState = newState.updateEntity(playerId) { container ->
+                        container.with(PlayerLostComponent(LossReason.EMPTY_LIBRARY))
+                    }
                     events.add(DrawFailedEvent(playerId, "Empty library"))
                     return@repeat
                 }
