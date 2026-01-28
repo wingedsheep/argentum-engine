@@ -32,8 +32,6 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.time.Duration.Companion.seconds
 
-// TODO Many of the integration tests are flaky, or just fail every time. Should fix.
-//
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 abstract class GameServerTestBase : FunSpec() {
 

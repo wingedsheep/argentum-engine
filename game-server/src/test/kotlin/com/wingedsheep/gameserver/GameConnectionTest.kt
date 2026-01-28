@@ -68,7 +68,6 @@ class GameConnectionTest : GameServerTestBase() {
             }
         }
 
-        // TODO Fails every time. Should fix.
         context("Concurrent Access") {
             test("multiple games can run on the same server") {
                 val ctx1 = setupGame(player1Name = "Alice1", player2Name = "Bob1")

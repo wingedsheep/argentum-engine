@@ -80,7 +80,6 @@ class GameFlowTest : GameServerTestBase() {
             }
         }
 
-        // TODO Test is flaky, fails sometimes
         context("Multi-Turn Gameplay") {
             test("turn counter increments correctly") {
                 val ctx = setupGame(monoGreenLands)

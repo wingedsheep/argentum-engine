@@ -9,7 +9,6 @@ import io.kotest.matchers.shouldBe
 class GameMaskingTest : GameServerTestBase() {
     init {
         context("State Masking") {
-            // TODO this test is flaky and fails sometimes
             test("player sees their own hand contents with full entity IDs") {
                 val ctx = setupGame(monoGreenLands)
                 val state = ctx.player1.client.requireLatestState()
@@ -23,7 +22,6 @@ class GameMaskingTest : GameServerTestBase() {
                 }
             }
 
-            // TODO this test always fails. It seems that the server doesn't communicate unseen cards in other player's hand correctly.
             test("player cannot see opponent hand contents but sees card count") {
                 val ctx = setupGame(monoGreenLands)
                 val state = ctx.player1.client.requireLatestState()
@@ -42,7 +40,6 @@ class GameMaskingTest : GameServerTestBase() {
                 }
             }
 
-            // TODO this test is flaky and fails sometimes
             test("battlefield is fully visible to both players") {
                 val ctx = setupGame(monoGreenLands)
                 val state1 = ctx.player1.client.requireLatestState()
