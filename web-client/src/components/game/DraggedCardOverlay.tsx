@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useGameStore } from '../../store/gameStore'
+import { getCardImageUrl } from '../../utils/cardImages'
 
 interface Point {
   x: number
@@ -38,7 +39,7 @@ export function DraggedCardOverlay() {
   const card = gameState.cards[draggingCardId]
   if (!card) return null
 
-  const cardImageUrl = `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(card.name)}&format=image&version=normal`
+  const cardImageUrl = getCardImageUrl(card.name, card.imageUri, 'normal')
 
   // Card dimensions
   const width = 80
