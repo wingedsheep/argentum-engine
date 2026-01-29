@@ -10,6 +10,7 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.redis.serializer.StringRedisSerializer
 
+// TODO Fix redis config
 //@ConfigurationProperties(prefix = "cache.redis")
 data class RedisProperties(
     val enabled: Boolean = false,
