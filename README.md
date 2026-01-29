@@ -37,6 +37,8 @@ Host booster drafts with up to 8 players. Create a draft lobby, invite friends, 
 
 Play Magic against friends with fully implemented MTG rules. The engine automatically handles the stack, priority, combat, triggers, and state-based actions—so you can focus on the game.
 
+**[Play now at magic.wingedesheep.com](https://magic.wingedesheep.com)**
+
 ## Architecture
 
 ```
