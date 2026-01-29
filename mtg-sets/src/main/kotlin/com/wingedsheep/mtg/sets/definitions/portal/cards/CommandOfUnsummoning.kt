@@ -29,7 +29,8 @@ val CommandOfUnsummoning = card("Command of Unsummoning") {
             minCount = 1,
             filter = CreatureTargetFilter.Attacking
         )
-        effect = ReturnToHandEffect(EffectTarget.ContextTarget(0))
+        effect = ReturnToHandEffect(EffectTarget.ContextTarget(0)) then
+                ReturnToHandEffect(EffectTarget.ContextTarget(1))
     }
 
     metadata {

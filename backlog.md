@@ -12,6 +12,7 @@
 - [x] Winds of change doesn't do anything
 - [x] Sorcerous sight doesn't show opponent's hand
 - [x] Renewing Dawn doesn't work
+- [x] Command of unsummoning only returns one card to hand
 
 ## Features
 

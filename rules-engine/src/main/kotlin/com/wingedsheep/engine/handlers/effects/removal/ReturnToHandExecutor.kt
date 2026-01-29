@@ -32,7 +32,7 @@ class ReturnToHandExecutor : EffectExecutor<ReturnToHandEffect> {
         context: EffectContext
     ): ExecutionResult {
         val targetId = resolveTarget(effect.target, context)
-            ?: return ExecutionResult.error(state, "No valid target for return")
+            ?: return ExecutionResult.success(state, emptyList()) // No-op if target doesn't exist (e.g., "up to" targeting)
 
         val container = state.getEntity(targetId)
             ?: return ExecutionResult.error(state, "Entity not found")
