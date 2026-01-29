@@ -1,5 +1,5 @@
 import { useGameStore } from '../../store/gameStore'
-import { useViewingPlayer, useOpponent, useZoneCards, useZone, useBattlefieldCards, useHasLegalActions, useStackCards, useGroupedZoneCards, groupCards } from '../../store/selectors'
+import { useViewingPlayer, useOpponent, useZoneCards, useZone, useBattlefieldCards, useHasLegalActions, useStackCards, groupCards, type GroupedCard } from '../../store/selectors'
 import { hand, graveyard, getNextStep, StepShortNames } from '../../types'
 import type { ClientCard, ZoneId, ClientPlayer, LegalActionInfo, EntityId, Keyword, ClientPlayerEffect } from '../../types'
 import { keywordIcons, genericKeywordIcon, displayableKeywords } from '../../assets/icons/keywords'
@@ -543,6 +543,7 @@ function CardPreview() {
 
 /**
  * Row of cards (hand or other horizontal zone).
+ * Cards in hand are NOT grouped - each card is shown individually.
  */
 function CardRow({
   zoneId,
@@ -555,15 +556,15 @@ function CardRow({
   interactive?: boolean
   small?: boolean
 }) {
-  const groupedCards = useGroupedZoneCards(zoneId)
+  const cards = useZoneCards(zoneId)
   const zone = useZone(zoneId)
   const responsive = useResponsiveContext()
 
   // For hidden zones (like opponent's hand), use zone size to show face-down placeholders
   const zoneSize = zone?.size ?? 0
-  const showPlaceholders = faceDown && groupedCards.length === 0 && zoneSize > 0
+  const showPlaceholders = faceDown && cards.length === 0 && zoneSize > 0
 
-  if (groupedCards.length === 0 && !showPlaceholders) {
+  if (cards.length === 0 && !showPlaceholders) {
     return <div style={{ ...styles.emptyZone, fontSize: responsive.fontSize.small }}>No cards</div>
   }
 
@@ -571,8 +572,8 @@ function CardRow({
   const sideZoneWidth = responsive.pileWidth + 20 // pile + margin
   const availableWidth = responsive.viewportWidth - (responsive.containerPadding * 2) - (sideZoneWidth * 2)
 
-  // Calculate card width that fits all cards (use grouped count for sizing)
-  const cardCount = showPlaceholders ? zoneSize : groupedCards.length
+  // Calculate card width that fits all cards
+  const cardCount = showPlaceholders ? zoneSize : cards.length
   const baseWidth = small ? responsive.smallCardWidth : responsive.cardWidth
   const minWidth = small ? 30 : 45
   const fittingWidth = calculateFittingCardWidth(
@@ -612,13 +613,14 @@ function CardRow({
     )
   }
 
+  // Render each card individually (no grouping for hand)
   return (
     <div style={{ ...styles.cardRow, gap: responsive.cardGap, padding: responsive.cardGap }}>
-      {groupedCards.map((group) => (
+      {cards.map((card) => (
         <GameCard
-          key={group.card.id}
-          card={group.card}
-          count={group.count}
+          key={card.id}
+          card={card}
+          count={1}
           faceDown={faceDown}
           interactive={interactive}
           small={small}
@@ -759,26 +761,34 @@ function BattlefieldArea({ isOpponent }: { isOpponent: boolean }) {
   const responsive = useResponsiveContext()
   const targetingState = useGameStore((state) => state.targetingState)
   const pendingDecision = useGameStore((state) => state.pendingDecision)
+  const stackCards = useStackCards()
 
   const lands = isOpponent ? opponentLands : playerLands
   const creatures = isOpponent ? opponentCreatures : playerCreatures
 
-  // Check if any land is a valid target - if so, don't stack lands
+  // Collect all targets: current targeting mode, pending decisions, AND spells on the stack
   const validTargets = targetingState?.validTargets ?? []
   const decisionTargets = pendingDecision?.type === 'ChooseTargetsDecision'
     ? Object.values(pendingDecision.legalTargets).flat()
     : []
-  const allValidTargets = [...validTargets, ...decisionTargets]
-  const anyLandIsTarget = lands.some((land) => allValidTargets.includes(land.id))
+  // Also include targets from spells/abilities already on the stack
+  const stackTargets = stackCards.flatMap((card) =>
+    card.targets
+      .filter((t) => t.type === 'Permanent')
+      .map((t) => (t as { type: 'Permanent'; entityId: string }).entityId)
+  )
+  const allTargetedIds = [...validTargets, ...decisionTargets, ...stackTargets]
+  const anyLandIsTarget = lands.some((land) => allTargetedIds.includes(land.id))
 
-  // Group identical lands (unless targeting mode needs individual lands), display creatures individually
+  // Group identical lands (unless any land is targeted), display creatures individually
   const groupedLands = anyLandIsTarget
-    ? lands.map((card) => ({ card, count: 1, cardIds: [card.id] as const }))
+    ? lands.map((card) => ({ card, count: 1, cardIds: [card.id] as const, cards: [card] as const }))
     : groupCards(lands)
   const groupedCreatures = creatures.map((card) => ({
     card,
     count: 1,
     cardIds: [card.id] as const,
+    cards: [card] as const,
   }))
 
   // For opponent: lands first (top), creatures second (bottom/closer to center)
@@ -799,12 +809,10 @@ function BattlefieldArea({ isOpponent }: { isOpponent: boolean }) {
       {/* First row */}
       <div style={{ ...styles.battlefieldRow, gap: responsive.cardGap }}>
         {firstRow.map((group) => (
-          <GameCard
-            key={group.card.id}
-            card={group.card}
-            count={group.count}
+          <CardStack
+            key={group.cardIds[0]}
+            group={group}
             interactive={!isOpponent}
-            battlefield
             isOpponentCard={isOpponent}
           />
         ))}
@@ -813,16 +821,80 @@ function BattlefieldArea({ isOpponent }: { isOpponent: boolean }) {
       {/* Second row */}
       <div style={{ ...styles.battlefieldRow, gap: responsive.cardGap }}>
         {secondRow.map((group) => (
-          <GameCard
-            key={group.card.id}
-            card={group.card}
-            count={group.count}
+          <CardStack
+            key={group.cardIds[0]}
+            group={group}
             interactive={!isOpponent}
-            battlefield
             isOpponentCard={isOpponent}
           />
         ))}
       </div>
+    </div>
+  )
+}
+
+/**
+ * Renders a group of identical cards as an overlapping stack.
+ * Each card has its own data-card-id for targeting arrows.
+ */
+function CardStack({
+  group,
+  interactive,
+  isOpponentCard,
+}: {
+  group: GroupedCard
+  interactive: boolean
+  isOpponentCard: boolean
+}) {
+  const responsive = useResponsiveContext()
+
+  // For single cards, just render a normal GameCard
+  if (group.count === 1) {
+    return (
+      <GameCard
+        card={group.card}
+        count={1}
+        interactive={interactive}
+        battlefield
+        isOpponentCard={isOpponentCard}
+      />
+    )
+  }
+
+  // Calculate stack offset (how much each card is offset from the previous)
+  const stackOffset = responsive.isMobile ? 12 : 18
+
+  // Calculate total width needed for the stack
+  const cardWidth = responsive.battlefieldCardWidth
+  const totalWidth = cardWidth + stackOffset * (group.count - 1)
+
+  return (
+    <div
+      style={{
+        position: 'relative',
+        width: totalWidth,
+        height: responsive.battlefieldCardHeight,
+      }}
+    >
+      {group.cards.map((card, index) => (
+        <div
+          key={card.id}
+          style={{
+            position: 'absolute',
+            left: index * stackOffset,
+            top: 0,
+            zIndex: index,
+          }}
+        >
+          <GameCard
+            card={card}
+            count={1}
+            interactive={interactive}
+            battlefield
+            isOpponentCard={isOpponentCard}
+          />
+        </div>
+      ))}
     </div>
   )
 }

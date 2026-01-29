@@ -298,12 +298,14 @@ export function useCombatState() {
  * Represents a group of identical cards for display purposes.
  */
 export interface GroupedCard {
-  /** The representative card to display */
+  /** The representative card to display (first card in group) */
   card: ClientCard
   /** Number of cards in this group */
   count: number
   /** All card IDs in this group (for action handling) */
   cardIds: readonly EntityId[]
+  /** All cards in this group (for stacked rendering) */
+  cards: readonly ClientCard[]
 }
 
 /**
@@ -354,29 +356,49 @@ export function computeCardGroupKey(card: ClientCard): string {
 }
 
 /**
+ * Maximum cards per visual group. Groups larger than this are split.
+ */
+const MAX_GROUP_SIZE = 4
+
+/**
  * Groups an array of cards by identical properties.
  * Cards are grouped if they have the same name and no distinguishing modifiers.
+ * Groups are limited to MAX_GROUP_SIZE (4) cards - larger groups are split.
  */
 export function groupCards(cards: readonly ClientCard[]): readonly GroupedCard[] {
   if (cards.length === 0) return []
 
-  const groups = new Map<string, { card: ClientCard; cardIds: EntityId[] }>()
+  const groups = new Map<string, { cards: ClientCard[]; cardIds: EntityId[] }>()
 
   for (const card of cards) {
     const key = computeCardGroupKey(card)
     const existing = groups.get(key)
     if (existing) {
+      existing.cards.push(card)
       existing.cardIds.push(card.id)
     } else {
-      groups.set(key, { card, cardIds: [card.id] })
+      groups.set(key, { cards: [card], cardIds: [card.id] })
     }
   }
 
-  return Array.from(groups.values()).map(({ card, cardIds }) => ({
-    card,
-    count: cardIds.length,
-    cardIds,
-  }))
+  // Split groups larger than MAX_GROUP_SIZE into multiple groups
+  const result: GroupedCard[] = []
+  for (const { cards: groupCards, cardIds } of groups.values()) {
+    for (let i = 0; i < groupCards.length; i += MAX_GROUP_SIZE) {
+      const slicedCards = groupCards.slice(i, i + MAX_GROUP_SIZE)
+      const slicedIds = cardIds.slice(i, i + MAX_GROUP_SIZE)
+      const firstCard = slicedCards[0]
+      if (!firstCard) continue // Should never happen, but satisfies TypeScript
+      result.push({
+        card: firstCard,
+        count: slicedCards.length,
+        cardIds: slicedIds,
+        cards: slicedCards,
+      })
+    }
+  }
+
+  return result
 }
 
 /**
