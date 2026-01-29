@@ -250,6 +250,50 @@ class EmptyLibraryLossTest : FunSpec({
         driver.state.getHand(activePlayer).size shouldBe startingHandSize + 1
     }
 
+    test("player loses during draw step when library is empty") {
+        val driver = GameTestDriver()
+        driver.registerCards(TestCards.all)
+
+        driver.initMirrorMatch(
+            deck = Deck.of(
+                "Island" to 20
+            ),
+            skipMulligans = true,
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+        val opponent = driver.getOpponent(activePlayer)
+
+        // Advance to main phase
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        // Empty the opponent's library (they will draw next turn)
+        driver.emptyLibrary(opponent)
+        driver.state.getLibrary(opponent).size shouldBe 0
+
+        // Pass through to the next player's turn by advancing through all phases
+        // This will eventually reach the opponent's draw step
+        driver.passPriorityUntil(Step.END)
+        driver.bothPass() // End step, priority passes, then cleanup triggers next turn
+
+        // Keep passing until the game ends (opponent draws from empty library)
+        var safetyCount = 0
+        while (!driver.state.gameOver && safetyCount < 20) {
+            driver.passPriority(driver.state.priorityPlayerId ?: break)
+            safetyCount++
+        }
+
+        // The game should be over with the original active player winning
+        driver.state.gameOver.shouldBeTrue()
+        driver.state.winnerId shouldBe activePlayer
+
+        // Verify the loss reason
+        val lostComponent = driver.state.getEntity(opponent)?.get<PlayerLostComponent>()
+        lostComponent shouldNotBe null
+        lostComponent!!.reason shouldBe LossReason.EMPTY_LIBRARY
+    }
+
     test("TurnManager.drawCards marks player as lost when library is empty") {
         val driver = GameTestDriver()
         driver.registerCards(TestCards.all)

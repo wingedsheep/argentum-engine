@@ -264,6 +264,15 @@ class TurnManager(
                 if (!drawResult.isSuccess) return drawResult
                 newState = drawResult.newState
                 events.addAll(drawResult.events)
+                // Check state-based actions after draw (Rule 704.3)
+                // This handles the case where a player tried to draw from an empty library
+                val sbaResult = sbaChecker.checkAndApply(newState)
+                newState = sbaResult.newState
+                events.addAll(sbaResult.events)
+                // Only give priority if the game is not over
+                if (newState.gameOver) {
+                    newState = newState.copy(priorityPlayerId = null)
+                }
             }
 
             Step.PRECOMBAT_MAIN,
