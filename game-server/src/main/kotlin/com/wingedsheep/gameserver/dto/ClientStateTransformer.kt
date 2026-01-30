@@ -536,8 +536,35 @@ class ClientStateTransformer(
             )
         }
 
-        // Add more effect checks here as they are implemented
-        // e.g., can't draw, extra turns, etc.
+        // Check for LoseAtEndStepComponent (Last Chance effect)
+        val loseAtEndStep = container.get<LoseAtEndStepComponent>()
+        if (loseAtEndStep != null) {
+            val description = if (loseAtEndStep.turnsUntilLoss <= 0) {
+                "You will lose the game at the beginning of this turn's end step"
+            } else {
+                "You will lose the game at the beginning of your next end step"
+            }
+            effects.add(
+                ClientPlayerEffect(
+                    effectId = "lose_at_end_step",
+                    name = "Last Chance",
+                    description = description,
+                    icon = "skull"
+                )
+            )
+        }
+
+        // Check for SkipNextTurnComponent (opponent will skip their turn)
+        if (container.has<SkipNextTurnComponent>()) {
+            effects.add(
+                ClientPlayerEffect(
+                    effectId = "skip_next_turn",
+                    name = "Skip Turn",
+                    description = "Your next turn will be skipped",
+                    icon = "skip"
+                )
+            )
+        }
 
         return effects
     }

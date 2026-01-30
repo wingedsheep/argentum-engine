@@ -197,5 +197,34 @@ enum class LossReason {
     LIFE_ZERO,
     POISON_COUNTERS,
     EMPTY_LIBRARY,
-    CONCESSION
+    CONCESSION,
+    CARD_EFFECT
 }
+
+/**
+ * Marker component indicating that a player should skip their entire next turn.
+ * Applied by effects like Last Chance (which gives the opponent an "extra turn"
+ * by skipping the other player's turn in a 2-player game).
+ *
+ * This component is consumed (removed) when the turn would start, and the turn
+ * is skipped instead.
+ */
+@Serializable
+data object SkipNextTurnComponent : Component
+
+/**
+ * Component indicating that a player will lose the game at the beginning of
+ * a future end step. Applied by effects like Last Chance.
+ *
+ * @param turnsUntilLoss Number of end steps to skip before triggering.
+ *   - 1 means lose at the end of the NEXT turn (not the current one)
+ *   - 0 means lose at the end of the CURRENT turn
+ * @param message Optional custom message to display when the player loses
+ *
+ * This component is consumed (removed) when it triggers and the player loses.
+ */
+@Serializable
+data class LoseAtEndStepComponent(
+    val turnsUntilLoss: Int = 1,
+    val message: String? = null
+) : Component

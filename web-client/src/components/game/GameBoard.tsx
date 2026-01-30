@@ -282,6 +282,7 @@ export function GameBoard() {
  */
 function ActiveEffectsBadges({ effects }: { effects: readonly ClientPlayerEffect[] | undefined }) {
   const responsive = useResponsiveContext()
+  const [hoveredEffect, setHoveredEffect] = React.useState<string | null>(null)
 
   if (!effects || effects.length === 0) return null
 
@@ -295,10 +296,16 @@ function ActiveEffectsBadges({ effects }: { effects: readonly ClientPlayerEffect
             padding: responsive.isMobile ? '2px 6px' : '4px 8px',
             fontSize: responsive.fontSize.small,
           }}
-          title={effect.description ?? effect.name}
+          onMouseEnter={() => setHoveredEffect(effect.effectId)}
+          onMouseLeave={() => setHoveredEffect(null)}
         >
           {effect.icon && <span style={styles.effectBadgeIcon}>{getEffectIcon(effect.icon)}</span>}
           <span style={styles.effectBadgeName}>{effect.name}</span>
+          {hoveredEffect === effect.effectId && effect.description && (
+            <div style={styles.effectTooltip}>
+              {effect.description}
+            </div>
+          )}
         </div>
       ))}
     </div>
@@ -312,10 +319,14 @@ function getEffectIcon(icon: string): string {
   switch (icon) {
     case 'shield-off':
       return '🛡️'
+    case 'shield':
+      return '⚡'
     case 'skip':
       return '⏭️'
     case 'lock':
       return '🔒'
+    case 'skull':
+      return '💀'
     default:
       return '⚡'
   }
@@ -2751,6 +2762,8 @@ const styles: Record<string, React.CSSProperties> = {
     border: '1px solid rgba(255, 100, 100, 0.5)',
     borderRadius: 4,
     color: '#ff8888',
+    position: 'relative',
+    cursor: 'help',
   } as React.CSSProperties,
   effectBadgeIcon: {
     fontSize: 12,
@@ -2758,6 +2771,22 @@ const styles: Record<string, React.CSSProperties> = {
   effectBadgeName: {
     fontWeight: 500,
     whiteSpace: 'nowrap',
+  } as React.CSSProperties,
+  effectTooltip: {
+    position: 'absolute',
+    bottom: '100%',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    color: '#ffffff',
+    padding: '6px 10px',
+    borderRadius: 4,
+    fontSize: 12,
+    whiteSpace: 'nowrap',
+    zIndex: 1000,
+    marginBottom: 4,
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
+    pointerEvents: 'none',
   } as React.CSSProperties,
 }
 

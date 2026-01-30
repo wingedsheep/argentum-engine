@@ -47,6 +47,8 @@ export type ServerMessage =
   | SpectatorStateUpdateMessage
   | SpectatingStartedMessage
   | SpectatingStoppedMessage
+  // Combat UI Messages
+  | OpponentBlockerAssignmentsMessage
 
 /**
  * Connection confirmed with assigned player ID.
@@ -368,6 +370,7 @@ export interface GameOverMessage {
   readonly type: 'gameOver'
   readonly winnerId: EntityId | null
   readonly reason: GameOverReason
+  readonly message?: string
 }
 
 /**
@@ -640,6 +643,20 @@ export interface SpectatingStoppedMessage {
 }
 
 // ============================================================================
+// Combat UI Messages
+// ============================================================================
+
+/**
+ * Opponent's tentative blocker assignments during declare blockers phase.
+ * Sent to the attacking player in real-time.
+ */
+export interface OpponentBlockerAssignmentsMessage {
+  readonly type: 'opponentBlockerAssignments'
+  /** Map of blocker creature ID to attacker creature ID */
+  readonly assignments: Record<EntityId, EntityId>
+}
+
+// ============================================================================
 // Client Messages (sent to server)
 // ============================================================================
 
@@ -673,6 +690,8 @@ export type ClientMessage =
   | ReadyForNextRoundMessage
   | SpectateGameMessage
   | StopSpectatingMessage
+  // Combat UI Messages
+  | UpdateBlockerAssignmentsMessage
 
 /**
  * Connect to the server with a player name.
@@ -948,6 +967,18 @@ export interface StopSpectatingMessage {
   readonly type: 'stopSpectating'
 }
 
+// Combat UI Client Messages
+
+/**
+ * Update tentative blocker assignments during declare blockers phase.
+ * Sent in real-time as the defending player assigns blockers.
+ */
+export interface UpdateBlockerAssignmentsMessage {
+  readonly type: 'updateBlockerAssignments'
+  /** Map of blocker creature ID to attacker creature ID */
+  readonly assignments: Record<EntityId, EntityId>
+}
+
 // Lobby Message Factories
 export function createCreateSealedLobbyMessage(
   setCode: string,
@@ -993,6 +1024,12 @@ export function createSpectateGameMessage(gameSessionId: string): SpectateGameMe
 
 export function createStopSpectatingMessage(): StopSpectatingMessage {
   return { type: 'stopSpectating' }
+}
+
+export function createUpdateBlockerAssignmentsMessage(
+  assignments: Record<EntityId, EntityId>
+): UpdateBlockerAssignmentsMessage {
+  return { type: 'updateBlockerAssignments', assignments }
 }
 
 // Lobby/Tournament Type Guards

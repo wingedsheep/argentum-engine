@@ -197,6 +197,8 @@ function GameOverlay() {
   const returnToMenu = useGameStore((state) => state.returnToMenu)
 
   if (gameOverState) {
+    // Use custom message if provided, otherwise fall back to standard reason
+    const reasonText = gameOverState.message || formatGameOverReason(gameOverState.reason, gameOverState.isWinner)
     return (
       <div style={overlayStyles.container}>
         <h1 style={{
@@ -205,7 +207,7 @@ function GameOverlay() {
         }}>
           {gameOverState.isWinner ? 'Victory!' : 'Defeat'}
         </h1>
-        <p style={overlayStyles.subtitle}>{formatGameOverReason(gameOverState.reason, gameOverState.isWinner)}</p>
+        <p style={overlayStyles.subtitle}>{reasonText}</p>
         <button
           onClick={returnToMenu}
           style={overlayStyles.button}

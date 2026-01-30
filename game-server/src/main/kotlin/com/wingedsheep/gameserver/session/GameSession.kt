@@ -1012,6 +1012,7 @@ class GameSession(
             LossReason.EMPTY_LIBRARY -> GameOverReason.DECK_OUT
             LossReason.POISON_COUNTERS -> GameOverReason.POISON_COUNTERS
             LossReason.CONCESSION -> GameOverReason.CONCESSION
+            LossReason.CARD_EFFECT -> GameOverReason.CARD_EFFECT
             null -> GameOverReason.LIFE_ZERO // Fallback
         }
     }

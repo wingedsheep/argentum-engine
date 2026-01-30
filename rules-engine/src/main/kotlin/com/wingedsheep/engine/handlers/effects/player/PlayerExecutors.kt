@@ -10,6 +10,7 @@ class PlayerExecutors : ExecutorModule {
     override fun executors(): List<EffectExecutor<*>> = listOf(
         PlayAdditionalLandsExecutor(),
         SkipCombatPhasesExecutor(),
-        SkipUntapExecutor()
+        SkipUntapExecutor(),
+        TakeExtraTurnExecutor()
     )
 }

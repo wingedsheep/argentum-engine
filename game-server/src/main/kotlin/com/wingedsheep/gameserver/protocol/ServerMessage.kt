@@ -85,7 +85,8 @@ sealed interface ServerMessage {
     @SerialName("gameOver")
     data class GameOver(
         val winnerId: EntityId?,
-        val reason: GameOverReason
+        val reason: GameOverReason,
+        val message: String? = null
     ) : ServerMessage
 
     /**
@@ -504,6 +505,21 @@ sealed interface ServerMessage {
     @Serializable
     @SerialName("spectatingStopped")
     data object SpectatingStopped : ServerMessage
+
+    // =========================================================================
+    // Combat UI Messages
+    // =========================================================================
+
+    /**
+     * Opponent's tentative blocker assignments during declare blockers phase.
+     * Sent to the attacking player in real-time.
+     */
+    @Serializable
+    @SerialName("opponentBlockerAssignments")
+    data class OpponentBlockerAssignments(
+        /** Map of blocker creature ID to attacker creature ID */
+        val assignments: Map<EntityId, EntityId>
+    ) : ServerMessage
 }
 
 /**
@@ -594,5 +610,6 @@ enum class GameOverReason {
     DECK_OUT,
     CONCESSION,
     POISON_COUNTERS,
-    DISCONNECTION
+    DISCONNECTION,
+    CARD_EFFECT
 }

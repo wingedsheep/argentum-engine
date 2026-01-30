@@ -11,6 +11,7 @@ import com.wingedsheep.gameserver.session.GameSession
 import com.wingedsheep.gameserver.session.PlayerSession
 import com.wingedsheep.gameserver.session.SessionRegistry
 import com.wingedsheep.engine.core.GameEvent
+import com.wingedsheep.engine.core.PlayerLostEvent
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.sdk.model.EntityId
 import org.slf4j.LoggerFactory
@@ -48,6 +49,7 @@ class GamePlayHandler(
             is ClientMessage.KeepHand -> handleKeepHand(session)
             is ClientMessage.Mulligan -> handleMulligan(session)
             is ClientMessage.ChooseBottomCards -> handleChooseBottomCards(session, message)
+            is ClientMessage.UpdateBlockerAssignments -> handleUpdateBlockerAssignments(session, message)
             else -> {}
         }
     }
@@ -346,7 +348,7 @@ class GamePlayHandler(
             is GameSession.ActionResult.Success -> {
                 logger.debug("Action executed successfully")
                 broadcastStateUpdate(gameSession, result.events)
-                if (gameSession.isGameOver()) handleGameOver(gameSession)
+                if (gameSession.isGameOver()) handleGameOver(gameSession, events = result.events)
             }
             is GameSession.ActionResult.PausedForDecision -> {
                 logger.debug("Action paused for decision: ${result.decision}")
@@ -372,10 +374,12 @@ class GamePlayHandler(
         handleGameOver(gameSession, GameOverReason.CONCESSION)
     }
 
-    fun handleGameOver(gameSession: GameSession, reason: GameOverReason? = null) {
+    fun handleGameOver(gameSession: GameSession, reason: GameOverReason? = null, events: List<GameEvent> = emptyList()) {
         val winnerId = gameSession.getWinnerId()
         val gameOverReason = reason ?: gameSession.getGameOverReason() ?: GameOverReason.LIFE_ZERO
-        val message = ServerMessage.GameOver(winnerId, gameOverReason)
+        // Extract custom message from PlayerLostEvent if present
+        val customMessage = events.filterIsInstance<PlayerLostEvent>().firstOrNull()?.message
+        val message = ServerMessage.GameOver(winnerId, gameOverReason, customMessage)
 
         gameSession.player1?.let { sender.send(it.webSocketSession, message) }
         gameSession.player2?.let { sender.send(it.webSocketSession, message) }
@@ -476,6 +480,27 @@ class GamePlayHandler(
             return null
         }
         return gameSession
+    }
+
+    private fun handleUpdateBlockerAssignments(session: WebSocketSession, message: ClientMessage.UpdateBlockerAssignments) {
+        val playerSession = sessionRegistry.getPlayerSession(session.id)
+        if (playerSession == null) {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        val gameSession = getGameSession(session, playerSession) ?: return
+
+        // Forward the blocker assignments to the opponent
+        val opponent = if (gameSession.player1?.playerId == playerSession.playerId) {
+            gameSession.player2
+        } else {
+            gameSession.player1
+        }
+
+        if (opponent != null) {
+            sender.send(opponent.webSocketSession, ServerMessage.OpponentBlockerAssignments(message.assignments))
+        }
     }
 
     // Callbacks to avoid circular dependencies with LobbyHandler

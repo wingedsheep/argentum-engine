@@ -44,6 +44,7 @@ import {
   createReadyForNextRoundMessage,
   createSpectateGameMessage,
   createStopSpectatingMessage,
+  createUpdateBlockerAssignmentsMessage,
   SealedCardInfo,
 } from '../types'
 import { GameWebSocket, getWebSocketUrl, type ConnectionStatus } from '../network/websocket'
@@ -144,6 +145,7 @@ export interface GameOverState {
   winnerId: EntityId | null
   reason: GameOverReason
   isWinner: boolean
+  message?: string | undefined
 }
 
 /**
@@ -268,6 +270,8 @@ export interface GameStore {
   draggingBlockerId: EntityId | null
   draggingCardId: EntityId | null
   revealedHandCardIds: readonly EntityId[] | null
+  /** Opponent's blocker assignments (for attacking player to see real-time) */
+  opponentBlockerAssignments: Record<EntityId, EntityId> | null
 
   // Animation queue
   pendingEvents: readonly ClientEvent[]
@@ -650,6 +654,8 @@ export const useGameStore = create<GameStore>()(
           waitingForOpponentMulligan: false,
           // Show revealed hand overlay if handLookedAt event received
           revealedHandCardIds: handLookedAtEvent?.cardIds ?? state.revealedHandCardIds,
+          // Clear opponent's blocker assignments when combat ends or blockers are confirmed
+          opponentBlockerAssignments: msg.state.combat?.blockers?.length ? null : state.opponentBlockerAssignments,
         }))
 
         // Auto-pass when the only action available is PassPriority
@@ -711,6 +717,7 @@ export const useGameStore = create<GameStore>()(
             winnerId: msg.winnerId,
             reason: msg.reason,
             isWinner: msg.winnerId === playerId,
+            message: msg.message,
           },
         })
       },
@@ -1022,6 +1029,13 @@ export const useGameStore = create<GameStore>()(
           spectatingState: null,
         })
       },
+
+      // Combat UI handlers
+      onOpponentBlockerAssignments: (msg) => {
+        set({
+          opponentBlockerAssignments: msg.assignments,
+        })
+      },
     }
 
     // Wrap handlers with logging in development
@@ -1048,6 +1062,7 @@ export const useGameStore = create<GameStore>()(
       draggingBlockerId: null,
       draggingCardId: null,
       revealedHandCardIds: null,
+      opponentBlockerAssignments: null,
       drawAnimations: [],
       damageAnimations: [],
       pendingEvents: [],
@@ -1633,13 +1648,18 @@ export const useGameStore = create<GameStore>()(
             return state
           }
 
+          const newAssignments = {
+            ...state.combatState.blockerAssignments,
+            [blockerId]: attackerId,
+          }
+
+          // Send assignments to server for real-time sync with opponent
+          ws?.send(createUpdateBlockerAssignmentsMessage(newAssignments))
+
           return {
             combatState: {
               ...state.combatState,
-              blockerAssignments: {
-                ...state.combatState.blockerAssignments,
-                [blockerId]: attackerId,
-              },
+              blockerAssignments: newAssignments,
             },
           }
         })
@@ -1652,6 +1672,10 @@ export const useGameStore = create<GameStore>()(
           }
 
           const { [blockerId]: _, ...remaining } = state.combatState.blockerAssignments
+
+          // Send assignments to server for real-time sync with opponent
+          ws?.send(createUpdateBlockerAssignmentsMessage(remaining))
+
           return {
             combatState: {
               ...state.combatState,

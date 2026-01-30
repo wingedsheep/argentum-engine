@@ -17,7 +17,9 @@ import com.wingedsheep.engine.state.components.player.LossReason
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.player.PlayerLostComponent
 import com.wingedsheep.engine.state.components.player.SkipCombatPhasesComponent
+import com.wingedsheep.engine.state.components.player.SkipNextTurnComponent
 import com.wingedsheep.engine.state.components.player.SkipUntapComponent
+import com.wingedsheep.engine.state.components.player.LoseAtEndStepComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -378,6 +380,33 @@ class TurnManager(
             }
 
             Step.END -> {
+                // Check if the active player has LoseAtEndStepComponent (Last Chance effect)
+                val loseComponent = newState.getEntity(activePlayer)?.get<LoseAtEndStepComponent>()
+                if (loseComponent != null) {
+                    if (loseComponent.turnsUntilLoss <= 0) {
+                        // Time's up - remove the component and make the player lose
+                        newState = newState.updateEntity(activePlayer) { container ->
+                            container.without<LoseAtEndStepComponent>()
+                                .with(PlayerLostComponent(LossReason.CARD_EFFECT))
+                        }
+                        events.add(PlayerLostEvent(activePlayer, GameEndReason.CARD_EFFECT, loseComponent.message))
+                        // Check state-based actions to end the game
+                        val sbaResult = sbaChecker.checkAndApply(newState)
+                        newState = sbaResult.newState
+                        events.addAll(sbaResult.events)
+                        // Game is over, no priority
+                        if (newState.gameOver) {
+                            newState = newState.copy(priorityPlayerId = null)
+                            return ExecutionResult.success(newState, events)
+                        }
+                    } else {
+                        // Decrement the counter for next end step, preserving the message
+                        newState = newState.updateEntity(activePlayer) { container ->
+                            container.without<LoseAtEndStepComponent>()
+                                .with(LoseAtEndStepComponent(loseComponent.turnsUntilLoss - 1, loseComponent.message))
+                        }
+                    }
+                }
                 newState = newState.withPriority(activePlayer)
             }
 
@@ -479,10 +508,21 @@ class TurnManager(
             ?: return ExecutionResult.error(state, "No active player")
 
         // Get next player
-        val nextPlayer = state.getNextPlayer(currentPlayer)
+        var nextPlayer = state.getNextPlayer(currentPlayer)
 
         // Clean up end-of-turn effects
-        val cleanedState = cleanupEndOfTurn(state)
+        var cleanedState = cleanupEndOfTurn(state)
+
+        // Check if the next player should skip their turn (e.g., Last Chance effect)
+        val nextPlayerEntity = cleanedState.getEntity(nextPlayer)
+        if (nextPlayerEntity?.has<SkipNextTurnComponent>() == true) {
+            // Remove the skip turn component and skip to the following player's turn
+            cleanedState = cleanedState.updateEntity(nextPlayer) { container ->
+                container.without<SkipNextTurnComponent>()
+            }
+            // In a 2-player game, this gives the current player another turn
+            nextPlayer = cleanedState.getNextPlayer(nextPlayer)
+        }
 
         // Start the new turn (sets step to UNTAP with no priority)
         val turnResult = startTurn(cleanedState, nextPlayer)

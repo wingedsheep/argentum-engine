@@ -19,7 +19,7 @@
 - [x] UI doesn't allow me to select a target for Capricious Sorcerer's activated ability
 - [x] Ingenious thief card says "Look at opponent's hand" but it allows you to select any player as a target
 - [x] Some cards can only target yourself or the opponent, but the UI still allows you to select the target
-- [ ] Last chance doesn't work yet. It should show a badge to indicate that the player loses next turn, and make the opponent skip their next turn.
+- [x] Last chance doesn't work yet. It should show a badge to indicate that the player loses next turn, and make the opponent skip their next turn.
 - [ ] Spitting earth card doesn't deal any damage, even though I have mountains in play
 - [ ] Disable analytics for local development
 - [x] Breath of life doesn't work. It can't target a creature in my graveyard.

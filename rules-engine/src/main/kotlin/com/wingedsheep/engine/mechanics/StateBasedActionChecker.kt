@@ -495,6 +495,7 @@ class StateBasedActionChecker {
                 LossReason.POISON_COUNTERS -> GameEndReason.POISON_COUNTERS
                 LossReason.EMPTY_LIBRARY -> GameEndReason.DECK_EMPTY
                 LossReason.CONCESSION -> GameEndReason.CONCESSION
+                LossReason.CARD_EFFECT -> GameEndReason.CARD_EFFECT
                 null -> GameEndReason.UNKNOWN
             }
             return ExecutionResult.success(

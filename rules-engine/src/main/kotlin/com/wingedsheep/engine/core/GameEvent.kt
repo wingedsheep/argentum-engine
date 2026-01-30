@@ -437,6 +437,7 @@ enum class GameEndReason {
     POISON_COUNTERS,
     CONCESSION,
     ALTERNATIVE_WIN,
+    CARD_EFFECT,
     UNKNOWN
 }
 
@@ -447,7 +448,8 @@ enum class GameEndReason {
 @SerialName("PlayerLostEvent")
 data class PlayerLostEvent(
     val playerId: EntityId,
-    val reason: GameEndReason
+    val reason: GameEndReason,
+    val message: String? = null
 ) : GameEvent
 
 // =============================================================================
