@@ -90,6 +90,12 @@ export function useInteraction() {
   const handleCardClick = useCallback(
     (cardId: EntityId) => {
       const result = processCardClick(cardId)
+      const actions = getCardActions(cardId)
+
+      // Debug logging
+      if (import.meta.env.DEV) {
+        console.log('handleCardClick:', cardId, 'result:', result.type, 'actions:', actions)
+      }
 
       switch (result.type) {
         case 'noAction':
@@ -106,7 +112,7 @@ export function useInteraction() {
           break
       }
     },
-    [processCardClick, submitAction, selectCard, startXSelection]
+    [processCardClick, getCardActions, submitAction, selectCard, startXSelection]
   )
 
   /**

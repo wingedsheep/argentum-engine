@@ -1,5 +1,6 @@
 import type { ClientManaPool } from '../../types'
 import { totalMana, isManaPoolEmpty } from '../../types'
+import { ManaSymbol } from './ManaSymbols'
 
 interface ManaPoolProps {
   manaPool: ClientManaPool
@@ -29,22 +30,22 @@ export function ManaPool({ manaPool }: ManaPoolProps) {
 
       <div style={{ display: 'flex', gap: 8 }}>
         {manaPool.white > 0 && (
-          <ManaOrb color="#f9faf4" symbol="W" count={manaPool.white} />
+          <ManaOrb symbol="W" count={manaPool.white} />
         )}
         {manaPool.blue > 0 && (
-          <ManaOrb color="#0e68ab" symbol="U" count={manaPool.blue} />
+          <ManaOrb symbol="U" count={manaPool.blue} />
         )}
         {manaPool.black > 0 && (
-          <ManaOrb color="#150b00" symbol="B" count={manaPool.black} textColor="#ccc" />
+          <ManaOrb symbol="B" count={manaPool.black} />
         )}
         {manaPool.red > 0 && (
-          <ManaOrb color="#d3202a" symbol="R" count={manaPool.red} />
+          <ManaOrb symbol="R" count={manaPool.red} />
         )}
         {manaPool.green > 0 && (
-          <ManaOrb color="#00733e" symbol="G" count={manaPool.green} />
+          <ManaOrb symbol="G" count={manaPool.green} />
         )}
         {manaPool.colorless > 0 && (
-          <ManaOrb color="#9e9e9e" symbol="C" count={manaPool.colorless} />
+          <ManaOrb symbol="C" count={manaPool.colorless} />
         )}
       </div>
 
@@ -62,16 +63,14 @@ export function ManaPool({ manaPool }: ManaPoolProps) {
 }
 
 interface ManaOrbProps {
-  color: string
   symbol: string
   count: number
-  textColor?: string
 }
 
 /**
- * Individual mana orb with count.
+ * Individual mana orb with count using the actual mana symbol asset.
  */
-function ManaOrb({ color, symbol, count, textColor = '#000' }: ManaOrbProps) {
+function ManaOrb({ symbol, count }: ManaOrbProps) {
   return (
     <div
       style={{
@@ -80,29 +79,7 @@ function ManaOrb({ color, symbol, count, textColor = '#000' }: ManaOrbProps) {
         gap: 2,
       }}
     >
-      <div
-        style={{
-          width: 24,
-          height: 24,
-          borderRadius: '50%',
-          backgroundColor: color,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          border: '2px solid rgba(255, 255, 255, 0.3)',
-          boxShadow: `0 0 8px ${color}`,
-        }}
-      >
-        <span
-          style={{
-            fontSize: 12,
-            fontWeight: 'bold',
-            color: textColor,
-          }}
-        >
-          {symbol}
-        </span>
-      </div>
+      <ManaSymbol symbol={symbol} size={24} />
       {count > 1 && (
         <span
           style={{

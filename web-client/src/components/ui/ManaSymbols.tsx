@@ -14,6 +14,11 @@ for (const [path, url] of Object.entries(symbolModules)) {
   }
 }
 
+// Debug: log available symbols (remove in production)
+if (import.meta.env.DEV) {
+  console.log('Available mana symbols:', Object.keys(SYMBOL_URLS))
+}
+
 /**
  * Renders a single mana symbol as an SVG icon.
  */
@@ -70,6 +75,36 @@ export function ManaCost({ cost, size = 14, gap = 1 }: { cost: string | null; si
       {symbols.map((match, i) => {
         const inner = match.slice(1, -1)
         return <ManaSymbol key={i} symbol={inner} size={size} />
+      })}
+    </span>
+  )
+}
+
+/**
+ * Renders ability text with inline mana symbols.
+ * Parses text like "{T}: Add {G}" and renders symbols inline with text.
+ */
+export function AbilityText({ text, size = 14 }: { text: string; size?: number }) {
+  if (!text) return null
+
+  // Check if text contains any symbols to parse
+  if (!text.includes('{')) {
+    return <span>{text}</span>
+  }
+
+  // Split by mana symbol pattern, keeping the delimiters
+  const parts = text.split(/(\{[^}]+\})/g).filter(Boolean)
+
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+      {parts.map((part, i) => {
+        const match = part.match(/^\{([^}]+)\}$/)
+        if (match && match[1]) {
+          // This is a mana symbol
+          return <ManaSymbol key={i} symbol={match[1]} size={size} />
+        }
+        // This is regular text
+        return <span key={i}>{part}</span>
       })}
     </span>
   )

@@ -172,6 +172,158 @@ data class ManaPool(
     }
 
     /**
+     * Result of a partial mana payment.
+     */
+    data class PartialPaymentResult(
+        val newPool: ManaPool,
+        val remainingCost: ManaCost,
+        val manaSpent: ManaPool
+    )
+
+    /**
+     * Pay as much of a mana cost as possible from this pool.
+     * Returns the new pool, the remaining unpaid cost, and the mana that was spent.
+     * This is used for AutoPay to use floating mana before tapping lands.
+     */
+    fun payPartial(cost: ManaCost): PartialPaymentResult {
+        var remaining = this
+        val unpaidSymbols = mutableListOf<ManaSymbol>()
+
+        // Track mana spent
+        var whiteSpent = 0
+        var blueSpent = 0
+        var blackSpent = 0
+        var redSpent = 0
+        var greenSpent = 0
+        var colorlessSpent = 0
+
+        // Try to pay colored costs first
+        for (symbol in cost.symbols) {
+            when (symbol) {
+                is ManaSymbol.Colored -> {
+                    val spent = remaining.spend(symbol.color)
+                    if (spent != null) {
+                        remaining = spent
+                        when (symbol.color) {
+                            Color.WHITE -> whiteSpent++
+                            Color.BLUE -> blueSpent++
+                            Color.BLACK -> blackSpent++
+                            Color.RED -> redSpent++
+                            Color.GREEN -> greenSpent++
+                        }
+                    } else {
+                        unpaidSymbols.add(symbol)
+                    }
+                }
+                is ManaSymbol.Colorless -> {
+                    val spent = remaining.spendColorless()
+                    if (spent != null) {
+                        remaining = spent
+                        colorlessSpent++
+                    } else {
+                        unpaidSymbols.add(symbol)
+                    }
+                }
+                is ManaSymbol.Hybrid -> {
+                    val spent = remaining.spend(symbol.color1)
+                        ?: remaining.spend(symbol.color2)
+                    if (spent != null) {
+                        remaining = spent
+                        // Track which color was used
+                        val usedColor1 = this.get(symbol.color1) > remaining.get(symbol.color1)
+                        if (usedColor1) {
+                            when (symbol.color1) {
+                                Color.WHITE -> whiteSpent++
+                                Color.BLUE -> blueSpent++
+                                Color.BLACK -> blackSpent++
+                                Color.RED -> redSpent++
+                                Color.GREEN -> greenSpent++
+                            }
+                        } else {
+                            when (symbol.color2) {
+                                Color.WHITE -> whiteSpent++
+                                Color.BLUE -> blueSpent++
+                                Color.BLACK -> blackSpent++
+                                Color.RED -> redSpent++
+                                Color.GREEN -> greenSpent++
+                            }
+                        }
+                    } else {
+                        unpaidSymbols.add(symbol)
+                    }
+                }
+                is ManaSymbol.Phyrexian -> {
+                    val spent = remaining.spend(symbol.color)
+                    if (spent != null) {
+                        remaining = spent
+                        when (symbol.color) {
+                            Color.WHITE -> whiteSpent++
+                            Color.BLUE -> blueSpent++
+                            Color.BLACK -> blackSpent++
+                            Color.RED -> redSpent++
+                            Color.GREEN -> greenSpent++
+                        }
+                    } else {
+                        unpaidSymbols.add(symbol)
+                    }
+                }
+                is ManaSymbol.Generic -> {
+                    // Add to unpaid for now, will handle below
+                    unpaidSymbols.add(symbol)
+                }
+                is ManaSymbol.X -> {
+                    // X is handled by caller
+                    unpaidSymbols.add(symbol)
+                }
+            }
+        }
+
+        // Now pay generic costs with remaining mana
+        var genericRemaining = unpaidSymbols.filterIsInstance<ManaSymbol.Generic>().sumOf { it.amount }
+        unpaidSymbols.removeAll { it is ManaSymbol.Generic }
+
+        // Spend colorless first for generic
+        while (genericRemaining > 0 && remaining.colorless > 0) {
+            remaining = remaining.spendColorless()!!
+            colorlessSpent++
+            genericRemaining--
+        }
+
+        // Spend colored mana for remaining generic
+        for (color in Color.entries) {
+            while (genericRemaining > 0 && remaining.get(color) > 0) {
+                remaining = remaining.spend(color)!!
+                when (color) {
+                    Color.WHITE -> whiteSpent++
+                    Color.BLUE -> blueSpent++
+                    Color.BLACK -> blackSpent++
+                    Color.RED -> redSpent++
+                    Color.GREEN -> greenSpent++
+                }
+                genericRemaining--
+            }
+        }
+
+        // Add remaining generic back to unpaid
+        if (genericRemaining > 0) {
+            unpaidSymbols.add(ManaSymbol.Generic(genericRemaining))
+        }
+
+        return PartialPaymentResult(
+            newPool = remaining,
+            remainingCost = ManaCost(unpaidSymbols),
+            manaSpent = ManaPool(
+                white = whiteSpent,
+                blue = blueSpent,
+                black = blackSpent,
+                red = redSpent,
+                green = greenSpent,
+                colorless = colorlessSpent
+            )
+        )
+    }
+
+    /**
      * Empty the mana pool (at end of phases).
      */
     fun empty(): ManaPool = EMPTY

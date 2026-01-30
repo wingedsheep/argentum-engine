@@ -2,6 +2,7 @@ import { useGameStore } from '../../store/gameStore'
 import { useCardActions } from '../../hooks/useLegalActions'
 import { useInteraction, useCanPassPriority } from '../../hooks/useInteraction'
 import type { LegalActionInfo } from '../../types'
+import { AbilityText } from './ManaSymbols'
 
 /**
  * Action menu displayed when a card with multiple actions is selected.
@@ -12,8 +13,13 @@ export function ActionMenu() {
   const { executeAction, cancelAction, passPriority } = useInteraction()
   const canPassPriority = useCanPassPriority()
 
-  // Don't show if no card selected or only one action (auto-execute)
-  if (!selectedCardId || cardActions.length <= 1) {
+  // Debug logging
+  if (import.meta.env.DEV && selectedCardId) {
+    console.log('ActionMenu - selectedCardId:', selectedCardId, 'cardActions:', cardActions)
+  }
+
+  // Don't show if no card selected or no actions
+  if (!selectedCardId || cardActions.length === 0) {
     // Show pass priority button when appropriate
     if (canPassPriority && !selectedCardId) {
       return <PassPriorityButton onClick={passPriority} />
@@ -114,7 +120,9 @@ function ActionButton({
       }}
     >
       <div style={{ fontWeight: 500 }}>{action.actionType}</div>
-      <div style={{ fontSize: 12, opacity: 0.8 }}>{action.description}</div>
+      <div style={{ fontSize: 12, opacity: 0.8, display: 'flex', alignItems: 'center' }}>
+        <AbilityText text={action.description} size={14} />
+      </div>
     </button>
   )
 }

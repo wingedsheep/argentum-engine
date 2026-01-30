@@ -762,7 +762,7 @@ class ActionProcessor(
             }
 
             is PaymentStrategy.AutoPay -> {
-                // First try to pay from the mana pool
+                // Always use floating mana first, then tap lands for the remainder
                 val poolComponent = currentState.getEntity(action.playerId)?.get<ManaPoolComponent>()
                     ?: ManaPoolComponent()
                 val pool = ManaPool(
@@ -774,38 +774,37 @@ class ActionProcessor(
                     colorless = poolComponent.colorless
                 )
 
-                val newPool = costHandler.payManaCost(pool, effectiveCost)
+                // Pay as much as possible from the floating mana pool
+                val partialResult = pool.payPartial(effectiveCost)
+                val poolAfterPartial = partialResult.newPool
+                val remainingCost = partialResult.remainingCost
+                val manaSpentFromPool = partialResult.manaSpent
 
-                if (newPool != null) {
-                    // Successfully paid from pool
-                    currentState = currentState.updateEntity(action.playerId) { container ->
-                        container.with(
-                            ManaPoolComponent(
-                                white = newPool.white,
-                                blue = newPool.blue,
-                                black = newPool.black,
-                                red = newPool.red,
-                                green = newPool.green,
-                                colorless = newPool.colorless
-                            )
-                        )
-                    }
-
-                    events.add(
-                        ManaSpentEvent(
-                            playerId = action.playerId,
-                            reason = "Cast ${cardComponent.name}",
-                            white = poolComponent.white - newPool.white,
-                            blue = poolComponent.blue - newPool.blue,
-                            black = poolComponent.black - newPool.black,
-                            red = poolComponent.red - newPool.red,
-                            green = poolComponent.green - newPool.green,
-                            colorless = poolComponent.colorless - newPool.colorless
+                // Update the pool with what remains after partial payment
+                currentState = currentState.updateEntity(action.playerId) { container ->
+                    container.with(
+                        ManaPoolComponent(
+                            white = poolAfterPartial.white,
+                            blue = poolAfterPartial.blue,
+                            black = poolAfterPartial.black,
+                            red = poolAfterPartial.red,
+                            green = poolAfterPartial.green,
+                            colorless = poolAfterPartial.colorless
                         )
                     )
-                } else {
-                    // Pool didn't have enough - try tapping lands
-                    val solution = manaSolver.solve(currentState, action.playerId, effectiveCost, xValue)
+                }
+
+                // Track total mana spent (pool + tapped lands)
+                var whiteSpent = manaSpentFromPool.white
+                var blueSpent = manaSpentFromPool.blue
+                var blackSpent = manaSpentFromPool.black
+                var redSpent = manaSpentFromPool.red
+                var greenSpent = manaSpentFromPool.green
+                var colorlessSpent = manaSpentFromPool.colorless
+
+                // If there's remaining cost, tap lands to pay it
+                if (!remainingCost.isEmpty()) {
+                    val solution = manaSolver.solve(currentState, action.playerId, remainingCost, xValue)
                         ?: return ExecutionResult.error(currentState, "Not enough mana to auto-pay")
 
                     // Tap each source and generate events
@@ -818,14 +817,7 @@ class ActionProcessor(
                         events.add(TappedEvent(source.entityId, source.name))
                     }
 
-                    // Track mana spent for the event
-                    var whiteSpent = 0
-                    var blueSpent = 0
-                    var blackSpent = 0
-                    var redSpent = 0
-                    var greenSpent = 0
-                    var colorlessSpent = 0
-
+                    // Add mana from tapped lands to the total spent
                     for ((_, production) in solution.manaProduced) {
                         when (production.color) {
                             Color.WHITE -> whiteSpent++
@@ -836,20 +828,20 @@ class ActionProcessor(
                             null -> colorlessSpent += production.colorless
                         }
                     }
-
-                    events.add(
-                        ManaSpentEvent(
-                            playerId = action.playerId,
-                            reason = "Cast ${cardComponent.name}",
-                            white = whiteSpent,
-                            blue = blueSpent,
-                            black = blackSpent,
-                            red = redSpent,
-                            green = greenSpent,
-                            colorless = colorlessSpent
-                        )
-                    )
                 }
+
+                events.add(
+                    ManaSpentEvent(
+                        playerId = action.playerId,
+                        reason = "Cast ${cardComponent.name}",
+                        white = whiteSpent,
+                        blue = blueSpent,
+                        black = blackSpent,
+                        red = redSpent,
+                        green = greenSpent,
+                        colorless = colorlessSpent
+                    )
+                )
             }
 
             is PaymentStrategy.Explicit -> {

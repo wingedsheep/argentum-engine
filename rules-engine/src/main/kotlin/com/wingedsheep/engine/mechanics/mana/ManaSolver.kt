@@ -8,6 +8,7 @@ import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComp
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
@@ -285,7 +286,8 @@ class ManaSolver(
     }
 
     /**
-     * Checks if a player can pay a mana cost (either from pool or via auto-pay).
+     * Checks if a player can pay a mana cost (from floating mana pool + auto-pay).
+     * Considers floating mana first, then checks if remaining can be paid by tapping sources.
      */
     fun canPay(
         state: GameState,
@@ -293,14 +295,53 @@ class ManaSolver(
         cost: ManaCost,
         xValue: Int = 0
     ): Boolean {
-        return solve(state, playerId, cost, xValue) != null
+        // Get the player's floating mana pool
+        val poolComponent = state.getEntity(playerId)?.get<ManaPoolComponent>()
+        val pool = if (poolComponent != null) {
+            ManaPool(
+                white = poolComponent.white,
+                blue = poolComponent.blue,
+                black = poolComponent.black,
+                red = poolComponent.red,
+                green = poolComponent.green,
+                colorless = poolComponent.colorless
+            )
+        } else {
+            ManaPool()
+        }
+
+        // Check if pool alone can pay
+        if (pool.canPay(cost)) {
+            return true
+        }
+
+        // Pay partial from pool and check if remaining can be tapped for
+        val partialResult = pool.payPartial(cost)
+        val remainingCost = partialResult.remainingCost
+
+        // If nothing remains after using pool, we can pay
+        if (remainingCost.isEmpty()) {
+            return true
+        }
+
+        // Check if we can tap sources for the remaining cost
+        return solve(state, playerId, remainingCost, xValue) != null
     }
 
     /**
-     * Gets the count of available mana sources for a player.
-     * This is the total number of untapped mana-producing permanents they control.
+     * Gets the total available mana for a player (floating mana + untapped sources).
      */
     fun getAvailableManaCount(state: GameState, playerId: EntityId): Int {
-        return findAvailableManaSources(state, playerId).size
+        // Count floating mana
+        val poolComponent = state.getEntity(playerId)?.get<ManaPoolComponent>()
+        val floatingMana = if (poolComponent != null) {
+            poolComponent.white + poolComponent.blue + poolComponent.black +
+                poolComponent.red + poolComponent.green + poolComponent.colorless
+        } else {
+            0
+        }
+
+        // Add untapped mana sources
+        return floatingMana + findAvailableManaSources(state, playerId).size
     }
 }

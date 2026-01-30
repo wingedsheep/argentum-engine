@@ -5,6 +5,7 @@ import type { ClientCard, ZoneId, ClientPlayer, LegalActionInfo, EntityId, Keywo
 import { keywordIcons, genericKeywordIcon, displayableKeywords } from '../../assets/icons/keywords'
 import { PhaseIndicator } from '../ui/PhaseIndicator'
 import { ManaPool } from '../ui/ManaPool'
+import { AbilityText } from '../ui/ManaSymbols'
 import { CombatArrows } from '../combat/CombatArrows'
 import { TargetingArrows } from '../targeting/TargetingArrows'
 import { DraggedCardOverlay } from './DraggedCardOverlay'
@@ -1487,9 +1488,12 @@ function ActionMenu() {
               ...styles.actionButton,
               padding: responsive.isMobile ? '10px 12px' : '12px 16px',
               fontSize: responsive.fontSize.normal,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
             }}
           >
-            {info.description}
+            <AbilityText text={info.description} size={responsive.isMobile ? 14 : 16} />
             {info.requiresTargets && <span style={{ color: '#888', marginLeft: 8 }}>(select target)</span>}
           </button>
         ))}
