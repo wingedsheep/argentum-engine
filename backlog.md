@@ -21,14 +21,19 @@
 - [x] Some cards can only target yourself or the opponent, but the UI still allows you to select the target
 - [x] Last chance doesn't work yet. It should show a badge to indicate that the player loses next turn, and make the opponent skip their next turn.
 - [ ] Spitting earth card doesn't deal any damage, even though I have mountains in play
-- [ ] Disable analytics for local development
+- [x] Disable analytics for local development
 - [x] Breath of life doesn't work. It can't target a creature in my graveyard.
-- [ ] First return to tournament standings before starting next game
-- [ ] Warnings, like "can't block a creature with flying" should disappear automatically after a few seconds
 - [ ] Not allowed to play mystic denial in response to my opponent casting a creature spell
+- [ ] Withering gaze doesn't allow me to look at the opponent's hand
+
+## Work in progress
+
+- [ ] Targeting spells on the stack
+- [ ] Auto passing priority -> Auto resolve spells if opponent passes
 
 ## Improvements
 
+- [x] First return to tournament standings before starting next game
 - [ ] Don't move cards when no hand
 - [ ] Timeline, in which phase, and whose turn is it
 - [ ] Button to accept spells on stack and pass to another phase of the turn
