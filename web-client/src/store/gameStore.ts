@@ -302,6 +302,10 @@ export interface GameStore {
   drawAnimations: readonly DrawAnimation[]
   addDrawAnimation: (animation: DrawAnimation) => void
   removeDrawAnimation: (id: string) => void
+  // Damage animation
+  damageAnimations: readonly DamageAnimation[]
+  addDamageAnimation: (animation: DamageAnimation) => void
+  removeDamageAnimation: (id: string) => void
 }
 
 /**
@@ -313,6 +317,18 @@ export interface DrawAnimation {
   cardName: string | null
   imageUri: string | null
   isOpponent: boolean
+  startTime: number
+}
+
+/**
+ * A life change animation (damage or life gain).
+ */
+export interface DamageAnimation {
+  id: string
+  targetId: EntityId
+  targetIsPlayer: boolean
+  amount: number
+  isLifeGain: boolean
   startTime: number
 }
 
@@ -485,7 +501,7 @@ export const useGameStore = create<GameStore>()(
         ) as { type: 'handLookedAt'; cardIds: readonly EntityId[] } | undefined
 
         // Process cardDrawn events for draw animations
-        const { playerId, addDrawAnimation } = get()
+        const { playerId, addDrawAnimation, addDamageAnimation } = get()
         const cardDrawnEvents = msg.events.filter((e) => e.type === 'cardDrawn') as {
           type: 'cardDrawn'
           playerId: EntityId
@@ -505,6 +521,55 @@ export const useGameStore = create<GameStore>()(
             isOpponent,
             startTime: Date.now() + index * 100, // Stagger multiple draws
           })
+        })
+
+        // Process lifeChanged events for player life changes (damage, life loss, life gain)
+        // Aggregate changes per player to show combined damage/healing from combat
+        const lifeChangedEvents = msg.events.filter(
+          (e) => e.type === 'lifeChanged' && (e as { change: number }).change !== 0
+        ) as {
+          type: 'lifeChanged'
+          playerId: EntityId
+          change: number
+        }[]
+
+        // Sum life changes per player, keeping damage and life gain separate
+        const playerLifeChanges = new Map<EntityId, { damage: number; lifeGain: number }>()
+        lifeChangedEvents.forEach((event) => {
+          const current = playerLifeChanges.get(event.playerId) ?? { damage: 0, lifeGain: 0 }
+          if (event.change < 0) {
+            current.damage += Math.abs(event.change)
+          } else {
+            current.lifeGain += event.change
+          }
+          playerLifeChanges.set(event.playerId, current)
+        })
+
+        // Create aggregated life change animations for players
+        let animIndex = 0
+        playerLifeChanges.forEach((changes, odPlayerId) => {
+          if (changes.damage > 0) {
+            addDamageAnimation({
+              id: `life-${odPlayerId}-${Date.now()}-damage`,
+              targetId: odPlayerId,
+              targetIsPlayer: true,
+              amount: changes.damage,
+              isLifeGain: false,
+              startTime: Date.now() + animIndex * 50,
+            })
+            animIndex++
+          }
+          if (changes.lifeGain > 0) {
+            addDamageAnimation({
+              id: `life-${odPlayerId}-${Date.now()}-gain`,
+              targetId: odPlayerId,
+              targetIsPlayer: true,
+              amount: changes.lifeGain,
+              isLifeGain: true,
+              startTime: Date.now() + animIndex * 50,
+            })
+            animIndex++
+          }
         })
 
         set((state) => ({
@@ -811,6 +876,7 @@ export const useGameStore = create<GameStore>()(
       draggingCardId: null,
       revealedHandCardIds: null,
       drawAnimations: [],
+      damageAnimations: [],
       pendingEvents: [],
       eventLog: [],
       gameOverState: null,
@@ -1577,6 +1643,18 @@ export const useGameStore = create<GameStore>()(
       removeDrawAnimation: (id) => {
         set((state) => ({
           drawAnimations: state.drawAnimations.filter((a) => a.id !== id),
+        }))
+      },
+
+      addDamageAnimation: (animation) => {
+        set((state) => ({
+          damageAnimations: [...state.damageAnimations, animation],
+        }))
+      },
+
+      removeDamageAnimation: (id) => {
+        set((state) => ({
+          damageAnimations: state.damageAnimations.filter((a) => a.id !== id),
         }))
       },
     }

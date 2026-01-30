@@ -463,8 +463,8 @@ class ClientStateTransformer(
         // Check if player has lost (they're not the winner and game is over)
         val hasLost = state.gameOver && state.winnerId != null && state.winnerId != playerId
 
-        // Only show mana pool to the player themselves
-        val manaPool = if (playerId == viewingPlayerId && manaPoolComponent != null) {
+        // Mana pool is public information in MTG - show for all players
+        val manaPool = if (manaPoolComponent != null) {
             ClientManaPool(
                 white = manaPoolComponent.white,
                 blue = manaPoolComponent.blue,

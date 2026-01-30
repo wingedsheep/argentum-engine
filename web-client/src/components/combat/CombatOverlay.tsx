@@ -27,167 +27,123 @@ export function CombatOverlay() {
   const numBlockers = Object.keys(combatState.blockerAssignments).length
 
   // Dynamic title
-  const title = isAttacking ? 'Declare Attackers' : 'Declare Blockers'
+  const title = isAttacking ? 'Attackers' : 'Blockers'
 
-  // Dynamic instructions
+  // Dynamic instructions (compact)
   const getInstructions = () => {
     if (isAttacking) {
-      if (!hasValidCreatures) {
-        return 'No creatures can attack this turn'
-      }
-      if (numAttackers === 0) {
-        return 'Click your creatures to select attackers'
-      }
-      return `${numAttackers} creature${numAttackers > 1 ? 's' : ''} attacking`
+      if (!hasValidCreatures) return 'None available'
+      if (numAttackers === 0) return 'Click to select'
+      return `${numAttackers} selected`
     } else {
-      if (!hasValidCreatures || !hasAttackers) {
-        return 'No blocks possible'
-      }
-      if (draggingBlockerId) {
-        return 'Drop on an attacker to assign block'
-      }
-      if (numBlockers === 0) {
-        return 'Drag your creatures onto attackers to block'
-      }
-      return `${numBlockers} blocker${numBlockers > 1 ? 's' : ''} assigned`
+      if (!hasValidCreatures || !hasAttackers) return 'None available'
+      if (draggingBlockerId) return 'Drop on attacker'
+      if (numBlockers === 0) return 'Drag to block'
+      return `${numBlockers} assigned`
     }
   }
 
-  // Button labels
+  // Button labels (compact)
   const confirmLabel = isAttacking
-    ? (numAttackers > 0 ? `Attack with ${numAttackers}` : 'Attack')
-    : (numBlockers > 0 ? `Block with ${numBlockers}` : 'Confirm Blocks')
+    ? (numAttackers > 0 ? `Attack (${numAttackers})` : 'Attack')
+    : (numBlockers > 0 ? `Block (${numBlockers})` : 'Confirm')
 
-  const skipLabel = isAttacking ? "Don't Attack" : "No Blocks"
+  const skipLabel = isAttacking ? 'Skip' : 'Skip'
 
   // Button states
   const canConfirm = isAttacking ? numAttackers > 0 : numBlockers > 0
   const showSkipAsMain = !canConfirm
 
-  const spacing = responsive.isMobile ? 8 : 12
-
   return (
     <div
       style={{
         position: 'fixed',
-        top: responsive.isMobile ? 60 : 80,
-        left: '50%',
-        transform: 'translateX(-50%)',
+        top: '50%',
+        right: responsive.isMobile ? 8 : 16,
+        transform: 'translateY(-50%)',
         backgroundColor: 'rgba(0, 0, 0, 0.95)',
-        padding: responsive.isMobile ? '16px 20px' : '20px 28px',
-        borderRadius: 12,
+        padding: responsive.isMobile ? '12px 16px' : '14px 20px',
+        borderRadius: 10,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: spacing,
+        gap: 8,
         pointerEvents: 'auto',
         boxShadow: '0 4px 24px rgba(0, 0, 0, 0.6)',
         border: `2px solid ${isAttacking ? '#e74c3c' : '#3498db'}`,
-        minWidth: responsive.isMobile ? 220 : 300,
         zIndex: 1001,
       }}
     >
       {/* Title */}
-      <h3
+      <div
         style={{
-          margin: 0,
           color: isAttacking ? '#e74c3c' : '#3498db',
-          fontSize: responsive.fontSize.large,
+          fontSize: responsive.fontSize.normal,
           fontWeight: 700,
           textTransform: 'uppercase',
           letterSpacing: 1,
         }}
       >
         {title}
-      </h3>
+      </div>
 
       {/* Instructions */}
-      <p
+      <div
         style={{
-          margin: 0,
-          color: draggingBlockerId ? '#88ccff' : '#aaa',
-          fontSize: responsive.fontSize.normal,
+          color: draggingBlockerId ? '#88ccff' : '#888',
+          fontSize: responsive.fontSize.small,
           textAlign: 'center',
-          minHeight: 20,
         }}
       >
         {getInstructions()}
-      </p>
+      </div>
 
       {/* Must-be-blocked warning */}
       {!isAttacking && hasMustBeBlocked && (
         <div
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
             backgroundColor: 'rgba(231, 76, 60, 0.2)',
             border: '1px solid #e74c3c',
-            borderRadius: 6,
-            padding: '8px 12px',
+            borderRadius: 4,
+            padding: '4px 8px',
             color: '#ff9999',
-            fontSize: responsive.fontSize.small,
+            fontSize: 11,
           }}
         >
-          <span style={{ fontSize: 16 }}>⚠️</span>
-          <span>
-            {combatState.mustBeBlockedAttackers.length === 1
-              ? 'Your creatures must block the highlighted attacker if able'
-              : 'Your creatures must block one of the highlighted attackers if able'}
-          </span>
-        </div>
-      )}
-
-      {/* Drag hint for blockers */}
-      {!isAttacking && hasValidCreatures && hasAttackers && !draggingBlockerId && numBlockers === 0 && !hasMustBeBlocked && (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            color: '#666',
-            fontSize: responsive.fontSize.small,
-          }}
-        >
-          <span style={{ fontSize: 16 }}>👆</span>
-          <span>Click and drag from your creature</span>
+          Must block if able
         </div>
       )}
 
       {/* Buttons */}
-      <div style={{ display: 'flex', gap: spacing, marginTop: 4 }}>
-        {/* Skip/No action button */}
+      <div style={{ display: 'flex', gap: 8 }}>
         <button
           onClick={cancelCombat}
           style={{
-            padding: responsive.isMobile ? '10px 16px' : '12px 20px',
-            fontSize: responsive.fontSize.normal,
+            padding: '8px 14px',
+            fontSize: responsive.fontSize.small,
             fontWeight: showSkipAsMain ? 600 : 400,
             backgroundColor: showSkipAsMain ? (isAttacking ? '#c0392b' : '#2980b9') : '#444',
             color: 'white',
             border: 'none',
-            borderRadius: 8,
+            borderRadius: 6,
             cursor: 'pointer',
-            transition: 'background-color 0.15s',
           }}
         >
           {skipLabel}
         </button>
 
-        {/* Confirm button - only show if there are selections */}
         {canConfirm && (
           <button
             onClick={confirmCombat}
             style={{
-              padding: responsive.isMobile ? '10px 16px' : '12px 20px',
-              fontSize: responsive.fontSize.normal,
+              padding: '8px 14px',
+              fontSize: responsive.fontSize.small,
               fontWeight: 600,
               backgroundColor: isAttacking ? '#c0392b' : '#2980b9',
               color: 'white',
               border: 'none',
-              borderRadius: 8,
+              borderRadius: 6,
               cursor: 'pointer',
-              transition: 'background-color 0.15s',
             }}
           >
             {confirmLabel}

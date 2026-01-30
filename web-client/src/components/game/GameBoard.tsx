@@ -11,6 +11,7 @@ import { TargetingArrows } from '../targeting/TargetingArrows'
 import { DraggedCardOverlay } from './DraggedCardOverlay'
 import { GameLog } from './GameLog'
 import { DrawAnimations } from '../animations/DrawAnimations'
+import { DamageAnimations } from '../animations/DamageAnimations'
 import { useResponsive, calculateFittingCardWidth, type ResponsiveSizes } from '../../hooks/useResponsive'
 import { getCardImageUrl, getScryfallFallbackUrl } from '../../utils/cardImages'
 import { useInteraction } from '../../hooks/useInteraction'
@@ -181,11 +182,9 @@ export function GameBoard() {
           {opponent && (
             <>
               <LifeDisplay life={opponent.life} playerId={opponent.playerId} />
-              <div style={styles.playerNameWithLabel}>
-                <span style={{ ...styles.playerName, fontSize: responsive.fontSize.small }}>{opponent.name}</span>
-                <span style={{ ...styles.playerLabel, fontSize: responsive.fontSize.small }}>(Opponent)</span>
-              </div>
+              <span style={{ ...styles.playerName, fontSize: responsive.fontSize.small }}>{opponent.name}</span>
               <ActiveEffectsBadges effects={opponent.activeEffects} />
+              {opponent.manaPool && <ManaPool manaPool={opponent.manaPool} />}
             </>
           )}
         </div>
@@ -202,11 +201,9 @@ export function GameBoard() {
         {/* Player life (right side) */}
         <div style={styles.centerLifeSection}>
           <LifeDisplay life={viewingPlayer.life} isPlayer playerId={viewingPlayer.playerId} />
-          <div style={styles.playerNameWithLabel}>
-            <span style={{ ...styles.playerName, fontSize: responsive.fontSize.small }}>{viewingPlayer.name}</span>
-            <span style={{ ...styles.playerLabel, fontSize: responsive.fontSize.small }}>(You)</span>
-          </div>
+          <span style={{ ...styles.playerName, fontSize: responsive.fontSize.small }}>{viewingPlayer.name}</span>
           <ActiveEffectsBadges effects={viewingPlayer.activeEffects} />
+          {viewingPlayer.manaPool && <ManaPool manaPool={viewingPlayer.manaPool} />}
         </div>
       </div>
 
@@ -221,15 +218,13 @@ export function GameBoard() {
             {/* Player battlefield - creatures first (closer to center), then lands */}
             <BattlefieldArea isOpponent={false} />
 
-            {/* Player hand with mana pool */}
+            {/* Player hand */}
             <div data-zone="hand" style={{ ...styles.handWithMana, marginTop: -40 }}>
               <CardRow
                 zoneId={hand(playerId)}
                 faceDown={false}
                 interactive
               />
-              {/* Mana pool display inline with hand */}
-              {viewingPlayer.manaPool && <ManaPool manaPool={viewingPlayer.manaPool} />}
             </div>
           </div>
 
@@ -257,6 +252,7 @@ export function GameBoard() {
         </button>
       )}
 
+
       {/* Action menu for selected card */}
       <ActionMenu />
 
@@ -273,6 +269,9 @@ export function GameBoard() {
 
       {/* Draw animations */}
       <DrawAnimations />
+
+      {/* Damage animations */}
+      <DamageAnimations />
     </div>
     </ResponsiveContext.Provider>
   )
@@ -396,6 +395,7 @@ function LifeDisplay({
   return (
     <div
       data-player-id={playerId}
+      data-life-display={playerId}
       onClick={handleClick}
       style={{
         ...styles.lifeDisplay,
@@ -407,8 +407,26 @@ function LifeDisplay({
         cursor,
         boxShadow,
         transition: 'all 0.2s ease-in-out',
+        position: 'relative',
       }}
     >
+      <span
+        style={{
+          position: 'absolute',
+          top: -8,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          fontSize: 9,
+          fontWeight: 'bold',
+          color: isPlayer ? '#4a9aea' : '#aa6aca',
+          backgroundColor: '#1a1a2e',
+          padding: '1px 4px',
+          borderRadius: 3,
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {isPlayer ? 'YOU' : 'OPPONENT'}
+      </span>
       <span style={{ color: life <= 5 ? '#ff4444' : '#ffffff' }}>{life}</span>
     </div>
   )
