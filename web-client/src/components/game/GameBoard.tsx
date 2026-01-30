@@ -1347,6 +1347,18 @@ function GameCard({
             maxX: playableAction.maxAffordableX ?? 0,
             selectedX: playableAction.maxAffordableX ?? 0,
           })
+        } else if (playableAction.action.type === 'CastSpell' && playableAction.additionalCostInfo?.costType === 'SacrificePermanent') {
+          // Check if spell requires sacrifice as additional cost
+          const costInfo = playableAction.additionalCostInfo
+          startTargeting({
+            action: playableAction.action,
+            validTargets: [...(costInfo.validSacrificeTargets ?? [])],
+            selectedTargets: [],
+            minTargets: costInfo.sacrificeCount ?? 1,
+            maxTargets: costInfo.sacrificeCount ?? 1,
+            isSacrificeSelection: true,
+            pendingActionInfo: playableAction,
+          })
         } else if (playableAction.requiresTargets && playableAction.validTargets && playableAction.validTargets.length > 0) {
           // Check if action requires targeting
           // Enter targeting mode
@@ -1638,26 +1650,39 @@ function ActionMenu() {
     const maxTargets = targetingState.maxTargets
     const hasEnoughTargets = selectedCount >= minTargets
     const hasMaxTargets = selectedCount >= maxTargets
+    const isSacrifice = targetingState.isSacrificeSelection
 
     // Build the target count display
     const targetDisplay = minTargets === maxTargets
       ? `${selectedCount}/${maxTargets}`
       : `${selectedCount} (${minTargets}-${maxTargets})`
 
+    // Build the prompt text based on selection type
+    const promptText = isSacrifice
+      ? `Select creature to sacrifice (${targetDisplay})`
+      : `Select targets (${targetDisplay})`
+
+    const hintText = hasMaxTargets
+      ? isSacrifice ? 'Creature selected' : 'Maximum targets selected'
+      : hasEnoughTargets
+        ? 'Click Confirm or select more'
+        : isSacrifice ? 'Click a creature you control' : 'Click a highlighted target'
+
     return (
       <div style={{
         ...styles.targetingOverlay,
         padding: responsive.isMobile ? '12px 16px' : '16px 24px',
+        borderColor: isSacrifice ? '#ff8800' : '#ff4444',
       }}>
-        <div style={{ ...styles.targetingPrompt, fontSize: responsive.fontSize.normal }}>
-          Select targets ({targetDisplay})
+        <div style={{
+          ...styles.targetingPrompt,
+          fontSize: responsive.fontSize.normal,
+          color: isSacrifice ? '#ff8800' : '#ff4444',
+        }}>
+          {promptText}
         </div>
         <div style={{ color: '#aaa', fontSize: responsive.fontSize.small, marginTop: 4 }}>
-          {hasMaxTargets
-            ? 'Maximum targets selected'
-            : hasEnoughTargets
-              ? 'Click Confirm or select more targets'
-              : 'Click a highlighted target'}
+          {hintText}
         </div>
         <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
           {hasEnoughTargets && (
@@ -1709,6 +1734,22 @@ function ActionMenu() {
         minX: info.minX ?? 0,
         maxX: info.maxAffordableX ?? 0,
         selectedX: info.maxAffordableX ?? 0,
+      })
+      selectCard(null)
+      return
+    }
+
+    // Check if spell requires sacrifice as additional cost
+    if (info.action.type === 'CastSpell' && info.additionalCostInfo?.costType === 'SacrificePermanent') {
+      const costInfo = info.additionalCostInfo
+      startTargeting({
+        action: info.action,
+        validTargets: [...(costInfo.validSacrificeTargets ?? [])],
+        selectedTargets: [],
+        minTargets: costInfo.sacrificeCount ?? 1,
+        maxTargets: costInfo.sacrificeCount ?? 1,
+        isSacrificeSelection: true,
+        pendingActionInfo: info,
       })
       selectCard(null)
       return
