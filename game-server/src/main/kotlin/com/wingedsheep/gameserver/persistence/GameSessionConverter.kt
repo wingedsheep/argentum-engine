@@ -16,7 +16,6 @@ import com.wingedsheep.sdk.model.EntityId
  * must expose getters for persistence (see getStateForPersistence, etc.).
  */
 fun GameSession.toPersistent(
-    playerIdentities: List<PlayerIdentity>,
     lobbyId: String?
 ): PersistentGameSession {
     return PersistentGameSession(
@@ -25,11 +24,11 @@ fun GameSession.toPersistent(
         deckLists = getDeckListsForPersistence().mapKeys { it.key.value },
         lastProcessedMessageId = getLastMessageIdsForPersistence().mapKeys { it.key.value },
         gameLogs = getLogsForPersistence().mapKeys { it.key.value },
-        playerInfos = playerIdentities.map { identity ->
+        playerInfos = getPlayerPersistenceInfo().map { (playerId, info) ->
             PersistentPlayerInfo(
-                playerId = identity.playerId.value,
-                playerName = identity.playerName,
-                token = identity.token
+                playerId = playerId.value,
+                playerName = info.playerName,
+                token = info.token
             )
         },
         lobbyId = lobbyId
@@ -46,6 +45,8 @@ fun GameSession.toPersistent(
  * @param cardRegistry The card registry for rebuilding the session
  * @return A new GameSession with state restored, and a list of player identities to register
  */
+private val logger = org.slf4j.LoggerFactory.getLogger("GameSessionConverter")
+
 fun restoreGameSession(
     persistent: PersistentGameSession,
     cardRegistry: CardRegistry
@@ -54,6 +55,8 @@ fun restoreGameSession(
         sessionId = persistent.sessionId,
         cardRegistry = cardRegistry
     )
+
+    logger.info("Restoring game ${persistent.sessionId}: gameState=${if (persistent.gameState != null) "present" else "NULL"}, players=${persistent.playerInfos.size}")
 
     // Convert persisted data back to EntityId-keyed maps
     val deckLists = persistent.deckLists.mapKeys { EntityId(it.key) }
@@ -68,6 +71,12 @@ fun restoreGameSession(
         logs = logs,
         lastIds = lastMessageIds
     )
+
+    // Restore player persistence info
+    val playerInfo = persistent.playerInfos.associate { info ->
+        EntityId(info.playerId) to GameSession.PlayerPersistenceInfo(info.playerName, info.token)
+    }
+    session.restorePlayerPersistenceInfo(playerInfo)
 
     // Create PlayerIdentity objects for each persisted player
     val playerIdentities = persistent.playerInfos.map { info ->

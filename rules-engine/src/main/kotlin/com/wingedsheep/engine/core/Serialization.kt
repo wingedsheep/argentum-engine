@@ -1,5 +1,11 @@
 package com.wingedsheep.engine.core
 
+import com.wingedsheep.engine.state.Component
+import com.wingedsheep.engine.state.components.battlefield.*
+import com.wingedsheep.engine.state.components.combat.*
+import com.wingedsheep.engine.state.components.identity.*
+import com.wingedsheep.engine.state.components.player.*
+import com.wingedsheep.engine.state.components.stack.*
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
@@ -125,5 +131,55 @@ val engineSerializersModule = SerializersModule {
         subclass(SearchLibraryToTopContinuation::class)
         subclass(EachPlayerChoosesDrawContinuation::class)
         subclass(PayOrSufferContinuation::class)
+    }
+
+    // Component hierarchy (for GameState persistence)
+    polymorphic(Component::class) {
+        // Identity components
+        subclass(CardComponent::class)
+        subclass(OwnerComponent::class)
+        subclass(ControllerComponent::class)
+        subclass(PlayerComponent::class)
+        subclass(LifeTotalComponent::class)
+        subclass(TokenComponent::class)
+        subclass(FaceDownComponent::class)
+        subclass(RevealedToComponent::class)
+
+        // Battlefield components
+        subclass(TappedComponent::class)
+        subclass(SummoningSicknessComponent::class)
+        subclass(CountersComponent::class)
+        subclass(DamageComponent::class)
+        subclass(AttachedToComponent::class)
+        subclass(AttachmentsComponent::class)
+        subclass(EnteredThisTurnComponent::class)
+        subclass(TimestampComponent::class)
+
+        // Combat components
+        subclass(AttackingComponent::class)
+        subclass(BlockingComponent::class)
+        subclass(BlockedComponent::class)
+        subclass(DamageAssignmentComponent::class)
+        subclass(DamageAssignmentOrderComponent::class)
+        subclass(DealtFirstStrikeDamageComponent::class)
+        subclass(RequiresManualDamageAssignmentComponent::class)
+        subclass(AttackersDeclaredThisCombatComponent::class)
+        subclass(BlockersDeclaredThisCombatComponent::class)
+
+        // Player components
+        subclass(ManaPoolComponent::class)
+        subclass(LandDropsComponent::class)
+        subclass(MulliganStateComponent::class)
+        subclass(SkipCombatPhasesComponent::class)
+        subclass(SkipUntapComponent::class)
+        subclass(PlayerLostComponent::class)
+
+        // Stack components
+        subclass(SpellOnStackComponent::class)
+        subclass(TriggeredAbilityOnStackComponent::class)
+        subclass(ActivatedAbilityOnStackComponent::class)
+        subclass(AbilityOnStackComponent::class)
+        subclass(TargetsComponent::class)
+        subclass(SpellContextComponent::class)
     }
 }

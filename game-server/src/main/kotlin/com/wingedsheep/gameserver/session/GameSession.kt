@@ -58,6 +58,11 @@ class GameSession(
     private val players = mutableMapOf<EntityId, PlayerSession>()
     private val deckLists = mutableMapOf<EntityId, List<String>>()
 
+    /** Player info for persistence (playerId -> (playerName, token)) */
+    private val playerPersistenceInfo = mutableMapOf<EntityId, PlayerPersistenceInfo>()
+
+    data class PlayerPersistenceInfo(val playerName: String, val token: String)
+
     private val actionProcessor = ActionProcessor(cardRegistry)
     private val gameInitializer = GameInitializer(cardRegistry)
     private val manaSolver = ManaSolver(cardRegistry)
@@ -1217,5 +1222,26 @@ class GameSession(
     fun associatePlayer(playerSession: PlayerSession) {
         players[playerSession.playerId] = playerSession
         playerSession.currentGameSessionId = sessionId
+    }
+
+    /**
+     * Store a player's info for persistence.
+     * Should be called when a player joins the game.
+     */
+    fun setPlayerPersistenceInfo(playerId: EntityId, playerName: String, token: String) {
+        playerPersistenceInfo[playerId] = PlayerPersistenceInfo(playerName, token)
+    }
+
+    /**
+     * Get all stored player info for persistence.
+     */
+    fun getPlayerPersistenceInfo(): Map<EntityId, PlayerPersistenceInfo> = playerPersistenceInfo.toMap()
+
+    /**
+     * Restore player info from persistence.
+     */
+    internal fun restorePlayerPersistenceInfo(info: Map<EntityId, PlayerPersistenceInfo>) {
+        playerPersistenceInfo.clear()
+        playerPersistenceInfo.putAll(info)
     }
 }

@@ -69,13 +69,15 @@ class GamePlayHandler(
         val gameSession = GameSession(cardRegistry = cardRegistry)
         gameSession.addPlayer(playerSession, deckList)
 
-        gameRepository.save(gameSession)
-        waitingGameSession = gameSession
-
+        // Store player info for persistence
         val token = sessionRegistry.getTokenByWsId(session.id)
         if (token != null) {
+            gameSession.setPlayerPersistenceInfo(playerSession.playerId, playerSession.playerName, token)
             sessionRegistry.getIdentityByToken(token)?.currentGameSessionId = gameSession.sessionId
         }
+
+        gameRepository.save(gameSession)
+        waitingGameSession = gameSession
 
         logger.info("Game created: ${gameSession.sessionId} by ${playerSession.playerName}")
         sender.send(session, ServerMessage.GameCreated(gameSession.sessionId))
@@ -124,13 +126,15 @@ class GamePlayHandler(
 
         gameSession.addPlayer(playerSession, deckList)
 
-        if (waitingGameSession?.sessionId == gameSession.sessionId) {
-            waitingGameSession = null
-        }
-
+        // Store player info for persistence
         val token = sessionRegistry.getTokenByWsId(session.id)
         if (token != null) {
+            gameSession.setPlayerPersistenceInfo(playerSession.playerId, playerSession.playerName, token)
             sessionRegistry.getIdentityByToken(token)?.currentGameSessionId = gameSession.sessionId
+        }
+
+        if (waitingGameSession?.sessionId == gameSession.sessionId) {
+            waitingGameSession = null
         }
 
         logger.info("Player ${playerSession.playerName} joined game ${gameSession.sessionId}")
@@ -143,6 +147,9 @@ class GamePlayHandler(
     fun startGame(gameSession: GameSession) {
         logger.info("Starting game: ${gameSession.sessionId}")
         gameSession.startGame()
+
+        // Save game state after starting (so gameState is persisted)
+        gameRepository.save(gameSession)
 
         val player1 = gameSession.player1
         val player2 = gameSession.player2
@@ -362,6 +369,9 @@ class GamePlayHandler(
                 if (update != null) sender.send(session.webSocketSession, update)
                 else logger.warn("createStateUpdate returned null for player2")
             }
+
+            // Persist state after every update
+            gameRepository.save(gameSession)
         } catch (e: Exception) {
             logger.error("Error broadcasting state update", e)
         }

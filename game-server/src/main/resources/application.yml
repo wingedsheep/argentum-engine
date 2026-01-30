@@ -16,14 +16,14 @@ cache:
 game:
   dev-endpoints:
     # Enable development endpoints for manual testing. NEVER enable in production.
-    enabled: ${GAME_DEV_ENDPOINTS_ENABLED:false}
+    enabled: ${GAME_DEV_ENDPOINTS_ENABLED:true}
 
 # Swagger UI - only enabled when dev endpoints are enabled
 springdoc:
   api-docs:
-    enabled: ${GAME_DEV_ENDPOINTS_ENABLED:false}
+    enabled: ${GAME_DEV_ENDPOINTS_ENABLED:true}
   swagger-ui:
-    enabled: ${GAME_DEV_ENDPOINTS_ENABLED:false}
+    enabled: ${GAME_DEV_ENDPOINTS_ENABLED:true}
     path: /swagger-ui.html
 
 logging:

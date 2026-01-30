@@ -6,49 +6,86 @@ default:
     @just --list
 
 # Build the entire project
+[group: 'build']
 build:
     ./gradlew build
 
 # Run all tests
+[group: 'build']
 test:
     ./gradlew test
 
 # Run tests for rules-engine only
+[group: 'build']
 test-rules:
     ./gradlew :rules-engine:test
 
 # Run tests for game-server only
+[group: 'build']
 test-server:
     ./gradlew :game-server:test
 
 # Run a specific test class (e.g., just test-class CreatureStatsTest)
+[group: 'build']
 test-class CLASS:
     ./gradlew :rules-engine:test --tests "{{CLASS}}"
 
-# Start the game server
-server:
-    ./gradlew :game-server:bootRun
-
-# Start the web client in dev mode
-client:
-    cd web-client && npm run dev
-
-# Install web client dependencies
-client-install:
-    cd web-client && npm install
-
-# Build the web client for production
-client-build:
-    cd web-client && npm run build
-
-# Type check the web client
-client-typecheck:
-    cd web-client && npm run typecheck
-
 # Clean build artifacts
+[group: 'build']
 clean:
     ./gradlew clean
 
 # Format and check code
+[group: 'build']
 check:
     ./gradlew check
+
+# Start the game server (loads .env if present)
+[group: 'dev']
+server:
+    @if [ -f .env ]; then set -a && source .env && set +a; fi && ./gradlew :game-server:bootRun
+
+# Start the web client in dev mode
+[group: 'dev']
+client:
+    cd web-client && npm run dev
+
+# Install web client dependencies
+[group: 'dev']
+client-install:
+    cd web-client && npm install
+
+# Build the web client for production
+[group: 'dev']
+client-build:
+    cd web-client && npm run build
+
+# Type check the web client
+[group: 'dev']
+client-typecheck:
+    cd web-client && npm run typecheck
+
+# Initialize local environment (copy .env.example to .env)
+[group: 'env']
+init:
+    @if [ -f .env ]; then echo ".env already exists, skipping"; else cp .env.example .env && echo "Created .env from .env.example"; fi
+
+# Start local Docker services (Redis)
+[group: 'env']
+docker-up:
+    docker compose -f docker-compose.local.yml up -d
+
+# Stop local Docker services
+[group: 'env']
+docker-down:
+    docker compose -f docker-compose.local.yml down
+
+# View Docker logs
+[group: 'env']
+docker-logs:
+    docker compose -f docker-compose.local.yml logs -f
+
+# Clear Redis data
+[group: 'env']
+redis-clear:
+    docker exec $(docker ps -q -f ancestor=redis:7-alpine) redis-cli FLUSHALL

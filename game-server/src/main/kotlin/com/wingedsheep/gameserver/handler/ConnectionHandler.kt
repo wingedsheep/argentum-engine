@@ -32,8 +32,10 @@ class ConnectionHandler(
         }
 
         val token = message.token
+        logger.info("Connect request from ${message.playerName}, token: ${token?.take(8) ?: "none"}...")
         if (token != null) {
             val existingIdentity = sessionRegistry.getIdentityByToken(token)
+            logger.info("Token lookup result: ${if (existingIdentity != null) "found identity for ${existingIdentity.playerName}" else "no identity found"}")
             if (existingIdentity != null) {
                 handleReconnect(session, existingIdentity)
                 return
@@ -99,6 +101,7 @@ class ConnectionHandler(
             else -> { context = null; contextId = null }
         }
 
+        logger.info("Sending Reconnected message: context=$context, contextId=$contextId, gameSessionId=${identity.currentGameSessionId}")
         sender.send(session, ServerMessage.Reconnected(
             playerId = identity.playerId.value,
             token = identity.token,
@@ -128,6 +131,7 @@ class ConnectionHandler(
             }
             "game" -> {
                 val gameSession = gameRepository.findById(gameSessionId!!)
+                logger.info("Reconnecting to game: found=${gameSession != null}, isStarted=${gameSession?.isStarted}, player1=${gameSession?.player1?.playerId?.value}, player2=${gameSession?.player2?.playerId?.value}")
                 if (gameSession != null) {
                     // Remove old player session if exists, then associate new one
                     if (gameSession.getPlayerSession(identity.playerId) != null) {
@@ -141,8 +145,11 @@ class ConnectionHandler(
                             sender.send(session, decision)
                         } else {
                             // Use broadcastStateUpdate to trigger auto-pass loop for both players
+                            logger.info("Sending state update for game $gameSessionId")
                             broadcastStateUpdateCallback?.invoke(gameSession, emptyList())
                         }
+                    } else {
+                        logger.info("Game not started yet, not sending state update")
                     }
                 }
             }

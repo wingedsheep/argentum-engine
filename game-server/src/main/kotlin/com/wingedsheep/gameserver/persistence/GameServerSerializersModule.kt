@@ -54,5 +54,6 @@ val persistenceJson = Json {
     ignoreUnknownKeys = true
     encodeDefaults = true
     classDiscriminator = "type"
+    allowStructuredMapKeys = true
     serializersModule = gameServerSerializersModule
 }

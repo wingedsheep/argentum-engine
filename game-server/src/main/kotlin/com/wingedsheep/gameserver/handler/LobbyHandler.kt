@@ -192,6 +192,13 @@ class LobbyHandler(
             val deck = playerState.submittedDeck
                 ?: throw IllegalStateException("Player $playerId has no submitted deck")
             gameSession.addPlayer(playerState.session, deck)
+
+            // Store player info for persistence
+            val token = sessionRegistry.getTokenByWsId(playerState.session.webSocketSession.id)
+            if (token != null) {
+                gameSession.setPlayerPersistenceInfo(playerId, playerState.session.playerName, token)
+                sessionRegistry.getIdentityByToken(token)?.currentGameSessionId = gameSession.sessionId
+            }
         }
 
         gameRepository.save(gameSession)
@@ -479,6 +486,10 @@ class LobbyHandler(
 
             gameSession.addPlayer(ps1, deck1)
             gameSession.addPlayer(ps2, deck2)
+
+            // Store player info for persistence
+            gameSession.setPlayerPersistenceInfo(ps1.playerId, ps1.playerName, player1State.identity.token)
+            gameSession.setPlayerPersistenceInfo(ps2.playerId, ps2.playerName, player2State.identity.token)
 
             gameRepository.save(gameSession)
             gameRepository.linkToLobby(gameSession.sessionId, lobbyId)

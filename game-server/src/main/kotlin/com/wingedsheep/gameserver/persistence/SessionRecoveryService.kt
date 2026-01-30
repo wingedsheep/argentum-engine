@@ -1,7 +1,5 @@
 package com.wingedsheep.gameserver.persistence
 
-import com.wingedsheep.gameserver.repository.GameRepository
-import com.wingedsheep.gameserver.repository.LobbyRepository
 import com.wingedsheep.gameserver.repository.RedisGameRepository
 import com.wingedsheep.gameserver.repository.RedisLobbyRepository
 import com.wingedsheep.gameserver.session.PlayerIdentity
@@ -21,8 +19,8 @@ import org.springframework.stereotype.Service
 @Service
 @ConditionalOnProperty(name = ["cache.redis.enabled"], havingValue = "true")
 class SessionRecoveryService(
-    private val gameRepository: GameRepository,
-    private val lobbyRepository: LobbyRepository,
+    private val redisGameRepository: RedisGameRepository,
+    private val redisLobbyRepository: RedisLobbyRepository,
     private val sessionRegistry: SessionRegistry
 ) {
     private val logger = LoggerFactory.getLogger(SessionRecoveryService::class.java)
@@ -37,32 +35,28 @@ class SessionRecoveryService(
         var playersRecovered = 0
 
         // Recover game sessions
-        if (gameRepository is RedisGameRepository) {
-            val gameSessions = gameRepository.loadAllFromRedis()
-            for ((_, identities) in gameSessions) {
-                for (identity in identities) {
-                    registerIdentityIfNew(identity)
-                    playersRecovered++
-                }
-                gamesRecovered++
+        val gameSessions = redisGameRepository.loadAllFromRedis()
+        for ((_, identities) in gameSessions) {
+            for (identity in identities) {
+                registerIdentityIfNew(identity)
+                playersRecovered++
             }
+            gamesRecovered++
         }
 
         // Recover lobbies
-        if (lobbyRepository is RedisLobbyRepository) {
-            val lobbies = lobbyRepository.loadAllLobbiesFromRedis()
-            for ((_, identities) in lobbies) {
-                for (identity in identities) {
-                    registerIdentityIfNew(identity)
-                    playersRecovered++
-                }
-                lobbiesRecovered++
+        val lobbies = redisLobbyRepository.loadAllLobbiesFromRedis()
+        for ((_, identities) in lobbies) {
+            for (identity in identities) {
+                registerIdentityIfNew(identity)
+                playersRecovered++
             }
-
-            // Recover tournaments
-            val tournaments = lobbyRepository.loadAllTournamentsFromRedis()
-            tournamentsRecovered = tournaments.size
+            lobbiesRecovered++
         }
+
+        // Recover tournaments
+        val tournaments = redisLobbyRepository.loadAllTournamentsFromRedis()
+        tournamentsRecovered = tournaments.size
 
         logger.info(
             "Session recovery complete: " +
@@ -82,10 +76,13 @@ class SessionRecoveryService(
         if (existing == null) {
             // Register identity without WebSocket session
             // The player will reconnect and their WebSocket will be associated then
-            logger.debug(
-                "Recovered player identity: {} ({})",
+            sessionRegistry.preRegisterIdentity(identity)
+            logger.info(
+                "Recovered player identity: {} ({}) with token {} for game {}",
                 identity.playerName,
-                identity.playerId.value
+                identity.playerId.value,
+                identity.token.take(8) + "...",
+                identity.currentGameSessionId
             )
         }
     }

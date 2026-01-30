@@ -16,11 +16,75 @@ Argentum Engine is a modular MTG implementation consisting of:
 - **Game Server** — Spring Boot backend for online multiplayer
 - **Web Client** — Browser-based UI
 
+## Getting Started
+
+### Prerequisites
+
+- JDK 21+
+- Node.js 18+
+- Docker (optional, for Redis)
+- [just](https://github.com/casey/just) command runner
+
+### Quick Start
+
+```bash
+# Initialize environment
+just init
+
+# Start Redis (optional, for session persistence)
+just docker-up
+
+# Start the game server
+just server
+
+# In another terminal, start the web client
+just client
+```
+
+The client runs at `http://localhost:5173` and connects to the server at `http://localhost:8080`.
+
+### Available Commands
+
+**Build & Test**
+| Command | Description |
+|---------|-------------|
+| `just build` | Build the entire project |
+| `just test` | Run all tests |
+| `just test-rules` | Run rules-engine tests only |
+| `just test-server` | Run game-server tests only |
+| `just clean` | Clean build artifacts |
+
+**Development**
+| Command | Description |
+|---------|-------------|
+| `just server` | Start the game server |
+| `just client` | Start the web client dev server |
+| `just client-install` | Install web client dependencies |
+
+**Environment**
+| Command | Description |
+|---------|-------------|
+| `just init` | Create `.env` from `.env.example` |
+| `just docker-up` | Start local Docker services (Redis) |
+| `just docker-down` | Stop local Docker services |
+| `just docker-logs` | View Docker logs |
+
+### Environment Variables
+
+Copy `.env.example` to `.env` to configure:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `CACHE_REDIS_ENABLED` | `false` | Enable Redis for session persistence |
+| `REDIS_HOST` | `localhost` | Redis host |
+| `REDIS_PORT` | `6379` | Redis port |
+
 ## Tech Stack
 
 - Kotlin 2.2
 - Spring Boot 4.x
-- WebGL (frontend)
+- React / TypeScript (frontend)
+- Redis (optional session persistence)
 - Keycloak (OAuth/authentication)
 
 ## Features

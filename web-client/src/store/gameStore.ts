@@ -422,11 +422,15 @@ export const useGameStore = create<GameStore>()(
 
       onReconnected: (msg) => {
         sessionStorage.setItem('argentum-token', msg.token)
-        set({
+        const updates: Partial<GameStore> = {
           connectionStatus: 'connected',
           playerId: entityId(msg.playerId),
-        })
-        // Navigation based on context is handled by the router in App.tsx
+        }
+        // Restore session context based on what the server tells us
+        if (msg.context === 'game' && msg.contextId) {
+          updates.sessionId = msg.contextId
+        }
+        set(updates)
         // The server will re-send appropriate state messages after reconnection
       },
 
@@ -773,10 +777,21 @@ export const useGameStore = create<GameStore>()(
           ws.disconnect()
         }
 
+        // Store player name for reconnection
+        sessionStorage.setItem('argentum-player-name', playerName)
+
         ws = new GameWebSocket({
           url: getWebSocketUrl(),
           onMessage: (msg) => handleServerMessage(msg, wrappedHandlers),
-          onStatusChange: (status) => set({ connectionStatus: status }),
+          onStatusChange: (status) => {
+            set({ connectionStatus: status })
+            // Send connect message on every successful connection (including reconnects)
+            if (status === 'connected' && ws) {
+              const token = sessionStorage.getItem('argentum-token') ?? undefined
+              const storedName = sessionStorage.getItem('argentum-player-name') ?? playerName
+              ws.send(createConnectMessage(storedName, token))
+            }
+          },
           onError: () => {
             set({
               lastError: {
@@ -789,24 +804,13 @@ export const useGameStore = create<GameStore>()(
         })
 
         ws.connect()
-
-        // Send connect message once connected (include token for reconnection)
-        const unsubscribe = useGameStore.subscribe(
-          (state) => state.connectionStatus,
-          (status) => {
-            if (status === 'connected' && ws) {
-              const token = sessionStorage.getItem('argentum-token') ?? undefined
-              ws.send(createConnectMessage(playerName, token))
-              unsubscribe()
-            }
-          }
-        )
       },
 
       disconnect: () => {
         ws?.disconnect()
         ws = null
         sessionStorage.removeItem('argentum-token')
+        sessionStorage.removeItem('argentum-player-name')
         set({
           connectionStatus: 'disconnected',
           playerId: null,

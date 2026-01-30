@@ -49,12 +49,10 @@ class RedisGameRepository(
     override fun save(gameSession: GameSession) {
         sessionCache[gameSession.sessionId] = gameSession
 
-        // Get player identities for this session
-        val playerIdentities = collectPlayerIdentities(gameSession)
         val lobbyId = gameToLobby[gameSession.sessionId]
 
         try {
-            val persistent = gameSession.toPersistent(playerIdentities, lobbyId)
+            val persistent = gameSession.toPersistent(lobbyId)
             val json = persistenceJson.encodeToString(PersistentGameSession.serializer(), persistent)
 
             redisTemplate.opsForValue().set(
@@ -188,23 +186,5 @@ class RedisGameRepository(
         }
 
         return results
-    }
-
-    private fun collectPlayerIdentities(session: GameSession): List<PlayerIdentity> {
-        val identities = mutableListOf<PlayerIdentity>()
-
-        session.player1?.let { ps ->
-            sessionRegistry.getAllIdentities()
-                .find { it.playerId == ps.playerId }
-                ?.let { identities.add(it) }
-        }
-
-        session.player2?.let { ps ->
-            sessionRegistry.getAllIdentities()
-                .find { it.playerId == ps.playerId }
-                ?.let { identities.add(it) }
-        }
-
-        return identities
     }
 }
