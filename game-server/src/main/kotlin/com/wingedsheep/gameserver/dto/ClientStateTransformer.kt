@@ -517,8 +517,27 @@ class ClientStateTransformer(
             )
         }
 
+        // Check for SkipUntapComponent (Exhaustion effect)
+        val skipUntap = container.get<SkipUntapComponent>()
+        if (skipUntap != null) {
+            val affected = when {
+                skipUntap.affectsCreatures && skipUntap.affectsLands -> "Creatures and lands"
+                skipUntap.affectsCreatures -> "Creatures"
+                skipUntap.affectsLands -> "Lands"
+                else -> "Permanents"
+            }
+            effects.add(
+                ClientPlayerEffect(
+                    effectId = "skip_untap",
+                    name = "Skip Untap",
+                    description = "$affected won't untap during your next untap step",
+                    icon = "shield"
+                )
+            )
+        }
+
         // Add more effect checks here as they are implemented
-        // e.g., can't untap, can't draw, extra turns, etc.
+        // e.g., can't draw, extra turns, etc.
 
         return effects
     }
