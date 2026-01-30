@@ -13,7 +13,7 @@
 - [x] Sorcerous sight doesn't show opponent's hand
 - [x] Renewing Dawn doesn't work
 - [x] Command of unsummoning only returns one card to hand
-- [ ] com.wingedsheep.gameserver.scenarios.ExhaustionScenarioTest > Exhaustion prevents untapping of creatures and lands > component is consumed and permanents untap normally in subsequent turns FAILED
+- [x] com.wingedsheep.gameserver.scenarios.ExhaustionScenarioTest > Exhaustion prevents untapping of creatures and lands > component is consumed and permanents untap normally in subsequent turns FAILED
 - [ ] Final strike doesn't work. The UI allows me to target the opponent, but not to select a creature to sacrifice.
 - [ ] Tidal surge doesn't allow me to select creatures to tap in the UI.
 - [ ] UI doesn't allow me to select a target for Capricious Sorcerer's activated ability
@@ -21,8 +21,9 @@
 - [ ] Some cards can only target yourself or the opponent, but the UI still allows you to select the target
 - [ ] Last chance doesn't work yet. It should show a badge to indicate that the player loses next turn, and make the opponent skip their next turn.
 - [ ] Spitting earth card doesn't deal any damage, even though I have mountains in play
+- [ ] Disable analytics for local development
 
 ## Features
 
 - [x] Add persistence. If the game server restarts, keep games that are in progress. Maybe Redis or PostgreSQL?
-- [ ] When playing sealed with more than 2 people and you are not currently playing, it might be possible to watch other people play a game.
+- [ ] Add spectator mode for sealed 
