@@ -10,6 +10,7 @@ class PermanentExecutors : ExecutorModule {
     override fun executors(): List<EffectExecutor<*>> = listOf(
         TapUntapExecutor(),
         TapAllCreaturesExecutor(),
+        TapTargetCreaturesExecutor(),
         ModifyStatsExecutor(),
         ModifyStatsForGroupExecutor(),
         GrantKeywordUntilEndOfTurnExecutor(),

@@ -1,9 +1,11 @@
 package com.wingedsheep.mtg.sets.definitions.portal.cards
 
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.CreatureTargetFilter
 import com.wingedsheep.sdk.scripting.TapTargetCreaturesEffect
+import com.wingedsheep.sdk.targeting.CreatureTargetFilter
+import com.wingedsheep.sdk.targeting.TargetCreature
 
 /**
  * Tidal Surge
@@ -16,10 +18,14 @@ val TidalSurge = card("Tidal Surge") {
     typeLine = "Sorcery"
 
     spell {
-        effect = TapTargetCreaturesEffect(
-            maxTargets = 3,
-            filter = CreatureTargetFilter.WithoutFlying
+        // Use targeting DSL to declare valid targets - up to 3 creatures without flying
+        target = TargetCreature(
+            count = 3,
+            optional = true,
+            filter = CreatureTargetFilter.WithoutKeyword(Keyword.FLYING)
         )
+        // Effect taps all selected targets
+        effect = TapTargetCreaturesEffect(maxTargets = 3)
     }
 
     metadata {

@@ -1040,7 +1040,91 @@ class GameSession(
                 CreatureTargetFilter.OpponentControls -> controllerId != playerId
                 CreatureTargetFilter.Tapped -> container.has<TappedComponent>()
                 CreatureTargetFilter.Untapped -> !container.has<TappedComponent>()
-                else -> true // Other filters not yet implemented
+                CreatureTargetFilter.Attacking -> container.has<AttackingComponent>()
+                CreatureTargetFilter.Blocking -> container.has<BlockedComponent>()
+                is CreatureTargetFilter.WithKeyword -> cardComponent.baseKeywords.contains(filter.keyword)
+                is CreatureTargetFilter.WithoutKeyword -> !cardComponent.baseKeywords.contains(filter.keyword)
+                is CreatureTargetFilter.WithColor -> cardComponent.colors.contains(filter.color)
+                is CreatureTargetFilter.NotColor -> !cardComponent.colors.contains(filter.color)
+                is CreatureTargetFilter.WithSubtype -> cardComponent.typeLine.hasSubtype(filter.subtype)
+                is CreatureTargetFilter.WithPowerAtMost -> {
+                    val power = (cardComponent.baseStats?.power as? com.wingedsheep.sdk.model.CharacteristicValue.Fixed)?.value ?: 0
+                    power <= filter.maxPower
+                }
+                is CreatureTargetFilter.WithPowerAtLeast -> {
+                    val power = (cardComponent.baseStats?.power as? com.wingedsheep.sdk.model.CharacteristicValue.Fixed)?.value ?: 0
+                    power >= filter.minPower
+                }
+                is CreatureTargetFilter.WithToughnessAtMost -> {
+                    val toughness = (cardComponent.baseStats?.toughness as? com.wingedsheep.sdk.model.CharacteristicValue.Fixed)?.value ?: 0
+                    toughness <= filter.maxToughness
+                }
+                is CreatureTargetFilter.AttackingYouControl -> {
+                    controllerId == playerId && container.has<AttackingComponent>()
+                }
+                is CreatureTargetFilter.AttackingWithSubtypeYouControl -> {
+                    controllerId == playerId &&
+                        container.has<AttackingComponent>() &&
+                        cardComponent.typeLine.hasSubtype(filter.subtype)
+                }
+                is CreatureTargetFilter.And -> {
+                    filter.filters.all { subFilter ->
+                        matchesCreatureFilter(state, entityId, container, cardComponent, subFilter, playerId)
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Helper to check if a creature matches a filter (for recursive And filter).
+     */
+    private fun matchesCreatureFilter(
+        state: GameState,
+        entityId: EntityId,
+        container: com.wingedsheep.engine.state.ComponentContainer,
+        cardComponent: CardComponent,
+        filter: CreatureTargetFilter,
+        playerId: EntityId
+    ): Boolean {
+        val controllerId = container.get<ControllerComponent>()?.playerId
+        return when (filter) {
+            CreatureTargetFilter.Any -> true
+            CreatureTargetFilter.YouControl -> controllerId == playerId
+            CreatureTargetFilter.OpponentControls -> controllerId != playerId
+            CreatureTargetFilter.Tapped -> container.has<TappedComponent>()
+            CreatureTargetFilter.Untapped -> !container.has<TappedComponent>()
+            CreatureTargetFilter.Attacking -> container.has<AttackingComponent>()
+            CreatureTargetFilter.Blocking -> container.has<BlockedComponent>()
+            is CreatureTargetFilter.WithKeyword -> cardComponent.baseKeywords.contains(filter.keyword)
+            is CreatureTargetFilter.WithoutKeyword -> !cardComponent.baseKeywords.contains(filter.keyword)
+            is CreatureTargetFilter.WithColor -> cardComponent.colors.contains(filter.color)
+            is CreatureTargetFilter.NotColor -> !cardComponent.colors.contains(filter.color)
+            is CreatureTargetFilter.WithSubtype -> cardComponent.typeLine.hasSubtype(filter.subtype)
+            is CreatureTargetFilter.WithPowerAtMost -> {
+                val power = (cardComponent.baseStats?.power as? com.wingedsheep.sdk.model.CharacteristicValue.Fixed)?.value ?: 0
+                power <= filter.maxPower
+            }
+            is CreatureTargetFilter.WithPowerAtLeast -> {
+                val power = (cardComponent.baseStats?.power as? com.wingedsheep.sdk.model.CharacteristicValue.Fixed)?.value ?: 0
+                power >= filter.minPower
+            }
+            is CreatureTargetFilter.WithToughnessAtMost -> {
+                val toughness = (cardComponent.baseStats?.toughness as? com.wingedsheep.sdk.model.CharacteristicValue.Fixed)?.value ?: 0
+                toughness <= filter.maxToughness
+            }
+            is CreatureTargetFilter.AttackingYouControl -> {
+                controllerId == playerId && container.has<AttackingComponent>()
+            }
+            is CreatureTargetFilter.AttackingWithSubtypeYouControl -> {
+                controllerId == playerId &&
+                    container.has<AttackingComponent>() &&
+                    cardComponent.typeLine.hasSubtype(filter.subtype)
+            }
+            is CreatureTargetFilter.And -> {
+                filter.filters.all { subFilter ->
+                    matchesCreatureFilter(state, entityId, container, cardComponent, subFilter, playerId)
+                }
             }
         }
     }

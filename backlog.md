@@ -15,7 +15,7 @@
 - [x] Command of unsummoning only returns one card to hand
 - [x] com.wingedsheep.gameserver.scenarios.ExhaustionScenarioTest > Exhaustion prevents untapping of creatures and lands > component is consumed and permanents untap normally in subsequent turns FAILED
 - [x] Final strike doesn't work. The UI allows me to target the opponent, but not to select a creature to sacrifice.
-- [ ] Tidal surge doesn't allow me to select creatures to tap in the UI.
+- [x] Tidal surge doesn't allow me to select creatures to tap in the UI.
 - [ ] UI doesn't allow me to select a target for Capricious Sorcerer's activated ability
 - [ ] Ingenious thief card says "Look at opponent's hand" but it allows you to select any player as a target
 - [ ] Some cards can only target yourself or the opponent, but the UI still allows you to select the target
@@ -24,6 +24,7 @@
 - [ ] Disable analytics for local development
 - [x] Breath of life doesn't work. It can't target a creature in my graveyard.
 - [ ] First return to tournament standings before starting next game
+- [ ] Warnings, like "can't block a creature with flying" should disappear automatically after a few seconds
 
 ## Improvements
 
