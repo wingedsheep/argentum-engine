@@ -303,7 +303,11 @@ sealed interface ServerMessage {
     data class TournamentStarted(
         val lobbyId: String,
         val totalRounds: Int,
-        val standings: List<PlayerStandingInfo>
+        val standings: List<PlayerStandingInfo>,
+        /** Name of first opponent (null if BYE) */
+        val nextOpponentName: String? = null,
+        /** True if player has a BYE in the first round */
+        val nextRoundHasBye: Boolean = false
     ) : ServerMessage
 
     /**
@@ -337,7 +341,27 @@ sealed interface ServerMessage {
         val lobbyId: String,
         val round: Int,
         val results: List<MatchResultInfo>,
-        val standings: List<PlayerStandingInfo>
+        val standings: List<PlayerStandingInfo>,
+        /** Name of next opponent (null if BYE or tournament complete) */
+        val nextOpponentName: String? = null,
+        /** True if player has a BYE in the next round */
+        val nextRoundHasBye: Boolean = false,
+        /** True if the tournament is complete (no more rounds) */
+        val isTournamentComplete: Boolean = false
+    ) : ServerMessage
+
+    /**
+     * A player is ready for the next round.
+     * Broadcast to all players in the lobby so they can see who is ready.
+     */
+    @Serializable
+    @SerialName("playerReadyForRound")
+    data class PlayerReadyForRound(
+        val lobbyId: String,
+        val playerId: String,
+        val playerName: String,
+        val readyPlayerIds: List<String>,
+        val totalConnectedPlayers: Int
     ) : ServerMessage
 
     /**

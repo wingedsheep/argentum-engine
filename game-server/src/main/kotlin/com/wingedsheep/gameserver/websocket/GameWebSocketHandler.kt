@@ -69,7 +69,7 @@ class GameWebSocketHandler(
                 is ClientMessage.UpdateLobbySettings -> lobbyHandler.handle(session, clientMessage)
 
                 is ClientMessage.ReadyForNextRound -> {
-                    // Currently auto-advancing rounds, so this is a no-op.
+                    lobbyHandler.handleReadyForNextRound(session)
                 }
 
                 is ClientMessage.SpectateGame,

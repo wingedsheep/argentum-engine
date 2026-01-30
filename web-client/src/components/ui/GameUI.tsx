@@ -704,6 +704,20 @@ function TournamentOverlay({
 }) {
   const playerId = useGameStore((state) => state.playerId)
   const spectateGame = useGameStore((state) => state.spectateGame)
+  const readyForNextRound = useGameStore((state) => state.readyForNextRound)
+
+  // Check if we're waiting for players to ready up (before first game OR between rounds)
+  const isWaitingForReady = (
+    // Before first round (round 0)
+    tournamentState.currentRound === 0 ||
+    // Between rounds (has results, no active match)
+    (tournamentState.lastRoundResults !== null && !tournamentState.currentMatchGameSessionId)
+  ) && !tournamentState.isComplete
+
+  // Check if current player is ready
+  const isPlayerReady = playerId ? tournamentState.readyPlayerIds.includes(playerId) : false
+  const readyCount = tournamentState.readyPlayerIds.length
+  const totalPlayers = tournamentState.standings.filter(s => s.isConnected).length
 
   return (
     <div
@@ -730,11 +744,38 @@ function TournamentOverlay({
 
       {!tournamentState.isComplete && (
         <p style={{ color: '#888', fontSize: responsive.fontSize.normal }}>
-          Round {tournamentState.currentRound} of {tournamentState.totalRounds}
+          {isWaitingForReady
+            ? `Starting Round ${tournamentState.currentRound + 1} of ${tournamentState.totalRounds}`
+            : `Round ${tournamentState.currentRound} of ${tournamentState.totalRounds}`}
         </p>
       )}
 
-      {tournamentState.isBye && (
+      {/* Next opponent info */}
+      {isWaitingForReady && (
+        <div
+          style={{
+            backgroundColor: '#1a2a4e',
+            padding: '16px 24px',
+            borderRadius: 8,
+            fontSize: responsive.fontSize.normal,
+            textAlign: 'center',
+            border: '1px solid #3a4a6e',
+          }}
+        >
+          <div style={{ color: '#888', fontSize: responsive.fontSize.small, marginBottom: 4 }}>
+            Round {tournamentState.currentRound + 1}
+          </div>
+          <div style={{ fontWeight: 600, fontSize: responsive.fontSize.large }}>
+            {tournamentState.nextRoundHasBye
+              ? 'You have a BYE'
+              : tournamentState.nextOpponentName
+                ? `vs ${tournamentState.nextOpponentName}`
+                : 'Waiting for matchup...'}
+          </div>
+        </div>
+      )}
+
+      {tournamentState.isBye && !isWaitingForReady && (
         <div
           style={{
             backgroundColor: '#1a472a',
@@ -748,8 +789,35 @@ function TournamentOverlay({
         </div>
       )}
 
-      {/* Show "waiting for others" message when match is done but not a bye */}
-      {!tournamentState.isBye && !tournamentState.currentMatchGameSessionId && !tournamentState.isComplete && (
+      {/* Ready for next round button and status */}
+      {isWaitingForReady && (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+          <button
+            onClick={readyForNextRound}
+            disabled={isPlayerReady}
+            style={{
+              padding: '14px 32px',
+              fontSize: responsive.fontSize.large,
+              fontWeight: 600,
+              backgroundColor: isPlayerReady ? '#1a472a' : '#e65100',
+              color: 'white',
+              border: isPlayerReady ? '2px solid #2a6a3a' : 'none',
+              borderRadius: 10,
+              cursor: isPlayerReady ? 'default' : 'pointer',
+              transition: 'all 0.2s',
+              boxShadow: isPlayerReady ? 'none' : '0 2px 12px rgba(230, 81, 0, 0.3)',
+            }}
+          >
+            {isPlayerReady ? '✓ Ready' : 'Ready for Next Round'}
+          </button>
+          <p style={{ color: '#888', fontSize: responsive.fontSize.small, margin: 0 }}>
+            {readyCount} of {totalPlayers} players ready
+          </p>
+        </div>
+      )}
+
+      {/* Show "waiting for others" message when in active round but match is done */}
+      {!isWaitingForReady && !tournamentState.isBye && !tournamentState.currentMatchGameSessionId && !tournamentState.isComplete && (
         <div
           style={{
             backgroundColor: '#2a2a4e',
@@ -829,11 +897,13 @@ function TournamentOverlay({
               <th style={thStyle}>L</th>
               <th style={thStyle}>D</th>
               <th style={thStyle}>Pts</th>
+              {isWaitingForReady && <th style={thStyle}>Ready</th>}
             </tr>
           </thead>
           <tbody>
             {tournamentState.standings.map((standing, index) => {
               const isMe = standing.playerId === playerId
+              const isReady = tournamentState.readyPlayerIds.includes(standing.playerId)
               return (
                 <tr
                   key={standing.playerId}
@@ -854,6 +924,11 @@ function TournamentOverlay({
                   <td style={{ ...tdStyle, color: '#ff4444' }}>{standing.losses}</td>
                   <td style={tdStyle}>{standing.draws}</td>
                   <td style={{ ...tdStyle, fontWeight: 600 }}>{standing.points}</td>
+                  {isWaitingForReady && (
+                    <td style={{ ...tdStyle, color: isReady ? '#4caf50' : '#666' }}>
+                      {standing.isConnected ? (isReady ? '✓' : '...') : '-'}
+                    </td>
+                  )}
                 </tr>
               )
             })}

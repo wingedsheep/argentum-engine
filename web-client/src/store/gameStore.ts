@@ -208,6 +208,12 @@ export interface TournamentState {
   isComplete: boolean
   finalStandings: readonly PlayerStandingInfo[] | null
   activeMatches?: readonly ActiveMatchInfo[]
+  /** Players who are ready for the next round */
+  readyPlayerIds: readonly string[]
+  /** Name of next opponent (null if BYE or tournament complete) */
+  nextOpponentName: string | null
+  /** True if player has a BYE in the next round */
+  nextRoundHasBye: boolean
 }
 
 /**
@@ -863,6 +869,9 @@ export const useGameStore = create<GameStore>()(
             isBye: false,
             isComplete: false,
             finalStandings: null,
+            readyPlayerIds: [],
+            nextOpponentName: msg.nextOpponentName ?? null,
+            nextRoundHasBye: msg.nextRoundHasBye ?? false,
           },
           // Clear deck building state since tournament is starting
           deckBuildingState: null,
@@ -878,6 +887,9 @@ export const useGameStore = create<GameStore>()(
                 currentMatchGameSessionId: msg.gameSessionId,
                 currentMatchOpponentName: msg.opponentName,
                 isBye: false,
+                readyPlayerIds: [],
+                nextOpponentName: null,
+                nextRoundHasBye: false,
               }
             : null,
           sessionId: msg.gameSessionId,
@@ -910,6 +922,10 @@ export const useGameStore = create<GameStore>()(
                 currentMatchGameSessionId: null,
                 currentMatchOpponentName: null,
                 isBye: false,
+                isComplete: msg.isTournamentComplete ?? false,
+                readyPlayerIds: [],
+                nextOpponentName: msg.nextOpponentName ?? null,
+                nextRoundHasBye: msg.nextRoundHasBye ?? false,
               }
             : null,
           // Clear game state for between rounds
@@ -918,6 +934,17 @@ export const useGameStore = create<GameStore>()(
           mulliganState: null,
           waitingForOpponentMulligan: false,
           legalActions: [],
+        }))
+      },
+
+      onPlayerReadyForRound: (msg) => {
+        set((state) => ({
+          tournamentState: state.tournamentState
+            ? {
+                ...state.tournamentState,
+                readyPlayerIds: msg.readyPlayerIds,
+              }
+            : null,
         }))
       },
 

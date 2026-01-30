@@ -62,6 +62,9 @@ class SealedLobby(
         boosterGenerator.getBasicLands(setCode)
     }
 
+    /** Players who are ready for the next round */
+    private val playersReadyForNextRound = mutableSetOf<EntityId>()
+
     val isFull: Boolean get() = players.size >= maxPlayers
     val playerCount: Int get() = players.size
 
@@ -254,6 +257,40 @@ class SealedLobby(
     sealed interface DeckSubmissionResult {
         data class Success(val allReady: Boolean) : DeckSubmissionResult
         data class Error(val message: String) : DeckSubmissionResult
+    }
+
+    // =========================================================================
+    // Ready State Tracking (between tournament rounds)
+    // =========================================================================
+
+    /**
+     * Mark a player as ready for the next round.
+     * @return true if the player was newly marked ready, false if already ready
+     */
+    fun markPlayerReady(playerId: EntityId): Boolean {
+        return playersReadyForNextRound.add(playerId)
+    }
+
+    /**
+     * Clear the ready state for all players (called when starting a new round).
+     */
+    fun clearReadyState() {
+        playersReadyForNextRound.clear()
+    }
+
+    /**
+     * Get the set of player IDs who are ready for the next round.
+     */
+    fun getReadyPlayerIds(): Set<EntityId> = playersReadyForNextRound.toSet()
+
+    /**
+     * Check if all connected players are ready for the next round.
+     */
+    fun areAllPlayersReady(): Boolean {
+        val connectedPlayers = players.values
+            .filter { it.identity.isConnected }
+            .map { it.identity.playerId }
+        return connectedPlayers.isNotEmpty() && connectedPlayers.all { it in playersReadyForNextRound }
     }
 
     // =========================================================================

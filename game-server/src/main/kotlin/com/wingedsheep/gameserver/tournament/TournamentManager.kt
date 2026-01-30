@@ -269,6 +269,29 @@ class TournamentManager(
         return round.matches.filter { !it.isBye && !it.isComplete }
     }
 
+    /**
+     * Peek at the next round's matchups without advancing.
+     * Returns a map of playerId -> opponentId (null for BYE).
+     */
+    fun peekNextRoundMatchups(): Map<EntityId, EntityId?> {
+        val nextRoundIndex = currentRoundIndex + 1
+        if (nextRoundIndex >= rounds.size) {
+            return emptyMap()
+        }
+
+        val nextRound = rounds[nextRoundIndex]
+        val matchups = mutableMapOf<EntityId, EntityId?>()
+
+        for (match in nextRound.matches) {
+            matchups[match.player1Id] = match.player2Id
+            if (match.player2Id != null) {
+                matchups[match.player2Id] = match.player1Id
+            }
+        }
+
+        return matchups
+    }
+
     // =========================================================================
     // Persistence Support (for Redis caching)
     // =========================================================================

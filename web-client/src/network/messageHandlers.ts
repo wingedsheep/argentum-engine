@@ -23,6 +23,7 @@ import type {
   TournamentMatchStartingMessage,
   TournamentByeMessage,
   RoundCompleteMessage,
+  PlayerReadyForRoundMessage,
   TournamentCompleteMessage,
   ActiveMatchesMessage,
   SpectatorStateUpdateMessage,
@@ -61,6 +62,7 @@ export interface MessageHandlers {
   onTournamentMatchStarting: (message: TournamentMatchStartingMessage) => void
   onTournamentBye: (message: TournamentByeMessage) => void
   onRoundComplete: (message: RoundCompleteMessage) => void
+  onPlayerReadyForRound: (message: PlayerReadyForRoundMessage) => void
   onTournamentComplete: (message: TournamentCompleteMessage) => void
   // Spectating handlers
   onActiveMatches: (message: ActiveMatchesMessage) => void
@@ -148,6 +150,9 @@ export function handleServerMessage(message: ServerMessage, handlers: MessageHan
       break
     case 'roundComplete':
       handlers.onRoundComplete(message)
+      break
+    case 'playerReadyForRound':
+      handlers.onPlayerReadyForRound(message)
       break
     case 'tournamentComplete':
       handlers.onTournamentComplete(message)
@@ -276,6 +281,10 @@ export function createLoggingHandlers(handlers: MessageHandlers): MessageHandler
     onRoundComplete: (msg) => {
       console.log('[Server] Round complete:', msg)
       handlers.onRoundComplete(msg)
+    },
+    onPlayerReadyForRound: (msg) => {
+      console.log('[Server] Player ready for round:', msg)
+      handlers.onPlayerReadyForRound(msg)
     },
     onTournamentComplete: (msg) => {
       console.log('[Server] Tournament complete:', msg)

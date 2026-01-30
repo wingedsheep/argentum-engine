@@ -209,6 +209,7 @@ export type {
   TournamentMatchStartingMessage,
   TournamentByeMessage,
   RoundCompleteMessage,
+  PlayerReadyForRoundMessage,
   TournamentCompleteMessage,
   ReadyForNextRoundMessage,
   // Spectating types
