@@ -696,20 +696,39 @@ class GameSession(
 
                             // Only add the action if all requirements can be satisfied
                             if (allRequirementsSatisfied) {
-                                result.add(LegalActionInfo(
-                                    actionType = "CastSpell",
-                                    description = "Cast ${cardComponent.name}",
-                                    action = CastSpell(playerId, cardId),
-                                    validTargets = firstReqInfo.validTargets,
-                                    requiresTargets = true,
-                                    targetCount = firstReq.count,
-                                    minTargets = firstReq.effectiveMinCount,
-                                    targetDescription = firstReq.description,
-                                    targetRequirements = if (targetReqInfos.size > 1) targetReqInfos else null,
-                                    hasXCost = hasXCost,
-                                    maxAffordableX = maxAffordableX,
-                                    additionalCostInfo = costInfo
-                                ))
+                                // Check if we can auto-select player targets (single target, single valid choice)
+                                // This applies to TargetPlayer and TargetOpponent - in a 2-player game with TargetOpponent,
+                                // there's always exactly one choice so we skip the prompt for better UX.
+                                val canAutoSelect = targetReqs.size == 1 &&
+                                    shouldAutoSelectPlayerTarget(firstReq, firstReqInfo.validTargets)
+
+                                if (canAutoSelect) {
+                                    // Auto-select the single valid player target
+                                    val autoSelectedTarget = ChosenTarget.Player(firstReqInfo.validTargets.first())
+                                    result.add(LegalActionInfo(
+                                        actionType = "CastSpell",
+                                        description = "Cast ${cardComponent.name}",
+                                        action = CastSpell(playerId, cardId, targets = listOf(autoSelectedTarget)),
+                                        hasXCost = hasXCost,
+                                        maxAffordableX = maxAffordableX,
+                                        additionalCostInfo = costInfo
+                                    ))
+                                } else {
+                                    result.add(LegalActionInfo(
+                                        actionType = "CastSpell",
+                                        description = "Cast ${cardComponent.name}",
+                                        action = CastSpell(playerId, cardId),
+                                        validTargets = firstReqInfo.validTargets,
+                                        requiresTargets = true,
+                                        targetCount = firstReq.count,
+                                        minTargets = firstReq.effectiveMinCount,
+                                        targetDescription = firstReq.description,
+                                        targetRequirements = if (targetReqInfos.size > 1) targetReqInfos else null,
+                                        hasXCost = hasXCost,
+                                        maxAffordableX = maxAffordableX,
+                                        additionalCostInfo = costInfo
+                                    ))
+                                }
                             }
                         } else {
                             // No targets required
@@ -812,16 +831,26 @@ class GameSession(
                     val validTargets = findValidTargets(state, playerId, targetReq)
                     if (validTargets.isEmpty()) continue
 
-                    result.add(LegalActionInfo(
-                        actionType = "ActivateAbility",
-                        description = ability.description,
-                        action = ActivateAbility(playerId, entityId, ability.id),
-                        validTargets = validTargets,
-                        requiresTargets = true,
-                        targetCount = targetReq.count,
-                        minTargets = targetReq.effectiveMinCount,
-                        targetDescription = targetReq.description
-                    ))
+                    // Check if we can auto-select player targets (single target, single valid choice)
+                    if (shouldAutoSelectPlayerTarget(targetReq, validTargets)) {
+                        val autoSelectedTarget = ChosenTarget.Player(validTargets.first())
+                        result.add(LegalActionInfo(
+                            actionType = "ActivateAbility",
+                            description = ability.description,
+                            action = ActivateAbility(playerId, entityId, ability.id, targets = listOf(autoSelectedTarget))
+                        ))
+                    } else {
+                        result.add(LegalActionInfo(
+                            actionType = "ActivateAbility",
+                            description = ability.description,
+                            action = ActivateAbility(playerId, entityId, ability.id),
+                            validTargets = validTargets,
+                            requiresTargets = true,
+                            targetCount = targetReq.count,
+                            minTargets = targetReq.effectiveMinCount,
+                            targetDescription = targetReq.description
+                        ))
+                    }
                 } else {
                     result.add(LegalActionInfo(
                         actionType = "ActivateAbility",
@@ -1014,6 +1043,28 @@ class GameSession(
             is TargetCardInGraveyard -> findValidGraveyardTargets(state, playerId, requirement.filter)
             else -> emptyList() // Other target types not yet implemented
         }
+    }
+
+    /**
+     * Check if a target requirement should be auto-selected for player targets.
+     *
+     * Auto-selection applies when:
+     * 1. The target requirement is TargetPlayer or TargetOpponent
+     * 2. Exactly one target is required (count == 1, minCount == 1)
+     * 3. Exactly one valid target exists
+     *
+     * This improves UX in 2-player games where TargetOpponent always has exactly
+     * one choice, avoiding unnecessary clicks for spells like "Target opponent discards".
+     */
+    private fun shouldAutoSelectPlayerTarget(
+        requirement: TargetRequirement,
+        validTargets: List<EntityId>
+    ): Boolean {
+        val isPlayerTarget = requirement is TargetPlayer || requirement is TargetOpponent
+        val requiresExactlyOne = requirement.count == 1 && requirement.effectiveMinCount == 1
+        val hasExactlyOneChoice = validTargets.size == 1
+
+        return isPlayerTarget && requiresExactlyOne && hasExactlyOneChoice
     }
 
     /**
