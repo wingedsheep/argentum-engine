@@ -66,6 +66,10 @@ class DynamicAmountEvaluator {
                 countLandsControlledBy(state, context.controllerId)
             }
 
+            is DynamicAmount.LandsWithSubtypeYouControl -> {
+                countLandsOfTypeControlledBy(state, context.controllerId, amount.subtype.value)
+            }
+
             is DynamicAmount.CardsInYourGraveyard -> {
                 val graveyardZone = ZoneKey(context.controllerId, ZoneType.GRAVEYARD)
                 state.getZone(graveyardZone).size

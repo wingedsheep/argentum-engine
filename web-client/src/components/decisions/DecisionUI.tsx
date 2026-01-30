@@ -170,30 +170,46 @@ export function DecisionUI() {
     }
 
     // Otherwise show the default banner for board targeting
+    // Positioned on the right side (like CombatOverlay) so it doesn't cover targets
     return (
       <div
         style={{
           position: 'fixed',
-          top: responsive.isMobile ? 60 : 80,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          backgroundColor: 'rgba(0, 0, 0, 0.9)',
-          padding: responsive.isMobile ? '12px 20px' : '16px 32px',
-          borderRadius: 12,
+          top: '50%',
+          right: responsive.isMobile ? 8 : 16,
+          transform: 'translateY(-50%)',
+          backgroundColor: 'rgba(0, 0, 0, 0.95)',
+          padding: responsive.isMobile ? '12px 16px' : '14px 20px',
+          borderRadius: 10,
           border: '2px solid #ff4444',
-          boxShadow: '0 4px 20px rgba(255, 68, 68, 0.3)',
-          zIndex: 1000,
+          boxShadow: '0 4px 24px rgba(255, 68, 68, 0.4)',
+          zIndex: 1001,
           textAlign: 'center',
           pointerEvents: 'none',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 8,
         }}
       >
-        <div style={{ color: 'white', fontSize: responsive.fontSize.large, fontWeight: 600 }}>
+        <div
+          style={{
+            color: '#ff4444',
+            fontSize: responsive.fontSize.normal,
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: 1,
+          }}
+        >
+          Choose Target
+        </div>
+        <div style={{ color: 'white', fontSize: responsive.fontSize.small, maxWidth: 180 }}>
           {pendingDecision.prompt}
         </div>
-        <div style={{ color: '#aaa', fontSize: responsive.fontSize.normal, marginTop: 4 }}>
+        <div style={{ color: '#888', fontSize: responsive.fontSize.small }}>
           {isPlayerOnly
-            ? "Click a player's life total to target them"
-            : 'Click a valid target on the board'}
+            ? "Click a player's life total"
+            : 'Click a valid target'}
         </div>
       </div>
     )

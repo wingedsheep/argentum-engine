@@ -128,6 +128,31 @@ object TestCards {
     )
 
     /**
+     * 6/6 for {6}{R}{R}{R} with flying.
+     * "When Fire Dragon enters the battlefield, it deals damage to target creature
+     * equal to the number of Mountains you control."
+     */
+    val FireDragon = CardDefinition.creature(
+        name = "Fire Dragon",
+        manaCost = ManaCost.parse("{6}{R}{R}{R}"),
+        subtypes = setOf(Subtype("Dragon")),
+        keywords = setOf(Keyword.FLYING),
+        power = 6,
+        toughness = 6,
+        oracleText = "Flying\nWhen Fire Dragon enters the battlefield, it deals damage to target creature equal to the number of Mountains you control.",
+        script = CardScript.creature(
+            TriggeredAbility.create(
+                trigger = OnEnterBattlefield(),
+                effect = DealDynamicDamageEffect(
+                    amount = DynamicAmount.LandsWithSubtypeYouControl(Subtype.MOUNTAIN),
+                    target = EffectTarget.ContextTarget(0)
+                ),
+                targetRequirement = TargetCreature()
+            )
+        )
+    )
+
+    /**
      * 2/2 for {3}{B}{B} with "When Serpent Assassin enters the battlefield, you may destroy target nonblack creature."
      */
     val SerpentAssassin = CardDefinition.creature(
@@ -562,6 +587,7 @@ object TestCards {
         SavannahLions,
         DeathTriggerTestCreature,
         VenerableMonk,
+        FireDragon,
         SerpentAssassin,
         WindDrake,
         ForestWalker,
