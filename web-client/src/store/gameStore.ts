@@ -298,6 +298,22 @@ export interface GameStore {
   consumeEvent: () => ClientEvent | undefined
   showRevealedHand: (cardIds: readonly EntityId[]) => void
   dismissRevealedHand: () => void
+  // Draw animation
+  drawAnimations: readonly DrawAnimation[]
+  addDrawAnimation: (animation: DrawAnimation) => void
+  removeDrawAnimation: (id: string) => void
+}
+
+/**
+ * A card draw animation.
+ */
+export interface DrawAnimation {
+  id: string
+  cardId: EntityId
+  cardName: string | null
+  imageUri: string | null
+  isOpponent: boolean
+  startTime: number
 }
 
 // WebSocket instance (singleton)
@@ -468,6 +484,29 @@ export const useGameStore = create<GameStore>()(
           (e) => e.type === 'handLookedAt'
         ) as { type: 'handLookedAt'; cardIds: readonly EntityId[] } | undefined
 
+        // Process cardDrawn events for draw animations
+        const { playerId, addDrawAnimation } = get()
+        const cardDrawnEvents = msg.events.filter((e) => e.type === 'cardDrawn') as {
+          type: 'cardDrawn'
+          playerId: EntityId
+          cardId: EntityId
+          cardName: string | null
+        }[]
+
+        // Create draw animations for each card drawn
+        cardDrawnEvents.forEach((event, index) => {
+          const isOpponent = event.playerId !== playerId
+          const card = msg.state.cards[event.cardId]
+          addDrawAnimation({
+            id: `draw-${event.cardId}-${Date.now()}-${index}`,
+            cardId: event.cardId,
+            cardName: event.cardName,
+            imageUri: card?.imageUri ?? null,
+            isOpponent,
+            startTime: Date.now() + index * 100, // Stagger multiple draws
+          })
+        })
+
         set((state) => ({
           gameState: msg.state,
           legalActions: msg.legalActions,
@@ -485,7 +524,6 @@ export const useGameStore = create<GameStore>()(
 
         // Auto-pass when the only action available is PassPriority
         // This skips through steps with no meaningful player actions
-        const { playerId } = get()
         if (playerId && shouldAutoPass(msg.legalActions, msg.state, playerId)) {
           // Small delay to allow state to settle and prevent rapid-fire passes
           setTimeout(() => {
@@ -772,6 +810,7 @@ export const useGameStore = create<GameStore>()(
       draggingBlockerId: null,
       draggingCardId: null,
       revealedHandCardIds: null,
+      drawAnimations: [],
       pendingEvents: [],
       eventLog: [],
       gameOverState: null,
@@ -1527,6 +1566,18 @@ export const useGameStore = create<GameStore>()(
 
       dismissRevealedHand: () => {
         set({ revealedHandCardIds: null })
+      },
+
+      addDrawAnimation: (animation) => {
+        set((state) => ({
+          drawAnimations: [...state.drawAnimations, animation],
+        }))
+      },
+
+      removeDrawAnimation: (id) => {
+        set((state) => ({
+          drawAnimations: state.drawAnimations.filter((a) => a.id !== id),
+        }))
       },
     }
   })
