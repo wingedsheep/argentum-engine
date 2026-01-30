@@ -129,6 +129,9 @@ function getTargetPosition(target: ClientChosenTarget): Point | null {
       return getCardCenter(target.entityId)
     case 'Spell':
       return getCardCenter(target.spellEntityId)
+    case 'Card':
+      // Card in a zone (e.g., graveyard) - use the same card lookup
+      return getCardCenter(target.cardId)
     default:
       return null
   }

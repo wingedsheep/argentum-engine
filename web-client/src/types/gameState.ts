@@ -271,6 +271,7 @@ export type ClientChosenTarget =
   | { readonly type: 'Player'; readonly playerId: EntityId }
   | { readonly type: 'Permanent'; readonly entityId: EntityId }
   | { readonly type: 'Spell'; readonly spellEntityId: EntityId }
+  | { readonly type: 'Card'; readonly cardId: EntityId }
 
 /**
  * Helper to check if a card is a creature.

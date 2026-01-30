@@ -18,7 +18,7 @@ val BreathOfLife = card("Breath of Life") {
     typeLine = "Sorcery"
 
     spell {
-        target = Targets.CreatureCardInGraveyard
+        target = Targets.CreatureCardInYourGraveyard
         effect = ReturnFromGraveyardEffect(
             filter = CardFilter.CreatureCard,
             destination = SearchDestination.BATTLEFIELD

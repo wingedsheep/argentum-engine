@@ -201,7 +201,7 @@ class ClientStateTransformer(
                     is ChosenTarget.Player -> ClientChosenTarget.Player(chosenTarget.playerId)
                     is ChosenTarget.Permanent -> ClientChosenTarget.Permanent(chosenTarget.entityId)
                     is ChosenTarget.Spell -> ClientChosenTarget.Spell(chosenTarget.spellEntityId)
-                    is ChosenTarget.Card -> null
+                    is ChosenTarget.Card -> ClientChosenTarget.Card(chosenTarget.cardId)
                 }
             } ?: emptyList()
         }
@@ -381,7 +381,7 @@ class ClientStateTransformer(
                 is ChosenTarget.Player -> ClientChosenTarget.Player(chosenTarget.playerId)
                 is ChosenTarget.Permanent -> ClientChosenTarget.Permanent(chosenTarget.entityId)
                 is ChosenTarget.Spell -> ClientChosenTarget.Spell(chosenTarget.spellEntityId)
-                is ChosenTarget.Card -> null // Cards in zones not displayed as targets
+                is ChosenTarget.Card -> ClientChosenTarget.Card(chosenTarget.cardId)
             }
         } ?: emptyList()
 

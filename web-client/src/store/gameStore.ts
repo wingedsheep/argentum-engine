@@ -1512,12 +1512,23 @@ export const useGameStore = create<GameStore>()(
           // All requirements filled - submit with all targets
           if (action.type === 'CastSpell' || action.type === 'ActivateAbility') {
             const targets = allSelected.flat().map((targetId) => {
+              // Check if this is a player ID
               const isPlayer = gameState.players.some(p => p.playerId === targetId)
               if (isPlayer) {
                 return { type: 'Player' as const, playerId: targetId }
-              } else {
-                return { type: 'Permanent' as const, entityId: targetId }
               }
+              // Check if this is a card in a graveyard
+              const card = gameState.cards[targetId]
+              if (card && card.zone?.zoneType === 'GRAVEYARD') {
+                return {
+                  type: 'Card' as const,
+                  cardId: targetId,
+                  ownerId: card.zone.ownerId,
+                  zone: 'GRAVEYARD' as const,
+                }
+              }
+              // Default to permanent (battlefield)
+              return { type: 'Permanent' as const, entityId: targetId }
             })
             const modifiedAction = {
               ...action,
@@ -1534,15 +1545,24 @@ export const useGameStore = create<GameStore>()(
         // Single target requirement flow
         if (action.type === 'CastSpell' || action.type === 'ActivateAbility') {
           // Convert selected targets to ChosenTarget format
-          // Check if target is a player or permanent
           const targets = targetingState.selectedTargets.map((targetId) => {
             // Check if this is a player ID
             const isPlayer = gameState.players.some(p => p.playerId === targetId)
             if (isPlayer) {
               return { type: 'Player' as const, playerId: targetId }
-            } else {
-              return { type: 'Permanent' as const, entityId: targetId }
             }
+            // Check if this is a card in a graveyard
+            const card = gameState.cards[targetId]
+            if (card && card.zone?.zoneType === 'GRAVEYARD') {
+              return {
+                type: 'Card' as const,
+                cardId: targetId,
+                ownerId: card.zone.ownerId,
+                zone: 'GRAVEYARD' as const,
+              }
+            }
+            // Default to permanent (battlefield)
+            return { type: 'Permanent' as const, entityId: targetId }
           })
           const modifiedAction = {
             ...action,

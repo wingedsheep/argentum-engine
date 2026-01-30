@@ -152,10 +152,17 @@ object Targets {
     val CardInGraveyard: TargetRequirement = TargetCardInGraveyard()
 
     /**
-     * Target creature card in a graveyard.
+     * Target creature card in a graveyard (any player's graveyard).
      */
     val CreatureCardInGraveyard: TargetRequirement =
         TargetCardInGraveyard(filter = GraveyardCardFilter.Creature)
+
+    /**
+     * Target creature card in YOUR graveyard.
+     * Used for cards like Breath of Life, Zombify, etc.
+     */
+    val CreatureCardInYourGraveyard: TargetRequirement =
+        TargetCardInGraveyard(filter = GraveyardCardFilter.CreatureInYourGraveyard)
 
     /**
      * Target instant or sorcery card in a graveyard.

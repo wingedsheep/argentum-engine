@@ -297,4 +297,8 @@ sealed interface ClientChosenTarget {
     @Serializable
     @kotlinx.serialization.SerialName("Spell")
     data class Spell(val spellEntityId: EntityId) : ClientChosenTarget
+
+    @Serializable
+    @kotlinx.serialization.SerialName("Card")
+    data class Card(val cardId: EntityId) : ClientChosenTarget
 }

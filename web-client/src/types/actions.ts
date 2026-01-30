@@ -44,6 +44,7 @@ export interface PassPriorityAction {
 export type ChosenTarget =
   | { readonly type: 'Player'; readonly playerId: EntityId }
   | { readonly type: 'Permanent'; readonly entityId: EntityId }
+  | { readonly type: 'Card'; readonly cardId: EntityId; readonly ownerId: EntityId; readonly zone: string }
   | { readonly type: 'Spell'; readonly spellEntityId: EntityId }
 
 export interface AdditionalCostPayment {
