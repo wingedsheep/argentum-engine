@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.LookAtTargetHandEffect
 import com.wingedsheep.sdk.scripting.OnEnterBattlefield
-import com.wingedsheep.sdk.targeting.TargetPlayer
+import com.wingedsheep.sdk.targeting.TargetOpponent
 
 /**
  * Ingenious Thief
@@ -26,7 +26,7 @@ val IngeniousThief = card("Ingenious Thief") {
 
     triggeredAbility {
         trigger = OnEnterBattlefield()
-        target = TargetPlayer()
+        target = TargetOpponent()
         effect = LookAtTargetHandEffect(EffectTarget.ContextTarget(0))
     }
 

@@ -102,6 +102,8 @@ class TriggerProcessor(
      * Process a triggered ability that requires targets.
      *
      * Creates a target selection decision and continuation frame.
+     * If there's exactly one legal target and the requirement is for exactly one target,
+     * auto-selects that target without prompting the player.
      */
     private fun processTargetedTrigger(
         state: GameState,
@@ -132,6 +134,19 @@ class TriggerProcessor(
                     )
                 )
             )
+        }
+
+        // Auto-select player targets when there's exactly one legal target and requirement is for exactly one target.
+        // This applies to TargetPlayer and TargetOpponent - in a 2-player game with TargetOpponent,
+        // there's always exactly one choice so we skip the prompt for better UX.
+        // We don't auto-select for creature/permanent targets because players may want to decline optional
+        // abilities or need to confirm their targeting choice.
+        val isPlayerTarget = targetRequirement is com.wingedsheep.sdk.targeting.TargetPlayer ||
+                             targetRequirement is com.wingedsheep.sdk.targeting.TargetOpponent
+        if (isPlayerTarget && legalTargets.size == 1 && targetRequirement.effectiveMinCount == 1 && targetRequirement.count == 1) {
+            val autoSelectedTarget = legalTargets.first()
+            val chosenTarget = createChosenTarget(state, autoSelectedTarget)
+            return putTriggerOnStack(state, trigger, listOf(chosenTarget))
         }
 
         // Create target requirement info for the decision
@@ -212,5 +227,55 @@ class TriggerProcessor(
     ): ExecutionResult {
         val triggers = triggerDetector.detectTriggers(state, events)
         return processTriggers(state, triggers)
+    }
+
+    /**
+     * Create a ChosenTarget from an EntityId based on what the entity is in the game state.
+     *
+     * @param state The current game state
+     * @param targetId The entity ID of the target
+     * @return The appropriate ChosenTarget type
+     */
+    private fun createChosenTarget(
+        state: GameState,
+        targetId: EntityId
+    ): com.wingedsheep.engine.state.components.stack.ChosenTarget {
+        // Check if it's a player
+        if (state.turnOrder.contains(targetId)) {
+            return com.wingedsheep.engine.state.components.stack.ChosenTarget.Player(targetId)
+        }
+
+        // Check if it's on the battlefield (permanent)
+        if (state.getBattlefield().contains(targetId)) {
+            return com.wingedsheep.engine.state.components.stack.ChosenTarget.Permanent(targetId)
+        }
+
+        // Check if it's on the stack (spell)
+        if (state.stack.contains(targetId)) {
+            return com.wingedsheep.engine.state.components.stack.ChosenTarget.Spell(targetId)
+        }
+
+        // Otherwise, assume it's a card in a zone (graveyard, etc.)
+        // Find which zone it's in
+        for (playerId in state.turnOrder) {
+            for (zoneType in listOf(
+                com.wingedsheep.sdk.core.ZoneType.GRAVEYARD,
+                com.wingedsheep.sdk.core.ZoneType.HAND,
+                com.wingedsheep.sdk.core.ZoneType.LIBRARY,
+                com.wingedsheep.sdk.core.ZoneType.EXILE
+            )) {
+                val zoneKey = com.wingedsheep.engine.state.ZoneKey(playerId, zoneType)
+                if (state.getZone(zoneKey).contains(targetId)) {
+                    return com.wingedsheep.engine.state.components.stack.ChosenTarget.Card(
+                        cardId = targetId,
+                        ownerId = playerId,
+                        zone = zoneType
+                    )
+                }
+            }
+        }
+
+        // Fallback to permanent (shouldn't happen if the target is valid)
+        return com.wingedsheep.engine.state.components.stack.ChosenTarget.Permanent(targetId)
     }
 }
