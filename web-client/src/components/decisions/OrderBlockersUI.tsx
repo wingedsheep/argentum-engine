@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react'
 import { useGameStore } from '../../store/gameStore'
-import type { EntityId, OrderObjectsDecision, SearchCardInfo } from '../../types'
+import type { EntityId, OrderObjectsDecision, SearchCardInfo, ClientCard } from '../../types'
 import { calculateFittingCardWidth, type ResponsiveSizes } from '../../hooks/useResponsive'
+import { getCardImageUrl } from '../../utils/cardImages'
 
 interface OrderBlockersUIProps {
   decision: OrderObjectsDecision
@@ -27,6 +28,11 @@ export function OrderBlockersUI({ decision, responsive }: OrderBlockersUIProps) 
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
   const submitOrderedDecision = useGameStore((s) => s.submitOrderedDecision)
+  const gameState = useGameStore((s) => s.gameState)
+
+  // Get the attacker card from game state using sourceId from decision context
+  const attackerId = decision.context.sourceId
+  const attackerCard = attackerId && gameState ? gameState.cards[attackerId] : null
 
   // Calculate card size that fits available width
   const availableWidth = responsive.viewportWidth - responsive.containerPadding * 2 - 64
@@ -95,9 +101,6 @@ export function OrderBlockersUI({ decision, responsive }: OrderBlockersUIProps) 
     submitOrderedDecision(orderedBlockers)
   }
 
-  // Get attacker name from decision context
-  const attackerName = decision.context.sourceName || 'your attacker'
-
   return (
     <div
       style={{
@@ -129,17 +132,15 @@ export function OrderBlockersUI({ decision, responsive }: OrderBlockersUIProps) 
         >
           Order Damage Assignment
         </h2>
-        <p
-          style={{
-            color: '#fbbf24',
-            margin: '8px 0 0',
-            fontSize: responsive.fontSize.large,
-            fontWeight: 500,
-          }}
-        >
-          for {attackerName}
-        </p>
       </div>
+
+      {/* Attacker Card Display */}
+      {attackerCard && (
+        <AttackerCardDisplay
+          card={attackerCard}
+          isMobile={responsive.isMobile}
+        />
+      )}
 
       {/* Instruction */}
       <p
@@ -151,7 +152,7 @@ export function OrderBlockersUI({ decision, responsive }: OrderBlockersUIProps) 
           maxWidth: 500,
         }}
       >
-        Drag to reorder. The leftmost creature receives damage first and must receive lethal damage before the next can be assigned any.
+        Order the blockers for damage assignment. The leftmost creature receives damage first and must receive lethal damage before the next can be assigned any.
       </p>
 
       {/* Card arrangement with FIRST/LAST indicators */}
@@ -328,7 +329,8 @@ function BlockerCard({
   onMoveRight: () => void
 }) {
   const cardName = cardInfo?.name || 'Unknown Card'
-  const cardImageUrl = `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&format=image&version=normal`
+  // Use the imageUri from cardInfo if available, otherwise fall back to Scryfall API
+  const cardImageUrl = cardInfo?.imageUri || `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&format=image&version=normal`
 
   const cardRatio = 1.4
   const cardHeight = Math.round(cardWidth * cardRatio)
@@ -512,4 +514,191 @@ function getOrdinalSuffix(n: number): string {
   const s = ['th', 'st', 'nd', 'rd']
   const v = n % 100
   return s[(v - 20) % 10] ?? s[v] ?? s[0] ?? 'th'
+}
+
+/**
+ * Displays the attacker card with its current battlefield state.
+ * Shows the card image, name, and power/toughness with damage marked.
+ */
+function AttackerCardDisplay({
+  card,
+  isMobile,
+}: {
+  card: ClientCard
+  isMobile: boolean
+}) {
+  const cardWidth = isMobile ? 120 : 160
+  const cardHeight = Math.round(cardWidth * 1.4)
+  const imageUrl = getCardImageUrl(card.name, card.imageUri)
+
+  // Calculate effective toughness (remaining after damage)
+  const hasDamage = card.damage && card.damage > 0
+  const effectiveToughness = card.toughness !== null && card.damage
+    ? card.toughness - card.damage
+    : card.toughness
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 8,
+      }}
+    >
+      {/* Label */}
+      <div
+        style={{
+          color: '#fbbf24',
+          fontSize: isMobile ? 12 : 14,
+          fontWeight: 600,
+          textTransform: 'uppercase',
+          letterSpacing: 1,
+        }}
+      >
+        Attacker
+      </div>
+
+      {/* Card container */}
+      <div
+        style={{
+          position: 'relative',
+          width: cardWidth,
+          height: cardHeight,
+        }}
+      >
+        {/* Card image */}
+        <div
+          style={{
+            width: cardWidth,
+            height: cardHeight,
+            backgroundColor: '#1a1a1a',
+            border: '3px solid #fbbf24',
+            borderRadius: isMobile ? 6 : 10,
+            overflow: 'hidden',
+            boxShadow: '0 0 20px rgba(251, 191, 36, 0.3), 0 4px 12px rgba(0, 0, 0, 0.6)',
+          }}
+        >
+          <img
+            src={imageUrl}
+            alt={card.name}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+            }}
+            onError={(e) => {
+              e.currentTarget.style.display = 'none'
+              const fallback = e.currentTarget.nextElementSibling as HTMLElement
+              if (fallback) fallback.style.display = 'flex'
+            }}
+          />
+          {/* Fallback */}
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              backgroundColor: '#1a1a1a',
+              display: 'none',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: isMobile ? 8 : 12,
+              gap: 4,
+            }}
+          >
+            <span
+              style={{
+                color: 'white',
+                fontSize: isMobile ? 12 : 14,
+                fontWeight: 600,
+                textAlign: 'center',
+              }}
+            >
+              {card.name}
+            </span>
+            <span
+              style={{
+                color: '#888',
+                fontSize: isMobile ? 10 : 12,
+                textAlign: 'center',
+              }}
+            >
+              {card.typeLine}
+            </span>
+          </div>
+        </div>
+
+        {/* Power/Toughness badge */}
+        {card.power !== null && card.toughness !== null && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: -8,
+              right: -8,
+              backgroundColor: hasDamage ? '#dc2626' : '#1a1a1a',
+              border: `2px solid ${hasDamage ? '#f87171' : '#fbbf24'}`,
+              borderRadius: 6,
+              padding: isMobile ? '2px 6px' : '4px 8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.5)',
+            }}
+          >
+            <span
+              style={{
+                color: 'white',
+                fontSize: isMobile ? 14 : 18,
+                fontWeight: 700,
+              }}
+            >
+              {card.power}
+            </span>
+            <span
+              style={{
+                color: '#888',
+                fontSize: isMobile ? 12 : 14,
+              }}
+            >
+              /
+            </span>
+            <span
+              style={{
+                color: hasDamage ? '#f87171' : 'white',
+                fontSize: isMobile ? 14 : 18,
+                fontWeight: 700,
+              }}
+            >
+              {effectiveToughness}
+            </span>
+            {hasDamage && (
+              <span
+                style={{
+                  color: '#888',
+                  fontSize: isMobile ? 10 : 12,
+                  marginLeft: 2,
+                }}
+              >
+                ({card.toughness})
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Card name */}
+      <div
+        style={{
+          color: 'white',
+          fontSize: isMobile ? 12 : 14,
+          fontWeight: 500,
+          textAlign: 'center',
+          maxWidth: cardWidth + 40,
+        }}
+      >
+        {card.name}
+      </div>
+    </div>
+  )
 }
