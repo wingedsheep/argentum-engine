@@ -417,6 +417,17 @@ class GamePlayHandler(
                 else logger.warn("createStateUpdate returned null for player2")
             }
 
+            // Update spectators
+            val spectatorState = gameSession.buildSpectatorState()
+            if (spectatorState != null) {
+                for (spectator in gameSession.getSpectators()) {
+                    val ws = spectator.webSocketSession
+                    if (ws != null && ws.isOpen) {
+                        sender.send(ws, spectatorState)
+                    }
+                }
+            }
+
             // Persist state after every update
             gameRepository.save(gameSession)
         } catch (e: Exception) {

@@ -17,6 +17,8 @@ import type {
   LobbySettings,
   PlayerStandingInfo,
   MatchResultInfo,
+  ActiveMatchInfo,
+  SpectatorPlayerState,
 } from '../types'
 import {
   entityId,
@@ -36,12 +38,46 @@ import {
   createJoinLobbyMessage,
   createStartSealedLobbyMessage,
   createLeaveLobbyMessage,
+  createStopLobbyMessage,
+  createUnsubmitDeckMessage,
   createUpdateLobbySettingsMessage,
   createReadyForNextRoundMessage,
+  createSpectateGameMessage,
+  createStopSpectatingMessage,
   SealedCardInfo,
 } from '../types'
 import { GameWebSocket, getWebSocketUrl, type ConnectionStatus } from '../network/websocket'
 import { handleServerMessage, createLoggingHandlers, type MessageHandlers } from '../network/messageHandlers'
+
+// ============================================================================
+// Deck Building State Persistence
+// ============================================================================
+
+interface SavedDeckState {
+  deck: readonly string[]
+  landCounts: Record<string, number>
+}
+
+const DECK_STATE_KEY = 'argentum-deck-state'
+
+function saveDeckState(deck: readonly string[], landCounts: Record<string, number>): void {
+  const state: SavedDeckState = { deck, landCounts }
+  sessionStorage.setItem(DECK_STATE_KEY, JSON.stringify(state))
+}
+
+function loadDeckState(): SavedDeckState | null {
+  const saved = sessionStorage.getItem(DECK_STATE_KEY)
+  if (!saved) return null
+  try {
+    return JSON.parse(saved) as SavedDeckState
+  } catch {
+    return null
+  }
+}
+
+function clearDeckState(): void {
+  sessionStorage.removeItem(DECK_STATE_KEY)
+}
 
 /**
  * Mulligan card info.
@@ -171,6 +207,22 @@ export interface TournamentState {
   isBye: boolean
   isComplete: boolean
   finalStandings: readonly PlayerStandingInfo[] | null
+  activeMatches?: readonly ActiveMatchInfo[]
+}
+
+/**
+ * State for spectating a game.
+ */
+export interface SpectatingState {
+  gameSessionId: string
+  player1: SpectatorPlayerState | null
+  player2: SpectatorPlayerState | null
+  player1Name?: string
+  player2Name?: string
+  currentPhase: string | null
+  activePlayerId: string | null
+  priorityPlayerId: string | null
+  combat: import('../types/messages').SpectatorCombatState | null
 }
 
 /**
@@ -231,6 +283,7 @@ export interface GameStore {
 
   // Tournament state
   tournamentState: TournamentState | null
+  spectatingState: SpectatingState | null
 
   // Actions
   connect: (playerName: string) => void
@@ -256,16 +309,22 @@ export interface GameStore {
   removeCardFromDeck: (cardName: string) => void
   setLandCount: (landType: string, count: number) => void
   submitSealedDeck: () => void
+  unsubmitDeck: () => void
 
   // Lobby actions
   createSealedLobby: (setCode: string, boosterCount?: number, maxPlayers?: number) => void
   joinLobby: (lobbyId: string) => void
   startSealedLobby: () => void
   leaveLobby: () => void
+  stopLobby: () => void
   updateLobbySettings: (settings: { boosterCount?: number; maxPlayers?: number; gamesPerMatch?: number }) => void
 
   // Tournament actions
   readyForNextRound: () => void
+
+  // Spectating actions
+  spectateGame: (gameSessionId: string) => void
+  stopSpectating: () => void
 
   // UI actions
   selectCard: (cardId: EntityId | null) => void
@@ -689,6 +748,10 @@ export const useGameStore = create<GameStore>()(
           set_name: msg.setName,
           pool_size: msg.cardPool.length,
         })
+
+        // Try to restore saved deck state (for page refresh during deck building)
+        const savedState = loadDeckState()
+
         set((state) => ({
           deckBuildingState: {
             phase: 'building',
@@ -696,9 +759,9 @@ export const useGameStore = create<GameStore>()(
             setName: msg.setName,
             cardPool: msg.cardPool,
             basicLands: msg.basicLands,
-            // Preserve existing deck/lands if already set, otherwise initialize
-            deck: state.deckBuildingState?.deck ?? [],
-            landCounts: state.deckBuildingState?.landCounts ?? {
+            // Priority: existing state > saved state > empty
+            deck: state.deckBuildingState?.deck ?? savedState?.deck ?? [],
+            landCounts: state.deckBuildingState?.landCounts ?? savedState?.landCounts ?? {
               Plains: 0,
               Island: 0,
               Swamp: 0,
@@ -750,7 +813,13 @@ export const useGameStore = create<GameStore>()(
       },
 
       onLobbyUpdate: (msg) => {
-        set({
+        const { playerId } = get()
+
+        // Check if current player's deck submission status changed
+        const currentPlayer = msg.players.find((p) => p.playerId === playerId)
+        const isDeckSubmitted = currentPlayer?.deckSubmitted ?? false
+
+        set((state) => ({
           lobbyState: {
             lobbyId: msg.lobbyId,
             state: msg.state,
@@ -758,11 +827,30 @@ export const useGameStore = create<GameStore>()(
             settings: msg.settings,
             isHost: msg.isHost,
           },
+          // Update deck building phase based on submission status
+          deckBuildingState:
+            state.deckBuildingState && msg.state === 'DECK_BUILDING'
+              ? {
+                  ...state.deckBuildingState,
+                  phase: isDeckSubmitted ? 'submitted' : 'building',
+                }
+              : state.deckBuildingState,
+        }))
+      },
+
+      onLobbyStopped: () => {
+        clearDeckState()
+        set({
+          lobbyState: null,
+          deckBuildingState: null,
         })
       },
 
       // Tournament handlers
       onTournamentStarted: (msg) => {
+        // Clear saved deck state since tournament is starting
+        clearDeckState()
+
         set({
           tournamentState: {
             lobbyId: msg.lobbyId,
@@ -849,6 +937,64 @@ export const useGameStore = create<GameStore>()(
           gameOverState: null,
         }))
       },
+
+      // Spectating handlers
+      onActiveMatches: (msg) => {
+        set((state) => ({
+          tournamentState: state.tournamentState
+            ? {
+                ...state.tournamentState,
+                activeMatches: msg.matches,
+                standings: msg.standings,
+                // Mark that this player's match is done (waiting for others)
+                currentMatchGameSessionId: null,
+                currentMatchOpponentName: null,
+              }
+            : null,
+          // Clear game state when receiving active matches (player is now in tournament view)
+          gameState: null,
+          gameOverState: null,
+          mulliganState: null,
+          waitingForOpponentMulligan: false,
+          legalActions: [],
+        }))
+      },
+
+      onSpectatorStateUpdate: (msg) => {
+        set({
+          spectatingState: {
+            gameSessionId: msg.gameSessionId,
+            player1: msg.player1,
+            player2: msg.player2,
+            currentPhase: msg.currentPhase,
+            activePlayerId: msg.activePlayerId,
+            priorityPlayerId: msg.priorityPlayerId,
+            combat: msg.combat,
+          },
+        })
+      },
+
+      onSpectatingStarted: (msg) => {
+        set({
+          spectatingState: {
+            gameSessionId: msg.gameSessionId,
+            player1: null,
+            player2: null,
+            player1Name: msg.player1Name,
+            player2Name: msg.player2Name,
+            currentPhase: null,
+            activePlayerId: null,
+            priorityPlayerId: null,
+            combat: null,
+          },
+        })
+      },
+
+      onSpectatingStopped: () => {
+        set({
+          spectatingState: null,
+        })
+      },
     }
 
     // Wrap handlers with logging in development
@@ -884,6 +1030,7 @@ export const useGameStore = create<GameStore>()(
       deckBuildingState: null,
       lobbyState: null,
       tournamentState: null,
+      spectatingState: null,
 
       // Connection actions
       connect: (playerName) => {
@@ -1094,10 +1241,13 @@ export const useGameStore = create<GameStore>()(
         set((state) => {
           if (!state.deckBuildingState) return state
 
+          const newDeck = [...state.deckBuildingState.deck, cardName]
+          saveDeckState(newDeck, state.deckBuildingState.landCounts)
+
           return {
             deckBuildingState: {
               ...state.deckBuildingState,
-              deck: [...state.deckBuildingState.deck, cardName],
+              deck: newDeck,
             },
           }
         })
@@ -1113,6 +1263,7 @@ export const useGameStore = create<GameStore>()(
 
           const newDeck = [...state.deckBuildingState.deck]
           newDeck.splice(index, 1)
+          saveDeckState(newDeck, state.deckBuildingState.landCounts)
 
           return {
             deckBuildingState: {
@@ -1127,13 +1278,16 @@ export const useGameStore = create<GameStore>()(
         set((state) => {
           if (!state.deckBuildingState) return state
 
+          const newLandCounts = {
+            ...state.deckBuildingState.landCounts,
+            [landType]: Math.max(0, count),
+          }
+          saveDeckState(state.deckBuildingState.deck, newLandCounts)
+
           return {
             deckBuildingState: {
               ...state.deckBuildingState,
-              landCounts: {
-                ...state.deckBuildingState.landCounts,
-                [landType]: Math.max(0, count),
-              },
+              landCounts: newLandCounts,
             },
           }
         })
@@ -1167,6 +1321,11 @@ export const useGameStore = create<GameStore>()(
         ws?.send(createSubmitSealedDeckMessage(deckList))
       },
 
+      unsubmitDeck: () => {
+        ws?.send(createUnsubmitDeckMessage())
+        // The server will send a lobby update which will update our state
+      },
+
       // Lobby actions
       createSealedLobby: (setCode, boosterCount = 6, maxPlayers = 8) => {
         trackEvent('sealed_lobby_created', { set_code: setCode, booster_count: boosterCount, max_players: maxPlayers })
@@ -1184,8 +1343,15 @@ export const useGameStore = create<GameStore>()(
       },
 
       leaveLobby: () => {
+        clearDeckState()
         ws?.send(createLeaveLobbyMessage())
-        set({ lobbyState: null })
+        set({ lobbyState: null, deckBuildingState: null })
+      },
+
+      stopLobby: () => {
+        clearDeckState()
+        ws?.send(createStopLobbyMessage())
+        set({ lobbyState: null, deckBuildingState: null })
       },
 
       updateLobbySettings: (settings) => {
@@ -1195,6 +1361,15 @@ export const useGameStore = create<GameStore>()(
       // Tournament actions
       readyForNextRound: () => {
         ws?.send(createReadyForNextRoundMessage())
+      },
+
+      // Spectating actions
+      spectateGame: (gameSessionId) => {
+        ws?.send(createSpectateGameMessage(gameSessionId))
+      },
+
+      stopSpectating: () => {
+        ws?.send(createStopSpectatingMessage())
       },
 
       // UI actions
@@ -1587,6 +1762,9 @@ export const useGameStore = create<GameStore>()(
       },
 
       returnToMenu: () => {
+        const state = get()
+        // If in a tournament, only clear game state, not tournament/lobby state
+        const isInTournament = state.tournamentState != null
         set({
           sessionId: null,
           opponentName: null,
@@ -1608,8 +1786,9 @@ export const useGameStore = create<GameStore>()(
           gameOverState: null,
           lastError: null,
           deckBuildingState: null,
-          lobbyState: null,
-          tournamentState: null,
+          // Preserve lobby/tournament state if in tournament
+          lobbyState: isInTournament ? state.lobbyState : null,
+          tournamentState: isInTournament ? state.tournamentState : null,
         })
       },
 

@@ -7,6 +7,7 @@ import { DecisionUI } from './components/decisions/DecisionUI'
 import { RevealedHandUI } from './components/decisions/RevealedHandUI'
 import { XCostSelector } from './components/ui/XCostSelector'
 import { DeckBuilderOverlay } from './components/sealed/DeckBuilderOverlay'
+import { SpectatorView } from './components/spectating/SpectatorView'
 import { useGameStore } from './store/gameStore'
 import { useViewingPlayer, useBattlefieldCards } from './store/selectors'
 import type { EntityId } from './types'
@@ -20,6 +21,7 @@ export default function App() {
   const legalActions = useGameStore((state) => state.legalActions)
   const combatState = useGameStore((state) => state.combatState)
   const deckBuildingState = useGameStore((state) => state.deckBuildingState)
+  const spectatingState = useGameStore((state) => state.spectatingState)
   const startCombat = useGameStore((state) => state.startCombat)
   const connect = useGameStore((state) => state.connect)
   const hasConnectedRef = useRef(false)
@@ -160,6 +162,9 @@ export default function App() {
 
       {/* Game over overlay */}
       {showGame && <GameOverlay />}
+
+      {/* Spectator view (when watching another game) */}
+      {spectatingState && <SpectatorView />}
     </div>
   )
 }

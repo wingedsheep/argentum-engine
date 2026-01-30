@@ -140,13 +140,28 @@ class ConnectionHandler(
                     gameSession.associatePlayer(playerSession)
 
                     if (gameSession.isStarted) {
-                        if (gameSession.isMulliganPhase) {
-                            val decision = gameSession.getMulliganDecision(identity.playerId)
-                            sender.send(session, decision)
-                        } else {
-                            // Use broadcastStateUpdate to trigger auto-pass loop for both players
-                            logger.info("Sending state update for game $gameSessionId")
-                            broadcastStateUpdateCallback?.invoke(gameSession, emptyList())
+                        when {
+                            // Player needs to choose cards to put on bottom
+                            gameSession.isAwaitingBottomCards(identity.playerId) -> {
+                                val hand = gameSession.getHand(identity.playerId)
+                                val cardsToBottom = gameSession.getCardsToBottom(identity.playerId)
+                                sender.send(session, ServerMessage.ChooseBottomCards(hand, cardsToBottom))
+                            }
+                            // Player hasn't made mulligan decision yet
+                            gameSession.isMulliganPhase && !gameSession.hasMulliganComplete(identity.playerId) -> {
+                                val decision = gameSession.getMulliganDecision(identity.playerId)
+                                sender.send(session, decision)
+                            }
+                            // Player finished but opponent still in mulligan
+                            gameSession.isMulliganPhase -> {
+                                sender.send(session, ServerMessage.WaitingForOpponentMulligan)
+                            }
+                            // Normal game in progress
+                            else -> {
+                                // Use broadcastStateUpdate to trigger auto-pass loop for both players
+                                logger.info("Sending state update for game $gameSessionId")
+                                broadcastStateUpdateCallback?.invoke(gameSession, emptyList())
+                            }
                         }
                     } else {
                         logger.info("Game not started yet, not sending state update")
@@ -166,24 +181,73 @@ class ConnectionHandler(
                         totalRounds = tournament.totalRounds,
                         standings = tournament.getStandingsInfo(connectedIds)
                     ))
-                    val currentMatch = tournament.getCurrentRoundGameMatches().find {
+
+                    // Find the player's match in the current round (including byes and completed matches)
+                    val currentRound = tournament.currentRound
+                    val playerMatch = currentRound?.matches?.find {
                         it.player1Id == identity.playerId || it.player2Id == identity.playerId
                     }
-                    if (currentMatch?.gameSessionId != null) {
-                        val gs = gameRepository.findById(currentMatch.gameSessionId!!)
-                        if (gs != null && gs.isStarted && !gs.isGameOver()) {
-                            identity.currentGameSessionId = currentMatch.gameSessionId
-                            playerSession.currentGameSessionId = currentMatch.gameSessionId
-                            val opponentId = if (currentMatch.player1Id == identity.playerId) currentMatch.player2Id else currentMatch.player1Id
-                            val opponentName = lobby.players[opponentId]?.identity?.playerName ?: "Unknown"
-                            sender.send(session, ServerMessage.TournamentMatchStarting(
+
+                    when {
+                        // Case 1: Player has a bye this round
+                        playerMatch?.isBye == true -> {
+                            sender.send(session, ServerMessage.TournamentBye(
                                 lobbyId = lobbyId,
-                                round = tournament.currentRound?.roundNumber ?: 0,
-                                gameSessionId = currentMatch.gameSessionId!!,
-                                opponentName = opponentName
+                                round = currentRound.roundNumber
                             ))
-                            val update = gs.createStateUpdate(identity.playerId, emptyList())
-                            if (update != null) sender.send(session, update)
+                            // Send active matches so they can spectate
+                            sendActiveMatchesToPlayerCallback?.invoke(identity, session)
+                        }
+
+                        // Case 2: Player has an active game in progress
+                        playerMatch?.gameSessionId != null && !playerMatch.isComplete -> {
+                            val gs = gameRepository.findById(playerMatch.gameSessionId!!)
+                            if (gs != null && gs.isStarted && !gs.isGameOver()) {
+                                identity.currentGameSessionId = playerMatch.gameSessionId
+                                playerSession.currentGameSessionId = playerMatch.gameSessionId
+                                val opponentId = if (playerMatch.player1Id == identity.playerId) playerMatch.player2Id else playerMatch.player1Id
+                                val opponentName = lobby.players[opponentId]?.identity?.playerName ?: "Unknown"
+                                sender.send(session, ServerMessage.TournamentMatchStarting(
+                                    lobbyId = lobbyId,
+                                    round = currentRound.roundNumber,
+                                    gameSessionId = playerMatch.gameSessionId!!,
+                                    opponentName = opponentName
+                                ))
+                                // Associate player with game session first
+                                if (gs.getPlayerSession(identity.playerId) != null) {
+                                    gs.removePlayer(identity.playerId)
+                                }
+                                gs.associatePlayer(playerSession)
+                                // Handle mulligan states
+                                when {
+                                    // Player needs to choose cards to put on bottom
+                                    gs.isAwaitingBottomCards(identity.playerId) -> {
+                                        val hand = gs.getHand(identity.playerId)
+                                        val cardsToBottom = gs.getCardsToBottom(identity.playerId)
+                                        sender.send(session, ServerMessage.ChooseBottomCards(hand, cardsToBottom))
+                                    }
+                                    // Player hasn't made mulligan decision yet
+                                    gs.isMulliganPhase && !gs.hasMulliganComplete(identity.playerId) -> {
+                                        val decision = gs.getMulliganDecision(identity.playerId)
+                                        sender.send(session, decision)
+                                    }
+                                    // Player finished but opponent still in mulligan
+                                    gs.isMulliganPhase -> {
+                                        sender.send(session, ServerMessage.WaitingForOpponentMulligan)
+                                    }
+                                    // Normal game in progress
+                                    else -> {
+                                        // Use broadcastStateUpdate to trigger auto-pass loop
+                                        broadcastStateUpdateCallback?.invoke(gs, emptyList())
+                                    }
+                                }
+                            }
+                        }
+
+                        // Case 3: Player's match is complete but round isn't (waiting for others)
+                        playerMatch?.isComplete == true -> {
+                            // Send active matches so they can see other games/spectate
+                            sendActiveMatchesToPlayerCallback?.invoke(identity, session)
                         }
                     }
                 }
@@ -312,6 +376,7 @@ class ConnectionHandler(
     var handleGameOverCallback: ((com.wingedsheep.gameserver.session.GameSession, GameOverReason) -> Unit)? = null
     var handleRoundCompleteCallback: ((String) -> Unit)? = null
     var broadcastStateUpdateCallback: ((com.wingedsheep.gameserver.session.GameSession, List<com.wingedsheep.engine.core.GameEvent>) -> Unit)? = null
+    var sendActiveMatchesToPlayerCallback: ((PlayerIdentity, WebSocketSession) -> Unit)? = null
 
     companion object {
         fun cardToSealedCardInfo(card: com.wingedsheep.sdk.model.CardDefinition): ServerMessage.SealedCardInfo {

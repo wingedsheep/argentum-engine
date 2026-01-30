@@ -111,6 +111,13 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
   const removeCardFromDeck = useGameStore((s) => s.removeCardFromDeck)
   const setLandCount = useGameStore((s) => s.setLandCount)
   const submitSealedDeck = useGameStore((s) => s.submitSealedDeck)
+  const unsubmitDeck = useGameStore((s) => s.unsubmitDeck)
+  const leaveLobby = useGameStore((s) => s.leaveLobby)
+  const stopLobby = useGameStore((s) => s.stopLobby)
+  const cancelGame = useGameStore((s) => s.cancelGame)
+  const lobbyState = useGameStore((s) => s.lobbyState)
+  const isInLobby = lobbyState !== null
+  const isHost = lobbyState?.isHost ?? false
 
   const [hoveredCard, setHoveredCard] = useState<SealedCardInfo | null>(null)
   const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(null)
@@ -340,22 +347,92 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
             {totalCount} / 40
           </div>
 
-          <button
-            onClick={submitSealedDeck}
-            disabled={!isValidDeck || isSubmitted}
-            style={{
-              padding: responsive.isMobile ? '6px 14px' : '8px 20px',
-              fontSize: responsive.fontSize.normal,
-              backgroundColor: isValidDeck && !isSubmitted ? '#4caf50' : '#555',
-              color: 'white',
-              border: 'none',
-              borderRadius: 6,
-              cursor: isValidDeck && !isSubmitted ? 'pointer' : 'not-allowed',
-              fontWeight: 600,
-            }}
-          >
-            {isSubmitted ? 'Submitted' : 'Submit Deck'}
-          </button>
+          {isSubmitted ? (
+            <button
+              onClick={unsubmitDeck}
+              style={{
+                padding: responsive.isMobile ? '6px 14px' : '8px 20px',
+                fontSize: responsive.fontSize.normal,
+                backgroundColor: '#ff9800',
+                color: 'white',
+                border: 'none',
+                borderRadius: 6,
+                cursor: 'pointer',
+                fontWeight: 600,
+              }}
+            >
+              Edit Deck
+            </button>
+          ) : (
+            <button
+              onClick={submitSealedDeck}
+              disabled={!isValidDeck}
+              style={{
+                padding: responsive.isMobile ? '6px 14px' : '8px 20px',
+                fontSize: responsive.fontSize.normal,
+                backgroundColor: isValidDeck ? '#4caf50' : '#555',
+                color: 'white',
+                border: 'none',
+                borderRadius: 6,
+                cursor: isValidDeck ? 'pointer' : 'not-allowed',
+                fontWeight: 600,
+              }}
+            >
+              Submit Deck
+            </button>
+          )}
+
+          {isInLobby ? (
+            isHost ? (
+              <button
+                onClick={stopLobby}
+                style={{
+                  padding: responsive.isMobile ? '6px 14px' : '8px 20px',
+                  fontSize: responsive.fontSize.normal,
+                  backgroundColor: '#c0392b',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 6,
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                }}
+              >
+                Stop Game
+              </button>
+            ) : (
+              <button
+                onClick={leaveLobby}
+                style={{
+                  padding: responsive.isMobile ? '6px 14px' : '8px 20px',
+                  fontSize: responsive.fontSize.normal,
+                  backgroundColor: '#c0392b',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 6,
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                }}
+              >
+                Leave
+              </button>
+            )
+          ) : (
+            <button
+              onClick={cancelGame}
+              style={{
+                padding: responsive.isMobile ? '6px 14px' : '8px 20px',
+                fontSize: responsive.fontSize.normal,
+                backgroundColor: '#c0392b',
+                color: 'white',
+                border: 'none',
+                borderRadius: 6,
+                cursor: 'pointer',
+                fontWeight: 600,
+              }}
+            >
+              Cancel Game
+            </button>
+          )}
         </div>
       </div>
 

@@ -141,6 +141,22 @@ sealed interface ClientMessage {
     data object LeaveLobby : ClientMessage
 
     /**
+     * Stop/disband the current lobby (host only).
+     * All players will be removed and the lobby will be deleted.
+     */
+    @Serializable
+    @SerialName("stopLobby")
+    data object StopLobby : ClientMessage
+
+    /**
+     * Unsubmit a previously submitted deck to continue editing.
+     * Only allowed while waiting for other players to submit.
+     */
+    @Serializable
+    @SerialName("unsubmitDeck")
+    data object UnsubmitDeck : ClientMessage
+
+    /**
      * Update lobby settings (host only).
      */
     @Serializable
@@ -157,4 +173,18 @@ sealed interface ClientMessage {
     @Serializable
     @SerialName("readyForNextRound")
     data object ReadyForNextRound : ClientMessage
+
+    /**
+     * Start spectating a game in the current tournament.
+     */
+    @Serializable
+    @SerialName("spectateGame")
+    data class SpectateGame(val gameSessionId: String) : ClientMessage
+
+    /**
+     * Stop spectating and return to tournament overview.
+     */
+    @Serializable
+    @SerialName("stopSpectating")
+    data object StopSpectating : ClientMessage
 }

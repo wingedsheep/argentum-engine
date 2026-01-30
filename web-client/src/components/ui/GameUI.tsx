@@ -703,6 +703,7 @@ function TournamentOverlay({
   responsive: ReturnType<typeof useResponsive>
 }) {
   const playerId = useGameStore((state) => state.playerId)
+  const spectateGame = useGameStore((state) => state.spectateGame)
 
   return (
     <div
@@ -740,9 +741,72 @@ function TournamentOverlay({
             padding: '12px 24px',
             borderRadius: 8,
             fontSize: responsive.fontSize.normal,
+            marginBottom: 8,
           }}
         >
-          You have a BYE this round (auto-win)
+          You have a BYE this round
+        </div>
+      )}
+
+      {/* Show "waiting for others" message when match is done but not a bye */}
+      {!tournamentState.isBye && !tournamentState.currentMatchGameSessionId && !tournamentState.isComplete && (
+        <div
+          style={{
+            backgroundColor: '#2a2a4e',
+            padding: '12px 24px',
+            borderRadius: 8,
+            fontSize: responsive.fontSize.normal,
+            marginBottom: 8,
+          }}
+        >
+          Waiting for other matches to complete...
+        </div>
+      )}
+
+      {/* Active matches for spectating - show for any player waiting (bye or game finished) */}
+      {!tournamentState.currentMatchGameSessionId && tournamentState.activeMatches && tournamentState.activeMatches.length > 0 && (
+        <div style={{ width: '100%', maxWidth: 500 }}>
+          <h3 style={{ margin: '0 0 8px 0', fontSize: responsive.fontSize.normal, color: '#888' }}>
+            Live Matches - Click to Watch
+          </h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {tournamentState.activeMatches.map((match) => (
+              <button
+                key={match.gameSessionId}
+                onClick={() => spectateGame(match.gameSessionId)}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '12px 16px',
+                  backgroundColor: '#1a1a2e',
+                  border: '1px solid #333',
+                  borderRadius: 8,
+                  color: 'white',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#2a2a4e')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#1a1a2e')}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                  <span style={{ fontWeight: 600 }}>{match.player1Name}</span>
+                  <span style={{ color: '#888' }}>vs</span>
+                  <span style={{ fontWeight: 600 }}>{match.player2Name}</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14 }}>
+                  <span style={{ color: match.player1Life <= 5 ? '#ff4444' : '#4caf50' }}>
+                    {match.player1Life}
+                  </span>
+                  <span style={{ color: '#666' }}>-</span>
+                  <span style={{ color: match.player2Life <= 5 ? '#ff4444' : '#4caf50' }}>
+                    {match.player2Life}
+                  </span>
+                  <span style={{ color: '#4fc3f7', marginLeft: 8 }}>▶ Watch</span>
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
       )}
 

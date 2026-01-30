@@ -110,12 +110,19 @@ class ExhaustionScenarioTest : ScenarioTestBase() {
 
             test("component is consumed and permanents untap normally in subsequent turns") {
                 // Setup similar to above
+                // Note: Both players need cards in their libraries to avoid losing when they draw
                 val game = scenario()
                     .withPlayers("ExhaustionCaster", "Opponent")
                     .withCardInHand(1, "Exhaustion")
                     .withLandsOnBattlefield(1, "Island", 3)
                     .withCardOnBattlefield(2, "Grizzly Bears", tapped = true)
                     .withCardOnBattlefield(2, "Forest", tapped = true)
+                    .withCardInLibrary(1, "Island")  // P1 needs cards to draw
+                    .withCardInLibrary(1, "Island")
+                    .withCardInLibrary(1, "Island")
+                    .withCardInLibrary(2, "Forest")  // P2 needs cards to draw
+                    .withCardInLibrary(2, "Forest")
+                    .withCardInLibrary(2, "Forest")
                     .withActivePlayer(1)
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()

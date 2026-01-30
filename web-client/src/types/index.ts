@@ -194,10 +194,13 @@ export type {
   LobbySettings,
   LobbyCreatedMessage,
   LobbyUpdateMessage,
+  LobbyStoppedMessage,
   CreateSealedLobbyMessage,
   JoinLobbyMessage,
   StartSealedLobbyMessage,
   LeaveLobbyMessage,
+  StopLobbyMessage,
+  UnsubmitDeckMessage,
   UpdateLobbySettingsMessage,
   // Tournament types
   PlayerStandingInfo,
@@ -208,6 +211,16 @@ export type {
   RoundCompleteMessage,
   TournamentCompleteMessage,
   ReadyForNextRoundMessage,
+  // Spectating types
+  ActiveMatchInfo,
+  ActiveMatchesMessage,
+  SpectatorCardInfo,
+  SpectatorPlayerState,
+  SpectatorStateUpdateMessage,
+  SpectatingStartedMessage,
+  SpectatingStoppedMessage,
+  SpectateGameMessage,
+  StopSpectatingMessage,
 } from './messages'
 export {
   isConnectedMessage,
@@ -246,9 +259,12 @@ export {
   createJoinLobbyMessage,
   createStartSealedLobbyMessage,
   createLeaveLobbyMessage,
+  createStopLobbyMessage,
+  createUnsubmitDeckMessage,
   createUpdateLobbySettingsMessage,
   isLobbyCreatedMessage,
   isLobbyUpdateMessage,
+  isLobbyStoppedMessage,
   // Tournament message factories & guards
   createReadyForNextRoundMessage,
   isTournamentStartedMessage,
@@ -256,4 +272,11 @@ export {
   isTournamentByeMessage,
   isRoundCompleteMessage,
   isTournamentCompleteMessage,
+  // Spectating factories & guards
+  createSpectateGameMessage,
+  createStopSpectatingMessage,
+  isActiveMatchesMessage,
+  isSpectatorStateUpdateMessage,
+  isSpectatingStartedMessage,
+  isSpectatingStoppedMessage,
 } from './messages'

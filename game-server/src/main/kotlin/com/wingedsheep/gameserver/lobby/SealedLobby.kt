@@ -147,6 +147,25 @@ class SealedLobby(
     }
 
     /**
+     * Unsubmit a previously submitted deck to allow editing again.
+     * Only allowed while in deck building phase (before tournament starts).
+     */
+    fun unsubmitDeck(playerId: EntityId): Boolean {
+        if (state != LobbyState.DECK_BUILDING) {
+            return false
+        }
+
+        val playerState = players[playerId] ?: return false
+
+        if (!playerState.hasSubmittedDeck) {
+            return false // Nothing to unsubmit
+        }
+
+        players[playerId] = playerState.copy(submittedDeck = null)
+        return true
+    }
+
+    /**
      * Check if all players have submitted decks.
      */
     fun allDecksSubmitted(): Boolean = players.values.all { it.hasSubmittedDeck }

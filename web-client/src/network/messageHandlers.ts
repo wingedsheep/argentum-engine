@@ -18,11 +18,16 @@ import type {
   DeckSubmittedMessage,
   LobbyCreatedMessage,
   LobbyUpdateMessage,
+  LobbyStoppedMessage,
   TournamentStartedMessage,
   TournamentMatchStartingMessage,
   TournamentByeMessage,
   RoundCompleteMessage,
   TournamentCompleteMessage,
+  ActiveMatchesMessage,
+  SpectatorStateUpdateMessage,
+  SpectatingStartedMessage,
+  SpectatingStoppedMessage,
 } from '../types'
 
 /**
@@ -50,12 +55,18 @@ export interface MessageHandlers {
   // Lobby handlers
   onLobbyCreated: (message: LobbyCreatedMessage) => void
   onLobbyUpdate: (message: LobbyUpdateMessage) => void
+  onLobbyStopped: (message: LobbyStoppedMessage) => void
   // Tournament handlers
   onTournamentStarted: (message: TournamentStartedMessage) => void
   onTournamentMatchStarting: (message: TournamentMatchStartingMessage) => void
   onTournamentBye: (message: TournamentByeMessage) => void
   onRoundComplete: (message: RoundCompleteMessage) => void
   onTournamentComplete: (message: TournamentCompleteMessage) => void
+  // Spectating handlers
+  onActiveMatches: (message: ActiveMatchesMessage) => void
+  onSpectatorStateUpdate: (message: SpectatorStateUpdateMessage) => void
+  onSpectatingStarted: (message: SpectatingStartedMessage) => void
+  onSpectatingStopped: (message: SpectatingStoppedMessage) => void
 }
 
 /**
@@ -122,6 +133,9 @@ export function handleServerMessage(message: ServerMessage, handlers: MessageHan
     case 'lobbyUpdate':
       handlers.onLobbyUpdate(message)
       break
+    case 'lobbyStopped':
+      handlers.onLobbyStopped(message)
+      break
     // Tournament messages
     case 'tournamentStarted':
       handlers.onTournamentStarted(message)
@@ -137,6 +151,19 @@ export function handleServerMessage(message: ServerMessage, handlers: MessageHan
       break
     case 'tournamentComplete':
       handlers.onTournamentComplete(message)
+      break
+    // Spectating messages
+    case 'activeMatches':
+      handlers.onActiveMatches(message)
+      break
+    case 'spectatorStateUpdate':
+      handlers.onSpectatorStateUpdate(message)
+      break
+    case 'spectatingStarted':
+      handlers.onSpectatingStarted(message)
+      break
+    case 'spectatingStopped':
+      handlers.onSpectatingStopped(message)
       break
     default: {
       // TypeScript exhaustiveness check
@@ -229,6 +256,10 @@ export function createLoggingHandlers(handlers: MessageHandlers): MessageHandler
       console.log('[Server] Lobby update:', msg)
       handlers.onLobbyUpdate(msg)
     },
+    onLobbyStopped: (msg) => {
+      console.log('[Server] Lobby stopped:', msg)
+      handlers.onLobbyStopped(msg)
+    },
     // Tournament handlers
     onTournamentStarted: (msg) => {
       console.log('[Server] Tournament started:', msg)
@@ -249,6 +280,23 @@ export function createLoggingHandlers(handlers: MessageHandlers): MessageHandler
     onTournamentComplete: (msg) => {
       console.log('[Server] Tournament complete:', msg)
       handlers.onTournamentComplete(msg)
+    },
+    // Spectating handlers
+    onActiveMatches: (msg) => {
+      console.log('[Server] Active matches:', msg)
+      handlers.onActiveMatches(msg)
+    },
+    onSpectatorStateUpdate: (msg) => {
+      console.log('[Server] Spectator state update:', msg)
+      handlers.onSpectatorStateUpdate(msg)
+    },
+    onSpectatingStarted: (msg) => {
+      console.log('[Server] Spectating started:', msg)
+      handlers.onSpectatingStarted(msg)
+    },
+    onSpectatingStopped: (msg) => {
+      console.log('[Server] Spectating stopped:', msg)
+      handlers.onSpectatingStopped(msg)
     },
   }
 }

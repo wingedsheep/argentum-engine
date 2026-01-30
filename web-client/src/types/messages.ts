@@ -34,12 +34,18 @@ export type ServerMessage =
   // Lobby Messages
   | LobbyCreatedMessage
   | LobbyUpdateMessage
+  | LobbyStoppedMessage
   // Tournament Messages
   | TournamentStartedMessage
   | TournamentMatchStartingMessage
   | TournamentByeMessage
   | RoundCompleteMessage
   | TournamentCompleteMessage
+  // Spectating Messages
+  | ActiveMatchesMessage
+  | SpectatorStateUpdateMessage
+  | SpectatingStartedMessage
+  | SpectatingStoppedMessage
 
 /**
  * Connection confirmed with assigned player ID.
@@ -467,6 +473,13 @@ export interface LobbyUpdateMessage {
   readonly isHost: boolean
 }
 
+/**
+ * Lobby was stopped/disbanded by the host.
+ */
+export interface LobbyStoppedMessage {
+  readonly type: 'lobbyStopped'
+}
+
 // ============================================================================
 // Tournament Server Messages
 // ============================================================================
@@ -525,6 +538,88 @@ export interface TournamentCompleteMessage {
 }
 
 // ============================================================================
+// Spectating Messages
+// ============================================================================
+
+export interface ActiveMatchInfo {
+  readonly gameSessionId: string
+  readonly player1Name: string
+  readonly player2Name: string
+  readonly player1Life: number
+  readonly player2Life: number
+}
+
+export interface ActiveMatchesMessage {
+  readonly type: 'activeMatches'
+  readonly lobbyId: string
+  readonly round: number
+  readonly matches: readonly ActiveMatchInfo[]
+  readonly standings: readonly PlayerStandingInfo[]
+}
+
+export interface SpectatorCardInfo {
+  readonly entityId: string
+  readonly name: string
+  readonly imageUri: string | null
+  readonly isTapped: boolean
+  readonly power: number | null
+  readonly toughness: number | null
+  readonly damage: number
+  readonly cardTypes: readonly string[]
+  readonly isAttacking: boolean
+  readonly targets: readonly SpectatorTarget[]
+}
+
+export type SpectatorTarget =
+  | { readonly type: 'Player'; readonly playerId: string }
+  | { readonly type: 'Permanent'; readonly entityId: string }
+  | { readonly type: 'Spell'; readonly spellEntityId: string }
+
+export interface SpectatorAttacker {
+  readonly creatureId: string
+  readonly blockedBy: readonly string[]
+}
+
+export interface SpectatorCombatState {
+  readonly attackingPlayerId: string
+  readonly defendingPlayerId: string
+  readonly attackers: readonly SpectatorAttacker[]
+}
+
+export interface SpectatorPlayerState {
+  readonly playerId: string
+  readonly playerName: string
+  readonly life: number
+  readonly handSize: number
+  readonly librarySize: number
+  readonly battlefield: readonly SpectatorCardInfo[]
+  readonly graveyard: readonly SpectatorCardInfo[]
+  readonly stack: readonly SpectatorCardInfo[]
+}
+
+export interface SpectatorStateUpdateMessage {
+  readonly type: 'spectatorStateUpdate'
+  readonly gameSessionId: string
+  readonly player1: SpectatorPlayerState
+  readonly player2: SpectatorPlayerState
+  readonly currentPhase: string
+  readonly activePlayerId: string | null
+  readonly priorityPlayerId: string | null
+  readonly combat: SpectatorCombatState | null
+}
+
+export interface SpectatingStartedMessage {
+  readonly type: 'spectatingStarted'
+  readonly gameSessionId: string
+  readonly player1Name: string
+  readonly player2Name: string
+}
+
+export interface SpectatingStoppedMessage {
+  readonly type: 'spectatingStopped'
+}
+
+// ============================================================================
 // Client Messages (sent to server)
 // ============================================================================
 
@@ -551,9 +646,13 @@ export type ClientMessage =
   | JoinLobbyMessage
   | StartSealedLobbyMessage
   | LeaveLobbyMessage
+  | StopLobbyMessage
+  | UnsubmitDeckMessage
   | UpdateLobbySettingsMessage
   // Tournament Messages
   | ReadyForNextRoundMessage
+  | SpectateGameMessage
+  | StopSpectatingMessage
 
 /**
  * Connect to the server with a player name.
@@ -799,6 +898,14 @@ export interface LeaveLobbyMessage {
   readonly type: 'leaveLobby'
 }
 
+export interface StopLobbyMessage {
+  readonly type: 'stopLobby'
+}
+
+export interface UnsubmitDeckMessage {
+  readonly type: 'unsubmitDeck'
+}
+
 export interface UpdateLobbySettingsMessage {
   readonly type: 'updateLobbySettings'
   readonly boosterCount?: number
@@ -810,6 +917,15 @@ export interface UpdateLobbySettingsMessage {
 
 export interface ReadyForNextRoundMessage {
   readonly type: 'readyForNextRound'
+}
+
+export interface SpectateGameMessage {
+  readonly type: 'spectateGame'
+  readonly gameSessionId: string
+}
+
+export interface StopSpectatingMessage {
+  readonly type: 'stopSpectating'
 }
 
 // Lobby Message Factories
@@ -833,6 +949,14 @@ export function createLeaveLobbyMessage(): LeaveLobbyMessage {
   return { type: 'leaveLobby' }
 }
 
+export function createStopLobbyMessage(): StopLobbyMessage {
+  return { type: 'stopLobby' }
+}
+
+export function createUnsubmitDeckMessage(): UnsubmitDeckMessage {
+  return { type: 'unsubmitDeck' }
+}
+
 export function createUpdateLobbySettingsMessage(
   settings: { boosterCount?: number; maxPlayers?: number; gamesPerMatch?: number }
 ): UpdateLobbySettingsMessage {
@@ -841,6 +965,14 @@ export function createUpdateLobbySettingsMessage(
 
 export function createReadyForNextRoundMessage(): ReadyForNextRoundMessage {
   return { type: 'readyForNextRound' }
+}
+
+export function createSpectateGameMessage(gameSessionId: string): SpectateGameMessage {
+  return { type: 'spectateGame', gameSessionId }
+}
+
+export function createStopSpectatingMessage(): StopSpectatingMessage {
+  return { type: 'stopSpectating' }
 }
 
 // Lobby/Tournament Type Guards
@@ -854,6 +986,10 @@ export function isLobbyCreatedMessage(msg: ServerMessage): msg is LobbyCreatedMe
 
 export function isLobbyUpdateMessage(msg: ServerMessage): msg is LobbyUpdateMessage {
   return msg.type === 'lobbyUpdate'
+}
+
+export function isLobbyStoppedMessage(msg: ServerMessage): msg is LobbyStoppedMessage {
+  return msg.type === 'lobbyStopped'
 }
 
 export function isTournamentStartedMessage(msg: ServerMessage): msg is TournamentStartedMessage {
@@ -874,4 +1010,21 @@ export function isRoundCompleteMessage(msg: ServerMessage): msg is RoundComplete
 
 export function isTournamentCompleteMessage(msg: ServerMessage): msg is TournamentCompleteMessage {
   return msg.type === 'tournamentComplete'
+}
+
+// Spectating Type Guards
+export function isActiveMatchesMessage(msg: ServerMessage): msg is ActiveMatchesMessage {
+  return msg.type === 'activeMatches'
+}
+
+export function isSpectatorStateUpdateMessage(msg: ServerMessage): msg is SpectatorStateUpdateMessage {
+  return msg.type === 'spectatorStateUpdate'
+}
+
+export function isSpectatingStartedMessage(msg: ServerMessage): msg is SpectatingStartedMessage {
+  return msg.type === 'spectatingStarted'
+}
+
+export function isSpectatingStoppedMessage(msg: ServerMessage): msg is SpectatingStoppedMessage {
+  return msg.type === 'spectatingStopped'
 }

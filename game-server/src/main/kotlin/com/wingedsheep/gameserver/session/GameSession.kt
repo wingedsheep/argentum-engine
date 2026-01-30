@@ -24,9 +24,16 @@ import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.targeting.*
+import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.combat.AttackingComponent
+import com.wingedsheep.engine.state.components.combat.BlockedComponent
+import com.wingedsheep.engine.state.components.stack.TargetsComponent
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.sdk.core.Phase
+import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.sdk.core.Keyword
@@ -57,6 +64,7 @@ class GameSession(
     private var gameState: GameState? = null
     private val players = mutableMapOf<EntityId, PlayerSession>()
     private val deckLists = mutableMapOf<EntityId, List<String>>()
+    private val spectators = mutableSetOf<PlayerSession>()
 
     /** Player info for persistence (playerId -> (playerName, token)) */
     private val playerPersistenceInfo = mutableMapOf<EntityId, PlayerPersistenceInfo>()
@@ -147,6 +155,171 @@ class GameSession(
      * Get the player session for a player ID.
      */
     fun getPlayerSession(playerId: EntityId): PlayerSession? = players[playerId]
+
+    // =========================================================================
+    // Spectator Management
+    // =========================================================================
+
+    /**
+     * Add a spectator to this game session.
+     */
+    fun addSpectator(spectator: PlayerSession) {
+        spectators.add(spectator)
+    }
+
+    /**
+     * Remove a spectator from this game session.
+     */
+    fun removeSpectator(spectator: PlayerSession) {
+        spectators.remove(spectator)
+    }
+
+    /**
+     * Get all spectators.
+     */
+    fun getSpectators(): Set<PlayerSession> = spectators.toSet()
+
+    /**
+     * Get player names for spectator display.
+     */
+    fun getPlayerNames(): Pair<String, String>? {
+        val p1 = player1 ?: return null
+        val p2 = player2 ?: return null
+        return Pair(p1.playerName, p2.playerName)
+    }
+
+    /**
+     * Get current life totals for spectator display.
+     */
+    fun getLifeTotals(): Pair<Int, Int>? {
+        val state = gameState ?: return null
+        val p1Id = player1?.playerId ?: return null
+        val p2Id = player2?.playerId ?: return null
+        val p1Life = state.getEntity(p1Id)?.get<LifeTotalComponent>()?.life ?: 20
+        val p2Life = state.getEntity(p2Id)?.get<LifeTotalComponent>()?.life ?: 20
+        return Pair(p1Life, p2Life)
+    }
+
+    /**
+     * Build spectator state for sending to spectators.
+     */
+    fun buildSpectatorState(): ServerMessage.SpectatorStateUpdate? {
+        val state = gameState ?: return null
+        val p1 = player1 ?: return null
+        val p2 = player2 ?: return null
+
+        return ServerMessage.SpectatorStateUpdate(
+            gameSessionId = sessionId,
+            player1 = buildSpectatorPlayerState(state, p1),
+            player2 = buildSpectatorPlayerState(state, p2),
+            currentPhase = state.phase.name,
+            activePlayerId = state.activePlayerId?.value,
+            priorityPlayerId = state.priorityPlayerId?.value,
+            combat = buildSpectatorCombatState(state)
+        )
+    }
+
+    private fun buildSpectatorCombatState(state: GameState): ServerMessage.SpectatorCombatState? {
+        // Only show combat state during combat phase
+        if (state.step.phase != Phase.COMBAT) {
+            return null
+        }
+
+        val attackers = mutableListOf<ServerMessage.SpectatorAttacker>()
+        var attackingPlayerId: EntityId? = null
+        var defendingPlayerId: EntityId? = null
+
+        // Find all attackers on the battlefield
+        for (entityId in state.getBattlefield()) {
+            val container = state.getEntity(entityId) ?: continue
+            val attackingComponent = container.get<AttackingComponent>() ?: continue
+
+            // Track the attacking and defending players
+            val controllerId = container.get<ControllerComponent>()?.playerId
+            if (controllerId != null) {
+                attackingPlayerId = controllerId
+                defendingPlayerId = attackingComponent.defenderId
+            }
+
+            val blockedComponent = container.get<BlockedComponent>()
+            attackers.add(
+                ServerMessage.SpectatorAttacker(
+                    creatureId = entityId.value,
+                    blockedBy = blockedComponent?.blockerIds?.map { it.value } ?: emptyList()
+                )
+            )
+        }
+
+        if (attackers.isEmpty() || attackingPlayerId == null || defendingPlayerId == null) {
+            return null
+        }
+
+        return ServerMessage.SpectatorCombatState(
+            attackingPlayerId = attackingPlayerId.value,
+            defendingPlayerId = defendingPlayerId.value,
+            attackers = attackers
+        )
+    }
+
+    private fun buildSpectatorPlayerState(state: GameState, playerSession: PlayerSession): ServerMessage.SpectatorPlayerState {
+        val playerId = playerSession.playerId
+        val playerEntity = state.getEntity(playerId)
+
+        val life = playerEntity?.get<LifeTotalComponent>()?.life ?: 20
+        val hand = state.getZone(playerId, ZoneType.HAND)
+        val library = state.getZone(playerId, ZoneType.LIBRARY)
+        val battlefield = state.getZone(playerId, ZoneType.BATTLEFIELD)
+        val graveyard = state.getZone(playerId, ZoneType.GRAVEYARD)
+
+        // Stack is shared between players - get all stack items
+        val stack = state.stack
+
+        return ServerMessage.SpectatorPlayerState(
+            playerId = playerId.value,
+            playerName = playerSession.playerName,
+            life = life,
+            handSize = hand.size,
+            librarySize = library.size,
+            battlefield = battlefield.mapNotNull { cardId -> buildSpectatorCardInfo(state, cardId) },
+            graveyard = graveyard.mapNotNull { cardId -> buildSpectatorCardInfo(state, cardId) },
+            stack = stack.mapNotNull { cardId -> buildSpectatorCardInfo(state, cardId) }
+        )
+    }
+
+    private fun buildSpectatorCardInfo(state: GameState, cardId: EntityId): ServerMessage.SpectatorCardInfo? {
+        val card = state.getEntity(cardId) ?: return null
+        val cardComponent = card.get<CardComponent>() ?: return null
+        val cardDef = cardRegistry.getCard(cardComponent.name)
+
+        val tapped = card.has<TappedComponent>()
+        val damage = card.get<DamageComponent>()?.amount ?: 0
+        val cardTypes = cardComponent.typeLine.cardTypes.map { it.name }
+        val isAttacking = card.has<AttackingComponent>()
+
+        // Get targets for spells/abilities on the stack
+        val targetsComponent = card.get<TargetsComponent>()
+        val targets = targetsComponent?.targets?.mapNotNull { chosenTarget ->
+            when (chosenTarget) {
+                is ChosenTarget.Player -> ServerMessage.SpectatorTarget.Player(chosenTarget.playerId.value)
+                is ChosenTarget.Permanent -> ServerMessage.SpectatorTarget.Permanent(chosenTarget.entityId.value)
+                is ChosenTarget.Spell -> ServerMessage.SpectatorTarget.Spell(chosenTarget.spellEntityId.value)
+                is ChosenTarget.Card -> null // Cards in zones not displayed as targets
+            }
+        } ?: emptyList()
+
+        return ServerMessage.SpectatorCardInfo(
+            entityId = cardId.value,
+            name = cardComponent.name,
+            imageUri = cardDef?.metadata?.imageUri,
+            isTapped = tapped,
+            power = cardComponent.baseStats?.basePower,
+            toughness = cardComponent.baseStats?.baseToughness,
+            damage = damage,
+            cardTypes = cardTypes,
+            isAttacking = isAttacking,
+            targets = targets
+        )
+    }
 
     /**
      * Start the game. Both players must have joined with deck lists.

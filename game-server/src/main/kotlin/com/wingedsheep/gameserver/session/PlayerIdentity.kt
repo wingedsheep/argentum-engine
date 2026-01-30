@@ -28,6 +28,10 @@ class PlayerIdentity(
     @Volatile
     var currentLobbyId: String? = null
 
+    /** Current game session ID being spectated (if any) */
+    @Volatile
+    var currentSpectatingGameId: String? = null
+
     /** Scheduled disconnect cleanup task — cancelled on reconnect */
     @Volatile
     var disconnectTimer: ScheduledFuture<*>? = null

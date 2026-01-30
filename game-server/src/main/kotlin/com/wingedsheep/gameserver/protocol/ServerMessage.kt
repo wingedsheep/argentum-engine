@@ -258,6 +258,13 @@ sealed interface ServerMessage {
         val isHost: Boolean
     ) : ServerMessage
 
+    /**
+     * Lobby was stopped/disbanded by the host.
+     */
+    @Serializable
+    @SerialName("lobbyStopped")
+    data object LobbyStopped : ServerMessage
+
     // =========================================================================
     // Tournament Messages
     // =========================================================================
@@ -342,6 +349,137 @@ sealed interface ServerMessage {
         val lobbyId: String,
         val finalStandings: List<PlayerStandingInfo>
     ) : ServerMessage
+
+    // =========================================================================
+    // Spectating Messages
+    // =========================================================================
+
+    /**
+     * Information about an active match that can be spectated.
+     */
+    @Serializable
+    data class ActiveMatchInfo(
+        val gameSessionId: String,
+        val player1Name: String,
+        val player2Name: String,
+        val player1Life: Int,
+        val player2Life: Int
+    )
+
+    /**
+     * List of active matches in the current tournament round.
+     * Sent to players with a bye so they can spectate.
+     */
+    @Serializable
+    @SerialName("activeMatches")
+    data class ActiveMatches(
+        val lobbyId: String,
+        val round: Int,
+        val matches: List<ActiveMatchInfo>,
+        val standings: List<PlayerStandingInfo>
+    ) : ServerMessage
+
+    /**
+     * Game state update for spectators (shows both players' perspectives).
+     */
+    @Serializable
+    @SerialName("spectatorStateUpdate")
+    data class SpectatorStateUpdate(
+        val gameSessionId: String,
+        val player1: SpectatorPlayerState,
+        val player2: SpectatorPlayerState,
+        val currentPhase: String,
+        val activePlayerId: String?,
+        val priorityPlayerId: String?,
+        val combat: SpectatorCombatState? = null
+    ) : ServerMessage
+
+    /**
+     * Combat state for spectators.
+     */
+    @Serializable
+    data class SpectatorCombatState(
+        val attackingPlayerId: String,
+        val defendingPlayerId: String,
+        val attackers: List<SpectatorAttacker>
+    )
+
+    /**
+     * Attacker info for spectators.
+     */
+    @Serializable
+    data class SpectatorAttacker(
+        val creatureId: String,
+        val blockedBy: List<String> = emptyList()
+    )
+
+    /**
+     * Target info for spectators (for spell/ability targeting arrows).
+     */
+    @Serializable
+    sealed interface SpectatorTarget {
+        @Serializable
+        @SerialName("Player")
+        data class Player(val playerId: String) : SpectatorTarget
+
+        @Serializable
+        @SerialName("Permanent")
+        data class Permanent(val entityId: String) : SpectatorTarget
+
+        @Serializable
+        @SerialName("Spell")
+        data class Spell(val spellEntityId: String) : SpectatorTarget
+    }
+
+    /**
+     * Player state as seen by spectators.
+     */
+    @Serializable
+    data class SpectatorPlayerState(
+        val playerId: String,
+        val playerName: String,
+        val life: Int,
+        val handSize: Int,
+        val librarySize: Int,
+        val battlefield: List<SpectatorCardInfo>,
+        val graveyard: List<SpectatorCardInfo>,
+        val stack: List<SpectatorCardInfo> = emptyList()
+    )
+
+    /**
+     * Card info for spectators.
+     */
+    @Serializable
+    data class SpectatorCardInfo(
+        val entityId: String,
+        val name: String,
+        val imageUri: String?,
+        val isTapped: Boolean = false,
+        val power: Int? = null,
+        val toughness: Int? = null,
+        val damage: Int = 0,
+        val cardTypes: List<String> = emptyList(),
+        val isAttacking: Boolean = false,
+        val targets: List<SpectatorTarget> = emptyList()
+    )
+
+    /**
+     * Confirmation that spectating has started.
+     */
+    @Serializable
+    @SerialName("spectatingStarted")
+    data class SpectatingStarted(
+        val gameSessionId: String,
+        val player1Name: String,
+        val player2Name: String
+    ) : ServerMessage
+
+    /**
+     * Confirmation that spectating has stopped.
+     */
+    @Serializable
+    @SerialName("spectatingStopped")
+    data object SpectatingStopped : ServerMessage
 }
 
 /**

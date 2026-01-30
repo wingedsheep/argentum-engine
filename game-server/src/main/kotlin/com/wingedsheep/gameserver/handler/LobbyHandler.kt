@@ -39,11 +39,15 @@ class LobbyHandler(
             is ClientMessage.CreateSealedGame -> handleCreateSealedGame(session, message)
             is ClientMessage.JoinSealedGame -> handleJoinSealedGame(session, message)
             is ClientMessage.SubmitSealedDeck -> handleSubmitSealedDeck(session, message)
+            is ClientMessage.UnsubmitDeck -> handleUnsubmitDeck(session)
             is ClientMessage.CreateSealedLobby -> handleCreateSealedLobby(session, message)
             is ClientMessage.JoinLobby -> handleJoinLobby(session, message)
             is ClientMessage.StartSealedLobby -> handleStartSealedLobby(session)
             is ClientMessage.LeaveLobby -> handleLeaveLobby(session)
+            is ClientMessage.StopLobby -> handleStopLobby(session)
             is ClientMessage.UpdateLobbySettings -> handleUpdateLobbySettings(session, message)
+            is ClientMessage.SpectateGame -> handleSpectateGame(session, message)
+            is ClientMessage.StopSpectating -> handleStopSpectating(session)
             else -> {}
         }
     }
@@ -352,6 +356,84 @@ class LobbyHandler(
         }
     }
 
+    private fun handleStopLobby(session: WebSocketSession) {
+        val token = sessionRegistry.getTokenByWsId(session.id)
+        val identity = token?.let { sessionRegistry.getIdentityByToken(it) }
+        if (identity == null) {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        val lobbyId = identity.currentLobbyId
+        if (lobbyId == null) {
+            sender.sendError(session, ErrorCode.GAME_NOT_FOUND, "Not in a lobby")
+            return
+        }
+
+        val lobby = lobbyRepository.findLobbyById(lobbyId)
+        if (lobby == null) {
+            sender.sendError(session, ErrorCode.GAME_NOT_FOUND, "Lobby not found")
+            return
+        }
+
+        if (!lobby.isHost(identity.playerId)) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "Only the host can stop the lobby")
+            return
+        }
+
+        // Can only stop during WAITING_FOR_PLAYERS or DECK_BUILDING
+        if (lobby.state != LobbyState.WAITING_FOR_PLAYERS && lobby.state != LobbyState.DECK_BUILDING) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "Cannot stop lobby during tournament")
+            return
+        }
+
+        logger.info("Host ${identity.playerName} stopped lobby $lobbyId")
+
+        // Notify all players that the lobby was stopped
+        lobby.players.forEach { (_, playerState) ->
+            val ws = playerState.identity.webSocketSession
+            if (ws != null && ws.isOpen) {
+                sender.send(ws, ServerMessage.LobbyStopped)
+            }
+            playerState.identity.currentLobbyId = null
+        }
+
+        // Remove the lobby
+        lobbyRepository.removeLobby(lobbyId)
+    }
+
+    private fun handleUnsubmitDeck(session: WebSocketSession) {
+        val token = sessionRegistry.getTokenByWsId(session.id)
+        val identity = token?.let { sessionRegistry.getIdentityByToken(it) }
+        if (identity == null) {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        val lobbyId = identity.currentLobbyId
+        if (lobbyId == null) {
+            sender.sendError(session, ErrorCode.GAME_NOT_FOUND, "Not in a lobby")
+            return
+        }
+
+        val lobby = lobbyRepository.findLobbyById(lobbyId)
+        if (lobby == null) {
+            sender.sendError(session, ErrorCode.GAME_NOT_FOUND, "Lobby not found")
+            return
+        }
+
+        val success = lobby.unsubmitDeck(identity.playerId)
+        if (!success) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "Cannot unsubmit deck")
+            return
+        }
+
+        logger.info("Player ${identity.playerName} unsubmitted deck in lobby $lobbyId")
+
+        // Notify all players of the updated lobby state
+        broadcastLobbyUpdate(lobby)
+    }
+
     private fun handleUpdateLobbySettings(session: WebSocketSession, message: ClientMessage.UpdateLobbySettings) {
         val token = sessionRegistry.getTokenByWsId(session.id)
         val identity = token?.let { sessionRegistry.getIdentityByToken(it) }
@@ -530,12 +612,15 @@ class LobbyHandler(
         for (match in round.matches) {
             if (match.isBye) {
                 val playerState = lobby.players[match.player1Id]
-                val ws = playerState?.identity?.webSocketSession
-                if (ws != null && ws.isOpen) {
+                val identity = playerState?.identity
+                val ws = identity?.webSocketSession
+                if (ws != null && ws.isOpen && identity != null) {
                     sender.send(ws, ServerMessage.TournamentBye(
                         lobbyId = lobbyId,
                         round = round.roundNumber
                     ))
+                    // Also send active matches so they can spectate
+                    sendActiveMatchesToPlayer(identity, ws)
                 }
             }
         }
@@ -599,6 +684,142 @@ class LobbyHandler(
             val ws = playerState.identity.webSocketSession
             if (ws != null && ws.isOpen) {
                 sender.send(ws, message)
+            }
+        }
+    }
+
+    // =========================================================================
+    // Spectating
+    // =========================================================================
+
+    private fun handleSpectateGame(session: WebSocketSession, message: ClientMessage.SpectateGame) {
+        val token = sessionRegistry.getTokenByWsId(session.id)
+        val identity = token?.let { sessionRegistry.getIdentityByToken(it) }
+        if (identity == null) {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        val playerSession = sessionRegistry.getPlayerSession(session.id)
+        if (playerSession == null) {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Player session not found")
+            return
+        }
+
+        // Find the game session
+        val gameSession = gameRepository.findById(message.gameSessionId)
+        if (gameSession == null) {
+            sender.sendError(session, ErrorCode.GAME_NOT_FOUND, "Game not found")
+            return
+        }
+
+        // Add as spectator
+        gameSession.addSpectator(playerSession)
+
+        // Track that this player is spectating
+        identity.currentSpectatingGameId = message.gameSessionId
+
+        val playerNames = gameSession.getPlayerNames()
+        if (playerNames != null) {
+            sender.send(session, ServerMessage.SpectatingStarted(
+                gameSessionId = message.gameSessionId,
+                player1Name = playerNames.first,
+                player2Name = playerNames.second
+            ))
+        }
+
+        // Send current game state
+        val spectatorState = gameSession.buildSpectatorState()
+        if (spectatorState != null) {
+            sender.send(session, spectatorState)
+        }
+
+        logger.info("Player ${identity.playerName} started spectating game ${message.gameSessionId}")
+    }
+
+    private fun handleStopSpectating(session: WebSocketSession) {
+        val token = sessionRegistry.getTokenByWsId(session.id)
+        val identity = token?.let { sessionRegistry.getIdentityByToken(it) }
+        if (identity == null) {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        val playerSession = sessionRegistry.getPlayerSession(session.id)
+        if (playerSession == null) {
+            return
+        }
+
+        val gameSessionId = identity.currentSpectatingGameId
+        if (gameSessionId != null) {
+            val gameSession = gameRepository.findById(gameSessionId)
+            gameSession?.removeSpectator(playerSession)
+            identity.currentSpectatingGameId = null
+
+            logger.info("Player ${identity.playerName} stopped spectating game $gameSessionId")
+        }
+
+        sender.send(session, ServerMessage.SpectatingStopped)
+
+        // Send active matches again so they can see the overview
+        sendActiveMatchesToPlayer(identity, session)
+    }
+
+    /**
+     * Send active matches info to a player (for bye screen).
+     */
+    fun sendActiveMatchesToPlayer(identity: PlayerIdentity, session: WebSocketSession) {
+        val lobbyId = identity.currentLobbyId ?: return
+        val lobby = lobbyRepository.findLobbyById(lobbyId) ?: return
+        val tournament = lobbyRepository.findTournamentById(lobbyId) ?: return
+
+        val connectedIds = lobby.players.values
+            .filter { it.identity.isConnected }
+            .map { it.identity.playerId }
+            .toSet()
+
+        val activeMatches = buildActiveMatchesList(tournament)
+
+        sender.send(session, ServerMessage.ActiveMatches(
+            lobbyId = lobbyId,
+            round = tournament.currentRound?.roundNumber ?: 0,
+            matches = activeMatches,
+            standings = tournament.getStandingsInfo(connectedIds)
+        ))
+    }
+
+    /**
+     * Build a list of active matches for spectating.
+     */
+    private fun buildActiveMatchesList(tournament: TournamentManager): List<ServerMessage.ActiveMatchInfo> {
+        val matches = tournament.getCurrentRoundGameMatches()
+        return matches.mapNotNull { match ->
+            val gameSessionId = match.gameSessionId ?: return@mapNotNull null
+            val gameSession = gameRepository.findById(gameSessionId) ?: return@mapNotNull null
+
+            val playerNames = gameSession.getPlayerNames() ?: return@mapNotNull null
+            val lifeTotals = gameSession.getLifeTotals() ?: return@mapNotNull null
+
+            ServerMessage.ActiveMatchInfo(
+                gameSessionId = gameSessionId,
+                player1Name = playerNames.first,
+                player2Name = playerNames.second,
+                player1Life = lifeTotals.first,
+                player2Life = lifeTotals.second
+            )
+        }
+    }
+
+    /**
+     * Broadcast spectator state update to all spectators of a game.
+     */
+    fun broadcastSpectatorUpdate(gameSession: GameSession) {
+        val spectatorState = gameSession.buildSpectatorState() ?: return
+
+        for (spectator in gameSession.getSpectators()) {
+            val ws = spectator.webSocketSession
+            if (ws != null && ws.isOpen) {
+                sender.send(ws, spectatorState)
             }
         }
     }

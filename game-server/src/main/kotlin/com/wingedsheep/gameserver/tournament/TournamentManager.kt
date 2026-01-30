@@ -153,13 +153,12 @@ class TournamentManager(
 
         val round = rounds[currentRoundIndex]
 
-        // Auto-complete BYE matches
+        // Auto-complete BYE matches (no points awarded for byes)
         for (match in round.matches) {
             if (match.isBye) {
-                match.winnerId = match.player1Id
                 match.isComplete = true
-                standings[match.player1Id]?.wins = (standings[match.player1Id]?.wins ?: 0) + 1
-                logger.info("BYE for ${standings[match.player1Id]?.playerName} in round ${round.roundNumber}")
+                // Don't set winnerId or add wins - byes don't count for points
+                logger.info("BYE for ${standings[match.player1Id]?.playerName} in round ${round.roundNumber} (no points)")
             }
         }
 

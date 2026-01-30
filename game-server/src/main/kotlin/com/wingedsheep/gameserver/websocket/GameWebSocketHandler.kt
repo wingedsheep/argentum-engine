@@ -33,6 +33,7 @@ class GameWebSocketHandler(
         connectionHandler.handleGameOverCallback = { gameSession, reason -> gamePlayHandler.handleGameOver(gameSession, reason) }
         connectionHandler.handleRoundCompleteCallback = { lobbyId -> lobbyHandler.handleRoundComplete(lobbyId) }
         connectionHandler.broadcastStateUpdateCallback = { gameSession, events -> gamePlayHandler.broadcastStateUpdate(gameSession, events) }
+        connectionHandler.sendActiveMatchesToPlayerCallback = { identity, wsSession -> lobbyHandler.sendActiveMatchesToPlayer(identity, wsSession) }
     }
 
     override fun afterConnectionEstablished(session: WebSocketSession) {
@@ -59,15 +60,20 @@ class GameWebSocketHandler(
                 is ClientMessage.CreateSealedGame,
                 is ClientMessage.JoinSealedGame,
                 is ClientMessage.SubmitSealedDeck,
+                is ClientMessage.UnsubmitDeck,
                 is ClientMessage.CreateSealedLobby,
                 is ClientMessage.JoinLobby,
                 is ClientMessage.StartSealedLobby,
                 is ClientMessage.LeaveLobby,
+                is ClientMessage.StopLobby,
                 is ClientMessage.UpdateLobbySettings -> lobbyHandler.handle(session, clientMessage)
 
                 is ClientMessage.ReadyForNextRound -> {
                     // Currently auto-advancing rounds, so this is a no-op.
                 }
+
+                is ClientMessage.SpectateGame,
+                is ClientMessage.StopSpectating -> lobbyHandler.handle(session, clientMessage)
             }
         } catch (e: Exception) {
             logger.error("Error handling message from ${session.id}", e)
