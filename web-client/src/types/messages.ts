@@ -17,6 +17,7 @@ export type ServerMessage =
   | ReconnectedMessage
   | GameCreatedMessage
   | GameStartedMessage
+  | GameCancelledMessage
   | StateUpdateMessage
   | MulliganDecisionMessage
   | ChooseBottomCardsMessage
@@ -74,6 +75,13 @@ export interface GameCreatedMessage {
 export interface GameStartedMessage {
   readonly type: 'gameStarted'
   readonly opponentName: string
+}
+
+/**
+ * Game was cancelled before it started (by the creator).
+ */
+export interface GameCancelledMessage {
+  readonly type: 'gameCancelled'
 }
 
 /**
@@ -533,6 +541,7 @@ export type ClientMessage =
   | MulliganMessage
   | ClientChooseBottomCardsMessage
   | ConcedeMessage
+  | CancelGameMessage
   // Sealed Draft Messages
   | CreateSealedGameMessage
   | JoinSealedGameMessage
@@ -609,6 +618,13 @@ export interface ConcedeMessage {
   readonly type: 'concede'
 }
 
+/**
+ * Cancel a game that hasn't started yet (waiting for opponent).
+ */
+export interface CancelGameMessage {
+  readonly type: 'cancelGame'
+}
+
 // ============================================================================
 // Sealed Draft Client Messages
 // ============================================================================
@@ -651,6 +667,10 @@ export function isGameCreatedMessage(msg: ServerMessage): msg is GameCreatedMess
 
 export function isGameStartedMessage(msg: ServerMessage): msg is GameStartedMessage {
   return msg.type === 'gameStarted'
+}
+
+export function isGameCancelledMessage(msg: ServerMessage): msg is GameCancelledMessage {
+  return msg.type === 'gameCancelled'
 }
 
 export function isStateUpdateMessage(msg: ServerMessage): msg is StateUpdateMessage {
@@ -736,6 +756,10 @@ export function createChooseBottomCardsMessage(cardIds: readonly EntityId[]): Cl
 
 export function createConcedeMessage(): ConcedeMessage {
   return { type: 'concede' }
+}
+
+export function createCancelGameMessage(): CancelGameMessage {
+  return { type: 'cancelGame' }
 }
 
 // Sealed Draft Message Factories

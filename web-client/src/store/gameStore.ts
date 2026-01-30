@@ -28,6 +28,7 @@ import {
   createMulliganMessage,
   createChooseBottomCardsMessage,
   createConcedeMessage,
+  createCancelGameMessage,
   createCreateSealedGameMessage,
   createJoinSealedGameMessage,
   createSubmitSealedDeckMessage,
@@ -247,6 +248,7 @@ export interface GameStore {
   mulligan: () => void
   chooseBottomCards: (cardIds: readonly EntityId[]) => void
   concede: () => void
+  cancelGame: () => void
   // Sealed draft actions
   createSealedGame: (setCode: string) => void
   joinSealedGame: (sessionId: string) => void
@@ -444,6 +446,19 @@ export const useGameStore = create<GameStore>()(
           opponentName: msg.opponentName,
           mulliganState: null,
           deckBuildingState: null, // Clear deck building state when game starts
+        })
+      },
+
+      onGameCancelled: () => {
+        trackEvent('game_cancelled_by_server')
+        // Return to menu state
+        set({
+          sessionId: null,
+          opponentName: null,
+          gameState: null,
+          legalActions: [],
+          mulliganState: null,
+          deckBuildingState: null,
         })
       },
 
@@ -953,6 +968,11 @@ export const useGameStore = create<GameStore>()(
       concede: () => {
         trackEvent('player_conceded')
         ws?.send(createConcedeMessage())
+      },
+
+      cancelGame: () => {
+        trackEvent('game_cancelled')
+        ws?.send(createCancelGameMessage())
       },
 
       // Sealed draft actions

@@ -160,6 +160,8 @@ export type {
   MulliganMessage,
   ClientChooseBottomCardsMessage,
   ConcedeMessage,
+  CancelGameMessage,
+  GameCancelledMessage,
   // Pending Decision types
   PendingDecision,
   PendingDecisionBase,
@@ -211,6 +213,7 @@ export {
   isConnectedMessage,
   isGameCreatedMessage,
   isGameStartedMessage,
+  isGameCancelledMessage,
   isStateUpdateMessage,
   isMulliganDecisionMessage,
   isChooseBottomCardsMessage,
@@ -225,6 +228,7 @@ export {
   createMulliganMessage,
   createChooseBottomCardsMessage,
   createConcedeMessage,
+  createCancelGameMessage,
   // Sealed Draft message factories
   createCreateSealedGameMessage,
   createJoinSealedGameMessage,

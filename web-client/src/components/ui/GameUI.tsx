@@ -336,6 +336,8 @@ function WaitingForOpponent({
   sessionId: string
   responsive: ReturnType<typeof useResponsive>
 }) {
+  const cancelGame = useGameStore((state) => state.cancelGame)
+
   return (
     <div style={{ textAlign: 'center' }}>
       <p style={{ fontSize: responsive.fontSize.normal }}>Game Created!</p>
@@ -345,6 +347,21 @@ function WaitingForOpponent({
       <p style={{ color: '#888', fontSize: responsive.fontSize.normal }}>
         Waiting for opponent to join...
       </p>
+      <button
+        onClick={cancelGame}
+        style={{
+          marginTop: 20,
+          padding: '8px 16px',
+          fontSize: responsive.fontSize.normal,
+          backgroundColor: '#c0392b',
+          color: 'white',
+          border: 'none',
+          borderRadius: 4,
+          cursor: 'pointer',
+        }}
+      >
+        Cancel Game
+      </button>
     </div>
   )
 }

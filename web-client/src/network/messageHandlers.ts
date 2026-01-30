@@ -4,6 +4,7 @@ import type {
   ReconnectedMessage,
   GameCreatedMessage,
   GameStartedMessage,
+  GameCancelledMessage,
   StateUpdateMessage,
   MulliganDecisionMessage,
   ChooseBottomCardsMessage,
@@ -32,6 +33,7 @@ export interface MessageHandlers {
   onReconnected: (message: ReconnectedMessage) => void
   onGameCreated: (message: GameCreatedMessage) => void
   onGameStarted: (message: GameStartedMessage) => void
+  onGameCancelled: (message: GameCancelledMessage) => void
   onStateUpdate: (message: StateUpdateMessage) => void
   onMulliganDecision: (message: MulliganDecisionMessage) => void
   onChooseBottomCards: (message: ChooseBottomCardsMessage) => void
@@ -72,6 +74,9 @@ export function handleServerMessage(message: ServerMessage, handlers: MessageHan
       break
     case 'gameStarted':
       handlers.onGameStarted(message)
+      break
+    case 'gameCancelled':
+      handlers.onGameCancelled(message)
       break
     case 'stateUpdate':
       handlers.onStateUpdate(message)
@@ -161,6 +166,10 @@ export function createLoggingHandlers(handlers: MessageHandlers): MessageHandler
     onGameStarted: (msg) => {
       console.log('[Server] Game started:', msg)
       handlers.onGameStarted(msg)
+    },
+    onGameCancelled: (msg) => {
+      console.log('[Server] Game cancelled:', msg)
+      handlers.onGameCancelled(msg)
     },
     onStateUpdate: (msg) => {
       console.log('[Server] State update:', msg)

@@ -44,6 +44,7 @@ class GamePlayHandler(
             is ClientMessage.JoinGame -> handleJoinGame(session, message)
             is ClientMessage.SubmitAction -> handleSubmitAction(session, message)
             is ClientMessage.Concede -> handleConcede(session)
+            is ClientMessage.CancelGame -> handleCancelGame(session)
             is ClientMessage.KeepHand -> handleKeepHand(session)
             is ClientMessage.Mulligan -> handleMulligan(session)
             is ClientMessage.ChooseBottomCards -> handleChooseBottomCards(session, message)
@@ -81,6 +82,52 @@ class GamePlayHandler(
 
         logger.info("Game created: ${gameSession.sessionId} by ${playerSession.playerName}")
         sender.send(session, ServerMessage.GameCreated(gameSession.sessionId))
+    }
+
+    private fun handleCancelGame(session: WebSocketSession) {
+        val playerSession = sessionRegistry.getPlayerSession(session.id)
+        if (playerSession == null) {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        val gameSessionId = playerSession.currentGameSessionId
+        if (gameSessionId == null) {
+            sender.sendError(session, ErrorCode.GAME_NOT_FOUND, "Not in a game")
+            return
+        }
+
+        val gameSession = gameRepository.findById(gameSessionId)
+        if (gameSession == null) {
+            sender.sendError(session, ErrorCode.GAME_NOT_FOUND, "Game not found")
+            return
+        }
+
+        // Only allow cancelling if game hasn't started yet (still waiting for opponent)
+        if (gameSession.isStarted) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "Cannot cancel a game that has already started. Use concede instead.")
+            return
+        }
+
+        logger.info("Player ${playerSession.playerName} cancelled game ${gameSession.sessionId}")
+
+        // Clear the waiting game session if this is it
+        if (waitingGameSession?.sessionId == gameSession.sessionId) {
+            waitingGameSession = null
+        }
+
+        // Clear player's current game session
+        playerSession.currentGameSessionId = null
+        val token = sessionRegistry.getTokenByWsId(session.id)
+        if (token != null) {
+            sessionRegistry.getIdentityByToken(token)?.currentGameSessionId = null
+        }
+
+        // Remove the game
+        gameRepository.remove(gameSessionId)
+
+        // Notify the player
+        sender.send(session, ServerMessage.GameCancelled)
     }
 
     fun handleJoinGame(session: WebSocketSession, message: ClientMessage.JoinGame) {

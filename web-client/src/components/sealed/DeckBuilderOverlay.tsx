@@ -25,6 +25,7 @@ export function DeckBuilderOverlay() {
  */
 function WaitingForOpponent({ setName }: { setName: string }) {
   const sessionId = useGameStore((state) => state.sessionId)
+  const cancelGame = useGameStore((state) => state.cancelGame)
   const responsive = useResponsive()
 
   return (
@@ -82,6 +83,21 @@ function WaitingForOpponent({ setName }: { setName: string }) {
           Share this ID with your opponent
         </p>
       </div>
+      <button
+        onClick={cancelGame}
+        style={{
+          marginTop: 8,
+          padding: '10px 20px',
+          fontSize: responsive.fontSize.normal,
+          backgroundColor: '#c0392b',
+          color: 'white',
+          border: 'none',
+          borderRadius: 4,
+          cursor: 'pointer',
+        }}
+      >
+        Cancel Game
+      </button>
     </div>
   )
 }

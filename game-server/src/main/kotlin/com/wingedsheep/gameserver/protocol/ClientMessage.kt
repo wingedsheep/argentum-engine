@@ -50,6 +50,13 @@ sealed interface ClientMessage {
     data object Concede : ClientMessage
 
     /**
+     * Cancel a game that hasn't started yet (waiting for opponent).
+     */
+    @Serializable
+    @SerialName("cancelGame")
+    data object CancelGame : ClientMessage
+
+    /**
      * Keep the current opening hand (end mulligan phase for this player).
      */
     @Serializable

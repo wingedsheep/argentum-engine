@@ -49,6 +49,13 @@ sealed interface ServerMessage {
     data class GameStarted(val opponentName: String) : ServerMessage
 
     /**
+     * Game was cancelled before it started (by the creator).
+     */
+    @Serializable
+    @SerialName("gameCancelled")
+    data object GameCancelled : ServerMessage
+
+    /**
      * Game state update after an action is executed.
      */
     @Serializable

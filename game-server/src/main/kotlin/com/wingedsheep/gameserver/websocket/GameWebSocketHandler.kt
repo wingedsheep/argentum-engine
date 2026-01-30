@@ -51,6 +51,7 @@ class GameWebSocketHandler(
                 is ClientMessage.JoinGame,
                 is ClientMessage.SubmitAction,
                 is ClientMessage.Concede,
+                is ClientMessage.CancelGame,
                 is ClientMessage.KeepHand,
                 is ClientMessage.Mulligan,
                 is ClientMessage.ChooseBottomCards -> gamePlayHandler.handle(session, clientMessage)
