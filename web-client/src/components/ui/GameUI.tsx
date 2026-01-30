@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useGameStore, type LobbyState, type TournamentState } from '../../store/gameStore'
-import { useResponsive } from '../../hooks/useResponsive'
+import { useResponsive, type ResponsiveSizes } from '../../hooks/useResponsive'
 
 type GameMode = 'normal' | 'sealed'
 
@@ -110,6 +110,7 @@ function ConnectionOverlay({
         pointerEvents: 'auto',
       }}
     >
+      <FullscreenButton responsive={responsive} />
       <h1 style={{ margin: 0, fontSize: responsive.fontSize.xlarge }}>Argentum Engine</h1>
 
       {error && (
@@ -413,6 +414,7 @@ function LobbyOverlay({
         padding: responsive.containerPadding,
       }}
     >
+      <FullscreenButton responsive={responsive} />
       <div style={{
         width: '100%',
         maxWidth: 500,
@@ -860,4 +862,56 @@ const tdStyle: React.CSSProperties = {
   padding: '10px 12px',
   textAlign: 'center',
   fontSize: 14,
+}
+
+/**
+ * Fullscreen toggle button.
+ */
+function FullscreenButton({ responsive }: { responsive: ResponsiveSizes }) {
+  const [isFullscreen, setIsFullscreen] = useState(false)
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement)
+    }
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
+  }, [])
+
+  const toggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen()
+      } else {
+        await document.exitFullscreen()
+      }
+    } catch (err) {
+      console.error('Fullscreen error:', err)
+    }
+  }
+
+  return (
+    <button
+      onClick={toggleFullscreen}
+      style={{
+        position: 'absolute',
+        top: responsive.isMobile ? 8 : 12,
+        left: responsive.isMobile ? 8 : 12,
+        zIndex: 100,
+        padding: responsive.isMobile ? '6px 10px' : '8px 14px',
+        fontSize: responsive.fontSize.small,
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        color: '#888',
+        border: '1px solid #444',
+        borderRadius: 6,
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 4,
+      }}
+      title={isFullscreen ? 'Exit fullscreen (Esc)' : 'Enter fullscreen'}
+    >
+      {isFullscreen ? '⛶ Exit' : '⛶ Fullscreen'}
+    </button>
+  )
 }

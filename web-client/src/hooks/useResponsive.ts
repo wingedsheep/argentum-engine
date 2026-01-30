@@ -103,34 +103,52 @@ export function useResponsive(): ResponsiveSizes {
     const baseCardWidth = isMobile ? 70 : isTablet ? 90 : 120
     const cardRatio = 1.4 // MTG card aspect ratio
 
-    // Scale down card sizes when viewport height is limited.
-    // The board needs to fit: opponent info + opponent hand + 2 battlefield rows (opponent) +
-    // center area + 2 battlefield rows (player) + player hand + player controls.
-    // On short screens, reduce card sizes proportionally.
-    const heightScale = height < 900 ? Math.max(0.6, height / 900) : 1
+    // Spacing scales with screen size - more aggressive reduction for compact screens
+    const cardGap = isMobile ? 2 : isCompact ? 4 : isTablet ? 6 : 8
+    const sectionGap = isMobile ? 2 : isCompact ? 4 : isTablet ? 6 : 8
+    const containerPadding = isMobile ? 4 : isCompact ? 8 : isTablet ? 12 : 16
+
+    // Calculate height scale based on actual available space.
+    // The layout has these vertical elements (after moving life/controls to center):
+    // - Center area with life totals and phase indicator: ~40px
+    // - Container padding (top + bottom): containerPadding * 2
+    // - Section gaps between main areas: sectionGap * 2
+    // - Card row padding/gaps: cardGap * 6
+    // - Card rows (weighted by relative size):
+    //   * Opponent hand (small cards): ~0.5 battlefield row equivalent
+    //   * 4 battlefield rows: 4.0 rows
+    //   * Player hand (larger cards): ~1.2 battlefield row equivalent
+    //   Total: ~5.7 rows, use 6.0 for safety margin
+    //
+    // We need: fixedHeight + (6 * battlefieldCardHeight) <= viewportHeight
+    const fixedElementsHeight = 40 + (containerPadding * 2) + (sectionGap * 2) + (cardGap * 6)
+    const availableForCards = Math.max(150, height - fixedElementsHeight)
+    const effectiveCardRows = 6.0
+    const maxCardHeight = availableForCards / effectiveCardRows
+    const maxCardWidth = maxCardHeight / cardRatio
+
+    // Base battlefield card width (the largest cards that determine fit)
+    const baseBattlefieldCardWidth = isMobile ? 60 : isTablet ? 80 : 100
+
+    // Calculate scale: how much we need to shrink to fit
+    const heightScale = Math.min(1, maxCardWidth / baseBattlefieldCardWidth)
 
     const cardWidth = Math.round(baseCardWidth * heightScale)
     const cardHeight = Math.round(cardWidth * cardRatio)
 
-    // Small cards (opponent hand)
-    const baseSmallCardWidth = isMobile ? 40 : isTablet ? 50 : 60
+    // Small cards (opponent hand) - scale proportionally, extra small on compact
+    const baseSmallCardWidth = isMobile ? 30 : isCompact ? 40 : isTablet ? 50 : 60
     const smallCardWidth = Math.round(baseSmallCardWidth * heightScale)
     const smallCardHeight = Math.round(smallCardWidth * cardRatio)
 
     // Battlefield cards - slightly smaller than hand cards
-    const baseBattlefieldCardWidth = isMobile ? 60 : isTablet ? 80 : 100
     const battlefieldCardWidth = Math.round(baseBattlefieldCardWidth * heightScale)
     const battlefieldCardHeight = Math.round(battlefieldCardWidth * cardRatio)
 
-    // Pile sizes (deck/graveyard)
-    const basePileWidth = isMobile ? 50 : isTablet ? 60 : 70
+    // Pile sizes (deck/graveyard) - smaller on compact screens
+    const basePileWidth = isMobile ? 40 : isCompact ? 50 : isTablet ? 60 : 70
     const pileWidth = Math.round(basePileWidth * heightScale)
     const pileHeight = Math.round(pileWidth * cardRatio)
-
-    // Spacing scales with screen size
-    const cardGap = isMobile ? 4 : isTablet ? 6 : 8
-    const sectionGap = isMobile ? 4 : isTablet ? 6 : 8
-    const containerPadding = isMobile ? 8 : isTablet ? 12 : 16
 
     // Font sizes
     const fontSize = {

@@ -73,6 +73,7 @@ export function ZoneSelectionUI({
 }: ZoneSelectionUIProps) {
   const [selectedCards, setSelectedCards] = useState<EntityId[]>([])
   const [hoveredCardId, setHoveredCardId] = useState<EntityId | null>(null)
+  const [minimized, setMinimized] = useState(false)
   const hoverCard = useGameStore((s) => s.hoverCard)
 
   // Handle hover - use global store if enabled
@@ -151,6 +152,36 @@ export function ZoneSelectionUI({
   const handleFailToFind = () => {
     onConfirm([])
     setSelectedCards([])
+  }
+
+  // When minimized, show floating button to restore
+  if (minimized) {
+    return (
+      <button
+        onClick={() => setMinimized(false)}
+        style={{
+          position: 'fixed',
+          bottom: 70,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          padding: responsive.isMobile ? '10px 16px' : '12px 24px',
+          fontSize: responsive.fontSize.normal,
+          backgroundColor: '#1e40af',
+          color: 'white',
+          border: 'none',
+          borderRadius: 8,
+          cursor: 'pointer',
+          fontWeight: 600,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+          zIndex: 100,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+        }}
+      >
+        ↑ Return to {title}
+      </button>
+    )
   }
 
   return (
@@ -270,6 +301,23 @@ export function ZoneSelectionUI({
           marginTop: 8,
         }}
       >
+        {/* View Battlefield button */}
+        <button
+          onClick={() => setMinimized(true)}
+          style={{
+            padding: responsive.isMobile ? '10px 20px' : '12px 28px',
+            fontSize: responsive.fontSize.normal,
+            backgroundColor: '#1e40af',
+            color: 'white',
+            border: 'none',
+            borderRadius: 8,
+            cursor: 'pointer',
+            transition: 'all 0.15s',
+          }}
+        >
+          View Battlefield
+        </button>
+
         {/* Fail to Find button */}
         {showFailToFind && (
           <button

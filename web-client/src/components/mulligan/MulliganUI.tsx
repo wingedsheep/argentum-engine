@@ -11,10 +11,42 @@ export function MulliganUI() {
   const mulliganState = useGameStore((state) => state.mulliganState)
   const responsive = useResponsive()
   const [hoveredCardId, setHoveredCardId] = useState<EntityId | null>(null)
+  const [minimized, setMinimized] = useState(false)
 
   if (!mulliganState) return null
 
   const hoveredCardInfo = hoveredCardId ? mulliganState.cards[hoveredCardId] : null
+  const isChoosingBottom = mulliganState.phase === 'choosingBottomCards'
+
+  // When minimized (only during choosingBottom phase), show floating button to restore
+  if (minimized && isChoosingBottom) {
+    return (
+      <button
+        onClick={() => setMinimized(false)}
+        style={{
+          position: 'fixed',
+          bottom: 70,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          padding: responsive.isMobile ? '10px 16px' : '12px 24px',
+          fontSize: responsive.fontSize.normal,
+          backgroundColor: '#1e40af',
+          color: 'white',
+          border: 'none',
+          borderRadius: 8,
+          cursor: 'pointer',
+          fontWeight: 600,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+          zIndex: 100,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+        }}
+      >
+        ↑ Return to Card Selection
+      </button>
+    )
+  }
 
   return (
     <div
@@ -38,7 +70,7 @@ export function MulliganUI() {
       {mulliganState.phase === 'deciding' ? (
         <MulliganDecision state={mulliganState} responsive={responsive} onHoverCard={setHoveredCardId} />
       ) : (
-        <ChooseBottomCards state={mulliganState} responsive={responsive} onHoverCard={setHoveredCardId} />
+        <ChooseBottomCards state={mulliganState} responsive={responsive} onHoverCard={setHoveredCardId} onMinimize={() => setMinimized(true)} />
       )}
 
       {/* Card preview on hover */}
@@ -143,7 +175,7 @@ function MulliganDecision({ state, responsive, onHoverCard }: { state: MulliganS
 /**
  * Choose cards to put on bottom after keeping.
  */
-function ChooseBottomCards({ state, responsive, onHoverCard }: { state: MulliganState; responsive: ResponsiveSizes; onHoverCard: (cardId: EntityId | null) => void }) {
+function ChooseBottomCards({ state, responsive, onHoverCard, onMinimize }: { state: MulliganState; responsive: ResponsiveSizes; onHoverCard: (cardId: EntityId | null) => void; onMinimize: () => void }) {
   const chooseBottomCards = useGameStore((s) => s.chooseBottomCards)
   const toggleMulliganCard = useGameStore((s) => s.toggleMulliganCard)
 
@@ -197,22 +229,38 @@ function ChooseBottomCards({ state, responsive, onHoverCard }: { state: Mulligan
         })}
       </div>
 
-      {/* Confirm button */}
-      <button
-        onClick={() => chooseBottomCards(state.selectedCards)}
-        disabled={!canConfirm}
-        style={{
-          padding: responsive.isMobile ? '10px 20px' : '12px 32px',
-          fontSize: responsive.fontSize.large,
-          backgroundColor: canConfirm ? '#00aa00' : '#444',
-          color: canConfirm ? 'white' : '#888',
-          border: 'none',
-          borderRadius: 8,
-          cursor: canConfirm ? 'pointer' : 'not-allowed',
-        }}
-      >
-        Confirm
-      </button>
+      {/* Action buttons */}
+      <div style={{ display: 'flex', gap: 16 }}>
+        <button
+          onClick={onMinimize}
+          style={{
+            padding: responsive.isMobile ? '10px 20px' : '12px 28px',
+            fontSize: responsive.fontSize.normal,
+            backgroundColor: '#1e40af',
+            color: 'white',
+            border: 'none',
+            borderRadius: 8,
+            cursor: 'pointer',
+          }}
+        >
+          View Battlefield
+        </button>
+        <button
+          onClick={() => chooseBottomCards(state.selectedCards)}
+          disabled={!canConfirm}
+          style={{
+            padding: responsive.isMobile ? '10px 20px' : '12px 32px',
+            fontSize: responsive.fontSize.large,
+            backgroundColor: canConfirm ? '#00aa00' : '#444',
+            color: canConfirm ? 'white' : '#888',
+            border: 'none',
+            borderRadius: 8,
+            cursor: canConfirm ? 'pointer' : 'not-allowed',
+          }}
+        >
+          Confirm
+        </button>
+      </div>
     </>
   )
 }

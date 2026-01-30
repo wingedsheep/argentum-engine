@@ -15,6 +15,7 @@ export function RevealedHandUI() {
   const hoverCard = useGameStore((state) => state.hoverCard)
   const responsive = useResponsive()
   const [hoveredCardId, setHoveredCardId] = useState<EntityId | null>(null)
+  const [minimized, setMinimized] = useState(false)
 
   if (!revealedHandCardIds || !gameState) return null
 
@@ -45,6 +46,36 @@ export function RevealedHandUI() {
   const handleMouseLeave = () => {
     setHoveredCardId(null)
     hoverCard(null)
+  }
+
+  // When minimized, show floating button to restore
+  if (minimized) {
+    return (
+      <button
+        onClick={() => setMinimized(false)}
+        style={{
+          position: 'fixed',
+          bottom: 70,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          padding: responsive.isMobile ? '10px 16px' : '12px 24px',
+          fontSize: responsive.fontSize.normal,
+          backgroundColor: '#1e40af',
+          color: 'white',
+          border: 'none',
+          borderRadius: 8,
+          cursor: 'pointer',
+          fontWeight: 600,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+          zIndex: 100,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+        }}
+      >
+        ↑ Return to Opponent's Hand
+      </button>
+    )
   }
 
   return (
@@ -189,23 +220,40 @@ export function RevealedHandUI() {
         </div>
       )}
 
-      {/* Dismiss button */}
-      <button
-        onClick={dismissRevealedHand}
-        style={{
-          padding: responsive.isMobile ? '10px 24px' : '12px 36px',
-          fontSize: responsive.fontSize.large,
-          backgroundColor: '#16a34a',
-          color: 'white',
-          border: 'none',
-          borderRadius: 8,
-          cursor: 'pointer',
-          fontWeight: 600,
-          transition: 'all 0.15s',
-        }}
-      >
-        OK
-      </button>
+      {/* Action buttons */}
+      <div style={{ display: 'flex', gap: 16 }}>
+        <button
+          onClick={() => setMinimized(true)}
+          style={{
+            padding: responsive.isMobile ? '10px 20px' : '12px 28px',
+            fontSize: responsive.fontSize.normal,
+            backgroundColor: '#1e40af',
+            color: 'white',
+            border: 'none',
+            borderRadius: 8,
+            cursor: 'pointer',
+            transition: 'all 0.15s',
+          }}
+        >
+          View Battlefield
+        </button>
+        <button
+          onClick={dismissRevealedHand}
+          style={{
+            padding: responsive.isMobile ? '10px 24px' : '12px 36px',
+            fontSize: responsive.fontSize.large,
+            backgroundColor: '#16a34a',
+            color: 'white',
+            border: 'none',
+            borderRadius: 8,
+            cursor: 'pointer',
+            fontWeight: 600,
+            transition: 'all 0.15s',
+          }}
+        >
+          OK
+        </button>
+      </div>
       {/* Card preview is handled by the global CardPreview component in GameBoard */}
     </div>
   )
