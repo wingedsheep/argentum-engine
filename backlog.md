@@ -22,7 +22,7 @@
 - [ ] Last chance doesn't work yet. It should show a badge to indicate that the player loses next turn, and make the opponent skip their next turn.
 - [ ] Spitting earth card doesn't deal any damage, even though I have mountains in play
 - [ ] Disable analytics for local development
-- [ ] Breath of life doesn't work. It can't target a creature in my graveyard.
+- [x] Breath of life doesn't work. It can't target a creature in my graveyard.
 - [ ] First return to tournament standings before starting next game
 
 ## Improvements
