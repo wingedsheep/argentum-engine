@@ -2423,6 +2423,12 @@ sealed interface CreatureGroupFilter {
         override val description: String = "Creatures you control with ${keyword.displayName.lowercase()}"
     }
 
+    /** Other tapped creatures you control (excludes self) */
+    @Serializable
+    data object OtherTappedYouControl : CreatureGroupFilter {
+        override val description: String = "Other tapped creatures you control"
+    }
+
     /** All nonwhite creatures */
     @Serializable
     data object NonWhite : CreatureGroupFilter {

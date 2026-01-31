@@ -10,6 +10,7 @@ import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CreatureGroupFilter
 import com.wingedsheep.sdk.scripting.GrantCantBeBlockedExceptByColorEffect
@@ -94,6 +95,10 @@ class GrantCantBeBlockedExceptByColorExecutor : EffectExecutor<GrantCantBeBlocke
                 controllerId == context.controllerId && cardComponent.colors.contains(filter.color)
             is CreatureGroupFilter.WithKeywordYouControl ->
                 controllerId == context.controllerId && cardComponent.baseKeywords.contains(filter.keyword)
+            is CreatureGroupFilter.OtherTappedYouControl -> {
+                val isTapped = state.getEntity(entityId)?.has<TappedComponent>() == true
+                controllerId == context.controllerId && entityId != context.sourceId && isTapped
+            }
         }
     }
 }

@@ -2,6 +2,7 @@ package com.wingedsheep.gameserver.sealed
 
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.mtg.sets.definitions.lorwyn.LorwynEclipsedSet
 import com.wingedsheep.mtg.sets.definitions.portal.PortalSet
 
 /**
@@ -34,6 +35,12 @@ class BoosterGenerator {
                 setName = PortalSet.SET_NAME,
                 cards = PortalSet.allCards,
                 basicLands = PortalSet.basicLands
+            ),
+            LorwynEclipsedSet.SET_CODE to SetConfig(
+                setCode = LorwynEclipsedSet.SET_CODE,
+                setName = LorwynEclipsedSet.SET_NAME,
+                cards = LorwynEclipsedSet.allCards,
+                basicLands = LorwynEclipsedSet.basicLands
             )
         )
 

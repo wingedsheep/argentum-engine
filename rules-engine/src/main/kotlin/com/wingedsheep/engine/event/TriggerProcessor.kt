@@ -136,6 +136,12 @@ class TriggerProcessor(
             )
         }
 
+        // If no legal targets but targeting is optional (effectiveMinCount == 0),
+        // put the ability on the stack with no targets - no need to prompt the player
+        if (legalTargets.isEmpty() && targetRequirement.effectiveMinCount == 0) {
+            return putTriggerOnStack(state, trigger, emptyList())
+        }
+
         // Auto-select player targets when there's exactly one legal target and requirement is for exactly one target.
         // This applies to TargetPlayer and TargetOpponent - in a 2-player game with TargetOpponent,
         // there's always exactly one choice so we skip the prompt for better UX.

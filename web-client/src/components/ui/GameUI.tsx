@@ -7,6 +7,7 @@ type GameMode = 'normal' | 'tournament'
 // Available sets for tournament play
 const AVAILABLE_SETS = [
   { code: 'POR', name: 'Portal' },
+  { code: 'ECL', name: 'Lorwyn Eclipsed' },
 ]
 
 /**
