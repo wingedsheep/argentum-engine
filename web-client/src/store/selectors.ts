@@ -135,8 +135,12 @@ export function usePlayer(playerId: EntityId | null): ClientPlayer | null {
  * Hook to get the viewing player.
  */
 export function useViewingPlayer(): ClientPlayer | null {
+  const gameState = useGameStore(selectGameState)
   const playerId = useGameStore(selectViewingPlayerId)
-  return usePlayer(playerId)
+  return useMemo(() => {
+    if (!gameState || !playerId) return null
+    return gameState.players.find((p) => p.playerId === playerId) ?? null
+  }, [gameState, playerId])
 }
 
 /**
