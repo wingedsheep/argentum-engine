@@ -570,6 +570,24 @@ class ClientStateTransformer(
             )
         }
 
+        // Check for MustAttackPlayerComponent (Taunt effect)
+        val mustAttack = container.get<MustAttackPlayerComponent>()
+        if (mustAttack != null) {
+            val description = if (mustAttack.activeThisTurn) {
+                "Your creatures must attack this turn"
+            } else {
+                "Your creatures must attack on your next turn"
+            }
+            effects.add(
+                ClientPlayerEffect(
+                    effectId = "must_attack",
+                    name = "Taunted",
+                    description = description,
+                    icon = "taunt"
+                )
+            )
+        }
+
         return effects
     }
 

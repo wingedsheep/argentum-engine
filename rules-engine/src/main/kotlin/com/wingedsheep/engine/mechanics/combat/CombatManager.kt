@@ -58,6 +58,12 @@ class CombatManager(
             }
         }
 
+        // Check must-attack requirements (Taunt)
+        val mustAttackValidation = validateMustAttackRequirements(state, attackingPlayer, attackers)
+        if (mustAttackValidation != null) {
+            return ExecutionResult.error(state, mustAttackValidation)
+        }
+
         // Apply attacker components and tap attacking creatures
         var newState = state
         val projected = stateProjector.project(state)
@@ -134,6 +140,94 @@ class CombatManager(
         }
 
         return null
+    }
+
+    /**
+     * Validate "must attack" requirements (Taunt effect).
+     *
+     * When a player has MustAttackPlayerComponent active:
+     * - All creatures that CAN attack MUST be declared as attackers
+     * - All declared attackers MUST attack the specified defender
+     *
+     * @return Error message if requirements not met, null if valid
+     */
+    private fun validateMustAttackRequirements(
+        state: GameState,
+        attackingPlayer: EntityId,
+        attackers: Map<EntityId, EntityId>
+    ): String? {
+        val mustAttack = state.getEntity(attackingPlayer)?.get<MustAttackPlayerComponent>()
+            ?: return null  // No must-attack requirement
+
+        // Only enforce if active this turn
+        if (!mustAttack.activeThisTurn) {
+            return null
+        }
+
+        val requiredDefender = mustAttack.defenderId
+
+        // Get all creatures that can legally attack
+        val validAttackers = getValidAttackers(state, attackingPlayer)
+
+        // All valid attackers must be declared
+        for (attackerId in validAttackers) {
+            if (attackerId !in attackers.keys) {
+                val cardName = state.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
+                return "$cardName must attack this turn (Taunt)"
+            }
+        }
+
+        // All declared attackers must attack the required defender
+        for ((attackerId, defenderId) in attackers) {
+            if (defenderId != requiredDefender) {
+                val cardName = state.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
+                val defenderName = state.getEntity(requiredDefender)?.get<CardComponent>()?.name ?: "that player"
+                return "$cardName must attack $defenderName (Taunt)"
+            }
+        }
+
+        return null
+    }
+
+    /**
+     * Get all creatures that can legally attack for a player.
+     * Used for validating must-attack requirements.
+     */
+    private fun getValidAttackers(state: GameState, playerId: EntityId): List<EntityId> {
+        val battlefield = state.getBattlefield()
+        val projected = stateProjector.project(state)
+
+        return battlefield.filter { entityId ->
+            val container = state.getEntity(entityId) ?: return@filter false
+            val cardComponent = container.get<CardComponent>() ?: return@filter false
+            val controller = container.get<ControllerComponent>()?.playerId
+
+            // Must be a creature controlled by the player
+            if (!cardComponent.typeLine.isCreature || controller != playerId) {
+                return@filter false
+            }
+
+            // Must be untapped
+            if (container.has<TappedComponent>()) {
+                return@filter false
+            }
+
+            // Check projected keywords for Haste/Defender
+            val hasHaste = projected.hasKeyword(entityId, Keyword.HASTE)
+            val hasDefender = projected.hasKeyword(entityId, Keyword.DEFENDER)
+
+            // Must not have summoning sickness (unless it has haste)
+            if (!hasHaste && container.has<SummoningSicknessComponent>()) {
+                return@filter false
+            }
+
+            // Must not have defender
+            if (hasDefender) {
+                return@filter false
+            }
+
+            true
+        }
     }
 
     // =========================================================================

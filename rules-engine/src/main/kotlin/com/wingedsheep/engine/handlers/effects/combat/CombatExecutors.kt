@@ -11,6 +11,7 @@ class CombatExecutors : ExecutorModule {
         MustBeBlockedExecutor(),
         PreventDamageFromAttackingCreaturesExecutor(),
         GrantCantBeBlockedExceptByColorExecutor(),
-        ReflectCombatDamageExecutor()
+        ReflectCombatDamageExecutor(),
+        TauntExecutor()
     )
 }

@@ -10,6 +10,7 @@ import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
+import com.wingedsheep.engine.state.components.combat.MustAttackPlayerComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
@@ -56,7 +57,7 @@ class TurnManager(
             state.turnNumber
         }
 
-        val newState = state.copy(
+        var newState = state.copy(
             activePlayerId = playerId,
             turnNumber = newTurnNumber,
             phase = Phase.BEGINNING,
@@ -64,6 +65,14 @@ class TurnManager(
             priorityPlayerId = null, // No priority during untap
             priorityPassedBy = emptySet()
         )
+
+        // Activate MustAttackPlayerComponent if present (Taunt effect)
+        val mustAttack = newState.getEntity(playerId)?.get<MustAttackPlayerComponent>()
+        if (mustAttack != null && !mustAttack.activeThisTurn) {
+            newState = newState.updateEntity(playerId) { container ->
+                container.with(mustAttack.copy(activeThisTurn = true))
+            }
+        }
 
         return ExecutionResult.success(
             newState,
@@ -376,6 +385,15 @@ class TurnManager(
                 if (!endCombatResult.isSuccess) return endCombatResult
                 newState = endCombatResult.newState
                 events.addAll(endCombatResult.events)
+
+                // Remove MustAttackPlayerComponent after combat (Taunt effect is consumed)
+                val mustAttack = newState.getEntity(activePlayer)?.get<MustAttackPlayerComponent>()
+                if (mustAttack != null && mustAttack.activeThisTurn) {
+                    newState = newState.updateEntity(activePlayer) { container ->
+                        container.without<MustAttackPlayerComponent>()
+                    }
+                }
+
                 newState = newState.withPriority(activePlayer)
             }
 

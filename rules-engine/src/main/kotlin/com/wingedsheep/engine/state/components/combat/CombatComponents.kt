@@ -96,3 +96,21 @@ data object AttackersDeclaredThisCombatComponent : Component
  */
 @Serializable
 data object BlockersDeclaredThisCombatComponent : Component
+
+/**
+ * Marks a player whose creatures must attack a specific defender if able.
+ * Used by Taunt and similar effects.
+ *
+ * This component is added to the player who was targeted by Taunt.
+ * During their next turn, all creatures they control that can attack
+ * must attack the specified defender (the Taunt caster).
+ *
+ * The component is removed after that player's combat phase ends.
+ */
+@Serializable
+data class MustAttackPlayerComponent(
+    /** The defender that must be attacked (the Taunt caster) */
+    val defenderId: EntityId,
+    /** Whether this is active for the current turn (set to true at start of affected player's turn) */
+    val activeThisTurn: Boolean = false
+) : Component

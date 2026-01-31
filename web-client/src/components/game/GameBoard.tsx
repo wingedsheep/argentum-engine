@@ -377,6 +377,8 @@ function getEffectIcon(icon: string): string {
       return '🔒'
     case 'skull':
       return '💀'
+    case 'taunt':
+      return '⚔️'
     default:
       return '⚡'
   }
