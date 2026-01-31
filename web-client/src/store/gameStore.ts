@@ -442,10 +442,17 @@ const STACK_VIEW_DELAY = 1500 // ms - to show opponent's spell before auto-passi
 function shouldAutoPass(
   legalActions: readonly LegalActionInfo[],
   gameState: ClientGameState,
-  playerId: EntityId
+  playerId: EntityId,
+  pendingDecision: PendingDecision | null | undefined
 ): AutoPassResult {
   // Must have priority
   if (gameState.priorityPlayerId !== playerId) {
+    return { autoPass: false }
+  }
+
+  // Don't auto-pass if the opponent has a pending decision (e.g., discarding cards)
+  // The game is waiting on them, not us
+  if (pendingDecision && pendingDecision.playerId !== playerId) {
     return { autoPass: false }
   }
 
@@ -690,11 +697,24 @@ export const useGameStore = create<GameStore>()(
         // Auto-pass when the only action available is PassPriority
         // This skips through steps with no meaningful player actions
         if (playerId) {
-          const autoPassResult = shouldAutoPass(msg.legalActions, msg.state, playerId)
+          const autoPassResult = shouldAutoPass(msg.legalActions, msg.state, playerId, msg.pendingDecision)
           if (autoPassResult.autoPass) {
             // Use the delay from the result - longer delay when showing opponent's spell
             setTimeout(() => {
-              const passAction = msg.legalActions.find((a) => a.action.type === 'PassPriority')
+              // Re-check current state - game may have changed during the delay
+              const currentState = get()
+              if (!currentState.gameState || !currentState.playerId) return
+
+              // Verify auto-pass is still valid with current state
+              const recheck = shouldAutoPass(
+                currentState.legalActions,
+                currentState.gameState,
+                currentState.playerId,
+                currentState.pendingDecision
+              )
+              if (!recheck.autoPass) return
+
+              const passAction = currentState.legalActions.find((a) => a.action.type === 'PassPriority')
               if (passAction && ws) {
                 ws.send(createSubmitActionMessage(passAction.action))
               }
