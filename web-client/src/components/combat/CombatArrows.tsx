@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useGameStore } from '../../store/gameStore'
 import type { EntityId } from '../../types'
+import { Step } from '../../types'
 
 interface Point {
   x: number
@@ -119,13 +120,27 @@ function getCardCenter(cardId: EntityId): Point | null {
  * 2. For the attacking player during declare blockers - uses opponentBlockerAssignments (real-time sync)
  * 3. After blockers are declared (for both players) - uses server-sent gameState.combat
  */
+// Combat steps where blocker arrows should be visible
+const COMBAT_STEPS = new Set([
+  Step.BEGIN_COMBAT,
+  Step.DECLARE_ATTACKERS,
+  Step.DECLARE_BLOCKERS,
+  Step.FIRST_STRIKE_COMBAT_DAMAGE,
+  Step.COMBAT_DAMAGE,
+  Step.END_COMBAT,
+])
+
 export function CombatArrows() {
   const combatState = useGameStore((state) => state.combatState)
   const gameStateCombat = useGameStore((state) => state.gameState?.combat)
+  const currentStep = useGameStore((state) => state.gameState?.currentStep)
   const opponentBlockerAssignments = useGameStore((state) => state.opponentBlockerAssignments)
   const draggingBlockerId = useGameStore((state) => state.draggingBlockerId)
   const [mousePos, setMousePos] = useState<Point | null>(null)
   const [arrows, setArrows] = useState<Array<{ start: Point; end: Point; blockerId: EntityId }>>([])
+
+  // Check if we're still in combat phase
+  const isInCombatPhase = currentStep && COMBAT_STEPS.has(currentStep as Step)
 
   // Track mouse position during drag
   useEffect(() => {
@@ -185,8 +200,8 @@ export function CombatArrows() {
             })
           }
         }
-      } else if (gameStateCombat && gameStateCombat.blockers.length > 0) {
-        // Use server-sent combat data (shows to both players after blockers declared)
+      } else if (gameStateCombat && gameStateCombat.blockers.length > 0 && isInCombatPhase) {
+        // Use server-sent combat data (shows to both players after blockers declared, only during combat)
         for (const blocker of gameStateCombat.blockers) {
           const blockerPos = getCardCenter(blocker.creatureId)
           const attackerPos = getCardCenter(blocker.blockingAttacker)
@@ -208,12 +223,12 @@ export function CombatArrows() {
     updateArrows()
     const interval = setInterval(updateArrows, 100)
     return () => clearInterval(interval)
-  }, [combatState, gameStateCombat, opponentBlockerAssignments, isDeclaringBlockers])
+  }, [combatState, gameStateCombat, opponentBlockerAssignments, isDeclaringBlockers, isInCombatPhase])
 
   // Don't render if no arrows to show
   const hasBlockers = isDeclaringBlockers ||
     (opponentBlockerAssignments && Object.keys(opponentBlockerAssignments).length > 0) ||
-    (gameStateCombat && gameStateCombat.blockers.length > 0)
+    (gameStateCombat && gameStateCombat.blockers.length > 0 && isInCombatPhase)
   if (!hasBlockers && !draggingBlockerId) {
     return null
   }
