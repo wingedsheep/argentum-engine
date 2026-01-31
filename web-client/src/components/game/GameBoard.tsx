@@ -2564,6 +2564,7 @@ const styles: Record<string, React.CSSProperties> = {
   emptyZone: {
     color: '#444',
     padding: 4,
+    minHeight: 60,
   },
   battlefieldArea: {
     display: 'flex',
