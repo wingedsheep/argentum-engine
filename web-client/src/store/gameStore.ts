@@ -417,39 +417,49 @@ function getTopOfStack(gameState: ClientGameState): ClientCard | null {
   return topId ? (gameState.cards[topId] ?? null) : null
 }
 
+/** Result from shouldAutoPass - either no auto-pass or auto-pass with delay */
+type AutoPassResult = { autoPass: false } | { autoPass: true; delay: number }
+
+// Delay constants
+const QUICK_AUTO_PASS_DELAY = 50 // ms - for own spells, empty stack phases
+const STACK_VIEW_DELAY = 1500 // ms - to show opponent's spell before auto-passing
+
 /**
- * Determines if we should auto-pass priority.
+ * Determines if we should auto-pass priority and with what delay.
  * Auto-passes when:
  * - It's our priority (implied by receiving legalActions)
  * - The only meaningful legal actions are PassPriority and/or mana abilities
  *   (mana abilities without anything to spend them on are not useful)
  * - We're not in a main phase where player might want to hold priority (unless stack is non-empty)
  * - OR the top of the stack is our own spell/ability (we rarely want to respond to ourselves)
+ * - OR the stack has an opponent's spell but we have no meaningful responses (with delay to show the spell)
  *
  * This skips through steps like UNTAP, UPKEEP, DRAW, BEGIN_COMBAT, etc.
  * when there are no meaningful actions available.
+ *
+ * Returns an object with autoPass flag and delay in milliseconds.
  */
 function shouldAutoPass(
   legalActions: readonly LegalActionInfo[],
   gameState: ClientGameState,
   playerId: EntityId
-): boolean {
+): AutoPassResult {
   // Must have priority
   if (gameState.priorityPlayerId !== playerId) {
-    return false
+    return { autoPass: false }
   }
 
   // Must have at least PassPriority available
   const hasPassPriority = legalActions.some((a) => a.action.type === 'PassPriority')
   if (!hasPassPriority) {
-    return false
+    return { autoPass: false }
   }
 
   // Auto-pass when responding to our own spell/ability on the stack
   // (99% of the time, players want their spell to resolve, not counter it themselves)
   const topOfStack = getTopOfStack(gameState)
   if (topOfStack && topOfStack.controllerId === playerId) {
-    return true
+    return { autoPass: true, delay: QUICK_AUTO_PASS_DELAY }
   }
 
   // Check if there are any meaningful actions besides PassPriority
@@ -466,26 +476,36 @@ function shouldAutoPass(
 
   // If there are meaningful actions, don't auto-pass
   if (hasMeaningfulActions) {
-    return false
+    return { autoPass: false }
   }
 
-  // If there's something on the stack (opponent's spell/ability), STOP to let the player
-  // see what was cast - even if they have no responses
+  // Check if there's something on the stack (opponent's spell/ability)
   const stackZone = gameState.zones.find((z) => z.zoneId.zoneType === 'STACK')
   const stackHasItems = stackZone && stackZone.cardIds && stackZone.cardIds.length > 0
-  if (stackHasItems) {
-    return false
+  if (stackHasItems && topOfStack) {
+    // Check if it's a permanent spell (creature, artifact, enchantment, planeswalker)
+    // For instants/sorceries, don't auto-pass - player may want to see the effect
+    const isPermanentSpell = topOfStack.cardTypes.some((type) =>
+      ['CREATURE', 'ARTIFACT', 'ENCHANTMENT', 'PLANESWALKER', 'BATTLE'].includes(type)
+    )
+    if (isPermanentSpell) {
+      // No meaningful responses to opponent's permanent spell - auto-pass after a delay
+      // so the player can see what was cast
+      return { autoPass: true, delay: STACK_VIEW_DELAY }
+    }
+    // For instants/sorceries, don't auto-pass
+    return { autoPass: false }
   }
 
   // Skip auto-pass during main phases when stack is empty - player might be thinking
   // about what to do or waiting to tap lands
   const step = gameState.currentStep
   if (step === 'PRECOMBAT_MAIN' || step === 'POSTCOMBAT_MAIN') {
-    return false
+    return { autoPass: false }
   }
 
   // Auto-pass for all other steps when only PassPriority/mana abilities are available
-  return true
+  return { autoPass: true, delay: QUICK_AUTO_PASS_DELAY }
 }
 
 /**
@@ -565,18 +585,21 @@ export const useGameStore = create<GameStore>()(
       },
 
       onStateUpdate: (msg) => {
+        // Get state first (needed for filtering events)
+        const { playerId, addDrawAnimation, addDamageAnimation } = get()
+
         // Check for handLookedAt or handRevealed event and show the revealed hand overlay
         const handLookedAtEvent = msg.events.find(
           (e) => e.type === 'handLookedAt'
         ) as { type: 'handLookedAt'; cardIds: readonly EntityId[] } | undefined
 
         // Also check for handRevealed events (from RevealHandEffect, e.g., Withering Gaze)
+        // Only show the overlay if the OPPONENT is revealing their hand (not the current player)
         const handRevealedEvent = msg.events.find(
-          (e) => e.type === 'handRevealed'
+          (e) => e.type === 'handRevealed' && (e as { revealingPlayerId: EntityId }).revealingPlayerId !== playerId
         ) as { type: 'handRevealed'; cardIds: readonly EntityId[] } | undefined
 
         // Process cardDrawn events for draw animations
-        const { playerId, addDrawAnimation, addDamageAnimation } = get()
         const cardDrawnEvents = msg.events.filter((e) => e.type === 'cardDrawn') as {
           type: 'cardDrawn'
           playerId: EntityId
@@ -666,14 +689,17 @@ export const useGameStore = create<GameStore>()(
 
         // Auto-pass when the only action available is PassPriority
         // This skips through steps with no meaningful player actions
-        if (playerId && shouldAutoPass(msg.legalActions, msg.state, playerId)) {
-          // Small delay to allow state to settle and prevent rapid-fire passes
-          setTimeout(() => {
-            const passAction = msg.legalActions.find((a) => a.action.type === 'PassPriority')
-            if (passAction && ws) {
-              ws.send(createSubmitActionMessage(passAction.action))
-            }
-          }, 50)
+        if (playerId) {
+          const autoPassResult = shouldAutoPass(msg.legalActions, msg.state, playerId)
+          if (autoPassResult.autoPass) {
+            // Use the delay from the result - longer delay when showing opponent's spell
+            setTimeout(() => {
+              const passAction = msg.legalActions.find((a) => a.action.type === 'PassPriority')
+              if (passAction && ws) {
+                ws.send(createSubmitActionMessage(passAction.action))
+              }
+            }, autoPassResult.delay)
+          }
         }
       },
 
