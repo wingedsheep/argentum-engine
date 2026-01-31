@@ -90,6 +90,7 @@ class ConnectionHandler(
                 when {
                     lobby == null -> { context = null; contextId = null }
                     lobby.state == LobbyState.WAITING_FOR_PLAYERS -> { context = "lobby"; contextId = lobbyId }
+                    lobby.state == LobbyState.DRAFTING -> { context = "drafting"; contextId = lobbyId }
                     lobby.state == LobbyState.DECK_BUILDING -> { context = "deckBuilding"; contextId = lobbyId }
                     lobby.state == LobbyState.TOURNAMENT_ACTIVE -> { context = "tournament"; contextId = lobbyId }
                     lobby.state == LobbyState.TOURNAMENT_COMPLETE -> { context = "tournament"; contextId = lobbyId }
@@ -114,6 +115,24 @@ class ConnectionHandler(
             "lobby" -> {
                 val lobby = lobbyRepository.findLobbyById(lobbyId!!)!!
                 sender.send(session, lobby.buildLobbyUpdate(identity.playerId))
+            }
+            "drafting" -> {
+                val lobby = lobbyRepository.findLobbyById(lobbyId!!)!!
+                sender.send(session, lobby.buildLobbyUpdate(identity.playerId))
+                // Send current draft pack and already-picked cards
+                val playerState = lobby.players[identity.playerId]
+                val pack = playerState?.currentPack
+                if (playerState != null && pack != null) {
+                    sender.send(session, ServerMessage.DraftPackReceived(
+                        packNumber = lobby.currentPackNumber,
+                        pickNumber = lobby.currentPickNumber,
+                        cards = pack.map { cardToSealedCardInfo(it) },
+                        timeRemainingSeconds = lobby.pickTimeRemaining,  // Use actual remaining time, not full duration
+                        passDirection = lobby.getPassDirection().name,
+                        picksPerRound = minOf(lobby.picksPerRound, pack.size),
+                        pickedCards = playerState.cardPool.map { cardToSealedCardInfo(it) }
+                    ))
+                }
             }
             "deckBuilding" -> {
                 val lobby = lobbyRepository.findLobbyById(lobbyId!!)!!
@@ -365,7 +384,7 @@ class ConnectionHandler(
             val lobby = lobbyRepository.findLobbyById(lobbyId)
             if (lobby != null) {
                 when (lobby.state) {
-                    LobbyState.WAITING_FOR_PLAYERS, LobbyState.DECK_BUILDING -> {
+                    LobbyState.WAITING_FOR_PLAYERS, LobbyState.DRAFTING, LobbyState.DECK_BUILDING -> {
                         lobby.removePlayer(identity.playerId)
                         if (lobby.playerCount == 0) {
                             lobbyRepository.removeLobby(lobbyId)
@@ -435,7 +454,7 @@ class ConnectionHandler(
         }
     }
 
-    private fun broadcastLobbyUpdate(lobby: com.wingedsheep.gameserver.lobby.SealedLobby) {
+    private fun broadcastLobbyUpdate(lobby: com.wingedsheep.gameserver.lobby.TournamentLobby) {
         lobby.players.forEach { (playerId, playerState) ->
             val ws = playerState.identity.webSocketSession
             if (ws != null && ws.isOpen) {

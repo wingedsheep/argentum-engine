@@ -7,6 +7,7 @@ import { DecisionUI } from './components/decisions/DecisionUI'
 import { RevealedHandUI } from './components/decisions/RevealedHandUI'
 import { XCostSelector } from './components/ui/XCostSelector'
 import { DeckBuilderOverlay } from './components/sealed/DeckBuilderOverlay'
+import { DraftPickOverlay } from './components/draft/DraftPickOverlay'
 import { SpectatorView } from './components/spectating/SpectatorView'
 import { useGameStore } from './store/gameStore'
 import { useViewingPlayer, useBattlefieldCards } from './store/selectors'
@@ -21,6 +22,7 @@ export default function App() {
   const legalActions = useGameStore((state) => state.legalActions)
   const combatState = useGameStore((state) => state.combatState)
   const deckBuildingState = useGameStore((state) => state.deckBuildingState)
+  const lobbyState = useGameStore((state) => state.lobbyState)
   const spectatingState = useGameStore((state) => state.spectatingState)
   const startCombat = useGameStore((state) => state.startCombat)
   const connect = useGameStore((state) => state.connect)
@@ -130,6 +132,7 @@ export default function App() {
   const showLobby = connectionStatus !== 'connected' || !gameState
   const showGame = !showLobby && !mulliganState
   const showDeckBuilder = deckBuildingState?.phase === 'building' || deckBuildingState?.phase === 'submitted'
+  const showDraftPick = lobbyState?.state === 'DRAFTING'
 
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
@@ -139,8 +142,11 @@ export default function App() {
       {/* Connection/lobby UI overlay */}
       {showLobby && <GameUI />}
 
-      {/* Deck building overlay (sealed draft) */}
+      {/* Deck building overlay (sealed/draft) */}
       {showDeckBuilder && <DeckBuilderOverlay />}
+
+      {/* Draft picking overlay */}
+      {showDraftPick && <DraftPickOverlay />}
 
       {/* Mulligan overlay */}
       {mulliganState && <MulliganUI />}

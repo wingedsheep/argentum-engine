@@ -196,13 +196,20 @@ export type {
   LobbyCreatedMessage,
   LobbyUpdateMessage,
   LobbyStoppedMessage,
-  CreateSealedLobbyMessage,
+  CreateTournamentLobbyMessage,
   JoinLobbyMessage,
-  StartSealedLobbyMessage,
+  StartTournamentLobbyMessage,
+  MakePickMessage,
   LeaveLobbyMessage,
   StopLobbyMessage,
   UnsubmitDeckMessage,
   UpdateLobbySettingsMessage,
+  // Draft types
+  DraftPackReceivedMessage,
+  DraftPickMadeMessage,
+  DraftPickConfirmedMessage,
+  DraftCompleteMessage,
+  DraftTimerUpdateMessage,
   // Tournament types
   PlayerStandingInfo,
   MatchResultInfo,
@@ -260,9 +267,12 @@ export {
   // Reconnect
   isReconnectedMessage,
   // Lobby message factories & guards
+  createCreateTournamentLobbyMessage,
   createCreateSealedLobbyMessage,
   createJoinLobbyMessage,
+  createStartTournamentLobbyMessage,
   createStartSealedLobbyMessage,
+  createMakePickMessage,
   createLeaveLobbyMessage,
   createStopLobbyMessage,
   createUnsubmitDeckMessage,
@@ -270,6 +280,12 @@ export {
   isLobbyCreatedMessage,
   isLobbyUpdateMessage,
   isLobbyStoppedMessage,
+  // Draft message type guards
+  isDraftPackReceivedMessage,
+  isDraftPickMadeMessage,
+  isDraftPickConfirmedMessage,
+  isDraftCompleteMessage,
+  isDraftTimerUpdateMessage,
   // Tournament message factories & guards
   createReadyForNextRoundMessage,
   isTournamentStartedMessage,

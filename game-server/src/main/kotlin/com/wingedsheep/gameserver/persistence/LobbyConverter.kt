@@ -3,7 +3,8 @@ package com.wingedsheep.gameserver.persistence
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.gameserver.lobby.LobbyPlayerState
 import com.wingedsheep.gameserver.lobby.LobbyState
-import com.wingedsheep.gameserver.lobby.SealedLobby
+import com.wingedsheep.gameserver.lobby.TournamentFormat
+import com.wingedsheep.gameserver.lobby.TournamentLobby
 import com.wingedsheep.gameserver.persistence.dto.*
 import com.wingedsheep.gameserver.sealed.SealedPlayerState
 import com.wingedsheep.gameserver.sealed.SealedSession
@@ -17,19 +18,21 @@ import com.wingedsheep.gameserver.tournament.TournamentRound
 import com.wingedsheep.sdk.model.EntityId
 
 // ============================================================================
-// SealedLobby Conversion
+// TournamentLobby Conversion
 // ============================================================================
 
 /**
- * Converts a SealedLobby to its persistent representation.
+ * Converts a TournamentLobby to its persistent representation.
  */
-fun SealedLobby.toPersistent(): PersistentSealedLobby {
-    return PersistentSealedLobby(
+fun TournamentLobby.toPersistent(): PersistentTournamentLobby {
+    return PersistentTournamentLobby(
         lobbyId = lobbyId,
         setCode = setCode,
         setName = setName,
+        format = format.name,
         boosterCount = boosterCount,
         maxPlayers = maxPlayers,
+        pickTimeSeconds = pickTimeSeconds,
         gamesPerMatch = gamesPerMatch,
         state = state.name,
         hostPlayerId = hostPlayerId?.value,
@@ -39,29 +42,43 @@ fun SealedLobby.toPersistent(): PersistentSealedLobby {
                 playerName = playerState.identity.playerName,
                 token = playerState.identity.token,
                 cardPoolNames = playerState.cardPool.map { it.name },
+                currentPackNames = playerState.currentPack?.map { it.name },
+                hasPicked = playerState.hasPicked,
                 submittedDeck = playerState.submittedDeck
             )
-        }
+        },
+        currentPackNumber = currentPackNumber,
+        currentPickNumber = currentPickNumber,
+        playerOrder = getPlayerOrderForPersistence()
     )
 }
 
 /**
- * Restores a SealedLobby from its persistent representation.
+ * Extension to get player order for persistence (exposed from TournamentLobby).
+ */
+private fun TournamentLobby.getPlayerOrderForPersistence(): List<String> {
+    return getPlayerOrder().map { it.value }
+}
+
+/**
+ * Restores a TournamentLobby from its persistent representation.
  *
  * @param persistent The persisted lobby data
  * @param cardRegistry The card registry for resolving card names to definitions
- * @return A restored SealedLobby and a list of PlayerIdentity objects to register
+ * @return A restored TournamentLobby and a list of PlayerIdentity objects to register
  */
-fun restoreSealedLobby(
-    persistent: PersistentSealedLobby,
+fun restoreTournamentLobby(
+    persistent: PersistentTournamentLobby,
     cardRegistry: CardRegistry
-): Pair<SealedLobby, List<PlayerIdentity>> {
-    val lobby = SealedLobby(
+): Pair<TournamentLobby, List<PlayerIdentity>> {
+    val lobby = TournamentLobby(
         lobbyId = persistent.lobbyId,
         setCode = persistent.setCode,
         setName = persistent.setName,
+        format = TournamentFormat.valueOf(persistent.format),
         boosterCount = persistent.boosterCount,
         maxPlayers = persistent.maxPlayers,
+        pickTimeSeconds = persistent.pickTimeSeconds,
         gamesPerMatch = persistent.gamesPerMatch
     )
 
@@ -84,9 +101,16 @@ fun restoreSealedLobby(
             cardRegistry.getCard(cardName)
         }
 
+        // Resolve current pack for draft
+        val currentPack = persistentPlayer.currentPackNames?.mapNotNull { cardName ->
+            cardRegistry.getCard(cardName)
+        }
+
         val playerState = LobbyPlayerState(
             identity = identity,
             cardPool = cardPool,
+            currentPack = currentPack,
+            hasPicked = persistentPlayer.hasPicked,
             submittedDeck = persistentPlayer.submittedDeck
         )
         lobby.players[playerId] = playerState
@@ -96,6 +120,13 @@ fun restoreSealedLobby(
     lobby.restoreFromPersistence(
         state = LobbyState.valueOf(persistent.state),
         hostPlayerId = persistent.hostPlayerId?.let { EntityId(it) }
+    )
+
+    // Restore draft state if applicable
+    lobby.restoreDraftState(
+        currentPackNumber = persistent.currentPackNumber,
+        currentPickNumber = persistent.currentPickNumber,
+        playerOrder = persistent.playerOrder.map { EntityId(it) }
     )
 
     return lobby to playerIdentities

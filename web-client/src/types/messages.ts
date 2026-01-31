@@ -35,6 +35,12 @@ export type ServerMessage =
   | LobbyCreatedMessage
   | LobbyUpdateMessage
   | LobbyStoppedMessage
+  // Draft Messages
+  | DraftPackReceivedMessage
+  | DraftPickMadeMessage
+  | DraftPickConfirmedMessage
+  | DraftCompleteMessage
+  | DraftTimerUpdateMessage
   // Tournament Messages
   | TournamentStartedMessage
   | TournamentMatchStartingMessage
@@ -66,7 +72,7 @@ export interface ReconnectedMessage {
   readonly type: 'reconnected'
   readonly playerId: string
   readonly token: string
-  readonly context: 'lobby' | 'deckBuilding' | 'game' | 'tournament' | null
+  readonly context: 'lobby' | 'drafting' | 'deckBuilding' | 'game' | 'tournament' | null
   readonly contextId: string | null
 }
 
@@ -458,9 +464,12 @@ export interface LobbyPlayerInfo {
 export interface LobbySettings {
   readonly setCode: string
   readonly setName: string
+  readonly format: 'SEALED' | 'DRAFT'
   readonly boosterCount: number
-  readonly gamesPerMatch: number
   readonly maxPlayers: number
+  readonly pickTimeSeconds: number
+  readonly picksPerRound: number  // Draft only: 1 or 2 (Pick 2 mode)
+  readonly gamesPerMatch: number
 }
 
 export interface LobbyCreatedMessage {
@@ -482,6 +491,60 @@ export interface LobbyUpdateMessage {
  */
 export interface LobbyStoppedMessage {
   readonly type: 'lobbyStopped'
+}
+
+// ============================================================================
+// Draft Server Messages
+// ============================================================================
+
+/**
+ * Player received a pack to draft from.
+ */
+export interface DraftPackReceivedMessage {
+  readonly type: 'draftPackReceived'
+  readonly packNumber: number
+  readonly pickNumber: number
+  readonly cards: readonly SealedCardInfo[]
+  readonly timeRemainingSeconds: number
+  readonly passDirection: 'LEFT' | 'RIGHT'
+  readonly picksPerRound: number  // Cards to pick this round (1 or 2)
+  readonly pickedCards?: readonly SealedCardInfo[]  // Cards already picked (for reconnect)
+}
+
+/**
+ * A player made a pick (broadcast to all).
+ */
+export interface DraftPickMadeMessage {
+  readonly type: 'draftPickMade'
+  readonly playerId: string
+  readonly playerName: string
+  readonly waitingForPlayers: readonly string[]
+}
+
+/**
+ * Confirmation that your pick was accepted.
+ */
+export interface DraftPickConfirmedMessage {
+  readonly type: 'draftPickConfirmed'
+  readonly cardNames: readonly string[]
+  readonly totalPicked: number
+}
+
+/**
+ * Draft is complete, transitioning to deck building.
+ */
+export interface DraftCompleteMessage {
+  readonly type: 'draftComplete'
+  readonly pickedCards: readonly SealedCardInfo[]
+  readonly basicLands: readonly SealedCardInfo[]
+}
+
+/**
+ * Timer update during draft.
+ */
+export interface DraftTimerUpdateMessage {
+  readonly type: 'draftTimerUpdate'
+  readonly secondsRemaining: number
 }
 
 // ============================================================================
@@ -679,9 +742,10 @@ export type ClientMessage =
   | JoinSealedGameMessage
   | SubmitSealedDeckMessage
   // Lobby Messages
-  | CreateSealedLobbyMessage
+  | CreateTournamentLobbyMessage
   | JoinLobbyMessage
-  | StartSealedLobbyMessage
+  | StartTournamentLobbyMessage
+  | MakePickMessage
   | LeaveLobbyMessage
   | StopLobbyMessage
   | UnsubmitDeckMessage
@@ -917,11 +981,13 @@ export function createSubmitSealedDeckMessage(deckList: Record<string, number>):
 // Lobby Client Messages
 // ============================================================================
 
-export interface CreateSealedLobbyMessage {
-  readonly type: 'createSealedLobby'
+export interface CreateTournamentLobbyMessage {
+  readonly type: 'createTournamentLobby'
   readonly setCode: string
+  readonly format: 'SEALED' | 'DRAFT'
   readonly boosterCount: number
   readonly maxPlayers: number
+  readonly pickTimeSeconds: number
 }
 
 export interface JoinLobbyMessage {
@@ -929,8 +995,13 @@ export interface JoinLobbyMessage {
   readonly lobbyId: string
 }
 
-export interface StartSealedLobbyMessage {
-  readonly type: 'startSealedLobby'
+export interface StartTournamentLobbyMessage {
+  readonly type: 'startTournamentLobby'
+}
+
+export interface MakePickMessage {
+  readonly type: 'makePick'
+  readonly cardNames: readonly string[]
 }
 
 export interface LeaveLobbyMessage {
@@ -947,9 +1018,13 @@ export interface UnsubmitDeckMessage {
 
 export interface UpdateLobbySettingsMessage {
   readonly type: 'updateLobbySettings'
+  readonly setCode?: string
+  readonly format?: 'SEALED' | 'DRAFT'
   readonly boosterCount?: number
   readonly maxPlayers?: number
   readonly gamesPerMatch?: number
+  readonly pickTimeSeconds?: number
+  readonly picksPerRound?: number
 }
 
 // Tournament Client Messages
@@ -980,20 +1055,40 @@ export interface UpdateBlockerAssignmentsMessage {
 }
 
 // Lobby Message Factories
+export function createCreateTournamentLobbyMessage(
+  setCode: string,
+  format: 'SEALED' | 'DRAFT' = 'SEALED',
+  boosterCount: number = 6,
+  maxPlayers: number = 8,
+  pickTimeSeconds: number = 45
+): CreateTournamentLobbyMessage {
+  return { type: 'createTournamentLobby', setCode, format, boosterCount, maxPlayers, pickTimeSeconds }
+}
+
+// Backwards compatibility alias
 export function createCreateSealedLobbyMessage(
   setCode: string,
   boosterCount: number = 6,
   maxPlayers: number = 8
-): CreateSealedLobbyMessage {
-  return { type: 'createSealedLobby', setCode, boosterCount, maxPlayers }
+): CreateTournamentLobbyMessage {
+  return createCreateTournamentLobbyMessage(setCode, 'SEALED', boosterCount, maxPlayers, 45)
 }
 
 export function createJoinLobbyMessage(lobbyId: string): JoinLobbyMessage {
   return { type: 'joinLobby', lobbyId }
 }
 
-export function createStartSealedLobbyMessage(): StartSealedLobbyMessage {
-  return { type: 'startSealedLobby' }
+export function createStartTournamentLobbyMessage(): StartTournamentLobbyMessage {
+  return { type: 'startTournamentLobby' }
+}
+
+// Backwards compatibility alias
+export function createStartSealedLobbyMessage(): StartTournamentLobbyMessage {
+  return createStartTournamentLobbyMessage()
+}
+
+export function createMakePickMessage(cardNames: string[]): MakePickMessage {
+  return { type: 'makePick', cardNames }
 }
 
 export function createLeaveLobbyMessage(): LeaveLobbyMessage {
@@ -1009,7 +1104,15 @@ export function createUnsubmitDeckMessage(): UnsubmitDeckMessage {
 }
 
 export function createUpdateLobbySettingsMessage(
-  settings: { boosterCount?: number; maxPlayers?: number; gamesPerMatch?: number }
+  settings: {
+    setCode?: string
+    format?: 'SEALED' | 'DRAFT'
+    boosterCount?: number
+    maxPlayers?: number
+    gamesPerMatch?: number
+    pickTimeSeconds?: number
+    picksPerRound?: number
+  }
 ): UpdateLobbySettingsMessage {
   return { type: 'updateLobbySettings', ...settings }
 }
@@ -1030,6 +1133,27 @@ export function createUpdateBlockerAssignmentsMessage(
   assignments: Record<EntityId, EntityId>
 ): UpdateBlockerAssignmentsMessage {
   return { type: 'updateBlockerAssignments', assignments }
+}
+
+// Draft Type Guards
+export function isDraftPackReceivedMessage(msg: ServerMessage): msg is DraftPackReceivedMessage {
+  return msg.type === 'draftPackReceived'
+}
+
+export function isDraftPickMadeMessage(msg: ServerMessage): msg is DraftPickMadeMessage {
+  return msg.type === 'draftPickMade'
+}
+
+export function isDraftPickConfirmedMessage(msg: ServerMessage): msg is DraftPickConfirmedMessage {
+  return msg.type === 'draftPickConfirmed'
+}
+
+export function isDraftCompleteMessage(msg: ServerMessage): msg is DraftCompleteMessage {
+  return msg.type === 'draftComplete'
+}
+
+export function isDraftTimerUpdateMessage(msg: ServerMessage): msg is DraftTimerUpdateMessage {
+  return msg.type === 'draftTimerUpdate'
 }
 
 // Lobby/Tournament Type Guards

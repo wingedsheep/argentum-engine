@@ -1,6 +1,6 @@
 package com.wingedsheep.gameserver.repository
 
-import com.wingedsheep.gameserver.lobby.SealedLobby
+import com.wingedsheep.gameserver.lobby.TournamentLobby
 import com.wingedsheep.gameserver.sealed.SealedSession
 import com.wingedsheep.gameserver.tournament.TournamentManager
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -8,10 +8,10 @@ import org.springframework.stereotype.Component
 import java.util.concurrent.ConcurrentHashMap
 
 interface LobbyRepository {
-    fun saveLobby(lobby: SealedLobby)
-    fun findLobbyById(lobbyId: String): SealedLobby?
-    fun removeLobby(lobbyId: String): SealedLobby?
-    fun findAllLobbies(): Collection<SealedLobby>
+    fun saveLobby(lobby: TournamentLobby)
+    fun findLobbyById(lobbyId: String): TournamentLobby?
+    fun removeLobby(lobbyId: String): TournamentLobby?
+    fun findAllLobbies(): Collection<TournamentLobby>
 
     fun saveSealedSession(session: SealedSession)
     fun findSealedSessionById(sessionId: String): SealedSession?
@@ -26,19 +26,19 @@ interface LobbyRepository {
 @ConditionalOnProperty(name = ["cache.redis.enabled"], havingValue = "false", matchIfMissing = true)
 class InMemoryLobbyRepository : LobbyRepository {
 
-    private val sealedLobbies = ConcurrentHashMap<String, SealedLobby>()
+    private val sealedLobbies = ConcurrentHashMap<String, TournamentLobby>()
     private val sealedSessions = ConcurrentHashMap<String, SealedSession>()
     private val tournaments = ConcurrentHashMap<String, TournamentManager>()
 
-    override fun saveLobby(lobby: SealedLobby) {
+    override fun saveLobby(lobby: TournamentLobby) {
         sealedLobbies[lobby.lobbyId] = lobby
     }
 
-    override fun findLobbyById(lobbyId: String): SealedLobby? = sealedLobbies[lobbyId]
+    override fun findLobbyById(lobbyId: String): TournamentLobby? = sealedLobbies[lobbyId]
 
-    override fun removeLobby(lobbyId: String): SealedLobby? = sealedLobbies.remove(lobbyId)
+    override fun removeLobby(lobbyId: String): TournamentLobby? = sealedLobbies.remove(lobbyId)
 
-    override fun findAllLobbies(): Collection<SealedLobby> = sealedLobbies.values
+    override fun findAllLobbies(): Collection<TournamentLobby> = sealedLobbies.values
 
     override fun saveSealedSession(session: SealedSession) {
         sealedSessions[session.sessionId] = session

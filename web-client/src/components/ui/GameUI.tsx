@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react'
 import { useGameStore, type LobbyState, type TournamentState } from '../../store/gameStore'
 import { useResponsive, type ResponsiveSizes } from '../../hooks/useResponsive'
 
-type GameMode = 'normal' | 'sealed'
+type GameMode = 'normal' | 'tournament'
 
-// Available sets for sealed play
+// Available sets for tournament play
 const AVAILABLE_SETS = [
   { code: 'POR', name: 'Portal' },
 ]
@@ -46,12 +46,11 @@ function ConnectionOverlay({
   const connect = useGameStore((state) => state.connect)
   const createGame = useGameStore((state) => state.createGame)
   const joinGame = useGameStore((state) => state.joinGame)
-  const createSealedLobby = useGameStore((state) => state.createSealedLobby)
+  const createTournamentLobby = useGameStore((state) => state.createTournamentLobby)
   const joinLobby = useGameStore((state) => state.joinLobby)
   const lobbyState = useGameStore((state) => state.lobbyState)
   const [joinSessionId, setJoinSessionId] = useState('')
   const [gameMode, setGameMode] = useState<GameMode>('normal')
-  const [selectedSet, setSelectedSet] = useState(AVAILABLE_SETS[0]?.code ?? 'POR')
   const [playerName, setPlayerName] = useState(() => sessionStorage.getItem('argentum-player-name') || '')
 
   const [nameConfirmed, setNameConfirmed] = useState(() => !!sessionStorage.getItem('argentum-player-name'))
@@ -69,8 +68,9 @@ function ConnectionOverlay({
   const randomDeck = {}
 
   const handleCreate = () => {
-    if (gameMode === 'sealed') {
-      createSealedLobby(selectedSet)
+    if (gameMode === 'tournament') {
+      // Create lobby with default settings - host can change in lobby
+      createTournamentLobby('POR', 'SEALED')
     } else {
       createGame(randomDeck)
     }
@@ -78,7 +78,7 @@ function ConnectionOverlay({
 
   const handleJoin = () => {
     if (joinSessionId.trim()) {
-      if (gameMode === 'sealed') {
+      if (gameMode === 'tournament') {
         joinLobby(joinSessionId.trim())
       } else {
         joinGame(joinSessionId.trim(), randomDeck)
@@ -184,52 +184,24 @@ function ConnectionOverlay({
               title="Play with a random deck"
             />
             <ModeButton
-              label="Sealed Lobby"
-              active={gameMode === 'sealed'}
-              onClick={() => setGameMode('sealed')}
+              label="Tournament"
+              active={gameMode === 'tournament'}
+              onClick={() => setGameMode('tournament')}
               responsive={responsive}
+              title="Sealed or Draft with up to 8 players"
             />
           </div>
 
-          {/* Set selector (only shown for sealed mode) */}
-          {gameMode === 'sealed' && (
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 8,
-                width: '100%',
-              }}
-            >
-              <label style={{ color: '#888', fontSize: responsive.fontSize.small }}>
-                Select Set:
-              </label>
-              <select
-                value={selectedSet}
-                onChange={(e) => setSelectedSet(e.target.value)}
-                style={{
-                  padding: responsive.isMobile ? '10px 12px' : '12px 16px',
-                  fontSize: responsive.fontSize.normal,
-                  backgroundColor: '#222',
-                  color: 'white',
-                  border: '1px solid #444',
-                  borderRadius: 8,
-                  cursor: 'pointer',
-                  width: '100%',
-                  maxWidth: 200,
-                }}
-              >
-                {AVAILABLE_SETS.map((set) => (
-                  <option key={set.code} value={set.code}>
-                    {set.name} ({set.code})
-                  </option>
-                ))}
-              </select>
-              <p style={{ color: '#666', fontSize: responsive.fontSize.small, margin: 0, textAlign: 'center' }}>
-                Create a lobby for up to 8 players, build decks, then play a round-robin tournament
-              </p>
-            </div>
+          {/* Game mode description */}
+          {gameMode === 'normal' && (
+            <p style={{ color: '#666', fontSize: responsive.fontSize.small, margin: 0, textAlign: 'center' }}>
+              Play with a randomly generated deck for quick 1v1 matches.
+            </p>
+          )}
+          {gameMode === 'tournament' && (
+            <p style={{ color: '#666', fontSize: responsive.fontSize.small, margin: 0, textAlign: 'center' }}>
+              Create a lobby for Sealed or Draft. Configure format and set after creating.
+            </p>
           )}
 
           <button
@@ -237,7 +209,7 @@ function ConnectionOverlay({
             style={{
               padding: responsive.isMobile ? '10px 20px' : '12px 24px',
               fontSize: responsive.fontSize.large,
-              backgroundColor: gameMode === 'sealed' ? '#e65100' : '#0066cc',
+              backgroundColor: gameMode === 'tournament' ? '#e65100' : '#0066cc',
               color: 'white',
               border: 'none',
               borderRadius: 8,
@@ -246,7 +218,7 @@ function ConnectionOverlay({
               maxWidth: 200,
             }}
           >
-            {gameMode === 'sealed' ? 'Create Lobby' : 'Create Game'}
+            {gameMode === 'tournament' ? 'Create Lobby' : 'Create Game'}
           </button>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#666' }}>
@@ -261,7 +233,7 @@ function ConnectionOverlay({
               value={joinSessionId}
               onChange={(e) => setJoinSessionId(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
-              placeholder={gameMode === 'sealed' ? 'Enter Lobby ID' : 'Enter Session ID'}
+              placeholder={gameMode === 'tournament' ? 'Enter Lobby ID' : 'Enter Session ID'}
               style={{
                 padding: responsive.isMobile ? '10px 12px' : '12px 16px',
                 fontSize: responsive.fontSize.normal,
@@ -423,7 +395,7 @@ function LobbyOverlay({
   lobbyState: LobbyState
   responsive: ReturnType<typeof useResponsive>
 }) {
-  const startSealedLobby = useGameStore((state) => state.startSealedLobby)
+  const startLobby = useGameStore((state) => state.startLobby)
   const leaveLobby = useGameStore((state) => state.leaveLobby)
   const updateLobbySettings = useGameStore((state) => state.updateLobbySettings)
   const tournamentState = useGameStore((state) => state.tournamentState)
@@ -435,6 +407,7 @@ function LobbyOverlay({
   }
 
   const isWaiting = lobbyState.state === 'WAITING_FOR_PLAYERS'
+  const isDraft = lobbyState.settings.format === 'DRAFT'
   const canStart = lobbyState.players.length >= 2
 
   const copyLobbyId = () => {
@@ -473,12 +446,12 @@ function LobbyOverlay({
           <div style={{
             fontSize: 11,
             fontWeight: 600,
-            color: '#e65100',
+            color: isDraft ? '#2196f3' : '#e65100',
             textTransform: 'uppercase',
             letterSpacing: '0.12em',
             marginBottom: 8,
           }}>
-            Sealed Draft
+            {isDraft ? 'Draft' : 'Sealed'}
           </div>
           <h1 style={{
             margin: '0 0 6px 0',
@@ -489,10 +462,12 @@ function LobbyOverlay({
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
           }}>
-            {lobbyState.settings.setName || 'Sealed Lobby'}
+            {lobbyState.settings.setName || 'Lobby'}
           </h1>
           <p style={{ color: '#555', fontSize: responsive.fontSize.small, margin: 0 }}>
-            {lobbyState.settings.boosterCount} boosters per player
+            {isDraft
+              ? `${lobbyState.settings.boosterCount} packs · ${lobbyState.settings.pickTimeSeconds}s per pick${lobbyState.settings.picksPerRound === 2 ? ' · Pick 2' : ''}`
+              : `${lobbyState.settings.boosterCount} boosters per player`}
             {(lobbyState.settings.gamesPerMatch ?? 1) > 1 && ` · ${lobbyState.settings.gamesPerMatch} games per matchup`}
           </p>
         </div>
@@ -548,6 +523,7 @@ function LobbyOverlay({
             borderRadius: 10,
             overflow: 'hidden',
           }}>
+            {/* Format selection */}
             <div style={{
               display: 'flex',
               alignItems: 'center',
@@ -556,11 +532,55 @@ function LobbyOverlay({
               borderBottom: '1px solid rgba(255, 255, 255, 0.04)',
             }}>
               <span style={{ color: '#888', fontSize: responsive.fontSize.small }}>
-                Boosters per player
+                Format
+              </span>
+              <div style={{ display: 'flex', gap: 4 }}>
+                <button
+                  onClick={() => updateLobbySettings({ format: 'SEALED' })}
+                  style={{
+                    padding: '5px 12px',
+                    fontSize: responsive.fontSize.small,
+                    backgroundColor: !isDraft ? '#e65100' : '#1a1a24',
+                    color: !isDraft ? 'white' : '#888',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: 6,
+                    cursor: 'pointer',
+                    fontWeight: !isDraft ? 600 : 400,
+                  }}
+                >
+                  Sealed
+                </button>
+                <button
+                  onClick={() => updateLobbySettings({ format: 'DRAFT' })}
+                  style={{
+                    padding: '5px 12px',
+                    fontSize: responsive.fontSize.small,
+                    backgroundColor: isDraft ? '#2196f3' : '#1a1a24',
+                    color: isDraft ? 'white' : '#888',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: 6,
+                    cursor: 'pointer',
+                    fontWeight: isDraft ? 600 : 400,
+                  }}
+                >
+                  Draft
+                </button>
+              </div>
+            </div>
+            {/* Set selection */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '12px 16px',
+              borderBottom: '1px solid rgba(255, 255, 255, 0.04)',
+            }}>
+              <span style={{ color: '#888', fontSize: responsive.fontSize.small }}>
+                Set
               </span>
               <select
-                value={lobbyState.settings.boosterCount}
-                onChange={(e) => updateLobbySettings({ boosterCount: Number(e.target.value) })}
+                value={lobbyState.settings.setCode}
+                onChange={(e) => updateLobbySettings({ setCode: e.target.value })}
                 style={{
                   padding: '5px 10px',
                   fontSize: responsive.fontSize.small,
@@ -572,11 +592,155 @@ function LobbyOverlay({
                   outline: 'none',
                 }}
               >
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => (
-                  <option key={n} value={n}>{n}</option>
+                {AVAILABLE_SETS.map((set) => (
+                  <option key={set.code} value={set.code}>
+                    {set.name}
+                  </option>
                 ))}
               </select>
             </div>
+            {/* Boosters setting - only for Sealed */}
+            {!isDraft && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 16px',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.04)',
+              }}>
+                <span style={{ color: '#888', fontSize: responsive.fontSize.small }}>
+                  Boosters per player
+                </span>
+                <select
+                  value={lobbyState.settings.boosterCount}
+                  onChange={(e) => updateLobbySettings({ boosterCount: Number(e.target.value) })}
+                  style={{
+                    padding: '5px 10px',
+                    fontSize: responsive.fontSize.small,
+                    backgroundColor: '#1a1a24',
+                    color: 'white',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: 6,
+                    cursor: 'pointer',
+                    outline: 'none',
+                  }}
+                >
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => (
+                    <option key={n} value={n}>{n}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {/* Packs per player - only for Draft */}
+            {isDraft && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 16px',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.04)',
+              }}>
+                <span style={{ color: '#888', fontSize: responsive.fontSize.small }}>
+                  Packs per player
+                </span>
+                <select
+                  value={lobbyState.settings.boosterCount}
+                  onChange={(e) => updateLobbySettings({ boosterCount: Number(e.target.value) })}
+                  style={{
+                    padding: '5px 10px',
+                    fontSize: responsive.fontSize.small,
+                    backgroundColor: '#1a1a24',
+                    color: 'white',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: 6,
+                    cursor: 'pointer',
+                    outline: 'none',
+                  }}
+                >
+                  {[1, 2, 3, 4, 5, 6].map((n) => (
+                    <option key={n} value={n}>{n}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {/* Pick timer setting - only for Draft */}
+            {isDraft && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 16px',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.04)',
+              }}>
+                <span style={{ color: '#888', fontSize: responsive.fontSize.small }}>
+                  Pick timer (seconds)
+                </span>
+                <select
+                  value={lobbyState.settings.pickTimeSeconds}
+                  onChange={(e) => updateLobbySettings({ pickTimeSeconds: Number(e.target.value) })}
+                  style={{
+                    padding: '5px 10px',
+                    fontSize: responsive.fontSize.small,
+                    backgroundColor: '#1a1a24',
+                    color: 'white',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: 6,
+                    cursor: 'pointer',
+                    outline: 'none',
+                  }}
+                >
+                  {[30, 45, 60, 90, 120].map((n) => (
+                    <option key={n} value={n}>{n}s</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {/* Pick 2 mode - only for Draft */}
+            {isDraft && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 16px',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.04)',
+              }}>
+                <span style={{ color: '#888', fontSize: responsive.fontSize.small }}>
+                  Cards per pick
+                </span>
+                <div style={{ display: 'flex', gap: 4 }}>
+                  <button
+                    onClick={() => updateLobbySettings({ picksPerRound: 1 })}
+                    style={{
+                      padding: '5px 12px',
+                      fontSize: responsive.fontSize.small,
+                      backgroundColor: lobbyState.settings.picksPerRound === 1 ? '#2196f3' : '#1a1a24',
+                      color: lobbyState.settings.picksPerRound === 1 ? 'white' : '#888',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      borderRadius: 6,
+                      cursor: 'pointer',
+                      fontWeight: lobbyState.settings.picksPerRound === 1 ? 600 : 400,
+                    }}
+                  >
+                    1
+                  </button>
+                  <button
+                    onClick={() => updateLobbySettings({ picksPerRound: 2 })}
+                    style={{
+                      padding: '5px 12px',
+                      fontSize: responsive.fontSize.small,
+                      backgroundColor: lobbyState.settings.picksPerRound === 2 ? '#2196f3' : '#1a1a24',
+                      color: lobbyState.settings.picksPerRound === 2 ? 'white' : '#888',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      borderRadius: 6,
+                      cursor: 'pointer',
+                      fontWeight: lobbyState.settings.picksPerRound === 2 ? 600 : 400,
+                    }}
+                  >
+                    2
+                  </button>
+                </div>
+              </div>
+            )}
             <div style={{
               display: 'flex',
               alignItems: 'center',
@@ -690,7 +854,7 @@ function LobbyOverlay({
         <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
           {isWaiting && lobbyState.isHost && (
             <button
-              onClick={startSealedLobby}
+              onClick={startLobby}
               disabled={!canStart}
               style={{
                 flex: 1,
@@ -708,7 +872,7 @@ function LobbyOverlay({
                 boxShadow: canStart ? '0 2px 12px rgba(230, 81, 0, 0.3)' : 'none',
               }}
             >
-              Start Game
+              {isDraft ? 'Start Draft' : 'Start Game'}
             </button>
           )}
           <button
@@ -751,6 +915,7 @@ function TournamentOverlay({
   const playerId = useGameStore((state) => state.playerId)
   const spectateGame = useGameStore((state) => state.spectateGame)
   const readyForNextRound = useGameStore((state) => state.readyForNextRound)
+  const leaveTournament = useGameStore((state) => state.leaveTournament)
 
   // Check if we're waiting for players to ready up (before first game OR between rounds)
   const isWaitingForReady = (
@@ -1024,7 +1189,7 @@ function TournamentOverlay({
 
       {tournamentState.isComplete && (
         <button
-          onClick={() => window.location.reload()}
+          onClick={leaveTournament}
           style={{
             padding: '12px 24px',
             fontSize: responsive.fontSize.large,

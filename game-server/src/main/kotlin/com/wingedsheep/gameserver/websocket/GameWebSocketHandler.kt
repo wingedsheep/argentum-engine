@@ -62,9 +62,10 @@ class GameWebSocketHandler(
                 is ClientMessage.JoinSealedGame,
                 is ClientMessage.SubmitSealedDeck,
                 is ClientMessage.UnsubmitDeck,
-                is ClientMessage.CreateSealedLobby,
+                is ClientMessage.CreateTournamentLobby,
                 is ClientMessage.JoinLobby,
-                is ClientMessage.StartSealedLobby,
+                is ClientMessage.StartTournamentLobby,
+                is ClientMessage.MakePick,
                 is ClientMessage.LeaveLobby,
                 is ClientMessage.StopLobby,
                 is ClientMessage.UpdateLobbySettings -> lobbyHandler.handle(session, clientMessage)

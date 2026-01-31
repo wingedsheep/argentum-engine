@@ -19,6 +19,11 @@ import type {
   LobbyCreatedMessage,
   LobbyUpdateMessage,
   LobbyStoppedMessage,
+  DraftPackReceivedMessage,
+  DraftPickMadeMessage,
+  DraftPickConfirmedMessage,
+  DraftCompleteMessage,
+  DraftTimerUpdateMessage,
   TournamentStartedMessage,
   TournamentMatchStartingMessage,
   TournamentByeMessage,
@@ -58,6 +63,12 @@ export interface MessageHandlers {
   onLobbyCreated: (message: LobbyCreatedMessage) => void
   onLobbyUpdate: (message: LobbyUpdateMessage) => void
   onLobbyStopped: (message: LobbyStoppedMessage) => void
+  // Draft handlers
+  onDraftPackReceived: (message: DraftPackReceivedMessage) => void
+  onDraftPickMade: (message: DraftPickMadeMessage) => void
+  onDraftPickConfirmed: (message: DraftPickConfirmedMessage) => void
+  onDraftComplete: (message: DraftCompleteMessage) => void
+  onDraftTimerUpdate: (message: DraftTimerUpdateMessage) => void
   // Tournament handlers
   onTournamentStarted: (message: TournamentStartedMessage) => void
   onTournamentMatchStarting: (message: TournamentMatchStartingMessage) => void
@@ -140,6 +151,22 @@ export function handleServerMessage(message: ServerMessage, handlers: MessageHan
       break
     case 'lobbyStopped':
       handlers.onLobbyStopped(message)
+      break
+    // Draft messages
+    case 'draftPackReceived':
+      handlers.onDraftPackReceived(message)
+      break
+    case 'draftPickMade':
+      handlers.onDraftPickMade(message)
+      break
+    case 'draftPickConfirmed':
+      handlers.onDraftPickConfirmed(message)
+      break
+    case 'draftComplete':
+      handlers.onDraftComplete(message)
+      break
+    case 'draftTimerUpdate':
+      handlers.onDraftTimerUpdate(message)
       break
     // Tournament messages
     case 'tournamentStarted':
@@ -271,6 +298,27 @@ export function createLoggingHandlers(handlers: MessageHandlers): MessageHandler
     onLobbyStopped: (msg) => {
       console.log('[Server] Lobby stopped:', msg)
       handlers.onLobbyStopped(msg)
+    },
+    // Draft handlers
+    onDraftPackReceived: (msg) => {
+      console.log('[Server] Draft pack received:', msg)
+      handlers.onDraftPackReceived(msg)
+    },
+    onDraftPickMade: (msg) => {
+      console.log('[Server] Draft pick made:', msg)
+      handlers.onDraftPickMade(msg)
+    },
+    onDraftPickConfirmed: (msg) => {
+      console.log('[Server] Draft pick confirmed:', msg)
+      handlers.onDraftPickConfirmed(msg)
+    },
+    onDraftComplete: (msg) => {
+      console.log('[Server] Draft complete:', msg)
+      handlers.onDraftComplete(msg)
+    },
+    onDraftTimerUpdate: (msg) => {
+      console.log('[Server] Draft timer update:', msg)
+      handlers.onDraftTimerUpdate(msg)
     },
     // Tournament handlers
     onTournamentStarted: (msg) => {

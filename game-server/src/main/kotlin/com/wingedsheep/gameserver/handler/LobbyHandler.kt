@@ -2,7 +2,9 @@ package com.wingedsheep.gameserver.handler
 
 import com.wingedsheep.gameserver.handler.ConnectionHandler.Companion.cardToSealedCardInfo
 import com.wingedsheep.gameserver.lobby.LobbyState
-import com.wingedsheep.gameserver.lobby.SealedLobby
+import com.wingedsheep.gameserver.lobby.PickResult
+import com.wingedsheep.gameserver.lobby.TournamentFormat
+import com.wingedsheep.gameserver.lobby.TournamentLobby
 import com.wingedsheep.gameserver.protocol.ClientMessage
 import com.wingedsheep.gameserver.protocol.ErrorCode
 import com.wingedsheep.gameserver.protocol.ServerMessage
@@ -16,6 +18,7 @@ import com.wingedsheep.gameserver.session.SessionRegistry
 import com.wingedsheep.gameserver.session.GameSession
 import com.wingedsheep.gameserver.tournament.TournamentManager
 import com.wingedsheep.engine.registry.CardRegistry
+import kotlinx.coroutines.*
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.springframework.web.socket.WebSocketSession
@@ -34,15 +37,19 @@ class LobbyHandler(
     @Volatile
     var waitingSealedSession: SealedSession? = null
 
+    /** Coroutine scope for draft timers */
+    private val draftScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+
     fun handle(session: WebSocketSession, message: ClientMessage) {
         when (message) {
             is ClientMessage.CreateSealedGame -> handleCreateSealedGame(session, message)
             is ClientMessage.JoinSealedGame -> handleJoinSealedGame(session, message)
             is ClientMessage.SubmitSealedDeck -> handleSubmitSealedDeck(session, message)
             is ClientMessage.UnsubmitDeck -> handleUnsubmitDeck(session)
-            is ClientMessage.CreateSealedLobby -> handleCreateSealedLobby(session, message)
+            is ClientMessage.CreateTournamentLobby -> handleCreateTournamentLobby(session, message)
             is ClientMessage.JoinLobby -> handleJoinLobby(session, message)
-            is ClientMessage.StartSealedLobby -> handleStartSealedLobby(session)
+            is ClientMessage.StartTournamentLobby -> handleStartTournamentLobby(session)
+            is ClientMessage.MakePick -> handleMakePick(session, message)
             is ClientMessage.LeaveLobby -> handleLeaveLobby(session)
             is ClientMessage.StopLobby -> handleStopLobby(session)
             is ClientMessage.UpdateLobbySettings -> handleUpdateLobbySettings(session, message)
@@ -211,7 +218,7 @@ class LobbyHandler(
         gamePlayHandler.startGame(gameSession)
     }
 
-    private fun handleCreateSealedLobby(session: WebSocketSession, message: ClientMessage.CreateSealedLobby) {
+    private fun handleCreateTournamentLobby(session: WebSocketSession, message: ClientMessage.CreateTournamentLobby) {
         val playerSession = sessionRegistry.getPlayerSession(session.id)
         if (playerSession == null) {
             sender.sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
@@ -231,16 +238,36 @@ class LobbyHandler(
             return
         }
 
-        val lobby = SealedLobby(
+        // Leave current lobby if in one
+        leaveCurrentLobbyIfPresent(identity)
+
+        val format = try {
+            TournamentFormat.valueOf(message.format.uppercase())
+        } catch (e: IllegalArgumentException) {
+            TournamentFormat.SEALED
+        }
+
+        // Set appropriate default booster count based on format
+        // Draft: default 3 packs, max 6
+        // Sealed: default 6 boosters, max 12
+        val boosterCount = if (format == TournamentFormat.DRAFT) {
+            if (message.boosterCount == 6) 3 else message.boosterCount.coerceIn(1, 6)  // 6 is the client default, use 3 for draft
+        } else {
+            message.boosterCount.coerceIn(1, 12)
+        }
+
+        val lobby = TournamentLobby(
             setCode = setConfig.setCode,
             setName = setConfig.setName,
-            boosterCount = message.boosterCount.coerceIn(1, 12),
-            maxPlayers = message.maxPlayers.coerceIn(2, 8)
+            format = format,
+            boosterCount = boosterCount,
+            maxPlayers = message.maxPlayers.coerceIn(2, 8),
+            pickTimeSeconds = message.pickTimeSeconds.coerceIn(15, 120)
         )
         lobby.addPlayer(identity)
         lobbyRepository.saveLobby(lobby)
 
-        logger.info("Sealed lobby created: ${lobby.lobbyId} by ${identity.playerName} (set: ${setConfig.setName})")
+        logger.info("Tournament lobby created: ${lobby.lobbyId} by ${identity.playerName} (set: ${setConfig.setName}, format: ${format.name})")
         sender.send(session, ServerMessage.LobbyCreated(lobby.lobbyId))
         broadcastLobbyUpdate(lobby)
     }
@@ -275,12 +302,15 @@ class LobbyHandler(
             return
         }
 
+        // Leave current lobby if in one
+        leaveCurrentLobbyIfPresent(identity)
+
         lobby.addPlayer(identity)
         logger.info("Player ${identity.playerName} joined lobby ${lobby.lobbyId}")
         broadcastLobbyUpdate(lobby)
     }
 
-    private fun handleStartSealedLobby(session: WebSocketSession) {
+    private fun handleStartTournamentLobby(session: WebSocketSession) {
         val token = sessionRegistry.getTokenByWsId(session.id)
         val identity = token?.let { sessionRegistry.getIdentityByToken(it) }
         if (identity == null) {
@@ -310,29 +340,245 @@ class LobbyHandler(
             return
         }
 
-        val started = lobby.startDeckBuilding(identity.playerId)
-        if (!started) {
-            sender.sendError(session, ErrorCode.INVALID_ACTION, "Failed to start lobby")
-            return
-        }
+        when (lobby.format) {
+            TournamentFormat.SEALED -> {
+                val started = lobby.startDeckBuilding(identity.playerId)
+                if (!started) {
+                    sender.sendError(session, ErrorCode.INVALID_ACTION, "Failed to start lobby")
+                    return
+                }
 
-        logger.info("Lobby ${lobby.lobbyId} started deck building (${lobby.playerCount} players)")
+                logger.info("Lobby ${lobby.lobbyId} started deck building - sealed (${lobby.playerCount} players)")
 
-        val basicLandInfos = lobby.basicLands.values.map { cardToSealedCardInfo(it) }
-        lobby.players.forEach { (_, playerState) ->
-            val poolInfos = playerState.cardPool.map { cardToSealedCardInfo(it) }
-            val ws = playerState.identity.webSocketSession
-            if (ws != null) {
-                sender.send(ws, ServerMessage.SealedPoolGenerated(
-                    setCode = lobby.setCode,
-                    setName = lobby.setName,
-                    cardPool = poolInfos,
-                    basicLands = basicLandInfos
-                ))
+                val basicLandInfos = lobby.basicLands.values.map { cardToSealedCardInfo(it) }
+                lobby.players.forEach { (_, playerState) ->
+                    val poolInfos = playerState.cardPool.map { cardToSealedCardInfo(it) }
+                    val ws = playerState.identity.webSocketSession
+                    if (ws != null) {
+                        sender.send(ws, ServerMessage.SealedPoolGenerated(
+                            setCode = lobby.setCode,
+                            setName = lobby.setName,
+                            cardPool = poolInfos,
+                            basicLands = basicLandInfos
+                        ))
+                    }
+                }
+            }
+
+            TournamentFormat.DRAFT -> {
+                val started = lobby.startDraft(identity.playerId)
+                if (!started) {
+                    sender.sendError(session, ErrorCode.INVALID_ACTION, "Failed to start draft")
+                    return
+                }
+
+                logger.info("Lobby ${lobby.lobbyId} started drafting (${lobby.playerCount} players)")
+
+                // Send first packs to all players
+                broadcastDraftPacks(lobby)
+
+                // Start the pick timer
+                startDraftTimer(lobby)
             }
         }
 
         broadcastLobbyUpdate(lobby)
+    }
+
+    /**
+     * Handle a player making a pick during draft.
+     */
+    private fun handleMakePick(session: WebSocketSession, message: ClientMessage.MakePick) {
+        val token = sessionRegistry.getTokenByWsId(session.id)
+        val identity = token?.let { sessionRegistry.getIdentityByToken(it) }
+        if (identity == null) {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        val lobbyId = identity.currentLobbyId
+        if (lobbyId == null) {
+            sender.sendError(session, ErrorCode.GAME_NOT_FOUND, "Not in a lobby")
+            return
+        }
+
+        val lobby = lobbyRepository.findLobbyById(lobbyId)
+        if (lobby == null) {
+            sender.sendError(session, ErrorCode.GAME_NOT_FOUND, "Lobby not found")
+            return
+        }
+
+        if (lobby.state != LobbyState.DRAFTING) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "Not in drafting phase")
+            return
+        }
+
+        val result = lobby.makePick(identity.playerId, message.cardNames)
+        when (result) {
+            is PickResult.Success -> {
+                val pickedNames = result.pickedCards.map { it.name }
+                logger.info("Player ${identity.playerName} picked ${pickedNames.joinToString(", ")} (${result.totalPicked} total)")
+
+                // Send confirmation to the player who picked
+                sender.send(session, ServerMessage.DraftPickConfirmed(
+                    cardNames = pickedNames,
+                    totalPicked = result.totalPicked
+                ))
+
+                // Broadcast to all players who is still waiting
+                broadcastDraftPickMade(lobby, identity, result.waitingForPlayers)
+
+                // Check if all players have picked
+                if (lobby.allPlayersPicked()) {
+                    processDraftRound(lobby)
+                }
+            }
+            is PickResult.Error -> {
+                sender.sendError(session, ErrorCode.INVALID_ACTION, result.message)
+            }
+        }
+    }
+
+    /**
+     * Process end of a draft pick round - pass packs and continue or finish.
+     */
+    private fun processDraftRound(lobby: TournamentLobby) {
+        // Cancel the current timer
+        lobby.pickTimerJob?.cancel()
+        lobby.pickTimerJob = null
+
+        // Pass packs
+        val continuesDraft = lobby.passPacks()
+
+        if (continuesDraft) {
+            // Continue drafting - send new packs
+            broadcastDraftPacks(lobby)
+            startDraftTimer(lobby)
+        } else {
+            // Draft complete - transition to deck building
+            logger.info("Draft complete for lobby ${lobby.lobbyId}, transitioning to deck building")
+
+            val basicLandInfos = lobby.basicLands.values.map { cardToSealedCardInfo(it) }
+
+            lobby.players.forEach { (_, playerState) ->
+                val poolInfos = playerState.cardPool.map { cardToSealedCardInfo(it) }
+                val ws = playerState.identity.webSocketSession
+                if (ws != null && ws.isOpen) {
+                    sender.send(ws, ServerMessage.DraftComplete(
+                        pickedCards = poolInfos,
+                        basicLands = basicLandInfos
+                    ))
+                }
+            }
+
+            broadcastLobbyUpdate(lobby)
+        }
+    }
+
+    /**
+     * Broadcast current draft packs to all players.
+     */
+    private fun broadcastDraftPacks(lobby: TournamentLobby) {
+        lobby.players.forEach { (_, playerState) ->
+            val ws = playerState.identity.webSocketSession
+            val pack = playerState.currentPack
+            if (ws != null && ws.isOpen && pack != null) {
+                sender.send(ws, ServerMessage.DraftPackReceived(
+                    packNumber = lobby.currentPackNumber,
+                    pickNumber = lobby.currentPickNumber,
+                    cards = pack.map { cardToSealedCardInfo(it) },
+                    timeRemainingSeconds = lobby.pickTimeSeconds,
+                    passDirection = lobby.getPassDirection().name,
+                    picksPerRound = minOf(lobby.picksPerRound, pack.size),
+                    pickedCards = playerState.cardPool.map { cardToSealedCardInfo(it) }
+                ))
+            }
+        }
+    }
+
+    /**
+     * Broadcast that a player made a pick.
+     */
+    private fun broadcastDraftPickMade(lobby: TournamentLobby, picker: PlayerIdentity, waitingForPlayers: List<String>) {
+        val message = ServerMessage.DraftPickMade(
+            playerId = picker.playerId.value,
+            playerName = picker.playerName,
+            waitingForPlayers = waitingForPlayers
+        )
+
+        lobby.players.forEach { (_, playerState) ->
+            val ws = playerState.identity.webSocketSession
+            if (ws != null && ws.isOpen) {
+                sender.send(ws, message)
+            }
+        }
+    }
+
+    /**
+     * Start the draft pick timer.
+     */
+    private fun startDraftTimer(lobby: TournamentLobby) {
+        lobby.pickTimeRemaining = lobby.pickTimeSeconds
+
+        lobby.pickTimerJob = draftScope.launch {
+            var remaining = lobby.pickTimeSeconds
+
+            while (remaining > 0 && isActive) {
+                delay(1000)
+                remaining--
+                lobby.pickTimeRemaining = remaining
+
+                // Broadcast timer update every second
+                broadcastTimerUpdate(lobby, remaining)
+            }
+
+            // Timer expired - auto-pick for players who haven't picked
+            if (isActive && lobby.state == LobbyState.DRAFTING) {
+                autoPickForSlowPlayers(lobby)
+            }
+        }
+    }
+
+    /**
+     * Broadcast timer update to all players.
+     */
+    private fun broadcastTimerUpdate(lobby: TournamentLobby, secondsRemaining: Int) {
+        val message = ServerMessage.DraftTimerUpdate(secondsRemaining)
+
+        lobby.players.forEach { (_, playerState) ->
+            val ws = playerState.identity.webSocketSession
+            if (ws != null && ws.isOpen) {
+                sender.send(ws, message)
+            }
+        }
+    }
+
+    /**
+     * Auto-pick for players who haven't made a selection when timer expires.
+     */
+    private fun autoPickForSlowPlayers(lobby: TournamentLobby) {
+        val slowPlayers = lobby.getPlayersWaitingToPick()
+
+        for (playerId in slowPlayers) {
+            val result = lobby.autoPickFirstCards(playerId)
+            if (result is PickResult.Success) {
+                val playerState = lobby.players[playerId]
+                val ws = playerState?.identity?.webSocketSession
+                val pickedNames = result.pickedCards.map { it.name }
+                if (ws != null && ws.isOpen) {
+                    sender.send(ws, ServerMessage.DraftPickConfirmed(
+                        cardNames = pickedNames,
+                        totalPicked = result.totalPicked
+                    ))
+                }
+                logger.info("Auto-picked ${pickedNames.joinToString(", ")} for player ${playerState?.identity?.playerName} (timeout)")
+            }
+        }
+
+        // Now process the round
+        if (lobby.allPlayersPicked()) {
+            processDraftRound(lobby)
+        }
     }
 
     private fun handleLeaveLobby(session: WebSocketSession) {
@@ -347,6 +593,27 @@ class LobbyHandler(
         identity.currentLobbyId = null
 
         logger.info("Player ${identity.playerName} left lobby $lobbyId")
+
+        if (lobby.playerCount == 0) {
+            lobbyRepository.removeLobby(lobbyId)
+            logger.info("Lobby $lobbyId removed (empty)")
+        } else {
+            broadcastLobbyUpdate(lobby)
+        }
+    }
+
+    /**
+     * Helper to leave current lobby if the player is in one.
+     * Used when creating/joining a new lobby to auto-leave the old one.
+     */
+    private fun leaveCurrentLobbyIfPresent(identity: PlayerIdentity) {
+        val lobbyId = identity.currentLobbyId ?: return
+        val lobby = lobbyRepository.findLobbyById(lobbyId) ?: return
+
+        lobby.removePlayer(identity.playerId)
+        identity.currentLobbyId = null
+
+        logger.info("Player ${identity.playerName} auto-left lobby $lobbyId")
 
         if (lobby.playerCount == 0) {
             lobbyRepository.removeLobby(lobbyId)
@@ -381,13 +648,17 @@ class LobbyHandler(
             return
         }
 
-        // Can only stop during WAITING_FOR_PLAYERS or DECK_BUILDING
-        if (lobby.state != LobbyState.WAITING_FOR_PLAYERS && lobby.state != LobbyState.DECK_BUILDING) {
+        // Can only stop during WAITING_FOR_PLAYERS, DRAFTING, or DECK_BUILDING (not during active tournament)
+        if (lobby.state == LobbyState.TOURNAMENT_ACTIVE || lobby.state == LobbyState.TOURNAMENT_COMPLETE) {
             sender.sendError(session, ErrorCode.INVALID_ACTION, "Cannot stop lobby during tournament")
             return
         }
 
         logger.info("Host ${identity.playerName} stopped lobby $lobbyId")
+
+        // Cancel the pick timer if we're in drafting
+        lobby.pickTimerJob?.cancel()
+        lobby.pickTimerJob = null
 
         // Notify all players that the lobby was stopped
         lobby.players.forEach { (_, playerState) ->
@@ -464,9 +735,38 @@ class LobbyHandler(
             return
         }
 
-        message.boosterCount?.let { lobby.boosterCount = it.coerceIn(1, 12) }
+        // Update set if provided
+        message.setCode?.let { newSetCode ->
+            if (!lobby.updateSet(newSetCode)) {
+                sender.sendError(session, ErrorCode.INVALID_ACTION, "Invalid set code: $newSetCode")
+                return
+            }
+        }
+
+        // Update format if provided
+        message.format?.let { formatStr ->
+            val newFormat = try {
+                TournamentFormat.valueOf(formatStr)
+            } catch (e: IllegalArgumentException) {
+                sender.sendError(session, ErrorCode.INVALID_ACTION, "Invalid format: $formatStr")
+                return
+            }
+            // When switching formats, adjust boosterCount to appropriate default
+            if (newFormat != lobby.format) {
+                lobby.format = newFormat
+                lobby.boosterCount = if (newFormat == TournamentFormat.DRAFT) 3 else 6
+            }
+        }
+
+        // Manual boosterCount override (apply after format change)
+        message.boosterCount?.let {
+            val maxCount = if (lobby.format == TournamentFormat.DRAFT) 6 else 12
+            lobby.boosterCount = it.coerceIn(1, maxCount)
+        }
         message.maxPlayers?.let { lobby.maxPlayers = it.coerceIn(2, 8) }
         message.gamesPerMatch?.let { lobby.gamesPerMatch = it.coerceIn(1, 5) }
+        message.pickTimeSeconds?.let { lobby.pickTimeSeconds = it.coerceIn(15, 180) }
+        message.picksPerRound?.let { lobby.picksPerRound = it.coerceIn(1, 2) }
 
         broadcastLobbyUpdate(lobby)
     }
@@ -486,7 +786,7 @@ class LobbyHandler(
 
         val result = lobby.submitDeck(identity.playerId, deckList)
         when (result) {
-            is SealedLobby.DeckSubmissionResult.Success -> {
+            is TournamentLobby.DeckSubmissionResult.Success -> {
                 val deckSize = deckList.values.sum()
                 logger.info("Player ${identity.playerName} submitted deck ($deckSize cards) in lobby $lobbyId")
                 sender.send(session, ServerMessage.DeckSubmitted(deckSize))
@@ -496,13 +796,13 @@ class LobbyHandler(
                     startTournament(lobby)
                 }
             }
-            is SealedLobby.DeckSubmissionResult.Error -> {
+            is TournamentLobby.DeckSubmissionResult.Error -> {
                 sender.sendError(session, ErrorCode.INVALID_DECK, result.message)
             }
         }
     }
 
-    fun broadcastLobbyUpdate(lobby: SealedLobby) {
+    fun broadcastLobbyUpdate(lobby: TournamentLobby) {
         lobby.players.forEach { (playerId, playerState) ->
             val ws = playerState.identity.webSocketSession
             if (ws != null && ws.isOpen) {
@@ -511,7 +811,7 @@ class LobbyHandler(
         }
     }
 
-    fun startTournament(lobby: SealedLobby) {
+    fun startTournament(lobby: TournamentLobby) {
         logger.info("Starting tournament for lobby ${lobby.lobbyId} with ${lobby.playerCount} players")
         lobby.startTournament()
 

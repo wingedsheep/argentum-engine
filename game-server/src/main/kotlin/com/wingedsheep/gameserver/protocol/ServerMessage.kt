@@ -234,8 +234,11 @@ sealed interface ServerMessage {
     data class LobbySettings(
         val setCode: String,
         val setName: String,
+        val format: String = "SEALED",      // "SEALED" or "DRAFT"
         val boosterCount: Int,
         val maxPlayers: Int,
+        val pickTimeSeconds: Int = 45,      // Draft only
+        val picksPerRound: Int = 1,         // Draft only: 1 or 2 (Pick 2 mode)
         val gamesPerMatch: Int = 1
     )
 
@@ -265,6 +268,65 @@ sealed interface ServerMessage {
     @Serializable
     @SerialName("lobbyStopped")
     data object LobbyStopped : ServerMessage
+
+    // =========================================================================
+    // Draft Messages
+    // =========================================================================
+
+    /**
+     * Draft pack received - sent to each player with their current pack to pick from.
+     */
+    @Serializable
+    @SerialName("draftPackReceived")
+    data class DraftPackReceived(
+        val packNumber: Int,           // 1, 2, or 3
+        val pickNumber: Int,           // 1-15
+        val cards: List<SealedCardInfo>,
+        val timeRemainingSeconds: Int,
+        val passDirection: String,     // "LEFT" or "RIGHT"
+        val picksPerRound: Int = 1,    // Cards to pick this round (1 or 2)
+        val pickedCards: List<SealedCardInfo> = emptyList()  // Cards already picked (for reconnect)
+    ) : ServerMessage
+
+    /**
+     * Another player made a pick - broadcast to show who is still waiting.
+     */
+    @Serializable
+    @SerialName("draftPickMade")
+    data class DraftPickMade(
+        val playerId: String,
+        val playerName: String,
+        val waitingForPlayers: List<String>
+    ) : ServerMessage
+
+    /**
+     * Confirmation that the player's pick was successful.
+     */
+    @Serializable
+    @SerialName("draftPickConfirmed")
+    data class DraftPickConfirmed(
+        val cardNames: List<String>,
+        val totalPicked: Int
+    ) : ServerMessage
+
+    /**
+     * Draft is complete - sent with the final pool.
+     */
+    @Serializable
+    @SerialName("draftComplete")
+    data class DraftComplete(
+        val pickedCards: List<SealedCardInfo>,
+        val basicLands: List<SealedCardInfo>
+    ) : ServerMessage
+
+    /**
+     * Timer update during draft - sent periodically.
+     */
+    @Serializable
+    @SerialName("draftTimerUpdate")
+    data class DraftTimerUpdate(
+        val secondsRemaining: Int
+    ) : ServerMessage
 
     // =========================================================================
     // Tournament Messages

@@ -34,9 +34,10 @@ import {
   createCreateSealedGameMessage,
   createJoinSealedGameMessage,
   createSubmitSealedDeckMessage,
-  createCreateSealedLobbyMessage,
+  createCreateTournamentLobbyMessage,
   createJoinLobbyMessage,
-  createStartSealedLobbyMessage,
+  createStartTournamentLobbyMessage,
+  createMakePickMessage,
   createLeaveLobbyMessage,
   createStopLobbyMessage,
   createUnsubmitDeckMessage,
@@ -203,14 +204,30 @@ export interface DeckBuildingState {
 }
 
 /**
- * Lobby state for sealed lobbies.
+ * Draft state during the drafting phase.
+ */
+export interface DraftState {
+  currentPack: readonly SealedCardInfo[]
+  packNumber: number
+  pickNumber: number
+  pickedCards: readonly SealedCardInfo[]
+  timeRemaining: number
+  passDirection: 'LEFT' | 'RIGHT'
+  picksPerRound: number  // Cards to pick this round (1 or 2)
+  waitingForPlayers: readonly string[]
+}
+
+/**
+ * Lobby state for tournament lobbies (sealed or draft).
  */
 export interface LobbyState {
   lobbyId: string
-  state: string
+  state: 'WAITING_FOR_PLAYERS' | 'DRAFTING' | 'DECK_BUILDING' | 'TOURNAMENT_ACTIVE' | 'TOURNAMENT_COMPLETE'
   players: readonly LobbyPlayerInfo[]
   settings: LobbySettings
   isHost: boolean
+  /** Draft-specific state (only populated when format is DRAFT and state is DRAFTING) */
+  draftState: DraftState | null
 }
 
 /**
@@ -340,12 +357,19 @@ export interface GameStore {
   unsubmitDeck: () => void
 
   // Lobby actions
+  createTournamentLobby: (setCode: string, format?: 'SEALED' | 'DRAFT', boosterCount?: number, maxPlayers?: number, pickTimeSeconds?: number) => void
+  /** @deprecated Use createTournamentLobby instead */
   createSealedLobby: (setCode: string, boosterCount?: number, maxPlayers?: number) => void
   joinLobby: (lobbyId: string) => void
+  startLobby: () => void
+  /** @deprecated Use startLobby instead */
   startSealedLobby: () => void
   leaveLobby: () => void
   stopLobby: () => void
-  updateLobbySettings: (settings: { boosterCount?: number; maxPlayers?: number; gamesPerMatch?: number }) => void
+  updateLobbySettings: (settings: { setCode?: string; format?: 'SEALED' | 'DRAFT'; boosterCount?: number; maxPlayers?: number; gamesPerMatch?: number; pickTimeSeconds?: number; picksPerRound?: number }) => void
+
+  // Draft actions
+  makePick: (cardNames: string[]) => void
 
   // Tournament actions
   readyForNextRound: () => void
@@ -381,6 +405,7 @@ export interface GameStore {
   cancelXSelection: () => void
   confirmXSelection: () => void
   returnToMenu: () => void
+  leaveTournament: () => void
   clearError: () => void
   consumeEvent: () => ClientEvent | undefined
   showRevealedHand: (cardIds: readonly EntityId[]) => void
@@ -898,14 +923,15 @@ export const useGameStore = create<GameStore>()(
             lobbyId: msg.lobbyId,
             state: 'WAITING_FOR_PLAYERS',
             players: [],
-            settings: { setCode: '', setName: '', boosterCount: 6, maxPlayers: 8, gamesPerMatch: 1 },
+            settings: { setCode: '', setName: '', format: 'SEALED', boosterCount: 6, maxPlayers: 8, pickTimeSeconds: 45, picksPerRound: 1, gamesPerMatch: 1 },
             isHost: true,
+            draftState: null,
           },
         })
       },
 
       onLobbyUpdate: (msg) => {
-        const { playerId } = get()
+        const { playerId, lobbyState } = get()
 
         // Save lobby ID for reconnection after refresh
         saveLobbyId(msg.lobbyId)
@@ -917,10 +943,12 @@ export const useGameStore = create<GameStore>()(
         set((state) => ({
           lobbyState: {
             lobbyId: msg.lobbyId,
-            state: msg.state,
+            state: msg.state as LobbyState['state'],
             players: msg.players,
             settings: msg.settings,
             isHost: msg.isHost,
+            // Preserve draft state if still drafting
+            draftState: msg.state === 'DRAFTING' ? (lobbyState?.draftState ?? null) : null,
           },
           // Update deck building phase based on submission status
           deckBuildingState:
@@ -940,6 +968,112 @@ export const useGameStore = create<GameStore>()(
           lobbyState: null,
           deckBuildingState: null,
         })
+      },
+
+      // Draft handlers
+      onDraftPackReceived: (msg) => {
+        set((state) => ({
+          lobbyState: state.lobbyState
+            ? {
+                ...state.lobbyState,
+                draftState: {
+                  currentPack: msg.cards,
+                  packNumber: msg.packNumber,
+                  pickNumber: msg.pickNumber,
+                  // Use pickedCards from server if provided (reconnect), otherwise preserve existing
+                  pickedCards: msg.pickedCards ?? state.lobbyState.draftState?.pickedCards ?? [],
+                  timeRemaining: msg.timeRemainingSeconds,
+                  passDirection: msg.passDirection,
+                  picksPerRound: msg.picksPerRound,
+                  waitingForPlayers: [],
+                },
+              }
+            : null,
+        }))
+      },
+
+      onDraftPickMade: (msg) => {
+        set((state) => ({
+          lobbyState: state.lobbyState?.draftState
+            ? {
+                ...state.lobbyState,
+                draftState: {
+                  ...state.lobbyState.draftState,
+                  waitingForPlayers: msg.waitingForPlayers,
+                },
+              }
+            : state.lobbyState,
+        }))
+      },
+
+      onDraftPickConfirmed: (msg) => {
+        set((state) => {
+          if (!state.lobbyState?.draftState) return state
+
+          // Find the picked cards in the current pack
+          const pickedCards = state.lobbyState.draftState.currentPack.filter((c) =>
+            msg.cardNames.includes(c.name)
+          )
+          if (pickedCards.length === 0) return state
+
+          return {
+            lobbyState: {
+              ...state.lobbyState,
+              draftState: {
+                ...state.lobbyState.draftState,
+                // Clear current pack - we're now waiting for the next pack to be passed
+                currentPack: [],
+                // Add to picked cards
+                pickedCards: [...state.lobbyState.draftState.pickedCards, ...pickedCards],
+              },
+            },
+          }
+        })
+      },
+
+      onDraftComplete: (msg) => {
+        trackEvent('draft_complete', { picked_cards: msg.pickedCards.length })
+
+        // Transition to deck building
+        set((state) => ({
+          lobbyState: state.lobbyState
+            ? {
+                ...state.lobbyState,
+                state: 'DECK_BUILDING',
+                draftState: null,
+              }
+            : null,
+          deckBuildingState: {
+            phase: 'building',
+            setCode: state.lobbyState?.settings.setCode ?? '',
+            setName: state.lobbyState?.settings.setName ?? '',
+            cardPool: msg.pickedCards,
+            basicLands: msg.basicLands,
+            deck: [],
+            landCounts: {
+              Plains: 0,
+              Island: 0,
+              Swamp: 0,
+              Mountain: 0,
+              Forest: 0,
+            },
+            opponentReady: false,
+          },
+        }))
+      },
+
+      onDraftTimerUpdate: (msg) => {
+        set((state) => ({
+          lobbyState: state.lobbyState?.draftState
+            ? {
+                ...state.lobbyState,
+                draftState: {
+                  ...state.lobbyState.draftState,
+                  timeRemaining: msg.secondsRemaining,
+                },
+              }
+            : state.lobbyState,
+        }))
       },
 
       // Tournament handlers
@@ -1454,19 +1588,32 @@ export const useGameStore = create<GameStore>()(
       },
 
       // Lobby actions
+      createTournamentLobby: (setCode, format = 'SEALED', boosterCount = 6, maxPlayers = 8, pickTimeSeconds = 45) => {
+        trackEvent('tournament_lobby_created', { set_code: setCode, format, booster_count: boosterCount, max_players: maxPlayers })
+        ws?.send(createCreateTournamentLobbyMessage(setCode, format, boosterCount, maxPlayers, pickTimeSeconds))
+      },
+
       createSealedLobby: (setCode, boosterCount = 6, maxPlayers = 8) => {
+        // Backwards compatibility
         trackEvent('sealed_lobby_created', { set_code: setCode, booster_count: boosterCount, max_players: maxPlayers })
-        ws?.send(createCreateSealedLobbyMessage(setCode, boosterCount, maxPlayers))
+        ws?.send(createCreateTournamentLobbyMessage(setCode, 'SEALED', boosterCount, maxPlayers, 45))
       },
 
       joinLobby: (lobbyId) => {
-        trackEvent('sealed_lobby_joined')
+        trackEvent('lobby_joined')
         ws?.send(createJoinLobbyMessage(lobbyId))
       },
 
+      startLobby: () => {
+        const { lobbyState } = get()
+        trackEvent('lobby_started', { format: lobbyState?.settings.format })
+        ws?.send(createStartTournamentLobbyMessage())
+      },
+
       startSealedLobby: () => {
+        // Backwards compatibility
         trackEvent('sealed_lobby_started')
-        ws?.send(createStartSealedLobbyMessage())
+        ws?.send(createStartTournamentLobbyMessage())
       },
 
       leaveLobby: () => {
@@ -1485,6 +1632,12 @@ export const useGameStore = create<GameStore>()(
 
       updateLobbySettings: (settings) => {
         ws?.send(createUpdateLobbySettingsMessage(settings))
+      },
+
+      // Draft actions
+      makePick: (cardNames) => {
+        trackEvent('draft_pick_made', { card_names: cardNames })
+        ws?.send(createMakePickMessage(cardNames))
       },
 
       // Tournament actions
@@ -1947,6 +2100,36 @@ export const useGameStore = create<GameStore>()(
           // Preserve lobby/tournament state if in tournament
           lobbyState: isInTournament ? state.lobbyState : null,
           tournamentState: isInTournament ? state.tournamentState : null,
+        })
+      },
+
+      leaveTournament: () => {
+        // Clear all state including tournament/lobby - used when tournament is complete
+        clearLobbyId()
+        clearDeckState()
+        set({
+          sessionId: null,
+          opponentName: null,
+          gameState: null,
+          legalActions: [],
+          pendingDecision: null,
+          mulliganState: null,
+          waitingForOpponentMulligan: false,
+          selectedCardId: null,
+          targetingState: null,
+          combatState: null,
+          xSelectionState: null,
+          hoveredCardId: null,
+          draggingBlockerId: null,
+          draggingCardId: null,
+          revealedHandCardIds: null,
+          pendingEvents: [],
+          eventLog: [],
+          gameOverState: null,
+          lastError: null,
+          deckBuildingState: null,
+          lobbyState: null,
+          tournamentState: null,
         })
       },
 

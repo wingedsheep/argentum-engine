@@ -35,8 +35,8 @@ class RandomDeckGenerator(
             6 to 0.09   // CMC 6+: ~3 cards
         )
 
-        // Maximum copies of any non-basic card
-        const val MAX_COPIES = 4
+        // Maximum copies of any non-basic card (1 for more variety)
+        const val MAX_COPIES = 1
 
         // Map color to basic land name
         private val COLOR_TO_LAND = mapOf(

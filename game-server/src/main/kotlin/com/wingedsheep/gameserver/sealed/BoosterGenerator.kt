@@ -92,40 +92,43 @@ class BoosterGenerator {
         }
 
         // Group cards by rarity
-        val commons = boosterPool.filter { it.metadata.rarity == Rarity.COMMON }
-        val uncommons = boosterPool.filter { it.metadata.rarity == Rarity.UNCOMMON }
-        val rares = boosterPool.filter { it.metadata.rarity == Rarity.RARE }
-        val mythics = boosterPool.filter { it.metadata.rarity == Rarity.MYTHIC }
+        val commons = boosterPool.filter { it.metadata.rarity == Rarity.COMMON }.toMutableList()
+        val uncommons = boosterPool.filter { it.metadata.rarity == Rarity.UNCOMMON }.toMutableList()
+        val rares = boosterPool.filter { it.metadata.rarity == Rarity.RARE }.toMutableList()
+        val mythics = boosterPool.filter { it.metadata.rarity == Rarity.MYTHIC }.toMutableList()
 
         val booster = mutableListOf<CardDefinition>()
+        val usedCardNames = mutableSetOf<String>()
 
-        // 11 Commons (with replacement)
-        repeat(11) {
-            if (commons.isNotEmpty()) {
-                booster.add(commons.random())
-            }
+        // Helper to pick a random card without duplicates
+        fun pickWithoutDuplicates(pool: MutableList<CardDefinition>): CardDefinition? {
+            val available = pool.filter { it.name !in usedCardNames }
+            if (available.isEmpty()) return null
+            val picked = available.random()
+            usedCardNames.add(picked.name)
+            return picked
         }
 
-        // 3 Uncommons (with replacement)
+        // 11 Commons (without duplicates within the same booster)
+        repeat(11) {
+            pickWithoutDuplicates(commons)?.let { booster.add(it) }
+        }
+
+        // 3 Uncommons (without duplicates within the same booster)
         repeat(3) {
-            if (uncommons.isNotEmpty()) {
-                booster.add(uncommons.random())
-            }
+            pickWithoutDuplicates(uncommons)?.let { booster.add(it) }
         }
 
         // 1 Rare (or Mythic with ~12.5% chance if mythics exist)
         val rareSlot = if (mythics.isNotEmpty() && Math.random() < 0.125) {
-            mythics.random()
-        } else if (rares.isNotEmpty()) {
-            rares.random()
-        } else if (uncommons.isNotEmpty()) {
-            // Fallback if no rares exist
-            uncommons.random()
-        } else if (commons.isNotEmpty()) {
-            commons.random()
+            pickWithoutDuplicates(mythics)
         } else {
-            throw IllegalStateException("No cards available for booster generation")
-        }
+            null
+        } ?: pickWithoutDuplicates(rares)
+          ?: pickWithoutDuplicates(uncommons)
+          ?: pickWithoutDuplicates(commons)
+          ?: throw IllegalStateException("No cards available for booster generation")
+
         booster.add(rareSlot)
 
         return booster

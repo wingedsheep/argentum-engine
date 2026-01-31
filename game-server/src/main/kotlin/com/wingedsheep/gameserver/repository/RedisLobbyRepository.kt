@@ -2,12 +2,12 @@ package com.wingedsheep.gameserver.repository
 
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.gameserver.config.RedisProperties
-import com.wingedsheep.gameserver.lobby.SealedLobby
-import com.wingedsheep.gameserver.persistence.dto.PersistentSealedLobby
+import com.wingedsheep.gameserver.lobby.TournamentLobby
+import com.wingedsheep.gameserver.persistence.dto.PersistentTournamentLobby
 import com.wingedsheep.gameserver.persistence.dto.PersistentSealedSession
 import com.wingedsheep.gameserver.persistence.dto.PersistentTournament
 import com.wingedsheep.gameserver.persistence.persistenceJson
-import com.wingedsheep.gameserver.persistence.restoreSealedLobby
+import com.wingedsheep.gameserver.persistence.restoreTournamentLobby
 import com.wingedsheep.gameserver.persistence.restoreTournamentManager
 import com.wingedsheep.gameserver.persistence.toPersistent
 import com.wingedsheep.gameserver.sealed.SealedSession
@@ -44,7 +44,7 @@ class RedisLobbyRepository(
     private val logger = LoggerFactory.getLogger(RedisLobbyRepository::class.java)
 
     // In-memory caches for active entities
-    private val lobbyCache = ConcurrentHashMap<String, SealedLobby>()
+    private val lobbyCache = ConcurrentHashMap<String, TournamentLobby>()
     private val sealedSessionCache = ConcurrentHashMap<String, SealedSession>()
     private val tournamentCache = ConcurrentHashMap<String, TournamentManager>()
 
@@ -58,12 +58,12 @@ class RedisLobbyRepository(
     // Lobby Operations
     // =========================================================================
 
-    override fun saveLobby(lobby: SealedLobby) {
+    override fun saveLobby(lobby: TournamentLobby) {
         lobbyCache[lobby.lobbyId] = lobby
 
         try {
             val persistent = lobby.toPersistent()
-            val json = persistenceJson.encodeToString(PersistentSealedLobby.serializer(), persistent)
+            val json = persistenceJson.encodeToString(PersistentTournamentLobby.serializer(), persistent)
 
             redisTemplate.opsForValue().set(
                 lobbyKey(lobby.lobbyId),
@@ -77,13 +77,13 @@ class RedisLobbyRepository(
         }
     }
 
-    override fun findLobbyById(lobbyId: String): SealedLobby? {
+    override fun findLobbyById(lobbyId: String): TournamentLobby? {
         lobbyCache[lobbyId]?.let { return it }
 
         return try {
             val json = redisTemplate.opsForValue().get(lobbyKey(lobbyId)) ?: return null
-            val persistent = persistenceJson.decodeFromString(PersistentSealedLobby.serializer(), json)
-            val (lobby, _) = restoreSealedLobby(persistent, cardRegistry)
+            val persistent = persistenceJson.decodeFromString(PersistentTournamentLobby.serializer(), json)
+            val (lobby, _) = restoreTournamentLobby(persistent, cardRegistry)
 
             lobbyCache[lobbyId] = lobby
             logger.debug("Loaded lobby $lobbyId from Redis")
@@ -94,7 +94,7 @@ class RedisLobbyRepository(
         }
     }
 
-    override fun removeLobby(lobbyId: String): SealedLobby? {
+    override fun removeLobby(lobbyId: String): TournamentLobby? {
         val lobby = lobbyCache.remove(lobbyId)
 
         try {
@@ -107,7 +107,7 @@ class RedisLobbyRepository(
         return lobby
     }
 
-    override fun findAllLobbies(): Collection<SealedLobby> {
+    override fun findAllLobbies(): Collection<TournamentLobby> {
         return lobbyCache.values
     }
 
@@ -224,10 +224,10 @@ class RedisLobbyRepository(
     /**
      * Load all lobbies from Redis.
      *
-     * @return List of (SealedLobby, List<PlayerIdentity>) pairs
+     * @return List of (TournamentLobby, List<PlayerIdentity>) pairs
      */
-    fun loadAllLobbiesFromRedis(): List<Pair<SealedLobby, List<PlayerIdentity>>> {
-        val results = mutableListOf<Pair<SealedLobby, List<PlayerIdentity>>>()
+    fun loadAllLobbiesFromRedis(): List<Pair<TournamentLobby, List<PlayerIdentity>>> {
+        val results = mutableListOf<Pair<TournamentLobby, List<PlayerIdentity>>>()
 
         try {
             val keys = redisTemplate.keys("${keyPrefix}lobby:*") ?: return results
@@ -235,8 +235,8 @@ class RedisLobbyRepository(
             for (key in keys) {
                 try {
                     val json = redisTemplate.opsForValue().get(key) ?: continue
-                    val persistent = persistenceJson.decodeFromString(PersistentSealedLobby.serializer(), json)
-                    val (lobby, identities) = restoreSealedLobby(persistent, cardRegistry)
+                    val persistent = persistenceJson.decodeFromString(PersistentTournamentLobby.serializer(), json)
+                    val (lobby, identities) = restoreTournamentLobby(persistent, cardRegistry)
 
                     lobbyCache[lobby.lobbyId] = lobby
                     results.add(lobby to identities)

@@ -105,33 +105,45 @@ sealed interface ClientMessage {
     data class SubmitSealedDeck(val deckList: Map<String, Int>) : ClientMessage
 
     // =========================================================================
-    // Sealed Lobby Messages
+    // Tournament Lobby Messages
     // =========================================================================
 
     /**
-     * Create a new sealed lobby for up to 8 players.
+     * Create a new tournament lobby for up to 8 players.
+     * Supports both SEALED and DRAFT formats.
      */
     @Serializable
-    @SerialName("createSealedLobby")
-    data class CreateSealedLobby(
+    @SerialName("createTournamentLobby")
+    data class CreateTournamentLobby(
         val setCode: String,
-        val boosterCount: Int = 6,
-        val maxPlayers: Int = 8
+        val format: String = "SEALED",     // "SEALED" or "DRAFT"
+        val boosterCount: Int = 6,         // Sealed: boosters in pool, Draft: packs per player
+        val maxPlayers: Int = 8,
+        val pickTimeSeconds: Int = 45      // Draft only
     ) : ClientMessage
 
     /**
-     * Join an existing sealed lobby.
+     * Join an existing tournament lobby.
      */
     @Serializable
     @SerialName("joinLobby")
     data class JoinLobby(val lobbyId: String) : ClientMessage
 
     /**
-     * Host starts the sealed lobby (generates pools, begins deck building).
+     * Host starts the tournament lobby.
+     * For Sealed: generates pools and begins deck building.
+     * For Draft: distributes first packs and begins drafting.
      */
     @Serializable
-    @SerialName("startSealedLobby")
-    data object StartSealedLobby : ClientMessage
+    @SerialName("startTournamentLobby")
+    data object StartTournamentLobby : ClientMessage
+
+    /**
+     * Make a pick during draft. Supports Pick 2 mode with multiple card names.
+     */
+    @Serializable
+    @SerialName("makePick")
+    data class MakePick(val cardNames: List<String>) : ClientMessage
 
     /**
      * Leave the current lobby.
@@ -161,7 +173,15 @@ sealed interface ClientMessage {
      */
     @Serializable
     @SerialName("updateLobbySettings")
-    data class UpdateLobbySettings(val boosterCount: Int? = null, val maxPlayers: Int? = null, val gamesPerMatch: Int? = null) : ClientMessage
+    data class UpdateLobbySettings(
+        val setCode: String? = null,
+        val format: String? = null,           // "SEALED" or "DRAFT"
+        val boosterCount: Int? = null,
+        val maxPlayers: Int? = null,
+        val gamesPerMatch: Int? = null,
+        val pickTimeSeconds: Int? = null,     // Draft only
+        val picksPerRound: Int? = null        // Draft only: 1 or 2
+    ) : ClientMessage
 
     // =========================================================================
     // Tournament Messages
