@@ -14,6 +14,7 @@ class PermanentExecutors : ExecutorModule {
         ModifyStatsExecutor(),
         ModifyStatsForGroupExecutor(),
         GrantKeywordUntilEndOfTurnExecutor(),
+        GrantKeywordToGroupExecutor(),
         AddCountersExecutor(),
         RemoveCountersExecutor()
     )
