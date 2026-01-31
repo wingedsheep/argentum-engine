@@ -735,7 +735,7 @@ export const useGameStore = create<GameStore>()(
           // Show revealed hand overlay if handLookedAt or handRevealed event received
           revealedHandCardIds: handLookedAtEvent?.cardIds ?? handRevealedEvent?.cardIds ?? state.revealedHandCardIds,
           // Clear opponent's blocker assignments when combat ends or blockers are confirmed
-          opponentBlockerAssignments: msg.state.combat?.blockers?.length ? null : state.opponentBlockerAssignments,
+          opponentBlockerAssignments: (msg.state.combat?.blockers?.length || !msg.state.combat) ? null : state.opponentBlockerAssignments,
         }))
 
         // Auto-pass when the only action available is PassPriority
