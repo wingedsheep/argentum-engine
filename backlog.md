@@ -20,19 +20,16 @@
 - [x] Ingenious thief card says "Look at opponent's hand" but it allows you to select any player as a target
 - [x] Some cards can only target yourself or the opponent, but the UI still allows you to select the target
 - [x] Last chance doesn't work yet. It should show a badge to indicate that the player loses next turn, and make the opponent skip their next turn.
-- [ ] Spitting earth card doesn't deal any damage, even though I have mountains in play
+- [x] Spitting earth card doesn't deal any damage, even though I have mountains in play
 - [x] Disable analytics for local development
 - [x] Breath of life doesn't work. It can't target a creature in my graveyard.
 - [x] Not allowed to play mystic denial in response to my opponent casting a creature spell
-- [ ] Withering gaze doesn't allow me to look at the opponent's hand
+- [x] Withering gaze doesn't allow me to look at the opponent's hand
 
 ## Work in progress
 
 - [x] Targeting spells on the stack
-- [ ] Auto passing priority
-  - Auto resolve spells if opponent passes
-  - Auto pass on cast creature or enchantment with no valid response (but do show the card on the stack in the frontend for a second or so)
-  - [Skip assign blockers phase if no creatures can block]()
+- [ ] Auto passing priority -> improve. Currently done in backend and frontend.
 
 ## Improvements
 
@@ -44,5 +41,5 @@
 ## Features
 
 - [x] Add persistence. If the game server restarts, keep games that are in progress. Maybe Redis or PostgreSQL?
-- [ ] Add spectator mode for sealed 
+- [x] Add spectator mode for sealed 
 - [ ] Matchmaking
