@@ -42,5 +42,9 @@ val AssassinsBlade = card("Assassin's Blade") {
         collectorNumber = "80"
         artist = "Mark Poole"
         imageUri = "https://cards.scryfall.io/normal/front/b/8/b80e8fe0-eccb-4268-a6ce-1365c68e6b13.jpg"
+        ruling(
+            "10/4/2004",
+            "This card was originally printed as a sorcery and has received errata to make it an instant."
+        )
     }
 }

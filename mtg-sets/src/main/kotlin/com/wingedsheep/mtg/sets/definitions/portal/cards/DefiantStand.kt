@@ -36,5 +36,9 @@ val DefiantStand = card("Defiant Stand") {
         collectorNumber = "12"
         artist = "Hannibal King"
         imageUri = "https://cards.scryfall.io/normal/front/9/c/9cc37fd2-5c34-4522-8113-e6dd2181550b.jpg"
+        ruling(
+            "10/4/2004",
+            "This card was originally printed as a sorcery and has received errata to make it an instant."
+        )
     }
 }

@@ -29,5 +29,9 @@ val DeepWood = card("Deep Wood") {
         artist = "Terese Nielsen"
         flavorText = "In the deep wood, the trees themselves offer protection."
         imageUri = "https://cards.scryfall.io/normal/front/4/2/4216c5aa-9df0-4e7c-b3e9-a3f712b17ce7.jpg"
+        ruling(
+            "10/4/2004",
+            "This card was originally printed as a sorcery and has received errata to make it an instant."
+        )
     }
 }

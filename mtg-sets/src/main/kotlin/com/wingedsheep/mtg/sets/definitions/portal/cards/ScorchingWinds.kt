@@ -30,5 +30,9 @@ val ScorchingWinds = card("Scorching Winds") {
         artist = "D. Alexander Gregory"
         flavorText = "The desert wind carries fire in its breath."
         imageUri = "https://cards.scryfall.io/normal/front/5/f/5fec371e-d4ba-439f-b1b8-2aac3f5b36bf.jpg"
+        ruling(
+            "10/4/2004",
+            "This card was originally printed as a sorcery and has received errata to make it an instant."
+        )
     }
 }

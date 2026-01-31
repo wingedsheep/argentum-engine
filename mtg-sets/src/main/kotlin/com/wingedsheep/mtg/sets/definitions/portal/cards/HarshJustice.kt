@@ -31,5 +31,9 @@ val HarshJustice = card("Harsh Justice") {
         collectorNumber = "18"
         artist = "John Coulthart"
         imageUri = "https://cards.scryfall.io/normal/front/3/6/3657001a-7f79-4d3f-9d35-462ecf684fa8.jpg"
+        ruling(
+            "10/4/2004",
+            "This card was originally printed as a sorcery and has received errata to make it an instant."
+        )
     }
 }

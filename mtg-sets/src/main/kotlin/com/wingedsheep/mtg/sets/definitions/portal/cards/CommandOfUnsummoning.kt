@@ -38,5 +38,9 @@ val CommandOfUnsummoning = card("Command of Unsummoning") {
         collectorNumber = "48"
         artist = "Phil Foglio"
         imageUri = "https://cards.scryfall.io/normal/front/e/6/e61b97fc-fa42-40a6-918e-e06383bfcae3.jpg"
+        ruling(
+            "10/4/2004",
+            "This card was originally printed as a sorcery and has received errata to make it an instant."
+        )
     }
 }

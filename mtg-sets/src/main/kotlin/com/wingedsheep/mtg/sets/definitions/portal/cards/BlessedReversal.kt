@@ -31,5 +31,9 @@ val BlessedReversal = card("Blessed Reversal") {
         collectorNumber = "7"
         artist = "Zina Saunders"
         imageUri = "https://cards.scryfall.io/normal/front/8/9/899ecc19-8106-4e5a-bb25-aaea9684ba0e.jpg"
+        ruling(
+            "10/4/2004",
+            "This card was originally printed as a sorcery and has received errata to make it an instant."
+        )
     }
 }

@@ -34,5 +34,9 @@ val TreetopDefense = card("Treetop Defense") {
         artist = "Richard Kane Ferguson"
         flavorText = "From the treetops, no flyer escapes unscathed."
         imageUri = "https://cards.scryfall.io/normal/front/f/5/f5e134b3-e8af-41e9-928d-c217ea7b2b13.jpg"
+        ruling(
+            "10/4/2004",
+            "This card was originally printed as a sorcery and has received errata to make it an instant."
+        )
     }
 }
