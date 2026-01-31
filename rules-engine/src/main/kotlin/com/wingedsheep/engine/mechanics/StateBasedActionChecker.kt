@@ -503,10 +503,10 @@ class StateBasedActionChecker {
                 listOf(GameEndedEvent(winner, reason))
             )
         } else if (activePlayers.isEmpty()) {
-            // No players remaining - draw
+            // No players remaining - draw (both players lost simultaneously)
             return ExecutionResult.success(
                 state.copy(gameOver = true, winnerId = null),
-                listOf(GameEndedEvent(null, GameEndReason.UNKNOWN))
+                listOf(GameEndedEvent(null, GameEndReason.DRAW))
             )
         }
 

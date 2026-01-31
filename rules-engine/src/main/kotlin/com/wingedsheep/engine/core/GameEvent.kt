@@ -438,6 +438,7 @@ enum class GameEndReason {
     CONCESSION,
     ALTERNATIVE_WIN,
     CARD_EFFECT,
+    DRAW,
     UNKNOWN
 }
 

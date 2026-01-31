@@ -1003,6 +1003,11 @@ class GameSession(
         val state = gameState ?: return null
         if (!state.gameOver) return null
 
+        // If no winner, it's a draw (both players lost simultaneously)
+        if (state.winnerId == null) {
+            return GameOverReason.DRAW
+        }
+
         // Find the losing player (the one who is not the winner)
         val loserId = state.turnOrder.find { it != state.winnerId }
         val lossComponent = loserId?.let { state.getEntity(it)?.get<PlayerLostComponent>() }

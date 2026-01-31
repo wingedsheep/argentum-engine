@@ -611,5 +611,6 @@ enum class GameOverReason {
     CONCESSION,
     POISON_COUNTERS,
     DISCONNECTION,
-    CARD_EFFECT
+    CARD_EFFECT,
+    DRAW
 }

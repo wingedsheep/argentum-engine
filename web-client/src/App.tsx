@@ -169,22 +169,26 @@ export default function App() {
   )
 }
 
-function formatGameOverReason(reason: GameOverReason, isWinner: boolean): string {
-  const winMessages: Record<GameOverReason, string> = {
+function formatGameOverReason(reason: GameOverReason, result: 'win' | 'lose' | 'draw'): string {
+  if (result === 'draw') {
+    return 'Both players lost simultaneously.'
+  }
+  const winMessages: Partial<Record<GameOverReason, string>> = {
     [GameOverReason.LIFE_ZERO]: "Your opponent's life total reached zero.",
     [GameOverReason.DECK_OUT]: 'Your opponent had no cards left to draw.',
     [GameOverReason.CONCESSION]: 'Your opponent conceded the game.',
     [GameOverReason.POISON_COUNTERS]: 'Your opponent received ten poison counters.',
     [GameOverReason.DISCONNECTION]: 'Your opponent disconnected.',
   }
-  const loseMessages: Record<GameOverReason, string> = {
+  const loseMessages: Partial<Record<GameOverReason, string>> = {
     [GameOverReason.LIFE_ZERO]: 'Your life total reached zero.',
     [GameOverReason.DECK_OUT]: 'You had no cards left to draw.',
     [GameOverReason.CONCESSION]: 'You conceded the game.',
     [GameOverReason.POISON_COUNTERS]: 'You received ten poison counters.',
     [GameOverReason.DISCONNECTION]: 'You disconnected from the game.',
   }
-  return isWinner ? winMessages[reason] : loseMessages[reason]
+  const messages = result === 'win' ? winMessages : loseMessages
+  return messages[reason] ?? 'The game has ended.'
 }
 
 /**
@@ -198,14 +202,18 @@ function GameOverlay() {
 
   if (gameOverState) {
     // Use custom message if provided, otherwise fall back to standard reason
-    const reasonText = gameOverState.message || formatGameOverReason(gameOverState.reason, gameOverState.isWinner)
+    const reasonText = gameOverState.message || formatGameOverReason(gameOverState.reason, gameOverState.result)
+    const titleColor =
+      gameOverState.result === 'win' ? '#00ff00' : gameOverState.result === 'draw' ? '#ffcc00' : '#ff0000'
+    const title =
+      gameOverState.result === 'win' ? 'Victory!' : gameOverState.result === 'draw' ? 'Draw' : 'Defeat'
     return (
       <div style={overlayStyles.container}>
         <h1 style={{
           ...overlayStyles.title,
-          color: gameOverState.isWinner ? '#00ff00' : '#ff0000',
+          color: titleColor,
         }}>
-          {gameOverState.isWinner ? 'Victory!' : 'Defeat'}
+          {title}
         </h1>
         <p style={overlayStyles.subtitle}>{reasonText}</p>
         <button

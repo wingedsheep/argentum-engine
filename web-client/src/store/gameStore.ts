@@ -162,7 +162,7 @@ export interface CombatState {
 export interface GameOverState {
   winnerId: EntityId | null
   reason: GameOverReason
-  isWinner: boolean
+  result: 'win' | 'lose' | 'draw'
   message?: string | undefined
 }
 
@@ -778,15 +778,18 @@ export const useGameStore = create<GameStore>()(
 
       onGameOver: (msg) => {
         const { playerId } = get()
+        // Determine result: draw if no winner, otherwise win/lose based on winnerId
+        const result: 'win' | 'lose' | 'draw' =
+          msg.winnerId === null ? 'draw' : msg.winnerId === playerId ? 'win' : 'lose'
         trackEvent('game_over', {
-          result: msg.winnerId === playerId ? 'win' : 'loss',
+          result,
           reason: msg.reason,
         })
         set({
           gameOverState: {
             winnerId: msg.winnerId,
             reason: msg.reason,
-            isWinner: msg.winnerId === playerId,
+            result,
             message: msg.message,
           },
         })
