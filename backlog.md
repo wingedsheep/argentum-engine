@@ -25,6 +25,7 @@
 - [x] Breath of life doesn't work. It can't target a creature in my graveyard.
 - [x] Not allowed to play mystic denial in response to my opponent casting a creature spell
 - [x] Withering gaze doesn't allow me to look at the opponent's hand
+- [x] Refreshing in the tournament lobby doesn't work. Then you return to the main screen. State is not saved.
 
 ## Work in progress
 
