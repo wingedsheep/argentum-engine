@@ -398,6 +398,7 @@ export interface GameStore {
   stopDraggingCard: () => void
   confirmCombat: () => void
   cancelCombat: () => void
+  attackWithAll: () => void
   clearCombat: () => void
   // X cost selection actions
   startXSelection: (state: XSelectionState) => void
@@ -1981,6 +1982,29 @@ export const useGameStore = create<GameStore>()(
 
         // Don't clear combatState here - let the server response drive state changes
         // The useEffect in App.tsx will exit combat mode when legalActions changes
+        set({ draggingBlockerId: null })
+      },
+
+      attackWithAll: () => {
+        const { combatState, playerId, gameState } = get()
+        if (!combatState || !playerId || !gameState) return
+        if (combatState.mode !== 'declareAttackers') return
+        if (combatState.validCreatures.length === 0) return
+
+        const opponent = gameState.players.find((p) => p.playerId !== playerId)
+        if (!opponent) return
+
+        const attackers: Record<EntityId, EntityId> = {}
+        for (const attackerId of combatState.validCreatures) {
+          attackers[attackerId] = opponent.playerId
+        }
+
+        const action = {
+          type: 'DeclareAttackers' as const,
+          playerId,
+          attackers,
+        }
+        ws?.send(createSubmitActionMessage(action))
         set({ draggingBlockerId: null })
       },
 

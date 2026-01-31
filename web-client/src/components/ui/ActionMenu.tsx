@@ -136,6 +136,12 @@ function ActionButton({
 function PassPriorityButton({ onClick }: { onClick: () => void }) {
   const stackCards = useStackCards()
   const hasStackItems = stackCards.length > 0
+  const combatState = useGameStore((state) => state.combatState)
+  const attackWithAll = useGameStore((state) => state.attackWithAll)
+
+  // Check if we can attack with all
+  const canAttackWithAll =
+    combatState?.mode === 'declareAttackers' && combatState.validCreatures.length > 0
 
   // Different styling based on whether we're resolving stack or passing phase
   const backgroundColor = hasStackItems ? '#c76e00' : '#444'
@@ -152,8 +158,36 @@ function PassPriorityButton({ onClick }: { onClick: () => void }) {
         bottom: 100,
         right: 20,
         pointerEvents: 'auto',
+        display: 'flex',
+        gap: 8,
       }}
     >
+      {canAttackWithAll && (
+        <button
+          onClick={attackWithAll}
+          style={{
+            padding: '12px 24px',
+            backgroundColor: '#c0392b',
+            color: 'white',
+            border: '2px solid #e74c3c',
+            borderRadius: 8,
+            cursor: 'pointer',
+            fontSize: 14,
+            fontWeight: 500,
+            transition: 'all 0.15s',
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.backgroundColor = '#e74c3c'
+            e.currentTarget.style.borderColor = '#ff6b6b'
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.backgroundColor = '#c0392b'
+            e.currentTarget.style.borderColor = '#e74c3c'
+          }}
+        >
+          Attack with All
+        </button>
+      )}
       <button
         onClick={onClick}
         style={{
