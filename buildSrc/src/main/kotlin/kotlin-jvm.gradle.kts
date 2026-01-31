@@ -18,6 +18,9 @@ tasks.withType<Test>().configureEach {
     // Configure all test Gradle tasks to use JUnitPlatform.
     useJUnitPlatform()
 
+    // Increase heap size for Spring Boot integration tests with WebSocket connections
+    maxHeapSize = "2g"
+
     // Log information about all test results, not only the failed ones.
     testLogging {
         events(
