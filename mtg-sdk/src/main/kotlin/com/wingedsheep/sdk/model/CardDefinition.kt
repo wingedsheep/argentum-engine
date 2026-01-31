@@ -5,6 +5,17 @@ import com.wingedsheep.sdk.scripting.KeywordAbility
 import kotlinx.serialization.Serializable
 
 /**
+ * An official ruling for a Magic: The Gathering card.
+ * @param date The date of the ruling (e.g., "6/8/2016")
+ * @param text The ruling text explaining card interactions or clarifications
+ */
+@Serializable
+data class Ruling(
+    val date: String,
+    val text: String
+)
+
+/**
  * Metadata from Scryfall for web client features like booster drafts.
  * Contains information useful for display, pricing, and card organization.
  */
@@ -16,7 +27,8 @@ data class ScryfallMetadata(
     val flavorText: String? = null,
     val imageUri: String? = null,
     val scryfallId: String? = null,
-    val releaseDate: String? = null
+    val releaseDate: String? = null,
+    val rulings: List<Ruling> = emptyList()
 )
 
 /**

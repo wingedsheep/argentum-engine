@@ -434,7 +434,10 @@ class ClientStateTransformer(
             isFaceDown = isFaceDown,
             targets = targets,
             imageUri = cardRegistry.getCard(cardComponent.cardDefinitionId)?.metadata?.imageUri,
-            activeEffects = activeEffects
+            activeEffects = activeEffects,
+            rulings = cardRegistry.getCard(cardComponent.cardDefinitionId)?.metadata?.rulings?.map {
+                ClientRuling(date = it.date, text = it.text)
+            } ?: emptyList()
         )
     }
 

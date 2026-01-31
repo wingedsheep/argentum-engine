@@ -138,6 +138,9 @@ export interface ClientCard {
 
   /** Active effects on this card (e.g., "can't be blocked except by black creatures") */
   readonly activeEffects?: readonly ClientCardEffect[]
+
+  /** Official rulings for this card (for card details view) */
+  readonly rulings?: readonly ClientRuling[]
 }
 
 /**
@@ -203,6 +206,18 @@ export interface ClientCardEffect {
   readonly description?: string
   /** Optional icon identifier for UI rendering */
   readonly icon?: string
+}
+
+/**
+ * An official ruling for a card.
+ * Displayed in card details view to clarify complex interactions.
+ * Matches backend ClientRuling.kt
+ */
+export interface ClientRuling {
+  /** Date of the ruling (e.g., "6/8/2016") */
+  readonly date: string
+  /** The ruling text */
+  readonly text: string
 }
 
 /**

@@ -157,7 +157,10 @@ data class ClientCard(
     val imageUri: String? = null,
 
     /** Active effects on this card (e.g., "can't be blocked except by black creatures") */
-    val activeEffects: List<ClientCardEffect> = emptyList()
+    val activeEffects: List<ClientCardEffect> = emptyList(),
+
+    /** Official rulings for this card (for card details view) */
+    val rulings: List<ClientRuling> = emptyList()
 )
 
 /**
@@ -228,6 +231,18 @@ data class ClientCardEffect(
     val description: String? = null,
     /** Optional icon identifier for UI rendering */
     val icon: String? = null
+)
+
+/**
+ * An official ruling for a card.
+ * Displayed in card details view to clarify complex interactions.
+ */
+@Serializable
+data class ClientRuling(
+    /** Date of the ruling (e.g., "6/8/2016") */
+    val date: String,
+    /** The ruling text */
+    val text: String
 )
 
 /**

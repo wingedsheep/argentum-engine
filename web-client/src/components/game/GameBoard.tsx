@@ -591,11 +591,33 @@ function StackDisplay() {
 
 /**
  * Card preview overlay - shows enlarged card when hovering.
+ * Shows rulings after hovering for 1 second.
  */
 function CardPreview() {
   const hoveredCardId = useGameStore((state) => state.hoveredCardId)
   const gameState = useGameStore((state) => state.gameState)
   const responsive = useResponsiveContext()
+  const [showRulings, setShowRulings] = useState(false)
+  const [lastHoveredId, setLastHoveredId] = useState<EntityId | null>(null)
+
+  // Show rulings after hovering for 1 second
+  useEffect(() => {
+    if (hoveredCardId !== lastHoveredId) {
+      setLastHoveredId(hoveredCardId)
+      setShowRulings(false)
+    }
+
+    if (!hoveredCardId) {
+      setShowRulings(false)
+      return
+    }
+
+    const timer = setTimeout(() => {
+      setShowRulings(true)
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [hoveredCardId, lastHoveredId])
 
   if (!hoveredCardId || !gameState) return null
 
@@ -614,6 +636,8 @@ function CardPreview() {
   const isToughnessBuffed = card.toughness !== null && card.baseToughness !== null && card.toughness > card.baseToughness
   const isToughnessDebuffed = card.toughness !== null && card.baseToughness !== null && card.toughness < card.baseToughness
   const hasStatModifications = isPowerBuffed || isPowerDebuffed || isToughnessBuffed || isToughnessDebuffed
+
+  const hasRulings = card.rulings && card.rulings.length > 0
 
   return (
     <div style={styles.cardPreviewOverlay}>
@@ -680,6 +704,26 @@ function CardPreview() {
                 <span style={styles.cardPreviewKeywordName}>{keyword}</span>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Rulings panel - appears after 1 second of hovering */}
+        {showRulings && hasRulings && (
+          <div style={styles.cardPreviewRulings}>
+            <div style={styles.cardPreviewRulingsHeader}>Rulings</div>
+            {card.rulings!.map((ruling, index) => (
+              <div key={index} style={styles.cardPreviewRuling}>
+                <div style={styles.cardPreviewRulingDate}>{ruling.date}</div>
+                <div style={styles.cardPreviewRulingText}>{ruling.text}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Rulings indicator - shows immediately if card has rulings */}
+        {!showRulings && hasRulings && (
+          <div style={styles.cardPreviewRulingsHint}>
+            Hold to see rulings...
           </div>
         )}
       </div>
@@ -2887,6 +2931,49 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#ffcc00',
     fontWeight: 600,
     fontSize: 14,
+  } as React.CSSProperties,
+  cardPreviewRulings: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.92)',
+    padding: 12,
+    borderRadius: 8,
+    border: '1px solid rgba(100, 150, 255, 0.3)',
+    maxWidth: 320,
+    maxHeight: 300,
+    overflowY: 'auto',
+  } as React.CSSProperties,
+  cardPreviewRulingsHeader: {
+    color: '#6699ff',
+    fontWeight: 700,
+    fontSize: 13,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    borderBottom: '1px solid rgba(100, 150, 255, 0.2)',
+    paddingBottom: 6,
+  } as React.CSSProperties,
+  cardPreviewRuling: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 2,
+  } as React.CSSProperties,
+  cardPreviewRulingDate: {
+    color: '#888888',
+    fontSize: 11,
+    fontStyle: 'italic',
+  } as React.CSSProperties,
+  cardPreviewRulingText: {
+    color: '#dddddd',
+    fontSize: 12,
+    lineHeight: 1.4,
+  } as React.CSSProperties,
+  cardPreviewRulingsHint: {
+    color: '#666666',
+    fontSize: 11,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    padding: '4px 8px',
   } as React.CSSProperties,
   // Active effect badge styles
   effectBadgesContainer: {

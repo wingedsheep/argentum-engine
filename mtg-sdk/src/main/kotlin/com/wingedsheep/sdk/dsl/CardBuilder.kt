@@ -686,12 +686,23 @@ class MetadataBuilder {
     var artist: String? = null
     var flavorText: String? = null
     var imageUri: String? = null
+    private val _rulings = mutableListOf<Ruling>()
+
+    /**
+     * Add an official ruling for this card.
+     * @param date The date of the ruling (e.g., "6/8/2016")
+     * @param text The ruling text
+     */
+    fun ruling(date: String, text: String) {
+        _rulings.add(Ruling(date, text))
+    }
 
     fun build(): ScryfallMetadata = ScryfallMetadata(
         collectorNumber = collectorNumber,
         rarity = rarity,
         artist = artist,
         flavorText = flavorText,
-        imageUri = imageUri
+        imageUri = imageUri,
+        rulings = _rulings.toList()
     )
 }

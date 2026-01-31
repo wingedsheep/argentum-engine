@@ -148,6 +148,15 @@ sealed interface ServerMessage {
     // =========================================================================
 
     /**
+     * An official ruling for a card.
+     */
+    @Serializable
+    data class SealedRuling(
+        val date: String,
+        val text: String
+    )
+
+    /**
      * Card information for sealed deck building UI.
      */
     @Serializable
@@ -159,7 +168,8 @@ sealed interface ServerMessage {
         val imageUri: String?,
         val power: Int? = null,
         val toughness: Int? = null,
-        val oracleText: String? = null
+        val oracleText: String? = null,
+        val rulings: List<SealedRuling> = emptyList()
     )
 
     /**

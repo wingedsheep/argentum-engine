@@ -479,7 +479,8 @@ class ConnectionHandler(
                 imageUri = card.metadata.imageUri,
                 power = card.creatureStats?.basePower,
                 toughness = card.creatureStats?.baseToughness,
-                oracleText = if (card.oracleText.isBlank()) null else card.oracleText
+                oracleText = if (card.oracleText.isBlank()) null else card.oracleText,
+                rulings = card.metadata.rulings.map { ServerMessage.SealedRuling(it.date, it.text) }
             )
         }
     }

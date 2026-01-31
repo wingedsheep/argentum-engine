@@ -42,5 +42,13 @@ val NaturalOrder = card("Natural Order") {
         artist = "Alan Rabinowitz"
         flavorText = "Nature's cycle continues: from life, life springs forth."
         imageUri = "https://cards.scryfall.io/normal/front/c/e/cecb34f8-6961-4c27-9368-26d156714d7b.jpg"
+        ruling(
+            "6/8/2016",
+            "Sacrificing a green creature is part of Natural Order's cost. You can't sacrifice more creatures to search for more creature cards, and you can't cast Natural Order at all if you control no green creatures."
+        )
+        ruling(
+            "6/8/2016",
+            "Players can respond to this spell only after it's been cast and all its costs have been paid. No one can try to destroy the creature you sacrificed to stop you from casting this spell or to make you sacrifice a different one."
+        )
     }
 }

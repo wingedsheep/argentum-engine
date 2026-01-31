@@ -393,6 +393,14 @@ export interface ErrorMessage {
 // ============================================================================
 
 /**
+ * An official ruling for a sealed card.
+ */
+export interface SealedRuling {
+  readonly date: string
+  readonly text: string
+}
+
+/**
  * Card information for sealed deck building UI.
  */
 export interface SealedCardInfo {
@@ -404,6 +412,7 @@ export interface SealedCardInfo {
   readonly power?: number | null
   readonly toughness?: number | null
   readonly oracleText?: string | null
+  readonly rulings?: readonly SealedRuling[]
 }
 
 /**

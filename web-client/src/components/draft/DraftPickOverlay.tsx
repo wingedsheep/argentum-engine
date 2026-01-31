@@ -759,9 +759,27 @@ function PickedCardRow({
 }
 
 function CardPreview({ card, pos }: { card: SealedCardInfo; pos: { x: number; y: number } | null }) {
+  const [showRulings, setShowRulings] = useState(false)
+  const [lastCardName, setLastCardName] = useState<string | null>(null)
+
+  // Show rulings after hovering for 1 second
+  useEffect(() => {
+    if (card.name !== lastCardName) {
+      setLastCardName(card.name)
+      setShowRulings(false)
+    }
+
+    const timer = setTimeout(() => {
+      setShowRulings(true)
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [card.name, lastCardName])
+
   const imageUrl = getCardImageUrl(card.name, card.imageUri, 'large')
   const previewWidth = 280
   const previewHeight = Math.round(previewWidth * 1.4)
+  const hasRulings = card.rulings && card.rulings.length > 0
 
   let top = 80
   let left = 20
@@ -784,6 +802,9 @@ function CardPreview({ card, pos }: { card: SealedCardInfo; pos: { x: number; y:
         pointerEvents: 'none',
         zIndex: 1001,
         transition: 'top 0.05s, left 0.05s',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
       }}
     >
       <div
@@ -805,8 +826,74 @@ function CardPreview({ card, pos }: { card: SealedCardInfo; pos: { x: number; y:
           }}
         />
       </div>
+
+      {/* Rulings panel - appears after 1 second of hovering */}
+      {showRulings && hasRulings && (
+        <div style={draftCardPreviewStyles.rulings}>
+          <div style={draftCardPreviewStyles.rulingsHeader}>Rulings</div>
+          {card.rulings!.map((ruling, index) => (
+            <div key={index} style={draftCardPreviewStyles.ruling}>
+              <div style={draftCardPreviewStyles.rulingDate}>{ruling.date}</div>
+              <div style={draftCardPreviewStyles.rulingText}>{ruling.text}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Rulings indicator - shows immediately if card has rulings */}
+      {!showRulings && hasRulings && (
+        <div style={draftCardPreviewStyles.rulingsHint}>
+          Hold to see rulings...
+        </div>
+      )}
     </div>
   )
+}
+
+const draftCardPreviewStyles = {
+  rulings: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.92)',
+    padding: 12,
+    borderRadius: 8,
+    border: '1px solid rgba(100, 150, 255, 0.3)',
+    maxWidth: 320,
+    maxHeight: 300,
+    overflowY: 'auto' as const,
+  },
+  rulingsHeader: {
+    color: '#6699ff',
+    fontWeight: 700,
+    fontSize: 13,
+    textTransform: 'uppercase' as const,
+    letterSpacing: 1,
+    borderBottom: '1px solid rgba(100, 150, 255, 0.2)',
+    paddingBottom: 6,
+  },
+  ruling: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: 2,
+  },
+  rulingDate: {
+    color: '#888888',
+    fontSize: 11,
+    fontStyle: 'italic' as const,
+  },
+  rulingText: {
+    color: '#dddddd',
+    fontSize: 12,
+    lineHeight: 1.4,
+  },
+  rulingsHint: {
+    color: '#666666',
+    fontSize: 11,
+    fontStyle: 'italic' as const,
+    textAlign: 'center' as const,
+    padding: '4px 8px',
+  },
 }
 
 // Helper functions
