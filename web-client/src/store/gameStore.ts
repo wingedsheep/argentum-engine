@@ -502,6 +502,7 @@ function getEventPlayerId(event: ClientEvent): EntityId | null {
     case 'permanentEntered': return event.controllerId
     case 'creatureAttacked': return event.attackingPlayerId
     case 'handLookedAt': return event.viewingPlayerId
+    case 'handRevealed': return event.revealingPlayerId
     case 'cardsRevealed': return event.revealingPlayerId
     default: return null
   }
@@ -564,10 +565,15 @@ export const useGameStore = create<GameStore>()(
       },
 
       onStateUpdate: (msg) => {
-        // Check for handLookedAt event and show the revealed hand overlay
+        // Check for handLookedAt or handRevealed event and show the revealed hand overlay
         const handLookedAtEvent = msg.events.find(
           (e) => e.type === 'handLookedAt'
         ) as { type: 'handLookedAt'; cardIds: readonly EntityId[] } | undefined
+
+        // Also check for handRevealed events (from RevealHandEffect, e.g., Withering Gaze)
+        const handRevealedEvent = msg.events.find(
+          (e) => e.type === 'handRevealed'
+        ) as { type: 'handRevealed'; cardIds: readonly EntityId[] } | undefined
 
         // Process cardDrawn events for draw animations
         const { playerId, addDrawAnimation, addDamageAnimation } = get()
@@ -652,8 +658,8 @@ export const useGameStore = create<GameStore>()(
             timestamp: Date.now(),
           })),
           waitingForOpponentMulligan: false,
-          // Show revealed hand overlay if handLookedAt event received
-          revealedHandCardIds: handLookedAtEvent?.cardIds ?? state.revealedHandCardIds,
+          // Show revealed hand overlay if handLookedAt or handRevealed event received
+          revealedHandCardIds: handLookedAtEvent?.cardIds ?? handRevealedEvent?.cardIds ?? state.revealedHandCardIds,
           // Clear opponent's blocker assignments when combat ends or blockers are confirmed
           opponentBlockerAssignments: msg.state.combat?.blockers?.length ? null : state.opponentBlockerAssignments,
         }))
