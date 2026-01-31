@@ -127,6 +127,14 @@ sealed interface SerializableModification {
      */
     @Serializable
     data class CantBeBlockedExceptByColor(val color: String) : SerializableModification
+
+    /**
+     * Damage reflection: when an attacking creature deals combat damage to the protected player,
+     * it deals that much damage to its controller.
+     * Used by Harsh Justice.
+     */
+    @Serializable
+    data class ReflectCombatDamage(val protectedPlayerId: String) : SerializableModification
 }
 
 /**
@@ -149,4 +157,6 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.PreventDamageFromAttackingCreatures -> Modification.NoOp
     // CantBeBlockedExceptByColor doesn't map to a layer modification - it's checked by CombatManager directly
     is SerializableModification.CantBeBlockedExceptByColor -> Modification.NoOp
+    // ReflectCombatDamage doesn't map to a layer modification - it's checked by CombatManager directly
+    is SerializableModification.ReflectCombatDamage -> Modification.NoOp
 }

@@ -10,6 +10,7 @@ class CombatExecutors : ExecutorModule {
     override fun executors(): List<EffectExecutor<*>> = listOf(
         MustBeBlockedExecutor(),
         PreventDamageFromAttackingCreaturesExecutor(),
-        GrantCantBeBlockedExceptByColorExecutor()
+        GrantCantBeBlockedExceptByColorExecutor(),
+        ReflectCombatDamageExecutor()
     )
 }

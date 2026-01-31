@@ -733,17 +733,50 @@ class CombatManager(
             ?: return ExecutionResult.error(state, "Player has no life total")
 
         val newLife = currentLife - amount
-        val newState = state.updateEntity(playerId) { container ->
+        var newState = state.updateEntity(playerId) { container ->
             container.with(LifeTotalComponent(newLife))
         }
 
-        return ExecutionResult.success(
-            newState,
-            listOf(
-                DamageDealtEvent(sourceId, playerId, amount, true),
-                LifeChangedEvent(playerId, currentLife, newLife, LifeChangeReason.DAMAGE)
-            )
+        val events = mutableListOf<GameEvent>(
+            DamageDealtEvent(sourceId, playerId, amount, true),
+            LifeChangedEvent(playerId, currentLife, newLife, LifeChangeReason.DAMAGE)
         )
+
+        // Check for damage reflection (Harsh Justice)
+        val hasReflection = hasReflectCombatDamage(state, playerId)
+        if (hasReflection) {
+            // Get the attacker's controller
+            val attackerController = state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
+
+            // Only reflect if attacker is controlled by a different player
+            if (attackerController != null && attackerController != playerId) {
+                val attackerControllerContainer = newState.getEntity(attackerController)
+                val attackerControllerLife = attackerControllerContainer?.get<LifeTotalComponent>()?.life
+
+                if (attackerControllerLife != null) {
+                    val reflectedNewLife = attackerControllerLife - amount
+                    newState = newState.updateEntity(attackerController) { container ->
+                        container.with(LifeTotalComponent(reflectedNewLife))
+                    }
+                    events.add(DamageDealtEvent(sourceId, attackerController, amount, true))
+                    events.add(LifeChangedEvent(attackerController, attackerControllerLife, reflectedNewLife, LifeChangeReason.DAMAGE))
+                }
+            }
+        }
+
+        return ExecutionResult.success(newState, events)
+    }
+
+    /**
+     * Check if a player has damage reflection active (Harsh Justice).
+     * This reflects combat damage from attacking creatures back to their controllers.
+     */
+    private fun hasReflectCombatDamage(state: GameState, playerId: EntityId): Boolean {
+        return state.floatingEffects.any { floatingEffect ->
+            val modification = floatingEffect.effect.modification
+            modification is SerializableModification.ReflectCombatDamage &&
+                modification.protectedPlayerId == playerId.toString()
+        }
     }
 
     /**
