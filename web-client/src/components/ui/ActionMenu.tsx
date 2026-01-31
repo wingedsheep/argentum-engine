@@ -1,6 +1,7 @@
 import { useGameStore } from '../../store/gameStore'
 import { useCardActions } from '../../hooks/useLegalActions'
 import { useInteraction, useCanPassPriority } from '../../hooks/useInteraction'
+import { useStackCards } from '../../store/selectors'
 import type { LegalActionInfo } from '../../types'
 import { AbilityText } from './ManaSymbols'
 
@@ -129,8 +130,21 @@ function ActionButton({
 
 /**
  * Pass priority button shown when player has priority.
+ * Shows "Resolve" with orange color when there's something on the stack,
+ * "Pass" with gray color otherwise (like MTG Arena).
  */
 function PassPriorityButton({ onClick }: { onClick: () => void }) {
+  const stackCards = useStackCards()
+  const hasStackItems = stackCards.length > 0
+
+  // Different styling based on whether we're resolving stack or passing phase
+  const backgroundColor = hasStackItems ? '#c76e00' : '#444'
+  const hoverBackgroundColor = hasStackItems ? '#e08000' : '#555'
+  const borderColor = hasStackItems ? '#e08000' : '#666'
+  const hoverBorderColor = hasStackItems ? '#ff9500' : '#888'
+  const label = hasStackItems ? 'Resolve' : 'Pass'
+  const icon = hasStackItems ? '✓' : '⏭️'
+
   return (
     <div
       style={{
@@ -144,9 +158,9 @@ function PassPriorityButton({ onClick }: { onClick: () => void }) {
         onClick={onClick}
         style={{
           padding: '12px 24px',
-          backgroundColor: '#444',
+          backgroundColor,
           color: 'white',
-          border: '2px solid #666',
+          border: `2px solid ${borderColor}`,
           borderRadius: 8,
           cursor: 'pointer',
           fontSize: 14,
@@ -154,16 +168,16 @@ function PassPriorityButton({ onClick }: { onClick: () => void }) {
           transition: 'all 0.15s',
         }}
         onMouseOver={(e) => {
-          e.currentTarget.style.backgroundColor = '#555'
-          e.currentTarget.style.borderColor = '#888'
+          e.currentTarget.style.backgroundColor = hoverBackgroundColor
+          e.currentTarget.style.borderColor = hoverBorderColor
         }}
         onMouseOut={(e) => {
-          e.currentTarget.style.backgroundColor = '#444'
-          e.currentTarget.style.borderColor = '#666'
+          e.currentTarget.style.backgroundColor = backgroundColor
+          e.currentTarget.style.borderColor = borderColor
         }}
       >
-        Pass Priority
-        <span style={{ marginLeft: 8, opacity: 0.6 }}>⏭️</span>
+        {label}
+        <span style={{ marginLeft: 8, opacity: 0.8 }}>{icon}</span>
       </button>
     </div>
   )
