@@ -187,4 +187,19 @@ sealed interface ClientMessage {
     @Serializable
     @SerialName("stopSpectating")
     data object StopSpectating : ClientMessage
+
+    // =========================================================================
+    // Combat UI Messages
+    // =========================================================================
+
+    /**
+     * Update tentative blocker assignments during declare blockers phase.
+     * Sent in real-time as the defending player assigns blockers.
+     */
+    @Serializable
+    @SerialName("updateBlockerAssignments")
+    data class UpdateBlockerAssignments(
+        /** Map of blocker creature ID to attacker creature ID */
+        val assignments: Map<EntityId, EntityId>
+    ) : ClientMessage
 }

@@ -23,19 +23,22 @@
 - [ ] Spitting earth card doesn't deal any damage, even though I have mountains in play
 - [x] Disable analytics for local development
 - [x] Breath of life doesn't work. It can't target a creature in my graveyard.
-- [ ] Not allowed to play mystic denial in response to my opponent casting a creature spell
+- [x] Not allowed to play mystic denial in response to my opponent casting a creature spell
 - [ ] Withering gaze doesn't allow me to look at the opponent's hand
 
 ## Work in progress
 
-- [ ] Targeting spells on the stack
-- [ ] Auto passing priority -> Auto resolve spells if opponent passes
+- [x] Targeting spells on the stack
+- [ ] Auto passing priority
+  - Auto resolve spells if opponent passes
+  - Auto pass on cast creature or enchantment with no valid response (but do show the card on the stack in the frontend for a second or so)
+  - [Skip assign blockers phase if no creatures can block]()
 
 ## Improvements
 
 - [x] First return to tournament standings before starting next game
 - [ ] Don't move cards when no hand
-- [ ] Timeline, in which phase, and whose turn is it
+- [ ] Show timeline, in which phase, and whose turn is it
 - [ ] Button to accept spells on stack and pass to another phase of the turn
 
 ## Features

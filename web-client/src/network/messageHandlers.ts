@@ -29,6 +29,7 @@ import type {
   SpectatorStateUpdateMessage,
   SpectatingStartedMessage,
   SpectatingStoppedMessage,
+  OpponentBlockerAssignmentsMessage,
 } from '../types'
 
 /**
@@ -69,6 +70,8 @@ export interface MessageHandlers {
   onSpectatorStateUpdate: (message: SpectatorStateUpdateMessage) => void
   onSpectatingStarted: (message: SpectatingStartedMessage) => void
   onSpectatingStopped: (message: SpectatingStoppedMessage) => void
+  // Combat UI handlers
+  onOpponentBlockerAssignments: (message: OpponentBlockerAssignmentsMessage) => void
 }
 
 /**
@@ -169,6 +172,10 @@ export function handleServerMessage(message: ServerMessage, handlers: MessageHan
       break
     case 'spectatingStopped':
       handlers.onSpectatingStopped(message)
+      break
+    // Combat UI messages
+    case 'opponentBlockerAssignments':
+      handlers.onOpponentBlockerAssignments(message)
       break
     default: {
       // TypeScript exhaustiveness check
@@ -306,6 +313,11 @@ export function createLoggingHandlers(handlers: MessageHandlers): MessageHandler
     onSpectatingStopped: (msg) => {
       console.log('[Server] Spectating stopped:', msg)
       handlers.onSpectatingStopped(msg)
+    },
+    // Combat UI handlers
+    onOpponentBlockerAssignments: (msg) => {
+      console.log('[Server] Opponent blocker assignments:', msg)
+      handlers.onOpponentBlockerAssignments(msg)
     },
   }
 }

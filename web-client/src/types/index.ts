@@ -222,6 +222,9 @@ export type {
   SpectatingStoppedMessage,
   SpectateGameMessage,
   StopSpectatingMessage,
+  // Combat UI types
+  OpponentBlockerAssignmentsMessage,
+  UpdateBlockerAssignmentsMessage,
 } from './messages'
 export {
   isConnectedMessage,
@@ -280,4 +283,6 @@ export {
   isSpectatorStateUpdateMessage,
   isSpectatingStartedMessage,
   isSpectatingStoppedMessage,
+  // Combat UI factories
+  createUpdateBlockerAssignmentsMessage,
 } from './messages'

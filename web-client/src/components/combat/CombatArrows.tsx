@@ -14,6 +14,12 @@ interface ArrowProps {
   dashed?: boolean
 }
 
+interface ArrowData {
+  start: Point
+  end: Point
+  blockerId: EntityId
+}
+
 /**
  * SVG arrow component with curved path and arrowhead.
  */
@@ -107,9 +113,16 @@ function getCardCenter(cardId: EntityId): Point | null {
 
 /**
  * Combat arrows overlay - draws arrows between blockers and attackers.
+ *
+ * Shows arrows in three scenarios:
+ * 1. During declare blockers phase (for the defending player) - uses local combatState
+ * 2. For the attacking player during declare blockers - uses opponentBlockerAssignments (real-time sync)
+ * 3. After blockers are declared (for both players) - uses server-sent gameState.combat
  */
 export function CombatArrows() {
   const combatState = useGameStore((state) => state.combatState)
+  const gameStateCombat = useGameStore((state) => state.gameState?.combat)
+  const opponentBlockerAssignments = useGameStore((state) => state.opponentBlockerAssignments)
   const draggingBlockerId = useGameStore((state) => state.draggingBlockerId)
   const [mousePos, setMousePos] = useState<Point | null>(null)
   const [arrows, setArrows] = useState<Array<{ start: Point; end: Point; blockerId: EntityId }>>([])
@@ -129,27 +142,62 @@ export function CombatArrows() {
     return () => window.removeEventListener('mousemove', handleMouseMove)
   }, [draggingBlockerId])
 
+  // Check if we're in active declare blockers mode (local state)
+  const isDeclaringBlockers = combatState?.mode === 'declareBlockers'
+
   // Update arrow positions when assignments change
   useEffect(() => {
-    if (!combatState || combatState.mode !== 'declareBlockers') {
-      setArrows([])
-      return
-    }
+    // Determine which blocker assignments to use:
+    // 1. If we're actively declaring blockers, use local combatState
+    // 2. If we're the attacker and opponent is assigning blockers, use opponentBlockerAssignments
+    // 3. Otherwise, use server-sent combat data (if blockers have been declared)
 
     const updateArrows = () => {
-      const newArrows: Array<{ start: Point; end: Point; blockerId: EntityId }> = []
+      const newArrows: ArrowData[] = []
 
-      for (const [blockerIdStr, attackerId] of Object.entries(combatState.blockerAssignments)) {
-        const blockerId = blockerIdStr as EntityId
-        const blockerPos = getCardCenter(blockerId)
-        const attackerPos = getCardCenter(attackerId)
+      if (isDeclaringBlockers && combatState) {
+        // Use local blocker assignments (real-time feedback during declaration)
+        for (const [blockerIdStr, attackerId] of Object.entries(combatState.blockerAssignments)) {
+          const blockerId = blockerIdStr as EntityId
+          const blockerPos = getCardCenter(blockerId)
+          const attackerPos = getCardCenter(attackerId)
 
-        if (blockerPos && attackerPos) {
-          newArrows.push({
-            start: blockerPos,
-            end: attackerPos,
-            blockerId,
-          })
+          if (blockerPos && attackerPos) {
+            newArrows.push({
+              start: blockerPos,
+              end: attackerPos,
+              blockerId,
+            })
+          }
+        }
+      } else if (opponentBlockerAssignments && Object.keys(opponentBlockerAssignments).length > 0) {
+        // Use opponent's real-time blocker assignments (for attacking player)
+        for (const [blockerIdStr, attackerId] of Object.entries(opponentBlockerAssignments)) {
+          const blockerId = blockerIdStr as EntityId
+          const blockerPos = getCardCenter(blockerId)
+          const attackerPos = getCardCenter(attackerId)
+
+          if (blockerPos && attackerPos) {
+            newArrows.push({
+              start: blockerPos,
+              end: attackerPos,
+              blockerId,
+            })
+          }
+        }
+      } else if (gameStateCombat && gameStateCombat.blockers.length > 0) {
+        // Use server-sent combat data (shows to both players after blockers declared)
+        for (const blocker of gameStateCombat.blockers) {
+          const blockerPos = getCardCenter(blocker.creatureId)
+          const attackerPos = getCardCenter(blocker.blockingAttacker)
+
+          if (blockerPos && attackerPos) {
+            newArrows.push({
+              start: blockerPos,
+              end: attackerPos,
+              blockerId: blocker.creatureId,
+            })
+          }
         }
       }
 
@@ -160,10 +208,13 @@ export function CombatArrows() {
     updateArrows()
     const interval = setInterval(updateArrows, 100)
     return () => clearInterval(interval)
-  }, [combatState])
+  }, [combatState, gameStateCombat, opponentBlockerAssignments, isDeclaringBlockers])
 
-  // Don't render if not in blocker mode
-  if (!combatState || combatState.mode !== 'declareBlockers') {
+  // Don't render if no arrows to show
+  const hasBlockers = isDeclaringBlockers ||
+    (opponentBlockerAssignments && Object.keys(opponentBlockerAssignments).length > 0) ||
+    (gameStateCombat && gameStateCombat.blockers.length > 0)
+  if (!hasBlockers && !draggingBlockerId) {
     return null
   }
 
