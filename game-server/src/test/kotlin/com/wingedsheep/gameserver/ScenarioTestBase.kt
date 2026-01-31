@@ -699,5 +699,56 @@ abstract class ScenarioTestBase : FunSpec() {
                 ?: error("No pending decision to respond to")
             return submitDecision(DistributionResponse(decisionId, distribution))
         }
+
+        /**
+         * Cast a spell by name targeting another spell on the stack.
+         */
+        fun castSpellTargetingStackSpell(
+            playerNumber: Int,
+            spellName: String,
+            targetSpellName: String
+        ): ExecutionResult {
+            val playerId = if (playerNumber == 1) player1Id else player2Id
+            val hand = state.getHand(playerId)
+            val cardId = hand.find { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.name == spellName
+            } ?: error("Card '$spellName' not found in player $playerNumber's hand")
+
+            val targetSpellId = state.stack.find { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.name == targetSpellName
+            } ?: error("Spell '$targetSpellName' not found on stack")
+
+            val targets = listOf(ChosenTarget.Spell(targetSpellId))
+            return execute(CastSpell(playerId, cardId, targets))
+        }
+
+        /**
+         * Cast a spell with an additional sacrifice cost.
+         * @param playerNumber The player casting the spell (1 or 2)
+         * @param spellName The name of the spell to cast
+         * @param sacrificeCreatureName The name of the creature to sacrifice
+         */
+        fun castSpellWithAdditionalSacrifice(
+            playerNumber: Int,
+            spellName: String,
+            sacrificeCreatureName: String
+        ): ExecutionResult {
+            val playerId = if (playerNumber == 1) player1Id else player2Id
+            val hand = state.getHand(playerId)
+            val cardId = hand.find { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.name == spellName
+            } ?: error("Card '$spellName' not found in player $playerNumber's hand")
+
+            val sacrificeId = state.getBattlefield().find { entityId ->
+                val container = state.getEntity(entityId) ?: return@find false
+                container.get<CardComponent>()?.name == sacrificeCreatureName &&
+                    container.get<ControllerComponent>()?.playerId == playerId
+            } ?: error("Creature '$sacrificeCreatureName' not found on player $playerNumber's battlefield")
+
+            val payment = com.wingedsheep.sdk.scripting.AdditionalCostPayment(
+                sacrificedPermanents = listOf(sacrificeId)
+            )
+            return execute(CastSpell(playerId, cardId, emptyList(), additionalCostPayment = payment))
+        }
     }
 }

@@ -1810,6 +1810,10 @@ export const useGameStore = create<GameStore>()(
                   zone: 'GRAVEYARD' as const,
                 }
               }
+              // Check if this is a spell on the stack
+              if (card && card.zone?.zoneType === 'STACK') {
+                return { type: 'Spell' as const, spellEntityId: targetId }
+              }
               // Default to permanent (battlefield)
               return { type: 'Permanent' as const, entityId: targetId }
             })
@@ -1843,6 +1847,10 @@ export const useGameStore = create<GameStore>()(
                 ownerId: card.zone.ownerId,
                 zone: 'GRAVEYARD' as const,
               }
+            }
+            // Check if this is a spell on the stack
+            if (card && card.zone?.zoneType === 'STACK') {
+              return { type: 'Spell' as const, spellEntityId: targetId }
             }
             // Default to permanent (battlefield)
             return { type: 'Permanent' as const, entityId: targetId }
