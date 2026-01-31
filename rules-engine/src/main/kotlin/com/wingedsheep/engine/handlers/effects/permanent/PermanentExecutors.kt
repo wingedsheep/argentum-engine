@@ -11,6 +11,7 @@ class PermanentExecutors : ExecutorModule {
         TapUntapExecutor(),
         TapAllCreaturesExecutor(),
         TapTargetCreaturesExecutor(),
+        UntapAllCreaturesYouControlExecutor(),
         ModifyStatsExecutor(),
         ModifyStatsForGroupExecutor(),
         GrantKeywordUntilEndOfTurnExecutor(),
