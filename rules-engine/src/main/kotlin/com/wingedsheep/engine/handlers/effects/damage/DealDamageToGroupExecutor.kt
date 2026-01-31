@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.dealDamageToTarget
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.scripting.CreatureDamageFilter
 import com.wingedsheep.sdk.scripting.DealDamageToGroupEffect
@@ -54,6 +55,7 @@ class DealDamageToGroupExecutor(
                 is CreatureDamageFilter.WithoutKeyword -> !cardComponent.baseKeywords.contains(filter.keyword)
                 is CreatureDamageFilter.OfColor -> cardComponent.colors.contains(filter.color)
                 is CreatureDamageFilter.NotOfColor -> !cardComponent.colors.contains(filter.color)
+                CreatureDamageFilter.Attacking -> container.has<AttackingComponent>()
             }
 
             if (!matches) continue

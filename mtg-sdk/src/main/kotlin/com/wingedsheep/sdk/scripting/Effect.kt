@@ -2301,6 +2301,12 @@ sealed interface CreatureDamageFilter {
     data class NotOfColor(val color: Color) : CreatureDamageFilter {
         override val description: String = "each non${color.displayName.lowercase()} creature"
     }
+
+    /** Attacking creatures only */
+    @Serializable
+    data object Attacking : CreatureDamageFilter {
+        override val description: String = "each attacking creature"
+    }
 }
 
 /**
