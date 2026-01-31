@@ -89,3 +89,18 @@ docker-logs:
 [group: 'env']
 redis-clear:
     docker exec $(docker ps -q -f ancestor=redis:7-alpine) redis-cli FLUSHALL
+
+# Run e2e browser tests (requires server and client running, or starts them)
+[group: 'test']
+test-e2e:
+    cd web-client && npm run test:e2e
+
+# Run e2e browser tests with UI
+[group: 'test']
+test-e2e-ui:
+    cd web-client && npm run test:e2e:ui
+
+# Run e2e browser tests with visible browser
+[group: 'test']
+test-e2e-headed:
+    cd web-client && npm run test:e2e:headed
