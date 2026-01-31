@@ -2,7 +2,10 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GainLifeForEachLandOnBattlefieldEffect
+import com.wingedsheep.sdk.scripting.CountFilter
+import com.wingedsheep.sdk.scripting.DynamicAmount
+import com.wingedsheep.sdk.scripting.GainLifeEffect
+import com.wingedsheep.sdk.scripting.PlayerReference
 
 /**
  * Fruition
@@ -15,9 +18,11 @@ val Fruition = card("Fruition") {
     typeLine = "Sorcery"
 
     spell {
-        effect = GainLifeForEachLandOnBattlefieldEffect(
-            landType = "Forest",
-            lifePerLand = 1
+        effect = GainLifeEffect(
+            DynamicAmount.CountPermanents(
+                controller = PlayerReference.Each,
+                filter = CountFilter.LandType("Forest")
+            )
         )
     }
 
