@@ -426,12 +426,11 @@ const QUICK_AUTO_PASS_DELAY = 50 // ms - for own spells, empty stack phases, opp
 /**
  * Determines if we should auto-pass priority and with what delay.
  * Auto-passes when:
- * - It's our priority (implied by receiving legalActions)
+ * - It's our priority
+ * - The stack is empty (opponent's spells require player to click "Resolve")
  * - The only meaningful legal actions are PassPriority and/or mana abilities
- *   (mana abilities without anything to spend them on are not useful)
- * - We're not in a main phase where player might want to hold priority (unless stack is non-empty)
+ * - We're not in a main phase
  * - OR the top of the stack is our own spell/ability (we rarely want to respond to ourselves)
- * - OR the stack has an opponent's spell but we have no meaningful responses (with delay to show the spell)
  *
  * This skips through steps like UNTAP, UPKEEP, DRAW, BEGIN_COMBAT, etc.
  * when there are no meaningful actions available.
@@ -485,20 +484,11 @@ function shouldAutoPass(
     return { autoPass: false }
   }
 
-  // Check if there's something on the stack (opponent's spell/ability)
+  // If there's something on the stack (opponent's spell/ability), don't auto-pass
+  // Let the player see it and click "Resolve" - trust the backend's decision to give priority
   const stackZone = gameState.zones.find((z) => z.zoneId.zoneType === 'STACK')
   const stackHasItems = stackZone && stackZone.cardIds && stackZone.cardIds.length > 0
-  if (stackHasItems && topOfStack) {
-    // Check if it's a permanent spell (creature, artifact, enchantment, planeswalker)
-    // For instants/sorceries, don't auto-pass - player may want to see the effect
-    const isPermanentSpell = topOfStack.cardTypes.some((type) =>
-      ['CREATURE', 'ARTIFACT', 'ENCHANTMENT', 'PLANESWALKER', 'BATTLE'].includes(type)
-    )
-    if (isPermanentSpell) {
-      // No meaningful responses to opponent's permanent spell - auto-pass quickly
-      return { autoPass: true, delay: QUICK_AUTO_PASS_DELAY }
-    }
-    // For instants/sorceries, don't auto-pass
+  if (stackHasItems) {
     return { autoPass: false }
   }
 
