@@ -30,7 +30,15 @@ sealed interface ClientEvent {
         val oldLife: Int,
         val newLife: Int,
         val change: Int,
-        override val description: String = if (change > 0) "Player gained $change life" else "Player lost ${-change} life"
+        val isYours: Boolean? = null,
+        override val description: String = when {
+            isYours == true && change > 0 -> "You gained $change life"
+            isYours == true && change < 0 -> "You lost ${-change} life"
+            isYours == false && change > 0 -> "Opponent gained $change life"
+            isYours == false && change < 0 -> "Opponent lost ${-change} life"
+            change > 0 -> "Player gained $change life"
+            else -> "Player lost ${-change} life"
+        }
     ) : ClientEvent
 
     @Serializable
@@ -67,7 +75,12 @@ sealed interface ClientEvent {
         val playerId: EntityId,
         val cardId: EntityId,
         val cardName: String?,
-        override val description: String = if (cardName != null) "Drew $cardName" else "Drew a card"
+        val isYours: Boolean? = null,
+        override val description: String = when (isYours) {
+            true -> if (cardName != null) "You drew $cardName" else "You drew a card"
+            false -> "Opponent drew a card"
+            null -> if (cardName != null) "Drew $cardName" else "Drew a card"
+        }
     ) : ClientEvent
 
     @Serializable
@@ -76,7 +89,12 @@ sealed interface ClientEvent {
         val playerId: EntityId,
         val cardId: EntityId,
         val cardName: String,
-        override val description: String = "Discarded $cardName"
+        val isYours: Boolean? = null,
+        override val description: String = when (isYours) {
+            true -> "You discarded $cardName"
+            false -> "Opponent discarded $cardName"
+            null -> "Discarded $cardName"
+        }
     ) : ClientEvent
 
     @Serializable
@@ -86,7 +104,12 @@ sealed interface ClientEvent {
         val cardName: String,
         val controllerId: EntityId,
         val enteredTapped: Boolean,
-        override val description: String = "$cardName entered the battlefield${if (enteredTapped) " tapped" else ""}"
+        val isYours: Boolean? = null,
+        override val description: String = when (isYours) {
+            true -> "Your $cardName entered the battlefield${if (enteredTapped) " tapped" else ""}"
+            false -> "Opponent's $cardName entered the battlefield${if (enteredTapped) " tapped" else ""}"
+            null -> "$cardName entered the battlefield${if (enteredTapped) " tapped" else ""}"
+        }
     ) : ClientEvent
 
     @Serializable
@@ -95,7 +118,13 @@ sealed interface ClientEvent {
         val cardId: EntityId,
         val cardName: String,
         val destination: String,
-        override val description: String = "$cardName went to $destination"
+        val ownerId: EntityId? = null,
+        val isYours: Boolean? = null,
+        override val description: String = when (isYours) {
+            true -> "Your $cardName went to $destination"
+            false -> "Opponent's $cardName went to $destination"
+            null -> "$cardName went to $destination"
+        }
     ) : ClientEvent
 
     // =========================================================================
@@ -127,7 +156,13 @@ sealed interface ClientEvent {
     data class CreatureDied(
         val creatureId: EntityId,
         val creatureName: String,
-        override val description: String = "$creatureName died"
+        val controllerId: EntityId? = null,
+        val isYours: Boolean? = null,
+        override val description: String = when (isYours) {
+            true -> "Your $creatureName died"
+            false -> "Opponent's $creatureName died"
+            null -> "$creatureName died"
+        }
     ) : ClientEvent
 
     // =========================================================================
@@ -140,7 +175,12 @@ sealed interface ClientEvent {
         val spellId: EntityId,
         val spellName: String,
         val casterId: EntityId,
-        override val description: String = "Cast $spellName"
+        val isYours: Boolean? = null,
+        override val description: String = when (isYours) {
+            true -> "You cast $spellName"
+            false -> "Opponent cast $spellName"
+            null -> "Cast $spellName"
+        }
     ) : ClientEvent
 
     @Serializable
@@ -165,7 +205,13 @@ sealed interface ClientEvent {
         val sourceId: EntityId,
         val sourceName: String,
         val abilityDescription: String,
-        override val description: String = "$sourceName: $abilityDescription"
+        val controllerId: EntityId? = null,
+        val isYours: Boolean? = null,
+        override val description: String = when (isYours) {
+            true -> "Your $sourceName triggered: $abilityDescription"
+            false -> "Opponent's $sourceName triggered: $abilityDescription"
+            null -> "$sourceName triggered: $abilityDescription"
+        }
     ) : ClientEvent
 
     @Serializable
@@ -174,7 +220,13 @@ sealed interface ClientEvent {
         val sourceId: EntityId,
         val sourceName: String,
         val abilityDescription: String,
-        override val description: String = "Activated $sourceName: $abilityDescription"
+        val controllerId: EntityId? = null,
+        val isYours: Boolean? = null,
+        override val description: String = when (isYours) {
+            true -> "You activated $sourceName"
+            false -> "Opponent activated $sourceName"
+            null -> "Activated $sourceName"
+        }
     ) : ClientEvent
 
     // =========================================================================
@@ -289,7 +341,12 @@ sealed interface ClientEvent {
         val playerId: EntityId,
         val cardsOnTop: Int,
         val cardsOnBottom: Int,
-        override val description: String = "Scried: put $cardsOnTop on top, $cardsOnBottom on bottom"
+        val isYours: Boolean? = null,
+        override val description: String = when (isYours) {
+            true -> "You scried: put $cardsOnTop on top, $cardsOnBottom on bottom"
+            false -> "Opponent scried: put $cardsOnTop on top, $cardsOnBottom on bottom"
+            null -> "Scried: put $cardsOnTop on top, $cardsOnBottom on bottom"
+        }
     ) : ClientEvent
 
     @Serializable
@@ -297,7 +354,12 @@ sealed interface ClientEvent {
     data class PermanentsSacrificed(
         val playerId: EntityId,
         val permanentNames: List<String>,
-        override val description: String = "Sacrificed ${permanentNames.joinToString(", ")}"
+        val isYours: Boolean? = null,
+        override val description: String = when (isYours) {
+            true -> "You sacrificed ${permanentNames.joinToString(", ")}"
+            false -> "Opponent sacrificed ${permanentNames.joinToString(", ")}"
+            null -> "Sacrificed ${permanentNames.joinToString(", ")}"
+        }
     ) : ClientEvent
 
     @Serializable
@@ -338,7 +400,8 @@ object ClientEventTransformer {
                 playerId = event.playerId,
                 oldLife = event.oldLife,
                 newLife = event.newLife,
-                change = event.newLife - event.oldLife
+                change = event.newLife - event.oldLife,
+                isYours = event.playerId == viewingPlayerId
             )
 
             is DamageDealtEvent -> ClientEvent.DamageDealt(
@@ -354,12 +417,13 @@ object ClientEventTransformer {
             is CardsDrawnEvent -> {
                 // For now, just create one event for each card drawn
                 // In future could batch them
-                val showNames = event.playerId == viewingPlayerId
+                val isYours = event.playerId == viewingPlayerId
                 if (event.cardIds.isNotEmpty()) {
                     ClientEvent.CardDrawn(
                         playerId = event.playerId,
                         cardId = event.cardIds.first(),
-                        cardName = if (showNames) "Card" else null // Would need state lookup
+                        cardName = if (isYours) "Card" else null, // Would need state lookup
+                        isYours = isYours
                     )
                 } else null
             }
@@ -369,38 +433,49 @@ object ClientEventTransformer {
                     ClientEvent.CardDiscarded(
                         playerId = event.playerId,
                         cardId = event.cardIds.first(),
-                        cardName = "Card" // Would need state lookup
+                        cardName = "Card", // Would need state lookup
+                        isYours = event.playerId == viewingPlayerId
                     )
                 } else null
             }
 
             is ZoneChangeEvent -> {
+                val isYours = event.ownerId == viewingPlayerId
                 when (event.toZone) {
                     com.wingedsheep.sdk.core.ZoneType.BATTLEFIELD -> ClientEvent.PermanentEntered(
                         cardId = event.entityId,
                         cardName = event.entityName,
                         controllerId = event.ownerId,
-                        enteredTapped = false // Would need to check state
+                        enteredTapped = false, // Would need to check state
+                        isYours = isYours
                     )
                     com.wingedsheep.sdk.core.ZoneType.GRAVEYARD -> ClientEvent.PermanentLeft(
                         cardId = event.entityId,
                         cardName = event.entityName,
-                        destination = "graveyard"
+                        destination = "graveyard",
+                        ownerId = event.ownerId,
+                        isYours = isYours
                     )
                     com.wingedsheep.sdk.core.ZoneType.EXILE -> ClientEvent.PermanentLeft(
                         cardId = event.entityId,
                         cardName = event.entityName,
-                        destination = "exile"
+                        destination = "exile",
+                        ownerId = event.ownerId,
+                        isYours = isYours
                     )
                     com.wingedsheep.sdk.core.ZoneType.HAND -> ClientEvent.PermanentLeft(
                         cardId = event.entityId,
                         cardName = event.entityName,
-                        destination = "hand"
+                        destination = "hand",
+                        ownerId = event.ownerId,
+                        isYours = isYours
                     )
                     com.wingedsheep.sdk.core.ZoneType.LIBRARY -> ClientEvent.PermanentLeft(
                         cardId = event.entityId,
                         cardName = event.entityName,
-                        destination = "library"
+                        destination = "library",
+                        ownerId = event.ownerId,
+                        isYours = isYours
                     )
                     else -> null
                 }
@@ -408,13 +483,16 @@ object ClientEventTransformer {
 
             is CreatureDestroyedEvent -> ClientEvent.CreatureDied(
                 creatureId = event.entityId,
-                creatureName = event.name
+                creatureName = event.name,
+                controllerId = event.controllerId,
+                isYours = event.controllerId?.let { it == viewingPlayerId }
             )
 
             is SpellCastEvent -> ClientEvent.SpellCast(
                 spellId = event.spellEntityId,
                 spellName = event.cardName,
-                casterId = event.casterId
+                casterId = event.casterId,
+                isYours = event.casterId == viewingPlayerId
             )
 
             is ResolvedEvent -> ClientEvent.SpellResolved(
@@ -435,13 +513,17 @@ object ClientEventTransformer {
             is AbilityTriggeredEvent -> ClientEvent.AbilityTriggered(
                 sourceId = event.sourceId,
                 sourceName = event.sourceName,
-                abilityDescription = event.description
+                abilityDescription = event.description,
+                controllerId = event.controllerId,
+                isYours = event.controllerId == viewingPlayerId
             )
 
             is AbilityActivatedEvent -> ClientEvent.AbilityActivated(
                 sourceId = event.sourceId,
                 sourceName = event.sourceName,
-                abilityDescription = "" // Description not available
+                abilityDescription = "", // Description not available
+                controllerId = event.controllerId,
+                isYours = event.controllerId == viewingPlayerId
             )
 
             is TappedEvent -> ClientEvent.PermanentTapped(

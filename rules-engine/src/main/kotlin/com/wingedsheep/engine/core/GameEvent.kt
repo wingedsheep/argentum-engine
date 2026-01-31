@@ -465,7 +465,8 @@ data class PlayerLostEvent(
 data class CreatureDestroyedEvent(
     val entityId: EntityId,
     val name: String,
-    val reason: String
+    val reason: String,
+    val controllerId: EntityId? = null
 ) : GameEvent
 
 // =============================================================================

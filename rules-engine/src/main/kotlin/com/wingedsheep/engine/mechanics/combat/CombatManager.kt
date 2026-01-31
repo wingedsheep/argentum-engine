@@ -973,10 +973,11 @@ class CombatManager(
     }
 
     /**
-     * Check for creatures with lethal damage and destroy them.
+     * Check for creatures with lethal damage and emit preview events.
+     * Actual destruction is handled by StateBasedActionChecker.
      */
     private fun checkLethalDamage(state: GameState): Pair<GameState, List<GameEvent>> {
-        var newState = state
+        val newState = state
         val events = mutableListOf<GameEvent>()
 
         // Use projected toughness (includes floating effects like +4/+4)
@@ -986,13 +987,17 @@ class CombatManager(
             val cardComponent = container.get<CardComponent>() ?: continue
             if (!cardComponent.typeLine.isCreature) continue
 
-            val damage = container.get<DamageComponent>()?.amount ?: 0
-            val toughness = projected.getToughness(entityId) ?: 0
+            // Only check creatures that have actually taken damage
+            val damageComponent = container.get<DamageComponent>() ?: continue
+            val damage = damageComponent.amount
+            if (damage <= 0) continue
+
+            // Skip if we can't determine toughness
+            val toughness = projected.getToughness(entityId) ?: continue
 
             if (damage >= toughness) {
-                // Creature has lethal damage - would be destroyed by state-based actions
-                // For now, just emit an event (actual destruction handled elsewhere)
-                events.add(CreatureDestroyedEvent(entityId, cardComponent.name, "lethal damage"))
+                // Creature has lethal damage - will be destroyed by state-based actions
+                // Don't emit event here - StateBasedActionChecker handles it
             }
         }
 

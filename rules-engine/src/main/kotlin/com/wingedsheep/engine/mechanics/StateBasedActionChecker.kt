@@ -547,7 +547,7 @@ class StateBasedActionChecker {
         return ExecutionResult.success(
             newState,
             listOf(
-                CreatureDestroyedEvent(entityId, cardComponent.name, reason),
+                CreatureDestroyedEvent(entityId, cardComponent.name, reason, controllerId),
                 ZoneChangeEvent(
                     entityId,
                     cardComponent.name,
