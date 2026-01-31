@@ -92,6 +92,7 @@ class ConnectionHandler(
                     lobby.state == LobbyState.WAITING_FOR_PLAYERS -> { context = "lobby"; contextId = lobbyId }
                     lobby.state == LobbyState.DECK_BUILDING -> { context = "deckBuilding"; contextId = lobbyId }
                     lobby.state == LobbyState.TOURNAMENT_ACTIVE -> { context = "tournament"; contextId = lobbyId }
+                    lobby.state == LobbyState.TOURNAMENT_COMPLETE -> { context = "tournament"; contextId = lobbyId }
                     else -> { context = null; contextId = null }
                 }
             }
@@ -176,10 +177,23 @@ class ConnectionHandler(
                         .filter { it.identity.isConnected }
                         .map { it.identity.playerId }
                         .toSet()
+
+                    // Get next opponent info for TournamentStarted message
+                    val nextRoundMatchups = tournament.peekNextRoundMatchups()
+                    val nextOpponentId = nextRoundMatchups[identity.playerId]
+                    val nextOpponentName = if (nextOpponentId != null) {
+                        lobby.players[nextOpponentId]?.identity?.playerName
+                    } else {
+                        null
+                    }
+                    val hasBye = nextRoundMatchups.containsKey(identity.playerId) && nextOpponentId == null
+
                     sender.send(session, ServerMessage.TournamentStarted(
                         lobbyId = lobbyId,
                         totalRounds = tournament.totalRounds,
-                        standings = tournament.getStandingsInfo(connectedIds)
+                        standings = tournament.getStandingsInfo(connectedIds),
+                        nextOpponentName = nextOpponentName,
+                        nextRoundHasBye = hasBye
                     ))
 
                     // Find the player's match in the current round (including byes and completed matches)
@@ -189,8 +203,24 @@ class ConnectionHandler(
                     }
 
                     when {
-                        // Case 1: Player has a bye this round
-                        playerMatch?.isBye == true -> {
+                        // Case 0: Before first round starts, waiting for players to ready up
+                        currentRound == null -> {
+                            // TournamentStarted already sent with next opponent info
+                            // Just send the current ready player list if any
+                            val readyPlayerIds = lobby.getReadyPlayerIds()
+                            if (readyPlayerIds.isNotEmpty()) {
+                                sender.send(session, ServerMessage.PlayerReadyForRound(
+                                    lobbyId = lobbyId,
+                                    playerId = readyPlayerIds.last().value,
+                                    playerName = "",
+                                    readyPlayerIds = readyPlayerIds.map { it.value },
+                                    totalConnectedPlayers = connectedIds.size
+                                ))
+                            }
+                        }
+
+                        // Case 1: Player has a bye this round (and round is still in progress)
+                        playerMatch?.isBye == true && !tournament.isRoundComplete() -> {
                             sender.send(session, ServerMessage.TournamentBye(
                                 lobbyId = lobbyId,
                                 round = currentRound.roundNumber
@@ -199,8 +229,8 @@ class ConnectionHandler(
                             sendActiveMatchesToPlayerCallback?.invoke(identity, session)
                         }
 
-                        // Case 2: Player has an active game in progress
-                        playerMatch?.gameSessionId != null && !playerMatch.isComplete -> {
+                        // Case 2: Player has an active game in progress (round not complete)
+                        playerMatch?.gameSessionId != null && !playerMatch.isComplete && !tournament.isRoundComplete() -> {
                             val gs = gameRepository.findById(playerMatch.gameSessionId!!)
                             if (gs != null && gs.isStarted && !gs.isGameOver()) {
                                 identity.currentGameSessionId = playerMatch.gameSessionId
@@ -245,9 +275,51 @@ class ConnectionHandler(
                         }
 
                         // Case 3: Player's match is complete but round isn't (waiting for others)
-                        playerMatch?.isComplete == true -> {
+                        playerMatch?.isComplete == true && !tournament.isRoundComplete() -> {
                             // Send active matches so they can see other games/spectate
                             sendActiveMatchesToPlayerCallback?.invoke(identity, session)
+                        }
+
+                        // Case 4: Round is complete, waiting for players to ready up
+                        tournament.isRoundComplete() -> {
+                            val round = currentRound!!
+                            // Get next round matchups to show who each player plays next
+                            val nextRoundMatchups = if (!tournament.isComplete) {
+                                tournament.peekNextRoundMatchups()
+                            } else {
+                                emptyMap()
+                            }
+
+                            // Find this player's next opponent
+                            val nextOpponentId = nextRoundMatchups[identity.playerId]
+                            val nextOpponentName = if (nextOpponentId != null) {
+                                lobby.players[nextOpponentId]?.identity?.playerName
+                            } else {
+                                null
+                            }
+                            val hasBye = nextRoundMatchups.containsKey(identity.playerId) && nextOpponentId == null
+
+                            sender.send(session, ServerMessage.RoundComplete(
+                                lobbyId = lobbyId,
+                                round = round.roundNumber,
+                                results = tournament.getCurrentRoundResults(),
+                                standings = tournament.getStandingsInfo(connectedIds),
+                                nextOpponentName = nextOpponentName,
+                                nextRoundHasBye = hasBye,
+                                isTournamentComplete = tournament.isComplete
+                            ))
+
+                            // Also send the current ready player list
+                            val readyPlayerIds = lobby.getReadyPlayerIds()
+                            if (readyPlayerIds.isNotEmpty()) {
+                                sender.send(session, ServerMessage.PlayerReadyForRound(
+                                    lobbyId = lobbyId,
+                                    playerId = readyPlayerIds.last().value,
+                                    playerName = "",
+                                    readyPlayerIds = readyPlayerIds.map { it.value },
+                                    totalConnectedPlayers = connectedIds.size
+                                ))
+                            }
                         }
                     }
                 }

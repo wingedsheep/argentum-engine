@@ -80,6 +80,24 @@ function clearDeckState(): void {
   sessionStorage.removeItem(DECK_STATE_KEY)
 }
 
+// ============================================================================
+// Lobby State Persistence
+// ============================================================================
+
+const LOBBY_ID_KEY = 'argentum-lobby-id'
+
+function saveLobbyId(lobbyId: string): void {
+  sessionStorage.setItem(LOBBY_ID_KEY, lobbyId)
+}
+
+function loadLobbyId(): string | null {
+  return sessionStorage.getItem(LOBBY_ID_KEY)
+}
+
+function clearLobbyId(): void {
+  sessionStorage.removeItem(LOBBY_ID_KEY)
+}
+
 /**
  * Mulligan card info.
  */
@@ -537,6 +555,10 @@ export const useGameStore = create<GameStore>()(
           connectionStatus: 'connected',
           playerId: entityId(msg.playerId),
         })
+        // Note: onConnected means we got a NEW identity (server didn't recognize our token).
+        // This can happen if the server restarted or our session expired.
+        // Clear any stale lobby state since we're starting fresh.
+        clearLobbyId()
       },
 
       onReconnected: (msg) => {
@@ -550,6 +572,15 @@ export const useGameStore = create<GameStore>()(
           updates.sessionId = msg.contextId
         }
         set(updates)
+
+        // Server handles tournament/lobby/deckBuilding/game contexts automatically
+        // Only try to rejoin lobby if server doesn't know our context
+        if (!msg.context && !msg.contextId) {
+          const savedLobbyId = loadLobbyId()
+          if (savedLobbyId && ws) {
+            ws.send(createJoinLobbyMessage(savedLobbyId))
+          }
+        }
         // The server will re-send appropriate state messages after reconnection
       },
 
@@ -762,6 +793,10 @@ export const useGameStore = create<GameStore>()(
       },
 
       onError: (msg) => {
+        // Clear saved lobby ID if lobby not found (prevents infinite rejoin loops)
+        if (msg.code === 'GAME_NOT_FOUND' || msg.message?.toLowerCase().includes('lobby')) {
+          clearLobbyId()
+        }
         set({
           lastError: {
             code: msg.code,
@@ -853,6 +888,8 @@ export const useGameStore = create<GameStore>()(
 
       // Lobby handlers
       onLobbyCreated: (msg) => {
+        // Save lobby ID for reconnection after refresh
+        saveLobbyId(msg.lobbyId)
         set({
           lobbyState: {
             lobbyId: msg.lobbyId,
@@ -866,6 +903,9 @@ export const useGameStore = create<GameStore>()(
 
       onLobbyUpdate: (msg) => {
         const { playerId } = get()
+
+        // Save lobby ID for reconnection after refresh
+        saveLobbyId(msg.lobbyId)
 
         // Check if current player's deck submission status changed
         const currentPlayer = msg.players.find((p) => p.playerId === playerId)
@@ -892,6 +932,7 @@ export const useGameStore = create<GameStore>()(
 
       onLobbyStopped: () => {
         clearDeckState()
+        clearLobbyId()
         set({
           lobbyState: null,
           deckBuildingState: null,
@@ -1159,6 +1200,8 @@ export const useGameStore = create<GameStore>()(
         ws = null
         sessionStorage.removeItem('argentum-token')
         sessionStorage.removeItem('argentum-player-name')
+        clearLobbyId()
+        clearDeckState()
         set({
           connectionStatus: 'disconnected',
           playerId: null,
@@ -1425,12 +1468,14 @@ export const useGameStore = create<GameStore>()(
 
       leaveLobby: () => {
         clearDeckState()
+        clearLobbyId()
         ws?.send(createLeaveLobbyMessage())
         set({ lobbyState: null, deckBuildingState: null })
       },
 
       stopLobby: () => {
         clearDeckState()
+        clearLobbyId()
         ws?.send(createStopLobbyMessage())
         set({ lobbyState: null, deckBuildingState: null })
       },

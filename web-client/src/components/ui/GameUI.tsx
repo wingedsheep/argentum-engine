@@ -86,6 +86,12 @@ function ConnectionOverlay({
     }
   }
 
+  // Show tournament UI if we're in a tournament (even without lobbyState)
+  const tournamentState = useGameStore((state) => state.tournamentState)
+  if (tournamentState) {
+    return <TournamentOverlay tournamentState={tournamentState} responsive={responsive} />
+  }
+
   // Show lobby UI if we're in a lobby
   if (lobbyState) {
     return <LobbyOverlay lobbyState={lobbyState} responsive={responsive} />
@@ -758,6 +764,13 @@ function TournamentOverlay({
   const isPlayerReady = playerId ? tournamentState.readyPlayerIds.includes(playerId) : false
   const readyCount = tournamentState.readyPlayerIds.length
   const totalPlayers = tournamentState.standings.filter(s => s.isConnected).length
+
+  // Auto-ready when player has a bye - no need for manual confirmation
+  useEffect(() => {
+    if (isWaitingForReady && tournamentState.nextRoundHasBye && !isPlayerReady) {
+      readyForNextRound()
+    }
+  }, [isWaitingForReady, tournamentState.nextRoundHasBye, isPlayerReady, readyForNextRound])
 
   return (
     <div
