@@ -418,11 +418,14 @@ function getTopOfStack(gameState: ClientGameState): ClientCard | null {
 }
 
 /** Result from shouldAutoPass - either no auto-pass or auto-pass with delay */
-type AutoPassResult = { autoPass: false } | { autoPass: true; delay: number }
+type AutoPassResult =
+  | { autoPass: false }
+  | { autoPass: true; delay: number; actionType: 'PassPriority' }
+  | { autoPass: true; delay: number; actionType: 'DeclareBlockers' }
 
 // Delay constants
 const QUICK_AUTO_PASS_DELAY = 50 // ms - for own spells, empty stack phases
-const STACK_VIEW_DELAY = 1500 // ms - to show opponent's spell before auto-passing
+const STACK_VIEW_DELAY = 1500 // ms - to show opponent's spell/attack arrows before auto-passing
 
 /**
  * Determines if we should auto-pass priority and with what delay.
@@ -466,7 +469,18 @@ function shouldAutoPass(
   // (99% of the time, players want their spell to resolve, not counter it themselves)
   const topOfStack = getTopOfStack(gameState)
   if (topOfStack && topOfStack.controllerId === playerId) {
-    return { autoPass: true, delay: QUICK_AUTO_PASS_DELAY }
+    return { autoPass: true, delay: QUICK_AUTO_PASS_DELAY, actionType: 'PassPriority' }
+  }
+
+  // Check if we're in declare blockers step with no valid blockers
+  // Auto-pass after delay so player can see attack arrows
+  const declareBlockersAction = legalActions.find((a) => a.action.type === 'DeclareBlockers')
+  if (declareBlockersAction) {
+    const hasValidBlockers = declareBlockersAction.validBlockers && declareBlockersAction.validBlockers.length > 0
+    if (!hasValidBlockers) {
+      // No creatures can block - auto-submit empty blockers after delay to show attack arrows
+      return { autoPass: true, delay: STACK_VIEW_DELAY, actionType: 'DeclareBlockers' }
+    }
   }
 
   // Check if there are any meaningful actions besides PassPriority
@@ -498,7 +512,7 @@ function shouldAutoPass(
     if (isPermanentSpell) {
       // No meaningful responses to opponent's permanent spell - auto-pass after a delay
       // so the player can see what was cast
-      return { autoPass: true, delay: STACK_VIEW_DELAY }
+      return { autoPass: true, delay: STACK_VIEW_DELAY, actionType: 'PassPriority' }
     }
     // For instants/sorceries, don't auto-pass
     return { autoPass: false }
@@ -512,7 +526,7 @@ function shouldAutoPass(
   }
 
   // Auto-pass for all other steps when only PassPriority/mana abilities are available
-  return { autoPass: true, delay: QUICK_AUTO_PASS_DELAY }
+  return { autoPass: true, delay: QUICK_AUTO_PASS_DELAY, actionType: 'PassPriority' }
 }
 
 /**
@@ -694,29 +708,42 @@ export const useGameStore = create<GameStore>()(
           opponentBlockerAssignments: msg.state.combat?.blockers?.length ? null : state.opponentBlockerAssignments,
         }))
 
-        // Auto-pass when the only action available is PassPriority
+        // Auto-pass when the only action available is PassPriority or no valid blockers
         // This skips through steps with no meaningful player actions
         if (playerId) {
           const autoPassResult = shouldAutoPass(msg.legalActions, msg.state, playerId, msg.pendingDecision)
           if (autoPassResult.autoPass) {
-            // Use the delay from the result - longer delay when showing opponent's spell
+            const actionType = autoPassResult.actionType
+            // Use the delay from the result - longer delay when showing opponent's spell/attack arrows
             setTimeout(() => {
               // Re-check current state - game may have changed during the delay
               const currentState = get()
               if (!currentState.gameState || !currentState.playerId) return
 
-              // Verify auto-pass is still valid with current state
+              // Verify auto-pass is still valid with current state and same action type
               const recheck = shouldAutoPass(
                 currentState.legalActions,
                 currentState.gameState,
                 currentState.playerId,
                 currentState.pendingDecision
               )
-              if (!recheck.autoPass) return
+              if (!recheck.autoPass || recheck.actionType !== actionType) return
 
-              const passAction = currentState.legalActions.find((a) => a.action.type === 'PassPriority')
-              if (passAction && ws) {
-                ws.send(createSubmitActionMessage(passAction.action))
+              if (actionType === 'PassPriority') {
+                const passAction = currentState.legalActions.find((a) => a.action.type === 'PassPriority')
+                if (passAction && ws) {
+                  ws.send(createSubmitActionMessage(passAction.action))
+                }
+              } else if (actionType === 'DeclareBlockers') {
+                // Auto-submit empty blockers when no creatures can block
+                const action = {
+                  type: 'DeclareBlockers' as const,
+                  playerId: currentState.playerId,
+                  blockers: {} as Record<EntityId, readonly EntityId[]>,
+                }
+                if (ws) {
+                  ws.send(createSubmitActionMessage(action))
+                }
               }
             }, autoPassResult.delay)
           }
