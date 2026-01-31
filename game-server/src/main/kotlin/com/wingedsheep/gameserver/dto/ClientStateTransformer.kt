@@ -398,6 +398,9 @@ class ClientStateTransformer(
             typeLineParts.joinToString(" ")
         }
 
+        // Build active effects from floating effects
+        val activeEffects = buildCardActiveEffects(state, entityId)
+
         return ClientCard(
             id = entityId,
             name = cardComponent.name,
@@ -430,7 +433,8 @@ class ClientStateTransformer(
             attachments = attachments,
             isFaceDown = isFaceDown,
             targets = targets,
-            imageUri = cardRegistry.getCard(cardComponent.cardDefinitionId)?.metadata?.imageUri
+            imageUri = cardRegistry.getCard(cardComponent.cardDefinitionId)?.metadata?.imageUri,
+            activeEffects = activeEffects
         )
     }
 
@@ -564,6 +568,50 @@ class ClientStateTransformer(
                     icon = "skip"
                 )
             )
+        }
+
+        return effects
+    }
+
+    /**
+     * Build a list of active effects on a card for display as badges.
+     * These come from floating effects that target this specific card.
+     */
+    private fun buildCardActiveEffects(
+        state: GameState,
+        entityId: EntityId
+    ): List<ClientCardEffect> {
+        val effects = mutableListOf<ClientCardEffect>()
+
+        // Check all floating effects that affect this entity
+        for (floatingEffect in state.floatingEffects) {
+            if (entityId !in floatingEffect.effect.affectedEntities) continue
+
+            when (val modification = floatingEffect.effect.modification) {
+                is SerializableModification.CantBeBlockedExceptByColor -> {
+                    val colorName = modification.color.lowercase().replaceFirstChar { it.uppercase() }
+                    effects.add(
+                        ClientCardEffect(
+                            effectId = "cant_be_blocked_except_by_${modification.color.lowercase()}",
+                            name = "Evasion",
+                            description = "Can't be blocked except by $colorName creatures",
+                            icon = "evasion"
+                        )
+                    )
+                }
+                is SerializableModification.MustBeBlockedByAll -> {
+                    effects.add(
+                        ClientCardEffect(
+                            effectId = "must_be_blocked_by_all",
+                            name = "Lure",
+                            description = "Must be blocked by all creatures able to block it",
+                            icon = "lure"
+                        )
+                    )
+                }
+                // Other modifications don't need badges (stats/keywords are shown elsewhere)
+                else -> { /* No badge needed */ }
+            }
         }
 
         return effects

@@ -135,6 +135,9 @@ export interface ClientCard {
 
   /** Image URI from card metadata (for rendering card images) */
   readonly imageUri?: string | null
+
+  /** Active effects on this card (e.g., "can't be blocked except by black creatures") */
+  readonly activeEffects?: readonly ClientCardEffect[]
 }
 
 /**
@@ -177,6 +180,21 @@ export interface ClientPlayer {
  * Matches backend ClientPlayerEffect.kt
  */
 export interface ClientPlayerEffect {
+  /** Unique identifier for the effect type */
+  readonly effectId: string
+  /** Human-readable name for display */
+  readonly name: string
+  /** Optional description/tooltip text */
+  readonly description?: string
+  /** Optional icon identifier for UI rendering */
+  readonly icon?: string
+}
+
+/**
+ * An active effect on a card that should be displayed as a badge.
+ * Matches backend ClientCardEffect.kt
+ */
+export interface ClientCardEffect {
   /** Unique identifier for the effect type */
   readonly effectId: string
   /** Human-readable name for display */

@@ -1,7 +1,7 @@
 import { useGameStore } from '../../store/gameStore'
 import { useViewingPlayer, useOpponent, useZoneCards, useZone, useBattlefieldCards, useHasLegalActions, useStackCards, groupCards, type GroupedCard } from '../../store/selectors'
 import { hand, graveyard, getNextStep, StepShortNames } from '../../types'
-import type { ClientCard, ZoneId, ClientPlayer, LegalActionInfo, EntityId, Keyword, ClientPlayerEffect } from '../../types'
+import type { ClientCard, ZoneId, ClientPlayer, LegalActionInfo, EntityId, Keyword, ClientPlayerEffect, ClientCardEffect } from '../../types'
 import { keywordIcons, genericKeywordIcon, displayableKeywords } from '../../assets/icons/keywords'
 import { PhaseIndicator } from '../ui/PhaseIndicator'
 import { ManaPool } from '../ui/ManaPool'
@@ -101,6 +101,56 @@ const KeywordIcons = ({ keywords, size }: { keywords: readonly Keyword[]; size: 
         </div>
       ))}
     </div>
+  )
+}
+
+/**
+ * Container component for active effect badges on a card.
+ * Used for temporary effects like "can't be blocked except by black creatures".
+ */
+const ActiveEffectBadges = ({ effects }: { effects: readonly ClientCardEffect[] }) => {
+  const [hoveredEffect, setHoveredEffect] = React.useState<string | null>(null)
+  const [tooltipPos, setTooltipPos] = React.useState<{ x: number; y: number } | null>(null)
+
+  if (!effects || effects.length === 0) return null
+
+  const handleMouseEnter = (effectId: string, e: React.MouseEvent) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    setTooltipPos({ x: rect.left + rect.width / 2, y: rect.top })
+    setHoveredEffect(effectId)
+  }
+
+  const handleMouseLeave = () => {
+    setHoveredEffect(null)
+    setTooltipPos(null)
+  }
+
+  const hoveredEffectData = effects.find(e => e.effectId === hoveredEffect)
+
+  return (
+    <>
+      <div style={styles.activeEffectsContainer}>
+        {effects.map((effect) => (
+          <div
+            key={effect.effectId}
+            style={styles.activeEffectBadge}
+            onMouseEnter={(e) => handleMouseEnter(effect.effectId, e)}
+            onMouseLeave={handleMouseLeave}
+          >
+            <span style={styles.activeEffectText}>{effect.name}</span>
+          </div>
+        ))}
+      </div>
+      {hoveredEffect && tooltipPos && hoveredEffectData?.description && (
+        <div style={{
+          ...styles.cardEffectTooltip,
+          left: tooltipPos.x,
+          top: tooltipPos.y,
+        }}>
+          {hoveredEffectData.description}
+        </div>
+      )}
+    </>
   )
 }
 
@@ -1689,6 +1739,11 @@ function GameCard({
         <KeywordIcons keywords={card.keywords} size={responsive.isMobile ? 14 : 18} />
       )}
 
+      {/* Active effect badges (evasion, etc.) */}
+      {battlefield && !faceDown && card.activeEffects && card.activeEffects.length > 0 && (
+        <ActiveEffectBadges effects={card.activeEffects} />
+      )}
+
       {/* Playable indicator glow effect (only outside combat mode) */}
       {isPlayable && !isSelected && (
         <div style={styles.playableGlow} />
@@ -2581,6 +2636,46 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     justifyContent: 'center',
     border: '1px solid rgba(255, 255, 255, 0.2)',
+  } as React.CSSProperties,
+  activeEffectsContainer: {
+    position: 'absolute',
+    bottom: 28,
+    left: 4,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 2,
+  } as React.CSSProperties,
+  activeEffectBadge: {
+    backgroundColor: 'rgba(150, 50, 200, 0.9)',
+    borderRadius: 4,
+    padding: '2px 6px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    border: '1px solid rgba(255, 200, 255, 0.4)',
+    cursor: 'help',
+  } as React.CSSProperties,
+  activeEffectText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 600,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  } as React.CSSProperties,
+  cardEffectTooltip: {
+    position: 'fixed',
+    transform: 'translate(-50%, -100%)',
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+    color: '#ffffff',
+    padding: '6px 10px',
+    borderRadius: 4,
+    fontSize: 11,
+    whiteSpace: 'nowrap',
+    zIndex: 10000,
+    marginTop: -8,
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.5)',
+    pointerEvents: 'none',
+    border: '1px solid rgba(150, 50, 200, 0.5)',
   } as React.CSSProperties,
   tappedOverlay: {
     position: 'absolute',

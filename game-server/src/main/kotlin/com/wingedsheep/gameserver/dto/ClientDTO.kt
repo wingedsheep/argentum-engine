@@ -154,7 +154,10 @@ data class ClientCard(
     val targets: List<ClientChosenTarget> = emptyList(),
 
     /** Image URI from card metadata (for rendering card images) */
-    val imageUri: String? = null
+    val imageUri: String? = null,
+
+    /** Active effects on this card (e.g., "can't be blocked except by black creatures") */
+    val activeEffects: List<ClientCardEffect> = emptyList()
 )
 
 /**
@@ -201,6 +204,22 @@ data class ClientPlayer(
  */
 @Serializable
 data class ClientPlayerEffect(
+    /** Unique identifier for the effect type */
+    val effectId: String,
+    /** Human-readable name for display */
+    val name: String,
+    /** Optional description/tooltip text */
+    val description: String? = null,
+    /** Optional icon identifier for UI rendering */
+    val icon: String? = null
+)
+
+/**
+ * An active effect on a card that should be displayed as a badge.
+ * Used for temporary effects like "can't be blocked except by black creatures".
+ */
+@Serializable
+data class ClientCardEffect(
     /** Unique identifier for the effect type */
     val effectId: String,
     /** Human-readable name for display */
