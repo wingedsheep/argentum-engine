@@ -207,8 +207,6 @@ class DynamicAmountEvaluator {
                 )
                 evaluateCountInZone(state, countInZone, context)
             }
-
-            else -> 0
         }
     }
 

@@ -12,14 +12,10 @@ class DamageExecutors(
     private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator(),
     private val decisionHandler: DecisionHandler = DecisionHandler()
 ) : ExecutorModule {
-    @Suppress("DEPRECATION")
     override fun executors(): List<EffectExecutor<*>> = listOf(
         DealDamageExecutor(),
         DealDynamicDamageExecutor(amountEvaluator),
         DealXDamageExecutor(),
-        DealXDamageToAllExecutor(),
-        DealDamageToAllCreaturesExecutor(),
-        DealDamageToAllExecutor(),
         DealDamageToGroupExecutor(amountEvaluator),
         DealDamageToPlayersExecutor(amountEvaluator),
         DividedDamageExecutor(decisionHandler)

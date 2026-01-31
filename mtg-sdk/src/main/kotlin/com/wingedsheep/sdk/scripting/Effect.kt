@@ -1413,53 +1413,6 @@ data class WheelEffect(
 }
 
 /**
- * Deal damage to all creatures.
- * "Deal X damage to each creature."
- *
- * @deprecated Use DealDamageToGroupEffect instead.
- */
-@Deprecated("Use DealDamageToGroupEffect instead", ReplaceWith("DealDamageToGroupEffect(amount)"))
-@Serializable
-data class DealDamageToAllCreaturesEffect(
-    val amount: Int,
-    val onlyFlying: Boolean = false,
-    val onlyNonFlying: Boolean = false
-) : Effect {
-    override val description: String = buildString {
-        append("Deal $amount damage to each ")
-        when {
-            onlyFlying -> append("creature with flying")
-            onlyNonFlying -> append("creature without flying")
-            else -> append("creature")
-        }
-    }
-}
-
-/**
- * Deal damage to each creature and each player.
- * Used for effects like Earthquake, Dry Spell, Fire Tempest.
- *
- * @deprecated Use DealDamageToGroupEffect instead.
- */
-@Deprecated("Use DealDamageToGroupEffect instead", ReplaceWith("DealDamageToGroupEffect(amount, CreatureDamageFilter.All, includePlayers = true)"))
-@Serializable
-data class DealDamageToAllEffect(
-    val amount: Int,
-    val onlyFlyingCreatures: Boolean = false,
-    val onlyNonFlyingCreatures: Boolean = false
-) : Effect {
-    override val description: String = buildString {
-        append("Deal $amount damage to each ")
-        when {
-            onlyFlyingCreatures -> append("creature with flying")
-            onlyNonFlyingCreatures -> append("creature without flying")
-            else -> append("creature")
-        }
-        append(" and each player")
-    }
-}
-
-/**
  * Deal damage to a group of creatures matching a filter.
  * Use with .then(DealDamageToPlayersEffect) for effects that also damage players.
  *
@@ -2266,7 +2219,7 @@ data class DealXDamageEffect(
 
 /**
  * Filter for mass damage effects targeting creatures.
- * Used with DealXDamageToAllEffect to specify which creatures are affected.
+ * Used with DealDamageToGroupEffect to specify which creatures are affected.
  */
 @Serializable
 sealed interface CreatureDamageFilter {
@@ -2306,34 +2259,6 @@ sealed interface CreatureDamageFilter {
     @Serializable
     data object Attacking : CreatureDamageFilter {
         override val description: String = "each attacking creature"
-    }
-}
-
-/**
- * Deal X damage to creatures and/or players where X is determined by the spell's X value.
- * Used for cards like Earthquake.
- *
- * @param creatureFilter Which creatures are damaged (null = no creatures)
- * @param includePlayers Whether to deal damage to players
- *
- * @deprecated Use DealDamageToGroupEffect with DynamicAmount.XValue instead.
- */
-@Deprecated("Use DealDamageToGroupEffect with DynamicAmount.XValue instead", ReplaceWith("DealDamageToGroupEffect(DynamicAmount.XValue, creatureFilter, includePlayers)"))
-@Serializable
-data class DealXDamageToAllEffect(
-    val creatureFilter: CreatureDamageFilter? = CreatureDamageFilter.All,
-    val includePlayers: Boolean = true
-) : Effect {
-    override val description: String = buildString {
-        append("Deal X damage to ")
-        val parts = mutableListOf<String>()
-        if (creatureFilter != null) {
-            parts.add(creatureFilter.description)
-        }
-        if (includePlayers) {
-            parts.add("each player")
-        }
-        append(parts.joinToString(" and "))
     }
 }
 

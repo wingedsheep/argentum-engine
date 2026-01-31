@@ -308,8 +308,6 @@ class TriggerDetector(
                 // Transform not yet implemented in new engine
                 false
             }
-
-            else -> false
         }
     }
 

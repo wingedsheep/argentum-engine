@@ -12,7 +12,9 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.CreatureDamageFilter
-import com.wingedsheep.sdk.scripting.DealXDamageToAllEffect
+import com.wingedsheep.sdk.scripting.DealDamageToGroupEffect
+import com.wingedsheep.sdk.scripting.DealDamageToPlayersEffect
+import com.wingedsheep.sdk.scripting.DynamicAmount
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -27,10 +29,10 @@ class XCostSpellTest : FunSpec({
         manaCost = ManaCost.parse("{X}{G}"),
         oracleText = "Hurricane deals X damage to each creature with flying and each player.",
         script = CardScript.spell(
-            effect = DealXDamageToAllEffect(
-                creatureFilter = CreatureDamageFilter.WithKeyword(Keyword.FLYING),
-                includePlayers = true
-            )
+            effect = DealDamageToGroupEffect(
+                DynamicAmount.XValue,
+                CreatureDamageFilter.WithKeyword(Keyword.FLYING)
+            ).then(DealDamageToPlayersEffect(DynamicAmount.XValue))
         )
     )
 
