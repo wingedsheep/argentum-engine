@@ -54,7 +54,10 @@ export default defineConfig({
   webServer: process.env.SKIP_WEB_SERVER ? undefined : [
     {
       // Start the game server
-      command: 'cd .. && ./gradlew :game-server:bootRun',
+      // Use --no-daemon in CI to ensure the process can be cleanly terminated
+      command: process.env.CI
+        ? 'cd .. && ./gradlew :game-server:bootRun --no-daemon'
+        : 'cd .. && ./gradlew :game-server:bootRun',
       url: 'http://localhost:8080/game',
       reuseExistingServer: !process.env.CI,
       timeout: 120000,
