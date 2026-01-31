@@ -131,7 +131,11 @@ class DevScenarioController(
             ApiResponse(responseCode = "400", description = "Invalid scenario configuration (e.g., unknown card name)")
         ]
     )
-    fun createScenario(@RequestBody request: ScenarioRequest): ResponseEntity<ScenarioResponse> {
+    fun createScenario(
+        @RequestBody request: ScenarioRequest,
+        @RequestParam(required = false) player1Token: String?,
+        @RequestParam(required = false) player2Token: String?
+    ): ResponseEntity<ScenarioResponse> {
         logger.info("Creating dev scenario: player1=${request.player1Name}, player2=${request.player2Name}")
 
         try {
@@ -194,7 +198,9 @@ class DevScenarioController(
             gameRepository.save(gameSession)
 
             // Create player identities with matching player IDs from the scenario
+            // Use provided tokens from query params if available, otherwise generate random UUIDs
             val identity1 = PlayerIdentity(
+                token = player1Token ?: java.util.UUID.randomUUID().toString(),
                 playerId = player1Id,
                 playerName = request.player1Name
             ).apply {
@@ -202,6 +208,7 @@ class DevScenarioController(
             }
 
             val identity2 = PlayerIdentity(
+                token = player2Token ?: java.util.UUID.randomUUID().toString(),
                 playerId = player2Id,
                 playerName = request.player2Name
             ).apply {
