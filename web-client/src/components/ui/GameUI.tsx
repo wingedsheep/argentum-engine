@@ -171,10 +171,11 @@ function ConnectionOverlay({
             }}
           >
             <ModeButton
-              label="Normal Game"
+              label="Quick Game"
               active={gameMode === 'normal'}
               onClick={() => setGameMode('normal')}
               responsive={responsive}
+              title="Play with a random deck"
             />
             <ModeButton
               label="Sealed Lobby"
@@ -301,15 +302,18 @@ function ModeButton({
   active,
   onClick,
   responsive,
+  title,
 }: {
   label: string
   active: boolean
   onClick: () => void
   responsive: ReturnType<typeof useResponsive>
+  title?: string
 }) {
   return (
     <button
       onClick={onClick}
+      title={title}
       style={{
         padding: responsive.isMobile ? '8px 12px' : '10px 16px',
         fontSize: responsive.fontSize.normal,
@@ -338,13 +342,49 @@ function WaitingForOpponent({
   responsive: ReturnType<typeof useResponsive>
 }) {
   const cancelGame = useGameStore((state) => state.cancelGame)
+  const [copied, setCopied] = useState(false)
+
+  const copySessionId = () => {
+    navigator.clipboard.writeText(sessionId)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   return (
     <div style={{ textAlign: 'center' }}>
       <p style={{ fontSize: responsive.fontSize.normal }}>Game Created!</p>
-      <p style={{ fontSize: responsive.isMobile ? 16 : 24, fontFamily: 'monospace', wordBreak: 'break-all' }}>
-        {sessionId}
-      </p>
+      <div
+        onClick={copySessionId}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 12,
+          padding: '12px 16px',
+          backgroundColor: copied ? 'rgba(79, 195, 247, 0.08)' : 'rgba(255, 255, 255, 0.03)',
+          border: copied ? '1px solid rgba(79, 195, 247, 0.3)' : '1px solid rgba(255, 255, 255, 0.08)',
+          borderRadius: 10,
+          cursor: 'pointer',
+          transition: 'all 0.2s',
+          marginBottom: 12,
+        }}
+      >
+        <div style={{
+          fontFamily: 'monospace',
+          fontSize: responsive.isMobile ? 15 : 18,
+          color: '#ddd',
+          fontWeight: 500,
+          letterSpacing: '0.04em',
+        }}>
+          {sessionId}
+        </div>
+        <span style={{
+          color: copied ? '#4fc3f7' : '#555',
+          fontSize: 12,
+          transition: 'color 0.2s',
+        }}>
+          {copied ? 'Copied!' : 'Copy'}
+        </span>
+      </div>
       <p style={{ color: '#888', fontSize: responsive.fontSize.normal }}>
         Waiting for opponent to join...
       </p>
