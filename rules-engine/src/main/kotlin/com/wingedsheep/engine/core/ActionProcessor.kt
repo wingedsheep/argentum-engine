@@ -53,7 +53,7 @@ class ActionProcessor(
     private val cardRegistry: CardRegistry? = null,
     private val combatManager: CombatManager = CombatManager(cardRegistry),
     private val turnManager: TurnManager = TurnManager(combatManager),
-    private val stackResolver: StackResolver = StackResolver(),
+    private val stackResolver: StackResolver = StackResolver(cardRegistry = cardRegistry),
     private val manaSolver: ManaSolver = ManaSolver(cardRegistry),
     private val costCalculator: CostCalculator = CostCalculator(cardRegistry),
     private val alternativePaymentHandler: AlternativePaymentHandler = AlternativePaymentHandler(),
@@ -101,6 +101,7 @@ class ActionProcessor(
             is PassPriority -> validatePassPriority(state, action)
             is CastSpell -> validateCastSpell(state, action)
             is ActivateAbility -> validateActivateAbility(state, action)
+            is CycleCard -> validateCycleCard(state, action)
             is PlayLand -> validatePlayLand(state, action)
             is DeclareAttackers -> validateDeclareAttackers(state, action)
             is DeclareBlockers -> validateDeclareBlockers(state, action)
@@ -371,26 +372,54 @@ class ActionProcessor(
         val ability = cardDef.script.activatedAbilities.find { it.id == action.abilityId }
             ?: return "Ability not found on this card"
 
-        // Check cost requirements
-        when (ability.cost) {
-            is AbilityCost.Tap -> {
-                // Must be untapped to pay tap cost
-                if (container.has<TappedComponent>()) {
-                    return "This permanent is already tapped"
-                }
+        // Check timing for planeswalker abilities (sorcery speed)
+        if (ability.isPlaneswalkerAbility) {
+            if (!turnManager.canPlaySorcerySpeed(state, action.playerId)) {
+                return "Loyalty abilities can only be activated at sorcery speed"
+            }
+        }
 
-                // Check summoning sickness for creatures (non-lands)
-                if (!cardComponent.typeLine.isLand && cardComponent.typeLine.isCreature) {
-                    val hasSummoningSickness = container.has<SummoningSicknessComponent>()
-                    // Check for haste keyword (note: this doesn't check granted haste, future enhancement)
-                    val hasHaste = cardComponent.baseKeywords.contains(Keyword.HASTE)
-                    if (hasSummoningSickness && !hasHaste) {
-                        return "This creature has summoning sickness"
+        // Get player's mana pool for cost validation
+        val poolComponent = state.getEntity(action.playerId)?.get<ManaPoolComponent>()
+            ?: ManaPoolComponent()
+        val manaPool = ManaPool(
+            white = poolComponent.white,
+            blue = poolComponent.blue,
+            black = poolComponent.black,
+            red = poolComponent.red,
+            green = poolComponent.green,
+            colorless = poolComponent.colorless
+        )
+
+        // Check cost requirements using CostHandler
+        if (!costHandler.canPayAbilityCost(state, ability.cost, action.sourceId, action.playerId, manaPool)) {
+            return when (ability.cost) {
+                is AbilityCost.Tap -> "This permanent is already tapped"
+                is AbilityCost.Loyalty -> {
+                    val cost = ability.cost as AbilityCost.Loyalty
+                    if (cost.change < 0) {
+                        "Not enough loyalty to activate this ability"
+                    } else {
+                        "Cannot pay loyalty cost"
                     }
                 }
+                is AbilityCost.Mana -> "Not enough mana to activate this ability"
+                is AbilityCost.PayLife -> "Not enough life to activate this ability"
+                else -> "Cannot pay ability cost"
             }
-            else -> {
-                // Other cost types - TODO: validate when implemented
+        }
+
+        // Additional check for tap cost + summoning sickness
+        if (ability.cost is AbilityCost.Tap ||
+            (ability.cost is AbilityCost.Composite && (ability.cost as AbilityCost.Composite).costs.any { it is AbilityCost.Tap })) {
+            // Check summoning sickness for creatures (non-lands)
+            if (!cardComponent.typeLine.isLand && cardComponent.typeLine.isCreature) {
+                val hasSummoningSickness = container.has<SummoningSicknessComponent>()
+                // Check for haste keyword (note: this doesn't check granted haste, future enhancement)
+                val hasHaste = cardComponent.baseKeywords.contains(Keyword.HASTE)
+                if (hasSummoningSickness && !hasHaste) {
+                    return "This creature has summoning sickness"
+                }
             }
         }
 
@@ -398,6 +427,21 @@ class ActionProcessor(
         for (restriction in ability.restrictions) {
             val error = checkActivationRestriction(state, action.playerId, restriction)
             if (error != null) return error
+        }
+
+        // Validate targets if the ability requires them
+        if (ability.targetRequirement != null && action.targets.isNotEmpty()) {
+            val targetError = targetValidator.validateTargets(
+                state,
+                action.targets,
+                listOf(ability.targetRequirement!!),
+                action.playerId
+            )
+            if (targetError != null) {
+                return targetError
+            }
+        } else if (ability.targetRequirement != null && action.targets.isEmpty()) {
+            return "This ability requires a target"
         }
 
         return null
@@ -447,6 +491,41 @@ class ActionProcessor(
                 }
             }
         }
+    }
+
+    private fun validateCycleCard(state: GameState, action: CycleCard): String? {
+        if (state.priorityPlayerId != action.playerId) {
+            return "You don't have priority"
+        }
+
+        // Check the card exists and is in hand
+        val container = state.getEntity(action.cardId)
+            ?: return "Card not found: ${action.cardId}"
+
+        val cardComponent = container.get<CardComponent>()
+            ?: return "Not a card: ${action.cardId}"
+
+        // Check card is in hand
+        val handZone = ZoneKey(action.playerId, ZoneType.HAND)
+        if (action.cardId !in state.getZone(handZone)) {
+            return "Card is not in your hand"
+        }
+
+        // Look up card definition to find cycling ability
+        val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId)
+            ?: return "Card definition not found"
+
+        // Find cycling ability
+        val cyclingAbility = cardDef.keywordAbilities.filterIsInstance<com.wingedsheep.sdk.scripting.KeywordAbility.Cycling>()
+            .firstOrNull()
+            ?: return "This card doesn't have cycling"
+
+        // Check if player can pay the cycling cost
+        if (!manaSolver.canPay(state, action.playerId, cyclingAbility.cost)) {
+            return "Not enough mana to cycle this card"
+        }
+
+        return null
     }
 
     private fun validatePlayLand(state: GameState, action: PlayLand): String? {
@@ -590,6 +669,7 @@ class ActionProcessor(
             is PassPriority -> executePassPriority(state, action)
             is CastSpell -> executeCastSpell(state, action)
             is ActivateAbility -> executeActivateAbility(state, action)
+            is CycleCard -> executeCycleCard(state, action)
             is PlayLand -> executePlayLand(state, action)
             is DeclareAttackers -> executeDeclareAttackers(state, action)
             is DeclareBlockers -> executeDeclareBlockers(state, action)
@@ -926,17 +1006,59 @@ class ActionProcessor(
         var currentState = state
         val events = mutableListOf<GameEvent>()
 
-        // Pay the cost
+        // Get player's mana pool for cost payment
+        val poolComponent = state.getEntity(action.playerId)?.get<ManaPoolComponent>()
+            ?: ManaPoolComponent()
+        var manaPool = ManaPool(
+            white = poolComponent.white,
+            blue = poolComponent.blue,
+            black = poolComponent.black,
+            red = poolComponent.red,
+            green = poolComponent.green,
+            colorless = poolComponent.colorless
+        )
+
+        // Pay the cost using CostHandler
+        val costResult = costHandler.payAbilityCost(
+            currentState,
+            ability.cost,
+            action.sourceId,
+            action.playerId,
+            manaPool
+        )
+
+        if (!costResult.success) {
+            return ExecutionResult.error(state, costResult.error ?: "Failed to pay ability cost")
+        }
+
+        currentState = costResult.newState!!
+        manaPool = costResult.newManaPool!!
+
+        // Update the mana pool in the state if it changed
+        if (manaPool != ManaPool(poolComponent.white, poolComponent.blue, poolComponent.black, poolComponent.red, poolComponent.green, poolComponent.colorless)) {
+            currentState = currentState.updateEntity(action.playerId) { c ->
+                c.with(ManaPoolComponent(
+                    white = manaPool.white,
+                    blue = manaPool.blue,
+                    black = manaPool.black,
+                    red = manaPool.red,
+                    green = manaPool.green,
+                    colorless = manaPool.colorless
+                ))
+            }
+        }
+
+        // Emit events for specific cost types
         when (ability.cost) {
             is AbilityCost.Tap -> {
-                // Tap the permanent
-                currentState = currentState.updateEntity(action.sourceId) { c ->
-                    c.with(TappedComponent)
-                }
                 events.add(TappedEvent(action.sourceId, cardComponent.name))
             }
+            is AbilityCost.Loyalty -> {
+                val loyaltyCost = ability.cost as AbilityCost.Loyalty
+                events.add(LoyaltyChangedEvent(action.sourceId, cardComponent.name, loyaltyCost.change))
+            }
             else -> {
-                // TODO: Handle other cost types (mana, sacrifice, etc.)
+                // Other cost types may need specific events
             }
         }
 
@@ -999,6 +1121,134 @@ class ActionProcessor(
         )
         val stackResult = stackResolver.putActivatedAbility(currentState, abilityOnStack, action.targets)
         return ExecutionResult.success(stackResult.newState, events + stackResult.events)
+    }
+
+    private fun executeCycleCard(state: GameState, action: CycleCard): ExecutionResult {
+        val container = state.getEntity(action.cardId)
+            ?: return ExecutionResult.error(state, "Card not found")
+
+        val cardComponent = container.get<CardComponent>()
+            ?: return ExecutionResult.error(state, "Not a card")
+
+        // Look up card definition to find cycling ability
+        val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId)
+            ?: return ExecutionResult.error(state, "Card definition not found")
+
+        val cyclingAbility = cardDef.keywordAbilities.filterIsInstance<com.wingedsheep.sdk.scripting.KeywordAbility.Cycling>()
+            .firstOrNull()
+            ?: return ExecutionResult.error(state, "This card doesn't have cycling")
+
+        var currentState = state
+        val events = mutableListOf<GameEvent>()
+        val ownerId = cardComponent.ownerId ?: action.playerId
+
+        // Pay the cycling cost (using AutoPay strategy)
+        val solution = manaSolver.solve(currentState, action.playerId, cyclingAbility.cost, 0)
+            ?: return ExecutionResult.error(state, "Not enough mana to cycle")
+
+        // Tap each source and generate events
+        for (source in solution.sources) {
+            currentState = currentState.updateEntity(source.entityId) { c ->
+                c.with(TappedComponent)
+            }
+            events.add(TappedEvent(source.entityId, source.name))
+        }
+
+        // Calculate mana spent for event
+        var whiteSpent = 0
+        var blueSpent = 0
+        var blackSpent = 0
+        var redSpent = 0
+        var greenSpent = 0
+        var colorlessSpent = 0
+
+        for ((_, production) in solution.manaProduced) {
+            when (production.color) {
+                Color.WHITE -> whiteSpent++
+                Color.BLUE -> blueSpent++
+                Color.BLACK -> blackSpent++
+                Color.RED -> redSpent++
+                Color.GREEN -> greenSpent++
+                null -> colorlessSpent += production.colorless
+            }
+        }
+
+        events.add(
+            ManaSpentEvent(
+                playerId = action.playerId,
+                reason = "Cycle ${cardComponent.name}",
+                white = whiteSpent,
+                blue = blueSpent,
+                black = blackSpent,
+                red = redSpent,
+                green = greenSpent,
+                colorless = colorlessSpent
+            )
+        )
+
+        // Discard the card (move from hand to graveyard)
+        val handZone = ZoneKey(action.playerId, ZoneType.HAND)
+        val graveyardZone = ZoneKey(ownerId, ZoneType.GRAVEYARD)
+        currentState = currentState.removeFromZone(handZone, action.cardId)
+        currentState = currentState.addToZone(graveyardZone, action.cardId)
+
+        events.add(
+            ZoneChangeEvent(
+                entityId = action.cardId,
+                entityName = cardComponent.name,
+                fromZone = ZoneType.HAND,
+                toZone = ZoneType.GRAVEYARD,
+                ownerId = ownerId
+            )
+        )
+
+        // Draw a card
+        val library = currentState.getLibrary(action.playerId)
+        if (library.isNotEmpty()) {
+            val drawnCardId = library.first()
+            val drawnCardName = currentState.getEntity(drawnCardId)?.get<CardComponent>()?.name ?: "Unknown"
+
+            val libraryZone = ZoneKey(action.playerId, ZoneType.LIBRARY)
+            currentState = currentState.removeFromZone(libraryZone, drawnCardId)
+            currentState = currentState.addToZone(handZone, drawnCardId)
+
+            events.add(
+                ZoneChangeEvent(
+                    entityId = drawnCardId,
+                    entityName = drawnCardName,
+                    fromZone = ZoneType.LIBRARY,
+                    toZone = ZoneType.HAND,
+                    ownerId = action.playerId
+                )
+            )
+
+            events.add(CardsDrawnEvent(action.playerId, 1, listOf(drawnCardId)))
+        }
+
+        // Tick the game state
+        currentState = currentState.tick()
+
+        // Detect and process triggers (e.g., cycling triggers, discard triggers)
+        val triggers = triggerDetector.detectTriggers(currentState, events)
+        if (triggers.isNotEmpty()) {
+            val triggerResult = triggerProcessor.processTriggers(currentState, triggers)
+
+            if (triggerResult.isPaused) {
+                return ExecutionResult.paused(
+                    triggerResult.state,
+                    triggerResult.pendingDecision!!,
+                    events + triggerResult.events
+                )
+            }
+
+            return ExecutionResult.success(
+                triggerResult.newState,
+                events + triggerResult.events
+            )
+        }
+
+        // Return success - cycling doesn't change priority (it's an activated ability that resolves immediately)
+        return ExecutionResult.success(currentState, events)
     }
 
     private fun executePlayLand(state: GameState, action: PlayLand): ExecutionResult {

@@ -6,6 +6,7 @@ import com.wingedsheep.gameserver.dto.ClientGameState
 import com.wingedsheep.gameserver.dto.ClientStateTransformer
 import com.wingedsheep.gameserver.protocol.GameOverReason
 import com.wingedsheep.gameserver.protocol.AdditionalCostInfo
+import com.wingedsheep.gameserver.protocol.ConvokeCreatureInfo
 import com.wingedsheep.gameserver.protocol.LegalActionInfo
 import com.wingedsheep.gameserver.protocol.LegalActionTargetInfo
 import com.wingedsheep.gameserver.protocol.ServerMessage
@@ -645,8 +646,21 @@ class GameSession(
                     }
                     if (!canPayAdditionalCosts) continue
 
-                    // Check mana affordability
-                    val canAfford = manaSolver.canPay(state, playerId, cardComponent.manaCost)
+                    // Check mana affordability (including Convoke if available)
+                    val hasConvoke = cardDef?.keywords?.contains(Keyword.CONVOKE) == true
+                    val convokeCreatures = if (hasConvoke) {
+                        findConvokeCreatures(state, playerId)
+                    } else null
+
+                    // For Convoke spells, check if affordable with creature help
+                    val canAfford = if (hasConvoke && convokeCreatures != null && convokeCreatures.isNotEmpty()) {
+                        // Can afford if: mana alone is enough, OR mana + convoke creatures cover the cost
+                        manaSolver.canPay(state, playerId, cardComponent.manaCost) ||
+                            canAffordWithConvoke(state, playerId, cardComponent.manaCost, convokeCreatures)
+                    } else {
+                        manaSolver.canPay(state, playerId, cardComponent.manaCost)
+                    }
+
                     if (canAfford) {
                         val targetReqs = cardDef?.script?.targetRequirements ?: emptyList()
 
@@ -670,6 +684,9 @@ class GameSession(
                             val fixedCost = cardComponent.manaCost.cmc  // X contributes 0 to CMC
                             (availableSources - fixedCost).coerceAtLeast(0)
                         } else null
+
+                        // Convoke info was already calculated above (before affordability check)
+                        val manaCostString = if (hasConvoke) cardComponent.manaCost.toString() else null
 
                         if (targetReqs.isNotEmpty()) {
                             // Spell requires targets - find valid targets for all requirements
@@ -711,7 +728,10 @@ class GameSession(
                                         action = CastSpell(playerId, cardId, targets = listOf(autoSelectedTarget)),
                                         hasXCost = hasXCost,
                                         maxAffordableX = maxAffordableX,
-                                        additionalCostInfo = costInfo
+                                        additionalCostInfo = costInfo,
+                                        hasConvoke = hasConvoke,
+                                        validConvokeCreatures = convokeCreatures,
+                                        manaCostString = manaCostString
                                     ))
                                 } else {
                                     result.add(LegalActionInfo(
@@ -726,7 +746,10 @@ class GameSession(
                                         targetRequirements = if (targetReqInfos.size > 1) targetReqInfos else null,
                                         hasXCost = hasXCost,
                                         maxAffordableX = maxAffordableX,
-                                        additionalCostInfo = costInfo
+                                        additionalCostInfo = costInfo,
+                                        hasConvoke = hasConvoke,
+                                        validConvokeCreatures = convokeCreatures,
+                                        manaCostString = manaCostString
                                     ))
                                 }
                             }
@@ -738,11 +761,34 @@ class GameSession(
                                 action = CastSpell(playerId, cardId),
                                 hasXCost = hasXCost,
                                 maxAffordableX = maxAffordableX,
-                                additionalCostInfo = costInfo
+                                additionalCostInfo = costInfo,
+                                hasConvoke = hasConvoke,
+                                validConvokeCreatures = convokeCreatures,
+                                manaCostString = manaCostString
                             ))
                         }
                     }
                 }
+            }
+        }
+
+        // Check for cycling abilities on cards in hand
+        for (cardId in hand) {
+            val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry.getCard(cardComponent.name) ?: continue
+
+            // Check for cycling ability
+            val cyclingAbility = cardDef.keywordAbilities
+                .filterIsInstance<com.wingedsheep.sdk.scripting.KeywordAbility.Cycling>()
+                .firstOrNull() ?: continue
+
+            // Check if player can afford the cycling cost
+            if (manaSolver.canPay(state, playerId, cyclingAbility.cost)) {
+                result.add(LegalActionInfo(
+                    actionType = "CycleCard",
+                    description = "Cycle ${cardComponent.name}",
+                    action = CycleCard(playerId, cardId)
+                ))
             }
         }
 
@@ -1364,6 +1410,98 @@ class GameSession(
             if (controllerId != playerId) return@filter false
             matchesCardFilter(cardComponent, cost.filter)
         }
+    }
+
+    /**
+     * Find untapped creatures that can be used for Convoke.
+     * Creatures with summoning sickness CAN be used for Convoke.
+     */
+    private fun findConvokeCreatures(state: GameState, playerId: EntityId): List<ConvokeCreatureInfo> {
+        val playerBattlefield = ZoneKey(playerId, ZoneType.BATTLEFIELD)
+        return state.getZone(playerBattlefield).mapNotNull { entityId ->
+            val container = state.getEntity(entityId) ?: return@mapNotNull null
+            val cardComponent = container.get<CardComponent>() ?: return@mapNotNull null
+
+            // Must be a creature
+            if (!cardComponent.typeLine.isCreature) return@mapNotNull null
+
+            // Must be controlled by the player
+            val controllerId = container.get<ControllerComponent>()?.playerId
+            if (controllerId != playerId) return@mapNotNull null
+
+            // Must be untapped
+            if (container.has<TappedComponent>()) return@mapNotNull null
+
+            ConvokeCreatureInfo(
+                entityId = entityId,
+                name = cardComponent.name,
+                colors = cardComponent.colors
+            )
+        }
+    }
+
+    /**
+     * Check if a spell can be afforded using Convoke creatures to help pay the cost.
+     *
+     * This is a simplified check that determines if the player has enough resources
+     * (mana sources + convoke creatures) to potentially pay the cost. The exact
+     * color matching is handled by the client UI and engine during actual casting.
+     */
+    private fun canAffordWithConvoke(
+        state: GameState,
+        playerId: EntityId,
+        manaCost: com.wingedsheep.sdk.core.ManaCost,
+        convokeCreatures: List<ConvokeCreatureInfo>
+    ): Boolean {
+        // Get available mana from all sources
+        val availableMana = manaSolver.getAvailableManaCount(state, playerId)
+
+        // Total resources = mana + convoke creatures
+        val totalResources = availableMana + convokeCreatures.size
+
+        // Simple check: can we cover the total CMC?
+        // This is a conservative estimate - colored requirements might still fail,
+        // but it allows us to highlight the card as potentially castable.
+        if (totalResources < manaCost.cmc) {
+            return false
+        }
+
+        // More precise check: for each colored mana symbol, we need either:
+        // - A mana source that can produce that color, OR
+        // - A creature of that color to convoke
+        // For simplicity, we'll use a greedy approach
+
+        // Count colored requirements using the colorCount property
+        val coloredRequirements = manaCost.colorCount
+
+        // Count creatures by color for convoke
+        val creatureColors = mutableMapOf<com.wingedsheep.sdk.core.Color, Int>()
+        for (creature in convokeCreatures) {
+            for (color in creature.colors) {
+                creatureColors[color] = (creatureColors[color] ?: 0) + 1
+            }
+        }
+
+        // Check if we can cover colored requirements with creatures
+        // (mana sources can produce any color, so they're always valid)
+        var creaturesUsedForColors = 0
+        for ((color, needed) in coloredRequirements) {
+            val creaturesOfColor = creatureColors[color] ?: 0
+            // We can use creatures of this color, but need to track how many we use
+            creaturesUsedForColors += minOf(needed, creaturesOfColor)
+        }
+
+        // Calculate generic mana requirement
+        val genericRequired = manaCost.genericAmount
+
+        // Creatures not used for colors can pay generic
+        val creaturesForGeneric = convokeCreatures.size - creaturesUsedForColors
+
+        // Total resources for generic = mana sources + unused creatures
+        val resourcesForGeneric = availableMana + creaturesForGeneric
+
+        // We can afford if we have enough for generic (colored is covered by creatures or mana)
+        return resourcesForGeneric >= genericRequired
     }
 
     /**

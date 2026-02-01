@@ -91,6 +91,8 @@ function ActionButton({
         return '#00aa00'
       case 'CastSpell':
         return '#0066cc'
+      case 'CycleCard':
+        return '#8855aa' // Purple for cycling
       case 'ActivateAbility':
         return '#886600'
       case 'PassPriority':

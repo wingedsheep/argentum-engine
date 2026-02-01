@@ -18,6 +18,7 @@ import com.wingedsheep.engine.state.components.identity.PlayerComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.gameserver.dto.ClientGameState
 import com.wingedsheep.gameserver.dto.ClientStateTransformer
 import com.wingedsheep.sdk.core.Phase
@@ -144,6 +145,13 @@ abstract class ScenarioTestBase : FunSpec() {
 
             if (summoningSickness) {
                 container = container.with(SummoningSicknessComponent)
+            }
+
+            // Add continuous effects from static abilities (e.g., "Other creatures you control have...")
+            val cardDef = cardRegistry.getCard(cardName)
+            if (cardDef != null) {
+                val staticHandler = StaticAbilityHandler(cardRegistry)
+                container = staticHandler.addContinuousEffectComponent(container, cardDef)
             }
 
             state = state.withEntity(cardId, container)
@@ -383,6 +391,20 @@ abstract class ScenarioTestBase : FunSpec() {
             }
 
             return execute(CastSpell(playerId, cardId, targets, xValue))
+        }
+
+        /**
+         * Cycle a card by name from a player's hand.
+         * The player pays the cycling cost, discards the card, and draws a card.
+         */
+        fun cycleCard(playerNumber: Int, cardName: String): ExecutionResult {
+            val playerId = if (playerNumber == 1) player1Id else player2Id
+            val hand = state.getHand(playerId)
+            val cardId = hand.find { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.name == cardName
+            } ?: error("Card '$cardName' not found in player $playerNumber's hand")
+
+            return execute(CycleCard(playerId, cardId))
         }
 
         /**

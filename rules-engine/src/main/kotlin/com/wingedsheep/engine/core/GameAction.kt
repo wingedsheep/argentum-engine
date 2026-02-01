@@ -111,6 +111,26 @@ data class ActivateAbility(
 ) : GameAction
 
 // =============================================================================
+// Cycling Actions
+// =============================================================================
+
+/**
+ * Player cycles a card from their hand.
+ *
+ * Cycling is an activated ability that can be activated from hand.
+ * The player pays the cycling cost, discards the card, and draws a card.
+ *
+ * @property playerId The player cycling the card
+ * @property cardId The card being cycled
+ */
+@Serializable
+@SerialName("CycleCard")
+data class CycleCard(
+    override val playerId: EntityId,
+    val cardId: EntityId
+) : GameAction
+
+// =============================================================================
 // Land Actions
 // =============================================================================
 

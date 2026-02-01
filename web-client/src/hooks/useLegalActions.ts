@@ -84,6 +84,8 @@ export function useCardActions(cardId: EntityId | null): LegalActionInfo[] {
           return a.cardId === cardId
         case 'CastSpell':
           return a.cardId === cardId
+        case 'CycleCard':
+          return a.cardId === cardId
         case 'ActivateAbility':
           return a.sourceId === cardId
         default:
@@ -139,6 +141,8 @@ function getActionCardId(action: GameAction): EntityId | null {
     case 'PlayLand':
       return action.cardId
     case 'CastSpell':
+      return action.cardId
+    case 'CycleCard':
       return action.cardId
     case 'ActivateAbility':
       return action.sourceId

@@ -11,6 +11,7 @@ export type GameAction =
   | PassPriorityAction
   | CastSpellAction
   | ActivateAbilityAction
+  | CycleCardAction
   | PlayLandAction
   | DeclareAttackersAction
   | DeclareBlockersAction
@@ -80,6 +81,16 @@ export interface ActivateAbilityAction {
   readonly sourceId: EntityId
   readonly abilityId: string
   readonly targets?: readonly ChosenTarget[]
+}
+
+// =============================================================================
+// Cycling Actions
+// =============================================================================
+
+export interface CycleCardAction {
+  readonly type: 'CycleCard'
+  readonly playerId: EntityId
+  readonly cardId: EntityId
 }
 
 // =============================================================================
@@ -210,6 +221,8 @@ export function getActionSubject(action: GameAction): EntityId | null {
     case 'PlayLand':
       return action.cardId
     case 'CastSpell':
+      return action.cardId
+    case 'CycleCard':
       return action.cardId
     case 'ActivateAbility':
       return action.sourceId
