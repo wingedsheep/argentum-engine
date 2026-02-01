@@ -253,6 +253,33 @@ class TriggerDetector(
                 }
             }
 
+            is OnOtherCreatureWithSubtypeEnters -> {
+                if (event !is ZoneChangeEvent ||
+                    event.toZone != com.wingedsheep.sdk.core.ZoneType.BATTLEFIELD ||
+                    event.entityId == sourceId) {
+                    false
+                } else {
+                    // Check if entering creature has the required subtype
+                    val enteringCard = state.getEntity(event.entityId)?.get<CardComponent>()
+                    val hasSubtype = enteringCard?.typeLine?.hasSubtype(trigger.subtype) == true
+                    val controllerMatches = !trigger.youControlOnly || event.ownerId == controllerId
+                    hasSubtype && controllerMatches
+                }
+            }
+
+            is OnCreatureWithSubtypeEnters -> {
+                if (event !is ZoneChangeEvent ||
+                    event.toZone != com.wingedsheep.sdk.core.ZoneType.BATTLEFIELD) {
+                    false
+                } else {
+                    // Check if entering creature has the required subtype
+                    val enteringCard = state.getEntity(event.entityId)?.get<CardComponent>()
+                    val hasSubtype = enteringCard?.typeLine?.hasSubtype(trigger.subtype) == true
+                    val controllerMatches = !trigger.youControlOnly || event.ownerId == controllerId
+                    hasSubtype && controllerMatches
+                }
+            }
+
             is OnDraw -> {
                 event is CardsDrawnEvent &&
                     (!trigger.controllerOnly || event.playerId == controllerId)

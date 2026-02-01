@@ -1,0 +1,39 @@
+package com.wingedsheep.mtg.sets.definitions.onslaught.cards
+
+import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.scripting.AddCountersEffect
+import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.OnOtherCreatureWithSubtypeEnters
+
+/**
+ * Elvish Vanguard
+ * {1}{G}
+ * Creature — Elf Warrior
+ * 1/1
+ * Whenever another Elf enters the battlefield, put a +1/+1 counter on Elvish Vanguard.
+ */
+val ElvishVanguard = card("Elvish Vanguard") {
+    manaCost = "{1}{G}"
+    typeLine = "Creature — Elf Warrior"
+    power = 1
+    toughness = 1
+
+    triggeredAbility {
+        trigger = OnOtherCreatureWithSubtypeEnters(Subtype("Elf"))
+        effect = AddCountersEffect(
+            counterType = "+1/+1",
+            count = 1,
+            target = EffectTarget.Self
+        )
+    }
+
+    metadata {
+        rarity = Rarity.UNCOMMON
+        collectorNumber = "259"
+        artist = "Greg Staples"
+        flavorText = "The elves are like the forest—individuals within a vast whole."
+        imageUri = "https://cards.scryfall.io/normal/front/c/a/ca14a61f-e4e4-4edc-b9cb-f6fd5e28de2a.jpg"
+    }
+}

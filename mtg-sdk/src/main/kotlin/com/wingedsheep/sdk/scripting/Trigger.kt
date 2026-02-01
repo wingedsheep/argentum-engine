@@ -93,6 +93,38 @@ data class OnOtherCreatureWithSubtypeDies(
     }
 }
 
+/**
+ * Triggers when another creature with a specific subtype enters the battlefield.
+ * "Whenever another Elf enters the battlefield, put a +1/+1 counter on this creature."
+ */
+@Serializable
+data class OnOtherCreatureWithSubtypeEnters(
+    val subtype: Subtype,
+    val youControlOnly: Boolean = false
+) : Trigger {
+    override val description: String = if (youControlOnly) {
+        "Whenever another ${subtype.value} you control enters the battlefield"
+    } else {
+        "Whenever another ${subtype.value} enters the battlefield"
+    }
+}
+
+/**
+ * Triggers when any creature with a specific subtype enters the battlefield.
+ * "Whenever a Beast enters the battlefield, you may draw a card."
+ */
+@Serializable
+data class OnCreatureWithSubtypeEnters(
+    val subtype: Subtype,
+    val youControlOnly: Boolean = false
+) : Trigger {
+    override val description: String = if (youControlOnly) {
+        "Whenever a ${subtype.value} you control enters the battlefield"
+    } else {
+        "Whenever a ${subtype.value} enters the battlefield"
+    }
+}
+
 // =============================================================================
 // Card Drawing Triggers
 // =============================================================================

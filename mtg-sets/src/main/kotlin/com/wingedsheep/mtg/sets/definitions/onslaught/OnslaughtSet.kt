@@ -34,8 +34,10 @@ object OnslaughtSet {
 
         // Green creatures
         BarkhideMauler,
+        ElvishVanguard,
         ElvishWarrior,
         Wellwisher,
         WirewoodElf,
+        WirewoodSavage,
     )
 }
