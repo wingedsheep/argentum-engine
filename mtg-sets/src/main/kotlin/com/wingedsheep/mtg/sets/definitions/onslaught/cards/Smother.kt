@@ -2,6 +2,7 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.CantBeRegeneratedEffect
 import com.wingedsheep.sdk.scripting.DestroyEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.targeting.CreatureTargetFilter
@@ -12,8 +13,6 @@ import com.wingedsheep.sdk.targeting.TargetCreature
  * {1}{B}
  * Instant
  * Destroy target creature with mana value 3 or less. It can't be regenerated.
- *
- * TODO: Add "can't be regenerated" clause when regeneration is implemented.
  */
 val Smother = card("Smother") {
     manaCost = "{1}{B}"
@@ -21,7 +20,8 @@ val Smother = card("Smother") {
 
     spell {
         target = TargetCreature(filter = CreatureTargetFilter.WithManaValueAtMost(3))
-        effect = DestroyEffect(EffectTarget.ContextTarget(0))
+        effect = DestroyEffect(EffectTarget.ContextTarget(0)) then
+                CantBeRegeneratedEffect(EffectTarget.ContextTarget(0))
     }
 
     metadata {

@@ -10,6 +10,7 @@ class RemovalExecutors : ExecutorModule {
     override fun executors(): List<EffectExecutor<*>> = listOf(
         DestroyExecutor(),
         DestroyAllExecutor(),
+        CantBeRegeneratedExecutor(),
         ExileExecutor(),
         ReturnToHandExecutor(),
         ReturnFromGraveyardEffectExecutor(),

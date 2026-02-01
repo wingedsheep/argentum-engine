@@ -187,6 +187,24 @@ data class DestroyEffect(
 }
 
 /**
+ * Mark target as unable to regenerate.
+ * "It can't be regenerated."
+ *
+ * Designed to be used AFTER DestroyEffect via .then() for cards like Smother.
+ * The target may be in the graveyard when this effect resolves.
+ * When regeneration is implemented, this will mark the entity to prevent
+ * regeneration effects from returning it to the battlefield.
+ *
+ * Example: DestroyEffect(target) then CantBeRegeneratedEffect(target)
+ */
+@Serializable
+data class CantBeRegeneratedEffect(
+    val target: EffectTarget
+) : Effect {
+    override val description: String = "${target.description} can't be regenerated"
+}
+
+/**
  * Exile target effect.
  * "Exile target creature/permanent"
  */
