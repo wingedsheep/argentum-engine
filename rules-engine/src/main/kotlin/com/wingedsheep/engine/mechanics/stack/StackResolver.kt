@@ -8,9 +8,11 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.engine.state.components.stack.*
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
@@ -235,6 +237,9 @@ class StackResolver(
     ): GameState {
         val controllerId = spellComponent.casterId
 
+        // Look up the card definition for additional info (like starting loyalty)
+        val cardDef = cardComponent?.let { cardRegistry?.getCard(it.cardDefinitionId) }
+
         // Update entity: remove spell components, add permanent components
         var newState = state.updateEntity(spellId) { c ->
             var updated = c.without<SpellOnStackComponent>()
@@ -244,6 +249,15 @@ class StackResolver(
             // Creatures enter with summoning sickness
             if (cardComponent?.typeLine?.isCreature == true) {
                 updated = updated.with(SummoningSicknessComponent)
+            }
+
+            // Planeswalkers enter with starting loyalty counters
+            if (cardComponent?.isPlaneswalker == true) {
+                val startingLoyalty = cardDef?.startingLoyalty ?: 0
+                if (startingLoyalty > 0) {
+                    val counters = CountersComponent().withCounters(CounterType.LOYALTY, startingLoyalty)
+                    updated = updated.with(counters)
+                }
             }
 
             // Add continuous effects from static abilities

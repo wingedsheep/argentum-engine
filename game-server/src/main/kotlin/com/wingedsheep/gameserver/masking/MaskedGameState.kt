@@ -127,6 +127,7 @@ data class MaskedPlayer(
     val handSize: Int,
     val librarySize: Int,
     val graveyardSize: Int,
+    val exileSize: Int,
     val landsPlayedThisTurn: Int,
     val hasLost: Boolean
 )

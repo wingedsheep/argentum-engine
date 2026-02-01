@@ -136,6 +136,7 @@ class StateMasker {
         val handSize = state.getHand(playerId).size
         val librarySize = state.getLibrary(playerId).size
         val graveyardSize = state.getGraveyard(playerId).size
+        val exileSize = state.getExile(playerId).size
 
         // Determine lands played this turn
         val landsPlayed = if (landDropsComponent != null) {
@@ -155,6 +156,7 @@ class StateMasker {
             handSize = handSize,
             librarySize = librarySize,
             graveyardSize = graveyardSize,
+            exileSize = exileSize,
             landsPlayedThisTurn = landsPlayed,
             hasLost = hasLost
         )

@@ -17,6 +17,7 @@ import com.wingedsheep.engine.state.components.identity.PlayerComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.gameserver.dto.ClientGameState
 import com.wingedsheep.gameserver.dto.ClientStateTransformer
 import com.wingedsheep.sdk.core.Phase
@@ -142,6 +143,13 @@ abstract class ScenarioTestBase : FunSpec() {
 
             if (summoningSickness) {
                 container = container.with(SummoningSicknessComponent)
+            }
+
+            // Add continuous effects from static abilities (e.g., "Other creatures you control have...")
+            val cardDef = cardRegistry.getCard(cardName)
+            if (cardDef != null) {
+                val staticHandler = StaticAbilityHandler(cardRegistry)
+                container = staticHandler.addContinuousEffectComponent(container, cardDef)
             }
 
             state = state.withEntity(cardId, container)

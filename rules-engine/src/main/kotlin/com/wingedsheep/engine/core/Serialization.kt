@@ -6,6 +6,7 @@ import com.wingedsheep.engine.state.components.combat.*
 import com.wingedsheep.engine.state.components.identity.*
 import com.wingedsheep.engine.state.components.player.*
 import com.wingedsheep.engine.state.components.stack.*
+import com.wingedsheep.engine.mechanics.layers.ContinuousEffectSourceComponent
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
@@ -181,5 +182,8 @@ val engineSerializersModule = SerializersModule {
         subclass(AbilityOnStackComponent::class)
         subclass(TargetsComponent::class)
         subclass(SpellContextComponent::class)
+
+        // Continuous effects
+        subclass(ContinuousEffectSourceComponent::class)
     }
 }

@@ -15,6 +15,7 @@ import com.wingedsheep.engine.state.components.player.LossReason
 import com.wingedsheep.engine.state.components.player.PlayerLostComponent
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
 
@@ -205,6 +206,7 @@ class StateBasedActionChecker {
 
     /**
      * 704.5g - A creature that's been dealt lethal damage is destroyed.
+     * Note: Indestructible creatures are not destroyed by lethal damage (Rule 702.12b).
      */
     private fun checkLethalDamage(state: GameState): ExecutionResult {
         var newState = state
@@ -216,6 +218,11 @@ class StateBasedActionChecker {
             val damageComponent = container.get<DamageComponent>() ?: continue
 
             if (!cardComponent.typeLine.isCreature) continue
+
+            // Check if creature has indestructible
+            if (stateProjector.hasProjectedKeyword(state, entityId, Keyword.INDESTRUCTIBLE)) {
+                continue // Indestructible creatures can't be destroyed by lethal damage
+            }
 
             val effectiveToughness = stateProjector.getProjectedToughness(state, entityId)
 

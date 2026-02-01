@@ -371,26 +371,54 @@ class ActionProcessor(
         val ability = cardDef.script.activatedAbilities.find { it.id == action.abilityId }
             ?: return "Ability not found on this card"
 
-        // Check cost requirements
-        when (ability.cost) {
-            is AbilityCost.Tap -> {
-                // Must be untapped to pay tap cost
-                if (container.has<TappedComponent>()) {
-                    return "This permanent is already tapped"
-                }
+        // Check timing for planeswalker abilities (sorcery speed)
+        if (ability.isPlaneswalkerAbility) {
+            if (!turnManager.canPlaySorcerySpeed(state, action.playerId)) {
+                return "Loyalty abilities can only be activated at sorcery speed"
+            }
+        }
 
-                // Check summoning sickness for creatures (non-lands)
-                if (!cardComponent.typeLine.isLand && cardComponent.typeLine.isCreature) {
-                    val hasSummoningSickness = container.has<SummoningSicknessComponent>()
-                    // Check for haste keyword (note: this doesn't check granted haste, future enhancement)
-                    val hasHaste = cardComponent.baseKeywords.contains(Keyword.HASTE)
-                    if (hasSummoningSickness && !hasHaste) {
-                        return "This creature has summoning sickness"
+        // Get player's mana pool for cost validation
+        val poolComponent = state.getEntity(action.playerId)?.get<ManaPoolComponent>()
+            ?: ManaPoolComponent()
+        val manaPool = ManaPool(
+            white = poolComponent.white,
+            blue = poolComponent.blue,
+            black = poolComponent.black,
+            red = poolComponent.red,
+            green = poolComponent.green,
+            colorless = poolComponent.colorless
+        )
+
+        // Check cost requirements using CostHandler
+        if (!costHandler.canPayAbilityCost(state, ability.cost, action.sourceId, action.playerId, manaPool)) {
+            return when (ability.cost) {
+                is AbilityCost.Tap -> "This permanent is already tapped"
+                is AbilityCost.Loyalty -> {
+                    val cost = ability.cost as AbilityCost.Loyalty
+                    if (cost.change < 0) {
+                        "Not enough loyalty to activate this ability"
+                    } else {
+                        "Cannot pay loyalty cost"
                     }
                 }
+                is AbilityCost.Mana -> "Not enough mana to activate this ability"
+                is AbilityCost.PayLife -> "Not enough life to activate this ability"
+                else -> "Cannot pay ability cost"
             }
-            else -> {
-                // Other cost types - TODO: validate when implemented
+        }
+
+        // Additional check for tap cost + summoning sickness
+        if (ability.cost is AbilityCost.Tap ||
+            (ability.cost is AbilityCost.Composite && (ability.cost as AbilityCost.Composite).costs.any { it is AbilityCost.Tap })) {
+            // Check summoning sickness for creatures (non-lands)
+            if (!cardComponent.typeLine.isLand && cardComponent.typeLine.isCreature) {
+                val hasSummoningSickness = container.has<SummoningSicknessComponent>()
+                // Check for haste keyword (note: this doesn't check granted haste, future enhancement)
+                val hasHaste = cardComponent.baseKeywords.contains(Keyword.HASTE)
+                if (hasSummoningSickness && !hasHaste) {
+                    return "This creature has summoning sickness"
+                }
             }
         }
 
@@ -398,6 +426,21 @@ class ActionProcessor(
         for (restriction in ability.restrictions) {
             val error = checkActivationRestriction(state, action.playerId, restriction)
             if (error != null) return error
+        }
+
+        // Validate targets if the ability requires them
+        if (ability.targetRequirement != null && action.targets.isNotEmpty()) {
+            val targetError = targetValidator.validateTargets(
+                state,
+                action.targets,
+                listOf(ability.targetRequirement!!),
+                action.playerId
+            )
+            if (targetError != null) {
+                return targetError
+            }
+        } else if (ability.targetRequirement != null && action.targets.isEmpty()) {
+            return "This ability requires a target"
         }
 
         return null
@@ -926,17 +969,59 @@ class ActionProcessor(
         var currentState = state
         val events = mutableListOf<GameEvent>()
 
-        // Pay the cost
+        // Get player's mana pool for cost payment
+        val poolComponent = state.getEntity(action.playerId)?.get<ManaPoolComponent>()
+            ?: ManaPoolComponent()
+        var manaPool = ManaPool(
+            white = poolComponent.white,
+            blue = poolComponent.blue,
+            black = poolComponent.black,
+            red = poolComponent.red,
+            green = poolComponent.green,
+            colorless = poolComponent.colorless
+        )
+
+        // Pay the cost using CostHandler
+        val costResult = costHandler.payAbilityCost(
+            currentState,
+            ability.cost,
+            action.sourceId,
+            action.playerId,
+            manaPool
+        )
+
+        if (!costResult.success) {
+            return ExecutionResult.error(state, costResult.error ?: "Failed to pay ability cost")
+        }
+
+        currentState = costResult.newState!!
+        manaPool = costResult.newManaPool!!
+
+        // Update the mana pool in the state if it changed
+        if (manaPool != ManaPool(poolComponent.white, poolComponent.blue, poolComponent.black, poolComponent.red, poolComponent.green, poolComponent.colorless)) {
+            currentState = currentState.updateEntity(action.playerId) { c ->
+                c.with(ManaPoolComponent(
+                    white = manaPool.white,
+                    blue = manaPool.blue,
+                    black = manaPool.black,
+                    red = manaPool.red,
+                    green = manaPool.green,
+                    colorless = manaPool.colorless
+                ))
+            }
+        }
+
+        // Emit events for specific cost types
         when (ability.cost) {
             is AbilityCost.Tap -> {
-                // Tap the permanent
-                currentState = currentState.updateEntity(action.sourceId) { c ->
-                    c.with(TappedComponent)
-                }
                 events.add(TappedEvent(action.sourceId, cardComponent.name))
             }
+            is AbilityCost.Loyalty -> {
+                val loyaltyCost = ability.cost as AbilityCost.Loyalty
+                events.add(LoyaltyChangedEvent(action.sourceId, cardComponent.name, loyaltyCost.change))
+            }
             else -> {
-                // TODO: Handle other cost types (mana, sacrifice, etc.)
+                // Other cost types may need specific events
             }
         }
 

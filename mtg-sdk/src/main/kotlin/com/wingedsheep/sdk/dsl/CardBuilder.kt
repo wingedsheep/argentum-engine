@@ -670,6 +670,7 @@ class LoyaltyAbilityBuilder(private val loyaltyChange: Int) {
         id = AbilityId.generate(),
         cost = AbilityCost.Loyalty(loyaltyChange),
         effect = effect,
+        targetRequirement = target,
         isPlaneswalkerAbility = true,
         timing = TimingRule.SorcerySpeed
     )

@@ -6,6 +6,7 @@ import { CombatOverlay } from './components/combat/CombatOverlay'
 import { DecisionUI } from './components/decisions/DecisionUI'
 import { RevealedHandUI } from './components/decisions/RevealedHandUI'
 import { XCostSelector } from './components/ui/XCostSelector'
+import { ConvokeSelector } from './components/ui/ConvokeSelector'
 import { DeckBuilderOverlay } from './components/sealed/DeckBuilderOverlay'
 import { DraftPickOverlay } from './components/draft/DraftPickOverlay'
 import { SpectatorView } from './components/spectating/SpectatorView'
@@ -159,6 +160,9 @@ export default function App() {
 
       {/* X cost selection overlay (when casting spells with X in cost) */}
       {showGame && <XCostSelector />}
+
+      {/* Convoke selection overlay (when casting spells with Convoke) */}
+      {showGame && <ConvokeSelector />}
 
       {/* Decision overlay (for pending decisions like discard to hand size) */}
       {showGame && <DecisionUI />}

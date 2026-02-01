@@ -172,6 +172,7 @@ export interface ClientPlayer {
   readonly handSize: number
   readonly librarySize: number
   readonly graveyardSize: number
+  readonly exileSize: number
   readonly landsPlayedThisTurn: number
   readonly hasLost: boolean
   readonly manaPool?: ClientManaPool

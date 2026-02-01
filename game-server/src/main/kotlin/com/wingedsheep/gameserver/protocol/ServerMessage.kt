@@ -2,6 +2,7 @@ package com.wingedsheep.gameserver.protocol
 
 import com.wingedsheep.gameserver.dto.ClientEvent
 import com.wingedsheep.gameserver.dto.ClientGameState
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.engine.core.GameAction
 import com.wingedsheep.engine.core.PendingDecision
@@ -640,7 +641,24 @@ data class LegalActionInfo(
     /** Whether this is a mana ability (doesn't highlight card as playable) */
     val isManaAbility: Boolean = false,
     /** Additional cost info - sacrifice targets, etc. */
-    val additionalCostInfo: AdditionalCostInfo? = null
+    val additionalCostInfo: AdditionalCostInfo? = null,
+    /** Whether this spell has Convoke */
+    val hasConvoke: Boolean = false,
+    /** Creatures that can be tapped to help pay for Convoke */
+    val validConvokeCreatures: List<ConvokeCreatureInfo>? = null,
+    /** The spell's mana cost for Convoke UI display */
+    val manaCostString: String? = null
+)
+
+/**
+ * Information about a creature that can be tapped for Convoke.
+ */
+@Serializable
+data class ConvokeCreatureInfo(
+    val entityId: EntityId,
+    val name: String,
+    /** Colors this creature can pay (based on its colors) */
+    val colors: Set<Color>
 )
 
 /**

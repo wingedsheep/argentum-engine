@@ -314,6 +314,22 @@ export interface LegalActionInfo {
   readonly isManaAbility?: boolean
   /** Additional cost info (sacrifice, etc.) */
   readonly additionalCostInfo?: AdditionalCostInfo
+  /** Whether this spell has Convoke */
+  readonly hasConvoke?: boolean
+  /** Creatures that can be tapped to help pay for Convoke */
+  readonly validConvokeCreatures?: readonly ConvokeCreatureInfo[]
+  /** The spell's mana cost string for Convoke UI display */
+  readonly manaCostString?: string
+}
+
+/**
+ * Information about a creature that can be tapped for Convoke.
+ */
+export interface ConvokeCreatureInfo {
+  readonly entityId: EntityId
+  readonly name: string
+  /** Colors this creature can pay (based on its colors) */
+  readonly colors: readonly string[]
 }
 
 /**

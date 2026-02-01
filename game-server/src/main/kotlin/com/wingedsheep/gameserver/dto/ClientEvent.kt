@@ -612,6 +612,13 @@ object ClientEventTransformer {
                 )
             }
 
+            is LoyaltyChangedEvent -> ClientEvent.CounterAdded(
+                permanentId = event.entityId,
+                permanentName = event.entityName,
+                counterType = "loyalty",
+                count = event.change
+            )
+
             // Events that don't need client representation or are handled differently
             is DrawFailedEvent,
             is LibraryShuffledEvent,
