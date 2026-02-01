@@ -2046,26 +2046,18 @@ export const useGameStore = create<GameStore>()(
       },
 
       attackWithAll: () => {
-        const { combatState, playerId, gameState } = get()
-        if (!combatState || !playerId || !gameState) return
+        const { combatState } = get()
+        if (!combatState) return
         if (combatState.mode !== 'declareAttackers') return
         if (combatState.validCreatures.length === 0) return
 
-        const opponent = gameState.players.find((p) => p.playerId !== playerId)
-        if (!opponent) return
-
-        const attackers: Record<EntityId, EntityId> = {}
-        for (const attackerId of combatState.validCreatures) {
-          attackers[attackerId] = opponent.playerId
-        }
-
-        const action = {
-          type: 'DeclareAttackers' as const,
-          playerId,
-          attackers,
-        }
-        ws?.send(createSubmitActionMessage(action))
-        set({ draggingBlockerId: null })
+        // Just select all valid creatures as attackers, don't commit yet
+        set({
+          combatState: {
+            ...combatState,
+            selectedAttackers: [...combatState.validCreatures],
+          },
+        })
       },
 
       cancelCombat: () => {

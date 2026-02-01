@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react'
 import { GameBoard } from './components/game/GameBoard'
 import { GameUI } from './components/ui/GameUI'
 import { MulliganUI } from './components/mulligan/MulliganUI'
-import { CombatOverlay } from './components/combat/CombatOverlay'
 import { DecisionUI } from './components/decisions/DecisionUI'
 import { RevealedHandUI } from './components/decisions/RevealedHandUI'
 import { RevealedCardsUI } from './components/decisions/RevealedCardsUI'
@@ -156,8 +155,6 @@ export default function App() {
       {/* Waiting for opponent mulligan overlay */}
       {!mulliganState && waitingForOpponentMulligan && <WaitingForMulliganOverlay />}
 
-      {/* Combat overlay (when declaring attackers/blockers) */}
-      {showGame && combatState && <CombatOverlay />}
 
       {/* X cost selection overlay (when casting spells with X in cost) */}
       {showGame && <XCostSelector />}

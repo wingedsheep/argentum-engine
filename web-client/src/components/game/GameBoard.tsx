@@ -182,6 +182,9 @@ export function GameBoard() {
   const playerId = useGameStore((state) => state.playerId)
   const submitAction = useGameStore((state) => state.submitAction)
   const combatState = useGameStore((state) => state.combatState)
+  const confirmCombat = useGameStore((state) => state.confirmCombat)
+  const cancelCombat = useGameStore((state) => state.cancelCombat)
+  const attackWithAll = useGameStore((state) => state.attackWithAll)
   const priorityMode = useGameStore(selectPriorityMode)
   const responsive = useResponsive()
 
@@ -212,6 +215,10 @@ export function GameBoard() {
     // Otherwise show next step
     const nextStep = getNextStep(gameState.currentStep)
     if (nextStep) {
+      // "End Turn" when passing to end step on my turn
+      if (nextStep === 'END' && isMyTurn) {
+        return 'End Turn'
+      }
       return `Pass to ${StepShortNames[nextStep]}`
     }
     return 'Pass'
@@ -245,7 +252,7 @@ export function GameBoard() {
     <ResponsiveContext.Provider value={responsive}>
     <div style={{
       ...styles.container,
-      padding: responsive.containerPadding,
+      padding: `0 ${responsive.containerPadding}px`,
       gap: responsive.sectionGap,
     }}>
       {/* Fullscreen button (top-left) */}
@@ -254,25 +261,35 @@ export function GameBoard() {
       {/* Concede button (top-right) */}
       <ConcedeButton />
 
+      {/* Opponent hand - fixed at top of screen */}
+      {opponent && (
+        <div
+          data-zone="opponent-hand"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 50,
+          }}
+        >
+          <CardRow
+            zoneId={hand(opponent.playerId)}
+            faceDown
+            small
+            inverted
+          />
+        </div>
+      )}
+
       {/* Opponent area (top) */}
       <div style={{
         ...styles.opponentArea,
-        borderLeft: priorityMode === 'responding' ? '3px solid #ffc107' : '3px solid transparent',
-        transition: 'border-color 0.2s',
+        marginTop: -responsive.containerPadding + 12,
+        paddingTop: responsive.smallCardHeight + 8,
       }}>
         <div style={styles.playerRowWithZones}>
           <div style={styles.playerMainArea}>
-            {/* Opponent hand (face down) */}
-            {opponent && (
-              <div data-zone="opponent-hand" style={{ marginBottom: -6 }}>
-                <CardRow
-                  zoneId={hand(opponent.playerId)}
-                  faceDown
-                  small
-                />
-              </div>
-            )}
-
             {/* Opponent battlefield - lands first (closer to opponent), then creatures */}
             <BattlefieldArea isOpponent />
           </div>
@@ -322,27 +339,37 @@ export function GameBoard() {
       {/* Player area (bottom) */}
       <div style={{
         ...styles.playerArea,
-        borderLeft: priorityMode === 'ownTurn' ? '3px solid #4fc3f7' : '3px solid transparent',
-        transition: 'border-color 0.2s',
+        marginBottom: -responsive.containerPadding + 12,
+        paddingBottom: responsive.cardHeight + 8,
       }}>
         <div style={styles.playerRowWithZones}>
           <div style={styles.playerMainArea}>
             {/* Player battlefield - creatures first (closer to center), then lands */}
             <BattlefieldArea isOpponent={false} />
 
-            {/* Player hand */}
-            <div data-zone="hand" style={{ ...styles.handWithMana, marginTop: -40 }}>
-              <CardRow
-                zoneId={hand(playerId)}
-                faceDown={false}
-                interactive
-              />
-            </div>
           </div>
 
           {/* Player deck/graveyard (right side) */}
           <ZonePile player={viewingPlayer} />
         </div>
+      </div>
+
+      {/* Player hand - fixed at bottom of screen */}
+      <div
+        data-zone="hand"
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 50,
+        }}
+      >
+        <CardRow
+          zoneId={hand(playerId)}
+          faceDown={false}
+          interactive
+        />
       </div>
 
       {/* Floating pass button (bottom-right) */}
@@ -365,6 +392,94 @@ export function GameBoard() {
         >
           {getPassButtonLabel()}
         </button>
+      )}
+
+      {/* Combat buttons (bottom-right) */}
+      {isInCombatMode && combatState?.mode === 'declareAttackers' && (
+        <div style={styles.combatButtonContainer}>
+          {combatState.selectedAttackers.length === 0 ? (
+            <>
+              <button
+                onClick={attackWithAll}
+                disabled={combatState.validCreatures.length === 0}
+                style={{
+                  ...styles.combatButton,
+                  ...styles.combatButtonPrimary,
+                  opacity: combatState.validCreatures.length === 0 ? 0.5 : 1,
+                }}
+              >
+                Attack All
+              </button>
+              <button
+                onClick={confirmCombat}
+                style={{
+                  ...styles.combatButton,
+                  ...styles.combatButtonSecondary,
+                }}
+              >
+                Skip
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={confirmCombat}
+                style={{
+                  ...styles.combatButton,
+                  ...styles.combatButtonPrimary,
+                }}
+              >
+                Attack with {combatState.selectedAttackers.length}
+              </button>
+              <button
+                onClick={cancelCombat}
+                style={{
+                  ...styles.combatButton,
+                  ...styles.combatButtonSecondary,
+                }}
+              >
+                Cancel
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
+      {isInCombatMode && combatState?.mode === 'declareBlockers' && (
+        <div style={styles.combatButtonContainer}>
+          {Object.keys(combatState.blockerAssignments).length === 0 ? (
+            <button
+              onClick={confirmCombat}
+              style={{
+                ...styles.combatButton,
+                ...styles.combatButtonSecondary,
+              }}
+            >
+              No Blocks
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={confirmCombat}
+                style={{
+                  ...styles.combatButton,
+                  ...styles.combatButtonPrimary,
+                }}
+              >
+                Confirm Blocks
+              </button>
+              <button
+                onClick={cancelCombat}
+                style={{
+                  ...styles.combatButton,
+                  ...styles.combatButtonSecondary,
+                }}
+              >
+                Cancel
+              </button>
+            </>
+          )}
+        </div>
       )}
 
 
@@ -836,11 +951,13 @@ function CardRow({
   faceDown = false,
   interactive = false,
   small = false,
+  inverted = false,
 }: {
   zoneId: ZoneId
   faceDown?: boolean
   interactive?: boolean
   small?: boolean
+  inverted?: boolean
 }) {
   const cards = useZoneCards(zoneId)
   const zone = useZone(zoneId)
@@ -870,7 +987,28 @@ function CardRow({
     minWidth
   )
 
-  // Render face-down placeholders for hidden zones
+  // For hands (player or opponent), create a fan effect
+  const isPlayerHand = interactive && !faceDown
+  const isOpponentHand = faceDown && inverted
+  const cardHeight = Math.round(fittingWidth * 1.4)
+
+  if ((isPlayerHand || isOpponentHand) && (cards.length > 0 || showPlaceholders)) {
+    return (
+      <HandFan
+        cards={cards}
+        placeholderCount={showPlaceholders ? zoneSize : 0}
+        fittingWidth={fittingWidth}
+        cardHeight={cardHeight}
+        cardGap={responsive.cardGap}
+        faceDown={faceDown}
+        interactive={interactive}
+        small={small}
+        inverted={inverted}
+      />
+    )
+  }
+
+  // Render face-down placeholders for hidden zones (non-fan layout)
   if (showPlaceholders) {
     const cardRatio = 1.4
     const height = Math.round(fittingWidth * cardRatio)
@@ -899,24 +1037,6 @@ function CardRow({
     )
   }
 
-  // For player's hand, create a fan effect
-  const isPlayerHand = interactive && !faceDown
-  const cardHeight = Math.round(fittingWidth * 1.4)
-
-  if (isPlayerHand && cards.length > 0) {
-    return (
-      <HandFan
-        cards={cards}
-        fittingWidth={fittingWidth}
-        cardHeight={cardHeight}
-        cardGap={responsive.cardGap}
-        faceDown={faceDown}
-        interactive={interactive}
-        small={small}
-      />
-    )
-  }
-
   // Render each card individually (no grouping for hand)
   return (
     <div style={{ ...styles.cardRow, gap: responsive.cardGap, padding: responsive.cardGap }}>
@@ -941,23 +1061,27 @@ function CardRow({
  */
 function HandFan({
   cards,
+  placeholderCount = 0,
   fittingWidth,
   cardHeight,
   faceDown,
   interactive,
   small,
+  inverted = false,
 }: {
   cards: readonly ClientCard[]
+  placeholderCount?: number
   fittingWidth: number
   cardHeight: number
   cardGap: number
   faceDown: boolean
   interactive: boolean
   small: boolean
+  inverted?: boolean
 }) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
 
-  const cardCount = cards.length
+  const cardCount = placeholderCount > 0 ? placeholderCount : cards.length
 
   // Scale fan parameters based on card count
   // Fewer cards = more spread, more cards = tighter fan
@@ -971,8 +1095,17 @@ function HandFan({
   // Total width of the hand fan
   const totalWidth = cardSpacing * (cardCount - 1) + fittingWidth
 
-  // Allow cards to extend slightly below the visible area to save vertical space
-  const bottomMargin = -15
+  // Allow cards to extend slightly beyond the visible area to save vertical space
+  const edgeMargin = -15
+
+  // For inverted fan, flip the arc and rotation direction
+  const rotationMultiplier = inverted ? -1 : 1
+  const verticalMultiplier = inverted ? -1 : 1
+
+  // Create array of items to render (either cards or placeholder indices)
+  const items = placeholderCount > 0
+    ? Array.from({ length: placeholderCount }, (_, i) => ({ type: 'placeholder' as const, index: i }))
+    : cards.map((card, index) => ({ type: 'card' as const, card, index }))
 
   return (
     <div
@@ -980,87 +1113,76 @@ function HandFan({
         position: 'relative',
         width: totalWidth,
         height: cardHeight + maxVerticalOffset + 40, // Extra space for hover lift
-        marginBottom: bottomMargin,
+        marginBottom: inverted ? 0 : edgeMargin,
+        marginTop: inverted ? edgeMargin : 0,
       }}
     >
-      {cards.map((card, index) => {
+      {items.map((item, index) => {
         // Calculate position from center (-1 to 1)
         const centerOffset = cardCount > 1
           ? (index - (cardCount - 1) / 2) / ((cardCount - 1) / 2)
           : 0
 
         // Calculate rotation (edges rotate away from center)
-        const rotation = centerOffset * maxRotation
+        const rotation = centerOffset * maxRotation * rotationMultiplier
 
-        // Calculate vertical offset (arc shape - center cards are higher)
+        // Calculate vertical offset (arc shape - center cards are higher/lower)
         const verticalOffset = (1 - Math.abs(centerOffset) ** 1.5) * maxVerticalOffset
 
-        // Calculate horizontal position - spread cards apart when one is hovered
-        let left = index * cardSpacing
-        if (hoveredIndex !== null && index !== hoveredIndex) {
-          // Push cards away from hovered card
-          const pushAmount = 8
-          if (index < hoveredIndex) {
-            left -= pushAmount * (1 - Math.abs(index - hoveredIndex) / cardCount)
-          } else {
-            left += pushAmount * (1 - Math.abs(index - hoveredIndex) / cardCount)
-          }
-        }
+        // Calculate horizontal position
+        const left = index * cardSpacing
 
-        // Is this card hovered?
-        const isHovered = hoveredIndex === index
+        // Z-index: center cards on top
+        const zIndex = 50 - Math.abs(index - Math.floor(cardCount / 2))
 
-        // Z-index: hovered card on top, otherwise based on distance from hover or center
-        let zIndex: number
-        if (isHovered) {
-          zIndex = 100
-        } else if (hoveredIndex !== null) {
-          // Cards closer to hovered card have higher z-index
-          zIndex = 50 - Math.abs(index - hoveredIndex)
-        } else {
-          // Default: center cards on top
-          zIndex = 50 - Math.abs(index - Math.floor(cardCount / 2))
-        }
-
-        // Hover lift amount
-        const hoverLift = 30
-
-        // Calculate pop-up direction based on rotation angle
-        // Cards rotate around bottom center, so we need to translate along the rotated axis
-        const rotationRad = (rotation * Math.PI) / 180
-        const popUpX = isHovered ? Math.sin(rotationRad) * hoverLift : 0
-        const popUpY = isHovered ? -Math.cos(rotationRad) * hoverLift : 0
+        const key = item.type === 'card' ? item.card.id : `placeholder-${item.index}`
 
         return (
           <div
-            key={card.id}
+            key={key}
             style={{
               position: 'absolute',
               left,
-              bottom: bottomMargin,
-              transform: `
-                translateX(${popUpX}px)
-                translateY(${-verticalOffset + popUpY}px)
-                rotate(${rotation}deg)
-                scale(${isHovered ? 1.08 : 1})
-              `,
-              transformOrigin: 'bottom center',
+              ...(inverted
+                ? { top: edgeMargin, transform: `translateY(${verticalOffset}px) rotate(${rotation}deg)` }
+                : { bottom: edgeMargin, transform: `translateY(${-verticalOffset}px) rotate(${rotation}deg)` }
+              ),
+              transformOrigin: inverted ? 'top center' : 'bottom center',
               zIndex,
               transition: 'transform 0.12s ease-out, left 0.12s ease-out',
               cursor: interactive ? 'pointer' : 'default',
             }}
-            onMouseEnter={() => setHoveredIndex(index)}
-            onMouseLeave={() => setHoveredIndex(null)}
+            onMouseEnter={() => !inverted && setHoveredIndex(index)}
+            onMouseLeave={() => !inverted && setHoveredIndex(null)}
           >
-            <GameCard
-              card={card}
-              count={1}
-              faceDown={faceDown}
-              interactive={interactive}
-              small={small}
-              overrideWidth={fittingWidth}
-              inHand={interactive && !faceDown}
-            />
+            {item.type === 'card' ? (
+              <GameCard
+                card={item.card}
+                count={1}
+                faceDown={faceDown}
+                interactive={interactive}
+                small={small}
+                overrideWidth={fittingWidth}
+                inHand={interactive && !faceDown}
+              />
+            ) : (
+              <div
+                style={{
+                  width: fittingWidth,
+                  height: cardHeight,
+                  borderRadius: 6,
+                  border: '2px solid #333',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
+                  overflow: 'hidden',
+                }}
+              >
+                <img
+                  src="https://backs.scryfall.io/large/2/2/222b7a3b-2321-4d4c-af19-19338b134971.jpg?1677416389"
+                  alt="Card back"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              </div>
+            )}
           </div>
         )
       })}
@@ -1496,45 +1618,74 @@ function BattlefieldArea({ isOpponent }: { isOpponent: boolean }) {
     cards: [card] as const,
   }))
 
-  // Layout: For opponent: lands (top), other (middle), creatures (bottom/closer to center)
-  // For player: creatures (top/closer to center), other (middle), lands (bottom/closer to player)
-  const firstRow = isOpponent ? groupedLands : groupedCreatures
-  const middleRow = groupedOther
-  const lastRow = isOpponent ? groupedCreatures : groupedLands
+  // Layout: Lands anchored near hand, creatures toward center
+  // For player: lands at bottom (near hand), creatures above
+  // For opponent: lands at top (near hand), creatures below
+  const hasCreatures = groupedCreatures.length > 0
+  const hasLands = groupedLands.length > 0
+  const hasOther = groupedOther.length > 0
+  const showDivider = (hasCreatures || hasOther) && hasLands
 
   return (
     <div
       style={{
         ...styles.battlefieldArea,
+        justifyContent: isOpponent ? 'flex-start' : 'flex-end',
         gap: 0,
       }}
     >
-      {/* First row (opponent: lands, player: creatures) */}
-      <div style={{ ...styles.battlefieldRow, gap: responsive.cardGap }}>
-        {firstRow.map((group) => (
-          <CardStack
-            key={group.cardIds[0]}
-            group={group}
-            interactive={!isOpponent}
-            isOpponentCard={isOpponent}
-          />
-        ))}
-      </div>
-
-      {/* Middle row - other permanents (planeswalkers, artifacts, enchantments) */}
-      {middleRow.length > 0 && (
+      {/* For player: creatures first (top, toward center) */}
+      {!isOpponent && (
         <>
-          <div
-            style={{
-              width: '60%',
-              height: 1,
-              backgroundColor: '#6b21a8',
-              margin: '6px 0',
-              opacity: 0.6,
-            }}
-          />
-          <div style={{ ...styles.battlefieldRow, gap: responsive.cardGap }}>
-            {middleRow.map((group) => (
+          {/* Creatures row */}
+          <div style={{
+            ...styles.battlefieldRow,
+            gap: responsive.cardGap,
+            minHeight: responsive.battlefieldCardHeight + 60,
+          }}>
+            {groupedCreatures.map((group) => (
+              <CardStack
+                key={group.cardIds[0]}
+                group={group}
+                interactive={!isOpponent}
+                isOpponentCard={isOpponent}
+              />
+            ))}
+          </div>
+
+          {/* Other permanents row */}
+          {hasOther && (
+            <div style={{ ...styles.battlefieldRow, gap: responsive.cardGap, marginTop: 4 }}>
+              {groupedOther.map((group) => (
+                <CardStack
+                  key={group.cardIds[0]}
+                  group={group}
+                  interactive={!isOpponent}
+                  isOpponentCard={isOpponent}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Divider */}
+          {showDivider && (
+            <div
+              style={{
+                width: '40%',
+                height: 1,
+                backgroundColor: '#444',
+                margin: '6px 0',
+              }}
+            />
+          )}
+
+          {/* Lands row (bottom, near hand) */}
+          <div style={{
+            ...styles.battlefieldRow,
+            gap: responsive.cardGap,
+            marginBottom: -40,
+          }}>
+            {groupedLands.map((group) => (
               <CardStack
                 key={group.cardIds[0]}
                 group={group}
@@ -1546,28 +1697,68 @@ function BattlefieldArea({ isOpponent }: { isOpponent: boolean }) {
         </>
       )}
 
-      {/* Divider between rows */}
-      <div
-        style={{
-          width: '60%',
-          height: 1,
-          backgroundColor: '#333',
-          margin: '8px 0',
-          opacity: 0.6,
-        }}
-      />
+      {/* For opponent: lands first (top, near hand) */}
+      {isOpponent && (
+        <>
+          {/* Lands row (top, near hand) */}
+          <div style={{
+            ...styles.battlefieldRow,
+            gap: responsive.cardGap,
+            marginTop: -40,
+          }}>
+            {groupedLands.map((group) => (
+              <CardStack
+                key={group.cardIds[0]}
+                group={group}
+                interactive={!isOpponent}
+                isOpponentCard={isOpponent}
+              />
+            ))}
+          </div>
 
-      {/* Last row (opponent: creatures, player: lands) */}
-      <div style={{ ...styles.battlefieldRow, gap: responsive.cardGap }}>
-        {lastRow.map((group) => (
-          <CardStack
-            key={group.cardIds[0]}
-            group={group}
-            interactive={!isOpponent}
-            isOpponentCard={isOpponent}
-          />
-        ))}
-      </div>
+          {/* Divider */}
+          {showDivider && (
+            <div
+              style={{
+                width: '40%',
+                height: 1,
+                backgroundColor: '#444',
+                margin: '6px 0',
+              }}
+            />
+          )}
+
+          {/* Other permanents row */}
+          {hasOther && (
+            <div style={{ ...styles.battlefieldRow, gap: responsive.cardGap, marginBottom: 4 }}>
+              {groupedOther.map((group) => (
+                <CardStack
+                  key={group.cardIds[0]}
+                  group={group}
+                  interactive={!isOpponent}
+                  isOpponentCard={isOpponent}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Creatures row (bottom, toward center) */}
+          <div style={{
+            ...styles.battlefieldRow,
+            gap: responsive.cardGap,
+            minHeight: responsive.battlefieldCardHeight + 60,
+          }}>
+            {groupedCreatures.map((group) => (
+              <CardStack
+                key={group.cardIds[0]}
+                group={group}
+                interactive={!isOpponent}
+                isOpponentCard={isOpponent}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   )
 }
@@ -1604,11 +1795,11 @@ function CardStack({
   const stackOffset = responsive.isMobile ? 12 : 18
 
   // Calculate total width needed for the stack
-  // Use height for tapped cards since they rotate 90 degrees
+  // Use height for tapped cards since they rotate 90 degrees (visually wider)
   const hasAnyTapped = group.cards.some(c => c.isTapped)
   const cardWidth = hasAnyTapped ? responsive.battlefieldCardHeight : responsive.battlefieldCardWidth
   const totalWidth = cardWidth + stackOffset * (group.count - 1)
-  const stackHeight = hasAnyTapped ? responsive.battlefieldCardWidth : responsive.battlefieldCardHeight
+  const stackHeight = responsive.battlefieldCardHeight  // Always use full height for consistent alignment
 
   return (
     <div
@@ -1617,7 +1808,7 @@ function CardStack({
         width: totalWidth,
         height: stackHeight,
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-end',
         transition: 'width 0.15s, height 0.15s',
       }}
     >
@@ -1630,7 +1821,7 @@ function CardStack({
             top: 0,
             bottom: 0,
             display: 'flex',
-            alignItems: 'center',
+            alignItems: 'flex-end',
             zIndex: index,
           }}
         >
@@ -1978,9 +2169,10 @@ function GameCard({
   // Check if currently being dragged (blocker or hand card)
   const isBeingDragged = draggingBlockerId === card.id || draggingCardId === card.id
 
-  // Container dimensions - swap width/height when tapped on battlefield to prevent overlap
-  const containerWidth = card.isTapped && battlefield ? height : width
-  const containerHeight = card.isTapped && battlefield ? width : height
+  // Container dimensions - expand width when tapped to prevent overlap
+  // Tapped cards rotate 90deg, so they need width = height to not overlap
+  const containerWidth = card.isTapped && battlefield ? height + 8 : width
+  const containerHeight = height
 
   const cardElement = (
     <div
@@ -1998,6 +2190,7 @@ function GameCard({
         cursor,
         border: borderStyle,
         transform: `${card.isTapped ? 'rotate(90deg)' : ''} ${isSelected && !isInCombatMode ? 'translateY(-8px)' : ''}`,
+        transformOrigin: 'center',
         boxShadow,
         opacity: isBeingDragged ? 0.6 : 1,
         userSelect: 'none',
@@ -2138,7 +2331,7 @@ function GameCard({
         width: containerWidth,
         height: containerHeight,
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-end',
         justifyContent: 'center',
         transition: 'width 0.15s, height 0.15s',
       }}>
@@ -2796,6 +2989,32 @@ const styles: Record<string, React.CSSProperties> = {
     boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
     zIndex: 100,
   },
+  combatButtonContainer: {
+    position: 'fixed',
+    bottom: 16,
+    right: 16,
+    display: 'flex',
+    gap: 8,
+    zIndex: 100,
+  },
+  combatButton: {
+    padding: '12px 24px',
+    fontWeight: 600,
+    color: 'white',
+    border: 'none',
+    borderRadius: 8,
+    cursor: 'pointer',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+    fontSize: 14,
+  },
+  combatButtonPrimary: {
+    backgroundColor: '#c62828',
+    border: '2px solid #ef5350',
+  },
+  combatButtonSecondary: {
+    backgroundColor: '#424242',
+    border: '2px solid #757575',
+  },
   playerArea: {
     display: 'flex',
     flexDirection: 'column',
@@ -2805,7 +3024,7 @@ const styles: Record<string, React.CSSProperties> = {
     flexGrow: 0,
     minHeight: 0,
     maxHeight: '46vh',
-    marginTop: 8,
+    marginTop: 'auto',
     paddingBottom: 0,
   },
   playerRowWithZones: {
