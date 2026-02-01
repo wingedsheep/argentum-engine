@@ -38,12 +38,14 @@ object OnslaughtSet {
         ScreechingBuzzard,
         SeveredLegion,
         Smother,
+        Swat,
 
         // Red creatures and spells
         BatteringCraghorn,
         ChargingSlateback,
         GoblinSkyRaider,
         GoblinSledder,
+        PinpointAvalanche,
         Shock,
 
         // Green creatures
