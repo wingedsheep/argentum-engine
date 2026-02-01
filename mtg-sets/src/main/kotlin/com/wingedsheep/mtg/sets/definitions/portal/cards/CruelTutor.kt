@@ -6,7 +6,8 @@ import com.wingedsheep.sdk.scripting.CardFilter
 import com.wingedsheep.sdk.scripting.CompositeEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.LoseLifeEffect
-import com.wingedsheep.sdk.scripting.SearchLibraryToTopEffect
+import com.wingedsheep.sdk.scripting.SearchDestination
+import com.wingedsheep.sdk.scripting.SearchLibraryEffect
 
 /**
  * Cruel Tutor
@@ -21,7 +22,10 @@ val CruelTutor = card("Cruel Tutor") {
     spell {
         effect = CompositeEffect(
             listOf(
-                SearchLibraryToTopEffect(CardFilter.AnyCard),
+                SearchLibraryEffect(
+                    filter = CardFilter.AnyCard,
+                    destination = SearchDestination.TOP_OF_LIBRARY
+                ),
                 LoseLifeEffect(2, EffectTarget.Controller)
             )
         )

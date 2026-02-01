@@ -66,7 +66,6 @@ class ContinuationHandler(
             is SearchLibraryContinuation -> resumeSearchLibrary(stateAfterPop, continuation, response)
             is ReorderLibraryContinuation -> resumeReorderLibrary(stateAfterPop, continuation, response)
             is BlockerOrderContinuation -> resumeBlockerOrder(stateAfterPop, continuation, response)
-            is SearchLibraryToTopContinuation -> resumeSearchLibraryToTop(stateAfterPop, continuation, response)
             is EachPlayerChoosesDrawContinuation -> resumeEachPlayerChoosesDraw(stateAfterPop, continuation, response)
             is LookAtOpponentLibraryContinuation -> resumeLookAtOpponentLibrary(stateAfterPop, continuation, response)
             is ReorderOpponentLibraryContinuation -> resumeReorderOpponentLibrary(stateAfterPop, continuation, response)
@@ -417,24 +416,64 @@ class ContinuationHandler(
             newState = newState.removeFromZone(libraryZone, cardId)
         }
 
-        // Move cards to destination zone
+        // For TOP_OF_LIBRARY: shuffle FIRST, then put cards on top
+        // This matches oracle text like "shuffle your library, then put the card on top"
+        if (continuation.destination == SearchDestination.TOP_OF_LIBRARY) {
+            // Shuffle library first (without the selected cards)
+            if (continuation.shuffleAfter) {
+                val library = newState.getZone(libraryZone).shuffled()
+                newState = newState.copy(zones = newState.zones + (libraryZone to library))
+                events.add(LibraryShuffledEvent(playerId))
+            }
+
+            // Then put the cards on top
+            val currentLibrary = newState.getZone(libraryZone)
+            newState = newState.copy(
+                zones = newState.zones + (libraryZone to selectedCards + currentLibrary)
+            )
+
+            // Emit zone change events
+            val cardNames = mutableListOf<String>()
+            for (cardId in selectedCards) {
+                val cardName = newState.getEntity(cardId)?.get<CardComponent>()?.name ?: "Unknown"
+                cardNames.add(cardName)
+                events.add(
+                    ZoneChangeEvent(
+                        entityId = cardId,
+                        entityName = cardName,
+                        fromZone = ZoneType.LIBRARY,
+                        toZone = ZoneType.LIBRARY,
+                        ownerId = playerId
+                    )
+                )
+            }
+
+            // Reveal cards if configured
+            if (continuation.reveal) {
+                events.add(
+                    CardsRevealedEvent(
+                        revealingPlayerId = playerId,
+                        cardIds = selectedCards,
+                        cardNames = cardNames,
+                        source = continuation.sourceName
+                    )
+                )
+            }
+
+            return checkForMoreContinuations(newState, events)
+        }
+
+        // For other destinations: move cards, then shuffle
         val destinationZone = when (continuation.destination) {
             SearchDestination.HAND -> ZoneKey(playerId, ZoneType.HAND)
             SearchDestination.BATTLEFIELD -> ZoneKey(playerId, ZoneType.BATTLEFIELD)
             SearchDestination.GRAVEYARD -> ZoneKey(playerId, ZoneType.GRAVEYARD)
-            SearchDestination.TOP_OF_LIBRARY -> libraryZone
+            SearchDestination.TOP_OF_LIBRARY -> libraryZone // unreachable
         }
 
+        val cardNames = mutableListOf<String>()
         for (cardId in selectedCards) {
-            // For TOP_OF_LIBRARY, add to the front
-            if (continuation.destination == SearchDestination.TOP_OF_LIBRARY) {
-                val currentLibrary = newState.getZone(libraryZone)
-                newState = newState.copy(
-                    zones = newState.zones + (libraryZone to listOf(cardId) + currentLibrary)
-                )
-            } else {
-                newState = newState.addToZone(destinationZone, cardId)
-            }
+            newState = newState.addToZone(destinationZone, cardId)
 
             // Apply tapped status for battlefield with entersTapped
             if (continuation.destination == SearchDestination.BATTLEFIELD && continuation.entersTapped) {
@@ -449,6 +488,7 @@ class ContinuationHandler(
 
             // Emit zone change event
             val cardName = newState.getEntity(cardId)?.get<CardComponent>()?.name ?: "Unknown"
+            cardNames.add(cardName)
             events.add(
                 ZoneChangeEvent(
                     entityId = cardId,
@@ -465,8 +505,17 @@ class ContinuationHandler(
             )
         }
 
-        // Reveal cards if configured (could emit a CardsRevealedEvent in the future)
-        // For now, the zone change events serve as implicit reveal
+        // Reveal cards if configured
+        if (continuation.reveal) {
+            events.add(
+                CardsRevealedEvent(
+                    revealingPlayerId = playerId,
+                    cardIds = selectedCards,
+                    cardNames = cardNames,
+                    source = continuation.sourceName
+                )
+            )
+        }
 
         // Shuffle library after search if configured
         if (continuation.shuffleAfter) {
@@ -908,83 +957,6 @@ class ContinuationHandler(
             decisionResult.pendingDecision,
             priorEvents + decisionResult.events
         )
-    }
-
-    /**
-     * Resume after player selected a card from library for "search and put on top" effect.
-     *
-     * This handles the tutor pattern where:
-     * 1. Remove selected card from library
-     * 2. Shuffle library FIRST
-     * 3. Put selected card on top of library
-     *
-     * This ensures the tutored card stays on top after the shuffle, which is the
-     * correct behavior for cards like Cruel Tutor and Personal Tutor.
-     */
-    private fun resumeSearchLibraryToTop(
-        state: GameState,
-        continuation: SearchLibraryToTopContinuation,
-        response: DecisionResponse
-    ): ExecutionResult {
-        if (response !is CardsSelectedResponse) {
-            return ExecutionResult.error(state, "Expected card selection response for library search")
-        }
-
-        val playerId = continuation.playerId
-        val selectedCards = response.selectedCards
-        val libraryZone = ZoneKey(playerId, ZoneType.LIBRARY)
-        val events = mutableListOf<GameEvent>()
-
-        var newState = state
-
-        // Handle "fail to find" case - just shuffle and return
-        if (selectedCards.isEmpty()) {
-            val library = newState.getZone(libraryZone).shuffled()
-            newState = newState.copy(zones = newState.zones + (libraryZone to library))
-            events.add(LibraryShuffledEvent(playerId))
-            return checkForMoreContinuations(newState, events)
-        }
-
-        // Get the selected card (there should be exactly 1)
-        val selectedCard = selectedCards.first()
-
-        // Step 1: Remove selected card from library
-        newState = newState.removeFromZone(libraryZone, selectedCard)
-
-        // Step 2: Shuffle library FIRST (without the selected card)
-        val shuffledLibrary = newState.getZone(libraryZone).shuffled()
-        newState = newState.copy(zones = newState.zones + (libraryZone to shuffledLibrary))
-        events.add(LibraryShuffledEvent(playerId))
-
-        // Step 3: Put selected card on TOP of library (after shuffle)
-        val libraryWithCardOnTop = listOf(selectedCard) + newState.getZone(libraryZone)
-        newState = newState.copy(zones = newState.zones + (libraryZone to libraryWithCardOnTop))
-
-        // Emit zone change event (card moved within library to top)
-        val cardName = newState.getEntity(selectedCard)?.get<CardComponent>()?.name ?: "Unknown"
-        events.add(
-            ZoneChangeEvent(
-                entityId = selectedCard,
-                entityName = cardName,
-                fromZone = ZoneType.LIBRARY,
-                toZone = ZoneType.LIBRARY,
-                ownerId = playerId
-            )
-        )
-
-        // Reveal the chosen card to all players if configured
-        if (continuation.reveal) {
-            events.add(
-                CardsRevealedEvent(
-                    revealingPlayerId = playerId,
-                    cardIds = listOf(selectedCard),
-                    cardNames = listOf(cardName),
-                    source = continuation.sourceName
-                )
-            )
-        }
-
-        return checkForMoreContinuations(newState, events)
     }
 
     /**

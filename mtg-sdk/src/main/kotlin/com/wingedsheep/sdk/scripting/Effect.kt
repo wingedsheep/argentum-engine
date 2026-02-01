@@ -2682,24 +2682,6 @@ sealed interface SpellFilter {
 }
 
 // =============================================================================
-// Library Manipulation Effects
-// =============================================================================
-
-/**
- * Search library for a card type and put it on top.
- * Used for Personal Tutor: "Search your library for a sorcery card, reveal it,
- * then shuffle and put that card on top."
- */
-@Serializable
-data class SearchLibraryToTopEffect(
-    val filter: CardFilter,
-    val reveal: Boolean = false
-) : Effect {
-    override val description: String =
-        "Search your library for ${filter.description}${if (reveal) ", reveal it," else ","} then shuffle and put that card on top"
-}
-
-// =============================================================================
 // Combat Manipulation Effects
 // =============================================================================
 
