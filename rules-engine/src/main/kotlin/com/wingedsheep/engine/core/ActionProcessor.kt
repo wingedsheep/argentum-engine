@@ -53,7 +53,7 @@ class ActionProcessor(
     private val cardRegistry: CardRegistry? = null,
     private val combatManager: CombatManager = CombatManager(cardRegistry),
     private val turnManager: TurnManager = TurnManager(combatManager),
-    private val stackResolver: StackResolver = StackResolver(),
+    private val stackResolver: StackResolver = StackResolver(cardRegistry = cardRegistry),
     private val manaSolver: ManaSolver = ManaSolver(cardRegistry),
     private val costCalculator: CostCalculator = CostCalculator(cardRegistry),
     private val alternativePaymentHandler: AlternativePaymentHandler = AlternativePaymentHandler(),

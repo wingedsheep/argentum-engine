@@ -3,6 +3,8 @@ package com.wingedsheep.engine.mechanics.stack
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.EffectHandler
+import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
@@ -26,7 +28,9 @@ import com.wingedsheep.sdk.scripting.Effect
  * - Countering spells
  */
 class StackResolver(
-    private val effectHandler: EffectHandler = EffectHandler()
+    private val effectHandler: EffectHandler = EffectHandler(),
+    private val cardRegistry: CardRegistry? = null,
+    private val staticAbilityHandler: StaticAbilityHandler = StaticAbilityHandler(cardRegistry)
 ) {
 
     // =========================================================================
@@ -241,6 +245,9 @@ class StackResolver(
             if (cardComponent?.typeLine?.isCreature == true) {
                 updated = updated.with(SummoningSicknessComponent)
             }
+
+            // Add continuous effects from static abilities
+            updated = staticAbilityHandler.addContinuousEffectComponent(updated)
 
             updated
         }

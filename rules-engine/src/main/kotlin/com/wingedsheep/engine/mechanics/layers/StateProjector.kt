@@ -2,6 +2,7 @@ package com.wingedsheep.engine.mechanics.layers
 
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.core.Color
@@ -209,6 +210,35 @@ class StateProjector {
                 state.getBattlefield().filter { entityId ->
                     val card = state.getEntity(entityId)?.get<CardComponent>() ?: return@filter false
                     card.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(filter.subtype))
+                }.toSet()
+            }
+            is AffectsFilter.OtherTappedCreaturesYouControl -> {
+                val controller = state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
+                    ?: return emptySet()
+                state.getBattlefield().filter { entityId ->
+                    if (entityId == sourceId) return@filter false // Exclude self
+                    val container = state.getEntity(entityId) ?: return@filter false
+                    val card = container.get<CardComponent>() ?: return@filter false
+                    val entityController = container.get<ControllerComponent>()?.playerId
+                    val isTapped = container.has<TappedComponent>()
+                    card.typeLine.isCreature && entityController == controller && isTapped
+                }.toSet()
+            }
+            is AffectsFilter.OtherCreaturesYouControl -> {
+                val controller = state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
+                    ?: return emptySet()
+                state.getBattlefield().filter { entityId ->
+                    if (entityId == sourceId) return@filter false // Exclude self
+                    val container = state.getEntity(entityId) ?: return@filter false
+                    val card = container.get<CardComponent>() ?: return@filter false
+                    val entityController = container.get<ControllerComponent>()?.playerId
+                    card.typeLine.isCreature && entityController == controller
+                }.toSet()
+            }
+            is AffectsFilter.AllOtherCreatures -> {
+                state.getBattlefield().filter { entityId ->
+                    if (entityId == sourceId) return@filter false // Exclude self
+                    state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.isCreature == true
                 }.toSet()
             }
         }
@@ -422,6 +452,23 @@ sealed interface AffectsFilter {
     data object AllCreaturesOpponentsControl : AffectsFilter
     data class SpecificEntities(val entityIds: Set<EntityId>) : AffectsFilter
     data class WithSubtype(val subtype: String) : AffectsFilter
+
+    /**
+     * Other tapped creatures you control (excludes the source permanent).
+     * Used for effects like "Other tapped creatures you control have indestructible."
+     */
+    data object OtherTappedCreaturesYouControl : AffectsFilter
+
+    /**
+     * Other creatures you control (excludes the source permanent).
+     * Used for lord effects like "Other creatures you control get +1/+1."
+     */
+    data object OtherCreaturesYouControl : AffectsFilter
+
+    /**
+     * All other creatures (excludes the source permanent).
+     */
+    data object AllOtherCreatures : AffectsFilter
 }
 
 /**

@@ -433,7 +433,8 @@ class ClientStateTransformer(
             attachments = attachments,
             isFaceDown = isFaceDown,
             targets = targets,
-            imageUri = cardRegistry.getCard(cardComponent.cardDefinitionId)?.metadata?.imageUri,
+            imageUri = cardRegistry.getCard(cardComponent.cardDefinitionId)?.metadata?.imageUri
+                ?: cardComponent.imageUri,
             activeEffects = activeEffects,
             rulings = cardRegistry.getCard(cardComponent.cardDefinitionId)?.metadata?.rulings?.map {
                 ClientRuling(date = it.date, text = it.text)

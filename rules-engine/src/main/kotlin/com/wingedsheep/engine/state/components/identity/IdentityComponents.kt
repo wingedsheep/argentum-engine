@@ -25,7 +25,8 @@ data class CardComponent(
     val baseKeywords: Set<Keyword> = emptySet(),
     val colors: Set<Color> = emptySet(),
     val ownerId: EntityId? = null,  // Original owner of the card
-    val spellEffect: Effect? = null  // Effect for instants/sorceries
+    val spellEffect: Effect? = null,  // Effect for instants/sorceries
+    val imageUri: String? = null  // Optional image URI for card art (used for tokens)
 ) : Component {
     // Convenience accessors
     val isCreature: Boolean get() = typeLine.isCreature

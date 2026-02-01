@@ -35,7 +35,9 @@ val AjaniOutlandChaperone = card("Ajani, Outland Chaperone") {
             power = 1,
             toughness = 1,
             colors = setOf(Color.GREEN, Color.WHITE),
-            creatureTypes = setOf("Kithkin")
+            creatureTypes = setOf("Kithkin"),
+            name = "Kithkin",
+            imageUri = "https://cards.scryfall.io/normal/front/2/e/2ed11e1b-2289-48d2-8d96-ee7e590ecfd4.jpg"
         )
     }
 
