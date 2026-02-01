@@ -475,11 +475,26 @@ class ContinuationHandler(
         for (cardId in selectedCards) {
             newState = newState.addToZone(destinationZone, cardId)
 
-            // Apply tapped status for battlefield with entersTapped
-            if (continuation.destination == SearchDestination.BATTLEFIELD && continuation.entersTapped) {
+            // Apply battlefield-specific components
+            if (continuation.destination == SearchDestination.BATTLEFIELD) {
                 val container = newState.getEntity(cardId)
                 if (container != null) {
-                    val newContainer = container.with(TappedComponent)
+                    var newContainer = container
+                        .with(com.wingedsheep.engine.state.components.identity.ControllerComponent(playerId))
+
+                    // Creatures enter with summoning sickness
+                    val cardComponent = container.get<CardComponent>()
+                    if (cardComponent?.typeLine?.isCreature == true) {
+                        newContainer = newContainer.with(
+                            com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
+                        )
+                    }
+
+                    // Apply tapped status if entersTapped
+                    if (continuation.entersTapped) {
+                        newContainer = newContainer.with(TappedComponent)
+                    }
+
                     newState = newState.copy(
                         entities = newState.entities + (cardId to newContainer)
                     )
