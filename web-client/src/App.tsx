@@ -5,6 +5,7 @@ import { MulliganUI } from './components/mulligan/MulliganUI'
 import { CombatOverlay } from './components/combat/CombatOverlay'
 import { DecisionUI } from './components/decisions/DecisionUI'
 import { RevealedHandUI } from './components/decisions/RevealedHandUI'
+import { RevealedCardsUI } from './components/decisions/RevealedCardsUI'
 import { XCostSelector } from './components/ui/XCostSelector'
 import { ConvokeSelector } from './components/ui/ConvokeSelector'
 import { DeckBuilderOverlay } from './components/sealed/DeckBuilderOverlay'
@@ -169,6 +170,9 @@ export default function App() {
 
       {/* Revealed hand overlay (when looking at opponent's hand) */}
       {showGame && <RevealedHandUI />}
+
+      {/* Revealed cards overlay (from effects like Sylvan Tutor) */}
+      {showGame && <RevealedCardsUI />}
 
       {/* Game over overlay */}
       {showGame && <GameOverlay />}

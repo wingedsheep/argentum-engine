@@ -331,6 +331,12 @@ export interface GameStore {
   draggingBlockerId: EntityId | null
   draggingCardId: EntityId | null
   revealedHandCardIds: readonly EntityId[] | null
+  /** Revealed cards from effects like Sylvan Tutor */
+  revealedCardsInfo: {
+    cardIds: readonly EntityId[]
+    cardNames: readonly string[]
+    source: string | null
+  } | null
   /** Opponent's blocker assignments (for attacking player to see real-time) */
   opponentBlockerAssignments: Record<EntityId, EntityId> | null
 
@@ -442,6 +448,8 @@ export interface GameStore {
   consumeEvent: () => ClientEvent | undefined
   showRevealedHand: (cardIds: readonly EntityId[]) => void
   dismissRevealedHand: () => void
+  showRevealedCards: (cardIds: readonly EntityId[], cardNames: readonly string[], source: string | null) => void
+  dismissRevealedCards: () => void
   // Draw animation
   drawAnimations: readonly DrawAnimation[]
   addDrawAnimation: (animation: DrawAnimation) => void
@@ -682,6 +690,12 @@ export const useGameStore = create<GameStore>()(
           (e) => e.type === 'handRevealed' && (e as { revealingPlayerId: EntityId }).revealingPlayerId !== playerId
         ) as { type: 'handRevealed'; cardIds: readonly EntityId[] } | undefined
 
+        // Check for cardsRevealed events (from tutors like Sylvan Tutor)
+        // Only show the overlay to the opponent - the revealing player already knows what they searched for
+        const cardsRevealedEvent = msg.events.find(
+          (e) => e.type === 'cardsRevealed' && (e as { revealingPlayerId: EntityId }).revealingPlayerId !== playerId
+        ) as { type: 'cardsRevealed'; cardIds: readonly EntityId[]; cardNames: readonly string[]; source: string | null } | undefined
+
         // Process cardDrawn events for draw animations
         const cardDrawnEvents = msg.events.filter((e) => e.type === 'cardDrawn') as {
           type: 'cardDrawn'
@@ -766,6 +780,10 @@ export const useGameStore = create<GameStore>()(
           waitingForOpponentMulligan: false,
           // Show revealed hand overlay if handLookedAt or handRevealed event received
           revealedHandCardIds: handLookedAtEvent?.cardIds ?? handRevealedEvent?.cardIds ?? state.revealedHandCardIds,
+          // Show revealed cards overlay if cardsRevealed event received
+          revealedCardsInfo: cardsRevealedEvent
+            ? { cardIds: cardsRevealedEvent.cardIds, cardNames: cardsRevealedEvent.cardNames, source: cardsRevealedEvent.source }
+            : state.revealedCardsInfo,
           // Clear opponent's blocker assignments when combat ends or blockers are confirmed
           opponentBlockerAssignments: (msg.state.combat?.blockers?.length || !msg.state.combat) ? null : state.opponentBlockerAssignments,
         }))
@@ -1312,6 +1330,7 @@ export const useGameStore = create<GameStore>()(
       draggingBlockerId: null,
       draggingCardId: null,
       revealedHandCardIds: null,
+      revealedCardsInfo: null,
       opponentBlockerAssignments: null,
       drawAnimations: [],
       damageAnimations: [],
@@ -2232,6 +2251,7 @@ export const useGameStore = create<GameStore>()(
           draggingBlockerId: null,
           draggingCardId: null,
           revealedHandCardIds: null,
+          revealedCardsInfo: null,
           pendingEvents: [],
           eventLog: [],
           gameOverState: null,
@@ -2263,6 +2283,7 @@ export const useGameStore = create<GameStore>()(
           draggingBlockerId: null,
           draggingCardId: null,
           revealedHandCardIds: null,
+          revealedCardsInfo: null,
           pendingEvents: [],
           eventLog: [],
           gameOverState: null,
@@ -2292,6 +2313,14 @@ export const useGameStore = create<GameStore>()(
 
       dismissRevealedHand: () => {
         set({ revealedHandCardIds: null })
+      },
+
+      showRevealedCards: (cardIds, cardNames, source) => {
+        set({ revealedCardsInfo: { cardIds, cardNames, source } })
+      },
+
+      dismissRevealedCards: () => {
+        set({ revealedCardsInfo: null })
       },
 
       addDrawAnimation: (animation) => {
