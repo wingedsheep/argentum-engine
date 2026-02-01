@@ -230,9 +230,15 @@ class AutoPassManager {
                 true
             }
 
-            // Main Phase - auto-pass (wait for combat or stack)
-            Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN -> {
-                logger.debug("AUTO-PASS: Opponent's main phase")
+            // Precombat Main Phase - STOP (give player a chance to act before combat)
+            Step.PRECOMBAT_MAIN -> {
+                logger.debug("STOP: Opponent's precombat main (window before combat)")
+                false
+            }
+
+            // Postcombat Main Phase - auto-pass (wait for end step or stack)
+            Step.POSTCOMBAT_MAIN -> {
+                logger.debug("AUTO-PASS: Opponent's postcombat main phase")
                 true
             }
 

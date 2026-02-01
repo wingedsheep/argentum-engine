@@ -161,17 +161,24 @@ function PassPriorityButton({ onClick }: { onClick: () => void }) {
   const hasStackItems = stackCards.length > 0
   const combatState = useGameStore((state) => state.combatState)
   const attackWithAll = useGameStore((state) => state.attackWithAll)
+  const gameState = useGameStore((state) => state.gameState)
+  const playerId = useGameStore((state) => state.playerId)
 
   // Check if we can attack with all
   const canAttackWithAll =
     combatState?.mode === 'declareAttackers' && combatState.validCreatures.length > 0
+
+  // Check if it's opponent's end step
+  const isOpponentsTurn = gameState && playerId && gameState.activePlayerId !== playerId
+  const isOpponentsEndStep = isOpponentsTurn && gameState?.currentStep === 'END'
 
   // Different styling based on whether we're resolving stack or passing phase
   const backgroundColor = hasStackItems ? '#c76e00' : '#444'
   const hoverBackgroundColor = hasStackItems ? '#e08000' : '#555'
   const borderColor = hasStackItems ? '#e08000' : '#666'
   const hoverBorderColor = hasStackItems ? '#ff9500' : '#888'
-  const label = hasStackItems ? 'Resolve' : 'Pass'
+  // Label: "Resolve" for stack items, "To my turn" at opponent's end step, "Pass" otherwise
+  const label = hasStackItems ? 'Resolve' : isOpponentsEndStep ? 'To my turn' : 'Pass'
   const icon = hasStackItems ? '✓' : '⏭️'
 
   return (

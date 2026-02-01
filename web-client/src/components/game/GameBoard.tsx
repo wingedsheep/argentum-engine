@@ -196,11 +196,18 @@ export function GameBoard() {
   const isInCombatMode = combatState !== null
 
 
-  // Compute pass button label - show next step if stack is empty
+  // Compute pass button label
   const getPassButtonLabel = () => {
+    // Show "Resolve" when there's something on the stack
     if (stackCards.length > 0) {
-      return 'Pass'
+      return 'Resolve'
     }
+    // Show "To my turn" when at opponent's end step
+    const isOpponentsTurn = gameState.activePlayerId !== viewingPlayer.playerId
+    if (isOpponentsTurn && gameState.currentStep === 'END') {
+      return 'To my turn'
+    }
+    // Otherwise show next step
     const nextStep = getNextStep(gameState.currentStep)
     if (nextStep) {
       return `Pass to ${StepShortNames[nextStep]}`
