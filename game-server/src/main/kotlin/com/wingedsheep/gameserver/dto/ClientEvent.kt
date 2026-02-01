@@ -327,6 +327,7 @@ sealed interface ClientEvent {
         val revealingPlayerId: EntityId,
         val cardIds: List<EntityId>,
         val cardNames: List<String>,
+        val imageUris: List<String?> = emptyList(),
         val source: String? = null,
         override val description: String = "Revealed ${cardNames.joinToString(", ")}${source?.let { " ($it)" } ?: ""}"
     ) : ClientEvent
@@ -608,6 +609,7 @@ object ClientEventTransformer {
                     revealingPlayerId = event.revealingPlayerId,
                     cardIds = event.cardIds,
                     cardNames = event.cardNames,
+                    imageUris = event.imageUris,
                     source = event.source
                 )
             }

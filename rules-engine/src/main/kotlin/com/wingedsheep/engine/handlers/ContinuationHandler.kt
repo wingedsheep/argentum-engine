@@ -434,9 +434,12 @@ class ContinuationHandler(
 
             // Emit zone change events
             val cardNames = mutableListOf<String>()
+            val imageUris = mutableListOf<String?>()
             for (cardId in selectedCards) {
-                val cardName = newState.getEntity(cardId)?.get<CardComponent>()?.name ?: "Unknown"
+                val cardComponent = newState.getEntity(cardId)?.get<CardComponent>()
+                val cardName = cardComponent?.name ?: "Unknown"
                 cardNames.add(cardName)
+                imageUris.add(cardComponent?.imageUri)
                 events.add(
                     ZoneChangeEvent(
                         entityId = cardId,
@@ -455,6 +458,7 @@ class ContinuationHandler(
                         revealingPlayerId = playerId,
                         cardIds = selectedCards,
                         cardNames = cardNames,
+                        imageUris = imageUris,
                         source = continuation.sourceName
                     )
                 )
@@ -472,6 +476,7 @@ class ContinuationHandler(
         }
 
         val cardNames = mutableListOf<String>()
+        val imageUris = mutableListOf<String?>()
         for (cardId in selectedCards) {
             newState = newState.addToZone(destinationZone, cardId)
 
@@ -502,8 +507,10 @@ class ContinuationHandler(
             }
 
             // Emit zone change event
-            val cardName = newState.getEntity(cardId)?.get<CardComponent>()?.name ?: "Unknown"
+            val cardComponent = newState.getEntity(cardId)?.get<CardComponent>()
+            val cardName = cardComponent?.name ?: "Unknown"
             cardNames.add(cardName)
+            imageUris.add(cardComponent?.imageUri)
             events.add(
                 ZoneChangeEvent(
                     entityId = cardId,
@@ -527,6 +534,7 @@ class ContinuationHandler(
                     revealingPlayerId = playerId,
                     cardIds = selectedCards,
                     cardNames = cardNames,
+                    imageUris = imageUris,
                     source = continuation.sourceName
                 )
             )

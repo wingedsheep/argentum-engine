@@ -265,6 +265,7 @@ export interface CardsRevealedEvent {
   readonly revealingPlayerId: EntityId
   readonly cardIds: readonly EntityId[]
   readonly cardNames: readonly string[]
+  readonly imageUris: readonly (string | null)[]
   readonly source: string | null
   readonly description: string
 }

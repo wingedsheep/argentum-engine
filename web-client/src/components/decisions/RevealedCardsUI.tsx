@@ -23,12 +23,12 @@ export function RevealedCardsUI() {
   const cards = revealedCardsInfo.cardIds
     .map((cardId, index) => {
       const card = gameState.cards[cardId]
-      // Fall back to the card names from the event if card is not in state
+      // Fall back to the card names and imageUris from the event if card is not in state
       // (e.g., it went to top of library and isn't visible)
       return card ?? {
         id: cardId,
         name: revealedCardsInfo.cardNames[index] ?? 'Unknown Card',
-        imageUri: null,
+        imageUri: revealedCardsInfo.imageUris[index] ?? null,
         typeLine: null,
       }
     })

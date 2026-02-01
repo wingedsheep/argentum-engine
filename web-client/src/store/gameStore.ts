@@ -335,6 +335,7 @@ export interface GameStore {
   revealedCardsInfo: {
     cardIds: readonly EntityId[]
     cardNames: readonly string[]
+    imageUris: readonly (string | null)[]
     source: string | null
   } | null
   /** Opponent's blocker assignments (for attacking player to see real-time) */
@@ -448,7 +449,7 @@ export interface GameStore {
   consumeEvent: () => ClientEvent | undefined
   showRevealedHand: (cardIds: readonly EntityId[]) => void
   dismissRevealedHand: () => void
-  showRevealedCards: (cardIds: readonly EntityId[], cardNames: readonly string[], source: string | null) => void
+  showRevealedCards: (cardIds: readonly EntityId[], cardNames: readonly string[], imageUris: readonly (string | null)[], source: string | null) => void
   dismissRevealedCards: () => void
   // Draw animation
   drawAnimations: readonly DrawAnimation[]
@@ -694,7 +695,7 @@ export const useGameStore = create<GameStore>()(
         // Only show the overlay to the opponent - the revealing player already knows what they searched for
         const cardsRevealedEvent = msg.events.find(
           (e) => e.type === 'cardsRevealed' && (e as { revealingPlayerId: EntityId }).revealingPlayerId !== playerId
-        ) as { type: 'cardsRevealed'; cardIds: readonly EntityId[]; cardNames: readonly string[]; source: string | null } | undefined
+        ) as { type: 'cardsRevealed'; cardIds: readonly EntityId[]; cardNames: readonly string[]; imageUris: readonly (string | null)[]; source: string | null } | undefined
 
         // Process cardDrawn events for draw animations
         const cardDrawnEvents = msg.events.filter((e) => e.type === 'cardDrawn') as {
@@ -782,7 +783,7 @@ export const useGameStore = create<GameStore>()(
           revealedHandCardIds: handLookedAtEvent?.cardIds ?? handRevealedEvent?.cardIds ?? state.revealedHandCardIds,
           // Show revealed cards overlay if cardsRevealed event received
           revealedCardsInfo: cardsRevealedEvent
-            ? { cardIds: cardsRevealedEvent.cardIds, cardNames: cardsRevealedEvent.cardNames, source: cardsRevealedEvent.source }
+            ? { cardIds: cardsRevealedEvent.cardIds, cardNames: cardsRevealedEvent.cardNames, imageUris: cardsRevealedEvent.imageUris, source: cardsRevealedEvent.source }
             : state.revealedCardsInfo,
           // Clear opponent's blocker assignments when combat ends or blockers are confirmed
           opponentBlockerAssignments: (msg.state.combat?.blockers?.length || !msg.state.combat) ? null : state.opponentBlockerAssignments,
@@ -2315,8 +2316,8 @@ export const useGameStore = create<GameStore>()(
         set({ revealedHandCardIds: null })
       },
 
-      showRevealedCards: (cardIds, cardNames, source) => {
-        set({ revealedCardsInfo: { cardIds, cardNames, source } })
+      showRevealedCards: (cardIds, cardNames, imageUris, source) => {
+        set({ revealedCardsInfo: { cardIds, cardNames, imageUris, source } })
       },
 
       dismissRevealedCards: () => {

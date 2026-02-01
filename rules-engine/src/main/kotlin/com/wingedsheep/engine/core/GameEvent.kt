@@ -558,6 +558,7 @@ data class CardsRevealedEvent(
     val revealingPlayerId: EntityId,
     val cardIds: List<EntityId>,
     val cardNames: List<String>,
+    val imageUris: List<String?> = emptyList(),
     val source: String? = null
 ) : GameEvent
 
