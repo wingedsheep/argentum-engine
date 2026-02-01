@@ -1130,6 +1130,12 @@ class GameSession(
                         matchesCreatureFilter(state, entityId, container, cardComponent, subFilter, playerId)
                     }
                 }
+                is CreatureTargetFilter.WithManaValueAtMost -> {
+                    cardComponent.manaValue <= filter.maxManaValue
+                }
+                is CreatureTargetFilter.WithManaValueAtLeast -> {
+                    cardComponent.manaValue >= filter.minManaValue
+                }
             }
         }
     }
@@ -1183,6 +1189,12 @@ class GameSession(
                 filter.filters.all { subFilter ->
                     matchesCreatureFilter(state, entityId, container, cardComponent, subFilter, playerId)
                 }
+            }
+            is CreatureTargetFilter.WithManaValueAtMost -> {
+                cardComponent.manaValue <= filter.maxManaValue
+            }
+            is CreatureTargetFilter.WithManaValueAtLeast -> {
+                cardComponent.manaValue >= filter.minManaValue
             }
         }
     }

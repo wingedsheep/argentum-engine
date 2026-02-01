@@ -62,6 +62,13 @@ class DynamicAmountEvaluator {
                 }
             }
 
+            is DynamicAmount.CreaturesWithSubtypeOnBattlefield -> {
+                state.getBattlefield().count { entityId ->
+                    val card = state.getEntity(entityId)?.get<CardComponent>()
+                    card?.typeLine?.isCreature == true && card.typeLine.hasSubtype(amount.subtype)
+                }
+            }
+
             is DynamicAmount.LandsYouControl -> {
                 countLandsControlledBy(state, context.controllerId)
             }

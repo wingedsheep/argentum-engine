@@ -3,6 +3,7 @@ package com.wingedsheep.gameserver
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.core.DistributionResponse
 import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.mtg.sets.definitions.onslaught.OnslaughtSet
 import com.wingedsheep.mtg.sets.definitions.portal.PortalSet
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
@@ -36,6 +37,7 @@ abstract class ScenarioTestBase : FunSpec() {
 
     protected val cardRegistry = CardRegistry().apply {
         register(PortalSet.allCards)
+        register(OnslaughtSet.allCards)
     }
     protected val actionProcessor = ActionProcessor(cardRegistry)
     protected val stateTransformer = ClientStateTransformer(cardRegistry)

@@ -150,6 +150,12 @@ class TargetFinder(
             is CreatureTargetFilter.NotColor -> {
                 !cardComponent.colors.contains(filter.color)
             }
+            is CreatureTargetFilter.WithManaValueAtMost -> {
+                cardComponent.manaValue <= filter.maxManaValue
+            }
+            is CreatureTargetFilter.WithManaValueAtLeast -> {
+                cardComponent.manaValue >= filter.minManaValue
+            }
         }
     }
 

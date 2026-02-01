@@ -241,6 +241,18 @@ class TargetValidator(
                 }
                 null
             }
+
+            is CreatureTargetFilter.WithManaValueAtMost -> {
+                if (cardComponent.manaValue > filter.maxManaValue) {
+                    "Target must have mana value ${filter.maxManaValue} or less"
+                } else null
+            }
+
+            is CreatureTargetFilter.WithManaValueAtLeast -> {
+                if (cardComponent.manaValue < filter.minManaValue) {
+                    "Target must have mana value ${filter.minManaValue} or greater"
+                } else null
+            }
         }
     }
 

@@ -21,7 +21,21 @@ object OnslaughtSet {
      * All cards implemented from this set.
      */
     val allCards = listOf(
-        // Black creatures
+        // White creatures
+        GlorySeeker,
+
+        // Black creatures and spells
         FesteringGoblin,
+        Smother,
+
+        // Red creatures and spells
+        GoblinSledder,
+        Shock,
+
+        // Green creatures
+        BarkhideMauler,
+        ElvishWarrior,
+        Wellwisher,
+        WirewoodElf,
     )
 }

@@ -391,6 +391,15 @@ sealed interface DynamicAmount {
     }
 
     /**
+     * Count of all creatures with a specific subtype on the battlefield.
+     * Used for tribal effects like Wellwisher ("for each Elf on the battlefield").
+     */
+    @Serializable
+    data class CreaturesWithSubtypeOnBattlefield(val subtype: Subtype) : DynamicAmount {
+        override val description: String = "the number of ${subtype.value}s on the battlefield"
+    }
+
+    /**
      * Your current life total.
      */
     @Serializable
