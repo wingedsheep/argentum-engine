@@ -20,6 +20,6 @@ val GlorySeeker = card("Glory Seeker") {
         collectorNumber = "31"
         artist = "Matt Cavotta"
         flavorText = "\"There's no contract to sign, no oath to swear. The enlistment procedure is to unsheathe your sword and point it at the enemy.\""
-        imageUri = "https://cards.scryfall.io/normal/front/8/4/84861b25-7ae8-4350-9b70-e05d30965548.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/9/0/9047075e-9fca-484d-bb79-32c0d6821281.jpg"
     }
 }

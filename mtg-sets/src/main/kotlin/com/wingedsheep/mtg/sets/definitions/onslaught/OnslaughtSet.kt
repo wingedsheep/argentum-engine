@@ -22,13 +22,18 @@ object OnslaughtSet {
      */
     val allCards = listOf(
         // White creatures
+        DaruLancer,
+        DiscipleOfGrace,
         GlorySeeker,
 
         // Black creatures and spells
+        AnuridMurkdiver,
+        DiscipleOfMalice,
         FesteringGoblin,
         Smother,
 
         // Red creatures and spells
+        BatteringCraghorn,
         GoblinSledder,
         Shock,
 

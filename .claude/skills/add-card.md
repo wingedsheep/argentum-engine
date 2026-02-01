@@ -22,9 +22,16 @@ Invoke this skill with `/add-card <card-name>` when:
 
 1. Use WebFetch to get card data:
    - URL: `https://api.scryfall.com/cards/named?exact=<card-name-url-encoded>`
+   - For a specific set: `https://api.scryfall.com/cards/named?exact=<card-name-url-encoded>&set=<set-code>`
    - Extract: name, mana_cost, type_line, oracle_text, power, toughness, colors, rarity, collector_number, artist, flavor_text, image_uris.normal
 
-2. Parse the oracle text to understand:
+2. **CRITICAL - Image URI**:
+   - **ALWAYS use the exact `image_uris.normal` URL from the Scryfall API response**
+   - **NEVER generate, guess, or hallucinate an image URI** - they have specific hash-based paths
+   - The correct format is: `https://cards.scryfall.io/normal/front/X/X/XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX.jpg`
+   - If the URL doesn't match this pattern, re-fetch from Scryfall
+
+3. Parse the oracle text to understand:
    - What type of card it is (creature, instant, sorcery, enchantment, etc.)
    - What abilities it has (spell effect, triggered, activated, static)
    - Targeting requirements
@@ -329,12 +336,14 @@ just build
 ## Checklist Summary
 
 **Simple Card (existing effects only)**:
-- [ ] Fetch card data from Scryfall
+- [ ] Fetch card data from Scryfall (use exact API URL)
+- [ ] **Verify image URI is from Scryfall response** (never hallucinate)
 - [ ] Create card file in `mtg-sets/.../cards/`
 - [ ] Add to set's `allCards` list
 
 **Card with New Effect**:
-- [ ] Fetch card data from Scryfall
+- [ ] Fetch card data from Scryfall (use exact API URL)
+- [ ] **Verify image URI is from Scryfall response** (never hallucinate)
 - [ ] Add effect type to `mtg-sdk/.../Effect.kt`
 - [ ] Create executor in `rules-engine/.../handlers/effects/`
 - [ ] Register in appropriate `*Executors.kt`
@@ -344,7 +353,8 @@ just build
 - [ ] Run tests
 
 **Card with New Keyword**:
-- [ ] Fetch card data from Scryfall
+- [ ] Fetch card data from Scryfall (use exact API URL)
+- [ ] **Verify image URI is from Scryfall response** (never hallucinate)
 - [ ] Add keyword to `mtg-sdk/.../Keyword.kt`
 - [ ] Update keyword handlers if needed
 - [ ] Create card definition
@@ -355,8 +365,9 @@ just build
 ## Important Notes
 
 1. **Always fetch from Scryfall first** - Never guess card text or stats
-2. **Check existing effects** - Most common effects already exist
-3. **Use immutable patterns** - Never modify state in place
-4. **Test new mechanics** - All new effects/keywords need tests
-5. **Follow naming conventions** - CardName should match file name
-6. **Keep effects data-only** - Logic goes in executors, not effect data classes
+2. **NEVER hallucinate image URIs** - Always use the exact `image_uris.normal` from Scryfall API response
+3. **Check existing effects** - Most common effects already exist
+4. **Use immutable patterns** - Never modify state in place
+5. **Test new mechanics** - All new effects/keywords need tests
+6. **Follow naming conventions** - CardName should match file name
+7. **Keep effects data-only** - Logic goes in executors, not effect data classes

@@ -30,6 +30,6 @@ val WirewoodSavage = card("Wirewood Savage") {
         collectorNumber = "296"
         artist = "Carl Critchlow"
         flavorText = "\"Only beasts know the one true law—everything is prey to something else.\""
-        imageUri = "https://cards.scryfall.io/normal/front/f/4/f4c95f09-9e4a-4a2e-8f1b-5d6ad6e4b53d.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/9/9/99982622-98bc-45ae-8642-41cd543f32a8.jpg"
     }
 }

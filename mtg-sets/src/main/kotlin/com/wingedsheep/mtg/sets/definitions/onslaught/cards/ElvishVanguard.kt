@@ -34,6 +34,6 @@ val ElvishVanguard = card("Elvish Vanguard") {
         collectorNumber = "259"
         artist = "Greg Staples"
         flavorText = "The elves are like the forest—individuals within a vast whole."
-        imageUri = "https://cards.scryfall.io/normal/front/c/a/ca14a61f-e4e4-4edc-b9cb-f6fd5e28de2a.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/4/5/455c6923-8d0e-4a7f-a5c0-add8db519ee3.jpg"
     }
 }

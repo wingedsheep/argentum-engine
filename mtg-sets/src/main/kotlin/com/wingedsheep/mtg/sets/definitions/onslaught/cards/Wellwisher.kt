@@ -30,6 +30,6 @@ val Wellwisher = card("Wellwisher") {
         collectorNumber = "300"
         artist = "Karl Kopinski"
         flavorText = "\"Close your ears to the voice of greed, and you can turn a gift for one into a gift for many.\""
-        imageUri = "https://cards.scryfall.io/normal/front/1/9/19dbbecb-b4d0-49d2-b36e-58279e051c5c.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/b/e/be95ab7c-0e77-4293-aa48-ee54902a363f.jpg"
     }
 }

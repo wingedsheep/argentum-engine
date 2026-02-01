@@ -37,6 +37,6 @@ val FesteringGoblin = card("Festering Goblin") {
         collectorNumber = "148"
         artist = "Thomas M. Baxa"
         flavorText = "In life, it was a fetid, disease-ridden thing. In death, not much changed."
-        imageUri = "https://cards.scryfall.io/normal/front/9/7/97fc2850-31fc-4ee0-8686-f3af5c3ac8e6.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/e/7/e7209cc8-b519-4f27-87d8-b12e239a121f.jpg"
     }
 }
