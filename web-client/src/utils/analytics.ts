@@ -1,5 +1,3 @@
-declare function gtag(...args: unknown[]): void
-
 const ANALYTICS_ENABLED = import.meta.env.VITE_ANALYTICS_ENABLED === 'true'
 const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID as string | undefined
 
@@ -19,20 +17,21 @@ export function initAnalytics() {
   function gtagFn(...args: unknown[]) {
     window.dataLayer.push(args)
   }
-  ;(window as unknown as { gtag: typeof gtag }).gtag = gtagFn as typeof gtag
+  window.gtag = gtagFn
 
   gtagFn('js', new Date())
   gtagFn('config', GA_MEASUREMENT_ID)
 }
 
 export function trackEvent(name: string, params?: Record<string, unknown>) {
-  if (ANALYTICS_ENABLED && typeof gtag !== 'undefined') {
-    gtag('event', name, params)
+  if (ANALYTICS_ENABLED && typeof window.gtag !== 'undefined') {
+    window.gtag('event', name, params)
   }
 }
 
 declare global {
   interface Window {
     dataLayer: unknown[]
+    gtag?: (...args: unknown[]) => void
   }
 }
