@@ -12,8 +12,6 @@ import com.wingedsheep.sdk.scripting.EffectTarget
  * Instant
  * Pinpoint Avalanche deals 4 damage to target creature.
  * The damage can't be prevented.
- *
- * TODO: Add "damage can't be prevented" clause when damage prevention is implemented.
  */
 val PinpointAvalanche = card("Pinpoint Avalanche") {
     manaCost = "{3}{R}{R}"
@@ -21,7 +19,7 @@ val PinpointAvalanche = card("Pinpoint Avalanche") {
 
     spell {
         target = Targets.Creature
-        effect = DealDamageEffect(4, EffectTarget.ContextTarget(0))
+        effect = DealDamageEffect(4, EffectTarget.ContextTarget(0), cantBePrevented = true)
     }
 
     metadata {

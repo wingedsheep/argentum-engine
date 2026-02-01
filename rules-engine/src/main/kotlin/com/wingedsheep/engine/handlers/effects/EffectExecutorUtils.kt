@@ -75,15 +75,20 @@ object EffectExecutorUtils {
      * @param targetId The entity to deal damage to
      * @param amount The amount of damage
      * @param sourceId The source of the damage
+     * @param cantBePrevented If true, this damage cannot be prevented by prevention effects
      * @return The execution result with updated state and events
      */
     fun dealDamageToTarget(
         state: GameState,
         targetId: EntityId,
         amount: Int,
-        sourceId: EntityId?
+        sourceId: EntityId?,
+        cantBePrevented: Boolean = false
     ): ExecutionResult {
         if (amount <= 0) return ExecutionResult.success(state)
+
+        // TODO: When damage prevention is implemented, check for prevention effects here.
+        // If cantBePrevented is true, skip the prevention check entirely.
 
         val events = mutableListOf<EngineGameEvent>()
         var newState = state

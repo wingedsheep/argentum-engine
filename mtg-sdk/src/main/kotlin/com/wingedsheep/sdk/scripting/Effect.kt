@@ -82,9 +82,13 @@ data class LoseLifeEffect(
 @Serializable
 data class DealDamageEffect(
     val amount: Int,
-    val target: EffectTarget
+    val target: EffectTarget,
+    val cantBePrevented: Boolean = false
 ) : Effect {
-    override val description: String = "Deal $amount damage to ${target.description}"
+    override val description: String = buildString {
+        append("Deal $amount damage to ${target.description}")
+        if (cantBePrevented) append(". This damage can't be prevented")
+    }
 }
 
 /**
