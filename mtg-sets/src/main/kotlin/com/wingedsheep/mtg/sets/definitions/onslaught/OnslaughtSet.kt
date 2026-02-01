@@ -27,16 +27,21 @@ object OnslaughtSet {
         DiscipleOfGrace,
         GlorySeeker,
 
+        // Blue creatures
+        SageAven,
+
         // Black creatures and spells
         AnuridMurkdiver,
         DiscipleOfMalice,
         FesteringGoblin,
         NantukoHusk,
+        ScreechingBuzzard,
         SeveredLegion,
         Smother,
 
         // Red creatures and spells
         BatteringCraghorn,
+        ChargingSlateback,
         GoblinSkyRaider,
         GoblinSledder,
         Shock,
@@ -49,6 +54,7 @@ object OnslaughtSet {
         SymbioticBeast,
         SymbioticElf,
         SymbioticWurm,
+        TreespringLorian,
         Wellwisher,
         WirewoodElf,
         WirewoodHerald,
