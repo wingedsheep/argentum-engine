@@ -22,6 +22,7 @@ object OnslaughtSet {
      */
     val allCards = listOf(
         // White creatures
+        CrudeRampart,
         DaruLancer,
         DiscipleOfGrace,
         GlorySeeker,
@@ -30,10 +31,13 @@ object OnslaughtSet {
         AnuridMurkdiver,
         DiscipleOfMalice,
         FesteringGoblin,
+        NantukoHusk,
+        SeveredLegion,
         Smother,
 
         // Red creatures and spells
         BatteringCraghorn,
+        GoblinSkyRaider,
         GoblinSledder,
         Shock,
 
@@ -41,8 +45,13 @@ object OnslaughtSet {
         BarkhideMauler,
         ElvishVanguard,
         ElvishWarrior,
+        SpittingGourna,
+        SymbioticBeast,
+        SymbioticElf,
+        SymbioticWurm,
         Wellwisher,
         WirewoodElf,
+        WirewoodHerald,
         WirewoodSavage,
     )
 }
