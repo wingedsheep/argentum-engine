@@ -425,9 +425,8 @@ class GamePlayHandler(
             val spectatorState = gameSession.buildSpectatorState()
             if (spectatorState != null) {
                 for (spectator in gameSession.getSpectators()) {
-                    val ws = spectator.webSocketSession
-                    if (ws != null && ws.isOpen) {
-                        sender.send(ws, spectatorState)
+                    if (spectator.webSocketSession.isOpen) {
+                        sender.send(spectator.webSocketSession, spectatorState)
                     }
                 }
             }

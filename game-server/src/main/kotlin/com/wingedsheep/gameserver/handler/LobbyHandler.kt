@@ -954,7 +954,7 @@ class LobbyHandler(
                 val playerState = lobby.players[match.player1Id]
                 val identity = playerState?.identity
                 val ws = identity?.webSocketSession
-                if (ws != null && ws.isOpen && identity != null) {
+                if (identity != null && ws != null && ws.isOpen) {
                     sender.send(ws, ServerMessage.TournamentBye(
                         lobbyId = lobbyId,
                         round = round.roundNumber
@@ -1241,9 +1241,8 @@ class LobbyHandler(
         val spectatorState = gameSession.buildSpectatorState() ?: return
 
         for (spectator in gameSession.getSpectators()) {
-            val ws = spectator.webSocketSession
-            if (ws != null && ws.isOpen) {
-                sender.send(ws, spectatorState)
+            if (spectator.webSocketSession.isOpen) {
+                sender.send(spectator.webSocketSession, spectatorState)
             }
         }
     }
