@@ -26,7 +26,8 @@ val SymbioticBeast = card("Symbiotic Beast") {
             power = 1,
             toughness = 1,
             colors = setOf(Color.GREEN),
-            creatureTypes = setOf("Insect")
+            creatureTypes = setOf("Insect"),
+            imageUri = "https://cards.scryfall.io/normal/front/a/a/aa47df37-f246-4f80-a944-008cdf347dad.jpg?1561757793"
         )
     }
 
