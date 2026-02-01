@@ -21,9 +21,9 @@ val AnuridMurkdiver = card("Anurid Murkdiver") {
 
     metadata {
         rarity = Rarity.COMMON
-        collectorNumber = "125"
-        artist = "Mark Tedin"
-        flavorText = "The swamps ran deep beneath Otaria, and with them the frog's hunting grounds."
-        imageUri = "https://cards.scryfall.io/normal/front/9/e/9e43d62c-488a-4c8d-b193-bacbf8037761.jpg"
+        collectorNumber = "124"
+        artist = "Dany Orizio"
+        flavorText = "Aphetto's swamps are alive with the dead."
+        imageUri = "https://cards.scryfall.io/normal/front/9/e/9e43d62c-488a-4c8d-b193-bacbf8037761.jpg?1562932427"
     }
 }

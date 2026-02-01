@@ -24,9 +24,9 @@ val DiscipleOfGrace = card("Disciple of Grace") {
 
     metadata {
         rarity = Rarity.COMMON
-        collectorNumber = "15"
-        artist = "Greg Staples"
-        flavorText = "She has seen death many times—most often at the moment of her attack."
-        imageUri = "https://cards.scryfall.io/normal/front/1/d/1d1790cb-34e4-4f23-8a13-1906fd9a956f.jpg"
+        collectorNumber = "25"
+        artist = "Thomas M. Baxa"
+        flavorText = "Dread was as foreign to her as the landscape ahead."
+        imageUri = "https://cards.scryfall.io/normal/front/1/d/1d1790cb-34e4-4f23-8a13-1906fd9a956f.jpg?1562901832"
     }
 }

@@ -24,9 +24,9 @@ val DaruLancer = card("Daru Lancer") {
 
     metadata {
         rarity = Rarity.COMMON
-        collectorNumber = "11"
-        artist = "Matthew D. Wilson"
-        flavorText = "The Order's finest ones are also its most devoted: They serve long after their deaths."
-        imageUri = "https://cards.scryfall.io/normal/front/c/d/cd888ca8-0ebe-46f0-9317-3b193ccc43fb.jpg"
+        collectorNumber = "20"
+        artist = "Brian Snõddy"
+        flavorText = "Although the Order frowned upon his preparations for the pits, behind closed doors most saw the fights as a necessary evil."
+        imageUri = "https://cards.scryfall.io/normal/front/c/d/cd888ca8-0ebe-46f0-9317-3b193ccc43fb.jpg?1562943531"
     }
 }

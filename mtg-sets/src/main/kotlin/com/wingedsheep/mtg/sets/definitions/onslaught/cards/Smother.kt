@@ -28,8 +28,8 @@ val Smother = card("Smother") {
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "170"
-        artist = "Karl Kopinski"
-        flavorText = "\"Before I hire new recruits, I test how long they can hold their breath. You'd be surprised how often it comes up.\"\n—Zahr Gada, Halimar expedition leader"
-        imageUri = "https://cards.scryfall.io/normal/front/c/f/cf605c8e-e59f-4f49-bb55-1824e7eadec0.jpg"
+        artist = "Carl Critchlow"
+        flavorText = "\"I can't hear them scream, but at least I don't have to listen to them beg.\" —Phage the Untouchable"
+        imageUri = "https://cards.scryfall.io/normal/front/9/a/9a8321af-d667-44e7-8c03-3957286604b9.jpg?1562931422"
     }
 }

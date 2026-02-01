@@ -18,8 +18,8 @@ val GlorySeeker = card("Glory Seeker") {
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "31"
-        artist = "Matt Cavotta"
-        flavorText = "\"There's no contract to sign, no oath to swear. The enlistment procedure is to unsheathe your sword and point it at the enemy.\""
-        imageUri = "https://cards.scryfall.io/normal/front/9/0/9047075e-9fca-484d-bb79-32c0d6821281.jpg"
+        artist = "Dave Dorman"
+        flavorText = "\"The turning of the tide always begins with one soldier's decision to head back into the fray.\""
+        imageUri = "https://cards.scryfall.io/normal/front/9/0/9047075e-9fca-484d-bb79-32c0d6821281.jpg?1562929017"
     }
 }

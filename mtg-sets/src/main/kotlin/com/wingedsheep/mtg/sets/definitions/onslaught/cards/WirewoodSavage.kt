@@ -27,9 +27,9 @@ val WirewoodSavage = card("Wirewood Savage") {
 
     metadata {
         rarity = Rarity.COMMON
-        collectorNumber = "296"
-        artist = "Carl Critchlow"
-        flavorText = "\"Only beasts know the one true law—everything is prey to something else.\""
-        imageUri = "https://cards.scryfall.io/normal/front/9/9/99982622-98bc-45ae-8642-41cd543f32a8.jpg"
+        collectorNumber = "304"
+        artist = "DiTerlizzi"
+        flavorText = "\"She is truly Wirewood's child now.\" —Elvish refugee"
+        imageUri = "https://cards.scryfall.io/normal/front/9/9/99982622-98bc-45ae-8642-41cd543f32a8.jpg?1562931203"
     }
 }

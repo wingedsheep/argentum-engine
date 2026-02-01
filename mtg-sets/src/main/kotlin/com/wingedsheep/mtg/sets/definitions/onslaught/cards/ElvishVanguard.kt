@@ -30,10 +30,10 @@ val ElvishVanguard = card("Elvish Vanguard") {
     }
 
     metadata {
-        rarity = Rarity.UNCOMMON
+        rarity = Rarity.RARE
         collectorNumber = "259"
-        artist = "Greg Staples"
-        flavorText = "The elves are like the forest—individuals within a vast whole."
-        imageUri = "https://cards.scryfall.io/normal/front/4/5/455c6923-8d0e-4a7f-a5c0-add8db519ee3.jpg"
+        artist = "Glen Angus"
+        flavorText = "\"Our lives are woven together like the trees' branches over our heads, forming a canopy that protects us all.\""
+        imageUri = "https://cards.scryfall.io/normal/front/4/5/455c6923-8d0e-4a7f-a5c0-add8db519ee3.jpg?1562911270"
     }
 }

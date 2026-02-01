@@ -38,6 +38,6 @@ val GoblinSledder = card("Goblin Sledder") {
         collectorNumber = "209"
         artist = "Ron Spencer"
         flavorText = "\"Let's play 'sled.' Here's how it works: you're the sled.\""
-        imageUri = "https://cards.scryfall.io/normal/front/1/2/12af10e9-19b7-4177-b556-a446f2788da7.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/3/a/3a9a1ecf-29f6-474e-bbcf-3455d388aa94.jpg?1562908786"
     }
 }

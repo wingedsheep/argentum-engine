@@ -17,9 +17,9 @@ val ElvishWarrior = card("Elvish Warrior") {
 
     metadata {
         rarity = Rarity.COMMON
-        collectorNumber = "261"
+        collectorNumber = "260"
         artist = "Christopher Moeller"
         flavorText = "\"My tales of war are the stories most asked for around the fires at night, but they're the ones I care least to tell.\""
-        imageUri = "https://cards.scryfall.io/normal/front/c/3/c3d0485a-209d-4040-94ab-856bdee83b81.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/2/c/2c6b767b-49e5-4845-9b3f-29540e5fa330.jpg?1562905400"
     }
 }

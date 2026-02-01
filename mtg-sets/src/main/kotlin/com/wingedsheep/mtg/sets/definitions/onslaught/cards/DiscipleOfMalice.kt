@@ -24,9 +24,9 @@ val DiscipleOfMalice = card("Disciple of Malice") {
 
     metadata {
         rarity = Rarity.COMMON
-        collectorNumber = "134"
-        artist = "Alex Horley-Orlandelli"
-        flavorText = "\"They say 'a little knowledge is a dangerous thing.' I say they don't know the half of it.\""
-        imageUri = "https://cards.scryfall.io/normal/front/7/4/74cc7ab0-a5db-4ae9-af9a-89fd5aaaab57.jpg"
+        collectorNumber = "139"
+        artist = "Matt Cavotta"
+        flavorText = "The lantern he carried did not light his way—it signaled his approach."
+        imageUri = "https://cards.scryfall.io/normal/front/7/4/74cc7ab0-a5db-4ae9-af9a-89fd5aaaab57.jpg?1562922559"
     }
 }

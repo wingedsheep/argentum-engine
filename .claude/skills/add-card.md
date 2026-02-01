@@ -22,16 +22,38 @@ Invoke this skill with `/add-card <card-name>` when:
 
 1. Use WebFetch to get card data:
    - URL: `https://api.scryfall.com/cards/named?exact=<card-name-url-encoded>`
-   - For a specific set: `https://api.scryfall.com/cards/named?exact=<card-name-url-encoded>&set=<set-code>`
+   - **For a specific set (STRONGLY RECOMMENDED)**: `https://api.scryfall.com/cards/named?exact=<card-name-url-encoded>&set=<set-code>`
    - Extract: name, mana_cost, type_line, oracle_text, power, toughness, colors, rarity, collector_number, artist, flavor_text, image_uris.normal
 
-2. **CRITICAL - Image URI**:
+2. **CRITICAL - Set-Specific Metadata**:
+   - **ALWAYS use the `&set=<set-code>` parameter** when adding cards to a specific set
+   - Each printing has different: rarity, collector_number, artist, flavor_text, and image_uris
+   - Example: Elvish Vanguard is **RARE** in Onslaught but **UNCOMMON** in Eternal Masters
+
+   **Example Scryfall URL for Onslaught cards**:
+   ```
+   https://api.scryfall.com/cards/named?exact=Elvish+Vanguard&set=ons
+   ```
+
+   Common set codes: `ons` (Onslaught), `por` (Portal), `lea` (Alpha), `leb` (Beta), `2ed` (Unlimited)
+
+3. **CRITICAL - Image URI**:
    - **ALWAYS use the exact `image_uris.normal` URL from the Scryfall API response**
    - **NEVER generate, guess, or hallucinate an image URI** - they have specific hash-based paths
-   - The correct format is: `https://cards.scryfall.io/normal/front/X/X/XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX.jpg`
+   - The correct format is: `https://cards.scryfall.io/normal/front/X/X/XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX.jpg?XXXXXXXXXX`
+   - **Include the query parameter** (e.g., `?1562911270`) - it's part of the URL
    - If the URL doesn't match this pattern, re-fetch from Scryfall
 
-3. Parse the oracle text to understand:
+4. **Check for Oracle Errata**:
+   - The `oracle_text` from Scryfall contains the current Oracle wording with all errata applied
+   - Compare against the printed card text - if different, the card has errata
+   - Document significant errata in a comment above the card definition
+   - Examples of common errata:
+     - "Bury" → "Destroy target creature. It can't be regenerated"
+     - "Remove from game" → "Exile"
+     - Creature type updates (e.g., "Summon Elf" → "Creature — Elf")
+
+5. Parse the oracle text to understand:
    - What type of card it is (creature, instant, sorcery, enchantment, etc.)
    - What abilities it has (spell effect, triggered, activated, static)
    - Targeting requirements
@@ -336,14 +358,18 @@ just build
 ## Checklist Summary
 
 **Simple Card (existing effects only)**:
-- [ ] Fetch card data from Scryfall (use exact API URL)
-- [ ] **Verify image URI is from Scryfall response** (never hallucinate)
+- [ ] Fetch card data from Scryfall with **set-specific URL** (e.g., `&set=ons`)
+- [ ] **Verify metadata matches the target set** (rarity, collector number, artist, flavor text)
+- [ ] **Verify image URI is from Scryfall response** (never hallucinate, include query param)
+- [ ] Check for errata (oracle text vs printed text)
 - [ ] Create card file in `mtg-sets/.../cards/`
 - [ ] Add to set's `allCards` list
 
 **Card with New Effect**:
-- [ ] Fetch card data from Scryfall (use exact API URL)
-- [ ] **Verify image URI is from Scryfall response** (never hallucinate)
+- [ ] Fetch card data from Scryfall with **set-specific URL** (e.g., `&set=ons`)
+- [ ] **Verify metadata matches the target set** (rarity, collector number, artist, flavor text)
+- [ ] **Verify image URI is from Scryfall response** (never hallucinate, include query param)
+- [ ] Check for errata (oracle text vs printed text)
 - [ ] Add effect type to `mtg-sdk/.../Effect.kt`
 - [ ] Create executor in `rules-engine/.../handlers/effects/`
 - [ ] Register in appropriate `*Executors.kt`
@@ -353,8 +379,10 @@ just build
 - [ ] Run tests
 
 **Card with New Keyword**:
-- [ ] Fetch card data from Scryfall (use exact API URL)
-- [ ] **Verify image URI is from Scryfall response** (never hallucinate)
+- [ ] Fetch card data from Scryfall with **set-specific URL** (e.g., `&set=ons`)
+- [ ] **Verify metadata matches the target set** (rarity, collector number, artist, flavor text)
+- [ ] **Verify image URI is from Scryfall response** (never hallucinate, include query param)
+- [ ] Check for errata (oracle text vs printed text)
 - [ ] Add keyword to `mtg-sdk/.../Keyword.kt`
 - [ ] Update keyword handlers if needed
 - [ ] Create card definition
@@ -365,9 +393,12 @@ just build
 ## Important Notes
 
 1. **Always fetch from Scryfall first** - Never guess card text or stats
-2. **NEVER hallucinate image URIs** - Always use the exact `image_uris.normal` from Scryfall API response
-3. **Check existing effects** - Most common effects already exist
-4. **Use immutable patterns** - Never modify state in place
-5. **Test new mechanics** - All new effects/keywords need tests
-6. **Follow naming conventions** - CardName should match file name
-7. **Keep effects data-only** - Logic goes in executors, not effect data classes
+2. **ALWAYS use set-specific API URL** - Use `&set=<code>` to get correct rarity, collector number, artist, and flavor text for the specific printing
+   - Example: `https://api.scryfall.com/cards/named?exact=Elvish+Vanguard&set=ons` for Onslaught version
+3. **NEVER hallucinate image URIs** - Always use the exact `image_uris.normal` from Scryfall API response (including the query parameter)
+4. **Check for errata** - Oracle text may differ from printed text; document significant errata in comments
+5. **Check existing effects** - Most common effects already exist
+6. **Use immutable patterns** - Never modify state in place
+7. **Test new mechanics** - All new effects/keywords need tests
+8. **Follow naming conventions** - CardName should match file name
+9. **Keep effects data-only** - Logic goes in executors, not effect data classes
