@@ -8,8 +8,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class PersistentTournamentLobby(
     val lobbyId: String,
-    val setCodes: List<String>,
-    val setNames: List<String>,
+    val setCodes: List<String> = emptyList(),
+    val setNames: List<String> = emptyList(),
     val format: String = "SEALED",  // TournamentFormat enum name
     val boosterCount: Int,
     val maxPlayers: Int,
