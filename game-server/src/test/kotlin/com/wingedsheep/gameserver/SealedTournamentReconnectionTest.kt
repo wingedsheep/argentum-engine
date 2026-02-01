@@ -88,7 +88,7 @@ class SealedTournamentReconnectionTest : FunSpec() {
                 val hostClient = createClient()
                 val hostConnected = hostClient.connectAs(playerNames[0])
                 hostClient.send(ClientMessage.CreateTournamentLobby(
-                    setCode = "POR",
+                    setCodes = listOf("POR"),
                     format = "SEALED",
                     boosterCount = 6,
                     maxPlayers = 8
@@ -307,7 +307,7 @@ class SealedTournamentReconnectionTest : FunSpec() {
                 val connected1 = client1.connectAs("Host")
 
                 client1.send(ClientMessage.CreateTournamentLobby(
-                    setCode = "POR",
+                    setCodes = listOf("POR"),
                     format = "SEALED",
                     boosterCount = 4, // Custom setting
                     maxPlayers = 6
@@ -346,7 +346,7 @@ class SealedTournamentReconnectionTest : FunSpec() {
                 // Create lobby with 3 players
                 val hostClient = createClient()
                 val hostConnected = hostClient.connectAs(playerNames[0])
-                hostClient.send(ClientMessage.CreateTournamentLobby("POR", "SEALED"))
+                hostClient.send(ClientMessage.CreateTournamentLobby(setCodes = listOf("POR"), format = "SEALED"))
 
                 eventually(5.seconds) {
                     hostClient.messages.any { it is ServerMessage.LobbyCreated } shouldBe true
@@ -400,7 +400,7 @@ class SealedTournamentReconnectionTest : FunSpec() {
                 // Create and start a 2-player lobby
                 val hostClient = createClient()
                 val hostConnected = hostClient.connectAs(playerNames[0])
-                hostClient.send(ClientMessage.CreateTournamentLobby("POR", "SEALED", 6, 2))
+                hostClient.send(ClientMessage.CreateTournamentLobby(setCodes = listOf("POR"), format = "SEALED", boosterCount = 6, maxPlayers = 2))
 
                 eventually(5.seconds) {
                     hostClient.messages.any { it is ServerMessage.LobbyCreated } shouldBe true

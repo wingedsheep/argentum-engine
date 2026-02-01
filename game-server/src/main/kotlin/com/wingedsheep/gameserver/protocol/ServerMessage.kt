@@ -238,12 +238,22 @@ sealed interface ServerMessage {
     )
 
     /**
+     * An available card set for selection in the lobby.
+     */
+    @Serializable
+    data class AvailableSet(
+        val code: String,
+        val name: String
+    )
+
+    /**
      * Lobby settings.
      */
     @Serializable
     data class LobbySettings(
-        val setCode: String,
-        val setName: String,
+        val setCodes: List<String>,
+        val setNames: List<String>,
+        val availableSets: List<AvailableSet> = emptyList(),  // For UI dropdown
         val format: String = "SEALED",      // "SEALED" or "DRAFT"
         val boosterCount: Int,
         val maxPlayers: Int,

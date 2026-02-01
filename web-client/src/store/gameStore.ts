@@ -357,7 +357,7 @@ export interface GameStore {
   unsubmitDeck: () => void
 
   // Lobby actions
-  createTournamentLobby: (setCode: string, format?: 'SEALED' | 'DRAFT', boosterCount?: number, maxPlayers?: number, pickTimeSeconds?: number) => void
+  createTournamentLobby: (setCodes: string[], format?: 'SEALED' | 'DRAFT', boosterCount?: number, maxPlayers?: number, pickTimeSeconds?: number) => void
   /** @deprecated Use createTournamentLobby instead */
   createSealedLobby: (setCode: string, boosterCount?: number, maxPlayers?: number) => void
   joinLobby: (lobbyId: string) => void
@@ -366,7 +366,7 @@ export interface GameStore {
   startSealedLobby: () => void
   leaveLobby: () => void
   stopLobby: () => void
-  updateLobbySettings: (settings: { setCode?: string; format?: 'SEALED' | 'DRAFT'; boosterCount?: number; maxPlayers?: number; gamesPerMatch?: number; pickTimeSeconds?: number; picksPerRound?: number }) => void
+  updateLobbySettings: (settings: { setCodes?: string[]; format?: 'SEALED' | 'DRAFT'; boosterCount?: number; maxPlayers?: number; gamesPerMatch?: number; pickTimeSeconds?: number; picksPerRound?: number }) => void
 
   // Draft actions
   makePick: (cardNames: string[]) => void
@@ -924,7 +924,7 @@ export const useGameStore = create<GameStore>()(
             lobbyId: msg.lobbyId,
             state: 'WAITING_FOR_PLAYERS',
             players: [],
-            settings: { setCode: '', setName: '', format: 'SEALED', boosterCount: 6, maxPlayers: 8, pickTimeSeconds: 45, picksPerRound: 1, gamesPerMatch: 1 },
+            settings: { setCodes: [], setNames: [], availableSets: [], format: 'SEALED', boosterCount: 6, maxPlayers: 8, pickTimeSeconds: 45, picksPerRound: 1, gamesPerMatch: 1 },
             isHost: true,
             draftState: null,
           },
@@ -1046,8 +1046,8 @@ export const useGameStore = create<GameStore>()(
             : null,
           deckBuildingState: {
             phase: 'building',
-            setCode: state.lobbyState?.settings.setCode ?? '',
-            setName: state.lobbyState?.settings.setName ?? '',
+            setCode: state.lobbyState?.settings.setCodes[0] ?? '',
+            setName: state.lobbyState?.settings.setNames[0] ?? '',
             cardPool: msg.pickedCards,
             basicLands: msg.basicLands,
             deck: [],
@@ -1589,15 +1589,15 @@ export const useGameStore = create<GameStore>()(
       },
 
       // Lobby actions
-      createTournamentLobby: (setCode, format = 'SEALED', boosterCount = 6, maxPlayers = 8, pickTimeSeconds = 45) => {
-        trackEvent('tournament_lobby_created', { set_code: setCode, format, booster_count: boosterCount, max_players: maxPlayers })
-        ws?.send(createCreateTournamentLobbyMessage(setCode, format, boosterCount, maxPlayers, pickTimeSeconds))
+      createTournamentLobby: (setCodes, format = 'SEALED', boosterCount = 6, maxPlayers = 8, pickTimeSeconds = 45) => {
+        trackEvent('tournament_lobby_created', { set_codes: setCodes, format, booster_count: boosterCount, max_players: maxPlayers })
+        ws?.send(createCreateTournamentLobbyMessage(setCodes, format, boosterCount, maxPlayers, pickTimeSeconds))
       },
 
       createSealedLobby: (setCode, boosterCount = 6, maxPlayers = 8) => {
         // Backwards compatibility
         trackEvent('sealed_lobby_created', { set_code: setCode, booster_count: boosterCount, max_players: maxPlayers })
-        ws?.send(createCreateTournamentLobbyMessage(setCode, 'SEALED', boosterCount, maxPlayers, 45))
+        ws?.send(createCreateTournamentLobbyMessage([setCode], 'SEALED', boosterCount, maxPlayers, 45))
       },
 
       joinLobby: (lobbyId) => {

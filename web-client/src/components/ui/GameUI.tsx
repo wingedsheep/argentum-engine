@@ -4,11 +4,6 @@ import { useResponsive, type ResponsiveSizes } from '../../hooks/useResponsive'
 
 type GameMode = 'normal' | 'tournament'
 
-// Available sets for tournament play
-const AVAILABLE_SETS = [
-  { code: 'POR', name: 'Portal' },
-]
-
 /**
  * Connection/lobby UI - shown when not in a game.
  * Combat mode and game UI are handled in App.tsx and GameBoard.tsx.
@@ -70,7 +65,7 @@ function ConnectionOverlay({
   const handleCreate = () => {
     if (gameMode === 'tournament') {
       // Create lobby with default settings - host can change in lobby
-      createTournamentLobby('POR', 'SEALED')
+      createTournamentLobby(['POR'], 'SEALED')
     } else {
       createGame(randomDeck)
     }
@@ -408,7 +403,8 @@ function LobbyOverlay({
 
   const isWaiting = lobbyState.state === 'WAITING_FOR_PLAYERS'
   const isDraft = lobbyState.settings.format === 'DRAFT'
-  const canStart = lobbyState.players.length >= 2
+  const hasSelectedSets = lobbyState.settings.setCodes.length > 0
+  const canStart = lobbyState.players.length >= 2 && hasSelectedSets
 
   const copyLobbyId = () => {
     navigator.clipboard.writeText(lobbyState.lobbyId)
@@ -462,7 +458,7 @@ function LobbyOverlay({
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
           }}>
-            {lobbyState.settings.setName || 'Lobby'}
+            {lobbyState.settings.setNames.join(' + ') || 'Lobby'}
           </h1>
           <p style={{ color: '#555', fontSize: responsive.fontSize.small, margin: 0 }}>
             {isDraft
@@ -576,28 +572,37 @@ function LobbyOverlay({
               borderBottom: '1px solid rgba(255, 255, 255, 0.04)',
             }}>
               <span style={{ color: '#888', fontSize: responsive.fontSize.small }}>
-                Set
+                Sets
               </span>
-              <select
-                value={lobbyState.settings.setCode}
-                onChange={(e) => updateLobbySettings({ setCode: e.target.value })}
-                style={{
-                  padding: '5px 10px',
-                  fontSize: responsive.fontSize.small,
-                  backgroundColor: '#1a1a24',
-                  color: 'white',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                  outline: 'none',
-                }}
-              >
-                {AVAILABLE_SETS.map((set) => (
-                  <option key={set.code} value={set.code}>
-                    {set.name}
-                  </option>
-                ))}
-              </select>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                {lobbyState.settings.availableSets.map((set) => {
+                  const isSelected = lobbyState.settings.setCodes.includes(set.code)
+                  return (
+                    <button
+                      key={set.code}
+                      onClick={() => {
+                        const newCodes = isSelected
+                          ? lobbyState.settings.setCodes.filter(c => c !== set.code)
+                          : [...lobbyState.settings.setCodes, set.code]
+                        updateLobbySettings({ setCodes: newCodes })
+                      }}
+                      style={{
+                        padding: '5px 12px',
+                        fontSize: responsive.fontSize.small,
+                        backgroundColor: isSelected ? (isDraft ? '#2196f3' : '#e65100') : '#1a1a24',
+                        color: isSelected ? 'white' : '#666',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        borderRadius: 6,
+                        cursor: 'pointer',
+                        fontWeight: isSelected ? 600 : 400,
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      {set.name}
+                    </button>
+                  )
+                })}
+              </div>
             </div>
             {/* Boosters setting - only for Sealed */}
             {!isDraft && (
@@ -856,6 +861,13 @@ function LobbyOverlay({
             <button
               onClick={startLobby}
               disabled={!canStart}
+              title={
+                !hasSelectedSets
+                  ? 'Select at least one set'
+                  : lobbyState.players.length < 2
+                    ? 'Need at least 2 players'
+                    : undefined
+              }
               style={{
                 flex: 1,
                 padding: '13px 20px',

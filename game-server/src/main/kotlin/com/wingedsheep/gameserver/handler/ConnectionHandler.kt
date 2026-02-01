@@ -142,8 +142,8 @@ class ConnectionHandler(
                     val basicLandInfos = lobby.basicLands.values.map { cardToSealedCardInfo(it) }
                     val poolInfos = playerState.cardPool.map { cardToSealedCardInfo(it) }
                     sender.send(session, ServerMessage.SealedPoolGenerated(
-                        setCode = lobby.setCode,
-                        setName = lobby.setName,
+                        setCode = lobby.setCodes.firstOrNull() ?: "",
+                        setName = lobby.setNames.firstOrNull() ?: "",
                         cardPool = poolInfos,
                         basicLands = basicLandInfos
                     ))

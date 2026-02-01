@@ -27,8 +27,8 @@ import com.wingedsheep.sdk.model.EntityId
 fun TournamentLobby.toPersistent(): PersistentTournamentLobby {
     return PersistentTournamentLobby(
         lobbyId = lobbyId,
-        setCode = setCode,
-        setName = setName,
+        setCodes = setCodes,
+        setNames = setNames,
         format = format.name,
         boosterCount = boosterCount,
         maxPlayers = maxPlayers,
@@ -73,8 +73,8 @@ fun restoreTournamentLobby(
 ): Pair<TournamentLobby, List<PlayerIdentity>> {
     val lobby = TournamentLobby(
         lobbyId = persistent.lobbyId,
-        setCode = persistent.setCode,
-        setName = persistent.setName,
+        setCodes = persistent.setCodes,
+        setNames = persistent.setNames,
         format = TournamentFormat.valueOf(persistent.format),
         boosterCount = persistent.boosterCount,
         maxPlayers = persistent.maxPlayers,

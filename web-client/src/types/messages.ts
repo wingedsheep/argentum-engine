@@ -470,9 +470,15 @@ export interface LobbyPlayerInfo {
   readonly deckSubmitted: boolean
 }
 
+export interface AvailableSet {
+  readonly code: string
+  readonly name: string
+}
+
 export interface LobbySettings {
-  readonly setCode: string
-  readonly setName: string
+  readonly setCodes: readonly string[]
+  readonly setNames: readonly string[]
+  readonly availableSets: readonly AvailableSet[]
   readonly format: 'SEALED' | 'DRAFT'
   readonly boosterCount: number
   readonly maxPlayers: number
@@ -992,7 +998,7 @@ export function createSubmitSealedDeckMessage(deckList: Record<string, number>):
 
 export interface CreateTournamentLobbyMessage {
   readonly type: 'createTournamentLobby'
-  readonly setCode: string
+  readonly setCodes: readonly string[]
   readonly format: 'SEALED' | 'DRAFT'
   readonly boosterCount: number
   readonly maxPlayers: number
@@ -1027,7 +1033,7 @@ export interface UnsubmitDeckMessage {
 
 export interface UpdateLobbySettingsMessage {
   readonly type: 'updateLobbySettings'
-  readonly setCode?: string
+  readonly setCodes?: readonly string[]
   readonly format?: 'SEALED' | 'DRAFT'
   readonly boosterCount?: number
   readonly maxPlayers?: number
@@ -1065,13 +1071,13 @@ export interface UpdateBlockerAssignmentsMessage {
 
 // Lobby Message Factories
 export function createCreateTournamentLobbyMessage(
-  setCode: string,
+  setCodes: readonly string[],
   format: 'SEALED' | 'DRAFT' = 'SEALED',
   boosterCount: number = 6,
   maxPlayers: number = 8,
   pickTimeSeconds: number = 45
 ): CreateTournamentLobbyMessage {
-  return { type: 'createTournamentLobby', setCode, format, boosterCount, maxPlayers, pickTimeSeconds }
+  return { type: 'createTournamentLobby', setCodes, format, boosterCount, maxPlayers, pickTimeSeconds }
 }
 
 // Backwards compatibility alias
@@ -1080,7 +1086,7 @@ export function createCreateSealedLobbyMessage(
   boosterCount: number = 6,
   maxPlayers: number = 8
 ): CreateTournamentLobbyMessage {
-  return createCreateTournamentLobbyMessage(setCode, 'SEALED', boosterCount, maxPlayers, 45)
+  return createCreateTournamentLobbyMessage([setCode], 'SEALED', boosterCount, maxPlayers, 45)
 }
 
 export function createJoinLobbyMessage(lobbyId: string): JoinLobbyMessage {
@@ -1114,7 +1120,7 @@ export function createUnsubmitDeckMessage(): UnsubmitDeckMessage {
 
 export function createUpdateLobbySettingsMessage(
   settings: {
-    setCode?: string
+    setCodes?: readonly string[]
     format?: 'SEALED' | 'DRAFT'
     boosterCount?: number
     maxPlayers?: number

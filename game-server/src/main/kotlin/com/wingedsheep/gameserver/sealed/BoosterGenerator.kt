@@ -3,6 +3,7 @@ package com.wingedsheep.gameserver.sealed
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.mtg.sets.definitions.portal.PortalSet
+import com.wingedsheep.mtg.sets.definitions.onslaught.OnslaughtSet
 
 /**
  * Generates booster packs and sealed pools from card sets.
@@ -34,6 +35,12 @@ class BoosterGenerator {
                 setName = PortalSet.SET_NAME,
                 cards = PortalSet.allCards,
                 basicLands = PortalSet.basicLands
+            ),
+            OnslaughtSet.SET_CODE to SetConfig(
+                setCode = OnslaughtSet.SET_CODE,
+                setName = OnslaughtSet.SET_NAME,
+                cards = OnslaughtSet.allCards,
+                basicLands = PortalSet.basicLands  // Use Portal lands for now
             )
         )
 
@@ -58,6 +65,31 @@ class BoosterGenerator {
     }
 
     /**
+     * Generate a single 15-card booster pack from multiple sets.
+     * Combines the card pools from all specified sets.
+     *
+     * @param setCodes The set codes to generate from
+     * @return List of 15 card definitions
+     * @throws IllegalArgumentException if any set code is not found
+     */
+    fun generateBooster(setCodes: List<String>): List<CardDefinition> {
+        if (setCodes.isEmpty()) {
+            throw IllegalArgumentException("At least one set code is required")
+        }
+        if (setCodes.size == 1) {
+            return generateBooster(setCodes.first())
+        }
+
+        val combinedCards = setCodes.flatMap { setCode ->
+            val setConfig = availableSets[setCode]
+                ?: throw IllegalArgumentException("Unknown set code: $setCode")
+            setConfig.cards
+        }
+
+        return generateBoosterFromCards(combinedCards)
+    }
+
+    /**
      * Generate a sealed pool of 90 cards (6 boosters) from the specified set.
      *
      * @param setCode The set code to generate from
@@ -67,6 +99,18 @@ class BoosterGenerator {
      */
     fun generateSealedPool(setCode: String, boosterCount: Int = 6): List<CardDefinition> {
         return (1..boosterCount).flatMap { generateBooster(setCode) }
+    }
+
+    /**
+     * Generate a sealed pool from multiple sets.
+     *
+     * @param setCodes The set codes to generate from
+     * @param boosterCount Number of boosters to open (default 6)
+     * @return List of all cards in the sealed pool
+     * @throws IllegalArgumentException if any set code is not found
+     */
+    fun generateSealedPool(setCodes: List<String>, boosterCount: Int = 6): List<CardDefinition> {
+        return (1..boosterCount).flatMap { generateBooster(setCodes) }
     }
 
     /**
@@ -83,6 +127,21 @@ class BoosterGenerator {
         return setConfig.basicLands
             .groupBy { it.name }
             .mapValues { (_, variants) -> variants.first() }
+    }
+
+    /**
+     * Get basic lands available for deck building from multiple sets.
+     * Uses the basic lands from the first set that has them.
+     *
+     * @param setCodes The set codes
+     * @return Map of land name to CardDefinition (one variant per type)
+     */
+    fun getBasicLands(setCodes: List<String>): Map<String, CardDefinition> {
+        if (setCodes.isEmpty()) {
+            throw IllegalArgumentException("At least one set code is required")
+        }
+        // Use basic lands from the first set
+        return getBasicLands(setCodes.first())
     }
 
     private fun generateBoosterFromCards(allCards: List<CardDefinition>): List<CardDefinition> {

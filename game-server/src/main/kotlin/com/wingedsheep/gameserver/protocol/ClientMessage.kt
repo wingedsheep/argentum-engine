@@ -115,7 +115,7 @@ sealed interface ClientMessage {
     @Serializable
     @SerialName("createTournamentLobby")
     data class CreateTournamentLobby(
-        val setCode: String,
+        val setCodes: List<String>,
         val format: String = "SEALED",     // "SEALED" or "DRAFT"
         val boosterCount: Int = 6,         // Sealed: boosters in pool, Draft: packs per player
         val maxPlayers: Int = 8,
@@ -174,7 +174,7 @@ sealed interface ClientMessage {
     @Serializable
     @SerialName("updateLobbySettings")
     data class UpdateLobbySettings(
-        val setCode: String? = null,
+        val setCodes: List<String>? = null,
         val format: String? = null,           // "SEALED" or "DRAFT"
         val boosterCount: Int? = null,
         val maxPlayers: Int? = null,
