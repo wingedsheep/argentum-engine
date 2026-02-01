@@ -3,7 +3,8 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CardFilter
-import com.wingedsheep.sdk.scripting.SearchLibraryToTopEffect
+import com.wingedsheep.sdk.scripting.SearchDestination
+import com.wingedsheep.sdk.scripting.SearchLibraryEffect
 
 /**
  * Personal Tutor
@@ -16,7 +17,11 @@ val PersonalTutor = card("Personal Tutor") {
     typeLine = "Sorcery"
 
     spell {
-        effect = SearchLibraryToTopEffect(CardFilter.SorceryCard, reveal = true)
+        effect = SearchLibraryEffect(
+            filter = CardFilter.SorceryCard,
+            destination = SearchDestination.TOP_OF_LIBRARY,
+            reveal = true
+        )
     }
 
     metadata {

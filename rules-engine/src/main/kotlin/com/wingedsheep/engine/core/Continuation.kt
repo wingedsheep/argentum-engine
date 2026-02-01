@@ -316,31 +316,6 @@ data class BlockerOrderContinuation(
 ) : ContinuationFrame
 
 /**
- * Resume after player selects a card from library for "search and put on top" effects.
- *
- * Used for tutor effects like Cruel Tutor and Personal Tutor where the card is
- * shuffled into the library first, then the selected card is placed on top.
- *
- * The key difference from SearchLibraryContinuation with TOP_OF_LIBRARY destination:
- * - SearchLibraryContinuation: put on top, then shuffle (card gets shuffled back in)
- * - SearchLibraryToTopContinuation: shuffle first, then put on top (card stays on top)
- *
- * @property playerId The player who is searching
- * @property sourceId The spell/ability that caused the search
- * @property sourceName Name of the source for event messages
- * @property filter The card filter that was used
- */
-@Serializable
-data class SearchLibraryToTopContinuation(
-    override val decisionId: String,
-    val playerId: EntityId,
-    val sourceId: EntityId?,
-    val sourceName: String?,
-    val filter: CardFilter,
-    val reveal: Boolean = false
-) : ContinuationFrame
-
-/**
  * Resume after a player chooses how many cards to draw for "each player may draw" effects.
  *
  * Used for effects like Temporary Truce where each player chooses how many cards (0-N)
