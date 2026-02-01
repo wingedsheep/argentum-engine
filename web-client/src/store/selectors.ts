@@ -69,6 +69,25 @@ export const selectHasPriority = (state: GameStore): boolean => {
 }
 
 /**
+ * Priority mode for visual indication.
+ * - ownTurn: Player has priority on their own turn (proactive)
+ * - responding: Player has priority on opponent's turn (reactive)
+ * - waiting: Player does not have priority
+ */
+export type PriorityMode = 'ownTurn' | 'responding' | 'waiting'
+
+/**
+ * Select the current priority mode for visual styling.
+ */
+export const selectPriorityMode = (state: GameStore): PriorityMode => {
+  const isMyTurn = selectIsMyTurn(state)
+  const hasPriority = selectHasPriority(state)
+  if (!hasPriority) return 'waiting'
+  if (isMyTurn) return 'ownTurn'
+  return 'responding'
+}
+
+/**
  * Select the current phase.
  */
 export const selectCurrentPhase = (state: GameStore) => state.gameState?.currentPhase ?? null

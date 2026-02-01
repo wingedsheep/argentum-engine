@@ -1,5 +1,5 @@
 import { useGameStore } from '../../store/gameStore'
-import { useViewingPlayer, useOpponent, useZoneCards, useZone, useBattlefieldCards, useHasLegalActions, useStackCards, groupCards, type GroupedCard } from '../../store/selectors'
+import { useViewingPlayer, useOpponent, useZoneCards, useZone, useBattlefieldCards, useHasLegalActions, useStackCards, groupCards, type GroupedCard, selectPriorityMode } from '../../store/selectors'
 import { hand, graveyard, exile, getNextStep, StepShortNames } from '../../types'
 import type { ClientCard, ZoneId, ClientPlayer, LegalActionInfo, EntityId, Keyword, ClientPlayerEffect, ClientCardEffect } from '../../types'
 import { CounterType } from '../../types'
@@ -182,6 +182,7 @@ export function GameBoard() {
   const playerId = useGameStore((state) => state.playerId)
   const submitAction = useGameStore((state) => state.submitAction)
   const combatState = useGameStore((state) => state.combatState)
+  const priorityMode = useGameStore(selectPriorityMode)
   const responsive = useResponsive()
 
   const viewingPlayer = useViewingPlayer()
@@ -193,6 +194,7 @@ export function GameBoard() {
   }
 
   const hasPriority = gameState.priorityPlayerId === viewingPlayer.playerId
+  const isMyTurn = gameState.activePlayerId === viewingPlayer.playerId
   const isInCombatMode = combatState !== null
 
 
@@ -215,6 +217,30 @@ export function GameBoard() {
     return 'Pass'
   }
 
+  // Get pass button colors based on priority mode
+  const getPassButtonStyle = (): React.CSSProperties => {
+    const hasStack = stackCards.length > 0
+    if (hasStack) {
+      // Resolve - keep orange
+      return {
+        backgroundColor: '#c76e00',
+        borderColor: '#e08000',
+      }
+    }
+    if (priorityMode === 'ownTurn') {
+      // Own turn - blue/cyan
+      return {
+        backgroundColor: '#1976d2',
+        borderColor: '#4fc3f7',
+      }
+    }
+    // Responding - amber/gold
+    return {
+      backgroundColor: '#f57c00',
+      borderColor: '#ffc107',
+    }
+  }
+
   return (
     <ResponsiveContext.Provider value={responsive}>
     <div style={{
@@ -229,7 +255,11 @@ export function GameBoard() {
       <ConcedeButton />
 
       {/* Opponent area (top) */}
-      <div style={styles.opponentArea}>
+      <div style={{
+        ...styles.opponentArea,
+        borderLeft: priorityMode === 'responding' ? '3px solid #ffc107' : '3px solid transparent',
+        transition: 'border-color 0.2s',
+      }}>
         <div style={styles.playerRowWithZones}>
           <div style={styles.playerMainArea}>
             {/* Opponent hand (face down) */}
@@ -271,8 +301,9 @@ export function GameBoard() {
           phase={gameState.currentPhase}
           step={gameState.currentStep}
           turnNumber={gameState.turnNumber}
-          isActivePlayer={gameState.activePlayerId === viewingPlayer.playerId}
+          isActivePlayer={isMyTurn}
           hasPriority={hasPriority}
+          priorityMode={priorityMode}
         />
 
         {/* Player life (right side) */}
@@ -289,7 +320,11 @@ export function GameBoard() {
 
 
       {/* Player area (bottom) */}
-      <div style={styles.playerArea}>
+      <div style={{
+        ...styles.playerArea,
+        borderLeft: priorityMode === 'ownTurn' ? '3px solid #4fc3f7' : '3px solid transparent',
+        transition: 'border-color 0.2s',
+      }}>
         <div style={styles.playerRowWithZones}>
           <div style={styles.playerMainArea}>
             {/* Player battlefield - creatures first (closer to center), then lands */}
@@ -321,8 +356,11 @@ export function GameBoard() {
           }}
           style={{
             ...styles.floatingPassButton,
+            ...getPassButtonStyle(),
             padding: responsive.isMobile ? '10px 20px' : '12px 28px',
             fontSize: responsive.fontSize.normal,
+            border: `2px solid ${getPassButtonStyle().borderColor}`,
+            transition: 'background-color 0.2s, border-color 0.2s',
           }}
         >
           {getPassButtonLabel()}
