@@ -2,6 +2,7 @@ package com.wingedsheep.gameserver.protocol
 
 import com.wingedsheep.gameserver.dto.ClientEvent
 import com.wingedsheep.gameserver.dto.ClientGameState
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.engine.core.GameAction
 import com.wingedsheep.engine.core.PendingDecision
@@ -179,8 +180,8 @@ sealed interface ServerMessage {
     @SerialName("sealedGameCreated")
     data class SealedGameCreated(
         val sessionId: String,
-        val setCode: String,
-        val setName: String
+        val setCodes: List<String>,
+        val setNames: List<String>
     ) : ServerMessage
 
     /**
@@ -190,10 +191,10 @@ sealed interface ServerMessage {
     @Serializable
     @SerialName("sealedPoolGenerated")
     data class SealedPoolGenerated(
-        /** Set code (e.g., "POR") */
-        val setCode: String,
-        /** Set name (e.g., "Portal") */
-        val setName: String,
+        /** Set codes (e.g., ["POR", "ONS"]) */
+        val setCodes: List<String>,
+        /** Set names (e.g., ["Portal", "Onslaught"]) */
+        val setNames: List<String>,
         /** 90 cards from 6 boosters */
         val cardPool: List<SealedCardInfo>,
         /** 5 basic land types available for deck building */
@@ -650,7 +651,24 @@ data class LegalActionInfo(
     /** Whether this is a mana ability (doesn't highlight card as playable) */
     val isManaAbility: Boolean = false,
     /** Additional cost info - sacrifice targets, etc. */
-    val additionalCostInfo: AdditionalCostInfo? = null
+    val additionalCostInfo: AdditionalCostInfo? = null,
+    /** Whether this spell has Convoke */
+    val hasConvoke: Boolean = false,
+    /** Creatures that can be tapped to help pay for Convoke */
+    val validConvokeCreatures: List<ConvokeCreatureInfo>? = null,
+    /** The spell's mana cost for Convoke UI display */
+    val manaCostString: String? = null
+)
+
+/**
+ * Information about a creature that can be tapped for Convoke.
+ */
+@Serializable
+data class ConvokeCreatureInfo(
+    val entityId: EntityId,
+    val name: String,
+    /** Colors this creature can pay (based on its colors) */
+    val colors: Set<Color>
 )
 
 /**

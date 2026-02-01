@@ -29,6 +29,19 @@ data class GrantKeyword(
 }
 
 /**
+ * Grants a keyword to a group of creatures (continuous static ability).
+ * Used for lord effects like "Other creatures you control have flying" or
+ * conditional effects like "Other tapped creatures you control have indestructible."
+ */
+@Serializable
+data class GrantKeywordToCreatureGroup(
+    val keyword: Keyword,
+    val filter: CreatureGroupFilter
+) : StaticAbility {
+    override val description: String = "${filter.description} have ${keyword.name.lowercase().replace('_', ' ')}"
+}
+
+/**
  * Modifies power/toughness (e.g., +2/+2 from an Equipment).
  */
 @Serializable

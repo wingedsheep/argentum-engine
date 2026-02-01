@@ -4,10 +4,12 @@ import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
@@ -79,8 +81,16 @@ class CostHandler {
                 cost.costs.all { canPayAbilityCost(state, it, sourceId, controllerId, manaPool) }
             }
             is AbilityCost.Loyalty -> {
-                // TODO: Check loyalty counters
-                true
+                // Check if we have enough loyalty to pay the cost
+                // Positive changes (like +1) can always be paid
+                // Negative changes (like -2) require at least that many counters
+                if (cost.change >= 0) {
+                    true
+                } else {
+                    val counters = state.getEntity(sourceId)?.get<CountersComponent>()
+                    val currentLoyalty = counters?.getCount(CounterType.LOYALTY) ?: 0
+                    currentLoyalty >= -cost.change
+                }
             }
         }
     }
@@ -150,8 +160,17 @@ class CostHandler {
                 CostPaymentResult.success(currentState, currentPool)
             }
             is AbilityCost.Loyalty -> {
-                // TODO: Adjust loyalty counters
-                CostPaymentResult.success(state, manaPool)
+                // Adjust loyalty counters based on the cost change
+                val newState = state.updateEntity(sourceId) { container ->
+                    val counters = container.get<CountersComponent>() ?: CountersComponent()
+                    val newCounters = if (cost.change >= 0) {
+                        counters.withAdded(CounterType.LOYALTY, cost.change)
+                    } else {
+                        counters.withRemoved(CounterType.LOYALTY, -cost.change)
+                    }
+                    container.with(newCounters)
+                }
+                CostPaymentResult.success(newState, manaPool)
             }
         }
     }

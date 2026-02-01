@@ -39,7 +39,8 @@ class CreateTokenExecutor : EffectExecutor<CreateTokenEffect> {
             createdTokens.add(tokenId)
 
             // Create token entity
-            val tokenName = "${effect.creatureTypes.joinToString(" ")} Token"
+            val defaultName = "${effect.creatureTypes.joinToString(" ")} Token"
+            val tokenName = effect.name ?: defaultName
             val tokenComponent = CardComponent(
                 cardDefinitionId = "token:$tokenName",
                 name = tokenName,
@@ -48,7 +49,8 @@ class CreateTokenExecutor : EffectExecutor<CreateTokenEffect> {
                 baseStats = CreatureStats(effect.power, effect.toughness),
                 baseKeywords = effect.keywords,
                 colors = effect.colors,
-                ownerId = context.controllerId
+                ownerId = context.controllerId,
+                imageUri = effect.imageUri
             )
 
             val container = ComponentContainer.of(

@@ -969,6 +969,15 @@ data class StoreCountEffect(
 /**
  * Create token effect.
  * "Create a 1/1 white Soldier creature token"
+ *
+ * @property count Number of tokens to create
+ * @property power Token power
+ * @property toughness Token toughness
+ * @property colors Token colors
+ * @property creatureTypes Token creature types (e.g., "Soldier", "Kithkin")
+ * @property keywords Keywords the token has (e.g., flying, vigilance)
+ * @property name Optional token name (defaults to creature types + "Token")
+ * @property imageUri Optional image URI for the token artwork
  */
 @Serializable
 data class CreateTokenEffect(
@@ -977,7 +986,9 @@ data class CreateTokenEffect(
     val toughness: Int,
     val colors: Set<Color>,
     val creatureTypes: Set<String>,
-    val keywords: Set<Keyword> = emptySet()
+    val keywords: Set<Keyword> = emptySet(),
+    val name: String? = null,
+    val imageUri: String? = null
 ) : Effect {
     override val description: String = buildString {
         append("Create ")
@@ -2430,6 +2441,12 @@ sealed interface CreatureGroupFilter {
     @Serializable
     data class WithKeywordYouControl(val keyword: Keyword) : CreatureGroupFilter {
         override val description: String = "Creatures you control with ${keyword.displayName.lowercase()}"
+    }
+
+    /** Other tapped creatures you control (excludes self) */
+    @Serializable
+    data object OtherTappedYouControl : CreatureGroupFilter {
+        override val description: String = "Other tapped creatures you control"
     }
 
     /** All nonwhite creatures */

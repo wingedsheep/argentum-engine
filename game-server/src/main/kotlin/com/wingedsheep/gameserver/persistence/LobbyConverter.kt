@@ -142,8 +142,8 @@ fun restoreTournamentLobby(
 fun SealedSession.toPersistent(): PersistentSealedSession {
     return PersistentSealedSession(
         sessionId = sessionId,
-        setCode = setCode,
-        setName = setName,
+        setCodes = setCodes,
+        setNames = setNames,
         state = state.name,
         players = players.mapKeys { it.key.value }.mapValues { (_, playerState) ->
             PersistentSealedPlayer(

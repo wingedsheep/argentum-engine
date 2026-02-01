@@ -8,6 +8,7 @@ import type {
   ClientEvent,
   GameAction,
   LegalActionInfo,
+  ConvokeCreatureInfo,
   GameOverReason,
   ErrorCode,
   PendingDecision,
@@ -188,6 +189,30 @@ export interface XSelectionState {
 }
 
 /**
+ * Selected creature for Convoke with its payment choice.
+ */
+export interface ConvokeCreatureSelection {
+  entityId: EntityId
+  name: string
+  /** If set, this creature pays for this color. If null, pays for generic. */
+  payingColor: string | null
+}
+
+/**
+ * Convoke selection state when casting spells with Convoke.
+ */
+export interface ConvokeSelectionState {
+  actionInfo: LegalActionInfo
+  cardName: string
+  /** Original mana cost of the spell */
+  manaCost: string
+  /** Creatures that have been selected for Convoke */
+  selectedCreatures: ConvokeCreatureSelection[]
+  /** All valid creatures that can be tapped for Convoke */
+  validCreatures: readonly ConvokeCreatureInfo[]
+}
+
+/**
  * Deck building state during sealed draft.
  */
 export interface DeckBuildingState {
@@ -301,6 +326,7 @@ export interface GameStore {
   targetingState: TargetingState | null
   combatState: CombatState | null
   xSelectionState: XSelectionState | null
+  convokeSelectionState: ConvokeSelectionState | null
   hoveredCardId: EntityId | null
   draggingBlockerId: EntityId | null
   draggingCardId: EntityId | null
@@ -405,6 +431,11 @@ export interface GameStore {
   updateXValue: (x: number) => void
   cancelXSelection: () => void
   confirmXSelection: () => void
+  // Convoke selection actions
+  startConvokeSelection: (state: ConvokeSelectionState) => void
+  toggleConvokeCreature: (entityId: EntityId, name: string, payingColor: string | null) => void
+  cancelConvokeSelection: () => void
+  confirmConvokeSelection: () => void
   returnToMenu: () => void
   leaveTournament: () => void
   clearError: () => void
@@ -1276,6 +1307,7 @@ export const useGameStore = create<GameStore>()(
       targetingState: null,
       combatState: null,
       xSelectionState: null,
+      convokeSelectionState: null,
       hoveredCardId: null,
       draggingBlockerId: null,
       draggingCardId: null,
@@ -2104,6 +2136,81 @@ export const useGameStore = create<GameStore>()(
         set({ xSelectionState: null })
       },
 
+      // Convoke selection actions
+      startConvokeSelection: (convokeSelectionState) => {
+        set({ convokeSelectionState })
+      },
+
+      toggleConvokeCreature: (entityId, name, payingColor) => {
+        set((state) => {
+          if (!state.convokeSelectionState) return state
+          const { selectedCreatures } = state.convokeSelectionState
+          const existingIndex = selectedCreatures.findIndex((c) => c.entityId === entityId)
+
+          let newSelectedCreatures: ConvokeCreatureSelection[]
+          if (existingIndex >= 0) {
+            // Remove the creature
+            newSelectedCreatures = selectedCreatures.filter((c) => c.entityId !== entityId)
+          } else {
+            // Add the creature
+            newSelectedCreatures = [...selectedCreatures, { entityId, name, payingColor }]
+          }
+
+          return {
+            convokeSelectionState: {
+              ...state.convokeSelectionState,
+              selectedCreatures: newSelectedCreatures,
+            },
+          }
+        })
+      },
+
+      cancelConvokeSelection: () => {
+        set({ convokeSelectionState: null })
+      },
+
+      confirmConvokeSelection: () => {
+        const { convokeSelectionState, startTargeting, playerId } = get()
+        if (!convokeSelectionState || !playerId) return
+
+        const { actionInfo, selectedCreatures } = convokeSelectionState
+
+        if (actionInfo.action.type === 'CastSpell') {
+          const baseAction = actionInfo.action
+
+          // Build the convokedCreatures map for AlternativePaymentChoice
+          const convokedCreatures: Record<string, { color: string | null }> = {}
+          for (const creature of selectedCreatures) {
+            convokedCreatures[creature.entityId] = { color: creature.payingColor }
+          }
+
+          // Build the action with alternativePayment
+          const actionWithConvoke = {
+            ...baseAction,
+            alternativePayment: {
+              delvedCards: [],
+              convokedCreatures,
+            },
+          }
+
+          // Check if the spell also requires targets
+          if (actionInfo.requiresTargets && actionInfo.validTargets && actionInfo.validTargets.length > 0) {
+            startTargeting({
+              action: actionWithConvoke,
+              validTargets: [...actionInfo.validTargets],
+              selectedTargets: [],
+              minTargets: actionInfo.minTargets ?? actionInfo.targetCount ?? 1,
+              maxTargets: actionInfo.targetCount ?? 1,
+            })
+          } else {
+            // No targets needed, submit directly
+            ws?.send(createSubmitActionMessage(actionWithConvoke))
+          }
+        }
+
+        set({ convokeSelectionState: null })
+      },
+
       returnToMenu: () => {
         const state = get()
         // If in a tournament, only clear game state, not tournament/lobby state
@@ -2120,6 +2227,7 @@ export const useGameStore = create<GameStore>()(
           targetingState: null,
           combatState: null,
           xSelectionState: null,
+          convokeSelectionState: null,
           hoveredCardId: null,
           draggingBlockerId: null,
           draggingCardId: null,

@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.mtg.sets.definitions.portal.PortalSet
 import com.wingedsheep.mtg.sets.definitions.onslaught.OnslaughtSet
+import kotlin.random.Random
 
 /**
  * Generates booster packs and sealed pools from card sets.
@@ -65,28 +66,29 @@ class BoosterGenerator {
     }
 
     /**
-     * Generate a single 15-card booster pack from multiple sets.
-     * Combines the card pools from all specified sets.
+     * Generate a single 15-card booster pack from one of the specified sets.
+     * Randomly selects one set and generates a booster from that set only.
+     * Each booster contains cards from a single set, never mixed.
      *
-     * @param setCodes The set codes to generate from
-     * @return List of 15 card definitions
+     * @param setCodes The set codes to choose from
+     * @return List of 15 card definitions from a single randomly-selected set
      * @throws IllegalArgumentException if any set code is not found
      */
     fun generateBooster(setCodes: List<String>): List<CardDefinition> {
         if (setCodes.isEmpty()) {
             throw IllegalArgumentException("At least one set code is required")
         }
-        if (setCodes.size == 1) {
-            return generateBooster(setCodes.first())
+
+        // Validate all set codes exist
+        setCodes.forEach { setCode ->
+            if (availableSets[setCode] == null) {
+                throw IllegalArgumentException("Unknown set code: $setCode")
+            }
         }
 
-        val combinedCards = setCodes.flatMap { setCode ->
-            val setConfig = availableSets[setCode]
-                ?: throw IllegalArgumentException("Unknown set code: $setCode")
-            setConfig.cards
-        }
-
-        return generateBoosterFromCards(combinedCards)
+        // Pick a random set and generate a booster from it
+        val selectedSet = setCodes.random()
+        return generateBooster(selectedSet)
     }
 
     /**
@@ -102,15 +104,68 @@ class BoosterGenerator {
     }
 
     /**
-     * Generate a sealed pool from multiple sets.
+     * Generate a sealed pool from multiple sets with equal distribution.
+     * Boosters are distributed evenly across all sets. Any remainder is
+     * distributed deterministically based on the distributionSeed.
+     *
+     * Example: 2 sets with 6 boosters → 3 boosters from each set
+     * Example: 3 sets with 6 boosters → 2 boosters from each set
+     * Example: 2 sets with 5 boosters → 3 from one set, 2 from the other
      *
      * @param setCodes The set codes to generate from
      * @param boosterCount Number of boosters to open (default 6)
+     * @param distributionSeed Seed for remainder distribution. Use the same seed
+     *                         for all players in a tournament to ensure they get
+     *                         the same set distribution (e.g., both get 3 Portal + 2 Onslaught).
+     *                         If null, uses random distribution.
      * @return List of all cards in the sealed pool
      * @throws IllegalArgumentException if any set code is not found
      */
-    fun generateSealedPool(setCodes: List<String>, boosterCount: Int = 6): List<CardDefinition> {
-        return (1..boosterCount).flatMap { generateBooster(setCodes) }
+    fun generateSealedPool(
+        setCodes: List<String>,
+        boosterCount: Int = 6,
+        distributionSeed: Long? = null
+    ): List<CardDefinition> {
+        if (setCodes.isEmpty()) {
+            throw IllegalArgumentException("At least one set code is required")
+        }
+        if (setCodes.size == 1) {
+            return generateSealedPool(setCodes.first(), boosterCount)
+        }
+
+        // Validate all set codes exist
+        setCodes.forEach { setCode ->
+            if (availableSets[setCode] == null) {
+                throw IllegalArgumentException("Unknown set code: $setCode")
+            }
+        }
+
+        // Use seeded random for deterministic distribution, or default random
+        val distributionRandom = distributionSeed?.let { Random(it) } ?: Random
+
+        // Calculate even distribution
+        val boostersPerSet = boosterCount / setCodes.size
+        val remainder = boosterCount % setCodes.size
+
+        // Build list of set codes for each booster
+        val boosterAssignments = mutableListOf<String>()
+
+        // Add base allocation for each set
+        setCodes.forEach { setCode ->
+            repeat(boostersPerSet) {
+                boosterAssignments.add(setCode)
+            }
+        }
+
+        // Distribute remainder using seeded random (deterministic for same seed)
+        val shuffledSets = setCodes.shuffled(distributionRandom)
+        repeat(remainder) { i ->
+            boosterAssignments.add(shuffledSets[i])
+        }
+
+        // Note: We don't shuffle the final assignments - each player gets their
+        // own random card contents anyway, only the set distribution needs to match
+        return boosterAssignments.flatMap { generateBooster(it) }
     }
 
     /**

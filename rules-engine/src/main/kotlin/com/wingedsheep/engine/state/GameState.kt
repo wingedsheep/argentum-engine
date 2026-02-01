@@ -236,6 +236,12 @@ data class GameState(
         getZone(playerId, ZoneType.GRAVEYARD)
 
     /**
+     * Get a player's exile zone.
+     */
+    fun getExile(playerId: EntityId): List<EntityId> =
+        getZone(playerId, ZoneType.EXILE)
+
+    /**
      * Remove an entity completely from the game (from all zones).
      */
     fun removeEntity(entityId: EntityId): GameState {

@@ -45,8 +45,8 @@ data class PersistentLobbyPlayer(
 @Serializable
 data class PersistentSealedSession(
     val sessionId: String,
-    val setCode: String,
-    val setName: String,
+    val setCodes: List<String>,
+    val setNames: List<String>,
     val state: String,  // SealedSessionState enum name
     val players: Map<String, PersistentSealedPlayer>  // playerId.value -> player state
 )

@@ -41,6 +41,18 @@ data class CountersComponent(
             CountersComponent(counters + (type to newCount))
         }
     }
+
+    /**
+     * Set counters to a specific value.
+     * Used for planeswalkers entering the battlefield with starting loyalty.
+     */
+    fun withCounters(type: CounterType, amount: Int): CountersComponent {
+        return if (amount <= 0) {
+            CountersComponent(counters - type)
+        } else {
+            CountersComponent(counters + (type to amount))
+        }
+    }
 }
 
 /**

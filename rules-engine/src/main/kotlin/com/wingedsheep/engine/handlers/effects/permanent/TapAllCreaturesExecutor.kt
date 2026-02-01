@@ -78,6 +78,11 @@ class TapAllCreaturesExecutor : EffectExecutor<TapAllCreaturesEffect> {
 
             is CreatureGroupFilter.WithKeywordYouControl ->
                 controllerId == context.controllerId && cardComponent.baseKeywords.contains(filter.keyword)
+
+            is CreatureGroupFilter.OtherTappedYouControl -> {
+                val isTapped = state.getEntity(entityId)?.has<com.wingedsheep.engine.state.components.battlefield.TappedComponent>() ?: false
+                entityId != context.sourceId && controllerId == context.controllerId && isTapped
+            }
         }
     }
 }

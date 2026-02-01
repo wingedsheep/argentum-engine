@@ -66,23 +66,33 @@ class LobbyHandler(
             return
         }
 
-        val setConfig = BoosterGenerator.getSetConfig(message.setCode)
-        if (setConfig == null) {
-            sender.sendError(session, ErrorCode.INVALID_ACTION, "Unknown set code: ${message.setCode}")
+        if (message.setCodes.isEmpty()) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "At least one set code is required")
             return
         }
 
-        val sealedSession = SealedSession(setCode = setConfig.setCode, setName = setConfig.setName)
+        // Validate all set codes
+        val setConfigs = message.setCodes.map { setCode ->
+            BoosterGenerator.getSetConfig(setCode) ?: run {
+                sender.sendError(session, ErrorCode.INVALID_ACTION, "Unknown set code: $setCode")
+                return
+            }
+        }
+
+        val sealedSession = SealedSession(
+            setCodes = setConfigs.map { it.setCode },
+            setNames = setConfigs.map { it.setName }
+        )
         sealedSession.addPlayer(playerSession)
 
         lobbyRepository.saveSealedSession(sealedSession)
         waitingSealedSession = sealedSession
 
-        logger.info("Sealed game created: ${sealedSession.sessionId} by ${playerSession.playerName} (set: ${setConfig.setName})")
+        logger.info("Sealed game created: ${sealedSession.sessionId} by ${playerSession.playerName} (sets: ${setConfigs.map { it.setName }})")
         sender.send(session, ServerMessage.SealedGameCreated(
             sessionId = sealedSession.sessionId,
-            setCode = setConfig.setCode,
-            setName = setConfig.setName
+            setCodes = sealedSession.setCodes,
+            setNames = sealedSession.setNames
         ))
     }
 
@@ -186,8 +196,8 @@ class LobbyHandler(
             sender.send(
                 playerState.session.webSocketSession,
                 ServerMessage.SealedPoolGenerated(
-                    setCode = sealedSession.setCode,
-                    setName = sealedSession.setName,
+                    setCodes = sealedSession.setCodes,
+                    setNames = sealedSession.setNames,
                     cardPool = poolInfos,
                     basicLands = basicLandInfos
                 )
@@ -363,8 +373,8 @@ class LobbyHandler(
                     val ws = playerState.identity.webSocketSession
                     if (ws != null) {
                         sender.send(ws, ServerMessage.SealedPoolGenerated(
-                            setCode = lobby.setCodes.firstOrNull() ?: "",
-                            setName = lobby.setNames.firstOrNull() ?: "",
+                            setCodes = lobby.setCodes,
+                            setNames = lobby.setNames,
                             cardPool = poolInfos,
                             basicLands = basicLandInfos
                         ))

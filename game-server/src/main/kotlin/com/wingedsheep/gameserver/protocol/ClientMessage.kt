@@ -83,11 +83,11 @@ sealed interface ClientMessage {
     // =========================================================================
 
     /**
-     * Create a new sealed game with a specific set.
+     * Create a new sealed game with one or more sets.
      */
     @Serializable
     @SerialName("createSealedGame")
-    data class CreateSealedGame(val setCode: String) : ClientMessage
+    data class CreateSealedGame(val setCodes: List<String>) : ClientMessage
 
     /**
      * Join an existing sealed game session.

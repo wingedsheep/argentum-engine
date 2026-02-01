@@ -210,9 +210,13 @@ class TournamentLobby(
         if (players.size < 2) return false
         if (format != TournamentFormat.SEALED) return false
 
-        // Generate unique pools for each player
+        // Generate a shared distribution seed so all players get the same
+        // set distribution (e.g., all get 3 Portal + 2 Onslaught boosters)
+        val distributionSeed = System.currentTimeMillis()
+
+        // Generate unique pools for each player (card contents differ, but set distribution is the same)
         players.forEach { (playerId, playerState) ->
-            val pool = boosterGenerator.generateSealedPool(setCodes, boosterCount)
+            val pool = boosterGenerator.generateSealedPool(setCodes, boosterCount, distributionSeed)
             players[playerId] = playerState.copy(cardPool = pool)
         }
 
