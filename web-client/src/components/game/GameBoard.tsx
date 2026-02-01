@@ -1598,13 +1598,8 @@ function BattlefieldArea({ isOpponent }: { isOpponent: boolean }) {
       .filter((t) => t.type === 'Permanent')
       .map((t) => (t as { type: 'Permanent'; entityId: string }).entityId)
   )
-  const allTargetedIds = [...validTargets, ...decisionTargets, ...stackTargets]
-  const anyLandIsTarget = lands.some((land) => allTargetedIds.includes(land.id))
-
-  // Group identical lands (unless any land is targeted), display creatures and other individually
-  const groupedLands = anyLandIsTarget
-    ? lands.map((card) => ({ card, count: 1, cardIds: [card.id] as const, cards: [card] as const }))
-    : groupCards(lands)
+  // Group identical lands, display creatures and other individually
+  const groupedLands = groupCards(lands)
   const groupedCreatures = creatures.map((card) => ({
     card,
     count: 1,
@@ -1903,7 +1898,10 @@ function GameCard({
   // Check if card has legal actions (is playable)
   const hasLegalActions = useHasLegalActions(card.id)
 
+  const hoveredCardId = useGameStore((state) => state.hoveredCardId)
+
   const isSelected = selectedCardId === card.id
+  const isHovered = hoveredCardId === card.id
   const isInTargetingMode = targetingState !== null
   const isValidTarget = targetingState?.validTargets.includes(card.id) ?? false
   const isSelectedTarget = targetingState?.selectedTargets.includes(card.id) ?? false
@@ -2148,13 +2146,25 @@ function GameCard({
   } else if (isSelected && !isInCombatMode) {
     borderStyle = '3px solid #ffff00'
     boxShadow = '0 8px 20px rgba(255, 255, 0, 0.4)'
+  } else if ((isValidTarget || isValidDecisionTarget) && isHovered) {
+    // Bright highlight when hovering over a valid target
+    borderStyle = '3px solid #ff6666'
+    boxShadow = '0 0 20px rgba(255, 100, 100, 0.9), 0 0 40px rgba(255, 68, 68, 0.6)'
   } else if (isValidTarget || isValidDecisionTarget) {
     borderStyle = '3px solid #ff4444'
     boxShadow = '0 4px 15px rgba(255, 68, 68, 0.6)'
+  } else if ((isValidAttacker || isValidBlocker) && isHovered) {
+    // Bright highlight when hovering over a valid attacker/blocker
+    borderStyle = '3px solid #44ff44'
+    boxShadow = '0 0 20px rgba(68, 255, 68, 0.9), 0 0 40px rgba(0, 255, 0, 0.5)'
   } else if (isValidAttacker || isValidBlocker) {
     // Green highlight for valid attackers/blockers
     borderStyle = '2px solid #00ff00'
     boxShadow = '0 0 12px rgba(0, 255, 0, 0.5), 0 0 24px rgba(0, 255, 0, 0.3)'
+  } else if (isPlayable && isHovered) {
+    // Bright highlight when hovering over a playable card
+    borderStyle = '3px solid #44ff44'
+    boxShadow = '0 0 20px rgba(68, 255, 68, 0.9), 0 0 40px rgba(0, 255, 0, 0.5)'
   } else if (isPlayable) {
     // Green highlight for playable cards
     borderStyle = '2px solid #00ff00'
