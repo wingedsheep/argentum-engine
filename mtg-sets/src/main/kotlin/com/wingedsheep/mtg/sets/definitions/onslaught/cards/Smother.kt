@@ -13,8 +13,7 @@ import com.wingedsheep.sdk.targeting.TargetCreature
  * Instant
  * Destroy target creature with mana value 3 or less. It can't be regenerated.
  *
- * Note: The "can't be regenerated" clause is not yet implemented as regeneration
- * is not yet supported in the engine.
+ * TODO: Add "can't be regenerated" clause when regeneration is implemented.
  */
 val Smother = card("Smother") {
     manaCost = "{1}{B}"

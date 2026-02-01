@@ -12,8 +12,6 @@ import com.wingedsheep.sdk.model.Rarity
  * Reach
  * Morph {4}{G} (You may cast this card face down as a 2/2 creature for {3}.
  * Turn it face up any time for its morph cost.)
- *
- * Note: Morph ability not yet implemented.
  */
 val SpittingGourna = card("Spitting Gourna") {
     manaCost = "{3}{G}{G}"
@@ -22,6 +20,7 @@ val SpittingGourna = card("Spitting Gourna") {
     toughness = 4
 
     keywords(Keyword.REACH)
+    morph = "{4}{G}"
 
     metadata {
         rarity = Rarity.COMMON

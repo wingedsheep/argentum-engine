@@ -12,8 +12,6 @@ import com.wingedsheep.sdk.model.Rarity
  * Defender
  * Morph {4}{W} (You may cast this card face down as a 2/2 creature for {3}.
  * Turn it face up any time for its morph cost.)
- *
- * Note: Morph ability not yet implemented.
  */
 val CrudeRampart = card("Crude Rampart") {
     manaCost = "{3}{W}"
@@ -22,6 +20,7 @@ val CrudeRampart = card("Crude Rampart") {
     toughness = 5
 
     keywords(Keyword.DEFENDER)
+    morph = "{4}{W}"
 
     metadata {
         rarity = Rarity.UNCOMMON

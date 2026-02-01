@@ -10,14 +10,14 @@ import com.wingedsheep.sdk.model.Rarity
  * 5/4
  * Morph {5}{G} (You may cast this card face down as a 2/2 creature for {3}.
  * Turn it face up any time for its morph cost.)
- *
- * Note: Morph ability not yet implemented.
  */
 val TreespringLorian = card("Treespring Lorian") {
     manaCost = "{5}{G}"
     typeLine = "Creature — Beast"
     power = 5
     toughness = 4
+
+    morph = "{5}{G}"
 
     metadata {
         rarity = Rarity.COMMON

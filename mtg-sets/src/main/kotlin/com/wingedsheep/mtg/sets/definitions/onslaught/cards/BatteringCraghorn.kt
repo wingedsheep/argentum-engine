@@ -11,8 +11,6 @@ import com.wingedsheep.sdk.model.Rarity
  * 3/1
  * First strike
  * Morph {1}{R}{R} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its morph cost.)
- *
- * Note: Morph ability not yet implemented.
  */
 val BatteringCraghorn = card("Battering Craghorn") {
     manaCost = "{2}{R}{R}"
@@ -21,6 +19,7 @@ val BatteringCraghorn = card("Battering Craghorn") {
     toughness = 1
 
     keywords(Keyword.FIRST_STRIKE)
+    morph = "{1}{R}{R}"
 
     metadata {
         rarity = Rarity.COMMON

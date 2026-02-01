@@ -13,8 +13,6 @@ import com.wingedsheep.sdk.scripting.StaticTarget
  * Charging Slateback can't block.
  * Morph {4}{R} (You may cast this card face down as a 2/2 creature for {3}.
  * Turn it face up any time for its morph cost.)
- *
- * Note: Morph ability not yet implemented.
  */
 val ChargingSlateback = card("Charging Slateback") {
     manaCost = "{4}{R}"
@@ -25,6 +23,7 @@ val ChargingSlateback = card("Charging Slateback") {
     staticAbility {
         ability = CantBlock(StaticTarget.SourceCreature)
     }
+    morph = "{4}{R}"
 
     metadata {
         rarity = Rarity.COMMON

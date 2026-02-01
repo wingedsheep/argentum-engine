@@ -11,8 +11,6 @@ import com.wingedsheep.sdk.model.Rarity
  * 3/4
  * First strike
  * Morph {2}{W}{W} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its morph cost.)
- *
- * Note: Morph ability not yet implemented.
  */
 val DaruLancer = card("Daru Lancer") {
     manaCost = "{4}{W}{W}"
@@ -21,6 +19,7 @@ val DaruLancer = card("Daru Lancer") {
     toughness = 4
 
     keywords(Keyword.FIRST_STRIKE)
+    morph = "{2}{W}{W}"
 
     metadata {
         rarity = Rarity.COMMON
