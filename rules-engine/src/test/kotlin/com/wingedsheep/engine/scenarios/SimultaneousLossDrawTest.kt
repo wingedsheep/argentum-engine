@@ -49,12 +49,15 @@ class SimultaneousLossDrawTest : FunSpec({
         val player2 = driver.player2!!
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
 
+        // Use active player (whoever goes first) to cast the spell
+        val caster = driver.activePlayer!!
+
         // Put MassiveFire in hand and give mana for X=5
-        val massiveFire = driver.putCardInHand(player1, "Massive Fire")
-        driver.giveMana(player1, Color.RED, 6) // 1R + X=5
+        val massiveFire = driver.putCardInHand(caster, "Massive Fire")
+        driver.giveMana(caster, Color.RED, 6) // 1R + X=5
 
         // Cast MassiveFire with X=5 (deals 5 damage to each player)
-        driver.castXSpell(player1, massiveFire, 5)
+        driver.castXSpell(caster, massiveFire, 5)
         driver.bothPass()
 
         // Game should be over

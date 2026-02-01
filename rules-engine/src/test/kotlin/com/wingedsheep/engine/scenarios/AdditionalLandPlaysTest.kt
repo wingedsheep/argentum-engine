@@ -58,39 +58,37 @@ class AdditionalLandPlaysTest : FunSpec({
         landDrops!!.remaining shouldBe 4
 
         // Play first land (normal)
-        val forest1 = driver.findCardInHand(player, "Forest")!!
+        val forest1 = driver.putCardInHand(player, "Forest")
         driver.playLand(player, forest1).isSuccess shouldBe true
 
         // Should have 3 remaining
         driver.state.getEntity(player)?.get<LandDropsComponent>()?.remaining shouldBe 3
 
         // Play second land (first additional)
-        val forest2 = driver.findCardInHand(player, "Forest")!!
+        val forest2 = driver.putCardInHand(player, "Forest")
         driver.playLand(player, forest2).isSuccess shouldBe true
 
         // Should have 2 remaining
         driver.state.getEntity(player)?.get<LandDropsComponent>()?.remaining shouldBe 2
 
         // Play third land (second additional)
-        val forest3 = driver.findCardInHand(player, "Forest")!!
+        val forest3 = driver.putCardInHand(player, "Forest")
         driver.playLand(player, forest3).isSuccess shouldBe true
 
         // Should have 1 remaining
         driver.state.getEntity(player)?.get<LandDropsComponent>()?.remaining shouldBe 1
 
         // Play fourth land (third additional)
-        val forest4 = driver.findCardInHand(player, "Forest")!!
+        val forest4 = driver.putCardInHand(player, "Forest")
         driver.playLand(player, forest4).isSuccess shouldBe true
 
         // Should have 0 remaining
         driver.state.getEntity(player)?.get<LandDropsComponent>()?.remaining shouldBe 0
 
         // Verify we can't play a fifth land
-        val forest5 = driver.findCardInHand(player, "Forest")
-        if (forest5 != null) {
-            val fifthResult = driver.submitExpectFailure(PlayLand(player, forest5))
-            fifthResult.isSuccess shouldBe false
-        }
+        val forest5 = driver.putCardInHand(player, "Forest")
+        val fifthResult = driver.submitExpectFailure(PlayLand(player, forest5))
+        fifthResult.isSuccess shouldBe false
 
         // Verify 4 lands on battlefield
         driver.getLands(player).size shouldBe 4
