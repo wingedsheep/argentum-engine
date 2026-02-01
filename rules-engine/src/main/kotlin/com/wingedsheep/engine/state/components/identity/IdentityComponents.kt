@@ -25,7 +25,8 @@ data class CardComponent(
     val baseKeywords: Set<Keyword> = emptySet(),
     val colors: Set<Color> = emptySet(),
     val ownerId: EntityId? = null,  // Original owner of the card
-    val spellEffect: Effect? = null  // Effect for instants/sorceries
+    val spellEffect: Effect? = null,  // Effect for instants/sorceries
+    val imageUri: String? = null  // Optional image URI for card art (used for tokens)
 ) : Component {
     // Convenience accessors
     val isCreature: Boolean get() = typeLine.isCreature
@@ -80,6 +81,16 @@ data object TokenComponent : Component
  */
 @Serializable
 data object FaceDownComponent : Component
+
+/**
+ * Stores the morph cost and original card identity for face-down creatures.
+ * This allows the creature to be turned face up by paying the morph cost.
+ */
+@Serializable
+data class MorphDataComponent(
+    val morphCost: ManaCost,
+    val originalCardDefinitionId: String
+) : Component
 
 /**
  * Tracks which players have been revealed this card's identity.

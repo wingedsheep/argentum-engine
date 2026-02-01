@@ -322,6 +322,20 @@ sealed interface KeywordAbility {
     }
 
     // =========================================================================
+    // Morph
+    // =========================================================================
+
+    /**
+     * Morph with a mana cost.
+     * "Morph {2}{U}" - You may cast this card face down as a 2/2 creature for {3}.
+     * Turn it face up any time for its morph cost.
+     */
+    @Serializable
+    data class Morph(val cost: ManaCost) : KeywordAbility {
+        override val description: String = "Morph $cost"
+    }
+
+    // =========================================================================
     // Companion Methods
     // =========================================================================
 
@@ -362,5 +376,10 @@ sealed interface KeywordAbility {
          * Create Cycling with mana cost from string.
          */
         fun cycling(cost: String): KeywordAbility = Cycling(ManaCost.parse(cost))
+
+        /**
+         * Create Morph with mana cost from string.
+         */
+        fun morph(cost: String): KeywordAbility = Morph(ManaCost.parse(cost))
     }
 }

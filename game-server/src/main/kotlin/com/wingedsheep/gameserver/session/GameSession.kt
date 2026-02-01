@@ -16,10 +16,13 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.LossReason
 import com.wingedsheep.engine.state.components.player.MulliganStateComponent
 import com.wingedsheep.engine.state.components.player.PlayerLostComponent
+import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.Deck
@@ -610,6 +613,31 @@ class GameSession(
             state.activePlayerId == playerId
 
         val hand = state.getHand(playerId)
+
+        // Check for morph cards that can be cast face-down (sorcery speed only)
+        if (canPlaySorcerySpeed) {
+            val morphCost = ManaCost.parse("{3}")
+            if (manaSolver.canPay(state, playerId, morphCost)) {
+                for (cardId in hand) {
+                    val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: continue
+                    val cardDef = cardRegistry.getCard(cardComponent.name) ?: continue
+
+                    // Check if card has Morph keyword
+                    val hasMorph = cardDef.keywordAbilities
+                        .any { it is com.wingedsheep.sdk.scripting.KeywordAbility.Morph }
+
+                    if (hasMorph) {
+                        result.add(LegalActionInfo(
+                            actionType = "CastFaceDown",
+                            description = "Cast ${cardComponent.name} face-down",
+                            action = CastSpell(playerId, cardId, castFaceDown = true),
+                            manaCostString = "{3}"
+                        ))
+                    }
+                }
+            }
+        }
+
         for (cardId in hand) {
             val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: continue
             if (!cardComponent.typeLine.isLand) {
@@ -831,6 +859,33 @@ class GameSession(
                     description = ability.description,
                     action = ActivateAbility(playerId, entityId, ability.id),
                     isManaAbility = true
+                ))
+            }
+        }
+
+        // Check for face-down creatures that can be turned face-up (morph)
+        // This is a special action that doesn't use the stack (can be done at any time with priority)
+        for (entityId in battlefieldPermanents) {
+            val container = state.getEntity(entityId) ?: continue
+
+            // Must be face-down
+            if (!container.has<FaceDownComponent>()) continue
+
+            // Must be controlled by the player
+            val controllerId = container.get<ControllerComponent>()?.playerId
+            if (controllerId != playerId) continue
+
+            // Must have morph data (to get the morph cost)
+            val morphData = container.get<MorphDataComponent>() ?: continue
+            val cardComponent = container.get<CardComponent>() ?: continue
+
+            // Check if player can afford the morph cost
+            if (manaSolver.canPay(state, playerId, morphData.morphCost)) {
+                result.add(LegalActionInfo(
+                    actionType = "TurnFaceUp",
+                    description = "Turn ${cardComponent.name} face-up",
+                    action = TurnFaceUp(playerId, entityId),
+                    manaCostString = morphData.morphCost.toString()
                 ))
             }
         }

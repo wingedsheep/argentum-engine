@@ -130,6 +130,9 @@ export interface ClientCard {
   /** Whether this card is face-down (for morph, manifest, hidden info) */
   readonly isFaceDown: boolean
 
+  /** Morph cost for face-down creatures (only visible to controller) */
+  readonly morphCost?: string | null
+
   /** Targets for spells/abilities on the stack (for targeting arrows) */
   readonly targets: readonly ClientChosenTarget[]
 
@@ -172,6 +175,7 @@ export interface ClientPlayer {
   readonly handSize: number
   readonly librarySize: number
   readonly graveyardSize: number
+  readonly exileSize: number
   readonly landsPlayedThisTurn: number
   readonly hasLost: boolean
   readonly manaPool?: ClientManaPool

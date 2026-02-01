@@ -401,3 +401,24 @@ data class OnTransform(
         }
     }
 }
+
+// =============================================================================
+// Morph Triggers
+// =============================================================================
+
+/**
+ * Triggers when a face-down creature is turned face up.
+ * "When [this creature] is turned face up..."
+ *
+ * Used for morph abilities that trigger upon revealing the creature.
+ */
+@Serializable
+data class OnTurnFaceUp(
+    val selfOnly: Boolean = true
+) : Trigger {
+    override val description: String = if (selfOnly) {
+        "When this creature is turned face up"
+    } else {
+        "Whenever a creature is turned face up"
+    }
+}

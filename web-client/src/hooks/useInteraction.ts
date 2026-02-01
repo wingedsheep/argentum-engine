@@ -11,6 +11,7 @@ export type CardClickResult =
   | { type: 'multipleActions'; actions: LegalActionInfo[] }
   | { type: 'requiresTargeting'; action: GameAction; requiredTargets: number }
   | { type: 'requiresXSelection'; actionInfo: LegalActionInfo }
+  | { type: 'requiresConvokeSelection'; actionInfo: LegalActionInfo }
 
 /**
  * Hook for handling card interactions.
@@ -27,6 +28,7 @@ export function useInteraction() {
   const legalActions = useGameStore((state) => state.legalActions)
   const startXSelection = useGameStore((state) => state.startXSelection)
   const startTargeting = useGameStore((state) => state.startTargeting)
+  const startConvokeSelection = useGameStore((state) => state.startConvokeSelection)
 
   /**
    * Get legal actions for a card.
@@ -40,8 +42,12 @@ export function useInteraction() {
             return a.cardId === cardId
           case 'CastSpell':
             return a.cardId === cardId
+          case 'CycleCard':
+            return a.cardId === cardId
           case 'ActivateAbility':
             return a.sourceId === cardId
+          case 'TurnFaceUp':
+            return a.permanentId === cardId
           default:
             return false
         }
@@ -117,7 +123,7 @@ export function useInteraction() {
 
   /**
    * Execute a specific action from the action menu.
-   * This checks for X cost spells and enters X selection mode if needed.
+   * This checks for X cost spells, Convoke spells, etc. and enters appropriate selection mode.
    */
   const executeAction = useCallback(
     (actionInfo: LegalActionInfo) => {
@@ -131,6 +137,19 @@ export function useInteraction() {
           minX: actionInfo.minX ?? 0,
           maxX: actionInfo.maxAffordableX ?? 0,
           selectedX: actionInfo.maxAffordableX ?? 0,
+        })
+        selectCard(null)
+        return
+      }
+
+      // Check if spell has Convoke and there are creatures to tap
+      if (action.type === 'CastSpell' && actionInfo.hasConvoke && actionInfo.validConvokeCreatures && actionInfo.validConvokeCreatures.length > 0) {
+        startConvokeSelection({
+          actionInfo,
+          cardName: actionInfo.description.replace('Cast ', ''),
+          manaCost: actionInfo.manaCostString ?? '',
+          selectedCreatures: [],
+          validCreatures: actionInfo.validConvokeCreatures,
         })
         selectCard(null)
         return
@@ -183,7 +202,7 @@ export function useInteraction() {
       submitAction(action)
       selectCard(null)
     },
-    [submitAction, selectCard, startXSelection, startTargeting]
+    [submitAction, selectCard, startXSelection, startTargeting, startConvokeSelection]
   )
 
   /**

@@ -7,6 +7,7 @@ import com.wingedsheep.engine.core.DamageDealtEvent
 import com.wingedsheep.engine.core.LifeChangedEvent
 import com.wingedsheep.engine.core.SpellCastEvent
 import com.wingedsheep.engine.core.TappedEvent
+import com.wingedsheep.engine.core.TurnFaceUpEvent
 import com.wingedsheep.engine.core.UntappedEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
@@ -335,6 +336,11 @@ class TriggerDetector(
                 // Transform not yet implemented in new engine
                 false
             }
+
+            is OnTurnFaceUp -> {
+                event is TurnFaceUpEvent &&
+                    (!trigger.selfOnly || event.entityId == sourceId)
+            }
         }
     }
 
@@ -459,6 +465,10 @@ data class TriggerContext(
                 is TappedEvent -> TriggerContext(triggeringEntityId = event.entityId)
                 is UntappedEvent -> TriggerContext(triggeringEntityId = event.entityId)
                 is LifeChangedEvent -> TriggerContext(triggeringPlayerId = event.playerId)
+                is TurnFaceUpEvent -> TriggerContext(
+                    triggeringEntityId = event.entityId,
+                    triggeringPlayerId = event.controllerId
+                )
                 else -> TriggerContext()
             }
         }

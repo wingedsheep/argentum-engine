@@ -17,7 +17,8 @@ data class SpellOnStackComponent(
     val xValue: Int? = null,  // For X spells
     val wasKicked: Boolean = false,  // For kicker costs
     val chosenModes: List<Int> = emptyList(),  // For modal spells
-    val sacrificedPermanents: List<EntityId> = emptyList()  // For additional costs
+    val sacrificedPermanents: List<EntityId> = emptyList(),  // For additional costs
+    val castFaceDown: Boolean = false  // For morph - creature enters face-down
 ) : Component
 
 /**

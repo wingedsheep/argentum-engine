@@ -536,6 +536,45 @@ object TestCards {
     )
 
     // =========================================================================
+    // Morph Creatures
+    // =========================================================================
+
+    /**
+     * 2/3 for {2}{W} with Morph {1}{W}.
+     * A basic morph creature for testing the mechanic.
+     */
+    val MorphTestCreature = CardDefinition(
+        name = "Morph Test Creature",
+        manaCost = ManaCost.parse("{2}{W}"),
+        typeLine = TypeLine.creature(setOf(Subtype("Test"))),
+        oracleText = "Morph {1}{W}",
+        creatureStats = CreatureStats(2, 3),
+        keywordAbilities = listOf(KeywordAbility.Morph(ManaCost.parse("{1}{W}")))
+    )
+
+    /**
+     * 4/4 for {3}{G}{G} with Morph {4}{G}{G}.
+     * When this creature is turned face up, draw a card.
+     */
+    val MorphWithTriggerTestCreature = CardDefinition(
+        name = "Morph Trigger Test Creature",
+        manaCost = ManaCost.parse("{3}{G}{G}"),
+        typeLine = TypeLine.creature(setOf(Subtype("Beast"))),
+        oracleText = "Morph {4}{G}{G}\nWhen this creature is turned face up, draw a card.",
+        creatureStats = CreatureStats(4, 4),
+        keywordAbilities = listOf(KeywordAbility.Morph(ManaCost.parse("{4}{G}{G}"))),
+        script = CardScript(
+            triggeredAbilities = listOf(
+                TriggeredAbility(
+                    id = AbilityId("morph-trigger-draw"),
+                    trigger = OnTurnFaceUp(),
+                    effect = DrawCardsEffect(1)
+                )
+            )
+        )
+    )
+
+    // =========================================================================
     // Alternative Payment Cards (Delve/Convoke)
     // =========================================================================
 
@@ -600,6 +639,9 @@ object TestCards {
         PalladiumMyr,
         BirdsOfParadise,
         RagavanNimblePilferer,
+        // Morph Creatures
+        MorphTestCreature,
+        MorphWithTriggerTestCreature,
         // Cost Reduction Cards
         GhaltaPrimalHunger,
         FrogmiteTestCard,

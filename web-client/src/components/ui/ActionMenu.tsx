@@ -86,6 +86,14 @@ function ActionButton({
   onClick: () => void
 }) {
   const getActionColor = () => {
+    // Handle morph-specific action types first (these have actionType different from action.type)
+    if (action.actionType === 'CastFaceDown') {
+      return '#555599' // Purple-blue for morph face-down
+    }
+    if (action.actionType === 'TurnFaceUp') {
+      return '#996633' // Brown-gold for turning face-up
+    }
+
     switch (action.action.type) {
       case 'PlayLand':
         return '#00aa00'
@@ -95,10 +103,24 @@ function ActionButton({
         return '#8855aa' // Purple for cycling
       case 'ActivateAbility':
         return '#886600'
+      case 'TurnFaceUp':
+        return '#996633' // Brown-gold for turning face-up
       case 'PassPriority':
         return '#888888'
       default:
         return '#666666'
+    }
+  }
+
+  // Get user-friendly label for action type
+  const getActionLabel = () => {
+    switch (action.actionType) {
+      case 'CastFaceDown':
+        return 'Cast Face-Down ({3})'
+      case 'TurnFaceUp':
+        return `Turn Face-Up (${action.manaCostString ?? ''})`
+      default:
+        return action.description
     }
   }
 
@@ -122,9 +144,8 @@ function ActionButton({
         e.currentTarget.style.filter = 'brightness(1)'
       }}
     >
-      <div style={{ fontWeight: 500 }}>{action.actionType}</div>
-      <div style={{ fontSize: 12, opacity: 0.8, display: 'flex', alignItems: 'center' }}>
-        <AbilityText text={action.description} size={14} />
+      <div style={{ fontWeight: 500, display: 'flex', alignItems: 'center' }}>
+        <AbilityText text={getActionLabel()} size={14} />
       </div>
     </button>
   )
