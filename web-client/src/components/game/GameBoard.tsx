@@ -1103,8 +1103,13 @@ function ZonePile({ player, isOpponent = false }: { player: ClientPlayer; isOppo
     borderRadius: responsive.isMobile ? 4 : 6,
   }
 
+  // Offset to avoid overlapping with buttons:
+  // - Player zones move up to avoid pass priority button (bottom-right)
+  // - Opponent zones move down to avoid concede button (top-right)
+  const verticalOffset = isOpponent ? { marginTop: 45 } : { marginBottom: 70 }
+
   return (
-    <div style={{ ...styles.zonePile, gap: responsive.cardGap, minWidth: responsive.pileWidth + 10 }}>
+    <div style={{ ...styles.zonePile, gap: responsive.cardGap, minWidth: responsive.pileWidth + 10, ...verticalOffset }}>
       {/* Library/Deck */}
       <div style={styles.zoneStack}>
         <div data-zone={isOpponent ? 'opponent-library' : 'player-library'} style={{ ...styles.deckPile, ...pileStyle }}>
@@ -1599,15 +1604,21 @@ function CardStack({
   const stackOffset = responsive.isMobile ? 12 : 18
 
   // Calculate total width needed for the stack
-  const cardWidth = responsive.battlefieldCardWidth
+  // Use height for tapped cards since they rotate 90 degrees
+  const hasAnyTapped = group.cards.some(c => c.isTapped)
+  const cardWidth = hasAnyTapped ? responsive.battlefieldCardHeight : responsive.battlefieldCardWidth
   const totalWidth = cardWidth + stackOffset * (group.count - 1)
+  const stackHeight = hasAnyTapped ? responsive.battlefieldCardWidth : responsive.battlefieldCardHeight
 
   return (
     <div
       style={{
         position: 'relative',
         width: totalWidth,
-        height: responsive.battlefieldCardHeight,
+        height: stackHeight,
+        display: 'flex',
+        alignItems: 'center',
+        transition: 'width 0.15s, height 0.15s',
       }}
     >
       {group.cards.map((card, index) => (
@@ -1617,6 +1628,9 @@ function CardStack({
             position: 'absolute',
             left: index * stackOffset,
             top: 0,
+            bottom: 0,
+            display: 'flex',
+            alignItems: 'center',
             zIndex: index,
           }}
         >
@@ -1964,7 +1978,11 @@ function GameCard({
   // Check if currently being dragged (blocker or hand card)
   const isBeingDragged = draggingBlockerId === card.id || draggingCardId === card.id
 
-  return (
+  // Container dimensions - swap width/height when tapped on battlefield to prevent overlap
+  const containerWidth = card.isTapped && battlefield ? height : width
+  const containerHeight = card.isTapped && battlefield ? width : height
+
+  const cardElement = (
     <div
       data-card-id={card.id}
       onClick={handleClick}
@@ -2112,6 +2130,24 @@ function GameCard({
       )}
     </div>
   )
+
+  // Wrap in container for tapped battlefield cards to prevent overlap
+  if (card.isTapped && battlefield) {
+    return (
+      <div style={{
+        width: containerWidth,
+        height: containerHeight,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        transition: 'width 0.15s, height 0.15s',
+      }}>
+        {cardElement}
+      </div>
+    )
+  }
+
+  return cardElement
 }
 
 /**
