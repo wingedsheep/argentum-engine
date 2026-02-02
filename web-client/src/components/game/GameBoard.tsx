@@ -3599,7 +3599,7 @@ const styles: Record<string, React.CSSProperties> = {
     position: 'fixed',
     top: 20,
     left: 20,
-    zIndex: 1500,
+    zIndex: 2500,
     pointerEvents: 'none',
   } as React.CSSProperties,
   cardPreviewContainer: {
