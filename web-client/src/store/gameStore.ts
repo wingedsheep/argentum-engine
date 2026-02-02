@@ -2298,6 +2298,8 @@ export const useGameStore = create<GameStore>()(
 
       leaveTournament: () => {
         // Clear all state including tournament/lobby - used when tournament is complete
+        // Notify server we're leaving
+        ws?.send(createLeaveLobbyMessage())
         clearLobbyId()
         clearDeckState()
         set({
@@ -2324,6 +2326,7 @@ export const useGameStore = create<GameStore>()(
           deckBuildingState: null,
           lobbyState: null,
           tournamentState: null,
+          spectatingState: null,
         })
       },
 
