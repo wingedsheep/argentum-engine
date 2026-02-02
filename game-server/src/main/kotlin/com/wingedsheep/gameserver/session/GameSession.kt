@@ -59,7 +59,8 @@ private val logger = LoggerFactory.getLogger(GameSession::class.java)
 class GameSession(
     val sessionId: String = UUID.randomUUID().toString(),
     private val cardRegistry: CardRegistry,
-    private val stateTransformer: ClientStateTransformer = ClientStateTransformer(cardRegistry)
+    private val stateTransformer: ClientStateTransformer = ClientStateTransformer(cardRegistry),
+    private val useHandSmoother: Boolean = false
 ) {
     // Lock for synchronizing state modifications to prevent lost updates
     private val stateLock = Any()
@@ -393,7 +394,8 @@ class GameSession(
         }
 
         val config = GameConfig(
-            players = playerConfigs
+            players = playerConfigs,
+            useHandSmoother = useHandSmoother
         )
 
         val result = gameInitializer.initializeGame(config)

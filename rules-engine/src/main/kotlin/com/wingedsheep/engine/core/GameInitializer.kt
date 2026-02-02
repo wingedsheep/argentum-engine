@@ -27,11 +27,19 @@ data class PlayerConfig(
 
 /**
  * Configuration for initializing a new game.
+ *
+ * @property players List of player configurations
+ * @property startingHandSize Number of cards to draw for opening hand (default: 7)
+ * @property skipMulligans Whether to skip the mulligan phase (default: false)
+ * @property useHandSmoother Whether to use MTGA-style hand smoothing for initial draw (default: false)
+ * @property handSmootherCandidates Number of candidate hands to generate when smoothing (default: 3, range: 2-3)
  */
 data class GameConfig(
     val players: List<PlayerConfig>,
     val startingHandSize: Int = 7,
-    val skipMulligans: Boolean = false
+    val skipMulligans: Boolean = false,
+    val useHandSmoother: Boolean = false,
+    val handSmootherCandidates: Int = 3
 )
 
 /**
@@ -139,7 +147,11 @@ class GameInitializer(
 
         // 5. Draw initial hands
         for (playerId in playerIds) {
-            val (newState, drawEvents) = drawCards(state, playerId, config.startingHandSize)
+            val (newState, drawEvents) = if (config.useHandSmoother) {
+                drawSmoothedHand(state, playerId, config.startingHandSize, config.handSmootherCandidates)
+            } else {
+                drawCards(state, playerId, config.startingHandSize)
+            }
             state = newState
             events.addAll(drawEvents)
         }
@@ -233,6 +245,135 @@ class GameInitializer(
         events.add(CardsDrawnEvent(playerId, drawnCardIds.size, drawnCardIds))
 
         return currentState to events
+    }
+
+    /**
+     * Draw a "smoothed" opening hand using MTGA-style hand smoothing algorithm.
+     *
+     * This algorithm generates multiple candidate hands and selects the one whose
+     * land ratio most closely matches the deck's overall land-to-spell ratio.
+     *
+     * ## Algorithm
+     * 1. Calculate the deck's land ratio (lands / deck_size)
+     * 2. Generate [candidateCount] candidate hands by shuffling and taking top cards
+     * 3. Score each candidate based on deviation from expected land ratio
+     * 4. Select the hand with the lowest deviation score
+     * 5. Apply the selected hand to the game state
+     *
+     * ## Notes
+     * - Only applies to the FIRST hand drawn (not mulligan redraws)
+     * - Subsequent mulligans use standard random draws
+     *
+     * @param state Current game state
+     * @param playerId Player to draw for
+     * @param count Number of cards to draw
+     * @param candidateCount Number of candidate hands to generate (2-3 recommended)
+     * @return Pair of new state and events
+     */
+    private fun drawSmoothedHand(
+        state: GameState,
+        playerId: EntityId,
+        count: Int,
+        candidateCount: Int
+    ): Pair<GameState, List<GameEvent>> {
+        val libraryKey = ZoneKey(playerId, ZoneType.LIBRARY)
+        val handKey = ZoneKey(playerId, ZoneType.HAND)
+        val library = state.getZone(libraryKey)
+
+        // Need enough cards for the hand
+        if (library.size < count) {
+            return drawCards(state, playerId, count)
+        }
+
+        // Calculate deck land ratio
+        val deckLandRatio = calculateDeckLandRatio(state, library)
+
+        // Generate candidate hands
+        val candidates = mutableListOf<List<EntityId>>()
+        val effectiveCandidateCount = candidateCount.coerceIn(2, 3)
+
+        repeat(effectiveCandidateCount) {
+            val shuffledLibrary = library.shuffled()
+            val candidateHand = shuffledLibrary.takeLast(count)
+            candidates.add(candidateHand)
+        }
+
+        // Score each candidate and select the best one
+        val bestCandidate = candidates.minByOrNull { candidate ->
+            scoreHand(state, candidate, deckLandRatio)
+        } ?: candidates.first()
+
+        // Apply the selected hand to the state
+        var currentState = state
+        val events = mutableListOf<GameEvent>()
+        val drawnCardIds = mutableListOf<EntityId>()
+
+        // Remove selected cards from library
+        var newLibrary = library.toMutableList()
+        for (cardId in bestCandidate) {
+            newLibrary.remove(cardId)
+        }
+
+        // Shuffle the remaining library
+        newLibrary = newLibrary.shuffled().toMutableList()
+        currentState = currentState.copy(zones = currentState.zones + (libraryKey to newLibrary))
+
+        // Add cards to hand
+        for (cardId in bestCandidate) {
+            drawnCardIds.add(cardId)
+            currentState = currentState.addToZone(handKey, cardId)
+
+            events.add(ZoneChangeEvent(
+                entityId = cardId,
+                entityName = currentState.getEntity(cardId)
+                    ?.get<CardComponent>()?.name ?: "Unknown",
+                fromZone = ZoneType.LIBRARY,
+                toZone = ZoneType.HAND,
+                ownerId = playerId
+            ))
+        }
+
+        events.add(CardsDrawnEvent(playerId, drawnCardIds.size, drawnCardIds))
+
+        return currentState to events
+    }
+
+    /**
+     * Calculate the land ratio in a deck (library).
+     *
+     * @param state Current game state for entity lookups
+     * @param library List of card entity IDs in the library
+     * @return Ratio of lands to total cards (0.0 to 1.0)
+     */
+    private fun calculateDeckLandRatio(state: GameState, library: List<EntityId>): Double {
+        if (library.isEmpty()) return 0.0
+
+        val landCount = library.count { cardId ->
+            state.getEntity(cardId)?.get<CardComponent>()?.typeLine?.isLand == true
+        }
+
+        return landCount.toDouble() / library.size
+    }
+
+    /**
+     * Score a candidate hand based on its deviation from the expected land ratio.
+     *
+     * Lower score = better match to deck composition.
+     *
+     * @param state Current game state for entity lookups
+     * @param hand List of card entity IDs in the candidate hand
+     * @param deckLandRatio Expected land ratio based on deck composition
+     * @return Absolute deviation from expected ratio (0.0 = perfect match)
+     */
+    private fun scoreHand(state: GameState, hand: List<EntityId>, deckLandRatio: Double): Double {
+        if (hand.isEmpty()) return Double.MAX_VALUE
+
+        val landCount = hand.count { cardId ->
+            state.getEntity(cardId)?.get<CardComponent>()?.typeLine?.isLand == true
+        }
+
+        val handLandRatio = landCount.toDouble() / hand.size
+        return kotlin.math.abs(handLandRatio - deckLandRatio)
     }
 
     companion object {
