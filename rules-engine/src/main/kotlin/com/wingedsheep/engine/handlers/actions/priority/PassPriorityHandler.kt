@@ -1,0 +1,140 @@
+package com.wingedsheep.engine.handlers.actions.priority
+
+import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.PassPriority
+import com.wingedsheep.engine.core.PriorityChangedEvent
+import com.wingedsheep.engine.core.TurnManager
+import com.wingedsheep.engine.event.TriggerDetector
+import com.wingedsheep.engine.event.TriggerProcessor
+import com.wingedsheep.engine.handlers.actions.ActionContext
+import com.wingedsheep.engine.handlers.actions.ActionHandler
+import com.wingedsheep.engine.mechanics.StateBasedActionChecker
+import com.wingedsheep.engine.mechanics.stack.StackResolver
+import com.wingedsheep.engine.state.GameState
+import kotlin.reflect.KClass
+
+/**
+ * Handler for the PassPriority action.
+ *
+ * When a player passes priority:
+ * - If all players have passed, resolve top of stack or advance game
+ * - Otherwise, pass to next player
+ */
+class PassPriorityHandler(
+    private val turnManager: TurnManager,
+    private val stackResolver: StackResolver,
+    private val sbaChecker: StateBasedActionChecker,
+    private val triggerDetector: TriggerDetector,
+    private val triggerProcessor: TriggerProcessor
+) : ActionHandler<PassPriority> {
+    override val actionType: KClass<PassPriority> = PassPriority::class
+
+    override fun validate(state: GameState, action: PassPriority): String? {
+        if (state.priorityPlayerId != action.playerId) {
+            return "You don't have priority"
+        }
+        // Cannot pass priority while there's a pending decision
+        val pendingDecision = state.pendingDecision
+        if (pendingDecision != null) {
+            return "Cannot pass priority while there's a pending decision - please respond to: ${pendingDecision.prompt}"
+        }
+        return null
+    }
+
+    override fun execute(state: GameState, action: PassPriority): ExecutionResult {
+        val newState = state.withPriorityPassed(action.playerId)
+
+        // Check if all players passed
+        if (newState.allPlayersPassed()) {
+            return if (newState.stack.isNotEmpty()) {
+                resolveTopOfStack(newState)
+            } else {
+                val advanceResult = advanceGame(newState)
+                if (!advanceResult.isSuccess || advanceResult.events.isEmpty()) {
+                    return advanceResult
+                }
+                // Detect triggers from step transition events
+                val triggers = triggerDetector.detectTriggers(advanceResult.newState, advanceResult.events)
+                if (triggers.isNotEmpty()) {
+                    val triggerResult = triggerProcessor.processTriggers(advanceResult.newState, triggers)
+                    if (triggerResult.isPaused) {
+                        return ExecutionResult.paused(
+                            triggerResult.state,
+                            triggerResult.pendingDecision!!,
+                            advanceResult.events + triggerResult.events
+                        )
+                    }
+                    return ExecutionResult.success(
+                        triggerResult.newState.withPriority(state.activePlayerId),
+                        advanceResult.events + triggerResult.events
+                    )
+                }
+                advanceResult
+            }
+        }
+
+        // Pass to next player
+        val nextPlayer = state.getNextPlayer(action.playerId)
+        return ExecutionResult.success(
+            newState.copy(priorityPlayerId = nextPlayer),
+            listOf(PriorityChangedEvent(nextPlayer))
+        )
+    }
+
+    private fun resolveTopOfStack(state: GameState): ExecutionResult {
+        val result = stackResolver.resolveTop(state)
+
+        if (!result.isSuccess) {
+            return result
+        }
+
+        // Check state-based actions after resolution
+        val sbaResult = sbaChecker.checkAndApply(result.newState)
+        var combinedEvents = result.events + sbaResult.events
+
+        if (sbaResult.newState.gameOver) {
+            return ExecutionResult.success(sbaResult.newState, combinedEvents)
+        }
+
+        // Detect and process triggers from resolution and SBA events
+        val triggers = triggerDetector.detectTriggers(sbaResult.newState, combinedEvents)
+        if (triggers.isNotEmpty()) {
+            val triggerResult = triggerProcessor.processTriggers(sbaResult.newState, triggers)
+
+            if (triggerResult.isPaused) {
+                return ExecutionResult.paused(
+                    triggerResult.state,
+                    triggerResult.pendingDecision!!,
+                    combinedEvents + triggerResult.events
+                )
+            }
+
+            combinedEvents = combinedEvents + triggerResult.events
+            return ExecutionResult.success(
+                triggerResult.newState.withPriority(state.activePlayerId),
+                combinedEvents
+            )
+        }
+
+        return ExecutionResult.success(
+            sbaResult.newState.withPriority(state.activePlayerId),
+            combinedEvents
+        )
+    }
+
+    private fun advanceGame(state: GameState): ExecutionResult {
+        return turnManager.advanceStep(state)
+    }
+
+    companion object {
+        fun create(context: ActionContext): PassPriorityHandler {
+            return PassPriorityHandler(
+                context.turnManager,
+                context.stackResolver,
+                context.sbaChecker,
+                context.triggerDetector,
+                context.triggerProcessor
+            )
+        }
+    }
+}

@@ -1,0 +1,610 @@
+package com.wingedsheep.engine.handlers.actions.spell
+
+import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.GameEvent
+import com.wingedsheep.engine.core.ManaSpentEvent
+import com.wingedsheep.engine.core.PaymentStrategy
+import com.wingedsheep.engine.core.PermanentsSacrificedEvent
+import com.wingedsheep.engine.core.TappedEvent
+import com.wingedsheep.engine.core.TurnManager
+import com.wingedsheep.engine.core.ZoneChangeEvent
+import com.wingedsheep.engine.event.TriggerDetector
+import com.wingedsheep.engine.event.TriggerProcessor
+import com.wingedsheep.engine.handlers.ConditionEvaluator
+import com.wingedsheep.engine.handlers.CostHandler
+import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.actions.ActionContext
+import com.wingedsheep.engine.handlers.actions.ActionHandler
+import com.wingedsheep.engine.mechanics.mana.AlternativePaymentHandler
+import com.wingedsheep.engine.mechanics.mana.CostCalculator
+import com.wingedsheep.engine.mechanics.mana.ManaPool
+import com.wingedsheep.engine.mechanics.mana.ManaSolver
+import com.wingedsheep.engine.mechanics.stack.StackResolver
+import com.wingedsheep.engine.mechanics.targeting.TargetValidator
+import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.player.ManaPoolComponent
+import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.AdditionalCost
+import com.wingedsheep.sdk.scripting.CardFilter
+import com.wingedsheep.sdk.scripting.CastRestriction
+import com.wingedsheep.sdk.scripting.KeywordAbility
+import kotlin.reflect.KClass
+
+/**
+ * Handler for the CastSpell action.
+ *
+ * This is the most complex handler, handling:
+ * - Timing validation
+ * - Cast restrictions
+ * - Additional costs (sacrifice, etc.)
+ * - Alternative payments (Delve, Convoke)
+ * - Three payment strategies (AutoPay, FromPool, Explicit)
+ * - Target validation
+ * - Morph/face-down casting
+ * - Trigger detection
+ */
+class CastSpellHandler(
+    private val cardRegistry: CardRegistry?,
+    private val turnManager: TurnManager,
+    private val manaSolver: ManaSolver,
+    private val costCalculator: CostCalculator,
+    private val alternativePaymentHandler: AlternativePaymentHandler,
+    private val costHandler: CostHandler,
+    private val stackResolver: StackResolver,
+    private val targetValidator: TargetValidator,
+    private val conditionEvaluator: ConditionEvaluator,
+    private val triggerDetector: TriggerDetector,
+    private val triggerProcessor: TriggerProcessor
+) : ActionHandler<CastSpell> {
+    override val actionType: KClass<CastSpell> = CastSpell::class
+
+    override fun validate(state: GameState, action: CastSpell): String? {
+        if (state.priorityPlayerId != action.playerId) {
+            return "You don't have priority"
+        }
+
+        val container = state.getEntity(action.cardId)
+            ?: return "Card not found: ${action.cardId}"
+
+        val cardComponent = container.get<CardComponent>()
+            ?: return "Not a card: ${action.cardId}"
+
+        val handZone = ZoneKey(action.playerId, ZoneType.HAND)
+        if (action.cardId !in state.getZone(handZone)) {
+            return "Card is not in your hand"
+        }
+
+        val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId)
+
+        // Handle face-down casting (morph)
+        if (action.castFaceDown) {
+            val morphAbility = cardDef?.keywordAbilities?.filterIsInstance<KeywordAbility.Morph>()?.firstOrNull()
+                ?: return "This card cannot be cast face down (no morph ability)"
+
+            if (!turnManager.canPlaySorcerySpeed(state, action.playerId)) {
+                return "You can only cast face-down creatures at sorcery speed"
+            }
+
+            val morphCastCost = ManaCost.parse("{3}")
+            return validatePayment(state, action, morphCastCost)
+        }
+
+        // Check timing
+        if (!cardComponent.typeLine.isInstant) {
+            if (!turnManager.canPlaySorcerySpeed(state, action.playerId)) {
+                return "You can only cast sorcery-speed spells during your main phase with an empty stack"
+            }
+        }
+
+        // Check cast restrictions
+        if (cardDef != null && cardDef.script.castRestrictions.isNotEmpty()) {
+            val restrictionError = validateCastRestrictions(state, cardDef.script.castRestrictions, action.playerId)
+            if (restrictionError != null) {
+                return restrictionError
+            }
+        }
+
+        // Validate additional costs
+        if (cardDef != null) {
+            val additionalCostError = validateAdditionalCosts(state, cardDef.script.additionalCosts, action)
+            if (additionalCostError != null) {
+                return additionalCostError
+            }
+        }
+
+        // Calculate effective cost
+        val effectiveCost = if (cardDef != null) {
+            costCalculator.calculateEffectiveCost(state, cardDef, action.playerId)
+        } else {
+            cardComponent.manaCost
+        }
+
+        // Validate payment
+        val paymentError = validatePayment(state, action, effectiveCost)
+        if (paymentError != null) {
+            return paymentError
+        }
+
+        // Validate targets
+        if (cardDef != null && action.targets.isNotEmpty()) {
+            val targetRequirements = cardDef.script.targetRequirements
+            if (targetRequirements.isNotEmpty()) {
+                val targetError = targetValidator.validateTargets(
+                    state,
+                    action.targets,
+                    targetRequirements,
+                    action.playerId
+                )
+                if (targetError != null) {
+                    return targetError
+                }
+            }
+        }
+
+        return null
+    }
+
+    private fun validatePayment(state: GameState, action: CastSpell, cost: ManaCost): String? {
+        val xValue = action.xValue ?: 0
+
+        return when (action.paymentStrategy) {
+            is PaymentStrategy.AutoPay -> {
+                if (!manaSolver.canPay(state, action.playerId, cost, xValue)) {
+                    "Not enough mana to cast this spell"
+                } else null
+            }
+            is PaymentStrategy.FromPool -> {
+                val poolComponent = state.getEntity(action.playerId)?.get<ManaPoolComponent>()
+                    ?: ManaPoolComponent()
+                val pool = ManaPool(
+                    white = poolComponent.white,
+                    blue = poolComponent.blue,
+                    black = poolComponent.black,
+                    red = poolComponent.red,
+                    green = poolComponent.green,
+                    colorless = poolComponent.colorless
+                )
+                if (!costHandler.canPayManaCost(pool, cost)) {
+                    "Insufficient mana in pool to cast this spell"
+                } else null
+            }
+            is PaymentStrategy.Explicit -> {
+                for (sourceId in action.paymentStrategy.manaAbilitiesToActivate) {
+                    val sourceContainer = state.getEntity(sourceId)
+                        ?: return "Mana source not found: $sourceId"
+                    if (sourceContainer.has<TappedComponent>()) {
+                        return "Mana source is already tapped: $sourceId"
+                    }
+                }
+                null
+            }
+        }
+    }
+
+    private fun validateCastRestrictions(
+        state: GameState,
+        restrictions: List<CastRestriction>,
+        playerId: EntityId
+    ): String? {
+        val opponentId = state.turnOrder.firstOrNull { it != playerId }
+        val context = EffectContext(
+            sourceId = null,
+            controllerId = playerId,
+            opponentId = opponentId,
+            targets = emptyList(),
+            xValue = 0
+        )
+
+        for (restriction in restrictions) {
+            val error = validateSingleRestriction(state, restriction, context)
+            if (error != null) return error
+        }
+        return null
+    }
+
+    private fun validateSingleRestriction(
+        state: GameState,
+        restriction: CastRestriction,
+        context: EffectContext
+    ): String? {
+        return when (restriction) {
+            is CastRestriction.OnlyDuringStep -> {
+                if (state.step != restriction.step) {
+                    "Can only be cast during the ${restriction.step.name.lowercase().replace('_', ' ')} step"
+                } else null
+            }
+            is CastRestriction.OnlyDuringPhase -> {
+                if (state.phase != restriction.phase) {
+                    "Can only be cast during the ${restriction.phase.name.lowercase().replace('_', ' ')} phase"
+                } else null
+            }
+            is CastRestriction.OnlyIfCondition -> {
+                if (!conditionEvaluator.evaluate(state, restriction.condition, context)) {
+                    "Casting condition not met"
+                } else null
+            }
+            is CastRestriction.TimingRequirement -> null
+            is CastRestriction.All -> {
+                for (subRestriction in restriction.restrictions) {
+                    val error = validateSingleRestriction(state, subRestriction, context)
+                    if (error != null) return error
+                }
+                null
+            }
+        }
+    }
+
+    private fun validateAdditionalCosts(
+        state: GameState,
+        additionalCosts: List<AdditionalCost>,
+        action: CastSpell
+    ): String? {
+        for (additionalCost in additionalCosts) {
+            when (additionalCost) {
+                is AdditionalCost.SacrificePermanent -> {
+                    val sacrificed = action.additionalCostPayment?.sacrificedPermanents ?: emptyList()
+                    if (sacrificed.size < additionalCost.count) {
+                        return "You must sacrifice ${additionalCost.count} ${additionalCost.filter.description} to cast this spell"
+                    }
+                    for (permId in sacrificed) {
+                        val permContainer = state.getEntity(permId)
+                            ?: return "Sacrificed permanent not found: $permId"
+                        val permCard = permContainer.get<CardComponent>()
+                            ?: return "Sacrificed entity is not a card: $permId"
+                        val permController = permContainer.get<ControllerComponent>()
+                        if (permController?.playerId != action.playerId) {
+                            return "You can only sacrifice permanents you control"
+                        }
+                        if (permId !in state.getBattlefield()) {
+                            return "Sacrificed permanent is not on the battlefield: $permId"
+                        }
+                        if (!matchesCardFilter(permCard, additionalCost.filter)) {
+                            return "${permCard.name} doesn't match the required filter: ${additionalCost.filter.description}"
+                        }
+                    }
+                }
+                else -> {}
+            }
+        }
+        return null
+    }
+
+    private fun matchesCardFilter(card: CardComponent, filter: CardFilter): Boolean {
+        return when (filter) {
+            is CardFilter.AnyCard -> true
+            is CardFilter.CreatureCard -> card.typeLine.isCreature
+            is CardFilter.LandCard -> card.typeLine.isLand
+            is CardFilter.BasicLandCard -> card.typeLine.isBasicLand
+            is CardFilter.SorceryCard -> card.typeLine.isSorcery
+            is CardFilter.InstantCard -> card.typeLine.isInstant
+            is CardFilter.HasSubtype -> card.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(filter.subtype))
+            is CardFilter.HasColor -> card.colors.contains(filter.color)
+            is CardFilter.And -> filter.filters.all { matchesCardFilter(card, it) }
+            is CardFilter.Or -> filter.filters.any { matchesCardFilter(card, it) }
+            is CardFilter.PermanentCard -> card.typeLine.isPermanent
+            is CardFilter.NonlandPermanentCard -> card.typeLine.isPermanent && !card.typeLine.isLand
+            is CardFilter.ManaValueAtMost -> card.manaCost.cmc <= filter.maxManaValue
+            is CardFilter.Not -> !matchesCardFilter(card, filter.filter)
+        }
+    }
+
+    override fun execute(state: GameState, action: CastSpell): ExecutionResult {
+        var currentState = state
+        val events = mutableListOf<GameEvent>()
+
+        val cardComponent = state.getEntity(action.cardId)?.get<CardComponent>()
+            ?: return ExecutionResult.error(state, "Card not found")
+
+        val xValue = action.xValue ?: 0
+        val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId)
+
+        // Calculate effective cost
+        var effectiveCost = if (action.castFaceDown) {
+            ManaCost.parse("{3}")
+        } else if (cardDef != null) {
+            costCalculator.calculateEffectiveCost(currentState, cardDef, action.playerId)
+        } else {
+            cardComponent.manaCost
+        }
+
+        // Process additional costs (sacrifice, etc.)
+        val sacrificedPermanentIds = mutableListOf<EntityId>()
+        if (cardDef != null && action.additionalCostPayment != null) {
+            for (additionalCost in cardDef.script.additionalCosts) {
+                when (additionalCost) {
+                    is AdditionalCost.SacrificePermanent -> {
+                        for (permId in action.additionalCostPayment.sacrificedPermanents) {
+                            val permContainer = currentState.getEntity(permId) ?: continue
+                            val permCard = permContainer.get<CardComponent>() ?: continue
+                            val controllerId = permContainer.get<ControllerComponent>()?.playerId ?: action.playerId
+                            val ownerId = permCard.ownerId ?: action.playerId
+                            val battlefieldZone = ZoneKey(controllerId, ZoneType.BATTLEFIELD)
+                            val graveyardZone = ZoneKey(ownerId, ZoneType.GRAVEYARD)
+
+                            currentState = currentState.removeFromZone(battlefieldZone, permId)
+                            currentState = currentState.addToZone(graveyardZone, permId)
+
+                            sacrificedPermanentIds.add(permId)
+
+                            events.add(PermanentsSacrificedEvent(action.playerId, listOf(permId)))
+                            events.add(ZoneChangeEvent(
+                                entityId = permId,
+                                entityName = permCard.name,
+                                fromZone = ZoneType.BATTLEFIELD,
+                                toZone = ZoneType.GRAVEYARD,
+                                ownerId = ownerId
+                            ))
+                        }
+                    }
+                    else -> {}
+                }
+            }
+        }
+
+        // Apply alternative payment (Delve/Convoke)
+        if (action.alternativePayment != null && !action.alternativePayment.isEmpty && cardDef != null) {
+            val altPaymentResult = alternativePaymentHandler.apply(
+                currentState,
+                effectiveCost,
+                action.alternativePayment,
+                action.playerId,
+                cardDef
+            )
+            effectiveCost = altPaymentResult.reducedCost
+            currentState = altPaymentResult.newState
+            events.addAll(altPaymentResult.events)
+        }
+
+        // Handle mana payment based on strategy
+        val paymentResult = processPayment(currentState, action, effectiveCost, cardComponent.name, xValue)
+        if (paymentResult.error != null) {
+            return ExecutionResult.error(currentState, paymentResult.error)
+        }
+        currentState = paymentResult.state
+        events.addAll(paymentResult.events)
+
+        // Cast the spell
+        val castResult = stackResolver.castSpell(
+            currentState,
+            action.cardId,
+            action.playerId,
+            action.targets,
+            action.xValue,
+            sacrificedPermanentIds,
+            action.castFaceDown
+        )
+
+        if (!castResult.isSuccess) {
+            return castResult
+        }
+
+        var allEvents = events + castResult.events
+
+        // Detect and process triggers from casting
+        val triggers = triggerDetector.detectTriggers(castResult.newState, castResult.events)
+        if (triggers.isNotEmpty()) {
+            val triggerResult = triggerProcessor.processTriggers(castResult.newState, triggers)
+
+            if (triggerResult.isPaused) {
+                return ExecutionResult.paused(
+                    triggerResult.state.withPriority(state.activePlayerId),
+                    triggerResult.pendingDecision!!,
+                    allEvents + triggerResult.events
+                )
+            }
+
+            allEvents = allEvents + triggerResult.events
+            return ExecutionResult.success(
+                triggerResult.newState.withPriority(state.activePlayerId),
+                allEvents
+            )
+        }
+
+        return ExecutionResult.success(
+            castResult.newState.withPriority(state.activePlayerId),
+            allEvents
+        )
+    }
+
+    private data class PaymentResult(
+        val state: GameState,
+        val events: List<GameEvent>,
+        val error: String?
+    )
+
+    private fun processPayment(
+        state: GameState,
+        action: CastSpell,
+        effectiveCost: ManaCost,
+        cardName: String,
+        xValue: Int
+    ): PaymentResult {
+        return when (action.paymentStrategy) {
+            is PaymentStrategy.FromPool -> payFromPool(state, action.playerId, effectiveCost, cardName)
+            is PaymentStrategy.AutoPay -> autoPay(state, action.playerId, effectiveCost, cardName, xValue)
+            is PaymentStrategy.Explicit -> explicitPay(state, action.paymentStrategy, cardName)
+        }
+    }
+
+    private fun payFromPool(
+        state: GameState,
+        playerId: EntityId,
+        cost: ManaCost,
+        cardName: String
+    ): PaymentResult {
+        val poolComponent = state.getEntity(playerId)?.get<ManaPoolComponent>()
+            ?: ManaPoolComponent()
+        val pool = ManaPool(
+            white = poolComponent.white,
+            blue = poolComponent.blue,
+            black = poolComponent.black,
+            red = poolComponent.red,
+            green = poolComponent.green,
+            colorless = poolComponent.colorless
+        )
+
+        val newPool = costHandler.payManaCost(pool, cost)
+            ?: return PaymentResult(state, emptyList(), "Insufficient mana in pool")
+
+        val newState = state.updateEntity(playerId) { container ->
+            container.with(
+                ManaPoolComponent(
+                    white = newPool.white,
+                    blue = newPool.blue,
+                    black = newPool.black,
+                    red = newPool.red,
+                    green = newPool.green,
+                    colorless = newPool.colorless
+                )
+            )
+        }
+
+        val event = ManaSpentEvent(
+            playerId = playerId,
+            reason = "Cast $cardName",
+            white = poolComponent.white - newPool.white,
+            blue = poolComponent.blue - newPool.blue,
+            black = poolComponent.black - newPool.black,
+            red = poolComponent.red - newPool.red,
+            green = poolComponent.green - newPool.green,
+            colorless = poolComponent.colorless - newPool.colorless
+        )
+
+        return PaymentResult(newState, listOf(event), null)
+    }
+
+    private fun autoPay(
+        state: GameState,
+        playerId: EntityId,
+        cost: ManaCost,
+        cardName: String,
+        xValue: Int
+    ): PaymentResult {
+        var currentState = state
+        val events = mutableListOf<GameEvent>()
+
+        // Use floating mana first
+        val poolComponent = state.getEntity(playerId)?.get<ManaPoolComponent>()
+            ?: ManaPoolComponent()
+        val pool = ManaPool(
+            white = poolComponent.white,
+            blue = poolComponent.blue,
+            black = poolComponent.black,
+            red = poolComponent.red,
+            green = poolComponent.green,
+            colorless = poolComponent.colorless
+        )
+
+        val partialResult = pool.payPartial(cost)
+        val poolAfterPartial = partialResult.newPool
+        val remainingCost = partialResult.remainingCost
+        val manaSpentFromPool = partialResult.manaSpent
+
+        currentState = currentState.updateEntity(playerId) { container ->
+            container.with(
+                ManaPoolComponent(
+                    white = poolAfterPartial.white,
+                    blue = poolAfterPartial.blue,
+                    black = poolAfterPartial.black,
+                    red = poolAfterPartial.red,
+                    green = poolAfterPartial.green,
+                    colorless = poolAfterPartial.colorless
+                )
+            )
+        }
+
+        var whiteSpent = manaSpentFromPool.white
+        var blueSpent = manaSpentFromPool.blue
+        var blackSpent = manaSpentFromPool.black
+        var redSpent = manaSpentFromPool.red
+        var greenSpent = manaSpentFromPool.green
+        var colorlessSpent = manaSpentFromPool.colorless
+
+        // Tap lands for remaining cost
+        if (!remainingCost.isEmpty()) {
+            val solution = manaSolver.solve(currentState, playerId, remainingCost, xValue)
+                ?: return PaymentResult(currentState, events, "Not enough mana to auto-pay")
+
+            for (source in solution.sources) {
+                currentState = currentState.updateEntity(source.entityId) { container ->
+                    container.with(TappedComponent)
+                }
+                events.add(TappedEvent(source.entityId, source.name))
+            }
+
+            for ((_, production) in solution.manaProduced) {
+                when (production.color) {
+                    Color.WHITE -> whiteSpent++
+                    Color.BLUE -> blueSpent++
+                    Color.BLACK -> blackSpent++
+                    Color.RED -> redSpent++
+                    Color.GREEN -> greenSpent++
+                    null -> colorlessSpent += production.colorless
+                }
+            }
+        }
+
+        events.add(
+            ManaSpentEvent(
+                playerId = playerId,
+                reason = "Cast $cardName",
+                white = whiteSpent,
+                blue = blueSpent,
+                black = blackSpent,
+                red = redSpent,
+                green = greenSpent,
+                colorless = colorlessSpent
+            )
+        )
+
+        return PaymentResult(currentState, events, null)
+    }
+
+    private fun explicitPay(
+        state: GameState,
+        strategy: PaymentStrategy.Explicit,
+        cardName: String
+    ): PaymentResult {
+        var currentState = state
+        val events = mutableListOf<GameEvent>()
+
+        for (sourceId in strategy.manaAbilitiesToActivate) {
+            val sourceName = currentState.getEntity(sourceId)
+                ?.get<CardComponent>()?.name ?: "Unknown"
+
+            currentState = currentState.updateEntity(sourceId) { container ->
+                container.with(TappedComponent)
+            }
+            events.add(TappedEvent(sourceId, sourceName))
+        }
+
+        return PaymentResult(currentState, events, null)
+    }
+
+    companion object {
+        fun create(context: ActionContext): CastSpellHandler {
+            return CastSpellHandler(
+                context.cardRegistry,
+                context.turnManager,
+                context.manaSolver,
+                context.costCalculator,
+                context.alternativePaymentHandler,
+                context.costHandler,
+                context.stackResolver,
+                context.targetValidator,
+                context.conditionEvaluator,
+                context.triggerDetector,
+                context.triggerProcessor
+            )
+        }
+    }
+}

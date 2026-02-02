@@ -1,0 +1,205 @@
+package com.wingedsheep.engine.handlers.actions.ability
+
+import com.wingedsheep.engine.core.CardsDrawnEvent
+import com.wingedsheep.engine.core.CycleCard
+import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.GameEvent
+import com.wingedsheep.engine.core.ManaSpentEvent
+import com.wingedsheep.engine.core.TappedEvent
+import com.wingedsheep.engine.core.ZoneChangeEvent
+import com.wingedsheep.engine.event.TriggerDetector
+import com.wingedsheep.engine.event.TriggerProcessor
+import com.wingedsheep.engine.handlers.actions.ActionContext
+import com.wingedsheep.engine.handlers.actions.ActionHandler
+import com.wingedsheep.engine.mechanics.mana.ManaSolver
+import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.scripting.KeywordAbility
+import kotlin.reflect.KClass
+
+/**
+ * Handler for the CycleCard action.
+ *
+ * Cycling allows a player to pay a cost, discard the card,
+ * and draw a new card. It's an activated ability from hand.
+ */
+class CycleCardHandler(
+    private val cardRegistry: CardRegistry?,
+    private val manaSolver: ManaSolver,
+    private val triggerDetector: TriggerDetector,
+    private val triggerProcessor: TriggerProcessor
+) : ActionHandler<CycleCard> {
+    override val actionType: KClass<CycleCard> = CycleCard::class
+
+    override fun validate(state: GameState, action: CycleCard): String? {
+        if (state.priorityPlayerId != action.playerId) {
+            return "You don't have priority"
+        }
+
+        val container = state.getEntity(action.cardId)
+            ?: return "Card not found: ${action.cardId}"
+
+        val cardComponent = container.get<CardComponent>()
+            ?: return "Not a card: ${action.cardId}"
+
+        val handZone = ZoneKey(action.playerId, ZoneType.HAND)
+        if (action.cardId !in state.getZone(handZone)) {
+            return "Card is not in your hand"
+        }
+
+        val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId)
+            ?: return "Card definition not found"
+
+        val cyclingAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Cycling>()
+            .firstOrNull()
+            ?: return "This card doesn't have cycling"
+
+        if (!manaSolver.canPay(state, action.playerId, cyclingAbility.cost)) {
+            return "Not enough mana to cycle this card"
+        }
+
+        return null
+    }
+
+    override fun execute(state: GameState, action: CycleCard): ExecutionResult {
+        val container = state.getEntity(action.cardId)
+            ?: return ExecutionResult.error(state, "Card not found")
+
+        val cardComponent = container.get<CardComponent>()
+            ?: return ExecutionResult.error(state, "Not a card")
+
+        val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId)
+            ?: return ExecutionResult.error(state, "Card definition not found")
+
+        val cyclingAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Cycling>()
+            .firstOrNull()
+            ?: return ExecutionResult.error(state, "This card doesn't have cycling")
+
+        var currentState = state
+        val events = mutableListOf<GameEvent>()
+        val ownerId = cardComponent.ownerId ?: action.playerId
+
+        // Pay the cycling cost (using AutoPay strategy)
+        val solution = manaSolver.solve(currentState, action.playerId, cyclingAbility.cost, 0)
+            ?: return ExecutionResult.error(state, "Not enough mana to cycle")
+
+        // Tap each source and generate events
+        for (source in solution.sources) {
+            currentState = currentState.updateEntity(source.entityId) { c ->
+                c.with(TappedComponent)
+            }
+            events.add(TappedEvent(source.entityId, source.name))
+        }
+
+        // Calculate mana spent for event
+        var whiteSpent = 0
+        var blueSpent = 0
+        var blackSpent = 0
+        var redSpent = 0
+        var greenSpent = 0
+        var colorlessSpent = 0
+
+        for ((_, production) in solution.manaProduced) {
+            when (production.color) {
+                Color.WHITE -> whiteSpent++
+                Color.BLUE -> blueSpent++
+                Color.BLACK -> blackSpent++
+                Color.RED -> redSpent++
+                Color.GREEN -> greenSpent++
+                null -> colorlessSpent += production.colorless
+            }
+        }
+
+        events.add(
+            ManaSpentEvent(
+                playerId = action.playerId,
+                reason = "Cycle ${cardComponent.name}",
+                white = whiteSpent,
+                blue = blueSpent,
+                black = blackSpent,
+                red = redSpent,
+                green = greenSpent,
+                colorless = colorlessSpent
+            )
+        )
+
+        // Discard the card (move from hand to graveyard)
+        val handZone = ZoneKey(action.playerId, ZoneType.HAND)
+        val graveyardZone = ZoneKey(ownerId, ZoneType.GRAVEYARD)
+        currentState = currentState.removeFromZone(handZone, action.cardId)
+        currentState = currentState.addToZone(graveyardZone, action.cardId)
+
+        events.add(
+            ZoneChangeEvent(
+                entityId = action.cardId,
+                entityName = cardComponent.name,
+                fromZone = ZoneType.HAND,
+                toZone = ZoneType.GRAVEYARD,
+                ownerId = ownerId
+            )
+        )
+
+        // Draw a card
+        val library = currentState.getLibrary(action.playerId)
+        if (library.isNotEmpty()) {
+            val drawnCardId = library.first()
+            val drawnCardName = currentState.getEntity(drawnCardId)?.get<CardComponent>()?.name ?: "Unknown"
+
+            val libraryZone = ZoneKey(action.playerId, ZoneType.LIBRARY)
+            currentState = currentState.removeFromZone(libraryZone, drawnCardId)
+            currentState = currentState.addToZone(handZone, drawnCardId)
+
+            events.add(
+                ZoneChangeEvent(
+                    entityId = drawnCardId,
+                    entityName = drawnCardName,
+                    fromZone = ZoneType.LIBRARY,
+                    toZone = ZoneType.HAND,
+                    ownerId = action.playerId
+                )
+            )
+
+            events.add(CardsDrawnEvent(action.playerId, 1, listOf(drawnCardId)))
+        }
+
+        currentState = currentState.tick()
+
+        // Detect and process triggers (e.g., cycling triggers, discard triggers)
+        val triggers = triggerDetector.detectTriggers(currentState, events)
+        if (triggers.isNotEmpty()) {
+            val triggerResult = triggerProcessor.processTriggers(currentState, triggers)
+
+            if (triggerResult.isPaused) {
+                return ExecutionResult.paused(
+                    triggerResult.state,
+                    triggerResult.pendingDecision!!,
+                    events + triggerResult.events
+                )
+            }
+
+            return ExecutionResult.success(
+                triggerResult.newState,
+                events + triggerResult.events
+            )
+        }
+
+        // Cycling doesn't change priority
+        return ExecutionResult.success(currentState, events)
+    }
+
+    companion object {
+        fun create(context: ActionContext): CycleCardHandler {
+            return CycleCardHandler(
+                context.cardRegistry,
+                context.manaSolver,
+                context.triggerDetector,
+                context.triggerProcessor
+            )
+        }
+    }
+}
