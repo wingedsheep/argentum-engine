@@ -3,6 +3,9 @@ package com.wingedsheep.sdk.dsl
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.TargetFilter
+import com.wingedsheep.sdk.scripting.Zone
 import com.wingedsheep.sdk.targeting.*
 
 /**
@@ -199,4 +202,83 @@ object Targets {
      */
     fun SpellWithManaValueAtMost(manaValue: Int): TargetRequirement =
         TargetSpell(filter = SpellTargetFilter.WithManaValueAtMost(manaValue))
+
+    // =========================================================================
+    // Unified Target Filters (NEW - composable predicate-based targeting)
+    // =========================================================================
+
+    /**
+     * Unified target filter namespace providing composable, predicate-based targeting.
+     *
+     * These filters use the new unified filter architecture. They can be used
+     * for effect targeting where you need to specify what kind of objects an
+     * effect should target.
+     *
+     * Usage:
+     * ```kotlin
+     * // Simple creature target
+     * Targets.Unified.creature
+     *
+     * // Tapped creature target
+     * Targets.Unified.tappedCreature
+     *
+     * // Custom: black creature with power 2 or less
+     * Targets.Unified.creature { withColor(Color.BLACK).powerAtMost(2) }
+     *
+     * // Card in graveyard
+     * Targets.Unified.creatureInGraveyard
+     * ```
+     */
+    object Unified {
+        // Battlefield creature targets
+        val creature: TargetFilter = TargetFilter.Creature
+        val creatureYouControl: TargetFilter = TargetFilter.CreatureYouControl
+        val creatureOpponentControls: TargetFilter = TargetFilter.CreatureOpponentControls
+        val otherCreature: TargetFilter = TargetFilter.OtherCreature
+        val otherCreatureYouControl: TargetFilter = TargetFilter.OtherCreatureYouControl
+        val tappedCreature: TargetFilter = TargetFilter.TappedCreature
+        val untappedCreature: TargetFilter = TargetFilter.UntappedCreature
+        val attackingCreature: TargetFilter = TargetFilter.AttackingCreature
+        val blockingCreature: TargetFilter = TargetFilter.BlockingCreature
+        val attackingOrBlockingCreature: TargetFilter = TargetFilter.AttackingOrBlockingCreature
+
+        // Battlefield permanent targets
+        val permanent: TargetFilter = TargetFilter.Permanent
+        val permanentYouControl: TargetFilter = TargetFilter.PermanentYouControl
+        val nonlandPermanent: TargetFilter = TargetFilter.NonlandPermanent
+        val nonlandPermanentOpponentControls: TargetFilter = TargetFilter.NonlandPermanentOpponentControls
+        val artifact: TargetFilter = TargetFilter.Artifact
+        val enchantment: TargetFilter = TargetFilter.Enchantment
+        val land: TargetFilter = TargetFilter.Land
+        val planeswalker: TargetFilter = TargetFilter.Planeswalker
+
+        // Graveyard targets
+        val cardInGraveyard: TargetFilter = TargetFilter.CardInGraveyard
+        val creatureInGraveyard: TargetFilter = TargetFilter.CreatureInGraveyard
+        val instantOrSorceryInGraveyard: TargetFilter = TargetFilter.InstantOrSorceryInGraveyard
+
+        // Stack targets
+        val spell: TargetFilter = TargetFilter.SpellOnStack
+        val creatureSpell: TargetFilter = TargetFilter.CreatureSpellOnStack
+        val noncreatureSpell: TargetFilter = TargetFilter.NoncreatureSpellOnStack
+        val instantOrSorcerySpell: TargetFilter = TargetFilter.InstantOrSorcerySpellOnStack
+
+        // Builder for custom creature filters
+        fun creature(builder: GameObjectFilter.() -> GameObjectFilter): TargetFilter =
+            TargetFilter(GameObjectFilter.Creature.builder())
+
+        // Builder for custom permanent filters
+        fun permanent(builder: GameObjectFilter.() -> GameObjectFilter): TargetFilter =
+            TargetFilter(GameObjectFilter.Permanent.builder())
+
+        // Target in specific zone
+        fun inGraveyard(builder: GameObjectFilter.() -> GameObjectFilter = { this }): TargetFilter =
+            TargetFilter(GameObjectFilter.Any.builder(), zone = Zone.Graveyard)
+
+        fun onStack(builder: GameObjectFilter.() -> GameObjectFilter = { this }): TargetFilter =
+            TargetFilter(GameObjectFilter.Any.builder(), zone = Zone.Stack)
+
+        fun inExile(builder: GameObjectFilter.() -> GameObjectFilter = { this }): TargetFilter =
+            TargetFilter(GameObjectFilter.Any.builder(), zone = Zone.Exile)
+    }
 }
