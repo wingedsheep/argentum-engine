@@ -1134,6 +1134,19 @@ function TournamentOverlay({
             {tournamentState.standings.map((standing, index) => {
               const isMe = standing.playerId === playerId
               const isReady = tournamentState.readyPlayerIds.includes(standing.playerId)
+              // Use server-provided rank or fall back to index+1
+              const displayRank = standing.rank ?? index + 1
+              // Get tiebreaker tooltip text
+              const tiebreakerTooltip =
+                standing.tiebreakerReason === 'HEAD_TO_HEAD'
+                  ? 'Lost head-to-head'
+                  : standing.tiebreakerReason === 'H2H_GAMES'
+                    ? 'Lower H2H game record'
+                    : standing.tiebreakerReason === 'LIFE_DIFF'
+                      ? 'Lower life differential'
+                      : standing.tiebreakerReason === 'TIED'
+                        ? 'Tied'
+                        : null
               return (
                 <tr
                   key={standing.playerId}
@@ -1142,7 +1155,12 @@ function TournamentOverlay({
                     borderBottom: '1px solid #222',
                   }}
                 >
-                  <td style={tdStyle}>{index + 1}</td>
+                  <td style={tdStyle} title={tiebreakerTooltip ?? undefined}>
+                    {displayRank}
+                    {standing.tiebreakerReason === 'TIED' && (
+                      <span style={{ color: '#888', marginLeft: 2 }}>*</span>
+                    )}
+                  </td>
                   <td style={{ ...tdStyle, textAlign: 'left', fontWeight: isMe ? 600 : 400 }}>
                     {standing.playerName}
                     {isMe && <span style={{ color: '#4fc3f7', marginLeft: 6 }}>(you)</span>}

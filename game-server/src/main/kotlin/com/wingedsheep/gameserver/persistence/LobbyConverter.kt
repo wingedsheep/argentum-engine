@@ -44,7 +44,8 @@ fun TournamentLobby.toPersistent(): PersistentTournamentLobby {
                 cardPoolNames = playerState.cardPool.map { it.name },
                 currentPackNames = playerState.currentPack?.map { it.name },
                 hasPicked = playerState.hasPicked,
-                submittedDeck = playerState.submittedDeck
+                submittedDeck = playerState.submittedDeck,
+                currentSpectatingGameId = playerState.identity.currentSpectatingGameId
             )
         },
         currentPackNumber = currentPackNumber,
@@ -93,6 +94,7 @@ fun restoreTournamentLobby(
             playerName = persistentPlayer.playerName
         ).also {
             it.currentLobbyId = persistent.lobbyId
+            it.currentSpectatingGameId = persistentPlayer.currentSpectatingGameId
         }
         playerIdentities.add(identity)
 
@@ -172,7 +174,10 @@ fun TournamentManager.toPersistent(lobbyId: String): PersistentTournament {
                 playerName = standing.playerName,
                 wins = standing.wins,
                 losses = standing.losses,
-                draws = standing.draws
+                draws = standing.draws,
+                gamesWon = standing.gamesWon,
+                gamesLost = standing.gamesLost,
+                lifeDifferential = standing.lifeDifferential
             )
         },
         rounds = getRoundsForPersistence().map { round ->
@@ -185,7 +190,9 @@ fun TournamentManager.toPersistent(lobbyId: String): PersistentTournament {
                         gameSessionId = match.gameSessionId,
                         winnerId = match.winnerId?.value,
                         isDraw = match.isDraw,
-                        isComplete = match.isComplete
+                        isComplete = match.isComplete,
+                        player1GameWins = match.player1GameWins,
+                        player2GameWins = match.player2GameWins
                     )
                 }
             )
@@ -228,7 +235,9 @@ fun restoreTournamentManager(persistent: PersistentTournament): TournamentManage
                     gameSessionId = persistentMatch.gameSessionId,
                     winnerId = persistentMatch.winnerId?.let { EntityId(it) },
                     isDraw = persistentMatch.isDraw,
-                    isComplete = persistentMatch.isComplete
+                    isComplete = persistentMatch.isComplete,
+                    player1GameWins = persistentMatch.player1GameWins,
+                    player2GameWins = persistentMatch.player2GameWins
                 )
             }
         )
@@ -241,7 +250,10 @@ fun restoreTournamentManager(persistent: PersistentTournament): TournamentManage
             playerName = persistentStanding.playerName,
             wins = persistentStanding.wins,
             losses = persistentStanding.losses,
-            draws = persistentStanding.draws
+            draws = persistentStanding.draws,
+            gamesWon = persistentStanding.gamesWon,
+            gamesLost = persistentStanding.gamesLost,
+            lifeDifferential = persistentStanding.lifeDifferential
         )
     }
 

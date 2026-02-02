@@ -13,6 +13,7 @@ import com.wingedsheep.gameserver.session.SessionRegistry
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.PlayerLostEvent
 import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.sdk.model.EntityId
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -390,7 +391,14 @@ class GamePlayHandler(
         if (lobbyId != null) {
             val tournament = lobbyRepository.findTournamentById(lobbyId)
             if (tournament != null) {
-                tournament.reportMatchResult(gameSessionId, winnerId)
+                // Capture winner's remaining life for tiebreaker calculations
+                val winnerLifeRemaining = if (winnerId != null) {
+                    gameSession.getStateForTesting()?.getEntity(winnerId)
+                        ?.get<LifeTotalComponent>()?.life ?: 0
+                } else {
+                    0
+                }
+                tournament.reportMatchResult(gameSessionId, winnerId, winnerLifeRemaining)
                 gameRepository.removeLobbyLink(gameSessionId)
 
                 if (tournament.isRoundComplete()) {

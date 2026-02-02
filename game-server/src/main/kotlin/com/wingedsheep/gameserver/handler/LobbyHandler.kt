@@ -1235,6 +1235,46 @@ class LobbyHandler(
     }
 
     /**
+     * Restore spectating state for a player after server restart.
+     * Re-adds them as a spectator and sends the spectating messages.
+     */
+    fun restoreSpectating(
+        identity: PlayerIdentity,
+        playerSession: PlayerSession,
+        session: WebSocketSession,
+        gameSessionId: String
+    ) {
+        val gameSession = gameRepository.findById(gameSessionId)
+        if (gameSession == null || gameSession.isGameOver()) {
+            // Game no longer exists or is over, clear spectating state and send active matches
+            identity.currentSpectatingGameId = null
+            sendActiveMatchesToPlayer(identity, session)
+            return
+        }
+
+        // Re-add as spectator
+        gameSession.addSpectator(playerSession)
+
+        // Send SpectatingStarted
+        val playerNames = gameSession.getPlayerNames()
+        if (playerNames != null) {
+            sender.send(session, ServerMessage.SpectatingStarted(
+                gameSessionId = gameSessionId,
+                player1Name = playerNames.first,
+                player2Name = playerNames.second
+            ))
+        }
+
+        // Send current game state
+        val spectatorState = gameSession.buildSpectatorState()
+        if (spectatorState != null) {
+            sender.send(session, spectatorState)
+        }
+
+        logger.info("Restored spectating for ${identity.playerName} to game $gameSessionId")
+    }
+
+    /**
      * Broadcast spectator state update to all spectators of a game.
      */
     fun broadcastSpectatorUpdate(gameSession: GameSession) {

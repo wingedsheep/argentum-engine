@@ -590,6 +590,12 @@ export interface PlayerStandingInfo {
   readonly draws: number
   readonly points: number
   readonly isConnected: boolean
+  readonly gamesWon?: number
+  readonly gamesLost?: number
+  readonly lifeDifferential?: number
+  readonly rank?: number
+  /** Tiebreaker reason: "HEAD_TO_HEAD", "H2H_GAMES", "LIFE_DIFF", "TIED", or null if no tie */
+  readonly tiebreakerReason?: string | null
 }
 
 export interface MatchResultInfo {

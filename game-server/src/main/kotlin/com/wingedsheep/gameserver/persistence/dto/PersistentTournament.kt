@@ -25,7 +25,10 @@ data class PersistentStanding(
     val playerName: String,
     val wins: Int,
     val losses: Int,
-    val draws: Int
+    val draws: Int,
+    val gamesWon: Int = 0,
+    val gamesLost: Int = 0,
+    val lifeDifferential: Int = 0
 )
 
 /**
@@ -47,5 +50,7 @@ data class PersistentMatch(
     val gameSessionId: String?,
     val winnerId: String?,
     val isDraw: Boolean,
-    val isComplete: Boolean
+    val isComplete: Boolean,
+    val player1GameWins: Int = 0,
+    val player2GameWins: Int = 0
 )

@@ -36,7 +36,8 @@ data class PersistentLobbyPlayer(
     val cardPoolNames: List<String>,  // Card names only
     val currentPackNames: List<String>? = null,  // Draft only: current pack cards
     val hasPicked: Boolean = false,  // Draft only
-    val submittedDeck: Map<String, Int>?  // cardName -> count
+    val submittedDeck: Map<String, Int>?,  // cardName -> count
+    val currentSpectatingGameId: String? = null  // Game being spectated (for bye players)
 )
 
 /**

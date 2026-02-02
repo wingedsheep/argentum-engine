@@ -244,8 +244,14 @@ class ConnectionHandler(
                                 lobbyId = lobbyId,
                                 round = currentRound.roundNumber
                             ))
-                            // Send active matches so they can spectate
-                            sendActiveMatchesToPlayerCallback?.invoke(identity, session)
+                            // Check if player was spectating a game before restart
+                            val spectatingGameId = identity.currentSpectatingGameId
+                            if (spectatingGameId != null) {
+                                restoreSpectatingCallback?.invoke(identity, playerSession, session, spectatingGameId)
+                            } else {
+                                // Send active matches so they can spectate
+                                sendActiveMatchesToPlayerCallback?.invoke(identity, session)
+                            }
                         }
 
                         // Case 2: Player has an active game in progress (round not complete)
@@ -295,8 +301,14 @@ class ConnectionHandler(
 
                         // Case 3: Player's match is complete but round isn't (waiting for others)
                         playerMatch?.isComplete == true && !tournament.isRoundComplete() -> {
-                            // Send active matches so they can see other games/spectate
-                            sendActiveMatchesToPlayerCallback?.invoke(identity, session)
+                            // Check if player was spectating a game before restart
+                            val spectatingGameId = identity.currentSpectatingGameId
+                            if (spectatingGameId != null) {
+                                restoreSpectatingCallback?.invoke(identity, playerSession, session, spectatingGameId)
+                            } else {
+                                // Send active matches so they can see other games/spectate
+                                sendActiveMatchesToPlayerCallback?.invoke(identity, session)
+                            }
                         }
 
                         // Case 4: Round is complete, waiting for players to ready up
@@ -468,6 +480,7 @@ class ConnectionHandler(
     var handleRoundCompleteCallback: ((String) -> Unit)? = null
     var broadcastStateUpdateCallback: ((com.wingedsheep.gameserver.session.GameSession, List<com.wingedsheep.engine.core.GameEvent>) -> Unit)? = null
     var sendActiveMatchesToPlayerCallback: ((PlayerIdentity, WebSocketSession) -> Unit)? = null
+    var restoreSpectatingCallback: ((PlayerIdentity, PlayerSession, WebSocketSession, String) -> Unit)? = null
 
     companion object {
         fun cardToSealedCardInfo(card: com.wingedsheep.sdk.model.CardDefinition): ServerMessage.SealedCardInfo {

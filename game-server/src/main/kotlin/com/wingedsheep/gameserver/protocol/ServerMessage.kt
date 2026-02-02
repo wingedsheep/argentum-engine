@@ -364,7 +364,13 @@ sealed interface ServerMessage {
         val losses: Int,
         val draws: Int,
         val points: Int,
-        val isConnected: Boolean = true
+        val isConnected: Boolean = true,
+        val gamesWon: Int = 0,
+        val gamesLost: Int = 0,
+        val lifeDifferential: Int = 0,
+        val rank: Int = 0,
+        /** Tiebreaker reason: "HEAD_TO_HEAD", "H2H_GAMES", "LIFE_DIFF", "TIED", or null if no tie */
+        val tiebreakerReason: String? = null
     )
 
     /**
