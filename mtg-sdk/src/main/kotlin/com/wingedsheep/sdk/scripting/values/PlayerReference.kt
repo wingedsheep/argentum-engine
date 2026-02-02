@@ -4,7 +4,21 @@ import kotlinx.serialization.Serializable
 
 /**
  * Reference to a player in zone counting and similar contexts.
+ *
+ * @deprecated Use [Player] sealed interface instead. Player is the unified player
+ * reference type that combines PlayerReference and PlayerFilter functionality.
+ *
+ * Migration:
+ * - PlayerReference.You -> Player.You
+ * - PlayerReference.Opponent -> Player.Opponent
+ * - PlayerReference.TargetOpponent -> Player.TargetOpponent
+ * - PlayerReference.TargetPlayer -> Player.TargetPlayer
+ * - PlayerReference.Each -> Player.Each
  */
+@Deprecated(
+    message = "Use Player sealed interface instead",
+    replaceWith = ReplaceWith("Player", "com.wingedsheep.sdk.scripting.Player")
+)
 @Serializable
 sealed interface PlayerReference {
     val description: String
