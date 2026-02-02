@@ -17,6 +17,7 @@ import com.wingedsheep.gameserver.session.PlayerSession
 import com.wingedsheep.gameserver.session.SessionRegistry
 import com.wingedsheep.gameserver.session.GameSession
 import com.wingedsheep.gameserver.tournament.TournamentManager
+import com.wingedsheep.gameserver.config.GameProperties
 import com.wingedsheep.engine.registry.CardRegistry
 import kotlinx.coroutines.*
 import org.slf4j.LoggerFactory
@@ -30,7 +31,8 @@ class LobbyHandler(
     private val lobbyRepository: LobbyRepository,
     private val sender: MessageSender,
     private val cardRegistry: CardRegistry,
-    private val gamePlayHandler: GamePlayHandler
+    private val gamePlayHandler: GamePlayHandler,
+    private val gameProperties: GameProperties
 ) {
     private val logger = LoggerFactory.getLogger(LobbyHandler::class.java)
 
@@ -207,7 +209,10 @@ class LobbyHandler(
 
     private fun startGameFromSealed(sealedSession: SealedSession) {
         logger.info("Starting game from sealed session: ${sealedSession.sessionId}")
-        val gameSession = GameSession(cardRegistry = cardRegistry)
+        val gameSession = GameSession(
+            cardRegistry = cardRegistry,
+            useHandSmoother = gameProperties.handSmoother.enabled
+        )
 
         sealedSession.players.forEach { (playerId, playerState) ->
             val deck = playerState.submittedDeck
@@ -902,7 +907,10 @@ class LobbyHandler(
             val deck1 = lobby.getSubmittedDeck(match.player1Id) ?: continue
             val deck2 = lobby.getSubmittedDeck(match.player2Id!!) ?: continue
 
-            val gameSession = GameSession(cardRegistry = cardRegistry)
+            val gameSession = GameSession(
+                cardRegistry = cardRegistry,
+                useHandSmoother = gameProperties.handSmoother.enabled
+            )
             val ps1 = player1State.identity.toPlayerSession()
             val ps2 = player2State.identity.toPlayerSession()
 

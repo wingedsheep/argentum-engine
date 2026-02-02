@@ -10,6 +10,7 @@ import com.wingedsheep.gameserver.repository.LobbyRepository
 import com.wingedsheep.gameserver.session.GameSession
 import com.wingedsheep.gameserver.session.PlayerSession
 import com.wingedsheep.gameserver.session.SessionRegistry
+import com.wingedsheep.gameserver.config.GameProperties
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.PlayerLostEvent
 import com.wingedsheep.engine.registry.CardRegistry
@@ -28,7 +29,8 @@ class GamePlayHandler(
     private val lobbyRepository: LobbyRepository,
     private val sender: MessageSender,
     private val cardRegistry: CardRegistry,
-    private val deckGenerator: RandomDeckGenerator
+    private val deckGenerator: RandomDeckGenerator,
+    private val gameProperties: GameProperties
 ) {
     private val logger = LoggerFactory.getLogger(GamePlayHandler::class.java)
 
@@ -70,7 +72,10 @@ class GamePlayHandler(
             message.deckList
         }
 
-        val gameSession = GameSession(cardRegistry = cardRegistry)
+        val gameSession = GameSession(
+            cardRegistry = cardRegistry,
+            useHandSmoother = gameProperties.handSmoother.enabled
+        )
         gameSession.addPlayer(playerSession, deckList)
 
         // Store player info for persistence
