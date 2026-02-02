@@ -174,6 +174,7 @@ val engineSerializersModule = SerializersModule {
         subclass(SkipCombatPhasesComponent::class)
         subclass(SkipUntapComponent::class)
         subclass(PlayerLostComponent::class)
+        subclass(LoseAtEndStepComponent::class)
 
         // Stack components
         subclass(SpellOnStackComponent::class)
