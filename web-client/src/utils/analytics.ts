@@ -14,13 +14,13 @@ export function initAnalytics() {
 
   // Initialize gtag
   window.dataLayer = window.dataLayer || []
-  function gtagFn(...args: unknown[]) {
-    window.dataLayer.push(args)
+  window.gtag = function () {
+    // eslint-disable-next-line prefer-rest-params
+    window.dataLayer.push(arguments)
   }
-  window.gtag = gtagFn
 
-  gtagFn('js', new Date())
-  gtagFn('config', GA_MEASUREMENT_ID)
+  window.gtag('js', new Date())
+  window.gtag('config', GA_MEASUREMENT_ID)
 }
 
 export function trackEvent(name: string, params?: Record<string, unknown>) {
