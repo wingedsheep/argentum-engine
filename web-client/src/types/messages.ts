@@ -717,6 +717,17 @@ export interface SpectatorPlayerState {
 export interface SpectatorStateUpdateMessage {
   readonly type: 'spectatorStateUpdate'
   readonly gameSessionId: string
+  /** Full ClientGameState for reusing GameBoard component (both hands masked) */
+  readonly gameState?: ClientGameState | null
+  /** Player 1's entity ID */
+  readonly player1Id?: string | null
+  /** Player 2's entity ID */
+  readonly player2Id?: string | null
+  /** Player 1 name */
+  readonly player1Name?: string | null
+  /** Player 2 name */
+  readonly player2Name?: string | null
+  // Legacy fields for backward compatibility
   readonly player1: SpectatorPlayerState
   readonly player2: SpectatorPlayerState
   readonly currentPhase: string

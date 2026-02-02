@@ -283,10 +283,17 @@ export interface TournamentState {
  */
 export interface SpectatingState {
   gameSessionId: string
+  /** Full ClientGameState for reusing GameBoard component (both hands masked) */
+  gameState: import('../types').ClientGameState | null
+  /** Player 1's entity ID */
+  player1Id: string | null
+  /** Player 2's entity ID */
+  player2Id: string | null
+  player1Name: string
+  player2Name: string
+  // Legacy fields for backward compatibility with old SpectatorView
   player1: SpectatorPlayerState | null
   player2: SpectatorPlayerState | null
-  player1Name?: string
-  player2Name?: string
   currentPhase: string | null
   activePlayerId: string | null
   priorityPlayerId: string | null
@@ -1263,9 +1270,38 @@ export const useGameStore = create<GameStore>()(
       },
 
       onSpectatorStateUpdate: (msg) => {
+        const { spectatingState: prevState, addDamageAnimation } = get()
+
+        // Detect life changes and add animations
+        if (msg.gameState && prevState?.gameState) {
+          const prevPlayers = prevState.gameState.players
+          const newPlayers = msg.gameState.players
+
+          for (const newPlayer of newPlayers) {
+            const prevPlayer = prevPlayers.find(p => p.playerId === newPlayer.playerId)
+            if (prevPlayer && prevPlayer.life !== newPlayer.life) {
+              const diff = newPlayer.life - prevPlayer.life
+              addDamageAnimation({
+                id: `spectator-life-${newPlayer.playerId}-${Date.now()}`,
+                targetId: newPlayer.playerId,
+                targetIsPlayer: true,
+                amount: Math.abs(diff),
+                isLifeGain: diff > 0,
+                startTime: Date.now(),
+              })
+            }
+          }
+        }
+
         set({
           spectatingState: {
             gameSessionId: msg.gameSessionId,
+            gameState: msg.gameState ?? null,
+            player1Id: msg.player1Id ?? null,
+            player2Id: msg.player2Id ?? null,
+            player1Name: msg.player1Name ?? msg.player1.playerName,
+            player2Name: msg.player2Name ?? msg.player2.playerName,
+            // Legacy fields for backward compatibility
             player1: msg.player1,
             player2: msg.player2,
             currentPhase: msg.currentPhase,
@@ -1280,10 +1316,14 @@ export const useGameStore = create<GameStore>()(
         set({
           spectatingState: {
             gameSessionId: msg.gameSessionId,
-            player1: null,
-            player2: null,
+            gameState: null,
+            player1Id: null,
+            player2Id: null,
             player1Name: msg.player1Name,
             player2Name: msg.player2Name,
+            // Legacy fields
+            player1: null,
+            player2: null,
             currentPhase: null,
             activePlayerId: null,
             priorityPlayerId: null,

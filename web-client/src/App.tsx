@@ -9,7 +9,7 @@ import { XCostSelector } from './components/ui/XCostSelector'
 import { ConvokeSelector } from './components/ui/ConvokeSelector'
 import { DeckBuilderOverlay } from './components/sealed/DeckBuilderOverlay'
 import { DraftPickOverlay } from './components/draft/DraftPickOverlay'
-import { SpectatorView } from './components/spectating/SpectatorView'
+import { SpectatorGameBoard } from './components/spectating/SpectatorGameBoard'
 import { useGameStore } from './store/gameStore'
 import { useViewingPlayer, useBattlefieldCards } from './store/selectors'
 import type { EntityId } from './types'
@@ -175,7 +175,7 @@ export default function App() {
       {showGame && <GameOverlay />}
 
       {/* Spectator view (when watching another game) */}
-      {spectatingState && <SpectatorView />}
+      {spectatingState && <SpectatorGameBoard />}
     </div>
   )
 }

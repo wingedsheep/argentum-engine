@@ -175,10 +175,21 @@ const ActiveEffectBadges = ({ effects }: { effects: readonly ClientCardEffect[] 
 }
 
 /**
+ * Props for GameBoard component.
+ */
+interface GameBoardProps {
+  /** When true, disables all interactions (for spectator view) */
+  spectatorMode?: boolean
+  /** Top offset in pixels for fixed elements (to account for headers) */
+  topOffset?: number
+}
+
+/**
  * 2D Game board layout - MTG Arena style.
  */
-export function GameBoard() {
-  const gameState = useGameStore((state) => state.gameState)
+export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardProps) {
+  const playerGameState = useGameStore((state) => state.gameState)
+  const spectatingState = useGameStore((state) => state.spectatingState)
   const playerId = useGameStore((state) => state.playerId)
   const submitAction = useGameStore((state) => state.submitAction)
   const combatState = useGameStore((state) => state.combatState)
@@ -188,17 +199,33 @@ export function GameBoard() {
   const priorityMode = useGameStore(selectPriorityMode)
   const responsive = useResponsive()
 
+  // In spectator mode, use spectatingState.gameState
+  const gameState = spectatorMode ? spectatingState?.gameState : playerGameState
+
   const viewingPlayer = useViewingPlayer()
   const opponent = useOpponent()
   const stackCards = useStackCards()
 
-  if (!gameState || !playerId || !viewingPlayer) {
+  // For spectator mode, we need to find players differently since playerId won't match
+  const spectatorPlayer1 = spectatorMode && gameState
+    ? gameState.players.find(p => p.playerId === spectatingState?.player1Id) ?? gameState.players[0]
+    : null
+  const spectatorPlayer2 = spectatorMode && gameState
+    ? gameState.players.find(p => p.playerId === spectatingState?.player2Id) ?? gameState.players[1]
+    : null
+
+  // In spectator mode, use player1 as "bottom" player and player2 as "top" (opponent)
+  const effectiveViewingPlayer = spectatorMode ? spectatorPlayer1 : viewingPlayer
+  const effectiveOpponent = spectatorMode ? spectatorPlayer2 : opponent
+
+  if (!gameState || (!spectatorMode && (!playerId || !viewingPlayer))) {
     return null
   }
 
-  const hasPriority = gameState.priorityPlayerId === viewingPlayer.playerId
-  const isMyTurn = gameState.activePlayerId === viewingPlayer.playerId
-  const isInCombatMode = combatState !== null
+  // In spectator mode: disable all interaction
+  const hasPriority = spectatorMode ? false : (gameState.priorityPlayerId === viewingPlayer?.playerId)
+  const isMyTurn = spectatorMode ? false : (gameState.activePlayerId === viewingPlayer?.playerId)
+  const isInCombatMode = spectatorMode ? false : (combatState !== null)
 
 
   // Compute pass button label
@@ -208,7 +235,7 @@ export function GameBoard() {
       return 'Resolve'
     }
     // Show "To my turn" when at opponent's end step
-    const isOpponentsTurn = gameState.activePlayerId !== viewingPlayer.playerId
+    const isOpponentsTurn = gameState.activePlayerId !== viewingPlayer?.playerId
     if (isOpponentsTurn && gameState.currentStep === 'END') {
       return 'To my turn'
     }
@@ -258,23 +285,24 @@ export function GameBoard() {
       {/* Fullscreen button (top-left) */}
       <FullscreenButton />
 
-      {/* Concede button (top-right) */}
-      <ConcedeButton />
+      {/* Concede button (top-right) - hidden in spectator mode */}
+      {!spectatorMode && <ConcedeButton />}
 
       {/* Opponent hand - fixed at top of screen */}
-      {opponent && (
+      {/* In spectator mode, show a hand size indicator instead of cards */}
+      {effectiveOpponent && (
         <div
           data-zone="opponent-hand"
           style={{
             position: 'fixed',
-            top: 0,
+            top: topOffset,
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 50,
           }}
         >
           <CardRow
-            zoneId={hand(opponent.playerId)}
+            zoneId={hand(effectiveOpponent.playerId)}
             faceDown
             small
             inverted
@@ -286,16 +314,18 @@ export function GameBoard() {
       <div style={{
         ...styles.opponentArea,
         marginTop: -responsive.containerPadding + 12,
-        paddingTop: responsive.smallCardHeight + 8,
+        paddingTop: spectatorMode
+          ? responsive.smallCardHeight + topOffset + 16
+          : responsive.smallCardHeight + 8,
       }}>
         <div style={styles.playerRowWithZones}>
           <div style={styles.playerMainArea}>
             {/* Opponent battlefield - lands first (closer to opponent), then creatures */}
-            <BattlefieldArea isOpponent />
+            <BattlefieldArea isOpponent spectatorMode={spectatorMode} />
           </div>
 
           {/* Opponent deck/graveyard (right side) */}
-          {opponent && <ZonePile player={opponent} isOpponent />}
+          {effectiveOpponent && <ZonePile player={effectiveOpponent} isOpponent />}
         </div>
       </div>
 
@@ -303,12 +333,12 @@ export function GameBoard() {
       <div style={styles.centerArea}>
         {/* Opponent life (left side) */}
         <div style={styles.centerLifeSection}>
-          {opponent && (
+          {effectiveOpponent && (
             <>
-              <LifeDisplay life={opponent.life} playerId={opponent.playerId} />
-              <span style={{ ...styles.playerName, fontSize: responsive.fontSize.small }}>{opponent.name}</span>
-              <ActiveEffectsBadges effects={opponent.activeEffects} />
-              {opponent.manaPool && <ManaPool manaPool={opponent.manaPool} />}
+              <LifeDisplay life={effectiveOpponent.life} playerId={effectiveOpponent.playerId} />
+              <span style={{ ...styles.playerName, fontSize: responsive.fontSize.small }}>{effectiveOpponent.name}</span>
+              <ActiveEffectsBadges effects={effectiveOpponent.activeEffects} />
+              {effectiveOpponent.manaPool && <ManaPool manaPool={effectiveOpponent.manaPool} />}
             </>
           )}
         </div>
@@ -321,14 +351,22 @@ export function GameBoard() {
           isActivePlayer={isMyTurn}
           hasPriority={hasPriority}
           priorityMode={priorityMode}
+          activePlayerName={spectatorMode
+            ? gameState.players.find(p => p.playerId === gameState.activePlayerId)?.name
+            : undefined
+          }
         />
 
         {/* Player life (right side) */}
         <div style={styles.centerLifeSection}>
-          <LifeDisplay life={viewingPlayer.life} isPlayer playerId={viewingPlayer.playerId} />
-          <span style={{ ...styles.playerName, fontSize: responsive.fontSize.small }}>{viewingPlayer.name}</span>
-          <ActiveEffectsBadges effects={viewingPlayer.activeEffects} />
-          {viewingPlayer.manaPool && <ManaPool manaPool={viewingPlayer.manaPool} />}
+          {effectiveViewingPlayer && (
+            <>
+              <LifeDisplay life={effectiveViewingPlayer.life} isPlayer playerId={effectiveViewingPlayer.playerId} />
+              <span style={{ ...styles.playerName, fontSize: responsive.fontSize.small }}>{effectiveViewingPlayer.name}</span>
+              <ActiveEffectsBadges effects={effectiveViewingPlayer.activeEffects} />
+              {effectiveViewingPlayer.manaPool && <ManaPool manaPool={effectiveViewingPlayer.manaPool} />}
+            </>
+          )}
         </div>
       </div>
 
@@ -340,21 +378,22 @@ export function GameBoard() {
       <div style={{
         ...styles.playerArea,
         marginBottom: -responsive.containerPadding + 12,
-        paddingBottom: responsive.cardHeight + 8,
+        paddingBottom: spectatorMode ? responsive.smallCardHeight + 8 : responsive.cardHeight + 8,
       }}>
         <div style={styles.playerRowWithZones}>
           <div style={styles.playerMainArea}>
             {/* Player battlefield - creatures first (closer to center), then lands */}
-            <BattlefieldArea isOpponent={false} />
+            <BattlefieldArea isOpponent={false} spectatorMode={spectatorMode} />
 
           </div>
 
           {/* Player deck/graveyard (right side) */}
-          <ZonePile player={viewingPlayer} />
+          {effectiveViewingPlayer && <ZonePile player={effectiveViewingPlayer} />}
         </div>
       </div>
 
       {/* Player hand - fixed at bottom of screen */}
+      {/* In spectator mode, show hand size indicator for "bottom" player too */}
       <div
         data-zone="hand"
         style={{
@@ -365,15 +404,23 @@ export function GameBoard() {
           zIndex: 50,
         }}
       >
-        <CardRow
-          zoneId={hand(playerId)}
-          faceDown={false}
-          interactive
-        />
+        {spectatorMode && effectiveViewingPlayer ? (
+          <CardRow
+            zoneId={hand(effectiveViewingPlayer.playerId)}
+            faceDown
+            small
+          />
+        ) : playerId ? (
+          <CardRow
+            zoneId={hand(playerId)}
+            faceDown={false}
+            interactive
+          />
+        ) : null}
       </div>
 
-      {/* Floating pass button (bottom-right) */}
-      {hasPriority && !isInCombatMode && (
+      {/* Floating pass button (bottom-right) - hidden in spectator mode */}
+      {!spectatorMode && hasPriority && !isInCombatMode && viewingPlayer && (
         <button
           onClick={() => {
             submitAction({
@@ -483,8 +530,8 @@ export function GameBoard() {
       )}
 
 
-      {/* Action menu for selected card */}
-      <ActionMenu />
+      {/* Action menu for selected card - hidden in spectator mode */}
+      {!spectatorMode && <ActionMenu />}
 
       {/* Combat arrows for blocker assignments */}
       <CombatArrows />
@@ -492,10 +539,10 @@ export function GameBoard() {
       {/* Targeting arrows for spells on the stack */}
       <TargetingArrows />
 
-      {/* Dragged card overlay */}
-      <DraggedCardOverlay />
+      {/* Dragged card overlay - hidden in spectator mode */}
+      {!spectatorMode && <DraggedCardOverlay />}
       <CardPreview />
-      <GameLog />
+      {!spectatorMode && <GameLog />}
 
       {/* Draw animations */}
       <DrawAnimations />
@@ -638,6 +685,7 @@ function LifeDisplay({
   return (
     <div
       data-player-id={playerId}
+      data-life-id={playerId}
       data-life-display={playerId}
       onClick={handleClick}
       style={{
@@ -988,11 +1036,15 @@ function CardRow({
   )
 
   // For hands (player or opponent), create a fan effect
+  // - Player's own hand: interactive, face-up
+  // - Opponent's hand: face-down, inverted (top of screen)
+  // - Spectator bottom hand: face-down, not inverted (bottom of screen)
   const isPlayerHand = interactive && !faceDown
   const isOpponentHand = faceDown && inverted
+  const isSpectatorBottomHand = faceDown && !inverted && !interactive
   const cardHeight = Math.round(fittingWidth * 1.4)
 
-  if ((isPlayerHand || isOpponentHand) && (cards.length > 0 || showPlaceholders)) {
+  if ((isPlayerHand || isOpponentHand || isSpectatorBottomHand) && (cards.length > 0 || showPlaceholders)) {
     return (
       <HandFan
         cards={cards}
@@ -1079,7 +1131,7 @@ function HandFan({
   small: boolean
   inverted?: boolean
 }) {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+  const [, setHoveredIndex] = useState<number | null>(null)
 
   const cardCount = placeholderCount > 0 ? placeholderCount : cards.length
 
@@ -1100,7 +1152,6 @@ function HandFan({
 
   // For inverted fan, flip the arc and rotation direction
   const rotationMultiplier = inverted ? -1 : 1
-  const verticalMultiplier = inverted ? -1 : 1
 
   // Create array of items to render (either cards or placeholder indices)
   const items = placeholderCount > 0
@@ -1569,7 +1620,7 @@ function GraveyardBrowser({ cards, onClose }: { cards: readonly ClientCard[], on
  * For player: creatures first (closer to center), then lands (closer to player)
  * For opponent: lands first (closer to opponent), then creatures (closer to center)
  */
-function BattlefieldArea({ isOpponent }: { isOpponent: boolean }) {
+function BattlefieldArea({ isOpponent, spectatorMode = false }: { isOpponent: boolean; spectatorMode?: boolean }) {
   const {
     playerLands,
     playerCreatures,
@@ -1579,25 +1630,11 @@ function BattlefieldArea({ isOpponent }: { isOpponent: boolean }) {
     opponentOther,
   } = useBattlefieldCards()
   const responsive = useResponsiveContext()
-  const targetingState = useGameStore((state) => state.targetingState)
-  const pendingDecision = useGameStore((state) => state.pendingDecision)
-  const stackCards = useStackCards()
 
   const lands = isOpponent ? opponentLands : playerLands
   const creatures = isOpponent ? opponentCreatures : playerCreatures
   const other = isOpponent ? opponentOther : playerOther
 
-  // Collect all targets: current targeting mode, pending decisions, AND spells on the stack
-  const validTargets = targetingState?.validTargets ?? []
-  const decisionTargets = pendingDecision?.type === 'ChooseTargetsDecision'
-    ? Object.values(pendingDecision.legalTargets).flat()
-    : []
-  // Also include targets from spells/abilities already on the stack
-  const stackTargets = stackCards.flatMap((card) =>
-    card.targets
-      .filter((t) => t.type === 'Permanent')
-      .map((t) => (t as { type: 'Permanent'; entityId: string }).entityId)
-  )
   // Group identical lands, display creatures and other individually
   const groupedLands = groupCards(lands)
   const groupedCreatures = creatures.map((card) => ({
@@ -1642,7 +1679,7 @@ function BattlefieldArea({ isOpponent }: { isOpponent: boolean }) {
               <CardStack
                 key={group.cardIds[0]}
                 group={group}
-                interactive={!isOpponent}
+                interactive={!spectatorMode && !isOpponent}
                 isOpponentCard={isOpponent}
               />
             ))}
@@ -1655,7 +1692,7 @@ function BattlefieldArea({ isOpponent }: { isOpponent: boolean }) {
                 <CardStack
                   key={group.cardIds[0]}
                   group={group}
-                  interactive={!isOpponent}
+                  interactive={!spectatorMode && !isOpponent}
                   isOpponentCard={isOpponent}
                 />
               ))}
@@ -1684,7 +1721,7 @@ function BattlefieldArea({ isOpponent }: { isOpponent: boolean }) {
               <CardStack
                 key={group.cardIds[0]}
                 group={group}
-                interactive={!isOpponent}
+                interactive={!spectatorMode && !isOpponent}
                 isOpponentCard={isOpponent}
               />
             ))}
@@ -1705,7 +1742,7 @@ function BattlefieldArea({ isOpponent }: { isOpponent: boolean }) {
               <CardStack
                 key={group.cardIds[0]}
                 group={group}
-                interactive={!isOpponent}
+                interactive={!spectatorMode && !isOpponent}
                 isOpponentCard={isOpponent}
               />
             ))}
@@ -1730,7 +1767,7 @@ function BattlefieldArea({ isOpponent }: { isOpponent: boolean }) {
                 <CardStack
                   key={group.cardIds[0]}
                   group={group}
-                  interactive={!isOpponent}
+                  interactive={!spectatorMode && !isOpponent}
                   isOpponentCard={isOpponent}
                 />
               ))}
@@ -1747,7 +1784,7 @@ function BattlefieldArea({ isOpponent }: { isOpponent: boolean }) {
               <CardStack
                 key={group.cardIds[0]}
                 group={group}
-                interactive={!isOpponent}
+                interactive={!spectatorMode && !isOpponent}
                 isOpponentCard={isOpponent}
               />
             ))}

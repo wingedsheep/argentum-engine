@@ -494,6 +494,17 @@ sealed interface ServerMessage {
     @SerialName("spectatorStateUpdate")
     data class SpectatorStateUpdate(
         val gameSessionId: String,
+        /** Full ClientGameState for reusing GameBoard component (both hands masked) */
+        val gameState: ClientGameState? = null,
+        /** Player 1's entity ID */
+        val player1Id: String? = null,
+        /** Player 2's entity ID */
+        val player2Id: String? = null,
+        /** Player 1 name (for display when gameState not yet loaded) */
+        val player1Name: String? = null,
+        /** Player 2 name (for display when gameState not yet loaded) */
+        val player2Name: String? = null,
+        // Legacy fields for backward compatibility
         val player1: SpectatorPlayerState,
         val player2: SpectatorPlayerState,
         val currentPhase: String,

@@ -212,14 +212,66 @@ class GameSession(
         val p1 = player1 ?: return null
         val p2 = player2 ?: return null
 
+        // Build full ClientGameState with both hands masked for GameBoard reuse
+        val spectatorClientState = buildSpectatorClientGameState(state, p1.playerId, p2.playerId)
+
         return ServerMessage.SpectatorStateUpdate(
             gameSessionId = sessionId,
+            gameState = spectatorClientState,
+            player1Id = p1.playerId.value,
+            player2Id = p2.playerId.value,
+            player1Name = p1.playerName,
+            player2Name = p2.playerName,
+            // Legacy fields for backward compatibility
             player1 = buildSpectatorPlayerState(state, p1),
             player2 = buildSpectatorPlayerState(state, p2),
             currentPhase = state.phase.name,
             activePlayerId = state.activePlayerId?.value,
             priorityPlayerId = state.priorityPlayerId?.value,
             combat = buildSpectatorCombatState(state)
+        )
+    }
+
+    /**
+     * Build a ClientGameState for spectators with both players' hands masked.
+     * Spectators see:
+     * - Both battlefields with full card info
+     * - Both graveyards with full card info
+     * - The stack with full card info
+     * - Both players' life totals and zone sizes
+     * - No hand contents (only hand sizes)
+     */
+    private fun buildSpectatorClientGameState(
+        state: GameState,
+        player1Id: EntityId,
+        player2Id: EntityId
+    ): ClientGameState {
+        // Use player1's perspective as the "viewing player" for the transform,
+        // then mask player1's hand as well
+        val baseState = stateTransformer.transform(state, player1Id)
+
+        // Filter out hand cards from the cards map (spectators can't see either player's hand)
+        val player1Hand = state.getHand(player1Id).toSet()
+        val player2Hand = state.getHand(player2Id).toSet()
+        val allHandCards = player1Hand + player2Hand
+        val visibleCards = baseState.cards.filterKeys { it !in allHandCards }
+
+        // Update zones to hide hand contents but keep sizes
+        val maskedZones = baseState.zones.map { zone ->
+            if (zone.zoneId.zoneType == ZoneType.HAND) {
+                // Keep size but hide card IDs for both hands
+                zone.copy(
+                    cardIds = emptyList(),
+                    isVisible = false
+                )
+            } else {
+                zone
+            }
+        }
+
+        return baseState.copy(
+            cards = visibleCards,
+            zones = maskedZones
         )
     }
 

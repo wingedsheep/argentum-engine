@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useGameStore } from '../../store/gameStore'
+import { selectGameState } from '../../store/selectors'
 import type { EntityId } from '../../types'
 import { Step, ZoneType } from '../../types'
 
@@ -19,6 +20,12 @@ interface ArrowData {
   start: Point
   end: Point
   blockerId: EntityId
+}
+
+interface AttackerArrowData {
+  start: Point
+  end: Point
+  attackerId: EntityId
 }
 
 /**
@@ -113,6 +120,20 @@ function getCardCenter(cardId: EntityId): Point | null {
 }
 
 /**
+ * Get the center position of a player's life display.
+ */
+function getPlayerLifeCenter(playerId: EntityId): Point | null {
+  const element = document.querySelector(`[data-life-id="${playerId}"]`)
+  if (!element) return null
+
+  const rect = element.getBoundingClientRect()
+  return {
+    x: rect.left + rect.width / 2,
+    y: rect.top + rect.height / 2,
+  }
+}
+
+/**
  * Combat arrows overlay - draws arrows between blockers and attackers.
  *
  * Shows arrows in three scenarios:
@@ -132,13 +153,16 @@ const COMBAT_STEPS = new Set([
 
 export function CombatArrows() {
   const combatState = useGameStore((state) => state.combatState)
-  const gameStateCombat = useGameStore((state) => state.gameState?.combat)
-  const currentStep = useGameStore((state) => state.gameState?.currentStep)
-  const cards = useGameStore((state) => state.gameState?.cards)
+  const gameState = useGameStore(selectGameState)
+  const gameStateCombat = gameState?.combat
+  const currentStep = gameState?.currentStep
+  const cards = gameState?.cards
   const opponentBlockerAssignments = useGameStore((state) => state.opponentBlockerAssignments)
   const draggingBlockerId = useGameStore((state) => state.draggingBlockerId)
+  const isSpectating = useGameStore((state) => state.spectatingState !== null)
   const [mousePos, setMousePos] = useState<Point | null>(null)
   const [arrows, setArrows] = useState<Array<{ start: Point; end: Point; blockerId: EntityId }>>([])
+  const [attackerArrows, setAttackerArrows] = useState<AttackerArrowData[]>([])
 
   // Check if we're still in combat phase
   const isInCombatPhase = currentStep && COMBAT_STEPS.has(currentStep as Step)
@@ -229,19 +253,59 @@ export function CombatArrows() {
       }
 
       setArrows(newArrows)
+
+      // Compute attacker arrows (for spectators and during combat)
+      const newAttackerArrows: AttackerArrowData[] = []
+      if (gameStateCombat && gameStateCombat.attackers.length > 0 && isInCombatPhase) {
+        // Build set of blocked attacker IDs for quick lookup
+        const blockedAttackerIds = new Set(
+          gameStateCombat.blockers.map(b => b.blockingAttacker)
+        )
+
+        for (const attacker of gameStateCombat.attackers) {
+          // Only show attacker arrows for unblocked attackers
+          if (blockedAttackerIds.has(attacker.creatureId)) {
+            continue
+          }
+
+          // Check if attacker is still on battlefield
+          const attackerCard = cards?.[attacker.creatureId]
+          if (attackerCard?.zone?.zoneType !== ZoneType.BATTLEFIELD) {
+            continue
+          }
+
+          const attackerPos = getCardCenter(attacker.creatureId)
+          // Get the target - either a player or planeswalker
+          let targetPos: Point | null = null
+          if (attacker.attackingTarget.type === 'Player') {
+            targetPos = getPlayerLifeCenter(attacker.attackingTarget.playerId)
+          }
+          // TODO: Add support for planeswalker targets
+
+          if (attackerPos && targetPos) {
+            newAttackerArrows.push({
+              start: attackerPos,
+              end: targetPos,
+              attackerId: attacker.creatureId,
+            })
+          }
+        }
+      }
+      setAttackerArrows(newAttackerArrows)
     }
 
     // Update immediately and on animation frames for smooth updates
     updateArrows()
     const interval = setInterval(updateArrows, 100)
     return () => clearInterval(interval)
-  }, [combatState, gameStateCombat, opponentBlockerAssignments, isDeclaringBlockers, isInCombatPhase, cards])
+  }, [combatState, gameStateCombat, opponentBlockerAssignments, isDeclaringBlockers, isInCombatPhase, cards, isSpectating])
 
   // Don't render if no arrows to show (only show during combat phase)
   const hasBlockers = isDeclaringBlockers ||
     (opponentBlockerAssignments && Object.keys(opponentBlockerAssignments).length > 0 && isInCombatPhase) ||
     (gameStateCombat && gameStateCombat.blockers.length > 0 && isInCombatPhase)
-  if (!hasBlockers && !draggingBlockerId) {
+  const hasAttackers = gameStateCombat && gameStateCombat.attackers.length > 0 && isInCombatPhase
+  if (!hasBlockers && !hasAttackers && !draggingBlockerId) {
     return null
   }
 
@@ -265,10 +329,20 @@ export function CombatArrows() {
         zIndex: 1000,
       }}
     >
-      {/* Existing blocker assignments */}
+      {/* Attacker arrows (unblocked attackers to defending player) */}
+      {attackerArrows.map(({ start, end, attackerId }) => (
+        <Arrow
+          key={`attacker-${attackerId}`}
+          start={start}
+          end={end}
+          color="#ff4444"
+        />
+      ))}
+
+      {/* Blocker assignments */}
       {arrows.map(({ start, end, blockerId }) => (
         <Arrow
-          key={blockerId}
+          key={`blocker-${blockerId}`}
           start={start}
           end={end}
           color="#4488ff"

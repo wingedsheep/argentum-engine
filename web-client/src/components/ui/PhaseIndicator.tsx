@@ -9,6 +9,8 @@ interface PhaseIndicatorProps {
   isActivePlayer: boolean
   hasPriority: boolean
   priorityMode: PriorityMode
+  /** Active player's name (for spectator mode display) */
+  activePlayerName?: string | undefined
 }
 
 /**
@@ -42,12 +44,16 @@ export function PhaseIndicator({
   isActivePlayer,
   hasPriority,
   priorityMode,
+  activePlayerName,
 }: PhaseIndicatorProps) {
   const responsive = useResponsive()
   const colors = modeColors[priorityMode]
 
   // Determine the status text based on mode
-  const statusText = priorityMode === 'ownTurn'
+  // If activePlayerName is provided (spectator mode), use that
+  const statusText = activePlayerName
+    ? `${activePlayerName}'s Turn`
+    : priorityMode === 'ownTurn'
     ? 'Your Turn'
     : priorityMode === 'responding'
     ? 'Responding'
