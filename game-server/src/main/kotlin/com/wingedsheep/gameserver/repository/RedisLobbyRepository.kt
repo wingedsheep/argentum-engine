@@ -10,6 +10,7 @@ import com.wingedsheep.gameserver.persistence.persistenceJson
 import com.wingedsheep.gameserver.persistence.restoreTournamentLobby
 import com.wingedsheep.gameserver.persistence.restoreTournamentManager
 import com.wingedsheep.gameserver.persistence.toPersistent
+import com.wingedsheep.gameserver.sealed.BoosterGenerator
 import com.wingedsheep.gameserver.sealed.SealedSession
 import com.wingedsheep.gameserver.session.PlayerIdentity
 import com.wingedsheep.gameserver.tournament.TournamentManager
@@ -38,7 +39,8 @@ import java.util.concurrent.TimeUnit
 class RedisLobbyRepository(
     private val redisTemplate: RedisTemplate<String, String>,
     private val cardRegistry: CardRegistry,
-    private val redisProperties: RedisProperties
+    private val redisProperties: RedisProperties,
+    private val boosterGenerator: BoosterGenerator
 ) : LobbyRepository {
 
     private val logger = LoggerFactory.getLogger(RedisLobbyRepository::class.java)
@@ -83,7 +85,7 @@ class RedisLobbyRepository(
         return try {
             val json = redisTemplate.opsForValue().get(lobbyKey(lobbyId)) ?: return null
             val persistent = persistenceJson.decodeFromString(PersistentTournamentLobby.serializer(), json)
-            val (lobby, _) = restoreTournamentLobby(persistent, cardRegistry)
+            val (lobby, _) = restoreTournamentLobby(persistent, cardRegistry, boosterGenerator)
 
             lobbyCache[lobbyId] = lobby
             logger.debug("Loaded lobby $lobbyId from Redis")

@@ -32,7 +32,8 @@ class LobbyHandler(
     private val sender: MessageSender,
     private val cardRegistry: CardRegistry,
     private val gamePlayHandler: GamePlayHandler,
-    private val gameProperties: GameProperties
+    private val gameProperties: GameProperties,
+    private val boosterGenerator: BoosterGenerator
 ) {
     private val logger = LoggerFactory.getLogger(LobbyHandler::class.java)
 
@@ -75,7 +76,7 @@ class LobbyHandler(
 
         // Validate all set codes
         val setConfigs = message.setCodes.map { setCode ->
-            BoosterGenerator.getSetConfig(setCode) ?: run {
+            boosterGenerator.getSetConfig(setCode) ?: run {
                 sender.sendError(session, ErrorCode.INVALID_ACTION, "Unknown set code: $setCode")
                 return
             }
@@ -83,7 +84,8 @@ class LobbyHandler(
 
         val sealedSession = SealedSession(
             setCodes = setConfigs.map { it.setCode },
-            setNames = setConfigs.map { it.setName }
+            setNames = setConfigs.map { it.setName },
+            boosterGenerator = boosterGenerator
         )
         sealedSession.addPlayer(playerSession)
 
@@ -245,9 +247,9 @@ class LobbyHandler(
             sender.sendError(session, ErrorCode.INVALID_ACTION, "At least one set code is required")
             return
         }
-        val setConfigs = message.setCodes.mapNotNull { BoosterGenerator.getSetConfig(it) }
+        val setConfigs = message.setCodes.mapNotNull { boosterGenerator.getSetConfig(it) }
         if (setConfigs.size != message.setCodes.size) {
-            val invalidCodes = message.setCodes.filter { BoosterGenerator.getSetConfig(it) == null }
+            val invalidCodes = message.setCodes.filter { boosterGenerator.getSetConfig(it) == null }
             sender.sendError(session, ErrorCode.INVALID_ACTION, "Unknown set codes: ${invalidCodes.joinToString()}")
             return
         }
@@ -280,6 +282,7 @@ class LobbyHandler(
         val lobby = TournamentLobby(
             setCodes = setConfigs.map { it.setCode },
             setNames = setConfigs.map { it.setName },
+            boosterGenerator = boosterGenerator,
             format = format,
             boosterCount = boosterCount,
             maxPlayers = message.maxPlayers.coerceIn(2, 8),
@@ -761,7 +764,7 @@ class LobbyHandler(
         message.setCodes?.let { newSetCodes ->
             // Allow empty setCodes to disable start button (but won't be able to start)
             if (newSetCodes.isNotEmpty() && !lobby.updateSets(newSetCodes)) {
-                val invalidCodes = newSetCodes.filter { BoosterGenerator.getSetConfig(it) == null }
+                val invalidCodes = newSetCodes.filter { boosterGenerator.getSetConfig(it) == null }
                 sender.sendError(session, ErrorCode.INVALID_ACTION, "Invalid set codes: ${invalidCodes.joinToString()}")
                 return
             }

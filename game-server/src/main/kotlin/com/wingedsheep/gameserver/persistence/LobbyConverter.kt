@@ -6,6 +6,7 @@ import com.wingedsheep.gameserver.lobby.LobbyState
 import com.wingedsheep.gameserver.lobby.TournamentFormat
 import com.wingedsheep.gameserver.lobby.TournamentLobby
 import com.wingedsheep.gameserver.persistence.dto.*
+import com.wingedsheep.gameserver.sealed.BoosterGenerator
 import com.wingedsheep.gameserver.sealed.SealedPlayerState
 import com.wingedsheep.gameserver.sealed.SealedSession
 import com.wingedsheep.gameserver.sealed.SealedSessionState
@@ -66,16 +67,19 @@ private fun TournamentLobby.getPlayerOrderForPersistence(): List<String> {
  *
  * @param persistent The persisted lobby data
  * @param cardRegistry The card registry for resolving card names to definitions
+ * @param boosterGenerator The booster generator for sealed/draft operations
  * @return A restored TournamentLobby and a list of PlayerIdentity objects to register
  */
 fun restoreTournamentLobby(
     persistent: PersistentTournamentLobby,
-    cardRegistry: CardRegistry
+    cardRegistry: CardRegistry,
+    boosterGenerator: BoosterGenerator
 ): Pair<TournamentLobby, List<PlayerIdentity>> {
     val lobby = TournamentLobby(
         lobbyId = persistent.lobbyId,
         setCodes = persistent.setCodes,
         setNames = persistent.setNames,
+        boosterGenerator = boosterGenerator,
         format = TournamentFormat.valueOf(persistent.format),
         boosterCount = persistent.boosterCount,
         maxPlayers = persistent.maxPlayers,

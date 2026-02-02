@@ -43,9 +43,9 @@ data class SealedPlayerState(
 class SealedSession(
     val sessionId: String = UUID.randomUUID().toString(),
     val setCodes: List<String>,
-    val setNames: List<String>
+    val setNames: List<String>,
+    private val boosterGenerator: BoosterGenerator
 ) {
-    private val boosterGenerator = BoosterGenerator()
 
     /** Player states indexed by player ID */
     val players = ConcurrentHashMap<EntityId, SealedPlayerState>()

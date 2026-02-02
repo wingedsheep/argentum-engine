@@ -21,6 +21,9 @@ game:
     # MTGA-style hand smoothing for opening hands. Selects the best of N candidate hands.
     enabled: ${GAME_HAND_SMOOTHER_ENABLED:true}
     candidates: ${GAME_HAND_SMOOTHER_CANDIDATES:3}
+  sets:
+    # Feature toggle for unreleased sets
+    onslaught-enabled: ${GAME_SETS_ONSLAUGHT_ENABLED:false}
 
 # Swagger UI - only enabled when dev endpoints are enabled
 springdoc:

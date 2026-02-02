@@ -77,6 +77,7 @@ class TournamentLobby(
     val lobbyId: String = UUID.randomUUID().toString(),
     var setCodes: List<String>,
     var setNames: List<String>,
+    private val boosterGenerator: BoosterGenerator,
     var format: TournamentFormat = TournamentFormat.SEALED,
     var boosterCount: Int = 6,        // Sealed: boosters in pool, Draft: packs per player (usually 3)
     var maxPlayers: Int = 8,
@@ -84,7 +85,6 @@ class TournamentLobby(
     var picksPerRound: Int = 1,       // Draft only: cards to pick each round (1 or 2)
     var gamesPerMatch: Int = 1
 ) {
-    private val boosterGenerator = BoosterGenerator()
 
     /**
      * Update the sets for this lobby. Can only be changed while waiting for players.
@@ -97,7 +97,7 @@ class TournamentLobby(
 
         // Validate all set codes first
         val configs = newSetCodes.map { code ->
-            BoosterGenerator.getSetConfig(code) ?: return false
+            boosterGenerator.getSetConfig(code) ?: return false
         }
 
         setCodes = configs.map { it.setCode }
@@ -505,7 +505,7 @@ class TournamentLobby(
             )
         }
 
-        val availableSets = BoosterGenerator.availableSets.values.map { config ->
+        val availableSets = boosterGenerator.availableSets.values.map { config ->
             ServerMessage.AvailableSet(code = config.setCode, name = config.setName)
         }
 

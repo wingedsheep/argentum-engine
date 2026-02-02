@@ -14,7 +14,9 @@ import kotlin.random.Random
  * - 3 Uncommons
  * - 1 Rare (with ~12.5% chance of Mythic if the set has mythics)
  */
-class BoosterGenerator {
+class BoosterGenerator(
+    val availableSets: Map<String, SetConfig>
+) {
 
     /**
      * Configuration for a card set that can be used for sealed.
@@ -28,28 +30,30 @@ class BoosterGenerator {
 
     companion object {
         /**
-         * Available sets for sealed play.
+         * Portal set configuration (always available).
          */
-        val availableSets: Map<String, SetConfig> = mapOf(
-            PortalSet.SET_CODE to SetConfig(
-                setCode = PortalSet.SET_CODE,
-                setName = PortalSet.SET_NAME,
-                cards = PortalSet.allCards,
-                basicLands = PortalSet.basicLands
-            ),
-            OnslaughtSet.SET_CODE to SetConfig(
-                setCode = OnslaughtSet.SET_CODE,
-                setName = OnslaughtSet.SET_NAME,
-                cards = OnslaughtSet.allCards,
-                basicLands = PortalSet.basicLands  // Use Portal lands for now
-            )
+        val portalSetConfig = SetConfig(
+            setCode = PortalSet.SET_CODE,
+            setName = PortalSet.SET_NAME,
+            cards = PortalSet.allCards,
+            basicLands = PortalSet.basicLands
         )
 
         /**
-         * Get set configuration by set code.
+         * Onslaught set configuration (feature-toggled).
          */
-        fun getSetConfig(setCode: String): SetConfig? = availableSets[setCode]
+        val onslaughtSetConfig = SetConfig(
+            setCode = OnslaughtSet.SET_CODE,
+            setName = OnslaughtSet.SET_NAME,
+            cards = OnslaughtSet.allCards,
+            basicLands = PortalSet.basicLands  // Use Portal lands for now
+        )
     }
+
+    /**
+     * Get set configuration by set code.
+     */
+    fun getSetConfig(setCode: String): SetConfig? = availableSets[setCode]
 
     /**
      * Generate a single 15-card booster pack from the specified set.
