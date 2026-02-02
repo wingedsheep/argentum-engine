@@ -238,7 +238,7 @@ class RedisLobbyRepository(
                 try {
                     val json = redisTemplate.opsForValue().get(key) ?: continue
                     val persistent = persistenceJson.decodeFromString(PersistentTournamentLobby.serializer(), json)
-                    val (lobby, identities) = restoreTournamentLobby(persistent, cardRegistry)
+                    val (lobby, identities) = restoreTournamentLobby(persistent, cardRegistry, boosterGenerator)
 
                     lobbyCache[lobby.lobbyId] = lobby
                     results.add(lobby to identities)
