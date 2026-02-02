@@ -103,9 +103,9 @@ class MulliganHandler {
 
         for (cardId in hand) {
             newState = newState.removeFromZone(handKey, cardId)
-            // Add to bottom of library (beginning of list)
+            // Add to bottom of library (end of list, since first() = top)
             val library = newState.getZone(libraryKey)
-            newState = newState.copy(zones = newState.zones + (libraryKey to listOf(cardId) + library))
+            newState = newState.copy(zones = newState.zones + (libraryKey to library + listOf(cardId)))
         }
 
         // 2. Shuffle library
@@ -126,7 +126,7 @@ class MulliganHandler {
         repeat(drawCount) {
             val library = newState.getZone(libraryKey)
             if (library.isNotEmpty()) {
-                val cardId = library.last()
+                val cardId = library.first()
                 drawnCardIds.add(cardId)
                 newState = newState.removeFromZone(libraryKey, cardId)
                 newState = newState.addToZone(handKey, cardId)
@@ -224,9 +224,9 @@ class MulliganHandler {
         // Move cards to bottom of library (in order specified)
         for (cardId in action.cardIds) {
             newState = newState.removeFromZone(handKey, cardId)
-            // Add to bottom of library (beginning of list)
+            // Add to bottom of library (end of list, since first() = top)
             val library = newState.getZone(libraryKey)
-            newState = newState.copy(zones = newState.zones + (libraryKey to listOf(cardId) + library))
+            newState = newState.copy(zones = newState.zones + (libraryKey to library + listOf(cardId)))
 
             events.add(ZoneChangeEvent(
                 entityId = cardId,

@@ -224,8 +224,8 @@ class GameInitializer(
                 return currentState to events
             }
 
-            // Draw from top of library (last element)
-            val cardId = library.last()
+            // Draw from top of library (first element)
+            val cardId = library.first()
             drawnCardIds.add(cardId)
 
             // Move card from library to hand
