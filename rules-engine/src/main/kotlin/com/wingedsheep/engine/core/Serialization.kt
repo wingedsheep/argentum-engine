@@ -144,6 +144,7 @@ val engineSerializersModule = SerializersModule {
         subclass(TokenComponent::class)
         subclass(FaceDownComponent::class)
         subclass(RevealedToComponent::class)
+        subclass(MorphDataComponent::class)
 
         // Battlefield components
         subclass(TappedComponent::class)
