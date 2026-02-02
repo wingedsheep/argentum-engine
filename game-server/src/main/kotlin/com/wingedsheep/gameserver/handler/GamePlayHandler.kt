@@ -500,6 +500,11 @@ class GamePlayHandler(
         if (opponent != null) {
             sender.send(opponent.webSocketSession, ServerMessage.OpponentBlockerAssignments(message.assignments))
         }
+
+        // Also forward to all spectators so they can see blocker arrows in real-time
+        for (spectator in gameSession.getSpectators()) {
+            sender.send(spectator.webSocketSession, ServerMessage.OpponentBlockerAssignments(message.assignments))
+        }
     }
 
     // Callbacks to avoid circular dependencies with LobbyHandler

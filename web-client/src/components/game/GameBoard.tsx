@@ -197,7 +197,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
   const cancelCombat = useGameStore((state) => state.cancelCombat)
   const attackWithAll = useGameStore((state) => state.attackWithAll)
   const priorityMode = useGameStore(selectPriorityMode)
-  const responsive = useResponsive()
+  const responsive = useResponsive(topOffset)
 
   // In spectator mode, use spectatingState.gameState
   const gameState = spectatorMode ? spectatingState?.gameState : playerGameState
@@ -289,7 +289,6 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
       {!spectatorMode && <ConcedeButton />}
 
       {/* Opponent hand - fixed at top of screen */}
-      {/* In spectator mode, show a hand size indicator instead of cards */}
       {effectiveOpponent && (
         <div
           data-zone="opponent-hand"
@@ -310,13 +309,25 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
         </div>
       )}
 
+      {/* Spectator mode: floating player name labels on the left side */}
+      {spectatorMode && effectiveOpponent && (
+        <div
+          style={{
+            ...styles.spectatorNameLabel,
+            position: 'fixed',
+            top: topOffset + responsive.smallCardHeight + responsive.handBattlefieldGap + 8,
+            left: 16,
+          }}
+        >
+          {effectiveOpponent.name}
+        </div>
+      )}
+
       {/* Opponent area (top) */}
       <div style={{
         ...styles.opponentArea,
-        marginTop: -responsive.containerPadding + 12,
-        paddingTop: spectatorMode
-          ? responsive.smallCardHeight + topOffset + 16
-          : responsive.smallCardHeight + 8,
+        marginTop: -responsive.containerPadding + responsive.sectionGap,
+        paddingTop: responsive.smallCardHeight + topOffset + responsive.handBattlefieldGap,
       }}>
         <div style={styles.playerRowWithZones}>
           <div style={styles.playerMainArea}>
@@ -377,8 +388,8 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
       {/* Player area (bottom) */}
       <div style={{
         ...styles.playerArea,
-        marginBottom: -responsive.containerPadding + 12,
-        paddingBottom: spectatorMode ? responsive.smallCardHeight + 8 : responsive.cardHeight + 8,
+        marginBottom: -responsive.containerPadding + responsive.sectionGap,
+        paddingBottom: (spectatorMode ? responsive.smallCardHeight : responsive.cardHeight) + responsive.handBattlefieldGap,
       }}>
         <div style={styles.playerRowWithZones}>
           <div style={styles.playerMainArea}>
@@ -392,8 +403,21 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
         </div>
       </div>
 
+      {/* Spectator mode: floating player name label for bottom player */}
+      {spectatorMode && effectiveViewingPlayer && (
+        <div
+          style={{
+            ...styles.spectatorNameLabel,
+            position: 'fixed',
+            bottom: responsive.smallCardHeight + responsive.handBattlefieldGap + 8,
+            left: 16,
+          }}
+        >
+          {effectiveViewingPlayer.name}
+        </div>
+      )}
+
       {/* Player hand - fixed at bottom of screen */}
-      {/* In spectator mode, show hand size indicator for "bottom" player too */}
       <div
         data-zone="hand"
         style={{
@@ -533,8 +557,8 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
       {/* Action menu for selected card - hidden in spectator mode */}
       {!spectatorMode && <ActionMenu />}
 
-      {/* Combat arrows for blocker assignments */}
-      <CombatArrows />
+      {/* Combat arrows for blocker assignments - rendered by SpectatorGameBoard in spectator mode to avoid stacking context issues */}
+      {!spectatorMode && <CombatArrows />}
 
       {/* Targeting arrows for spells on the stack */}
       <TargetingArrows />
@@ -1279,7 +1303,9 @@ function ZonePile({ player, isOpponent = false }: { player: ClientPlayer; isOppo
   // Offset to avoid overlapping with buttons:
   // - Player zones move up to avoid pass priority button (bottom-right)
   // - Opponent zones move down to avoid concede button (top-right)
-  const verticalOffset = isOpponent ? { marginTop: 45 } : { marginBottom: 70 }
+  const verticalOffset = isOpponent
+    ? { marginTop: responsive.zonePileOffset }
+    : { marginBottom: responsive.zonePileOffset + responsive.sectionGap * 3 }
 
   return (
     <div style={{ ...styles.zonePile, gap: responsive.cardGap, minWidth: responsive.pileWidth + 10, ...verticalOffset }}>
@@ -1673,7 +1699,7 @@ function BattlefieldArea({ isOpponent, spectatorMode = false }: { isOpponent: bo
           <div style={{
             ...styles.battlefieldRow,
             gap: responsive.cardGap,
-            minHeight: responsive.battlefieldCardHeight + 60,
+            minHeight: responsive.battlefieldCardHeight + responsive.battlefieldRowPadding,
           }}>
             {groupedCreatures.map((group) => (
               <CardStack
@@ -1778,7 +1804,7 @@ function BattlefieldArea({ isOpponent, spectatorMode = false }: { isOpponent: bo
           <div style={{
             ...styles.battlefieldRow,
             gap: responsive.cardGap,
-            minHeight: responsive.battlefieldCardHeight + 60,
+            minHeight: responsive.battlefieldCardHeight + responsive.battlefieldRowPadding,
           }}>
             {groupedCreatures.map((group) => (
               <CardStack
@@ -3249,6 +3275,18 @@ const styles: Record<string, React.CSSProperties> = {
   },
   playerName: {
     color: '#888',
+  },
+  spectatorNameLabel: {
+    color: '#e0e0e0',
+    fontSize: 14,
+    fontWeight: 600,
+    backgroundColor: 'rgba(20, 20, 30, 0.9)',
+    padding: '8px 16px',
+    borderRadius: 6,
+    border: '1px solid rgba(255, 255, 255, 0.15)',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.4)',
+    letterSpacing: '0.02em',
+    zIndex: 100,
   },
   lifeDisplay: {
     borderRadius: '50%',

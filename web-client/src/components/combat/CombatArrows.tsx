@@ -326,7 +326,7 @@ export function CombatArrows() {
         width: '100vw',
         height: '100vh',
         pointerEvents: 'none',
-        zIndex: 1000,
+        zIndex: 2000, // Above spectator container (1500)
       }}
     >
       {/* Attacker arrows (unblocked attackers to defending player) */}
