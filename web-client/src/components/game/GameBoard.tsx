@@ -1,5 +1,5 @@
 import { useGameStore } from '../../store/gameStore'
-import { useViewingPlayer, useOpponent, useZoneCards, useZone, useBattlefieldCards, useHasLegalActions, useStackCards, groupCards, type GroupedCard, selectPriorityMode } from '../../store/selectors'
+import { useViewingPlayer, useOpponent, useZoneCards, useZone, useBattlefieldCards, useHasLegalActions, useStackCards, groupCards, type GroupedCard, selectPriorityMode, selectGameState } from '../../store/selectors'
 import { hand, graveyard, exile, getNextStep, StepShortNames } from '../../types'
 import type { ClientCard, ZoneId, ClientPlayer, LegalActionInfo, EntityId, Keyword, ClientPlayerEffect, ClientCardEffect } from '../../types'
 import { CounterType } from '../../types'
@@ -847,7 +847,7 @@ function StackDisplay() {
  */
 function CardPreview() {
   const hoveredCardId = useGameStore((state) => state.hoveredCardId)
-  const gameState = useGameStore((state) => state.gameState)
+  const gameState = useGameStore(selectGameState)
   const responsive = useResponsiveContext()
   const [showRulings, setShowRulings] = useState(false)
   const [lastHoveredId, setLastHoveredId] = useState<EntityId | null>(null)
