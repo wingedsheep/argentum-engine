@@ -1,7 +1,8 @@
 import { useGameStore } from '../../store/gameStore'
-import { useViewingPlayer, useOpponent, useZoneCards, useZone, useBattlefieldCards, useHasLegalActions, useStackCards, groupCards, type GroupedCard } from '../../store/selectors'
-import { hand, graveyard, getNextStep, StepShortNames } from '../../types'
+import { useViewingPlayer, useOpponent, useZoneCards, useZone, useBattlefieldCards, useHasLegalActions, useStackCards, groupCards, type GroupedCard, selectPriorityMode, selectGameState } from '../../store/selectors'
+import { hand, graveyard, exile, getNextStep, StepShortNames } from '../../types'
 import type { ClientCard, ZoneId, ClientPlayer, LegalActionInfo, EntityId, Keyword, ClientPlayerEffect, ClientCardEffect } from '../../types'
+import { CounterType } from '../../types'
 import { keywordIcons, genericKeywordIcon, displayableKeywords } from '../../assets/icons/keywords'
 import { PhaseIndicator } from '../ui/PhaseIndicator'
 import { ManaPool } from '../ui/ManaPool'
@@ -73,6 +74,25 @@ function getPTColor(
   }
 
   return 'white'
+}
+
+/**
+ * Calculate the stat contribution from +1/+1 and -1/-1 counters.
+ * Returns the net modifier (positive or negative).
+ */
+function getCounterStatModifier(card: ClientCard): number {
+  const plusCounters = card.counters[CounterType.PLUS_ONE_PLUS_ONE] ?? 0
+  const minusCounters = card.counters[CounterType.MINUS_ONE_MINUS_ONE] ?? 0
+  return plusCounters - minusCounters
+}
+
+/**
+ * Check if a card has any +1/+1 or -1/-1 counters.
+ */
+function hasStatCounters(card: ClientCard): boolean {
+  const plusCounters = card.counters[CounterType.PLUS_ONE_PLUS_ONE] ?? 0
+  const minusCounters = card.counters[CounterType.MINUS_ONE_MINUS_ONE] ?? 0
+  return plusCounters > 0 || minusCounters > 0
 }
 
 /**
@@ -155,73 +175,168 @@ const ActiveEffectBadges = ({ effects }: { effects: readonly ClientCardEffect[] 
 }
 
 /**
+ * Props for GameBoard component.
+ */
+interface GameBoardProps {
+  /** When true, disables all interactions (for spectator view) */
+  spectatorMode?: boolean
+  /** Top offset in pixels for fixed elements (to account for headers) */
+  topOffset?: number
+}
+
+/**
  * 2D Game board layout - MTG Arena style.
  */
-export function GameBoard() {
-  const gameState = useGameStore((state) => state.gameState)
+export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardProps) {
+  const playerGameState = useGameStore((state) => state.gameState)
+  const spectatingState = useGameStore((state) => state.spectatingState)
   const playerId = useGameStore((state) => state.playerId)
   const submitAction = useGameStore((state) => state.submitAction)
   const combatState = useGameStore((state) => state.combatState)
-  const responsive = useResponsive()
+  const confirmCombat = useGameStore((state) => state.confirmCombat)
+  const cancelCombat = useGameStore((state) => state.cancelCombat)
+  const attackWithAll = useGameStore((state) => state.attackWithAll)
+  const priorityMode = useGameStore(selectPriorityMode)
+  const responsive = useResponsive(topOffset)
+
+  // In spectator mode, use spectatingState.gameState
+  const gameState = spectatorMode ? spectatingState?.gameState : playerGameState
 
   const viewingPlayer = useViewingPlayer()
   const opponent = useOpponent()
   const stackCards = useStackCards()
 
-  if (!gameState || !playerId || !viewingPlayer) {
+  // For spectator mode, we need to find players differently since playerId won't match
+  const spectatorPlayer1 = spectatorMode && gameState
+    ? gameState.players.find(p => p.playerId === spectatingState?.player1Id) ?? gameState.players[0]
+    : null
+  const spectatorPlayer2 = spectatorMode && gameState
+    ? gameState.players.find(p => p.playerId === spectatingState?.player2Id) ?? gameState.players[1]
+    : null
+
+  // In spectator mode, use player1 as "bottom" player and player2 as "top" (opponent)
+  const effectiveViewingPlayer = spectatorMode ? spectatorPlayer1 : viewingPlayer
+  const effectiveOpponent = spectatorMode ? spectatorPlayer2 : opponent
+
+  if (!gameState || (!spectatorMode && (!playerId || !viewingPlayer))) {
     return null
   }
 
-  const hasPriority = gameState.priorityPlayerId === viewingPlayer.playerId
-  const isInCombatMode = combatState !== null
+  // In spectator mode: disable all interaction
+  const hasPriority = spectatorMode ? false : (gameState.priorityPlayerId === viewingPlayer?.playerId)
+  const isMyTurn = spectatorMode ? false : (gameState.activePlayerId === viewingPlayer?.playerId)
+  const isInCombatMode = spectatorMode ? false : (combatState !== null)
 
 
-  // Compute pass button label - show next step if stack is empty
+  // Compute pass button label
   const getPassButtonLabel = () => {
+    // Show "Resolve" when there's something on the stack
     if (stackCards.length > 0) {
-      return 'Pass'
+      return 'Resolve'
     }
+    // Show "To my turn" when at opponent's end step
+    const isOpponentsTurn = gameState.activePlayerId !== viewingPlayer?.playerId
+    if (isOpponentsTurn && gameState.currentStep === 'END') {
+      return 'To my turn'
+    }
+    // Otherwise show next step
     const nextStep = getNextStep(gameState.currentStep)
     if (nextStep) {
+      // "End Turn" when passing to end step on my turn
+      if (nextStep === 'END' && isMyTurn) {
+        return 'End Turn'
+      }
       return `Pass to ${StepShortNames[nextStep]}`
     }
     return 'Pass'
+  }
+
+  // Get pass button colors based on priority mode
+  const getPassButtonStyle = (): React.CSSProperties => {
+    const hasStack = stackCards.length > 0
+    if (hasStack) {
+      // Resolve - keep orange
+      return {
+        backgroundColor: '#c76e00',
+        borderColor: '#e08000',
+      }
+    }
+    if (priorityMode === 'ownTurn') {
+      // Own turn - blue/cyan
+      return {
+        backgroundColor: '#1976d2',
+        borderColor: '#4fc3f7',
+      }
+    }
+    // Responding - amber/gold
+    return {
+      backgroundColor: '#f57c00',
+      borderColor: '#ffc107',
+    }
   }
 
   return (
     <ResponsiveContext.Provider value={responsive}>
     <div style={{
       ...styles.container,
-      padding: responsive.containerPadding,
+      padding: `0 ${responsive.containerPadding}px`,
       gap: responsive.sectionGap,
     }}>
       {/* Fullscreen button (top-left) */}
       <FullscreenButton />
 
-      {/* Concede button (top-right) */}
-      <ConcedeButton />
+      {/* Concede button (top-right) - hidden in spectator mode */}
+      {!spectatorMode && <ConcedeButton />}
+
+      {/* Opponent hand - fixed at top of screen */}
+      {effectiveOpponent && (
+        <div
+          data-zone="opponent-hand"
+          style={{
+            position: 'fixed',
+            top: topOffset,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 50,
+          }}
+        >
+          <CardRow
+            zoneId={hand(effectiveOpponent.playerId)}
+            faceDown
+            small
+            inverted
+          />
+        </div>
+      )}
+
+      {/* Spectator mode: floating player name labels on the left side */}
+      {spectatorMode && effectiveOpponent && (
+        <div
+          style={{
+            ...styles.spectatorNameLabel,
+            position: 'fixed',
+            top: topOffset + responsive.smallCardHeight + responsive.handBattlefieldGap + 8,
+            left: 16,
+          }}
+        >
+          {effectiveOpponent.name}
+        </div>
+      )}
 
       {/* Opponent area (top) */}
-      <div style={styles.opponentArea}>
+      <div style={{
+        ...styles.opponentArea,
+        marginTop: -responsive.containerPadding + responsive.sectionGap,
+        paddingTop: responsive.smallCardHeight + topOffset + responsive.handBattlefieldGap,
+      }}>
         <div style={styles.playerRowWithZones}>
           <div style={styles.playerMainArea}>
-            {/* Opponent hand (face down) */}
-            {opponent && (
-              <div data-zone="opponent-hand" style={{ marginBottom: -6 }}>
-                <CardRow
-                  zoneId={hand(opponent.playerId)}
-                  faceDown
-                  small
-                />
-              </div>
-            )}
-
             {/* Opponent battlefield - lands first (closer to opponent), then creatures */}
-            <BattlefieldArea isOpponent />
+            <BattlefieldArea isOpponent spectatorMode={spectatorMode} />
           </div>
 
           {/* Opponent deck/graveyard (right side) */}
-          {opponent && <ZonePile player={opponent} isOpponent />}
+          {effectiveOpponent && <ZonePile player={effectiveOpponent} isOpponent />}
         </div>
       </div>
 
@@ -229,12 +344,12 @@ export function GameBoard() {
       <div style={styles.centerArea}>
         {/* Opponent life (left side) */}
         <div style={styles.centerLifeSection}>
-          {opponent && (
+          {effectiveOpponent && (
             <>
-              <LifeDisplay life={opponent.life} playerId={opponent.playerId} />
-              <span style={{ ...styles.playerName, fontSize: responsive.fontSize.small }}>{opponent.name}</span>
-              <ActiveEffectsBadges effects={opponent.activeEffects} />
-              {opponent.manaPool && <ManaPool manaPool={opponent.manaPool} />}
+              <LifeDisplay life={effectiveOpponent.life} playerId={effectiveOpponent.playerId} />
+              <span style={{ ...styles.playerName, fontSize: responsive.fontSize.small }}>{effectiveOpponent.name}</span>
+              <ActiveEffectsBadges effects={effectiveOpponent.activeEffects} />
+              {effectiveOpponent.manaPool && <ManaPool manaPool={effectiveOpponent.manaPool} />}
             </>
           )}
         </div>
@@ -244,16 +359,25 @@ export function GameBoard() {
           phase={gameState.currentPhase}
           step={gameState.currentStep}
           turnNumber={gameState.turnNumber}
-          isActivePlayer={gameState.activePlayerId === viewingPlayer.playerId}
+          isActivePlayer={isMyTurn}
           hasPriority={hasPriority}
+          priorityMode={priorityMode}
+          activePlayerName={spectatorMode
+            ? gameState.players.find(p => p.playerId === gameState.activePlayerId)?.name
+            : undefined
+          }
         />
 
         {/* Player life (right side) */}
         <div style={styles.centerLifeSection}>
-          <LifeDisplay life={viewingPlayer.life} isPlayer playerId={viewingPlayer.playerId} />
-          <span style={{ ...styles.playerName, fontSize: responsive.fontSize.small }}>{viewingPlayer.name}</span>
-          <ActiveEffectsBadges effects={viewingPlayer.activeEffects} />
-          {viewingPlayer.manaPool && <ManaPool manaPool={viewingPlayer.manaPool} />}
+          {effectiveViewingPlayer && (
+            <>
+              <LifeDisplay life={effectiveViewingPlayer.life} isPlayer playerId={effectiveViewingPlayer.playerId} />
+              <span style={{ ...styles.playerName, fontSize: responsive.fontSize.small }}>{effectiveViewingPlayer.name}</span>
+              <ActiveEffectsBadges effects={effectiveViewingPlayer.activeEffects} />
+              {effectiveViewingPlayer.manaPool && <ManaPool manaPool={effectiveViewingPlayer.manaPool} />}
+            </>
+          )}
         </div>
       </div>
 
@@ -262,29 +386,65 @@ export function GameBoard() {
 
 
       {/* Player area (bottom) */}
-      <div style={styles.playerArea}>
+      <div style={{
+        ...styles.playerArea,
+        marginBottom: -responsive.containerPadding + responsive.sectionGap,
+        paddingBottom: (spectatorMode ? responsive.smallCardHeight : responsive.cardHeight) + responsive.handBattlefieldGap,
+      }}>
         <div style={styles.playerRowWithZones}>
           <div style={styles.playerMainArea}>
             {/* Player battlefield - creatures first (closer to center), then lands */}
-            <BattlefieldArea isOpponent={false} />
+            <BattlefieldArea isOpponent={false} spectatorMode={spectatorMode} />
 
-            {/* Player hand */}
-            <div data-zone="hand" style={{ ...styles.handWithMana, marginTop: -40 }}>
-              <CardRow
-                zoneId={hand(playerId)}
-                faceDown={false}
-                interactive
-              />
-            </div>
           </div>
 
           {/* Player deck/graveyard (right side) */}
-          <ZonePile player={viewingPlayer} />
+          {effectiveViewingPlayer && <ZonePile player={effectiveViewingPlayer} />}
         </div>
       </div>
 
-      {/* Floating pass button (bottom-right) */}
-      {hasPriority && !isInCombatMode && (
+      {/* Spectator mode: floating player name label for bottom player */}
+      {spectatorMode && effectiveViewingPlayer && (
+        <div
+          style={{
+            ...styles.spectatorNameLabel,
+            position: 'fixed',
+            bottom: responsive.smallCardHeight + responsive.handBattlefieldGap + 8,
+            left: 16,
+          }}
+        >
+          {effectiveViewingPlayer.name}
+        </div>
+      )}
+
+      {/* Player hand - fixed at bottom of screen */}
+      <div
+        data-zone="hand"
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 50,
+        }}
+      >
+        {spectatorMode && effectiveViewingPlayer ? (
+          <CardRow
+            zoneId={hand(effectiveViewingPlayer.playerId)}
+            faceDown
+            small
+          />
+        ) : playerId ? (
+          <CardRow
+            zoneId={hand(playerId)}
+            faceDown={false}
+            interactive
+          />
+        ) : null}
+      </div>
+
+      {/* Floating pass button (bottom-right) - hidden in spectator mode */}
+      {!spectatorMode && hasPriority && !isInCombatMode && viewingPlayer && (
         <button
           onClick={() => {
             submitAction({
@@ -294,28 +454,119 @@ export function GameBoard() {
           }}
           style={{
             ...styles.floatingPassButton,
+            ...getPassButtonStyle(),
             padding: responsive.isMobile ? '10px 20px' : '12px 28px',
             fontSize: responsive.fontSize.normal,
+            border: `2px solid ${getPassButtonStyle().borderColor}`,
+            transition: 'background-color 0.2s, border-color 0.2s',
           }}
         >
           {getPassButtonLabel()}
         </button>
       )}
 
+      {/* Combat buttons (bottom-right) */}
+      {isInCombatMode && combatState?.mode === 'declareAttackers' && (
+        <div style={styles.combatButtonContainer}>
+          {combatState.selectedAttackers.length === 0 ? (
+            <>
+              <button
+                onClick={attackWithAll}
+                disabled={combatState.validCreatures.length === 0}
+                style={{
+                  ...styles.combatButton,
+                  ...styles.combatButtonPrimary,
+                  opacity: combatState.validCreatures.length === 0 ? 0.5 : 1,
+                }}
+              >
+                Attack All
+              </button>
+              <button
+                onClick={confirmCombat}
+                style={{
+                  ...styles.combatButton,
+                  ...styles.combatButtonSecondary,
+                }}
+              >
+                Skip
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={confirmCombat}
+                style={{
+                  ...styles.combatButton,
+                  ...styles.combatButtonPrimary,
+                }}
+              >
+                Attack with {combatState.selectedAttackers.length}
+              </button>
+              <button
+                onClick={cancelCombat}
+                style={{
+                  ...styles.combatButton,
+                  ...styles.combatButtonSecondary,
+                }}
+              >
+                Cancel
+              </button>
+            </>
+          )}
+        </div>
+      )}
 
-      {/* Action menu for selected card */}
-      <ActionMenu />
+      {isInCombatMode && combatState?.mode === 'declareBlockers' && (
+        <div style={styles.combatButtonContainer}>
+          {Object.keys(combatState.blockerAssignments).length === 0 ? (
+            <button
+              onClick={confirmCombat}
+              style={{
+                ...styles.combatButton,
+                ...styles.combatButtonSecondary,
+              }}
+            >
+              No Blocks
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={confirmCombat}
+                style={{
+                  ...styles.combatButton,
+                  ...styles.combatButtonPrimary,
+                }}
+              >
+                Confirm Blocks
+              </button>
+              <button
+                onClick={cancelCombat}
+                style={{
+                  ...styles.combatButton,
+                  ...styles.combatButtonSecondary,
+                }}
+              >
+                Cancel
+              </button>
+            </>
+          )}
+        </div>
+      )}
 
-      {/* Combat arrows for blocker assignments */}
-      <CombatArrows />
+
+      {/* Action menu for selected card - hidden in spectator mode */}
+      {!spectatorMode && <ActionMenu />}
+
+      {/* Combat arrows for blocker assignments - rendered by SpectatorGameBoard in spectator mode to avoid stacking context issues */}
+      {!spectatorMode && <CombatArrows />}
 
       {/* Targeting arrows for spells on the stack */}
       <TargetingArrows />
 
-      {/* Dragged card overlay */}
-      <DraggedCardOverlay />
+      {/* Dragged card overlay - hidden in spectator mode */}
+      {!spectatorMode && <DraggedCardOverlay />}
       <CardPreview />
-      <GameLog />
+      {!spectatorMode && <GameLog />}
 
       {/* Draw animations */}
       <DrawAnimations />
@@ -458,6 +709,7 @@ function LifeDisplay({
   return (
     <div
       data-player-id={playerId}
+      data-life-id={playerId}
       data-life-display={playerId}
       onClick={handleClick}
       style={{
@@ -595,7 +847,7 @@ function StackDisplay() {
  */
 function CardPreview() {
   const hoveredCardId = useGameStore((state) => state.hoveredCardId)
-  const gameState = useGameStore((state) => state.gameState)
+  const gameState = useGameStore(selectGameState)
   const responsive = useResponsiveContext()
   const [showRulings, setShowRulings] = useState(false)
   const [lastHoveredId, setLastHoveredId] = useState<EntityId | null>(null)
@@ -637,6 +889,18 @@ function CardPreview() {
   const isToughnessDebuffed = card.toughness !== null && card.baseToughness !== null && card.toughness < card.baseToughness
   const hasStatModifications = isPowerBuffed || isPowerDebuffed || isToughnessBuffed || isToughnessDebuffed
 
+  // Calculate stat breakdown
+  const counterModifier = getCounterStatModifier(card)
+  const hasCounters = hasStatCounters(card)
+  // Effects = total change - counter contribution
+  const effectPowerMod = card.power !== null && card.basePower !== null
+    ? (card.power - card.basePower) - counterModifier
+    : 0
+  const effectToughnessMod = card.toughness !== null && card.baseToughness !== null
+    ? (card.toughness - card.baseToughness) - counterModifier
+    : 0
+  const hasEffects = effectPowerMod !== 0 || effectToughnessMod !== 0
+
   const hasRulings = card.rulings && card.rulings.length > 0
 
   return (
@@ -660,39 +924,58 @@ function CardPreview() {
         </div>
 
         {/* Stats box (for creatures with modifications) */}
-        {card.power !== null && card.toughness !== null && (
-          <div style={{
-            ...styles.cardPreviewStats,
-            backgroundColor: hasStatModifications ? 'rgba(0, 0, 0, 0.9)' : 'transparent',
-          }}>
-            {hasStatModifications && (
-              <>
-                <span style={{
-                  color: isPowerBuffed ? '#00ff00' : isPowerDebuffed ? '#ff4444' : '#ffffff',
-                  fontWeight: 700,
-                  fontSize: responsive.isMobile ? 18 : 24,
-                }}>
-                  {card.power}
-                </span>
-                <span style={{ color: '#ffffff', fontSize: responsive.isMobile ? 18 : 24 }}>/</span>
-                <span style={{
-                  color: isToughnessBuffed ? '#00ff00' : isToughnessDebuffed ? '#ff4444' : '#ffffff',
-                  fontWeight: 700,
-                  fontSize: responsive.isMobile ? 18 : 24,
-                }}>
-                  {card.toughness}
-                </span>
-                {(card.basePower !== null && card.baseToughness !== null) && (
-                  <span style={{
-                    color: '#888888',
-                    fontSize: responsive.isMobile ? 12 : 14,
-                    marginLeft: 8,
-                  }}>
-                    (base: {card.basePower}/{card.baseToughness})
+        {card.power !== null && card.toughness !== null && hasStatModifications && (
+          <div style={styles.cardPreviewStatsBox}>
+            {/* Current P/T (large) */}
+            <div style={styles.cardPreviewStatsMain}>
+              <span style={{
+                color: isPowerBuffed ? '#00ff00' : isPowerDebuffed ? '#ff4444' : '#ffffff',
+                fontWeight: 700,
+                fontSize: responsive.isMobile ? 20 : 26,
+              }}>
+                {card.power}
+              </span>
+              <span style={{ color: '#ffffff', fontSize: responsive.isMobile ? 20 : 26 }}>/</span>
+              <span style={{
+                color: isToughnessBuffed ? '#00ff00' : isToughnessDebuffed ? '#ff4444' : '#ffffff',
+                fontWeight: 700,
+                fontSize: responsive.isMobile ? 20 : 26,
+              }}>
+                {card.toughness}
+              </span>
+            </div>
+            {/* Breakdown rows */}
+            <div style={styles.cardPreviewStatsBreakdown}>
+              {/* Base stats */}
+              {card.basePower !== null && card.baseToughness !== null && (
+                <div style={styles.cardPreviewStatsRow}>
+                  <span style={styles.cardPreviewStatsLabel}>Base</span>
+                  <span style={styles.cardPreviewStatsValue}>
+                    {card.basePower}/{card.baseToughness}
                   </span>
-                )}
-              </>
-            )}
+                </div>
+              )}
+              {/* Counter contribution */}
+              {hasCounters && (
+                <div style={styles.cardPreviewStatsRow}>
+                  <span style={{...styles.cardPreviewStatsLabel, color: '#66ccff'}}>
+                    <span style={{marginRight: 4}}>⬡</span>Counters
+                  </span>
+                  <span style={{...styles.cardPreviewStatsValue, color: counterModifier >= 0 ? '#66ccff' : '#ff6666'}}>
+                    {counterModifier >= 0 ? '+' : ''}{counterModifier}/{counterModifier >= 0 ? '+' : ''}{counterModifier}
+                  </span>
+                </div>
+              )}
+              {/* Effects contribution */}
+              {hasEffects && (
+                <div style={styles.cardPreviewStatsRow}>
+                  <span style={{...styles.cardPreviewStatsLabel, color: '#ffcc66'}}>Effects</span>
+                  <span style={{...styles.cardPreviewStatsValue, color: '#ffcc66'}}>
+                    {effectPowerMod >= 0 ? '+' : ''}{effectPowerMod}/{effectToughnessMod >= 0 ? '+' : ''}{effectToughnessMod}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -740,11 +1023,13 @@ function CardRow({
   faceDown = false,
   interactive = false,
   small = false,
+  inverted = false,
 }: {
   zoneId: ZoneId
   faceDown?: boolean
   interactive?: boolean
   small?: boolean
+  inverted?: boolean
 }) {
   const cards = useZoneCards(zoneId)
   const zone = useZone(zoneId)
@@ -774,7 +1059,32 @@ function CardRow({
     minWidth
   )
 
-  // Render face-down placeholders for hidden zones
+  // For hands (player or opponent), create a fan effect
+  // - Player's own hand: interactive, face-up
+  // - Opponent's hand: face-down, inverted (top of screen)
+  // - Spectator bottom hand: face-down, not inverted (bottom of screen)
+  const isPlayerHand = interactive && !faceDown
+  const isOpponentHand = faceDown && inverted
+  const isSpectatorBottomHand = faceDown && !inverted && !interactive
+  const cardHeight = Math.round(fittingWidth * 1.4)
+
+  if ((isPlayerHand || isOpponentHand || isSpectatorBottomHand) && (cards.length > 0 || showPlaceholders)) {
+    return (
+      <HandFan
+        cards={cards}
+        placeholderCount={showPlaceholders ? zoneSize : 0}
+        fittingWidth={fittingWidth}
+        cardHeight={cardHeight}
+        cardGap={responsive.cardGap}
+        faceDown={faceDown}
+        interactive={interactive}
+        small={small}
+        inverted={inverted}
+      />
+    )
+  }
+
+  // Render face-down placeholders for hidden zones (non-fan layout)
   if (showPlaceholders) {
     const cardRatio = 1.4
     const height = Math.round(fittingWidth * cardRatio)
@@ -803,24 +1113,6 @@ function CardRow({
     )
   }
 
-  // For player's hand, create a fan effect
-  const isPlayerHand = interactive && !faceDown
-  const cardHeight = Math.round(fittingWidth * 1.4)
-
-  if (isPlayerHand && cards.length > 0) {
-    return (
-      <HandFan
-        cards={cards}
-        fittingWidth={fittingWidth}
-        cardHeight={cardHeight}
-        cardGap={responsive.cardGap}
-        faceDown={faceDown}
-        interactive={interactive}
-        small={small}
-      />
-    )
-  }
-
   // Render each card individually (no grouping for hand)
   return (
     <div style={{ ...styles.cardRow, gap: responsive.cardGap, padding: responsive.cardGap }}>
@@ -845,23 +1137,27 @@ function CardRow({
  */
 function HandFan({
   cards,
+  placeholderCount = 0,
   fittingWidth,
   cardHeight,
   faceDown,
   interactive,
   small,
+  inverted = false,
 }: {
   cards: readonly ClientCard[]
+  placeholderCount?: number
   fittingWidth: number
   cardHeight: number
   cardGap: number
   faceDown: boolean
   interactive: boolean
   small: boolean
+  inverted?: boolean
 }) {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+  const [, setHoveredIndex] = useState<number | null>(null)
 
-  const cardCount = cards.length
+  const cardCount = placeholderCount > 0 ? placeholderCount : cards.length
 
   // Scale fan parameters based on card count
   // Fewer cards = more spread, more cards = tighter fan
@@ -875,8 +1171,16 @@ function HandFan({
   // Total width of the hand fan
   const totalWidth = cardSpacing * (cardCount - 1) + fittingWidth
 
-  // Allow cards to extend slightly below the visible area to save vertical space
-  const bottomMargin = -15
+  // Allow cards to extend slightly beyond the visible area to save vertical space
+  const edgeMargin = -15
+
+  // For inverted fan, flip the arc and rotation direction
+  const rotationMultiplier = inverted ? -1 : 1
+
+  // Create array of items to render (either cards or placeholder indices)
+  const items = placeholderCount > 0
+    ? Array.from({ length: placeholderCount }, (_, i) => ({ type: 'placeholder' as const, index: i }))
+    : cards.map((card, index) => ({ type: 'card' as const, card, index }))
 
   return (
     <div
@@ -884,87 +1188,76 @@ function HandFan({
         position: 'relative',
         width: totalWidth,
         height: cardHeight + maxVerticalOffset + 40, // Extra space for hover lift
-        marginBottom: bottomMargin,
+        marginBottom: inverted ? 0 : edgeMargin,
+        marginTop: inverted ? edgeMargin : 0,
       }}
     >
-      {cards.map((card, index) => {
+      {items.map((item, index) => {
         // Calculate position from center (-1 to 1)
         const centerOffset = cardCount > 1
           ? (index - (cardCount - 1) / 2) / ((cardCount - 1) / 2)
           : 0
 
         // Calculate rotation (edges rotate away from center)
-        const rotation = centerOffset * maxRotation
+        const rotation = centerOffset * maxRotation * rotationMultiplier
 
-        // Calculate vertical offset (arc shape - center cards are higher)
+        // Calculate vertical offset (arc shape - center cards are higher/lower)
         const verticalOffset = (1 - Math.abs(centerOffset) ** 1.5) * maxVerticalOffset
 
-        // Calculate horizontal position - spread cards apart when one is hovered
-        let left = index * cardSpacing
-        if (hoveredIndex !== null && index !== hoveredIndex) {
-          // Push cards away from hovered card
-          const pushAmount = 8
-          if (index < hoveredIndex) {
-            left -= pushAmount * (1 - Math.abs(index - hoveredIndex) / cardCount)
-          } else {
-            left += pushAmount * (1 - Math.abs(index - hoveredIndex) / cardCount)
-          }
-        }
+        // Calculate horizontal position
+        const left = index * cardSpacing
 
-        // Is this card hovered?
-        const isHovered = hoveredIndex === index
+        // Z-index: center cards on top
+        const zIndex = 50 - Math.abs(index - Math.floor(cardCount / 2))
 
-        // Z-index: hovered card on top, otherwise based on distance from hover or center
-        let zIndex: number
-        if (isHovered) {
-          zIndex = 100
-        } else if (hoveredIndex !== null) {
-          // Cards closer to hovered card have higher z-index
-          zIndex = 50 - Math.abs(index - hoveredIndex)
-        } else {
-          // Default: center cards on top
-          zIndex = 50 - Math.abs(index - Math.floor(cardCount / 2))
-        }
-
-        // Hover lift amount
-        const hoverLift = 30
-
-        // Calculate pop-up direction based on rotation angle
-        // Cards rotate around bottom center, so we need to translate along the rotated axis
-        const rotationRad = (rotation * Math.PI) / 180
-        const popUpX = isHovered ? Math.sin(rotationRad) * hoverLift : 0
-        const popUpY = isHovered ? -Math.cos(rotationRad) * hoverLift : 0
+        const key = item.type === 'card' ? item.card.id : `placeholder-${item.index}`
 
         return (
           <div
-            key={card.id}
+            key={key}
             style={{
               position: 'absolute',
               left,
-              bottom: bottomMargin,
-              transform: `
-                translateX(${popUpX}px)
-                translateY(${-verticalOffset + popUpY}px)
-                rotate(${rotation}deg)
-                scale(${isHovered ? 1.08 : 1})
-              `,
-              transformOrigin: 'bottom center',
+              ...(inverted
+                ? { top: edgeMargin, transform: `translateY(${verticalOffset}px) rotate(${rotation}deg)` }
+                : { bottom: edgeMargin, transform: `translateY(${-verticalOffset}px) rotate(${rotation}deg)` }
+              ),
+              transformOrigin: inverted ? 'top center' : 'bottom center',
               zIndex,
               transition: 'transform 0.12s ease-out, left 0.12s ease-out',
               cursor: interactive ? 'pointer' : 'default',
             }}
-            onMouseEnter={() => setHoveredIndex(index)}
-            onMouseLeave={() => setHoveredIndex(null)}
+            onMouseEnter={() => !inverted && setHoveredIndex(index)}
+            onMouseLeave={() => !inverted && setHoveredIndex(null)}
           >
-            <GameCard
-              card={card}
-              count={1}
-              faceDown={faceDown}
-              interactive={interactive}
-              small={small}
-              overrideWidth={fittingWidth}
-              inHand={interactive && !faceDown}
-            />
+            {item.type === 'card' ? (
+              <GameCard
+                card={item.card}
+                count={1}
+                faceDown={faceDown}
+                interactive={interactive}
+                small={small}
+                overrideWidth={fittingWidth}
+                inHand={interactive && !faceDown}
+              />
+            ) : (
+              <div
+                style={{
+                  width: fittingWidth,
+                  height: cardHeight,
+                  borderRadius: 6,
+                  border: '2px solid #333',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
+                  overflow: 'hidden',
+                }}
+              >
+                <img
+                  src="https://backs.scryfall.io/large/2/2/222b7a3b-2321-4d4c-af19-19338b134971.jpg?1677416389"
+                  alt="Card back"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              </div>
+            )}
           </div>
         )
       })}
@@ -973,14 +1266,17 @@ function HandFan({
 }
 
 /**
- * Deck and graveyard pile display.
+ * Deck, graveyard, and exile pile display.
  */
 function ZonePile({ player, isOpponent = false }: { player: ClientPlayer; isOpponent?: boolean }) {
   const graveyardCards = useZoneCards(graveyard(player.playerId))
   const topGraveyardCard = graveyardCards[graveyardCards.length - 1]
+  const exileCards = useZoneCards(exile(player.playerId))
+  const topExileCard = exileCards[exileCards.length - 1]
   const hoverCard = useGameStore((state) => state.hoverCard)
   const responsive = useResponsiveContext()
   const [browsingGraveyard, setBrowsingGraveyard] = useState(false)
+  const [browsingExile, setBrowsingExile] = useState(false)
   const stackCards = useStackCards()
 
   // Find any graveyard cards that are being targeted by spells on the stack
@@ -1004,8 +1300,15 @@ function ZonePile({ player, isOpponent = false }: { player: ClientPlayer; isOppo
     borderRadius: responsive.isMobile ? 4 : 6,
   }
 
+  // Offset to avoid overlapping with buttons:
+  // - Player zones move up to avoid pass priority button (bottom-right)
+  // - Opponent zones move down to avoid concede button (top-right)
+  const verticalOffset = isOpponent
+    ? { marginTop: responsive.zonePileOffset }
+    : { marginBottom: responsive.zonePileOffset + responsive.sectionGap * 3 }
+
   return (
-    <div style={{ ...styles.zonePile, gap: responsive.cardGap, minWidth: responsive.pileWidth + 10 }}>
+    <div style={{ ...styles.zonePile, gap: responsive.cardGap, minWidth: responsive.pileWidth + 10, ...verticalOffset }}>
       {/* Library/Deck */}
       <div style={styles.zoneStack}>
         <div data-zone={isOpponent ? 'opponent-library' : 'player-library'} style={{ ...styles.deckPile, ...pileStyle }}>
@@ -1072,9 +1375,153 @@ function ZonePile({ player, isOpponent = false }: { player: ClientPlayer; isOppo
         <span style={{ ...styles.zoneLabel, fontSize: responsive.isMobile ? 8 : 10 }}>Graveyard</span>
       </div>
 
+      {/* Exile */}
+      <div style={styles.zoneStack}>
+        <div
+          data-exile-id={player.playerId}
+          style={{ ...styles.exilePile, ...pileStyle, cursor: exileCards.length > 0 ? 'pointer' : 'default' }}
+          onClick={() => { if (exileCards.length > 0) setBrowsingExile(true) }}
+          onMouseEnter={() => { if (topExileCard) hoverCard(topExileCard.id) }}
+          onMouseLeave={() => hoverCard(null)}
+        >
+          {topExileCard ? (
+            <img
+              src={getCardImageUrl(topExileCard.name, topExileCard.imageUri, 'normal')}
+              alt={topExileCard.name}
+              style={{ ...styles.pileImage, opacity: 0.7 }}
+              onError={(e) => handleImageError(e, topExileCard.name, 'normal')}
+            />
+          ) : (
+            <div style={styles.emptyPile} />
+          )}
+          {player.exileSize > 0 && (
+            <div style={{ ...styles.pileCount, fontSize: responsive.fontSize.small }}>{player.exileSize}</div>
+          )}
+        </div>
+        <span style={{ ...styles.zoneLabel, fontSize: responsive.isMobile ? 8 : 10 }}>Exile</span>
+      </div>
+
       {browsingGraveyard && (
         <GraveyardBrowser cards={graveyardCards} onClose={() => setBrowsingGraveyard(false)} />
       )}
+      {browsingExile && (
+        <ExileBrowser cards={exileCards} onClose={() => setBrowsingExile(false)} />
+      )}
+    </div>
+  )
+}
+
+/**
+ * Full-screen overlay for browsing exile cards.
+ */
+function ExileBrowser({ cards, onClose }: { cards: readonly ClientCard[], onClose: () => void }) {
+  const hoverCard = useGameStore((state) => state.hoverCard)
+  const responsive = useResponsiveContext()
+  const [minimized, setMinimized] = useState(false)
+
+  const cardWidth = responsive.isMobile ? 120 : 160
+  const cardHeight = Math.round(cardWidth * 1.4)
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (minimized) {
+          setMinimized(false)
+        } else {
+          onClose()
+        }
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [onClose, minimized])
+
+  // When minimized, show floating button to restore
+  if (minimized) {
+    return (
+      <button
+        onClick={() => setMinimized(false)}
+        style={{
+          position: 'fixed',
+          bottom: 70,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          padding: responsive.isMobile ? '10px 16px' : '12px 24px',
+          fontSize: responsive.fontSize.normal,
+          backgroundColor: '#7c3aed',
+          color: 'white',
+          border: 'none',
+          borderRadius: 8,
+          cursor: 'pointer',
+          fontWeight: 600,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+          zIndex: 100,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+        }}
+      >
+        ↑ Return to Exile
+      </button>
+    )
+  }
+
+  return (
+    <div style={styles.exileOverlay} onClick={onClose}>
+      <div style={styles.exileBrowserContent} onClick={(e) => e.stopPropagation()}>
+        <div style={styles.exileBrowserHeader}>
+          <h2 style={styles.exileBrowserTitle}>Exile ({cards.length})</h2>
+          <button style={styles.exileCloseButton} onClick={onClose}>✕</button>
+        </div>
+        <div style={styles.exileCardGrid}>
+          {cards.map((card) => (
+            <div
+              key={card.id}
+              style={{ width: cardWidth, height: cardHeight, borderRadius: 6, overflow: 'hidden', flexShrink: 0 }}
+              onMouseEnter={() => hoverCard(card.id)}
+              onMouseLeave={() => hoverCard(null)}
+            >
+              <img
+                src={getCardImageUrl(card.name, card.imageUri, 'normal')}
+                alt={card.name}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                onError={(e) => handleImageError(e, card.name, 'normal')}
+              />
+            </div>
+          ))}
+        </div>
+        {/* Action buttons */}
+        <div style={{ display: 'flex', gap: 16, marginTop: 16 }}>
+          <button
+            onClick={() => setMinimized(true)}
+            style={{
+              padding: responsive.isMobile ? '10px 20px' : '12px 28px',
+              fontSize: responsive.fontSize.normal,
+              backgroundColor: '#7c3aed',
+              color: 'white',
+              border: 'none',
+              borderRadius: 8,
+              cursor: 'pointer',
+            }}
+          >
+            View Battlefield
+          </button>
+          <button
+            onClick={onClose}
+            style={{
+              padding: responsive.isMobile ? '10px 20px' : '12px 28px',
+              fontSize: responsive.fontSize.normal,
+              backgroundColor: '#333',
+              color: '#aaa',
+              border: '1px solid #555',
+              borderRadius: 8,
+              cursor: 'pointer',
+            }}
+          >
+            Close
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
@@ -1199,92 +1646,177 @@ function GraveyardBrowser({ cards, onClose }: { cards: readonly ClientCard[], on
  * For player: creatures first (closer to center), then lands (closer to player)
  * For opponent: lands first (closer to opponent), then creatures (closer to center)
  */
-function BattlefieldArea({ isOpponent }: { isOpponent: boolean }) {
+function BattlefieldArea({ isOpponent, spectatorMode = false }: { isOpponent: boolean; spectatorMode?: boolean }) {
   const {
     playerLands,
     playerCreatures,
+    playerOther,
     opponentLands,
     opponentCreatures,
+    opponentOther,
   } = useBattlefieldCards()
   const responsive = useResponsiveContext()
-  const targetingState = useGameStore((state) => state.targetingState)
-  const pendingDecision = useGameStore((state) => state.pendingDecision)
-  const stackCards = useStackCards()
 
   const lands = isOpponent ? opponentLands : playerLands
   const creatures = isOpponent ? opponentCreatures : playerCreatures
+  const other = isOpponent ? opponentOther : playerOther
 
-  // Collect all targets: current targeting mode, pending decisions, AND spells on the stack
-  const validTargets = targetingState?.validTargets ?? []
-  const decisionTargets = pendingDecision?.type === 'ChooseTargetsDecision'
-    ? Object.values(pendingDecision.legalTargets).flat()
-    : []
-  // Also include targets from spells/abilities already on the stack
-  const stackTargets = stackCards.flatMap((card) =>
-    card.targets
-      .filter((t) => t.type === 'Permanent')
-      .map((t) => (t as { type: 'Permanent'; entityId: string }).entityId)
-  )
-  const allTargetedIds = [...validTargets, ...decisionTargets, ...stackTargets]
-  const anyLandIsTarget = lands.some((land) => allTargetedIds.includes(land.id))
-
-  // Group identical lands (unless any land is targeted), display creatures individually
-  const groupedLands = anyLandIsTarget
-    ? lands.map((card) => ({ card, count: 1, cardIds: [card.id] as const, cards: [card] as const }))
-    : groupCards(lands)
+  // Group identical lands, display creatures and other individually
+  const groupedLands = groupCards(lands)
   const groupedCreatures = creatures.map((card) => ({
     card,
     count: 1,
     cardIds: [card.id] as const,
     cards: [card] as const,
   }))
+  const groupedOther = other.map((card) => ({
+    card,
+    count: 1,
+    cardIds: [card.id] as const,
+    cards: [card] as const,
+  }))
 
-  // For opponent: lands first (top), creatures second (bottom/closer to center)
-  // For player: creatures first (top/closer to center), lands second (bottom/closer to player)
-  const firstRow = isOpponent ? groupedLands : groupedCreatures
-  const secondRow = isOpponent ? groupedCreatures : groupedLands
+  // Layout: Lands anchored near hand, creatures toward center
+  // For player: lands at bottom (near hand), creatures above
+  // For opponent: lands at top (near hand), creatures below
+  const hasCreatures = groupedCreatures.length > 0
+  const hasLands = groupedLands.length > 0
+  const hasOther = groupedOther.length > 0
+  const showDivider = (hasCreatures || hasOther) && hasLands
 
   return (
     <div
       style={{
         ...styles.battlefieldArea,
+        justifyContent: isOpponent ? 'flex-start' : 'flex-end',
         gap: 0,
       }}
     >
-      {/* First row */}
-      <div style={{ ...styles.battlefieldRow, gap: responsive.cardGap }}>
-        {firstRow.map((group) => (
-          <CardStack
-            key={group.cardIds[0]}
-            group={group}
-            interactive={!isOpponent}
-            isOpponentCard={isOpponent}
-          />
-        ))}
-      </div>
+      {/* For player: creatures first (top, toward center) */}
+      {!isOpponent && (
+        <>
+          {/* Creatures row */}
+          <div style={{
+            ...styles.battlefieldRow,
+            gap: responsive.cardGap,
+            minHeight: responsive.battlefieldCardHeight + responsive.battlefieldRowPadding,
+          }}>
+            {groupedCreatures.map((group) => (
+              <CardStack
+                key={group.cardIds[0]}
+                group={group}
+                interactive={!spectatorMode && !isOpponent}
+                isOpponentCard={isOpponent}
+              />
+            ))}
+          </div>
 
-      {/* Divider between creatures and lands */}
-      <div
-        style={{
-          width: '60%',
-          height: 1,
-          backgroundColor: '#333',
-          margin: '8px 0',
-          opacity: 0.6,
-        }}
-      />
+          {/* Other permanents row */}
+          {hasOther && (
+            <div style={{ ...styles.battlefieldRow, gap: responsive.cardGap, marginTop: 4 }}>
+              {groupedOther.map((group) => (
+                <CardStack
+                  key={group.cardIds[0]}
+                  group={group}
+                  interactive={!spectatorMode && !isOpponent}
+                  isOpponentCard={isOpponent}
+                />
+              ))}
+            </div>
+          )}
 
-      {/* Second row */}
-      <div style={{ ...styles.battlefieldRow, gap: responsive.cardGap }}>
-        {secondRow.map((group) => (
-          <CardStack
-            key={group.cardIds[0]}
-            group={group}
-            interactive={!isOpponent}
-            isOpponentCard={isOpponent}
-          />
-        ))}
-      </div>
+          {/* Divider */}
+          {showDivider && (
+            <div
+              style={{
+                width: '40%',
+                height: 1,
+                backgroundColor: '#444',
+                margin: '6px 0',
+              }}
+            />
+          )}
+
+          {/* Lands row (bottom, near hand) */}
+          <div style={{
+            ...styles.battlefieldRow,
+            gap: responsive.cardGap,
+            marginBottom: -40,
+          }}>
+            {groupedLands.map((group) => (
+              <CardStack
+                key={group.cardIds[0]}
+                group={group}
+                interactive={!spectatorMode && !isOpponent}
+                isOpponentCard={isOpponent}
+              />
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* For opponent: lands first (top, near hand) */}
+      {isOpponent && (
+        <>
+          {/* Lands row (top, near hand) */}
+          <div style={{
+            ...styles.battlefieldRow,
+            gap: responsive.cardGap,
+            marginTop: -40,
+          }}>
+            {groupedLands.map((group) => (
+              <CardStack
+                key={group.cardIds[0]}
+                group={group}
+                interactive={!spectatorMode && !isOpponent}
+                isOpponentCard={isOpponent}
+              />
+            ))}
+          </div>
+
+          {/* Divider */}
+          {showDivider && (
+            <div
+              style={{
+                width: '40%',
+                height: 1,
+                backgroundColor: '#444',
+                margin: '6px 0',
+              }}
+            />
+          )}
+
+          {/* Other permanents row */}
+          {hasOther && (
+            <div style={{ ...styles.battlefieldRow, gap: responsive.cardGap, marginBottom: 4 }}>
+              {groupedOther.map((group) => (
+                <CardStack
+                  key={group.cardIds[0]}
+                  group={group}
+                  interactive={!spectatorMode && !isOpponent}
+                  isOpponentCard={isOpponent}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Creatures row (bottom, toward center) */}
+          <div style={{
+            ...styles.battlefieldRow,
+            gap: responsive.cardGap,
+            minHeight: responsive.battlefieldCardHeight + responsive.battlefieldRowPadding,
+          }}>
+            {groupedCreatures.map((group) => (
+              <CardStack
+                key={group.cardIds[0]}
+                group={group}
+                interactive={!spectatorMode && !isOpponent}
+                isOpponentCard={isOpponent}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   )
 }
@@ -1321,15 +1853,21 @@ function CardStack({
   const stackOffset = responsive.isMobile ? 12 : 18
 
   // Calculate total width needed for the stack
-  const cardWidth = responsive.battlefieldCardWidth
+  // Use height for tapped cards since they rotate 90 degrees (visually wider)
+  const hasAnyTapped = group.cards.some(c => c.isTapped)
+  const cardWidth = hasAnyTapped ? responsive.battlefieldCardHeight : responsive.battlefieldCardWidth
   const totalWidth = cardWidth + stackOffset * (group.count - 1)
+  const stackHeight = responsive.battlefieldCardHeight  // Always use full height for consistent alignment
 
   return (
     <div
       style={{
         position: 'relative',
         width: totalWidth,
-        height: responsive.battlefieldCardHeight,
+        height: stackHeight,
+        display: 'flex',
+        alignItems: 'flex-end',
+        transition: 'width 0.15s, height 0.15s',
       }}
     >
       {group.cards.map((card, index) => (
@@ -1339,6 +1877,9 @@ function CardStack({
             position: 'absolute',
             left: index * stackOffset,
             top: 0,
+            bottom: 0,
+            display: 'flex',
+            alignItems: 'flex-end',
             zIndex: index,
           }}
         >
@@ -1420,7 +1961,10 @@ function GameCard({
   // Check if card has legal actions (is playable)
   const hasLegalActions = useHasLegalActions(card.id)
 
+  const hoveredCardId = useGameStore((state) => state.hoveredCardId)
+
   const isSelected = selectedCardId === card.id
+  const isHovered = hoveredCardId === card.id
   const isInTargetingMode = targetingState !== null
   const isValidTarget = targetingState?.validTargets.includes(card.id) ?? false
   const isSelectedTarget = targetingState?.selectedTargets.includes(card.id) ?? false
@@ -1665,13 +2209,25 @@ function GameCard({
   } else if (isSelected && !isInCombatMode) {
     borderStyle = '3px solid #ffff00'
     boxShadow = '0 8px 20px rgba(255, 255, 0, 0.4)'
+  } else if ((isValidTarget || isValidDecisionTarget) && isHovered) {
+    // Bright highlight when hovering over a valid target
+    borderStyle = '3px solid #ff6666'
+    boxShadow = '0 0 20px rgba(255, 100, 100, 0.9), 0 0 40px rgba(255, 68, 68, 0.6)'
   } else if (isValidTarget || isValidDecisionTarget) {
     borderStyle = '3px solid #ff4444'
     boxShadow = '0 4px 15px rgba(255, 68, 68, 0.6)'
+  } else if ((isValidAttacker || isValidBlocker) && isHovered) {
+    // Bright highlight when hovering over a valid attacker/blocker
+    borderStyle = '3px solid #44ff44'
+    boxShadow = '0 0 20px rgba(68, 255, 68, 0.9), 0 0 40px rgba(0, 255, 0, 0.5)'
   } else if (isValidAttacker || isValidBlocker) {
     // Green highlight for valid attackers/blockers
     borderStyle = '2px solid #00ff00'
     boxShadow = '0 0 12px rgba(0, 255, 0, 0.5), 0 0 24px rgba(0, 255, 0, 0.3)'
+  } else if (isPlayable && isHovered) {
+    // Bright highlight when hovering over a playable card
+    borderStyle = '3px solid #44ff44'
+    boxShadow = '0 0 20px rgba(68, 255, 68, 0.9), 0 0 40px rgba(0, 255, 0, 0.5)'
   } else if (isPlayable) {
     // Green highlight for playable cards
     borderStyle = '2px solid #00ff00'
@@ -1686,7 +2242,12 @@ function GameCard({
   // Check if currently being dragged (blocker or hand card)
   const isBeingDragged = draggingBlockerId === card.id || draggingCardId === card.id
 
-  return (
+  // Container dimensions - expand width when tapped to prevent overlap
+  // Tapped cards rotate 90deg, so they need width = height to not overlap
+  const containerWidth = card.isTapped && battlefield ? height + 8 : width
+  const containerHeight = height
+
+  const cardElement = (
     <div
       data-card-id={card.id}
       onClick={handleClick}
@@ -1702,6 +2263,7 @@ function GameCard({
         cursor,
         border: borderStyle,
         transform: `${card.isTapped ? 'rotate(90deg)' : ''} ${isSelected && !isInCombatMode ? 'translateY(-8px)' : ''}`,
+        transformOrigin: 'center',
         boxShadow,
         opacity: isBeingDragged ? 0.6 : 1,
         userSelect: 'none',
@@ -1780,6 +2342,20 @@ function GameCard({
         </div>
       )}
 
+      {/* Counter badge for creatures with +1/+1 or -1/-1 counters */}
+      {battlefield && !faceDown && hasStatCounters(card) && (
+        <div style={{
+          ...styles.counterBadge,
+          fontSize: responsive.isMobile ? 9 : 11,
+          padding: responsive.isMobile ? '1px 4px' : '2px 6px',
+        }}>
+          <span style={styles.counterBadgeIcon}>⬡</span>
+          <span style={styles.counterBadgeText}>
+            {getCounterStatModifier(card) >= 0 ? '+' : ''}{getCounterStatModifier(card)}
+          </span>
+        </div>
+      )}
+
       {/* Keyword ability icons */}
       {battlefield && !faceDown && card.keywords.length > 0 && (
         <KeywordIcons keywords={card.keywords} size={responsive.isMobile ? 14 : 18} />
@@ -1820,6 +2396,24 @@ function GameCard({
       )}
     </div>
   )
+
+  // Wrap in container for tapped battlefield cards to prevent overlap
+  if (card.isTapped && battlefield) {
+    return (
+      <div style={{
+        width: containerWidth,
+        height: containerHeight,
+        display: 'flex',
+        alignItems: 'flex-end',
+        justifyContent: 'center',
+        transition: 'width 0.15s, height 0.15s',
+      }}>
+        {cardElement}
+      </div>
+    )
+  }
+
+  return cardElement
 }
 
 /**
@@ -1978,7 +2572,12 @@ function GraveyardTargetingOverlay({
         >
           {ownerIds.map((ownerId) => {
             const isActive = ownerId === currentOwnerId
-            const cardCount = cardsByOwner.get(ownerId)?.length ?? 0
+            const ownerCards = cardsByOwner.get(ownerId) ?? []
+            const cardCount = ownerCards.length
+            // Count how many cards are selected from this graveyard
+            const selectedFromThisGraveyard = ownerCards.filter((c) =>
+              targetingState.selectedTargets.includes(c.id)
+            ).length
             return (
               <button
                 key={ownerId}
@@ -1988,14 +2587,36 @@ function GraveyardTargetingOverlay({
                   fontSize: responsive.fontSize.normal,
                   backgroundColor: isActive ? '#4a5568' : 'transparent',
                   color: isActive ? 'white' : '#888',
-                  border: 'none',
+                  border: selectedFromThisGraveyard > 0 && !isActive ? '2px solid #fbbf24' : 'none',
                   borderRadius: 6,
                   cursor: 'pointer',
                   fontWeight: isActive ? 600 : 400,
                   transition: 'all 0.15s',
+                  position: 'relative',
                 }}
               >
                 {getPlayerLabel(ownerId)} ({cardCount})
+                {selectedFromThisGraveyard > 0 && (
+                  <span
+                    style={{
+                      position: 'absolute',
+                      top: -6,
+                      right: -6,
+                      backgroundColor: '#fbbf24',
+                      color: '#1a1a1a',
+                      borderRadius: '50%',
+                      width: 20,
+                      height: 20,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: 12,
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    {selectedFromThisGraveyard}
+                  </span>
+                )}
               </button>
             )
           })}
@@ -2441,6 +3062,32 @@ const styles: Record<string, React.CSSProperties> = {
     boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
     zIndex: 100,
   },
+  combatButtonContainer: {
+    position: 'fixed',
+    bottom: 16,
+    right: 16,
+    display: 'flex',
+    gap: 8,
+    zIndex: 100,
+  },
+  combatButton: {
+    padding: '12px 24px',
+    fontWeight: 600,
+    color: 'white',
+    border: 'none',
+    borderRadius: 8,
+    cursor: 'pointer',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+    fontSize: 14,
+  },
+  combatButtonPrimary: {
+    backgroundColor: '#c62828',
+    border: '2px solid #ef5350',
+  },
+  combatButtonSecondary: {
+    backgroundColor: '#424242',
+    border: '2px solid #757575',
+  },
   playerArea: {
     display: 'flex',
     flexDirection: 'column',
@@ -2450,7 +3097,7 @@ const styles: Record<string, React.CSSProperties> = {
     flexGrow: 0,
     minHeight: 0,
     maxHeight: '46vh',
-    marginTop: 8,
+    marginTop: 'auto',
     paddingBottom: 0,
   },
   playerRowWithZones: {
@@ -2568,6 +3215,59 @@ const styles: Record<string, React.CSSProperties> = {
     overflowY: 'auto',
     justifyContent: 'center',
   } as React.CSSProperties,
+  exilePile: {
+    position: 'relative',
+    overflow: 'hidden',
+    boxShadow: '0 2px 8px rgba(124, 58, 237, 0.4)',
+    backgroundColor: '#1a1a2e',
+    border: '1px solid rgba(124, 58, 237, 0.5)',
+  },
+  exileOverlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(20, 0, 40, 0.9)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 2000,
+  } as React.CSSProperties,
+  exileBrowserContent: {
+    maxWidth: '90vw',
+    maxHeight: '80vh',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 16,
+  } as React.CSSProperties,
+  exileBrowserHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  } as React.CSSProperties,
+  exileBrowserTitle: {
+    color: '#c4b5fd',
+    margin: 0,
+    fontSize: 18,
+    fontWeight: 600,
+  } as React.CSSProperties,
+  exileCloseButton: {
+    background: 'none',
+    border: '1px solid #7c3aed',
+    color: '#c4b5fd',
+    fontSize: 18,
+    cursor: 'pointer',
+    padding: '4px 10px',
+    borderRadius: 4,
+  } as React.CSSProperties,
+  exileCardGrid: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: 10,
+    overflowY: 'auto',
+    justifyContent: 'center',
+  } as React.CSSProperties,
   playerInfo: {
     display: 'flex',
     alignItems: 'center',
@@ -2575,6 +3275,18 @@ const styles: Record<string, React.CSSProperties> = {
   },
   playerName: {
     color: '#888',
+  },
+  spectatorNameLabel: {
+    color: '#e0e0e0',
+    fontSize: 14,
+    fontWeight: 600,
+    backgroundColor: 'rgba(20, 20, 30, 0.9)',
+    padding: '8px 16px',
+    borderRadius: 6,
+    border: '1px solid rgba(255, 255, 255, 0.15)',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.4)',
+    letterSpacing: '0.02em',
+    zIndex: 100,
   },
   lifeDisplay: {
     borderRadius: '50%',
@@ -2887,7 +3599,7 @@ const styles: Record<string, React.CSSProperties> = {
     position: 'fixed',
     top: 20,
     left: 20,
-    zIndex: 1500,
+    zIndex: 2500,
     pointerEvents: 'none',
   } as React.CSSProperties,
   cardPreviewContainer: {
@@ -2904,14 +3616,6 @@ const styles: Record<string, React.CSSProperties> = {
     width: '100%',
     height: '100%',
     objectFit: 'cover',
-  } as React.CSSProperties,
-  cardPreviewStats: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '8px 16px',
-    borderRadius: 8,
-    gap: 2,
   } as React.CSSProperties,
   cardPreviewKeywords: {
     display: 'flex',
@@ -3015,6 +3719,67 @@ const styles: Record<string, React.CSSProperties> = {
     marginBottom: 4,
     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
     pointerEvents: 'none',
+  } as React.CSSProperties,
+  // Counter badge styles (for +1/+1 counters on battlefield cards)
+  counterBadge: {
+    position: 'absolute',
+    bottom: 22,
+    right: 4,
+    backgroundColor: 'rgba(30, 80, 140, 0.95)',
+    borderRadius: 4,
+    border: '1px solid rgba(100, 180, 255, 0.5)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 2,
+    color: '#66ccff',
+    fontWeight: 700,
+    zIndex: 5,
+  } as React.CSSProperties,
+  counterBadgeIcon: {
+    fontSize: 8,
+    opacity: 0.9,
+  } as React.CSSProperties,
+  counterBadgeText: {
+    fontWeight: 700,
+  } as React.CSSProperties,
+  // Enhanced preview stats box styles
+  cardPreviewStatsBox: {
+    display: 'flex',
+    flexDirection: 'column',
+    backgroundColor: 'rgba(0, 0, 0, 0.92)',
+    borderRadius: 8,
+    padding: '8px 12px',
+    gap: 6,
+    border: '1px solid rgba(255, 255, 255, 0.15)',
+  } as React.CSSProperties,
+  cardPreviewStatsMain: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 2,
+  } as React.CSSProperties,
+  cardPreviewStatsBreakdown: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 3,
+    borderTop: '1px solid rgba(255, 255, 255, 0.15)',
+    paddingTop: 6,
+  } as React.CSSProperties,
+  cardPreviewStatsRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    fontSize: 12,
+  } as React.CSSProperties,
+  cardPreviewStatsLabel: {
+    color: '#888888',
+    display: 'flex',
+    alignItems: 'center',
+  } as React.CSSProperties,
+  cardPreviewStatsValue: {
+    color: '#cccccc',
+    fontWeight: 600,
+    fontFamily: 'monospace',
   } as React.CSSProperties,
 }
 

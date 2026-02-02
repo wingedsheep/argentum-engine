@@ -204,6 +204,24 @@ sealed interface CreatureTargetFilter {
     data class NotColor(val color: Color) : CreatureTargetFilter {
         override val description: String = "non${color.displayName.lowercase()}"
     }
+
+    /**
+     * Creature with mana value at most a specific amount.
+     * Used for cards like Smother ("target creature with mana value 3 or less")
+     */
+    @Serializable
+    data class WithManaValueAtMost(val maxManaValue: Int) : CreatureTargetFilter {
+        override val description: String = "creature with mana value $maxManaValue or less"
+    }
+
+    /**
+     * Creature with mana value at least a specific amount.
+     * Used for cards that target larger creatures.
+     */
+    @Serializable
+    data class WithManaValueAtLeast(val minManaValue: Int) : CreatureTargetFilter {
+        override val description: String = "creature with mana value $minManaValue or greater"
+    }
 }
 
 // =============================================================================

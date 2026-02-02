@@ -2,6 +2,7 @@ package com.wingedsheep.gameserver.protocol
 
 import com.wingedsheep.gameserver.dto.ClientEvent
 import com.wingedsheep.gameserver.dto.ClientGameState
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.engine.core.GameAction
 import com.wingedsheep.engine.core.PendingDecision
@@ -179,8 +180,8 @@ sealed interface ServerMessage {
     @SerialName("sealedGameCreated")
     data class SealedGameCreated(
         val sessionId: String,
-        val setCode: String,
-        val setName: String
+        val setCodes: List<String>,
+        val setNames: List<String>
     ) : ServerMessage
 
     /**
@@ -190,10 +191,10 @@ sealed interface ServerMessage {
     @Serializable
     @SerialName("sealedPoolGenerated")
     data class SealedPoolGenerated(
-        /** Set code (e.g., "POR") */
-        val setCode: String,
-        /** Set name (e.g., "Portal") */
-        val setName: String,
+        /** Set codes (e.g., ["POR", "ONS"]) */
+        val setCodes: List<String>,
+        /** Set names (e.g., ["Portal", "Onslaught"]) */
+        val setNames: List<String>,
         /** 90 cards from 6 boosters */
         val cardPool: List<SealedCardInfo>,
         /** 5 basic land types available for deck building */
@@ -238,12 +239,22 @@ sealed interface ServerMessage {
     )
 
     /**
+     * An available card set for selection in the lobby.
+     */
+    @Serializable
+    data class AvailableSet(
+        val code: String,
+        val name: String
+    )
+
+    /**
      * Lobby settings.
      */
     @Serializable
     data class LobbySettings(
-        val setCode: String,
-        val setName: String,
+        val setCodes: List<String>,
+        val setNames: List<String>,
+        val availableSets: List<AvailableSet> = emptyList(),  // For UI dropdown
         val format: String = "SEALED",      // "SEALED" or "DRAFT"
         val boosterCount: Int,
         val maxPlayers: Int,
@@ -353,7 +364,13 @@ sealed interface ServerMessage {
         val losses: Int,
         val draws: Int,
         val points: Int,
-        val isConnected: Boolean = true
+        val isConnected: Boolean = true,
+        val gamesWon: Int = 0,
+        val gamesLost: Int = 0,
+        val lifeDifferential: Int = 0,
+        val rank: Int = 0,
+        /** Tiebreaker reason: "HEAD_TO_HEAD", "H2H_GAMES", "LIFE_DIFF", "TIED", or null if no tie */
+        val tiebreakerReason: String? = null
     )
 
     /**
@@ -363,6 +380,8 @@ sealed interface ServerMessage {
     data class MatchResultInfo(
         val player1Name: String,
         val player2Name: String,
+        val player1Id: String,
+        val player2Id: String?,
         val winnerId: String?,
         val isDraw: Boolean = false,
         val isBye: Boolean = false
@@ -483,6 +502,17 @@ sealed interface ServerMessage {
     @SerialName("spectatorStateUpdate")
     data class SpectatorStateUpdate(
         val gameSessionId: String,
+        /** Full ClientGameState for reusing GameBoard component (both hands masked) */
+        val gameState: ClientGameState? = null,
+        /** Player 1's entity ID */
+        val player1Id: String? = null,
+        /** Player 2's entity ID */
+        val player2Id: String? = null,
+        /** Player 1 name (for display when gameState not yet loaded) */
+        val player1Name: String? = null,
+        /** Player 2 name (for display when gameState not yet loaded) */
+        val player2Name: String? = null,
+        // Legacy fields for backward compatibility
         val player1: SpectatorPlayerState,
         val player2: SpectatorPlayerState,
         val currentPhase: String,
@@ -640,7 +670,24 @@ data class LegalActionInfo(
     /** Whether this is a mana ability (doesn't highlight card as playable) */
     val isManaAbility: Boolean = false,
     /** Additional cost info - sacrifice targets, etc. */
-    val additionalCostInfo: AdditionalCostInfo? = null
+    val additionalCostInfo: AdditionalCostInfo? = null,
+    /** Whether this spell has Convoke */
+    val hasConvoke: Boolean = false,
+    /** Creatures that can be tapped to help pay for Convoke */
+    val validConvokeCreatures: List<ConvokeCreatureInfo>? = null,
+    /** The spell's mana cost for Convoke UI display */
+    val manaCostString: String? = null
+)
+
+/**
+ * Information about a creature that can be tapped for Convoke.
+ */
+@Serializable
+data class ConvokeCreatureInfo(
+    val entityId: EntityId,
+    val name: String,
+    /** Colors this creature can pay (based on its colors) */
+    val colors: Set<Color>
 )
 
 /**

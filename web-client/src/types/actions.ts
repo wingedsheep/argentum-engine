@@ -11,7 +11,9 @@ export type GameAction =
   | PassPriorityAction
   | CastSpellAction
   | ActivateAbilityAction
+  | CycleCardAction
   | PlayLandAction
+  | TurnFaceUpAction
   | DeclareAttackersAction
   | DeclareBlockersAction
   | OrderBlockersAction
@@ -63,6 +65,8 @@ export interface CastSpellAction {
   readonly xValue?: number | null
   readonly paymentStrategy?: PaymentStrategy
   readonly additionalCostPayment?: AdditionalCostPayment
+  /** Whether to cast this card face-down (for Morph creatures) */
+  readonly castFaceDown?: boolean
 }
 
 export type PaymentStrategy =
@@ -80,6 +84,27 @@ export interface ActivateAbilityAction {
   readonly sourceId: EntityId
   readonly abilityId: string
   readonly targets?: readonly ChosenTarget[]
+}
+
+// =============================================================================
+// Cycling Actions
+// =============================================================================
+
+export interface CycleCardAction {
+  readonly type: 'CycleCard'
+  readonly playerId: EntityId
+  readonly cardId: EntityId
+}
+
+// =============================================================================
+// Morph Actions
+// =============================================================================
+
+export interface TurnFaceUpAction {
+  readonly type: 'TurnFaceUp'
+  readonly playerId: EntityId
+  readonly permanentId: EntityId
+  readonly paymentStrategy?: PaymentStrategy
 }
 
 // =============================================================================
@@ -211,8 +236,12 @@ export function getActionSubject(action: GameAction): EntityId | null {
       return action.cardId
     case 'CastSpell':
       return action.cardId
+    case 'CycleCard':
+      return action.cardId
     case 'ActivateAbility':
       return action.sourceId
+    case 'TurnFaceUp':
+      return action.permanentId
     default:
       return null
   }

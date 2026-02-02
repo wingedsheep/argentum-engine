@@ -7,6 +7,7 @@ import com.wingedsheep.engine.core.DamageDealtEvent
 import com.wingedsheep.engine.core.LifeChangedEvent
 import com.wingedsheep.engine.core.SpellCastEvent
 import com.wingedsheep.engine.core.TappedEvent
+import com.wingedsheep.engine.core.TurnFaceUpEvent
 import com.wingedsheep.engine.core.UntappedEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
@@ -253,6 +254,33 @@ class TriggerDetector(
                 }
             }
 
+            is OnOtherCreatureWithSubtypeEnters -> {
+                if (event !is ZoneChangeEvent ||
+                    event.toZone != com.wingedsheep.sdk.core.ZoneType.BATTLEFIELD ||
+                    event.entityId == sourceId) {
+                    false
+                } else {
+                    // Check if entering creature has the required subtype
+                    val enteringCard = state.getEntity(event.entityId)?.get<CardComponent>()
+                    val hasSubtype = enteringCard?.typeLine?.hasSubtype(trigger.subtype) == true
+                    val controllerMatches = !trigger.youControlOnly || event.ownerId == controllerId
+                    hasSubtype && controllerMatches
+                }
+            }
+
+            is OnCreatureWithSubtypeEnters -> {
+                if (event !is ZoneChangeEvent ||
+                    event.toZone != com.wingedsheep.sdk.core.ZoneType.BATTLEFIELD) {
+                    false
+                } else {
+                    // Check if entering creature has the required subtype
+                    val enteringCard = state.getEntity(event.entityId)?.get<CardComponent>()
+                    val hasSubtype = enteringCard?.typeLine?.hasSubtype(trigger.subtype) == true
+                    val controllerMatches = !trigger.youControlOnly || event.ownerId == controllerId
+                    hasSubtype && controllerMatches
+                }
+            }
+
             is OnDraw -> {
                 event is CardsDrawnEvent &&
                     (!trigger.controllerOnly || event.playerId == controllerId)
@@ -307,6 +335,11 @@ class TriggerDetector(
             is OnTransform -> {
                 // Transform not yet implemented in new engine
                 false
+            }
+
+            is OnTurnFaceUp -> {
+                event is TurnFaceUpEvent &&
+                    (!trigger.selfOnly || event.entityId == sourceId)
             }
         }
     }
@@ -432,6 +465,10 @@ data class TriggerContext(
                 is TappedEvent -> TriggerContext(triggeringEntityId = event.entityId)
                 is UntappedEvent -> TriggerContext(triggeringEntityId = event.entityId)
                 is LifeChangedEvent -> TriggerContext(triggeringPlayerId = event.playerId)
+                is TurnFaceUpEvent -> TriggerContext(
+                    triggeringEntityId = event.entityId,
+                    triggeringPlayerId = event.controllerId
+                )
                 else -> TriggerContext()
             }
         }

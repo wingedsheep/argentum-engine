@@ -75,8 +75,9 @@ sealed interface PickResult {
  */
 class TournamentLobby(
     val lobbyId: String = UUID.randomUUID().toString(),
-    var setCode: String,
-    var setName: String,
+    var setCodes: List<String>,
+    var setNames: List<String>,
+    private val boosterGenerator: BoosterGenerator,
     var format: TournamentFormat = TournamentFormat.SEALED,
     var boosterCount: Int = 6,        // Sealed: boosters in pool, Draft: packs per player (usually 3)
     var maxPlayers: Int = 8,
@@ -84,17 +85,23 @@ class TournamentLobby(
     var picksPerRound: Int = 1,       // Draft only: cards to pick each round (1 or 2)
     var gamesPerMatch: Int = 1
 ) {
-    private val boosterGenerator = BoosterGenerator()
 
     /**
-     * Update the set for this lobby. Can only be changed while waiting for players.
-     * Returns true if the set was valid and changed, false otherwise.
+     * Update the sets for this lobby. Can only be changed while waiting for players.
+     * Returns true if all sets were valid and changed, false otherwise.
+     * Note: Empty list is NOT allowed via this method - handled by LobbyHandler.
      */
-    fun updateSet(newSetCode: String): Boolean {
+    fun updateSets(newSetCodes: List<String>): Boolean {
         if (state != LobbyState.WAITING_FOR_PLAYERS) return false
-        val setConfig = BoosterGenerator.getSetConfig(newSetCode) ?: return false
-        setCode = setConfig.setCode
-        setName = setConfig.setName
+        if (newSetCodes.isEmpty()) return false
+
+        // Validate all set codes first
+        val configs = newSetCodes.map { code ->
+            boosterGenerator.getSetConfig(code) ?: return false
+        }
+
+        setCodes = configs.map { it.setCode }
+        setNames = configs.map { it.setName }
         return true
     }
 
@@ -112,7 +119,7 @@ class TournamentLobby(
 
     /** Basic lands available for deck building */
     val basicLands: Map<String, CardDefinition> by lazy {
-        boosterGenerator.getBasicLands(setCode)
+        boosterGenerator.getBasicLands(setCodes)
     }
 
     /** Players who are ready for the next round */
@@ -203,9 +210,13 @@ class TournamentLobby(
         if (players.size < 2) return false
         if (format != TournamentFormat.SEALED) return false
 
-        // Generate unique pools for each player
+        // Generate a shared distribution seed so all players get the same
+        // set distribution (e.g., all get 3 Portal + 2 Onslaught boosters)
+        val distributionSeed = System.currentTimeMillis()
+
+        // Generate unique pools for each player (card contents differ, but set distribution is the same)
         players.forEach { (playerId, playerState) ->
-            val pool = boosterGenerator.generateSealedPool(setCode, boosterCount)
+            val pool = boosterGenerator.generateSealedPool(setCodes, boosterCount, distributionSeed)
             players[playerId] = playerState.copy(cardPool = pool)
         }
 
@@ -242,7 +253,7 @@ class TournamentLobby(
      */
     private fun distributeNewPacks() {
         players.forEach { (playerId, playerState) ->
-            val newPack = boosterGenerator.generateBooster(setCode)
+            val newPack = boosterGenerator.generateBooster(setCodes)
             playerState.currentPack = newPack
             playerState.hasPicked = false
         }
@@ -494,13 +505,18 @@ class TournamentLobby(
             )
         }
 
+        val availableSets = boosterGenerator.availableSets.values.map { config ->
+            ServerMessage.AvailableSet(code = config.setCode, name = config.setName)
+        }
+
         return ServerMessage.LobbyUpdate(
             lobbyId = lobbyId,
             state = state.name,
             players = playerInfos,
             settings = ServerMessage.LobbySettings(
-                setCode = setCode,
-                setName = setName,
+                setCodes = setCodes,
+                setNames = setNames,
+                availableSets = availableSets,
                 format = format.name,
                 boosterCount = boosterCount,
                 maxPlayers = maxPlayers,

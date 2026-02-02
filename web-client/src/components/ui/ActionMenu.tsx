@@ -86,17 +86,41 @@ function ActionButton({
   onClick: () => void
 }) {
   const getActionColor = () => {
+    // Handle morph-specific action types first (these have actionType different from action.type)
+    if (action.actionType === 'CastFaceDown') {
+      return '#555599' // Purple-blue for morph face-down
+    }
+    if (action.actionType === 'TurnFaceUp') {
+      return '#996633' // Brown-gold for turning face-up
+    }
+
     switch (action.action.type) {
       case 'PlayLand':
         return '#00aa00'
       case 'CastSpell':
         return '#0066cc'
+      case 'CycleCard':
+        return '#8855aa' // Purple for cycling
       case 'ActivateAbility':
         return '#886600'
+      case 'TurnFaceUp':
+        return '#996633' // Brown-gold for turning face-up
       case 'PassPriority':
         return '#888888'
       default:
         return '#666666'
+    }
+  }
+
+  // Get user-friendly label for action type
+  const getActionLabel = () => {
+    switch (action.actionType) {
+      case 'CastFaceDown':
+        return 'Cast Face-Down ({3})'
+      case 'TurnFaceUp':
+        return `Turn Face-Up (${action.manaCostString ?? ''})`
+      default:
+        return action.description
     }
   }
 
@@ -120,9 +144,8 @@ function ActionButton({
         e.currentTarget.style.filter = 'brightness(1)'
       }}
     >
-      <div style={{ fontWeight: 500 }}>{action.actionType}</div>
-      <div style={{ fontSize: 12, opacity: 0.8, display: 'flex', alignItems: 'center' }}>
-        <AbilityText text={action.description} size={14} />
+      <div style={{ fontWeight: 500, display: 'flex', alignItems: 'center' }}>
+        <AbilityText text={getActionLabel()} size={14} />
       </div>
     </button>
   )
@@ -138,17 +161,24 @@ function PassPriorityButton({ onClick }: { onClick: () => void }) {
   const hasStackItems = stackCards.length > 0
   const combatState = useGameStore((state) => state.combatState)
   const attackWithAll = useGameStore((state) => state.attackWithAll)
+  const gameState = useGameStore((state) => state.gameState)
+  const playerId = useGameStore((state) => state.playerId)
 
   // Check if we can attack with all
   const canAttackWithAll =
     combatState?.mode === 'declareAttackers' && combatState.validCreatures.length > 0
+
+  // Check if it's opponent's end step
+  const isOpponentsTurn = gameState && playerId && gameState.activePlayerId !== playerId
+  const isOpponentsEndStep = isOpponentsTurn && gameState?.currentStep === 'END'
 
   // Different styling based on whether we're resolving stack or passing phase
   const backgroundColor = hasStackItems ? '#c76e00' : '#444'
   const hoverBackgroundColor = hasStackItems ? '#e08000' : '#555'
   const borderColor = hasStackItems ? '#e08000' : '#666'
   const hoverBorderColor = hasStackItems ? '#ff9500' : '#888'
-  const label = hasStackItems ? 'Resolve' : 'Pass'
+  // Label: "Resolve" for stack items, "To my turn" at opponent's end step, "Pass" otherwise
+  const label = hasStackItems ? 'Resolve' : isOpponentsEndStep ? 'To my turn' : 'Pass'
   const icon = hasStackItems ? '✓' : '⏭️'
 
   return (

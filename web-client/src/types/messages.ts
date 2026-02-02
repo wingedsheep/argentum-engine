@@ -314,6 +314,22 @@ export interface LegalActionInfo {
   readonly isManaAbility?: boolean
   /** Additional cost info (sacrifice, etc.) */
   readonly additionalCostInfo?: AdditionalCostInfo
+  /** Whether this spell has Convoke */
+  readonly hasConvoke?: boolean
+  /** Creatures that can be tapped to help pay for Convoke */
+  readonly validConvokeCreatures?: readonly ConvokeCreatureInfo[]
+  /** The spell's mana cost string for Convoke UI display */
+  readonly manaCostString?: string
+}
+
+/**
+ * Information about a creature that can be tapped for Convoke.
+ */
+export interface ConvokeCreatureInfo {
+  readonly entityId: EntityId
+  readonly name: string
+  /** Colors this creature can pay (based on its colors) */
+  readonly colors: readonly string[]
 }
 
 /**
@@ -470,9 +486,15 @@ export interface LobbyPlayerInfo {
   readonly deckSubmitted: boolean
 }
 
+export interface AvailableSet {
+  readonly code: string
+  readonly name: string
+}
+
 export interface LobbySettings {
-  readonly setCode: string
-  readonly setName: string
+  readonly setCodes: readonly string[]
+  readonly setNames: readonly string[]
+  readonly availableSets: readonly AvailableSet[]
   readonly format: 'SEALED' | 'DRAFT'
   readonly boosterCount: number
   readonly maxPlayers: number
@@ -568,11 +590,19 @@ export interface PlayerStandingInfo {
   readonly draws: number
   readonly points: number
   readonly isConnected: boolean
+  readonly gamesWon?: number
+  readonly gamesLost?: number
+  readonly lifeDifferential?: number
+  readonly rank?: number
+  /** Tiebreaker reason: "HEAD_TO_HEAD", "H2H_GAMES", "LIFE_DIFF", "TIED", or null if no tie */
+  readonly tiebreakerReason?: string | null
 }
 
 export interface MatchResultInfo {
   readonly player1Name: string
   readonly player2Name: string
+  readonly player1Id: string
+  readonly player2Id: string | null
   readonly winnerId: string | null
   readonly isDraw: boolean
   readonly isBye: boolean
@@ -695,6 +725,17 @@ export interface SpectatorPlayerState {
 export interface SpectatorStateUpdateMessage {
   readonly type: 'spectatorStateUpdate'
   readonly gameSessionId: string
+  /** Full ClientGameState for reusing GameBoard component (both hands masked) */
+  readonly gameState?: ClientGameState | null
+  /** Player 1's entity ID */
+  readonly player1Id?: string | null
+  /** Player 2's entity ID */
+  readonly player2Id?: string | null
+  /** Player 1 name */
+  readonly player1Name?: string | null
+  /** Player 2 name */
+  readonly player2Name?: string | null
+  // Legacy fields for backward compatibility
   readonly player1: SpectatorPlayerState
   readonly player2: SpectatorPlayerState
   readonly currentPhase: string
@@ -992,7 +1033,7 @@ export function createSubmitSealedDeckMessage(deckList: Record<string, number>):
 
 export interface CreateTournamentLobbyMessage {
   readonly type: 'createTournamentLobby'
-  readonly setCode: string
+  readonly setCodes: readonly string[]
   readonly format: 'SEALED' | 'DRAFT'
   readonly boosterCount: number
   readonly maxPlayers: number
@@ -1027,7 +1068,7 @@ export interface UnsubmitDeckMessage {
 
 export interface UpdateLobbySettingsMessage {
   readonly type: 'updateLobbySettings'
-  readonly setCode?: string
+  readonly setCodes?: readonly string[]
   readonly format?: 'SEALED' | 'DRAFT'
   readonly boosterCount?: number
   readonly maxPlayers?: number
@@ -1065,13 +1106,13 @@ export interface UpdateBlockerAssignmentsMessage {
 
 // Lobby Message Factories
 export function createCreateTournamentLobbyMessage(
-  setCode: string,
+  setCodes: readonly string[],
   format: 'SEALED' | 'DRAFT' = 'SEALED',
   boosterCount: number = 6,
   maxPlayers: number = 8,
   pickTimeSeconds: number = 45
 ): CreateTournamentLobbyMessage {
-  return { type: 'createTournamentLobby', setCode, format, boosterCount, maxPlayers, pickTimeSeconds }
+  return { type: 'createTournamentLobby', setCodes, format, boosterCount, maxPlayers, pickTimeSeconds }
 }
 
 // Backwards compatibility alias
@@ -1080,7 +1121,7 @@ export function createCreateSealedLobbyMessage(
   boosterCount: number = 6,
   maxPlayers: number = 8
 ): CreateTournamentLobbyMessage {
-  return createCreateTournamentLobbyMessage(setCode, 'SEALED', boosterCount, maxPlayers, 45)
+  return createCreateTournamentLobbyMessage([setCode], 'SEALED', boosterCount, maxPlayers, 45)
 }
 
 export function createJoinLobbyMessage(lobbyId: string): JoinLobbyMessage {
@@ -1114,7 +1155,7 @@ export function createUnsubmitDeckMessage(): UnsubmitDeckMessage {
 
 export function createUpdateLobbySettingsMessage(
   settings: {
-    setCode?: string
+    setCodes?: readonly string[]
     format?: 'SEALED' | 'DRAFT'
     boosterCount?: number
     maxPlayers?: number

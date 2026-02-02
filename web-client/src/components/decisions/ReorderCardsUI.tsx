@@ -22,6 +22,7 @@ export function ReorderCardsUI({ decision, responsive }: ReorderCardsUIProps) {
   const [orderedCards, setOrderedCards] = useState<EntityId[]>([...decision.cards])
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
+  const [hoveredCardId, setHoveredCardId] = useState<EntityId | null>(null)
   const submitOrderedDecision = useGameStore((s) => s.submitOrderedDecision)
   const hoverCard = useGameStore((s) => s.hoverCard)
 
@@ -93,10 +94,12 @@ export function ReorderCardsUI({ decision, responsive }: ReorderCardsUIProps) {
   }
 
   const handleMouseEnter = useCallback((cardId: EntityId) => {
+    setHoveredCardId(cardId)
     hoverCard(cardId)
   }, [hoverCard])
 
   const handleMouseLeave = useCallback(() => {
+    setHoveredCardId(null)
     hoverCard(null)
   }, [hoverCard])
 
@@ -287,6 +290,11 @@ export function ReorderCardsUI({ decision, responsive }: ReorderCardsUIProps) {
       >
         Confirm Order
       </button>
+
+      {/* Card preview on hover */}
+      {hoveredCardId && !responsive.isMobile && decision.cardInfo[hoveredCardId] && (
+        <ReorderCardPreview cardInfo={decision.cardInfo[hoveredCardId]!} />
+      )}
     </div>
   )
 }
@@ -520,4 +528,47 @@ function getOrdinalSuffix(n: number): string {
   const s = ['th', 'st', 'nd', 'rd']
   const v = n % 100
   return s[(v - 20) % 10] ?? s[v] ?? s[0] ?? 'th'
+}
+
+/**
+ * Card preview overlay - shows enlarged card when hovering.
+ */
+function ReorderCardPreview({ cardInfo }: { cardInfo: SearchCardInfo }) {
+  const cardName = cardInfo.name || 'Unknown Card'
+  const cardImageUrl = getCardImageUrl(cardName, cardInfo.imageUri, 'large')
+
+  const previewWidth = 280
+  const previewHeight = Math.round(previewWidth * 1.4)
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        top: 20,
+        right: 20,
+        pointerEvents: 'none',
+        zIndex: 1001,
+      }}
+    >
+      <div
+        style={{
+          width: previewWidth,
+          height: previewHeight,
+          borderRadius: 12,
+          overflow: 'hidden',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6)',
+        }}
+      >
+        <img
+          src={cardImageUrl}
+          alt={cardName}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+          }}
+        />
+      </div>
+    </div>
+  )
 }

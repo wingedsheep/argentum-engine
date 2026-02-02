@@ -8,8 +8,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class PersistentTournamentLobby(
     val lobbyId: String,
-    val setCode: String,
-    val setName: String,
+    val setCodes: List<String> = emptyList(),
+    val setNames: List<String> = emptyList(),
     val format: String = "SEALED",  // TournamentFormat enum name
     val boosterCount: Int,
     val maxPlayers: Int,
@@ -36,7 +36,8 @@ data class PersistentLobbyPlayer(
     val cardPoolNames: List<String>,  // Card names only
     val currentPackNames: List<String>? = null,  // Draft only: current pack cards
     val hasPicked: Boolean = false,  // Draft only
-    val submittedDeck: Map<String, Int>?  // cardName -> count
+    val submittedDeck: Map<String, Int>?,  // cardName -> count
+    val currentSpectatingGameId: String? = null  // Game being spectated (for bye players)
 )
 
 /**
@@ -45,8 +46,8 @@ data class PersistentLobbyPlayer(
 @Serializable
 data class PersistentSealedSession(
     val sessionId: String,
-    val setCode: String,
-    val setName: String,
+    val setCodes: List<String>,
+    val setNames: List<String>,
     val state: String,  // SealedSessionState enum name
     val players: Map<String, PersistentSealedPlayer>  // playerId.value -> player state
 )

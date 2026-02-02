@@ -11,14 +11,28 @@ import type {
 import { ZoneType, zoneIdEquals } from '../types'
 
 /**
- * Select the game state.
+ * Select the game state (works for both normal play and spectating).
+ * Returns spectatingState.gameState when spectating, otherwise gameState.
  */
-export const selectGameState = (state: GameStore) => state.gameState
+export const selectGameState = (state: GameStore) =>
+  state.spectatingState?.gameState ?? state.gameState
+
+/**
+ * Select the raw player game state (not spectator).
+ */
+export const selectPlayerGameState = (state: GameStore) => state.gameState
+
+/**
+ * Check if we're currently spectating.
+ */
+export const selectIsSpectating = (state: GameStore) => state.spectatingState !== null
 
 /**
  * Select the viewing player ID.
+ * In spectator mode, returns player1Id as the "viewing" player (bottom of screen).
  */
-export const selectViewingPlayerId = (state: GameStore) => state.playerId
+export const selectViewingPlayerId = (state: GameStore) =>
+  (state.spectatingState?.player1Id as EntityId | null) ?? state.playerId
 
 /**
  * Select all legal actions.
@@ -66,6 +80,25 @@ export const selectHasPriority = (state: GameStore): boolean => {
   const { gameState, playerId } = state
   if (!gameState || !playerId) return false
   return gameState.priorityPlayerId === playerId
+}
+
+/**
+ * Priority mode for visual indication.
+ * - ownTurn: Player has priority on their own turn (proactive)
+ * - responding: Player has priority on opponent's turn (reactive)
+ * - waiting: Player does not have priority
+ */
+export type PriorityMode = 'ownTurn' | 'responding' | 'waiting'
+
+/**
+ * Select the current priority mode for visual styling.
+ */
+export const selectPriorityMode = (state: GameStore): PriorityMode => {
+  const isMyTurn = selectIsMyTurn(state)
+  const hasPriority = selectHasPriority(state)
+  if (!hasPriority) return 'waiting'
+  if (isMyTurn) return 'ownTurn'
+  return 'responding'
 }
 
 /**

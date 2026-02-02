@@ -2,12 +2,15 @@ package com.wingedsheep.engine.mechanics.layers
 
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
+import kotlinx.serialization.Serializable
 
 /**
  * Projects the game state by applying continuous effects in layer order (Rule 613).
@@ -43,14 +46,26 @@ class StateProjector {
             val container = state.getEntity(entityId) ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue
 
-            projectedValues[entityId] = MutableProjectedValues(
-                power = cardComponent.baseStats?.basePower,
-                toughness = cardComponent.baseStats?.baseToughness,
-                keywords = cardComponent.baseKeywords.map { it.name }.toMutableSet(),
-                colors = cardComponent.colors.map { it.name }.toMutableSet(),
-                types = extractTypes(cardComponent),
-                controllerId = container.get<ControllerComponent>()?.playerId
-            )
+            // Face-down creatures are 2/2 colorless creatures with no name, types, or abilities
+            if (container.has<FaceDownComponent>()) {
+                projectedValues[entityId] = MutableProjectedValues(
+                    power = 2,
+                    toughness = 2,
+                    keywords = mutableSetOf(),  // No keywords
+                    colors = mutableSetOf(),     // Colorless
+                    types = mutableSetOf("CREATURE"),  // Just creature type
+                    controllerId = container.get<ControllerComponent>()?.playerId
+                )
+            } else {
+                projectedValues[entityId] = MutableProjectedValues(
+                    power = cardComponent.baseStats?.basePower,
+                    toughness = cardComponent.baseStats?.baseToughness,
+                    keywords = cardComponent.baseKeywords.map { it.name }.toMutableSet(),
+                    colors = cardComponent.colors.map { it.name }.toMutableSet(),
+                    types = extractTypes(cardComponent),
+                    controllerId = container.get<ControllerComponent>()?.playerId
+                )
+            }
         }
 
         // Collect all active continuous effects
@@ -96,6 +111,28 @@ class StateProjector {
     fun getProjectedToughness(state: GameState, entityId: EntityId): Int {
         val projected = project(state)
         return projected.getToughness(entityId) ?: 0
+    }
+
+    /**
+     * Get the projected keywords of an entity.
+     */
+    fun getProjectedKeywords(state: GameState, entityId: EntityId): Set<Keyword> {
+        val projected = project(state)
+        return projected.getKeywords(entityId).mapNotNull { keywordName ->
+            try {
+                Keyword.valueOf(keywordName)
+            } catch (e: IllegalArgumentException) {
+                null
+            }
+        }.toSet()
+    }
+
+    /**
+     * Check if an entity has a specific keyword after applying continuous effects.
+     */
+    fun hasProjectedKeyword(state: GameState, entityId: EntityId, keyword: Keyword): Boolean {
+        val projected = project(state)
+        return projected.hasKeyword(entityId, keyword)
     }
 
     /**
@@ -209,6 +246,35 @@ class StateProjector {
                 state.getBattlefield().filter { entityId ->
                     val card = state.getEntity(entityId)?.get<CardComponent>() ?: return@filter false
                     card.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(filter.subtype))
+                }.toSet()
+            }
+            is AffectsFilter.OtherTappedCreaturesYouControl -> {
+                val controller = state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
+                    ?: return emptySet()
+                state.getBattlefield().filter { entityId ->
+                    if (entityId == sourceId) return@filter false // Exclude self
+                    val container = state.getEntity(entityId) ?: return@filter false
+                    val card = container.get<CardComponent>() ?: return@filter false
+                    val entityController = container.get<ControllerComponent>()?.playerId
+                    val isTapped = container.has<TappedComponent>()
+                    card.typeLine.isCreature && entityController == controller && isTapped
+                }.toSet()
+            }
+            is AffectsFilter.OtherCreaturesYouControl -> {
+                val controller = state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
+                    ?: return emptySet()
+                state.getBattlefield().filter { entityId ->
+                    if (entityId == sourceId) return@filter false // Exclude self
+                    val container = state.getEntity(entityId) ?: return@filter false
+                    val card = container.get<CardComponent>() ?: return@filter false
+                    val entityController = container.get<ControllerComponent>()?.playerId
+                    card.typeLine.isCreature && entityController == controller
+                }.toSet()
+            }
+            is AffectsFilter.AllOtherCreatures -> {
+                state.getBattlefield().filter { entityId ->
+                    if (entityId == sourceId) return@filter false // Exclude self
+                    state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.isCreature == true
                 }.toSet()
             }
         }
@@ -398,6 +464,7 @@ class StateProjector {
 /**
  * Component that stores continuous effects generated by a permanent.
  */
+@Serializable
 data class ContinuousEffectSourceComponent(
     val effects: List<ContinuousEffectData>
 ) : com.wingedsheep.engine.state.Component
@@ -405,6 +472,7 @@ data class ContinuousEffectSourceComponent(
 /**
  * Data for a single continuous effect.
  */
+@Serializable
 data class ContinuousEffectData(
     val layer: Layer,
     val sublayer: Sublayer? = null,
@@ -415,18 +483,46 @@ data class ContinuousEffectData(
 /**
  * Filter for determining which entities are affected.
  */
+@Serializable
 sealed interface AffectsFilter {
+    @Serializable
     data object Self : AffectsFilter
+    @Serializable
     data object AllCreatures : AffectsFilter
+    @Serializable
     data object AllCreaturesYouControl : AffectsFilter
+    @Serializable
     data object AllCreaturesOpponentsControl : AffectsFilter
+    @Serializable
     data class SpecificEntities(val entityIds: Set<EntityId>) : AffectsFilter
+    @Serializable
     data class WithSubtype(val subtype: String) : AffectsFilter
+
+    /**
+     * Other tapped creatures you control (excludes the source permanent).
+     * Used for effects like "Other tapped creatures you control have indestructible."
+     */
+    @Serializable
+    data object OtherTappedCreaturesYouControl : AffectsFilter
+
+    /**
+     * Other creatures you control (excludes the source permanent).
+     * Used for lord effects like "Other creatures you control get +1/+1."
+     */
+    @Serializable
+    data object OtherCreaturesYouControl : AffectsFilter
+
+    /**
+     * All other creatures (excludes the source permanent).
+     */
+    @Serializable
+    data object AllOtherCreatures : AffectsFilter
 }
 
 /**
  * Represents a continuous effect that modifies the game state.
  */
+@Serializable
 data class ContinuousEffect(
     val sourceId: EntityId,
     val layer: Layer,
@@ -439,6 +535,7 @@ data class ContinuousEffect(
 /**
  * The layers in which continuous effects are applied (Rule 613).
  */
+@Serializable
 enum class Layer {
     COPY,           // Layer 1
     CONTROL,        // Layer 2
@@ -452,6 +549,7 @@ enum class Layer {
 /**
  * Sublayers for layer 7 (power/toughness).
  */
+@Serializable
 enum class Sublayer {
     CHARACTERISTIC_DEFINING,  // 7a
     SET_VALUES,               // 7b
@@ -463,19 +561,31 @@ enum class Sublayer {
 /**
  * Types of modifications that can be applied.
  */
+@Serializable
 sealed interface Modification {
+    @Serializable
     data class SetPowerToughness(val power: Int, val toughness: Int) : Modification
+    @Serializable
     data class ModifyPowerToughness(val powerMod: Int, val toughnessMod: Int) : Modification
+    @Serializable
     data class SwitchPowerToughness(val targetId: EntityId) : Modification
+    @Serializable
     data class GrantKeyword(val keyword: String) : Modification
+    @Serializable
     data class RemoveKeyword(val keyword: String) : Modification
+    @Serializable
     data class ChangeColor(val colors: Set<String>) : Modification
+    @Serializable
     data class AddColor(val colors: Set<String>) : Modification
+    @Serializable
     data class AddType(val type: String) : Modification
+    @Serializable
     data class RemoveType(val type: String) : Modification
+    @Serializable
     data class ChangeController(val newControllerId: EntityId) : Modification
 
     /** No-op modification for effects that don't modify projected state (e.g., combat restrictions) */
+    @Serializable
     data object NoOp : Modification
 }
 

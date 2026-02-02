@@ -8,6 +8,7 @@ import type {
   ClientEvent,
   GameAction,
   LegalActionInfo,
+  ConvokeCreatureInfo,
   GameOverReason,
   ErrorCode,
   PendingDecision,
@@ -188,6 +189,30 @@ export interface XSelectionState {
 }
 
 /**
+ * Selected creature for Convoke with its payment choice.
+ */
+export interface ConvokeCreatureSelection {
+  entityId: EntityId
+  name: string
+  /** If set, this creature pays for this color. If null, pays for generic. */
+  payingColor: string | null
+}
+
+/**
+ * Convoke selection state when casting spells with Convoke.
+ */
+export interface ConvokeSelectionState {
+  actionInfo: LegalActionInfo
+  cardName: string
+  /** Original mana cost of the spell */
+  manaCost: string
+  /** Creatures that have been selected for Convoke */
+  selectedCreatures: ConvokeCreatureSelection[]
+  /** All valid creatures that can be tapped for Convoke */
+  validCreatures: readonly ConvokeCreatureInfo[]
+}
+
+/**
  * Deck building state during sealed draft.
  */
 export interface DeckBuildingState {
@@ -258,10 +283,17 @@ export interface TournamentState {
  */
 export interface SpectatingState {
   gameSessionId: string
+  /** Full ClientGameState for reusing GameBoard component (both hands masked) */
+  gameState: import('../types').ClientGameState | null
+  /** Player 1's entity ID */
+  player1Id: string | null
+  /** Player 2's entity ID */
+  player2Id: string | null
+  player1Name: string
+  player2Name: string
+  // Legacy fields for backward compatibility with old SpectatorView
   player1: SpectatorPlayerState | null
   player2: SpectatorPlayerState | null
-  player1Name?: string
-  player2Name?: string
   currentPhase: string | null
   activePlayerId: string | null
   priorityPlayerId: string | null
@@ -301,10 +333,18 @@ export interface GameStore {
   targetingState: TargetingState | null
   combatState: CombatState | null
   xSelectionState: XSelectionState | null
+  convokeSelectionState: ConvokeSelectionState | null
   hoveredCardId: EntityId | null
   draggingBlockerId: EntityId | null
   draggingCardId: EntityId | null
   revealedHandCardIds: readonly EntityId[] | null
+  /** Revealed cards from effects like Sylvan Tutor */
+  revealedCardsInfo: {
+    cardIds: readonly EntityId[]
+    cardNames: readonly string[]
+    imageUris: readonly (string | null)[]
+    source: string | null
+  } | null
   /** Opponent's blocker assignments (for attacking player to see real-time) */
   opponentBlockerAssignments: Record<EntityId, EntityId> | null
 
@@ -357,7 +397,7 @@ export interface GameStore {
   unsubmitDeck: () => void
 
   // Lobby actions
-  createTournamentLobby: (setCode: string, format?: 'SEALED' | 'DRAFT', boosterCount?: number, maxPlayers?: number, pickTimeSeconds?: number) => void
+  createTournamentLobby: (setCodes: string[], format?: 'SEALED' | 'DRAFT', boosterCount?: number, maxPlayers?: number, pickTimeSeconds?: number) => void
   /** @deprecated Use createTournamentLobby instead */
   createSealedLobby: (setCode: string, boosterCount?: number, maxPlayers?: number) => void
   joinLobby: (lobbyId: string) => void
@@ -366,7 +406,7 @@ export interface GameStore {
   startSealedLobby: () => void
   leaveLobby: () => void
   stopLobby: () => void
-  updateLobbySettings: (settings: { setCode?: string; format?: 'SEALED' | 'DRAFT'; boosterCount?: number; maxPlayers?: number; gamesPerMatch?: number; pickTimeSeconds?: number; picksPerRound?: number }) => void
+  updateLobbySettings: (settings: { setCodes?: string[]; format?: 'SEALED' | 'DRAFT'; boosterCount?: number; maxPlayers?: number; gamesPerMatch?: number; pickTimeSeconds?: number; picksPerRound?: number }) => void
 
   // Draft actions
   makePick: (cardNames: string[]) => void
@@ -405,12 +445,19 @@ export interface GameStore {
   updateXValue: (x: number) => void
   cancelXSelection: () => void
   confirmXSelection: () => void
+  // Convoke selection actions
+  startConvokeSelection: (state: ConvokeSelectionState) => void
+  toggleConvokeCreature: (entityId: EntityId, name: string, payingColor: string | null) => void
+  cancelConvokeSelection: () => void
+  confirmConvokeSelection: () => void
   returnToMenu: () => void
   leaveTournament: () => void
   clearError: () => void
   consumeEvent: () => ClientEvent | undefined
   showRevealedHand: (cardIds: readonly EntityId[]) => void
   dismissRevealedHand: () => void
+  showRevealedCards: (cardIds: readonly EntityId[], cardNames: readonly string[], imageUris: readonly (string | null)[], source: string | null) => void
+  dismissRevealedCards: () => void
   // Draw animation
   drawAnimations: readonly DrawAnimation[]
   addDrawAnimation: (animation: DrawAnimation) => void
@@ -651,6 +698,12 @@ export const useGameStore = create<GameStore>()(
           (e) => e.type === 'handRevealed' && (e as { revealingPlayerId: EntityId }).revealingPlayerId !== playerId
         ) as { type: 'handRevealed'; cardIds: readonly EntityId[] } | undefined
 
+        // Check for cardsRevealed events (from tutors like Sylvan Tutor)
+        // Only show the overlay to the opponent - the revealing player already knows what they searched for
+        const cardsRevealedEvent = msg.events.find(
+          (e) => e.type === 'cardsRevealed' && (e as { revealingPlayerId: EntityId }).revealingPlayerId !== playerId
+        ) as { type: 'cardsRevealed'; cardIds: readonly EntityId[]; cardNames: readonly string[]; imageUris: readonly (string | null)[]; source: string | null } | undefined
+
         // Process cardDrawn events for draw animations
         const cardDrawnEvents = msg.events.filter((e) => e.type === 'cardDrawn') as {
           type: 'cardDrawn'
@@ -735,6 +788,10 @@ export const useGameStore = create<GameStore>()(
           waitingForOpponentMulligan: false,
           // Show revealed hand overlay if handLookedAt or handRevealed event received
           revealedHandCardIds: handLookedAtEvent?.cardIds ?? handRevealedEvent?.cardIds ?? state.revealedHandCardIds,
+          // Show revealed cards overlay if cardsRevealed event received
+          revealedCardsInfo: cardsRevealedEvent
+            ? { cardIds: cardsRevealedEvent.cardIds, cardNames: cardsRevealedEvent.cardNames, imageUris: cardsRevealedEvent.imageUris, source: cardsRevealedEvent.source }
+            : state.revealedCardsInfo,
           // Clear opponent's blocker assignments when combat ends or blockers are confirmed
           opponentBlockerAssignments: (msg.state.combat?.blockers?.length || !msg.state.combat) ? null : state.opponentBlockerAssignments,
         }))
@@ -924,7 +981,7 @@ export const useGameStore = create<GameStore>()(
             lobbyId: msg.lobbyId,
             state: 'WAITING_FOR_PLAYERS',
             players: [],
-            settings: { setCode: '', setName: '', format: 'SEALED', boosterCount: 6, maxPlayers: 8, pickTimeSeconds: 45, picksPerRound: 1, gamesPerMatch: 1 },
+            settings: { setCodes: [], setNames: [], availableSets: [], format: 'SEALED', boosterCount: 6, maxPlayers: 8, pickTimeSeconds: 45, picksPerRound: 1, gamesPerMatch: 1 },
             isHost: true,
             draftState: null,
           },
@@ -1046,8 +1103,8 @@ export const useGameStore = create<GameStore>()(
             : null,
           deckBuildingState: {
             phase: 'building',
-            setCode: state.lobbyState?.settings.setCode ?? '',
-            setName: state.lobbyState?.settings.setName ?? '',
+            setCode: state.lobbyState?.settings.setCodes[0] ?? '',
+            setName: state.lobbyState?.settings.setNames[0] ?? '',
             cardPool: msg.pickedCards,
             basicLands: msg.basicLands,
             deck: [],
@@ -1213,9 +1270,38 @@ export const useGameStore = create<GameStore>()(
       },
 
       onSpectatorStateUpdate: (msg) => {
+        const { spectatingState: prevState, addDamageAnimation } = get()
+
+        // Detect life changes and add animations
+        if (msg.gameState && prevState?.gameState) {
+          const prevPlayers = prevState.gameState.players
+          const newPlayers = msg.gameState.players
+
+          for (const newPlayer of newPlayers) {
+            const prevPlayer = prevPlayers.find(p => p.playerId === newPlayer.playerId)
+            if (prevPlayer && prevPlayer.life !== newPlayer.life) {
+              const diff = newPlayer.life - prevPlayer.life
+              addDamageAnimation({
+                id: `spectator-life-${newPlayer.playerId}-${Date.now()}`,
+                targetId: newPlayer.playerId,
+                targetIsPlayer: true,
+                amount: Math.abs(diff),
+                isLifeGain: diff > 0,
+                startTime: Date.now(),
+              })
+            }
+          }
+        }
+
         set({
           spectatingState: {
             gameSessionId: msg.gameSessionId,
+            gameState: msg.gameState ?? null,
+            player1Id: msg.player1Id ?? null,
+            player2Id: msg.player2Id ?? null,
+            player1Name: msg.player1Name ?? msg.player1.playerName,
+            player2Name: msg.player2Name ?? msg.player2.playerName,
+            // Legacy fields for backward compatibility
             player1: msg.player1,
             player2: msg.player2,
             currentPhase: msg.currentPhase,
@@ -1230,10 +1316,14 @@ export const useGameStore = create<GameStore>()(
         set({
           spectatingState: {
             gameSessionId: msg.gameSessionId,
-            player1: null,
-            player2: null,
+            gameState: null,
+            player1Id: null,
+            player2Id: null,
             player1Name: msg.player1Name,
             player2Name: msg.player2Name,
+            // Legacy fields
+            player1: null,
+            player2: null,
             currentPhase: null,
             activePlayerId: null,
             priorityPlayerId: null,
@@ -1276,10 +1366,12 @@ export const useGameStore = create<GameStore>()(
       targetingState: null,
       combatState: null,
       xSelectionState: null,
+      convokeSelectionState: null,
       hoveredCardId: null,
       draggingBlockerId: null,
       draggingCardId: null,
       revealedHandCardIds: null,
+      revealedCardsInfo: null,
       opponentBlockerAssignments: null,
       drawAnimations: [],
       damageAnimations: [],
@@ -1589,15 +1681,15 @@ export const useGameStore = create<GameStore>()(
       },
 
       // Lobby actions
-      createTournamentLobby: (setCode, format = 'SEALED', boosterCount = 6, maxPlayers = 8, pickTimeSeconds = 45) => {
-        trackEvent('tournament_lobby_created', { set_code: setCode, format, booster_count: boosterCount, max_players: maxPlayers })
-        ws?.send(createCreateTournamentLobbyMessage(setCode, format, boosterCount, maxPlayers, pickTimeSeconds))
+      createTournamentLobby: (setCodes, format = 'SEALED', boosterCount = 6, maxPlayers = 8, pickTimeSeconds = 45) => {
+        trackEvent('tournament_lobby_created', { set_codes: setCodes, format, booster_count: boosterCount, max_players: maxPlayers })
+        ws?.send(createCreateTournamentLobbyMessage(setCodes, format, boosterCount, maxPlayers, pickTimeSeconds))
       },
 
       createSealedLobby: (setCode, boosterCount = 6, maxPlayers = 8) => {
         // Backwards compatibility
         trackEvent('sealed_lobby_created', { set_code: setCode, booster_count: boosterCount, max_players: maxPlayers })
-        ws?.send(createCreateTournamentLobbyMessage(setCode, 'SEALED', boosterCount, maxPlayers, 45))
+        ws?.send(createCreateTournamentLobbyMessage([setCode], 'SEALED', boosterCount, maxPlayers, 45))
       },
 
       joinLobby: (lobbyId) => {
@@ -1994,26 +2086,18 @@ export const useGameStore = create<GameStore>()(
       },
 
       attackWithAll: () => {
-        const { combatState, playerId, gameState } = get()
-        if (!combatState || !playerId || !gameState) return
+        const { combatState } = get()
+        if (!combatState) return
         if (combatState.mode !== 'declareAttackers') return
         if (combatState.validCreatures.length === 0) return
 
-        const opponent = gameState.players.find((p) => p.playerId !== playerId)
-        if (!opponent) return
-
-        const attackers: Record<EntityId, EntityId> = {}
-        for (const attackerId of combatState.validCreatures) {
-          attackers[attackerId] = opponent.playerId
-        }
-
-        const action = {
-          type: 'DeclareAttackers' as const,
-          playerId,
-          attackers,
-        }
-        ws?.send(createSubmitActionMessage(action))
-        set({ draggingBlockerId: null })
+        // Just select all valid creatures as attackers, don't commit yet
+        set({
+          combatState: {
+            ...combatState,
+            selectedAttackers: [...combatState.validCreatures],
+          },
+        })
       },
 
       cancelCombat: () => {
@@ -2104,6 +2188,81 @@ export const useGameStore = create<GameStore>()(
         set({ xSelectionState: null })
       },
 
+      // Convoke selection actions
+      startConvokeSelection: (convokeSelectionState) => {
+        set({ convokeSelectionState })
+      },
+
+      toggleConvokeCreature: (entityId, name, payingColor) => {
+        set((state) => {
+          if (!state.convokeSelectionState) return state
+          const { selectedCreatures } = state.convokeSelectionState
+          const existingIndex = selectedCreatures.findIndex((c) => c.entityId === entityId)
+
+          let newSelectedCreatures: ConvokeCreatureSelection[]
+          if (existingIndex >= 0) {
+            // Remove the creature
+            newSelectedCreatures = selectedCreatures.filter((c) => c.entityId !== entityId)
+          } else {
+            // Add the creature
+            newSelectedCreatures = [...selectedCreatures, { entityId, name, payingColor }]
+          }
+
+          return {
+            convokeSelectionState: {
+              ...state.convokeSelectionState,
+              selectedCreatures: newSelectedCreatures,
+            },
+          }
+        })
+      },
+
+      cancelConvokeSelection: () => {
+        set({ convokeSelectionState: null })
+      },
+
+      confirmConvokeSelection: () => {
+        const { convokeSelectionState, startTargeting, playerId } = get()
+        if (!convokeSelectionState || !playerId) return
+
+        const { actionInfo, selectedCreatures } = convokeSelectionState
+
+        if (actionInfo.action.type === 'CastSpell') {
+          const baseAction = actionInfo.action
+
+          // Build the convokedCreatures map for AlternativePaymentChoice
+          const convokedCreatures: Record<string, { color: string | null }> = {}
+          for (const creature of selectedCreatures) {
+            convokedCreatures[creature.entityId] = { color: creature.payingColor }
+          }
+
+          // Build the action with alternativePayment
+          const actionWithConvoke = {
+            ...baseAction,
+            alternativePayment: {
+              delvedCards: [],
+              convokedCreatures,
+            },
+          }
+
+          // Check if the spell also requires targets
+          if (actionInfo.requiresTargets && actionInfo.validTargets && actionInfo.validTargets.length > 0) {
+            startTargeting({
+              action: actionWithConvoke,
+              validTargets: [...actionInfo.validTargets],
+              selectedTargets: [],
+              minTargets: actionInfo.minTargets ?? actionInfo.targetCount ?? 1,
+              maxTargets: actionInfo.targetCount ?? 1,
+            })
+          } else {
+            // No targets needed, submit directly
+            ws?.send(createSubmitActionMessage(actionWithConvoke))
+          }
+        }
+
+        set({ convokeSelectionState: null })
+      },
+
       returnToMenu: () => {
         const state = get()
         // If in a tournament, only clear game state, not tournament/lobby state
@@ -2120,10 +2279,12 @@ export const useGameStore = create<GameStore>()(
           targetingState: null,
           combatState: null,
           xSelectionState: null,
+          convokeSelectionState: null,
           hoveredCardId: null,
           draggingBlockerId: null,
           draggingCardId: null,
           revealedHandCardIds: null,
+          revealedCardsInfo: null,
           pendingEvents: [],
           eventLog: [],
           gameOverState: null,
@@ -2137,6 +2298,8 @@ export const useGameStore = create<GameStore>()(
 
       leaveTournament: () => {
         // Clear all state including tournament/lobby - used when tournament is complete
+        // Notify server we're leaving
+        ws?.send(createLeaveLobbyMessage())
         clearLobbyId()
         clearDeckState()
         set({
@@ -2155,6 +2318,7 @@ export const useGameStore = create<GameStore>()(
           draggingBlockerId: null,
           draggingCardId: null,
           revealedHandCardIds: null,
+          revealedCardsInfo: null,
           pendingEvents: [],
           eventLog: [],
           gameOverState: null,
@@ -2162,6 +2326,7 @@ export const useGameStore = create<GameStore>()(
           deckBuildingState: null,
           lobbyState: null,
           tournamentState: null,
+          spectatingState: null,
         })
       },
 
@@ -2184,6 +2349,14 @@ export const useGameStore = create<GameStore>()(
 
       dismissRevealedHand: () => {
         set({ revealedHandCardIds: null })
+      },
+
+      showRevealedCards: (cardIds, cardNames, imageUris, source) => {
+        set({ revealedCardsInfo: { cardIds, cardNames, imageUris, source } })
+      },
+
+      dismissRevealedCards: () => {
+        set({ revealedCardsInfo: null })
       },
 
       addDrawAnimation: (animation) => {

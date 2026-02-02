@@ -14,10 +14,33 @@ data class PlayerStanding(
     val playerName: String,
     var wins: Int = 0,
     var losses: Int = 0,
-    var draws: Int = 0
+    var draws: Int = 0,
+    var gamesWon: Int = 0,
+    var gamesLost: Int = 0,
+    var lifeDifferential: Int = 0
 ) {
     val points: Int get() = wins * 3 + draws * 1
 }
+
+/**
+ * Reason why a player's position was determined by a tiebreaker.
+ */
+enum class TiebreakerReason {
+    NONE,           // No tie - won on points
+    HEAD_TO_HEAD,   // Won head-to-head matchup
+    H2H_GAMES,      // Won on head-to-head game differential
+    LIFE_DIFF,      // Won on life differential
+    TIED            // True tie - shared position
+}
+
+/**
+ * A player standing with calculated rank and tiebreaker information.
+ */
+data class RankedStanding(
+    val standing: PlayerStanding,
+    val rank: Int,
+    val tiebreakerReason: TiebreakerReason
+)
 
 /**
  * A single match in a round.
@@ -28,9 +51,18 @@ data class TournamentMatch(
     var gameSessionId: String? = null,
     var winnerId: EntityId? = null,
     var isDraw: Boolean = false,
-    var isComplete: Boolean = false
+    var isComplete: Boolean = false,
+    var player1GameWins: Int = 0,
+    var player2GameWins: Int = 0
 ) {
     val isBye: Boolean get() = player2Id == null
+
+    /**
+     * Check if this match involves both of the specified players.
+     */
+    fun hasPlayers(p1: EntityId, p2: EntityId): Boolean {
+        return (player1Id == p1 && player2Id == p2) || (player1Id == p2 && player2Id == p1)
+    }
 }
 
 /**
@@ -167,8 +199,12 @@ class TournamentManager(
 
     /**
      * Record a match result.
+     *
+     * @param gameSessionId The game session ID
+     * @param winnerId The winner's player ID, or null for a draw
+     * @param winnerLifeRemaining The winner's remaining life total (for tiebreaker calculations)
      */
-    fun reportMatchResult(gameSessionId: String, winnerId: EntityId?) {
+    fun reportMatchResult(gameSessionId: String, winnerId: EntityId?, winnerLifeRemaining: Int = 0) {
         val round = currentRound ?: return
         val match = round.matches.find { it.gameSessionId == gameSessionId } ?: return
 
@@ -178,11 +214,25 @@ class TournamentManager(
 
         if (winnerId != null) {
             match.winnerId = winnerId
-            standings[winnerId]?.wins = (standings[winnerId]?.wins ?: 0) + 1
+            standings[winnerId]?.apply {
+                wins += 1
+                gamesWon += 1
+                lifeDifferential += winnerLifeRemaining
+            }
 
             val loserId = if (match.player1Id == winnerId) match.player2Id else match.player1Id
             if (loserId != null) {
-                standings[loserId]?.losses = (standings[loserId]?.losses ?: 0) + 1
+                standings[loserId]?.apply {
+                    losses += 1
+                    gamesLost += 1
+                }
+            }
+
+            // Track game wins per player in the match
+            if (match.player1Id == winnerId) {
+                match.player1GameWins += 1
+            } else {
+                match.player2GameWins += 1
             }
         } else {
             match.isDraw = true
@@ -192,7 +242,7 @@ class TournamentManager(
             }
         }
 
-        logger.info("Match result reported for game $gameSessionId: winner=${winnerId?.value ?: "draw"}")
+        logger.info("Match result reported for game $gameSessionId: winner=${winnerId?.value ?: "draw"}, life=$winnerLifeRemaining")
     }
 
     /**
@@ -221,18 +271,149 @@ class TournamentManager(
      */
     fun isRoundComplete(): Boolean = currentRound?.isComplete ?: true
 
+    // =========================================================================
+    // Tiebreaker Functions
+    // =========================================================================
+
     /**
-     * Get current standings sorted by points (descending).
+     * Get the head-to-head result between two players.
+     *
+     * @return positive if player1 won more head-to-head matches,
+     *         negative if player2 won more,
+     *         0 if tied
      */
-    fun getStandings(): List<PlayerStanding> {
-        return standings.values.sortedByDescending { it.points }
+    private fun getHeadToHeadResult(player1: EntityId, player2: EntityId): Int {
+        val matches = rounds.flatMap { it.matches }
+            .filter { it.hasPlayers(player1, player2) && it.isComplete && !it.isBye }
+
+        val p1Wins = matches.count { it.winnerId == player1 }
+        val p2Wins = matches.count { it.winnerId == player2 }
+
+        return p1Wins.compareTo(p2Wins)
     }
 
     /**
-     * Get standings as server message format.
+     * Get the head-to-head game differential between two players.
+     * This counts individual game wins across all head-to-head matches.
+     *
+     * @return positive if player1 won more games in H2H matches,
+     *         negative if player2 won more,
+     *         0 if tied
+     */
+    private fun getHeadToHeadGameDiff(player1: EntityId, player2: EntityId): Int {
+        val matches = rounds.flatMap { it.matches }
+            .filter { it.hasPlayers(player1, player2) && it.isComplete && !it.isBye }
+
+        var p1GameWins = 0
+        var p2GameWins = 0
+
+        for (match in matches) {
+            if (match.player1Id == player1) {
+                p1GameWins += match.player1GameWins
+                p2GameWins += match.player2GameWins
+            } else {
+                // player1 is in the player2Id slot
+                p1GameWins += match.player2GameWins
+                p2GameWins += match.player1GameWins
+            }
+        }
+
+        return p1GameWins.compareTo(p2GameWins)
+    }
+
+    /**
+     * Determine which tiebreaker separated two players.
+     *
+     * @param higher The player ranked higher
+     * @param lower The player ranked lower
+     * @return The tiebreaker reason for the lower player
+     */
+    private fun determineTiebreakerUsed(higher: PlayerStanding, lower: PlayerStanding): TiebreakerReason {
+        // If points differ, no tiebreaker needed
+        if (higher.points != lower.points) {
+            return TiebreakerReason.NONE
+        }
+
+        // Check head-to-head
+        val h2hResult = getHeadToHeadResult(higher.playerId, lower.playerId)
+        if (h2hResult > 0) {
+            return TiebreakerReason.HEAD_TO_HEAD
+        }
+
+        // Check head-to-head game differential
+        val h2hGameDiff = getHeadToHeadGameDiff(higher.playerId, lower.playerId)
+        if (h2hGameDiff > 0) {
+            return TiebreakerReason.H2H_GAMES
+        }
+
+        // Check life differential
+        if (higher.lifeDifferential > lower.lifeDifferential) {
+            return TiebreakerReason.LIFE_DIFF
+        }
+
+        // True tie
+        return TiebreakerReason.TIED
+    }
+
+    /**
+     * Get current standings sorted by points with tiebreakers applied.
+     *
+     * Tiebreaker order:
+     * 1. Points (wins × 3 + draws)
+     * 2. Head-to-head result
+     * 3. Head-to-head game differential
+     * 4. Life differential
+     * 5. Tied (shared position)
+     */
+    fun getStandings(): List<PlayerStanding> {
+        return standings.values.sortedWith(
+            compareByDescending<PlayerStanding> { it.points }
+                .thenComparator { a, b -> -getHeadToHeadResult(a.playerId, b.playerId) }
+                .thenComparator { a, b -> -getHeadToHeadGameDiff(a.playerId, b.playerId) }
+                .thenByDescending { it.lifeDifferential }
+        )
+    }
+
+    /**
+     * Get ranked standings with tiebreaker information.
+     * Players who are truly tied share the same rank.
+     */
+    fun getRankedStandings(): List<RankedStanding> {
+        val sorted = getStandings()
+        if (sorted.isEmpty()) return emptyList()
+
+        val result = mutableListOf<RankedStanding>()
+        var currentRank = 1
+
+        for (i in sorted.indices) {
+            val standing = sorted[i]
+            val tiebreakerReason: TiebreakerReason
+
+            if (i == 0) {
+                // First player - no tiebreaker needed
+                tiebreakerReason = TiebreakerReason.NONE
+            } else {
+                val previous = sorted[i - 1]
+                tiebreakerReason = determineTiebreakerUsed(previous, standing)
+
+                // Update rank only if truly different (not TIED)
+                if (tiebreakerReason != TiebreakerReason.TIED) {
+                    currentRank = i + 1
+                }
+            }
+
+            result.add(RankedStanding(standing, currentRank, tiebreakerReason))
+        }
+
+        return result
+    }
+
+    /**
+     * Get standings as server message format with tiebreaker information.
      */
     fun getStandingsInfo(connectedPlayerIds: Set<EntityId> = emptySet()): List<ServerMessage.PlayerStandingInfo> {
-        return getStandings().map { s ->
+        return getRankedStandings().map { ranked ->
+            val s = ranked.standing
             ServerMessage.PlayerStandingInfo(
                 playerId = s.playerId.value,
                 playerName = s.playerName,
@@ -240,7 +421,12 @@ class TournamentManager(
                 losses = s.losses,
                 draws = s.draws,
                 points = s.points,
-                isConnected = connectedPlayerIds.isEmpty() || s.playerId in connectedPlayerIds
+                isConnected = connectedPlayerIds.isEmpty() || s.playerId in connectedPlayerIds,
+                gamesWon = s.gamesWon,
+                gamesLost = s.gamesLost,
+                lifeDifferential = s.lifeDifferential,
+                rank = ranked.rank,
+                tiebreakerReason = if (ranked.tiebreakerReason == TiebreakerReason.NONE) null else ranked.tiebreakerReason.name
             )
         }
     }
@@ -254,6 +440,8 @@ class TournamentManager(
             ServerMessage.MatchResultInfo(
                 player1Name = standings[match.player1Id]?.playerName ?: "Unknown",
                 player2Name = match.player2Id?.let { standings[it]?.playerName } ?: "BYE",
+                player1Id = match.player1Id.value,
+                player2Id = match.player2Id?.value,
                 winnerId = match.winnerId?.value,
                 isDraw = match.isDraw,
                 isBye = match.isBye

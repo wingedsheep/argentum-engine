@@ -148,6 +148,7 @@ export type {
   GameStartedMessage,
   StateUpdateMessage,
   LegalActionInfo,
+  ConvokeCreatureInfo,
   MulliganDecisionMessage,
   ChooseBottomCardsMessage,
   MulliganCompleteMessage,

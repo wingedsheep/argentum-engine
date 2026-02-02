@@ -45,6 +45,7 @@ data class PassPriority(
  * @property xValue The value of X for X-cost spells
  * @property paymentStrategy How the player intends to pay the mana cost
  * @property alternativePayment Optional alternative payment choices (Delve, Convoke)
+ * @property castFaceDown If true, cast as a face-down 2/2 creature for {3} (morph)
  */
 @Serializable
 @SerialName("CastSpell")
@@ -55,7 +56,8 @@ data class CastSpell(
     val xValue: Int? = null,
     val paymentStrategy: PaymentStrategy = PaymentStrategy.AutoPay,
     val alternativePayment: AlternativePaymentChoice? = null,
-    val additionalCostPayment: AdditionalCostPayment? = null
+    val additionalCostPayment: AdditionalCostPayment? = null,
+    val castFaceDown: Boolean = false
 ) : GameAction
 
 /**
@@ -108,6 +110,26 @@ data class ActivateAbility(
     val sourceId: EntityId,
     val abilityId: AbilityId,
     val targets: List<ChosenTarget> = emptyList()
+) : GameAction
+
+// =============================================================================
+// Cycling Actions
+// =============================================================================
+
+/**
+ * Player cycles a card from their hand.
+ *
+ * Cycling is an activated ability that can be activated from hand.
+ * The player pays the cycling cost, discards the card, and draws a card.
+ *
+ * @property playerId The player cycling the card
+ * @property cardId The card being cycled
+ */
+@Serializable
+@SerialName("CycleCard")
+data class CycleCard(
+    override val playerId: EntityId,
+    val cardId: EntityId
 ) : GameAction
 
 // =============================================================================
@@ -266,4 +288,25 @@ data class BottomCards(
 @SerialName("Concede")
 data class Concede(
     override val playerId: EntityId
+) : GameAction
+
+// =============================================================================
+// Morph Actions
+// =============================================================================
+
+/**
+ * Player turns a face-down creature face up by paying its morph cost.
+ * This is a special action that doesn't use the stack and can be done any time
+ * the player has priority.
+ *
+ * @property playerId The player turning the creature face up
+ * @property permanentId The face-down creature to turn face up
+ * @property paymentStrategy How the player intends to pay the morph cost
+ */
+@Serializable
+@SerialName("TurnFaceUp")
+data class TurnFaceUp(
+    override val playerId: EntityId,
+    val permanentId: EntityId,
+    val paymentStrategy: PaymentStrategy = PaymentStrategy.AutoPay
 ) : GameAction

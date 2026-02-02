@@ -230,7 +230,7 @@ class AutoPassManager {
                 true
             }
 
-            // Main Phase - auto-pass (wait for combat or stack)
+            // Main Phases - auto-pass (wait for combat or end step or stack)
             Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN -> {
                 logger.debug("AUTO-PASS: Opponent's main phase")
                 true

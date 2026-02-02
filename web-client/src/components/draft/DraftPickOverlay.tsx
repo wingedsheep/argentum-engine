@@ -149,7 +149,7 @@ function DraftPicker({ draftState, settings }: { draftState: DraftState; setting
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <h2 style={{ color: 'white', margin: 0, fontSize: responsive.isMobile ? 16 : 22 }}>
-            Draft - {settings.setName}
+            Draft - {settings.setNames.join(' + ')}
           </h2>
           <PackPickIndicator
             packNumber={draftState.packNumber}

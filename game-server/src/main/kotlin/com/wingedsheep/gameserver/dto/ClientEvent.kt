@@ -327,6 +327,7 @@ sealed interface ClientEvent {
         val revealingPlayerId: EntityId,
         val cardIds: List<EntityId>,
         val cardNames: List<String>,
+        val imageUris: List<String?> = emptyList(),
         val source: String? = null,
         override val description: String = "Revealed ${cardNames.joinToString(", ")}${source?.let { " ($it)" } ?: ""}"
     ) : ClientEvent
@@ -608,9 +609,17 @@ object ClientEventTransformer {
                     revealingPlayerId = event.revealingPlayerId,
                     cardIds = event.cardIds,
                     cardNames = event.cardNames,
+                    imageUris = event.imageUris,
                     source = event.source
                 )
             }
+
+            is LoyaltyChangedEvent -> ClientEvent.CounterAdded(
+                permanentId = event.entityId,
+                permanentName = event.entityName,
+                counterType = "loyalty",
+                count = event.change
+            )
 
             // Events that don't need client representation or are handled differently
             is DrawFailedEvent,
@@ -633,7 +642,8 @@ object ClientEventTransformer {
             is PermanentsSacrificedEvent,
             is LookedAtCardsEvent,
             is LibraryReorderedEvent,
-            is KeywordGrantedEvent -> null
+            is KeywordGrantedEvent,
+            is TurnFaceUpEvent -> null
         }
     }
 }

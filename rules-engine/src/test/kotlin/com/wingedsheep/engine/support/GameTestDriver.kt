@@ -551,6 +551,7 @@ class GameTestDriver {
     /**
      * Put a creature directly onto the battlefield (test helper).
      * Creates a new card entity from the registry and adds it to battlefield.
+     * Also adds ContinuousEffectSourceComponent for static abilities.
      */
     fun putCreatureOnBattlefield(playerId: EntityId, cardName: String): EntityId {
         val cardDef = cardRegistry.requireCard(cardName)
@@ -570,12 +571,16 @@ class GameTestDriver {
             spellEffect = cardDef.spellEffect
         )
 
-        val container = com.wingedsheep.engine.state.ComponentContainer.of(
+        var container = com.wingedsheep.engine.state.ComponentContainer.of(
             cardComponent,
             com.wingedsheep.engine.state.components.identity.OwnerComponent(playerId),
             ControllerComponent(playerId),
             com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
         )
+
+        // Add continuous effects from static abilities
+        val staticAbilityHandler = com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler(cardRegistry)
+        container = staticAbilityHandler.addContinuousEffectComponent(container, cardDef)
 
         _state = _state.withEntity(cardId, container)
 

@@ -1,5 +1,6 @@
 import { Phase, Step, StepDisplayNames } from '../../types'
 import { useResponsive } from '../../hooks/useResponsive'
+import type { PriorityMode } from '../../store/selectors'
 
 interface PhaseIndicatorProps {
   phase: Phase
@@ -7,6 +8,30 @@ interface PhaseIndicatorProps {
   turnNumber: number
   isActivePlayer: boolean
   hasPriority: boolean
+  priorityMode: PriorityMode
+  /** Active player's name (for spectator mode display) */
+  activePlayerName?: string | undefined
+}
+
+/**
+ * Color configuration for each priority mode.
+ */
+const modeColors: Record<PriorityMode, { border: string; glow: string; badge: string }> = {
+  ownTurn: {
+    border: '#4fc3f7',
+    glow: '0 0 12px rgba(79, 195, 247, 0.5)',
+    badge: '#4fc3f7',
+  },
+  responding: {
+    border: '#ffc107',
+    glow: '0 0 12px rgba(255, 193, 7, 0.5)',
+    badge: '#ffc107',
+  },
+  waiting: {
+    border: 'transparent',
+    glow: 'none',
+    badge: '#666',
+  },
 }
 
 /**
@@ -18,13 +43,28 @@ export function PhaseIndicator({
   turnNumber,
   isActivePlayer,
   hasPriority,
+  priorityMode,
+  activePlayerName,
 }: PhaseIndicatorProps) {
   const responsive = useResponsive()
+  const colors = modeColors[priorityMode]
+
+  // Determine the status text based on mode
+  // If activePlayerName is provided (spectator mode), use that
+  const statusText = activePlayerName
+    ? `${activePlayerName}'s Turn`
+    : priorityMode === 'ownTurn'
+    ? 'Your Turn'
+    : priorityMode === 'responding'
+    ? 'Responding'
+    : isActivePlayer
+    ? 'Your Turn'
+    : "Opponent's Turn"
 
   return (
     <div
       style={{
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        backgroundColor: 'rgba(0, 0, 0, 0.85)',
         borderRadius: responsive.isMobile ? 6 : 8,
         padding: responsive.isMobile ? '6px 10px' : '8px 16px',
         display: 'flex',
@@ -32,11 +72,22 @@ export function PhaseIndicator({
         alignItems: 'center',
         gap: responsive.isMobile ? 2 : 4,
         pointerEvents: 'auto',
+        border: `2px solid ${colors.border}`,
+        boxShadow: colors.glow,
+        transition: 'border-color 0.2s, box-shadow 0.2s',
       }}
     >
-      {/* Turn number */}
-      <span style={{ color: '#888', fontSize: responsive.isMobile ? 9 : 11 }}>
-        Turn {turnNumber}
+      {/* Turn status - replaces separate Active/Priority badges */}
+      <span
+        style={{
+          color: hasPriority ? colors.badge : '#888',
+          fontSize: responsive.isMobile ? 9 : 11,
+          fontWeight: hasPriority ? 600 : 400,
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
+        }}
+      >
+        {statusText}
       </span>
 
       {/* Phase/Step display */}
@@ -47,27 +98,10 @@ export function PhaseIndicator({
         </span>
       </div>
 
-      {/* Priority indicator */}
-      <div
-        style={{
-          display: 'flex',
-          gap: responsive.isMobile ? 4 : 8,
-          marginTop: responsive.isMobile ? 2 : 4,
-        }}
-      >
-        <StatusBadge
-          label="Active"
-          active={isActivePlayer}
-          color="#0088ff"
-          isMobile={responsive.isMobile}
-        />
-        <StatusBadge
-          label="Priority"
-          active={hasPriority}
-          color="#00ff00"
-          isMobile={responsive.isMobile}
-        />
-      </div>
+      {/* Turn number */}
+      <span style={{ color: '#666', fontSize: responsive.isMobile ? 8 : 10 }}>
+        Turn {turnNumber}
+      </span>
     </div>
   )
 }
@@ -85,37 +119,6 @@ function PhaseIcon({ phase, isMobile = false }: { phase: Phase; isMobile?: boole
   }
 
   return <span style={{ fontSize: isMobile ? 14 : 18 }}>{icons[phase]}</span>
-}
-
-/**
- * Status badge showing active/priority state.
- */
-function StatusBadge({
-  label,
-  active,
-  color,
-  isMobile = false,
-}: {
-  label: string
-  active: boolean
-  color: string
-  isMobile?: boolean
-}) {
-  return (
-    <div
-      style={{
-        padding: isMobile ? '1px 6px' : '2px 8px',
-        borderRadius: 4,
-        backgroundColor: active ? color : '#333',
-        opacity: active ? 1 : 0.5,
-        fontSize: isMobile ? 9 : 11,
-        color: active ? '#000' : '#888',
-        fontWeight: active ? 600 : 400,
-      }}
-    >
-      {label}
-    </div>
-  )
 }
 
 /**

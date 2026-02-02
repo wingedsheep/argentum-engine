@@ -6,6 +6,7 @@ import com.wingedsheep.gameserver.lobby.LobbyState
 import com.wingedsheep.gameserver.lobby.TournamentFormat
 import com.wingedsheep.gameserver.lobby.TournamentLobby
 import com.wingedsheep.gameserver.persistence.dto.*
+import com.wingedsheep.gameserver.sealed.BoosterGenerator
 import com.wingedsheep.gameserver.sealed.SealedPlayerState
 import com.wingedsheep.gameserver.sealed.SealedSession
 import com.wingedsheep.gameserver.sealed.SealedSessionState
@@ -27,8 +28,8 @@ import com.wingedsheep.sdk.model.EntityId
 fun TournamentLobby.toPersistent(): PersistentTournamentLobby {
     return PersistentTournamentLobby(
         lobbyId = lobbyId,
-        setCode = setCode,
-        setName = setName,
+        setCodes = setCodes,
+        setNames = setNames,
         format = format.name,
         boosterCount = boosterCount,
         maxPlayers = maxPlayers,
@@ -44,7 +45,8 @@ fun TournamentLobby.toPersistent(): PersistentTournamentLobby {
                 cardPoolNames = playerState.cardPool.map { it.name },
                 currentPackNames = playerState.currentPack?.map { it.name },
                 hasPicked = playerState.hasPicked,
-                submittedDeck = playerState.submittedDeck
+                submittedDeck = playerState.submittedDeck,
+                currentSpectatingGameId = playerState.identity.currentSpectatingGameId
             )
         },
         currentPackNumber = currentPackNumber,
@@ -65,16 +67,19 @@ private fun TournamentLobby.getPlayerOrderForPersistence(): List<String> {
  *
  * @param persistent The persisted lobby data
  * @param cardRegistry The card registry for resolving card names to definitions
+ * @param boosterGenerator The booster generator for sealed/draft operations
  * @return A restored TournamentLobby and a list of PlayerIdentity objects to register
  */
 fun restoreTournamentLobby(
     persistent: PersistentTournamentLobby,
-    cardRegistry: CardRegistry
+    cardRegistry: CardRegistry,
+    boosterGenerator: BoosterGenerator
 ): Pair<TournamentLobby, List<PlayerIdentity>> {
     val lobby = TournamentLobby(
         lobbyId = persistent.lobbyId,
-        setCode = persistent.setCode,
-        setName = persistent.setName,
+        setCodes = persistent.setCodes,
+        setNames = persistent.setNames,
+        boosterGenerator = boosterGenerator,
         format = TournamentFormat.valueOf(persistent.format),
         boosterCount = persistent.boosterCount,
         maxPlayers = persistent.maxPlayers,
@@ -93,6 +98,7 @@ fun restoreTournamentLobby(
             playerName = persistentPlayer.playerName
         ).also {
             it.currentLobbyId = persistent.lobbyId
+            it.currentSpectatingGameId = persistentPlayer.currentSpectatingGameId
         }
         playerIdentities.add(identity)
 
@@ -142,8 +148,8 @@ fun restoreTournamentLobby(
 fun SealedSession.toPersistent(): PersistentSealedSession {
     return PersistentSealedSession(
         sessionId = sessionId,
-        setCode = setCode,
-        setName = setName,
+        setCodes = setCodes,
+        setNames = setNames,
         state = state.name,
         players = players.mapKeys { it.key.value }.mapValues { (_, playerState) ->
             PersistentSealedPlayer(
@@ -172,7 +178,10 @@ fun TournamentManager.toPersistent(lobbyId: String): PersistentTournament {
                 playerName = standing.playerName,
                 wins = standing.wins,
                 losses = standing.losses,
-                draws = standing.draws
+                draws = standing.draws,
+                gamesWon = standing.gamesWon,
+                gamesLost = standing.gamesLost,
+                lifeDifferential = standing.lifeDifferential
             )
         },
         rounds = getRoundsForPersistence().map { round ->
@@ -185,7 +194,9 @@ fun TournamentManager.toPersistent(lobbyId: String): PersistentTournament {
                         gameSessionId = match.gameSessionId,
                         winnerId = match.winnerId?.value,
                         isDraw = match.isDraw,
-                        isComplete = match.isComplete
+                        isComplete = match.isComplete,
+                        player1GameWins = match.player1GameWins,
+                        player2GameWins = match.player2GameWins
                     )
                 }
             )
@@ -228,7 +239,9 @@ fun restoreTournamentManager(persistent: PersistentTournament): TournamentManage
                     gameSessionId = persistentMatch.gameSessionId,
                     winnerId = persistentMatch.winnerId?.let { EntityId(it) },
                     isDraw = persistentMatch.isDraw,
-                    isComplete = persistentMatch.isComplete
+                    isComplete = persistentMatch.isComplete,
+                    player1GameWins = persistentMatch.player1GameWins,
+                    player2GameWins = persistentMatch.player2GameWins
                 )
             }
         )
@@ -241,7 +254,10 @@ fun restoreTournamentManager(persistent: PersistentTournament): TournamentManage
             playerName = persistentStanding.playerName,
             wins = persistentStanding.wins,
             losses = persistentStanding.losses,
-            draws = persistentStanding.draws
+            draws = persistentStanding.draws,
+            gamesWon = persistentStanding.gamesWon,
+            gamesLost = persistentStanding.gamesLost,
+            lifeDifferential = persistentStanding.lifeDifferential
         )
     }
 

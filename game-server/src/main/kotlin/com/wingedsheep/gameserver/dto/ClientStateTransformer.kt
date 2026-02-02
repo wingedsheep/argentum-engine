@@ -76,7 +76,7 @@ class ClientStateTransformer(
 
             // Include card details for visible cards (either whole zone visible, or individually revealed)
             for (entityId in visibleCardIds) {
-                val clientCard = transformCard(state, entityId, zoneKey, projectedState)
+                val clientCard = transformCard(state, entityId, zoneKey, projectedState, viewingPlayerId)
                 if (clientCard != null) {
                     cards[entityId] = clientCard
                 }
@@ -100,7 +100,7 @@ class ClientStateTransformer(
             // Add cards if they happen to exist (rare if zone was missing from map, but good for safety)
             for (entityId in bfEntities) {
                 if (entityId !in cards) {
-                    val clientCard = transformCard(state, entityId, bfZoneKey, projectedState)
+                    val clientCard = transformCard(state, entityId, bfZoneKey, projectedState, viewingPlayerId)
                     if (clientCard != null) {
                         cards[entityId] = clientCard
                     }
@@ -124,7 +124,7 @@ class ClientStateTransformer(
             // Include card details for stack items
             for (entityId in state.stack) {
                 if (entityId !in cards) {
-                    val clientCard = transformCard(state, entityId, stackZoneKey, projectedState)
+                    val clientCard = transformCard(state, entityId, stackZoneKey, projectedState, viewingPlayerId)
                         ?: transformAbilityOnStack(state, entityId)
                     if (clientCard != null) {
                         cards[entityId] = clientCard
@@ -308,7 +308,8 @@ class ClientStateTransformer(
         state: GameState,
         entityId: EntityId,
         zoneKey: ZoneKey,
-        projectedState: ProjectedState
+        projectedState: ProjectedState,
+        viewingPlayerId: EntityId
     ): ClientCard? {
         val container = state.getEntity(entityId) ?: return null
         val cardComponent = container.get<CardComponent>() ?: return null
@@ -345,6 +346,51 @@ class ClientStateTransformer(
         val hasHaste = keywords.contains(com.wingedsheep.sdk.core.Keyword.HASTE)
         val hasSummoningSickness = hasSummoningSicknessComponent && !hasHaste
         val isFaceDown = container.has<FaceDownComponent>()
+
+        // Get morph data for face-down creatures
+        val morphData = container.get<MorphDataComponent>()
+
+        // Handle face-down creature masking
+        // Opponents see a generic 2/2 with no information
+        // Controller sees real card info + morph cost
+        if (isFaceDown && controllerId != viewingPlayerId) {
+            return ClientCard(
+                id = entityId,
+                name = "Face-down creature",
+                manaCost = "",
+                manaValue = 0,
+                typeLine = "Creature",
+                cardTypes = setOf("CREATURE"),
+                subtypes = emptySet(),
+                colors = emptySet(),
+                oracleText = "",
+                power = 2,
+                toughness = 2,
+                basePower = 2,
+                baseToughness = 2,
+                damage = container.get<DamageComponent>()?.amount,
+                keywords = emptySet(),
+                counters = container.get<CountersComponent>()?.counters ?: emptyMap(),
+                isTapped = isTapped,
+                hasSummoningSickness = hasSummoningSickness,
+                isTransformed = false,
+                isAttacking = container.get<AttackingComponent>() != null,
+                isBlocking = container.get<BlockingComponent>() != null,
+                attackingTarget = container.get<AttackingComponent>()?.defenderId,
+                blockingTarget = container.get<BlockingComponent>()?.blockedAttackerIds?.firstOrNull(),
+                controllerId = controllerId,
+                ownerId = ownerId,
+                isToken = false,
+                zone = zoneKey,
+                attachedTo = container.get<AttachedToComponent>()?.targetId,
+                attachments = state.getBattlefield().filter { otherId ->
+                    state.getEntity(otherId)?.get<AttachedToComponent>()?.targetId == entityId
+                },
+                isFaceDown = true,
+                morphCost = null, // Opponent can't see morph cost
+                imageUri = "https://cards.scryfall.io/large/front/d/9/d9b96b86-a05d-4a47-acba-20bc54c4c4b5.jpg" // Generic morph overlay
+            )
+        }
 
         // Get damage
         val damageComponent = container.get<DamageComponent>()
@@ -432,8 +478,10 @@ class ClientStateTransformer(
             attachedTo = attachedTo,
             attachments = attachments,
             isFaceDown = isFaceDown,
+            morphCost = if (isFaceDown && morphData != null) morphData.morphCost.toString() else null,
             targets = targets,
-            imageUri = cardRegistry.getCard(cardComponent.cardDefinitionId)?.metadata?.imageUri,
+            imageUri = cardRegistry.getCard(cardComponent.cardDefinitionId)?.metadata?.imageUri
+                ?: cardComponent.imageUri,
             activeEffects = activeEffects,
             rulings = cardRegistry.getCard(cardComponent.cardDefinitionId)?.metadata?.rulings?.map {
                 ClientRuling(date = it.date, text = it.text)
@@ -459,6 +507,7 @@ class ClientStateTransformer(
         val handSize = state.getHand(playerId).size
         val librarySize = state.getLibrary(playerId).size
         val graveyardSize = state.getGraveyard(playerId).size
+        val exileSize = state.getExile(playerId).size
 
         // Determine lands played this turn
         val landsPlayed = if (landDropsComponent != null) {
@@ -495,6 +544,7 @@ class ClientStateTransformer(
             handSize = handSize,
             librarySize = librarySize,
             graveyardSize = graveyardSize,
+            exileSize = exileSize,
             landsPlayedThisTurn = landsPlayed,
             hasLost = hasLost,
             manaPool = manaPool,

@@ -17,6 +17,8 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.engine.mechanics.layers.StateProjector
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EffectTarget
@@ -25,6 +27,8 @@ import com.wingedsheep.sdk.scripting.EffectTarget
  * Utility functions shared across effect executors.
  */
 object EffectExecutorUtils {
+
+    private val stateProjector = StateProjector()
 
     /**
      * Resolve a target from the effect target definition and context.
@@ -71,15 +75,20 @@ object EffectExecutorUtils {
      * @param targetId The entity to deal damage to
      * @param amount The amount of damage
      * @param sourceId The source of the damage
+     * @param cantBePrevented If true, this damage cannot be prevented by prevention effects
      * @return The execution result with updated state and events
      */
     fun dealDamageToTarget(
         state: GameState,
         targetId: EntityId,
         amount: Int,
-        sourceId: EntityId?
+        sourceId: EntityId?,
+        cantBePrevented: Boolean = false
     ): ExecutionResult {
         if (amount <= 0) return ExecutionResult.success(state)
+
+        // TODO: When damage prevention is implemented, check for prevention effects here.
+        // If cantBePrevented is true, skip the prevention check entirely.
 
         val events = mutableListOf<EngineGameEvent>()
         var newState = state
@@ -120,7 +129,11 @@ object EffectExecutorUtils {
         val cardComponent = container.get<CardComponent>()
             ?: return ExecutionResult.error(state, "Not a card: $entityId")
 
-        // TODO: Check for indestructible
+        // Check for indestructible - indestructible permanents can't be destroyed
+        if (stateProjector.hasProjectedKeyword(state, entityId, Keyword.INDESTRUCTIBLE)) {
+            // Indestructible - the destroy effect has no effect (not an error)
+            return ExecutionResult.success(state)
+        }
 
         // Find which player's battlefield it's on
         val controllerId = container.get<ControllerComponent>()?.playerId
@@ -153,6 +166,59 @@ object EffectExecutorUtils {
                     cardComponent.name,
                     ZoneType.BATTLEFIELD,
                     ZoneType.GRAVEYARD,
+                    ownerId
+                )
+            )
+        )
+    }
+
+    /**
+     * Move a card from any zone to another zone.
+     * Finds the card's current zone and moves it to the destination.
+     *
+     * @param state The current game state
+     * @param entityId The entity to move
+     * @param targetZoneType The destination zone type
+     * @return The execution result with updated state and events
+     */
+    fun moveCardToZone(state: GameState, entityId: EntityId, targetZoneType: ZoneType): ExecutionResult {
+        val container = state.getEntity(entityId)
+            ?: return ExecutionResult.error(state, "Entity not found")
+
+        val cardComponent = container.get<CardComponent>()
+            ?: return ExecutionResult.error(state, "Not a card")
+
+        val ownerId = cardComponent.ownerId
+            ?: return ExecutionResult.error(state, "Cannot determine owner")
+
+        // Find the current zone of the card
+        val currentZone = state.zones.entries.find { (_, cards) -> entityId in cards }?.key
+            ?: return ExecutionResult.error(state, "Card not in any zone")
+
+        // Move to target zone
+        val targetZone = ZoneKey(ownerId, targetZoneType)
+
+        var newState = state.removeFromZone(currentZone, entityId)
+        newState = newState.addToZone(targetZone, entityId)
+
+        // Remove permanent-only components if moving from battlefield
+        if (currentZone.zoneType == ZoneType.BATTLEFIELD) {
+            newState = newState.updateEntity(entityId) { c ->
+                c.without<ControllerComponent>()
+                    .without<TappedComponent>()
+                    .without<SummoningSicknessComponent>()
+                    .without<DamageComponent>()
+            }
+        }
+
+        return ExecutionResult.success(
+            newState,
+            listOf(
+                ZoneChangeEvent(
+                    entityId,
+                    cardComponent.name,
+                    currentZone.zoneType,
+                    targetZoneType,
                     ownerId
                 )
             )

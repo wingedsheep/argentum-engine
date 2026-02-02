@@ -10,9 +10,11 @@ import com.wingedsheep.gameserver.repository.LobbyRepository
 import com.wingedsheep.gameserver.session.GameSession
 import com.wingedsheep.gameserver.session.PlayerSession
 import com.wingedsheep.gameserver.session.SessionRegistry
+import com.wingedsheep.gameserver.config.GameProperties
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.PlayerLostEvent
 import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.sdk.model.EntityId
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -27,7 +29,8 @@ class GamePlayHandler(
     private val lobbyRepository: LobbyRepository,
     private val sender: MessageSender,
     private val cardRegistry: CardRegistry,
-    private val deckGenerator: RandomDeckGenerator
+    private val deckGenerator: RandomDeckGenerator,
+    private val gameProperties: GameProperties
 ) {
     private val logger = LoggerFactory.getLogger(GamePlayHandler::class.java)
 
@@ -69,7 +72,10 @@ class GamePlayHandler(
             message.deckList
         }
 
-        val gameSession = GameSession(cardRegistry = cardRegistry)
+        val gameSession = GameSession(
+            cardRegistry = cardRegistry,
+            useHandSmoother = gameProperties.handSmoother.enabled
+        )
         gameSession.addPlayer(playerSession, deckList)
 
         // Store player info for persistence
@@ -390,7 +396,14 @@ class GamePlayHandler(
         if (lobbyId != null) {
             val tournament = lobbyRepository.findTournamentById(lobbyId)
             if (tournament != null) {
-                tournament.reportMatchResult(gameSessionId, winnerId)
+                // Capture winner's remaining life for tiebreaker calculations
+                val winnerLifeRemaining = if (winnerId != null) {
+                    gameSession.getStateForTesting()?.getEntity(winnerId)
+                        ?.get<LifeTotalComponent>()?.life ?: 0
+                } else {
+                    0
+                }
+                tournament.reportMatchResult(gameSessionId, winnerId, winnerLifeRemaining)
                 gameRepository.removeLobbyLink(gameSessionId)
 
                 if (tournament.isRoundComplete()) {
@@ -425,9 +438,8 @@ class GamePlayHandler(
             val spectatorState = gameSession.buildSpectatorState()
             if (spectatorState != null) {
                 for (spectator in gameSession.getSpectators()) {
-                    val ws = spectator.webSocketSession
-                    if (ws != null && ws.isOpen) {
-                        sender.send(ws, spectatorState)
+                    if (spectator.webSocketSession.isOpen) {
+                        sender.send(spectator.webSocketSession, spectatorState)
                     }
                 }
             }
@@ -500,6 +512,11 @@ class GamePlayHandler(
 
         if (opponent != null) {
             sender.send(opponent.webSocketSession, ServerMessage.OpponentBlockerAssignments(message.assignments))
+        }
+
+        // Also forward to all spectators so they can see blocker arrows in real-time
+        for (spectator in gameSession.getSpectators()) {
+            sender.send(spectator.webSocketSession, ServerMessage.OpponentBlockerAssignments(message.assignments))
         }
     }
 

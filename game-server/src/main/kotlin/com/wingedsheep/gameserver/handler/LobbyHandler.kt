@@ -17,6 +17,7 @@ import com.wingedsheep.gameserver.session.PlayerSession
 import com.wingedsheep.gameserver.session.SessionRegistry
 import com.wingedsheep.gameserver.session.GameSession
 import com.wingedsheep.gameserver.tournament.TournamentManager
+import com.wingedsheep.gameserver.config.GameProperties
 import com.wingedsheep.engine.registry.CardRegistry
 import kotlinx.coroutines.*
 import org.slf4j.LoggerFactory
@@ -30,7 +31,9 @@ class LobbyHandler(
     private val lobbyRepository: LobbyRepository,
     private val sender: MessageSender,
     private val cardRegistry: CardRegistry,
-    private val gamePlayHandler: GamePlayHandler
+    private val gamePlayHandler: GamePlayHandler,
+    private val gameProperties: GameProperties,
+    private val boosterGenerator: BoosterGenerator
 ) {
     private val logger = LoggerFactory.getLogger(LobbyHandler::class.java)
 
@@ -66,23 +69,34 @@ class LobbyHandler(
             return
         }
 
-        val setConfig = BoosterGenerator.getSetConfig(message.setCode)
-        if (setConfig == null) {
-            sender.sendError(session, ErrorCode.INVALID_ACTION, "Unknown set code: ${message.setCode}")
+        if (message.setCodes.isEmpty()) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "At least one set code is required")
             return
         }
 
-        val sealedSession = SealedSession(setCode = setConfig.setCode, setName = setConfig.setName)
+        // Validate all set codes
+        val setConfigs = message.setCodes.map { setCode ->
+            boosterGenerator.getSetConfig(setCode) ?: run {
+                sender.sendError(session, ErrorCode.INVALID_ACTION, "Unknown set code: $setCode")
+                return
+            }
+        }
+
+        val sealedSession = SealedSession(
+            setCodes = setConfigs.map { it.setCode },
+            setNames = setConfigs.map { it.setName },
+            boosterGenerator = boosterGenerator
+        )
         sealedSession.addPlayer(playerSession)
 
         lobbyRepository.saveSealedSession(sealedSession)
         waitingSealedSession = sealedSession
 
-        logger.info("Sealed game created: ${sealedSession.sessionId} by ${playerSession.playerName} (set: ${setConfig.setName})")
+        logger.info("Sealed game created: ${sealedSession.sessionId} by ${playerSession.playerName} (sets: ${setConfigs.map { it.setName }})")
         sender.send(session, ServerMessage.SealedGameCreated(
             sessionId = sealedSession.sessionId,
-            setCode = setConfig.setCode,
-            setName = setConfig.setName
+            setCodes = sealedSession.setCodes,
+            setNames = sealedSession.setNames
         ))
     }
 
@@ -186,8 +200,8 @@ class LobbyHandler(
             sender.send(
                 playerState.session.webSocketSession,
                 ServerMessage.SealedPoolGenerated(
-                    setCode = sealedSession.setCode,
-                    setName = sealedSession.setName,
+                    setCodes = sealedSession.setCodes,
+                    setNames = sealedSession.setNames,
                     cardPool = poolInfos,
                     basicLands = basicLandInfos
                 )
@@ -197,7 +211,10 @@ class LobbyHandler(
 
     private fun startGameFromSealed(sealedSession: SealedSession) {
         logger.info("Starting game from sealed session: ${sealedSession.sessionId}")
-        val gameSession = GameSession(cardRegistry = cardRegistry)
+        val gameSession = GameSession(
+            cardRegistry = cardRegistry,
+            useHandSmoother = gameProperties.handSmoother.enabled
+        )
 
         sealedSession.players.forEach { (playerId, playerState) ->
             val deck = playerState.submittedDeck
@@ -225,9 +242,15 @@ class LobbyHandler(
             return
         }
 
-        val setConfig = BoosterGenerator.getSetConfig(message.setCode)
-        if (setConfig == null) {
-            sender.sendError(session, ErrorCode.INVALID_ACTION, "Unknown set code: ${message.setCode}")
+        // Validate all set codes
+        if (message.setCodes.isEmpty()) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "At least one set code is required")
+            return
+        }
+        val setConfigs = message.setCodes.mapNotNull { boosterGenerator.getSetConfig(it) }
+        if (setConfigs.size != message.setCodes.size) {
+            val invalidCodes = message.setCodes.filter { boosterGenerator.getSetConfig(it) == null }
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "Unknown set codes: ${invalidCodes.joinToString()}")
             return
         }
 
@@ -257,8 +280,9 @@ class LobbyHandler(
         }
 
         val lobby = TournamentLobby(
-            setCode = setConfig.setCode,
-            setName = setConfig.setName,
+            setCodes = setConfigs.map { it.setCode },
+            setNames = setConfigs.map { it.setName },
+            boosterGenerator = boosterGenerator,
             format = format,
             boosterCount = boosterCount,
             maxPlayers = message.maxPlayers.coerceIn(2, 8),
@@ -267,7 +291,8 @@ class LobbyHandler(
         lobby.addPlayer(identity)
         lobbyRepository.saveLobby(lobby)
 
-        logger.info("Tournament lobby created: ${lobby.lobbyId} by ${identity.playerName} (set: ${setConfig.setName}, format: ${format.name})")
+        val setNamesStr = setConfigs.joinToString(", ") { it.setName }
+        logger.info("Tournament lobby created: ${lobby.lobbyId} by ${identity.playerName} (sets: $setNamesStr, format: ${format.name})")
         sender.send(session, ServerMessage.LobbyCreated(lobby.lobbyId))
         broadcastLobbyUpdate(lobby)
     }
@@ -356,8 +381,8 @@ class LobbyHandler(
                     val ws = playerState.identity.webSocketSession
                     if (ws != null) {
                         sender.send(ws, ServerMessage.SealedPoolGenerated(
-                            setCode = lobby.setCode,
-                            setName = lobby.setName,
+                            setCodes = lobby.setCodes,
+                            setNames = lobby.setNames,
                             cardPool = poolInfos,
                             basicLands = basicLandInfos
                         ))
@@ -735,11 +760,17 @@ class LobbyHandler(
             return
         }
 
-        // Update set if provided
-        message.setCode?.let { newSetCode ->
-            if (!lobby.updateSet(newSetCode)) {
-                sender.sendError(session, ErrorCode.INVALID_ACTION, "Invalid set code: $newSetCode")
+        // Update sets if provided (can be empty to disable start)
+        message.setCodes?.let { newSetCodes ->
+            // Allow empty setCodes to disable start button (but won't be able to start)
+            if (newSetCodes.isNotEmpty() && !lobby.updateSets(newSetCodes)) {
+                val invalidCodes = newSetCodes.filter { boosterGenerator.getSetConfig(it) == null }
+                sender.sendError(session, ErrorCode.INVALID_ACTION, "Invalid set codes: ${invalidCodes.joinToString()}")
                 return
+            }
+            if (newSetCodes.isEmpty()) {
+                lobby.setCodes = emptyList()
+                lobby.setNames = emptyList()
             }
         }
 
@@ -879,7 +910,10 @@ class LobbyHandler(
             val deck1 = lobby.getSubmittedDeck(match.player1Id) ?: continue
             val deck2 = lobby.getSubmittedDeck(match.player2Id!!) ?: continue
 
-            val gameSession = GameSession(cardRegistry = cardRegistry)
+            val gameSession = GameSession(
+                cardRegistry = cardRegistry,
+                useHandSmoother = gameProperties.handSmoother.enabled
+            )
             val ps1 = player1State.identity.toPlayerSession()
             val ps2 = player2State.identity.toPlayerSession()
 
@@ -931,7 +965,7 @@ class LobbyHandler(
                 val playerState = lobby.players[match.player1Id]
                 val identity = playerState?.identity
                 val ws = identity?.webSocketSession
-                if (ws != null && ws.isOpen && identity != null) {
+                if (identity != null && ws != null && ws.isOpen) {
                     sender.send(ws, ServerMessage.TournamentBye(
                         lobbyId = lobbyId,
                         round = round.roundNumber
@@ -1212,15 +1246,54 @@ class LobbyHandler(
     }
 
     /**
+     * Restore spectating state for a player after server restart.
+     * Re-adds them as a spectator and sends the spectating messages.
+     */
+    fun restoreSpectating(
+        identity: PlayerIdentity,
+        playerSession: PlayerSession,
+        session: WebSocketSession,
+        gameSessionId: String
+    ) {
+        val gameSession = gameRepository.findById(gameSessionId)
+        if (gameSession == null || gameSession.isGameOver()) {
+            // Game no longer exists or is over, clear spectating state and send active matches
+            identity.currentSpectatingGameId = null
+            sendActiveMatchesToPlayer(identity, session)
+            return
+        }
+
+        // Re-add as spectator
+        gameSession.addSpectator(playerSession)
+
+        // Send SpectatingStarted
+        val playerNames = gameSession.getPlayerNames()
+        if (playerNames != null) {
+            sender.send(session, ServerMessage.SpectatingStarted(
+                gameSessionId = gameSessionId,
+                player1Name = playerNames.first,
+                player2Name = playerNames.second
+            ))
+        }
+
+        // Send current game state
+        val spectatorState = gameSession.buildSpectatorState()
+        if (spectatorState != null) {
+            sender.send(session, spectatorState)
+        }
+
+        logger.info("Restored spectating for ${identity.playerName} to game $gameSessionId")
+    }
+
+    /**
      * Broadcast spectator state update to all spectators of a game.
      */
     fun broadcastSpectatorUpdate(gameSession: GameSession) {
         val spectatorState = gameSession.buildSpectatorState() ?: return
 
         for (spectator in gameSession.getSpectators()) {
-            val ws = spectator.webSocketSession
-            if (ws != null && ws.isOpen) {
-                sender.send(ws, spectatorState)
+            if (spectator.webSocketSession.isOpen) {
+                sender.send(spectator.webSocketSession, spectatorState)
             }
         }
     }

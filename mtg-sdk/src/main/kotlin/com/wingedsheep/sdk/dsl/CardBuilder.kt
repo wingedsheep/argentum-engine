@@ -175,6 +175,12 @@ class CardBuilder(private val name: String) {
      */
     var auraTarget: TargetRequirement? = null
 
+    /**
+     * Morph cost as a string (e.g., "{2}{U}").
+     * When set, the card gains the Morph keyword ability.
+     */
+    var morph: String? = null
+
     // =========================================================================
     // Internal State
     // =========================================================================
@@ -353,6 +359,13 @@ class CardBuilder(private val name: String) {
         // Build metadata
         val metadata = metadataBuilder?.build() ?: ScryfallMetadata()
 
+        // Add morph keyword ability if morph cost is specified
+        val finalKeywordAbilities = if (morph != null) {
+            keywordAbilityList + KeywordAbility.Morph(ManaCost.parse(morph!!))
+        } else {
+            keywordAbilityList.toList()
+        }
+
         return CardDefinition(
             name = name,
             manaCost = parsedManaCost,
@@ -360,7 +373,7 @@ class CardBuilder(private val name: String) {
             oracleText = oracleText,
             creatureStats = creatureStats,
             keywords = keywordSet.toSet(),
-            keywordAbilities = keywordAbilityList.toList(),
+            keywordAbilities = finalKeywordAbilities,
             script = script,
             equipCost = equipCost,
             startingLoyalty = startingLoyalty,
@@ -670,6 +683,7 @@ class LoyaltyAbilityBuilder(private val loyaltyChange: Int) {
         id = AbilityId.generate(),
         cost = AbilityCost.Loyalty(loyaltyChange),
         effect = effect,
+        targetRequirement = target,
         isPlaneswalkerAbility = true,
         timing = TimingRule.SorcerySpeed
     )

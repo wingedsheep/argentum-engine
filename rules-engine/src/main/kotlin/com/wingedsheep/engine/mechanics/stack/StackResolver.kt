@@ -3,12 +3,19 @@ package com.wingedsheep.engine.mechanics.stack
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.EffectHandler
+import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.identity.MorphDataComponent
+import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.engine.state.components.stack.*
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
@@ -26,7 +33,9 @@ import com.wingedsheep.sdk.scripting.Effect
  * - Countering spells
  */
 class StackResolver(
-    private val effectHandler: EffectHandler = EffectHandler()
+    private val effectHandler: EffectHandler = EffectHandler(),
+    private val cardRegistry: CardRegistry? = null,
+    private val staticAbilityHandler: StaticAbilityHandler = StaticAbilityHandler(cardRegistry)
 ) {
 
     // =========================================================================
@@ -35,6 +44,10 @@ class StackResolver(
 
     /**
      * Put a spell on the stack.
+     *
+     * @param castFaceDown If true, cast as a face-down 2/2 creature (morph). The spell
+     *                     will resolve as a face-down creature with FaceDownComponent
+     *                     and MorphDataComponent.
      */
     fun castSpell(
         state: GameState,
@@ -42,7 +55,8 @@ class StackResolver(
         casterId: EntityId,
         targets: List<ChosenTarget> = emptyList(),
         xValue: Int? = null,
-        sacrificedPermanents: List<EntityId> = emptyList()
+        sacrificedPermanents: List<EntityId> = emptyList(),
+        castFaceDown: Boolean = false
     ): ExecutionResult {
         val container = state.getEntity(cardId)
             ?: return ExecutionResult.error(state, "Card not found: $cardId")
@@ -55,9 +69,25 @@ class StackResolver(
 
         // Add spell components
         newState = newState.updateEntity(cardId) { c ->
-            var updated = c.with(SpellOnStackComponent(casterId, xValue, sacrificedPermanents = sacrificedPermanents))
+            var updated = c.with(SpellOnStackComponent(
+                casterId = casterId,
+                xValue = xValue,
+                sacrificedPermanents = sacrificedPermanents,
+                castFaceDown = castFaceDown
+            ))
             if (targets.isNotEmpty()) {
                 updated = updated.with(TargetsComponent(targets))
+            }
+            // If casting face-down, add the morph data component with the morph cost
+            if (castFaceDown) {
+                val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId)
+                val morphAbility = cardDef?.keywordAbilities?.filterIsInstance<KeywordAbility.Morph>()?.firstOrNull()
+                if (morphAbility != null) {
+                    updated = updated.with(MorphDataComponent(
+                        morphCost = morphAbility.cost,
+                        originalCardDefinitionId = cardComponent.cardDefinitionId
+                    ))
+                }
             }
             updated
         }
@@ -65,9 +95,12 @@ class StackResolver(
         // Push to stack
         newState = newState.pushToStack(cardId)
 
+        // For face-down creatures, use a generic name in the event
+        val eventName = if (castFaceDown) "Face-down creature" else cardComponent.name
+
         return ExecutionResult.success(
             newState.tick(),
-            listOf(SpellCastEvent(cardId, cardComponent.name, casterId))
+            listOf(SpellCastEvent(cardId, eventName, casterId))
         )
     }
 
@@ -237,9 +270,20 @@ class StackResolver(
                 .without<TargetsComponent>()
                 .with(ControllerComponent(controllerId))
 
-            // Creatures enter with summoning sickness
-            if (cardComponent?.typeLine?.isCreature == true) {
+            // If cast face-down (morph), add FaceDownComponent
+            // MorphDataComponent was already added when the spell was cast
+            if (spellComponent.castFaceDown) {
+                updated = updated.with(FaceDownComponent)
+            }
+
+            // Creatures enter with summoning sickness (including face-down creatures)
+            if (cardComponent?.typeLine?.isCreature == true || spellComponent.castFaceDown) {
                 updated = updated.with(SummoningSicknessComponent)
+            }
+
+            // Add continuous effects from static abilities (but not for face-down creatures)
+            if (!spellComponent.castFaceDown) {
+                updated = staticAbilityHandler.addContinuousEffectComponent(updated)
             }
 
             updated

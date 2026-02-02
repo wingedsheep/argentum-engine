@@ -1,6 +1,7 @@
 package com.wingedsheep.gameserver.scenarios
 
 import com.wingedsheep.engine.core.PassPriority
+import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.gameserver.ScenarioTestBase
 import com.wingedsheep.gameserver.session.GameSession
@@ -263,6 +264,47 @@ class NaturalOrderScenarioTest : ScenarioTestBase() {
                 // Natural Order should be in graveyard
                 withClue("Natural Order should be in graveyard after resolution") {
                     game.isInGraveyard(1, "Natural Order") shouldBe true
+                }
+            }
+
+            test("Creature fetched by Natural Order has summoning sickness") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardInHand(1, "Natural Order")
+                    .withCardOnBattlefield(1, "Grizzly Bears")
+                    .withLandsOnBattlefield(1, "Forest", 4)
+                    .withCardInLibrary(1, "Whiptail Wurm")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                // Cast Natural Order, sacrificing Grizzly Bears
+                val castResult = game.castSpellWithAdditionalSacrifice(1, "Natural Order", "Grizzly Bears")
+                withClue("Natural Order should be cast successfully: ${castResult.error}") {
+                    castResult.error shouldBe null
+                }
+
+                // Resolve the stack
+                game.resolveStack()
+
+                // Select Whiptail Wurm from the library search
+                val decision = game.getPendingDecision()!!
+                val libraryCards = (decision as com.wingedsheep.engine.core.SearchLibraryDecision).cards
+                val wurmId = libraryCards.entries.first { it.value.name == "Whiptail Wurm" }.key
+                game.selectCards(listOf(wurmId))
+
+                // Whiptail Wurm should be on the battlefield
+                withClue("Whiptail Wurm should be on the battlefield") {
+                    game.isOnBattlefield("Whiptail Wurm") shouldBe true
+                }
+
+                // Find the Whiptail Wurm on the battlefield and check for summoning sickness
+                val wurmOnBattlefield = game.state.getBattlefield().find { entityId ->
+                    game.state.getEntity(entityId)?.get<CardComponent>()?.name == "Whiptail Wurm"
+                }
+                withClue("Whiptail Wurm should have summoning sickness") {
+                    wurmOnBattlefield.shouldNotBeNull()
+                    game.state.getEntity(wurmOnBattlefield)?.has<SummoningSicknessComponent>() shouldBe true
                 }
             }
         }

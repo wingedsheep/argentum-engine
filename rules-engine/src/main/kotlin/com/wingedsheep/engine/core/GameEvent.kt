@@ -315,6 +315,17 @@ data class CountersRemovedEvent(
     val amount: Int
 ) : GameEvent
 
+/**
+ * Loyalty on a planeswalker changed (due to ability activation).
+ */
+@Serializable
+@SerialName("LoyaltyChangedEvent")
+data class LoyaltyChangedEvent(
+    val entityId: EntityId,
+    val entityName: String,
+    val change: Int
+) : GameEvent
+
 // =============================================================================
 // Card Events
 // =============================================================================
@@ -547,6 +558,7 @@ data class CardsRevealedEvent(
     val revealingPlayerId: EntityId,
     val cardIds: List<EntityId>,
     val cardNames: List<String>,
+    val imageUris: List<String?> = emptyList(),
     val source: String? = null
 ) : GameEvent
 
@@ -572,4 +584,19 @@ data class LibraryReorderedEvent(
     val playerId: EntityId,
     val cardCount: Int,
     val source: String? = null
+) : GameEvent
+
+// =============================================================================
+// Morph Events
+// =============================================================================
+
+/**
+ * A face-down creature was turned face up.
+ */
+@Serializable
+@SerialName("TurnFaceUpEvent")
+data class TurnFaceUpEvent(
+    val entityId: EntityId,
+    val cardName: String,
+    val controllerId: EntityId
 ) : GameEvent

@@ -82,9 +82,13 @@ data class LoseLifeEffect(
 @Serializable
 data class DealDamageEffect(
     val amount: Int,
-    val target: EffectTarget
+    val target: EffectTarget,
+    val cantBePrevented: Boolean = false
 ) : Effect {
-    override val description: String = "Deal $amount damage to ${target.description}"
+    override val description: String = buildString {
+        append("Deal $amount damage to ${target.description}")
+        if (cantBePrevented) append(". This damage can't be prevented")
+    }
 }
 
 /**
@@ -184,6 +188,24 @@ data class DestroyEffect(
     val target: EffectTarget
 ) : Effect {
     override val description: String = "Destroy ${target.description}"
+}
+
+/**
+ * Mark target as unable to regenerate.
+ * "It can't be regenerated."
+ *
+ * Designed to be used AFTER DestroyEffect via .then() for cards like Smother.
+ * The target may be in the graveyard when this effect resolves.
+ * When regeneration is implemented, this will mark the entity to prevent
+ * regeneration effects from returning it to the battlefield.
+ *
+ * Example: DestroyEffect(target) then CantBeRegeneratedEffect(target)
+ */
+@Serializable
+data class CantBeRegeneratedEffect(
+    val target: EffectTarget
+) : Effect {
+    override val description: String = "${target.description} can't be regenerated"
 }
 
 /**
@@ -388,6 +410,15 @@ sealed interface DynamicAmount {
     @Serializable
     data object AllCreatures : DynamicAmount {
         override val description: String = "the number of creatures on the battlefield"
+    }
+
+    /**
+     * Count of all creatures with a specific subtype on the battlefield.
+     * Used for tribal effects like Wellwisher ("for each Elf on the battlefield").
+     */
+    @Serializable
+    data class CreaturesWithSubtypeOnBattlefield(val subtype: Subtype) : DynamicAmount {
+        override val description: String = "the number of ${subtype.value}s on the battlefield"
     }
 
     /**
@@ -960,6 +991,15 @@ data class StoreCountEffect(
 /**
  * Create token effect.
  * "Create a 1/1 white Soldier creature token"
+ *
+ * @property count Number of tokens to create
+ * @property power Token power
+ * @property toughness Token toughness
+ * @property colors Token colors
+ * @property creatureTypes Token creature types (e.g., "Soldier", "Kithkin")
+ * @property keywords Keywords the token has (e.g., flying, vigilance)
+ * @property name Optional token name (defaults to creature types + "Token")
+ * @property imageUri Optional image URI for the token artwork
  */
 @Serializable
 data class CreateTokenEffect(
@@ -968,7 +1008,9 @@ data class CreateTokenEffect(
     val toughness: Int,
     val colors: Set<Color>,
     val creatureTypes: Set<String>,
-    val keywords: Set<Keyword> = emptySet()
+    val keywords: Set<Keyword> = emptySet(),
+    val name: String? = null,
+    val imageUri: String? = null
 ) : Effect {
     override val description: String = buildString {
         append("Create ")
@@ -2421,6 +2463,12 @@ sealed interface CreatureGroupFilter {
     @Serializable
     data class WithKeywordYouControl(val keyword: Keyword) : CreatureGroupFilter {
         override val description: String = "Creatures you control with ${keyword.displayName.lowercase()}"
+    }
+
+    /** Other tapped creatures you control (excludes self) */
+    @Serializable
+    data object OtherTappedYouControl : CreatureGroupFilter {
+        override val description: String = "Other tapped creatures you control"
     }
 
     /** All nonwhite creatures */

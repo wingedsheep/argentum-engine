@@ -150,6 +150,9 @@ data class ClientCard(
     /** Whether this card is face-down (for morph, manifest, hidden info) */
     val isFaceDown: Boolean,
 
+    /** Morph cost for face-down creatures (only visible to controller) */
+    val morphCost: String? = null,
+
     /** Targets for spells/abilities on the stack (for targeting arrows) */
     val targets: List<ClientChosenTarget> = emptyList(),
 
@@ -192,6 +195,7 @@ data class ClientPlayer(
     val handSize: Int,
     val librarySize: Int,
     val graveyardSize: Int,
+    val exileSize: Int,
     val landsPlayedThisTurn: Int,
     val hasLost: Boolean,
 

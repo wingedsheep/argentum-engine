@@ -6,6 +6,7 @@ import com.wingedsheep.gameserver.dto.ClientGameState
 import com.wingedsheep.gameserver.dto.ClientStateTransformer
 import com.wingedsheep.gameserver.protocol.GameOverReason
 import com.wingedsheep.gameserver.protocol.AdditionalCostInfo
+import com.wingedsheep.gameserver.protocol.ConvokeCreatureInfo
 import com.wingedsheep.gameserver.protocol.LegalActionInfo
 import com.wingedsheep.gameserver.protocol.LegalActionTargetInfo
 import com.wingedsheep.gameserver.protocol.ServerMessage
@@ -15,10 +16,13 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.LossReason
 import com.wingedsheep.engine.state.components.player.MulliganStateComponent
 import com.wingedsheep.engine.state.components.player.PlayerLostComponent
+import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.Deck
@@ -55,7 +59,8 @@ private val logger = LoggerFactory.getLogger(GameSession::class.java)
 class GameSession(
     val sessionId: String = UUID.randomUUID().toString(),
     private val cardRegistry: CardRegistry,
-    private val stateTransformer: ClientStateTransformer = ClientStateTransformer(cardRegistry)
+    private val stateTransformer: ClientStateTransformer = ClientStateTransformer(cardRegistry),
+    private val useHandSmoother: Boolean = false
 ) {
     // Lock for synchronizing state modifications to prevent lost updates
     private val stateLock = Any()
@@ -208,14 +213,66 @@ class GameSession(
         val p1 = player1 ?: return null
         val p2 = player2 ?: return null
 
+        // Build full ClientGameState with both hands masked for GameBoard reuse
+        val spectatorClientState = buildSpectatorClientGameState(state, p1.playerId, p2.playerId)
+
         return ServerMessage.SpectatorStateUpdate(
             gameSessionId = sessionId,
+            gameState = spectatorClientState,
+            player1Id = p1.playerId.value,
+            player2Id = p2.playerId.value,
+            player1Name = p1.playerName,
+            player2Name = p2.playerName,
+            // Legacy fields for backward compatibility
             player1 = buildSpectatorPlayerState(state, p1),
             player2 = buildSpectatorPlayerState(state, p2),
             currentPhase = state.phase.name,
             activePlayerId = state.activePlayerId?.value,
             priorityPlayerId = state.priorityPlayerId?.value,
             combat = buildSpectatorCombatState(state)
+        )
+    }
+
+    /**
+     * Build a ClientGameState for spectators with both players' hands masked.
+     * Spectators see:
+     * - Both battlefields with full card info
+     * - Both graveyards with full card info
+     * - The stack with full card info
+     * - Both players' life totals and zone sizes
+     * - No hand contents (only hand sizes)
+     */
+    private fun buildSpectatorClientGameState(
+        state: GameState,
+        player1Id: EntityId,
+        player2Id: EntityId
+    ): ClientGameState {
+        // Use player1's perspective as the "viewing player" for the transform,
+        // then mask player1's hand as well
+        val baseState = stateTransformer.transform(state, player1Id)
+
+        // Filter out hand cards from the cards map (spectators can't see either player's hand)
+        val player1Hand = state.getHand(player1Id).toSet()
+        val player2Hand = state.getHand(player2Id).toSet()
+        val allHandCards = player1Hand + player2Hand
+        val visibleCards = baseState.cards.filterKeys { it !in allHandCards }
+
+        // Update zones to hide hand contents but keep sizes
+        val maskedZones = baseState.zones.map { zone ->
+            if (zone.zoneId.zoneType == ZoneType.HAND) {
+                // Keep size but hide card IDs for both hands
+                zone.copy(
+                    cardIds = emptyList(),
+                    isVisible = false
+                )
+            } else {
+                zone
+            }
+        }
+
+        return baseState.copy(
+            cards = visibleCards,
+            zones = maskedZones
         )
     }
 
@@ -337,7 +394,8 @@ class GameSession(
         }
 
         val config = GameConfig(
-            players = playerConfigs
+            players = playerConfigs,
+            useHandSmoother = useHandSmoother
         )
 
         val result = gameInitializer.initializeGame(config)
@@ -609,6 +667,31 @@ class GameSession(
             state.activePlayerId == playerId
 
         val hand = state.getHand(playerId)
+
+        // Check for morph cards that can be cast face-down (sorcery speed only)
+        if (canPlaySorcerySpeed) {
+            val morphCost = ManaCost.parse("{3}")
+            if (manaSolver.canPay(state, playerId, morphCost)) {
+                for (cardId in hand) {
+                    val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: continue
+                    val cardDef = cardRegistry.getCard(cardComponent.name) ?: continue
+
+                    // Check if card has Morph keyword
+                    val hasMorph = cardDef.keywordAbilities
+                        .any { it is com.wingedsheep.sdk.scripting.KeywordAbility.Morph }
+
+                    if (hasMorph) {
+                        result.add(LegalActionInfo(
+                            actionType = "CastFaceDown",
+                            description = "Cast ${cardComponent.name} face-down",
+                            action = CastSpell(playerId, cardId, castFaceDown = true),
+                            manaCostString = "{3}"
+                        ))
+                    }
+                }
+            }
+        }
+
         for (cardId in hand) {
             val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: continue
             if (!cardComponent.typeLine.isLand) {
@@ -645,8 +728,21 @@ class GameSession(
                     }
                     if (!canPayAdditionalCosts) continue
 
-                    // Check mana affordability
-                    val canAfford = manaSolver.canPay(state, playerId, cardComponent.manaCost)
+                    // Check mana affordability (including Convoke if available)
+                    val hasConvoke = cardDef?.keywords?.contains(Keyword.CONVOKE) == true
+                    val convokeCreatures = if (hasConvoke) {
+                        findConvokeCreatures(state, playerId)
+                    } else null
+
+                    // For Convoke spells, check if affordable with creature help
+                    val canAfford = if (hasConvoke && convokeCreatures != null && convokeCreatures.isNotEmpty()) {
+                        // Can afford if: mana alone is enough, OR mana + convoke creatures cover the cost
+                        manaSolver.canPay(state, playerId, cardComponent.manaCost) ||
+                            canAffordWithConvoke(state, playerId, cardComponent.manaCost, convokeCreatures)
+                    } else {
+                        manaSolver.canPay(state, playerId, cardComponent.manaCost)
+                    }
+
                     if (canAfford) {
                         val targetReqs = cardDef?.script?.targetRequirements ?: emptyList()
 
@@ -670,6 +766,9 @@ class GameSession(
                             val fixedCost = cardComponent.manaCost.cmc  // X contributes 0 to CMC
                             (availableSources - fixedCost).coerceAtLeast(0)
                         } else null
+
+                        // Convoke info was already calculated above (before affordability check)
+                        val manaCostString = if (hasConvoke) cardComponent.manaCost.toString() else null
 
                         if (targetReqs.isNotEmpty()) {
                             // Spell requires targets - find valid targets for all requirements
@@ -711,7 +810,10 @@ class GameSession(
                                         action = CastSpell(playerId, cardId, targets = listOf(autoSelectedTarget)),
                                         hasXCost = hasXCost,
                                         maxAffordableX = maxAffordableX,
-                                        additionalCostInfo = costInfo
+                                        additionalCostInfo = costInfo,
+                                        hasConvoke = hasConvoke,
+                                        validConvokeCreatures = convokeCreatures,
+                                        manaCostString = manaCostString
                                     ))
                                 } else {
                                     result.add(LegalActionInfo(
@@ -726,7 +828,10 @@ class GameSession(
                                         targetRequirements = if (targetReqInfos.size > 1) targetReqInfos else null,
                                         hasXCost = hasXCost,
                                         maxAffordableX = maxAffordableX,
-                                        additionalCostInfo = costInfo
+                                        additionalCostInfo = costInfo,
+                                        hasConvoke = hasConvoke,
+                                        validConvokeCreatures = convokeCreatures,
+                                        manaCostString = manaCostString
                                     ))
                                 }
                             }
@@ -738,11 +843,34 @@ class GameSession(
                                 action = CastSpell(playerId, cardId),
                                 hasXCost = hasXCost,
                                 maxAffordableX = maxAffordableX,
-                                additionalCostInfo = costInfo
+                                additionalCostInfo = costInfo,
+                                hasConvoke = hasConvoke,
+                                validConvokeCreatures = convokeCreatures,
+                                manaCostString = manaCostString
                             ))
                         }
                     }
                 }
+            }
+        }
+
+        // Check for cycling abilities on cards in hand
+        for (cardId in hand) {
+            val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry.getCard(cardComponent.name) ?: continue
+
+            // Check for cycling ability
+            val cyclingAbility = cardDef.keywordAbilities
+                .filterIsInstance<com.wingedsheep.sdk.scripting.KeywordAbility.Cycling>()
+                .firstOrNull() ?: continue
+
+            // Check if player can afford the cycling cost
+            if (manaSolver.canPay(state, playerId, cyclingAbility.cost)) {
+                result.add(LegalActionInfo(
+                    actionType = "CycleCard",
+                    description = "Cycle ${cardComponent.name}",
+                    action = CycleCard(playerId, cardId)
+                ))
             }
         }
 
@@ -785,6 +913,33 @@ class GameSession(
                     description = ability.description,
                     action = ActivateAbility(playerId, entityId, ability.id),
                     isManaAbility = true
+                ))
+            }
+        }
+
+        // Check for face-down creatures that can be turned face-up (morph)
+        // This is a special action that doesn't use the stack (can be done at any time with priority)
+        for (entityId in battlefieldPermanents) {
+            val container = state.getEntity(entityId) ?: continue
+
+            // Must be face-down
+            if (!container.has<FaceDownComponent>()) continue
+
+            // Must be controlled by the player
+            val controllerId = container.get<ControllerComponent>()?.playerId
+            if (controllerId != playerId) continue
+
+            // Must have morph data (to get the morph cost)
+            val morphData = container.get<MorphDataComponent>() ?: continue
+            val cardComponent = container.get<CardComponent>() ?: continue
+
+            // Check if player can afford the morph cost
+            if (manaSolver.canPay(state, playerId, morphData.morphCost)) {
+                result.add(LegalActionInfo(
+                    actionType = "TurnFaceUp",
+                    description = "Turn ${cardComponent.name} face-up",
+                    action = TurnFaceUp(playerId, entityId),
+                    manaCostString = morphData.morphCost.toString()
                 ))
             }
         }
@@ -1130,6 +1285,12 @@ class GameSession(
                         matchesCreatureFilter(state, entityId, container, cardComponent, subFilter, playerId)
                     }
                 }
+                is CreatureTargetFilter.WithManaValueAtMost -> {
+                    cardComponent.manaValue <= filter.maxManaValue
+                }
+                is CreatureTargetFilter.WithManaValueAtLeast -> {
+                    cardComponent.manaValue >= filter.minManaValue
+                }
             }
         }
     }
@@ -1183,6 +1344,12 @@ class GameSession(
                 filter.filters.all { subFilter ->
                     matchesCreatureFilter(state, entityId, container, cardComponent, subFilter, playerId)
                 }
+            }
+            is CreatureTargetFilter.WithManaValueAtMost -> {
+                cardComponent.manaValue <= filter.maxManaValue
+            }
+            is CreatureTargetFilter.WithManaValueAtLeast -> {
+                cardComponent.manaValue >= filter.minManaValue
             }
         }
     }
@@ -1352,6 +1519,98 @@ class GameSession(
             if (controllerId != playerId) return@filter false
             matchesCardFilter(cardComponent, cost.filter)
         }
+    }
+
+    /**
+     * Find untapped creatures that can be used for Convoke.
+     * Creatures with summoning sickness CAN be used for Convoke.
+     */
+    private fun findConvokeCreatures(state: GameState, playerId: EntityId): List<ConvokeCreatureInfo> {
+        val playerBattlefield = ZoneKey(playerId, ZoneType.BATTLEFIELD)
+        return state.getZone(playerBattlefield).mapNotNull { entityId ->
+            val container = state.getEntity(entityId) ?: return@mapNotNull null
+            val cardComponent = container.get<CardComponent>() ?: return@mapNotNull null
+
+            // Must be a creature
+            if (!cardComponent.typeLine.isCreature) return@mapNotNull null
+
+            // Must be controlled by the player
+            val controllerId = container.get<ControllerComponent>()?.playerId
+            if (controllerId != playerId) return@mapNotNull null
+
+            // Must be untapped
+            if (container.has<TappedComponent>()) return@mapNotNull null
+
+            ConvokeCreatureInfo(
+                entityId = entityId,
+                name = cardComponent.name,
+                colors = cardComponent.colors
+            )
+        }
+    }
+
+    /**
+     * Check if a spell can be afforded using Convoke creatures to help pay the cost.
+     *
+     * This is a simplified check that determines if the player has enough resources
+     * (mana sources + convoke creatures) to potentially pay the cost. The exact
+     * color matching is handled by the client UI and engine during actual casting.
+     */
+    private fun canAffordWithConvoke(
+        state: GameState,
+        playerId: EntityId,
+        manaCost: com.wingedsheep.sdk.core.ManaCost,
+        convokeCreatures: List<ConvokeCreatureInfo>
+    ): Boolean {
+        // Get available mana from all sources
+        val availableMana = manaSolver.getAvailableManaCount(state, playerId)
+
+        // Total resources = mana + convoke creatures
+        val totalResources = availableMana + convokeCreatures.size
+
+        // Simple check: can we cover the total CMC?
+        // This is a conservative estimate - colored requirements might still fail,
+        // but it allows us to highlight the card as potentially castable.
+        if (totalResources < manaCost.cmc) {
+            return false
+        }
+
+        // More precise check: for each colored mana symbol, we need either:
+        // - A mana source that can produce that color, OR
+        // - A creature of that color to convoke
+        // For simplicity, we'll use a greedy approach
+
+        // Count colored requirements using the colorCount property
+        val coloredRequirements = manaCost.colorCount
+
+        // Count creatures by color for convoke
+        val creatureColors = mutableMapOf<com.wingedsheep.sdk.core.Color, Int>()
+        for (creature in convokeCreatures) {
+            for (color in creature.colors) {
+                creatureColors[color] = (creatureColors[color] ?: 0) + 1
+            }
+        }
+
+        // Check if we can cover colored requirements with creatures
+        // (mana sources can produce any color, so they're always valid)
+        var creaturesUsedForColors = 0
+        for ((color, needed) in coloredRequirements) {
+            val creaturesOfColor = creatureColors[color] ?: 0
+            // We can use creatures of this color, but need to track how many we use
+            creaturesUsedForColors += minOf(needed, creaturesOfColor)
+        }
+
+        // Calculate generic mana requirement
+        val genericRequired = manaCost.genericAmount
+
+        // Creatures not used for colors can pay generic
+        val creaturesForGeneric = convokeCreatures.size - creaturesUsedForColors
+
+        // Total resources for generic = mana sources + unused creatures
+        val resourcesForGeneric = availableMana + creaturesForGeneric
+
+        // We can afford if we have enough for generic (colored is covered by creatures or mana)
+        return resourcesForGeneric >= genericRequired
     }
 
     /**

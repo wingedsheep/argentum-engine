@@ -614,6 +614,9 @@ function GraveyardTargetingUI({
   const minTargets = targetReq?.minTargets ?? 1
   const maxTargets = targetReq?.maxTargets ?? 1
 
+  // Lift selection state to persist across tab switches
+  const [selectedCards, setSelectedCards] = useState<EntityId[]>([])
+
   // If only one graveyard, use simple UI
   if (ownerIds.length <= 1) {
     return (
@@ -687,7 +690,12 @@ function GraveyardTargetingUI({
       >
         {ownerIds.map((ownerId) => {
           const isActive = ownerId === currentOwnerId
-          const cardCount = cardsByOwner.get(ownerId)?.length ?? 0
+          const ownerCards = cardsByOwner.get(ownerId) ?? []
+          const cardCount = ownerCards.length
+          // Count how many cards are selected from this graveyard
+          const selectedFromThisGraveyard = ownerCards.filter((c) =>
+            selectedCards.includes(c.id)
+          ).length
           return (
             <button
               key={ownerId}
@@ -697,14 +705,36 @@ function GraveyardTargetingUI({
                 fontSize: responsive.fontSize.normal,
                 backgroundColor: isActive ? '#4a5568' : 'transparent',
                 color: isActive ? 'white' : '#888',
-                border: 'none',
+                border: selectedFromThisGraveyard > 0 && !isActive ? '2px solid #fbbf24' : 'none',
                 borderRadius: 6,
                 cursor: 'pointer',
                 fontWeight: isActive ? 600 : 400,
                 transition: 'all 0.15s',
+                position: 'relative',
               }}
             >
               {getPlayerLabel(ownerId)} ({cardCount})
+              {selectedFromThisGraveyard > 0 && (
+                <span
+                  style={{
+                    position: 'absolute',
+                    top: -6,
+                    right: -6,
+                    backgroundColor: '#fbbf24',
+                    color: '#1a1a1a',
+                    borderRadius: '50%',
+                    width: 20,
+                    height: 20,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 12,
+                    fontWeight: 'bold',
+                  }}
+                >
+                  {selectedFromThisGraveyard}
+                </span>
+              )}
             </button>
           )
         })}
@@ -713,6 +743,8 @@ function GraveyardTargetingUI({
       {/* Card selection - reuse ZoneSelectionUI but embed it */}
       <GraveyardCardSelection
         cards={cards}
+        selectedCards={selectedCards}
+        onSelectedCardsChange={setSelectedCards}
         minSelections={minTargets}
         maxSelections={maxTargets}
         responsive={responsive}
@@ -724,28 +756,27 @@ function GraveyardTargetingUI({
 
 /**
  * Card selection portion for graveyard targeting (without the full overlay).
+ * Now accepts selectedCards as a prop to persist across tab switches.
  */
 function GraveyardCardSelection({
   cards,
+  selectedCards,
+  onSelectedCardsChange,
   minSelections,
   maxSelections,
   responsive,
   onConfirm,
 }: {
   cards: ZoneCardInfo[]
+  selectedCards: EntityId[]
+  onSelectedCardsChange: (cards: EntityId[]) => void
   minSelections: number
   maxSelections: number
   responsive: ResponsiveSizes
   onConfirm: (selectedCards: EntityId[]) => void
 }) {
-  const [selectedCards, setSelectedCards] = useState<EntityId[]>([])
   const [hoveredCardId, setHoveredCardId] = useState<EntityId | null>(null)
   const hoverCard = useGameStore((s) => s.hoverCard)
-
-  // Reset selection when cards change (switching graveyards)
-  useMemo(() => {
-    setSelectedCards([])
-  }, [cards])
 
   // Sort cards by type then name
   const sortedCards = useMemo(() => {
@@ -779,15 +810,11 @@ function GraveyardCardSelection({
   )
 
   const toggleCard = (cardId: EntityId) => {
-    setSelectedCards((prev) => {
-      if (prev.includes(cardId)) {
-        return prev.filter((id) => id !== cardId)
-      }
-      if (prev.length >= maxSelections) {
-        return prev
-      }
-      return [...prev, cardId]
-    })
+    if (selectedCards.includes(cardId)) {
+      onSelectedCardsChange(selectedCards.filter((id) => id !== cardId))
+    } else if (selectedCards.length < maxSelections) {
+      onSelectedCardsChange([...selectedCards, cardId])
+    }
   }
 
   // Handle hover using global store (for the CardPreview component)
@@ -801,9 +828,9 @@ function GraveyardCardSelection({
     hoverCard(null)
   }
 
-  const handleConfirm = () => {
+  const handleConfirmClick = () => {
     onConfirm(selectedCards)
-    setSelectedCards([])
+    onSelectedCardsChange([])
   }
 
   return (
@@ -869,8 +896,8 @@ function GraveyardCardSelection({
 
       {/* Confirm button */}
       <button
-        onClick={handleConfirm}
-        disabled={!canConfirm || selectedCards.length === 0}
+        onClick={handleConfirmClick}
+        disabled={!canConfirm}
         style={{
           padding: responsive.isMobile ? '10px 24px' : '12px 36px',
           fontSize: responsive.fontSize.large,

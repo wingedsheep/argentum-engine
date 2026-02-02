@@ -42,10 +42,10 @@ data class SealedPlayerState(
  */
 class SealedSession(
     val sessionId: String = UUID.randomUUID().toString(),
-    val setCode: String,
-    val setName: String
+    val setCodes: List<String>,
+    val setNames: List<String>,
+    private val boosterGenerator: BoosterGenerator
 ) {
-    private val boosterGenerator = BoosterGenerator()
 
     /** Player states indexed by player ID */
     val players = ConcurrentHashMap<EntityId, SealedPlayerState>()
@@ -57,7 +57,7 @@ class SealedSession(
 
     /** Basic lands available for deck building */
     val basicLands: Map<String, CardDefinition> by lazy {
-        boosterGenerator.getBasicLands(setCode)
+        boosterGenerator.getBasicLands(setCodes)
     }
 
     val isFull: Boolean get() = players.size >= 2
@@ -95,9 +95,13 @@ class SealedSession(
         require(players.size == 2) { "Need exactly 2 players to generate pools" }
         require(state == SealedSessionState.WAITING_FOR_PLAYERS) { "Pools already generated" }
 
-        // Generate unique pools for each player
+        // Generate a shared distribution seed so all players get the same
+        // set distribution (e.g., both get 3 Portal + 2 Onslaught boosters)
+        val distributionSeed = System.currentTimeMillis()
+
+        // Generate unique pools for each player (card contents differ, but set distribution is the same)
         players.forEach { (playerId, playerState) ->
-            val pool = boosterGenerator.generateSealedPool(setCode)
+            val pool = boosterGenerator.generateSealedPool(setCodes, distributionSeed = distributionSeed)
             players[playerId] = playerState.copy(cardPool = pool)
         }
 

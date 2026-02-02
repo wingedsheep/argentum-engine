@@ -25,6 +25,6 @@ class DealDamageExecutor : EffectExecutor<DealDamageEffect> {
         val targetId = resolveTarget(effect.target, context)
             ?: return ExecutionResult.error(state, "No valid target for damage")
 
-        return dealDamageToTarget(state, targetId, effect.amount, context.sourceId)
+        return dealDamageToTarget(state, targetId, effect.amount, context.sourceId, effect.cantBePrevented)
     }
 }

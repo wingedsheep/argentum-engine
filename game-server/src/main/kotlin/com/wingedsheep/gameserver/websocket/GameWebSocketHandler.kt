@@ -34,6 +34,9 @@ class GameWebSocketHandler(
         connectionHandler.handleRoundCompleteCallback = { lobbyId -> lobbyHandler.handleRoundComplete(lobbyId) }
         connectionHandler.broadcastStateUpdateCallback = { gameSession, events -> gamePlayHandler.broadcastStateUpdate(gameSession, events) }
         connectionHandler.sendActiveMatchesToPlayerCallback = { identity, wsSession -> lobbyHandler.sendActiveMatchesToPlayer(identity, wsSession) }
+        connectionHandler.restoreSpectatingCallback = { identity, playerSession, wsSession, gameSessionId ->
+            lobbyHandler.restoreSpectating(identity, playerSession, wsSession, gameSessionId)
+        }
     }
 
     override fun afterConnectionEstablished(session: WebSocketSession) {
