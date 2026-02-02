@@ -1199,22 +1199,22 @@ function TournamentOverlay({
         </div>
       )}
 
-      {tournamentState.isComplete && (
-        <button
-          onClick={leaveTournament}
-          style={{
-            padding: '12px 24px',
-            fontSize: responsive.fontSize.large,
-            backgroundColor: '#e65100',
-            color: 'white',
-            border: 'none',
-            borderRadius: 8,
-            cursor: 'pointer',
-          }}
-        >
-          Return to Menu
-        </button>
-      )}
+      {/* Leave/Return button */}
+      <button
+        onClick={leaveTournament}
+        style={{
+          padding: tournamentState.isComplete ? '12px 24px' : '10px 20px',
+          fontSize: tournamentState.isComplete ? responsive.fontSize.large : responsive.fontSize.normal,
+          backgroundColor: tournamentState.isComplete ? '#e65100' : 'transparent',
+          color: tournamentState.isComplete ? 'white' : '#666',
+          border: tournamentState.isComplete ? 'none' : '1px solid #444',
+          borderRadius: 8,
+          cursor: 'pointer',
+          marginTop: tournamentState.isComplete ? 0 : 8,
+        }}
+      >
+        {tournamentState.isComplete ? 'Return to Menu' : 'Leave Tournament'}
+      </button>
     </div>
   )
 }
