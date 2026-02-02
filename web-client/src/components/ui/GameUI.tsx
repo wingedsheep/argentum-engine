@@ -1209,7 +1209,7 @@ function TournamentOverlay({
                   ? 'BYE'
                   : result.isDraw
                     ? 'Draw'
-                    : `Winner: ${result.winnerId === result.player1Name ? result.player1Name : result.player2Name}`}
+                    : `Winner: ${result.winnerId === result.player1Id ? result.player1Name : result.player2Name}`}
               </span>
               <span>{result.isBye ? '' : result.player2Name}</span>
             </div>

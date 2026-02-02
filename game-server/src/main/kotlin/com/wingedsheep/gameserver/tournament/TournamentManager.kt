@@ -440,6 +440,8 @@ class TournamentManager(
             ServerMessage.MatchResultInfo(
                 player1Name = standings[match.player1Id]?.playerName ?: "Unknown",
                 player2Name = match.player2Id?.let { standings[it]?.playerName } ?: "BYE",
+                player1Id = match.player1Id.value,
+                player2Id = match.player2Id?.value,
                 winnerId = match.winnerId?.value,
                 isDraw = match.isDraw,
                 isBye = match.isBye

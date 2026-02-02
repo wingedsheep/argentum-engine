@@ -601,6 +601,8 @@ export interface PlayerStandingInfo {
 export interface MatchResultInfo {
   readonly player1Name: string
   readonly player2Name: string
+  readonly player1Id: string
+  readonly player2Id: string | null
   readonly winnerId: string | null
   readonly isDraw: boolean
   readonly isBye: boolean

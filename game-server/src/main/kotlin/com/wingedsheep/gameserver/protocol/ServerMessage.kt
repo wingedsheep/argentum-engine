@@ -380,6 +380,8 @@ sealed interface ServerMessage {
     data class MatchResultInfo(
         val player1Name: String,
         val player2Name: String,
+        val player1Id: String,
+        val player2Id: String?,
         val winnerId: String?,
         val isDraw: Boolean = false,
         val isBye: Boolean = false
