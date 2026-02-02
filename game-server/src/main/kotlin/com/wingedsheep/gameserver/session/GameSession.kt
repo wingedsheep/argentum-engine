@@ -89,6 +89,9 @@ class GameSession(
     /** Accumulated game log per player (player-specific due to masking) */
     private val gameLogs = java.util.concurrent.ConcurrentHashMap<EntityId, MutableList<ClientEvent>>()
 
+    /** Per-player full control setting (disables auto-pass when enabled) */
+    private val fullControlEnabled = java.util.concurrent.ConcurrentHashMap<EntityId, Boolean>()
+
     val player1: PlayerSession? get() = players.values.firstOrNull()
     val player2: PlayerSession? get() = players.values.drop(1).firstOrNull()
 
@@ -216,6 +219,12 @@ class GameSession(
         // Build full ClientGameState with both hands masked for GameBoard reuse
         val spectatorClientState = buildSpectatorClientGameState(state, p1.playerId, p2.playerId)
 
+        // Build decision status if there's a pending decision
+        val decisionStatus = state.pendingDecision?.let { decision ->
+            val decidingPlayer = if (decision.playerId == p1.playerId) p1 else p2
+            createSpectatorDecisionStatus(decision, decidingPlayer.playerName)
+        }
+
         return ServerMessage.SpectatorStateUpdate(
             gameSessionId = sessionId,
             gameState = spectatorClientState,
@@ -229,7 +238,37 @@ class GameSession(
             currentPhase = state.phase.name,
             activePlayerId = state.activePlayerId?.value,
             priorityPlayerId = state.priorityPlayerId?.value,
-            combat = buildSpectatorCombatState(state)
+            combat = buildSpectatorCombatState(state),
+            decisionStatus = decisionStatus
+        )
+    }
+
+    /**
+     * Create a decision status for spectators.
+     * Similar to createOpponentDecisionStatus but includes the player name.
+     */
+    private fun createSpectatorDecisionStatus(decision: PendingDecision, playerName: String): ServerMessage.SpectatorDecisionStatus {
+        val displayText = when (decision) {
+            is SelectCardsDecision -> "Selecting cards"
+            is ChooseTargetsDecision -> "Choosing targets"
+            is YesNoDecision -> "Making a choice"
+            is ChooseModeDecision -> "Choosing mode"
+            is ChooseColorDecision -> "Choosing a color"
+            is ChooseNumberDecision -> "Choosing a number"
+            is DistributeDecision -> "Distributing"
+            is OrderObjectsDecision -> "Ordering blockers"
+            is SplitPilesDecision -> "Splitting piles"
+            is SearchLibraryDecision -> "Searching library"
+            is ReorderLibraryDecision -> "Reordering cards"
+            is AssignDamageDecision -> "Assigning damage"
+            is ChooseOptionDecision -> "Making a choice"
+        }
+        return ServerMessage.SpectatorDecisionStatus(
+            playerName = playerName,
+            playerId = decision.playerId.value,
+            decisionType = decision::class.simpleName ?: "Unknown",
+            displayText = displayText,
+            sourceName = decision.context.sourceName
         )
     }
 
@@ -1080,9 +1119,75 @@ class GameSession(
             enrichDecision(it, state)
         }
 
+        // Calculate next stop point for the Pass button (only if player has priority)
+        val nextStopPoint = if (state.priorityPlayerId == playerId && !isFullControlEnabled(playerId)) {
+            val hasMeaningfulActions = legalActions.any { action ->
+                action.actionType != "PassPriority" && !action.isManaAbility
+            }
+            autoPassManager.getNextStopPoint(state, playerId, hasMeaningfulActions)
+        } else {
+            null
+        }
+
+        // Include opponent decision status for the OTHER player (so they know opponent is making a choice)
+        val opponentDecisionStatus = state.pendingDecision?.takeIf { it.playerId != playerId }?.let {
+            createOpponentDecisionStatus(it)
+        }
+
         val stateWithLog = clientState.copy(gameLog = playerLog.toList())
-        return ServerMessage.StateUpdate(stateWithLog, clientEvents, legalActions, pendingDecision)
+        return ServerMessage.StateUpdate(stateWithLog, clientEvents, legalActions, pendingDecision, nextStopPoint, opponentDecisionStatus)
     }
+
+    /**
+     * Create a masked summary of a pending decision for the opponent.
+     * This shows that a decision is being made without revealing private information.
+     */
+    private fun createOpponentDecisionStatus(decision: PendingDecision): ServerMessage.OpponentDecisionStatus {
+        val displayText = when (decision) {
+            is SelectCardsDecision -> "Selecting cards"
+            is ChooseTargetsDecision -> "Choosing targets"
+            is YesNoDecision -> "Making a choice"
+            is ChooseModeDecision -> "Choosing mode"
+            is ChooseColorDecision -> "Choosing a color"
+            is ChooseNumberDecision -> "Choosing a number"
+            is DistributeDecision -> "Distributing"
+            is OrderObjectsDecision -> "Ordering blockers"
+            is SplitPilesDecision -> "Splitting piles"
+            is SearchLibraryDecision -> "Searching library"
+            is ReorderLibraryDecision -> "Reordering cards"
+            is AssignDamageDecision -> "Assigning damage"
+            is ChooseOptionDecision -> "Making a choice"
+        }
+        return ServerMessage.OpponentDecisionStatus(
+            decisionType = decision::class.simpleName ?: "Unknown",
+            displayText = displayText,
+            sourceName = decision.context.sourceName
+        )
+    }
+
+    // =========================================================================
+    // Full Control Settings
+    // =========================================================================
+
+    /**
+     * Set full control mode for a player.
+     * When enabled, auto-pass is disabled and the player receives priority at every possible point.
+     */
+    fun setFullControl(playerId: EntityId, enabled: Boolean) {
+        fullControlEnabled[playerId] = enabled
+        logger.info("Player $playerId set full control to $enabled")
+    }
+
+    /**
+     * Check if a player has full control mode enabled.
+     */
+    fun isFullControlEnabled(playerId: EntityId): Boolean {
+        return fullControlEnabled[playerId] ?: false
+    }
+
+    // =========================================================================
+    // Auto-Pass Management
+    // =========================================================================
 
     /**
      * Check if the player with priority should automatically pass.
@@ -1098,6 +1203,11 @@ class GameSession(
 
         // Get the player with priority
         val priorityPlayer = state.priorityPlayerId ?: return null
+
+        // Check if player has full control enabled - never auto-pass
+        if (isFullControlEnabled(priorityPlayer)) {
+            return null
+        }
 
         // Get legal actions for that player
         val legalActions = getLegalActions(priorityPlayer)

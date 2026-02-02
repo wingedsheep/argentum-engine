@@ -4,7 +4,6 @@ import { subscribeWithSelector } from 'zustand/middleware'
 import type {
   EntityId,
   ClientGameState,
-  ClientCard,
   ClientEvent,
   GameAction,
   LegalActionInfo,
@@ -12,6 +11,7 @@ import type {
   GameOverReason,
   ErrorCode,
   PendingDecision,
+  OpponentDecisionStatus,
 } from '../types'
 import type {
   LobbyPlayerInfo,
@@ -47,6 +47,7 @@ import {
   createSpectateGameMessage,
   createStopSpectatingMessage,
   createUpdateBlockerAssignmentsMessage,
+  createSetFullControlMessage,
   SealedCardInfo,
 } from '../types'
 import { GameWebSocket, getWebSocketUrl, type ConnectionStatus } from '../network/websocket'
@@ -298,6 +299,8 @@ export interface SpectatingState {
   activePlayerId: string | null
   priorityPlayerId: string | null
   combat: import('../types/messages').SpectatorCombatState | null
+  /** Pending decision status (null if no decision in progress) */
+  decisionStatus: import('../types/messages').SpectatorDecisionStatus | null
 }
 
 /**
@@ -323,6 +326,7 @@ export interface GameStore {
   gameState: ClientGameState | null
   legalActions: readonly LegalActionInfo[]
   pendingDecision: PendingDecision | null
+  opponentDecisionStatus: OpponentDecisionStatus | null
 
   // Mulligan state
   mulliganState: MulliganState | null
@@ -347,6 +351,12 @@ export interface GameStore {
   } | null
   /** Opponent's blocker assignments (for attacking player to see real-time) */
   opponentBlockerAssignments: Record<EntityId, EntityId> | null
+
+  // Game settings
+  /** Full control mode - disables auto-pass when enabled */
+  fullControl: boolean
+  /** Where passing priority will take the player (e.g., "Combat", "End Step", "My turn") */
+  nextStopPoint: string | null
 
   // Animation queue
   pendingEvents: readonly ClientEvent[]
@@ -450,6 +460,8 @@ export interface GameStore {
   toggleConvokeCreature: (entityId: EntityId, name: string, payingColor: string | null) => void
   cancelConvokeSelection: () => void
   confirmConvokeSelection: () => void
+  // Game settings actions
+  setFullControl: (enabled: boolean) => void
   returnToMenu: () => void
   leaveTournament: () => void
   clearError: () => void
@@ -494,105 +506,6 @@ export interface DamageAnimation {
 
 // WebSocket instance (singleton)
 let ws: GameWebSocket | null = null
-
-/**
- * Gets the top item on the stack (the most recently added spell/ability).
- */
-function getTopOfStack(gameState: ClientGameState): ClientCard | null {
-  const stackZone = gameState.zones.find((z) => z.zoneId.zoneType === 'STACK')
-  if (!stackZone || !stackZone.cardIds || stackZone.cardIds.length === 0) {
-    return null
-  }
-  // Stack is ordered with newest at end (last in, first out)
-  const topId = stackZone.cardIds[stackZone.cardIds.length - 1]
-  return topId ? (gameState.cards[topId] ?? null) : null
-}
-
-/** Result from shouldAutoPass - either no auto-pass or auto-pass with delay */
-type AutoPassResult = { autoPass: false } | { autoPass: true; delay: number }
-
-// Delay constants
-const QUICK_AUTO_PASS_DELAY = 50 // ms - for own spells, empty stack phases, opponent's permanents
-
-/**
- * Determines if we should auto-pass priority and with what delay.
- * Auto-passes when:
- * - It's our priority
- * - The stack is empty (opponent's spells require player to click "Resolve")
- * - The only meaningful legal actions are PassPriority and/or mana abilities
- * - We're not in a main phase
- * - OR the top of the stack is our own spell/ability (we rarely want to respond to ourselves)
- *
- * This skips through steps like UNTAP, UPKEEP, DRAW, BEGIN_COMBAT, etc.
- * when there are no meaningful actions available.
- *
- * Returns an object with autoPass flag and delay in milliseconds.
- */
-function shouldAutoPass(
-  legalActions: readonly LegalActionInfo[],
-  gameState: ClientGameState,
-  playerId: EntityId,
-  pendingDecision: PendingDecision | null | undefined
-): AutoPassResult {
-  // Must have priority
-  if (gameState.priorityPlayerId !== playerId) {
-    return { autoPass: false }
-  }
-
-  // Don't auto-pass if the opponent has a pending decision (e.g., discarding cards)
-  // The game is waiting on them, not us
-  if (pendingDecision && pendingDecision.playerId !== playerId) {
-    return { autoPass: false }
-  }
-
-  // Must have at least PassPriority available
-  const hasPassPriority = legalActions.some((a) => a.action.type === 'PassPriority')
-  if (!hasPassPriority) {
-    return { autoPass: false }
-  }
-
-  // Auto-pass when responding to our own spell/ability on the stack
-  // (99% of the time, players want their spell to resolve, not counter it themselves)
-  const topOfStack = getTopOfStack(gameState)
-  if (topOfStack && topOfStack.controllerId === playerId) {
-    return { autoPass: true, delay: QUICK_AUTO_PASS_DELAY }
-  }
-
-  // Check if there are any meaningful actions besides PassPriority
-  // Meaningful actions include: PlayLand, CastSpell, non-mana ActivateAbility, etc.
-  const hasMeaningfulActions = legalActions.some((a) => {
-    const type = a.action.type
-    // PassPriority is not considered "meaningful" for auto-pass
-    if (type === 'PassPriority') return false
-    // Mana abilities are not meaningful for auto-pass (they're always available)
-    if (a.isManaAbility) return false
-    // Everything else is meaningful
-    return true
-  })
-
-  // If there are meaningful actions, don't auto-pass
-  if (hasMeaningfulActions) {
-    return { autoPass: false }
-  }
-
-  // If there's something on the stack (opponent's spell/ability), don't auto-pass
-  // Let the player see it and click "Resolve" - trust the backend's decision to give priority
-  const stackZone = gameState.zones.find((z) => z.zoneId.zoneType === 'STACK')
-  const stackHasItems = stackZone && stackZone.cardIds && stackZone.cardIds.length > 0
-  if (stackHasItems) {
-    return { autoPass: false }
-  }
-
-  // Skip auto-pass during main phases when stack is empty - player might be thinking
-  // about what to do or waiting to tap lands
-  const step = gameState.currentStep
-  if (step === 'PRECOMBAT_MAIN' || step === 'POSTCOMBAT_MAIN') {
-    return { autoPass: false }
-  }
-
-  // Auto-pass for all other steps when only PassPriority/mana abilities are available
-  return { autoPass: true, delay: QUICK_AUTO_PASS_DELAY }
-}
 
 /**
  * Extract the relevant player ID from an event for log coloring.
@@ -779,6 +692,8 @@ export const useGameStore = create<GameStore>()(
           gameState: msg.state,
           legalActions: msg.legalActions,
           pendingDecision: msg.pendingDecision ?? null,
+          opponentDecisionStatus: msg.opponentDecisionStatus ?? null,
+          nextStopPoint: msg.nextStopPoint ?? null,
           pendingEvents: [...state.pendingEvents, ...msg.events],
           eventLog: (msg.state.gameLog ?? []).map((e: ClientEvent) => ({
             description: e.description,
@@ -795,33 +710,6 @@ export const useGameStore = create<GameStore>()(
           // Clear opponent's blocker assignments when combat ends or blockers are confirmed
           opponentBlockerAssignments: (msg.state.combat?.blockers?.length || !msg.state.combat) ? null : state.opponentBlockerAssignments,
         }))
-
-        // Auto-pass when the only action available is PassPriority
-        // This skips through steps with no meaningful player actions
-        if (playerId) {
-          const autoPassResult = shouldAutoPass(msg.legalActions, msg.state, playerId, msg.pendingDecision)
-          if (autoPassResult.autoPass) {
-            setTimeout(() => {
-              // Re-check current state - game may have changed during the delay
-              const currentState = get()
-              if (!currentState.gameState || !currentState.playerId) return
-
-              // Verify auto-pass is still valid with current state
-              const recheck = shouldAutoPass(
-                currentState.legalActions,
-                currentState.gameState,
-                currentState.playerId,
-                currentState.pendingDecision
-              )
-              if (!recheck.autoPass) return
-
-              const passAction = currentState.legalActions.find((a) => a.action.type === 'PassPriority')
-              if (passAction && ws) {
-                ws.send(createSubmitActionMessage(passAction.action))
-              }
-            }, autoPassResult.delay)
-          }
-        }
       },
 
       onMulliganDecision: (msg) => {
@@ -1308,6 +1196,7 @@ export const useGameStore = create<GameStore>()(
             activePlayerId: msg.activePlayerId,
             priorityPlayerId: msg.priorityPlayerId,
             combat: msg.combat,
+            decisionStatus: msg.decisionStatus ?? null,
           },
         })
       },
@@ -1328,6 +1217,7 @@ export const useGameStore = create<GameStore>()(
             activePlayerId: null,
             priorityPlayerId: null,
             combat: null,
+            decisionStatus: null,
           },
         })
       },
@@ -1360,6 +1250,7 @@ export const useGameStore = create<GameStore>()(
       gameState: null,
       legalActions: [],
       pendingDecision: null,
+      opponentDecisionStatus: null,
       mulliganState: null,
       waitingForOpponentMulligan: false,
       selectedCardId: null,
@@ -1373,6 +1264,8 @@ export const useGameStore = create<GameStore>()(
       revealedHandCardIds: null,
       revealedCardsInfo: null,
       opponentBlockerAssignments: null,
+      fullControl: false,
+      nextStopPoint: null,
       drawAnimations: [],
       damageAnimations: [],
       pendingEvents: [],
@@ -2263,6 +2156,11 @@ export const useGameStore = create<GameStore>()(
         set({ convokeSelectionState: null })
       },
 
+      setFullControl: (enabled: boolean) => {
+        ws?.send(createSetFullControlMessage(enabled))
+        set({ fullControl: enabled })
+      },
+
       returnToMenu: () => {
         const state = get()
         // If in a tournament, only clear game state, not tournament/lobby state
@@ -2285,6 +2183,8 @@ export const useGameStore = create<GameStore>()(
           draggingCardId: null,
           revealedHandCardIds: null,
           revealedCardsInfo: null,
+          fullControl: false,
+          nextStopPoint: null,
           pendingEvents: [],
           eventLog: [],
           gameOverState: null,
@@ -2319,6 +2219,8 @@ export const useGameStore = create<GameStore>()(
           draggingCardId: null,
           revealedHandCardIds: null,
           revealedCardsInfo: null,
+          fullControl: false,
+          nextStopPoint: null,
           pendingEvents: [],
           eventLog: [],
           gameOverState: null,

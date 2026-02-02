@@ -100,6 +100,16 @@ export interface GameCancelledMessage {
 }
 
 /**
+ * Summary of opponent's pending decision (masked for privacy).
+ * Sent to the non-deciding player so they know the opponent is making a choice.
+ */
+export interface OpponentDecisionStatus {
+  readonly decisionType: string
+  readonly displayText: string
+  readonly sourceName?: string | null
+}
+
+/**
  * Game state update after an action is executed.
  */
 export interface StateUpdateMessage {
@@ -109,6 +119,10 @@ export interface StateUpdateMessage {
   readonly legalActions: readonly LegalActionInfo[]
   /** Pending decision that requires player input (e.g., discard to hand size) */
   readonly pendingDecision?: PendingDecision
+  /** Where passing priority will take the player (e.g., "Combat", "End Step", "My turn") */
+  readonly nextStopPoint?: string | null
+  /** Summary of opponent's pending decision (null if opponent has no decision) */
+  readonly opponentDecisionStatus?: OpponentDecisionStatus | null
 }
 
 // ============================================================================
@@ -722,6 +736,18 @@ export interface SpectatorPlayerState {
   readonly stack: readonly SpectatorCardInfo[]
 }
 
+/**
+ * Summary of a pending decision for spectators.
+ * Includes player name since spectators need to know who is deciding.
+ */
+export interface SpectatorDecisionStatus {
+  readonly playerName: string
+  readonly playerId: string
+  readonly decisionType: string
+  readonly displayText: string
+  readonly sourceName?: string | null
+}
+
 export interface SpectatorStateUpdateMessage {
   readonly type: 'spectatorStateUpdate'
   readonly gameSessionId: string
@@ -742,6 +768,8 @@ export interface SpectatorStateUpdateMessage {
   readonly activePlayerId: string | null
   readonly priorityPlayerId: string | null
   readonly combat: SpectatorCombatState | null
+  /** Pending decision status (null if no decision in progress) */
+  readonly decisionStatus?: SpectatorDecisionStatus | null
 }
 
 export interface SpectatingStartedMessage {
@@ -806,6 +834,8 @@ export type ClientMessage =
   | StopSpectatingMessage
   // Combat UI Messages
   | UpdateBlockerAssignmentsMessage
+  // Game Settings Messages
+  | SetFullControlMessage
 
 /**
  * Connect to the server with a player name.
@@ -1104,6 +1134,17 @@ export interface UpdateBlockerAssignmentsMessage {
   readonly assignments: Record<EntityId, EntityId>
 }
 
+// Game Settings Client Messages
+
+/**
+ * Toggle full control mode for the current game.
+ * When enabled, auto-pass is disabled and player receives priority at every possible point.
+ */
+export interface SetFullControlMessage {
+  readonly type: 'setFullControl'
+  readonly enabled: boolean
+}
+
 // Lobby Message Factories
 export function createCreateTournamentLobbyMessage(
   setCodes: readonly string[],
@@ -1183,6 +1224,12 @@ export function createUpdateBlockerAssignmentsMessage(
   assignments: Record<EntityId, EntityId>
 ): UpdateBlockerAssignmentsMessage {
   return { type: 'updateBlockerAssignments', assignments }
+}
+
+// Game Settings Message Factories
+
+export function createSetFullControlMessage(enabled: boolean): SetFullControlMessage {
+  return { type: 'setFullControl', enabled }
 }
 
 // Draft Type Guards

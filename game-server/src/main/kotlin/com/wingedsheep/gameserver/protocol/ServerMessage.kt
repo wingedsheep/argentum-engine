@@ -57,6 +57,17 @@ sealed interface ServerMessage {
     data object GameCancelled : ServerMessage
 
     /**
+     * Summary of opponent's pending decision (masked for privacy).
+     * Sent to the non-deciding player so they know the opponent is making a choice.
+     */
+    @Serializable
+    data class OpponentDecisionStatus(
+        val decisionType: String,
+        val displayText: String,
+        val sourceName: String? = null
+    )
+
+    /**
      * Game state update after an action is executed.
      */
     @Serializable
@@ -66,7 +77,11 @@ sealed interface ServerMessage {
         val events: List<ClientEvent>,
         val legalActions: List<LegalActionInfo>,
         /** Pending decision that requires player input (e.g., discard to hand size) */
-        val pendingDecision: PendingDecision? = null
+        val pendingDecision: PendingDecision? = null,
+        /** Where passing priority will take the player (e.g., "Combat", "End Step", "My turn") */
+        val nextStopPoint: String? = null,
+        /** Summary of opponent's pending decision (null if opponent has no decision) */
+        val opponentDecisionStatus: OpponentDecisionStatus? = null
     ) : ServerMessage
 
     /**
@@ -496,6 +511,19 @@ sealed interface ServerMessage {
     ) : ServerMessage
 
     /**
+     * Summary of a pending decision for spectators.
+     * Includes player name since spectators need to know who is deciding.
+     */
+    @Serializable
+    data class SpectatorDecisionStatus(
+        val playerName: String,
+        val playerId: String,
+        val decisionType: String,
+        val displayText: String,
+        val sourceName: String? = null
+    )
+
+    /**
      * Game state update for spectators (shows both players' perspectives).
      */
     @Serializable
@@ -518,7 +546,9 @@ sealed interface ServerMessage {
         val currentPhase: String,
         val activePlayerId: String?,
         val priorityPlayerId: String?,
-        val combat: SpectatorCombatState? = null
+        val combat: SpectatorCombatState? = null,
+        /** Pending decision status (null if no decision in progress) */
+        val decisionStatus: SpectatorDecisionStatus? = null
     ) : ServerMessage
 
     /**

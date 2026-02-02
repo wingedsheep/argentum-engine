@@ -170,6 +170,7 @@ export type {
   PendingDecisionBase,
   DecisionContext,
   DecisionPhase,
+  OpponentDecisionStatus,
   SelectCardsDecision,
   YesNoDecision,
   ChooseTargetsDecision,
@@ -228,6 +229,7 @@ export type {
   SpectatorCardInfo,
   SpectatorPlayerState,
   SpectatorStateUpdateMessage,
+  SpectatorDecisionStatus,
   SpectatingStartedMessage,
   SpectatingStoppedMessage,
   SpectateGameMessage,
@@ -235,6 +237,8 @@ export type {
   // Combat UI types
   OpponentBlockerAssignmentsMessage,
   UpdateBlockerAssignmentsMessage,
+  // Game Settings types
+  SetFullControlMessage,
 } from './messages'
 export {
   isConnectedMessage,
@@ -304,4 +308,6 @@ export {
   isSpectatingStoppedMessage,
   // Combat UI factories
   createUpdateBlockerAssignmentsMessage,
+  // Game Settings factories
+  createSetFullControlMessage,
 } from './messages'

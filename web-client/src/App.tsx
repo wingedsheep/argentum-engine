@@ -7,6 +7,7 @@ import { RevealedHandUI } from './components/decisions/RevealedHandUI'
 import { RevealedCardsUI } from './components/decisions/RevealedCardsUI'
 import { XCostSelector } from './components/ui/XCostSelector'
 import { ConvokeSelector } from './components/ui/ConvokeSelector'
+import { OpponentDecisionIndicator } from './components/ui/OpponentDecisionIndicator'
 import { DeckBuilderOverlay } from './components/sealed/DeckBuilderOverlay'
 import { DraftPickOverlay } from './components/draft/DraftPickOverlay'
 import { SpectatorGameBoard } from './components/spectating/SpectatorGameBoard'
@@ -139,6 +140,9 @@ export default function App() {
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
       {/* Main game board (2D) */}
       {showGame && <GameBoard />}
+
+      {/* Opponent decision indicator (shown during game when opponent is deciding) */}
+      {showGame && <OpponentDecisionIndicator />}
 
       {/* Connection/lobby UI overlay */}
       {showLobby && <GameUI />}

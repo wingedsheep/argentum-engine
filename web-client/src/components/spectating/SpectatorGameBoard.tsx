@@ -2,6 +2,7 @@ import { useGameStore } from '../../store/gameStore'
 import { SpectatorContext } from '../../contexts/SpectatorContext'
 import { GameBoard } from '../game/GameBoard'
 import { CombatArrows } from '../combat/CombatArrows'
+import type { SpectatorDecisionStatus } from '../../types'
 
 // ============================================================================
 // SpectatorGameBoard - Read-only view of a game in progress
@@ -82,6 +83,12 @@ export function SpectatorGameBoard() {
         <div style={styles.gameBoardContainer}>
           <GameBoard spectatorMode topOffset={HEADER_HEIGHT} />
         </div>
+        {/* Decision indicator for spectators */}
+        {spectatingState.decisionStatus && (
+          <SpectatorDecisionIndicator
+            decisionStatus={spectatingState.decisionStatus}
+          />
+        )}
       </div>
       {/* Combat arrows rendered at top level to ensure visibility above all containers */}
       <CombatArrows />
@@ -147,6 +154,33 @@ function SpectatorHeader({
       </div>
       {/* Spacer to balance the back button */}
       <div style={styles.headerSpacer} />
+    </div>
+  )
+}
+
+/**
+ * Decision indicator shown when a player is making a choice.
+ * For spectators, this shows which player is deciding.
+ */
+function SpectatorDecisionIndicator({
+  decisionStatus,
+}: {
+  decisionStatus: SpectatorDecisionStatus
+}) {
+  return (
+    <div style={styles.decisionIndicator}>
+      <div style={styles.decisionSpinner} />
+      <div>
+        <div style={styles.decisionText}>
+          {decisionStatus.playerName} is {decisionStatus.displayText.toLowerCase()}
+        </div>
+        {decisionStatus.sourceName && (
+          <div style={styles.decisionSourceText}>
+            ({decisionStatus.sourceName})
+          </div>
+        )}
+      </div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   )
 }
@@ -249,5 +283,41 @@ const styles: Record<string, React.CSSProperties> = {
     borderTopColor: '#888',
     borderRadius: '50%',
     animation: 'spin 1s linear infinite',
+  },
+
+  // Decision indicator styles
+  decisionIndicator: {
+    position: 'absolute',
+    top: 80,
+    left: '50%',
+    transform: 'translateX(-50%)',
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    border: '1px solid #ffc107',
+    borderRadius: 8,
+    padding: '10px 20px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 12,
+    zIndex: 100,
+    pointerEvents: 'none',
+  },
+
+  decisionSpinner: {
+    width: 16,
+    height: 16,
+    border: '2px solid #333',
+    borderTopColor: '#ffc107',
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite',
+  },
+
+  decisionText: {
+    color: '#ffc107',
+    fontWeight: 500,
+  },
+
+  decisionSourceText: {
+    color: '#888',
+    fontSize: '0.85em',
   },
 }
