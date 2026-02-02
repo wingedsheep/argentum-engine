@@ -6,7 +6,27 @@ import kotlinx.serialization.Serializable
 /**
  * Filter for counting cards/permanents.
  * This is the universal filter used in CountInZone and similar.
+ *
+ * @deprecated Use [GameObjectFilter] instead. GameObjectFilter provides composable
+ * predicate-based filtering that supports both card properties and game state.
+ *
+ * Migration examples:
+ * - `CountFilter.Any` -> `GameObjectFilter.Any`
+ * - `CountFilter.Creatures` -> `GameObjectFilter.Creature`
+ * - `CountFilter.TappedCreatures` -> `GameObjectFilter.Creature.tapped()`
+ * - `CountFilter.AttackingCreatures` -> `GameObjectFilter.Creature.attacking()`
+ * - `CountFilter.Lands` -> `GameObjectFilter.Land`
+ * - `CountFilter.CreatureColor(Color.RED)` -> `GameObjectFilter.Creature.withColor(Color.RED)`
+ *
+ * Use `CountFilter.toUnified()` extension function for automatic conversion.
+ *
+ * @see GameObjectFilter
+ * @see toUnified
  */
+@Deprecated(
+    message = "Use GameObjectFilter instead for composable predicate-based filtering",
+    replaceWith = ReplaceWith("GameObjectFilter", "com.wingedsheep.sdk.scripting.GameObjectFilter")
+)
 @Serializable
 sealed interface CountFilter {
     val description: String

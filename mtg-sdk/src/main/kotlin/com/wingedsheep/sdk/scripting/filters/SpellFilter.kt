@@ -4,7 +4,27 @@ import kotlinx.serialization.Serializable
 
 /**
  * Filter for spell types that can be countered.
+ *
+ * @deprecated Use [TargetFilter] with [Zone.Stack] instead. TargetFilter provides
+ * composable predicate-based filtering with zone context.
+ *
+ * Migration examples:
+ * - `SpellFilter.AnySpell` -> `TargetFilter.SpellOnStack`
+ * - `SpellFilter.CreatureSpell` -> `TargetFilter.CreatureSpellOnStack`
+ * - `SpellFilter.NonCreatureSpell` -> `TargetFilter.NoncreatureSpellOnStack`
+ * - `SpellFilter.InstantSpell` -> `TargetFilter(GameObjectFilter.Instant, zone = Zone.Stack)`
+ * - `SpellFilter.SorcerySpell` -> `TargetFilter(GameObjectFilter.Sorcery, zone = Zone.Stack)`
+ *
+ * Use `SpellFilter.toUnified()` extension function for automatic conversion.
+ *
+ * @see TargetFilter
+ * @see GameObjectFilter
+ * @see toUnified
  */
+@Deprecated(
+    message = "Use TargetFilter with Zone.Stack instead for composable predicate-based filtering",
+    replaceWith = ReplaceWith("TargetFilter", "com.wingedsheep.sdk.scripting.TargetFilter")
+)
 @Serializable
 sealed interface SpellFilter {
     val description: String

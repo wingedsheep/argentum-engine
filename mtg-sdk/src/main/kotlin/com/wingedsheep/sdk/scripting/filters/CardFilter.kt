@@ -5,7 +5,28 @@ import kotlinx.serialization.Serializable
 
 /**
  * Filter for matching cards during search effects.
+ *
+ * @deprecated Use [GameObjectFilter] instead. GameObjectFilter provides composable
+ * predicate-based filtering with fluent builder methods.
+ *
+ * Migration examples:
+ * - `CardFilter.AnyCard` -> `GameObjectFilter.Any`
+ * - `CardFilter.CreatureCard` -> `GameObjectFilter.Creature`
+ * - `CardFilter.LandCard` -> `GameObjectFilter.Land`
+ * - `CardFilter.BasicLandCard` -> `GameObjectFilter.BasicLand`
+ * - `CardFilter.HasColor(Color.RED)` -> `GameObjectFilter.Any.withColor(Color.RED)`
+ * - `CardFilter.HasSubtype("Elf")` -> `GameObjectFilter.Any.withSubtype("Elf")`
+ * - `CardFilter.ManaValueAtMost(3)` -> `GameObjectFilter.Any.manaValueAtMost(3)`
+ *
+ * Use `CardFilter.toUnified()` extension function for automatic conversion.
+ *
+ * @see GameObjectFilter
+ * @see toUnified
  */
+@Deprecated(
+    message = "Use GameObjectFilter instead for composable predicate-based filtering",
+    replaceWith = ReplaceWith("GameObjectFilter", "com.wingedsheep.sdk.scripting.GameObjectFilter")
+)
 @Serializable
 sealed interface CardFilter {
     val description: String

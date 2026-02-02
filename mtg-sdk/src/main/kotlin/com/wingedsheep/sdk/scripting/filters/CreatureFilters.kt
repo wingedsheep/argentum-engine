@@ -7,7 +7,26 @@ import kotlinx.serialization.Serializable
 /**
  * Filter for mass damage effects targeting creatures.
  * Used with DealDamageToGroupEffect to specify which creatures are affected.
+ *
+ * @deprecated Use [GroupFilter] instead. GroupFilter provides composable
+ * predicate-based filtering with fluent builder methods.
+ *
+ * Migration examples:
+ * - `CreatureDamageFilter.All` -> `GroupFilter.AllCreatures`
+ * - `CreatureDamageFilter.WithKeyword(Keyword.FLYING)` -> `GroupFilter.AllCreatures.withKeyword(Keyword.FLYING)`
+ * - `CreatureDamageFilter.WithoutKeyword(Keyword.FLYING)` -> `GroupFilter.AllCreatures.withoutKeyword(Keyword.FLYING)`
+ * - `CreatureDamageFilter.OfColor(Color.RED)` -> `GroupFilter.AllCreatures.withColor(Color.RED)`
+ * - `CreatureDamageFilter.Attacking` -> `GroupFilter.AttackingCreatures`
+ *
+ * Use `CreatureDamageFilter.toUnified()` extension function for automatic conversion.
+ *
+ * @see GroupFilter
+ * @see toUnified
  */
+@Deprecated(
+    message = "Use GroupFilter instead for composable predicate-based filtering",
+    replaceWith = ReplaceWith("GroupFilter", "com.wingedsheep.sdk.scripting.GroupFilter")
+)
 @Serializable
 sealed interface CreatureDamageFilter {
     val description: String
@@ -51,7 +70,27 @@ sealed interface CreatureDamageFilter {
 
 /**
  * Filter for groups of creatures affected by mass effects.
+ *
+ * @deprecated Use [GroupFilter] instead. GroupFilter provides composable
+ * predicate-based filtering with fluent builder methods.
+ *
+ * Migration examples:
+ * - `CreatureGroupFilter.AllYouControl` -> `GroupFilter.AllCreaturesYouControl`
+ * - `CreatureGroupFilter.AllOpponentsControl` -> `GroupFilter.AllCreaturesOpponentsControl`
+ * - `CreatureGroupFilter.All` -> `GroupFilter.AllCreatures`
+ * - `CreatureGroupFilter.AllOther` -> `GroupFilter.AllOtherCreatures`
+ * - `CreatureGroupFilter.ColorYouControl(Color.RED)` -> `GroupFilter.AllCreaturesYouControl.withColor(Color.RED)`
+ * - `CreatureGroupFilter.WithKeywordYouControl(Keyword.FLYING)` -> `GroupFilter.AllCreaturesYouControl.withKeyword(Keyword.FLYING)`
+ *
+ * Use `CreatureGroupFilter.toUnified()` extension function for automatic conversion.
+ *
+ * @see GroupFilter
+ * @see toUnified
  */
+@Deprecated(
+    message = "Use GroupFilter instead for composable predicate-based filtering",
+    replaceWith = ReplaceWith("GroupFilter", "com.wingedsheep.sdk.scripting.GroupFilter")
+)
 @Serializable
 sealed interface CreatureGroupFilter {
     val description: String
@@ -113,7 +152,28 @@ sealed interface CreatureGroupFilter {
 
 /**
  * Filter for creature targeting.
+ *
+ * @deprecated Use [TargetFilter] instead. TargetFilter provides composable
+ * predicate-based filtering with fluent builder methods.
+ *
+ * Migration examples:
+ * - `CreatureTargetFilter.Any` -> `TargetFilter.Creature`
+ * - `CreatureTargetFilter.WithFlying` -> `TargetFilter.Creature.withKeyword(Keyword.FLYING)`
+ * - `CreatureTargetFilter.WithoutFlying` -> `TargetFilter.Creature.withoutKeyword(Keyword.FLYING)`
+ * - `CreatureTargetFilter.Tapped` -> `TargetFilter.TappedCreature`
+ * - `CreatureTargetFilter.Untapped` -> `TargetFilter.UntappedCreature`
+ * - `CreatureTargetFilter.Attacking` -> `TargetFilter.AttackingCreature`
+ * - `CreatureTargetFilter.Nonblack` -> `TargetFilter.Creature.notColor(Color.BLACK)`
+ *
+ * Use `CreatureTargetFilter.toUnified()` extension function for automatic conversion.
+ *
+ * @see TargetFilter
+ * @see toUnified
  */
+@Deprecated(
+    message = "Use TargetFilter instead for composable predicate-based filtering",
+    replaceWith = ReplaceWith("TargetFilter", "com.wingedsheep.sdk.scripting.TargetFilter")
+)
 @Serializable
 sealed interface CreatureTargetFilter {
     val description: String
