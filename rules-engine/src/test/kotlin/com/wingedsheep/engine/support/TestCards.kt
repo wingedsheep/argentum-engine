@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.scripting.CantBeBlockedByPower
 import com.wingedsheep.sdk.targeting.AnyTarget
+import com.wingedsheep.sdk.targeting.TargetCardInGraveyard
 import com.wingedsheep.sdk.targeting.TargetCreature
 import com.wingedsheep.sdk.targeting.TargetSpell
 import com.wingedsheep.sdk.targeting.SpellTargetFilter
@@ -167,6 +168,29 @@ object TestCards {
                 effect = DestroyEffect(EffectTarget.ContextTarget(0)),
                 optional = true,
                 targetRequirement = TargetCreature(filter = TargetFilter.Creature.notColor(Color.BLACK))
+            )
+        )
+    )
+
+    /**
+     * 2/2 for {3}{B} with "When Gravedigger enters the battlefield, you may return target creature card from your graveyard to your hand."
+     */
+    val Gravedigger = CardDefinition.creature(
+        name = "Gravedigger",
+        manaCost = ManaCost.parse("{3}{B}"),
+        subtypes = setOf(Subtype("Zombie")),
+        power = 2,
+        toughness = 2,
+        oracleText = "When Gravedigger enters the battlefield, you may return target creature card from your graveyard to your hand.",
+        script = CardScript.creature(
+            TriggeredAbility.create(
+                trigger = OnEnterBattlefield(),
+                effect = ReturnFromGraveyardEffect(
+                    filter = GameObjectFilter.Creature,
+                    destination = SearchDestination.HAND
+                ),
+                optional = true,
+                targetRequirement = TargetCardInGraveyard(filter = TargetFilter.CreatureInYourGraveyard)
             )
         )
     )
@@ -627,6 +651,7 @@ object TestCards {
         VenerableMonk,
         FireDragon,
         SerpentAssassin,
+        Gravedigger,
         WindDrake,
         ForestWalker,
         IslandWalker,

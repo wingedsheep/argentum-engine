@@ -549,6 +549,43 @@ class GameTestDriver {
     }
 
     /**
+     * Put a specific card directly into a player's graveyard (test helper).
+     * Creates a new card entity from the registry and adds it to graveyard.
+     */
+    fun putCardInGraveyard(playerId: EntityId, cardName: String): EntityId {
+        val cardDef = cardRegistry.requireCard(cardName)
+        val cardId = EntityId.generate()
+
+        // Create card entity
+        val cardComponent = CardComponent(
+            cardDefinitionId = cardDef.name,
+            name = cardDef.name,
+            manaCost = cardDef.manaCost,
+            typeLine = cardDef.typeLine,
+            oracleText = cardDef.oracleText,
+            baseStats = cardDef.creatureStats,
+            baseKeywords = cardDef.keywords,
+            colors = cardDef.colors,
+            ownerId = playerId,
+            spellEffect = cardDef.spellEffect
+        )
+
+        val container = com.wingedsheep.engine.state.ComponentContainer.of(
+            cardComponent,
+            com.wingedsheep.engine.state.components.identity.OwnerComponent(playerId),
+            ControllerComponent(playerId)
+        )
+
+        _state = _state.withEntity(cardId, container)
+
+        // Add to graveyard
+        val graveyardZone = ZoneKey(playerId, ZoneType.GRAVEYARD)
+        _state = _state.addToZone(graveyardZone, cardId)
+
+        return cardId
+    }
+
+    /**
      * Put a creature directly onto the battlefield (test helper).
      * Creates a new card entity from the registry and adds it to battlefield.
      * Also adds ContinuousEffectSourceComponent for static abilities.
