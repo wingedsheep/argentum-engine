@@ -183,9 +183,31 @@ class TournamentLobby(
     }
 
     /**
-     * Remove a player from the lobby.
+     * Remove a player from the lobby (for disconnection).
+     * During a tournament, the player state is kept so they can rejoin later.
      */
     fun removePlayer(playerId: EntityId) {
+        val playerState = players[playerId] ?: return
+        playerState.identity.currentLobbyId = null
+
+        // Only fully remove player during WAITING_FOR_PLAYERS state
+        // During tournament phases, keep the state so they can rejoin
+        if (state == LobbyState.WAITING_FOR_PLAYERS) {
+            players.remove(playerId)
+            // Transfer host if the host left
+            if (hostPlayerId == playerId) {
+                hostPlayerId = players.keys.firstOrNull()
+            }
+        }
+        // During tournament, the player state remains in `players` but their identity
+        // is disconnected - they can rejoin using the lobby code
+    }
+
+    /**
+     * Forcefully remove a player from the lobby (for explicit "Leave Tournament" action).
+     * This permanently removes the player and they cannot rejoin.
+     */
+    fun forceRemovePlayer(playerId: EntityId) {
         val playerState = players.remove(playerId) ?: return
         playerState.identity.currentLobbyId = null
 
@@ -193,6 +215,28 @@ class TournamentLobby(
         if (hostPlayerId == playerId) {
             hostPlayerId = players.keys.firstOrNull()
         }
+    }
+
+    /**
+     * Check if a player was in this tournament (can rejoin).
+     */
+    fun wasPlayerInTournament(playerId: EntityId): Boolean {
+        return players.containsKey(playerId)
+    }
+
+    /**
+     * Rejoin a player who was previously in this tournament.
+     * Updates their identity to the new one while preserving their card pool and deck.
+     */
+    fun rejoinPlayer(identity: PlayerIdentity): Boolean {
+        val existingState = players[identity.playerId] ?: return false
+
+        // Update the player state with new identity but keep card pool and deck
+        players[identity.playerId] = existingState.copy(
+            identity = identity
+        )
+        identity.currentLobbyId = lobbyId
+        return true
     }
 
     /**
@@ -470,11 +514,23 @@ class TournamentLobby(
 
     /**
      * Transition to tournament active state.
+     * Used when all decks are submitted at once (legacy flow).
      */
     fun startTournament() {
         require(state == LobbyState.DECK_BUILDING) { "Not in deck building phase" }
         require(allDecksSubmitted()) { "Not all decks submitted" }
         state = LobbyState.TOURNAMENT_ACTIVE
+    }
+
+    /**
+     * Activate tournament state for eager match starting.
+     * Called when the first player submits their deck, allowing matches
+     * to start as soon as both players in a match have submitted.
+     */
+    fun activateTournament() {
+        if (state == LobbyState.DECK_BUILDING) {
+            state = LobbyState.TOURNAMENT_ACTIVE
+        }
     }
 
     /**

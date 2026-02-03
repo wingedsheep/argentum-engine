@@ -458,6 +458,16 @@ class TournamentManager(
     }
 
     /**
+     * Get the match for a specific player in the current round.
+     */
+    fun getPlayerMatchInCurrentRound(playerId: EntityId): TournamentMatch? {
+        val round = currentRound ?: return null
+        return round.matches.find {
+            it.player1Id == playerId || it.player2Id == playerId
+        }
+    }
+
+    /**
      * Peek at the next round's matchups without advancing.
      * Returns a map of playerId -> opponentId (null for BYE).
      */
