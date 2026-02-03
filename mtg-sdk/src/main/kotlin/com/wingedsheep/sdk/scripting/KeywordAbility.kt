@@ -81,7 +81,7 @@ sealed interface KeywordAbility {
      * "Ward—Sacrifice a creature."
      */
     @Serializable
-    data class WardSacrifice(val filter: CardFilter) : KeywordAbility {
+    data class WardSacrifice(val filter: GameObjectFilter) : KeywordAbility {
         override val description: String = "Ward—Sacrifice a ${filter.description}"
     }
 

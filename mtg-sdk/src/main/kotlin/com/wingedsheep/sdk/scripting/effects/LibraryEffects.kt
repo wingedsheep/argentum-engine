@@ -119,7 +119,7 @@ data class ScryEffect(
 @Serializable
 data class LookAtTopXPutOntoBattlefieldEffect(
     val countSource: DynamicAmount,
-    val filter: CardFilter,
+    val filter: GameObjectFilter,
     val shuffleAfter: Boolean = true
 ) : Effect {
     override val description: String = buildString {

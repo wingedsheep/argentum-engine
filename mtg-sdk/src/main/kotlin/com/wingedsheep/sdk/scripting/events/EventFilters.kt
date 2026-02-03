@@ -60,7 +60,7 @@ sealed interface RecipientFilter {
     }
 
     @Serializable
-    data class Matching(val filter: CardFilter) : RecipientFilter {
+    data class Matching(val filter: GameObjectFilter) : RecipientFilter {
         override val description = filter.description
     }
 }
@@ -112,7 +112,7 @@ sealed interface SourceFilter {
     }
 
     @Serializable
-    data class Matching(val filter: CardFilter) : SourceFilter {
+    data class Matching(val filter: GameObjectFilter) : SourceFilter {
         override val description = filter.description
     }
 }
@@ -191,7 +191,7 @@ sealed interface ObjectFilter {
     }
 
     @Serializable
-    data class Matching(val filter: CardFilter) : ObjectFilter {
+    data class Matching(val filter: GameObjectFilter) : ObjectFilter {
         override val description = filter.description
     }
 }

@@ -138,7 +138,7 @@ sealed interface GameEvent {
     @Serializable
     data class TokenCreationEvent(
         val controller: ControllerFilter = ControllerFilter.You,
-        val tokenFilter: CardFilter? = null
+        val tokenFilter: GameObjectFilter? = null
     ) : GameEvent {
         override val description: String = buildString {
             append("one or more ")
@@ -206,7 +206,7 @@ sealed interface GameEvent {
     @Serializable
     data class DiscardEvent(
         val player: PlayerFilter = PlayerFilter.You,
-        val cardFilter: CardFilter? = null
+        val cardFilter: GameObjectFilter? = null
     ) : GameEvent {
         override val description: String = buildString {
             append(player.description)
