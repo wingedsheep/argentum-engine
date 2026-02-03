@@ -12,6 +12,7 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.*
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
@@ -425,9 +426,13 @@ class CombatManager(
         }
 
         // Check if the blocker has "can't block" restriction (e.g., Craven Giant, Jungle Lion)
-        val cantBlockValidation = validateCantBlock(cardComponent)
-        if (cantBlockValidation != null) {
-            return cantBlockValidation
+        // Face-down creatures have no abilities, so they can block
+        val isFaceDown = container.has<FaceDownComponent>()
+        if (!isFaceDown) {
+            val cantBlockValidation = validateCantBlock(cardComponent)
+            if (cantBlockValidation != null) {
+                return cantBlockValidation
+            }
         }
 
         // Use projected keywords (includes floating effects)
@@ -1245,8 +1250,9 @@ class CombatManager(
         val blockerContainer = state.getEntity(blockerId) ?: return false
         val blockerCard = blockerContainer.get<CardComponent>() ?: return false
 
-        // Check if blocker has "can't block" restriction
-        if (hasCantBlockAbility(blockerCard)) return false
+        // Check if blocker has "can't block" restriction (face-down creatures have no abilities)
+        val isFaceDown = blockerContainer.has<FaceDownComponent>()
+        if (!isFaceDown && hasCantBlockAbility(blockerCard)) return false
 
         val projected = stateProjector.project(state)
         val attackers = state.entities.filter { (_, container) -> container.has<AttackingComponent>() }.keys
@@ -1273,8 +1279,9 @@ class CombatManager(
         val blockerCard = blockerContainer.get<CardComponent>() ?: return false
         val attackerCard = attackerContainer.get<CardComponent>() ?: return false
 
-        // Check if blocker has "can't block" restriction
-        if (hasCantBlockAbility(blockerCard)) {
+        // Check if blocker has "can't block" restriction (face-down creatures have no abilities)
+        val isFaceDown = blockerContainer.has<FaceDownComponent>()
+        if (!isFaceDown && hasCantBlockAbility(blockerCard)) {
             return false
         }
 
