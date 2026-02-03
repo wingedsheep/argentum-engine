@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.mechanics.targeting
 
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
@@ -13,6 +15,7 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.TargetFilter
 import com.wingedsheep.sdk.targeting.*
 
 /**
@@ -28,6 +31,7 @@ class TargetValidator(
     private val cardRegistry: CardRegistry? = null,
     private val stateProjector: StateProjector = StateProjector()
 ) {
+    private val predicateEvaluator = PredicateEvaluator()
 
     /**
      * Validate all targets for a spell/ability against their requirements.
@@ -83,14 +87,14 @@ class TargetValidator(
         casterId: EntityId
     ): String? {
         return when (requirement) {
-            is TargetCreature -> validateCreatureTarget(state, target, requirement.filter, casterId)
+            is TargetCreature -> validateCreatureTarget(state, target, requirement.filter, requirement.unifiedFilter, casterId)
             is TargetPermanent -> validatePermanentTarget(state, target, requirement.filter, casterId)
             is TargetPlayer -> validatePlayerTarget(state, target)
             is TargetOpponent -> validateOpponentTarget(state, target, casterId)
             is AnyTarget -> validateAnyTarget(state, target)
             is TargetCreatureOrPlayer -> validateCreatureOrPlayerTarget(state, target)
             is TargetCreatureOrPlaneswalker -> validateCreatureOrPlaneswalkerTarget(state, target)
-            is TargetCardInGraveyard -> validateGraveyardTarget(state, target, requirement.filter)
+            is TargetCardInGraveyard -> validateGraveyardTarget(state, target, requirement.filter, requirement.unifiedFilter, casterId)
             is TargetSpell -> validateSpellTarget(state, target)
             is TargetOther -> validateSingleTarget(state, target, requirement.baseRequirement, casterId)
         }
@@ -100,6 +104,7 @@ class TargetValidator(
         state: GameState,
         target: ChosenTarget,
         filter: CreatureTargetFilter,
+        unifiedFilter: TargetFilter?,
         casterId: EntityId
     ): String? {
         if (target !is ChosenTarget.Permanent) {
@@ -121,7 +126,17 @@ class TargetValidator(
             return "Target must be on the battlefield"
         }
 
-        // Validate against the filter
+        // Prefer unified filter when available
+        if (unifiedFilter != null) {
+            val predicateContext = PredicateContext(controllerId = casterId)
+            val matches = predicateEvaluator.matches(state, target.entityId, unifiedFilter.baseFilter, predicateContext)
+            if (!matches) {
+                return "Target does not match filter: ${unifiedFilter.description}"
+            }
+            return null
+        }
+
+        // Fall back to legacy filter
         return validateCreatureFilter(state, target.entityId, cardComponent, container, filter, casterId)
     }
 
@@ -417,7 +432,9 @@ class TargetValidator(
     private fun validateGraveyardTarget(
         state: GameState,
         target: ChosenTarget,
-        filter: GraveyardCardFilter
+        filter: GraveyardCardFilter,
+        unifiedFilter: TargetFilter?,
+        casterId: EntityId
     ): String? {
         if (target !is ChosenTarget.Card) {
             return "Target must be a card in a graveyard"
@@ -425,6 +442,7 @@ class TargetValidator(
         if (target.zone != ZoneType.GRAVEYARD) {
             return "Target must be in a graveyard"
         }
+
         val zoneKey = ZoneKey(target.ownerId, ZoneType.GRAVEYARD)
         if (target.cardId !in state.getZone(zoneKey)) {
             return "Target not found in graveyard"
@@ -433,6 +451,18 @@ class TargetValidator(
         val cardComponent = state.getEntity(target.cardId)?.get<CardComponent>()
             ?: return "Target is not a card"
 
+        // Prefer unified filter when available
+        // The unified filter's OwnedByYou predicate handles "your graveyard" restriction
+        if (unifiedFilter != null) {
+            val predicateContext = PredicateContext(controllerId = casterId)
+            val matches = predicateEvaluator.matches(state, target.cardId, unifiedFilter.baseFilter, predicateContext)
+            if (!matches) {
+                return "Target does not match filter: ${unifiedFilter.description}"
+            }
+            return null
+        }
+
+        // Fall back to legacy filter
         return when (filter) {
             is GraveyardCardFilter.Any -> null
             is GraveyardCardFilter.Creature -> {
@@ -450,8 +480,10 @@ class TargetValidator(
                 } else null
             }
             is GraveyardCardFilter.CreatureInYourGraveyard -> {
-                // This is handled by zone matching elsewhere
-                if (!cardComponent.typeLine.isCreature) "Target must be a creature card" else null
+                // Check both type and ownership
+                if (!cardComponent.typeLine.isCreature) return "Target must be a creature card"
+                if (target.ownerId != casterId) return "Target must be in your graveyard"
+                null
             }
         }
     }

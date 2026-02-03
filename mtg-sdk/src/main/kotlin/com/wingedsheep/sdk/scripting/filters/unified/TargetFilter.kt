@@ -122,6 +122,9 @@ data class TargetFilter(
         /** Target creature card in a graveyard */
         val CreatureInGraveyard = TargetFilter(GameObjectFilter.Creature, zone = Zone.Graveyard)
 
+        /** Target creature card in your graveyard */
+        val CreatureInYourGraveyard = TargetFilter(GameObjectFilter.Creature.ownedByYou(), zone = Zone.Graveyard)
+
         /** Target instant or sorcery card in a graveyard */
         val InstantOrSorceryInGraveyard = TargetFilter(GameObjectFilter.InstantOrSorcery, zone = Zone.Graveyard)
 
@@ -193,6 +196,12 @@ data class TargetFilter(
 
     /** Must be controlled by opponent */
     fun opponentControls() = copy(baseFilter = baseFilter.opponentControls())
+
+    /** Must be owned by you (for cards in graveyards/exile) */
+    fun ownedByYou() = copy(baseFilter = baseFilter.ownedByYou())
+
+    /** Must be owned by opponent (for cards in graveyards/exile) */
+    fun ownedByOpponent() = copy(baseFilter = baseFilter.ownedByOpponent())
 
     /** Exclude the source permanent */
     fun other() = copy(excludeSelf = true)

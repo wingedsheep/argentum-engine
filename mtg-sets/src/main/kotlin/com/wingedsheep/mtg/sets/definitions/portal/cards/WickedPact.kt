@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.DestroyEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.LoseLifeEffect
-import com.wingedsheep.sdk.targeting.CreatureTargetFilter
+import com.wingedsheep.sdk.scripting.TargetFilter
 import com.wingedsheep.sdk.targeting.TargetCreature
 
 /**
@@ -22,10 +22,10 @@ val WickedPact = card("Wicked Pact") {
     spell {
         // Use two separate target requirements so each creature can be targeted independently
         val creature1 = target("first nonblack creature", TargetCreature(
-            filter = CreatureTargetFilter.NotColor(Color.BLACK)
+            unifiedFilter = TargetFilter.Creature.notColor(Color.BLACK)
         ))
         val creature2 = target("second nonblack creature", TargetCreature(
-            filter = CreatureTargetFilter.NotColor(Color.BLACK)
+            unifiedFilter = TargetFilter.Creature.notColor(Color.BLACK)
         ))
 
         effect = DestroyEffect(creature1) then

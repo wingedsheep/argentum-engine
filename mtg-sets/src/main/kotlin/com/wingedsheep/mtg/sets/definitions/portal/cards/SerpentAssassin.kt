@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.DestroyEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.OnEnterBattlefield
-import com.wingedsheep.sdk.targeting.CreatureTargetFilter
+import com.wingedsheep.sdk.scripting.TargetFilter
 import com.wingedsheep.sdk.targeting.TargetCreature
 
 /**
@@ -25,7 +25,7 @@ val SerpentAssassin = card("Serpent Assassin") {
     triggeredAbility {
         trigger = OnEnterBattlefield()
         optional = true
-        target = TargetCreature(filter = CreatureTargetFilter.NotColor(Color.BLACK))
+        target = TargetCreature(unifiedFilter = TargetFilter.Creature.notColor(Color.BLACK))
         effect = DestroyEffect(EffectTarget.ContextTarget(0))
     }
 

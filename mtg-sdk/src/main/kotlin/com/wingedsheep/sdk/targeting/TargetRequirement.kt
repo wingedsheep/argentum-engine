@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.TargetFilter
 import kotlinx.serialization.Serializable
 
 /**
@@ -70,14 +71,17 @@ data class TargetOpponent(
  * @param count Maximum number of targets
  * @param minCount Minimum number of targets (for "one or two" style targeting)
  * @param optional If true, allows 0 targets ("up to X" style targeting)
- * @param filter Restrictions on which creatures can be targeted
+ * @param filter Restrictions on which creatures can be targeted (deprecated, use unifiedFilter)
+ * @param unifiedFilter Unified filter for targeting (preferred over filter)
  */
 @Serializable
 data class TargetCreature(
     override val count: Int = 1,
     override val minCount: Int = count,
     override val optional: Boolean = false,
-    val filter: CreatureTargetFilter = CreatureTargetFilter.Any
+    @Deprecated("Use unifiedFilter instead")
+    val filter: CreatureTargetFilter = CreatureTargetFilter.Any,
+    val unifiedFilter: TargetFilter? = null
 ) : TargetRequirement {
     override val description: String = buildString {
         if (optional) {
@@ -85,12 +89,30 @@ data class TargetCreature(
         } else if (minCount < count) {
             append("$minCount to ")
         }
-        if (filter != CreatureTargetFilter.Any) {
-            append(filter.description)
+        // Use unified filter description if available
+        val filterDesc = unifiedFilter?.description ?: filter.description.takeIf { filter != CreatureTargetFilter.Any }
+        if (filterDesc != null && filterDesc.isNotEmpty()) {
+            append(filterDesc)
             append(" ")
         }
         append("target ")
         append(if (count == 1) "creature" else "$count creatures")
+    }
+
+    companion object {
+        /** Create TargetCreature with unified filter (preferred) */
+        operator fun invoke(
+            unifiedFilter: TargetFilter,
+            count: Int = 1,
+            minCount: Int = count,
+            optional: Boolean = false
+        ) = TargetCreature(
+            count = count,
+            minCount = minCount,
+            optional = optional,
+            filter = CreatureTargetFilter.Any,
+            unifiedFilter = unifiedFilter
+        )
     }
 }
 
@@ -365,20 +387,44 @@ data class TargetCreatureOrPlaneswalker(
 
 /**
  * Target card in a graveyard.
+ *
+ * @param count Maximum number of targets
+ * @param optional If true, allows 0 targets ("up to X" style targeting)
+ * @param filter Restrictions on which cards can be targeted (deprecated, use unifiedFilter)
+ * @param unifiedFilter Unified filter for targeting (preferred over filter).
+ *        Use TargetFilter.CreatureInYourGraveyard or .youControl() to restrict to your graveyard.
  */
 @Serializable
 data class TargetCardInGraveyard(
     override val count: Int = 1,
     override val optional: Boolean = false,
-    val filter: GraveyardCardFilter = GraveyardCardFilter.Any
+    @Deprecated("Use unifiedFilter instead")
+    val filter: GraveyardCardFilter = GraveyardCardFilter.Any,
+    val unifiedFilter: TargetFilter? = null
 ) : TargetRequirement {
     override val description: String = buildString {
         append("target ")
-        if (filter != GraveyardCardFilter.Any) {
-            append(filter.description)
+        // Use unified filter description if available
+        val filterDesc = unifiedFilter?.description ?: filter.description.takeIf { filter != GraveyardCardFilter.Any }
+        if (filterDesc != null && filterDesc.isNotEmpty()) {
+            append(filterDesc)
             append(" ")
         }
         append("card in a graveyard")
+    }
+
+    companion object {
+        /** Create TargetCardInGraveyard with unified filter (preferred) */
+        operator fun invoke(
+            unifiedFilter: TargetFilter,
+            count: Int = 1,
+            optional: Boolean = false
+        ) = TargetCardInGraveyard(
+            count = count,
+            optional = optional,
+            filter = GraveyardCardFilter.Any,
+            unifiedFilter = unifiedFilter
+        )
     }
 }
 

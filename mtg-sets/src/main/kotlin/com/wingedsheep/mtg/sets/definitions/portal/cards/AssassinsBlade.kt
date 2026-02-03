@@ -6,8 +6,8 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.DestroyEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.TargetFilter
 import com.wingedsheep.sdk.scripting.YouWereAttackedThisStep
-import com.wingedsheep.sdk.targeting.CreatureTargetFilter
 import com.wingedsheep.sdk.targeting.TargetCreature
 
 /**
@@ -26,14 +26,7 @@ val AssassinsBlade = card("Assassin's Blade") {
         castOnlyDuring(Step.DECLARE_ATTACKERS)
         castOnlyIf(YouWereAttackedThisStep)
 
-        target = TargetCreature(
-            filter = CreatureTargetFilter.And(
-                listOf(
-                    CreatureTargetFilter.Attacking,
-                    CreatureTargetFilter.NotColor(Color.BLACK)
-                )
-            )
-        )
+        target = TargetCreature(unifiedFilter = TargetFilter.AttackingCreature.notColor(Color.BLACK))
         effect = DestroyEffect(EffectTarget.ContextTarget(0))
     }
 

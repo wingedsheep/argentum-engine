@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CantBeRegeneratedEffect
 import com.wingedsheep.sdk.scripting.DestroyEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.targeting.CreatureTargetFilter
+import com.wingedsheep.sdk.scripting.TargetFilter
 import com.wingedsheep.sdk.targeting.TargetCreature
 
 /**
@@ -19,7 +19,7 @@ val Smother = card("Smother") {
     typeLine = "Instant"
 
     spell {
-        target = TargetCreature(filter = CreatureTargetFilter.WithManaValueAtMost(3))
+        target = TargetCreature(unifiedFilter = TargetFilter.Creature.manaValueAtMost(3))
         effect = DestroyEffect(EffectTarget.ContextTarget(0)) then
                 CantBeRegeneratedEffect(EffectTarget.ContextTarget(0))
     }

@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.DestroyEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.KeywordAbility
-import com.wingedsheep.sdk.targeting.CreatureTargetFilter
+import com.wingedsheep.sdk.scripting.TargetFilter
 import com.wingedsheep.sdk.targeting.TargetCreature
 
 /**
@@ -20,7 +20,7 @@ val Swat = card("Swat") {
     typeLine = "Instant"
 
     spell {
-        target = TargetCreature(filter = CreatureTargetFilter.WithPowerAtMost(2))
+        target = TargetCreature(unifiedFilter = TargetFilter.Creature.powerAtMost(2))
         effect = DestroyEffect(EffectTarget.ContextTarget(0))
     }
 

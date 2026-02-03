@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.DealDamageEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.GainLifeEffect
-import com.wingedsheep.sdk.targeting.CreatureTargetFilter
+import com.wingedsheep.sdk.scripting.TargetFilter
 import com.wingedsheep.sdk.targeting.TargetCreature
 
 /**
@@ -20,7 +20,7 @@ val SoulShred = card("Soul Shred") {
     typeLine = "Sorcery"
 
     spell {
-        target = TargetCreature(filter = CreatureTargetFilter.NotColor(Color.BLACK))
+        target = TargetCreature(unifiedFilter = TargetFilter.Creature.notColor(Color.BLACK))
         effect = DealDamageEffect(3, EffectTarget.ContextTarget(0)) then
                 GainLifeEffect(3, EffectTarget.Controller)
     }

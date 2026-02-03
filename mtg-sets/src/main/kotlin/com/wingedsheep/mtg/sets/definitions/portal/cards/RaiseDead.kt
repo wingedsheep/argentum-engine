@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.ReturnFromGraveyardEffect
 import com.wingedsheep.sdk.scripting.SearchDestination
-import com.wingedsheep.sdk.targeting.GraveyardCardFilter
+import com.wingedsheep.sdk.scripting.TargetFilter
 import com.wingedsheep.sdk.targeting.TargetCardInGraveyard
 
 /**
@@ -19,7 +19,7 @@ val RaiseDead = card("Raise Dead") {
     typeLine = "Sorcery"
 
     spell {
-        target = TargetCardInGraveyard(filter = GraveyardCardFilter.CreatureInYourGraveyard)
+        target = TargetCardInGraveyard(unifiedFilter = TargetFilter.CreatureInYourGraveyard)
         effect = ReturnFromGraveyardEffect(
             unifiedFilter = GameObjectFilter.Creature,
             destination = SearchDestination.HAND

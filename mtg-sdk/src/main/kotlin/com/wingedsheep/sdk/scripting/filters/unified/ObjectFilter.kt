@@ -224,6 +224,12 @@ data class GameObjectFilter(
     /** Must be controlled by the target player */
     fun targetPlayerControls() = copy(controllerPredicate = ControllerPredicate.ControlledByTargetPlayer)
 
+    /** Must be owned by you (for cards in graveyards/exile that don't have controllers) */
+    fun ownedByYou() = copy(controllerPredicate = ControllerPredicate.OwnedByYou)
+
+    /** Must be owned by an opponent (for cards in graveyards/exile that don't have controllers) */
+    fun ownedByOpponent() = copy(controllerPredicate = ControllerPredicate.OwnedByOpponent)
+
     // =============================================================================
     // Composition
     // =============================================================================

@@ -11,6 +11,7 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.TargetFilter
 import com.wingedsheep.sdk.targeting.*
 
 /**
@@ -22,6 +23,7 @@ import com.wingedsheep.sdk.targeting.*
 class TargetFinder(
     private val stateProjector: StateProjector = StateProjector()
 ) {
+    private val predicateEvaluator = PredicateEvaluator()
 
     /**
      * Find all legal targets for a given requirement.
@@ -65,6 +67,7 @@ class TargetFinder(
     ): List<EntityId> {
         val projected = stateProjector.project(state)
         val battlefield = state.getBattlefield()
+        val unifiedFilter = requirement.unifiedFilter
 
         return battlefield.filter { entityId ->
             val container = state.getEntity(entityId) ?: return@filter false
@@ -84,7 +87,13 @@ class TargetFinder(
                 return@filter false
             }
 
-            // Apply filter
+            // Prefer unified filter when available
+            if (unifiedFilter != null) {
+                val predicateContext = PredicateContext(controllerId = controllerId)
+                return@filter predicateEvaluator.matches(state, entityId, unifiedFilter.baseFilter, predicateContext)
+            }
+
+            // Fall back to legacy filter
             matchesCreatureFilter(requirement.filter, container, cardComponent, entityController, controllerId, state, sourceId)
         }
     }
@@ -317,8 +326,9 @@ class TargetFinder(
         controllerId: EntityId
     ): List<EntityId> {
         val targets = mutableListOf<EntityId>()
+        val unifiedFilter = requirement.unifiedFilter
 
-        // Check all graveyards
+        // Check all graveyards - the unified filter's OwnedByYou predicate handles "your graveyard" restriction
         for (playerId in state.turnOrder) {
             val graveyardKey = ZoneKey(playerId, ZoneType.GRAVEYARD)
             val graveyard = state.getZone(graveyardKey)
@@ -327,7 +337,16 @@ class TargetFinder(
                 val container = state.getEntity(cardId) ?: continue
                 val cardComponent = container.get<CardComponent>() ?: continue
 
-                // Apply filter
+                // Prefer unified filter when available
+                if (unifiedFilter != null) {
+                    val predicateContext = PredicateContext(controllerId = controllerId)
+                    if (predicateEvaluator.matches(state, cardId, unifiedFilter.baseFilter, predicateContext)) {
+                        targets.add(cardId)
+                    }
+                    continue
+                }
+
+                // Fall back to legacy filter
                 val matches = when (requirement.filter) {
                     is GraveyardCardFilter.Any -> true
                     is GraveyardCardFilter.Creature -> cardComponent.typeLine.isCreature

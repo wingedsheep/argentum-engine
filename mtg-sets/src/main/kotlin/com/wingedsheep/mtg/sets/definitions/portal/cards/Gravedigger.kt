@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.OnEnterBattlefield
 import com.wingedsheep.sdk.scripting.ReturnFromGraveyardEffect
 import com.wingedsheep.sdk.scripting.SearchDestination
-import com.wingedsheep.sdk.targeting.GraveyardCardFilter
+import com.wingedsheep.sdk.scripting.TargetFilter
 import com.wingedsheep.sdk.targeting.TargetCardInGraveyard
 
 /**
@@ -26,7 +26,7 @@ val Gravedigger = card("Gravedigger") {
     triggeredAbility {
         trigger = OnEnterBattlefield()
         optional = true
-        target = TargetCardInGraveyard(filter = GraveyardCardFilter.CreatureInYourGraveyard)
+        target = TargetCardInGraveyard(unifiedFilter = TargetFilter.CreatureInYourGraveyard)
         effect = ReturnFromGraveyardEffect(
             unifiedFilter = GameObjectFilter.Creature,
             destination = SearchDestination.HAND

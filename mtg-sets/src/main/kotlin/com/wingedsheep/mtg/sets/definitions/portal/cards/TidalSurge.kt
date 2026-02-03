@@ -4,7 +4,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.TapTargetCreaturesEffect
-import com.wingedsheep.sdk.targeting.CreatureTargetFilter
+import com.wingedsheep.sdk.scripting.TargetFilter
 import com.wingedsheep.sdk.targeting.TargetCreature
 
 /**
@@ -22,7 +22,7 @@ val TidalSurge = card("Tidal Surge") {
         target = TargetCreature(
             count = 3,
             optional = true,
-            filter = CreatureTargetFilter.WithoutKeyword(Keyword.FLYING)
+            unifiedFilter = TargetFilter.Creature.withoutKeyword(Keyword.FLYING)
         )
         // Effect taps all selected targets
         effect = TapTargetCreaturesEffect(maxTargets = 3)

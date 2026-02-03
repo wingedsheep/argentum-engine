@@ -4,7 +4,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.ModifyStatsEffect
-import com.wingedsheep.sdk.targeting.CreatureTargetFilter
+import com.wingedsheep.sdk.scripting.TargetFilter
 import com.wingedsheep.sdk.targeting.TargetCreature
 
 /**
@@ -18,7 +18,7 @@ val MonstrousGrowth = card("Monstrous Growth") {
     typeLine = "Sorcery"
 
     spell {
-        target = TargetCreature(filter = CreatureTargetFilter.Any)
+        target = TargetCreature(unifiedFilter = TargetFilter.Creature)
         effect = ModifyStatsEffect(
             powerModifier = 4,
             toughnessModifier = 4,

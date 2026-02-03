@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.DestroyEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.targeting.CreatureTargetFilter
+import com.wingedsheep.sdk.scripting.TargetFilter
 import com.wingedsheep.sdk.targeting.TargetCreature
 
 /**
@@ -19,7 +19,7 @@ val HandOfDeath = card("Hand of Death") {
     typeLine = "Sorcery"
 
     spell {
-        target = TargetCreature(filter = CreatureTargetFilter.NotColor(Color.BLACK))
+        target = TargetCreature(unifiedFilter = TargetFilter.Creature.notColor(Color.BLACK))
         effect = DestroyEffect(EffectTarget.ContextTarget(0))
     }
 

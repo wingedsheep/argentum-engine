@@ -5,8 +5,8 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.ReturnToHandEffect
+import com.wingedsheep.sdk.scripting.TargetFilter
 import com.wingedsheep.sdk.scripting.YouWereAttackedThisStep
-import com.wingedsheep.sdk.targeting.CreatureTargetFilter
 import com.wingedsheep.sdk.targeting.TargetCreature
 
 /**
@@ -27,7 +27,7 @@ val CommandOfUnsummoning = card("Command of Unsummoning") {
         target = TargetCreature(
             count = 2,
             minCount = 1,
-            filter = CreatureTargetFilter.Attacking
+            unifiedFilter = TargetFilter.AttackingCreature
         )
         effect = ReturnToHandEffect(EffectTarget.ContextTarget(0)) then
                 ReturnToHandEffect(EffectTarget.ContextTarget(1))
