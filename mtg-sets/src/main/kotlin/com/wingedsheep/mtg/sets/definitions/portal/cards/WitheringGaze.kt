@@ -22,15 +22,11 @@ val WitheringGaze = card("Withering Gaze") {
             listOf(
                 RevealHandEffect(EffectTarget.ContextTarget(0)),
                 DrawCardsEffect(
-                    count = DynamicAmount.CountInZone(
-                        player = PlayerReference.TargetOpponent,
-                        zone = ZoneReference.Hand,
-                        filter = CountFilter.Or(
-                            listOf(
-                                CountFilter.HasSubtype("Forest"),
-                                CountFilter.CardColor(Color.GREEN)
-                            )
-                        )
+                    count = DynamicAmount.Count(
+                        player = Player.TargetOpponent,
+                        zone = Zone.Hand,
+                        filter = GameObjectFilter.Any.withSubtype("Forest") or
+                            GameObjectFilter.Any.withColor(Color.GREEN)
                     )
                 )
             )

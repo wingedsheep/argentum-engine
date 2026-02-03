@@ -11,7 +11,10 @@ import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CountFilter
 import com.wingedsheep.sdk.scripting.DynamicAmount
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.Player
 import com.wingedsheep.sdk.scripting.PlayerReference
+import com.wingedsheep.sdk.scripting.Zone
 import com.wingedsheep.sdk.scripting.ZoneReference
 import kotlin.math.max
 import kotlin.math.min
@@ -214,6 +217,15 @@ class DynamicAmountEvaluator {
                 )
                 evaluateCountInZone(state, countInZone, context)
             }
+
+            // Unified counting (new filter architecture)
+            is DynamicAmount.Count -> {
+                evaluateUnifiedCount(state, amount.player, amount.zone, amount.filter, context)
+            }
+
+            is DynamicAmount.CountBattlefield -> {
+                evaluateUnifiedCount(state, amount.player, Zone.Battlefield, amount.filter, context)
+            }
         }
     }
 
@@ -330,6 +342,95 @@ class DynamicAmountEvaluator {
             is ZoneReference.Exile -> ZoneType.EXILE
         }
     }
+
+    // =========================================================================
+    // Unified Filter Evaluation (new architecture)
+    // =========================================================================
+
+    private val predicateEvaluator = PredicateEvaluator()
+
+    private fun evaluateUnifiedCount(
+        state: GameState,
+        player: Player,
+        zone: Zone,
+        filter: GameObjectFilter,
+        context: EffectContext
+    ): Int {
+        val playerIds = resolveUnifiedPlayerIds(state, player, context)
+        val zoneType = resolveUnifiedZoneType(zone)
+
+        val predicateContext = PredicateContext.fromEffectContext(context)
+
+        return playerIds.sumOf { playerId ->
+            val entities = if (zoneType == ZoneType.BATTLEFIELD) {
+                // Battlefield is shared, filter by controller
+                state.getBattlefield().filter { entityId ->
+                    state.getEntity(entityId)?.get<ControllerComponent>()?.playerId == playerId
+                }
+            } else {
+                state.getZone(ZoneKey(playerId, zoneType))
+            }
+
+            entities.count { entityId ->
+                predicateEvaluator.matches(state, entityId, filter, predicateContext)
+            }
+        }
+    }
+
+    private fun resolveUnifiedPlayerIds(
+        state: GameState,
+        player: Player,
+        context: EffectContext
+    ): List<EntityId> {
+        return when (player) {
+            is Player.You -> listOf(context.controllerId)
+            is Player.Opponent -> state.turnOrder.filter { it != context.controllerId }
+            is Player.EachOpponent -> state.turnOrder.filter { it != context.controllerId }
+            is Player.TargetOpponent -> listOfNotNull(context.opponentId)
+            is Player.TargetPlayer -> listOfNotNull(context.opponentId)
+            is Player.Each -> state.turnOrder
+            is Player.Any -> state.turnOrder
+            is Player.ContextPlayer -> {
+                // Resolve from context targets
+                val targetIndex = player.index
+                context.targets.getOrNull(targetIndex)
+                    ?.let { target ->
+                        when (target) {
+                            is com.wingedsheep.sdk.scripting.EffectTarget.ContextTarget -> {
+                                // Recursive resolution not supported, return empty
+                                emptyList()
+                            }
+                            else -> emptyList()
+                        }
+                    }
+                    ?: emptyList()
+            }
+            is Player.ControllerOf -> {
+                // Would need to resolve the target and find its controller
+                emptyList()
+            }
+            is Player.OwnerOf -> {
+                // Would need to resolve the target and find its owner
+                emptyList()
+            }
+        }
+    }
+
+    private fun resolveUnifiedZoneType(zone: Zone): ZoneType {
+        return when (zone) {
+            Zone.Hand -> ZoneType.HAND
+            Zone.Battlefield -> ZoneType.BATTLEFIELD
+            Zone.Graveyard -> ZoneType.GRAVEYARD
+            Zone.Library -> ZoneType.LIBRARY
+            Zone.Exile -> ZoneType.EXILE
+            Zone.Stack -> ZoneType.STACK
+            Zone.Command -> ZoneType.COMMAND
+        }
+    }
+
+    // =========================================================================
+    // Legacy Filter Evaluation (deprecated filters)
+    // =========================================================================
 
     private fun matchesCountFilter(state: GameState, entityId: EntityId, filter: CountFilter): Boolean {
         val container = state.getEntity(entityId) ?: return false

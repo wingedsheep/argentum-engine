@@ -4,6 +4,8 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Subtype
 import kotlinx.serialization.Serializable
 
+// Note: Player, Zone, and GameObjectFilter are in the same package (com.wingedsheep.sdk.scripting)
+
 /**
  * Sources for dynamic values in effects.
  */
@@ -364,6 +366,102 @@ sealed interface DynamicAmount {
             }
             append(controller.description)
             append(" controls")
+        }
+    }
+
+    // =========================================================================
+    // Unified Counting - Using the new unified filter architecture
+    // =========================================================================
+
+    /**
+     * Count game objects in a zone matching a unified filter.
+     * This is the preferred counting primitive using the new unified filter system.
+     *
+     * Examples:
+     * ```kotlin
+     * // Cards in your hand
+     * Count(Player.You, Zone.Hand)
+     *
+     * // Forests on the battlefield (any player)
+     * Count(Player.Each, Zone.Battlefield, GameObjectFilter.Land.withSubtype("Forest"))
+     *
+     * // Tapped creatures opponent controls
+     * Count(Player.Opponent, Zone.Battlefield, GameObjectFilter.Creature.tapped())
+     *
+     * // Green cards in target opponent's hand
+     * Count(Player.TargetOpponent, Zone.Hand, GameObjectFilter.Any.withColor(Color.GREEN))
+     * ```
+     *
+     * @param player Whose zone to count in
+     * @param zone Which zone to count
+     * @param filter Filter for what to count (default: any)
+     */
+    @Serializable
+    data class Count(
+        val player: Player,
+        val zone: Zone,
+        val filter: GameObjectFilter = GameObjectFilter.Any
+    ) : DynamicAmount {
+        override val description: String = buildString {
+            append("the number of ")
+            val filterDesc = filter.description
+            if (filterDesc.isNotEmpty()) {
+                append(filterDesc)
+                append(" ")
+            }
+            when (zone) {
+                Zone.Battlefield -> {
+                    when (player) {
+                        Player.You -> append("you control")
+                        Player.Opponent, Player.TargetOpponent -> append("${player.description} controls")
+                        Player.Each -> append("on the battlefield")
+                        else -> append("${player.description} controls")
+                    }
+                }
+                else -> {
+                    append("in ")
+                    append(player.description)
+                    append("'s ")
+                    append(zone.description)
+                }
+            }
+        }
+    }
+
+    /**
+     * Count permanents on battlefield matching a unified filter.
+     * Convenience wrapper for Count with Zone.Battlefield.
+     *
+     * Examples:
+     * ```kotlin
+     * // Creatures you control
+     * CountBattlefield(Player.You, GameObjectFilter.Creature)
+     *
+     * // All Forests
+     * CountBattlefield(Player.Each, GameObjectFilter.Land.withSubtype("Forest"))
+     *
+     * // Attacking creatures you control
+     * CountBattlefield(Player.You, GameObjectFilter.Creature.attacking())
+     * ```
+     */
+    @Serializable
+    data class CountBattlefield(
+        val player: Player,
+        val filter: GameObjectFilter = GameObjectFilter.Any
+    ) : DynamicAmount {
+        override val description: String = buildString {
+            append("the number of ")
+            val filterDesc = filter.description
+            if (filterDesc.isNotEmpty()) {
+                append(filterDesc)
+                append(" ")
+            }
+            when (player) {
+                Player.You -> append("you control")
+                Player.Opponent, Player.TargetOpponent -> append("${player.description} controls")
+                Player.Each -> append("on the battlefield")
+                else -> append("${player.description} controls")
+            }
         }
     }
 }

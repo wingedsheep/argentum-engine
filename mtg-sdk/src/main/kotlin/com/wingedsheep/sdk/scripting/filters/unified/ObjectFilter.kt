@@ -229,14 +229,14 @@ data class GameObjectFilter(
     // =============================================================================
 
     /** Combine with another filter using AND logic */
-    fun and(other: GameObjectFilter) = copy(
+    infix fun and(other: GameObjectFilter) = copy(
         cardPredicates = cardPredicates + other.cardPredicates,
         statePredicates = statePredicates + other.statePredicates,
         controllerPredicate = other.controllerPredicate ?: controllerPredicate
     )
 
     /** Combine with another filter using OR logic */
-    fun or(other: GameObjectFilter) = GameObjectFilter(
+    infix fun or(other: GameObjectFilter) = GameObjectFilter(
         cardPredicates = listOf(
             CardPredicate.Or(
                 cardPredicates + other.cardPredicates

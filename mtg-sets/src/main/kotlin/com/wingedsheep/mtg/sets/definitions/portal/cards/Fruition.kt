@@ -2,10 +2,11 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.CountFilter
 import com.wingedsheep.sdk.scripting.DynamicAmount
 import com.wingedsheep.sdk.scripting.GainLifeEffect
-import com.wingedsheep.sdk.scripting.PlayerReference
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.Player
+import com.wingedsheep.sdk.scripting.Zone
 
 /**
  * Fruition
@@ -19,9 +20,10 @@ val Fruition = card("Fruition") {
 
     spell {
         effect = GainLifeEffect(
-            DynamicAmount.CountPermanents(
-                controller = PlayerReference.Each,
-                filter = CountFilter.LandType("Forest")
+            DynamicAmount.Count(
+                player = Player.Each,
+                zone = Zone.Battlefield,
+                filter = GameObjectFilter.Land.withSubtype("Forest")
             )
         )
     }
