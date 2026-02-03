@@ -246,6 +246,25 @@ class AutoPassManagerTest : FunSpec({
 
             autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
         }
+
+        test("Auto-pass during declare blockers when no blockers or responses available") {
+            val state = createMockState(player2, player1, Step.DECLARE_BLOCKERS)
+            val actions = listOf(
+                passPriorityAction(player2) // No blockers, no instants
+            )
+
+            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
+        }
+
+        test("STOP during declare blockers when blockers or responses available") {
+            val state = createMockState(player2, player1, Step.DECLARE_BLOCKERS)
+            val actions = listOf(
+                passPriorityAction(player2),
+                instantSpellAction(player2) // Has a response available
+            )
+
+            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe false
+        }
     }
 
     context("Rule 3: My Turn Optimization") {

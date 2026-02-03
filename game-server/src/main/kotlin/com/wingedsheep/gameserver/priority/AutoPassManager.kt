@@ -274,10 +274,15 @@ class AutoPassManager {
                 }
             }
             Step.DECLARE_BLOCKERS -> {
-                // We're the defending player, so we declared blockers
-                // STOP for removal/pump before damage
-                logger.debug("STOP: My declare blockers step")
-                false
+                // We're the defending player - stop if we have blockers or responses
+                // Auto-pass if we have nothing to do
+                if (meaningfulActions.isEmpty()) {
+                    logger.debug("AUTO-PASS: Opponent's declare blockers (no meaningful actions)")
+                    true
+                } else {
+                    logger.debug("STOP: Opponent's declare blockers (can block or respond)")
+                    false
+                }
             }
             Step.FIRST_STRIKE_COMBAT_DAMAGE, Step.COMBAT_DAMAGE, Step.END_COMBAT -> {
                 if (meaningfulActions.isNotEmpty()) {
@@ -436,7 +441,7 @@ class AutoPassManager {
             Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN -> true
             Step.BEGIN_COMBAT -> !hasMeaningfulActions // Auto-pass if no actions
             Step.DECLARE_ATTACKERS -> !hasMeaningfulActions // Auto-pass if no actions
-            Step.DECLARE_BLOCKERS -> false
+            Step.DECLARE_BLOCKERS -> !hasMeaningfulActions // Auto-pass if no blockers/responses
             Step.FIRST_STRIKE_COMBAT_DAMAGE, Step.COMBAT_DAMAGE, Step.END_COMBAT -> !hasMeaningfulActions
             Step.END -> false // Golden rule
             Step.CLEANUP, Step.UNTAP -> true
