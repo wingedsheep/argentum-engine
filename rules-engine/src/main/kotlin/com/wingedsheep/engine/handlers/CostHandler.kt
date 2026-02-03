@@ -15,7 +15,6 @@ import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.AdditionalCost
-import com.wingedsheep.sdk.scripting.CardFilter
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 
 /**
@@ -210,17 +209,6 @@ class CostHandler {
 
     // Helper functions
 
-    private fun findMatchingPermanents(
-        state: GameState,
-        controllerId: EntityId,
-        filter: CardFilter
-    ): List<EntityId> {
-        return state.entities.filter { (_, container) ->
-            container.get<ControllerComponent>()?.playerId == controllerId &&
-            matchesFilter(container.get<CardComponent>(), filter)
-        }.keys.toList()
-    }
-
     private fun findMatchingPermanentsUnified(
         state: GameState,
         controllerId: EntityId,
@@ -230,18 +218,6 @@ class CostHandler {
         return state.entities.filter { (entityId, container) ->
             container.get<ControllerComponent>()?.playerId == controllerId &&
             predicateEvaluator.matches(state, entityId, filter, context)
-        }.keys.toList()
-    }
-
-    private fun findUntappedMatchingPermanents(
-        state: GameState,
-        controllerId: EntityId,
-        filter: CardFilter
-    ): List<EntityId> {
-        return state.entities.filter { (_, container) ->
-            container.get<ControllerComponent>()?.playerId == controllerId &&
-            !container.has<TappedComponent>() &&
-            matchesFilter(container.get<CardComponent>(), filter)
         }.keys.toList()
     }
 
@@ -258,17 +234,6 @@ class CostHandler {
         }.keys.toList()
     }
 
-    private fun findMatchingCards(
-        state: GameState,
-        cardIds: List<EntityId>,
-        filter: CardFilter
-    ): List<EntityId> {
-        return cardIds.filter { cardId ->
-            val cardComponent = state.getEntity(cardId)?.get<CardComponent>()
-            matchesFilter(cardComponent, filter)
-        }
-    }
-
     private fun findMatchingCardsUnified(
         state: GameState,
         cardIds: List<EntityId>,
@@ -278,27 +243,6 @@ class CostHandler {
         val context = PredicateContext(controllerId = controllerId)
         return cardIds.filter { cardId ->
             predicateEvaluator.matches(state, cardId, filter, context)
-        }
-    }
-
-    private fun matchesFilter(card: CardComponent?, filter: CardFilter): Boolean {
-        if (card == null) return false
-
-        return when (filter) {
-            is CardFilter.AnyCard -> true
-            is CardFilter.CreatureCard -> card.typeLine.isCreature
-            is CardFilter.LandCard -> card.typeLine.isLand
-            is CardFilter.BasicLandCard -> card.typeLine.isBasicLand
-            is CardFilter.SorceryCard -> card.typeLine.isSorcery
-            is CardFilter.InstantCard -> card.typeLine.isInstant
-            is CardFilter.HasSubtype -> card.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(filter.subtype))
-            is CardFilter.HasColor -> card.colors.contains(filter.color)
-            is CardFilter.And -> filter.filters.all { matchesFilter(card, it) }
-            is CardFilter.Or -> filter.filters.any { matchesFilter(card, it) }
-            is CardFilter.PermanentCard -> card.typeLine.isPermanent
-            is CardFilter.NonlandPermanentCard -> card.typeLine.isPermanent && !card.typeLine.isLand
-            is CardFilter.ManaValueAtMost -> card.manaCost.cmc <= filter.maxManaValue
-            is CardFilter.Not -> !matchesFilter(card, filter.filter)
         }
     }
 

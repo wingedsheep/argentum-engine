@@ -24,7 +24,7 @@ data object CounterSpellEffect : Effect {
  */
 @Serializable
 data class CounterSpellWithFilterEffect(
-    val filter: SpellFilter
+    val filter: TargetFilter = TargetFilter.SpellOnStack
 ) : Effect {
-    override val description: String = "Counter target ${filter.description} spell"
+    override val description: String = "Counter target ${filter.baseFilter.description} spell"
 }

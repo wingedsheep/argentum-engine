@@ -1620,28 +1620,6 @@ class GameSession(
     }
 
     /**
-     * Check if a card matches a CardFilter.
-     */
-    private fun matchesCardFilter(card: CardComponent, filter: com.wingedsheep.sdk.scripting.CardFilter): Boolean {
-        return when (filter) {
-            is com.wingedsheep.sdk.scripting.CardFilter.AnyCard -> true
-            is com.wingedsheep.sdk.scripting.CardFilter.CreatureCard -> card.typeLine.isCreature
-            is com.wingedsheep.sdk.scripting.CardFilter.LandCard -> card.typeLine.isLand
-            is com.wingedsheep.sdk.scripting.CardFilter.BasicLandCard -> card.typeLine.isBasicLand
-            is com.wingedsheep.sdk.scripting.CardFilter.SorceryCard -> card.typeLine.isSorcery
-            is com.wingedsheep.sdk.scripting.CardFilter.InstantCard -> card.typeLine.isInstant
-            is com.wingedsheep.sdk.scripting.CardFilter.HasSubtype -> card.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(filter.subtype))
-            is com.wingedsheep.sdk.scripting.CardFilter.HasColor -> card.colors.contains(filter.color)
-            is com.wingedsheep.sdk.scripting.CardFilter.And -> filter.filters.all { matchesCardFilter(card, it) }
-            is com.wingedsheep.sdk.scripting.CardFilter.Or -> filter.filters.any { matchesCardFilter(card, it) }
-            is com.wingedsheep.sdk.scripting.CardFilter.PermanentCard -> card.typeLine.isPermanent
-            is com.wingedsheep.sdk.scripting.CardFilter.NonlandPermanentCard -> card.typeLine.isPermanent && !card.typeLine.isLand
-            is com.wingedsheep.sdk.scripting.CardFilter.ManaValueAtMost -> card.manaCost.cmc <= filter.maxManaValue
-            is com.wingedsheep.sdk.scripting.CardFilter.Not -> !matchesCardFilter(card, filter.filter)
-        }
-    }
-
-    /**
      * Enrich a PendingDecision with imageUri data from the card registry.
      * The engine creates SearchCardInfo with null imageUri because it doesn't have access
      * to card metadata. This function populates the imageUri using the card registry.

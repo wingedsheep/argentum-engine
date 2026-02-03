@@ -313,23 +313,27 @@ sealed interface DynamicAmount {
     }
 
     // =========================================================================
-    // Zone-based Counting - General counting with filters
+    // Zone-based Counting - Legacy (use Count/CountBattlefield instead)
     // =========================================================================
 
     /**
      * Count cards in a zone matching a filter.
-     * This is the general-purpose counting primitive that replaces many specific amounts.
      *
-     * Examples:
-     * - CountInZone(Controller, Hand) = cards in your hand
-     * - CountInZone(Opponent, Hand) = cards in opponent's hand
-     * - CountInZone(Controller, Battlefield, PermanentFilter.Creature) = creatures you control
-     * - CountInZone(Opponent, Battlefield, PermanentFilter.TappedCreature) = tapped creatures opponent controls
+     * @deprecated Use [Count] instead with the unified filter architecture.
+     *
+     * Migration examples:
+     * - `CountInZone(PlayerReference.You, ZoneReference.Hand)` -> `Count(Player.You, Zone.Hand)`
+     * - `CountInZone(PlayerReference.Opponent, ZoneReference.Battlefield, CountFilter.Creatures)` ->
+     *   `Count(Player.Opponent, Zone.Battlefield, GameObjectFilter.Creature)`
      *
      * @param player Whose zone to count in
      * @param zone Which zone to count
      * @param filter Optional filter for what to count
      */
+    @Deprecated(
+        message = "Use Count instead with unified Player, Zone, and GameObjectFilter",
+        replaceWith = ReplaceWith("Count(player, zone, filter)", "com.wingedsheep.sdk.scripting.DynamicAmount.Count")
+    )
     @Serializable
     data class CountInZone(
         val player: PlayerReference,
@@ -351,8 +355,19 @@ sealed interface DynamicAmount {
 
     /**
      * Count permanents on battlefield matching a filter.
-     * Convenience wrapper for CountInZone with battlefield.
+     *
+     * @deprecated Use [CountBattlefield] instead with the unified filter architecture.
+     *
+     * Migration examples:
+     * - `CountPermanents(PlayerReference.You, CountFilter.Creatures)` ->
+     *   `CountBattlefield(Player.You, GameObjectFilter.Creature)`
+     * - `CountPermanents(PlayerReference.Opponent, CountFilter.Lands)` ->
+     *   `CountBattlefield(Player.Opponent, GameObjectFilter.Land)`
      */
+    @Deprecated(
+        message = "Use CountBattlefield instead with unified Player and GameObjectFilter",
+        replaceWith = ReplaceWith("CountBattlefield(controller, filter)", "com.wingedsheep.sdk.scripting.DynamicAmount.CountBattlefield")
+    )
     @Serializable
     data class CountPermanents(
         val controller: PlayerReference,

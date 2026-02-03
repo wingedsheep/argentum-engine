@@ -36,7 +36,6 @@ import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AdditionalCost
-import com.wingedsheep.sdk.scripting.CardFilter
 import com.wingedsheep.sdk.scripting.CastRestriction
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import kotlin.reflect.KClass
@@ -284,25 +283,6 @@ class CastSpellHandler(
             }
         }
         return null
-    }
-
-    private fun matchesCardFilter(card: CardComponent, filter: CardFilter): Boolean {
-        return when (filter) {
-            is CardFilter.AnyCard -> true
-            is CardFilter.CreatureCard -> card.typeLine.isCreature
-            is CardFilter.LandCard -> card.typeLine.isLand
-            is CardFilter.BasicLandCard -> card.typeLine.isBasicLand
-            is CardFilter.SorceryCard -> card.typeLine.isSorcery
-            is CardFilter.InstantCard -> card.typeLine.isInstant
-            is CardFilter.HasSubtype -> card.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(filter.subtype))
-            is CardFilter.HasColor -> card.colors.contains(filter.color)
-            is CardFilter.And -> filter.filters.all { matchesCardFilter(card, it) }
-            is CardFilter.Or -> filter.filters.any { matchesCardFilter(card, it) }
-            is CardFilter.PermanentCard -> card.typeLine.isPermanent
-            is CardFilter.NonlandPermanentCard -> card.typeLine.isPermanent && !card.typeLine.isLand
-            is CardFilter.ManaValueAtMost -> card.manaCost.cmc <= filter.maxManaValue
-            is CardFilter.Not -> !matchesCardFilter(card, filter.filter)
-        }
     }
 
     override fun execute(state: GameState, action: CastSpell): ExecutionResult {
