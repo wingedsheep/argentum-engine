@@ -48,6 +48,7 @@ class StackResolver(
      * @param castFaceDown If true, cast as a face-down 2/2 creature (morph). The spell
      *                     will resolve as a face-down creature with FaceDownComponent
      *                     and MorphDataComponent.
+     * @param damageDistribution Pre-chosen damage distribution for DividedDamageEffect spells
      */
     fun castSpell(
         state: GameState,
@@ -56,7 +57,8 @@ class StackResolver(
         targets: List<ChosenTarget> = emptyList(),
         xValue: Int? = null,
         sacrificedPermanents: List<EntityId> = emptyList(),
-        castFaceDown: Boolean = false
+        castFaceDown: Boolean = false,
+        damageDistribution: Map<EntityId, Int>? = null
     ): ExecutionResult {
         val container = state.getEntity(cardId)
             ?: return ExecutionResult.error(state, "Card not found: $cardId")
@@ -73,7 +75,8 @@ class StackResolver(
                 casterId = casterId,
                 xValue = xValue,
                 sacrificedPermanents = sacrificedPermanents,
-                castFaceDown = castFaceDown
+                castFaceDown = castFaceDown,
+                damageDistribution = damageDistribution
             ))
             if (targets.isNotEmpty()) {
                 updated = updated.with(TargetsComponent(targets))
@@ -318,7 +321,8 @@ class StackResolver(
                 opponentId = newState.getOpponent(spellComponent.casterId),
                 targets = targets,
                 xValue = spellComponent.xValue,
-                sacrificedPermanents = spellComponent.sacrificedPermanents
+                sacrificedPermanents = spellComponent.sacrificedPermanents,
+                damageDistribution = spellComponent.damageDistribution
             )
 
             val effectResult = effectHandler.execute(newState, spellEffect, context)

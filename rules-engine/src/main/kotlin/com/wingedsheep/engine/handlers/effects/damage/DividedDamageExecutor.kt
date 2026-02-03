@@ -22,9 +22,12 @@ import kotlin.reflect.KClass
  *
  * "Deal X damage divided as you choose among N targets"
  *
- * If there's only one target, deal all damage directly.
- * If there are multiple targets, create a DistributeDecision for the player
- * to allocate damage (minimum 1 per target for damage effects).
+ * Per MTG rules, damage distribution must be chosen as part of targeting (at cast time),
+ * not when the spell resolves. This executor uses the pre-supplied distribution from
+ * the EffectContext.
+ *
+ * If there's only one target, deal all damage directly (no distribution needed).
+ * If there are multiple targets, use the pre-supplied damageDistribution from context.
  */
 class DividedDamageExecutor(
     private val decisionHandler: DecisionHandler
@@ -49,7 +52,42 @@ class DividedDamageExecutor(
             return dealDamageToTarget(state, targets.first(), effect.totalDamage, context.sourceId)
         }
 
-        // Multiple targets - create a distribution decision
+        // Multiple targets - use pre-supplied distribution from context
+        val distribution = context.damageDistribution
+        if (distribution == null) {
+            // Fallback: This shouldn't happen with proper flow, but handle gracefully
+            // by creating a decision (legacy behavior)
+            return createDistributionDecision(state, effect, context, targets)
+        }
+
+        // Deal damage to each target per the distribution
+        var currentState = state
+        val events = mutableListOf<com.wingedsheep.engine.core.GameEvent>()
+
+        for ((targetId, amount) in distribution) {
+            if (amount > 0) {
+                val result = dealDamageToTarget(currentState, targetId, amount, context.sourceId)
+                if (!result.isSuccess) {
+                    return result
+                }
+                currentState = result.newState
+                events.addAll(result.events)
+            }
+        }
+
+        return ExecutionResult.success(currentState, events)
+    }
+
+    /**
+     * Legacy behavior: Create a DistributeDecision for backwards compatibility.
+     * This should only be used if damageDistribution is not provided in context.
+     */
+    private fun createDistributionDecision(
+        state: GameState,
+        effect: DividedDamageEffect,
+        context: EffectContext,
+        targets: List<com.wingedsheep.sdk.model.EntityId>
+    ): ExecutionResult {
         val sourceName = context.sourceId?.let { sourceId ->
             state.getEntity(sourceId)?.get<CardComponent>()?.name
         } ?: "Effect"

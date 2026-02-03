@@ -49,6 +49,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.ControllerPredicate
 import com.wingedsheep.sdk.scripting.ActivationRestriction
 import com.wingedsheep.sdk.scripting.CastRestriction
+import com.wingedsheep.sdk.scripting.DividedDamageEffect
 import com.wingedsheep.gameserver.priority.AutoPassManager
 import org.slf4j.LoggerFactory
 import java.util.UUID
@@ -815,6 +816,13 @@ class GameSession(
                         // Convoke info was already calculated above (before affordability check)
                         val manaCostString = if (hasConvoke) cardComponent.manaCost.toString() else null
 
+                        // Check for DividedDamageEffect to flag damage distribution requirement
+                        val spellEffect = cardDef?.script?.spellEffect
+                        val dividedDamageEffect = spellEffect as? DividedDamageEffect
+                        val requiresDamageDistribution = dividedDamageEffect != null
+                        val totalDamageToDistribute = dividedDamageEffect?.totalDamage
+                        val minDamagePerTarget = if (dividedDamageEffect != null) 1 else null
+
                         if (targetReqs.isNotEmpty()) {
                             // Spell requires targets - find valid targets for all requirements
                             val targetReqInfos = targetReqs.mapIndexed { index, req ->
@@ -858,7 +866,10 @@ class GameSession(
                                         additionalCostInfo = costInfo,
                                         hasConvoke = hasConvoke,
                                         validConvokeCreatures = convokeCreatures,
-                                        manaCostString = manaCostString
+                                        manaCostString = manaCostString,
+                                        requiresDamageDistribution = requiresDamageDistribution,
+                                        totalDamageToDistribute = totalDamageToDistribute,
+                                        minDamagePerTarget = minDamagePerTarget
                                     ))
                                 } else {
                                     result.add(LegalActionInfo(
@@ -876,7 +887,10 @@ class GameSession(
                                         additionalCostInfo = costInfo,
                                         hasConvoke = hasConvoke,
                                         validConvokeCreatures = convokeCreatures,
-                                        manaCostString = manaCostString
+                                        manaCostString = manaCostString,
+                                        requiresDamageDistribution = requiresDamageDistribution,
+                                        totalDamageToDistribute = totalDamageToDistribute,
+                                        minDamagePerTarget = minDamagePerTarget
                                     ))
                                 }
                             }

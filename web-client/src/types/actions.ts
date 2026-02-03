@@ -67,6 +67,8 @@ export interface CastSpellAction {
   readonly additionalCostPayment?: AdditionalCostPayment
   /** Whether to cast this card face-down (for Morph creatures) */
   readonly castFaceDown?: boolean
+  /** Pre-chosen damage distribution for DividedDamageEffect spells (target ID -> damage amount) */
+  readonly damageDistribution?: Record<EntityId, number>
 }
 
 export type PaymentStrategy =

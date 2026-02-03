@@ -46,6 +46,7 @@ data class PassPriority(
  * @property paymentStrategy How the player intends to pay the mana cost
  * @property alternativePayment Optional alternative payment choices (Delve, Convoke)
  * @property castFaceDown If true, cast as a face-down 2/2 creature for {3} (morph)
+ * @property damageDistribution Pre-chosen damage distribution for DividedDamageEffect spells (target ID -> damage amount)
  */
 @Serializable
 @SerialName("CastSpell")
@@ -57,7 +58,8 @@ data class CastSpell(
     val paymentStrategy: PaymentStrategy = PaymentStrategy.AutoPay,
     val alternativePayment: AlternativePaymentChoice? = null,
     val additionalCostPayment: AdditionalCostPayment? = null,
-    val castFaceDown: Boolean = false
+    val castFaceDown: Boolean = false,
+    val damageDistribution: Map<EntityId, Int>? = null
 ) : GameAction
 
 /**

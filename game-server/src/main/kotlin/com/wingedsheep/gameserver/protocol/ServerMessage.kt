@@ -706,7 +706,13 @@ data class LegalActionInfo(
     /** Creatures that can be tapped to help pay for Convoke */
     val validConvokeCreatures: List<ConvokeCreatureInfo>? = null,
     /** The spell's mana cost for Convoke UI display */
-    val manaCostString: String? = null
+    val manaCostString: String? = null,
+    /** Whether this spell requires damage distribution at cast time (for DividedDamageEffect) */
+    val requiresDamageDistribution: Boolean = false,
+    /** Total damage to distribute for DividedDamageEffect spells */
+    val totalDamageToDistribute: Int? = null,
+    /** Minimum damage per target (usually 1 per MTG rules) */
+    val minDamagePerTarget: Int? = null
 )
 
 /**

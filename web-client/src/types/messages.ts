@@ -334,6 +334,12 @@ export interface LegalActionInfo {
   readonly validConvokeCreatures?: readonly ConvokeCreatureInfo[]
   /** The spell's mana cost string for Convoke UI display */
   readonly manaCostString?: string
+  /** Whether this spell requires damage distribution at cast time (for DividedDamageEffect) */
+  readonly requiresDamageDistribution?: boolean
+  /** Total damage to distribute for DividedDamageEffect spells */
+  readonly totalDamageToDistribute?: number
+  /** Minimum damage per target (usually 1 per MTG rules) */
+  readonly minDamagePerTarget?: number
 }
 
 /**

@@ -37,7 +37,9 @@ import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.CastRestriction
+import com.wingedsheep.sdk.scripting.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.toEntityId
 import kotlin.reflect.KClass
 
 /**
@@ -149,6 +151,36 @@ class CastSpellHandler(
                 )
                 if (targetError != null) {
                     return targetError
+                }
+            }
+        }
+
+        // Validate damage distribution for DividedDamageEffect spells
+        val spellEffect = cardDef?.script?.spellEffect
+        if (spellEffect is DividedDamageEffect && action.targets.size > 1) {
+            val distribution = action.damageDistribution
+            if (distribution == null) {
+                return "Damage distribution required for this spell when targeting multiple creatures"
+            }
+
+            // Check that distribution targets match chosen targets
+            val targetIds = action.targets.map { it.toEntityId() }.toSet()
+            val distributionTargets = distribution.keys
+            if (distributionTargets != targetIds) {
+                return "Damage distribution targets must match chosen targets"
+            }
+
+            // Check that total damage equals the spell's total damage
+            val totalDistributed = distribution.values.sum()
+            if (totalDistributed != spellEffect.totalDamage) {
+                return "Total distributed damage ($totalDistributed) must equal ${spellEffect.totalDamage}"
+            }
+
+            // Check that each target gets at least 1 damage (per MTG rules)
+            val minPerTarget = 1
+            for ((targetId, damage) in distribution) {
+                if (damage < minPerTarget) {
+                    return "Each target must receive at least $minPerTarget damage"
                 }
             }
         }
@@ -368,7 +400,8 @@ class CastSpellHandler(
             action.targets,
             action.xValue,
             sacrificedPermanentIds,
-            action.castFaceDown
+            action.castFaceDown,
+            action.damageDistribution
         )
 
         if (!castResult.isSuccess) {

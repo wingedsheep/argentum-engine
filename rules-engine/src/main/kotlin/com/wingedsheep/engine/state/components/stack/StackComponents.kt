@@ -18,7 +18,8 @@ data class SpellOnStackComponent(
     val wasKicked: Boolean = false,  // For kicker costs
     val chosenModes: List<Int> = emptyList(),  // For modal spells
     val sacrificedPermanents: List<EntityId> = emptyList(),  // For additional costs
-    val castFaceDown: Boolean = false  // For morph - creature enters face-down
+    val castFaceDown: Boolean = false,  // For morph - creature enters face-down
+    val damageDistribution: Map<EntityId, Int>? = null  // For DividedDamageEffect - pre-chosen damage allocation
 ) : Component
 
 /**

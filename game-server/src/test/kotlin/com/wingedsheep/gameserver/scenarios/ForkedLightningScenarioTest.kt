@@ -7,7 +7,6 @@ import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
  * Scenario test for Forked Lightning.
@@ -18,16 +17,19 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  * "Forked Lightning deals 4 damage divided as you choose among one, two,
  * or three target creatures."
  *
+ * Per MTG rules, damage distribution for "divided as you choose" effects
+ * must be chosen as part of targeting—at cast time—not when the spell resolves.
+ *
  * Test scenarios:
- * 1. Single target: All 4 damage goes to one creature
- * 2. Two targets: Player distributes damage (e.g., 2+2 or 3+1)
- * 3. Three targets: Player distributes damage (e.g., 2+1+1)
+ * 1. Single target: All 4 damage goes to one creature (no distribution needed)
+ * 2. Two targets: Distribution provided at cast time
+ * 3. Three targets: Distribution provided at cast time
  */
 class ForkedLightningScenarioTest : ScenarioTestBase() {
 
     init {
         context("Forked Lightning basic functionality") {
-            test("deals all 4 damage to single target directly without distribution prompt") {
+            test("deals all 4 damage to single target directly without distribution") {
                 // Setup: Player 1 has Forked Lightning in hand with Mountains
                 // Player 2 has a single creature on the battlefield
                 val game = scenario()
@@ -45,12 +47,13 @@ class ForkedLightningScenarioTest : ScenarioTestBase() {
                     game.isOnBattlefield("Hill Giant") shouldBe true
                 }
 
-                // Cast Forked Lightning targeting Hill Giant
+                // Cast Forked Lightning targeting Hill Giant (single target - no distribution needed)
                 val castResult = game.execute(
                     CastSpell(
                         game.player1Id,
                         game.findCardsInHand(1, "Forked Lightning").first(),
                         listOf(ChosenTarget.Permanent(hillGiant))
+                        // No damageDistribution needed for single target
                     )
                 )
                 withClue("Forked Lightning should be cast successfully: ${castResult.error}") {
@@ -72,7 +75,7 @@ class ForkedLightningScenarioTest : ScenarioTestBase() {
                 }
             }
 
-            test("prompts for damage distribution with two targets") {
+            test("deals damage distributed at cast time with two targets") {
                 // Setup: Player 1 has Forked Lightning
                 // Player 2 has two creatures
                 val game = scenario()
@@ -88,14 +91,19 @@ class ForkedLightningScenarioTest : ScenarioTestBase() {
                 val hillGiant = game.findPermanent("Hill Giant")!!
                 val ragingGoblin = game.findPermanent("Raging Goblin")!!
 
-                // Cast Forked Lightning targeting both creatures
+                // Cast Forked Lightning targeting both creatures with damage distribution
+                // Distribution: 3 damage to Hill Giant, 1 to Raging Goblin
                 val castResult = game.execute(
                     CastSpell(
-                        game.player1Id,
-                        game.findCardsInHand(1, "Forked Lightning").first(),
-                        listOf(
+                        playerId = game.player1Id,
+                        cardId = game.findCardsInHand(1, "Forked Lightning").first(),
+                        targets = listOf(
                             ChosenTarget.Permanent(hillGiant),
                             ChosenTarget.Permanent(ragingGoblin)
+                        ),
+                        damageDistribution = mapOf(
+                            hillGiant to 3,
+                            ragingGoblin to 1
                         )
                     )
                 )
@@ -103,43 +111,15 @@ class ForkedLightningScenarioTest : ScenarioTestBase() {
                     castResult.error shouldBe null
                 }
 
-                // Resolve the spell
+                // Resolve the spell - damage distribution was already chosen at cast time
                 game.resolveStack()
 
-                // Should prompt for damage distribution
-                withClue("Should have a pending distribution decision") {
-                    game.hasPendingDecision() shouldBe true
-                }
-
-                val decision = game.getPendingDecision()
-                withClue("Decision should be DistributeDecision") {
-                    decision.shouldBeInstanceOf<DistributeDecision>()
-                }
-
-                val distributeDecision = decision as DistributeDecision
-                withClue("Total damage should be 4") {
-                    distributeDecision.totalAmount shouldBe 4
-                }
-                withClue("Should have 2 targets") {
-                    distributeDecision.targets.size shouldBe 2
-                }
-                withClue("Minimum damage per target should be 1") {
-                    distributeDecision.minPerTarget shouldBe 1
-                }
-
-                // Distribute 3 damage to Hill Giant, 1 to Raging Goblin
-                val distributionResult = game.submitDistribution(
-                    mapOf(
-                        hillGiant to 3,
-                        ragingGoblin to 1
-                    )
-                )
-                withClue("Distribution should succeed: ${distributionResult.error}") {
-                    distributionResult.error shouldBe null
+                // Should NOT have a pending decision - distribution was provided at cast time
+                withClue("No pending decision - distribution was chosen at cast time") {
+                    game.hasPendingDecision() shouldBe false
                 }
 
                 // Hill Giant dies (3 damage, 3 toughness), Raging Goblin dies (1 damage, 1 toughness)
-                // SBAs are now checked automatically after submitDistribution
                 withClue("Hill Giant should be destroyed (took lethal damage)") {
                     game.isOnBattlefield("Hill Giant") shouldBe false
                 }
@@ -148,7 +128,7 @@ class ForkedLightningScenarioTest : ScenarioTestBase() {
                 }
             }
 
-            test("distributes damage among three targets") {
+            test("distributes damage among three targets at cast time") {
                 // Setup: Player 1 has Forked Lightning
                 // Player 2 has three creatures
                 val game = scenario()
@@ -166,15 +146,21 @@ class ForkedLightningScenarioTest : ScenarioTestBase() {
                 val ragingGoblin = game.findPermanent("Raging Goblin")!!
                 val elvishRanger = game.findPermanent("Elvish Ranger")!!
 
-                // Cast Forked Lightning targeting all three creatures
+                // Cast Forked Lightning targeting all three creatures with damage distribution
+                // Distribution: 2 damage to Hill Giant, 1 to Raging Goblin, 1 to Elvish Ranger
                 val castResult = game.execute(
                     CastSpell(
-                        game.player1Id,
-                        game.findCardsInHand(1, "Forked Lightning").first(),
-                        listOf(
+                        playerId = game.player1Id,
+                        cardId = game.findCardsInHand(1, "Forked Lightning").first(),
+                        targets = listOf(
                             ChosenTarget.Permanent(hillGiant),
                             ChosenTarget.Permanent(ragingGoblin),
                             ChosenTarget.Permanent(elvishRanger)
+                        ),
+                        damageDistribution = mapOf(
+                            hillGiant to 2,
+                            ragingGoblin to 1,
+                            elvishRanger to 1
                         )
                     )
                 )
@@ -182,29 +168,15 @@ class ForkedLightningScenarioTest : ScenarioTestBase() {
                     castResult.error shouldBe null
                 }
 
-                // Resolve the spell
+                // Resolve the spell - damage distribution was already chosen at cast time
                 game.resolveStack()
 
-                // Should prompt for damage distribution
-                val decision = game.getPendingDecision() as DistributeDecision
-                withClue("Should have 3 targets") {
-                    decision.targets.size shouldBe 3
-                }
-
-                // Distribute 2 to Hill Giant, 1 to Raging Goblin, 1 to Elvish Ranger
-                val distributionResult = game.submitDistribution(
-                    mapOf(
-                        hillGiant to 2,
-                        ragingGoblin to 1,
-                        elvishRanger to 1
-                    )
-                )
-                withClue("Distribution should succeed: ${distributionResult.error}") {
-                    distributionResult.error shouldBe null
+                // Should NOT have a pending decision - distribution was provided at cast time
+                withClue("No pending decision - distribution was chosen at cast time") {
+                    game.hasPendingDecision() shouldBe false
                 }
 
                 // Hill Giant survives (2 damage, 3 toughness)
-                // SBAs are now checked automatically after submitDistribution
                 // Raging Goblin dies (1 damage, 1 toughness)
                 // Elvish Ranger dies (1 damage, 1 toughness)
                 withClue("Hill Giant should survive (only took 2 damage)") {
