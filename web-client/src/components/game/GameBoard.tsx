@@ -195,6 +195,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
   const combatState = useGameStore((state) => state.combatState)
   const confirmCombat = useGameStore((state) => state.confirmCombat)
   const cancelCombat = useGameStore((state) => state.cancelCombat)
+  const clearBlockerAssignments = useGameStore((state) => state.clearBlockerAssignments)
   const attackWithAll = useGameStore((state) => state.attackWithAll)
   const priorityMode = useGameStore(selectPriorityMode)
   const responsive = useResponsive(topOffset)
@@ -540,13 +541,13 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
                 Confirm Blocks
               </button>
               <button
-                onClick={cancelCombat}
+                onClick={clearBlockerAssignments}
                 style={{
                   ...styles.combatButton,
                   ...styles.combatButtonSecondary,
                 }}
               >
-                Cancel
+                Clear Blockers
               </button>
             </>
           )}

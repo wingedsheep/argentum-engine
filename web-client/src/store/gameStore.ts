@@ -462,6 +462,7 @@ export interface GameStore {
   toggleAttacker: (creatureId: EntityId) => void
   assignBlocker: (blockerId: EntityId, attackerId: EntityId) => void
   removeBlockerAssignment: (blockerId: EntityId) => void
+  clearBlockerAssignments: () => void
   startDraggingBlocker: (blockerId: EntityId) => void
   stopDraggingBlocker: () => void
   startDraggingCard: (cardId: EntityId) => void
@@ -1940,6 +1941,24 @@ export const useGameStore = create<GameStore>()(
             combatState: {
               ...state.combatState,
               blockerAssignments: remaining,
+            },
+          }
+        })
+      },
+
+      clearBlockerAssignments: () => {
+        set((state) => {
+          if (!state.combatState || state.combatState.mode !== 'declareBlockers') {
+            return state
+          }
+
+          // Send empty assignments to server for real-time sync with opponent
+          ws?.send(createUpdateBlockerAssignmentsMessage({}))
+
+          return {
+            combatState: {
+              ...state.combatState,
+              blockerAssignments: {},
             },
           }
         })
