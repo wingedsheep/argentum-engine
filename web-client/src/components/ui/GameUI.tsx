@@ -1127,6 +1127,7 @@ function TournamentOverlay({
               <th style={thStyle}>L</th>
               <th style={thStyle}>D</th>
               <th style={thStyle}>Pts</th>
+              <th style={thStyle} title="Game Win Rate">GWR</th>
               {isWaitingForReady && <th style={thStyle}>Ready</th>}
             </tr>
           </thead>
@@ -1136,26 +1137,62 @@ function TournamentOverlay({
               const isReady = tournamentState.readyPlayerIds.includes(standing.playerId)
               // Use server-provided rank or fall back to index+1
               const displayRank = standing.rank ?? index + 1
-              // Get tiebreaker tooltip text
-              const tiebreakerTooltip =
-                standing.tiebreakerReason === 'HEAD_TO_HEAD'
-                  ? 'Lost head-to-head'
-                  : standing.tiebreakerReason === 'H2H_GAMES'
-                    ? 'Lower H2H game record'
-                    : standing.tiebreakerReason === 'LIFE_DIFF'
-                      ? 'Lower life differential'
-                      : standing.tiebreakerReason === 'TIED'
-                        ? 'Tied'
+
+              // Calculate game win rate
+              const gamesWon = standing.gamesWon ?? 0
+              const gamesLost = standing.gamesLost ?? 0
+              const totalGames = gamesWon + gamesLost
+              const winRate = totalGames > 0 ? ((gamesWon / totalGames) * 100).toFixed(0) : '-'
+              const gameRecord = totalGames > 0 ? `${gamesWon}-${gamesLost}` : '-'
+
+              // Build detailed standing breakdown for tooltip
+              const standingDetails: string[] = [
+                `${standing.playerName}`,
+                `Match Record: ${standing.wins}W-${standing.losses}L-${standing.draws}D`,
+                `Points: ${standing.points}`,
+              ]
+              if (totalGames > 0) {
+                standingDetails.push(`Game Record: ${gameRecord} (${winRate}%)`)
+              }
+              if (standing.lifeDifferential !== undefined) {
+                const lifeDiffStr = standing.lifeDifferential >= 0
+                  ? `+${standing.lifeDifferential}`
+                  : `${standing.lifeDifferential}`
+                standingDetails.push(`Life Differential: ${lifeDiffStr}`)
+              }
+              if (standing.tiebreakerReason && standing.tiebreakerReason !== 'TIED') {
+                const tiebreakerText =
+                  standing.tiebreakerReason === 'HEAD_TO_HEAD'
+                    ? 'Ranked by: Head-to-head record'
+                    : standing.tiebreakerReason === 'H2H_GAMES'
+                      ? 'Ranked by: H2H game record'
+                      : standing.tiebreakerReason === 'LIFE_DIFF'
+                        ? 'Ranked by: Life differential'
                         : null
+                if (tiebreakerText) standingDetails.push(tiebreakerText)
+              } else if (standing.tiebreakerReason === 'TIED') {
+                standingDetails.push('Tied with another player')
+              }
+              const standingTooltip = standingDetails.join('\n')
+
               return (
                 <tr
                   key={standing.playerId}
                   style={{
                     backgroundColor: isMe ? '#1a1a3a' : 'transparent',
                     borderBottom: '1px solid #222',
+                    cursor: 'default',
+                    transition: 'background-color 0.15s',
+                  }}
+                  title={standingTooltip}
+                  onMouseEnter={(e) => {
+                    if (!isMe) e.currentTarget.style.backgroundColor = '#1a1a2a'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = isMe ? '#1a1a3a' : 'transparent'
                   }}
                 >
-                  <td style={tdStyle} title={tiebreakerTooltip ?? undefined}>
+                  <td style={tdStyle}>
                     {displayRank}
                     {standing.tiebreakerReason === 'TIED' && (
                       <span style={{ color: '#888', marginLeft: 2 }}>*</span>
@@ -1172,6 +1209,9 @@ function TournamentOverlay({
                   <td style={{ ...tdStyle, color: '#ff4444' }}>{standing.losses}</td>
                   <td style={tdStyle}>{standing.draws}</td>
                   <td style={{ ...tdStyle, fontWeight: 600 }}>{standing.points}</td>
+                  <td style={{ ...tdStyle, color: '#aaa', fontSize: 12 }}>
+                    {totalGames > 0 ? `${winRate}%` : '-'}
+                  </td>
                   {isWaitingForReady && (
                     <td style={{ ...tdStyle, color: isReady ? '#4caf50' : '#666' }}>
                       {standing.isConnected ? (isReady ? '✓' : '...') : '-'}
