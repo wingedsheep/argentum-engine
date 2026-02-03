@@ -96,7 +96,7 @@ class FinalStrikeScenarioTest : ScenarioTestBase() {
                 // Trying to cast without sacrifice payment should fail
                 val castResult = game.castSpellTargetingPlayer(1, "Final Strike", 2)
                 withClue("Final Strike should fail without sacrifice") {
-                    castResult.error shouldBe "You must sacrifice 1 creature card to cast this spell"
+                    castResult.error shouldBe "You must sacrifice 1 creature to cast this spell"
                 }
             }
         }

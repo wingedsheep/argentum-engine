@@ -40,6 +40,8 @@ import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.ActivationRestriction
@@ -1622,14 +1624,26 @@ class GameSession(
         cost: com.wingedsheep.sdk.scripting.AdditionalCost.SacrificePermanent
     ): List<EntityId> {
         val playerBattlefield = ZoneKey(playerId, ZoneType.BATTLEFIELD)
+        val unifiedFilter = cost.unifiedFilter
+
         return state.getZone(playerBattlefield).filter { entityId ->
             val container = state.getEntity(entityId) ?: return@filter false
             val cardComponent = container.get<CardComponent>() ?: return@filter false
             val controllerId = container.get<ControllerComponent>()?.playerId
             if (controllerId != playerId) return@filter false
-            matchesCardFilter(cardComponent, cost.filter)
+
+            // Use unified filter if present, otherwise fall back to legacy filter
+            if (unifiedFilter != null) {
+                val predicateContext = PredicateContext(controllerId = playerId)
+                predicateEvaluator.matches(state, entityId, unifiedFilter, predicateContext)
+            } else {
+                @Suppress("DEPRECATION")
+                matchesCardFilter(cardComponent, cost.filter)
+            }
         }
     }
+
+    private val predicateEvaluator = PredicateEvaluator()
 
     /**
      * Find untapped creatures that can be used for Convoke.
