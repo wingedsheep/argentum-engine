@@ -17,6 +17,11 @@ import io.mockk.every
 import io.mockk.mockk
 
 /**
+ * Type of stack item for test mocking.
+ */
+enum class StackItemType { ABILITY, PERMANENT_SPELL, INSTANT_SORCERY }
+
+/**
  * Tests for the Arena-style AutoPassManager.
  *
  * These tests verify the 4 Rules:
@@ -36,7 +41,8 @@ class AutoPassManagerTest : FunSpec({
         step: Step,
         stackEmpty: Boolean = true,
         hasPendingDecision: Boolean = false,
-        stackControllerId: EntityId? = null
+        stackControllerId: EntityId? = null,
+        stackItemType: StackItemType = StackItemType.ABILITY
     ): GameState {
         val state = mockk<GameState>(relaxed = true)
         every { state.priorityPlayerId } returns priorityPlayerId
@@ -54,17 +60,43 @@ class AutoPassManagerTest : FunSpec({
             val stackEntity = mockk<com.wingedsheep.engine.state.ComponentContainer>(relaxed = true)
             every { state.getEntity(stackItemId) } returns stackEntity
 
-            // Set up the controller - use ActivatedAbilityOnStackComponent for abilities
             val controllerId = stackControllerId ?: activePlayerId
-            val abilityComponent = com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent(
-                sourceId = EntityId.generate(),
-                sourceName = "Test Ability",
-                controllerId = controllerId,
-                effect = mockk(relaxed = true)
-            )
-            every { stackEntity.get<com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent>() } returns abilityComponent
-            every { stackEntity.get<com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent>() } returns null
-            every { stackEntity.get<com.wingedsheep.engine.state.components.stack.SpellOnStackComponent>() } returns null
+
+            when (stackItemType) {
+                StackItemType.ABILITY -> {
+                    val abilityComponent = com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent(
+                        sourceId = EntityId.generate(),
+                        sourceName = "Test Ability",
+                        controllerId = controllerId,
+                        effect = mockk(relaxed = true)
+                    )
+                    every { stackEntity.get<com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent>() } returns abilityComponent
+                    every { stackEntity.get<com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent>() } returns null
+                    every { stackEntity.get<com.wingedsheep.engine.state.components.stack.SpellOnStackComponent>() } returns null
+                }
+                StackItemType.PERMANENT_SPELL -> {
+                    val spellComponent = com.wingedsheep.engine.state.components.stack.SpellOnStackComponent(
+                        casterId = controllerId
+                    )
+                    val cardComponent = mockk<com.wingedsheep.engine.state.components.identity.CardComponent>(relaxed = true)
+                    every { cardComponent.isPermanent } returns true
+                    every { stackEntity.get<com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent>() } returns null
+                    every { stackEntity.get<com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent>() } returns null
+                    every { stackEntity.get<com.wingedsheep.engine.state.components.stack.SpellOnStackComponent>() } returns spellComponent
+                    every { stackEntity.get<com.wingedsheep.engine.state.components.identity.CardComponent>() } returns cardComponent
+                }
+                StackItemType.INSTANT_SORCERY -> {
+                    val spellComponent = com.wingedsheep.engine.state.components.stack.SpellOnStackComponent(
+                        casterId = controllerId
+                    )
+                    val cardComponent = mockk<com.wingedsheep.engine.state.components.identity.CardComponent>(relaxed = true)
+                    every { cardComponent.isPermanent } returns false
+                    every { stackEntity.get<com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent>() } returns null
+                    every { stackEntity.get<com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent>() } returns null
+                    every { stackEntity.get<com.wingedsheep.engine.state.components.stack.SpellOnStackComponent>() } returns spellComponent
+                    every { stackEntity.get<com.wingedsheep.engine.state.components.identity.CardComponent>() } returns cardComponent
+                }
+            }
             every { stackEntity.get<com.wingedsheep.engine.state.components.identity.ControllerComponent>() } returns null
         }
 
@@ -355,15 +387,39 @@ class AutoPassManagerTest : FunSpec({
             autoPassManager.shouldAutoPass(state, player1, actions) shouldBe true
         }
 
-        test("AUTO-PASS when opponent's spell is on stack but no responses available") {
-            // player2's spell on stack, player1 has priority but no responses → auto-pass
-            val state = createMockState(player1, player1, Step.PRECOMBAT_MAIN, stackEmpty = false, stackControllerId = player2)
+        test("STOP when opponent's ability is on stack with no responses") {
+            // player2's ability on stack, player1 has priority but no responses → stop to see the effect
+            val state = createMockState(player1, player1, Step.PRECOMBAT_MAIN, stackEmpty = false, stackControllerId = player2, stackItemType = StackItemType.ABILITY)
             val actions = listOf(
                 passPriorityAction(player1),
                 manaAbilityAction(player1) // Only mana ability, not a response
             )
 
-            // Auto-pass when can't respond anyway
+            // Stop so player can see the opponent's ability effect
+            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe false
+        }
+
+        test("STOP when opponent's instant/sorcery is on stack with no responses") {
+            // player2's instant on stack, player1 has priority but no responses → stop to see the effect
+            val state = createMockState(player1, player1, Step.PRECOMBAT_MAIN, stackEmpty = false, stackControllerId = player2, stackItemType = StackItemType.INSTANT_SORCERY)
+            val actions = listOf(
+                passPriorityAction(player1),
+                manaAbilityAction(player1) // Only mana ability, not a response
+            )
+
+            // Stop so player can see the opponent's spell effect
+            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe false
+        }
+
+        test("AUTO-PASS when opponent's permanent spell is on stack with no responses") {
+            // player2's creature on stack, player1 has priority but no responses → auto-pass
+            val state = createMockState(player1, player1, Step.PRECOMBAT_MAIN, stackEmpty = false, stackControllerId = player2, stackItemType = StackItemType.PERMANENT_SPELL)
+            val actions = listOf(
+                passPriorityAction(player1),
+                manaAbilityAction(player1) // Only mana ability, not a response
+            )
+
+            // Auto-pass since permanent just enters the battlefield
             autoPassManager.shouldAutoPass(state, player1, actions) shouldBe true
         }
     }
