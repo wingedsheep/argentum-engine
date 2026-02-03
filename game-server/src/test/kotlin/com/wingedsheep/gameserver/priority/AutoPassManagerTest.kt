@@ -202,6 +202,25 @@ class AutoPassManagerTest : FunSpec({
 
             autoPassManager.shouldAutoPass(state, player2, actions) shouldBe false
         }
+
+        test("Auto-pass during opponent's begin combat when no meaningful actions") {
+            val state = createMockState(player2, player1, Step.BEGIN_COMBAT)
+            val actions = listOf(
+                passPriorityAction(player2),
+                manaAbilityAction(player2) // Only mana ability, not meaningful
+            )
+
+            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
+        }
+
+        test("Auto-pass during opponent's declare attackers when no meaningful actions") {
+            val state = createMockState(player2, player1, Step.DECLARE_ATTACKERS)
+            val actions = listOf(
+                passPriorityAction(player2) // Only pass priority available
+            )
+
+            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
+        }
     }
 
     context("Rule 3: My Turn Optimization") {

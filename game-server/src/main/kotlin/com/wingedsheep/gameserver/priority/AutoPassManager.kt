@@ -1,6 +1,7 @@
 package com.wingedsheep.gameserver.priority
 
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.gameserver.protocol.LegalActionInfo
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
@@ -29,8 +30,9 @@ import org.slf4j.LoggerFactory
  * - Upkeep/Draw: AUTO-PASS
  * - Combat: STOP (for combat tricks like Giant Growth)
  *
- * ## Rule 4: The Stack Response (Absolute Rule)
- * If the stack is NOT empty and you have a legal response: ALWAYS STOP
+ * ## Rule 4: The Stack Response (Arena-style)
+ * - If YOUR spell/ability is on top of the stack: AUTO-PASS (let opponent respond)
+ * - If OPPONENT's spell/ability is on top: STOP (you might want to respond)
  */
 class AutoPassManager {
 
@@ -59,11 +61,22 @@ class AutoPassManager {
             return false
         }
 
-        // Rule 4: Stack Response - ALWAYS STOP if stack is non-empty
-        // This gives the player a chance to see what the opponent cast
+        // Rule 4: Stack Response - Check who controls the top of the stack
+        // - If YOUR spell/ability is on top → AUTO-PASS (let opponent respond)
+        // - If OPPONENT's spell/ability is on top → STOP (you might want to respond)
         if (state.stack.isNotEmpty()) {
-            logger.debug("STOP: Stack non-empty")
-            return false
+            val topOfStack = state.stack.last() // Stack is LIFO, last = top
+            val topController = state.getEntity(topOfStack)?.get<ControllerComponent>()?.playerId
+
+            if (topController == playerId) {
+                // Our own spell/ability is on top - auto-pass to let opponent respond
+                logger.debug("AUTO-PASS: Own spell/ability on top of stack")
+                return true
+            } else {
+                // Opponent's spell/ability is on top - stop to consider response
+                logger.debug("STOP: Opponent's spell/ability on stack")
+                return false
+            }
         }
 
         // Get meaningful actions (Rule 1)
@@ -236,15 +249,26 @@ class AutoPassManager {
                 true
             }
 
-            // Combat - STOP during begin combat and declare attackers
+            // Combat - STOP during begin combat and declare attackers IF we have meaningful actions
             // This is the crucial window to tap creatures or kill attackers
+            // But if we can't do anything, auto-pass to speed up the game
             Step.BEGIN_COMBAT -> {
-                logger.debug("STOP: Opponent's begin combat (crucial window)")
-                false
+                if (meaningfulActions.isEmpty()) {
+                    logger.debug("AUTO-PASS: Opponent's begin combat (no meaningful actions)")
+                    true
+                } else {
+                    logger.debug("STOP: Opponent's begin combat (crucial window)")
+                    false
+                }
             }
             Step.DECLARE_ATTACKERS -> {
-                logger.debug("STOP: Opponent's declare attackers (crucial window)")
-                false
+                if (meaningfulActions.isEmpty()) {
+                    logger.debug("AUTO-PASS: Opponent's declare attackers (no meaningful actions)")
+                    true
+                } else {
+                    logger.debug("STOP: Opponent's declare attackers (crucial window)")
+                    false
+                }
             }
             Step.DECLARE_BLOCKERS -> {
                 // We're the defending player, so we declared blockers
@@ -291,6 +315,125 @@ class AutoPassManager {
             (action.actionType == "CastSpell" || action.actionType == "ActivateAbility") &&
             // Must have valid targets if required
             (!action.requiresTargets || !action.validTargets.isNullOrEmpty())
+        }
+    }
+
+    /**
+     * Calculates the next step/phase where the game will stop for this player.
+     * This is used to show on the Pass button (e.g., "Pass to Combat", "To my turn").
+     *
+     * @param state The current game state
+     * @param playerId The player who has priority
+     * @param hasMeaningfulActions Whether the player has meaningful actions available
+     * @return A user-friendly string describing the next stop point, or null if unknown
+     */
+    fun getNextStopPoint(
+        state: GameState,
+        playerId: EntityId,
+        hasMeaningfulActions: Boolean
+    ): String? {
+        // If there's something on the stack, passing will resolve it
+        if (state.stack.isNotEmpty()) {
+            return "Resolve"
+        }
+
+        val currentStep = state.step
+        val isMyTurn = state.activePlayerId == playerId
+
+        // Simulate advancing through steps to find where we'll stop
+        var step = currentStep
+        var onMyTurn = isMyTurn
+        var iterations = 0
+        val maxIterations = 20 // Prevent infinite loops
+
+        while (iterations < maxIterations) {
+            iterations++
+
+            // Advance to next step
+            val nextStep = step.next()
+            val turnChanged = nextStep == Step.UNTAP && step == Step.CLEANUP
+
+            if (turnChanged) {
+                onMyTurn = !onMyTurn
+            }
+            step = nextStep
+
+            // Check if we'd stop at this step
+            if (wouldStopAtStep(step, onMyTurn, hasMeaningfulActions)) {
+                return formatStopPoint(step, onMyTurn, isMyTurn)
+            }
+        }
+
+        return null
+    }
+
+    /**
+     * Determines if the player would stop at a given step (assuming no stack and no pending decision).
+     */
+    private fun wouldStopAtStep(step: Step, isMyTurn: Boolean, hasMeaningfulActions: Boolean): Boolean {
+        return if (isMyTurn) {
+            !shouldAutoPassOnMyTurnForStep(step, hasMeaningfulActions)
+        } else {
+            !shouldAutoPassOnOpponentTurnForStep(step, hasMeaningfulActions)
+        }
+    }
+
+    /**
+     * Simplified version of shouldAutoPassOnMyTurn that doesn't need the full action list.
+     */
+    private fun shouldAutoPassOnMyTurnForStep(step: Step, hasMeaningfulActions: Boolean): Boolean {
+        return when (step) {
+            Step.UPKEEP, Step.DRAW -> true
+            Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN -> false // Always stop on my main phases
+            Step.BEGIN_COMBAT -> true
+            Step.DECLARE_ATTACKERS -> false
+            Step.DECLARE_BLOCKERS -> false
+            Step.FIRST_STRIKE_COMBAT_DAMAGE, Step.COMBAT_DAMAGE, Step.END_COMBAT -> !hasMeaningfulActions
+            Step.END -> false
+            Step.CLEANUP, Step.UNTAP -> true
+        }
+    }
+
+    /**
+     * Simplified version of shouldAutoPassOnOpponentTurn that doesn't need the full action list.
+     */
+    private fun shouldAutoPassOnOpponentTurnForStep(step: Step, hasMeaningfulActions: Boolean): Boolean {
+        return when (step) {
+            Step.UPKEEP, Step.DRAW -> true
+            Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN -> true
+            Step.BEGIN_COMBAT -> !hasMeaningfulActions // Auto-pass if no actions
+            Step.DECLARE_ATTACKERS -> !hasMeaningfulActions // Auto-pass if no actions
+            Step.DECLARE_BLOCKERS -> false
+            Step.FIRST_STRIKE_COMBAT_DAMAGE, Step.COMBAT_DAMAGE, Step.END_COMBAT -> !hasMeaningfulActions
+            Step.END -> false // Golden rule
+            Step.CLEANUP, Step.UNTAP -> true
+        }
+    }
+
+    /**
+     * Format the stop point as a user-friendly string.
+     */
+    private fun formatStopPoint(step: Step, willBeMyTurn: Boolean, currentlyMyTurn: Boolean): String {
+        // If the turn is changing, show "My turn" or "Opponent's turn"
+        if (willBeMyTurn != currentlyMyTurn) {
+            return if (willBeMyTurn) "My turn" else "Opponent's turn"
+        }
+
+        // Otherwise show the step/phase name
+        return when (step) {
+            Step.UNTAP -> "Untap"
+            Step.UPKEEP -> "Upkeep"
+            Step.DRAW -> "Draw"
+            Step.PRECOMBAT_MAIN -> "Main"
+            Step.BEGIN_COMBAT -> "Combat"
+            Step.DECLARE_ATTACKERS -> "Attackers"
+            Step.DECLARE_BLOCKERS -> "Blockers"
+            Step.FIRST_STRIKE_COMBAT_DAMAGE -> "First Strike"
+            Step.COMBAT_DAMAGE -> "Damage"
+            Step.END_COMBAT -> "End Combat"
+            Step.POSTCOMBAT_MAIN -> "Main 2"
+            Step.END -> "End Step"
+            Step.CLEANUP -> "Cleanup"
         }
     }
 }
