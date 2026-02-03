@@ -15,6 +15,7 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.CanOnlyBlockCreaturesWithKeyword
 import com.wingedsheep.sdk.scripting.CantBeBlockedByPower
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.StaticTarget
@@ -429,6 +430,15 @@ class CombatManager(
             return cantBlockValidation
         }
 
+        // Use projected keywords (includes floating effects)
+        val projected = stateProjector.project(state)
+
+        // Check if the blocker can only block creatures with a specific keyword (e.g., Cloud Pirates)
+        val canOnlyBlockValidation = validateCanOnlyBlockWithKeyword(state, cardComponent, attackerIds, projected)
+        if (canOnlyBlockValidation != null) {
+            return canOnlyBlockValidation
+        }
+
         // Check evasion abilities of each attacker
         for (attackerId in attackerIds) {
             val evasionValidation = validateCanBlock(state, blockerId, attackerId, blockingPlayer)
@@ -704,6 +714,61 @@ class CombatManager(
             ?: return false
 
         return cantBlockAbility.target == StaticTarget.SourceCreature
+    }
+
+    /**
+     * Check if a creature has "can only block creatures with X" restriction.
+     * Returns an error message if any attacker lacks the required keyword, null otherwise.
+     *
+     * Used for Cloud Pirates, Cloud Spirit, etc: "can block only creatures with flying."
+     */
+    private fun validateCanOnlyBlockWithKeyword(
+        state: GameState,
+        blockerCard: CardComponent,
+        attackerIds: List<EntityId>,
+        projected: ProjectedState
+    ): String? {
+        val cardDef = cardRegistry?.getCard(blockerCard.cardDefinitionId) ?: return null
+        val restriction = cardDef.staticAbilities.filterIsInstance<CanOnlyBlockCreaturesWithKeyword>().firstOrNull()
+            ?: return null
+
+        // Check if the restriction applies to this creature
+        if (restriction.target != StaticTarget.SourceCreature) {
+            return null
+        }
+
+        // Check each attacker - all must have the required keyword
+        for (attackerId in attackerIds) {
+            val attackerCard = state.getEntity(attackerId)?.get<CardComponent>() ?: continue
+
+            if (!projected.hasKeyword(attackerId, restriction.keyword)) {
+                return "${blockerCard.name} can block only creatures with ${restriction.keyword.displayName.lowercase()}"
+            }
+        }
+
+        return null
+    }
+
+    /**
+     * Check if a creature can block despite "can only block creatures with X" restriction.
+     * Returns true if there's no restriction or the attacker has the required keyword.
+     */
+    private fun canBlockDespiteKeywordRestriction(
+        state: GameState,
+        blockerId: EntityId,
+        attackerId: EntityId,
+        projected: ProjectedState
+    ): Boolean {
+        val blockerCard = state.getEntity(blockerId)?.get<CardComponent>() ?: return true
+        val cardDef = cardRegistry?.getCard(blockerCard.cardDefinitionId) ?: return true
+        val restriction = cardDef.staticAbilities.filterIsInstance<CanOnlyBlockCreaturesWithKeyword>().firstOrNull()
+            ?: return true
+
+        if (restriction.target != StaticTarget.SourceCreature) {
+            return true
+        }
+
+        return projected.hasKeyword(attackerId, restriction.keyword)
     }
 
     /**
@@ -1210,6 +1275,11 @@ class CombatManager(
 
         // Check if blocker has "can't block" restriction
         if (hasCantBlockAbility(blockerCard)) {
+            return false
+        }
+
+        // Check if blocker can only block creatures with a specific keyword (e.g., Cloud Pirates)
+        if (!canBlockDespiteKeywordRestriction(state, blockerId, attackerId, projected)) {
             return false
         }
 
