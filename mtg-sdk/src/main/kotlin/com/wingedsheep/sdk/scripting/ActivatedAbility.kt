@@ -56,22 +56,74 @@ sealed interface AbilityCost {
         override val description: String = "Pay $amount life"
     }
 
-    /** Sacrifice a permanent */
+    /**
+     * Sacrifice a permanent
+     *
+     * @property filter Legacy filter (deprecated, use unifiedFilter)
+     * @property unifiedFilter Unified filter (preferred)
+     */
     @Serializable
-    data class Sacrifice(val filter: CardFilter) : AbilityCost {
-        override val description: String = "Sacrifice a ${filter.description}"
+    data class Sacrifice(
+        @Deprecated("Use unifiedFilter instead")
+        val filter: CardFilter = CardFilter.AnyCard,
+        val unifiedFilter: GameObjectFilter? = null
+    ) : AbilityCost {
+        override val description: String = "Sacrifice a ${unifiedFilter?.description ?: filter.description}"
+
+        companion object {
+            /** Create with unified filter */
+            operator fun invoke(unifiedFilter: GameObjectFilter) =
+                Sacrifice(filter = CardFilter.AnyCard, unifiedFilter = unifiedFilter)
+        }
     }
 
-    /** Discard a card */
+    /**
+     * Discard a card
+     *
+     * @property filter Legacy filter (deprecated, use unifiedFilter)
+     * @property unifiedFilter Unified filter (preferred)
+     */
     @Serializable
-    data class Discard(val filter: CardFilter = CardFilter.AnyCard) : AbilityCost {
-        override val description: String = "Discard a ${filter.description}"
+    data class Discard(
+        @Deprecated("Use unifiedFilter instead")
+        val filter: CardFilter = CardFilter.AnyCard,
+        val unifiedFilter: GameObjectFilter? = null
+    ) : AbilityCost {
+        override val description: String = "Discard a ${unifiedFilter?.description ?: filter.description}"
+
+        companion object {
+            /** Create with unified filter */
+            operator fun invoke(unifiedFilter: GameObjectFilter) =
+                Discard(filter = CardFilter.AnyCard, unifiedFilter = unifiedFilter)
+        }
     }
 
-    /** Exile cards from graveyard */
+    /**
+     * Exile cards from graveyard
+     *
+     * @property count Number of cards to exile
+     * @property filter Legacy filter (deprecated, use unifiedFilter)
+     * @property unifiedFilter Unified filter (preferred)
+     */
     @Serializable
-    data class ExileFromGraveyard(val count: Int, val filter: CardFilter = CardFilter.AnyCard) : AbilityCost {
-        override val description: String = "Exile $count ${filter.description}${if (count > 1) "s" else ""} from your graveyard"
+    data class ExileFromGraveyard(
+        val count: Int,
+        @Deprecated("Use unifiedFilter instead")
+        val filter: CardFilter = CardFilter.AnyCard,
+        val unifiedFilter: GameObjectFilter? = null
+    ) : AbilityCost {
+        override val description: String = buildString {
+            val filterDesc = unifiedFilter?.description ?: filter.description
+            append("Exile $count $filterDesc")
+            if (count > 1) append("s")
+            append(" from your graveyard")
+        }
+
+        companion object {
+            /** Create with unified filter */
+            operator fun invoke(count: Int, unifiedFilter: GameObjectFilter) =
+                ExileFromGraveyard(count = count, filter = CardFilter.AnyCard, unifiedFilter = unifiedFilter)
+        }
     }
 
     /** Discard self (the card with this ability) - used for cycling */

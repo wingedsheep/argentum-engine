@@ -4,9 +4,9 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityCost
-import com.wingedsheep.sdk.scripting.CardFilter
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.ModifyStatsEffect
 
 /**
@@ -23,7 +23,7 @@ val GoblinSledder = card("Goblin Sledder") {
     toughness = 1
 
     activatedAbility {
-        cost = AbilityCost.Sacrifice(CardFilter.HasSubtype("Goblin"))
+        cost = AbilityCost.Sacrifice(GameObjectFilter.Creature.withSubtype("Goblin"))
         target = Targets.Creature
         effect = ModifyStatsEffect(
             powerModifier = 1,

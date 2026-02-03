@@ -2,7 +2,7 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.CardFilter
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.OnEnterBattlefield
 import com.wingedsheep.sdk.scripting.PayCost
 import com.wingedsheep.sdk.scripting.PayOrSufferEffect
@@ -25,7 +25,7 @@ val MercenaryKnight = card("Mercenary Knight") {
     triggeredAbility {
         trigger = OnEnterBattlefield()
         effect = PayOrSufferEffect(
-            cost = PayCost.Discard(filter = CardFilter.CreatureCard),
+            cost = PayCost.Discard(GameObjectFilter.Creature),
             suffer = SacrificeSelfEffect
         )
     }

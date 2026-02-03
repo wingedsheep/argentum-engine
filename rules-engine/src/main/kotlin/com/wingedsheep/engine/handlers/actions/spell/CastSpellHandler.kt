@@ -14,6 +14,8 @@ import com.wingedsheep.engine.event.TriggerProcessor
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.CostHandler
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.actions.ActionContext
 import com.wingedsheep.engine.handlers.actions.ActionHandler
 import com.wingedsheep.engine.mechanics.mana.AlternativePaymentHandler
@@ -66,6 +68,8 @@ class CastSpellHandler(
     private val triggerProcessor: TriggerProcessor
 ) : ActionHandler<CastSpell> {
     override val actionType: KClass<CastSpell> = CastSpell::class
+
+    private val predicateEvaluator = PredicateEvaluator()
 
     override fun validate(state: GameState, action: CastSpell): String? {
         if (state.priorityPlayerId != action.playerId) {
@@ -252,8 +256,11 @@ class CastSpellHandler(
             when (additionalCost) {
                 is AdditionalCost.SacrificePermanent -> {
                     val sacrificed = action.additionalCostPayment?.sacrificedPermanents ?: emptyList()
+                    val unifiedFilter = additionalCost.unifiedFilter
+                    @Suppress("DEPRECATION")
+                    val filterDesc = unifiedFilter?.description ?: additionalCost.filter.description
                     if (sacrificed.size < additionalCost.count) {
-                        return "You must sacrifice ${additionalCost.count} ${additionalCost.filter.description} to cast this spell"
+                        return "You must sacrifice ${additionalCost.count} $filterDesc to cast this spell"
                     }
                     for (permId in sacrificed) {
                         val permContainer = state.getEntity(permId)
@@ -267,8 +274,16 @@ class CastSpellHandler(
                         if (permId !in state.getBattlefield()) {
                             return "Sacrificed permanent is not on the battlefield: $permId"
                         }
-                        if (!matchesCardFilter(permCard, additionalCost.filter)) {
-                            return "${permCard.name} doesn't match the required filter: ${additionalCost.filter.description}"
+                        // Use unified filter if present, otherwise fall back to legacy filter
+                        val matches = if (unifiedFilter != null) {
+                            val context = PredicateContext(controllerId = action.playerId)
+                            predicateEvaluator.matches(state, permId, unifiedFilter, context)
+                        } else {
+                            @Suppress("DEPRECATION")
+                            matchesCardFilter(permCard, additionalCost.filter)
+                        }
+                        if (!matches) {
+                            return "${permCard.name} doesn't match the required filter: $filterDesc"
                         }
                     }
                 }

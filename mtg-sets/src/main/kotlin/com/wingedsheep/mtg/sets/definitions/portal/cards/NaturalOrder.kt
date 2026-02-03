@@ -4,7 +4,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AdditionalCost
-import com.wingedsheep.sdk.scripting.CardFilter
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.SearchDestination
 import com.wingedsheep.sdk.scripting.SearchLibraryEffect
 
@@ -20,18 +20,12 @@ val NaturalOrder = card("Natural Order") {
     typeLine = "Sorcery"
 
     additionalCost(AdditionalCost.SacrificePermanent(
-        filter = CardFilter.And(listOf(
-            CardFilter.CreatureCard,
-            CardFilter.HasColor(Color.GREEN)
-        ))
+        unifiedFilter = GameObjectFilter.Creature.withColor(Color.GREEN)
     ))
 
     spell {
         effect = SearchLibraryEffect(
-            filter = CardFilter.And(listOf(
-                CardFilter.CreatureCard,
-                CardFilter.HasColor(Color.GREEN)
-            )),
+            unifiedFilter = GameObjectFilter.Creature.withColor(Color.GREEN),
             destination = SearchDestination.BATTLEFIELD
         )
     }

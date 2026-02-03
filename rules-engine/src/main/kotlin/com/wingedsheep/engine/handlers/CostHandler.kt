@@ -16,11 +16,14 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.CardFilter
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 
 /**
  * Validates and pays costs for spells and abilities.
  */
 class CostHandler {
+
+    private val predicateEvaluator = PredicateEvaluator()
 
     /**
      * Check if a mana cost can be paid from a player's mana pool.
@@ -62,15 +65,33 @@ class CostHandler {
                 life > cost.amount // Can pay if life is > cost (not <= 0 after)
             }
             is AbilityCost.Sacrifice -> {
-                findMatchingPermanents(state, controllerId, cost.filter).isNotEmpty()
+                val unifiedFilter = cost.unifiedFilter
+                if (unifiedFilter != null) {
+                    findMatchingPermanentsUnified(state, controllerId, unifiedFilter).isNotEmpty()
+                } else {
+                    @Suppress("DEPRECATION")
+                    findMatchingPermanents(state, controllerId, cost.filter).isNotEmpty()
+                }
             }
             is AbilityCost.Discard -> {
                 val handZone = ZoneKey(controllerId, ZoneType.HAND)
-                findMatchingCards(state, state.getZone(handZone), cost.filter).isNotEmpty()
+                val unifiedFilter = cost.unifiedFilter
+                if (unifiedFilter != null) {
+                    findMatchingCardsUnified(state, state.getZone(handZone), unifiedFilter, controllerId).isNotEmpty()
+                } else {
+                    @Suppress("DEPRECATION")
+                    findMatchingCards(state, state.getZone(handZone), cost.filter).isNotEmpty()
+                }
             }
             is AbilityCost.ExileFromGraveyard -> {
                 val graveyardZone = ZoneKey(controllerId, ZoneType.GRAVEYARD)
-                findMatchingCards(state, state.getZone(graveyardZone), cost.filter).size >= cost.count
+                val unifiedFilter = cost.unifiedFilter
+                if (unifiedFilter != null) {
+                    findMatchingCardsUnified(state, state.getZone(graveyardZone), unifiedFilter, controllerId).size >= cost.count
+                } else {
+                    @Suppress("DEPRECATION")
+                    findMatchingCards(state, state.getZone(graveyardZone), cost.filter).size >= cost.count
+                }
             }
             is AbilityCost.DiscardSelf -> {
                 // Card must be in hand
@@ -185,11 +206,25 @@ class CostHandler {
     ): Boolean {
         return when (cost) {
             is AdditionalCost.SacrificePermanent -> {
-                findMatchingPermanents(state, controllerId, cost.filter).size >= cost.count
+                val unifiedFilter = cost.unifiedFilter
+                val count = if (unifiedFilter != null) {
+                    findMatchingPermanentsUnified(state, controllerId, unifiedFilter).size
+                } else {
+                    @Suppress("DEPRECATION")
+                    findMatchingPermanents(state, controllerId, cost.filter).size
+                }
+                count >= cost.count
             }
             is AdditionalCost.DiscardCards -> {
                 val handZone = ZoneKey(controllerId, ZoneType.HAND)
-                findMatchingCards(state, state.getZone(handZone), cost.filter).size >= cost.count
+                val unifiedFilter = cost.unifiedFilter
+                val count = if (unifiedFilter != null) {
+                    findMatchingCardsUnified(state, state.getZone(handZone), unifiedFilter, controllerId).size
+                } else {
+                    @Suppress("DEPRECATION")
+                    findMatchingCards(state, state.getZone(handZone), cost.filter).size
+                }
+                count >= cost.count
             }
             is AdditionalCost.PayLife -> {
                 val life = state.getEntity(controllerId)?.get<LifeTotalComponent>()?.life ?: 0
@@ -197,10 +232,24 @@ class CostHandler {
             }
             is AdditionalCost.ExileCards -> {
                 val zone = ZoneKey(controllerId, cost.fromZone.toZoneType())
-                findMatchingCards(state, state.getZone(zone), cost.filter).size >= cost.count
+                val unifiedFilter = cost.unifiedFilter
+                val count = if (unifiedFilter != null) {
+                    findMatchingCardsUnified(state, state.getZone(zone), unifiedFilter, controllerId).size
+                } else {
+                    @Suppress("DEPRECATION")
+                    findMatchingCards(state, state.getZone(zone), cost.filter).size
+                }
+                count >= cost.count
             }
             is AdditionalCost.TapPermanents -> {
-                findUntappedMatchingPermanents(state, controllerId, cost.filter).size >= cost.count
+                val unifiedFilter = cost.unifiedFilter
+                val count = if (unifiedFilter != null) {
+                    findUntappedMatchingPermanentsUnified(state, controllerId, unifiedFilter).size
+                } else {
+                    @Suppress("DEPRECATION")
+                    findUntappedMatchingPermanents(state, controllerId, cost.filter).size
+                }
+                count >= cost.count
             }
         }
     }
@@ -218,6 +267,18 @@ class CostHandler {
         }.keys.toList()
     }
 
+    private fun findMatchingPermanentsUnified(
+        state: GameState,
+        controllerId: EntityId,
+        filter: GameObjectFilter
+    ): List<EntityId> {
+        val context = PredicateContext(controllerId = controllerId)
+        return state.entities.filter { (entityId, container) ->
+            container.get<ControllerComponent>()?.playerId == controllerId &&
+            predicateEvaluator.matches(state, entityId, filter, context)
+        }.keys.toList()
+    }
+
     private fun findUntappedMatchingPermanents(
         state: GameState,
         controllerId: EntityId,
@@ -230,6 +291,19 @@ class CostHandler {
         }.keys.toList()
     }
 
+    private fun findUntappedMatchingPermanentsUnified(
+        state: GameState,
+        controllerId: EntityId,
+        filter: GameObjectFilter
+    ): List<EntityId> {
+        val context = PredicateContext(controllerId = controllerId)
+        return state.entities.filter { (entityId, container) ->
+            container.get<ControllerComponent>()?.playerId == controllerId &&
+            !container.has<TappedComponent>() &&
+            predicateEvaluator.matches(state, entityId, filter, context)
+        }.keys.toList()
+    }
+
     private fun findMatchingCards(
         state: GameState,
         cardIds: List<EntityId>,
@@ -238,6 +312,18 @@ class CostHandler {
         return cardIds.filter { cardId ->
             val cardComponent = state.getEntity(cardId)?.get<CardComponent>()
             matchesFilter(cardComponent, filter)
+        }
+    }
+
+    private fun findMatchingCardsUnified(
+        state: GameState,
+        cardIds: List<EntityId>,
+        filter: GameObjectFilter,
+        controllerId: EntityId
+    ): List<EntityId> {
+        val context = PredicateContext(controllerId = controllerId)
+        return cardIds.filter { cardId ->
+            predicateEvaluator.matches(state, cardId, filter, context)
         }
     }
 

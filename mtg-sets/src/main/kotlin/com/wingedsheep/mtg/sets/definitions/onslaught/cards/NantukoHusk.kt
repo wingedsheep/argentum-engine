@@ -3,9 +3,9 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityCost
-import com.wingedsheep.sdk.scripting.CardFilter
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.ModifyStatsEffect
 
 /**
@@ -22,7 +22,7 @@ val NantukoHusk = card("Nantuko Husk") {
     toughness = 2
 
     activatedAbility {
-        cost = AbilityCost.Sacrifice(CardFilter.CreatureCard)
+        cost = AbilityCost.Sacrifice(GameObjectFilter.Creature)
         effect = ModifyStatsEffect(
             powerModifier = 2,
             toughnessModifier = 2,

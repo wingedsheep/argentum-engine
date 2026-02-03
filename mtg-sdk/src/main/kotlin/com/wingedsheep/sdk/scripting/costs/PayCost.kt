@@ -14,35 +14,59 @@ sealed interface PayCost {
      * Discard one or more cards matching a filter to avoid the consequence.
      * "...unless you discard a land card"
      *
-     * @property filter What type of card must be discarded
+     * @property filter Legacy filter (deprecated, use unifiedFilter)
      * @property count How many cards must be discarded (default 1)
      * @property random If true, the discard is random (e.g., Pillaging Horde)
+     * @property unifiedFilter Unified filter (preferred)
      */
     @Serializable
     data class Discard(
+        @Deprecated("Use unifiedFilter instead")
         val filter: CardFilter = CardFilter.AnyCard,
         val count: Int = 1,
-        val random: Boolean = false
+        val random: Boolean = false,
+        val unifiedFilter: GameObjectFilter? = null
     ) : PayCost {
         override val description: String = buildString {
             append("discard ")
-            if (count == 1) {
-                when (filter) {
-                    CardFilter.AnyCard -> append("a card")
-                    CardFilter.LandCard -> append("a land card")
-                    CardFilter.CreatureCard -> append("a creature card")
-                    else -> append("a ${filter.description}")
+            val filterDesc = unifiedFilter?.description
+            if (filterDesc != null) {
+                if (count == 1) {
+                    append("a $filterDesc")
+                } else {
+                    append("$count ${filterDesc}s")
                 }
             } else {
-                append("$count ")
-                when (filter) {
-                    CardFilter.AnyCard -> append("cards")
-                    CardFilter.LandCard -> append("land cards")
-                    CardFilter.CreatureCard -> append("creature cards")
-                    else -> append("${filter.description}s")
+                @Suppress("DEPRECATION")
+                if (count == 1) {
+                    when (filter) {
+                        CardFilter.AnyCard -> append("a card")
+                        CardFilter.LandCard -> append("a land card")
+                        CardFilter.CreatureCard -> append("a creature card")
+                        else -> append("a ${filter.description}")
+                    }
+                } else {
+                    append("$count ")
+                    when (filter) {
+                        CardFilter.AnyCard -> append("cards")
+                        CardFilter.LandCard -> append("land cards")
+                        CardFilter.CreatureCard -> append("creature cards")
+                        else -> append("${filter.description}s")
+                    }
                 }
             }
             if (random) append(" at random")
+        }
+
+        companion object {
+            /** Create with unified filter */
+            operator fun invoke(unifiedFilter: GameObjectFilter, count: Int = 1, random: Boolean = false) =
+                Discard(
+                    filter = CardFilter.AnyCard,
+                    count = count,
+                    random = random,
+                    unifiedFilter = unifiedFilter
+                )
         }
     }
 
@@ -50,23 +74,26 @@ sealed interface PayCost {
      * Sacrifice one or more permanents matching a filter to avoid the consequence.
      * "...unless you sacrifice three Forests"
      *
-     * @property filter What type of permanent must be sacrificed
+     * @property filter Legacy filter (deprecated, use unifiedFilter)
      * @property count How many permanents must be sacrificed (default 1)
+     * @property unifiedFilter Unified filter (preferred)
      */
     @Serializable
     data class Sacrifice(
-        val filter: CardFilter,
-        val count: Int = 1
+        @Deprecated("Use unifiedFilter instead")
+        val filter: CardFilter = CardFilter.AnyCard,
+        val count: Int = 1,
+        val unifiedFilter: GameObjectFilter? = null
     ) : PayCost {
         override val description: String = buildString {
             append("sacrifice ")
+            val filterDesc = unifiedFilter?.description ?: filter.description
             if (count == 1) {
-                val desc = filter.description
-                append(if (desc.first().lowercaseChar() in "aeiou") "an" else "a")
-                append(" $desc")
+                append(if (filterDesc.first().lowercaseChar() in "aeiou") "an" else "a")
+                append(" $filterDesc")
             } else {
                 append(numberToWord(count))
-                append(" ${filter.description}s")
+                append(" ${filterDesc}s")
             }
         }
 
@@ -77,6 +104,16 @@ sealed interface PayCost {
             4 -> "four"
             5 -> "five"
             else -> n.toString()
+        }
+
+        companion object {
+            /** Create with unified filter */
+            operator fun invoke(unifiedFilter: GameObjectFilter, count: Int = 1) =
+                Sacrifice(
+                    filter = CardFilter.AnyCard,
+                    count = count,
+                    unifiedFilter = unifiedFilter
+                )
         }
     }
 
