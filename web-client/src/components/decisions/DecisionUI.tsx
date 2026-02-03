@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useGameStore } from '../../store/gameStore'
+import type { DecisionSelectionState } from '../../store/gameStore'
 import type { EntityId, SelectCardsDecision, ChooseTargetsDecision, YesNoDecision, ChooseNumberDecision, ClientCard, ClientGameState } from '../../types'
 import { ZoneType } from '../../types'
 import { useResponsive, calculateFittingCardWidth, type ResponsiveSizes } from '../../hooks/useResponsive'
@@ -128,6 +129,17 @@ export function DecisionUI() {
 
   // Handle SelectCardsDecision
   if (pendingDecision.type === 'SelectCardsDecision') {
+    // If useTargetingUI is true, use targeting-style UI (click on battlefield)
+    if (pendingDecision.useTargetingUI) {
+      return (
+        <BattlefieldSelectionUI
+          decision={pendingDecision}
+          responsive={responsive}
+        />
+      )
+    }
+
+    // Default: full-screen modal
     return (
       <div
         style={{
@@ -217,6 +229,142 @@ export function DecisionUI() {
 
   // Other decision types not yet implemented
   return null
+}
+
+/**
+ * Battlefield selection UI for SelectCardsDecision with useTargetingUI=true.
+ * Shows a side banner and allows clicking cards on the battlefield to select them.
+ */
+function BattlefieldSelectionUI({
+  decision,
+  responsive,
+}: {
+  decision: SelectCardsDecision
+  responsive: ResponsiveSizes
+}) {
+  const startDecisionSelection = useGameStore((s) => s.startDecisionSelection)
+  const decisionSelectionState = useGameStore((s) => s.decisionSelectionState)
+  const cancelDecisionSelection = useGameStore((s) => s.cancelDecisionSelection)
+  const submitDecision = useGameStore((s) => s.submitDecision)
+
+  // Start decision selection state when this component mounts
+  useEffect(() => {
+    const selectionState: DecisionSelectionState = {
+      decisionId: decision.id,
+      validOptions: decision.options,
+      selectedOptions: [],
+      minSelections: decision.minSelections,
+      maxSelections: decision.maxSelections,
+      prompt: decision.prompt,
+    }
+    startDecisionSelection(selectionState)
+
+    // Cleanup when unmounting
+    return () => {
+      cancelDecisionSelection()
+    }
+  }, [decision.id])
+
+  const selectedCount = decisionSelectionState?.selectedOptions.length ?? 0
+  const minSelections = decision.minSelections
+  const maxSelections = decision.maxSelections
+  const canConfirm = selectedCount >= minSelections && selectedCount <= maxSelections
+  const canSkip = minSelections === 0
+
+  const handleConfirm = () => {
+    if (canConfirm && decisionSelectionState) {
+      submitDecision(decisionSelectionState.selectedOptions)
+      cancelDecisionSelection()
+    }
+  }
+
+  const handleSkip = () => {
+    submitDecision([])
+    cancelDecisionSelection()
+  }
+
+  // Side banner (similar to ChooseTargetsDecision)
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        top: '50%',
+        right: responsive.isMobile ? 8 : 16,
+        transform: 'translateY(-50%)',
+        backgroundColor: 'rgba(0, 0, 0, 0.95)',
+        padding: responsive.isMobile ? '12px 16px' : '16px 24px',
+        borderRadius: 10,
+        border: '2px solid #ff9900',
+        boxShadow: '0 4px 24px rgba(255, 153, 0, 0.4)',
+        zIndex: 1001,
+        textAlign: 'center',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 12,
+        minWidth: responsive.isMobile ? 160 : 200,
+      }}
+    >
+      <div
+        style={{
+          color: '#ff9900',
+          fontSize: responsive.fontSize.normal,
+          fontWeight: 700,
+          textTransform: 'uppercase',
+          letterSpacing: 1,
+        }}
+      >
+        Select Cards
+      </div>
+      <div style={{ color: 'white', fontSize: responsive.fontSize.small, maxWidth: 180 }}>
+        {decision.prompt}
+      </div>
+      <div style={{ color: '#888', fontSize: responsive.fontSize.small }}>
+        {selectedCount} / {maxSelections} selected
+        {minSelections > 0 && ` (min ${minSelections})`}
+      </div>
+      <div style={{ color: '#666', fontSize: responsive.fontSize.small - 1 }}>
+        Click valid cards to select
+      </div>
+
+      {/* Confirm/Skip buttons */}
+      <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+        {canSkip && (
+          <button
+            onClick={handleSkip}
+            style={{
+              padding: responsive.isMobile ? '8px 16px' : '10px 20px',
+              fontSize: responsive.fontSize.small,
+              backgroundColor: '#444',
+              color: 'white',
+              border: 'none',
+              borderRadius: 6,
+              cursor: 'pointer',
+              fontWeight: 500,
+            }}
+          >
+            Skip
+          </button>
+        )}
+        <button
+          onClick={handleConfirm}
+          disabled={!canConfirm}
+          style={{
+            padding: responsive.isMobile ? '8px 16px' : '10px 20px',
+            fontSize: responsive.fontSize.small,
+            backgroundColor: canConfirm ? '#00aa00' : '#333',
+            color: canConfirm ? 'white' : '#666',
+            border: 'none',
+            borderRadius: 6,
+            cursor: canConfirm ? 'pointer' : 'not-allowed',
+            fontWeight: 600,
+          }}
+        >
+          Confirm
+        </button>
+      </div>
+    </div>
+  )
 }
 
 /**

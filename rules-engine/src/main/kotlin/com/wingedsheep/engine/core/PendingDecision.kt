@@ -104,6 +104,7 @@ data class TargetRequirementInfo(
  * @property minSelections Minimum number that must be selected
  * @property maxSelections Maximum number that can be selected
  * @property cardInfo Optional card info for displaying hidden cards (e.g., opponent's library)
+ * @property useTargetingUI If true, use the targeting UI (click on battlefield) instead of modal
  */
 @Serializable
 @SerialName("SelectCardsDecision")
@@ -118,7 +119,9 @@ data class SelectCardsDecision(
     /** Whether the order of selection matters */
     val ordered: Boolean = false,
     /** Card info for displaying hidden cards (null if cards are visible to the player) */
-    val cardInfo: Map<EntityId, SearchCardInfo>? = null
+    val cardInfo: Map<EntityId, SearchCardInfo>? = null,
+    /** If true, use the targeting UI (click on battlefield) instead of modal overlay */
+    val useTargetingUI: Boolean = false
 ) : PendingDecision
 
 /**

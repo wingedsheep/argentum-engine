@@ -170,6 +170,25 @@ export interface GameOverState {
 }
 
 /**
+ * Decision selection state for SelectCardsDecision with useTargetingUI=true.
+ * This allows selecting cards on the battlefield instead of using a modal.
+ */
+export interface DecisionSelectionState {
+  /** The pending decision this selection is for */
+  decisionId: string
+  /** Valid card IDs that can be selected */
+  validOptions: readonly EntityId[]
+  /** Currently selected card IDs */
+  selectedOptions: readonly EntityId[]
+  /** Minimum selections required */
+  minSelections: number
+  /** Maximum selections allowed */
+  maxSelections: number
+  /** Prompt to display */
+  prompt: string
+}
+
+/**
  * Error state for displaying errors to the user.
  */
 export interface ErrorState {
@@ -338,6 +357,7 @@ export interface GameStore {
   combatState: CombatState | null
   xSelectionState: XSelectionState | null
   convokeSelectionState: ConvokeSelectionState | null
+  decisionSelectionState: DecisionSelectionState | null
   hoveredCardId: EntityId | null
   draggingBlockerId: EntityId | null
   draggingCardId: EntityId | null
@@ -460,6 +480,11 @@ export interface GameStore {
   toggleConvokeCreature: (entityId: EntityId, name: string, payingColor: string | null) => void
   cancelConvokeSelection: () => void
   confirmConvokeSelection: () => void
+  // Decision selection actions (for SelectCardsDecision with useTargetingUI)
+  startDecisionSelection: (state: DecisionSelectionState) => void
+  toggleDecisionSelection: (cardId: EntityId) => void
+  cancelDecisionSelection: () => void
+  confirmDecisionSelection: () => void
   // Game settings actions
   setFullControl: (enabled: boolean) => void
   returnToMenu: () => void
@@ -1258,6 +1283,7 @@ export const useGameStore = create<GameStore>()(
       combatState: null,
       xSelectionState: null,
       convokeSelectionState: null,
+      decisionSelectionState: null,
       hoveredCardId: null,
       draggingBlockerId: null,
       draggingCardId: null,
@@ -2156,6 +2182,57 @@ export const useGameStore = create<GameStore>()(
         set({ convokeSelectionState: null })
       },
 
+      startDecisionSelection: (state: DecisionSelectionState) => {
+        set({ decisionSelectionState: state })
+      },
+
+      toggleDecisionSelection: (cardId: EntityId) => {
+        set((state) => {
+          if (!state.decisionSelectionState) return state
+          const { selectedOptions, maxSelections } = state.decisionSelectionState
+          const isSelected = selectedOptions.includes(cardId)
+          if (isSelected) {
+            return {
+              decisionSelectionState: {
+                ...state.decisionSelectionState,
+                selectedOptions: selectedOptions.filter((id) => id !== cardId),
+              },
+            }
+          } else if (selectedOptions.length < maxSelections) {
+            return {
+              decisionSelectionState: {
+                ...state.decisionSelectionState,
+                selectedOptions: [...selectedOptions, cardId],
+              },
+            }
+          }
+          return state
+        })
+      },
+
+      cancelDecisionSelection: () => {
+        set({ decisionSelectionState: null })
+      },
+
+      confirmDecisionSelection: () => {
+        const { decisionSelectionState, pendingDecision, playerId } = get()
+        if (!decisionSelectionState || !pendingDecision || !playerId) return
+
+        // Submit the decision with selected cards using the same pattern as submitDecision
+        const action = {
+          type: 'SubmitDecision' as const,
+          playerId,
+          response: {
+            type: 'CardsSelectedResponse' as const,
+            decisionId: pendingDecision.id,
+            selectedCards: [...decisionSelectionState.selectedOptions],
+          },
+        }
+        ws?.send(createSubmitActionMessage(action))
+
+        set({ decisionSelectionState: null })
+      },
+
       setFullControl: (enabled: boolean) => {
         ws?.send(createSetFullControlMessage(enabled))
         set({ fullControl: enabled })
@@ -2178,6 +2255,7 @@ export const useGameStore = create<GameStore>()(
           combatState: null,
           xSelectionState: null,
           convokeSelectionState: null,
+          decisionSelectionState: null,
           hoveredCardId: null,
           draggingBlockerId: null,
           draggingCardId: null,

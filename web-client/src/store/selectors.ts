@@ -55,6 +55,11 @@ export const selectHoveredCardId = (state: GameStore) => state.hoveredCardId
 export const selectTargetingState = (state: GameStore) => state.targetingState
 
 /**
+ * Select the decision selection state.
+ */
+export const selectDecisionSelectionState = (state: GameStore) => state.decisionSelectionState
+
+/**
  * Select the mulligan state.
  */
 export const selectMulliganState = (state: GameStore) => state.mulliganState

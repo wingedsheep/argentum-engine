@@ -346,7 +346,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
         <div style={styles.centerLifeSection}>
           {effectiveOpponent && (
             <>
-              <LifeDisplay life={effectiveOpponent.life} playerId={effectiveOpponent.playerId} />
+              <LifeDisplay life={effectiveOpponent.life} playerId={effectiveOpponent.playerId} playerName={effectiveOpponent.name} spectatorMode={spectatorMode} />
               <span style={{ ...styles.playerName, fontSize: responsive.fontSize.small }}>{effectiveOpponent.name}</span>
               <ActiveEffectsBadges effects={effectiveOpponent.activeEffects} />
               {effectiveOpponent.manaPool && <ManaPool manaPool={effectiveOpponent.manaPool} />}
@@ -372,7 +372,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
         <div style={styles.centerLifeSection}>
           {effectiveViewingPlayer && (
             <>
-              <LifeDisplay life={effectiveViewingPlayer.life} isPlayer playerId={effectiveViewingPlayer.playerId} />
+              <LifeDisplay life={effectiveViewingPlayer.life} isPlayer playerId={effectiveViewingPlayer.playerId} playerName={effectiveViewingPlayer.name} spectatorMode={spectatorMode} />
               <span style={{ ...styles.playerName, fontSize: responsive.fontSize.small }}>{effectiveViewingPlayer.name}</span>
               <ActiveEffectsBadges effects={effectiveViewingPlayer.activeEffects} />
               {effectiveViewingPlayer.manaPool && <ManaPool manaPool={effectiveViewingPlayer.manaPool} />}
@@ -641,11 +641,15 @@ function getEffectIcon(icon: string): string {
 function LifeDisplay({
   life,
   isPlayer = false,
-  playerId
+  playerId,
+  playerName,
+  spectatorMode = false,
 }: {
   life: number
   isPlayer?: boolean
   playerId: EntityId
+  playerName?: string
+  spectatorMode?: boolean
 }) {
   const responsive = useResponsiveContext()
   const targetingState = useGameStore((state) => state.targetingState)
@@ -740,7 +744,7 @@ function LifeDisplay({
           whiteSpace: 'nowrap',
         }}
       >
-        {isPlayer ? 'YOU' : 'OPPONENT'}
+        {spectatorMode && playerName ? playerName.toUpperCase() : (isPlayer ? 'YOU' : 'OPPONENT')}
       </span>
       <span style={{ color: life <= 5 ? '#ff4444' : '#ffffff' }}>{life}</span>
     </div>
@@ -1948,6 +1952,8 @@ function GameCard({
   const startXSelection = useGameStore((state) => state.startXSelection)
   const pendingDecision = useGameStore((state) => state.pendingDecision)
   const submitTargetsDecision = useGameStore((state) => state.submitTargetsDecision)
+  const decisionSelectionState = useGameStore((state) => state.decisionSelectionState)
+  const toggleDecisionSelection = useGameStore((state) => state.toggleDecisionSelection)
   const responsive = useResponsiveContext()
   const { handleCardClick } = useInteraction()
   const dragStartPos = useRef<{ x: number; y: number } | null>(null)
@@ -1979,6 +1985,10 @@ function GameCard({
   const isChooseTargetsDecision = pendingDecision?.type === 'ChooseTargetsDecision'
   const decisionLegalTargets = isChooseTargetsDecision ? (pendingDecision.legalTargets[0] ?? []) : []
   const isValidDecisionTarget = decisionLegalTargets.includes(card.id)
+
+  // Check if this card is a valid option in decision selection mode (SelectCardsDecision with useTargetingUI)
+  const isValidDecisionSelection = decisionSelectionState?.validOptions.includes(card.id) ?? false
+  const isSelectedDecisionOption = decisionSelectionState?.selectedOptions.includes(card.id) ?? false
 
   // Combat mode checks
   const isInAttackerMode = combatState?.mode === 'declareAttackers'
@@ -2158,6 +2168,12 @@ function GameCard({
       return
     }
 
+    // Handle decision selection mode clicks (SelectCardsDecision with useTargetingUI)
+    if (isValidDecisionSelection) {
+      toggleDecisionSelection(card.id)
+      return
+    }
+
     // Handle attacker mode clicks
     if (isInAttackerMode) {
       if (isValidAttacker) {
@@ -2212,14 +2228,18 @@ function GameCard({
     // Yellow highlight for selected targets (already chosen in targeting mode)
     borderStyle = '3px solid #ffff00'
     boxShadow = '0 0 20px rgba(255, 255, 0, 0.8), 0 0 40px rgba(255, 255, 0, 0.4)'
+  } else if (isSelectedDecisionOption) {
+    // Orange highlight for selected decision options
+    borderStyle = '3px solid #ff9900'
+    boxShadow = '0 0 20px rgba(255, 153, 0, 0.8), 0 0 40px rgba(255, 153, 0, 0.4)'
   } else if (isSelected && !isInCombatMode) {
     borderStyle = '3px solid #ffff00'
     boxShadow = '0 8px 20px rgba(255, 255, 0, 0.4)'
-  } else if ((isValidTarget || isValidDecisionTarget) && isHovered) {
+  } else if ((isValidTarget || isValidDecisionTarget || isValidDecisionSelection) && isHovered) {
     // Bright highlight when hovering over a valid target
     borderStyle = '3px solid #ff6666'
     boxShadow = '0 0 20px rgba(255, 100, 100, 0.9), 0 0 40px rgba(255, 68, 68, 0.6)'
-  } else if (isValidTarget || isValidDecisionTarget) {
+  } else if (isValidTarget || isValidDecisionTarget || isValidDecisionSelection) {
     borderStyle = '3px solid #ff4444'
     boxShadow = '0 4px 15px rgba(255, 68, 68, 0.6)'
   } else if ((isValidAttacker || isValidBlocker) && isHovered) {
@@ -2241,7 +2261,7 @@ function GameCard({
   }
 
   // Determine cursor
-  const canInteract = interactive || isValidTarget || isValidDecisionTarget || isValidAttacker || isValidBlocker || isAttackingInBlockerMode || canDragToPlay
+  const canInteract = interactive || isValidTarget || isValidDecisionTarget || isValidDecisionSelection || isValidAttacker || isValidBlocker || isAttackingInBlockerMode || canDragToPlay
   const baseCursor = canInteract ? 'pointer' : 'default'
   const cursor = (isValidBlocker && !isSelectedAsBlocker) || canDragToPlay ? 'grab' : baseCursor
 

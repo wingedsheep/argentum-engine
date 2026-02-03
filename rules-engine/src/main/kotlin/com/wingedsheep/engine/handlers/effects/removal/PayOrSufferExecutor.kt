@@ -226,7 +226,8 @@ class PayOrSufferExecutor(
             minSelections = 0,
             maxSelections = cost.count,
             ordered = false,
-            phase = DecisionPhase.RESOLUTION
+            phase = DecisionPhase.RESOLUTION,
+            useTargetingUI = true  // Use battlefield targeting UI instead of modal
         )
 
         // Push continuation to handle the response

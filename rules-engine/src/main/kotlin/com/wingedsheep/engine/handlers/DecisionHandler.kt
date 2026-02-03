@@ -73,7 +73,8 @@ class DecisionHandler {
         minSelections: Int,
         maxSelections: Int,
         ordered: Boolean = false,
-        phase: DecisionPhase = DecisionPhase.RESOLUTION
+        phase: DecisionPhase = DecisionPhase.RESOLUTION,
+        useTargetingUI: Boolean = false
     ): ExecutionResult {
         val decision = SelectCardsDecision(
             id = generateDecisionId(),
@@ -87,7 +88,8 @@ class DecisionHandler {
             options = options,
             minSelections = minSelections,
             maxSelections = maxSelections,
-            ordered = ordered
+            ordered = ordered,
+            useTargetingUI = useTargetingUI
         )
 
         val newState = state.withPendingDecision(decision)
