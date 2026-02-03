@@ -53,6 +53,7 @@ class GamePlayHandler(
             is ClientMessage.Mulligan -> handleMulligan(session)
             is ClientMessage.ChooseBottomCards -> handleChooseBottomCards(session, message)
             is ClientMessage.UpdateBlockerAssignments -> handleUpdateBlockerAssignments(session, message)
+            is ClientMessage.SetFullControl -> handleSetFullControl(session, message)
             else -> {}
         }
     }
@@ -518,6 +519,22 @@ class GamePlayHandler(
         for (spectator in gameSession.getSpectators()) {
             sender.send(spectator.webSocketSession, ServerMessage.OpponentBlockerAssignments(message.assignments))
         }
+    }
+
+    private fun handleSetFullControl(session: WebSocketSession, message: ClientMessage.SetFullControl) {
+        val playerSession = sessionRegistry.getPlayerSession(session.id)
+        if (playerSession == null) {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        val gameSession = getGameSession(session, playerSession) ?: return
+
+        gameSession.setFullControl(playerSession.playerId, message.enabled)
+        logger.info("Player ${playerSession.playerName} set full control to ${message.enabled}")
+
+        // Broadcast state update so the UI reflects the change
+        broadcastStateUpdate(gameSession, emptyList())
     }
 
     // Callbacks to avoid circular dependencies with LobbyHandler

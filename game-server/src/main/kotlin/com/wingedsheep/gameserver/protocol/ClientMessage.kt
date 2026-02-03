@@ -222,4 +222,16 @@ sealed interface ClientMessage {
         /** Map of blocker creature ID to attacker creature ID */
         val assignments: Map<EntityId, EntityId>
     ) : ClientMessage
+
+    // =========================================================================
+    // Game Settings Messages
+    // =========================================================================
+
+    /**
+     * Toggle full control mode for the current game.
+     * When enabled, auto-pass is disabled and player receives priority at every possible point.
+     */
+    @Serializable
+    @SerialName("setFullControl")
+    data class SetFullControl(val enabled: Boolean) : ClientMessage
 }

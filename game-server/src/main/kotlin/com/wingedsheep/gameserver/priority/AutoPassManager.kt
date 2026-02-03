@@ -187,85 +187,96 @@ class AutoPassManager {
     }
 
     /**
-     * Rule 3: Determine auto-pass behavior on your own turn.
+     * Rule 3: Determine auto-pass behavior on your own turn (TRUE Arena-style).
      *
-     * - Upkeep/Draw: AUTO-PASS (rarely cast instants in own upkeep)
-     * - Main Phases: DON'T auto-pass (want to play spells)
-     * - Combat: STOP (for combat tricks)
-     * - End Step: DON'T auto-pass (might want to use abilities)
+     * Arena is VERY aggressive about auto-passing on your own turn. You only stop at:
+     * - Main phases (to play lands and spells)
+     * - Declare attackers (to declare attacks)
+     *
+     * EVERYTHING ELSE auto-passes, even if you have instant-speed actions available.
+     * If you want to act at other times, you need Full Control or manual stops.
+     *
+     * This matches how Arena actually works - it speeds through your turn so you can
+     * play your main phase cards and attack, then quickly passes to opponent's turn.
      */
     private fun shouldAutoPassOnMyTurn(
         step: Step,
         meaningfulActions: List<LegalActionInfo>
     ): Boolean {
         return when (step) {
-            // Beginning Phase - auto-pass (rarely need to act)
+            // Main Phases - STOP (this is where you play lands and cast spells)
+            Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN -> {
+                logger.debug("STOP: My main phase")
+                false
+            }
+
+            // Declare Attackers - STOP (need to declare attacks)
+            Step.DECLARE_ATTACKERS -> {
+                logger.debug("STOP: My declare attackers step")
+                false
+            }
+
+            // EVERYTHING ELSE - AUTO-PASS (Arena-style aggressive passing)
+            // This includes: upkeep, draw, begin combat, declare blockers (after opponent blocks),
+            // first strike damage, combat damage, end combat, end step, cleanup
             Step.UPKEEP, Step.DRAW -> {
                 logger.debug("AUTO-PASS: My upkeep/draw step")
                 true
             }
 
-            // Main Phases - DON'T auto-pass (want to play spells/lands)
-            Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN -> {
-                logger.debug("STOP: My main phase with meaningful actions")
-                false
-            }
-
-            // Combat Steps - STOP during declare blockers (for combat tricks after blocks)
-            // Begin Combat and Declare Attackers are handled by combat UI
             Step.BEGIN_COMBAT -> {
-                // Usually auto-pass to get to attackers quickly
                 logger.debug("AUTO-PASS: My begin combat")
                 true
             }
-            Step.DECLARE_ATTACKERS -> {
-                // This step requires declaring attackers - not an auto-pass scenario
-                logger.debug("STOP: My declare attackers step")
-                false
-            }
+
             Step.DECLARE_BLOCKERS -> {
-                // STOP after blocks to use combat tricks
-                logger.debug("STOP: My declare blockers step (for combat tricks)")
-                false
+                logger.debug("AUTO-PASS: My declare blockers step (opponent declared, moving to damage)")
+                true
             }
+
             Step.FIRST_STRIKE_COMBAT_DAMAGE, Step.COMBAT_DAMAGE, Step.END_COMBAT -> {
-                if (meaningfulActions.isNotEmpty()) {
-                    logger.debug("STOP: My combat damage/end combat with meaningful actions")
-                    false
-                } else {
-                    logger.debug("AUTO-PASS: My combat damage/end combat")
-                    true
-                }
+                logger.debug("AUTO-PASS: My combat damage/end combat")
+                true
             }
 
-            // End Step - DON'T auto-pass (might want to use abilities)
             Step.END -> {
-                logger.debug("STOP: My end step with meaningful actions")
-                false
+                logger.debug("AUTO-PASS: My end step")
+                true
             }
 
-            // Cleanup - no priority normally
             Step.CLEANUP, Step.UNTAP -> {
-                logger.debug("AUTO-PASS: Cleanup/Untap (no priority)")
+                logger.debug("AUTO-PASS: Cleanup/Untap")
                 true
             }
         }
     }
 
     /**
-     * Rule 2: Determine auto-pass behavior on opponent's turn.
+     * Rule 2: Determine auto-pass behavior on opponent's turn (TRUE Arena-style).
      *
-     * - Upkeep/Draw: AUTO-PASS (unless manual stop)
-     * - Main Phase: AUTO-PASS (wait for stack or combat)
-     * - Combat (Start/Attackers): STOP (crucial window!)
-     * - Declare Blockers: STOP (for removal/pump before damage)
+     * Arena is very aggressive about auto-passing on opponent's turn too.
+     * You only stop when you actually need to make a blocking decision.
+     * Having instants in hand doesn't mean you stop at every phase.
+     *
+     * - Upkeep/Draw/Main: AUTO-PASS
+     * - Begin Combat/Declare Attackers: AUTO-PASS (Arena doesn't stop here by default)
+     * - Declare Blockers: STOP only if you have creatures that can block
      * - Combat Damage: AUTO-PASS
-     * - End Step: ALWAYS STOP (golden rule)
+     * - End Step: STOP only if you have meaningful instant-speed actions
      */
     private fun shouldAutoPassOnOpponentTurn(
         step: Step,
         meaningfulActions: List<LegalActionInfo>
     ): Boolean {
+        // Check if we have blockers available
+        val hasBlockers = meaningfulActions.any { it.actionType == "DeclareBlockers" && !it.validBlockers.isNullOrEmpty() }
+
+        // Check if we have instant-speed responses (spells/abilities, not blockers)
+        val hasInstantSpeedResponses = meaningfulActions.any { action ->
+            (action.actionType == "CastSpell" || action.actionType == "ActivateAbility" || action.actionType == "CycleCard") &&
+            (!action.requiresTargets || !action.validTargets.isNullOrEmpty())
+        }
+
         return when (step) {
             // Beginning Phase - auto-pass
             Step.UPKEEP, Step.DRAW -> {
@@ -273,64 +284,51 @@ class AutoPassManager {
                 true
             }
 
-            // Main Phases - auto-pass (wait for combat or end step or stack)
+            // Main Phases - auto-pass (wait for end step if you want to cast instants)
             Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN -> {
                 logger.debug("AUTO-PASS: Opponent's main phase")
                 true
             }
 
-            // Combat - STOP during begin combat and declare attackers IF we have meaningful actions
-            // This is the crucial window to tap creatures or kill attackers
-            // But if we can't do anything, auto-pass to speed up the game
-            Step.BEGIN_COMBAT -> {
-                if (meaningfulActions.isEmpty()) {
-                    logger.debug("AUTO-PASS: Opponent's begin combat (no meaningful actions)")
-                    true
-                } else {
-                    logger.debug("STOP: Opponent's begin combat (crucial window)")
-                    false
-                }
+            // Begin Combat / Declare Attackers - AUTO-PASS (Arena-style)
+            // Arena doesn't stop here by default, even if you have instants
+            Step.BEGIN_COMBAT, Step.DECLARE_ATTACKERS -> {
+                logger.debug("AUTO-PASS: Opponent's begin combat/declare attackers (Arena-style)")
+                true
             }
-            Step.DECLARE_ATTACKERS -> {
-                if (meaningfulActions.isEmpty()) {
-                    logger.debug("AUTO-PASS: Opponent's declare attackers (no meaningful actions)")
-                    true
-                } else {
-                    logger.debug("STOP: Opponent's declare attackers (crucial window)")
-                    false
-                }
-            }
+
+            // Declare Blockers - STOP only if we have creatures that can block
             Step.DECLARE_BLOCKERS -> {
-                // We're the defending player - stop if we have blockers or responses
-                // Auto-pass if we have nothing to do
-                if (meaningfulActions.isEmpty()) {
-                    logger.debug("AUTO-PASS: Opponent's declare blockers (no meaningful actions)")
-                    true
-                } else {
-                    logger.debug("STOP: Opponent's declare blockers (can block or respond)")
-                    false
-                }
-            }
-            Step.FIRST_STRIKE_COMBAT_DAMAGE, Step.COMBAT_DAMAGE, Step.END_COMBAT -> {
-                if (meaningfulActions.isNotEmpty()) {
-                    logger.debug("STOP: Opponent's combat damage/end combat with meaningful actions")
+                if (hasBlockers) {
+                    logger.debug("STOP: Opponent's declare blockers (have blockers)")
                     false
                 } else {
-                    logger.debug("AUTO-PASS: Opponent's combat damage/end combat")
+                    logger.debug("AUTO-PASS: Opponent's declare blockers (no blockers)")
                     true
                 }
             }
 
-            // End Step - ALWAYS STOP (golden rule)
-            // This is when control players cast "end of turn" draw spells
+            // Combat Damage steps - AUTO-PASS
+            Step.FIRST_STRIKE_COMBAT_DAMAGE, Step.COMBAT_DAMAGE, Step.END_COMBAT -> {
+                logger.debug("AUTO-PASS: Opponent's combat damage/end combat")
+                true
+            }
+
+            // End Step - STOP only if we have instant-speed actions to use
+            // This is the classic "end of turn" window for casting instants
             Step.END -> {
-                logger.debug("STOP: Opponent's end step (golden rule)")
-                false
+                if (hasInstantSpeedResponses) {
+                    logger.debug("STOP: Opponent's end step (have instant-speed actions)")
+                    false
+                } else {
+                    logger.debug("AUTO-PASS: Opponent's end step (no instant-speed actions)")
+                    true
+                }
             }
 
             // Cleanup - no priority normally
             Step.CLEANUP, Step.UNTAP -> {
-                logger.debug("AUTO-PASS: Cleanup/Untap (no priority)")
+                logger.debug("AUTO-PASS: Cleanup/Untap")
                 true
             }
         }
@@ -465,33 +463,32 @@ class AutoPassManager {
     }
 
     /**
-     * Simplified version of shouldAutoPassOnMyTurn that doesn't need the full action list.
+     * Simplified version of shouldAutoPassOnMyTurn for calculating next stop point.
+     * Arena-style: Only stop at main phases and declare attackers on your own turn.
      */
     private fun shouldAutoPassOnMyTurnForStep(step: Step, hasMeaningfulActions: Boolean): Boolean {
         return when (step) {
-            Step.UPKEEP, Step.DRAW -> true
-            Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN -> false // Always stop on my main phases
-            Step.BEGIN_COMBAT -> true
+            // Only stop at main phases and declare attackers
+            Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN -> false
             Step.DECLARE_ATTACKERS -> false
-            Step.DECLARE_BLOCKERS -> false
-            Step.FIRST_STRIKE_COMBAT_DAMAGE, Step.COMBAT_DAMAGE, Step.END_COMBAT -> !hasMeaningfulActions
-            Step.END -> false
-            Step.CLEANUP, Step.UNTAP -> true
+            // Everything else auto-passes
+            else -> true
         }
     }
 
     /**
-     * Simplified version of shouldAutoPassOnOpponentTurn that doesn't need the full action list.
+     * Simplified version of shouldAutoPassOnOpponentTurn for calculating next stop point.
+     * Arena-style: Very aggressive auto-passing, only stop at declare blockers and end step.
      */
     private fun shouldAutoPassOnOpponentTurnForStep(step: Step, hasMeaningfulActions: Boolean): Boolean {
         return when (step) {
+            // Auto-pass through most phases
             Step.UPKEEP, Step.DRAW -> true
             Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN -> true
-            Step.BEGIN_COMBAT -> !hasMeaningfulActions // Auto-pass if no actions
-            Step.DECLARE_ATTACKERS -> !hasMeaningfulActions // Auto-pass if no actions
-            Step.DECLARE_BLOCKERS -> !hasMeaningfulActions // Auto-pass if no blockers/responses
-            Step.FIRST_STRIKE_COMBAT_DAMAGE, Step.COMBAT_DAMAGE, Step.END_COMBAT -> !hasMeaningfulActions
-            Step.END -> false // Golden rule
+            Step.BEGIN_COMBAT, Step.DECLARE_ATTACKERS -> true // Arena-style: don't stop here
+            Step.DECLARE_BLOCKERS -> !hasMeaningfulActions // Stop only if we have blockers
+            Step.FIRST_STRIKE_COMBAT_DAMAGE, Step.COMBAT_DAMAGE, Step.END_COMBAT -> true
+            Step.END -> !hasMeaningfulActions // Stop only if we have instant-speed actions
             Step.CLEANUP, Step.UNTAP -> true
         }
     }

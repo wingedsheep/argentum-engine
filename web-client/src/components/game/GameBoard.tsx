@@ -14,7 +14,7 @@ import { GameLog } from './GameLog'
 import { DrawAnimations } from '../animations/DrawAnimations'
 import { DamageAnimations } from '../animations/DamageAnimations'
 import { useResponsive, calculateFittingCardWidth, type ResponsiveSizes } from '../../hooks/useResponsive'
-import { getCardImageUrl, getScryfallFallbackUrl } from '../../utils/cardImages'
+import { getCardImageUrl, getScryfallFallbackUrl, MORPH_FACE_DOWN_IMAGE_URL } from '../../utils/cardImages'
 import { useInteraction } from '../../hooks/useInteraction'
 import React, { createContext, useContext, useCallback, useEffect, useRef, useState } from 'react'
 
@@ -198,6 +198,8 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
   const clearBlockerAssignments = useGameStore((state) => state.clearBlockerAssignments)
   const attackWithAll = useGameStore((state) => state.attackWithAll)
   const priorityMode = useGameStore(selectPriorityMode)
+  const fullControl = useGameStore((state) => state.fullControl)
+  const setFullControl = useGameStore((state) => state.setFullControl)
   const responsive = useResponsive(topOffset)
 
   // In spectator mode, use spectatingState.gameState
@@ -463,6 +465,33 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
           }}
         >
           {getPassButtonLabel()}
+        </button>
+      )}
+
+      {/* Full Control toggle button (bottom-right, above pass button) - hidden in spectator mode */}
+      {!spectatorMode && viewingPlayer && (
+        <button
+          onClick={() => setFullControl(!fullControl)}
+          title={fullControl
+            ? 'Full Control ON: You will receive priority at every step. Click to disable.'
+            : 'Full Control OFF: Auto-passing enabled. Click to enable full control.'}
+          style={{
+            position: 'fixed',
+            bottom: responsive.isMobile ? 60 : 70,
+            right: 16,
+            padding: responsive.isMobile ? '4px 10px' : '6px 12px',
+            fontSize: responsive.fontSize.small,
+            fontWeight: 500,
+            backgroundColor: fullControl ? 'rgba(79, 195, 247, 0.9)' : 'rgba(40, 40, 40, 0.8)',
+            color: fullControl ? '#000' : '#999',
+            border: fullControl ? '1px solid #4fc3f7' : '1px solid #555',
+            borderRadius: 4,
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            zIndex: 100,
+          }}
+        >
+          {fullControl ? 'Full Control' : 'Auto'}
         </button>
       )}
 
@@ -1853,6 +1882,7 @@ function CardStack({
       <GameCard
         card={group.card}
         count={1}
+        faceDown={group.card.isFaceDown}
         interactive={interactive}
         battlefield
         isOpponentCard={isOpponentCard}
@@ -1897,6 +1927,7 @@ function CardStack({
           <GameCard
             card={card}
             count={1}
+            faceDown={card.isFaceDown}
             interactive={interactive}
             battlefield
             isOpponentCard={isOpponentCard}
@@ -1961,11 +1992,12 @@ function GameCard({
   const handledByDrag = useRef(false)
 
   // Hover handlers for card preview
+  // Allow hover for non-face-down cards, or for the controller's own face-down cards
   const handleMouseEnter = useCallback(() => {
-    if (!faceDown) {
+    if (!faceDown || !isOpponentCard) {
       hoverCard(card.id)
     }
-  }, [card.id, faceDown, hoverCard])
+  }, [card.id, faceDown, isOpponentCard, hoverCard])
 
   const handleMouseLeave = useCallback(() => {
     hoverCard(null)
@@ -2008,10 +2040,11 @@ function GameCard({
   const isMustBeBlocked = isInBlockerMode && isOpponentCard && combatState.mustBeBlockedAttackers.includes(card.id)
 
   // Only show playable highlight outside of combat mode (and when not targeting)
-  const isPlayable = interactive && hasLegalActions && !faceDown && !isInCombatMode
+  // Face-down cards can be playable too (for TurnFaceUp action)
+  const isPlayable = interactive && hasLegalActions && !isInCombatMode
 
   const cardImageUrl = faceDown
-    ? 'https://backs.scryfall.io/large/2/2/222b7a3b-2321-4d4c-af19-19338b134971.jpg?1677416389'
+    ? MORPH_FACE_DOWN_IMAGE_URL
     : getCardImageUrl(card.name, card.imageUri, 'normal')
 
   // Use responsive sizes, but allow override for fitting cards in hand
@@ -2082,8 +2115,24 @@ function GameCard({
       handledByDrag.current = true
 
       if (!draggedFarEnough) {
-        // Short drag = click: open action menu
+        // Short drag = click
         stopDraggingCard()
+
+        // During combat mode, toggle attacker/blocker selection instead of opening action menu
+        if (isInAttackerMode) {
+          if (isValidAttacker) {
+            toggleAttacker(card.id)
+          }
+          return
+        }
+        if (isInBlockerMode) {
+          if (isValidBlocker && isSelectedAsBlocker) {
+            removeBlockerAssignment(card.id)
+          }
+          return
+        }
+
+        // Outside combat mode, open action menu
         handleCardClick(card.id)
         return
       }
@@ -2130,7 +2179,7 @@ function GameCard({
 
     window.addEventListener('mouseup', handleGlobalMouseUp)
     return () => window.removeEventListener('mouseup', handleGlobalMouseUp)
-  }, [draggingCardId, card.id, playableAction, submitAction, stopDraggingCard, startTargeting, startXSelection, handleCardClick])
+  }, [draggingCardId, card.id, playableAction, submitAction, stopDraggingCard, startTargeting, startXSelection, handleCardClick, isInAttackerMode, isValidAttacker, toggleAttacker, isInBlockerMode, isValidBlocker, isSelectedAsBlocker, removeBlockerAssignment])
 
   // Global mouse up handler to cancel drag
   useEffect(() => {
@@ -2340,25 +2389,29 @@ function GameCard({
         </div>
       )}
 
-      {/* P/T overlay for creatures on battlefield */}
-      {battlefield && !faceDown && card.power !== null && card.toughness !== null && (
+      {/* P/T overlay for creatures on battlefield (server sends 2/2 for face-down creatures) */}
+      {battlefield && card.power !== null && card.toughness !== null && (
         <div style={{
           ...styles.ptOverlay,
-          backgroundColor: getPTColor(card.power, card.toughness, card.basePower, card.baseToughness) !== 'white'
-            ? 'rgba(0, 0, 0, 0.85)'
-            : 'rgba(0, 0, 0, 0.7)',
+          backgroundColor: faceDown
+            ? 'rgba(0, 0, 0, 0.7)'
+            : getPTColor(card.power, card.toughness, card.basePower, card.baseToughness) !== 'white'
+              ? 'rgba(0, 0, 0, 0.85)'
+              : 'rgba(0, 0, 0, 0.7)',
         }}>
           <span style={{
-            color: getPTColor(card.power, card.toughness, card.basePower, card.baseToughness),
+            color: faceDown ? 'white' : getPTColor(card.power, card.toughness, card.basePower, card.baseToughness),
             fontWeight: 700,
             fontSize: responsive.isMobile ? 10 : 12,
           }}>
             {card.power}/
           </span>
           <span style={{
-            color: card.damage != null && card.damage > 0
-              ? '#ff4444'
-              : getPTColor(card.power, card.toughness, card.basePower, card.baseToughness),
+            color: faceDown
+              ? (card.damage != null && card.damage > 0 ? '#ff4444' : 'white')
+              : card.damage != null && card.damage > 0
+                ? '#ff4444'
+                : getPTColor(card.power, card.toughness, card.basePower, card.baseToughness),
             fontWeight: 700,
             fontSize: responsive.isMobile ? 10 : 12,
           }}>
@@ -2942,8 +2995,8 @@ function ActionMenu() {
       return
     }
 
-    // Check if spell requires sacrifice as additional cost
-    if (info.action.type === 'CastSpell' && info.additionalCostInfo?.costType === 'SacrificePermanent') {
+    // Check if spell or ability requires sacrifice as a cost
+    if ((info.action.type === 'CastSpell' || info.action.type === 'ActivateAbility') && info.additionalCostInfo?.costType === 'SacrificePermanent') {
       const costInfo = info.additionalCostInfo
       startTargeting({
         action: info.action,

@@ -199,9 +199,12 @@ class AutoPassManagerTest : FunSpec({
         }
     }
 
-    context("Rule 2: Opponent's Turn Compression") {
-        test("Auto-pass during opponent's upkeep") {
-            val state = createMockState(player2, player1, Step.UPKEEP) // player2's turn
+    context("Rule 2: Opponent's Turn Compression (Arena-style aggressive passing)") {
+        // Arena auto-passes through most of opponent's turn.
+        // Only stops at: declare blockers (if you have blockers), end step (if you have instants)
+
+        test("Auto-pass during opponent's upkeep even with instants") {
+            val state = createMockState(player2, player1, Step.UPKEEP)
             val actions = listOf(
                 passPriorityAction(player2),
                 instantSpellAction(player2)
@@ -210,7 +213,7 @@ class AutoPassManagerTest : FunSpec({
             autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
         }
 
-        test("Auto-pass during opponent's draw step") {
+        test("Auto-pass during opponent's draw step even with instants") {
             val state = createMockState(player2, player1, Step.DRAW)
             val actions = listOf(
                 passPriorityAction(player2),
@@ -220,7 +223,7 @@ class AutoPassManagerTest : FunSpec({
             autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
         }
 
-        test("Auto-pass during opponent's main phase") {
+        test("Auto-pass during opponent's main phase even with instants") {
             val state = createMockState(player2, player1, Step.PRECOMBAT_MAIN)
             val actions = listOf(
                 passPriorityAction(player2),
@@ -230,27 +233,65 @@ class AutoPassManagerTest : FunSpec({
             autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
         }
 
-        test("STOP during opponent's begin combat") {
+        test("Auto-pass during opponent's begin combat even with instants (Arena-style)") {
             val state = createMockState(player2, player1, Step.BEGIN_COMBAT)
             val actions = listOf(
                 passPriorityAction(player2),
                 instantSpellAction(player2)
             )
 
-            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe false
+            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
         }
 
-        test("STOP during opponent's declare attackers") {
+        test("Auto-pass during opponent's declare attackers even with instants (Arena-style)") {
             val state = createMockState(player2, player1, Step.DECLARE_ATTACKERS)
             val actions = listOf(
                 passPriorityAction(player2),
                 instantSpellAction(player2)
             )
 
+            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
+        }
+
+        test("Auto-pass during declare blockers when only instants available (no blockers)") {
+            val state = createMockState(player2, player1, Step.DECLARE_BLOCKERS)
+            val actions = listOf(
+                passPriorityAction(player2),
+                instantSpellAction(player2) // Has instant but no blockers
+            )
+
+            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
+        }
+
+        test("STOP during declare blockers when blockers available") {
+            val state = createMockState(player2, player1, Step.DECLARE_BLOCKERS)
+            val blockerId = EntityId.generate()
+            val attackerId = EntityId.generate()
+            val actions = listOf(
+                passPriorityAction(player2),
+                LegalActionInfo(
+                    actionType = "DeclareBlockers",
+                    description = "Declare blockers",
+                    action = PassPriority(player2), // placeholder - action type is what matters
+                    validBlockers = listOf(blockerId),
+                    validAttackers = listOf(attackerId)
+                )
+            )
+
             autoPassManager.shouldAutoPass(state, player2, actions) shouldBe false
         }
 
-        test("STOP during opponent's end step - the golden rule") {
+        test("Auto-pass during opponent's combat damage even with instants (Arena-style)") {
+            val state = createMockState(player2, player1, Step.COMBAT_DAMAGE)
+            val actions = listOf(
+                passPriorityAction(player2),
+                instantSpellAction(player2)
+            )
+
+            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
+        }
+
+        test("STOP during opponent's end step when you have instant-speed actions") {
             val state = createMockState(player2, player1, Step.END)
             val actions = listOf(
                 passPriorityAction(player2),
@@ -260,47 +301,22 @@ class AutoPassManagerTest : FunSpec({
             autoPassManager.shouldAutoPass(state, player2, actions) shouldBe false
         }
 
-        test("Auto-pass during opponent's begin combat when no meaningful actions") {
-            val state = createMockState(player2, player1, Step.BEGIN_COMBAT)
+        test("Auto-pass during opponent's end step when no instant-speed actions") {
+            val state = createMockState(player2, player1, Step.END)
             val actions = listOf(
                 passPriorityAction(player2),
-                manaAbilityAction(player2) // Only mana ability, not meaningful
+                manaAbilityAction(player2) // Only mana ability
             )
 
             autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
-        }
-
-        test("Auto-pass during opponent's declare attackers when no meaningful actions") {
-            val state = createMockState(player2, player1, Step.DECLARE_ATTACKERS)
-            val actions = listOf(
-                passPriorityAction(player2) // Only pass priority available
-            )
-
-            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
-        }
-
-        test("Auto-pass during declare blockers when no blockers or responses available") {
-            val state = createMockState(player2, player1, Step.DECLARE_BLOCKERS)
-            val actions = listOf(
-                passPriorityAction(player2) // No blockers, no instants
-            )
-
-            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
-        }
-
-        test("STOP during declare blockers when blockers or responses available") {
-            val state = createMockState(player2, player1, Step.DECLARE_BLOCKERS)
-            val actions = listOf(
-                passPriorityAction(player2),
-                instantSpellAction(player2) // Has a response available
-            )
-
-            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe false
         }
     }
 
-    context("Rule 3: My Turn Optimization") {
-        test("Auto-pass during my upkeep") {
+    context("Rule 3: My Turn Optimization (Arena-style aggressive passing)") {
+        // Arena only stops at main phases and declare attackers on your own turn.
+        // Everything else auto-passes, even if you have instant-speed actions.
+
+        test("Auto-pass during my upkeep even with instants") {
             val state = createMockState(player1, player1, Step.UPKEEP)
             val actions = listOf(
                 passPriorityAction(player1),
@@ -310,7 +326,7 @@ class AutoPassManagerTest : FunSpec({
             autoPassManager.shouldAutoPass(state, player1, actions) shouldBe true
         }
 
-        test("Auto-pass during my draw step") {
+        test("Auto-pass during my draw step even with instants") {
             val state = createMockState(player1, player1, Step.DRAW)
             val actions = listOf(
                 passPriorityAction(player1),
@@ -330,14 +346,65 @@ class AutoPassManagerTest : FunSpec({
             autoPassManager.shouldAutoPass(state, player1, actions) shouldBe false
         }
 
-        test("STOP during my declare blockers (for combat tricks)") {
-            val state = createMockState(player1, player1, Step.DECLARE_BLOCKERS)
+        test("STOP during my declare attackers") {
+            val state = createMockState(player1, player1, Step.DECLARE_ATTACKERS)
             val actions = listOf(
                 passPriorityAction(player1),
                 instantSpellAction(player1)
             )
 
             autoPassManager.shouldAutoPass(state, player1, actions) shouldBe false
+        }
+
+        test("Auto-pass during my declare blockers even with combat tricks (Arena-style)") {
+            // Arena auto-passes here - if you want to use combat tricks, use Full Control
+            val state = createMockState(player1, player1, Step.DECLARE_BLOCKERS)
+            val actions = listOf(
+                passPriorityAction(player1),
+                instantSpellAction(player1)
+            )
+
+            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe true
+        }
+
+        test("Auto-pass during my first strike damage even with instants (Arena-style)") {
+            val state = createMockState(player1, player1, Step.FIRST_STRIKE_COMBAT_DAMAGE)
+            val actions = listOf(
+                passPriorityAction(player1),
+                instantSpellAction(player1)
+            )
+
+            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe true
+        }
+
+        test("Auto-pass during my combat damage even with instants (Arena-style)") {
+            val state = createMockState(player1, player1, Step.COMBAT_DAMAGE)
+            val actions = listOf(
+                passPriorityAction(player1),
+                instantSpellAction(player1)
+            )
+
+            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe true
+        }
+
+        test("Auto-pass during my end combat even with instants (Arena-style)") {
+            val state = createMockState(player1, player1, Step.END_COMBAT)
+            val actions = listOf(
+                passPriorityAction(player1),
+                instantSpellAction(player1)
+            )
+
+            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe true
+        }
+
+        test("Auto-pass during my end step even with instants (Arena-style)") {
+            val state = createMockState(player1, player1, Step.END)
+            val actions = listOf(
+                passPriorityAction(player1),
+                instantSpellAction(player1)
+            )
+
+            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe true
         }
     }
 
