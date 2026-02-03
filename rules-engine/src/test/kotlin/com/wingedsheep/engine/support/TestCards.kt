@@ -284,6 +284,43 @@ object TestCards {
         keywords = setOf(Keyword.FIRST_STRIKE)
     )
 
+    /**
+     * 2/2 Fear for {1}{B}{B}
+     * Test card for fear evasion.
+     */
+    val FearCreature = CardDefinition.creature(
+        name = "Fear Creature",
+        manaCost = ManaCost.parse("{1}{B}{B}"),
+        subtypes = setOf(Subtype("Zombie")),
+        power = 2,
+        toughness = 2,
+        oracleText = "Fear",
+        keywords = setOf(Keyword.FEAR)
+    )
+
+    /**
+     * 2/2 Artifact Creature for {2}
+     * Colorless artifact creature for testing fear blocking.
+     */
+    val ArtifactCreature = CardDefinition(
+        name = "Artifact Creature",
+        manaCost = ManaCost.parse("{2}"),
+        typeLine = TypeLine.artifactCreature(setOf(Subtype("Golem"))),
+        creatureStats = CreatureStats(2, 2)
+    )
+
+    /**
+     * 2/2 Black Creature for {1}{B}
+     * For testing fear blocking.
+     */
+    val BlackCreature = CardDefinition.creature(
+        name = "Black Creature",
+        manaCost = ManaCost.parse("{1}{B}"),
+        subtypes = setOf(Subtype("Zombie")),
+        power = 2,
+        toughness = 2
+    )
+
     // =========================================================================
     // Instants
     // =========================================================================
@@ -658,6 +695,9 @@ object TestCards {
         FleetFootedMonk,
         PhantomWarrior,
         BladeOfTheNinthWatch,
+        FearCreature,
+        ArtifactCreature,
+        BlackCreature,
         // Mana Dorks
         LlanowarElves,
         PalladiumMyr,

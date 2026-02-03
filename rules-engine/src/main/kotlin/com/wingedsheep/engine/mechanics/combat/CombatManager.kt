@@ -14,6 +14,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CanOnlyBlockCreaturesWithKeyword
@@ -528,8 +529,17 @@ class CombatManager(
         // Skulk: Cannot be blocked by creatures with greater power
         // TODO: Implement skulk
 
-        // Intimidate/Fear: Can only be blocked by artifact creatures or creatures sharing a color
-        // TODO: Implement intimidate/fear
+        // Fear: Can only be blocked by artifact creatures or black creatures
+        if (projected.hasKeyword(attackerId, Keyword.FEAR)) {
+            val isArtifactCreature = blockerCard.typeLine.isArtifactCreature
+            val isBlackCreature = Color.BLACK in blockerCard.colors
+            if (!isArtifactCreature && !isBlackCreature) {
+                return "${blockerCard.name} cannot block ${attackerCard.name} (fear)"
+            }
+        }
+
+        // Intimidate: Can only be blocked by artifact creatures or creatures sharing a color
+        // TODO: Implement intimidate
 
         return null
     }
@@ -1310,6 +1320,13 @@ class CombatManager(
         // Shadow: Can only be blocked by creatures with shadow
         if (projected.hasKeyword(attackerId, Keyword.SHADOW)) {
             if (!projected.hasKeyword(blockerId, Keyword.SHADOW)) return false
+        }
+
+        // Fear: Can only be blocked by artifact creatures or black creatures
+        if (projected.hasKeyword(attackerId, Keyword.FEAR)) {
+            val isArtifactCreature = blockerCard.typeLine.isArtifactCreature
+            val isBlackCreature = Color.BLACK in blockerCard.colors
+            if (!isArtifactCreature && !isBlackCreature) return false
         }
 
         // Landwalk: Cannot be blocked if defending player controls land of that type
