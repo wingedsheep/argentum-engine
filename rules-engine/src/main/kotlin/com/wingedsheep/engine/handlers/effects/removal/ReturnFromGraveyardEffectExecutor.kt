@@ -9,10 +9,13 @@ import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComp
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CardFilter
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.ReturnFromGraveyardEffect
 import com.wingedsheep.sdk.scripting.SearchDestination
 import java.util.UUID
@@ -34,6 +37,8 @@ import kotlin.reflect.KClass
 class ReturnFromGraveyardEffectExecutor : EffectExecutor<ReturnFromGraveyardEffect> {
 
     override val effectType: KClass<ReturnFromGraveyardEffect> = ReturnFromGraveyardEffect::class
+
+    private val predicateEvaluator = PredicateEvaluator()
 
     override fun execute(
         state: GameState,
@@ -85,10 +90,19 @@ class ReturnFromGraveyardEffectExecutor : EffectExecutor<ReturnFromGraveyardEffe
         val graveyard = state.getZone(graveyardZone)
 
         // Filter cards matching the criteria
-        val matchingCards = graveyard.filter { cardId ->
-            val container = state.getEntity(cardId)
-            val cardComponent = container?.get<CardComponent>()
-            matchesFilter(cardComponent, effect.filter)
+        // Prefer unified filter if available, fall back to legacy filter
+        val unifiedFilter = effect.unifiedFilter
+        val matchingCards = if (unifiedFilter != null) {
+            val predicateContext = PredicateContext.fromEffectContext(context)
+            graveyard.filter { cardId ->
+                predicateEvaluator.matches(state, cardId, unifiedFilter, predicateContext)
+            }
+        } else {
+            graveyard.filter { cardId ->
+                val container = state.getEntity(cardId)
+                val cardComponent = container?.get<CardComponent>()
+                matchesFilter(cardComponent, effect.filter)
+            }
         }
 
         // No matches — spell resolves with no effect
@@ -113,10 +127,14 @@ class ReturnFromGraveyardEffectExecutor : EffectExecutor<ReturnFromGraveyardEffe
             state.getEntity(sourceId)?.get<CardComponent>()?.name
         }
 
+        // Use unified filter description if available
+        val filterDescription = effect.unifiedFilter?.description
+            ?: if (effect.filter == CardFilter.AnyCard) "any card" else effect.filter.description
+
         val decision = SearchLibraryDecision(
             id = decisionId,
             playerId = playerId,
-            prompt = "Choose ${if (effect.filter == CardFilter.AnyCard) "a card" else "a ${effect.filter.description}"} from your graveyard to return to your hand",
+            prompt = "Choose a $filterDescription from your graveyard to return to your hand",
             context = DecisionContext(
                 sourceId = context.sourceId,
                 sourceName = sourceName,
@@ -126,7 +144,7 @@ class ReturnFromGraveyardEffectExecutor : EffectExecutor<ReturnFromGraveyardEffe
             minSelections = 1,
             maxSelections = 1,
             cards = cardInfoMap,
-            filterDescription = if (effect.filter == CardFilter.AnyCard) "any card" else effect.filter.description
+            filterDescription = filterDescription
         )
 
         val continuation = ReturnFromGraveyardContinuation(

@@ -2,9 +2,9 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.CardFilter
 import com.wingedsheep.sdk.scripting.CompositeEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.SearchDestination
 import com.wingedsheep.sdk.scripting.SearchLibraryEffect
@@ -23,7 +23,7 @@ val CruelTutor = card("Cruel Tutor") {
         effect = CompositeEffect(
             listOf(
                 SearchLibraryEffect(
-                    filter = CardFilter.AnyCard,
+                    unifiedFilter = GameObjectFilter.Any,
                     destination = SearchDestination.TOP_OF_LIBRARY
                 ),
                 LoseLifeEffect(2, EffectTarget.Controller)
