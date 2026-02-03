@@ -354,6 +354,18 @@ class AutoPassManagerTest : FunSpec({
             // Auto-pass when own ability is on stack (let opponent respond)
             autoPassManager.shouldAutoPass(state, player1, actions) shouldBe true
         }
+
+        test("AUTO-PASS when opponent's spell is on stack but no responses available") {
+            // player2's spell on stack, player1 has priority but no responses → auto-pass
+            val state = createMockState(player1, player1, Step.PRECOMBAT_MAIN, stackEmpty = false, stackControllerId = player2)
+            val actions = listOf(
+                passPriorityAction(player1),
+                manaAbilityAction(player1) // Only mana ability, not a response
+            )
+
+            // Auto-pass when can't respond anyway
+            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe true
+        }
     }
 
     context("Edge Cases") {

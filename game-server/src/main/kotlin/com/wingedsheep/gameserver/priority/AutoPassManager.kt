@@ -64,9 +64,12 @@ class AutoPassManager {
             return false
         }
 
+        // Get meaningful actions (Rule 1) - needed for stack response check
+        val meaningfulActions = getMeaningfulActions(legalActions, state)
+
         // Rule 4: Stack Response - Check who controls the top of the stack
         // - If YOUR spell/ability is on top → AUTO-PASS (let opponent respond)
-        // - If OPPONENT's spell/ability is on top → STOP (you might want to respond)
+        // - If OPPONENT's spell/ability is on top → STOP only if you have responses
         if (state.stack.isNotEmpty()) {
             val topOfStack = state.stack.last() // Stack is LIFO, last = top
             val topController = getStackItemController(state, topOfStack)
@@ -76,14 +79,16 @@ class AutoPassManager {
                 logger.debug("AUTO-PASS: Own spell/ability on top of stack")
                 return true
             } else {
-                // Opponent's spell/ability is on top - stop to consider response
-                logger.debug("STOP: Opponent's spell/ability on stack")
-                return false
+                // Opponent's spell/ability is on top - stop only if we can respond
+                if (meaningfulActions.isEmpty()) {
+                    logger.debug("AUTO-PASS: Opponent's spell/ability on stack but no responses")
+                    return true
+                } else {
+                    logger.debug("STOP: Opponent's spell/ability on stack and have responses")
+                    return false
+                }
             }
         }
-
-        // Get meaningful actions (Rule 1)
-        val meaningfulActions = getMeaningfulActions(legalActions, state)
 
         // Determine if this is our turn or opponent's turn
         val isMyTurn = state.activePlayerId == playerId
