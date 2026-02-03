@@ -364,18 +364,24 @@ class ConnectionHandler(
         if (token != null) {
             val identity = sessionRegistry.getIdentityByToken(token)
             if (identity != null) {
-                logger.info("Player disconnected: ${identity.playerName} (starting ${sessionRegistry.disconnectGracePeriodMinutes}m grace period)")
+                // Use longer grace period for tournament players
+                val lobbyId = identity.currentLobbyId
+                val lobby = if (lobbyId != null) lobbyRepository.findLobbyById(lobbyId) else null
+                val isInTournament = lobby?.state == LobbyState.TOURNAMENT_ACTIVE
+                val gracePeriodMinutes = if (isInTournament) {
+                    sessionRegistry.tournamentDisconnectGracePeriodMinutes
+                } else {
+                    sessionRegistry.disconnectGracePeriodMinutes
+                }
+
+                logger.info("Player disconnected: ${identity.playerName} (starting ${gracePeriodMinutes}m grace period, tournament=$isInTournament)")
                 identity.webSocketSession = null
 
                 identity.disconnectTimer = sessionRegistry.disconnectScheduler.schedule({
                     handleDisconnectTimeout(token)
-                }, sessionRegistry.disconnectGracePeriodMinutes, TimeUnit.MINUTES)
+                }, gracePeriodMinutes, TimeUnit.MINUTES)
 
-                val lobbyId = identity.currentLobbyId
-                if (lobbyId != null) {
-                    val lobby = lobbyRepository.findLobbyById(lobbyId)
-                    if (lobby != null) broadcastLobbyUpdate(lobby)
-                }
+                if (lobby != null) broadcastLobbyUpdate(lobby)
                 return
             }
         }

@@ -32,6 +32,9 @@ class SessionRegistry {
     /** Grace period before treating a disconnect as abandonment */
     val disconnectGracePeriodMinutes = 5L
 
+    /** Longer grace period for tournament players */
+    val tournamentDisconnectGracePeriodMinutes = 60L
+
     fun register(identity: PlayerIdentity, session: WebSocketSession, playerSession: PlayerSession) {
         identity.webSocketSession = session
         playerIdentities[identity.token] = identity
