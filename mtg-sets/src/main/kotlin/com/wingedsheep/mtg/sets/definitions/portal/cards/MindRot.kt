@@ -4,20 +4,20 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.DiscardCardsEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.targeting.TargetPlayer
+import com.wingedsheep.sdk.targeting.TargetOpponent
 
 /**
  * Mind Rot
  * {2}{B}
  * Sorcery
- * Target player discards two cards.
+ * Target opponent discards two cards.
  */
 val MindRot = card("Mind Rot") {
     manaCost = "{2}{B}"
     typeLine = "Sorcery"
 
     spell {
-        target = TargetPlayer()
+        target = TargetOpponent()
         effect = DiscardCardsEffect(2, EffectTarget.ContextTarget(0))
     }
 
