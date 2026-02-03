@@ -101,7 +101,7 @@ data class DestroyAllEffect(
  */
 @Serializable
 data class SacrificeEffect(
-    val filter: CardFilter,
+    val filter: GameObjectFilter,
     val count: Int = 1,
     val any: Boolean = false
 ) : Effect {
@@ -132,7 +132,7 @@ data object SacrificeSelfEffect : Effect {
  */
 @Serializable
 data class ForceSacrificeEffect(
-    val filter: CardFilter,
+    val filter: GameObjectFilter,
     val count: Int = 1,
     val target: EffectTarget = EffectTarget.Opponent
 ) : Effect {
@@ -217,32 +217,12 @@ data class ExileAndReplaceWithTokenEffect(
 /**
  * Return a card from graveyard to another zone.
  * "Return target creature card from your graveyard to your hand"
- *
- * Supports both legacy [CardFilter] and unified [GameObjectFilter].
  */
 @Serializable
 data class ReturnFromGraveyardEffect(
-    @Deprecated("Use unifiedFilter instead")
-    val filter: CardFilter = CardFilter.AnyCard,
-    val destination: SearchDestination = SearchDestination.HAND,
-    /** Unified filter using the new predicate-based architecture. Preferred over [filter]. */
-    val unifiedFilter: GameObjectFilter? = null
+    val filter: GameObjectFilter = GameObjectFilter.Any,
+    val destination: SearchDestination = SearchDestination.HAND
 ) : Effect {
     override val description: String
-        get() {
-            val filterDesc = unifiedFilter?.description ?: filter.description
-            return "Return $filterDesc from your graveyard ${destination.description}"
-        }
-
-    companion object {
-        /** Create a ReturnFromGraveyardEffect with a unified filter */
-        operator fun invoke(
-            unifiedFilter: GameObjectFilter,
-            destination: SearchDestination = SearchDestination.HAND
-        ) = ReturnFromGraveyardEffect(
-            filter = CardFilter.AnyCard,
-            destination = destination,
-            unifiedFilter = unifiedFilter
-        )
-    }
+        get() = "Return ${filter.description} from your graveyard ${destination.description}"
 }

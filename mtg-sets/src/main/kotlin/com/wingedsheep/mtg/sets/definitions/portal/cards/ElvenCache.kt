@@ -18,7 +18,7 @@ val ElvenCache = card("Elven Cache") {
 
     spell {
         effect = ReturnFromGraveyardEffect(
-            unifiedFilter = GameObjectFilter.Any,
+            filter = GameObjectFilter.Any,
             destination = SearchDestination.HAND
         )
     }

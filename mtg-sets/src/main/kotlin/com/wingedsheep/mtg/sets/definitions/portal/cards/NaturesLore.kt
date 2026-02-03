@@ -18,7 +18,7 @@ val NaturesLore = card("Nature's Lore") {
 
     spell {
         effect = SearchLibraryEffect(
-            unifiedFilter = GameObjectFilter.Land.withSubtype("Forest"),
+            filter = GameObjectFilter.Land.withSubtype("Forest"),
             destination = SearchDestination.BATTLEFIELD,
             entersTapped = false
         )

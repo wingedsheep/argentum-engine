@@ -24,7 +24,7 @@ val WoodElves = card("Wood Elves") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         effect = SearchLibraryEffect(
-            unifiedFilter = GameObjectFilter.Land.withSubtype("Forest"),
+            filter = GameObjectFilter.Land.withSubtype("Forest"),
             destination = SearchDestination.BATTLEFIELD,
             entersTapped = false
         )

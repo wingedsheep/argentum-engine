@@ -256,9 +256,7 @@ class CastSpellHandler(
             when (additionalCost) {
                 is AdditionalCost.SacrificePermanent -> {
                     val sacrificed = action.additionalCostPayment?.sacrificedPermanents ?: emptyList()
-                    val unifiedFilter = additionalCost.unifiedFilter
-                    @Suppress("DEPRECATION")
-                    val filterDesc = unifiedFilter?.description ?: additionalCost.filter.description
+                    val filterDesc = additionalCost.filter.description
                     if (sacrificed.size < additionalCost.count) {
                         return "You must sacrifice ${additionalCost.count} $filterDesc to cast this spell"
                     }
@@ -274,14 +272,9 @@ class CastSpellHandler(
                         if (permId !in state.getBattlefield()) {
                             return "Sacrificed permanent is not on the battlefield: $permId"
                         }
-                        // Use unified filter if present, otherwise fall back to legacy filter
-                        val matches = if (unifiedFilter != null) {
-                            val context = PredicateContext(controllerId = action.playerId)
-                            predicateEvaluator.matches(state, permId, unifiedFilter, context)
-                        } else {
-                            @Suppress("DEPRECATION")
-                            matchesCardFilter(permCard, additionalCost.filter)
-                        }
+                        // Use unified filter
+                        val context = PredicateContext(controllerId = action.playerId)
+                        val matches = predicateEvaluator.matches(state, permId, additionalCost.filter, context)
                         if (!matches) {
                             return "${permCard.name} doesn't match the required filter: $filterDesc"
                         }

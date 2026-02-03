@@ -44,6 +44,9 @@ import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.AbilityCost
+import com.wingedsheep.sdk.scripting.TargetFilter
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.ControllerPredicate
 import com.wingedsheep.sdk.scripting.ActivationRestriction
 import com.wingedsheep.sdk.scripting.CastRestriction
 import com.wingedsheep.gameserver.priority.AutoPassManager
@@ -82,6 +85,7 @@ class GameSession(
     private val gameInitializer = GameInitializer(cardRegistry)
     private val manaSolver = ManaSolver(cardRegistry)
     private val conditionEvaluator = ConditionEvaluator()
+    private val predicateEvaluator = PredicateEvaluator()
     private val turnManager = TurnManager()
     private val autoPassManager = AutoPassManager()
 
@@ -1303,12 +1307,12 @@ class GameSession(
             is TargetOpponent -> state.turnOrder.filter { it != playerId }
             is AnyTarget -> {
                 // Any target = creatures + players
-                val creatures = findValidCreatureTargets(state, playerId, CreatureTargetFilter.Any)
+                val creatures = findValidCreatureTargets(state, playerId, TargetFilter.Creature)
                 val players = state.turnOrder.toList()
                 creatures + players
             }
             is TargetCreatureOrPlayer -> {
-                val creatures = findValidCreatureTargets(state, playerId, CreatureTargetFilter.Any)
+                val creatures = findValidCreatureTargets(state, playerId, TargetFilter.Creature)
                 val players = state.turnOrder.toList()
                 creatures + players
             }
@@ -1343,126 +1347,17 @@ class GameSession(
 
     /**
      * Find valid creature targets based on a filter.
+     * Uses PredicateEvaluator for unified filter matching.
      */
     private fun findValidCreatureTargets(
         state: GameState,
         playerId: EntityId,
-        filter: CreatureTargetFilter
+        filter: TargetFilter
     ): List<EntityId> {
         val battlefield = state.getBattlefield()
+        val context = PredicateContext(controllerId = playerId)
         return battlefield.filter { entityId ->
-            val container = state.getEntity(entityId) ?: return@filter false
-            val cardComponent = container.get<CardComponent>() ?: return@filter false
-
-            // Must be a creature
-            if (!cardComponent.typeLine.isCreature) return@filter false
-
-            // Apply filter
-            val controllerId = container.get<ControllerComponent>()?.playerId
-            when (filter) {
-                CreatureTargetFilter.Any -> true
-                CreatureTargetFilter.YouControl -> controllerId == playerId
-                CreatureTargetFilter.OpponentControls -> controllerId != playerId
-                CreatureTargetFilter.Tapped -> container.has<TappedComponent>()
-                CreatureTargetFilter.Untapped -> !container.has<TappedComponent>()
-                CreatureTargetFilter.Attacking -> container.has<AttackingComponent>()
-                CreatureTargetFilter.Blocking -> container.has<BlockedComponent>()
-                is CreatureTargetFilter.WithKeyword -> cardComponent.baseKeywords.contains(filter.keyword)
-                is CreatureTargetFilter.WithoutKeyword -> !cardComponent.baseKeywords.contains(filter.keyword)
-                is CreatureTargetFilter.WithColor -> cardComponent.colors.contains(filter.color)
-                is CreatureTargetFilter.NotColor -> !cardComponent.colors.contains(filter.color)
-                is CreatureTargetFilter.WithSubtype -> cardComponent.typeLine.hasSubtype(filter.subtype)
-                is CreatureTargetFilter.WithPowerAtMost -> {
-                    val power = (cardComponent.baseStats?.power as? com.wingedsheep.sdk.model.CharacteristicValue.Fixed)?.value ?: 0
-                    power <= filter.maxPower
-                }
-                is CreatureTargetFilter.WithPowerAtLeast -> {
-                    val power = (cardComponent.baseStats?.power as? com.wingedsheep.sdk.model.CharacteristicValue.Fixed)?.value ?: 0
-                    power >= filter.minPower
-                }
-                is CreatureTargetFilter.WithToughnessAtMost -> {
-                    val toughness = (cardComponent.baseStats?.toughness as? com.wingedsheep.sdk.model.CharacteristicValue.Fixed)?.value ?: 0
-                    toughness <= filter.maxToughness
-                }
-                is CreatureTargetFilter.AttackingYouControl -> {
-                    controllerId == playerId && container.has<AttackingComponent>()
-                }
-                is CreatureTargetFilter.AttackingWithSubtypeYouControl -> {
-                    controllerId == playerId &&
-                        container.has<AttackingComponent>() &&
-                        cardComponent.typeLine.hasSubtype(filter.subtype)
-                }
-                is CreatureTargetFilter.And -> {
-                    filter.filters.all { subFilter ->
-                        matchesCreatureFilter(state, entityId, container, cardComponent, subFilter, playerId)
-                    }
-                }
-                is CreatureTargetFilter.WithManaValueAtMost -> {
-                    cardComponent.manaValue <= filter.maxManaValue
-                }
-                is CreatureTargetFilter.WithManaValueAtLeast -> {
-                    cardComponent.manaValue >= filter.minManaValue
-                }
-            }
-        }
-    }
-
-    /**
-     * Helper to check if a creature matches a filter (for recursive And filter).
-     */
-    private fun matchesCreatureFilter(
-        state: GameState,
-        entityId: EntityId,
-        container: com.wingedsheep.engine.state.ComponentContainer,
-        cardComponent: CardComponent,
-        filter: CreatureTargetFilter,
-        playerId: EntityId
-    ): Boolean {
-        val controllerId = container.get<ControllerComponent>()?.playerId
-        return when (filter) {
-            CreatureTargetFilter.Any -> true
-            CreatureTargetFilter.YouControl -> controllerId == playerId
-            CreatureTargetFilter.OpponentControls -> controllerId != playerId
-            CreatureTargetFilter.Tapped -> container.has<TappedComponent>()
-            CreatureTargetFilter.Untapped -> !container.has<TappedComponent>()
-            CreatureTargetFilter.Attacking -> container.has<AttackingComponent>()
-            CreatureTargetFilter.Blocking -> container.has<BlockedComponent>()
-            is CreatureTargetFilter.WithKeyword -> cardComponent.baseKeywords.contains(filter.keyword)
-            is CreatureTargetFilter.WithoutKeyword -> !cardComponent.baseKeywords.contains(filter.keyword)
-            is CreatureTargetFilter.WithColor -> cardComponent.colors.contains(filter.color)
-            is CreatureTargetFilter.NotColor -> !cardComponent.colors.contains(filter.color)
-            is CreatureTargetFilter.WithSubtype -> cardComponent.typeLine.hasSubtype(filter.subtype)
-            is CreatureTargetFilter.WithPowerAtMost -> {
-                val power = (cardComponent.baseStats?.power as? com.wingedsheep.sdk.model.CharacteristicValue.Fixed)?.value ?: 0
-                power <= filter.maxPower
-            }
-            is CreatureTargetFilter.WithPowerAtLeast -> {
-                val power = (cardComponent.baseStats?.power as? com.wingedsheep.sdk.model.CharacteristicValue.Fixed)?.value ?: 0
-                power >= filter.minPower
-            }
-            is CreatureTargetFilter.WithToughnessAtMost -> {
-                val toughness = (cardComponent.baseStats?.toughness as? com.wingedsheep.sdk.model.CharacteristicValue.Fixed)?.value ?: 0
-                toughness <= filter.maxToughness
-            }
-            is CreatureTargetFilter.AttackingYouControl -> {
-                controllerId == playerId && container.has<AttackingComponent>()
-            }
-            is CreatureTargetFilter.AttackingWithSubtypeYouControl -> {
-                controllerId == playerId &&
-                    container.has<AttackingComponent>() &&
-                    cardComponent.typeLine.hasSubtype(filter.subtype)
-            }
-            is CreatureTargetFilter.And -> {
-                filter.filters.all { subFilter ->
-                    matchesCreatureFilter(state, entityId, container, cardComponent, subFilter, playerId)
-                }
-            }
-            is CreatureTargetFilter.WithManaValueAtMost -> {
-                cardComponent.manaValue <= filter.maxManaValue
-            }
-            is CreatureTargetFilter.WithManaValueAtLeast -> {
-                cardComponent.manaValue >= filter.minManaValue
-            }
+            predicateEvaluator.matches(state, entityId, filter.baseFilter, context)
         }
     }
 
@@ -1495,28 +1390,23 @@ class GameSession(
 
     /**
      * Find valid graveyard card targets based on a filter.
+     * Uses PredicateEvaluator for unified filter matching.
      */
     private fun findValidGraveyardTargets(
         state: GameState,
         playerId: EntityId,
-        filter: GraveyardCardFilter
+        filter: TargetFilter
     ): List<EntityId> {
-        val playerIds = when (filter) {
-            is GraveyardCardFilter.CreatureInYourGraveyard -> listOf(playerId)
-            else -> state.turnOrder.toList()
+        // Determine which graveyards to search based on filter's controller predicate
+        val playerIds = if (filter.baseFilter.controllerPredicate == ControllerPredicate.ControlledByYou) {
+            listOf(playerId)
+        } else {
+            state.turnOrder.toList()
         }
+        val context = PredicateContext(controllerId = playerId)
         return playerIds.flatMap { pid ->
             state.getGraveyard(pid).filter { entityId ->
-                val container = state.getEntity(entityId) ?: return@filter false
-                val cardComponent = container.get<CardComponent>() ?: return@filter false
-                when (filter) {
-                    GraveyardCardFilter.Any -> true
-                    GraveyardCardFilter.Creature -> cardComponent.typeLine.isCreature
-                    GraveyardCardFilter.CreatureInYourGraveyard -> cardComponent.typeLine.isCreature
-                    GraveyardCardFilter.Instant -> cardComponent.typeLine.isInstant
-                    GraveyardCardFilter.Sorcery -> cardComponent.typeLine.isSorcery
-                    GraveyardCardFilter.InstantOrSorcery -> cardComponent.typeLine.isInstant || cardComponent.typeLine.isSorcery
-                }
+                predicateEvaluator.matches(state, entityId, filter.baseFilter, context)
             }
         }
     }
@@ -1617,6 +1507,7 @@ class GameSession(
 
     /**
      * Find valid sacrifice targets for an additional cost.
+     * Uses PredicateEvaluator for unified filter matching.
      */
     private fun findSacrificeTargets(
         state: GameState,
@@ -1624,26 +1515,17 @@ class GameSession(
         cost: com.wingedsheep.sdk.scripting.AdditionalCost.SacrificePermanent
     ): List<EntityId> {
         val playerBattlefield = ZoneKey(playerId, ZoneType.BATTLEFIELD)
-        val unifiedFilter = cost.unifiedFilter
+        val predicateContext = PredicateContext(controllerId = playerId)
 
         return state.getZone(playerBattlefield).filter { entityId ->
             val container = state.getEntity(entityId) ?: return@filter false
-            val cardComponent = container.get<CardComponent>() ?: return@filter false
+            container.get<CardComponent>() ?: return@filter false
             val controllerId = container.get<ControllerComponent>()?.playerId
             if (controllerId != playerId) return@filter false
 
-            // Use unified filter if present, otherwise fall back to legacy filter
-            if (unifiedFilter != null) {
-                val predicateContext = PredicateContext(controllerId = playerId)
-                predicateEvaluator.matches(state, entityId, unifiedFilter, predicateContext)
-            } else {
-                @Suppress("DEPRECATION")
-                matchesCardFilter(cardComponent, cost.filter)
-            }
+            predicateEvaluator.matches(state, entityId, cost.filter, predicateContext)
         }
     }
-
-    private val predicateEvaluator = PredicateEvaluator()
 
     /**
      * Find untapped creatures that can be used for Convoke.

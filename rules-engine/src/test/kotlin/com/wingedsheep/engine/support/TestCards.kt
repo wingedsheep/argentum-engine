@@ -10,7 +10,6 @@ import com.wingedsheep.sdk.targeting.AnyTarget
 import com.wingedsheep.sdk.targeting.TargetCreature
 import com.wingedsheep.sdk.targeting.TargetSpell
 import com.wingedsheep.sdk.targeting.SpellTargetFilter
-import com.wingedsheep.sdk.targeting.CreatureTargetFilter as TargetingCreatureFilter
 import java.util.UUID
 
 /**
@@ -167,7 +166,7 @@ object TestCards {
                 trigger = OnEnterBattlefield(),
                 effect = DestroyEffect(EffectTarget.ContextTarget(0)),
                 optional = true,
-                targetRequirement = TargetCreature(filter = TargetingCreatureFilter.NotColor(Color.BLACK))
+                targetRequirement = TargetCreature(filter = TargetFilter.Creature.notColor(Color.BLACK))
             )
         )
     )
@@ -330,7 +329,7 @@ object TestCards {
         oracleText = "Destroy target nonblack creature.",
         script = CardScript.spell(
             effect = DestroyEffect(EffectTarget.TargetNonblackCreature),
-            TargetCreature(filter = TargetingCreatureFilter.NotColor(Color.BLACK))
+            TargetCreature(filter = TargetFilter.Creature.notColor(Color.BLACK))
         )
     )
 
@@ -360,8 +359,8 @@ object TestCards {
                 DestroyEffect(EffectTarget.ContextTarget(1)),
                 LoseLifeEffect(5, EffectTarget.Controller)
             )),
-            TargetCreature(filter = TargetingCreatureFilter.NotColor(Color.BLACK)),
-            TargetCreature(filter = TargetingCreatureFilter.NotColor(Color.BLACK))
+            TargetCreature(filter = TargetFilter.Creature.notColor(Color.BLACK)),
+            TargetCreature(filter = TargetFilter.Creature.notColor(Color.BLACK))
         )
     )
 

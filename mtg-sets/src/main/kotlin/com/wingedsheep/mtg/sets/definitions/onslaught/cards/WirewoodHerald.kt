@@ -26,7 +26,7 @@ val WirewoodHerald = card("Wirewood Herald") {
         trigger = Triggers.Dies
         effect = MayEffect(
             SearchLibraryEffect(
-                unifiedFilter = GameObjectFilter.Any.withSubtype("Elf"),
+                filter = GameObjectFilter.Any.withSubtype("Elf"),
                 count = 1,
                 destination = SearchDestination.HAND,
                 reveal = true,

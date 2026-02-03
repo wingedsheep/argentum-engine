@@ -2,7 +2,7 @@ package com.wingedsheep.sdk.dsl
 
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.scripting.AbilityCost
-import com.wingedsheep.sdk.scripting.CardFilter
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 
 /**
  * Facade object providing convenient access to AbilityCost types.
@@ -64,7 +64,7 @@ object Costs {
     /**
      * Sacrifice a permanent matching the filter.
      */
-    fun Sacrifice(filter: CardFilter): AbilityCost =
+    fun Sacrifice(filter: GameObjectFilter = GameObjectFilter.Any): AbilityCost =
         AbilityCost.Sacrifice(filter)
 
     // =========================================================================
@@ -79,7 +79,7 @@ object Costs {
     /**
      * Discard a card matching the filter.
      */
-    fun Discard(filter: CardFilter): AbilityCost =
+    fun Discard(filter: GameObjectFilter = GameObjectFilter.Any): AbilityCost =
         AbilityCost.Discard(filter)
 
     /**
@@ -94,7 +94,7 @@ object Costs {
     /**
      * Exile cards from graveyard.
      */
-    fun ExileFromGraveyard(count: Int, filter: CardFilter = CardFilter.AnyCard): AbilityCost =
+    fun ExileFromGraveyard(count: Int, filter: GameObjectFilter = GameObjectFilter.Any): AbilityCost =
         AbilityCost.ExileFromGraveyard(count, filter)
 
     // =========================================================================

@@ -265,7 +265,9 @@ data class PredicateContext(
     val controllerId: EntityId,
     val targetOpponentId: EntityId? = null,
     val targetPlayerId: EntityId? = null,
-    val sourceId: EntityId? = null
+    val sourceId: EntityId? = null,
+    /** Owner of the entity being evaluated (for graveyard targeting) */
+    val ownerId: EntityId? = null
 ) {
     companion object {
         /**

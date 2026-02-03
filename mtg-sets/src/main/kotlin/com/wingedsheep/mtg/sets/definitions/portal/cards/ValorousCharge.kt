@@ -21,7 +21,7 @@ val ValorousCharge = card("Valorous Charge") {
         effect = ModifyStatsForGroupEffect(
             powerModifier = 2,
             toughnessModifier = 0,
-            unifiedFilter = GroupFilter(GameObjectFilter.Creature.withColor(Color.WHITE))
+            filter = GroupFilter(GameObjectFilter.Creature.withColor(Color.WHITE))
         )
     }
 

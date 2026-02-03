@@ -22,7 +22,7 @@ val TidalSurge = card("Tidal Surge") {
         target = TargetCreature(
             count = 3,
             optional = true,
-            unifiedFilter = TargetFilter.Creature.withoutKeyword(Keyword.FLYING)
+            filter = TargetFilter.Creature.withoutKeyword(Keyword.FLYING)
         )
         // Effect taps all selected targets
         effect = TapTargetCreaturesEffect(maxTargets = 3)

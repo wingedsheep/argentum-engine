@@ -8,7 +8,7 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.CardFilter
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.OnEnterBattlefield
 import com.wingedsheep.sdk.scripting.PayCost
 import com.wingedsheep.sdk.scripting.PayOrSufferEffect
@@ -41,7 +41,7 @@ class SacrificeUnlessSacrificeTest : FunSpec({
             TriggeredAbility.create(
                 trigger = OnEnterBattlefield(),
                 effect = PayOrSufferEffect(
-                    cost = PayCost.Sacrifice(filter = CardFilter.HasSubtype("Forest")),
+                    cost = PayCost.Sacrifice(filter = GameObjectFilter.Any.withSubtype("Forest")),
                     suffer = SacrificeSelfEffect
                 )
             )
@@ -59,7 +59,7 @@ class SacrificeUnlessSacrificeTest : FunSpec({
             TriggeredAbility.create(
                 trigger = OnEnterBattlefield(),
                 effect = PayOrSufferEffect(
-                    cost = PayCost.Sacrifice(filter = CardFilter.HasSubtype("Forest"), count = 3),
+                    cost = PayCost.Sacrifice(filter = GameObjectFilter.Any.withSubtype("Forest"), count = 3),
                     suffer = SacrificeSelfEffect
                 )
             )

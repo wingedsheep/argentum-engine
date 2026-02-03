@@ -51,45 +51,45 @@ object Targets {
     /**
      * Target creature you control.
      */
-    val CreatureYouControl: TargetRequirement = TargetCreature(filter = CreatureTargetFilter.YouControl)
+    val CreatureYouControl: TargetRequirement = TargetCreature(filter = TargetFilter.CreatureYouControl)
 
     /**
      * Target creature an opponent controls.
      */
-    val CreatureOpponentControls: TargetRequirement = TargetCreature(filter = CreatureTargetFilter.OpponentControls)
+    val CreatureOpponentControls: TargetRequirement = TargetCreature(filter = TargetFilter.CreatureOpponentControls)
 
     /**
      * Target attacking creature.
      */
-    val AttackingCreature: TargetRequirement = TargetCreature(filter = CreatureTargetFilter.Attacking)
+    val AttackingCreature: TargetRequirement = TargetCreature(filter = TargetFilter.AttackingCreature)
 
     /**
      * Target blocking creature.
      */
-    val BlockingCreature: TargetRequirement = TargetCreature(filter = CreatureTargetFilter.Blocking)
+    val BlockingCreature: TargetRequirement = TargetCreature(filter = TargetFilter.BlockingCreature)
 
     /**
      * Target tapped creature.
      */
-    val TappedCreature: TargetRequirement = TargetCreature(filter = CreatureTargetFilter.Tapped)
+    val TappedCreature: TargetRequirement = TargetCreature(filter = TargetFilter.TappedCreature)
 
     /**
      * Target creature with a specific keyword.
      */
     fun CreatureWithKeyword(keyword: Keyword): TargetRequirement =
-        TargetCreature(filter = CreatureTargetFilter.WithKeyword(keyword))
+        TargetCreature(filter = TargetFilter(GameObjectFilter.Creature.withKeyword(keyword)))
 
     /**
      * Target creature with a specific color.
      */
     fun CreatureWithColor(color: Color): TargetRequirement =
-        TargetCreature(filter = CreatureTargetFilter.WithColor(color))
+        TargetCreature(filter = TargetFilter(GameObjectFilter.Creature.withColor(color)))
 
     /**
      * Target creature with power at most N.
      */
     fun CreatureWithPowerAtMost(maxPower: Int): TargetRequirement =
-        TargetCreature(filter = CreatureTargetFilter.WithPowerAtMost(maxPower))
+        TargetCreature(filter = TargetFilter(GameObjectFilter.Creature.powerAtMost(maxPower)))
 
     /**
      * Target up to N creatures.
@@ -158,20 +158,20 @@ object Targets {
      * Target creature card in a graveyard (any player's graveyard).
      */
     val CreatureCardInGraveyard: TargetRequirement =
-        TargetCardInGraveyard(filter = GraveyardCardFilter.Creature)
+        TargetCardInGraveyard(filter = TargetFilter.CreatureInGraveyard)
 
     /**
      * Target creature card in YOUR graveyard.
      * Used for cards like Breath of Life, Zombify, etc.
      */
     val CreatureCardInYourGraveyard: TargetRequirement =
-        TargetCardInGraveyard(filter = GraveyardCardFilter.CreatureInYourGraveyard)
+        TargetCardInGraveyard(filter = TargetFilter.CreatureInYourGraveyard)
 
     /**
      * Target instant or sorcery card in a graveyard.
      */
     val InstantOrSorceryInGraveyard: TargetRequirement =
-        TargetCardInGraveyard(filter = GraveyardCardFilter.InstantOrSorcery)
+        TargetCardInGraveyard(filter = TargetFilter.InstantOrSorceryInGraveyard)
 
     // =========================================================================
     // Spell Targeting

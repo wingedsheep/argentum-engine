@@ -22,10 +22,10 @@ val WickedPact = card("Wicked Pact") {
     spell {
         // Use two separate target requirements so each creature can be targeted independently
         val creature1 = target("first nonblack creature", TargetCreature(
-            unifiedFilter = TargetFilter.Creature.notColor(Color.BLACK)
+            filter = TargetFilter.Creature.notColor(Color.BLACK)
         ))
         val creature2 = target("second nonblack creature", TargetCreature(
-            unifiedFilter = TargetFilter.Creature.notColor(Color.BLACK)
+            filter = TargetFilter.Creature.notColor(Color.BLACK)
         ))
 
         effect = DestroyEffect(creature1) then

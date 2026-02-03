@@ -51,43 +51,22 @@ data class DealXDamageEffect(
  * Use with .then(DealDamageToPlayersEffect) for effects that also damage players.
  *
  * Examples:
- * - Pyroclasm: DealDamageToGroupEffect(2)
+ * - Pyroclasm: DealDamageToGroupEffect(2, GroupFilter.AllCreatures)
  * - Needle Storm: DealDamageToGroupEffect(4, GroupFilter.AllCreatures.withKeyword(Keyword.FLYING))
  * - Earthquake: DealDamageToGroupEffect(DynamicAmount.XValue, GroupFilter.AllCreatures.withoutKeyword(Keyword.FLYING))
  *                  .then(DealDamageToPlayersEffect(DynamicAmount.XValue))
  *
  * @param amount The amount of damage to deal (can be fixed or dynamic like X)
- * @param filter Which creatures are damaged (deprecated, use unifiedFilter)
- * @param unifiedFilter Which creatures are damaged using unified GroupFilter
+ * @param filter Which creatures are damaged
  */
 @Serializable
 data class DealDamageToGroupEffect(
     val amount: DynamicAmount,
-    @Deprecated("Use unifiedFilter instead")
-    val filter: CreatureDamageFilter = CreatureDamageFilter.All,
-    /** Unified filter using the new predicate-based architecture. Preferred over [filter]. */
-    val unifiedFilter: GroupFilter? = null
+    val filter: GroupFilter = GroupFilter.AllCreatures
 ) : Effect {
-    constructor(
-        amount: Int,
-        filter: CreatureDamageFilter = CreatureDamageFilter.All
-    ) : this(DynamicAmount.Fixed(amount), filter)
+    constructor(amount: Int, filter: GroupFilter = GroupFilter.AllCreatures) : this(DynamicAmount.Fixed(amount), filter)
 
-    override val description: String
-        get() {
-            val filterDesc = unifiedFilter?.description ?: filter.description
-            return "Deal ${amount.description} damage to $filterDesc"
-        }
-
-    companion object {
-        /** Create with unified GroupFilter */
-        operator fun invoke(amount: DynamicAmount, unifiedFilter: GroupFilter) =
-            DealDamageToGroupEffect(amount, CreatureDamageFilter.All, unifiedFilter)
-
-        /** Create with fixed amount and unified GroupFilter */
-        operator fun invoke(amount: Int, unifiedFilter: GroupFilter) =
-            DealDamageToGroupEffect(DynamicAmount.Fixed(amount), CreatureDamageFilter.All, unifiedFilter)
-    }
+    override val description: String = "Deal ${amount.description} damage to ${filter.description}"
 }
 
 /**

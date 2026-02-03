@@ -7,7 +7,7 @@ import com.wingedsheep.sdk.core.*
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.CreatureGroupFilter
+import com.wingedsheep.sdk.scripting.GroupFilter
 import com.wingedsheep.sdk.scripting.ModifyStatsForGroupEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -25,7 +25,7 @@ class ModifyStatsForGroupTest : FunSpec({
             effect = ModifyStatsForGroupEffect(
                 powerModifier = 1,
                 toughnessModifier = 1,
-                filter = CreatureGroupFilter.AllYouControl
+                filter = GroupFilter.AllCreaturesYouControl
             )
         )
     )

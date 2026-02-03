@@ -18,7 +18,7 @@ val UntamedWilds = card("Untamed Wilds") {
 
     spell {
         effect = SearchLibraryEffect(
-            unifiedFilter = GameObjectFilter.BasicLand,
+            filter = GameObjectFilter.BasicLand,
             destination = SearchDestination.BATTLEFIELD,
             entersTapped = false
         )

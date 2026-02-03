@@ -19,7 +19,7 @@ val DreadCharge = card("Dread Charge") {
 
     spell {
         effect = GrantCantBeBlockedExceptByColorEffect(
-            unifiedFilter = GroupFilter(GameObjectFilter.Creature.withColor(Color.BLACK).youControl()),
+            filter = GroupFilter(GameObjectFilter.Creature.withColor(Color.BLACK).youControl()),
             canOnlyBeBlockedByColor = Color.BLACK
         )
     }

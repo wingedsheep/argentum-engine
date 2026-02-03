@@ -19,7 +19,7 @@ val WarriorsCharge = card("Warrior's Charge") {
         effect = ModifyStatsForGroupEffect(
             powerModifier = 1,
             toughnessModifier = 1,
-            unifiedFilter = GroupFilter.AllCreaturesYouControl
+            filter = GroupFilter.AllCreaturesYouControl
         )
     }
 

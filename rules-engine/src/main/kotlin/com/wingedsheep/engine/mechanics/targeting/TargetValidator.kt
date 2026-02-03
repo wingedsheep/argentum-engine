@@ -2,16 +2,11 @@ package com.wingedsheep.engine.mechanics.targeting
 
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
-import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
-import com.wingedsheep.engine.state.components.battlefield.TappedComponent
-import com.wingedsheep.engine.state.components.combat.AttackingComponent
-import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
-import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
@@ -25,12 +20,9 @@ import com.wingedsheep.sdk.targeting.*
  * - Is the correct type (creature, permanent, player, etc.)
  * - Matches any filters (attacking, nonblack, you control, etc.)
  *
- * Uses StateProjector to get accurate P/T values with continuous effects applied.
+ * Uses PredicateEvaluator to match unified filters against game state.
  */
-class TargetValidator(
-    private val cardRegistry: CardRegistry? = null,
-    private val stateProjector: StateProjector = StateProjector()
-) {
+class TargetValidator {
     private val predicateEvaluator = PredicateEvaluator()
 
     /**
@@ -87,14 +79,14 @@ class TargetValidator(
         casterId: EntityId
     ): String? {
         return when (requirement) {
-            is TargetCreature -> validateCreatureTarget(state, target, requirement.filter, requirement.unifiedFilter, casterId)
+            is TargetCreature -> validateCreatureTarget(state, target, requirement.filter, casterId)
             is TargetPermanent -> validatePermanentTarget(state, target, requirement.filter, casterId)
             is TargetPlayer -> validatePlayerTarget(state, target)
             is TargetOpponent -> validateOpponentTarget(state, target, casterId)
             is AnyTarget -> validateAnyTarget(state, target)
             is TargetCreatureOrPlayer -> validateCreatureOrPlayerTarget(state, target)
             is TargetCreatureOrPlaneswalker -> validateCreatureOrPlaneswalkerTarget(state, target)
-            is TargetCardInGraveyard -> validateGraveyardTarget(state, target, requirement.filter, requirement.unifiedFilter, casterId)
+            is TargetCardInGraveyard -> validateGraveyardTarget(state, target, requirement.filter, casterId)
             is TargetSpell -> validateSpellTarget(state, target)
             is TargetOther -> validateSingleTarget(state, target, requirement.baseRequirement, casterId)
         }
@@ -103,8 +95,7 @@ class TargetValidator(
     private fun validateCreatureTarget(
         state: GameState,
         target: ChosenTarget,
-        filter: CreatureTargetFilter,
-        unifiedFilter: TargetFilter?,
+        filter: TargetFilter,
         casterId: EntityId
     ): String? {
         if (target !is ChosenTarget.Permanent) {
@@ -126,149 +117,13 @@ class TargetValidator(
             return "Target must be on the battlefield"
         }
 
-        // Prefer unified filter when available
-        if (unifiedFilter != null) {
-            val predicateContext = PredicateContext(controllerId = casterId)
-            val matches = predicateEvaluator.matches(state, target.entityId, unifiedFilter.baseFilter, predicateContext)
-            if (!matches) {
-                return "Target does not match filter: ${unifiedFilter.description}"
-            }
-            return null
+        // Use unified filter
+        val predicateContext = PredicateContext(controllerId = casterId)
+        val matches = predicateEvaluator.matches(state, target.entityId, filter.baseFilter, predicateContext)
+        if (!matches) {
+            return "Target does not match filter: ${filter.description}"
         }
-
-        // Fall back to legacy filter
-        return validateCreatureFilter(state, target.entityId, cardComponent, container, filter, casterId)
-    }
-
-    private fun validateCreatureFilter(
-        state: GameState,
-        entityId: EntityId,
-        cardComponent: CardComponent,
-        container: com.wingedsheep.engine.state.ComponentContainer,
-        filter: CreatureTargetFilter,
-        casterId: EntityId
-    ): String? {
-        return when (filter) {
-            is CreatureTargetFilter.Any -> null
-
-            is CreatureTargetFilter.YouControl -> {
-                val controller = container.get<ControllerComponent>()?.playerId
-                if (controller != casterId) "Target must be a creature you control" else null
-            }
-
-            is CreatureTargetFilter.OpponentControls -> {
-                val controller = container.get<ControllerComponent>()?.playerId
-                if (controller == casterId) "Target must be a creature an opponent controls" else null
-            }
-
-            is CreatureTargetFilter.Attacking -> {
-                if (!container.has<AttackingComponent>()) "Target must be an attacking creature" else null
-            }
-
-            is CreatureTargetFilter.Blocking -> {
-                if (!container.has<BlockingComponent>()) "Target must be a blocking creature" else null
-            }
-
-            is CreatureTargetFilter.Tapped -> {
-                if (!container.has<TappedComponent>()) "Target must be a tapped creature" else null
-            }
-
-            is CreatureTargetFilter.Untapped -> {
-                if (container.has<TappedComponent>()) "Target must be an untapped creature" else null
-            }
-
-            is CreatureTargetFilter.WithKeyword -> {
-                if (!cardComponent.baseKeywords.contains(filter.keyword)) {
-                    "Target must have ${filter.keyword.name.lowercase().replace('_', ' ')}"
-                } else null
-            }
-
-            is CreatureTargetFilter.WithoutKeyword -> {
-                if (cardComponent.baseKeywords.contains(filter.keyword)) {
-                    "Target must not have ${filter.keyword.name.lowercase().replace('_', ' ')}"
-                } else null
-            }
-
-            is CreatureTargetFilter.WithColor -> {
-                if (!cardComponent.colors.contains(filter.color)) {
-                    "Target must be ${filter.color.displayName.lowercase()}"
-                } else null
-            }
-
-            is CreatureTargetFilter.NotColor -> {
-                if (cardComponent.colors.contains(filter.color)) {
-                    "Target must not be ${filter.color.displayName.lowercase()}"
-                } else null
-            }
-
-            is CreatureTargetFilter.WithPowerAtMost -> {
-                // Use projected power to account for continuous effects
-                val power = stateProjector.getProjectedPower(state, entityId)
-                if (power > filter.maxPower) {
-                    "Target must have power ${filter.maxPower} or less"
-                } else null
-            }
-
-            is CreatureTargetFilter.WithPowerAtLeast -> {
-                // Use projected power to account for continuous effects
-                val power = stateProjector.getProjectedPower(state, entityId)
-                if (power < filter.minPower) {
-                    "Target must have power ${filter.minPower} or greater"
-                } else null
-            }
-
-            is CreatureTargetFilter.WithToughnessAtMost -> {
-                // Use projected toughness to account for continuous effects
-                val toughness = stateProjector.getProjectedToughness(state, entityId)
-                if (toughness > filter.maxToughness) {
-                    "Target must have toughness ${filter.maxToughness} or less"
-                } else null
-            }
-
-            is CreatureTargetFilter.WithSubtype -> {
-                if (!cardComponent.typeLine.hasSubtype(filter.subtype)) {
-                    "Target must be a ${filter.subtype.value}"
-                } else null
-            }
-
-            is CreatureTargetFilter.And -> {
-                // All filters must pass
-                for (subFilter in filter.filters) {
-                    val error = validateCreatureFilter(state, entityId, cardComponent, container, subFilter, casterId)
-                    if (error != null) return error
-                }
-                null
-            }
-
-            is CreatureTargetFilter.AttackingYouControl -> {
-                val controller = container.get<ControllerComponent>()?.playerId
-                if (controller != casterId) return "Target must be a creature you control"
-                if (!container.has<AttackingComponent>()) return "Target must be an attacking creature"
-                null
-            }
-
-            is CreatureTargetFilter.AttackingWithSubtypeYouControl -> {
-                val controller = container.get<ControllerComponent>()?.playerId
-                if (controller != casterId) return "Target must be a creature you control"
-                if (!container.has<AttackingComponent>()) return "Target must be an attacking creature"
-                if (!cardComponent.typeLine.hasSubtype(filter.subtype)) {
-                    return "Target must be a ${filter.subtype.value}"
-                }
-                null
-            }
-
-            is CreatureTargetFilter.WithManaValueAtMost -> {
-                if (cardComponent.manaValue > filter.maxManaValue) {
-                    "Target must have mana value ${filter.maxManaValue} or less"
-                } else null
-            }
-
-            is CreatureTargetFilter.WithManaValueAtLeast -> {
-                if (cardComponent.manaValue < filter.minManaValue) {
-                    "Target must have mana value ${filter.minManaValue} or greater"
-                } else null
-            }
-        }
+        return null
     }
 
     private fun validatePermanentTarget(
@@ -432,8 +287,7 @@ class TargetValidator(
     private fun validateGraveyardTarget(
         state: GameState,
         target: ChosenTarget,
-        filter: GraveyardCardFilter,
-        unifiedFilter: TargetFilter?,
+        filter: TargetFilter,
         casterId: EntityId
     ): String? {
         if (target !is ChosenTarget.Card) {
@@ -448,44 +302,13 @@ class TargetValidator(
             return "Target not found in graveyard"
         }
 
-        val cardComponent = state.getEntity(target.cardId)?.get<CardComponent>()
-            ?: return "Target is not a card"
-
-        // Prefer unified filter when available
-        // The unified filter's OwnedByYou predicate handles "your graveyard" restriction
-        if (unifiedFilter != null) {
-            val predicateContext = PredicateContext(controllerId = casterId)
-            val matches = predicateEvaluator.matches(state, target.cardId, unifiedFilter.baseFilter, predicateContext)
-            if (!matches) {
-                return "Target does not match filter: ${unifiedFilter.description}"
-            }
-            return null
+        // Use unified filter - OwnedByYou predicate handles "your graveyard" restriction
+        val predicateContext = PredicateContext(controllerId = casterId, ownerId = target.ownerId)
+        val matches = predicateEvaluator.matches(state, target.cardId, filter.baseFilter, predicateContext)
+        if (!matches) {
+            return "Target does not match filter: ${filter.description}"
         }
-
-        // Fall back to legacy filter
-        return when (filter) {
-            is GraveyardCardFilter.Any -> null
-            is GraveyardCardFilter.Creature -> {
-                if (!cardComponent.typeLine.isCreature) "Target must be a creature card" else null
-            }
-            is GraveyardCardFilter.Instant -> {
-                if (!cardComponent.typeLine.isInstant) "Target must be an instant card" else null
-            }
-            is GraveyardCardFilter.Sorcery -> {
-                if (!cardComponent.typeLine.isSorcery) "Target must be a sorcery card" else null
-            }
-            is GraveyardCardFilter.InstantOrSorcery -> {
-                if (!cardComponent.typeLine.isInstant && !cardComponent.typeLine.isSorcery) {
-                    "Target must be an instant or sorcery card"
-                } else null
-            }
-            is GraveyardCardFilter.CreatureInYourGraveyard -> {
-                // Check both type and ownership
-                if (!cardComponent.typeLine.isCreature) return "Target must be a creature card"
-                if (target.ownerId != casterId) return "Target must be in your graveyard"
-                null
-            }
-        }
+        return null
     }
 
     private fun validateSpellTarget(state: GameState, target: ChosenTarget): String? {

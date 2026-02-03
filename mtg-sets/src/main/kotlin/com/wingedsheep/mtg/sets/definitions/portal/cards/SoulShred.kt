@@ -20,7 +20,7 @@ val SoulShred = card("Soul Shred") {
     typeLine = "Sorcery"
 
     spell {
-        target = TargetCreature(unifiedFilter = TargetFilter.Creature.notColor(Color.BLACK))
+        target = TargetCreature(filter = TargetFilter.Creature.notColor(Color.BLACK))
         effect = DealDamageEffect(3, EffectTarget.ContextTarget(0)) then
                 GainLifeEffect(3, EffectTarget.Controller)
     }

@@ -20,7 +20,7 @@ val Swat = card("Swat") {
     typeLine = "Instant"
 
     spell {
-        target = TargetCreature(unifiedFilter = TargetFilter.Creature.powerAtMost(2))
+        target = TargetCreature(filter = TargetFilter.Creature.powerAtMost(2))
         effect = DestroyEffect(EffectTarget.ContextTarget(0))
     }
 

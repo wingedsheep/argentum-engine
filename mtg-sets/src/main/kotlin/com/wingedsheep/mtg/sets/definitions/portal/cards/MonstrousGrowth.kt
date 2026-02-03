@@ -18,7 +18,7 @@ val MonstrousGrowth = card("Monstrous Growth") {
     typeLine = "Sorcery"
 
     spell {
-        target = TargetCreature(unifiedFilter = TargetFilter.Creature)
+        target = TargetCreature(filter = TargetFilter.Creature)
         effect = ModifyStatsEffect(
             powerModifier = 4,
             toughnessModifier = 4,

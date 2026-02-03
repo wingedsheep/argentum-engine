@@ -18,7 +18,7 @@ val PersonalTutor = card("Personal Tutor") {
 
     spell {
         effect = SearchLibraryEffect(
-            unifiedFilter = GameObjectFilter.Sorcery,
+            filter = GameObjectFilter.Sorcery,
             destination = SearchDestination.TOP_OF_LIBRARY,
             reveal = true
         )

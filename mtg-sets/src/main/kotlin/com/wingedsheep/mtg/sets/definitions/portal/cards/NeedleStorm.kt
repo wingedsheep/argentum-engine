@@ -19,7 +19,7 @@ val NeedleStorm = card("Needle Storm") {
     spell {
         effect = DealDamageToGroupEffect(
             amount = 4,
-            unifiedFilter = GroupFilter.AllCreatures.withKeyword(Keyword.FLYING)
+            filter = GroupFilter.AllCreatures.withKeyword(Keyword.FLYING)
         )
     }
 

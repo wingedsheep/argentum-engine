@@ -11,9 +11,7 @@ import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.CreatureGroupFilter
 import com.wingedsheep.sdk.scripting.GrantCantBeBlockedExceptByColorEffect
 import kotlin.reflect.KClass
 
@@ -38,36 +36,24 @@ class GrantCantBeBlockedExceptByColorExecutor : EffectExecutor<GrantCantBeBlocke
     ): ExecutionResult {
         val affectedEntities = mutableSetOf<EntityId>()
 
-        // Use unified filter if present, otherwise fall back to legacy filter
-        val unifiedFilter = effect.unifiedFilter
-        if (unifiedFilter != null) {
-            // Use PredicateEvaluator for unified filter
-            val predicateContext = PredicateContext.fromEffectContext(context)
-            for (entityId in state.getBattlefield()) {
-                val container = state.getEntity(entityId) ?: continue
-                val cardComponent = container.get<CardComponent>() ?: continue
+        val filter = effect.filter
+        val predicateContext = PredicateContext.fromEffectContext(context)
 
-                if (!cardComponent.typeLine.isCreature) continue
+        for (entityId in state.getBattlefield()) {
+            val container = state.getEntity(entityId) ?: continue
+            val cardComponent = container.get<CardComponent>() ?: continue
 
-                val excludeSelf = unifiedFilter.excludeSelf && entityId == context.sourceId
-                if (excludeSelf) continue
+            if (!cardComponent.typeLine.isCreature) continue
 
-                if (!predicateEvaluator.matches(state, entityId, unifiedFilter.baseFilter, predicateContext)) continue
+            // Check excludeSelf
+            if (filter.excludeSelf && entityId == context.sourceId) continue
 
-                affectedEntities.add(entityId)
+            // Apply unified filter
+            if (!predicateEvaluator.matches(state, entityId, filter.baseFilter, predicateContext)) {
+                continue
             }
-        } else {
-            // Legacy filter support
-            for (entityId in state.getBattlefield()) {
-                val container = state.getEntity(entityId) ?: continue
-                val cardComponent = container.get<CardComponent>() ?: continue
 
-                if (!cardComponent.typeLine.isCreature) continue
-                @Suppress("DEPRECATION")
-                if (!matchesFilter(state, entityId, cardComponent, effect.filter, context)) continue
-
-                affectedEntities.add(entityId)
-            }
+            affectedEntities.add(entityId)
         }
 
         if (affectedEntities.isEmpty()) {
@@ -97,32 +83,5 @@ class GrantCantBeBlockedExceptByColorExecutor : EffectExecutor<GrantCantBeBlocke
         )
 
         return ExecutionResult.success(newState)
-    }
-
-    private fun matchesFilter(
-        state: GameState,
-        entityId: EntityId,
-        cardComponent: CardComponent,
-        filter: CreatureGroupFilter,
-        context: EffectContext
-    ): Boolean {
-        val controllerId = state.getEntity(entityId)?.get<ControllerComponent>()?.playerId
-
-        return when (filter) {
-            is CreatureGroupFilter.All -> true
-            is CreatureGroupFilter.AllOther -> entityId != context.sourceId
-            is CreatureGroupFilter.AllYouControl -> controllerId == context.controllerId
-            is CreatureGroupFilter.AllOpponentsControl -> controllerId != context.controllerId
-            is CreatureGroupFilter.NonWhite -> !cardComponent.colors.contains(com.wingedsheep.sdk.core.Color.WHITE)
-            is CreatureGroupFilter.NotColor -> !cardComponent.colors.contains(filter.excludedColor)
-            is CreatureGroupFilter.ColorYouControl ->
-                controllerId == context.controllerId && cardComponent.colors.contains(filter.color)
-            is CreatureGroupFilter.WithKeywordYouControl ->
-                controllerId == context.controllerId && cardComponent.baseKeywords.contains(filter.keyword)
-            is CreatureGroupFilter.OtherTappedYouControl -> {
-                val isTapped = state.getEntity(entityId)?.has<com.wingedsheep.engine.state.components.battlefield.TappedComponent>() ?: false
-                entityId != context.sourceId && controllerId == context.controllerId && isTapped
-            }
-        }
     }
 }

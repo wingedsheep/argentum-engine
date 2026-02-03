@@ -25,7 +25,7 @@ val SerpentAssassin = card("Serpent Assassin") {
     triggeredAbility {
         trigger = OnEnterBattlefield()
         optional = true
-        target = TargetCreature(unifiedFilter = TargetFilter.Creature.notColor(Color.BLACK))
+        target = TargetCreature(filter = TargetFilter.Creature.notColor(Color.BLACK))
         effect = DestroyEffect(EffectTarget.ContextTarget(0))
     }
 

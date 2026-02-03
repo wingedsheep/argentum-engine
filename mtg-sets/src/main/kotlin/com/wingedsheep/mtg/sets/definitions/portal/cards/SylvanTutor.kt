@@ -19,7 +19,7 @@ val SylvanTutor = card("Sylvan Tutor") {
 
     spell {
         effect = SearchLibraryEffect(
-            unifiedFilter = GameObjectFilter.Creature,
+            filter = GameObjectFilter.Creature,
             destination = SearchDestination.TOP_OF_LIBRARY,
             reveal = true
         )

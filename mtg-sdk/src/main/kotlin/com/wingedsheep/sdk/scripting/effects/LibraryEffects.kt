@@ -147,28 +147,21 @@ data class ShuffleLibraryEffect(
 /**
  * Search library for cards matching a filter.
  * "Search your library for a Forest card and put it onto the battlefield"
- *
- * Supports both legacy [CardFilter] and unified [GameObjectFilter]. When both are provided,
- * [unifiedFilter] takes precedence for evaluation.
  */
 @Serializable
 data class SearchLibraryEffect(
-    @Deprecated("Use unifiedFilter instead")
-    val filter: CardFilter = CardFilter.AnyCard,
+    val filter: GameObjectFilter = GameObjectFilter.Any,
     val count: Int = 1,
     val destination: SearchDestination = SearchDestination.HAND,
     val entersTapped: Boolean = false,
     val shuffleAfter: Boolean = true,
     val reveal: Boolean = false,
-    val selectedCardIds: List<com.wingedsheep.sdk.model.EntityId>? = null,
-    /** Unified filter using the new predicate-based architecture. Preferred over [filter]. */
-    val unifiedFilter: GameObjectFilter? = null
+    val selectedCardIds: List<com.wingedsheep.sdk.model.EntityId>? = null
 ) : Effect {
     override val description: String = buildString {
-        val filterDesc = unifiedFilter?.description ?: filter.description
         append("Search your library for ")
         append(if (count == 1) "a" else "up to $count")
-        append(" $filterDesc")
+        append(" ${filter.description}")
         if (count != 1) append("s")
         if (reveal) append(", reveal ${if (count == 1) "it" else "them"},")
         append(" and put ${if (count == 1) "it" else "them"} ")
@@ -177,26 +170,6 @@ data class SearchLibraryEffect(
             append(" tapped")
         }
         if (shuffleAfter) append(". Then shuffle your library")
-    }
-
-    companion object {
-        /** Create a SearchLibraryEffect with a unified filter */
-        operator fun invoke(
-            unifiedFilter: GameObjectFilter,
-            count: Int = 1,
-            destination: SearchDestination = SearchDestination.HAND,
-            entersTapped: Boolean = false,
-            shuffleAfter: Boolean = true,
-            reveal: Boolean = false
-        ) = SearchLibraryEffect(
-            filter = CardFilter.AnyCard,
-            count = count,
-            destination = destination,
-            entersTapped = entersTapped,
-            shuffleAfter = shuffleAfter,
-            reveal = reveal,
-            unifiedFilter = unifiedFilter
-        )
     }
 }
 

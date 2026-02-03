@@ -21,7 +21,7 @@ val NaturesCloak = card("Nature's Cloak") {
     spell {
         effect = GrantKeywordToGroupEffect(
             keyword = Keyword.FORESTWALK,
-            unifiedFilter = GroupFilter(GameObjectFilter.Creature.withColor(Color.GREEN).youControl())
+            filter = GroupFilter(GameObjectFilter.Creature.withColor(Color.GREEN).youControl())
         )
     }
 

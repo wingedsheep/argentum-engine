@@ -8,10 +8,8 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
-import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.CardFilter
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.SearchLibraryEffect
 import java.util.UUID
@@ -53,19 +51,9 @@ class SearchLibraryExecutor : EffectExecutor<SearchLibraryEffect> {
         }
 
         // Filter cards that match the criteria
-        // Prefer unified filter if available, fall back to legacy filter
-        val unifiedFilter = effect.unifiedFilter
-        val matchingCards = if (unifiedFilter != null) {
-            val predicateContext = PredicateContext.fromEffectContext(context)
-            library.filter { cardId ->
-                predicateEvaluator.matches(state, cardId, unifiedFilter, predicateContext)
-            }
-        } else {
-            library.filter { cardId ->
-                val container = state.getEntity(cardId)
-                val cardComponent = container?.get<CardComponent>()
-                matchesFilter(cardComponent, effect.filter)
-            }
+        val predicateContext = PredicateContext.fromEffectContext(context)
+        val matchingCards = library.filter { cardId ->
+            predicateEvaluator.matches(state, cardId, effect.filter, predicateContext)
         }
 
         // If no cards match, shuffle (if configured) and return
@@ -95,8 +83,7 @@ class SearchLibraryExecutor : EffectExecutor<SearchLibraryEffect> {
             state.getEntity(sourceId)?.get<CardComponent>()?.name
         }
 
-        // Use unified filter description if available
-        val filterDescription = effect.unifiedFilter?.description ?: effect.filter.description
+        val filterDescription = effect.filter.description
 
         val decision = SearchLibraryDecision(
             id = decisionId,
@@ -167,28 +154,4 @@ class SearchLibraryExecutor : EffectExecutor<SearchLibraryEffect> {
         )
     }
 
-    /**
-     * Check if a card matches the given filter.
-     * Matches the implementation in CostHandler.kt for consistency.
-     */
-    private fun matchesFilter(card: CardComponent?, filter: CardFilter): Boolean {
-        if (card == null) return false
-
-        return when (filter) {
-            is CardFilter.AnyCard -> true
-            is CardFilter.CreatureCard -> card.typeLine.isCreature
-            is CardFilter.LandCard -> card.typeLine.isLand
-            is CardFilter.BasicLandCard -> card.typeLine.isBasicLand
-            is CardFilter.SorceryCard -> card.typeLine.isSorcery
-            is CardFilter.InstantCard -> card.typeLine.isInstant
-            is CardFilter.HasSubtype -> card.typeLine.hasSubtype(Subtype(filter.subtype))
-            is CardFilter.HasColor -> card.colors.contains(filter.color)
-            is CardFilter.And -> filter.filters.all { matchesFilter(card, it) }
-            is CardFilter.Or -> filter.filters.any { matchesFilter(card, it) }
-            is CardFilter.PermanentCard -> card.typeLine.isPermanent
-            is CardFilter.NonlandPermanentCard -> card.typeLine.isPermanent && !card.typeLine.isLand
-            is CardFilter.ManaValueAtMost -> card.manaCost.cmc <= filter.maxManaValue
-            is CardFilter.Not -> !matchesFilter(card, filter.filter)
-        }
-    }
 }

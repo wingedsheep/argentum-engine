@@ -20,7 +20,7 @@ val BreathOfLife = card("Breath of Life") {
     spell {
         target = Targets.CreatureCardInYourGraveyard
         effect = ReturnFromGraveyardEffect(
-            unifiedFilter = GameObjectFilter.Creature,
+            filter = GameObjectFilter.Creature,
             destination = SearchDestination.BATTLEFIELD
         )
     }

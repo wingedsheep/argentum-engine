@@ -11,7 +11,7 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.CreatureDamageFilter
+import com.wingedsheep.sdk.scripting.GroupFilter
 import com.wingedsheep.sdk.scripting.DealDamageToGroupEffect
 import com.wingedsheep.sdk.scripting.DealDamageToPlayersEffect
 import com.wingedsheep.sdk.scripting.DynamicAmount
@@ -31,7 +31,7 @@ class XCostSpellTest : FunSpec({
         script = CardScript.spell(
             effect = DealDamageToGroupEffect(
                 DynamicAmount.XValue,
-                CreatureDamageFilter.WithKeyword(Keyword.FLYING)
+                GroupFilter.AllCreatures.withKeyword(Keyword.FLYING)
             ).then(DealDamageToPlayersEffect(DynamicAmount.XValue))
         )
     )

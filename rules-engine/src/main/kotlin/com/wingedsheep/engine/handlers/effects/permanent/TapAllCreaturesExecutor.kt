@@ -10,10 +10,6 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.engine.state.components.identity.ControllerComponent
-import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.CreatureGroupFilter
 import com.wingedsheep.sdk.scripting.TapAllCreaturesEffect
 import kotlin.reflect.KClass
 
@@ -35,9 +31,8 @@ class TapAllCreaturesExecutor : EffectExecutor<TapAllCreaturesEffect> {
         var newState = state
         val events = mutableListOf<EngineGameEvent>()
 
-        // Use unified filter if available
-        val unifiedFilter = effect.unifiedFilter
-        val predicateContext = if (unifiedFilter != null) PredicateContext.fromEffectContext(context) else null
+        val filter = effect.filter
+        val predicateContext = PredicateContext.fromEffectContext(context)
 
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
@@ -48,14 +43,13 @@ class TapAllCreaturesExecutor : EffectExecutor<TapAllCreaturesEffect> {
             // Skip already tapped creatures
             if (container.has<TappedComponent>()) continue
 
-            // Check filter - prefer unified filter
-            val matches = if (unifiedFilter != null && predicateContext != null) {
-                predicateEvaluator.matches(state, entityId, unifiedFilter.baseFilter, predicateContext)
-            } else {
-                matchesFilter(state, entityId, cardComponent, effect.filter, context)
-            }
+            // Check excludeSelf
+            if (filter.excludeSelf && entityId == context.sourceId) continue
 
-            if (!matches) continue
+            // Apply unified filter
+            if (!predicateEvaluator.matches(state, entityId, filter.baseFilter, predicateContext)) {
+                continue
+            }
 
             // Tap the creature
             newState = newState.updateEntity(entityId) { it.with(TappedComponent) }
@@ -63,40 +57,5 @@ class TapAllCreaturesExecutor : EffectExecutor<TapAllCreaturesEffect> {
         }
 
         return ExecutionResult.success(newState, events)
-    }
-
-    private fun matchesFilter(
-        state: GameState,
-        entityId: EntityId,
-        cardComponent: CardComponent,
-        filter: CreatureGroupFilter,
-        context: EffectContext
-    ): Boolean {
-        val controllerId = state.getEntity(entityId)?.get<ControllerComponent>()?.playerId
-
-        return when (filter) {
-            is CreatureGroupFilter.All -> true
-
-            is CreatureGroupFilter.AllOther -> entityId != context.sourceId
-
-            is CreatureGroupFilter.AllYouControl -> controllerId == context.controllerId
-
-            is CreatureGroupFilter.AllOpponentsControl -> controllerId != context.controllerId
-
-            is CreatureGroupFilter.NonWhite -> !cardComponent.colors.contains(Color.WHITE)
-
-            is CreatureGroupFilter.NotColor -> !cardComponent.colors.contains(filter.excludedColor)
-
-            is CreatureGroupFilter.ColorYouControl ->
-                controllerId == context.controllerId && cardComponent.colors.contains(filter.color)
-
-            is CreatureGroupFilter.WithKeywordYouControl ->
-                controllerId == context.controllerId && cardComponent.baseKeywords.contains(filter.keyword)
-
-            is CreatureGroupFilter.OtherTappedYouControl -> {
-                val isTapped = state.getEntity(entityId)?.has<com.wingedsheep.engine.state.components.battlefield.TappedComponent>() ?: false
-                entityId != context.sourceId && controllerId == context.controllerId && isTapped
-            }
-        }
     }
 }

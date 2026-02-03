@@ -26,7 +26,7 @@ val KingsAssassin = card("King's Assassin") {
 
     activatedAbility {
         cost = AbilityCost.Tap
-        target = TargetCreature(unifiedFilter = TargetFilter.TappedCreature)
+        target = TargetCreature(filter = TargetFilter.TappedCreature)
         effect = DestroyEffect(EffectTarget.ContextTarget(0))
         restrictions = listOf(
             ActivationRestriction.All(

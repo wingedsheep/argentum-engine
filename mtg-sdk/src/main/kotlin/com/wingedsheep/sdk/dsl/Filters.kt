@@ -3,7 +3,6 @@ package com.wingedsheep.sdk.dsl
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.scripting.CardFilter
 import com.wingedsheep.sdk.scripting.CardPredicate
 import com.wingedsheep.sdk.scripting.CreatureFilter
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -36,90 +35,87 @@ object Filters {
     /**
      * Any card.
      */
-    val AnyCard: CardFilter = CardFilter.AnyCard
+    val AnyCard: GameObjectFilter = GameObjectFilter.Any
 
     /**
      * Creature card.
      */
-    val Creature: CardFilter = CardFilter.CreatureCard
+    val Creature: GameObjectFilter = GameObjectFilter.Creature
 
     /**
      * Land card.
      */
-    val Land: CardFilter = CardFilter.LandCard
+    val Land: GameObjectFilter = GameObjectFilter.Land
 
     /**
      * Basic land card.
      */
-    val BasicLand: CardFilter = CardFilter.BasicLandCard
+    val BasicLand: GameObjectFilter = GameObjectFilter.BasicLand
 
     /**
      * Plains card (for Gift of Estates, etc.).
      */
-    val PlainsCard: CardFilter = CardFilter.HasSubtype("Plains")
+    val PlainsCard: GameObjectFilter = GameObjectFilter.Land.withSubtype("Plains")
 
     /**
      * Island card.
      */
-    val IslandCard: CardFilter = CardFilter.HasSubtype("Island")
+    val IslandCard: GameObjectFilter = GameObjectFilter.Land.withSubtype("Island")
 
     /**
      * Swamp card.
      */
-    val SwampCard: CardFilter = CardFilter.HasSubtype("Swamp")
+    val SwampCard: GameObjectFilter = GameObjectFilter.Land.withSubtype("Swamp")
 
     /**
      * Mountain card.
      */
-    val MountainCard: CardFilter = CardFilter.HasSubtype("Mountain")
+    val MountainCard: GameObjectFilter = GameObjectFilter.Land.withSubtype("Mountain")
 
     /**
      * Forest card.
      */
-    val ForestCard: CardFilter = CardFilter.HasSubtype("Forest")
+    val ForestCard: GameObjectFilter = GameObjectFilter.Land.withSubtype("Forest")
 
     /**
      * Instant card.
      */
-    val Instant: CardFilter = CardFilter.InstantCard
+    val Instant: GameObjectFilter = GameObjectFilter.Instant
 
     /**
      * Sorcery card.
      */
-    val Sorcery: CardFilter = CardFilter.SorceryCard
+    val Sorcery: GameObjectFilter = GameObjectFilter.Sorcery
 
     /**
      * Permanent card.
      */
-    val Permanent: CardFilter = CardFilter.PermanentCard
+    val Permanent: GameObjectFilter = GameObjectFilter.Permanent
 
     /**
      * Nonland permanent card.
      */
-    val NonlandPermanent: CardFilter = CardFilter.NonlandPermanentCard
+    val NonlandPermanent: GameObjectFilter = GameObjectFilter.NonlandPermanent
 
     /**
      * Card with a specific subtype.
      */
-    fun WithSubtype(subtype: String): CardFilter = CardFilter.HasSubtype(subtype)
+    fun WithSubtype(subtype: String): GameObjectFilter = GameObjectFilter.Any.withSubtype(subtype)
 
     /**
      * Card with a specific color.
      */
-    fun WithColor(color: Color): CardFilter = CardFilter.HasColor(color)
+    fun WithColor(color: Color): GameObjectFilter = GameObjectFilter.Any.withColor(color)
 
     /**
      * Green creature card (for Natural Order).
      */
-    val GreenCreature: CardFilter = CardFilter.And(listOf(
-        CardFilter.CreatureCard,
-        CardFilter.HasColor(Color.GREEN)
-    ))
+    val GreenCreature: GameObjectFilter = GameObjectFilter.Creature.withColor(Color.GREEN)
 
     /**
      * Card with mana value at most N.
      */
-    fun ManaValueAtMost(max: Int): CardFilter = CardFilter.ManaValueAtMost(max)
+    fun ManaValueAtMost(max: Int): GameObjectFilter = GameObjectFilter.Any.manaValueAtMost(max)
 
     // =========================================================================
     // Creature Filters (for static abilities)

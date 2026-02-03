@@ -11,10 +11,8 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
-import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.CardFilter
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.ReturnFromGraveyardEffect
 import com.wingedsheep.sdk.scripting.SearchDestination
@@ -90,19 +88,9 @@ class ReturnFromGraveyardEffectExecutor : EffectExecutor<ReturnFromGraveyardEffe
         val graveyard = state.getZone(graveyardZone)
 
         // Filter cards matching the criteria
-        // Prefer unified filter if available, fall back to legacy filter
-        val unifiedFilter = effect.unifiedFilter
-        val matchingCards = if (unifiedFilter != null) {
-            val predicateContext = PredicateContext.fromEffectContext(context)
-            graveyard.filter { cardId ->
-                predicateEvaluator.matches(state, cardId, unifiedFilter, predicateContext)
-            }
-        } else {
-            graveyard.filter { cardId ->
-                val container = state.getEntity(cardId)
-                val cardComponent = container?.get<CardComponent>()
-                matchesFilter(cardComponent, effect.filter)
-            }
+        val predicateContext = PredicateContext.fromEffectContext(context)
+        val matchingCards = graveyard.filter { cardId ->
+            predicateEvaluator.matches(state, cardId, effect.filter, predicateContext)
         }
 
         // No matches — spell resolves with no effect
@@ -127,9 +115,7 @@ class ReturnFromGraveyardEffectExecutor : EffectExecutor<ReturnFromGraveyardEffe
             state.getEntity(sourceId)?.get<CardComponent>()?.name
         }
 
-        // Use unified filter description if available
-        val filterDescription = effect.unifiedFilter?.description
-            ?: if (effect.filter == CardFilter.AnyCard) "any card" else effect.filter.description
+        val filterDescription = effect.filter.description
 
         val decision = SearchLibraryDecision(
             id = decisionId,
@@ -171,26 +157,6 @@ class ReturnFromGraveyardEffectExecutor : EffectExecutor<ReturnFromGraveyardEffe
                 )
             )
         )
-    }
-
-    private fun matchesFilter(card: CardComponent?, filter: CardFilter): Boolean {
-        if (card == null) return false
-        return when (filter) {
-            is CardFilter.AnyCard -> true
-            is CardFilter.CreatureCard -> card.typeLine.isCreature
-            is CardFilter.LandCard -> card.typeLine.isLand
-            is CardFilter.BasicLandCard -> card.typeLine.isBasicLand
-            is CardFilter.SorceryCard -> card.typeLine.isSorcery
-            is CardFilter.InstantCard -> card.typeLine.isInstant
-            is CardFilter.HasSubtype -> card.typeLine.hasSubtype(Subtype(filter.subtype))
-            is CardFilter.HasColor -> card.colors.contains(filter.color)
-            is CardFilter.And -> filter.filters.all { matchesFilter(card, it) }
-            is CardFilter.Or -> filter.filters.any { matchesFilter(card, it) }
-            is CardFilter.PermanentCard -> card.typeLine.isPermanent
-            is CardFilter.NonlandPermanentCard -> card.typeLine.isPermanent && !card.typeLine.isLand
-            is CardFilter.ManaValueAtMost -> card.manaCost.cmc <= filter.maxManaValue
-            is CardFilter.Not -> !matchesFilter(card, filter.filter)
-        }
     }
 
     private fun moveToHand(

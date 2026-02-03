@@ -23,7 +23,7 @@ val CruelTutor = card("Cruel Tutor") {
         effect = CompositeEffect(
             listOf(
                 SearchLibraryEffect(
-                    unifiedFilter = GameObjectFilter.Any,
+                    filter = GameObjectFilter.Any,
                     destination = SearchDestination.TOP_OF_LIBRARY
                 ),
                 LoseLifeEffect(2, EffectTarget.Controller)

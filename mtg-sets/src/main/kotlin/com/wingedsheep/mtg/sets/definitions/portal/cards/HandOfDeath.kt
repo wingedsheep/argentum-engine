@@ -19,7 +19,7 @@ val HandOfDeath = card("Hand of Death") {
     typeLine = "Sorcery"
 
     spell {
-        target = TargetCreature(unifiedFilter = TargetFilter.Creature.notColor(Color.BLACK))
+        target = TargetCreature(filter = TargetFilter.Creature.notColor(Color.BLACK))
         effect = DestroyEffect(EffectTarget.ContextTarget(0))
     }
 

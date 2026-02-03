@@ -19,7 +19,7 @@ val Smother = card("Smother") {
     typeLine = "Instant"
 
     spell {
-        target = TargetCreature(unifiedFilter = TargetFilter.Creature.manaValueAtMost(3))
+        target = TargetCreature(filter = TargetFilter.Creature.manaValueAtMost(3))
         effect = DestroyEffect(EffectTarget.ContextTarget(0)) then
                 CantBeRegeneratedEffect(EffectTarget.ContextTarget(0))
     }

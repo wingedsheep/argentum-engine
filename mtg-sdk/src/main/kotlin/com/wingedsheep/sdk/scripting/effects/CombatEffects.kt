@@ -55,7 +55,7 @@ data class ReflectCombatDamageEffect(
  */
 @Serializable
 data class PreventCombatDamageFromEffect(
-    val source: CreatureGroupFilter,
+    val source: GroupFilter,
     val duration: Duration = Duration.EndOfTurn
 ) : Effect {
     override val description: String =
@@ -76,36 +76,19 @@ data object PreventDamageFromAttackingCreaturesThisTurnEffect : Effect {
  * "Black creatures you control can't be blocked this turn except by black creatures."
  * Used for Dread Charge.
  *
- * @property filter Which creatures gain the evasion (deprecated, use unifiedFilter)
+ * @property filter Which creatures gain the evasion
  * @property canOnlyBeBlockedByColor The color of creatures that can block them
- * @property unifiedFilter Unified group filter (preferred)
+ * @property duration How long the effect lasts
  */
 @Serializable
 data class GrantCantBeBlockedExceptByColorEffect(
-    @Deprecated("Use unifiedFilter instead")
-    val filter: CreatureGroupFilter = CreatureGroupFilter.All,
+    val filter: GroupFilter,
     val canOnlyBeBlockedByColor: Color,
-    val duration: Duration = Duration.EndOfTurn,
-    val unifiedFilter: GroupFilter? = null
+    val duration: Duration = Duration.EndOfTurn
 ) : Effect {
     override val description: String = buildString {
-        val filterDesc = unifiedFilter?.description ?: filter.description
-        append("$filterDesc can't be blocked")
+        append("${filter.description} can't be blocked")
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
         append(" except by ${canOnlyBeBlockedByColor.displayName.lowercase()} creatures")
-    }
-
-    companion object {
-        /** Create with unified filter */
-        operator fun invoke(
-            unifiedFilter: GroupFilter,
-            canOnlyBeBlockedByColor: Color,
-            duration: Duration = Duration.EndOfTurn
-        ) = GrantCantBeBlockedExceptByColorEffect(
-            filter = CreatureGroupFilter.All,
-            canOnlyBeBlockedByColor = canOnlyBeBlockedByColor,
-            duration = duration,
-            unifiedFilter = unifiedFilter
-        )
     }
 }

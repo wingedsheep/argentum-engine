@@ -9,9 +9,7 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.dealDamageToTarget
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.sdk.scripting.CreatureDamageFilter
 import com.wingedsheep.sdk.scripting.DealDamageToGroupEffect
 import kotlin.reflect.KClass
 
@@ -46,9 +44,8 @@ class DealDamageToGroupExecutor(
         var newState = state
         val events = mutableListOf<EngineGameEvent>()
 
-        // Use unified filter if available
-        val unifiedFilter = effect.unifiedFilter
-        val predicateContext = if (unifiedFilter != null) PredicateContext.fromEffectContext(context) else null
+        val filter = effect.filter
+        val predicateContext = PredicateContext.fromEffectContext(context)
 
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
@@ -56,14 +53,13 @@ class DealDamageToGroupExecutor(
 
             if (!cardComponent.typeLine.isCreature) continue
 
-            // Apply creature filter - prefer unified filter
-            val matches = if (unifiedFilter != null && predicateContext != null) {
-                predicateEvaluator.matches(state, entityId, unifiedFilter.baseFilter, predicateContext)
-            } else {
-                matchesLegacyFilter(container, cardComponent, effect.filter)
-            }
+            // Check excludeSelf
+            if (filter.excludeSelf && entityId == context.sourceId) continue
 
-            if (!matches) continue
+            // Apply unified filter
+            if (!predicateEvaluator.matches(state, entityId, filter.baseFilter, predicateContext)) {
+                continue
+            }
 
             val result = dealDamageToTarget(newState, entityId, damageAmount, context.sourceId)
             newState = result.newState
@@ -71,20 +67,5 @@ class DealDamageToGroupExecutor(
         }
 
         return ExecutionResult.success(newState, events)
-    }
-
-    private fun matchesLegacyFilter(
-        container: com.wingedsheep.engine.state.ComponentContainer,
-        cardComponent: CardComponent,
-        filter: CreatureDamageFilter
-    ): Boolean {
-        return when (filter) {
-            CreatureDamageFilter.All -> true
-            is CreatureDamageFilter.WithKeyword -> cardComponent.baseKeywords.contains(filter.keyword)
-            is CreatureDamageFilter.WithoutKeyword -> !cardComponent.baseKeywords.contains(filter.keyword)
-            is CreatureDamageFilter.OfColor -> cardComponent.colors.contains(filter.color)
-            is CreatureDamageFilter.NotOfColor -> !cardComponent.colors.contains(filter.color)
-            CreatureDamageFilter.Attacking -> container.has<AttackingComponent>()
-        }
     }
 }

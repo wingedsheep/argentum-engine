@@ -2,8 +2,8 @@ package com.wingedsheep.engine.core
 
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.CardFilter
 import com.wingedsheep.sdk.scripting.Effect
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.SearchDestination
 import kotlinx.serialization.Serializable
 
@@ -245,7 +245,7 @@ data class ReturnFromGraveyardContinuation(
     val sourceId: EntityId?,
     val sourceName: String?,
     val destination: SearchDestination,
-    val filter: CardFilter
+    val filter: GameObjectFilter
 ) : ContinuationFrame
 
 /**
@@ -267,7 +267,7 @@ data class SearchLibraryContinuation(
     val playerId: EntityId,
     val sourceId: EntityId?,
     val sourceName: String?,
-    val filter: CardFilter,
+    val filter: GameObjectFilter,
     val count: Int,
     val destination: SearchDestination,
     val entersTapped: Boolean,
@@ -420,7 +420,7 @@ data class PayOrSufferContinuation(
     val costType: PayOrSufferCostType,
     val sufferEffect: Effect,
     val requiredCount: Int,
-    val filter: CardFilter,
+    val filter: GameObjectFilter,
     val random: Boolean = false
 ) : ContinuationFrame
 

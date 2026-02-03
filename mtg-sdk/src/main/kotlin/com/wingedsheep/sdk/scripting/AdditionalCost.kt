@@ -21,37 +21,23 @@ sealed interface AdditionalCost {
      * Sacrifice a permanent matching the given filter.
      * Example: "Sacrifice a green creature" for Natural Order
      *
-     * @property filter Legacy filter (deprecated, use unifiedFilter)
+     * @property filter Which permanents can be sacrificed
      * @property count Number of permanents to sacrifice
-     * @property unifiedFilter Unified filter (preferred)
      */
     @Serializable
     data class SacrificePermanent(
-        @Deprecated("Use unifiedFilter instead")
-        val filter: CardFilter = CardFilter.AnyCard,
-        val count: Int = 1,
-        val unifiedFilter: GameObjectFilter? = null
+        val filter: GameObjectFilter = GameObjectFilter.Any,
+        val count: Int = 1
     ) : AdditionalCost {
         override val description: String = buildString {
-            val filterDesc = unifiedFilter?.description ?: filter.description
             append("Sacrifice ")
             if (count == 1) {
                 append("a ")
             } else {
                 append("$count ")
             }
-            append(filterDesc)
+            append(filter.description)
             if (count != 1) append("s")
-        }
-
-        companion object {
-            /** Create with unified filter */
-            operator fun invoke(unifiedFilter: GameObjectFilter, count: Int = 1) =
-                SacrificePermanent(
-                    filter = CardFilter.AnyCard,
-                    count = count,
-                    unifiedFilter = unifiedFilter
-                )
         }
     }
 
@@ -60,36 +46,22 @@ sealed interface AdditionalCost {
      * Example: "Discard a card" or "Discard 2 cards"
      *
      * @property count Number of cards to discard
-     * @property filter Legacy filter (deprecated, use unifiedFilter)
-     * @property unifiedFilter Unified filter (preferred)
+     * @property filter Which cards can be discarded
      */
     @Serializable
     data class DiscardCards(
         val count: Int = 1,
-        @Deprecated("Use unifiedFilter instead")
-        val filter: CardFilter = CardFilter.AnyCard,
-        val unifiedFilter: GameObjectFilter? = null
+        val filter: GameObjectFilter = GameObjectFilter.Any
     ) : AdditionalCost {
         override val description: String = buildString {
-            val filterDesc = unifiedFilter?.description ?: filter.description
             append("Discard ")
             if (count == 1) {
                 append("a ")
             } else {
                 append("$count ")
             }
-            append(filterDesc)
+            append(filter.description)
             if (count != 1) append("s")
-        }
-
-        companion object {
-            /** Create with unified filter */
-            operator fun invoke(count: Int = 1, unifiedFilter: GameObjectFilter) =
-                DiscardCards(
-                    count = count,
-                    filter = CardFilter.AnyCard,
-                    unifiedFilter = unifiedFilter
-                )
         }
     }
 
@@ -109,40 +81,25 @@ sealed interface AdditionalCost {
      * Example: "Exile a creature card from your graveyard"
      *
      * @property count Number of cards to exile
-     * @property filter Legacy filter (deprecated, use unifiedFilter)
+     * @property filter Which cards can be exiled
      * @property fromZone Zone to exile from
-     * @property unifiedFilter Unified filter (preferred)
      */
     @Serializable
     data class ExileCards(
         val count: Int = 1,
-        @Deprecated("Use unifiedFilter instead")
-        val filter: CardFilter = CardFilter.AnyCard,
-        val fromZone: CostZone = CostZone.GRAVEYARD,
-        val unifiedFilter: GameObjectFilter? = null
+        val filter: GameObjectFilter = GameObjectFilter.Any,
+        val fromZone: CostZone = CostZone.GRAVEYARD
     ) : AdditionalCost {
         override val description: String = buildString {
-            val filterDesc = unifiedFilter?.description ?: filter.description
             append("Exile ")
             if (count == 1) {
                 append("a ")
             } else {
                 append("$count ")
             }
-            append(filterDesc)
+            append(filter.description)
             if (count != 1) append("s")
             append(" from your ${fromZone.description}")
-        }
-
-        companion object {
-            /** Create with unified filter */
-            operator fun invoke(count: Int = 1, unifiedFilter: GameObjectFilter, fromZone: CostZone = CostZone.GRAVEYARD) =
-                ExileCards(
-                    count = count,
-                    filter = CardFilter.AnyCard,
-                    fromZone = fromZone,
-                    unifiedFilter = unifiedFilter
-                )
         }
     }
 
@@ -151,37 +108,23 @@ sealed interface AdditionalCost {
      * Example: "Tap an untapped creature you control"
      *
      * @property count Number of permanents to tap
-     * @property filter Legacy filter (deprecated, use unifiedFilter)
-     * @property unifiedFilter Unified filter (preferred)
+     * @property filter Which permanents can be tapped
      */
     @Serializable
     data class TapPermanents(
         val count: Int = 1,
-        @Deprecated("Use unifiedFilter instead")
-        val filter: CardFilter = CardFilter.CreatureCard,
-        val unifiedFilter: GameObjectFilter? = null
+        val filter: GameObjectFilter = GameObjectFilter.Creature
     ) : AdditionalCost {
         override val description: String = buildString {
-            val filterDesc = unifiedFilter?.description ?: filter.description
             append("Tap ")
             if (count == 1) {
                 append("an untapped ")
             } else {
                 append("$count untapped ")
             }
-            append(filterDesc)
+            append(filter.description)
             if (count != 1) append("s")
             append(" you control")
-        }
-
-        companion object {
-            /** Create with unified filter */
-            operator fun invoke(count: Int = 1, unifiedFilter: GameObjectFilter) =
-                TapPermanents(
-                    count = count,
-                    filter = CardFilter.CreatureCard,
-                    unifiedFilter = unifiedFilter
-                )
         }
     }
 }

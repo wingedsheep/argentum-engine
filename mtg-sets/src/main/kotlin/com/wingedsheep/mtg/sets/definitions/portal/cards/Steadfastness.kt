@@ -19,7 +19,7 @@ val Steadfastness = card("Steadfastness") {
         effect = ModifyStatsForGroupEffect(
             powerModifier = 0,
             toughnessModifier = 3,
-            unifiedFilter = GroupFilter.AllCreaturesYouControl
+            filter = GroupFilter.AllCreaturesYouControl
         )
     }
 

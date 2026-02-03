@@ -65,7 +65,7 @@ data class ActionContext(
                 triggerDetector = TriggerDetector(cardRegistry),
                 triggerProcessor = TriggerProcessor(),
                 conditionEvaluator = ConditionEvaluator(),
-                targetValidator = TargetValidator(cardRegistry)
+                targetValidator = TargetValidator()
             )
         }
     }

@@ -20,12 +20,12 @@ val NaturalOrder = card("Natural Order") {
     typeLine = "Sorcery"
 
     additionalCost(AdditionalCost.SacrificePermanent(
-        unifiedFilter = GameObjectFilter.Creature.withColor(Color.GREEN)
+        filter = GameObjectFilter.Creature.withColor(Color.GREEN)
     ))
 
     spell {
         effect = SearchLibraryEffect(
-            unifiedFilter = GameObjectFilter.Creature.withColor(Color.GREEN),
+            filter = GameObjectFilter.Creature.withColor(Color.GREEN),
             destination = SearchDestination.BATTLEFIELD
         )
     }

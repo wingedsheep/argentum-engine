@@ -99,32 +99,18 @@ data class GrantKeywordUntilEndOfTurnEffect(
  * Used for cards like Nature's Cloak: "Green creatures you control gain forestwalk until end of turn."
  *
  * @property keyword The keyword to grant
- * @property filter Which creatures are affected (deprecated, use unifiedFilter)
- * @property unifiedFilter Which creatures are affected using unified GroupFilter
+ * @property filter Which creatures are affected
+ * @property duration How long the effect lasts
  */
 @Serializable
 data class GrantKeywordToGroupEffect(
     val keyword: Keyword,
-    @Deprecated("Use unifiedFilter instead")
-    val filter: CreatureGroupFilter = CreatureGroupFilter.All,
-    val duration: Duration = Duration.EndOfTurn,
-    /** Unified filter using the new predicate-based architecture. Preferred over [filter]. */
-    val unifiedFilter: GroupFilter? = null
+    val filter: GroupFilter = GroupFilter.AllCreatures,
+    val duration: Duration = Duration.EndOfTurn
 ) : Effect {
-    override val description: String
-        get() = buildString {
-            val filterDesc = unifiedFilter?.description ?: filter.description
-            append("$filterDesc gain ${keyword.displayName.lowercase()}")
-            if (duration.description.isNotEmpty()) append(" ${duration.description}")
-        }
-
-    companion object {
-        /** Create with unified GroupFilter */
-        operator fun invoke(
-            keyword: Keyword,
-            unifiedFilter: GroupFilter,
-            duration: Duration = Duration.EndOfTurn
-        ) = GrantKeywordToGroupEffect(keyword, CreatureGroupFilter.All, duration, unifiedFilter)
+    override val description: String = buildString {
+        append("${filter.description} gain ${keyword.displayName.lowercase()}")
+        if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
 }
 
@@ -134,37 +120,22 @@ data class GrantKeywordToGroupEffect(
  *
  * @property powerModifier Power bonus (can be negative)
  * @property toughnessModifier Toughness bonus (can be negative)
- * @property filter Which creatures are affected (deprecated, use unifiedFilter)
- * @property unifiedFilter Which creatures are affected using unified GroupFilter
+ * @property filter Which creatures are affected
+ * @property duration How long the effect lasts
  */
 @Serializable
 data class ModifyStatsForGroupEffect(
     val powerModifier: Int,
     val toughnessModifier: Int,
-    @Deprecated("Use unifiedFilter instead")
-    val filter: CreatureGroupFilter = CreatureGroupFilter.All,
-    val duration: Duration = Duration.EndOfTurn,
-    /** Unified filter using the new predicate-based architecture. Preferred over [filter]. */
-    val unifiedFilter: GroupFilter? = null
+    val filter: GroupFilter = GroupFilter.AllCreatures,
+    val duration: Duration = Duration.EndOfTurn
 ) : Effect {
-    override val description: String
-        get() = buildString {
-            val filterDesc = unifiedFilter?.description ?: filter.description
-            append("$filterDesc get ")
-            val powerStr = if (powerModifier >= 0) "+$powerModifier" else "$powerModifier"
-            val toughStr = if (toughnessModifier >= 0) "+$toughnessModifier" else "$toughnessModifier"
-            append("$powerStr/$toughStr")
-            if (duration.description.isNotEmpty()) append(" ${duration.description}")
-        }
-
-    companion object {
-        /** Create with unified GroupFilter */
-        operator fun invoke(
-            powerModifier: Int,
-            toughnessModifier: Int,
-            unifiedFilter: GroupFilter,
-            duration: Duration = Duration.EndOfTurn
-        ) = ModifyStatsForGroupEffect(powerModifier, toughnessModifier, CreatureGroupFilter.All, duration, unifiedFilter)
+    override val description: String = buildString {
+        append("${filter.description} get ")
+        val powerStr = if (powerModifier >= 0) "+$powerModifier" else "$powerModifier"
+        val toughStr = if (toughnessModifier >= 0) "+$toughnessModifier" else "$toughnessModifier"
+        append("$powerStr/$toughStr")
+        if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
 }
 
@@ -221,27 +192,13 @@ data class TransformAllCreaturesEffect(
  * "Tap all nonwhite creatures."
  * Used for Blinding Light.
  *
- * @property filter Which creatures are affected (deprecated, use unifiedFilter)
- * @property unifiedFilter Which creatures are affected using unified GroupFilter
+ * @property filter Which creatures are affected
  */
 @Serializable
 data class TapAllCreaturesEffect(
-    @Deprecated("Use unifiedFilter instead")
-    val filter: CreatureGroupFilter = CreatureGroupFilter.All,
-    /** Unified filter using the new predicate-based architecture. Preferred over [filter]. */
-    val unifiedFilter: GroupFilter? = null
+    val filter: GroupFilter = GroupFilter.AllCreatures
 ) : Effect {
-    override val description: String
-        get() {
-            val filterDesc = unifiedFilter?.description ?: filter.description
-            return "Tap ${filterDesc.replaceFirstChar { it.lowercase() }}"
-        }
-
-    companion object {
-        /** Create with unified GroupFilter */
-        operator fun invoke(unifiedFilter: GroupFilter) =
-            TapAllCreaturesEffect(CreatureGroupFilter.All, unifiedFilter)
-    }
+    override val description: String = "Tap ${filter.description.replaceFirstChar { it.lowercase() }}"
 }
 
 /**
@@ -254,19 +211,13 @@ data object UntapAllCreaturesYouControlEffect : Effect {
 }
 
 /**
- * Tap up to X target creatures with a filter.
+ * Tap up to X target creatures.
  * Used for Tidal Surge: "Tap up to three target creatures without flying."
+ * Note: The targeting filter is specified in the spell's TargetCreature, not here.
  */
 @Serializable
 data class TapTargetCreaturesEffect(
-    val maxTargets: Int,
-    val filter: CreatureTargetFilter = CreatureTargetFilter.Any
+    val maxTargets: Int
 ) : Effect {
-    override val description: String = buildString {
-        append("Tap up to $maxTargets target ")
-        if (filter != CreatureTargetFilter.Any) {
-            append("${filter.description} ")
-        }
-        append("creature${if (maxTargets > 1) "s" else ""}")
-    }
+    override val description: String = "Tap up to $maxTargets target creature${if (maxTargets > 1) "s" else ""}"
 }

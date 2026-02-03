@@ -3,14 +3,16 @@ package com.wingedsheep.engine.handlers.effects.removal
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.CardFilter
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.PayCost
 import com.wingedsheep.sdk.scripting.PayOrSufferEffect
 import java.util.UUID
@@ -36,6 +38,8 @@ class PayOrSufferExecutor(
 ) : EffectExecutor<PayOrSufferEffect> {
 
     override val effectType: KClass<PayOrSufferEffect> = PayOrSufferEffect::class
+
+    private val predicateEvaluator = PredicateEvaluator()
 
     override fun execute(
         state: GameState,
@@ -293,7 +297,7 @@ class PayOrSufferExecutor(
             costType = PayOrSufferCostType.PAY_LIFE,
             sufferEffect = effect.suffer,
             requiredCount = cost.amount,
-            filter = CardFilter.AnyCard, // Not used for life payment
+            filter = GameObjectFilter.Any, // Not used for life payment
             random = false
         )
 
@@ -320,15 +324,14 @@ class PayOrSufferExecutor(
     private fun findValidCardsInHand(
         state: GameState,
         playerId: EntityId,
-        filter: CardFilter
+        filter: GameObjectFilter
     ): List<EntityId> {
         val handZone = ZoneKey(playerId, ZoneType.HAND)
         val hand = state.getZone(handZone)
+        val context = PredicateContext(controllerId = playerId)
 
         return hand.filter { cardId ->
-            val container = state.getEntity(cardId) ?: return@filter false
-            val card = container.get<CardComponent>() ?: return@filter false
-            matchesFilter(card, filter)
+            predicateEvaluator.matches(state, cardId, filter, context)
         }
     }
 
@@ -339,40 +342,16 @@ class PayOrSufferExecutor(
     private fun findValidPermanentsOnBattlefield(
         state: GameState,
         playerId: EntityId,
-        filter: CardFilter,
+        filter: GameObjectFilter,
         sourceId: EntityId
     ): List<EntityId> {
         val battlefieldZone = ZoneKey(playerId, ZoneType.BATTLEFIELD)
         val battlefield = state.getZone(battlefieldZone)
+        val context = PredicateContext(controllerId = playerId)
 
         return battlefield.filter { permanentId ->
             if (permanentId == sourceId) return@filter false
-
-            val container = state.getEntity(permanentId) ?: return@filter false
-            val card = container.get<CardComponent>() ?: return@filter false
-            matchesFilter(card, filter)
-        }
-    }
-
-    /**
-     * Check if a card matches the specified filter.
-     */
-    private fun matchesFilter(card: CardComponent, filter: CardFilter): Boolean {
-        return when (filter) {
-            is CardFilter.AnyCard -> true
-            is CardFilter.CreatureCard -> card.typeLine.isCreature
-            is CardFilter.LandCard -> card.typeLine.isLand
-            is CardFilter.BasicLandCard -> card.typeLine.isBasicLand
-            is CardFilter.SorceryCard -> card.typeLine.isSorcery
-            is CardFilter.InstantCard -> card.typeLine.isInstant
-            is CardFilter.PermanentCard -> card.typeLine.isPermanent
-            is CardFilter.NonlandPermanentCard -> card.typeLine.isPermanent && !card.typeLine.isLand
-            is CardFilter.HasSubtype -> Subtype.of(filter.subtype) in card.typeLine.subtypes
-            is CardFilter.HasColor -> filter.color in card.colors
-            is CardFilter.ManaValueAtMost -> (card.manaCost?.cmc ?: 0) <= filter.maxManaValue
-            is CardFilter.And -> filter.filters.all { matchesFilter(card, it) }
-            is CardFilter.Or -> filter.filters.any { matchesFilter(card, it) }
-            is CardFilter.Not -> !matchesFilter(card, filter.filter)
+            predicateEvaluator.matches(state, permanentId, filter, context)
         }
     }
 
@@ -451,15 +430,12 @@ class PayOrSufferExecutor(
      * Build prompt for discard cost.
      */
     private fun buildDiscardPrompt(cost: PayCost.Discard, sourceName: String): String {
+        val desc = cost.filter.description
         val typeText = if (cost.count == 1) {
-            when (cost.filter) {
-                CardFilter.AnyCard -> "a card"
-                CardFilter.LandCard -> "a land card"
-                CardFilter.CreatureCard -> "a creature card"
-                else -> "a ${cost.filter.description}"
-            }
+            val article = if (desc == "card") "a" else if (desc.first().lowercaseChar() in "aeiou") "an" else "a"
+            "$article $desc"
         } else {
-            "${cost.count} ${cost.filter.description}${if (cost.filter != CardFilter.AnyCard) "s" else " cards"}"
+            "${cost.count} ${desc}s"
         }
         return "Discard $typeText to keep $sourceName, or skip to accept the consequence"
     }
@@ -468,34 +444,35 @@ class PayOrSufferExecutor(
      * Build prompt for sacrifice cost.
      */
     private fun buildSacrificePrompt(cost: PayCost.Sacrifice, sourceName: String): String {
+        val desc = cost.filter.description
         val typeText = if (cost.count == 1) {
-            val desc = cost.filter.description
             "${if (desc.first().lowercaseChar() in "aeiou") "an" else "a"} $desc"
         } else {
-            "${cost.count} ${cost.filter.description}s"
+            "${cost.count} ${desc}s"
         }
         return "Sacrifice $typeText to keep $sourceName, or skip to accept the consequence"
     }
 
     companion object {
+        private val predicateEvaluatorStatic = PredicateEvaluator()
+
         /**
          * Execute the random discard after player confirmed.
          */
         fun executeRandomDiscard(
             state: GameState,
             playerId: EntityId,
-            filter: CardFilter,
+            filter: GameObjectFilter,
             count: Int
         ): ExecutionResult {
             val handZone = ZoneKey(playerId, ZoneType.HAND)
             val graveyardZone = ZoneKey(playerId, ZoneType.GRAVEYARD)
             val hand = state.getZone(handZone)
+            val context = PredicateContext(controllerId = playerId)
 
             // Filter valid cards
             val validCards = hand.filter { cardId ->
-                val container = state.getEntity(cardId) ?: return@filter false
-                val card = container.get<CardComponent>() ?: return@filter false
-                matchesFilterStatic(card, filter)
+                predicateEvaluatorStatic.matches(state, cardId, filter, context)
             }
 
             if (validCards.isEmpty()) {
@@ -525,25 +502,6 @@ class PayOrSufferExecutor(
             events.add(0, CardsDiscardedEvent(playerId, cardsToDiscard))
 
             return ExecutionResult.success(newState, events)
-        }
-
-        private fun matchesFilterStatic(card: CardComponent, filter: CardFilter): Boolean {
-            return when (filter) {
-                is CardFilter.AnyCard -> true
-                is CardFilter.CreatureCard -> card.typeLine.isCreature
-                is CardFilter.LandCard -> card.typeLine.isLand
-                is CardFilter.BasicLandCard -> card.typeLine.isBasicLand
-                is CardFilter.SorceryCard -> card.typeLine.isSorcery
-                is CardFilter.InstantCard -> card.typeLine.isInstant
-                is CardFilter.PermanentCard -> card.typeLine.isPermanent
-                is CardFilter.NonlandPermanentCard -> card.typeLine.isPermanent && !card.typeLine.isLand
-                is CardFilter.HasSubtype -> Subtype.of(filter.subtype) in card.typeLine.subtypes
-                is CardFilter.HasColor -> filter.color in card.colors
-                is CardFilter.ManaValueAtMost -> (card.manaCost?.cmc ?: 0) <= filter.maxManaValue
-                is CardFilter.And -> filter.filters.all { matchesFilterStatic(card, it) }
-                is CardFilter.Or -> filter.filters.any { matchesFilterStatic(card, it) }
-                is CardFilter.Not -> !matchesFilterStatic(card, filter.filter)
-            }
         }
     }
 }

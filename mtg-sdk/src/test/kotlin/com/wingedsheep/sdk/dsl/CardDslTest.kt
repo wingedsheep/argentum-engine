@@ -693,7 +693,7 @@ class CardDslTest : DescribeSpec({
                 triggeredAbility {
                     trigger = Triggers.LeavesBattlefield
                     effect = ReturnFromGraveyardEffect(
-                        filter = CardFilter.AnyCard,
+                        filter = GameObjectFilter.Any,
                         destination = SearchDestination.BATTLEFIELD
                     )
                 }
@@ -717,10 +717,10 @@ class CardDslTest : DescribeSpec({
                 spell {
                     // Sacrifice any number of lands, then search for that many
                     effect = EffectPatterns.sacrificeFor(
-                        filter = CardFilter.LandCard,
+                        filter = GameObjectFilter.Land,
                         countName = "sacrificedLands",
                         thenEffect = SearchLibraryEffect(
-                            filter = CardFilter.LandCard,
+                            filter = GameObjectFilter.Land,
                             count = 0, // Engine will read from VariableReference
                             destination = SearchDestination.BATTLEFIELD,
                             entersTapped = false
@@ -824,22 +824,22 @@ class CardDslTest : DescribeSpec({
 
         it("should support may-pay-or-else pattern") {
             val optionalEffect = OptionalCostEffect(
-                cost = SacrificeEffect(CardFilter.CreatureCard),
+                cost = SacrificeEffect(GameObjectFilter.Creature),
                 ifPaid = DealDamageEffect(3, EffectTarget.AnyTarget),
                 ifNotPaid = LoseLifeEffect(3, EffectTarget.Controller)
             )
 
-            optionalEffect.description shouldBe "You may sacrifice a creature card. If you do, deal 3 damage to any target. Otherwise, you lose 3 life"
+            optionalEffect.description shouldBe "You may sacrifice a creature. If you do, deal 3 damage to any target. Otherwise, you lose 3 life"
         }
 
         it("should support reflexive triggers") {
             val reflexive = ReflexiveTriggerEffect(
-                action = SacrificeEffect(CardFilter.CreatureCard),
+                action = SacrificeEffect(GameObjectFilter.Creature),
                 optional = true,
                 reflexiveEffect = DealDamageEffect(5, EffectTarget.AnyTarget)
             )
 
-            reflexive.description shouldBe "You may sacrifice a creature card. When you do, deal 5 damage to any target"
+            reflexive.description shouldBe "You may sacrifice a creature. When you do, deal 5 damage to any target"
         }
     }
 
@@ -847,7 +847,7 @@ class CardDslTest : DescribeSpec({
 
         it("should create sacrifice-for pattern with variable binding") {
             val effect = EffectPatterns.sacrificeFor(
-                filter = CardFilter.LandCard,
+                filter = GameObjectFilter.Land,
                 countName = "landCount",
                 thenEffect = DrawCardsEffect(1)
             )
@@ -871,7 +871,7 @@ class CardDslTest : DescribeSpec({
 
         it("should create reflexive trigger shorthand") {
             val effect = EffectPatterns.reflexiveTrigger(
-                action = SacrificeEffect(CardFilter.CreatureCard),
+                action = SacrificeEffect(GameObjectFilter.Creature),
                 whenYouDo = GainLifeEffect(5)
             )
 

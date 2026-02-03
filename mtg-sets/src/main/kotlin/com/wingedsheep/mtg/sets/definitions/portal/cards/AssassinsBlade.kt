@@ -26,7 +26,7 @@ val AssassinsBlade = card("Assassin's Blade") {
         castOnlyDuring(Step.DECLARE_ATTACKERS)
         castOnlyIf(YouWereAttackedThisStep)
 
-        target = TargetCreature(unifiedFilter = TargetFilter.AttackingCreature.notColor(Color.BLACK))
+        target = TargetCreature(filter = TargetFilter.AttackingCreature.notColor(Color.BLACK))
         effect = DestroyEffect(EffectTarget.ContextTarget(0))
     }
 

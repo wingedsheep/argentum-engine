@@ -72,6 +72,9 @@ data class GroupFilter(
         /** All other creatures opponents control */
         val OtherCreaturesOpponentsControl = GroupFilter(GameObjectFilter.Creature.opponentControls(), excludeSelf = true)
 
+        /** All other tapped creatures you control (for effects like Adept Watershaper) */
+        val OtherTappedCreaturesYouControl = GroupFilter(GameObjectFilter.Creature.youControl().tapped(), excludeSelf = true)
+
         /** All attacking creatures */
         val AttackingCreatures = GroupFilter(GameObjectFilter.Creature.attacking())
 

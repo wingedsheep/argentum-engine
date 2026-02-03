@@ -36,7 +36,7 @@ data class GrantKeyword(
 @Serializable
 data class GrantKeywordToCreatureGroup(
     val keyword: Keyword,
-    val filter: CreatureGroupFilter
+    val filter: GroupFilter
 ) : StaticAbility {
     override val description: String = "${filter.description} have ${keyword.name.lowercase().replace('_', ' ')}"
 }

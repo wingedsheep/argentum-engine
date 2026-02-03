@@ -156,7 +156,7 @@ object Effects {
      * Search library for cards.
      */
     fun SearchLibrary(
-        filter: CardFilter,
+        filter: GameObjectFilter,
         count: Int = 1,
         destination: SearchDestination = SearchDestination.HAND,
         entersTapped: Boolean = false,
@@ -215,7 +215,7 @@ object Effects {
     /**
      * Force a player to sacrifice permanents matching a filter.
      */
-    fun Sacrifice(filter: CardFilter, count: Int = 1, target: EffectTarget = EffectTarget.Opponent): Effect =
+    fun Sacrifice(filter: GameObjectFilter, count: Int = 1, target: EffectTarget = EffectTarget.Opponent): Effect =
         ForceSacrificeEffect(filter, count, target)
 
     // =========================================================================

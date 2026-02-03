@@ -18,7 +18,7 @@ val Vengeance = card("Vengeance") {
     typeLine = "Sorcery"
 
     spell {
-        target = TargetCreature(unifiedFilter = TargetFilter.TappedCreature)
+        target = TargetCreature(filter = TargetFilter.TappedCreature)
         effect = DestroyEffect(EffectTarget.ContextTarget(0))
     }
 

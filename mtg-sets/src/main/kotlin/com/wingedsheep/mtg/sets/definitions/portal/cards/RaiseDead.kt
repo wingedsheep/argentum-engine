@@ -19,9 +19,9 @@ val RaiseDead = card("Raise Dead") {
     typeLine = "Sorcery"
 
     spell {
-        target = TargetCardInGraveyard(unifiedFilter = TargetFilter.CreatureInYourGraveyard)
+        target = TargetCardInGraveyard(filter = TargetFilter.CreatureInYourGraveyard)
         effect = ReturnFromGraveyardEffect(
-            unifiedFilter = GameObjectFilter.Creature,
+            filter = GameObjectFilter.Creature,
             destination = SearchDestination.HAND
         )
     }

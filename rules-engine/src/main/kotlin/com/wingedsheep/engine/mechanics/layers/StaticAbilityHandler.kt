@@ -5,7 +5,9 @@ import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.scripting.GrantKeywordToCreatureGroup
-import com.wingedsheep.sdk.scripting.CreatureGroupFilter
+import com.wingedsheep.sdk.scripting.GroupFilter
+import com.wingedsheep.sdk.scripting.ControllerPredicate
+import com.wingedsheep.sdk.scripting.StatePredicate
 import com.wingedsheep.sdk.scripting.StaticAbility
 
 /**
@@ -85,7 +87,7 @@ class StaticAbilityHandler(
                     layer = Layer.ABILITY,
                     sublayer = null,
                     modification = Modification.GrantKeyword(ability.keyword.name),
-                    affectsFilter = convertCreatureGroupFilter(ability.filter)
+                    affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
             // TODO: Add support for other static ability types as needed:
@@ -97,24 +99,29 @@ class StaticAbilityHandler(
     }
 
     /**
-     * Convert a CreatureGroupFilter to an AffectsFilter.
+     * Convert a GroupFilter to an AffectsFilter.
      */
-    private fun convertCreatureGroupFilter(filter: CreatureGroupFilter): AffectsFilter {
-        return when (filter) {
-            is CreatureGroupFilter.AllYouControl -> AffectsFilter.AllCreaturesYouControl
-            is CreatureGroupFilter.AllOpponentsControl -> AffectsFilter.AllCreaturesOpponentsControl
-            is CreatureGroupFilter.All -> AffectsFilter.AllCreatures
-            is CreatureGroupFilter.AllOther -> AffectsFilter.AllOtherCreatures
-            is CreatureGroupFilter.OtherTappedYouControl -> AffectsFilter.OtherTappedCreaturesYouControl
-            // For filters that need more specific handling, fall back to AllCreatures
-            // and rely on the filter evaluation in StateProjector
-            is CreatureGroupFilter.ColorYouControl,
-            is CreatureGroupFilter.WithKeywordYouControl,
-            is CreatureGroupFilter.NonWhite,
-            is CreatureGroupFilter.NotColor -> {
-                // TODO: Add specific AffectsFilter variants for these if needed
-                AffectsFilter.AllCreatures
-            }
+    private fun convertGroupFilter(filter: GroupFilter): AffectsFilter {
+        val baseFilter = filter.baseFilter
+        val controllerPredicate = baseFilter.controllerPredicate
+        val hasExcludeSelf = filter.excludeSelf
+        val hasTappedPredicate = baseFilter.statePredicates.any { it == StatePredicate.IsTapped }
+
+        // Handle "other tapped creatures you control" pattern
+        if (hasExcludeSelf && hasTappedPredicate && controllerPredicate == ControllerPredicate.ControlledByYou) {
+            return AffectsFilter.OtherTappedCreaturesYouControl
+        }
+
+        // Handle "other creatures" pattern
+        if (hasExcludeSelf) {
+            return AffectsFilter.AllOtherCreatures
+        }
+
+        // Handle controller-based filters
+        return when (controllerPredicate) {
+            ControllerPredicate.ControlledByYou -> AffectsFilter.AllCreaturesYouControl
+            ControllerPredicate.ControlledByOpponent -> AffectsFilter.AllCreaturesOpponentsControl
+            else -> AffectsFilter.AllCreatures
         }
     }
 }

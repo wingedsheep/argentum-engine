@@ -58,7 +58,7 @@ class ActionProcessor(
     triggerDetector: TriggerDetector = TriggerDetector(cardRegistry),
     triggerProcessor: TriggerProcessor = TriggerProcessor(),
     conditionEvaluator: ConditionEvaluator = ConditionEvaluator(),
-    targetValidator: TargetValidator = TargetValidator(cardRegistry)
+    targetValidator: TargetValidator = TargetValidator()
 ) {
     /**
      * Context containing all dependencies needed by action handlers.

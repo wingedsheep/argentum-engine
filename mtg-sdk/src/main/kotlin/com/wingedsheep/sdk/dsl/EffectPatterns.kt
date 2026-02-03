@@ -64,12 +64,12 @@ object EffectPatterns {
      * Used for Scapeshift-style effects where the count matters:
      * "Sacrifice any number of lands. Search for that many lands."
      *
-     * @param filter What to sacrifice (e.g., CardFilter.LandCard)
+     * @param filter What to sacrifice (e.g., GameObjectFilter.Land)
      * @param countName Variable name to store the count
      * @param thenEffect Effect that uses the stored count
      */
     fun sacrificeFor(
-        filter: CardFilter,
+        filter: GameObjectFilter,
         countName: String,
         thenEffect: Effect
     ): CompositeEffect = CompositeEffect(
@@ -87,12 +87,12 @@ object EffectPatterns {
      *
      * Example:
      * ```kotlin
-     * sacrifice(CardFilter.CreatureCard, then = DrawCardsEffect(2))
+     * sacrifice(GameObjectFilter.Creature, then = DrawCardsEffect(2))
      * // -> "Sacrifice a creature. Draw two cards."
      * ```
      */
     fun sacrifice(
-        filter: CardFilter,
+        filter: GameObjectFilter,
         count: Int = 1,
         then: Effect
     ): CompositeEffect = CompositeEffect(

@@ -1,7 +1,6 @@
 package com.wingedsheep.sdk.targeting
 
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.TargetFilter
@@ -71,17 +70,14 @@ data class TargetOpponent(
  * @param count Maximum number of targets
  * @param minCount Minimum number of targets (for "one or two" style targeting)
  * @param optional If true, allows 0 targets ("up to X" style targeting)
- * @param filter Restrictions on which creatures can be targeted (deprecated, use unifiedFilter)
- * @param unifiedFilter Unified filter for targeting (preferred over filter)
+ * @param filter Restrictions on which creatures can be targeted
  */
 @Serializable
 data class TargetCreature(
     override val count: Int = 1,
     override val minCount: Int = count,
     override val optional: Boolean = false,
-    @Deprecated("Use unifiedFilter instead")
-    val filter: CreatureTargetFilter = CreatureTargetFilter.Any,
-    val unifiedFilter: TargetFilter? = null
+    val filter: TargetFilter = TargetFilter.Creature
 ) : TargetRequirement {
     override val description: String = buildString {
         if (optional) {
@@ -89,160 +85,13 @@ data class TargetCreature(
         } else if (minCount < count) {
             append("$minCount to ")
         }
-        // Use unified filter description if available
-        val filterDesc = unifiedFilter?.description ?: filter.description.takeIf { filter != CreatureTargetFilter.Any }
+        val filterDesc = filter.description.takeIf { filter != TargetFilter.Creature }
         if (filterDesc != null && filterDesc.isNotEmpty()) {
             append(filterDesc)
             append(" ")
         }
         append("target ")
         append(if (count == 1) "creature" else "$count creatures")
-    }
-
-    companion object {
-        /** Create TargetCreature with unified filter (preferred) */
-        operator fun invoke(
-            unifiedFilter: TargetFilter,
-            count: Int = 1,
-            minCount: Int = count,
-            optional: Boolean = false
-        ) = TargetCreature(
-            count = count,
-            minCount = minCount,
-            optional = optional,
-            filter = CreatureTargetFilter.Any,
-            unifiedFilter = unifiedFilter
-        )
-    }
-}
-
-/**
- * Filter for creature targeting restrictions.
- *
- * Filters are pure data - validation is handled by TargetValidator.
- */
-@Serializable
-sealed interface CreatureTargetFilter {
-    val description: String
-
-    @Serializable
-    data object Any : CreatureTargetFilter {
-        override val description: String = ""
-    }
-
-    @Serializable
-    data object YouControl : CreatureTargetFilter {
-        override val description: String = "creature you control"
-    }
-
-    @Serializable
-    data object OpponentControls : CreatureTargetFilter {
-        override val description: String = "creature an opponent controls"
-    }
-
-    @Serializable
-    data object Attacking : CreatureTargetFilter {
-        override val description: String = "attacking"
-    }
-
-    @Serializable
-    data object Blocking : CreatureTargetFilter {
-        override val description: String = "blocking"
-    }
-
-    @Serializable
-    data object Tapped : CreatureTargetFilter {
-        override val description: String = "tapped"
-    }
-
-    @Serializable
-    data object Untapped : CreatureTargetFilter {
-        override val description: String = "untapped"
-    }
-
-    @Serializable
-    data class WithKeyword(val keyword: Keyword) : CreatureTargetFilter {
-        override val description: String = keyword.name.lowercase().replace('_', ' ')
-    }
-
-    @Serializable
-    data class WithoutKeyword(val keyword: Keyword) : CreatureTargetFilter {
-        override val description: String = "without ${keyword.name.lowercase().replace('_', ' ')}"
-    }
-
-    @Serializable
-    data class WithColor(val color: Color) : CreatureTargetFilter {
-        override val description: String = color.displayName.lowercase()
-    }
-
-    @Serializable
-    data class WithPowerAtMost(val maxPower: Int) : CreatureTargetFilter {
-        override val description: String = "with power $maxPower or less"
-    }
-
-    @Serializable
-    data class WithPowerAtLeast(val minPower: Int) : CreatureTargetFilter {
-        override val description: String = "with power $minPower or greater"
-    }
-
-    @Serializable
-    data class WithToughnessAtMost(val maxToughness: Int) : CreatureTargetFilter {
-        override val description: String = "with toughness $maxToughness or less"
-    }
-
-    @Serializable
-    data class WithSubtype(val subtype: Subtype) : CreatureTargetFilter {
-        override val description: String = subtype.value
-    }
-
-    @Serializable
-    data class And(val filters: List<CreatureTargetFilter>) : CreatureTargetFilter {
-        override val description: String = filters.joinToString(" ") { it.description }
-    }
-
-    /**
-     * Attacking creature you control.
-     * Used for abilities like "target attacking creature you control"
-     */
-    @Serializable
-    data object AttackingYouControl : CreatureTargetFilter {
-        override val description: String = "attacking creature you control"
-    }
-
-    /**
-     * Attacking creature with a specific subtype that you control.
-     * Used for tribal attack triggers like "target attacking Goblin you control"
-     */
-    @Serializable
-    data class AttackingWithSubtypeYouControl(val subtype: Subtype) : CreatureTargetFilter {
-        override val description: String = "attacking ${subtype.value} you control"
-    }
-
-    /**
-     * Creature that is not a specific color.
-     * Used for cards like "target nonblack creature"
-     */
-    @Serializable
-    data class NotColor(val color: Color) : CreatureTargetFilter {
-        override val description: String = "non${color.displayName.lowercase()}"
-    }
-
-    /**
-     * Creature with mana value at most a specific amount.
-     * Used for cards like Smother ("target creature with mana value 3 or less")
-     */
-    @Serializable
-    data class WithManaValueAtMost(val maxManaValue: Int) : CreatureTargetFilter {
-        override val description: String = "creature with mana value $maxManaValue or less"
-    }
-
-    /**
-     * Creature with mana value at least a specific amount.
-     * Used for cards that target larger creatures.
-     */
-    @Serializable
-    data class WithManaValueAtLeast(val minManaValue: Int) : CreatureTargetFilter {
-        override val description: String = "creature with mana value $minManaValue or greater"
     }
 }
 
@@ -390,85 +239,23 @@ data class TargetCreatureOrPlaneswalker(
  *
  * @param count Maximum number of targets
  * @param optional If true, allows 0 targets ("up to X" style targeting)
- * @param filter Restrictions on which cards can be targeted (deprecated, use unifiedFilter)
- * @param unifiedFilter Unified filter for targeting (preferred over filter).
- *        Use TargetFilter.CreatureInYourGraveyard or .youControl() to restrict to your graveyard.
+ * @param filter Restrictions on which cards can be targeted.
+ *        Use TargetFilter.CreatureInYourGraveyard or .ownedByYou() to restrict to your graveyard.
  */
 @Serializable
 data class TargetCardInGraveyard(
     override val count: Int = 1,
     override val optional: Boolean = false,
-    @Deprecated("Use unifiedFilter instead")
-    val filter: GraveyardCardFilter = GraveyardCardFilter.Any,
-    val unifiedFilter: TargetFilter? = null
+    val filter: TargetFilter = TargetFilter.CardInGraveyard
 ) : TargetRequirement {
     override val description: String = buildString {
         append("target ")
-        // Use unified filter description if available
-        val filterDesc = unifiedFilter?.description ?: filter.description.takeIf { filter != GraveyardCardFilter.Any }
+        val filterDesc = filter.description.takeIf { filter != TargetFilter.CardInGraveyard }
         if (filterDesc != null && filterDesc.isNotEmpty()) {
             append(filterDesc)
             append(" ")
         }
         append("card in a graveyard")
-    }
-
-    companion object {
-        /** Create TargetCardInGraveyard with unified filter (preferred) */
-        operator fun invoke(
-            unifiedFilter: TargetFilter,
-            count: Int = 1,
-            optional: Boolean = false
-        ) = TargetCardInGraveyard(
-            count = count,
-            optional = optional,
-            filter = GraveyardCardFilter.Any,
-            unifiedFilter = unifiedFilter
-        )
-    }
-}
-
-/**
- * Filter for graveyard card targeting.
- *
- * Filters are pure data - validation is handled by TargetValidator.
- */
-@Serializable
-sealed interface GraveyardCardFilter {
-    val description: String
-
-    @Serializable
-    data object Any : GraveyardCardFilter {
-        override val description: String = ""
-    }
-
-    @Serializable
-    data object Creature : GraveyardCardFilter {
-        override val description: String = "creature"
-    }
-
-    @Serializable
-    data object Instant : GraveyardCardFilter {
-        override val description: String = "instant"
-    }
-
-    @Serializable
-    data object Sorcery : GraveyardCardFilter {
-        override val description: String = "sorcery"
-    }
-
-    @Serializable
-    data object InstantOrSorcery : GraveyardCardFilter {
-        override val description: String = "instant or sorcery"
-    }
-
-    /**
-     * Creature card in your graveyard.
-     * Used for "target creature card from your graveyard"
-     */
-    @Serializable
-    data object CreatureInYourGraveyard : GraveyardCardFilter {
-        override val description: String = "creature card from your graveyard"
     }
 }
 

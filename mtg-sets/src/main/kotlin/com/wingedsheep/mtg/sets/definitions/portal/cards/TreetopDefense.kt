@@ -24,7 +24,7 @@ val TreetopDefense = card("Treetop Defense") {
         castOnlyIf(YouWereAttackedThisStep)
         effect = GrantKeywordToGroupEffect(
             keyword = Keyword.REACH,
-            unifiedFilter = GroupFilter.AllCreaturesYouControl
+            filter = GroupFilter.AllCreaturesYouControl
         )
     }
 
