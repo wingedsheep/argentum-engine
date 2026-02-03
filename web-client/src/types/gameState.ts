@@ -144,6 +144,9 @@ export interface ClientCard {
 
   /** Official rulings for this card (for card details view) */
   readonly rulings?: readonly ClientRuling[]
+
+  /** Chosen X value for spells with X in their cost (only present on stack) */
+  readonly chosenX?: number | null
 }
 
 /**

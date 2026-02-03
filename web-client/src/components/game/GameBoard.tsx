@@ -823,6 +823,12 @@ function StackDisplay() {
                 title={`${card.name}\n${card.oracleText || ''}`}
                 onError={(e) => handleImageError(e, card.name, 'small')}
               />
+              {/* Show chosen X value for X spells */}
+              {card.chosenX != null && (
+                <div style={styles.stackXBadge}>
+                  X={card.chosenX}
+                </div>
+              )}
             </div>
           )
         })}
@@ -3594,6 +3600,19 @@ const styles: Record<string, React.CSSProperties> = {
     whiteSpace: 'nowrap',
     textAlign: 'center',
   },
+  stackXBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    backgroundColor: 'rgba(138, 43, 226, 0.95)',
+    color: 'white',
+    padding: '2px 6px',
+    borderRadius: 4,
+    fontSize: 11,
+    fontWeight: 700,
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.5)',
+    zIndex: 10,
+  } as React.CSSProperties,
   // Card preview styles
   cardPreviewOverlay: {
     position: 'fixed',

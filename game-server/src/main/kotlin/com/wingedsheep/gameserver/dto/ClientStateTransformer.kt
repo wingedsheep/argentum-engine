@@ -13,6 +13,7 @@ import com.wingedsheep.engine.state.components.stack.TargetsComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
+import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.StateProjector
@@ -431,6 +432,10 @@ class ClientStateTransformer(
             }
         } ?: emptyList()
 
+        // Get chosen X value for spells on the stack
+        val spellOnStack = container.get<SpellOnStackComponent>()
+        val chosenX = spellOnStack?.xValue
+
         // Build type line string from TypeLine
         val typeLine = cardComponent.typeLine
         val typeLineParts = mutableListOf<String>()
@@ -485,7 +490,8 @@ class ClientStateTransformer(
             activeEffects = activeEffects,
             rulings = cardRegistry.getCard(cardComponent.cardDefinitionId)?.metadata?.rulings?.map {
                 ClientRuling(date = it.date, text = it.text)
-            } ?: emptyList()
+            } ?: emptyList(),
+            chosenX = chosenX
         )
     }
 

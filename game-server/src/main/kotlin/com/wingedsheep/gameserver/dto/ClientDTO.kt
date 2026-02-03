@@ -163,7 +163,10 @@ data class ClientCard(
     val activeEffects: List<ClientCardEffect> = emptyList(),
 
     /** Official rulings for this card (for card details view) */
-    val rulings: List<ClientRuling> = emptyList()
+    val rulings: List<ClientRuling> = emptyList(),
+
+    /** Chosen X value for spells with X in their cost (only present on stack) */
+    val chosenX: Int? = null
 )
 
 /**
