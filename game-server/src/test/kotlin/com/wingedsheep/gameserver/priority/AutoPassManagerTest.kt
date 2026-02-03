@@ -35,14 +35,39 @@ class AutoPassManagerTest : FunSpec({
         activePlayerId: EntityId,
         step: Step,
         stackEmpty: Boolean = true,
-        hasPendingDecision: Boolean = false
+        hasPendingDecision: Boolean = false,
+        stackControllerId: EntityId? = null
     ): GameState {
         val state = mockk<GameState>(relaxed = true)
         every { state.priorityPlayerId } returns priorityPlayerId
         every { state.activePlayerId } returns activePlayerId
         every { state.step } returns step
         every { state.phase } returns step.phase
-        every { state.stack } returns if (stackEmpty) emptyList() else listOf(EntityId.generate())
+
+        if (stackEmpty) {
+            every { state.stack } returns emptyList()
+        } else {
+            val stackItemId = EntityId.generate()
+            every { state.stack } returns listOf(stackItemId)
+
+            // Mock the stack item entity with appropriate component
+            val stackEntity = mockk<com.wingedsheep.engine.state.ComponentContainer>(relaxed = true)
+            every { state.getEntity(stackItemId) } returns stackEntity
+
+            // Set up the controller - use ActivatedAbilityOnStackComponent for abilities
+            val controllerId = stackControllerId ?: activePlayerId
+            val abilityComponent = com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent(
+                sourceId = EntityId.generate(),
+                sourceName = "Test Ability",
+                controllerId = controllerId,
+                effect = mockk(relaxed = true)
+            )
+            every { stackEntity.get<com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent>() } returns abilityComponent
+            every { stackEntity.get<com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent>() } returns null
+            every { stackEntity.get<com.wingedsheep.engine.state.components.stack.SpellOnStackComponent>() } returns null
+            every { stackEntity.get<com.wingedsheep.engine.state.components.identity.ControllerComponent>() } returns null
+        }
+
         every { state.pendingDecision } returns if (hasPendingDecision) mockk() else null
         every { state.gameOver } returns false
         return state
@@ -265,9 +290,21 @@ class AutoPassManagerTest : FunSpec({
         }
     }
 
-    context("Rule 4: Stack Response - Absolute Rule") {
-        test("STOP when stack is non-empty and have responses") {
-            val state = createMockState(player1, player1, Step.PRECOMBAT_MAIN, stackEmpty = false)
+    context("Rule 4: Stack Response - Arena Style") {
+        test("AUTO-PASS when own ability is on stack") {
+            // player1's ability on stack, player1 has priority → auto-pass to let opponent respond
+            val state = createMockState(player1, player1, Step.PRECOMBAT_MAIN, stackEmpty = false, stackControllerId = player1)
+            val actions = listOf(
+                passPriorityAction(player1),
+                instantSpellAction(player1)
+            )
+
+            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe true
+        }
+
+        test("STOP when opponent's ability is on stack") {
+            // player2's ability on stack, player1 has priority → stop to consider response
+            val state = createMockState(player1, player1, Step.PRECOMBAT_MAIN, stackEmpty = false, stackControllerId = player2)
             val actions = listOf(
                 passPriorityAction(player1),
                 instantSpellAction(player1)
@@ -276,8 +313,9 @@ class AutoPassManagerTest : FunSpec({
             autoPassManager.shouldAutoPass(state, player1, actions) shouldBe false
         }
 
-        test("STOP when stack is non-empty even during opponent's main") {
-            val state = createMockState(player2, player1, Step.PRECOMBAT_MAIN, stackEmpty = false)
+        test("STOP when opponent's ability is on stack even during opponent's main") {
+            // player1's ability on stack (opponent from player2's perspective), player2 has priority
+            val state = createMockState(player2, player1, Step.PRECOMBAT_MAIN, stackEmpty = false, stackControllerId = player1)
             val actions = listOf(
                 passPriorityAction(player2),
                 instantSpellAction(player2)
@@ -286,15 +324,16 @@ class AutoPassManagerTest : FunSpec({
             autoPassManager.shouldAutoPass(state, player2, actions) shouldBe false
         }
 
-        test("STOP when stack is non-empty even with no responses available") {
-            val state = createMockState(player1, player1, Step.PRECOMBAT_MAIN, stackEmpty = false)
+        test("AUTO-PASS when own ability is on stack even with no responses available") {
+            // player1's ability on stack, player1 has priority → auto-pass
+            val state = createMockState(player1, player1, Step.PRECOMBAT_MAIN, stackEmpty = false, stackControllerId = player1)
             val actions = listOf(
                 passPriorityAction(player1),
                 manaAbilityAction(player1) // Only mana ability, not a response
             )
 
-            // Always stop when stack is non-empty so player can see what was cast
-            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe false
+            // Auto-pass when own ability is on stack (let opponent respond)
+            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe true
         }
     }
 

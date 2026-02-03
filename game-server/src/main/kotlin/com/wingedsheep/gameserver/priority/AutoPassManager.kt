@@ -2,6 +2,9 @@ package com.wingedsheep.gameserver.priority
 
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
+import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
+import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.gameserver.protocol.LegalActionInfo
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
@@ -66,7 +69,7 @@ class AutoPassManager {
         // - If OPPONENT's spell/ability is on top → STOP (you might want to respond)
         if (state.stack.isNotEmpty()) {
             val topOfStack = state.stack.last() // Stack is LIFO, last = top
-            val topController = state.getEntity(topOfStack)?.get<ControllerComponent>()?.playerId
+            val topController = getStackItemController(state, topOfStack)
 
             if (topController == playerId) {
                 // Our own spell/ability is on top - auto-pass to let opponent respond
@@ -316,6 +319,36 @@ class AutoPassManager {
             // Must have valid targets if required
             (!action.requiresTargets || !action.validTargets.isNullOrEmpty())
         }
+    }
+
+    /**
+     * Get the controller of a stack item.
+     * Checks various component types since abilities use different components than spells.
+     */
+    private fun getStackItemController(state: GameState, entityId: EntityId): EntityId? {
+        val container = state.getEntity(entityId) ?: return null
+
+        // Check for activated ability
+        container.get<ActivatedAbilityOnStackComponent>()?.let {
+            return it.controllerId
+        }
+
+        // Check for triggered ability
+        container.get<TriggeredAbilityOnStackComponent>()?.let {
+            return it.controllerId
+        }
+
+        // Check for spell (uses casterId)
+        container.get<SpellOnStackComponent>()?.let {
+            return it.casterId
+        }
+
+        // Fall back to ControllerComponent (for permanents that somehow end up here)
+        container.get<ControllerComponent>()?.let {
+            return it.playerId
+        }
+
+        return null
     }
 
     /**
