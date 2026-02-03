@@ -29,6 +29,7 @@ import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.ActivationRestriction
 import com.wingedsheep.sdk.scripting.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.AddManaEffect
+import com.wingedsheep.engine.handlers.CostPaymentChoices
 import kotlin.reflect.KClass
 
 /**
@@ -173,13 +174,22 @@ class ActivateAbilityHandler(
             colorless = poolComponent.colorless
         )
 
+        // Build cost payment choices from the action
+        val costChoices = CostPaymentChoices(
+            sacrificeChoices = action.costPayment?.sacrificedPermanents ?: emptyList(),
+            discardChoices = action.costPayment?.discardedCards ?: emptyList(),
+            exileChoices = action.costPayment?.exiledCards ?: emptyList(),
+            tapChoices = action.costPayment?.tappedPermanents ?: emptyList()
+        )
+
         // Pay the cost
         val costResult = costHandler.payAbilityCost(
             currentState,
             ability.cost,
             action.sourceId,
             action.playerId,
-            manaPool
+            manaPool,
+            costChoices
         )
 
         if (!costResult.success) {
@@ -188,6 +198,9 @@ class ActivateAbilityHandler(
 
         currentState = costResult.newState!!
         manaPool = costResult.newManaPool!!
+
+        // Collect events from cost payment (e.g., sacrifice events)
+        events.addAll(costResult.events)
 
         // Update mana pool if changed
         if (manaPool != ManaPool(poolComponent.white, poolComponent.blue, poolComponent.black, poolComponent.red, poolComponent.green, poolComponent.colorless)) {

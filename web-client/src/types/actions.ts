@@ -86,6 +86,8 @@ export interface ActivateAbilityAction {
   readonly sourceId: EntityId
   readonly abilityId: string
   readonly targets?: readonly ChosenTarget[]
+  /** Payment choices for ability costs (sacrifice, etc.) */
+  readonly costPayment?: AdditionalCostPayment
 }
 
 // =============================================================================

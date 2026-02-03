@@ -1016,7 +1016,10 @@ class GameSession(
             val nonManaAbilities = cardDef.script.activatedAbilities.filter { !it.isManaAbility }
 
             for (ability in nonManaAbilities) {
-                // Check cost requirements
+                // Check cost requirements and gather sacrifice targets if needed
+                var sacrificeTargets: List<EntityId>? = null
+                var sacrificeCost: AbilityCost.Sacrifice? = null
+
                 when (ability.cost) {
                     is AbilityCost.Tap -> {
                         if (container.has<TappedComponent>()) continue
@@ -1025,6 +1028,43 @@ class GameSession(
                             val hasHaste = cardComponent.baseKeywords.contains(Keyword.HASTE)
                             if (hasSummoningSickness && !hasHaste) continue
                         }
+                    }
+                    is AbilityCost.Sacrifice -> {
+                        sacrificeCost = ability.cost as AbilityCost.Sacrifice
+                        sacrificeTargets = findAbilitySacrificeTargets(state, playerId, sacrificeCost.filter)
+                        if (sacrificeTargets.isEmpty()) continue
+                    }
+                    is AbilityCost.Composite -> {
+                        val compositeCost = ability.cost as AbilityCost.Composite
+                        var costCanBePaid = true
+                        for (subCost in compositeCost.costs) {
+                            when (subCost) {
+                                is AbilityCost.Tap -> {
+                                    if (container.has<TappedComponent>()) {
+                                        costCanBePaid = false
+                                        break
+                                    }
+                                    if (!cardComponent.typeLine.isLand && cardComponent.typeLine.isCreature) {
+                                        val hasSummoningSickness = container.has<SummoningSicknessComponent>()
+                                        val hasHaste = cardComponent.baseKeywords.contains(Keyword.HASTE)
+                                        if (hasSummoningSickness && !hasHaste) {
+                                            costCanBePaid = false
+                                            break
+                                        }
+                                    }
+                                }
+                                is AbilityCost.Sacrifice -> {
+                                    sacrificeCost = subCost
+                                    sacrificeTargets = findAbilitySacrificeTargets(state, playerId, subCost.filter)
+                                    if (sacrificeTargets.isEmpty()) {
+                                        costCanBePaid = false
+                                        break
+                                    }
+                                }
+                                else -> {}
+                            }
+                        }
+                        if (!costCanBePaid) continue
                     }
                     else -> {}
                 }
@@ -1039,6 +1079,16 @@ class GameSession(
                 }
                 if (!restrictionsMet) continue
 
+                // Build additional cost info for sacrifice costs
+                val costInfo = if (sacrificeTargets != null && sacrificeCost != null) {
+                    AdditionalCostInfo(
+                        description = sacrificeCost.description,
+                        costType = "SacrificePermanent",
+                        validSacrificeTargets = sacrificeTargets,
+                        sacrificeCount = 1
+                    )
+                } else null
+
                 // Check for target requirements
                 val targetReq = ability.targetRequirement
                 if (targetReq != null) {
@@ -1051,7 +1101,8 @@ class GameSession(
                         result.add(LegalActionInfo(
                             actionType = "ActivateAbility",
                             description = ability.description,
-                            action = ActivateAbility(playerId, entityId, ability.id, targets = listOf(autoSelectedTarget))
+                            action = ActivateAbility(playerId, entityId, ability.id, targets = listOf(autoSelectedTarget)),
+                            additionalCostInfo = costInfo
                         ))
                     } else {
                         result.add(LegalActionInfo(
@@ -1062,14 +1113,16 @@ class GameSession(
                             requiresTargets = true,
                             targetCount = targetReq.count,
                             minTargets = targetReq.effectiveMinCount,
-                            targetDescription = targetReq.description
+                            targetDescription = targetReq.description,
+                            additionalCostInfo = costInfo
                         ))
                     }
                 } else {
                     result.add(LegalActionInfo(
                         actionType = "ActivateAbility",
                         description = ability.description,
-                        action = ActivateAbility(playerId, entityId, ability.id)
+                        action = ActivateAbility(playerId, entityId, ability.id),
+                        additionalCostInfo = costInfo
                     ))
                 }
             }
@@ -1538,6 +1591,28 @@ class GameSession(
             if (controllerId != playerId) return@filter false
 
             predicateEvaluator.matches(state, entityId, cost.filter, predicateContext)
+        }
+    }
+
+    /**
+     * Find valid sacrifice targets for an ability cost (AbilityCost.Sacrifice).
+     * Uses PredicateEvaluator for unified filter matching.
+     */
+    private fun findAbilitySacrificeTargets(
+        state: GameState,
+        playerId: EntityId,
+        filter: GameObjectFilter
+    ): List<EntityId> {
+        val playerBattlefield = ZoneKey(playerId, ZoneType.BATTLEFIELD)
+        val predicateContext = PredicateContext(controllerId = playerId)
+
+        return state.getZone(playerBattlefield).filter { entityId ->
+            val container = state.getEntity(entityId) ?: return@filter false
+            container.get<CardComponent>() ?: return@filter false
+            val controllerId = container.get<ControllerComponent>()?.playerId
+            if (controllerId != playerId) return@filter false
+
+            predicateEvaluator.matches(state, entityId, filter, predicateContext)
         }
     }
 

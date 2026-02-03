@@ -1765,6 +1765,31 @@ export const useGameStore = create<GameStore>()(
               set({ targetingState: null })
               return
             }
+          } else if (action.type === 'ActivateAbility') {
+            const actionWithCost = {
+              ...action,
+              costPayment: {
+                sacrificedPermanents: [...targetingState.selectedTargets],
+              },
+            }
+
+            // Check if the ability also requires effect targets
+            if (actionInfo.requiresTargets && actionInfo.validTargets && actionInfo.validTargets.length > 0) {
+              // Chain to ability targeting phase
+              set({ targetingState: null })
+              startTargeting({
+                action: actionWithCost,
+                validTargets: [...actionInfo.validTargets],
+                selectedTargets: [],
+                minTargets: actionInfo.minTargets ?? actionInfo.targetCount ?? 1,
+                maxTargets: actionInfo.targetCount ?? 1,
+              })
+              return
+            } else {
+              submitAction(actionWithCost)
+              set({ targetingState: null })
+              return
+            }
           }
         }
 

@@ -1,6 +1,9 @@
 package com.wingedsheep.engine.handlers
 
 import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.GameEvent
+import com.wingedsheep.engine.core.PermanentsSacrificedEvent
+import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
@@ -133,8 +136,33 @@ class CostHandler {
             is AbilityCost.Sacrifice -> {
                 val toSacrifice = choices.sacrificeChoices.firstOrNull()
                     ?: return CostPaymentResult.failure("No sacrifice target chosen")
-                // TODO: Move to graveyard
-                CostPaymentResult.success(state, manaPool)
+
+                // Get the controller of the permanent being sacrificed
+                val sacrificeContainer = state.getEntity(toSacrifice)
+                    ?: return CostPaymentResult.failure("Sacrifice target not found")
+                val sacrificeController = sacrificeContainer.get<ControllerComponent>()?.playerId
+                    ?: return CostPaymentResult.failure("Sacrifice target has no controller")
+                val sacrificeName = sacrificeContainer.get<CardComponent>()?.name ?: "Unknown"
+
+                // Move from battlefield to graveyard
+                val battlefieldZone = ZoneKey(sacrificeController, ZoneType.BATTLEFIELD)
+                val graveyardZone = ZoneKey(sacrificeController, ZoneType.GRAVEYARD)
+
+                var newState = state.removeFromZone(battlefieldZone, toSacrifice)
+                newState = newState.addToZone(graveyardZone, toSacrifice)
+
+                val events = listOf(
+                    PermanentsSacrificedEvent(sacrificeController, listOf(toSacrifice)),
+                    ZoneChangeEvent(
+                        entityId = toSacrifice,
+                        entityName = sacrificeName,
+                        fromZone = ZoneType.BATTLEFIELD,
+                        toZone = ZoneType.GRAVEYARD,
+                        ownerId = sacrificeController
+                    )
+                )
+
+                CostPaymentResult.success(newState, manaPool, events)
             }
             is AbilityCost.Discard -> {
                 val toDiscard = choices.discardChoices.firstOrNull()
@@ -261,11 +289,12 @@ data class CostPaymentResult(
     val success: Boolean,
     val newState: GameState?,
     val newManaPool: ManaPool?,
-    val error: String?
+    val error: String?,
+    val events: List<GameEvent> = emptyList()
 ) {
     companion object {
-        fun success(state: GameState, manaPool: ManaPool) =
-            CostPaymentResult(true, state, manaPool, null)
+        fun success(state: GameState, manaPool: ManaPool, events: List<GameEvent> = emptyList()) =
+            CostPaymentResult(true, state, manaPool, null, events)
 
         fun failure(error: String) =
             CostPaymentResult(false, null, null, error)

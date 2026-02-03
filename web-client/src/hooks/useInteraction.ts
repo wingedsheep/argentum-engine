@@ -155,8 +155,8 @@ export function useInteraction() {
         return
       }
 
-      // Check if spell requires sacrifice as additional cost
-      if (action.type === 'CastSpell' && actionInfo.additionalCostInfo?.costType === 'SacrificePermanent') {
+      // Check if spell or ability requires sacrifice as a cost
+      if ((action.type === 'CastSpell' || action.type === 'ActivateAbility') && actionInfo.additionalCostInfo?.costType === 'SacrificePermanent') {
         const costInfo = actionInfo.additionalCostInfo
         startTargeting({
           action,

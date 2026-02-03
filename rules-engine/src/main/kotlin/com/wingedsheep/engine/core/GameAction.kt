@@ -104,6 +104,12 @@ sealed interface PaymentStrategy {
 
 /**
  * Player activates an ability.
+ *
+ * @property playerId The player activating the ability
+ * @property sourceId The permanent whose ability is being activated
+ * @property abilityId The ID of the ability being activated
+ * @property targets Chosen targets for the ability's effect
+ * @property costPayment Payment choices for costs (sacrifice, etc.)
  */
 @Serializable
 @SerialName("ActivateAbility")
@@ -111,7 +117,8 @@ data class ActivateAbility(
     override val playerId: EntityId,
     val sourceId: EntityId,
     val abilityId: AbilityId,
-    val targets: List<ChosenTarget> = emptyList()
+    val targets: List<ChosenTarget> = emptyList(),
+    val costPayment: AdditionalCostPayment? = null
 ) : GameAction
 
 // =============================================================================
