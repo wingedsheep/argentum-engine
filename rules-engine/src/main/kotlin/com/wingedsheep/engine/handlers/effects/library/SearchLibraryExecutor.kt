@@ -6,10 +6,13 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CardFilter
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.SearchLibraryEffect
 import java.util.UUID
 import kotlin.reflect.KClass
@@ -33,6 +36,8 @@ class SearchLibraryExecutor : EffectExecutor<SearchLibraryEffect> {
 
     override val effectType: KClass<SearchLibraryEffect> = SearchLibraryEffect::class
 
+    private val predicateEvaluator = PredicateEvaluator()
+
     override fun execute(
         state: GameState,
         effect: SearchLibraryEffect,
@@ -48,10 +53,19 @@ class SearchLibraryExecutor : EffectExecutor<SearchLibraryEffect> {
         }
 
         // Filter cards that match the criteria
-        val matchingCards = library.filter { cardId ->
-            val container = state.getEntity(cardId)
-            val cardComponent = container?.get<CardComponent>()
-            matchesFilter(cardComponent, effect.filter)
+        // Prefer unified filter if available, fall back to legacy filter
+        val unifiedFilter = effect.unifiedFilter
+        val matchingCards = if (unifiedFilter != null) {
+            val predicateContext = PredicateContext.fromEffectContext(context)
+            library.filter { cardId ->
+                predicateEvaluator.matches(state, cardId, unifiedFilter, predicateContext)
+            }
+        } else {
+            library.filter { cardId ->
+                val container = state.getEntity(cardId)
+                val cardComponent = container?.get<CardComponent>()
+                matchesFilter(cardComponent, effect.filter)
+            }
         }
 
         // If no cards match, shuffle (if configured) and return
@@ -81,10 +95,13 @@ class SearchLibraryExecutor : EffectExecutor<SearchLibraryEffect> {
             state.getEntity(sourceId)?.get<CardComponent>()?.name
         }
 
+        // Use unified filter description if available
+        val filterDescription = effect.unifiedFilter?.description ?: effect.filter.description
+
         val decision = SearchLibraryDecision(
             id = decisionId,
             playerId = playerId,
-            prompt = "Search your library for ${if (effect.count == 1) "a" else "up to ${effect.count}"} ${effect.filter.description}",
+            prompt = "Search your library for ${if (effect.count == 1) "a" else "up to ${effect.count}"} $filterDescription",
             context = DecisionContext(
                 sourceId = context.sourceId,
                 sourceName = sourceName,
@@ -94,7 +111,7 @@ class SearchLibraryExecutor : EffectExecutor<SearchLibraryEffect> {
             minSelections = 0, // Can always "fail to find"
             maxSelections = maxSelections,
             cards = cardInfoMap,
-            filterDescription = effect.filter.description
+            filterDescription = filterDescription
         )
 
         // Create continuation to resume after player selects

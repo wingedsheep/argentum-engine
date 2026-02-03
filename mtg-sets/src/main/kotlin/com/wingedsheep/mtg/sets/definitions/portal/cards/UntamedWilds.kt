@@ -2,7 +2,7 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.CardFilter
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.SearchDestination
 import com.wingedsheep.sdk.scripting.SearchLibraryEffect
 
@@ -18,7 +18,7 @@ val UntamedWilds = card("Untamed Wilds") {
 
     spell {
         effect = SearchLibraryEffect(
-            filter = CardFilter.BasicLandCard,
+            unifiedFilter = GameObjectFilter.BasicLand,
             destination = SearchDestination.BATTLEFIELD,
             entersTapped = false
         )
