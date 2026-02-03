@@ -2,6 +2,8 @@ package com.wingedsheep.engine.handlers.effects.combat
 
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
 import com.wingedsheep.engine.mechanics.layers.FloatingEffectData
@@ -27,6 +29,8 @@ class GrantCantBeBlockedExceptByColorExecutor : EffectExecutor<GrantCantBeBlocke
 
     override val effectType: KClass<GrantCantBeBlockedExceptByColorEffect> = GrantCantBeBlockedExceptByColorEffect::class
 
+    private val predicateEvaluator = PredicateEvaluator()
+
     override fun execute(
         state: GameState,
         effect: GrantCantBeBlockedExceptByColorEffect,
@@ -34,15 +38,36 @@ class GrantCantBeBlockedExceptByColorExecutor : EffectExecutor<GrantCantBeBlocke
     ): ExecutionResult {
         val affectedEntities = mutableSetOf<EntityId>()
 
-        // Find all creatures matching the filter
-        for (entityId in state.getBattlefield()) {
-            val container = state.getEntity(entityId) ?: continue
-            val cardComponent = container.get<CardComponent>() ?: continue
+        // Use unified filter if present, otherwise fall back to legacy filter
+        val unifiedFilter = effect.unifiedFilter
+        if (unifiedFilter != null) {
+            // Use PredicateEvaluator for unified filter
+            val predicateContext = PredicateContext.fromEffectContext(context)
+            for (entityId in state.getBattlefield()) {
+                val container = state.getEntity(entityId) ?: continue
+                val cardComponent = container.get<CardComponent>() ?: continue
 
-            if (!cardComponent.typeLine.isCreature) continue
-            if (!matchesFilter(state, entityId, cardComponent, effect.filter, context)) continue
+                if (!cardComponent.typeLine.isCreature) continue
 
-            affectedEntities.add(entityId)
+                val excludeSelf = unifiedFilter.excludeSelf && entityId == context.sourceId
+                if (excludeSelf) continue
+
+                if (!predicateEvaluator.matches(state, entityId, unifiedFilter.baseFilter, predicateContext)) continue
+
+                affectedEntities.add(entityId)
+            }
+        } else {
+            // Legacy filter support
+            for (entityId in state.getBattlefield()) {
+                val container = state.getEntity(entityId) ?: continue
+                val cardComponent = container.get<CardComponent>() ?: continue
+
+                if (!cardComponent.typeLine.isCreature) continue
+                @Suppress("DEPRECATION")
+                if (!matchesFilter(state, entityId, cardComponent, effect.filter, context)) continue
+
+                affectedEntities.add(entityId)
+            }
         }
 
         if (affectedEntities.isEmpty()) {

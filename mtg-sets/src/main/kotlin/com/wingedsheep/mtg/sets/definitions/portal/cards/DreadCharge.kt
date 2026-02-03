@@ -3,8 +3,9 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.CreatureGroupFilter
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantCantBeBlockedExceptByColorEffect
+import com.wingedsheep.sdk.scripting.GroupFilter
 
 /**
  * Dread Charge
@@ -18,7 +19,7 @@ val DreadCharge = card("Dread Charge") {
 
     spell {
         effect = GrantCantBeBlockedExceptByColorEffect(
-            filter = CreatureGroupFilter.ColorYouControl(Color.BLACK),
+            unifiedFilter = GroupFilter(GameObjectFilter.Creature.withColor(Color.BLACK).youControl()),
             canOnlyBeBlockedByColor = Color.BLACK
         )
     }

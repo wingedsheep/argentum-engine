@@ -4,6 +4,8 @@ import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.StatsModifiedEvent
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
 import com.wingedsheep.engine.mechanics.layers.FloatingEffectData
@@ -27,6 +29,8 @@ class ModifyStatsForGroupExecutor : EffectExecutor<ModifyStatsForGroupEffect> {
 
     override val effectType: KClass<ModifyStatsForGroupEffect> = ModifyStatsForGroupEffect::class
 
+    private val predicateEvaluator = PredicateEvaluator()
+
     override fun execute(
         state: GameState,
         effect: ModifyStatsForGroupEffect,
@@ -35,12 +39,24 @@ class ModifyStatsForGroupExecutor : EffectExecutor<ModifyStatsForGroupEffect> {
         val events = mutableListOf<EngineGameEvent>()
         val affectedEntities = mutableSetOf<EntityId>()
 
+        // Use unified filter if available
+        val unifiedFilter = effect.unifiedFilter
+        val predicateContext = if (unifiedFilter != null) PredicateContext.fromEffectContext(context) else null
+
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue
 
             if (!cardComponent.typeLine.isCreature) continue
-            if (!matchesFilter(state, entityId, cardComponent, effect.filter, context)) continue
+
+            // Apply filter - prefer unified filter
+            val matches = if (unifiedFilter != null && predicateContext != null) {
+                predicateEvaluator.matches(state, entityId, unifiedFilter.baseFilter, predicateContext)
+            } else {
+                matchesFilter(state, entityId, cardComponent, effect.filter, context)
+            }
+
+            if (!matches) continue
 
             affectedEntities.add(entityId)
 

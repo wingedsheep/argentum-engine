@@ -2,7 +2,7 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.CreatureGroupFilter
+import com.wingedsheep.sdk.scripting.GroupFilter
 import com.wingedsheep.sdk.scripting.ModifyStatsForGroupEffect
 
 /**
@@ -19,7 +19,7 @@ val Steadfastness = card("Steadfastness") {
         effect = ModifyStatsForGroupEffect(
             powerModifier = 0,
             toughnessModifier = 3,
-            filter = CreatureGroupFilter.AllYouControl
+            unifiedFilter = GroupFilter.AllCreaturesYouControl
         )
     }
 

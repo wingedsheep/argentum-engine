@@ -76,18 +76,36 @@ data object PreventDamageFromAttackingCreaturesThisTurnEffect : Effect {
  * "Black creatures you control can't be blocked this turn except by black creatures."
  * Used for Dread Charge.
  *
- * @property filter Which creatures gain the evasion
+ * @property filter Which creatures gain the evasion (deprecated, use unifiedFilter)
  * @property canOnlyBeBlockedByColor The color of creatures that can block them
+ * @property unifiedFilter Unified group filter (preferred)
  */
 @Serializable
 data class GrantCantBeBlockedExceptByColorEffect(
-    val filter: CreatureGroupFilter,
+    @Deprecated("Use unifiedFilter instead")
+    val filter: CreatureGroupFilter = CreatureGroupFilter.All,
     val canOnlyBeBlockedByColor: Color,
-    val duration: Duration = Duration.EndOfTurn
+    val duration: Duration = Duration.EndOfTurn,
+    val unifiedFilter: GroupFilter? = null
 ) : Effect {
     override val description: String = buildString {
-        append("${filter.description} can't be blocked")
+        val filterDesc = unifiedFilter?.description ?: filter.description
+        append("$filterDesc can't be blocked")
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
         append(" except by ${canOnlyBeBlockedByColor.displayName.lowercase()} creatures")
+    }
+
+    companion object {
+        /** Create with unified filter */
+        operator fun invoke(
+            unifiedFilter: GroupFilter,
+            canOnlyBeBlockedByColor: Color,
+            duration: Duration = Duration.EndOfTurn
+        ) = GrantCantBeBlockedExceptByColorEffect(
+            filter = CreatureGroupFilter.All,
+            canOnlyBeBlockedByColor = canOnlyBeBlockedByColor,
+            duration = duration,
+            unifiedFilter = unifiedFilter
+        )
     }
 }

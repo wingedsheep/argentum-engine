@@ -3,10 +3,10 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.CreatureDamageFilter
 import com.wingedsheep.sdk.scripting.DealDamageToGroupEffect
 import com.wingedsheep.sdk.scripting.DealDamageToPlayersEffect
 import com.wingedsheep.sdk.scripting.DynamicAmount
+import com.wingedsheep.sdk.scripting.GroupFilter
 
 /**
  * Hurricane
@@ -19,7 +19,7 @@ val Hurricane = card("Hurricane") {
     typeLine = "Sorcery"
 
     spell {
-        effect = DealDamageToGroupEffect(DynamicAmount.XValue, CreatureDamageFilter.WithKeyword(Keyword.FLYING)) then
+        effect = DealDamageToGroupEffect(DynamicAmount.XValue, GroupFilter.AllCreatures.withKeyword(Keyword.FLYING)) then
             DealDamageToPlayersEffect(DynamicAmount.XValue)
     }
 

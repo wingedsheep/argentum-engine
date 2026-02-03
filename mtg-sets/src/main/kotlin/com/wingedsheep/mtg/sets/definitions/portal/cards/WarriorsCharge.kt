@@ -2,7 +2,7 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.CreatureGroupFilter
+import com.wingedsheep.sdk.scripting.GroupFilter
 import com.wingedsheep.sdk.scripting.ModifyStatsForGroupEffect
 
 /**
@@ -19,7 +19,7 @@ val WarriorsCharge = card("Warrior's Charge") {
         effect = ModifyStatsForGroupEffect(
             powerModifier = 1,
             toughnessModifier = 1,
-            filter = CreatureGroupFilter.AllYouControl
+            unifiedFilter = GroupFilter.AllCreaturesYouControl
         )
     }
 

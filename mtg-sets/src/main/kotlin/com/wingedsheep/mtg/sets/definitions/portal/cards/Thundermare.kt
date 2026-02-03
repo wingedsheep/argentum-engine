@@ -3,7 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.CreatureGroupFilter
+import com.wingedsheep.sdk.scripting.GroupFilter
 import com.wingedsheep.sdk.scripting.OnEnterBattlefield
 import com.wingedsheep.sdk.scripting.TapAllCreaturesEffect
 
@@ -25,7 +25,7 @@ val Thundermare = card("Thundermare") {
 
     triggeredAbility {
         trigger = OnEnterBattlefield()
-        effect = TapAllCreaturesEffect(CreatureGroupFilter.AllOther)
+        effect = TapAllCreaturesEffect(GroupFilter.AllOtherCreatures)
     }
 
     metadata {

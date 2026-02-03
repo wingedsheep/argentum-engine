@@ -4,6 +4,8 @@ import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.dealDamageToTarget
 import com.wingedsheep.engine.state.GameState
@@ -27,6 +29,8 @@ class DealDamageToGroupExecutor(
 
     override val effectType: KClass<DealDamageToGroupEffect> = DealDamageToGroupEffect::class
 
+    private val predicateEvaluator = PredicateEvaluator()
+
     override fun execute(
         state: GameState,
         effect: DealDamageToGroupEffect,
@@ -42,20 +46,21 @@ class DealDamageToGroupExecutor(
         var newState = state
         val events = mutableListOf<EngineGameEvent>()
 
+        // Use unified filter if available
+        val unifiedFilter = effect.unifiedFilter
+        val predicateContext = if (unifiedFilter != null) PredicateContext.fromEffectContext(context) else null
+
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue
 
             if (!cardComponent.typeLine.isCreature) continue
 
-            // Apply creature filter
-            val matches = when (val filter = effect.filter) {
-                CreatureDamageFilter.All -> true
-                is CreatureDamageFilter.WithKeyword -> cardComponent.baseKeywords.contains(filter.keyword)
-                is CreatureDamageFilter.WithoutKeyword -> !cardComponent.baseKeywords.contains(filter.keyword)
-                is CreatureDamageFilter.OfColor -> cardComponent.colors.contains(filter.color)
-                is CreatureDamageFilter.NotOfColor -> !cardComponent.colors.contains(filter.color)
-                CreatureDamageFilter.Attacking -> container.has<AttackingComponent>()
+            // Apply creature filter - prefer unified filter
+            val matches = if (unifiedFilter != null && predicateContext != null) {
+                predicateEvaluator.matches(state, entityId, unifiedFilter.baseFilter, predicateContext)
+            } else {
+                matchesLegacyFilter(container, cardComponent, effect.filter)
             }
 
             if (!matches) continue
@@ -66,5 +71,20 @@ class DealDamageToGroupExecutor(
         }
 
         return ExecutionResult.success(newState, events)
+    }
+
+    private fun matchesLegacyFilter(
+        container: com.wingedsheep.engine.state.ComponentContainer,
+        cardComponent: CardComponent,
+        filter: CreatureDamageFilter
+    ): Boolean {
+        return when (filter) {
+            CreatureDamageFilter.All -> true
+            is CreatureDamageFilter.WithKeyword -> cardComponent.baseKeywords.contains(filter.keyword)
+            is CreatureDamageFilter.WithoutKeyword -> !cardComponent.baseKeywords.contains(filter.keyword)
+            is CreatureDamageFilter.OfColor -> cardComponent.colors.contains(filter.color)
+            is CreatureDamageFilter.NotOfColor -> !cardComponent.colors.contains(filter.color)
+            CreatureDamageFilter.Attacking -> container.has<AttackingComponent>()
+        }
     }
 }

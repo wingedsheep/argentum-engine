@@ -1,8 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.portal.cards
 
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.CreatureGroupFilter
+import com.wingedsheep.sdk.scripting.GroupFilter
 import com.wingedsheep.sdk.scripting.TapAllCreaturesEffect
 
 /**
@@ -16,7 +17,7 @@ val BlindingLight = card("Blinding Light") {
     typeLine = "Sorcery"
 
     spell {
-        effect = TapAllCreaturesEffect(filter = CreatureGroupFilter.NonWhite)
+        effect = TapAllCreaturesEffect(GroupFilter.AllCreatures.notColor(Color.WHITE))
     }
 
     metadata {

@@ -4,6 +4,8 @@ import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.TappedEvent
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
@@ -23,6 +25,8 @@ class TapAllCreaturesExecutor : EffectExecutor<TapAllCreaturesEffect> {
 
     override val effectType: KClass<TapAllCreaturesEffect> = TapAllCreaturesEffect::class
 
+    private val predicateEvaluator = PredicateEvaluator()
+
     override fun execute(
         state: GameState,
         effect: TapAllCreaturesEffect,
@@ -30,6 +34,10 @@ class TapAllCreaturesExecutor : EffectExecutor<TapAllCreaturesEffect> {
     ): ExecutionResult {
         var newState = state
         val events = mutableListOf<EngineGameEvent>()
+
+        // Use unified filter if available
+        val unifiedFilter = effect.unifiedFilter
+        val predicateContext = if (unifiedFilter != null) PredicateContext.fromEffectContext(context) else null
 
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
@@ -40,8 +48,14 @@ class TapAllCreaturesExecutor : EffectExecutor<TapAllCreaturesEffect> {
             // Skip already tapped creatures
             if (container.has<TappedComponent>()) continue
 
-            // Check filter
-            if (!matchesFilter(state, entityId, cardComponent, effect.filter, context)) continue
+            // Check filter - prefer unified filter
+            val matches = if (unifiedFilter != null && predicateContext != null) {
+                predicateEvaluator.matches(state, entityId, unifiedFilter.baseFilter, predicateContext)
+            } else {
+                matchesFilter(state, entityId, cardComponent, effect.filter, context)
+            }
+
+            if (!matches) continue
 
             // Tap the creature
             newState = newState.updateEntity(entityId) { it.with(TappedComponent) }
