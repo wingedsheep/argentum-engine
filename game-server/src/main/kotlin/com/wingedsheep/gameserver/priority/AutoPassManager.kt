@@ -130,9 +130,16 @@ class AutoPassManager {
                 return@filter false
             }
 
-            // DeclareAttackers and DeclareBlockers are always meaningful when available
-            if (action.actionType == "DeclareAttackers" || action.actionType == "DeclareBlockers") {
-                return@filter true
+            // DeclareAttackers is meaningful if there are valid attackers
+            if (action.actionType == "DeclareAttackers") {
+                val hasValidAttackers = !action.validAttackers.isNullOrEmpty()
+                return@filter hasValidAttackers
+            }
+
+            // DeclareBlockers is meaningful only if there are valid blockers
+            if (action.actionType == "DeclareBlockers") {
+                val hasValidBlockers = !action.validBlockers.isNullOrEmpty()
+                return@filter hasValidBlockers
             }
 
             // PlayLand is always meaningful when available
