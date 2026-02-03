@@ -1317,8 +1317,9 @@ function suggestLands(
   spellCount: number,
   setLandCount: (name: string, count: number) => void,
 ) {
-  // Target 40 cards total
-  const targetLands = Math.max(0, 40 - spellCount)
+  // Use standard limited ratio: 17 lands per 23 spells
+  // Formula: lands = spells * 17 / 23
+  const targetLands = Math.max(0, Math.round(spellCount * 17 / 23))
   if (targetLands === 0) return
 
   // Count color symbols in deck spells
