@@ -2,7 +2,7 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.CardFilter
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.ReturnFromGraveyardEffect
 import com.wingedsheep.sdk.scripting.SearchDestination
 import com.wingedsheep.sdk.targeting.GraveyardCardFilter
@@ -21,7 +21,7 @@ val RaiseDead = card("Raise Dead") {
     spell {
         target = TargetCardInGraveyard(filter = GraveyardCardFilter.CreatureInYourGraveyard)
         effect = ReturnFromGraveyardEffect(
-            filter = CardFilter.CreatureCard,
+            unifiedFilter = GameObjectFilter.Creature,
             destination = SearchDestination.HAND
         )
     }

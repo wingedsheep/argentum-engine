@@ -3,7 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.CardFilter
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.MayEffect
 import com.wingedsheep.sdk.scripting.SearchDestination
 import com.wingedsheep.sdk.scripting.SearchLibraryEffect
@@ -26,7 +26,7 @@ val WirewoodHerald = card("Wirewood Herald") {
         trigger = Triggers.Dies
         effect = MayEffect(
             SearchLibraryEffect(
-                filter = CardFilter.HasSubtype("Elf"),
+                unifiedFilter = GameObjectFilter.Any.withSubtype("Elf"),
                 count = 1,
                 destination = SearchDestination.HAND,
                 reveal = true,
