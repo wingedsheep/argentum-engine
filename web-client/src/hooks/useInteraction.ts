@@ -218,6 +218,73 @@ export function useInteraction() {
   )
 
   /**
+   * Check if an action can be auto-executed (no special requirements).
+   */
+  const canAutoExecute = useCallback(
+    (actionInfo: LegalActionInfo): boolean => {
+      const action = actionInfo.action
+
+      // X cost spells need selection
+      if (action.type === 'CastSpell' && actionInfo.hasXCost) {
+        return false
+      }
+
+      // Convoke spells with creatures need selection
+      if (action.type === 'CastSpell' && actionInfo.hasConvoke && actionInfo.validConvokeCreatures && actionInfo.validConvokeCreatures.length > 0) {
+        return false
+      }
+
+      // Sacrifice costs need selection
+      if ((action.type === 'CastSpell' || action.type === 'ActivateAbility') && actionInfo.additionalCostInfo?.costType === 'SacrificePermanent') {
+        return false
+      }
+
+      // Targeting spells need selection
+      if (actionInfo.requiresTargets && actionInfo.validTargets && actionInfo.validTargets.length > 0) {
+        return false
+      }
+
+      return true
+    },
+    []
+  )
+
+  /**
+   * Handle a card being double-clicked.
+   * Auto-executes simple actions, shows action menu for complex ones.
+   */
+  const handleDoubleClick = useCallback(
+    (cardId: EntityId) => {
+      const actions = getCardActions(cardId)
+
+      // Debug logging
+      if (import.meta.env.DEV) {
+        console.log('handleDoubleClick:', cardId, 'actions:', actions.length)
+      }
+
+      if (actions.length === 0) {
+        selectCard(null)
+        return
+      }
+
+      if (actions.length === 1) {
+        const actionInfo = actions[0]!
+        if (canAutoExecute(actionInfo)) {
+          // Auto-execute simple action
+          submitAction(actionInfo.action)
+          selectCard(null)
+          return
+        }
+      }
+
+      // Multiple actions or complex action - use executeAction for the first one
+      // This handles X cost, targeting, convoke, etc.
+      executeAction(actions[0]!)
+    },
+    [getCardActions, canAutoExecute, submitAction, selectCard, executeAction]
+  )
+
+  /**
    * Cancel the current selection/action.
    */
   const cancelAction = useCallback(() => {
@@ -246,6 +313,7 @@ export function useInteraction() {
     getCardActions,
     processCardClick,
     handleCardClick,
+    handleDoubleClick,
     executeAction,
     cancelAction,
     passPriority,

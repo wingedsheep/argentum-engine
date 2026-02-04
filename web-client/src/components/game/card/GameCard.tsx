@@ -65,7 +65,7 @@ export function GameCard({
   const decisionSelectionState = useGameStore((state) => state.decisionSelectionState)
   const toggleDecisionSelection = useGameStore((state) => state.toggleDecisionSelection)
   const responsive = useResponsiveContext()
-  const { handleCardClick } = useInteraction()
+  const { handleCardClick, handleDoubleClick } = useInteraction()
   const dragStartPos = useRef<{ x: number; y: number } | null>(null)
   const handledByDrag = useRef(false)
 
@@ -345,6 +345,19 @@ export function GameCard({
     }
   }
 
+  // Double-click handler - auto-cast if possible
+  const handleDoubleClickEvent = () => {
+    // Skip if in special modes
+    if (isInTargetingMode || isInCombatMode || isChooseTargetsDecision || isValidDecisionSelection) {
+      return
+    }
+
+    // Only handle interactive cards
+    if (interactive) {
+      handleDoubleClick(card.id)
+    }
+  }
+
   // Determine border color based on state
   // Priority: attacking > blocking > selected > validTarget > validAttacker/Blocker > playable > default
   let borderStyle = '2px solid #333'
@@ -423,6 +436,7 @@ export function GameCard({
     <div
       data-card-id={card.id}
       onClick={handleClick}
+      onDoubleClick={handleDoubleClickEvent}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       onMouseEnter={handleMouseEnter}
