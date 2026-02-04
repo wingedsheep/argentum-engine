@@ -77,6 +77,18 @@ export function useCardActions(cardId: EntityId | null): LegalActionInfo[] {
   return useMemo(() => {
     if (!cardId) return []
 
+    // Debug: log cycling actions and their cardIds
+    if (import.meta.env.DEV) {
+      const cyclingActions = legalActions.filter(a => a.action.type === 'CycleCard')
+      if (cyclingActions.length > 0) {
+        console.log('useCardActions - looking for cardId:', cardId)
+        console.log('useCardActions - cycling actions:', cyclingActions.map(a => ({
+          actionCardId: (a.action as { cardId?: string }).cardId,
+          matches: (a.action as { cardId?: string }).cardId === cardId
+        })))
+      }
+    }
+
     return legalActions.filter((action) => {
       const a = action.action
       switch (a.type) {
@@ -87,6 +99,8 @@ export function useCardActions(cardId: EntityId | null): LegalActionInfo[] {
         case 'CycleCard':
           return a.cardId === cardId
         case 'ActivateAbility':
+          return a.sourceId === cardId
+        case 'TurnFaceUp':
           return a.sourceId === cardId
         default:
           return false
@@ -145,6 +159,8 @@ function getActionCardId(action: GameAction): EntityId | null {
     case 'CycleCard':
       return action.cardId
     case 'ActivateAbility':
+      return action.sourceId
+    case 'TurnFaceUp':
       return action.sourceId
     default:
       return null

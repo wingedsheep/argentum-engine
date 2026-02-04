@@ -6,7 +6,7 @@ import { CounterType } from '../../types'
 import { keywordIcons, genericKeywordIcon, displayableKeywords } from '../../assets/icons/keywords'
 import { PhaseIndicator } from '../ui/PhaseIndicator'
 import { ManaPool } from '../ui/ManaPool'
-import { AbilityText } from '../ui/ManaSymbols'
+import { ActionMenu } from '../ui/ActionMenu'
 import { CombatArrows } from '../combat/CombatArrows'
 import { TargetingArrows } from '../targeting/TargetingArrows'
 import { DraggedCardOverlay } from './DraggedCardOverlay'
@@ -17,6 +17,32 @@ import { useResponsive, calculateFittingCardWidth, type ResponsiveSizes } from '
 import { getCardImageUrl, getScryfallFallbackUrl, MORPH_FACE_DOWN_IMAGE_URL } from '../../utils/cardImages'
 import { useInteraction } from '../../hooks/useInteraction'
 import React, { createContext, useContext, useCallback, useEffect, useRef, useState } from 'react'
+
+/**
+ * Check if a card has multiple potential casting options.
+ * Returns true if the card has more than one way to be used.
+ * The server now sends all potential actions (including unaffordable ones),
+ * so we can simply count distinct action types.
+ *
+ * @param cardLegalActions Legal actions for this specific card from the server
+ */
+function hasMultipleCastingOptions(cardLegalActions: LegalActionInfo[]): boolean {
+  // Count distinct casting method types
+  const hasNormalCast = cardLegalActions.some(
+    (a) => a.action.type === 'CastSpell' && a.actionType !== 'CastFaceDown'
+  )
+  const hasMorphCast = cardLegalActions.some((a) => a.actionType === 'CastFaceDown')
+  const hasCycling = cardLegalActions.some((a) => a.action.type === 'CycleCard')
+  const hasPlayLand = cardLegalActions.some((a) => a.action.type === 'PlayLand')
+
+  let options = 0
+  if (hasNormalCast) options++
+  if (hasMorphCast) options++
+  if (hasCycling) options++
+  if (hasPlayLand) options++
+
+  return options > 1
+}
 
 // Context to pass responsive sizes down the component tree
 const ResponsiveContext = createContext<ResponsiveSizes | null>(null)
@@ -586,6 +612,9 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
 
       {/* Action menu for selected card - hidden in spectator mode */}
       {!spectatorMode && <ActionMenu />}
+
+      {/* Targeting overlay for spell/ability target selection */}
+      {!spectatorMode && <TargetingOverlay />}
 
       {/* Combat arrows for blocker assignments - rendered by SpectatorGameBoard in spectator mode to avoid stacking context issues */}
       {!spectatorMode && <CombatArrows />}
@@ -2058,11 +2087,17 @@ function GameCard({
   const height = Math.round(width * cardRatio)
 
   // Check if this card can be played/cast (for drag-to-play)
-  const playableAction = legalActions.find((a) => {
+  // Get all playable actions (including morph, cycling, etc.)
+  const playableActions = legalActions.filter((a) => {
     const action = a.action
     return (action.type === 'PlayLand' && action.cardId === card.id) ||
-           (action.type === 'CastSpell' && action.cardId === card.id)
+           (action.type === 'CastSpell' && action.cardId === card.id) ||
+           (action.type === 'CycleCard' && action.cardId === card.id)
   })
+  const playableAction = playableActions[0]
+  // Show modal if multiple legal actions OR if card has multiple potential options (e.g., morph + normal cast)
+  const hasMultiplePotentialOptions = hasMultipleCastingOptions(playableActions)
+  const shouldShowCastModal = playableActions.length > 1 || (hasMultiplePotentialOptions && playableActions.length > 0)
   const canDragToPlay = inHand && playableAction && !isInCombatMode
 
   // Handle mouse down - start dragging for blockers or hand cards
@@ -2138,6 +2173,13 @@ function GameCard({
       }
 
       if (!isOverHand && playableAction) {
+        // If multiple casting methods available, open the modal to let player choose
+        if (shouldShowCastModal) {
+          selectCard(card.id)
+          stopDraggingCard()
+          return
+        }
+
         // Check if spell has X cost - needs X selection first
         if (playableAction.hasXCost) {
           startXSelection({
@@ -2179,7 +2221,7 @@ function GameCard({
 
     window.addEventListener('mouseup', handleGlobalMouseUp)
     return () => window.removeEventListener('mouseup', handleGlobalMouseUp)
-  }, [draggingCardId, card.id, playableAction, submitAction, stopDraggingCard, startTargeting, startXSelection, handleCardClick, isInAttackerMode, isValidAttacker, toggleAttacker, isInBlockerMode, isValidBlocker, isSelectedAsBlocker, removeBlockerAssignment])
+  }, [draggingCardId, card.id, playableAction, shouldShowCastModal, submitAction, stopDraggingCard, startTargeting, startXSelection, handleCardClick, selectCard, isInAttackerMode, isValidAttacker, toggleAttacker, isInBlockerMode, isValidBlocker, isSelectedAsBlocker, removeBlockerAssignment])
 
   // Global mouse up handler to cancel drag
   useEffect(() => {
@@ -2852,222 +2894,104 @@ function GraveyardTargetingOverlay({
 }
 
 /**
- * Action menu that appears when a card with legal actions is selected.
- * Handles targeting mode for blocking (select blocker, then click attacker).
+ * Targeting overlay that appears when selecting targets for spells/abilities.
+ * Handles graveyard targeting, sacrifice selection, and normal targeting.
  */
-function ActionMenu() {
-  const selectedCardId = useGameStore((state) => state.selectedCardId)
-  const legalActions = useGameStore((state) => state.legalActions)
-  const submitAction = useGameStore((state) => state.submitAction)
-  const selectCard = useGameStore((state) => state.selectCard)
+function TargetingOverlay() {
   const targetingState = useGameStore((state) => state.targetingState)
   const cancelTargeting = useGameStore((state) => state.cancelTargeting)
   const confirmTargeting = useGameStore((state) => state.confirmTargeting)
-  const startTargeting = useGameStore((state) => state.startTargeting)
-  const startXSelection = useGameStore((state) => state.startXSelection)
   const responsive = useResponsiveContext()
 
   const gameState = useGameStore((state) => state.gameState)
   const addTarget = useGameStore((state) => state.addTarget)
   const removeTarget = useGameStore((state) => state.removeTarget)
 
-  // If in targeting mode, show targeting UI instead
-  if (targetingState) {
-    const selectedCount = targetingState.selectedTargets.length
-    const minTargets = targetingState.minTargets
-    const maxTargets = targetingState.maxTargets
-    const hasEnoughTargets = selectedCount >= minTargets
-    const hasMaxTargets = selectedCount >= maxTargets
-    const isSacrifice = targetingState.isSacrificeSelection
+  // Only show when in targeting mode
+  if (!targetingState) return null
 
-    // Check if all valid targets are graveyard cards
-    const graveyardCards: ClientCard[] = []
-    let allTargetsAreGraveyard = targetingState.validTargets.length > 0
-    for (const targetId of targetingState.validTargets) {
-      const card = gameState?.cards[targetId]
-      if (card && card.zone?.zoneType === 'GRAVEYARD') {
-        graveyardCards.push(card)
-      } else {
-        allTargetsAreGraveyard = false
-        break
-      }
+  const selectedCount = targetingState.selectedTargets.length
+  const minTargets = targetingState.minTargets
+  const maxTargets = targetingState.maxTargets
+  const hasEnoughTargets = selectedCount >= minTargets
+  const hasMaxTargets = selectedCount >= maxTargets
+  const isSacrifice = targetingState.isSacrificeSelection
+
+  // Check if all valid targets are graveyard cards
+  const graveyardCards: ClientCard[] = []
+  let allTargetsAreGraveyard = targetingState.validTargets.length > 0
+  for (const targetId of targetingState.validTargets) {
+    const card = gameState?.cards[targetId]
+    if (card && card.zone?.zoneType === 'GRAVEYARD') {
+      graveyardCards.push(card)
+    } else {
+      allTargetsAreGraveyard = false
+      break
     }
+  }
 
-    // If all targets are graveyard cards, show graveyard selection UI
-    if (allTargetsAreGraveyard && graveyardCards.length > 0) {
-      return (
-        <GraveyardTargetingOverlay
-          graveyardCards={graveyardCards}
-          targetingState={targetingState}
-          responsive={responsive}
-          onSelect={addTarget}
-          onDeselect={removeTarget}
-          onConfirm={confirmTargeting}
-          onCancel={cancelTargeting}
-        />
-      )
-    }
-
-    // Build the target count display
-    const targetDisplay = minTargets === maxTargets
-      ? `${selectedCount}/${maxTargets}`
-      : `${selectedCount} (${minTargets}-${maxTargets})`
-
-    // Build the prompt text based on selection type
-    const promptText = isSacrifice
-      ? `Select creature to sacrifice (${targetDisplay})`
-      : `Select targets (${targetDisplay})`
-
-    const hintText = hasMaxTargets
-      ? isSacrifice ? 'Creature selected' : 'Maximum targets selected'
-      : hasEnoughTargets
-        ? 'Click Confirm or select more'
-        : isSacrifice ? 'Click a creature you control' : 'Click a highlighted target'
-
+  // If all targets are graveyard cards, show graveyard selection UI
+  if (allTargetsAreGraveyard && graveyardCards.length > 0) {
     return (
-      <div style={{
-        ...styles.targetingOverlay,
-        padding: responsive.isMobile ? '12px 16px' : '16px 24px',
-        borderColor: isSacrifice ? '#ff8800' : '#ff4444',
-      }}>
-        <div style={{
-          ...styles.targetingPrompt,
-          fontSize: responsive.fontSize.normal,
-          color: isSacrifice ? '#ff8800' : '#ff4444',
-        }}>
-          {promptText}
-        </div>
-        <div style={{ color: '#aaa', fontSize: responsive.fontSize.small, marginTop: 4 }}>
-          {hintText}
-        </div>
-        <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-          {hasEnoughTargets && (
-            <button onClick={confirmTargeting} style={{
-              ...styles.actionButton,
-              padding: responsive.isMobile ? '8px 12px' : '10px 16px',
-              fontSize: responsive.fontSize.normal,
-            }}>
-              Confirm ({selectedCount})
-            </button>
-          )}
-          <button onClick={cancelTargeting} style={{
-            ...styles.cancelButton,
-            padding: responsive.isMobile ? '8px 12px' : '10px 16px',
-            fontSize: responsive.fontSize.normal,
-          }}>
-            Cancel
-          </button>
-        </div>
-      </div>
+      <GraveyardTargetingOverlay
+        graveyardCards={graveyardCards}
+        targetingState={targetingState}
+        responsive={responsive}
+        onSelect={addTarget}
+        onDeselect={removeTarget}
+        onConfirm={confirmTargeting}
+        onCancel={cancelTargeting}
+      />
     )
   }
 
-  if (!selectedCardId) return null
+  // Build the target count display
+  const targetDisplay = minTargets === maxTargets
+    ? `${selectedCount}/${maxTargets}`
+    : `${selectedCount} (${minTargets}-${maxTargets})`
 
-  // Filter legal actions for the selected card
-  const cardActions = legalActions.filter((info) => {
-    const action = info.action
-    switch (action.type) {
-      case 'PlayLand':
-        return action.cardId === selectedCardId
-      case 'CastSpell':
-        return action.cardId === selectedCardId
-      case 'ActivateAbility':
-        return action.sourceId === selectedCardId
-      default:
-        return false
-    }
-  })
+  // Build the prompt text based on selection type
+  const promptText = isSacrifice
+    ? `Select creature to sacrifice (${targetDisplay})`
+    : `Select targets (${targetDisplay})`
 
-  if (cardActions.length === 0) return null
-
-  const handleActionClick = (info: LegalActionInfo) => {
-    // Check if spell has X cost - needs X selection first
-    if (info.action.type === 'CastSpell' && info.hasXCost) {
-      startXSelection({
-        actionInfo: info,
-        cardName: info.description.replace('Cast ', ''),
-        minX: info.minX ?? 0,
-        maxX: info.maxAffordableX ?? 0,
-        selectedX: info.maxAffordableX ?? 0,
-      })
-      selectCard(null)
-      return
-    }
-
-    // Check if spell or ability requires sacrifice as a cost
-    if ((info.action.type === 'CastSpell' || info.action.type === 'ActivateAbility') && info.additionalCostInfo?.costType === 'SacrificePermanent') {
-      const costInfo = info.additionalCostInfo
-      startTargeting({
-        action: info.action,
-        validTargets: [...(costInfo.validSacrificeTargets ?? [])],
-        selectedTargets: [],
-        minTargets: costInfo.sacrificeCount ?? 1,
-        maxTargets: costInfo.sacrificeCount ?? 1,
-        isSacrificeSelection: true,
-        pendingActionInfo: info,
-      })
-      selectCard(null)
-      return
-    }
-
-    // Check if action requires targeting
-    if (info.requiresTargets && info.validTargets && info.validTargets.length > 0) {
-      // Enter targeting mode
-      startTargeting({
-        action: info.action,
-        validTargets: info.validTargets,
-        selectedTargets: [],
-        minTargets: info.minTargets ?? info.targetCount ?? 1,
-        maxTargets: info.targetCount ?? 1,
-      })
-      selectCard(null)
-    } else {
-      // Submit action directly
-      submitAction(info.action)
-      selectCard(null)
-    }
-  }
+  const hintText = hasMaxTargets
+    ? isSacrifice ? 'Creature selected' : 'Maximum targets selected'
+    : hasEnoughTargets
+      ? 'Click Confirm or select more'
+      : isSacrifice ? 'Click a creature you control' : 'Click a highlighted target'
 
   return (
-    <div style={styles.actionMenuOverlay} onClick={() => selectCard(null)}>
+    <div style={{
+      ...styles.targetingOverlay,
+      padding: responsive.isMobile ? '12px 16px' : '16px 24px',
+      borderColor: isSacrifice ? '#ff8800' : '#ff4444',
+    }}>
       <div style={{
-        ...styles.actionMenu,
-        padding: responsive.isMobile ? 12 : 16,
-        minWidth: responsive.isMobile ? 160 : 200,
-      }} onClick={(e) => e.stopPropagation()}>
-        <div style={{
-          ...styles.actionMenuTitle,
-          fontSize: responsive.fontSize.small,
-        }}>Actions</div>
-
-        {/* Card actions */}
-        {cardActions.map((info, index) => (
-          <button
-            key={index}
-            onClick={() => handleActionClick(info)}
-            style={{
-              ...styles.actionButton,
-              padding: responsive.isMobile ? '10px 12px' : '12px 16px',
-              fontSize: responsive.fontSize.normal,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 4,
-            }}
-          >
-            <AbilityText text={info.description} size={responsive.isMobile ? 14 : 16} />
-            {info.requiresTargets && <span style={{ color: '#888', marginLeft: 8 }}>(select target)</span>}
-          </button>
-        ))}
-
-        <button
-          onClick={() => selectCard(null)}
-          style={{
-            ...styles.cancelButton,
+        ...styles.targetingPrompt,
+        fontSize: responsive.fontSize.normal,
+        color: isSacrifice ? '#ff8800' : '#ff4444',
+      }}>
+        {promptText}
+      </div>
+      <div style={{ color: '#aaa', fontSize: responsive.fontSize.small, marginTop: 4 }}>
+        {hintText}
+      </div>
+      <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+        {hasEnoughTargets && (
+          <button onClick={confirmTargeting} style={{
+            ...styles.actionButton,
             padding: responsive.isMobile ? '8px 12px' : '10px 16px',
             fontSize: responsive.fontSize.normal,
-          }}
-        >
+          }}>
+            Confirm ({selectedCount})
+          </button>
+        )}
+        <button onClick={cancelTargeting} style={{
+          ...styles.cancelButton,
+          padding: responsive.isMobile ? '8px 12px' : '10px 16px',
+          fontSize: responsive.fontSize.normal,
+        }}>
           Cancel
         </button>
       </div>
@@ -3570,36 +3494,6 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#ff4444',
     fontSize: 16,
     fontWeight: 600,
-  },
-  actionMenuOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 100,
-  },
-  actionMenu: {
-    backgroundColor: '#1a1a2e',
-    border: '2px solid #444',
-    borderRadius: 12,
-    padding: 16,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 8,
-    minWidth: 200,
-  },
-  actionMenuTitle: {
-    color: '#888',
-    fontSize: 12,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginBottom: 8,
-    textAlign: 'center',
   },
   actionButton: {
     padding: '12px 16px',

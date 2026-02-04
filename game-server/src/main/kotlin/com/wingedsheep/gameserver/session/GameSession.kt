@@ -42,6 +42,7 @@ import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.TargetFilter
@@ -87,6 +88,7 @@ class GameSession(
     private val manaSolver = ManaSolver(cardRegistry)
     private val conditionEvaluator = ConditionEvaluator()
     private val predicateEvaluator = PredicateEvaluator()
+    private val stateProjector = StateProjector()
     private val turnManager = TurnManager()
     private val autoPassManager = AutoPassManager()
 
@@ -717,21 +719,35 @@ class GameSession(
         // Check for morph cards that can be cast face-down (sorcery speed only)
         if (canPlaySorcerySpeed) {
             val morphCost = ManaCost.parse("{3}")
-            if (manaSolver.canPay(state, playerId, morphCost)) {
-                for (cardId in hand) {
-                    val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: continue
-                    val cardDef = cardRegistry.getCard(cardComponent.name) ?: continue
+            val canAffordMorph = manaSolver.canPay(state, playerId, morphCost)
+            for (cardId in hand) {
+                val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: continue
+                val cardDef = cardRegistry.getCard(cardComponent.name) ?: continue
 
-                    // Check if card has Morph keyword
-                    val hasMorph = cardDef.keywordAbilities
-                        .any { it is com.wingedsheep.sdk.scripting.KeywordAbility.Morph }
+                // Check if card has Morph keyword
+                val hasMorph = cardDef.keywordAbilities
+                    .any { it is com.wingedsheep.sdk.scripting.KeywordAbility.Morph }
 
-                    if (hasMorph) {
+                if (hasMorph) {
+                    // Add morph action (affordable or not) - client shows greyed out if unaffordable
+                    result.add(LegalActionInfo(
+                        actionType = "CastFaceDown",
+                        description = "Cast ${cardComponent.name} face-down",
+                        action = CastSpell(playerId, cardId, castFaceDown = true),
+                        isAffordable = canAffordMorph,
+                        manaCostString = "{3}"
+                    ))
+
+                    // Check if we can afford to cast normally - if not, add unaffordable cast action
+                    // This ensures the player sees both options in the cast modal
+                    val canAffordNormal = manaSolver.canPay(state, playerId, cardComponent.manaCost)
+                    if (!canAffordNormal) {
                         result.add(LegalActionInfo(
-                            actionType = "CastFaceDown",
-                            description = "Cast ${cardComponent.name} face-down",
-                            action = CastSpell(playerId, cardId, castFaceDown = true),
-                            manaCostString = "{3}"
+                            actionType = "CastSpell",
+                            description = "Cast ${cardComponent.name}",
+                            action = CastSpell(playerId, cardId),
+                            isAffordable = false,
+                            manaCostString = cardComponent.manaCost.toString()
                         ))
                     }
                 }
@@ -813,8 +829,8 @@ class GameSession(
                             (availableSources - fixedCost).coerceAtLeast(0)
                         } else null
 
-                        // Convoke info was already calculated above (before affordability check)
-                        val manaCostString = if (hasConvoke) cardComponent.manaCost.toString() else null
+                        // Always include mana cost string for cast actions
+                        val manaCostString = cardComponent.manaCost.toString()
 
                         // Check for DividedDamageEffect to flag damage distribution requirement
                         val spellEffect = cardDef?.script?.spellEffect
@@ -916,20 +932,55 @@ class GameSession(
         // Check for cycling abilities on cards in hand
         for (cardId in hand) {
             val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: continue
-            val cardDef = cardRegistry.getCard(cardComponent.name) ?: continue
+            val cardDef = cardRegistry.getCard(cardComponent.name)
+            if (cardDef == null) {
+                logger.warn("Cycling check: No card definition found for '${cardComponent.name}'")
+                continue
+            }
 
-            // Check for cycling ability
-            val cyclingAbility = cardDef.keywordAbilities
+            // Check for cycling ability - log at info level to ensure visibility
+            val allAbilities = cardDef.keywordAbilities
+            logger.info("Cycling check: ${cardComponent.name} has ${allAbilities.size} keyword abilities: ${allAbilities.map { "${it::class.simpleName}(${it})" }}")
+            val cyclingAbility = allAbilities
                 .filterIsInstance<com.wingedsheep.sdk.scripting.KeywordAbility.Cycling>()
-                .firstOrNull() ?: continue
+                .firstOrNull()
+            if (cyclingAbility == null) {
+                logger.info("Cycling check: No Cycling ability found for ${cardComponent.name}")
+                continue
+            }
+            logger.info("Cycling check: Found cycling ability for ${cardComponent.name} with cost ${cyclingAbility.cost}")
 
-            // Check if player can afford the cycling cost
-            if (manaSolver.canPay(state, playerId, cyclingAbility.cost)) {
-                result.add(LegalActionInfo(
-                    actionType = "CycleCard",
-                    description = "Cycle ${cardComponent.name}",
-                    action = CycleCard(playerId, cardId)
-                ))
+            // Add cycling action (affordable or not) - client shows greyed out if unaffordable
+            val canAffordCycling = manaSolver.canPay(state, playerId, cyclingAbility.cost)
+            result.add(LegalActionInfo(
+                actionType = "CycleCard",
+                description = "Cycle ${cardComponent.name}",
+                action = CycleCard(playerId, cardId),
+                isAffordable = canAffordCycling,
+                manaCostString = cyclingAbility.cost.toString()
+            ))
+
+            // For cards with cycling, also add the normal cast option (matching morph pattern)
+            // This ensures the player sees both options in the cast modal
+            if (!cardComponent.typeLine.isLand) {
+                val isInstant = cardComponent.typeLine.isInstant
+                val canCastTiming = isInstant || canPlaySorcerySpeed
+                if (canCastTiming) {
+                    // Check if we can afford to cast normally
+                    val canAffordNormal = manaSolver.canPay(state, playerId, cardComponent.manaCost)
+                    // Check if a cast action was already added (affordable)
+                    val hasCastAction = result.any { it.action is CastSpell && (it.action as CastSpell).cardId == cardId }
+                    if (!hasCastAction) {
+                        // Add cast action (always, but marked as unaffordable if can't pay)
+                        result.add(LegalActionInfo(
+                            actionType = "CastSpell",
+                            description = "Cast ${cardComponent.name}",
+                            action = CastSpell(playerId, cardId),
+                            isAffordable = canAffordNormal,
+                            manaCostString = cardComponent.manaCost.toString()
+                        ))
+                    }
+                }
             }
         }
 
@@ -995,8 +1046,8 @@ class GameSession(
             // Check if player can afford the morph cost
             if (manaSolver.canPay(state, playerId, morphData.morphCost)) {
                 result.add(LegalActionInfo(
-                    actionType = "TurnFaceUp",
-                    description = "Turn ${cardComponent.name} face-up",
+                    actionType = "ActivateAbility",
+                    description = "Turn face-up (${morphData.morphCost})",
                     action = TurnFaceUp(playerId, entityId),
                     manaCostString = morphData.morphCost.toString()
                 ))
@@ -1414,17 +1465,19 @@ class GameSession(
 
     /**
      * Find valid creature targets based on a filter.
-     * Uses PredicateEvaluator for unified filter matching.
+     * Uses PredicateEvaluator with projected state to correctly handle face-down creatures.
      */
     private fun findValidCreatureTargets(
         state: GameState,
         playerId: EntityId,
         filter: TargetFilter
     ): List<EntityId> {
+        val projected = stateProjector.project(state)
         val battlefield = state.getBattlefield()
         val context = PredicateContext(controllerId = playerId)
         return battlefield.filter { entityId ->
-            predicateEvaluator.matches(state, entityId, filter.baseFilter, context)
+            // Use projected state for correct face-down creature handling
+            predicateEvaluator.matchesWithProjection(state, projected, entityId, filter.baseFilter, context)
         }
     }
 
