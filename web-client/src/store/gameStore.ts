@@ -383,6 +383,8 @@ export interface GameStore {
   decisionSelectionState: DecisionSelectionState | null
   damageDistributionState: DamageDistributionState | null
   hoveredCardId: EntityId | null
+  /** Preview of which lands/mana sources would be tapped when casting the hovered spell */
+  autoTapPreview: readonly EntityId[] | null
   draggingBlockerId: EntityId | null
   draggingCardId: EntityId | null
   revealedHandCardIds: readonly EntityId[] | null
@@ -1316,6 +1318,7 @@ export const useGameStore = create<GameStore>()(
       decisionSelectionState: null,
       damageDistributionState: null,
       hoveredCardId: null,
+      autoTapPreview: null,
       draggingBlockerId: null,
       draggingCardId: null,
       revealedHandCardIds: null,
@@ -1707,7 +1710,18 @@ export const useGameStore = create<GameStore>()(
       },
 
       hoverCard: (cardId) => {
-        set({ hoveredCardId: cardId })
+        // Find auto-tap preview if hovering over a castable card
+        let autoTapPreview: GameStore['autoTapPreview'] = null
+        if (cardId) {
+          const { legalActions } = get()
+          const castAction = legalActions.find(
+            (a) => a.action.type === 'CastSpell' && a.action.cardId === cardId
+          )
+          if (castAction?.autoTapPreview) {
+            autoTapPreview = castAction.autoTapPreview
+          }
+        }
+        set({ hoveredCardId: cardId, autoTapPreview })
       },
 
       toggleMulliganCard: (cardId) => {

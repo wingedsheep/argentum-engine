@@ -30,7 +30,19 @@ data class ManaSource(
     /** Colors this source can produce (empty means colorless-only) */
     val producesColors: Set<Color>,
     /** Whether this source can produce colorless mana */
-    val producesColorless: Boolean = false
+    val producesColorless: Boolean = false,
+    /** Whether this is a basic land (Plains, Island, Swamp, Mountain, Forest) */
+    val isBasicLand: Boolean = false,
+    /** Whether this source is a creature */
+    val isCreature: Boolean = false,
+    /** Whether this source has non-mana activated abilities (utility land/creature) */
+    val hasNonManaAbilities: Boolean = false,
+    /** Whether tapping this source costs life (pain land) */
+    val hasPainCost: Boolean = false,
+    /** Amount of life paid when tapping (for pain lands) */
+    val painAmount: Int = 0,
+    /** Whether this creature can attack (no summoning sickness or has haste) */
+    val canAttack: Boolean = false
 )
 
 /**
@@ -92,51 +104,79 @@ class ManaSolver(
             return null
         }
 
+        // Analyze hand to inform smart tapping decisions
+        val handRequirements = analyzeHandRequirements(state, playerId)
+
+        // Count available sources per color for hand-awareness
+        val availableSourcesByColor = mutableMapOf<Color, Int>()
+        for (color in Color.entries) {
+            availableSourcesByColor[color] = availableSources.count { it.producesColors.contains(color) }
+        }
+
         // Track which sources we've used
         val usedSources = mutableListOf<ManaSource>()
         val manaProduced = mutableMapOf<EntityId, ManaProduction>()
         var remainingSources = availableSources.toMutableList()
 
+        // Helper to update available counts when a source is used
+        fun useSource(source: ManaSource) {
+            usedSources.add(source)
+            remainingSources.remove(source)
+            for (color in source.producesColors) {
+                availableSourcesByColor[color] = (availableSourcesByColor[color] ?: 1) - 1
+            }
+        }
+
         // 1. Pay colored costs first (most constrained)
         for (symbol in cost.symbols) {
             when (symbol) {
                 is ManaSymbol.Colored -> {
-                    val source = findBestSourceForColor(remainingSources, symbol.color)
+                    val source = findBestSourceForColor(remainingSources, symbol.color, handRequirements, availableSourcesByColor)
                         ?: return null // Can't pay this colored cost
 
-                    usedSources.add(source)
                     manaProduced[source.entityId] = ManaProduction(color = symbol.color)
-                    remainingSources.remove(source)
+                    useSource(source)
                 }
                 is ManaSymbol.Hybrid -> {
-                    // Try first color, then second
-                    val source = findBestSourceForColor(remainingSources, symbol.color1)
-                        ?: findBestSourceForColor(remainingSources, symbol.color2)
-                        ?: return null
+                    // Try first color, then second - use priority to pick the best
+                    val source1 = findBestSourceForColor(remainingSources, symbol.color1, handRequirements, availableSourcesByColor)
+                    val source2 = findBestSourceForColor(remainingSources, symbol.color2, handRequirements, availableSourcesByColor)
+
+                    val source = when {
+                        source1 == null && source2 == null -> return null
+                        source1 == null -> source2!!
+                        source2 == null -> source1
+                        else -> {
+                            // Pick the source with lower priority (tap it first)
+                            val priority1 = calculateTapPriority(source1, handRequirements, availableSourcesByColor)
+                            val priority2 = calculateTapPriority(source2, handRequirements, availableSourcesByColor)
+                            if (priority1 <= priority2) source1 else source2
+                        }
+                    }
 
                     val colorUsed = if (source.producesColors.contains(symbol.color1))
                         symbol.color1 else symbol.color2
-                    usedSources.add(source)
                     manaProduced[source.entityId] = ManaProduction(color = colorUsed)
-                    remainingSources.remove(source)
+                    useSource(source)
                 }
                 is ManaSymbol.Phyrexian -> {
                     // For now, always pay with mana (not life)
-                    val source = findBestSourceForColor(remainingSources, symbol.color)
+                    val source = findBestSourceForColor(remainingSources, symbol.color, handRequirements, availableSourcesByColor)
                         ?: return null
 
-                    usedSources.add(source)
                     manaProduced[source.entityId] = ManaProduction(color = symbol.color)
-                    remainingSources.remove(source)
+                    useSource(source)
                 }
                 is ManaSymbol.Colorless -> {
                     // Must pay with actual colorless mana (from Wastes, etc.)
-                    val source = remainingSources.find { it.producesColorless }
+                    // Sort colorless sources by priority
+                    val source = remainingSources
+                        .filter { it.producesColorless }
+                        .minByOrNull { calculateTapPriority(it, handRequirements, availableSourcesByColor) }
                         ?: return null
 
-                    usedSources.add(source)
                     manaProduced[source.entityId] = ManaProduction(colorless = 1)
-                    remainingSources.remove(source)
+                    useSource(source)
                 }
                 is ManaSymbol.Generic, is ManaSymbol.X -> {
                     // Handle in the generic pass below
@@ -151,12 +191,10 @@ class ManaSolver(
                 return null // Not enough mana
             }
 
-            // Prefer sources that only produce one color (or colorless)
-            // to preserve flexibility of multi-color lands
-            val source = remainingSources.minByOrNull { it.producesColors.size }
+            // Use priority-based selection for generic costs
+            val source = remainingSources.minByOrNull { calculateTapPriority(it, handRequirements, availableSourcesByColor) }
                 ?: return null
 
-            usedSources.add(source)
             // For generic costs, use the first available color or colorless
             val colorToUse = source.producesColors.firstOrNull()
             manaProduced[source.entityId] = if (colorToUse != null) {
@@ -164,10 +202,114 @@ class ManaSolver(
             } else {
                 ManaProduction(colorless = 1)
             }
-            remainingSources.remove(source)
+            useSource(source)
         }
 
         return ManaSolution(usedSources, manaProduced)
+    }
+
+    /**
+     * Calculates the tap priority for a mana source (lower = tap first).
+     *
+     * Priority order (tap first to last):
+     * 1. Basic lands (priority ~0-1)
+     * 2. Non-basic single-color lands without abilities (~2)
+     * 3. Dual/tri-lands without abilities (~3-5)
+     * 4. Utility lands with non-mana abilities (~10-14)
+     * 5. Pain lands (~16+)
+     * 6. Mana creatures that can attack (~20+)
+     * 7. Five-color lands (~25+)
+     */
+    private fun calculateTapPriority(
+        source: ManaSource,
+        handRequirements: Map<Color, Int>,
+        availableSourcesByColor: Map<Color, Int>
+    ): Int {
+        var priority = 0
+
+        // Base: color flexibility (0-10 based on color count)
+        priority += when (source.producesColors.size) {
+            0 -> 1      // Colorless-only
+            1 -> 0      // Single color - tap first
+            2 -> 3      // Dual land
+            3 -> 4      // Tri-land
+            4 -> 5      // Four-color
+            else -> 10  // Five-color - tap last
+        }
+
+        // Prefer basics (+2 penalty for non-basics)
+        if (!source.isBasicLand && source.producesColors.isNotEmpty()) {
+            priority += 2
+        }
+
+        // Preserve utility lands (+10 for non-mana abilities)
+        if (source.hasNonManaAbilities) {
+            priority += 10
+        }
+
+        // Avoid pain lands (+15 + pain amount)
+        if (source.hasPainCost) {
+            priority += 15 + source.painAmount
+        }
+
+        // Preserve attackers (+20 for creatures that can attack)
+        if (source.isCreature && source.canAttack) {
+            priority += 20
+        }
+
+        // Hand awareness: penalize tapping sources for colors we need in hand
+        // but have limited supply of
+        for (color in source.producesColors) {
+            val required = handRequirements[color] ?: 0
+            val available = availableSourcesByColor[color] ?: 0
+
+            // If tapping this would leave us short for hand cards, add penalty
+            if (required > 0 && available <= required) {
+                priority += 5  // Medium penalty - still allow if necessary
+            }
+        }
+
+        return priority
+    }
+
+    /**
+     * Analyzes cards in hand and returns required color counts.
+     * Returns map of Color -> minimum sources needed to cast the most color-demanding card of that color.
+     */
+    private fun analyzeHandRequirements(state: GameState, playerId: EntityId): Map<Color, Int> {
+        val handZone = ZoneKey(playerId, ZoneType.HAND)
+        val handCards = state.getZone(handZone)
+
+        val colorRequirements = mutableMapOf<Color, Int>()
+
+        for (entityId in handCards) {
+            val container = state.getEntity(entityId) ?: continue
+            val card = container.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry?.getCard(card.cardDefinitionId) ?: continue
+
+            // Get mana cost
+            val manaCost = cardDef.manaCost ?: continue
+
+            // Count colored symbols per color in this card's cost
+            val cardColorCounts = mutableMapOf<Color, Int>()
+            for (symbol in manaCost.symbols) {
+                when (symbol) {
+                    is ManaSymbol.Colored -> {
+                        cardColorCounts[symbol.color] = (cardColorCounts[symbol.color] ?: 0) + 1
+                    }
+                    // Hybrid symbols don't strictly require either color
+                    else -> {}
+                }
+            }
+
+            // Update max requirements per color
+            for ((color, count) in cardColorCounts) {
+                val current = colorRequirements[color] ?: 0
+                colorRequirements[color] = maxOf(current, count)
+            }
+        }
+
+        return colorRequirements
     }
 
     /**
@@ -176,6 +318,13 @@ class ManaSolver(
      * - Basic lands and lands with basic land subtypes
      * - Non-land permanents with explicit tap mana abilities (mana dorks, mana rocks)
      * - Respects summoning sickness for creatures (unless they have haste)
+     *
+     * Populates smart-tapping metadata for each source:
+     * - isBasicLand: true for basic land types
+     * - isCreature: true for creatures
+     * - hasNonManaAbilities: true if the source has activated abilities that aren't mana abilities
+     * - hasPainCost/painAmount: true if the mana ability costs life
+     * - canAttack: true for creatures that can attack (no summoning sickness or has haste)
      */
     private fun findAvailableManaSources(state: GameState, playerId: EntityId): List<ManaSource> {
         val battlefieldZone = ZoneKey(playerId, ZoneType.BATTLEFIELD)
@@ -198,18 +347,54 @@ class ManaSolver(
 
             // Check for explicit mana abilities via CardRegistry
             val cardDef = cardRegistry?.getCard(card.cardDefinitionId)
-            val manaAbilities = cardDef?.script?.activatedAbilities?.filter { it.isManaAbility } ?: emptyList()
+            val allAbilities = cardDef?.script?.activatedAbilities ?: emptyList()
+            val manaAbilities = allAbilities.filter { it.isManaAbility }
+
+            // Detect non-mana activated abilities (utility land/creature)
+            val hasNonManaAbilities = allAbilities.any { !it.isManaAbility }
+
+            // Creature and attack capability detection
+            val isCreature = card.typeLine.isCreature
+            val hasSummoningSickness = container.has<SummoningSicknessComponent>()
+            val hasHaste = projected.hasKeyword(entityId, Keyword.HASTE)
+            val canAttack = isCreature && (!hasSummoningSickness || hasHaste)
+
+            // Basic land detection
+            val isBasicLand = card.typeLine.isBasicLand
 
             // Try to find a tap-based mana ability
             for (ability in manaAbilities) {
-                // Only consider tap abilities for auto-pay
-                if (ability.cost != AbilityCost.Tap) continue
+                // Detect pain cost in mana abilities
+                var hasPainCost = false
+                var painAmount = 0
+                val abilityCanBeUsed = when (val cost = ability.cost) {
+                    is AbilityCost.Tap -> true
+                    is AbilityCost.PayLife -> {
+                        hasPainCost = true
+                        painAmount = cost.amount
+                        true
+                    }
+                    is AbilityCost.Composite -> {
+                        var hasTap = false
+                        for (subCost in cost.costs) {
+                            when (subCost) {
+                                is AbilityCost.Tap -> hasTap = true
+                                is AbilityCost.PayLife -> {
+                                    hasPainCost = true
+                                    painAmount = maxOf(painAmount, subCost.amount)
+                                }
+                                else -> {}
+                            }
+                        }
+                        hasTap // Only auto-pay tap-based abilities
+                    }
+                    else -> false // Skip non-tap mana abilities
+                }
+
+                if (!abilityCanBeUsed) continue
 
                 // Check summoning sickness for creatures (non-lands)
-                if (!card.typeLine.isLand && card.typeLine.isCreature) {
-                    val hasSummoningSickness = container.has<SummoningSicknessComponent>()
-                    // Use projected keywords to check for Haste (includes granted abilities)
-                    val hasHaste = projected.hasKeyword(entityId, Keyword.HASTE)
+                if (!card.typeLine.isLand && isCreature) {
                     if (hasSummoningSickness && !hasHaste) {
                         continue // Can't use this ability due to summoning sickness
                     }
@@ -221,19 +406,37 @@ class ManaSolver(
                         entityId = entityId,
                         name = card.name,
                         producesColors = setOf(effect.color),
-                        producesColorless = false
+                        producesColorless = false,
+                        isBasicLand = isBasicLand,
+                        isCreature = isCreature,
+                        hasNonManaAbilities = hasNonManaAbilities,
+                        hasPainCost = hasPainCost,
+                        painAmount = painAmount,
+                        canAttack = canAttack
                     )
                     is AddColorlessManaEffect -> ManaSource(
                         entityId = entityId,
                         name = card.name,
                         producesColors = emptySet(),
-                        producesColorless = true
+                        producesColorless = true,
+                        isBasicLand = isBasicLand,
+                        isCreature = isCreature,
+                        hasNonManaAbilities = hasNonManaAbilities,
+                        hasPainCost = hasPainCost,
+                        painAmount = painAmount,
+                        canAttack = canAttack
                     )
                     is AddAnyColorManaEffect -> ManaSource(
                         entityId = entityId,
                         name = card.name,
                         producesColors = Color.entries.toSet(),
-                        producesColorless = false
+                        producesColorless = false,
+                        isBasicLand = isBasicLand,
+                        isCreature = isCreature,
+                        hasNonManaAbilities = hasNonManaAbilities,
+                        hasPainCost = hasPainCost,
+                        painAmount = painAmount,
+                        canAttack = canAttack
                     )
                     else -> null // Unknown effect type, skip this ability
                 }
@@ -265,24 +468,30 @@ class ManaSolver(
                 entityId = entityId,
                 name = card.name,
                 producesColors = producesColors,
-                producesColorless = producesColorless
+                producesColorless = producesColorless,
+                isBasicLand = isBasicLand,
+                isCreature = false, // Falls back to land subtype logic, so not a creature
+                hasNonManaAbilities = hasNonManaAbilities,
+                hasPainCost = false,
+                painAmount = 0,
+                canAttack = false
             )
         }
     }
 
     /**
      * Finds the best source to produce a specific color.
-     * Prefers sources that ONLY produce that color (to preserve multi-land flexibility).
+     * Uses priority-based selection to pick the optimal source.
      */
-    private fun findBestSourceForColor(sources: List<ManaSource>, color: Color): ManaSource? {
-        // First, try to find a source that only produces this color
-        val singleColorSource = sources.find {
-            it.producesColors == setOf(color)
-        }
-        if (singleColorSource != null) return singleColorSource
-
-        // Otherwise, any source that can produce this color
-        return sources.find { it.producesColors.contains(color) }
+    private fun findBestSourceForColor(
+        sources: List<ManaSource>,
+        color: Color,
+        handRequirements: Map<Color, Int>,
+        availableSourcesByColor: Map<Color, Int>
+    ): ManaSource? {
+        return sources
+            .filter { it.producesColors.contains(color) }
+            .minByOrNull { calculateTapPriority(it, handRequirements, availableSourcesByColor) }
     }
 
     /**

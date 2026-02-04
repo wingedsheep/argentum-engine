@@ -832,6 +832,10 @@ class GameSession(
                         // Always include mana cost string for cast actions
                         val manaCostString = cardComponent.manaCost.toString()
 
+                        // Compute auto-tap preview for UI highlighting
+                        val autoTapSolution = manaSolver.solve(state, playerId, cardComponent.manaCost)
+                        val autoTapPreview = autoTapSolution?.sources?.map { it.entityId }
+
                         // Check for DividedDamageEffect to flag damage distribution requirement
                         val spellEffect = cardDef?.script?.spellEffect
                         val dividedDamageEffect = spellEffect as? DividedDamageEffect
@@ -885,7 +889,8 @@ class GameSession(
                                         manaCostString = manaCostString,
                                         requiresDamageDistribution = requiresDamageDistribution,
                                         totalDamageToDistribute = totalDamageToDistribute,
-                                        minDamagePerTarget = minDamagePerTarget
+                                        minDamagePerTarget = minDamagePerTarget,
+                                        autoTapPreview = autoTapPreview
                                     ))
                                 } else {
                                     result.add(LegalActionInfo(
@@ -906,7 +911,8 @@ class GameSession(
                                         manaCostString = manaCostString,
                                         requiresDamageDistribution = requiresDamageDistribution,
                                         totalDamageToDistribute = totalDamageToDistribute,
-                                        minDamagePerTarget = minDamagePerTarget
+                                        minDamagePerTarget = minDamagePerTarget,
+                                        autoTapPreview = autoTapPreview
                                     ))
                                 }
                             }
@@ -921,7 +927,8 @@ class GameSession(
                                 additionalCostInfo = costInfo,
                                 hasConvoke = hasConvoke,
                                 validConvokeCreatures = convokeCreatures,
-                                manaCostString = manaCostString
+                                manaCostString = manaCostString,
+                                autoTapPreview = autoTapPreview
                             ))
                         }
                     }

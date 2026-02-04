@@ -82,8 +82,10 @@ export function GameCard({
   const hasLegalActions = useHasLegalActions(card.id)
 
   const hoveredCardId = useGameStore((state) => state.hoveredCardId)
+  const autoTapPreview = useGameStore((state) => state.autoTapPreview)
 
   const isSelected = selectedCardId === card.id
+  const isInAutoTapPreview = autoTapPreview?.includes(card.id) ?? false
   const isHovered = hoveredCardId === card.id
   const isInTargetingMode = targetingState !== null
   const isValidTarget = targetingState?.validTargets.includes(card.id) ?? false
@@ -398,6 +400,10 @@ export function GameCard({
     // Green highlight for playable cards
     borderStyle = '2px solid #00ff00'
     boxShadow = '0 0 12px rgba(0, 255, 0, 0.5), 0 0 24px rgba(0, 255, 0, 0.3)'
+  } else if (isInAutoTapPreview) {
+    // Cyan highlight for lands that would be auto-tapped
+    borderStyle = '2px solid #00ddff'
+    boxShadow = '0 0 12px rgba(0, 221, 255, 0.6), 0 0 24px rgba(0, 221, 255, 0.3)'
   }
 
   // Determine cursor

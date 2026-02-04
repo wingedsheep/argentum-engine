@@ -714,7 +714,9 @@ data class LegalActionInfo(
     /** Total damage to distribute for DividedDamageEffect spells */
     val totalDamageToDistribute: Int? = null,
     /** Minimum damage per target (usually 1 per MTG rules) */
-    val minDamagePerTarget: Int? = null
+    val minDamagePerTarget: Int? = null,
+    /** Preview of which lands/sources would be auto-tapped if this spell is cast (for UI highlighting) */
+    val autoTapPreview: List<EntityId>? = null
 )
 
 /**

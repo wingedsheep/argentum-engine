@@ -344,6 +344,8 @@ export interface LegalActionInfo {
   readonly totalDamageToDistribute?: number
   /** Minimum damage per target (usually 1 per MTG rules) */
   readonly minDamagePerTarget?: number
+  /** Preview of which lands/sources would be auto-tapped if this spell is cast (for UI highlighting) */
+  readonly autoTapPreview?: readonly EntityId[]
 }
 
 /**
