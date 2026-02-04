@@ -313,11 +313,23 @@ class AutoPassManager {
                 true
             }
 
-            // Begin Combat / Declare Attackers - AUTO-PASS (Arena-style)
-            // Arena doesn't stop here by default, even if you have instants
-            Step.BEGIN_COMBAT, Step.DECLARE_ATTACKERS -> {
-                logger.debug("AUTO-PASS: Opponent's begin combat/declare attackers (Arena-style)")
+            // Begin Combat - AUTO-PASS (Arena-style)
+            Step.BEGIN_COMBAT -> {
+                logger.debug("AUTO-PASS: Opponent's begin combat (Arena-style)")
                 true
+            }
+
+            // Declare Attackers - STOP if we have instant-speed responses
+            // This is crucial for cards like Blessed Reversal and Scorching Winds
+            // that can ONLY be cast during the declare attackers step when being attacked
+            Step.DECLARE_ATTACKERS -> {
+                if (hasInstantSpeedResponses) {
+                    logger.debug("STOP: Opponent's declare attackers (have instant-speed actions)")
+                    false
+                } else {
+                    logger.debug("AUTO-PASS: Opponent's declare attackers (no instant-speed actions)")
+                    true
+                }
             }
 
             // Declare Blockers - STOP only if we have creatures that can block
@@ -501,14 +513,16 @@ class AutoPassManager {
 
     /**
      * Simplified version of shouldAutoPassOnOpponentTurn for calculating next stop point.
-     * Arena-style: Very aggressive auto-passing, only stop at declare blockers and end step.
+     * Arena-style: Very aggressive auto-passing, only stop at declare blockers, declare attackers
+     * (if have responses), and end step.
      */
     private fun shouldAutoPassOnOpponentTurnForStep(step: Step, hasMeaningfulActions: Boolean): Boolean {
         return when (step) {
             // Auto-pass through most phases
             Step.UPKEEP, Step.DRAW -> true
             Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN -> true
-            Step.BEGIN_COMBAT, Step.DECLARE_ATTACKERS -> true // Arena-style: don't stop here
+            Step.BEGIN_COMBAT -> true
+            Step.DECLARE_ATTACKERS -> !hasMeaningfulActions // Stop if we have instant-speed actions
             Step.DECLARE_BLOCKERS -> !hasMeaningfulActions // Stop only if we have blockers
             Step.FIRST_STRIKE_COMBAT_DAMAGE, Step.COMBAT_DAMAGE, Step.END_COMBAT -> true
             Step.END -> !hasMeaningfulActions // Stop only if we have instant-speed actions

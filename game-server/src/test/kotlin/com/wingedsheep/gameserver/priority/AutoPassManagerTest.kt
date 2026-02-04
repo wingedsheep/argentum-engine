@@ -257,11 +257,22 @@ class AutoPassManagerTest : FunSpec({
             autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
         }
 
-        test("Auto-pass during opponent's declare attackers even with instants (Arena-style)") {
+        test("STOP during opponent's declare attackers when have instant-speed responses") {
+            // This is important for cards like Blessed Reversal and Scorching Winds
+            // that can ONLY be cast during the declare attackers step
             val state = createMockState(player2, player1, Step.DECLARE_ATTACKERS)
             val actions = listOf(
                 passPriorityAction(player2),
                 instantSpellAction(player2)
+            )
+
+            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe false
+        }
+
+        test("Auto-pass during opponent's declare attackers with no instant-speed responses") {
+            val state = createMockState(player2, player1, Step.DECLARE_ATTACKERS)
+            val actions = listOf(
+                passPriorityAction(player2)
             )
 
             autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
