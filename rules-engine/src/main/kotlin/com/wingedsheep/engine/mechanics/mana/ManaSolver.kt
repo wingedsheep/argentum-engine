@@ -519,22 +519,22 @@ class ManaSolver(
             ManaPool()
         }
 
-        // Check if pool alone can pay
-        if (pool.canPay(cost)) {
-            return true
-        }
-
-        // Pay partial from pool and check if remaining can be tapped for
+        // Pay partial from pool for the base cost
         val partialResult = pool.payPartial(cost)
         val remainingCost = partialResult.remainingCost
+        val poolAfterPartial = partialResult.newPool
 
-        // If nothing remains after using pool, we can pay
-        if (remainingCost.isEmpty()) {
+        // Calculate how much X can be paid from remaining pool
+        val xPaidFromPool = poolAfterPartial.total.coerceAtMost(xValue)
+        val xRemainingToPay = xValue - xPaidFromPool
+
+        // If nothing remains after using pool (including X), we can pay
+        if (remainingCost.isEmpty() && xRemainingToPay == 0) {
             return true
         }
 
-        // Check if we can tap sources for the remaining cost
-        return solve(state, playerId, remainingCost, xValue) != null
+        // Check if we can tap sources for the remaining cost (including remaining X)
+        return solve(state, playerId, remainingCost, xRemainingToPay) != null
     }
 
     /**

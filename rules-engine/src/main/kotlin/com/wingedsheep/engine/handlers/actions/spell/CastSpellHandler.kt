@@ -450,7 +450,7 @@ class CastSpellHandler(
         xValue: Int
     ): PaymentResult {
         return when (action.paymentStrategy) {
-            is PaymentStrategy.FromPool -> payFromPool(state, action.playerId, effectiveCost, cardName)
+            is PaymentStrategy.FromPool -> payFromPool(state, action.playerId, effectiveCost, cardName, xValue)
             is PaymentStrategy.AutoPay -> autoPay(state, action.playerId, effectiveCost, cardName, xValue)
             is PaymentStrategy.Explicit -> explicitPay(state, action.paymentStrategy, cardName)
         }
@@ -460,7 +460,8 @@ class CastSpellHandler(
         state: GameState,
         playerId: EntityId,
         cost: ManaCost,
-        cardName: String
+        cardName: String,
+        xValue: Int
     ): PaymentResult {
         val poolComponent = state.getEntity(playerId)?.get<ManaPoolComponent>()
             ?: ManaPoolComponent()
@@ -473,18 +474,57 @@ class CastSpellHandler(
             colorless = poolComponent.colorless
         )
 
-        val newPool = costHandler.payManaCost(pool, cost)
+        // Pay base cost first
+        var poolAfterPayment = costHandler.payManaCost(pool, cost)
             ?: return PaymentResult(state, emptyList(), "Insufficient mana in pool")
+
+        // Track mana spent for the event
+        var whiteSpent = poolComponent.white - poolAfterPayment.white
+        var blueSpent = poolComponent.blue - poolAfterPayment.blue
+        var blackSpent = poolComponent.black - poolAfterPayment.black
+        var redSpent = poolComponent.red - poolAfterPayment.red
+        var greenSpent = poolComponent.green - poolAfterPayment.green
+        var colorlessSpent = poolComponent.colorless - poolAfterPayment.colorless
+
+        // Pay for X from remaining pool
+        var xRemainingToPay = xValue
+
+        // Spend colorless first for X
+        while (xRemainingToPay > 0 && poolAfterPayment.colorless > 0) {
+            poolAfterPayment = poolAfterPayment.spendColorless()!!
+            colorlessSpent++
+            xRemainingToPay--
+        }
+
+        // Spend colored mana for remaining X
+        for (color in Color.entries) {
+            while (xRemainingToPay > 0 && poolAfterPayment.get(color) > 0) {
+                poolAfterPayment = poolAfterPayment.spend(color)!!
+                when (color) {
+                    Color.WHITE -> whiteSpent++
+                    Color.BLUE -> blueSpent++
+                    Color.BLACK -> blackSpent++
+                    Color.RED -> redSpent++
+                    Color.GREEN -> greenSpent++
+                }
+                xRemainingToPay--
+            }
+        }
+
+        // Check if we could pay for all of X
+        if (xRemainingToPay > 0) {
+            return PaymentResult(state, emptyList(), "Insufficient mana in pool for X cost")
+        }
 
         val newState = state.updateEntity(playerId) { container ->
             container.with(
                 ManaPoolComponent(
-                    white = newPool.white,
-                    blue = newPool.blue,
-                    black = newPool.black,
-                    red = newPool.red,
-                    green = newPool.green,
-                    colorless = newPool.colorless
+                    white = poolAfterPayment.white,
+                    blue = poolAfterPayment.blue,
+                    black = poolAfterPayment.black,
+                    red = poolAfterPayment.red,
+                    green = poolAfterPayment.green,
+                    colorless = poolAfterPayment.colorless
                 )
             )
         }
@@ -492,12 +532,12 @@ class CastSpellHandler(
         val event = ManaSpentEvent(
             playerId = playerId,
             reason = "Cast $cardName",
-            white = poolComponent.white - newPool.white,
-            blue = poolComponent.blue - newPool.blue,
-            black = poolComponent.black - newPool.black,
-            red = poolComponent.red - newPool.red,
-            green = poolComponent.green - newPool.green,
-            colorless = poolComponent.colorless - newPool.colorless
+            white = whiteSpent,
+            blue = blueSpent,
+            black = blackSpent,
+            red = redSpent,
+            green = greenSpent,
+            colorless = colorlessSpent
         )
 
         return PaymentResult(newState, listOf(event), null)
@@ -526,22 +566,9 @@ class CastSpellHandler(
         )
 
         val partialResult = pool.payPartial(cost)
-        val poolAfterPartial = partialResult.newPool
+        var poolAfterPayment = partialResult.newPool
         val remainingCost = partialResult.remainingCost
         val manaSpentFromPool = partialResult.manaSpent
-
-        currentState = currentState.updateEntity(playerId) { container ->
-            container.with(
-                ManaPoolComponent(
-                    white = poolAfterPartial.white,
-                    blue = poolAfterPartial.blue,
-                    black = poolAfterPartial.black,
-                    red = poolAfterPartial.red,
-                    green = poolAfterPartial.green,
-                    colorless = poolAfterPartial.colorless
-                )
-            )
-        }
 
         var whiteSpent = manaSpentFromPool.white
         var blueSpent = manaSpentFromPool.blue
@@ -550,9 +577,47 @@ class CastSpellHandler(
         var greenSpent = manaSpentFromPool.green
         var colorlessSpent = manaSpentFromPool.colorless
 
-        // Tap lands for remaining cost
-        if (!remainingCost.isEmpty()) {
-            val solution = manaSolver.solve(currentState, playerId, remainingCost, xValue)
+        // Use remaining floating mana for X cost
+        var xRemainingToPay = xValue
+
+        // Spend colorless first for X
+        while (xRemainingToPay > 0 && poolAfterPayment.colorless > 0) {
+            poolAfterPayment = poolAfterPayment.spendColorless()!!
+            colorlessSpent++
+            xRemainingToPay--
+        }
+
+        // Spend colored mana for remaining X
+        for (color in Color.entries) {
+            while (xRemainingToPay > 0 && poolAfterPayment.get(color) > 0) {
+                poolAfterPayment = poolAfterPayment.spend(color)!!
+                when (color) {
+                    Color.WHITE -> whiteSpent++
+                    Color.BLUE -> blueSpent++
+                    Color.BLACK -> blackSpent++
+                    Color.RED -> redSpent++
+                    Color.GREEN -> greenSpent++
+                }
+                xRemainingToPay--
+            }
+        }
+
+        currentState = currentState.updateEntity(playerId) { container ->
+            container.with(
+                ManaPoolComponent(
+                    white = poolAfterPayment.white,
+                    blue = poolAfterPayment.blue,
+                    black = poolAfterPayment.black,
+                    red = poolAfterPayment.red,
+                    green = poolAfterPayment.green,
+                    colorless = poolAfterPayment.colorless
+                )
+            )
+        }
+
+        // Tap lands for remaining cost (using xRemainingToPay instead of full xValue)
+        if (!remainingCost.isEmpty() || xRemainingToPay > 0) {
+            val solution = manaSolver.solve(currentState, playerId, remainingCost, xRemainingToPay)
                 ?: return PaymentResult(currentState, events, "Not enough mana to auto-pay")
 
             for (source in solution.sources) {
