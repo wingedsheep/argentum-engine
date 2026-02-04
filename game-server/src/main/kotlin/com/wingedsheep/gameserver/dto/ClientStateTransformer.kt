@@ -331,8 +331,10 @@ class ClientStateTransformer(
             null
         }
 
-        val power = projectedValues?.power ?: cardComponent.baseStats?.basePower
-        val toughness = projectedValues?.toughness ?: cardComponent.baseStats?.baseToughness
+        // Face-down creatures are always 2/2 per MTG rules, regardless of viewer
+        val isFaceDown = container.has<FaceDownComponent>()
+        val power = if (isFaceDown) 2 else projectedValues?.power ?: cardComponent.baseStats?.basePower
+        val toughness = if (isFaceDown) 2 else projectedValues?.toughness ?: cardComponent.baseStats?.baseToughness
         val keywords = projectedValues?.keywords?.mapNotNull {
             try { com.wingedsheep.sdk.core.Keyword.valueOf(it) } catch (_: Exception) { null }
         }?.toSet() ?: cardComponent.baseKeywords
@@ -346,7 +348,6 @@ class ClientStateTransformer(
         val hasSummoningSicknessComponent = container.has<SummoningSicknessComponent>()
         val hasHaste = keywords.contains(com.wingedsheep.sdk.core.Keyword.HASTE)
         val hasSummoningSickness = hasSummoningSicknessComponent && !hasHaste
-        val isFaceDown = container.has<FaceDownComponent>()
 
         // Get morph data for face-down creatures
         val morphData = container.get<MorphDataComponent>()
@@ -389,7 +390,7 @@ class ClientStateTransformer(
                 },
                 isFaceDown = true,
                 morphCost = null, // Opponent can't see morph cost
-                imageUri = "https://cards.scryfall.io/large/front/d/9/d9b96b86-a05d-4a47-acba-20bc54c4c4b5.jpg" // Generic morph overlay
+                imageUri = "https://cards.scryfall.io/large/front/e/9/e9375cbe-93c0-41a5-a6e3-fb4416f54a69.jpg" // Morph token from Commander 2019
             )
         }
 

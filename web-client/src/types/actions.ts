@@ -107,7 +107,7 @@ export interface CycleCardAction {
 export interface TurnFaceUpAction {
   readonly type: 'TurnFaceUp'
   readonly playerId: EntityId
-  readonly permanentId: EntityId
+  readonly sourceId: EntityId
   readonly paymentStrategy?: PaymentStrategy
 }
 
@@ -245,7 +245,7 @@ export function getActionSubject(action: GameAction): EntityId | null {
     case 'ActivateAbility':
       return action.sourceId
     case 'TurnFaceUp':
-      return action.permanentId
+      return action.sourceId
     default:
       return null
   }

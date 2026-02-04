@@ -208,7 +208,11 @@ export function useCardLegalActions(cardId: EntityId | null): readonly LegalActi
           return a.cardId === cardId
         case 'CastSpell':
           return a.cardId === cardId
+        case 'CycleCard':
+          return a.cardId === cardId
         case 'ActivateAbility':
+          return a.sourceId === cardId
+        case 'TurnFaceUp':
           return a.sourceId === cardId
         default:
           return false
@@ -218,14 +222,17 @@ export function useCardLegalActions(cardId: EntityId | null): readonly LegalActi
 }
 
 /**
- * Hook to check if a card has any legal actions (excluding mana abilities).
+ * Hook to check if a card has any legal actions (excluding mana abilities and unaffordable actions).
  * Mana abilities are always available but shouldn't cause cards to be highlighted.
+ * Unaffordable actions (isAffordable = false) are shown in the modal but shouldn't cause highlighting.
  */
 export function useHasLegalActions(cardId: EntityId | null): boolean {
   const actions = useCardLegalActions(cardId)
-  // Filter out mana abilities - they shouldn't cause highlighting
-  const nonManaActions = actions.filter((a) => !a.isManaAbility)
-  return nonManaActions.length > 0
+  // Filter out mana abilities and unaffordable actions - they shouldn't cause highlighting
+  const affordableNonManaActions = actions.filter(
+    (a) => !a.isManaAbility && a.isAffordable !== false
+  )
+  return affordableNonManaActions.length > 0
 }
 
 /**

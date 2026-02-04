@@ -68,11 +68,11 @@ class TargetFinder(
 
         return battlefield.filter { entityId ->
             val container = state.getEntity(entityId) ?: return@filter false
-            val cardComponent = container.get<CardComponent>() ?: return@filter false
+            container.get<CardComponent>() ?: return@filter false
             val entityController = container.get<ControllerComponent>()?.playerId
 
-            // Must be a creature
-            if (!cardComponent.typeLine.isCreature) return@filter false
+            // Must be a creature - use projected state for face-down creatures (Rule 707.2)
+            if (!projected.hasType(entityId, "CREATURE")) return@filter false
 
             // Check hexproof - can't be targeted by opponents
             if (projected.hasKeyword(entityId, Keyword.HEXPROOF) && entityController != controllerId) {
@@ -84,9 +84,9 @@ class TargetFinder(
                 return@filter false
             }
 
-            // Use unified filter
+            // Use unified filter with projected state
             val predicateContext = PredicateContext(controllerId = controllerId)
-            predicateEvaluator.matches(state, entityId, filter.baseFilter, predicateContext)
+            predicateEvaluator.matchesWithProjection(state, projected, entityId, filter.baseFilter, predicateContext)
         }
     }
 

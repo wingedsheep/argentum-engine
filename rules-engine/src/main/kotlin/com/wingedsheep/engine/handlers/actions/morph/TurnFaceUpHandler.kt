@@ -47,15 +47,15 @@ class TurnFaceUpHandler(
             return "You don't have priority"
         }
 
-        val container = state.getEntity(action.permanentId)
-            ?: return "Permanent not found: ${action.permanentId}"
+        val container = state.getEntity(action.sourceId)
+            ?: return "Permanent not found: ${action.sourceId}"
 
         val controller = container.get<ControllerComponent>()?.playerId
         if (controller != action.playerId) {
             return "You don't control this permanent"
         }
 
-        if (action.permanentId !in state.getBattlefield()) {
+        if (action.sourceId !in state.getBattlefield()) {
             return "Permanent is not on the battlefield"
         }
 
@@ -106,7 +106,7 @@ class TurnFaceUpHandler(
         var currentState = state
         val events = mutableListOf<GameEvent>()
 
-        val container = state.getEntity(action.permanentId)
+        val container = state.getEntity(action.sourceId)
             ?: return ExecutionResult.error(state, "Permanent not found")
 
         val morphData = container.get<MorphDataComponent>()
@@ -217,12 +217,12 @@ class TurnFaceUpHandler(
         }
 
         // Turn the creature face up
-        currentState = currentState.updateEntity(action.permanentId) { c ->
+        currentState = currentState.updateEntity(action.sourceId) { c ->
             c.without<FaceDownComponent>()
         }
 
         val turnFaceUpEvent = TurnFaceUpEvent(
-            entityId = action.permanentId,
+            entityId = action.sourceId,
             cardName = cardName,
             controllerId = action.playerId
         )

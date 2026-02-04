@@ -47,7 +47,7 @@ export function useInteraction() {
           case 'ActivateAbility':
             return a.sourceId === cardId
           case 'TurnFaceUp':
-            return a.permanentId === cardId
+            return a.sourceId === cardId
           default:
             return false
         }

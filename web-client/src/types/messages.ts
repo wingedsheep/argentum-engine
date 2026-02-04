@@ -328,6 +328,8 @@ export interface LegalActionInfo {
   readonly minX?: number
   /** Whether this is a mana ability (doesn't highlight card as playable) */
   readonly isManaAbility?: boolean
+  /** Whether this action can currently be afforded/executed (default true) */
+  readonly isAffordable?: boolean
   /** Additional cost info (sacrifice, etc.) */
   readonly additionalCostInfo?: AdditionalCostInfo
   /** Whether this spell has Convoke */

@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers
 
+import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
@@ -67,6 +68,206 @@ class PredicateEvaluator {
         }
 
         return stateMatches
+    }
+
+    /**
+     * Evaluate a GameObjectFilter against an entity using projected state.
+     * This version uses the projected characteristics (types, colors, keywords)
+     * which correctly handles face-down creatures (Rule 707.2).
+     */
+    fun matchesWithProjection(
+        state: GameState,
+        projected: ProjectedState,
+        entityId: EntityId,
+        filter: GameObjectFilter,
+        context: PredicateContext
+    ): Boolean {
+        val container = state.getEntity(entityId) ?: return false
+
+        // Check controller predicate first (if specified)
+        filter.controllerPredicate?.let { controllerPred ->
+            if (!matchesControllerPredicateWithProjection(state, projected, entityId, controllerPred, context)) {
+                return false
+            }
+        }
+
+        // Check all card predicates using projected state
+        val cardMatches = if (filter.matchAll) {
+            filter.cardPredicates.all { predicate ->
+                matchesCardPredicateWithProjection(state, projected, entityId, predicate)
+            }
+        } else {
+            filter.cardPredicates.isEmpty() || filter.cardPredicates.any { predicate ->
+                matchesCardPredicateWithProjection(state, projected, entityId, predicate)
+            }
+        }
+
+        if (!cardMatches) return false
+
+        // Check all state predicates (these use base state, not projected)
+        val stateMatches = filter.statePredicates.all { predicate ->
+            matchesStatePredicate(state, entityId, predicate)
+        }
+
+        return stateMatches
+    }
+
+    /**
+     * Evaluate a CardPredicate against an entity using projected state.
+     */
+    fun matchesCardPredicateWithProjection(
+        state: GameState,
+        projected: ProjectedState,
+        entityId: EntityId,
+        predicate: CardPredicate
+    ): Boolean {
+        val container = state.getEntity(entityId) ?: return false
+        val card = container.get<CardComponent>() ?: return false
+        val projectedValues = projected.getProjectedValues(entityId)
+
+        // Use projected types/colors/keywords if available, otherwise fall back to base
+        val types = projectedValues?.types ?: card.typeLine.cardTypes.map { it.name }.toSet()
+        val colors = projectedValues?.colors ?: card.colors.map { it.name }.toSet()
+        val keywords = projectedValues?.keywords ?: card.baseKeywords.map { it.name }.toSet()
+
+        return when (predicate) {
+            // Type predicates - use projected types
+            CardPredicate.IsCreature -> "CREATURE" in types
+            CardPredicate.IsLand -> "LAND" in types
+            CardPredicate.IsArtifact -> "ARTIFACT" in types
+            CardPredicate.IsEnchantment -> "ENCHANTMENT" in types
+            CardPredicate.IsPlaneswalker -> "PLANESWALKER" in types
+            CardPredicate.IsInstant -> "INSTANT" in types
+            CardPredicate.IsSorcery -> "SORCERY" in types
+            CardPredicate.IsBasicLand -> "LAND" in types && card.typeLine.supertypes.any { it.name == "BASIC" }
+            CardPredicate.IsPermanent -> types.any { it in setOf("CREATURE", "LAND", "ARTIFACT", "ENCHANTMENT", "PLANESWALKER") }
+            CardPredicate.IsNonland -> "LAND" !in types
+            CardPredicate.IsNoncreature -> "CREATURE" !in types
+            CardPredicate.IsToken -> container.has<TokenComponent>()
+            CardPredicate.IsNontoken -> !container.has<TokenComponent>()
+
+            // Color predicates - use projected colors
+            is CardPredicate.HasColor -> predicate.color.name in colors
+            is CardPredicate.NotColor -> predicate.color.name !in colors
+            CardPredicate.IsColorless -> colors.isEmpty()
+            CardPredicate.IsMulticolored -> colors.size > 1
+            CardPredicate.IsMonocolored -> colors.size == 1
+
+            // Subtype predicates - face-down creatures have no subtypes
+            is CardPredicate.HasSubtype -> {
+                // Face-down permanents have no subtypes
+                if (projectedValues != null && projectedValues.types == setOf("CREATURE") && colors.isEmpty()) {
+                    false  // Likely face-down
+                } else {
+                    card.typeLine.hasSubtype(predicate.subtype)
+                }
+            }
+            is CardPredicate.NotSubtype -> {
+                if (projectedValues != null && projectedValues.types == setOf("CREATURE") && colors.isEmpty()) {
+                    true  // Face-down has no subtypes
+                } else {
+                    !card.typeLine.hasSubtype(predicate.subtype)
+                }
+            }
+            is CardPredicate.HasBasicLandType -> {
+                if (projectedValues != null && projectedValues.types == setOf("CREATURE") && colors.isEmpty()) {
+                    false  // Face-down has no land types
+                } else {
+                    card.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(predicate.landType))
+                }
+            }
+
+            // Keyword predicates - use projected keywords
+            is CardPredicate.HasKeyword -> predicate.keyword.name in keywords
+            is CardPredicate.NotKeyword -> predicate.keyword.name !in keywords
+
+            // Mana value predicates - face-down has CMC 0
+            is CardPredicate.ManaValueEquals -> {
+                val cmc = if (projectedValues != null && projectedValues.types == setOf("CREATURE") && colors.isEmpty()) 0 else card.manaValue
+                cmc == predicate.value
+            }
+            is CardPredicate.ManaValueAtMost -> {
+                val cmc = if (projectedValues != null && projectedValues.types == setOf("CREATURE") && colors.isEmpty()) 0 else card.manaValue
+                cmc <= predicate.max
+            }
+            is CardPredicate.ManaValueAtLeast -> {
+                val cmc = if (projectedValues != null && projectedValues.types == setOf("CREATURE") && colors.isEmpty()) 0 else card.manaValue
+                cmc >= predicate.min
+            }
+
+            // Power/toughness predicates - use projected P/T
+            is CardPredicate.PowerEquals -> {
+                val power = projectedValues?.power ?: card.baseStats?.basePower
+                power == predicate.value
+            }
+            is CardPredicate.PowerAtMost -> {
+                val power = projectedValues?.power ?: card.baseStats?.basePower ?: 0
+                power <= predicate.max
+            }
+            is CardPredicate.PowerAtLeast -> {
+                val power = projectedValues?.power ?: card.baseStats?.basePower ?: 0
+                power >= predicate.min
+            }
+            is CardPredicate.ToughnessEquals -> {
+                val toughness = projectedValues?.toughness ?: card.baseStats?.baseToughness
+                toughness == predicate.value
+            }
+            is CardPredicate.ToughnessAtMost -> {
+                val toughness = projectedValues?.toughness ?: card.baseStats?.baseToughness ?: 0
+                toughness <= predicate.max
+            }
+            is CardPredicate.ToughnessAtLeast -> {
+                val toughness = projectedValues?.toughness ?: card.baseStats?.baseToughness ?: 0
+                toughness >= predicate.min
+            }
+
+            // Composite predicates
+            is CardPredicate.And -> {
+                predicate.predicates.all { matchesCardPredicateWithProjection(state, projected, entityId, it) }
+            }
+            is CardPredicate.Or -> {
+                predicate.predicates.any { matchesCardPredicateWithProjection(state, projected, entityId, it) }
+            }
+            is CardPredicate.Not -> {
+                !matchesCardPredicateWithProjection(state, projected, entityId, predicate.predicate)
+            }
+        }
+    }
+
+    /**
+     * Evaluate a ControllerPredicate using projected state (for controller-changing effects).
+     */
+    private fun matchesControllerPredicateWithProjection(
+        state: GameState,
+        projected: ProjectedState,
+        entityId: EntityId,
+        predicate: ControllerPredicate,
+        context: PredicateContext
+    ): Boolean {
+        // Use projected controller if available
+        val controllerId = projected.getController(entityId)
+            ?: state.getEntity(entityId)?.get<ControllerComponent>()?.playerId
+            ?: return false
+
+        return when (predicate) {
+            ControllerPredicate.ControlledByYou -> controllerId == context.controllerId
+            ControllerPredicate.ControlledByOpponent -> controllerId != context.controllerId
+            ControllerPredicate.ControlledByAny -> true
+            ControllerPredicate.ControlledByTargetOpponent -> {
+                context.targetOpponentId?.let { controllerId == it } ?: false
+            }
+            ControllerPredicate.ControlledByTargetPlayer -> {
+                context.targetPlayerId?.let { controllerId == it } ?: false
+            }
+            ControllerPredicate.OwnedByYou -> {
+                val card = state.getEntity(entityId)?.get<CardComponent>()
+                card?.ownerId == context.controllerId
+            }
+            ControllerPredicate.OwnedByOpponent -> {
+                val card = state.getEntity(entityId)?.get<CardComponent>()
+                card?.ownerId != null && card.ownerId != context.controllerId
+            }
+        }
     }
 
     /**

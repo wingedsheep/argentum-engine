@@ -309,13 +309,13 @@ data class Concede(
  * the player has priority.
  *
  * @property playerId The player turning the creature face up
- * @property permanentId The face-down creature to turn face up
+ * @property sourceId The face-down creature to turn face up (named sourceId for frontend consistency with ActivateAbility)
  * @property paymentStrategy How the player intends to pay the morph cost
  */
 @Serializable
 @SerialName("TurnFaceUp")
 data class TurnFaceUp(
     override val playerId: EntityId,
-    val permanentId: EntityId,
+    val sourceId: EntityId,
     val paymentStrategy: PaymentStrategy = PaymentStrategy.AutoPay
 ) : GameAction

@@ -1,4 +1,11 @@
 /**
+ * Standard MTG morph face-down card art from Scryfall.
+ * This is the official morph token from Commander 2019 (TC19 #27) showing the distinctive helmet artwork.
+ * Source: https://scryfall.com/card/tc19/27/morph
+ */
+export const MORPH_FACE_DOWN_IMAGE_URL = 'https://cards.scryfall.io/large/front/e/9/e9375cbe-93c0-41a5-a6e3-fb4416f54a69.jpg'
+
+/**
  * Get the image URL for a card.
  *
  * Uses the provided imageUri if available (from card metadata),

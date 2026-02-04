@@ -675,6 +675,8 @@ data class LegalActionInfo(
     val actionType: String,
     val description: String,
     val action: GameAction,
+    /** Whether this action can currently be afforded/executed. False means the option exists but player can't pay the cost. */
+    val isAffordable: Boolean = true,
     /** Valid target IDs if this action requires targeting */
     val validTargets: List<EntityId>? = null,
     /** Whether this action requires selecting targets before submission */
