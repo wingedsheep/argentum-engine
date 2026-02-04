@@ -56,10 +56,16 @@
 
 .lobbyContent {
   width: 100%;
-  max-width: 500px;
+  max-width: 560px;
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+}
+
+@media (max-width: 639px) {
+  .lobbyContent {
+    max-width: 100%;
+  }
 }
 
 /* =========================================================================
@@ -129,7 +135,7 @@
   gap: var(--space-3);
   align-items: center;
   width: 100%;
-  max-width: 400px;
+  max-width: 520px;
 }
 
 .inputLabel {
@@ -165,7 +171,17 @@
   text-align: left;
   max-width: none;
   flex: 1;
-  min-width: 0;
+  min-width: 320px;
+  font-family: monospace;
+  letter-spacing: 0.02em;
+  font-size: var(--font-md);
+}
+
+@media (max-width: 639px) {
+  .sessionInput {
+    min-width: 0;
+    font-size: var(--font-sm);
+  }
 }
 
 /* =========================================================================
@@ -207,10 +223,18 @@
   composes: primaryButton;
   background-color: #00aa44;
   white-space: nowrap;
+  max-width: 100px;
+  flex-shrink: 0;
 }
 
 .joinButton:disabled {
   background-color: var(--bg-surface-6);
+}
+
+@media (max-width: 639px) {
+  .joinButton {
+    max-width: none;
+  }
 }
 
 .cancelButton {
@@ -338,6 +362,8 @@
  * ========================================================================= */
 .waitingSection {
   text-align: center;
+  width: 100%;
+  max-width: 520px;
 }
 
 .waitingTitle {
@@ -356,13 +382,22 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-3) var(--space-5);
   background-color: var(--bg-panel-light);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-xl);
   cursor: pointer;
   transition: all 0.2s;
   margin-bottom: var(--space-3);
+  min-width: 0;
+}
+
+@media (max-width: 639px) {
+  .inviteBox {
+    padding: var(--space-2) var(--space-3);
+    width: 100%;
+    justify-content: space-between;
+  }
 }
 
 .inviteBoxCopied {
@@ -376,11 +411,13 @@
   font-weight: var(--font-weight-medium);
   letter-spacing: 0.04em;
   font-size: var(--font-lg);
+  word-break: break-all;
+  user-select: all;
 }
 
 @media (max-width: 639px) {
   .inviteCode {
-    font-size: 15px;
+    font-size: 14px;
   }
 }
 
