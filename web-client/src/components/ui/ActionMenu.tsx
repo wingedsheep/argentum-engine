@@ -1,9 +1,10 @@
-import { useEffect, useCallback, useMemo } from 'react'
+import { useEffect, useCallback, useMemo, useState } from 'react'
 import { useGameStore } from '../../store/gameStore'
 import { useCardActions } from '../../hooks/useLegalActions'
 import { useInteraction } from '../../hooks/useInteraction'
 import type { LegalActionInfo, ClientCard } from '../../types'
 import { ManaCost, AbilityText } from './ManaSymbols'
+import { getCardImageUrl } from '../../utils/cardImages'
 
 /**
  * Represents an action option in the modal (either available or unavailable).
@@ -201,6 +202,9 @@ export function ActionMenu() {
 
   // Show floating action panel (subtle, no full overlay)
   if (shouldShowModal) {
+    // Get card image URL
+    const cardImageUrl = cardInfo ? getCardImageUrl(cardInfo.name, cardInfo.imageUri, 'large') : null
+
     return (
       <div
         style={{
@@ -221,20 +225,15 @@ export function ActionMenu() {
             maxWidth: 320,
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1)',
             backdropFilter: 'blur(8px)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
           }}
         >
-          {/* Card name header */}
-          <div
-            style={{
-              color: '#fbbf24',
-              fontSize: 14,
-              fontWeight: 600,
-              marginBottom: 12,
-              textAlign: 'center',
-            }}
-          >
-            {cardInfo?.name ?? 'Card'}
-          </div>
+          {/* Large card image */}
+          {cardImageUrl && (
+            <CardImage imageUrl={cardImageUrl} cardName={cardInfo?.name ?? 'Card'} />
+          )}
 
           {/* Action buttons */}
           <div
@@ -242,6 +241,7 @@ export function ActionMenu() {
               display: 'flex',
               flexDirection: 'column',
               gap: 8,
+              width: '100%',
             }}
           >
             {actionOptions.map((option) => (
@@ -495,6 +495,83 @@ function ActionOptionButton({
         <ManaCost cost={option.manaCost} size={16} gap={2} />
       )}
     </button>
+  )
+}
+
+/**
+ * Card image display for the action menu.
+ * Shows a large card image with loading state and error fallback.
+ */
+function CardImage({
+  imageUrl,
+  cardName,
+}: {
+  imageUrl: string
+  cardName: string
+}) {
+  const [imageLoaded, setImageLoaded] = useState(false)
+  const [imageError, setImageError] = useState(false)
+
+  return (
+    <div
+      style={{
+        width: 200,
+        height: 279, // Standard MTG card aspect ratio (63mm x 88mm ≈ 1:1.395)
+        marginBottom: 12,
+        borderRadius: 8,
+        overflow: 'hidden',
+        backgroundColor: '#1a1a1e',
+        position: 'relative',
+      }}
+    >
+      {!imageLoaded && !imageError && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#666',
+            fontSize: 12,
+          }}
+        >
+          Loading...
+        </div>
+      )}
+      {imageError ? (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#fbbf24',
+            fontSize: 14,
+            fontWeight: 600,
+            textAlign: 'center',
+            padding: 16,
+          }}
+        >
+          {cardName}
+        </div>
+      ) : (
+        <img
+          src={imageUrl}
+          alt={cardName}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            opacity: imageLoaded ? 1 : 0,
+            transition: 'opacity 0.2s ease',
+          }}
+          onLoad={() => setImageLoaded(true)}
+          onError={() => setImageError(true)}
+        />
+      )}
+    </div>
   )
 }
 
