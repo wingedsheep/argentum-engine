@@ -153,24 +153,24 @@ class PredicateEvaluator {
             CardPredicate.IsMulticolored -> colors.size > 1
             CardPredicate.IsMonocolored -> colors.size == 1
 
-            // Subtype predicates - face-down creatures have no subtypes
+            // Subtype predicates - face-down creatures have no subtypes (Rule 707.2)
             is CardPredicate.HasSubtype -> {
                 // Face-down permanents have no subtypes
-                if (projectedValues != null && projectedValues.types == setOf("CREATURE") && colors.isEmpty()) {
-                    false  // Likely face-down
+                if (projectedValues?.isFaceDown == true) {
+                    false
                 } else {
                     card.typeLine.hasSubtype(predicate.subtype)
                 }
             }
             is CardPredicate.NotSubtype -> {
-                if (projectedValues != null && projectedValues.types == setOf("CREATURE") && colors.isEmpty()) {
+                if (projectedValues?.isFaceDown == true) {
                     true  // Face-down has no subtypes
                 } else {
                     !card.typeLine.hasSubtype(predicate.subtype)
                 }
             }
             is CardPredicate.HasBasicLandType -> {
-                if (projectedValues != null && projectedValues.types == setOf("CREATURE") && colors.isEmpty()) {
+                if (projectedValues?.isFaceDown == true) {
                     false  // Face-down has no land types
                 } else {
                     card.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(predicate.landType))
@@ -181,17 +181,17 @@ class PredicateEvaluator {
             is CardPredicate.HasKeyword -> predicate.keyword.name in keywords
             is CardPredicate.NotKeyword -> predicate.keyword.name !in keywords
 
-            // Mana value predicates - face-down has CMC 0
+            // Mana value predicates - face-down has CMC 0 (Rule 707.2)
             is CardPredicate.ManaValueEquals -> {
-                val cmc = if (projectedValues != null && projectedValues.types == setOf("CREATURE") && colors.isEmpty()) 0 else card.manaValue
+                val cmc = if (projectedValues?.isFaceDown == true) 0 else card.manaValue
                 cmc == predicate.value
             }
             is CardPredicate.ManaValueAtMost -> {
-                val cmc = if (projectedValues != null && projectedValues.types == setOf("CREATURE") && colors.isEmpty()) 0 else card.manaValue
+                val cmc = if (projectedValues?.isFaceDown == true) 0 else card.manaValue
                 cmc <= predicate.max
             }
             is CardPredicate.ManaValueAtLeast -> {
-                val cmc = if (projectedValues != null && projectedValues.types == setOf("CREATURE") && colors.isEmpty()) 0 else card.manaValue
+                val cmc = if (projectedValues?.isFaceDown == true) 0 else card.manaValue
                 cmc >= predicate.min
             }
 

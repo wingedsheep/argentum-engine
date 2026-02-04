@@ -54,7 +54,9 @@ class StateProjector {
                     keywords = mutableSetOf(),  // No keywords
                     colors = mutableSetOf(),     // Colorless
                     types = mutableSetOf("CREATURE"),  // Just creature type
-                    controllerId = container.get<ControllerComponent>()?.playerId
+                    subtypes = mutableSetOf(),   // No subtypes (Rule 707.2)
+                    controllerId = container.get<ControllerComponent>()?.playerId,
+                    isFaceDown = true
                 )
             } else {
                 projectedValues[entityId] = MutableProjectedValues(
@@ -63,7 +65,9 @@ class StateProjector {
                     keywords = cardComponent.baseKeywords.map { it.name }.toMutableSet(),
                     colors = cardComponent.colors.map { it.name }.toMutableSet(),
                     types = extractTypes(cardComponent),
-                    controllerId = container.get<ControllerComponent>()?.playerId
+                    subtypes = cardComponent.typeLine.subtypes.map { it.value }.toMutableSet(),
+                    controllerId = container.get<ControllerComponent>()?.playerId,
+                    isFaceDown = false
                 )
             }
         }
@@ -90,7 +94,9 @@ class StateProjector {
                 keywords = v.keywords.toSet(),
                 colors = v.colors.toSet(),
                 types = v.types.toSet(),
-                controllerId = v.controllerId
+                subtypes = v.subtypes.toSet(),
+                controllerId = v.controllerId,
+                isFaceDown = v.isFaceDown
             )
         }
 
@@ -598,7 +604,9 @@ private data class MutableProjectedValues(
     val keywords: MutableSet<String> = mutableSetOf(),
     val colors: MutableSet<String> = mutableSetOf(),
     val types: MutableSet<String> = mutableSetOf(),
-    var controllerId: EntityId? = null
+    val subtypes: MutableSet<String> = mutableSetOf(),
+    var controllerId: EntityId? = null,
+    var isFaceDown: Boolean = false
 )
 
 /**
@@ -610,7 +618,9 @@ data class ProjectedValues(
     val keywords: Set<String> = emptySet(),
     val colors: Set<String> = emptySet(),
     val types: Set<String> = emptySet(),
-    val controllerId: EntityId? = null
+    val subtypes: Set<String> = emptySet(),
+    val controllerId: EntityId? = null,
+    val isFaceDown: Boolean = false
 )
 
 /**
@@ -673,6 +683,23 @@ class ProjectedState(
      */
     fun hasType(entityId: EntityId, type: String): Boolean =
         getTypes(entityId).contains(type)
+
+    /**
+     * Get projected subtypes for an entity.
+     * Face-down creatures have no subtypes (Rule 707.2).
+     */
+    fun getSubtypes(entityId: EntityId): Set<String> = projectedValues[entityId]?.subtypes ?: emptySet()
+
+    /**
+     * Check if an entity has a specific subtype.
+     */
+    fun hasSubtype(entityId: EntityId, subtype: String): Boolean =
+        getSubtypes(entityId).any { it.equals(subtype, ignoreCase = true) }
+
+    /**
+     * Check if an entity is face-down.
+     */
+    fun isFaceDown(entityId: EntityId): Boolean = projectedValues[entityId]?.isFaceDown == true
 
     /**
      * Get the projected controller of an entity.

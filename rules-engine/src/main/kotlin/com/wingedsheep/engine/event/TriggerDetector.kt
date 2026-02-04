@@ -11,6 +11,7 @@ import com.wingedsheep.engine.core.TurnFaceUpEvent
 import com.wingedsheep.engine.core.UntappedEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
+import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -27,7 +28,8 @@ import com.wingedsheep.sdk.scripting.*
  */
 class TriggerDetector(
     private val cardRegistry: CardRegistry? = null,
-    private val abilityRegistry: AbilityRegistry = AbilityRegistry()
+    private val abilityRegistry: AbilityRegistry = AbilityRegistry(),
+    private val stateProjector: StateProjector = StateProjector()
 ) {
 
     /**
@@ -246,9 +248,10 @@ class TriggerDetector(
                     event.entityId == sourceId) {
                     false
                 } else {
-                    // Check if dying creature has the required subtype
-                    val dyingCard = state.getEntity(event.entityId)?.get<CardComponent>()
-                    val hasSubtype = dyingCard?.typeLine?.hasSubtype(trigger.subtype) == true
+                    // Check if dying creature has the required subtype using projected state
+                    // This correctly handles face-down creatures which have no subtypes (Rule 707.2)
+                    val projected = stateProjector.project(state)
+                    val hasSubtype = projected.hasSubtype(event.entityId, trigger.subtype.value)
                     val controllerMatches = !trigger.youControlOnly || event.ownerId == controllerId
                     hasSubtype && controllerMatches
                 }
@@ -260,9 +263,10 @@ class TriggerDetector(
                     event.entityId == sourceId) {
                     false
                 } else {
-                    // Check if entering creature has the required subtype
-                    val enteringCard = state.getEntity(event.entityId)?.get<CardComponent>()
-                    val hasSubtype = enteringCard?.typeLine?.hasSubtype(trigger.subtype) == true
+                    // Check if entering creature has the required subtype using projected state
+                    // This correctly handles face-down creatures which have no subtypes (Rule 707.2)
+                    val projected = stateProjector.project(state)
+                    val hasSubtype = projected.hasSubtype(event.entityId, trigger.subtype.value)
                     val controllerMatches = !trigger.youControlOnly || event.ownerId == controllerId
                     hasSubtype && controllerMatches
                 }
@@ -273,9 +277,10 @@ class TriggerDetector(
                     event.toZone != com.wingedsheep.sdk.core.ZoneType.BATTLEFIELD) {
                     false
                 } else {
-                    // Check if entering creature has the required subtype
-                    val enteringCard = state.getEntity(event.entityId)?.get<CardComponent>()
-                    val hasSubtype = enteringCard?.typeLine?.hasSubtype(trigger.subtype) == true
+                    // Check if entering creature has the required subtype using projected state
+                    // This correctly handles face-down creatures which have no subtypes (Rule 707.2)
+                    val projected = stateProjector.project(state)
+                    val hasSubtype = projected.hasSubtype(event.entityId, trigger.subtype.value)
                     val controllerMatches = !trigger.youControlOnly || event.ownerId == controllerId
                     hasSubtype && controllerMatches
                 }
