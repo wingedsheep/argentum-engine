@@ -29,6 +29,24 @@ export function trackEvent(name: string, params?: Record<string, unknown>) {
   }
 }
 
+/**
+ * Set user properties for GA4 audience segmentation and realtime filtering.
+ * Use this to track user state like "currently in a game".
+ */
+export function setUserProperties(properties: Record<string, unknown>) {
+  if (ANALYTICS_ENABLED && typeof window.gtag !== 'undefined' && GA_MEASUREMENT_ID) {
+    window.gtag('set', 'user_properties', properties)
+  }
+}
+
+/**
+ * Mark the user as currently in a game. This enables GA4 realtime
+ * filtering to show "active players in games".
+ */
+export function setInGame(inGame: boolean) {
+  setUserProperties({ in_game: inGame ? 'true' : 'false' })
+}
+
 declare global {
   interface Window {
     dataLayer: unknown[]

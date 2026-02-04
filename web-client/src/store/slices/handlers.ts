@@ -5,7 +5,7 @@
 import type { MessageHandlers } from '../../network/messageHandlers'
 import type { GameStore, EntityId, LobbyState } from './types'
 import { entityId, createJoinLobbyMessage } from '../../types'
-import { trackEvent } from '../../utils/analytics'
+import { trackEvent, setInGame } from '../../utils/analytics'
 import {
   getWebSocket,
   clearLobbyId,
@@ -87,6 +87,7 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
 
     onGameStarted: (msg) => {
       trackEvent('game_started', { opponent_name: msg.opponentName })
+      setInGame(true)
       set({
         opponentName: msg.opponentName,
         mulliganState: null,
@@ -96,6 +97,7 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
 
     onGameCancelled: () => {
       trackEvent('game_cancelled_by_server')
+      setInGame(false)
       set({
         sessionId: null,
         opponentName: null,
@@ -249,6 +251,7 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
       const result: 'win' | 'lose' | 'draw' =
         msg.winnerId === null ? 'draw' : msg.winnerId === playerId ? 'win' : 'lose'
       trackEvent('game_over', { result, reason: msg.reason })
+      setInGame(false)
       set({
         gameOverState: {
           winnerId: msg.winnerId,
