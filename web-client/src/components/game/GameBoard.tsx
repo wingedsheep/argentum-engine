@@ -2210,6 +2210,8 @@ function GameCard({
             selectedTargets: [],
             minTargets: playableAction.minTargets ?? playableAction.targetCount ?? 1,
             maxTargets: playableAction.targetCount ?? 1,
+            // Pass pendingActionInfo for damage distribution spells (e.g., Forked Lightning)
+            ...(playableAction.requiresDamageDistribution ? { pendingActionInfo: playableAction } : {}),
           })
         } else {
           // Play the card directly

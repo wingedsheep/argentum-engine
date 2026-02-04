@@ -132,7 +132,7 @@ export interface TargetingState {
   maxTargets: number
   /** If set, this targeting phase is for sacrifice selection, not spell targets */
   isSacrificeSelection?: boolean
-  /** The original action info, used to chain sacrifice -> spell targeting */
+  /** The original action info, used to chain sacrifice -> spell targeting -> damage distribution */
   pendingActionInfo?: LegalActionInfo
   /** Current target requirement index for multi-target spells (0-indexed) */
   currentRequirementIndex?: number
@@ -140,6 +140,8 @@ export interface TargetingState {
   allSelectedTargets?: readonly (readonly EntityId[])[]
   /** All target requirements (for multi-target spells) */
   targetRequirements?: LegalActionInfo['targetRequirements']
+  /** If set, this spell requires damage distribution after target selection */
+  requiresDamageDistribution?: boolean
 }
 
 /**
@@ -206,6 +208,27 @@ export interface XSelectionState {
   minX: number
   maxX: number
   selectedX: number
+}
+
+/**
+ * Damage distribution state for DividedDamageEffect spells like Forked Lightning.
+ * This is used at cast time, not resolution time.
+ */
+export interface DamageDistributionState {
+  /** The action info containing the spell being cast */
+  actionInfo: LegalActionInfo
+  /** The action with targets already set */
+  action: import('../types').CastSpellAction
+  /** Card name for display */
+  cardName: string
+  /** Selected target entity IDs */
+  targetIds: readonly EntityId[]
+  /** Total damage to distribute */
+  totalDamage: number
+  /** Minimum damage per target (usually 1 per MTG rules) */
+  minPerTarget: number
+  /** Current distribution (targetId -> damage amount) */
+  distribution: Record<EntityId, number>
 }
 
 /**
@@ -358,6 +381,7 @@ export interface GameStore {
   xSelectionState: XSelectionState | null
   convokeSelectionState: ConvokeSelectionState | null
   decisionSelectionState: DecisionSelectionState | null
+  damageDistributionState: DamageDistributionState | null
   hoveredCardId: EntityId | null
   draggingBlockerId: EntityId | null
   draggingCardId: EntityId | null
@@ -486,6 +510,11 @@ export interface GameStore {
   toggleDecisionSelection: (cardId: EntityId) => void
   cancelDecisionSelection: () => void
   confirmDecisionSelection: () => void
+  // Damage distribution actions (for DividedDamageEffect spells at cast time)
+  startDamageDistribution: (state: DamageDistributionState) => void
+  updateDamageDistribution: (targetId: EntityId, amount: number) => void
+  cancelDamageDistribution: () => void
+  confirmDamageDistribution: () => void
   // Game settings actions
   setFullControl: (enabled: boolean) => void
   returnToMenu: () => void
@@ -1285,6 +1314,7 @@ export const useGameStore = create<GameStore>()(
       xSelectionState: null,
       convokeSelectionState: null,
       decisionSelectionState: null,
+      damageDistributionState: null,
       hoveredCardId: null,
       draggingBlockerId: null,
       draggingCardId: null,
@@ -1737,7 +1767,7 @@ export const useGameStore = create<GameStore>()(
       },
 
       confirmTargeting: () => {
-        const { targetingState, submitAction, gameState, startTargeting } = get()
+        const { targetingState, submitAction, gameState, startTargeting, startDamageDistribution } = get()
         if (!targetingState || !gameState) return
 
         // Handle sacrifice selection phase
@@ -1762,6 +1792,8 @@ export const useGameStore = create<GameStore>()(
                 selectedTargets: [],
                 minTargets: actionInfo.minTargets ?? actionInfo.targetCount ?? 1,
                 maxTargets: actionInfo.targetCount ?? 1,
+                // Pass pendingActionInfo for damage distribution spells
+                ...(actionInfo.requiresDamageDistribution ? { pendingActionInfo: actionInfo } : {}),
               })
               return
             } else {
@@ -1787,6 +1819,8 @@ export const useGameStore = create<GameStore>()(
                 selectedTargets: [],
                 minTargets: actionInfo.minTargets ?? actionInfo.targetCount ?? 1,
                 maxTargets: actionInfo.targetCount ?? 1,
+                // Pass pendingActionInfo for damage distribution spells
+                ...(actionInfo.requiresDamageDistribution ? { pendingActionInfo: actionInfo } : {}),
               })
               return
             } else {
@@ -1829,6 +1863,8 @@ export const useGameStore = create<GameStore>()(
               currentRequirementIndex: nextIndex,
               allSelectedTargets: allSelected,
               targetRequirements: targetingState.targetRequirements,
+              // Preserve pendingActionInfo for damage distribution spells
+              ...(targetingState.pendingActionInfo ? { pendingActionInfo: targetingState.pendingActionInfo } : {}),
             })
             return
           }
@@ -1900,6 +1936,38 @@ export const useGameStore = create<GameStore>()(
             ...action,
             targets,
           }
+
+          // Check if this spell requires damage distribution (e.g., Forked Lightning)
+          const actionInfo = targetingState.pendingActionInfo
+          if (
+            action.type === 'CastSpell' &&
+            actionInfo?.requiresDamageDistribution &&
+            actionInfo.totalDamageToDistribute &&
+            targetingState.selectedTargets.length > 1
+          ) {
+            // Enter damage distribution mode
+            const cardName = actionInfo.description.replace('Cast ', '')
+            const minPerTarget = actionInfo.minDamagePerTarget ?? 1
+
+            // Initialize distribution with minimum per target
+            const initialDistribution: Record<EntityId, number> = {}
+            for (const targetId of targetingState.selectedTargets) {
+              initialDistribution[targetId] = minPerTarget
+            }
+
+            startDamageDistribution({
+              actionInfo,
+              action: modifiedAction as import('../types').CastSpellAction,
+              cardName,
+              targetIds: [...targetingState.selectedTargets],
+              totalDamage: actionInfo.totalDamageToDistribute,
+              minPerTarget,
+              distribution: initialDistribution,
+            })
+            set({ targetingState: null })
+            return
+          }
+
           submitAction(modifiedAction)
         } else {
           submitAction(action)
@@ -2141,6 +2209,8 @@ export const useGameStore = create<GameStore>()(
               selectedTargets: [],
               minTargets: actionInfo.minTargets ?? actionInfo.targetCount ?? 1,
               maxTargets: actionInfo.targetCount ?? 1,
+              // Pass pendingActionInfo for damage distribution spells
+              ...(actionInfo.requiresDamageDistribution ? { pendingActionInfo: actionInfo } : {}),
             })
           } else {
             // No targets needed, submit directly
@@ -2220,6 +2290,8 @@ export const useGameStore = create<GameStore>()(
               selectedTargets: [],
               minTargets: actionInfo.minTargets ?? actionInfo.targetCount ?? 1,
               maxTargets: actionInfo.targetCount ?? 1,
+              // Pass pendingActionInfo for damage distribution spells
+              ...(actionInfo.requiresDamageDistribution ? { pendingActionInfo: actionInfo } : {}),
             })
           } else {
             // No targets needed, submit directly
@@ -2281,6 +2353,44 @@ export const useGameStore = create<GameStore>()(
         set({ decisionSelectionState: null })
       },
 
+      // Damage distribution actions
+      startDamageDistribution: (state: DamageDistributionState) => {
+        set({ damageDistributionState: state })
+      },
+
+      updateDamageDistribution: (targetId: EntityId, amount: number) => {
+        set((state) => {
+          if (!state.damageDistributionState) return state
+          return {
+            damageDistributionState: {
+              ...state.damageDistributionState,
+              distribution: {
+                ...state.damageDistributionState.distribution,
+                [targetId]: amount,
+              },
+            },
+          }
+        })
+      },
+
+      cancelDamageDistribution: () => {
+        set({ damageDistributionState: null })
+      },
+
+      confirmDamageDistribution: () => {
+        const { damageDistributionState, submitAction } = get()
+        if (!damageDistributionState) return
+
+        // Build the action with targets and damage distribution
+        const actionWithDistribution = {
+          ...damageDistributionState.action,
+          damageDistribution: { ...damageDistributionState.distribution },
+        }
+
+        submitAction(actionWithDistribution)
+        set({ damageDistributionState: null })
+      },
+
       setFullControl: (enabled: boolean) => {
         ws?.send(createSetFullControlMessage(enabled))
         set({ fullControl: enabled })
@@ -2304,6 +2414,7 @@ export const useGameStore = create<GameStore>()(
           xSelectionState: null,
           convokeSelectionState: null,
           decisionSelectionState: null,
+          damageDistributionState: null,
           hoveredCardId: null,
           draggingBlockerId: null,
           draggingCardId: null,
@@ -2340,6 +2451,9 @@ export const useGameStore = create<GameStore>()(
           targetingState: null,
           combatState: null,
           xSelectionState: null,
+          convokeSelectionState: null,
+          decisionSelectionState: null,
+          damageDistributionState: null,
           hoveredCardId: null,
           draggingBlockerId: null,
           draggingCardId: null,

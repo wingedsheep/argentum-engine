@@ -7,6 +7,7 @@ import { RevealedHandUI } from './components/decisions/RevealedHandUI'
 import { RevealedCardsUI } from './components/decisions/RevealedCardsUI'
 import { XCostSelector } from './components/ui/XCostSelector'
 import { ConvokeSelector } from './components/ui/ConvokeSelector'
+import { DamageDistributionModal } from './components/decisions/DamageDistributionModal'
 import { OpponentDecisionIndicator } from './components/ui/OpponentDecisionIndicator'
 import { DeckBuilderOverlay } from './components/sealed/DeckBuilderOverlay'
 import { DraftPickOverlay } from './components/draft/DraftPickOverlay'
@@ -165,6 +166,9 @@ export default function App() {
 
       {/* Convoke selection overlay (when casting spells with Convoke) */}
       {showGame && <ConvokeSelector />}
+
+      {/* Damage distribution overlay (for DividedDamageEffect spells like Forked Lightning) */}
+      {showGame && <DamageDistributionModal />}
 
       {/* Decision overlay (for pending decisions like discard to hand size) */}
       {showGame && <DecisionUI />}

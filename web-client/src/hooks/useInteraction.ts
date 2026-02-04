@@ -176,24 +176,36 @@ export function useInteraction() {
         // Check for multi-target spells (e.g., Wicked Pact)
         if (actionInfo.targetRequirements && actionInfo.targetRequirements.length > 1) {
           const firstReq = actionInfo.targetRequirements[0]!
-          startTargeting({
+          const targetingState = {
             action,
             validTargets: [...firstReq.validTargets],
-            selectedTargets: [],
+            selectedTargets: [] as readonly import('../types').EntityId[],
             minTargets: firstReq.minTargets,
             maxTargets: firstReq.maxTargets,
             currentRequirementIndex: 0,
-            allSelectedTargets: [],
+            allSelectedTargets: [] as readonly (readonly import('../types').EntityId[])[],
             targetRequirements: actionInfo.targetRequirements,
-          })
+          }
+          // Pass actionInfo for damage distribution spells
+          if (actionInfo.requiresDamageDistribution) {
+            startTargeting({ ...targetingState, pendingActionInfo: actionInfo })
+          } else {
+            startTargeting(targetingState)
+          }
         } else {
-          startTargeting({
+          const targetingState = {
             action,
             validTargets: [...actionInfo.validTargets],
-            selectedTargets: [],
+            selectedTargets: [] as readonly import('../types').EntityId[],
             minTargets: actionInfo.minTargets ?? actionInfo.targetCount ?? 1,
             maxTargets: actionInfo.targetCount ?? 1,
-          })
+          }
+          // Pass actionInfo for damage distribution spells (e.g., Forked Lightning)
+          if (actionInfo.requiresDamageDistribution) {
+            startTargeting({ ...targetingState, pendingActionInfo: actionInfo })
+          } else {
+            startTargeting(targetingState)
+          }
         }
         selectCard(null)
         return
