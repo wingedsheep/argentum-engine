@@ -6,6 +6,7 @@ import com.wingedsheep.engine.core.PlayLand
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.DeclareAttackers
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombatComponent
 import com.wingedsheep.gameserver.protocol.LegalActionInfo
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -42,13 +43,26 @@ class AutoPassManagerTest : FunSpec({
         stackEmpty: Boolean = true,
         hasPendingDecision: Boolean = false,
         stackControllerId: EntityId? = null,
-        stackItemType: StackItemType = StackItemType.ABILITY
+        stackItemType: StackItemType = StackItemType.ABILITY,
+        blockersHaveBeenDeclared: Boolean = false,
+        defendingPlayerId: EntityId? = null
     ): GameState {
         val state = mockk<GameState>(relaxed = true)
         every { state.priorityPlayerId } returns priorityPlayerId
         every { state.activePlayerId } returns activePlayerId
         every { state.step } returns step
         every { state.phase } returns step.phase
+
+        // Set up turnOrder for blocker detection
+        val defender = defendingPlayerId ?: if (activePlayerId == player1) player2 else player1
+        every { state.turnOrder } returns listOf(activePlayerId, defender)
+
+        // Mock BlockersDeclaredThisCombatComponent on defender if blockers have been declared
+        if (blockersHaveBeenDeclared) {
+            val defenderEntity = mockk<com.wingedsheep.engine.state.ComponentContainer>(relaxed = true)
+            every { defenderEntity.get<BlockersDeclaredThisCombatComponent>() } returns BlockersDeclaredThisCombatComponent
+            every { state.getEntity(defender) } returns defenderEntity
+        }
 
         if (stackEmpty) {
             every { state.stack } returns emptyList()
@@ -524,6 +538,75 @@ class AutoPassManagerTest : FunSpec({
             val actions = listOf(passPriorityAction(player1))
 
             autoPassManager.shouldAutoPass(state, player1, actions) shouldBe false
+        }
+    }
+
+    context("Declare Blockers Priority Window (combat tricks)") {
+        test("STOP during my declare blockers step after blockers declared if I have combat tricks") {
+            // After opponent declares blockers, attacking player should get chance to cast Giant Growth
+            val state = createMockState(
+                priorityPlayerId = player1,
+                activePlayerId = player1,
+                step = Step.DECLARE_BLOCKERS,
+                blockersHaveBeenDeclared = true,
+                defendingPlayerId = player2
+            )
+            val actions = listOf(
+                passPriorityAction(player1),
+                instantSpellAction(player1)  // Combat trick like Giant Growth
+            )
+
+            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe false
+        }
+
+        test("Auto-pass during my declare blockers step after blockers declared if NO instant-speed actions") {
+            // If attacker has no combat tricks, auto-pass to damage step
+            val state = createMockState(
+                priorityPlayerId = player1,
+                activePlayerId = player1,
+                step = Step.DECLARE_BLOCKERS,
+                blockersHaveBeenDeclared = true,
+                defendingPlayerId = player2
+            )
+            val actions = listOf(
+                passPriorityAction(player1)
+                // No instant-speed actions
+            )
+
+            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe true
+        }
+
+        test("STOP during opponent's declare blockers step after blockers declared if I have combat tricks") {
+            // After declaring blockers, defending player should also get a chance to cast instants
+            val state = createMockState(
+                priorityPlayerId = player2,
+                activePlayerId = player1,  // It's player1's turn (attacker)
+                step = Step.DECLARE_BLOCKERS,
+                blockersHaveBeenDeclared = true,
+                defendingPlayerId = player2
+            )
+            val actions = listOf(
+                passPriorityAction(player2),
+                instantSpellAction(player2)  // Combat trick
+            )
+
+            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe false
+        }
+
+        test("Auto-pass during my declare blockers step BEFORE blockers declared even with combat tricks") {
+            // Before blockers are declared, attacker should auto-pass (Arena-style)
+            val state = createMockState(
+                priorityPlayerId = player1,
+                activePlayerId = player1,
+                step = Step.DECLARE_BLOCKERS,
+                blockersHaveBeenDeclared = false  // Not yet declared
+            )
+            val actions = listOf(
+                passPriorityAction(player1),
+                instantSpellAction(player1)
+            )
+
+            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe true
         }
     }
 })

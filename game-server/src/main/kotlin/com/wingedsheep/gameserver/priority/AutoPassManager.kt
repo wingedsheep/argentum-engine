@@ -1,6 +1,7 @@
 package com.wingedsheep.gameserver.priority
 
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombatComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
@@ -118,6 +119,28 @@ class AutoPassManager {
         if (meaningfulActions.isEmpty()) {
             logger.debug("AUTO-PASS: No meaningful actions available")
             return true
+        }
+
+        // Special handling for DECLARE_BLOCKERS step after blockers are declared.
+        // Both players should get a chance to cast combat tricks (like Giant Growth)
+        // after blockers are assigned and before combat damage.
+        if (state.step == Step.DECLARE_BLOCKERS) {
+            val blockersHaveBeenDeclared = state.turnOrder.any { pid ->
+                state.getEntity(pid)?.get<BlockersDeclaredThisCombatComponent>() != null
+            }
+
+            if (blockersHaveBeenDeclared) {
+                // After blockers are declared, stop if player has instant-speed responses
+                val hasInstantSpeedResponses = meaningfulActions.any { action ->
+                    (action.actionType == "CastSpell" || action.actionType == "ActivateAbility" || action.actionType == "CycleCard") &&
+                    (!action.requiresTargets || !action.validTargets.isNullOrEmpty())
+                }
+
+                if (hasInstantSpeedResponses) {
+                    logger.debug("STOP: Declare blockers step after blockers declared (have instant-speed responses)")
+                    return false
+                }
+            }
         }
 
         return if (isMyTurn) {
