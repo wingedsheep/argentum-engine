@@ -608,6 +608,11 @@ class TournamentLobby(
             if (count > availableInPool) {
                 return "Not enough copies of $cardName in pool (have $availableInPool, trying to use $count)"
             }
+
+            // Enforce 4-copy limit
+            if (count > 4) {
+                return "Cannot have more than 4 copies of $cardName (have $count)"
+            }
         }
 
         return null

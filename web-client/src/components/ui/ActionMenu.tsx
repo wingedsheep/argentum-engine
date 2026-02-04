@@ -231,9 +231,6 @@ export function ActionMenu() {
               fontWeight: 600,
               marginBottom: 12,
               textAlign: 'center',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
             }}
           >
             {cardInfo?.name ?? 'Card'}
@@ -416,79 +413,6 @@ function ActionButton({
 }
 
 /**
- * Simple icon component for action types.
- */
-function ActionIcon({
-  type,
-  isAvailable,
-}: {
-  type: ActionOption['actionType']
-  isAvailable: boolean
-}) {
-  const color = isAvailable ? '#fff' : '#555'
-
-  // Simple SVG icons for each action type
-  switch (type) {
-    case 'cast':
-      // Spell/star burst icon
-      return (
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path
-            d="M10 2L11.5 7.5H17L12.5 11L14 17L10 13L6 17L7.5 11L3 7.5H8.5L10 2Z"
-            fill={color}
-          />
-        </svg>
-      )
-    case 'castFaceDown':
-      // Face-down/hidden card icon
-      return (
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <rect x="4" y="3" width="12" height="14" rx="1.5" fill={color} />
-          <circle cx="10" cy="10" r="3" fill={isAvailable ? '#3d3356' : '#333'} />
-        </svg>
-      )
-    case 'cycle':
-      // Cycle/refresh arrows icon
-      return (
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path
-            d="M15 10C15 12.76 12.76 15 10 15C7.24 15 5 12.76 5 10C5 7.24 7.24 5 10 5C11.38 5 12.63 5.56 13.54 6.46L11 9H17V3L14.95 5.05C13.68 3.78 11.93 3 10 3C6.13 3 3 6.13 3 10C3 13.87 6.13 17 10 17C13.87 17 17 13.87 17 10H15Z"
-            fill={color}
-          />
-        </svg>
-      )
-    case 'playLand':
-      // Mountain/land icon
-      return (
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path d="M2 16L7 6L10 11L14 5L18 16H2Z" fill={color} />
-        </svg>
-      )
-    case 'activate':
-      // Lightning bolt / tap icon for activated abilities
-      return (
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path d="M11 2L4 12H9L8 18L16 8H11L11 2Z" fill={color} />
-        </svg>
-      )
-    case 'turnFaceUp':
-      // Flip/reveal icon
-      return (
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path d="M3 4H17V12H3V4ZM5 6V10H15V6H5Z" fill={color} />
-          <path d="M10 13L14 17H6L10 13Z" fill={color} />
-        </svg>
-      )
-    default:
-      return (
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <circle cx="10" cy="10" r="6" fill={color} />
-        </svg>
-      )
-  }
-}
-
-/**
  * Get gradient colors for action type.
  */
 function getActionGradient(
@@ -528,22 +452,28 @@ function ActionOptionButton({
   onClick: () => void
 }) {
   const gradient = getActionGradient(option.actionType, option.isAvailable)
+  // Only show separate mana cost if label doesn't already contain mana symbols
+  const showSeparateCost = option.manaCost && !option.label.includes('{')
 
   return (
     <button
       onClick={onClick}
       disabled={!option.isAvailable}
       style={{
-        padding: '10px 12px',
+        padding: '8px 12px',
         background: gradient,
         color: option.isAvailable ? 'white' : '#555',
         border: option.isAvailable
           ? '1px solid rgba(255, 255, 255, 0.15)'
           : '1px solid #333',
-        borderRadius: 8,
+        borderRadius: 6,
         cursor: option.isAvailable ? 'pointer' : 'not-allowed',
         textAlign: 'left',
         transition: 'all 0.15s ease',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 8,
       }}
       onMouseOver={(e) => {
         if (option.isAvailable) {
@@ -558,42 +488,12 @@ function ActionOptionButton({
           : '#333'
       }}
     >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 10,
-        }}
-      >
-        <ActionIcon type={option.actionType} isAvailable={option.isAvailable} />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div
-            style={{
-              fontWeight: 500,
-              fontSize: 13,
-              lineHeight: 1.2,
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}
-          >
-            {option.label}
-          </div>
-        </div>
-        {option.manaCost && (
-          <div
-            style={{
-              backgroundColor: 'rgba(0, 0, 0, 0.2)',
-              borderRadius: 6,
-              padding: '4px 8px',
-              flexShrink: 0,
-              opacity: option.isAvailable ? 1 : 0.5,
-            }}
-          >
-            <ManaCost cost={option.manaCost} size={16} gap={2} />
-          </div>
-        )}
-      </div>
+      <span style={{ fontWeight: 500, fontSize: 13 }}>
+        <AbilityText text={option.label} size={14} />
+      </span>
+      {showSeparateCost && (
+        <ManaCost cost={option.manaCost} size={16} gap={2} />
+      )}
     </button>
   )
 }

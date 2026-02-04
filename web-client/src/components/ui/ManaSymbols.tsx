@@ -2,12 +2,13 @@
  * Mana symbol rendering using local SVG assets.
  */
 
-// Import all mana symbol SVGs as static assets
-const symbolModules = import.meta.glob('../../assets/mana/*.svg', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
+// Import all symbol SVGs as static assets from both mana and actions folders
+const manaModules = import.meta.glob('../../assets/symbols/mana/*.svg', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
+const actionModules = import.meta.glob('../../assets/symbols/actions/*.svg', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
 
 // Build a lookup map: symbol key -> resolved URL
 const SYMBOL_URLS: Record<string, string> = {}
-for (const [path, url] of Object.entries(symbolModules)) {
+for (const [path, url] of Object.entries({ ...manaModules, ...actionModules })) {
   const match = path.match(/\/(\w+)\.svg$/)
   if (match?.[1]) {
     SYMBOL_URLS[match[1]] = url
@@ -96,7 +97,7 @@ export function AbilityText({ text, size = 14 }: { text: string; size?: number }
   const parts = text.split(/(\{[^}]+\})/g).filter(Boolean)
 
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+    <span>
       {parts.map((part, i) => {
         const match = part.match(/^\{([^}]+)\}$/)
         if (match && match[1]) {

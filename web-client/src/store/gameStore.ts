@@ -1515,6 +1515,10 @@ export const useGameStore = create<GameStore>()(
         set((state) => {
           if (!state.deckBuildingState) return state
 
+          // Enforce 4-copy limit (except basic lands, but those are managed separately via landCounts)
+          const currentCount = state.deckBuildingState.deck.filter((c) => c === cardName).length
+          if (currentCount >= 4) return state
+
           const newDeck = [...state.deckBuildingState.deck, cardName]
           saveDeckState(newDeck, state.deckBuildingState.landCounts)
 

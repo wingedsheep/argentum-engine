@@ -391,6 +391,17 @@ class GamePlayHandler(
         gameSession.player1?.let { sender.send(it.webSocketSession, message) }
         gameSession.player2?.let { sender.send(it.webSocketSession, message) }
 
+        // Notify spectators that the game has ended and return them to tournament overview
+        for (spectator in gameSession.getSpectators()) {
+            if (spectator.webSocketSession.isOpen) {
+                sender.send(spectator.webSocketSession, ServerMessage.SpectatingStopped)
+            }
+            // Clear their spectating state
+            sessionRegistry.getIdentityByWsId(spectator.webSocketSession.id)?.let { identity ->
+                identity.currentSpectatingGameId = null
+            }
+        }
+
         val gameSessionId = gameSession.sessionId
 
         val lobbyId = gameRepository.getLobbyForGame(gameSessionId)
