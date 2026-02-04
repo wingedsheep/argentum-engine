@@ -70,12 +70,9 @@ export function GameCard({
   const handledByDrag = useRef(false)
 
   // Hover handlers for card preview
-  // Allow hover for non-face-down cards, or for the controller's own face-down cards
   const handleMouseEnter = useCallback(() => {
-    if (!faceDown || !isOpponentCard) {
-      hoverCard(card.id)
-    }
-  }, [card.id, faceDown, isOpponentCard, hoverCard])
+    hoverCard(card.id)
+  }, [card.id, hoverCard])
 
   const handleMouseLeave = useCallback(() => {
     hoverCard(null)
