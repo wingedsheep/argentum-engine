@@ -24,7 +24,39 @@ function DraftPicker({ draftState, settings }: { draftState: DraftState; setting
   const leaveLobby = useGameStore((s) => s.leaveLobby)
   const stopLobby = useGameStore((s) => s.stopLobby)
   const lobbyState = useGameStore((s) => s.lobbyState)
+  const playerId = useGameStore((s) => s.playerId)
   const isHost = lobbyState?.isHost ?? false
+
+  // Calculate neighbors based on pass direction
+  const neighbors = useMemo(() => {
+    const players = lobbyState?.players ?? []
+    if (players.length < 2 || !playerId) return null
+
+    const myIndex = players.findIndex((p) => p.playerId === playerId)
+    if (myIndex === -1) return null
+
+    const n = players.length
+    const leftIndex = (myIndex - 1 + n) % n
+    const rightIndex = (myIndex + 1) % n
+
+    const leftPlayer = players[leftIndex]
+    const rightPlayer = players[rightIndex]
+
+    // Based on pass direction, determine who we're passing to and receiving from
+    const passingTo = draftState.passDirection === 'LEFT' ? leftPlayer : rightPlayer
+    const receivingFrom = draftState.passDirection === 'LEFT' ? rightPlayer : leftPlayer
+
+    return {
+      passingTo: passingTo ? {
+        name: passingTo.playerName,
+        isWaiting: draftState.waitingForPlayers.includes(passingTo.playerName),
+      } : null,
+      receivingFrom: receivingFrom ? {
+        name: receivingFrom.playerName,
+        isWaiting: draftState.waitingForPlayers.includes(receivingFrom.playerName),
+      } : null,
+    }
+  }, [lobbyState?.players, playerId, draftState.passDirection, draftState.waitingForPlayers])
 
   const [hoveredCard, setHoveredCard] = useState<SealedCardInfo | null>(null)
   const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(null)
@@ -68,28 +100,38 @@ function DraftPicker({ draftState, settings }: { draftState: DraftState; setting
   // Timer warning threshold
   const timerWarning = draftState.timeRemaining <= 10
 
-  // Group picked cards by color for sidebar, sorted by CMC within each color
+  // Group picked cards by color for sidebar, with counts for duplicates
   const pickedByColor = useMemo(() => {
-    const groups: Record<string, SealedCardInfo[]> = {
-      W: [], U: [], B: [], R: [], G: [], C: [], M: [],
+    const groups: Record<string, Array<{ card: SealedCardInfo; count: number }>> = {
+      W: [], U: [], B: [], R: [], G: [], M: [], C: [],
+    }
+    // Count occurrences of each card by name within each color
+    const colorCounts: Record<string, Map<string, { card: SealedCardInfo; count: number }>> = {
+      W: new Map(), U: new Map(), B: new Map(), R: new Map(), G: new Map(), M: new Map(), C: new Map(),
     }
     for (const card of draftState.pickedCards) {
       const colors = getCardColors(card)
+      let colorKey: string
       if (colors.size === 0) {
-        groups['C']!.push(card)
+        colorKey = 'C'
       } else if (colors.size > 1) {
-        groups['M']!.push(card)
+        colorKey = 'M'
       } else {
-        const color = [...colors][0]!
-        groups[color]!.push(card)
+        colorKey = [...colors][0]!
+      }
+      const existing = colorCounts[colorKey]!.get(card.name)
+      if (existing) {
+        existing.count++
+      } else {
+        colorCounts[colorKey]!.set(card.name, { card, count: 1 })
       }
     }
-    // Sort each color group by CMC, then by name
+    // Convert maps to arrays and sort by CMC, then by name
     for (const color of Object.keys(groups)) {
-      groups[color]!.sort((a, b) => {
-        const cmcDiff = getCmc(a) - getCmc(b)
+      groups[color] = Array.from(colorCounts[color]!.values()).sort((a, b) => {
+        const cmcDiff = getCmc(a.card) - getCmc(b.card)
         if (cmcDiff !== 0) return cmcDiff
-        return a.name.localeCompare(b.name)
+        return a.card.name.localeCompare(b.card.name)
       })
     }
     return groups
@@ -114,6 +156,19 @@ function DraftPicker({ draftState, settings }: { draftState: DraftState; setting
 
     return { creatures, spells, curve }
   }, [draftState.pickedCards])
+
+  // Group current pack by rarity for display
+  const packByRarity = useMemo(() => {
+    const groups: Record<string, SealedCardInfo[]> = {
+      MYTHIC: [], RARE: [], UNCOMMON: [], COMMON: [],
+    }
+    for (const card of draftState.currentPack) {
+      const rarity = card.rarity.toUpperCase()
+      const rarityKey = ['MYTHIC', 'RARE', 'UNCOMMON'].includes(rarity) ? rarity : 'COMMON'
+      groups[rarityKey]!.push(card)
+    }
+    return groups
+  }, [draftState.currentPack])
 
   const totalPicked = draftState.pickedCards.length
   const totalPacks = settings.boosterCount
@@ -159,8 +214,8 @@ function DraftPicker({ draftState, settings }: { draftState: DraftState; setting
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          {/* Pass direction indicator */}
-          <PassDirectionIndicator direction={draftState.passDirection} />
+          {/* Pass direction indicator with neighbors */}
+          <PassDirectionIndicator direction={draftState.passDirection} neighbors={neighbors} />
 
           {/* Timer - only show when player has a pack to pick from */}
           {draftState.currentPack.length > 0 ? (
@@ -281,19 +336,25 @@ function DraftPicker({ draftState, settings }: { draftState: DraftState; setting
                   flexWrap: 'wrap',
                   gap: responsive.isMobile ? 8 : 12,
                   justifyContent: 'center',
+                  alignItems: 'flex-start',
                   maxWidth: 1200,
                 }}
               >
-                {draftState.currentPack.map((card) => (
-                  <PackCard
-                    key={card.name}
-                    card={card}
-                    isSelected={selectedCards.includes(card.name)}
-                    onClick={() => handleCardClick(card.name)}
-                    onHover={handleHover}
-                    responsive={responsive}
-                  />
-                ))}
+                {(['MYTHIC', 'RARE', 'UNCOMMON', 'COMMON'] as const).flatMap((rarity) => {
+                  const cards = packByRarity[rarity]
+                  if (!cards || cards.length === 0) return []
+                  return cards.map((card) => (
+                    <PackCard
+                      key={card.name}
+                      card={card}
+                      rarity={rarity}
+                      isSelected={selectedCards.includes(card.name)}
+                      onClick={() => handleCardClick(card.name)}
+                      onHover={handleHover}
+                      responsive={responsive}
+                    />
+                  ))
+                })}
               </div>
             ) : (
               <div
@@ -405,24 +466,93 @@ function PackPickIndicator({ packNumber, pickNumber, totalPacks }: { packNumber:
   )
 }
 
-function PassDirectionIndicator({ direction }: { direction: 'LEFT' | 'RIGHT' }) {
+function PassDirectionIndicator({
+  direction,
+  neighbors,
+}: {
+  direction: 'LEFT' | 'RIGHT'
+  neighbors: {
+    passingTo: { name: string; isWaiting: boolean } | null
+    receivingFrom: { name: string; isWaiting: boolean } | null
+  } | null
+}) {
   const isLeft = direction === 'LEFT'
+
   return (
     <div
       style={{
         display: 'flex',
         alignItems: 'center',
-        gap: 6,
-        padding: '4px 10px',
-        backgroundColor: isLeft ? 'rgba(255, 152, 0, 0.15)' : 'rgba(33, 150, 243, 0.15)',
+        gap: 12,
+        padding: '6px 12px',
+        backgroundColor: '#2a2a2a',
         borderRadius: 6,
-        border: `1px solid ${isLeft ? '#ff9800' : '#2196f3'}`,
+        border: '1px solid #444',
       }}
     >
-      <span style={{ fontSize: 16 }}>{isLeft ? '←' : '→'}</span>
-      <span style={{ color: isLeft ? '#ff9800' : '#2196f3', fontSize: 12, fontWeight: 600 }}>
-        Pass {direction}
-      </span>
+      {/* Receiving from */}
+      {neighbors?.receivingFrom && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ color: '#4caf50', fontSize: 14 }}>←</span>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+            <span style={{ color: '#888', fontSize: 9, textTransform: 'uppercase' }}>From</span>
+            <span
+              style={{
+                color: neighbors.receivingFrom.isWaiting ? '#ff9800' : '#4caf50',
+                fontSize: 11,
+                fontWeight: 600,
+                maxWidth: 80,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {neighbors.receivingFrom.name}
+              {neighbors.receivingFrom.isWaiting && ' ...'}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Direction indicator */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 4,
+          padding: '2px 8px',
+          backgroundColor: isLeft ? 'rgba(255, 152, 0, 0.2)' : 'rgba(33, 150, 243, 0.2)',
+          borderRadius: 4,
+        }}
+      >
+        <span style={{ color: isLeft ? '#ff9800' : '#2196f3', fontSize: 10, fontWeight: 600 }}>
+          {isLeft ? '←' : '→'}
+        </span>
+      </div>
+
+      {/* Passing to */}
+      {neighbors?.passingTo && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+            <span style={{ color: '#888', fontSize: 9, textTransform: 'uppercase' }}>To</span>
+            <span
+              style={{
+                color: neighbors.passingTo.isWaiting ? '#ff9800' : '#4caf50',
+                fontSize: 11,
+                fontWeight: 600,
+                maxWidth: 80,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {neighbors.passingTo.name}
+              {neighbors.passingTo.isWaiting && ' ...'}
+            </span>
+          </div>
+          <span style={{ color: '#4caf50', fontSize: 14 }}>→</span>
+        </div>
+      )}
     </div>
   )
 }
@@ -488,12 +618,14 @@ function WaitingIndicator({ players }: { players: readonly string[] }) {
 
 function PackCard({
   card,
+  rarity,
   isSelected,
   onClick,
   onHover,
   responsive,
 }: {
   card: SealedCardInfo
+  rarity: 'MYTHIC' | 'RARE' | 'UNCOMMON' | 'COMMON'
   isSelected: boolean
   onClick: () => void
   onHover: (card: SealedCardInfo | null, e?: React.MouseEvent) => void
@@ -502,6 +634,13 @@ function PackCard({
   const cardWidth = responsive.isMobile ? 120 : 160
   const cardHeight = Math.round(cardWidth * 1.4)
   const imageUrl = getCardImageUrl(card.name, card.imageUri, 'normal')
+
+  const rarityColors: Record<string, string> = {
+    MYTHIC: '#ff8b00',
+    RARE: '#ffd700',
+    UNCOMMON: '#c0c0c0',
+    COMMON: '#555',
+  }
 
   return (
     <div
@@ -545,6 +684,17 @@ function PackCard({
           objectFit: 'cover',
         }}
       />
+      {/* Rarity indicator strip at bottom */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: 4,
+          backgroundColor: rarityColors[rarity],
+        }}
+      />
       {isSelected && (
         <div
           style={{
@@ -577,7 +727,7 @@ function PickedCardsSidebar({
   onHover,
   responsive,
 }: {
-  pickedByColor: Record<string, SealedCardInfo[]>
+  pickedByColor: Record<string, Array<{ card: SealedCardInfo; count: number }>>
   analytics: { creatures: number; spells: number; curve: Record<number, number> }
   totalPicked: number
   onHover: (card: SealedCardInfo | null, e?: React.MouseEvent) => void
@@ -671,8 +821,9 @@ function PickedCardsSidebar({
           </div>
         ) : (
           colorOrder.map((color) => {
-            const cards = pickedByColor[color] ?? []
-            if (cards.length === 0) return null
+            const entries = pickedByColor[color] ?? []
+            if (entries.length === 0) return null
+            const totalInColor = entries.reduce((sum, e) => sum + e.count, 0)
             return (
               <div key={color} style={{ marginBottom: 8 }}>
                 <div
@@ -692,13 +843,14 @@ function PickedCardsSidebar({
                     }}
                   />
                   <span style={{ color: '#888', fontSize: 10, fontWeight: 600, textTransform: 'uppercase' }}>
-                    {colorNames[color]} ({cards.length})
+                    {colorNames[color]} ({totalInColor})
                   </span>
                 </div>
-                {cards.map((card) => (
+                {entries.map(({ card, count }) => (
                   <PickedCardRow
                     key={card.name}
                     card={card}
+                    count={count}
                     onHover={onHover}
                   />
                 ))}
@@ -713,9 +865,11 @@ function PickedCardsSidebar({
 
 function PickedCardRow({
   card,
+  count,
   onHover,
 }: {
   card: SealedCardInfo
+  count: number
   onHover: (card: SealedCardInfo | null, e?: React.MouseEvent) => void
 }) {
   return (
@@ -737,6 +891,19 @@ function PickedCardRow({
         e.currentTarget.style.backgroundColor = 'transparent'
       }}
     >
+      {count > 1 && (
+        <span
+          style={{
+            color: '#4fc3f7',
+            fontSize: 11,
+            fontWeight: 600,
+            marginRight: 6,
+            minWidth: 16,
+          }}
+        >
+          {count}x
+        </span>
+      )}
       <span
         style={{
           color: '#ddd',

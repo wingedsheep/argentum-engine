@@ -308,24 +308,30 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
       })
       const savedState = loadDeckState()
 
-      set((state) => ({
-        deckBuildingState: {
-          phase: 'building',
-          setCode: msg.setCode,
-          setName: msg.setName,
-          cardPool: msg.cardPool,
-          basicLands: msg.basicLands,
-          deck: state.deckBuildingState?.deck ?? savedState?.deck ?? [],
-          landCounts: state.deckBuildingState?.landCounts ?? savedState?.landCounts ?? {
-            Plains: 0,
-            Island: 0,
-            Swamp: 0,
-            Mountain: 0,
-            Forest: 0,
+      set((state) => {
+        // Preserve 'submitted' phase if already set, or if tournament state exists (deck must have been submitted)
+        const existingPhase = state.deckBuildingState?.phase
+        const phase = existingPhase === 'submitted' || state.tournamentState ? 'submitted' : 'building'
+
+        return {
+          deckBuildingState: {
+            phase,
+            setCode: msg.setCode,
+            setName: msg.setName,
+            cardPool: msg.cardPool,
+            basicLands: msg.basicLands,
+            deck: state.deckBuildingState?.deck ?? savedState?.deck ?? [],
+            landCounts: state.deckBuildingState?.landCounts ?? savedState?.landCounts ?? {
+              Plains: 0,
+              Island: 0,
+              Swamp: 0,
+              Mountain: 0,
+              Forest: 0,
+            },
+            opponentReady: state.deckBuildingState?.opponentReady ?? false,
           },
-          opponentReady: state.deckBuildingState?.opponentReady ?? false,
-        },
-      }))
+        }
+      })
     },
 
     onOpponentDeckSubmitted: () => {
@@ -380,12 +386,14 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
     },
 
     onDraftPickConfirmed: (msg) => {
+      // Add picked cards immediately for instant feedback.
+      // The server's authoritative list in DraftPackReceived will replace this.
       set((state) => {
         if (!state.lobbyState?.draftState) return state
+
         const pickedCards = state.lobbyState.draftState.currentPack.filter((c) =>
           msg.cardNames.includes(c.name)
         )
-        if (pickedCards.length === 0) return state
 
         return {
           lobbyState: {
@@ -464,8 +472,10 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
           isHost: msg.isHost,
           draftState: msg.state === 'DRAFTING' ? (lobbyState?.draftState ?? null) : null,
         },
+        // Update deck building phase during DECK_BUILDING or TOURNAMENT_ACTIVE
+        // This allows returning to deck building after unsubmitting during tournament
         deckBuildingState:
-          state.deckBuildingState && msg.state === 'DECK_BUILDING'
+          state.deckBuildingState && (msg.state === 'DECK_BUILDING' || msg.state === 'TOURNAMENT_ACTIVE')
             ? { ...state.deckBuildingState, phase: isDeckSubmitted ? 'submitted' : 'building' }
             : state.deckBuildingState,
       }))
@@ -481,8 +491,9 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
     // Tournament handlers
     // ========================================================================
     onTournamentStarted: (msg) => {
-      clearDeckState()
-      set({
+      // NOTE: Don't clear deckBuildingState - we allow returning to deck building
+      // until the first match starts
+      set((state) => ({
         tournamentState: {
           lobbyId: msg.lobbyId,
           totalRounds: msg.totalRounds,
@@ -498,8 +509,11 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
           nextOpponentName: msg.nextOpponentName ?? null,
           nextRoundHasBye: msg.nextRoundHasBye ?? false,
         },
-        deckBuildingState: null,
-      })
+        // Keep deckBuildingState but ensure phase is 'submitted'
+        deckBuildingState: state.deckBuildingState
+          ? { ...state.deckBuildingState, phase: 'submitted' }
+          : null,
+      }))
     },
 
     onTournamentMatchStarting: (msg) => {
@@ -514,6 +528,7 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
               readyPlayerIds: [],
               nextOpponentName: null,
               nextRoundHasBye: false,
+              activeMatches: [], // Clear - player is now in a game
             }
           : null,
         sessionId: msg.gameSessionId,
@@ -550,6 +565,7 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
               readyPlayerIds: [],
               nextOpponentName: msg.nextOpponentName ?? null,
               nextRoundHasBye: msg.nextRoundHasBye ?? false,
+              activeMatches: [], // Clear - round is over, no active matches
             }
           : null,
         gameState: null,
