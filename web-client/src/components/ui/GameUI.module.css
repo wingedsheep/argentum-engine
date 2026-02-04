@@ -1,0 +1,922 @@
+/**
+ * GameUI styles.
+ * Styles for connection overlay, lobby, and tournament screens.
+ */
+
+/* =========================================================================
+ * Connection Overlay
+ * ========================================================================= */
+.connectionOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--bg-overlay-darker);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+  pointer-events: auto;
+  gap: var(--space-6);
+  padding: var(--space-4);
+}
+
+@media (max-width: 639px) {
+  .connectionOverlay {
+    gap: var(--space-4);
+    padding: var(--space-1);
+  }
+}
+
+/* =========================================================================
+ * Lobby Overlay
+ * ========================================================================= */
+.lobbyOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--gradient-page);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+  padding: var(--space-4);
+}
+
+@media (max-width: 639px) {
+  .lobbyOverlay {
+    padding: var(--space-1);
+  }
+}
+
+.lobbyContent {
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* =========================================================================
+ * Tournament Overlay
+ * ========================================================================= */
+.tournamentOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--bg-overlay-darker);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+  gap: var(--space-4);
+  padding: var(--space-4);
+  overflow: auto;
+}
+
+@media (max-width: 639px) {
+  .tournamentOverlay {
+    padding: var(--space-1);
+  }
+}
+
+/* =========================================================================
+ * Title
+ * ========================================================================= */
+.title {
+  margin: 0;
+  font-size: var(--font-3xl);
+}
+
+.lobbyTitle {
+  margin: 0 0 var(--space-1) 0;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: -0.02em;
+  background: var(--gradient-title);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: var(--font-2xl);
+}
+
+@media (max-width: 639px) {
+  .lobbyTitle {
+    font-size: var(--font-xl);
+  }
+}
+
+/* =========================================================================
+ * Error Message
+ * ========================================================================= */
+.errorMessage {
+  color: var(--color-error);
+  font-size: var(--font-md);
+}
+
+/* =========================================================================
+ * Input Group
+ * ========================================================================= */
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: center;
+  width: 100%;
+  max-width: 400px;
+}
+
+.inputLabel {
+  color: var(--text-muted);
+  font-size: var(--font-md);
+}
+
+.textInput {
+  background-color: var(--bg-surface-5);
+  color: var(--text-primary);
+  border: 1px solid var(--border-solid-medium);
+  border-radius: var(--radius-lg);
+  text-align: center;
+  width: 100%;
+  max-width: 250px;
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--font-lg);
+}
+
+@media (max-width: 639px) {
+  .textInput {
+    padding: var(--space-2) var(--space-3);
+  }
+}
+
+.textInput:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.sessionInput {
+  composes: textInput;
+  text-align: left;
+  max-width: none;
+  flex: 1;
+  min-width: 0;
+}
+
+/* =========================================================================
+ * Buttons
+ * ========================================================================= */
+.primaryButton {
+  background-color: var(--color-primary);
+  color: var(--text-primary);
+  border: none;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  width: 100%;
+  max-width: 200px;
+  padding: var(--space-3) var(--space-6);
+  font-size: var(--font-lg);
+}
+
+@media (max-width: 639px) {
+  .primaryButton {
+    padding: var(--space-2) var(--space-5);
+  }
+}
+
+.primaryButton:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.primaryButton:disabled {
+  background-color: var(--bg-surface-6);
+  cursor: not-allowed;
+}
+
+.tournamentButton {
+  composes: primaryButton;
+  background-color: var(--color-warning-light);
+}
+
+.joinButton {
+  composes: primaryButton;
+  background-color: #00aa44;
+  white-space: nowrap;
+}
+
+.joinButton:disabled {
+  background-color: var(--bg-surface-6);
+}
+
+.cancelButton {
+  margin-top: var(--space-5);
+  background-color: var(--color-error-darker);
+  color: var(--text-primary);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--font-md);
+}
+
+.cancelButton:hover {
+  filter: brightness(1.1);
+}
+
+.leaveButton {
+  background-color: transparent;
+  color: var(--text-disabled);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  padding: var(--space-3) var(--space-5);
+  font-size: var(--font-md);
+}
+
+.leaveButton:hover {
+  background-color: var(--bg-surface-6);
+  color: var(--text-tertiary);
+}
+
+.returnButton {
+  composes: leaveButton;
+  background-color: var(--color-warning-light);
+  color: var(--text-primary);
+  border: none;
+  padding: var(--space-3) var(--space-6);
+  font-size: var(--font-lg);
+}
+
+/* =========================================================================
+ * Mode Toggle
+ * ========================================================================= */
+.modeToggle {
+  display: flex;
+  background-color: var(--bg-surface-5);
+  border-radius: var(--radius-lg);
+  padding: var(--space-1);
+  gap: var(--space-1);
+}
+
+.modeButton {
+  background-color: transparent;
+  color: var(--text-muted);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: var(--font-weight-normal);
+  transition: all var(--transition-fast);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--font-md);
+}
+
+@media (max-width: 639px) {
+  .modeButton {
+    padding: var(--space-2) var(--space-3);
+  }
+}
+
+.modeButtonActive {
+  background-color: var(--color-accent);
+  color: #000;
+  font-weight: var(--font-weight-semibold);
+}
+
+/* =========================================================================
+ * Divider
+ * ========================================================================= */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-disabled);
+}
+
+.dividerLine {
+  width: 40px;
+  height: 1px;
+  background-color: var(--text-disabled);
+}
+
+.dividerText {
+  font-size: var(--font-sm);
+}
+
+/* =========================================================================
+ * Join Row
+ * ========================================================================= */
+.joinRow {
+  display: flex;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+@media (max-width: 639px) {
+  .joinRow {
+    flex-direction: column;
+  }
+}
+
+/* =========================================================================
+ * Mode Description
+ * ========================================================================= */
+.modeDescription {
+  color: var(--text-disabled);
+  font-size: var(--font-sm);
+  margin: 0;
+  text-align: center;
+}
+
+/* =========================================================================
+ * Waiting Section
+ * ========================================================================= */
+.waitingSection {
+  text-align: center;
+}
+
+.waitingTitle {
+  font-size: var(--font-md);
+}
+
+.waitingSubtitle {
+  color: var(--text-muted);
+  font-size: var(--font-md);
+}
+
+/* =========================================================================
+ * Invite Code Box
+ * ========================================================================= */
+.inviteBox {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--bg-panel-light);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: var(--space-3);
+}
+
+.inviteBoxCopied {
+  background-color: rgba(79, 195, 247, 0.08);
+  border-color: rgba(79, 195, 247, 0.3);
+}
+
+.inviteCode {
+  font-family: monospace;
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.04em;
+  font-size: var(--font-lg);
+}
+
+@media (max-width: 639px) {
+  .inviteCode {
+    font-size: 15px;
+  }
+}
+
+.inviteCopyLabel {
+  color: var(--text-faint);
+  font-size: 12px;
+  transition: color 0.2s;
+}
+
+.inviteCopyLabelCopied {
+  color: var(--color-accent);
+}
+
+/* =========================================================================
+ * Lobby Header
+ * ========================================================================= */
+.lobbyHeader {
+  text-align: center;
+  margin-bottom: var(--space-2);
+}
+
+.lobbyFormat {
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: var(--space-2);
+}
+
+.lobbyFormatSealed {
+  color: var(--color-warning-light);
+}
+
+.lobbyFormatDraft {
+  color: var(--color-accent-dark);
+}
+
+.lobbySubtitle {
+  color: var(--text-faint);
+  font-size: var(--font-sm);
+  margin: 0;
+}
+
+/* =========================================================================
+ * Settings Panel
+ * ========================================================================= */
+.settingsPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background-color: var(--bg-panel-light);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+.settingsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.settingsRow:last-child {
+  border-bottom: none;
+}
+
+.settingsLabel {
+  color: var(--text-muted);
+  font-size: var(--font-sm);
+}
+
+.settingsButtons {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.settingsButton {
+  padding: 5px var(--space-3);
+  font-size: var(--font-sm);
+  background-color: var(--bg-surface-4);
+  color: var(--text-muted);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: var(--font-weight-normal);
+}
+
+.settingsButtonActive {
+  background-color: var(--color-warning-light);
+  color: var(--text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.settingsButtonDraft {
+  background-color: var(--color-accent-dark);
+}
+
+.settingsSelect {
+  padding: 5px var(--space-2);
+  font-size: var(--font-sm);
+  background-color: var(--bg-surface-4);
+  color: var(--text-primary);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  outline: none;
+}
+
+/* =========================================================================
+ * Player List
+ * ========================================================================= */
+.playerListPanel {
+  background-color: var(--bg-panel-light);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+.playerListHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-medium);
+}
+
+.playerListTitle {
+  font-size: var(--font-md);
+  font-weight: var(--font-weight-semibold);
+  color: #ccc;
+}
+
+.playerCount {
+  color: var(--border-solid-medium);
+  font-size: var(--font-sm);
+}
+
+.playerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background-color var(--transition-fast);
+}
+
+.playerRow:last-child {
+  border-bottom: none;
+}
+
+.playerInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.statusDotOnline {
+  background-color: #00cc44;
+  box-shadow: 0 0 6px rgba(0, 204, 68, 0.4);
+}
+
+.statusDotOffline {
+  background-color: var(--color-error);
+  box-shadow: 0 0 6px rgba(255, 68, 68, 0.4);
+}
+
+.playerName {
+  font-size: var(--font-md);
+  color: var(--text-secondary);
+}
+
+.hostBadge {
+  font-size: 9px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-warning-light);
+  background-color: rgba(230, 81, 0, 0.12);
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.playerStatus {
+  font-size: var(--font-sm);
+  font-weight: var(--font-weight-normal);
+}
+
+.playerStatusDisconnected {
+  color: var(--color-error);
+}
+
+.playerStatusReady {
+  color: #4caf50;
+  font-weight: var(--font-weight-medium);
+}
+
+.playerStatusJoined {
+  color: var(--text-faint);
+}
+
+.emptyPlayerList {
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+  color: var(--border-solid-dark);
+  font-size: var(--font-sm);
+}
+
+/* =========================================================================
+ * Actions Row
+ * ========================================================================= */
+.actionsRow {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+.startButton {
+  flex: 1;
+  padding: 13px var(--space-5);
+  font-size: var(--font-md);
+  font-weight: var(--font-weight-semibold);
+  background: var(--gradient-warning);
+  color: var(--text-primary);
+  border: none;
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: 0 2px 12px rgba(230, 81, 0, 0.3);
+}
+
+.startButton:disabled {
+  background: var(--bg-surface-4);
+  color: var(--border-solid-medium);
+  border: 1px solid var(--border-light);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.waitingHint {
+  color: var(--border-solid-medium);
+  font-size: var(--font-sm);
+  text-align: center;
+  margin: 0;
+}
+
+/* =========================================================================
+ * Tournament Standings Table
+ * ========================================================================= */
+.standingsTable {
+  width: 100%;
+  max-width: 500px;
+  background-color: var(--bg-surface-2);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.standingsTableInner {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.standingsHeader {
+  background-color: var(--bg-surface-5);
+}
+
+.standingsTh {
+  padding: var(--space-2) var(--space-3);
+  text-align: center;
+  font-size: 14px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-muted);
+}
+
+.standingsThLeft {
+  composes: standingsTh;
+  text-align: left;
+}
+
+.standingsTd {
+  padding: var(--space-2) var(--space-3);
+  text-align: center;
+  font-size: 14px;
+  border-bottom: 1px solid var(--bg-surface-5);
+}
+
+.standingsTdLeft {
+  composes: standingsTd;
+  text-align: left;
+}
+
+.standingsRowMe {
+  background-color: #1a1a3a;
+}
+
+.standingsRowMe:hover {
+  background-color: #1a1a3a;
+}
+
+.standingsRow:hover {
+  background-color: #1a1a2a;
+}
+
+.standingsWins {
+  color: #00cc44;
+}
+
+.standingsLosses {
+  color: var(--color-error);
+}
+
+.standingsPoints {
+  font-weight: var(--font-weight-semibold);
+}
+
+.standingsGwr {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.meIndicator {
+  color: var(--color-accent);
+  margin-left: var(--space-1);
+}
+
+.disconnectedIndicator {
+  color: var(--color-error);
+  margin-left: var(--space-1);
+  font-size: 12px;
+}
+
+.tiedIndicator {
+  color: var(--text-muted);
+  margin-left: 2px;
+}
+
+/* =========================================================================
+ * Tournament Status Boxes
+ * ========================================================================= */
+.statusBox {
+  padding: var(--space-4) var(--space-6);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-md);
+  text-align: center;
+}
+
+.statusBoxBye {
+  background-color: var(--color-success-bg);
+}
+
+.statusBoxWaiting {
+  background-color: #2a2a4e;
+}
+
+.statusBoxMatch {
+  background-color: #1a2a4e;
+  border: 1px solid #3a4a6e;
+}
+
+.statusBoxMatchLabel {
+  color: var(--text-muted);
+  font-size: var(--font-sm);
+  margin-bottom: var(--space-1);
+}
+
+.statusBoxMatchOpponent {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-lg);
+}
+
+/* =========================================================================
+ * Ready Button
+ * ========================================================================= */
+.readyButton {
+  padding: 14px var(--space-7);
+  font-size: var(--font-lg);
+  font-weight: var(--font-weight-semibold);
+  background-color: var(--color-warning-light);
+  color: var(--text-primary);
+  border: none;
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 12px rgba(230, 81, 0, 0.3);
+}
+
+.readyButton:disabled {
+  background-color: var(--color-success-bg);
+  border: 2px solid var(--color-success-border);
+  cursor: default;
+  box-shadow: none;
+}
+
+.readyCount {
+  color: var(--text-muted);
+  font-size: var(--font-sm);
+  margin: 0;
+}
+
+/* =========================================================================
+ * Active Matches
+ * ========================================================================= */
+.matchesSection {
+  width: 100%;
+  max-width: 500px;
+}
+
+.matchesSectionTitle {
+  margin: 0 0 var(--space-2) 0;
+  font-size: var(--font-md);
+  color: var(--text-muted);
+}
+
+.matchesList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.matchButton {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--bg-surface-4);
+  border: 1px solid var(--border-solid-dark);
+  border-radius: var(--radius-lg);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.matchButton:hover {
+  background-color: #2a2a4e;
+}
+
+.matchPlayers {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.matchPlayerName {
+  font-weight: var(--font-weight-semibold);
+}
+
+.matchVs {
+  color: var(--text-muted);
+}
+
+.matchScore {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 14px;
+}
+
+.matchLifeHigh {
+  color: #4caf50;
+}
+
+.matchLifeLow {
+  color: var(--color-error);
+}
+
+.matchScoreDash {
+  color: var(--text-disabled);
+}
+
+.matchWatch {
+  color: var(--color-accent);
+  margin-left: var(--space-2);
+}
+
+/* =========================================================================
+ * Last Round Results
+ * ========================================================================= */
+.resultsSection {
+  width: 100%;
+  max-width: 500px;
+}
+
+.resultsSectionTitle {
+  composes: matchesSectionTitle;
+}
+
+.resultRow {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--space-1) var(--space-3);
+  background-color: var(--bg-surface-2);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-1);
+  font-size: var(--font-sm);
+}
+
+.resultOutcome {
+  color: var(--text-muted);
+}
+
+/* =========================================================================
+ * Fullscreen Button
+ * ========================================================================= */
+.fullscreenButton {
+  position: absolute;
+  top: var(--space-3);
+  left: var(--space-3);
+  z-index: var(--z-controls);
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  border: 1px solid var(--border-solid-medium);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-sm);
+}
+
+@media (max-width: 639px) {
+  .fullscreenButton {
+    top: var(--space-2);
+    left: var(--space-2);
+    padding: var(--space-1) var(--space-2);
+  }
+}
+
+.fullscreenButton:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}

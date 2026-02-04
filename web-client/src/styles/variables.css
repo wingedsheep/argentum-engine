@@ -1,0 +1,216 @@
+/**
+ * Design tokens for Argentum Engine web client.
+ * CSS custom properties for consistent theming across the application.
+ */
+
+:root {
+  /* =========================================================================
+   * Z-Index Scale
+   * Semantic layers for consistent stacking order
+   * ========================================================================= */
+  --z-base: 1;
+  --z-cards: 10;
+  --z-floating: 50;
+  --z-controls: 100;
+  --z-overlay: 500;
+  --z-modal: 1000;
+  --z-modal-content: 1001;
+  --z-priority: 1500;
+  --z-combat: 2000;
+  --z-targeting: 2500;
+  --z-tooltip: 10000;
+
+  /* =========================================================================
+   * Colors - Background Surfaces
+   * Numbered scale from darkest (1) to lightest (6)
+   * ========================================================================= */
+  --bg-surface-1: #0a0a15;
+  --bg-surface-2: #111;
+  --bg-surface-3: #1a1a1e;
+  --bg-surface-4: #1a1a2e;
+  --bg-surface-5: #222;
+  --bg-surface-6: #333;
+
+  /* =========================================================================
+   * Colors - Overlay Backgrounds
+   * Semi-transparent backgrounds for modals and overlays
+   * ========================================================================= */
+  --bg-overlay-dark: rgba(0, 0, 0, 0.85);
+  --bg-overlay-darker: rgba(0, 0, 0, 0.9);
+  --bg-overlay-darkest: rgba(0, 0, 0, 0.92);
+  --bg-overlay-opaque: rgba(0, 0, 0, 0.95);
+
+  /* Panel backgrounds with blur effect */
+  --bg-panel: rgba(20, 20, 28, 0.95);
+  --bg-panel-light: rgba(255, 255, 255, 0.03);
+  --bg-panel-hover: rgba(255, 255, 255, 0.05);
+
+  /* =========================================================================
+   * Colors - Text
+   * ========================================================================= */
+  --text-primary: #fff;
+  --text-secondary: #ddd;
+  --text-tertiary: #aaa;
+  --text-muted: #888;
+  --text-disabled: #666;
+  --text-faint: #555;
+  --text-placeholder: #444;
+
+  /* =========================================================================
+   * Colors - Semantic
+   * ========================================================================= */
+  /* Success / Affirmative */
+  --color-success: #00aa00;
+  --color-success-light: #00cc44;
+  --color-success-dark: #16a34a;
+  --color-success-darker: #15803d;
+  --color-success-bg: #1a472a;
+  --color-success-border: #2a6a3a;
+
+  /* Error / Danger */
+  --color-error: #ff4444;
+  --color-error-dark: #c62828;
+  --color-error-darker: #c0392b;
+
+  /* Warning */
+  --color-warning: #cc6600;
+  --color-warning-light: #e65100;
+  --color-warning-dark: #bf4300;
+
+  /* Primary / Action */
+  --color-primary: #0066cc;
+  --color-primary-light: #2563eb;
+  --color-primary-dark: #1e40af;
+
+  /* Secondary / Accent */
+  --color-accent: #4fc3f7;
+  --color-accent-dark: #2196f3;
+
+  /* Special / Purple */
+  --color-special: #7c3aed;
+  --color-special-light: #9333ea;
+  --color-special-dark: #5b21b6;
+  --color-special-darker: #6b21a8;
+
+  /* Morph / Pink */
+  --color-morph: #be185d;
+  --color-morph-dark: #9d174d;
+
+  /* Ability / Orange */
+  --color-ability: #d97706;
+  --color-ability-dark: #b45309;
+
+  /* Highlight / Gold */
+  --color-highlight: #fbbf24;
+  --color-highlight-shadow: rgba(251, 191, 36, 0.3);
+
+  /* Selection glow */
+  --color-selection: #00ff00;
+  --color-selection-bg: #003300;
+  --color-selection-shadow: rgba(0, 255, 0, 0.3);
+
+  /* Targeting */
+  --color-target: #ff4444;
+  --color-target-secondary: #ff9900;
+  --color-target-shadow: rgba(255, 68, 68, 0.4);
+  --color-target-secondary-shadow: rgba(255, 153, 0, 0.4);
+
+  /* =========================================================================
+   * Colors - Mana (MTG)
+   * ========================================================================= */
+  --mana-white: #f8f6d8;
+  --mana-blue: #0e68ab;
+  --mana-black: #150b00;
+  --mana-red: #d3202a;
+  --mana-green: #00733e;
+  --mana-colorless: #ccc2c0;
+  --mana-gold: #fcba03;
+
+  /* =========================================================================
+   * Colors - Borders
+   * ========================================================================= */
+  --border-subtle: rgba(255, 255, 255, 0.04);
+  --border-light: rgba(255, 255, 255, 0.08);
+  --border-medium: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.15);
+  --border-solid-dark: #333;
+  --border-solid-medium: #444;
+  --border-solid-light: #555;
+
+  /* =========================================================================
+   * Spacing Scale
+   * Based on 4px unit
+   * ========================================================================= */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 48px;
+
+  /* =========================================================================
+   * Typography - Font Sizes
+   * Default desktop sizes, overridden by responsive.css
+   * ========================================================================= */
+  --font-xs: 10px;
+  --font-sm: 12px;
+  --font-md: 14px;
+  --font-lg: 18px;
+  --font-xl: 24px;
+  --font-2xl: 32px;
+  --font-3xl: 36px;
+
+  /* =========================================================================
+   * Typography - Font Weights
+   * ========================================================================= */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* =========================================================================
+   * Border Radius
+   * ========================================================================= */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
+  --radius-2xl: 12px;
+
+  /* =========================================================================
+   * Shadows
+   * ========================================================================= */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.6);
+  --shadow-xl: 0 8px 20px rgba(0, 0, 0, 0.5);
+  --shadow-2xl: 0 8px 32px rgba(0, 0, 0, 0.6);
+  --shadow-panel: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1);
+
+  /* =========================================================================
+   * Transitions
+   * ========================================================================= */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.2s ease;
+  --transition-slow: 0.3s ease;
+
+  /* =========================================================================
+   * Gradients
+   * ========================================================================= */
+  /* Button gradients */
+  --gradient-primary: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  --gradient-success: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  --gradient-danger: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  --gradient-warning: linear-gradient(180deg, #e65100 0%, #bf4300 100%);
+  --gradient-special: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+  --gradient-cycle: linear-gradient(135deg, #9333ea 0%, #6b21a8 100%);
+  --gradient-morph: linear-gradient(135deg, #be185d 0%, #9d174d 100%);
+  --gradient-ability: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  --gradient-disabled: linear-gradient(135deg, #252528 0%, #1a1a1e 100%);
+
+  /* Page gradients */
+  --gradient-page: linear-gradient(135deg, #0a0a12 0%, #12101e 50%, #0a0a12 100%);
+  --gradient-title: linear-gradient(180deg, #fff 0%, #aaa 100%);
+}

@@ -3,6 +3,7 @@ import { useGameStore } from '../../store/gameStore'
 import type { EntityId } from '../../types'
 import { useResponsive, calculateFittingCardWidth } from '../../hooks/useResponsive'
 import { getCardImageUrl } from '../../utils/cardImages'
+import styles from './RevealedCardsUI.module.css'
 
 /**
  * Overlay that shows cards revealed by the opponent (e.g., from Sylvan Tutor).
@@ -60,60 +61,20 @@ export function RevealedCardsUI() {
   const sourceText = revealedCardsInfo.source ? ` (${revealedCardsInfo.source})` : ''
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.92)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: responsive.isMobile ? 16 : 24,
-        padding: responsive.containerPadding,
-        pointerEvents: 'auto',
-        zIndex: 1000,
-      }}
-    >
+    <div className={styles.overlay}>
       {/* Header */}
-      <div style={{ textAlign: 'center' }}>
-        <h2
-          style={{
-            color: 'white',
-            margin: 0,
-            fontSize: responsive.isMobile ? 20 : 28,
-            fontWeight: 600,
-          }}
-        >
+      <div className={styles.header}>
+        <h2 className={styles.title}>
           Opponent Revealed{sourceText}
         </h2>
-        <p
-          style={{
-            color: '#aaa',
-            margin: '8px 0 0',
-            fontSize: responsive.fontSize.normal,
-          }}
-        >
+        <p className={styles.subtitle}>
           {revealedCardsInfo.cardNames.join(', ')}
         </p>
       </div>
 
       {/* Card ribbon */}
       {cards.length > 0 && (
-        <div
-          style={{
-            display: 'flex',
-            gap,
-            padding: responsive.isMobile ? 12 : 24,
-            justifyContent: 'center',
-            overflowX: 'auto',
-            maxWidth: '100%',
-            scrollBehavior: 'smooth',
-          }}
-        >
+        <div className={styles.cardRibbon} style={{ gap }}>
           {cards.map((card) => {
             const isHovered = hoveredCardId === card.id
             const cardImageUrl = getCardImageUrl(card.name, card.imageUri)
@@ -123,33 +84,19 @@ export function RevealedCardsUI() {
                 key={card.id}
                 onMouseEnter={() => handleMouseEnter(card.id)}
                 onMouseLeave={handleMouseLeave}
+                className={styles.card}
                 style={{
                   width: cardWidth,
                   height: cardHeight,
-                  backgroundColor: '#1a1a1a',
-                  border: isHovered ? '2px solid #fbbf24' : '2px solid #333',
-                  borderRadius: responsive.isMobile ? 6 : 10,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  overflow: 'hidden',
-                  cursor: 'default',
-                  transition: 'all 0.2s ease-out',
-                  transform: isHovered ? 'translateY(-4px) scale(1.02)' : 'none',
-                  boxShadow: isHovered
-                    ? '0 8px 20px rgba(251, 191, 36, 0.3)'
-                    : '0 4px 12px rgba(0, 0, 0, 0.6)',
-                  flexShrink: 0,
-                  position: 'relative',
+                  borderColor: isHovered ? 'var(--color-highlight)' : undefined,
+                  transform: isHovered ? 'translateY(-4px) scale(1.02)' : undefined,
+                  boxShadow: isHovered ? '0 8px 20px var(--color-highlight-shadow)' : undefined,
                 }}
               >
                 <img
                   src={cardImageUrl}
                   alt={card.name}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                  }}
+                  className={styles.cardImage}
                   onError={(e) => {
                     e.currentTarget.style.display = 'none'
                     const fallback = e.currentTarget.nextElementSibling as HTMLElement
@@ -157,38 +104,12 @@ export function RevealedCardsUI() {
                   }}
                 />
                 {/* Fallback when image fails */}
-                <div
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    backgroundColor: '#1a1a1a',
-                    display: 'none',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: responsive.isMobile ? '6px' : '10px',
-                    gap: 4,
-                  }}
-                >
-                  <span
-                    style={{
-                      color: 'white',
-                      fontSize: responsive.isMobile ? 12 : 16,
-                      fontWeight: 600,
-                      textAlign: 'center',
-                      lineHeight: 1.2,
-                    }}
-                  >
+                <div className={styles.cardFallback}>
+                  <span className={styles.cardFallbackName}>
                     {card.name}
                   </span>
                   {card.typeLine && (
-                    <span
-                      style={{
-                        color: '#888',
-                        fontSize: responsive.isMobile ? 10 : 12,
-                        textAlign: 'center',
-                      }}
-                    >
+                    <span className={styles.cardFallbackType}>
                       {card.typeLine}
                     </span>
                   )}
@@ -200,20 +121,7 @@ export function RevealedCardsUI() {
       )}
 
       {/* OK button */}
-      <button
-        onClick={dismissRevealedCards}
-        style={{
-          padding: responsive.isMobile ? '10px 24px' : '12px 36px',
-          fontSize: responsive.fontSize.large,
-          backgroundColor: '#16a34a',
-          color: 'white',
-          border: 'none',
-          borderRadius: 8,
-          cursor: 'pointer',
-          fontWeight: 600,
-          transition: 'all 0.15s',
-        }}
-      >
+      <button onClick={dismissRevealedCards} className={styles.okButton}>
         OK
       </button>
       {/* Card preview is handled by the global CardPreview component in GameBoard */}

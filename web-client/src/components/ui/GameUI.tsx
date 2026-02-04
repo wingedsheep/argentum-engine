@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useGameStore, type LobbyState, type TournamentState } from '../../store/gameStore'
-import { useResponsive, type ResponsiveSizes } from '../../hooks/useResponsive'
+import styles from './GameUI.module.css'
 
 type GameMode = 'normal' | 'tournament'
 
@@ -57,7 +57,6 @@ function ConnectionOverlay({
       connect(playerName.trim())
     }
   }
-  const responsive = useResponsive()
 
   // Empty deck triggers server-side random deck generation from Portal set
   const randomDeck = {}
@@ -84,43 +83,26 @@ function ConnectionOverlay({
   // Show tournament UI if we're in a tournament (even without lobbyState)
   const tournamentState = useGameStore((state) => state.tournamentState)
   if (tournamentState) {
-    return <TournamentOverlay tournamentState={tournamentState} responsive={responsive} />
+    return <TournamentOverlay tournamentState={tournamentState} />
   }
 
   // Show lobby UI if we're in a lobby
   if (lobbyState) {
-    return <LobbyOverlay lobbyState={lobbyState} responsive={responsive} />
+    return <LobbyOverlay lobbyState={lobbyState} />
   }
 
   return (
-    <div
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.9)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: 'white',
-        gap: responsive.isMobile ? 16 : 24,
-        padding: responsive.containerPadding,
-        pointerEvents: 'auto',
-      }}
-    >
-      <FullscreenButton responsive={responsive} />
-      <h1 style={{ margin: 0, fontSize: responsive.fontSize.xlarge }}>Argentum Engine</h1>
+    <div className={styles.connectionOverlay}>
+      <FullscreenButton />
+      <h1 className={styles.title}>Argentum Engine</h1>
 
       {error && (
-        <p style={{ color: '#ff4444', fontSize: responsive.fontSize.normal }}>Error: {error}</p>
+        <p className={styles.errorMessage}>Error: {error}</p>
       )}
 
       {!nameConfirmed && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center', width: '100%', maxWidth: 400 }}>
-          <label style={{ color: '#888', fontSize: responsive.fontSize.normal }}>Enter your name</label>
+        <div className={styles.inputGroup}>
+          <label className={styles.inputLabel}>Enter your name</label>
           <input
             type="text"
             value={playerName}
@@ -129,30 +111,12 @@ function ConnectionOverlay({
             placeholder="Your name"
             autoFocus
             maxLength={20}
-            style={{
-              padding: responsive.isMobile ? '10px 12px' : '12px 16px',
-              fontSize: responsive.fontSize.large,
-              backgroundColor: '#222',
-              color: 'white',
-              border: '1px solid #444',
-              borderRadius: 8,
-              textAlign: 'center',
-              width: '100%',
-              maxWidth: 250,
-            }}
+            className={styles.textInput}
           />
           <button
             onClick={confirmName}
             disabled={!playerName.trim()}
-            style={{
-              padding: responsive.isMobile ? '10px 20px' : '12px 24px',
-              fontSize: responsive.fontSize.large,
-              backgroundColor: playerName.trim() ? '#0066cc' : '#333',
-              color: 'white',
-              border: 'none',
-              borderRadius: 8,
-              cursor: playerName.trim() ? 'pointer' : 'not-allowed',
-            }}
+            className={styles.primaryButton}
           >
             Continue
           </button>
@@ -160,99 +124,61 @@ function ConnectionOverlay({
       )}
 
       {status === 'connected' && !sessionId && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: responsive.isMobile ? 16 : 24, alignItems: 'center', width: '100%', maxWidth: 400 }}>
+        <div className={styles.inputGroup}>
           {/* Game Mode Toggle */}
-          <div
-            style={{
-              display: 'flex',
-              backgroundColor: '#222',
-              borderRadius: 8,
-              padding: 4,
-              gap: 4,
-            }}
-          >
+          <div className={styles.modeToggle}>
             <ModeButton
               label="Quick Game"
               active={gameMode === 'normal'}
               onClick={() => setGameMode('normal')}
-              responsive={responsive}
               title="Play with a random deck"
             />
             <ModeButton
               label="Tournament"
               active={gameMode === 'tournament'}
               onClick={() => setGameMode('tournament')}
-              responsive={responsive}
               title="Sealed or Draft with up to 8 players"
             />
           </div>
 
           {/* Game mode description */}
           {gameMode === 'normal' && (
-            <p style={{ color: '#666', fontSize: responsive.fontSize.small, margin: 0, textAlign: 'center' }}>
+            <p className={styles.modeDescription}>
               Play with a randomly generated deck for quick 1v1 matches.
             </p>
           )}
           {gameMode === 'tournament' && (
-            <p style={{ color: '#666', fontSize: responsive.fontSize.small, margin: 0, textAlign: 'center' }}>
+            <p className={styles.modeDescription}>
               Create a lobby for Sealed or Draft. Configure format and set after creating.
             </p>
           )}
 
           <button
             onClick={handleCreate}
-            style={{
-              padding: responsive.isMobile ? '10px 20px' : '12px 24px',
-              fontSize: responsive.fontSize.large,
-              backgroundColor: gameMode === 'tournament' ? '#e65100' : '#0066cc',
-              color: 'white',
-              border: 'none',
-              borderRadius: 8,
-              cursor: 'pointer',
-              width: '100%',
-              maxWidth: 200,
-            }}
+            className={gameMode === 'tournament' ? styles.tournamentButton : styles.primaryButton}
           >
             {gameMode === 'tournament' ? 'Create Lobby' : 'Create Game'}
           </button>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#666' }}>
-            <div style={{ width: 40, height: 1, backgroundColor: '#666' }} />
-            <span style={{ fontSize: responsive.fontSize.small }}>or join existing</span>
-            <div style={{ width: 40, height: 1, backgroundColor: '#666' }} />
+          <div className={styles.divider}>
+            <div className={styles.dividerLine} />
+            <span className={styles.dividerText}>or join existing</span>
+            <div className={styles.dividerLine} />
           </div>
 
-          <div style={{ display: 'flex', gap: 8, flexDirection: responsive.isMobile ? 'column' : 'row', width: '100%' }}>
+          <div className={styles.joinRow}>
             <input
               type="text"
               value={joinSessionId}
               onChange={(e) => setJoinSessionId(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
               placeholder={gameMode === 'tournament' ? 'Enter Lobby ID' : 'Enter Session ID'}
-              style={{
-                padding: responsive.isMobile ? '10px 12px' : '12px 16px',
-                fontSize: responsive.fontSize.normal,
-                backgroundColor: '#222',
-                color: 'white',
-                border: '1px solid #444',
-                borderRadius: 8,
-                flex: 1,
-                minWidth: 0,
-              }}
+              className={styles.sessionInput}
             />
             <button
               onClick={handleJoin}
               disabled={!joinSessionId.trim()}
-              style={{
-                padding: responsive.isMobile ? '10px 20px' : '12px 24px',
-                fontSize: responsive.fontSize.large,
-                backgroundColor: joinSessionId.trim() ? '#00aa44' : '#333',
-                color: 'white',
-                border: 'none',
-                borderRadius: 8,
-                cursor: joinSessionId.trim() ? 'pointer' : 'not-allowed',
-                whiteSpace: 'nowrap',
-              }}
+              className={styles.joinButton}
             >
               Join
             </button>
@@ -261,7 +187,7 @@ function ConnectionOverlay({
       )}
 
       {sessionId && (
-        <WaitingForOpponent sessionId={sessionId} responsive={responsive} />
+        <WaitingForOpponent sessionId={sessionId} />
       )}
     </div>
   )
@@ -274,30 +200,18 @@ function ModeButton({
   label,
   active,
   onClick,
-  responsive,
   title,
 }: {
   label: string
   active: boolean
   onClick: () => void
-  responsive: ReturnType<typeof useResponsive>
   title?: string
 }) {
   return (
     <button
       onClick={onClick}
       title={title}
-      style={{
-        padding: responsive.isMobile ? '8px 12px' : '10px 16px',
-        fontSize: responsive.fontSize.normal,
-        backgroundColor: active ? '#4fc3f7' : 'transparent',
-        color: active ? '#000' : '#888',
-        border: 'none',
-        borderRadius: 6,
-        cursor: 'pointer',
-        fontWeight: active ? 600 : 400,
-        transition: 'all 0.15s',
-      }}
+      className={`${styles.modeButton} ${active ? styles.modeButtonActive : ''}`}
     >
       {label}
     </button>
@@ -309,10 +223,8 @@ function ModeButton({
  */
 function WaitingForOpponent({
   sessionId,
-  responsive,
 }: {
   sessionId: string
-  responsive: ReturnType<typeof useResponsive>
 }) {
   const cancelGame = useGameStore((state) => state.cancelGame)
   const [copied, setCopied] = useState(false)
@@ -324,56 +236,23 @@ function WaitingForOpponent({
   }
 
   return (
-    <div style={{ textAlign: 'center' }}>
-      <p style={{ fontSize: responsive.fontSize.normal }}>Game Created!</p>
+    <div className={styles.waitingSection}>
+      <p className={styles.waitingTitle}>Game Created!</p>
       <div
         onClick={copySessionId}
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 12,
-          padding: '12px 16px',
-          backgroundColor: copied ? 'rgba(79, 195, 247, 0.08)' : 'rgba(255, 255, 255, 0.03)',
-          border: copied ? '1px solid rgba(79, 195, 247, 0.3)' : '1px solid rgba(255, 255, 255, 0.08)',
-          borderRadius: 10,
-          cursor: 'pointer',
-          transition: 'all 0.2s',
-          marginBottom: 12,
-        }}
+        className={`${styles.inviteBox} ${copied ? styles.inviteBoxCopied : ''}`}
       >
-        <div style={{
-          fontFamily: 'monospace',
-          fontSize: responsive.isMobile ? 15 : 18,
-          color: '#ddd',
-          fontWeight: 500,
-          letterSpacing: '0.04em',
-        }}>
+        <div className={styles.inviteCode}>
           {sessionId}
         </div>
-        <span style={{
-          color: copied ? '#4fc3f7' : '#555',
-          fontSize: 12,
-          transition: 'color 0.2s',
-        }}>
+        <span className={`${styles.inviteCopyLabel} ${copied ? styles.inviteCopyLabelCopied : ''}`}>
           {copied ? 'Copied!' : 'Copy'}
         </span>
       </div>
-      <p style={{ color: '#888', fontSize: responsive.fontSize.normal }}>
+      <p className={styles.waitingSubtitle}>
         Waiting for opponent to join...
       </p>
-      <button
-        onClick={cancelGame}
-        style={{
-          marginTop: 20,
-          padding: '8px 16px',
-          fontSize: responsive.fontSize.normal,
-          backgroundColor: '#c0392b',
-          color: 'white',
-          border: 'none',
-          borderRadius: 4,
-          cursor: 'pointer',
-        }}
-      >
+      <button onClick={cancelGame} className={styles.cancelButton}>
         Cancel Game
       </button>
     </div>
@@ -385,10 +264,8 @@ function WaitingForOpponent({
  */
 function LobbyOverlay({
   lobbyState,
-  responsive,
 }: {
   lobbyState: LobbyState
-  responsive: ReturnType<typeof useResponsive>
 }) {
   const startLobby = useGameStore((state) => state.startLobby)
   const leaveLobby = useGameStore((state) => state.leaveLobby)
@@ -398,7 +275,7 @@ function LobbyOverlay({
 
   // Show tournament standings when tournament is active
   if (tournamentState) {
-    return <TournamentOverlay tournamentState={tournamentState} responsive={responsive} />
+    return <TournamentOverlay tournamentState={tournamentState} />
   }
 
   const isWaiting = lobbyState.state === 'WAITING_FOR_PLAYERS'
@@ -413,54 +290,18 @@ function LobbyOverlay({
   }
 
   return (
-    <div
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: 'linear-gradient(135deg, #0a0a12 0%, #12101e 50%, #0a0a12 100%)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: 'white',
-        padding: responsive.containerPadding,
-      }}
-    >
-      <FullscreenButton responsive={responsive} />
-      <div style={{
-        width: '100%',
-        maxWidth: 500,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 16,
-      }}>
+    <div className={styles.lobbyOverlay}>
+      <FullscreenButton />
+      <div className={styles.lobbyContent}>
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: 8 }}>
-          <div style={{
-            fontSize: 11,
-            fontWeight: 600,
-            color: isDraft ? '#2196f3' : '#e65100',
-            textTransform: 'uppercase',
-            letterSpacing: '0.12em',
-            marginBottom: 8,
-          }}>
+        <div className={styles.lobbyHeader}>
+          <div className={`${styles.lobbyFormat} ${isDraft ? styles.lobbyFormatDraft : styles.lobbyFormatSealed}`}>
             {isDraft ? 'Draft' : 'Sealed'}
           </div>
-          <h1 style={{
-            margin: '0 0 6px 0',
-            fontSize: responsive.isMobile ? 26 : 32,
-            fontWeight: 700,
-            letterSpacing: '-0.02em',
-            background: 'linear-gradient(180deg, #fff 0%, #aaa 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-          }}>
+          <h1 className={styles.lobbyTitle}>
             {lobbyState.settings.setNames.join(' + ') || 'Lobby'}
           </h1>
-          <p style={{ color: '#555', fontSize: responsive.fontSize.small, margin: 0 }}>
+          <p className={styles.lobbySubtitle}>
             {isDraft
               ? `${lobbyState.settings.boosterCount} packs · ${lobbyState.settings.pickTimeSeconds}s per pick${lobbyState.settings.picksPerRound === 2 ? ' · Pick 2' : ''}`
               : `${lobbyState.settings.boosterCount} boosters per player`}
@@ -471,110 +312,47 @@ function LobbyOverlay({
         {/* Invite code */}
         <div
           onClick={copyLobbyId}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '12px 16px',
-            backgroundColor: copied ? 'rgba(79, 195, 247, 0.08)' : 'rgba(255, 255, 255, 0.03)',
-            border: copied ? '1px solid rgba(79, 195, 247, 0.3)' : '1px solid rgba(255, 255, 255, 0.08)',
-            borderRadius: 10,
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-          }}
+          className={`${styles.inviteBox} ${copied ? styles.inviteBoxCopied : ''}`}
+          style={{ alignSelf: 'stretch', justifyContent: 'space-between' }}
         >
           <div>
-            <div style={{ color: '#666', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 3 }}>
+            <div style={{ color: 'var(--text-disabled)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 3 }}>
               Invite Code
             </div>
-            <div style={{
-              fontFamily: 'monospace',
-              fontSize: responsive.isMobile ? 15 : 18,
-              color: '#ddd',
-              fontWeight: 500,
-              letterSpacing: '0.04em',
-            }}>
+            <div className={styles.inviteCode}>
               {lobbyState.lobbyId}
             </div>
           </div>
-          <span style={{
-            color: copied ? '#4fc3f7' : '#555',
-            fontSize: 12,
-            flexShrink: 0,
-            marginLeft: 12,
-            transition: 'color 0.2s',
-          }}>
+          <span className={`${styles.inviteCopyLabel} ${copied ? styles.inviteCopyLabelCopied : ''}`} style={{ flexShrink: 0, marginLeft: 12 }}>
             {copied ? 'Copied!' : 'Copy'}
           </span>
         </div>
 
         {/* Settings (host only) */}
         {isWaiting && lobbyState.isHost && (
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 0,
-            backgroundColor: 'rgba(255, 255, 255, 0.03)',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-            borderRadius: 10,
-            overflow: 'hidden',
-          }}>
+          <div className={styles.settingsPanel}>
             {/* Format selection */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '12px 16px',
-              borderBottom: '1px solid rgba(255, 255, 255, 0.04)',
-            }}>
-              <span style={{ color: '#888', fontSize: responsive.fontSize.small }}>
-                Format
-              </span>
-              <div style={{ display: 'flex', gap: 4 }}>
+            <div className={styles.settingsRow}>
+              <span className={styles.settingsLabel}>Format</span>
+              <div className={styles.settingsButtons}>
                 <button
                   onClick={() => updateLobbySettings({ format: 'SEALED' })}
-                  style={{
-                    padding: '5px 12px',
-                    fontSize: responsive.fontSize.small,
-                    backgroundColor: !isDraft ? '#e65100' : '#1a1a24',
-                    color: !isDraft ? 'white' : '#888',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    borderRadius: 6,
-                    cursor: 'pointer',
-                    fontWeight: !isDraft ? 600 : 400,
-                  }}
+                  className={`${styles.settingsButton} ${!isDraft ? styles.settingsButtonActive : ''}`}
                 >
                   Sealed
                 </button>
                 <button
                   onClick={() => updateLobbySettings({ format: 'DRAFT' })}
-                  style={{
-                    padding: '5px 12px',
-                    fontSize: responsive.fontSize.small,
-                    backgroundColor: isDraft ? '#2196f3' : '#1a1a24',
-                    color: isDraft ? 'white' : '#888',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    borderRadius: 6,
-                    cursor: 'pointer',
-                    fontWeight: isDraft ? 600 : 400,
-                  }}
+                  className={`${styles.settingsButton} ${isDraft ? `${styles.settingsButtonActive} ${styles.settingsButtonDraft}` : ''}`}
                 >
                   Draft
                 </button>
               </div>
             </div>
             {/* Set selection */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '12px 16px',
-              borderBottom: '1px solid rgba(255, 255, 255, 0.04)',
-            }}>
-              <span style={{ color: '#888', fontSize: responsive.fontSize.small }}>
-                Sets
-              </span>
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            <div className={styles.settingsRow}>
+              <span className={styles.settingsLabel}>Sets</span>
+              <div className={styles.settingsButtons} style={{ flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                 {lobbyState.settings.availableSets.map((set) => {
                   const isSelected = lobbyState.settings.setCodes.includes(set.code)
                   return (
@@ -586,17 +364,7 @@ function LobbyOverlay({
                           : [...lobbyState.settings.setCodes, set.code]
                         updateLobbySettings({ setCodes: newCodes })
                       }}
-                      style={{
-                        padding: '5px 12px',
-                        fontSize: responsive.fontSize.small,
-                        backgroundColor: isSelected ? (isDraft ? '#2196f3' : '#e65100') : '#1a1a24',
-                        color: isSelected ? 'white' : '#666',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                        borderRadius: 6,
-                        cursor: 'pointer',
-                        fontWeight: isSelected ? 600 : 400,
-                        transition: 'all 0.15s',
-                      }}
+                      className={`${styles.settingsButton} ${isSelected ? (isDraft ? `${styles.settingsButtonActive} ${styles.settingsButtonDraft}` : styles.settingsButtonActive) : ''}`}
                     >
                       {set.name}
                     </button>
@@ -606,29 +374,12 @@ function LobbyOverlay({
             </div>
             {/* Boosters setting - only for Sealed */}
             {!isDraft && (
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '12px 16px',
-                borderBottom: '1px solid rgba(255, 255, 255, 0.04)',
-              }}>
-                <span style={{ color: '#888', fontSize: responsive.fontSize.small }}>
-                  Boosters per player
-                </span>
+              <div className={styles.settingsRow}>
+                <span className={styles.settingsLabel}>Boosters per player</span>
                 <select
                   value={lobbyState.settings.boosterCount}
                   onChange={(e) => updateLobbySettings({ boosterCount: Number(e.target.value) })}
-                  style={{
-                    padding: '5px 10px',
-                    fontSize: responsive.fontSize.small,
-                    backgroundColor: '#1a1a24',
-                    color: 'white',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    borderRadius: 6,
-                    cursor: 'pointer',
-                    outline: 'none',
-                  }}
+                  className={styles.settingsSelect}
                 >
                   {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => (
                     <option key={n} value={n}>{n}</option>
@@ -638,29 +389,12 @@ function LobbyOverlay({
             )}
             {/* Packs per player - only for Draft */}
             {isDraft && (
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '12px 16px',
-                borderBottom: '1px solid rgba(255, 255, 255, 0.04)',
-              }}>
-                <span style={{ color: '#888', fontSize: responsive.fontSize.small }}>
-                  Packs per player
-                </span>
+              <div className={styles.settingsRow}>
+                <span className={styles.settingsLabel}>Packs per player</span>
                 <select
                   value={lobbyState.settings.boosterCount}
                   onChange={(e) => updateLobbySettings({ boosterCount: Number(e.target.value) })}
-                  style={{
-                    padding: '5px 10px',
-                    fontSize: responsive.fontSize.small,
-                    backgroundColor: '#1a1a24',
-                    color: 'white',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    borderRadius: 6,
-                    cursor: 'pointer',
-                    outline: 'none',
-                  }}
+                  className={styles.settingsSelect}
                 >
                   {[1, 2, 3, 4, 5, 6].map((n) => (
                     <option key={n} value={n}>{n}</option>
@@ -670,29 +404,12 @@ function LobbyOverlay({
             )}
             {/* Pick timer setting - only for Draft */}
             {isDraft && (
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '12px 16px',
-                borderBottom: '1px solid rgba(255, 255, 255, 0.04)',
-              }}>
-                <span style={{ color: '#888', fontSize: responsive.fontSize.small }}>
-                  Pick timer (seconds)
-                </span>
+              <div className={styles.settingsRow}>
+                <span className={styles.settingsLabel}>Pick timer (seconds)</span>
                 <select
                   value={lobbyState.settings.pickTimeSeconds}
                   onChange={(e) => updateLobbySettings({ pickTimeSeconds: Number(e.target.value) })}
-                  style={{
-                    padding: '5px 10px',
-                    fontSize: responsive.fontSize.small,
-                    backgroundColor: '#1a1a24',
-                    color: 'white',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    borderRadius: 6,
-                    cursor: 'pointer',
-                    outline: 'none',
-                  }}
+                  className={styles.settingsSelect}
                 >
                   {[30, 45, 60, 90, 120].map((n) => (
                     <option key={n} value={n}>{n}s</option>
@@ -702,72 +419,30 @@ function LobbyOverlay({
             )}
             {/* Pick 2 mode - only for Draft */}
             {isDraft && (
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '12px 16px',
-                borderBottom: '1px solid rgba(255, 255, 255, 0.04)',
-              }}>
-                <span style={{ color: '#888', fontSize: responsive.fontSize.small }}>
-                  Cards per pick
-                </span>
-                <div style={{ display: 'flex', gap: 4 }}>
+              <div className={styles.settingsRow}>
+                <span className={styles.settingsLabel}>Cards per pick</span>
+                <div className={styles.settingsButtons}>
                   <button
                     onClick={() => updateLobbySettings({ picksPerRound: 1 })}
-                    style={{
-                      padding: '5px 12px',
-                      fontSize: responsive.fontSize.small,
-                      backgroundColor: lobbyState.settings.picksPerRound === 1 ? '#2196f3' : '#1a1a24',
-                      color: lobbyState.settings.picksPerRound === 1 ? 'white' : '#888',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      borderRadius: 6,
-                      cursor: 'pointer',
-                      fontWeight: lobbyState.settings.picksPerRound === 1 ? 600 : 400,
-                    }}
+                    className={`${styles.settingsButton} ${lobbyState.settings.picksPerRound === 1 ? `${styles.settingsButtonActive} ${styles.settingsButtonDraft}` : ''}`}
                   >
                     1
                   </button>
                   <button
                     onClick={() => updateLobbySettings({ picksPerRound: 2 })}
-                    style={{
-                      padding: '5px 12px',
-                      fontSize: responsive.fontSize.small,
-                      backgroundColor: lobbyState.settings.picksPerRound === 2 ? '#2196f3' : '#1a1a24',
-                      color: lobbyState.settings.picksPerRound === 2 ? 'white' : '#888',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      borderRadius: 6,
-                      cursor: 'pointer',
-                      fontWeight: lobbyState.settings.picksPerRound === 2 ? 600 : 400,
-                    }}
+                    className={`${styles.settingsButton} ${lobbyState.settings.picksPerRound === 2 ? `${styles.settingsButtonActive} ${styles.settingsButtonDraft}` : ''}`}
                   >
                     2
                   </button>
                 </div>
               </div>
             )}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '12px 16px',
-            }}>
-              <span style={{ color: '#888', fontSize: responsive.fontSize.small }}>
-                Games per matchup
-              </span>
+            <div className={styles.settingsRow}>
+              <span className={styles.settingsLabel}>Games per matchup</span>
               <select
                 value={lobbyState.settings.gamesPerMatch ?? 1}
                 onChange={(e) => updateLobbySettings({ gamesPerMatch: Number(e.target.value) })}
-                style={{
-                  padding: '5px 10px',
-                  fontSize: responsive.fontSize.small,
-                  backgroundColor: '#1a1a24',
-                  color: 'white',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                  outline: 'none',
-                }}
+                className={styles.settingsSelect}
               >
                 {[1, 2, 3, 4, 5].map((n) => (
                   <option key={n} value={n}>{n}</option>
@@ -778,68 +453,35 @@ function LobbyOverlay({
         )}
 
         {/* Player list */}
-        <div style={{
-          backgroundColor: 'rgba(255, 255, 255, 0.03)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
-          borderRadius: 10,
-          overflow: 'hidden',
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '12px 16px',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
-          }}>
-            <span style={{ fontSize: responsive.fontSize.normal, fontWeight: 600, color: '#ccc' }}>Players</span>
-            <span style={{ color: '#444', fontSize: responsive.fontSize.small }}>
+        <div className={styles.playerListPanel}>
+          <div className={styles.playerListHeader}>
+            <span className={styles.playerListTitle}>Players</span>
+            <span className={styles.playerCount}>
               {lobbyState.players.length} / {lobbyState.settings.maxPlayers || 8}
             </span>
           </div>
           {lobbyState.players.map((player, i) => (
             <div
               key={player.playerId}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '11px 16px',
-                borderBottom: i < lobbyState.players.length - 1 ? '1px solid rgba(255, 255, 255, 0.04)' : 'none',
-                transition: 'background-color 0.15s',
-              }}
+              className={styles.playerRow}
+              style={{ borderBottom: i < lobbyState.players.length - 1 ? undefined : 'none' }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: '50%',
-                  backgroundColor: !player.isConnected ? '#ff4444' : '#00cc44',
-                  boxShadow: !player.isConnected ? '0 0 6px rgba(255, 68, 68, 0.4)' : '0 0 6px rgba(0, 204, 68, 0.4)',
-                  flexShrink: 0,
-                }} />
-                <span style={{ fontSize: responsive.fontSize.normal, color: '#ddd' }}>
+              <div className={styles.playerInfo}>
+                <div className={`${styles.statusDot} ${!player.isConnected ? styles.statusDotOffline : styles.statusDotOnline}`} />
+                <span className={styles.playerName}>
                   {player.playerName}
                 </span>
                 {player.isHost && (
-                  <span style={{
-                    fontSize: 9,
-                    fontWeight: 700,
-                    color: '#e65100',
-                    backgroundColor: 'rgba(230, 81, 0, 0.12)',
-                    padding: '2px 7px',
-                    borderRadius: 4,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.06em',
-                  }}>
-                    Host
-                  </span>
+                  <span className={styles.hostBadge}>Host</span>
                 )}
               </div>
-              <span style={{
-                fontSize: responsive.fontSize.small,
-                color: !player.isConnected ? '#ff4444' : player.deckSubmitted ? '#4caf50' : '#555',
-                fontWeight: player.deckSubmitted ? 500 : 400,
-              }}>
+              <span className={`${styles.playerStatus} ${
+                !player.isConnected
+                  ? styles.playerStatusDisconnected
+                  : player.deckSubmitted
+                    ? styles.playerStatusReady
+                    : styles.playerStatusJoined
+              }`}>
                 {!player.isConnected
                   ? 'Disconnected'
                   : player.deckSubmitted
@@ -849,14 +491,14 @@ function LobbyOverlay({
             </div>
           ))}
           {lobbyState.players.length === 0 && (
-            <div style={{ padding: '24px 16px', textAlign: 'center', color: '#333', fontSize: responsive.fontSize.small }}>
+            <div className={styles.emptyPlayerList}>
               Waiting for players to join...
             </div>
           )}
         </div>
 
         {/* Actions */}
-        <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+        <div className={styles.actionsRow}>
           {isWaiting && lobbyState.isHost && (
             <button
               onClick={startLobby}
@@ -868,44 +510,18 @@ function LobbyOverlay({
                     ? 'Need at least 2 players'
                     : undefined
               }
-              style={{
-                flex: 1,
-                padding: '13px 20px',
-                fontSize: responsive.fontSize.normal,
-                fontWeight: 600,
-                background: canStart
-                  ? 'linear-gradient(180deg, #e65100 0%, #bf4300 100%)'
-                  : '#1a1a24',
-                color: canStart ? 'white' : '#444',
-                border: canStart ? 'none' : '1px solid rgba(255, 255, 255, 0.08)',
-                borderRadius: 10,
-                cursor: canStart ? 'pointer' : 'not-allowed',
-                transition: 'all 0.15s',
-                boxShadow: canStart ? '0 2px 12px rgba(230, 81, 0, 0.3)' : 'none',
-              }}
+              className={styles.startButton}
             >
               {isDraft ? 'Start Draft' : 'Start Game'}
             </button>
           )}
-          <button
-            onClick={leaveLobby}
-            style={{
-              padding: '13px 20px',
-              fontSize: responsive.fontSize.normal,
-              backgroundColor: 'transparent',
-              color: '#666',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
-              borderRadius: 10,
-              cursor: 'pointer',
-              transition: 'all 0.15s',
-            }}
-          >
+          <button onClick={leaveLobby} className={styles.leaveButton}>
             Leave
           </button>
         </div>
 
         {isWaiting && !lobbyState.isHost && (
-          <p style={{ color: '#444', fontSize: responsive.fontSize.small, textAlign: 'center', margin: 0 }}>
+          <p className={styles.waitingHint}>
             Waiting for host to start the game...
           </p>
         )}
@@ -919,10 +535,8 @@ function LobbyOverlay({
  */
 function TournamentOverlay({
   tournamentState,
-  responsive,
 }: {
   tournamentState: TournamentState
-  responsive: ReturnType<typeof useResponsive>
 }) {
   const playerId = useGameStore((state) => state.playerId)
   const spectateGame = useGameStore((state) => state.spectateGame)
@@ -950,30 +564,13 @@ function TournamentOverlay({
   }, [isWaitingForReady, tournamentState.nextRoundHasBye, isPlayerReady, readyForNextRound])
 
   return (
-    <div
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.9)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: 'white',
-        gap: 16,
-        padding: responsive.containerPadding,
-        overflow: 'auto',
-      }}
-    >
-      <h1 style={{ margin: 0, fontSize: responsive.fontSize.xlarge }}>
+    <div className={styles.tournamentOverlay}>
+      <h1 className={styles.title}>
         {tournamentState.isComplete ? 'Tournament Complete' : 'Tournament Standings'}
       </h1>
 
       {!tournamentState.isComplete && (
-        <p style={{ color: '#888', fontSize: responsive.fontSize.normal }}>
+        <p className={styles.waitingSubtitle}>
           {isWaitingForReady
             ? `Starting Round ${tournamentState.currentRound + 1} of ${tournamentState.totalRounds}`
             : `Round ${tournamentState.currentRound} of ${tournamentState.totalRounds}`}
@@ -982,20 +579,11 @@ function TournamentOverlay({
 
       {/* Next opponent info */}
       {isWaitingForReady && (
-        <div
-          style={{
-            backgroundColor: '#1a2a4e',
-            padding: '16px 24px',
-            borderRadius: 8,
-            fontSize: responsive.fontSize.normal,
-            textAlign: 'center',
-            border: '1px solid #3a4a6e',
-          }}
-        >
-          <div style={{ color: '#888', fontSize: responsive.fontSize.small, marginBottom: 4 }}>
+        <div className={styles.statusBoxMatch}>
+          <div className={styles.statusBoxMatchLabel}>
             Round {tournamentState.currentRound + 1}
           </div>
-          <div style={{ fontWeight: 600, fontSize: responsive.fontSize.large }}>
+          <div className={styles.statusBoxMatchOpponent}>
             {tournamentState.nextRoundHasBye
               ? 'You have a BYE'
               : tournamentState.nextOpponentName
@@ -1006,15 +594,7 @@ function TournamentOverlay({
       )}
 
       {tournamentState.isBye && !isWaitingForReady && (
-        <div
-          style={{
-            backgroundColor: '#1a472a',
-            padding: '12px 24px',
-            borderRadius: 8,
-            fontSize: responsive.fontSize.normal,
-            marginBottom: 8,
-          }}
-        >
+        <div className={styles.statusBoxBye}>
           You have a BYE this round
         </div>
       )}
@@ -1025,22 +605,11 @@ function TournamentOverlay({
           <button
             onClick={readyForNextRound}
             disabled={isPlayerReady}
-            style={{
-              padding: '14px 32px',
-              fontSize: responsive.fontSize.large,
-              fontWeight: 600,
-              backgroundColor: isPlayerReady ? '#1a472a' : '#e65100',
-              color: 'white',
-              border: isPlayerReady ? '2px solid #2a6a3a' : 'none',
-              borderRadius: 10,
-              cursor: isPlayerReady ? 'default' : 'pointer',
-              transition: 'all 0.2s',
-              boxShadow: isPlayerReady ? 'none' : '0 2px 12px rgba(230, 81, 0, 0.3)',
-            }}
+            className={styles.readyButton}
           >
             {isPlayerReady ? '✓ Ready' : 'Ready for Next Round'}
           </button>
-          <p style={{ color: '#888', fontSize: responsive.fontSize.small, margin: 0 }}>
+          <p className={styles.readyCount}>
             {readyCount} of {totalPlayers} players ready
           </p>
         </div>
@@ -1048,59 +617,38 @@ function TournamentOverlay({
 
       {/* Show "waiting for others" message when in active round but match is done */}
       {!isWaitingForReady && !tournamentState.isBye && !tournamentState.currentMatchGameSessionId && !tournamentState.isComplete && (
-        <div
-          style={{
-            backgroundColor: '#2a2a4e',
-            padding: '12px 24px',
-            borderRadius: 8,
-            fontSize: responsive.fontSize.normal,
-            marginBottom: 8,
-          }}
-        >
+        <div className={styles.statusBoxWaiting}>
           Waiting for other matches to complete...
         </div>
       )}
 
       {/* Active matches for spectating - show for any player waiting (bye or game finished) */}
       {!tournamentState.currentMatchGameSessionId && tournamentState.activeMatches && tournamentState.activeMatches.length > 0 && (
-        <div style={{ width: '100%', maxWidth: 500 }}>
-          <h3 style={{ margin: '0 0 8px 0', fontSize: responsive.fontSize.normal, color: '#888' }}>
+        <div className={styles.matchesSection}>
+          <h3 className={styles.matchesSectionTitle}>
             Live Matches - Click to Watch
           </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div className={styles.matchesList}>
             {tournamentState.activeMatches.map((match) => (
               <button
                 key={match.gameSessionId}
                 onClick={() => spectateGame(match.gameSessionId)}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '12px 16px',
-                  backgroundColor: '#1a1a2e',
-                  border: '1px solid #333',
-                  borderRadius: 8,
-                  color: 'white',
-                  cursor: 'pointer',
-                  transition: 'background-color 0.2s',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#2a2a4e')}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#1a1a2e')}
+                className={styles.matchButton}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                  <span style={{ fontWeight: 600 }}>{match.player1Name}</span>
-                  <span style={{ color: '#888' }}>vs</span>
-                  <span style={{ fontWeight: 600 }}>{match.player2Name}</span>
+                <div className={styles.matchPlayers}>
+                  <span className={styles.matchPlayerName}>{match.player1Name}</span>
+                  <span className={styles.matchVs}>vs</span>
+                  <span className={styles.matchPlayerName}>{match.player2Name}</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14 }}>
-                  <span style={{ color: match.player1Life <= 5 ? '#ff4444' : '#4caf50' }}>
+                <div className={styles.matchScore}>
+                  <span className={match.player1Life <= 5 ? styles.matchLifeLow : styles.matchLifeHigh}>
                     {match.player1Life}
                   </span>
-                  <span style={{ color: '#666' }}>-</span>
-                  <span style={{ color: match.player2Life <= 5 ? '#ff4444' : '#4caf50' }}>
+                  <span className={styles.matchScoreDash}>-</span>
+                  <span className={match.player2Life <= 5 ? styles.matchLifeLow : styles.matchLifeHigh}>
                     {match.player2Life}
                   </span>
-                  <span style={{ color: '#4fc3f7', marginLeft: 8 }}>▶ Watch</span>
+                  <span className={styles.matchWatch}>▶ Watch</span>
                 </div>
               </button>
             ))}
@@ -1109,26 +657,18 @@ function TournamentOverlay({
       )}
 
       {/* Standings table */}
-      <div
-        style={{
-          width: '100%',
-          maxWidth: 500,
-          backgroundColor: '#111',
-          borderRadius: 8,
-          overflow: 'hidden',
-        }}
-      >
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ backgroundColor: '#222' }}>
-              <th style={thStyle}>#</th>
-              <th style={{ ...thStyle, textAlign: 'left' }}>Player</th>
-              <th style={thStyle}>W</th>
-              <th style={thStyle}>L</th>
-              <th style={thStyle}>D</th>
-              <th style={thStyle}>Pts</th>
-              <th style={thStyle} title="Game Win Rate">GWR</th>
-              {isWaitingForReady && <th style={thStyle}>Ready</th>}
+      <div className={styles.standingsTable}>
+        <table className={styles.standingsTableInner}>
+          <thead className={styles.standingsHeader}>
+            <tr>
+              <th className={styles.standingsTh}>#</th>
+              <th className={styles.standingsThLeft}>Player</th>
+              <th className={styles.standingsTh}>W</th>
+              <th className={styles.standingsTh}>L</th>
+              <th className={styles.standingsTh}>D</th>
+              <th className={styles.standingsTh}>Pts</th>
+              <th className={styles.standingsTh} title="Game Win Rate">GWR</th>
+              {isWaitingForReady && <th className={styles.standingsTh}>Ready</th>}
             </tr>
           </thead>
           <tbody>
@@ -1178,42 +718,31 @@ function TournamentOverlay({
               return (
                 <tr
                   key={standing.playerId}
-                  style={{
-                    backgroundColor: isMe ? '#1a1a3a' : 'transparent',
-                    borderBottom: '1px solid #222',
-                    cursor: 'default',
-                    transition: 'background-color 0.15s',
-                  }}
+                  className={`${styles.standingsRow} ${isMe ? styles.standingsRowMe : ''}`}
                   title={standingTooltip}
-                  onMouseEnter={(e) => {
-                    if (!isMe) e.currentTarget.style.backgroundColor = '#1a1a2a'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = isMe ? '#1a1a3a' : 'transparent'
-                  }}
                 >
-                  <td style={tdStyle}>
+                  <td className={styles.standingsTd}>
                     {displayRank}
                     {standing.tiebreakerReason === 'TIED' && (
-                      <span style={{ color: '#888', marginLeft: 2 }}>*</span>
+                      <span className={styles.tiedIndicator}>*</span>
                     )}
                   </td>
-                  <td style={{ ...tdStyle, textAlign: 'left', fontWeight: isMe ? 600 : 400 }}>
+                  <td className={styles.standingsTdLeft} style={{ fontWeight: isMe ? 600 : 400 }}>
                     {standing.playerName}
-                    {isMe && <span style={{ color: '#4fc3f7', marginLeft: 6 }}>(you)</span>}
+                    {isMe && <span className={styles.meIndicator}>(you)</span>}
                     {!standing.isConnected && (
-                      <span style={{ color: '#ff4444', marginLeft: 6, fontSize: 12 }}>DC</span>
+                      <span className={styles.disconnectedIndicator}>DC</span>
                     )}
                   </td>
-                  <td style={{ ...tdStyle, color: '#00cc44' }}>{standing.wins}</td>
-                  <td style={{ ...tdStyle, color: '#ff4444' }}>{standing.losses}</td>
-                  <td style={tdStyle}>{standing.draws}</td>
-                  <td style={{ ...tdStyle, fontWeight: 600 }}>{standing.points}</td>
-                  <td style={{ ...tdStyle, color: '#aaa', fontSize: 12 }}>
+                  <td className={`${styles.standingsTd} ${styles.standingsWins}`}>{standing.wins}</td>
+                  <td className={`${styles.standingsTd} ${styles.standingsLosses}`}>{standing.losses}</td>
+                  <td className={styles.standingsTd}>{standing.draws}</td>
+                  <td className={`${styles.standingsTd} ${styles.standingsPoints}`}>{standing.points}</td>
+                  <td className={`${styles.standingsTd} ${styles.standingsGwr}`}>
                     {totalGames > 0 ? `${winRate}%` : '-'}
                   </td>
                   {isWaitingForReady && (
-                    <td style={{ ...tdStyle, color: isReady ? '#4caf50' : '#666' }}>
+                    <td className={styles.standingsTd} style={{ color: isReady ? '#4caf50' : 'var(--text-disabled)' }}>
                       {standing.isConnected ? (isReady ? '✓' : '...') : '-'}
                     </td>
                   )}
@@ -1226,25 +755,14 @@ function TournamentOverlay({
 
       {/* Last round results */}
       {tournamentState.lastRoundResults && (
-        <div style={{ width: '100%', maxWidth: 500 }}>
-          <h3 style={{ margin: '0 0 8px 0', fontSize: responsive.fontSize.normal, color: '#888' }}>
+        <div className={styles.resultsSection}>
+          <h3 className={styles.resultsSectionTitle}>
             Round {tournamentState.currentRound} Results
           </h3>
           {tournamentState.lastRoundResults.map((result, i) => (
-            <div
-              key={i}
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                padding: '6px 12px',
-                backgroundColor: '#111',
-                borderRadius: 4,
-                marginBottom: 4,
-                fontSize: responsive.fontSize.small,
-              }}
-            >
+            <div key={i} className={styles.resultRow}>
               <span>{result.player1Name}</span>
-              <span style={{ color: '#888' }}>
+              <span className={styles.resultOutcome}>
                 {result.isBye
                   ? 'BYE'
                   : result.isDraw
@@ -1260,16 +778,8 @@ function TournamentOverlay({
       {/* Leave/Return button */}
       <button
         onClick={leaveTournament}
-        style={{
-          padding: tournamentState.isComplete ? '12px 24px' : '10px 20px',
-          fontSize: tournamentState.isComplete ? responsive.fontSize.large : responsive.fontSize.normal,
-          backgroundColor: tournamentState.isComplete ? '#e65100' : 'transparent',
-          color: tournamentState.isComplete ? 'white' : '#666',
-          border: tournamentState.isComplete ? 'none' : '1px solid #444',
-          borderRadius: 8,
-          cursor: 'pointer',
-          marginTop: tournamentState.isComplete ? 0 : 8,
-        }}
+        className={tournamentState.isComplete ? styles.returnButton : styles.leaveButton}
+        style={{ marginTop: tournamentState.isComplete ? 0 : 8 }}
       >
         {tournamentState.isComplete ? 'Return to Menu' : 'Leave Tournament'}
       </button>
@@ -1277,24 +787,10 @@ function TournamentOverlay({
   )
 }
 
-const thStyle: React.CSSProperties = {
-  padding: '10px 12px',
-  textAlign: 'center',
-  fontSize: 14,
-  fontWeight: 600,
-  color: '#888',
-}
-
-const tdStyle: React.CSSProperties = {
-  padding: '10px 12px',
-  textAlign: 'center',
-  fontSize: 14,
-}
-
 /**
  * Fullscreen toggle button.
  */
-function FullscreenButton({ responsive }: { responsive: ResponsiveSizes }) {
+function FullscreenButton() {
   const [isFullscreen, setIsFullscreen] = useState(false)
 
   useEffect(() => {
@@ -1320,22 +816,7 @@ function FullscreenButton({ responsive }: { responsive: ResponsiveSizes }) {
   return (
     <button
       onClick={toggleFullscreen}
-      style={{
-        position: 'absolute',
-        top: responsive.isMobile ? 8 : 12,
-        left: responsive.isMobile ? 8 : 12,
-        zIndex: 100,
-        padding: responsive.isMobile ? '6px 10px' : '8px 14px',
-        fontSize: responsive.fontSize.small,
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        color: '#888',
-        border: '1px solid #444',
-        borderRadius: 6,
-        cursor: 'pointer',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 4,
-      }}
+      className={styles.fullscreenButton}
       title={isFullscreen ? 'Exit fullscreen (Esc)' : 'Enter fullscreen'}
     >
       {isFullscreen ? '⛶ Exit' : '⛶ Fullscreen'}

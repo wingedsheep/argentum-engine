@@ -1,0 +1,600 @@
+/**
+ * Decision UI styles.
+ * Styles for various decision overlays (YesNo, ChooseNumber, CardSelection, etc.)
+ */
+
+/* =========================================================================
+ * Overlay Container
+ * ========================================================================= */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--bg-overlay-dark);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  z-index: var(--z-modal);
+  gap: var(--space-6);
+  padding: var(--space-4);
+}
+
+@media (max-width: 639px) {
+  .overlay {
+    gap: var(--space-3);
+    padding: var(--space-1);
+  }
+}
+
+/* Darker variant for graveyards etc */
+.overlayDarker {
+  composes: overlay;
+  background-color: var(--bg-overlay-darkest);
+  gap: var(--space-5);
+}
+
+/* =========================================================================
+ * Side Banner (for targeting/selection prompts)
+ * ========================================================================= */
+.sideBanner {
+  position: fixed;
+  top: 50%;
+  right: var(--space-4);
+  transform: translateY(-50%);
+  background-color: var(--bg-overlay-opaque);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-xl);
+  z-index: var(--z-modal-content);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 200px;
+}
+
+@media (max-width: 639px) {
+  .sideBanner {
+    right: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    min-width: 160px;
+  }
+}
+
+.sideBannerTarget {
+  composes: sideBanner;
+  border: 2px solid var(--color-target);
+  box-shadow: 0 4px 24px var(--color-target-shadow);
+  pointer-events: none;
+}
+
+.sideBannerSelection {
+  composes: sideBanner;
+  border: 2px solid var(--color-target-secondary);
+  box-shadow: 0 4px 24px var(--color-target-secondary-shadow);
+}
+
+/* =========================================================================
+ * Typography
+ * ========================================================================= */
+.title {
+  color: var(--text-primary);
+  margin: 0;
+  text-align: center;
+  font-size: var(--font-xl);
+}
+
+@media (max-width: 639px) {
+  .title {
+    font-size: var(--font-lg);
+  }
+}
+
+.titleSmall {
+  font-size: var(--font-lg);
+  font-weight: var(--font-weight-bold);
+}
+
+@media (max-width: 639px) {
+  .titleSmall {
+    font-size: var(--font-md);
+  }
+}
+
+.bannerTitle {
+  color: var(--color-target);
+  font-size: var(--font-md);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.bannerTitleSelection {
+  composes: bannerTitle;
+  color: var(--color-target-secondary);
+}
+
+.subtitle {
+  color: var(--text-tertiary);
+  margin: 0;
+  font-size: var(--font-md);
+}
+
+.prompt {
+  color: var(--text-primary);
+  font-size: var(--font-sm);
+  max-width: 180px;
+}
+
+.hint {
+  color: var(--text-muted);
+  font-size: var(--font-sm);
+}
+
+.hintSmall {
+  color: var(--text-disabled);
+  font-size: calc(var(--font-sm) - 1px);
+}
+
+/* =========================================================================
+ * Button Containers
+ * ========================================================================= */
+.buttonContainer {
+  display: flex;
+  gap: var(--space-6);
+  margin-top: var(--space-6);
+}
+
+@media (max-width: 639px) {
+  .buttonContainer {
+    gap: var(--space-4);
+    margin-top: var(--space-4);
+  }
+}
+
+.buttonContainerSmall {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+/* =========================================================================
+ * Action Buttons
+ * ========================================================================= */
+.yesButton,
+.noButton,
+.confirmButton,
+.skipButton {
+  border: none;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  font-weight: var(--font-weight-semibold);
+  transition: filter var(--transition-fast);
+  padding: var(--space-4) var(--space-8);
+  font-size: var(--font-lg);
+  min-width: 120px;
+}
+
+@media (max-width: 639px) {
+  .yesButton,
+  .noButton,
+  .confirmButton {
+    padding: var(--space-3) var(--space-7);
+    min-width: 100px;
+  }
+}
+
+.yesButton {
+  background-color: var(--color-success);
+  color: var(--text-primary);
+}
+
+.yesButton:hover {
+  filter: brightness(1.1);
+}
+
+.noButton {
+  background-color: var(--bg-surface-6);
+  color: var(--text-primary);
+}
+
+.noButton:hover {
+  filter: brightness(1.2);
+}
+
+.confirmButton {
+  background-color: var(--color-success);
+  color: var(--text-primary);
+}
+
+.confirmButton:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.confirmButton:disabled {
+  background-color: var(--bg-surface-6);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.confirmButtonSmall {
+  padding: var(--space-2) var(--space-5);
+  font-size: var(--font-sm);
+  border-radius: var(--radius-md);
+}
+
+@media (max-width: 639px) {
+  .confirmButtonSmall {
+    padding: var(--space-2) var(--space-4);
+  }
+}
+
+.skipButton {
+  background-color: var(--bg-surface-6);
+  color: var(--text-primary);
+  padding: var(--space-2) var(--space-5);
+  font-size: var(--font-sm);
+  min-width: auto;
+}
+
+@media (max-width: 639px) {
+  .skipButton {
+    padding: var(--space-2) var(--space-4);
+  }
+}
+
+.skipButton:hover {
+  filter: brightness(1.2);
+}
+
+/* =========================================================================
+ * Number Selection
+ * ========================================================================= */
+.numberContainer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+@media (max-width: 639px) {
+  .numberContainer {
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+  }
+}
+
+.numberButton {
+  padding: var(--space-4) var(--space-7);
+  font-size: var(--font-lg);
+  background-color: var(--bg-surface-6);
+  color: var(--text-primary);
+  border: 2px solid var(--text-disabled);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  font-weight: var(--font-weight-semibold);
+  min-width: 60px;
+  transition: all var(--transition-fast);
+}
+
+@media (max-width: 639px) {
+  .numberButton {
+    padding: var(--space-3) var(--space-5);
+    min-width: 50px;
+  }
+}
+
+.numberButton:hover:not(.numberButtonSelected) {
+  border-color: var(--text-muted);
+  background-color: var(--bg-surface-5);
+}
+
+.numberButtonSelected {
+  background-color: var(--color-primary);
+  border-color: #66aaff;
+  border-width: 3px;
+}
+
+/* =========================================================================
+ * Card Container
+ * ========================================================================= */
+.cardContainer {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  max-width: 100%;
+  padding: var(--space-4);
+}
+
+@media (max-width: 639px) {
+  .cardContainer {
+    padding: var(--space-2);
+  }
+}
+
+.cardRibbon {
+  display: flex;
+  justify-content: center;
+  overflow-x: auto;
+  max-width: 100%;
+  scroll-behavior: smooth;
+  padding: var(--space-6);
+}
+
+@media (max-width: 639px) {
+  .cardRibbon {
+    padding: var(--space-3);
+  }
+}
+
+/* =========================================================================
+ * Decision Card (for discard/selection)
+ * ========================================================================= */
+.decisionCard {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+  position: relative;
+  border-radius: var(--radius-xl);
+}
+
+@media (max-width: 639px) {
+  .decisionCard {
+    border-radius: var(--radius-md);
+  }
+}
+
+.decisionCardDefault {
+  background-color: var(--bg-surface-3);
+  border: 2px solid var(--border-solid-medium);
+  box-shadow: var(--shadow-md);
+}
+
+.decisionCardDefault:hover:not(.decisionCardSelected) {
+  border-color: var(--color-highlight);
+  transform: translateY(-4px);
+}
+
+.decisionCardSelected {
+  background-color: #330000;
+  border: 3px solid var(--color-target);
+  transform: translateY(-8px) scale(1.05);
+  box-shadow: 0 8px 20px rgba(255, 68, 68, 0.3);
+}
+
+/* =========================================================================
+ * Graveyard Card
+ * ========================================================================= */
+.graveyardCard {
+  composes: decisionCard;
+}
+
+.graveyardCardDefault {
+  background-color: var(--bg-surface-3);
+  border: 2px solid var(--border-solid-dark);
+  box-shadow: var(--shadow-lg);
+}
+
+.graveyardCardHovered {
+  border-color: var(--text-disabled);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(255, 255, 255, 0.15);
+}
+
+.graveyardCardSelected {
+  background-color: #1a3320;
+  border: 3px solid var(--color-highlight);
+  transform: translateY(-12px) scale(1.05);
+  box-shadow: 0 12px 28px rgba(251, 191, 36, 0.4), 0 0 20px rgba(251, 191, 36, 0.2);
+}
+
+/* =========================================================================
+ * Card Image
+ * ========================================================================= */
+.cardImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* =========================================================================
+ * Card Fallback (when image fails)
+ * ========================================================================= */
+.cardFallback {
+  position: absolute;
+  inset: 0;
+  background-color: var(--bg-surface-3);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2);
+  gap: var(--space-1);
+}
+
+@media (max-width: 639px) {
+  .cardFallback {
+    padding: var(--space-1);
+  }
+}
+
+.cardFallbackName {
+  color: var(--text-primary);
+  font-weight: var(--font-weight-medium);
+  font-size: 11px;
+  text-align: center;
+}
+
+@media (max-width: 639px) {
+  .cardFallbackName {
+    font-size: 9px;
+  }
+}
+
+/* =========================================================================
+ * Selection Indicator
+ * ========================================================================= */
+.selectionIndicator {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  background-color: var(--color-target);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+  font-weight: var(--font-weight-bold);
+  font-size: 12px;
+}
+
+.selectionIndicatorGold {
+  composes: selectionIndicator;
+  background-color: var(--color-highlight);
+  color: var(--bg-surface-3);
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* =========================================================================
+ * Card Preview
+ * ========================================================================= */
+.previewContainer {
+  position: fixed;
+  top: var(--space-5);
+  right: var(--space-5);
+  pointer-events: none;
+  z-index: var(--z-modal-content);
+}
+
+.previewCard {
+  border-radius: var(--radius-2xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-2xl);
+}
+
+.previewImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* =========================================================================
+ * Graveyard Tabs
+ * ========================================================================= */
+.graveyardTabs {
+  display: flex;
+  gap: var(--space-3);
+  background-color: rgba(0, 0, 0, 0.4);
+  padding: var(--space-1);
+  border-radius: var(--radius-lg);
+}
+
+@media (max-width: 639px) {
+  .graveyardTabs {
+    gap: var(--space-2);
+  }
+}
+
+.graveyardTab {
+  padding: var(--space-2) var(--space-6);
+  font-size: var(--font-md);
+  background-color: transparent;
+  color: var(--text-muted);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: var(--font-weight-normal);
+  transition: all var(--transition-fast);
+  position: relative;
+}
+
+@media (max-width: 639px) {
+  .graveyardTab {
+    padding: var(--space-2) var(--space-4);
+  }
+}
+
+.graveyardTabActive {
+  background-color: #4a5568;
+  color: var(--text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.graveyardTabWithSelection {
+  border: 2px solid var(--color-highlight);
+}
+
+.graveyardTabBadge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background-color: var(--color-highlight);
+  color: var(--bg-surface-3);
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: var(--font-weight-bold);
+}
+
+/* =========================================================================
+ * Selection Counter
+ * ========================================================================= */
+.selectionCounter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  color: var(--text-muted);
+  font-size: var(--font-md);
+}
+
+.selectionCount {
+  font-weight: var(--font-weight-semibold);
+}
+
+.selectionCountValid {
+  color: #4ade80;
+}
+
+.selectionCountPartial {
+  color: var(--color-highlight);
+}
+
+/* =========================================================================
+ * No Cards Message
+ * ========================================================================= */
+.noCardsMessage {
+  color: var(--text-disabled);
+  font-size: var(--font-md);
+}
+
+/* =========================================================================
+ * Header Section
+ * ========================================================================= */
+.header {
+  text-align: center;
+}
+
+.headerSubtitle {
+  color: var(--text-tertiary);
+  margin: var(--space-2) 0 0;
+  font-size: var(--font-md);
+}

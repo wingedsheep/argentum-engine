@@ -3,6 +3,7 @@ import { useGameStore, type MulliganState, type MulliganCardInfo } from '../../s
 import type { EntityId } from '../../types'
 import { useResponsive, calculateFittingCardWidth, type ResponsiveSizes } from '../../hooks/useResponsive'
 import { getCardImageUrl } from '../../utils/cardImages'
+import styles from './MulliganUI.module.css'
 
 /**
  * Mulligan UI overlay.
@@ -23,25 +24,7 @@ export function MulliganUI() {
     return (
       <button
         onClick={() => setMinimized(false)}
-        style={{
-          position: 'fixed',
-          bottom: 70,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          padding: responsive.isMobile ? '10px 16px' : '12px 24px',
-          fontSize: responsive.fontSize.normal,
-          backgroundColor: '#1e40af',
-          color: 'white',
-          border: 'none',
-          borderRadius: 8,
-          cursor: 'pointer',
-          fontWeight: 600,
-          boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
-          zIndex: 100,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-        }}
+        className={styles.minimizedButton}
       >
         ↑ Return to Card Selection
       </button>
@@ -49,24 +32,7 @@ export function MulliganUI() {
   }
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.85)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: responsive.isMobile ? 12 : 24,
-        padding: responsive.containerPadding,
-        pointerEvents: 'auto',
-        zIndex: 1000,
-      }}
-    >
+    <div className={styles.overlay}>
       {mulliganState.phase === 'deciding' ? (
         <MulliganDecision state={mulliganState} responsive={responsive} onHoverCard={setHoveredCardId} />
       ) : (
@@ -96,28 +62,19 @@ function MulliganDecision({ state, responsive, onHoverCard }: { state: MulliganS
 
   return (
     <>
-      <h2 style={{ color: 'white', margin: 0, fontSize: responsive.isMobile ? 18 : 24 }}>
+      <h2 className={styles.title}>
         {state.mulliganCount === 0
           ? 'Opening Hand'
           : `Mulligan ${state.mulliganCount}`}
       </h2>
 
-      <p style={{ color: '#888', margin: 0, fontSize: responsive.fontSize.normal, textAlign: 'center' }}>
+      <p className={styles.subtitle}>
         {state.mulliganCount > 0 &&
           `If you keep, you'll put ${state.cardsToPutOnBottom} card(s) on the bottom.`}
       </p>
 
       {/* Hand preview */}
-      <div
-        style={{
-          display: 'flex',
-          gap,
-          padding: responsive.isMobile ? 8 : 16,
-          justifyContent: 'center',
-          flexWrap: 'wrap',
-          maxWidth: '100%',
-        }}
-      >
+      <div className={styles.cardContainer} style={{ gap }}>
         {state.hand.map((cardId) => {
           const cardInfo = state.cards[cardId]
           return (
@@ -128,7 +85,6 @@ function MulliganDecision({ state, responsive, onHoverCard }: { state: MulliganS
               imageUri={cardInfo?.imageUri}
               selectable={false}
               cardWidth={cardWidth}
-              isMobile={responsive.isMobile}
               onMouseEnter={() => onHoverCard(cardId)}
               onMouseLeave={() => onHoverCard(null)}
             />
@@ -137,34 +93,12 @@ function MulliganDecision({ state, responsive, onHoverCard }: { state: MulliganS
       </div>
 
       {/* Action buttons */}
-      <div style={{ display: 'flex', gap: responsive.isMobile ? 8 : 16, flexWrap: 'wrap', justifyContent: 'center' }}>
-        <button
-          onClick={keepHand}
-          style={{
-            padding: responsive.isMobile ? '10px 20px' : '12px 32px',
-            fontSize: responsive.fontSize.large,
-            backgroundColor: '#00aa00',
-            color: 'white',
-            border: 'none',
-            borderRadius: 8,
-            cursor: 'pointer',
-          }}
-        >
+      <div className={styles.buttonContainer}>
+        <button onClick={keepHand} className={styles.keepButton}>
           Keep Hand
         </button>
 
-        <button
-          onClick={mulligan}
-          style={{
-            padding: responsive.isMobile ? '10px 20px' : '12px 32px',
-            fontSize: responsive.fontSize.large,
-            backgroundColor: '#cc6600',
-            color: 'white',
-            border: 'none',
-            borderRadius: 8,
-            cursor: 'pointer',
-          }}
-        >
+        <button onClick={mulligan} className={styles.mulliganButton}>
           Mulligan
         </button>
       </div>
@@ -189,26 +123,17 @@ function ChooseBottomCards({ state, responsive, onHoverCard, onMinimize }: { sta
 
   return (
     <>
-      <h2 style={{ color: 'white', margin: 0, fontSize: responsive.isMobile ? 18 : 24 }}>
+      <h2 className={styles.title}>
         Choose {state.cardsToPutOnBottom} Card
         {state.cardsToPutOnBottom > 1 ? 's' : ''} for Bottom
       </h2>
 
-      <p style={{ color: '#888', margin: 0, fontSize: responsive.fontSize.normal }}>
+      <p className={styles.subtitle}>
         Selected: {state.selectedCards.length} / {state.cardsToPutOnBottom}
       </p>
 
       {/* Hand with selectable cards */}
-      <div
-        style={{
-          display: 'flex',
-          gap,
-          padding: responsive.isMobile ? 8 : 16,
-          justifyContent: 'center',
-          flexWrap: 'wrap',
-          maxWidth: '100%',
-        }}
-      >
+      <div className={styles.cardContainer} style={{ gap }}>
         {state.hand.map((cardId) => {
           const cardInfo = state.cards[cardId]
           return (
@@ -221,7 +146,6 @@ function ChooseBottomCards({ state, responsive, onHoverCard, onMinimize }: { sta
               isSelected={state.selectedCards.includes(cardId)}
               onClick={() => toggleMulliganCard(cardId)}
               cardWidth={cardWidth}
-              isMobile={responsive.isMobile}
               onMouseEnter={() => onHoverCard(cardId)}
               onMouseLeave={() => onHoverCard(null)}
             />
@@ -230,33 +154,14 @@ function ChooseBottomCards({ state, responsive, onHoverCard, onMinimize }: { sta
       </div>
 
       {/* Action buttons */}
-      <div style={{ display: 'flex', gap: 16 }}>
-        <button
-          onClick={onMinimize}
-          style={{
-            padding: responsive.isMobile ? '10px 20px' : '12px 28px',
-            fontSize: responsive.fontSize.normal,
-            backgroundColor: '#1e40af',
-            color: 'white',
-            border: 'none',
-            borderRadius: 8,
-            cursor: 'pointer',
-          }}
-        >
+      <div className={styles.buttonContainer}>
+        <button onClick={onMinimize} className={styles.viewBattlefieldButton}>
           View Battlefield
         </button>
         <button
           onClick={() => chooseBottomCards(state.selectedCards)}
           disabled={!canConfirm}
-          style={{
-            padding: responsive.isMobile ? '10px 20px' : '12px 32px',
-            fontSize: responsive.fontSize.large,
-            backgroundColor: canConfirm ? '#00aa00' : '#444',
-            color: canConfirm ? 'white' : '#888',
-            border: 'none',
-            borderRadius: 8,
-            cursor: canConfirm ? 'pointer' : 'not-allowed',
-          }}
+          className={styles.confirmButton}
         >
           Confirm
         </button>
@@ -277,7 +182,6 @@ function MulliganCard({
   isSelected = false,
   onClick,
   cardWidth = 130,
-  isMobile = false,
   onMouseEnter,
   onMouseLeave,
 }: {
@@ -288,7 +192,6 @@ function MulliganCard({
   isSelected?: boolean
   onClick?: () => void
   cardWidth?: number
-  isMobile?: boolean
   onMouseEnter?: () => void
   onMouseLeave?: () => void
 }) {
@@ -298,36 +201,30 @@ function MulliganCard({
   const cardRatio = 1.4
   const cardHeight = Math.round(cardWidth * cardRatio)
 
+  const cardClasses = [
+    styles.card,
+    isSelected ? styles.cardSelected : styles.cardDefault,
+    selectable && styles.cardSelectable,
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   return (
     <div
       onClick={selectable ? onClick : undefined}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
+      className={cardClasses}
       style={{
         width: cardWidth,
         height: cardHeight,
-        backgroundColor: isSelected ? '#003300' : '#1a1a1a',
-        border: isSelected ? '3px solid #00ff00' : '2px solid #444',
-        borderRadius: isMobile ? 6 : 10,
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        cursor: selectable ? 'pointer' : 'default',
-        transition: 'all 0.15s',
-        transform: isSelected ? 'translateY(-8px) scale(1.05)' : 'none',
-        boxShadow: isSelected ? '0 8px 20px rgba(0, 255, 0, 0.3)' : '0 4px 8px rgba(0, 0, 0, 0.5)',
-        flexShrink: 0,
       }}
     >
       {/* Card image */}
       <img
         src={cardImageUrl}
         alt={cardName}
-        style={{
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-        }}
+        className={styles.cardImage}
         onError={(e) => {
           // Hide image on error and show placeholder
           e.currentTarget.style.display = 'none'
@@ -335,24 +232,8 @@ function MulliganCard({
       />
 
       {/* Fallback text (shown if image fails) */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          padding: isMobile ? '4px' : '8px',
-          display: 'none', // Will be shown via CSS when image fails
-        }}
-      >
-        <span
-          style={{
-            color: 'white',
-            fontSize: isMobile ? 9 : 11,
-            fontWeight: 500,
-          }}
-        >
+      <div className={styles.cardFallback}>
+        <span className={styles.cardFallbackName}>
           {cardName}
         </span>
       </div>
@@ -370,32 +251,18 @@ function MulliganCardPreview({ cardInfo }: { cardInfo: MulliganCardInfo }) {
   const previewHeight = Math.round(previewWidth * 1.4)
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        top: 20,
-        right: 20,
-        pointerEvents: 'none',
-        zIndex: 1001,
-      }}
-    >
+    <div className={styles.previewContainer}>
       <div
+        className={styles.previewCard}
         style={{
           width: previewWidth,
           height: previewHeight,
-          borderRadius: 12,
-          overflow: 'hidden',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6)',
         }}
       >
         <img
           src={cardImageUrl}
           alt={cardInfo.name}
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-          }}
+          className={styles.previewImage}
         />
       </div>
     </div>

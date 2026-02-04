@@ -1,0 +1,182 @@
+/**
+ * Button component styles.
+ * Supports variants (primary, secondary, success, danger, warning, ghost)
+ * and sizes (sm, md, lg).
+ */
+
+/* =========================================================================
+ * Base Button
+ * ========================================================================= */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: none;
+  cursor: pointer;
+  font-weight: var(--font-weight-semibold);
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* =========================================================================
+ * Size Variants
+ * ========================================================================= */
+.sm {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-sm);
+  border-radius: var(--radius-md);
+}
+
+.md {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--font-md);
+  border-radius: var(--radius-lg);
+}
+
+.lg {
+  padding: var(--space-3) var(--space-6);
+  font-size: var(--font-lg);
+  border-radius: var(--radius-lg);
+}
+
+/* =========================================================================
+ * Primary Variant
+ * ========================================================================= */
+.primary {
+  background: var(--gradient-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-strong);
+}
+
+.primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.primary:disabled {
+  background: var(--gradient-disabled);
+  color: var(--text-disabled);
+  border-color: var(--border-solid-dark);
+}
+
+/* =========================================================================
+ * Secondary Variant
+ * ========================================================================= */
+.secondary {
+  background-color: var(--bg-surface-6);
+  color: var(--text-muted);
+  border: 1px solid var(--border-solid-dark);
+}
+
+.secondary:hover:not(:disabled) {
+  background-color: var(--bg-surface-5);
+  color: var(--text-tertiary);
+  border-color: var(--border-solid-medium);
+}
+
+.secondary:disabled {
+  background-color: var(--bg-surface-3);
+  color: var(--text-disabled);
+}
+
+/* =========================================================================
+ * Success Variant
+ * ========================================================================= */
+.success {
+  background: var(--gradient-success);
+  color: var(--text-primary);
+  border: none;
+}
+
+.success:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.success:disabled {
+  background: var(--gradient-disabled);
+  color: var(--text-disabled);
+}
+
+/* =========================================================================
+ * Danger Variant
+ * ========================================================================= */
+.danger {
+  background: var(--gradient-danger);
+  color: var(--text-primary);
+  border: none;
+}
+
+.danger:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.danger:disabled {
+  background: var(--gradient-disabled);
+  color: var(--text-disabled);
+}
+
+/* =========================================================================
+ * Warning Variant
+ * ========================================================================= */
+.warning {
+  background: var(--gradient-warning);
+  color: var(--text-primary);
+  border: none;
+  box-shadow: 0 2px 12px rgba(230, 81, 0, 0.3);
+}
+
+.warning:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.warning:disabled {
+  background: var(--bg-surface-3);
+  color: var(--text-placeholder);
+  border: 1px solid var(--border-light);
+  box-shadow: none;
+}
+
+/* =========================================================================
+ * Ghost Variant
+ * ========================================================================= */
+.ghost {
+  background-color: transparent;
+  color: var(--text-disabled);
+  border: 1px solid var(--border-solid-dark);
+}
+
+.ghost:hover:not(:disabled) {
+  background-color: var(--bg-surface-6);
+  color: var(--text-tertiary);
+}
+
+.ghost:disabled {
+  color: var(--text-faint);
+  border-color: var(--border-light);
+}
+
+/* =========================================================================
+ * Full Width Modifier
+ * ========================================================================= */
+.fullWidth {
+  width: 100%;
+}
+
+/* =========================================================================
+ * Active/Selected State
+ * ========================================================================= */
+.active {
+  background-color: var(--color-accent);
+  color: #000;
+  font-weight: var(--font-weight-semibold);
+}
+
+.active:hover:not(:disabled) {
+  filter: brightness(1.1);
+}

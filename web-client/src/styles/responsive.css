@@ -1,0 +1,113 @@
+/**
+ * Responsive CSS overrides for Argentum Engine web client.
+ * Adjusts CSS variables at different breakpoints.
+ */
+
+/* =========================================================================
+ * Mobile (<640px)
+ * ========================================================================= */
+@media (max-width: 639px) {
+  :root {
+    /* Typography */
+    --font-xs: 8px;
+    --font-sm: 9px;
+    --font-md: 11px;
+    --font-lg: 14px;
+    --font-xl: 18px;
+    --font-2xl: 22px;
+    --font-3xl: 26px;
+
+    /* Spacing */
+    --space-container: var(--space-1);
+    --space-section: var(--space-1);
+    --space-card-gap: 2px;
+
+    /* Border radius */
+    --radius-card: var(--radius-md);
+  }
+}
+
+/* =========================================================================
+ * Tablet (640px - 1023px)
+ * ========================================================================= */
+@media (min-width: 640px) and (max-width: 1023px) {
+  :root {
+    /* Typography */
+    --font-xs: 9px;
+    --font-sm: 10px;
+    --font-md: 12px;
+    --font-lg: 16px;
+    --font-xl: 24px;
+    --font-2xl: 28px;
+    --font-3xl: 32px;
+
+    /* Spacing */
+    --space-container: var(--space-3);
+    --space-section: var(--space-2);
+    --space-card-gap: 6px;
+
+    /* Border radius */
+    --radius-card: var(--radius-lg);
+  }
+}
+
+/* =========================================================================
+ * Desktop (>=1024px)
+ * ========================================================================= */
+@media (min-width: 1024px) {
+  :root {
+    /* Typography - uses default values from variables.css */
+
+    /* Spacing */
+    --space-container: var(--space-4);
+    --space-section: var(--space-2);
+    --space-card-gap: 8px;
+
+    /* Border radius */
+    --radius-card: var(--radius-xl);
+  }
+}
+
+/* =========================================================================
+ * Compact Height (<700px)
+ * For screens that are wide but short
+ * ========================================================================= */
+@media (max-height: 699px) {
+  :root {
+    /* Reduce spacing for tight vertical layouts */
+    --space-section: var(--space-1);
+  }
+}
+
+/* =========================================================================
+ * Utility classes for responsive visibility
+ * ========================================================================= */
+.hide-mobile {
+  display: none;
+}
+
+.hide-tablet {
+  display: block;
+}
+
+.hide-desktop {
+  display: block;
+}
+
+@media (min-width: 640px) {
+  .hide-mobile {
+    display: block;
+  }
+  .hide-tablet {
+    display: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hide-tablet {
+    display: block;
+  }
+  .hide-desktop {
+    display: none;
+  }
+}

@@ -1,5 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import './styles/variables.css'
+import './styles/responsive.css'
 import App from './App'
 import { initAnalytics } from './utils/analytics'
 

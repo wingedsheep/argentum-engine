@@ -1,0 +1,324 @@
+/**
+ * Mulligan UI styles.
+ * Full-screen overlay for mulligan decisions.
+ */
+
+/* =========================================================================
+ * Overlay Container
+ * ========================================================================= */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--bg-overlay-dark);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  z-index: var(--z-modal);
+}
+
+/* Desktop spacing */
+.overlay {
+  gap: var(--space-6);
+  padding: var(--space-4);
+}
+
+/* Mobile spacing */
+@media (max-width: 639px) {
+  .overlay {
+    gap: var(--space-3);
+    padding: var(--space-1);
+  }
+}
+
+/* =========================================================================
+ * Minimized Button (floating restore button)
+ * ========================================================================= */
+.minimizedButton {
+  position: fixed;
+  bottom: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--color-primary-dark);
+  color: var(--text-primary);
+  border: none;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  font-weight: var(--font-weight-semibold);
+  box-shadow: var(--shadow-lg);
+  z-index: var(--z-controls);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  font-size: var(--font-md);
+}
+
+@media (max-width: 639px) {
+  .minimizedButton {
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--font-md);
+  }
+}
+
+.minimizedButton:hover {
+  filter: brightness(1.1);
+}
+
+/* =========================================================================
+ * Title
+ * ========================================================================= */
+.title {
+  color: var(--text-primary);
+  margin: 0;
+  font-size: var(--font-xl);
+}
+
+@media (max-width: 639px) {
+  .title {
+    font-size: var(--font-lg);
+  }
+}
+
+/* =========================================================================
+ * Subtitle / Instructions
+ * ========================================================================= */
+.subtitle {
+  color: var(--text-muted);
+  margin: 0;
+  font-size: var(--font-md);
+  text-align: center;
+}
+
+/* =========================================================================
+ * Card Container
+ * ========================================================================= */
+.cardContainer {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+
+/* Desktop spacing */
+.cardContainer {
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+
+@media (max-width: 639px) {
+  .cardContainer {
+    gap: var(--space-1);
+    padding: var(--space-2);
+  }
+}
+
+/* =========================================================================
+ * Button Container
+ * ========================================================================= */
+.buttonContainer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Desktop spacing */
+.buttonContainer {
+  gap: var(--space-4);
+}
+
+@media (max-width: 639px) {
+  .buttonContainer {
+    gap: var(--space-2);
+  }
+}
+
+/* =========================================================================
+ * Action Buttons
+ * ========================================================================= */
+.keepButton,
+.mulliganButton,
+.viewBattlefieldButton,
+.confirmButton {
+  border: none;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  font-size: var(--font-lg);
+  transition: filter var(--transition-fast);
+}
+
+/* Desktop padding */
+.keepButton,
+.mulliganButton,
+.confirmButton {
+  padding: var(--space-3) var(--space-7);
+}
+
+.viewBattlefieldButton {
+  padding: var(--space-3) var(--space-7);
+  font-size: var(--font-md);
+}
+
+@media (max-width: 639px) {
+  .keepButton,
+  .mulliganButton,
+  .confirmButton {
+    padding: var(--space-2) var(--space-5);
+  }
+  .viewBattlefieldButton {
+    padding: var(--space-2) var(--space-5);
+  }
+}
+
+.keepButton {
+  background-color: var(--color-success);
+  color: var(--text-primary);
+}
+
+.keepButton:hover {
+  filter: brightness(1.1);
+}
+
+.mulliganButton {
+  background-color: var(--color-warning);
+  color: var(--text-primary);
+}
+
+.mulliganButton:hover {
+  filter: brightness(1.1);
+}
+
+.viewBattlefieldButton {
+  background-color: var(--color-primary-dark);
+  color: var(--text-primary);
+}
+
+.viewBattlefieldButton:hover {
+  filter: brightness(1.1);
+}
+
+.confirmButton {
+  background-color: var(--color-success);
+  color: var(--text-primary);
+}
+
+.confirmButton:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.confirmButton:disabled {
+  background-color: var(--bg-surface-6);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+/* =========================================================================
+ * Mulligan Card
+ * ========================================================================= */
+.card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+  border-radius: var(--radius-xl);
+}
+
+@media (max-width: 639px) {
+  .card {
+    border-radius: var(--radius-md);
+  }
+}
+
+.cardDefault {
+  background-color: var(--bg-surface-3);
+  border: 2px solid var(--border-solid-medium);
+  box-shadow: var(--shadow-md);
+}
+
+.cardSelected {
+  background-color: var(--color-selection-bg);
+  border: 3px solid var(--color-selection);
+  transform: translateY(-8px) scale(1.05);
+  box-shadow: 0 8px 20px var(--color-selection-shadow);
+}
+
+.cardSelectable {
+  cursor: pointer;
+}
+
+.cardSelectable:hover:not(.cardSelected) {
+  border-color: var(--color-highlight);
+  transform: translateY(-4px);
+}
+
+/* =========================================================================
+ * Card Image
+ * ========================================================================= */
+.cardImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* =========================================================================
+ * Card Fallback (when image fails)
+ * ========================================================================= */
+.cardFallback {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: none;
+}
+
+/* Desktop padding */
+.cardFallback {
+  padding: var(--space-2);
+}
+
+@media (max-width: 639px) {
+  .cardFallback {
+    padding: var(--space-1);
+  }
+}
+
+.cardFallbackName {
+  color: var(--text-primary);
+  font-weight: var(--font-weight-medium);
+  font-size: 11px;
+}
+
+@media (max-width: 639px) {
+  .cardFallbackName {
+    font-size: 9px;
+  }
+}
+
+/* =========================================================================
+ * Card Preview (hover enlargement)
+ * ========================================================================= */
+.previewContainer {
+  position: fixed;
+  top: var(--space-5);
+  right: var(--space-5);
+  pointer-events: none;
+  z-index: var(--z-modal-content);
+}
+
+.previewCard {
+  border-radius: var(--radius-2xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-2xl);
+}
+
+.previewImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

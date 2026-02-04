@@ -1,0 +1,276 @@
+/**
+ * Action Menu styles.
+ * Floating panel for selecting card actions (cast, morph, cycle, etc.)
+ */
+
+/* =========================================================================
+ * Floating Container
+ * ========================================================================= */
+.container {
+  position: fixed;
+  bottom: 140px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--z-modal);
+  pointer-events: auto;
+}
+
+/* =========================================================================
+ * Panel
+ * ========================================================================= */
+.panel {
+  background-color: var(--bg-panel);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-4);
+  min-width: 220px;
+  max-width: 320px;
+  box-shadow: var(--shadow-panel);
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* =========================================================================
+ * Card Image Container
+ * ========================================================================= */
+.cardImageContainer {
+  width: 200px;
+  height: 279px; /* Standard MTG card aspect ratio (63mm x 88mm ≈ 1:1.395) */
+  margin-bottom: var(--space-3);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background-color: var(--bg-surface-3);
+  position: relative;
+}
+
+.cardImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.2s ease;
+}
+
+.cardImageLoading {
+  opacity: 0;
+}
+
+.cardImageLoaded {
+  opacity: 1;
+}
+
+/* =========================================================================
+ * Loading/Error States
+ * ========================================================================= */
+.loadingIndicator {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-disabled);
+  font-size: var(--font-sm);
+}
+
+.errorFallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-highlight);
+  font-size: var(--font-md);
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+  padding: var(--space-4);
+}
+
+/* =========================================================================
+ * Action Buttons Container
+ * ========================================================================= */
+.actionsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+/* =========================================================================
+ * Action Option Button
+ * ========================================================================= */
+.actionButton {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  border: 1px solid var(--border-strong);
+  color: var(--text-primary);
+}
+
+.actionButton:hover:not(:disabled) {
+  filter: brightness(1.1);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.actionButton:disabled {
+  cursor: not-allowed;
+  color: var(--text-faint);
+  border-color: var(--border-solid-dark);
+}
+
+.actionButtonLabel {
+  font-weight: var(--font-weight-medium);
+  font-size: 13px;
+}
+
+/* Action type gradients */
+.actionCast {
+  background: var(--gradient-primary);
+}
+
+.actionCastFaceDown {
+  background: var(--gradient-special);
+}
+
+.actionCycle {
+  background: var(--gradient-cycle);
+}
+
+.actionPlayLand {
+  background: var(--gradient-success);
+}
+
+.actionActivate {
+  background: var(--gradient-ability);
+}
+
+.actionTurnFaceUp {
+  background: var(--gradient-morph);
+}
+
+.actionDisabled {
+  background: var(--gradient-disabled);
+}
+
+/* =========================================================================
+ * Cancel Button
+ * ========================================================================= */
+.cancelButton {
+  margin-top: var(--space-3);
+  width: 100%;
+  padding: var(--space-2) var(--space-4);
+  background-color: transparent;
+  color: var(--text-disabled);
+  border: 1px solid var(--border-solid-dark);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--font-sm);
+  transition: all var(--transition-fast);
+}
+
+.cancelButton:hover {
+  background-color: var(--bg-surface-6);
+  color: var(--text-tertiary);
+}
+
+/* =========================================================================
+ * Fallback Action Menu
+ * ========================================================================= */
+.fallbackContainer {
+  position: absolute;
+  bottom: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--bg-overlay-darker);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 200px;
+  pointer-events: auto;
+}
+
+.fallbackLabel {
+  color: var(--text-muted);
+  font-size: var(--font-sm);
+  margin-bottom: var(--space-1);
+}
+
+/* =========================================================================
+ * Fallback Action Button
+ * ========================================================================= */
+.fallbackActionButton {
+  padding: var(--space-2) var(--space-4);
+  color: var(--text-primary);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-align: left;
+  transition: filter var(--transition-fast);
+}
+
+.fallbackActionButton:hover {
+  filter: brightness(1.2);
+}
+
+.fallbackActionLabel {
+  font-weight: var(--font-weight-medium);
+  display: flex;
+  align-items: center;
+}
+
+/* Fallback action type colors */
+.fallbackPlayLand {
+  background-color: var(--color-success);
+}
+
+.fallbackCast {
+  background-color: var(--color-primary);
+}
+
+.fallbackCastFaceDown {
+  background-color: #555599;
+}
+
+.fallbackTurnFaceUp {
+  background-color: #996633;
+}
+
+.fallbackCycle {
+  background-color: #8855aa;
+}
+
+.fallbackActivate {
+  background-color: #886600;
+}
+
+.fallbackPass {
+  background-color: var(--text-muted);
+}
+
+.fallbackDefault {
+  background-color: var(--text-disabled);
+}
+
+/* =========================================================================
+ * Fallback Cancel Button
+ * ========================================================================= */
+.fallbackCancelButton {
+  padding: var(--space-2) var(--space-4);
+  background-color: var(--bg-surface-6);
+  color: var(--text-muted);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  margin-top: var(--space-1);
+}
+
+.fallbackCancelButton:hover {
+  background-color: var(--bg-surface-5);
+}

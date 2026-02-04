@@ -10,6 +10,7 @@ import { OrderBlockersUI } from './OrderBlockersUI'
 import { ZoneSelectionUI, type ZoneCardInfo } from './ZoneSelectionUI'
 import { DistributeDecisionUI } from './DistributeDecisionUI'
 import { getCardImageUrl } from '../../utils/cardImages'
+import styles from './DecisionUI.module.css'
 
 /**
  * Check if all legal targets in a ChooseTargetsDecision are players.
@@ -73,25 +74,8 @@ export function DecisionUI() {
   // Handle YesNoDecision (e.g., "You may shuffle your library")
   if (pendingDecision.type === 'YesNoDecision') {
     return (
-      <div
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.85)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: responsive.isMobile ? 12 : 24,
-          padding: responsive.containerPadding,
-          pointerEvents: 'auto',
-          zIndex: 1000,
-        }}
-      >
-        <YesNoDecisionUI decision={pendingDecision} responsive={responsive} />
+      <div className={styles.overlay}>
+        <YesNoDecisionUI decision={pendingDecision} />
       </div>
     )
   }
@@ -99,25 +83,8 @@ export function DecisionUI() {
   // Handle ChooseNumberDecision (e.g., "Choose how many cards to draw")
   if (pendingDecision.type === 'ChooseNumberDecision') {
     return (
-      <div
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.85)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: responsive.isMobile ? 12 : 24,
-          padding: responsive.containerPadding,
-          pointerEvents: 'auto',
-          zIndex: 1000,
-        }}
-      >
-        <ChooseNumberDecisionUI decision={pendingDecision} responsive={responsive} />
+      <div className={styles.overlay}>
+        <ChooseNumberDecisionUI decision={pendingDecision} />
       </div>
     )
   }
@@ -134,31 +101,13 @@ export function DecisionUI() {
       return (
         <BattlefieldSelectionUI
           decision={pendingDecision}
-          responsive={responsive}
         />
       )
     }
 
     // Default: full-screen modal
     return (
-      <div
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.85)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: responsive.isMobile ? 12 : 24,
-          padding: responsive.containerPadding,
-          pointerEvents: 'auto',
-          zIndex: 1000,
-        }}
-      >
+      <div className={styles.overlay}>
         <CardSelectionDecision decision={pendingDecision} responsive={responsive} />
       </div>
     )
@@ -184,41 +133,14 @@ export function DecisionUI() {
     // Otherwise show the default banner for board targeting
     // Positioned on the right side (like CombatOverlay) so it doesn't cover targets
     return (
-      <div
-        style={{
-          position: 'fixed',
-          top: '50%',
-          right: responsive.isMobile ? 8 : 16,
-          transform: 'translateY(-50%)',
-          backgroundColor: 'rgba(0, 0, 0, 0.95)',
-          padding: responsive.isMobile ? '12px 16px' : '14px 20px',
-          borderRadius: 10,
-          border: '2px solid #ff4444',
-          boxShadow: '0 4px 24px rgba(255, 68, 68, 0.4)',
-          zIndex: 1001,
-          textAlign: 'center',
-          pointerEvents: 'none',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 8,
-        }}
-      >
-        <div
-          style={{
-            color: '#ff4444',
-            fontSize: responsive.fontSize.normal,
-            fontWeight: 700,
-            textTransform: 'uppercase',
-            letterSpacing: 1,
-          }}
-        >
+      <div className={styles.sideBannerTarget}>
+        <div className={styles.bannerTitle}>
           Choose Target
         </div>
-        <div style={{ color: 'white', fontSize: responsive.fontSize.small, maxWidth: 180 }}>
+        <div className={styles.prompt}>
           {pendingDecision.prompt}
         </div>
-        <div style={{ color: '#888', fontSize: responsive.fontSize.small }}>
+        <div className={styles.hint}>
           {isPlayerOnly
             ? "Click a player's life total"
             : 'Click a valid target'}
@@ -237,10 +159,8 @@ export function DecisionUI() {
  */
 function BattlefieldSelectionUI({
   decision,
-  responsive,
 }: {
   decision: SelectCardsDecision
-  responsive: ResponsiveSizes
 }) {
   const startDecisionSelection = useGameStore((s) => s.startDecisionSelection)
   const decisionSelectionState = useGameStore((s) => s.decisionSelectionState)
@@ -285,80 +205,32 @@ function BattlefieldSelectionUI({
 
   // Side banner (similar to ChooseTargetsDecision)
   return (
-    <div
-      style={{
-        position: 'fixed',
-        top: '50%',
-        right: responsive.isMobile ? 8 : 16,
-        transform: 'translateY(-50%)',
-        backgroundColor: 'rgba(0, 0, 0, 0.95)',
-        padding: responsive.isMobile ? '12px 16px' : '16px 24px',
-        borderRadius: 10,
-        border: '2px solid #ff9900',
-        boxShadow: '0 4px 24px rgba(255, 153, 0, 0.4)',
-        zIndex: 1001,
-        textAlign: 'center',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 12,
-        minWidth: responsive.isMobile ? 160 : 200,
-      }}
-    >
-      <div
-        style={{
-          color: '#ff9900',
-          fontSize: responsive.fontSize.normal,
-          fontWeight: 700,
-          textTransform: 'uppercase',
-          letterSpacing: 1,
-        }}
-      >
+    <div className={styles.sideBannerSelection}>
+      <div className={styles.bannerTitleSelection}>
         Select Cards
       </div>
-      <div style={{ color: 'white', fontSize: responsive.fontSize.small, maxWidth: 180 }}>
+      <div className={styles.prompt}>
         {decision.prompt}
       </div>
-      <div style={{ color: '#888', fontSize: responsive.fontSize.small }}>
+      <div className={styles.hint}>
         {selectedCount} / {maxSelections} selected
         {minSelections > 0 && ` (min ${minSelections})`}
       </div>
-      <div style={{ color: '#666', fontSize: responsive.fontSize.small - 1 }}>
+      <div className={styles.hintSmall}>
         Click valid cards to select
       </div>
 
       {/* Confirm/Skip buttons */}
-      <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+      <div className={styles.buttonContainerSmall}>
         {canSkip && (
-          <button
-            onClick={handleSkip}
-            style={{
-              padding: responsive.isMobile ? '8px 16px' : '10px 20px',
-              fontSize: responsive.fontSize.small,
-              backgroundColor: '#444',
-              color: 'white',
-              border: 'none',
-              borderRadius: 6,
-              cursor: 'pointer',
-              fontWeight: 500,
-            }}
-          >
+          <button onClick={handleSkip} className={`${styles.skipButton}`}>
             Skip
           </button>
         )}
         <button
           onClick={handleConfirm}
           disabled={!canConfirm}
-          style={{
-            padding: responsive.isMobile ? '8px 16px' : '10px 20px',
-            fontSize: responsive.fontSize.small,
-            backgroundColor: canConfirm ? '#00aa00' : '#333',
-            color: canConfirm ? 'white' : '#666',
-            border: 'none',
-            borderRadius: 6,
-            cursor: canConfirm ? 'pointer' : 'not-allowed',
-            fontWeight: 600,
-          }}
+          className={`${styles.confirmButton} ${styles.confirmButtonSmall}`}
         >
           Confirm
         </button>
@@ -372,10 +244,8 @@ function BattlefieldSelectionUI({
  */
 function YesNoDecisionUI({
   decision,
-  responsive,
 }: {
   decision: YesNoDecision
-  responsive: ResponsiveSizes
 }) {
   const submitYesNoDecision = useGameStore((s) => s.submitYesNoDecision)
 
@@ -389,61 +259,22 @@ function YesNoDecisionUI({
 
   return (
     <>
-      <h2
-        style={{
-          color: 'white',
-          margin: 0,
-          fontSize: responsive.isMobile ? 18 : 24,
-          textAlign: 'center',
-        }}
-      >
+      <h2 className={styles.title}>
         {decision.prompt}
       </h2>
 
       {decision.context.sourceName && (
-        <p style={{ color: '#aaa', margin: 0, fontSize: responsive.fontSize.normal }}>
+        <p className={styles.subtitle}>
           {decision.context.sourceName}
         </p>
       )}
 
       {/* Yes/No buttons */}
-      <div
-        style={{
-          display: 'flex',
-          gap: responsive.isMobile ? 16 : 24,
-          marginTop: responsive.isMobile ? 16 : 24,
-        }}
-      >
-        <button
-          onClick={handleYes}
-          style={{
-            padding: responsive.isMobile ? '12px 32px' : '16px 48px',
-            fontSize: responsive.fontSize.large,
-            backgroundColor: '#00aa00',
-            color: 'white',
-            border: 'none',
-            borderRadius: 8,
-            cursor: 'pointer',
-            fontWeight: 600,
-            minWidth: responsive.isMobile ? 100 : 120,
-          }}
-        >
+      <div className={styles.buttonContainer}>
+        <button onClick={handleYes} className={styles.yesButton}>
           {decision.yesText}
         </button>
-        <button
-          onClick={handleNo}
-          style={{
-            padding: responsive.isMobile ? '12px 32px' : '16px 48px',
-            fontSize: responsive.fontSize.large,
-            backgroundColor: '#666',
-            color: 'white',
-            border: 'none',
-            borderRadius: 8,
-            cursor: 'pointer',
-            fontWeight: 600,
-            minWidth: responsive.isMobile ? 100 : 120,
-          }}
-        >
+        <button onClick={handleNo} className={styles.noButton}>
           {decision.noText}
         </button>
       </div>
@@ -456,10 +287,8 @@ function YesNoDecisionUI({
  */
 function ChooseNumberDecisionUI({
   decision,
-  responsive,
 }: {
   decision: ChooseNumberDecision
-  responsive: ResponsiveSizes
 }) {
   const [selectedNumber, setSelectedNumber] = useState(decision.minValue)
   const submitNumberDecision = useGameStore((s) => s.submitNumberDecision)
@@ -476,49 +305,23 @@ function ChooseNumberDecisionUI({
 
   return (
     <>
-      <h2
-        style={{
-          color: 'white',
-          margin: 0,
-          fontSize: responsive.isMobile ? 18 : 24,
-          textAlign: 'center',
-        }}
-      >
+      <h2 className={styles.title}>
         {decision.prompt}
       </h2>
 
       {decision.context.sourceName && (
-        <p style={{ color: '#aaa', margin: 0, fontSize: responsive.fontSize.normal }}>
+        <p className={styles.subtitle}>
           {decision.context.sourceName}
         </p>
       )}
 
       {/* Number selection buttons */}
-      <div
-        style={{
-          display: 'flex',
-          gap: responsive.isMobile ? 8 : 12,
-          marginTop: responsive.isMobile ? 16 : 24,
-          flexWrap: 'wrap',
-          justifyContent: 'center',
-        }}
-      >
+      <div className={styles.numberContainer}>
         {numbers.map((num) => (
           <button
             key={num}
             onClick={() => setSelectedNumber(num)}
-            style={{
-              padding: responsive.isMobile ? '12px 20px' : '16px 28px',
-              fontSize: responsive.fontSize.large,
-              backgroundColor: selectedNumber === num ? '#0066cc' : '#444',
-              color: 'white',
-              border: selectedNumber === num ? '3px solid #66aaff' : '2px solid #666',
-              borderRadius: 8,
-              cursor: 'pointer',
-              fontWeight: 600,
-              minWidth: responsive.isMobile ? 50 : 60,
-              transition: 'all 0.15s',
-            }}
+            className={`${styles.numberButton} ${selectedNumber === num ? styles.numberButtonSelected : ''}`}
           >
             {num}
           </button>
@@ -526,20 +329,7 @@ function ChooseNumberDecisionUI({
       </div>
 
       {/* Confirm button */}
-      <button
-        onClick={handleConfirm}
-        style={{
-          padding: responsive.isMobile ? '12px 32px' : '16px 48px',
-          fontSize: responsive.fontSize.large,
-          backgroundColor: '#00aa00',
-          color: 'white',
-          border: 'none',
-          borderRadius: 8,
-          cursor: 'pointer',
-          fontWeight: 600,
-          marginTop: responsive.isMobile ? 16 : 24,
-        }}
-      >
+      <button onClick={handleConfirm} className={styles.confirmButton}>
         Confirm
       </button>
     </>
@@ -605,34 +395,18 @@ function CardSelectionDecision({
 
   return (
     <>
-      <h2
-        style={{
-          color: 'white',
-          margin: 0,
-          fontSize: responsive.isMobile ? 18 : 24,
-          textAlign: 'center',
-        }}
-      >
+      <h2 className={styles.title}>
         {decision.prompt}
       </h2>
 
-      <p style={{ color: '#888', margin: 0, fontSize: responsive.fontSize.normal }}>
+      <p className={styles.hint}>
         Selected: {selectedCards.length} / {decision.minSelections}
         {decision.minSelections !== decision.maxSelections &&
           ` - ${decision.maxSelections}`}
       </p>
 
       {/* Card options */}
-      <div
-        style={{
-          display: 'flex',
-          gap,
-          padding: responsive.isMobile ? 8 : 16,
-          justifyContent: 'center',
-          flexWrap: 'wrap',
-          maxWidth: '100%',
-        }}
-      >
+      <div className={styles.cardContainer} style={{ gap }}>
         {decision.options.map((cardId) => {
           // For hidden cards (e.g., opponent's library), use cardInfo from decision
           // For visible cards (e.g., own hand for discard), use gameState.cards
@@ -649,7 +423,6 @@ function CardSelectionDecision({
               isSelected={selectedCards.includes(cardId)}
               onClick={() => toggleCard(cardId)}
               cardWidth={cardWidth}
-              isMobile={responsive.isMobile}
               onMouseEnter={() => setHoveredCardId(cardId)}
               onMouseLeave={() => setHoveredCardId(null)}
             />
@@ -661,15 +434,7 @@ function CardSelectionDecision({
       <button
         onClick={handleConfirm}
         disabled={!canConfirm}
-        style={{
-          padding: responsive.isMobile ? '10px 20px' : '12px 32px',
-          fontSize: responsive.fontSize.large,
-          backgroundColor: canConfirm ? '#00aa00' : '#444',
-          color: canConfirm ? 'white' : '#888',
-          border: 'none',
-          borderRadius: 8,
-          cursor: canConfirm ? 'pointer' : 'not-allowed',
-        }}
+        className={styles.confirmButton}
       >
         Confirm
       </button>
@@ -785,57 +550,19 @@ function GraveyardTargetingUI({
 
   // Multiple graveyards - show tabs
   return (
-    <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.92)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: responsive.isMobile ? 12 : 20,
-        padding: responsive.containerPadding,
-        pointerEvents: 'auto',
-        zIndex: 1000,
-      }}
-    >
+    <div className={styles.overlayDarker}>
       {/* Header */}
-      <div style={{ textAlign: 'center' }}>
-        <h2
-          style={{
-            color: 'white',
-            margin: 0,
-            fontSize: responsive.isMobile ? 20 : 28,
-            fontWeight: 600,
-          }}
-        >
+      <div className={styles.header}>
+        <h2 className={styles.title}>
           Choose from Graveyard
         </h2>
-        <p
-          style={{
-            color: '#aaa',
-            margin: '8px 0 0',
-            fontSize: responsive.fontSize.normal,
-          }}
-        >
+        <p className={styles.headerSubtitle}>
           {decision.prompt}
         </p>
       </div>
 
       {/* Graveyard tabs */}
-      <div
-        style={{
-          display: 'flex',
-          gap: responsive.isMobile ? 8 : 12,
-          backgroundColor: 'rgba(0, 0, 0, 0.4)',
-          padding: 4,
-          borderRadius: 8,
-        }}
-      >
+      <div className={styles.graveyardTabs}>
         {ownerIds.map((ownerId) => {
           const isActive = ownerId === currentOwnerId
           const ownerCards = cardsByOwner.get(ownerId) ?? []
@@ -844,42 +571,22 @@ function GraveyardTargetingUI({
           const selectedFromThisGraveyard = ownerCards.filter((c) =>
             selectedCards.includes(c.id)
           ).length
+
+          const tabClasses = [
+            styles.graveyardTab,
+            isActive && styles.graveyardTabActive,
+            selectedFromThisGraveyard > 0 && !isActive && styles.graveyardTabWithSelection,
+          ].filter(Boolean).join(' ')
+
           return (
             <button
               key={ownerId}
               onClick={() => setSelectedOwnerId(ownerId)}
-              style={{
-                padding: responsive.isMobile ? '8px 16px' : '10px 24px',
-                fontSize: responsive.fontSize.normal,
-                backgroundColor: isActive ? '#4a5568' : 'transparent',
-                color: isActive ? 'white' : '#888',
-                border: selectedFromThisGraveyard > 0 && !isActive ? '2px solid #fbbf24' : 'none',
-                borderRadius: 6,
-                cursor: 'pointer',
-                fontWeight: isActive ? 600 : 400,
-                transition: 'all 0.15s',
-                position: 'relative',
-              }}
+              className={tabClasses}
             >
               {getPlayerLabel(ownerId)} ({cardCount})
               {selectedFromThisGraveyard > 0 && (
-                <span
-                  style={{
-                    position: 'absolute',
-                    top: -6,
-                    right: -6,
-                    backgroundColor: '#fbbf24',
-                    color: '#1a1a1a',
-                    borderRadius: '50%',
-                    width: 20,
-                    height: 20,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 12,
-                    fontWeight: 'bold',
-                  }}
-                >
+                <span className={styles.graveyardTabBadge}>
                   {selectedFromThisGraveyard}
                 </span>
               )}
@@ -981,26 +688,19 @@ function GraveyardCardSelection({
     onSelectedCardsChange([])
   }
 
+  const countClass = canConfirm
+    ? styles.selectionCountValid
+    : selectedCards.length > 0
+      ? styles.selectionCountPartial
+      : ''
+
   return (
     <>
       {/* Selection counter */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 16,
-          color: '#888',
-          fontSize: responsive.fontSize.normal,
-        }}
-      >
+      <div className={styles.selectionCounter}>
         <span>
           Selected:{' '}
-          <span
-            style={{
-              color: canConfirm ? '#4ade80' : selectedCards.length > 0 ? '#fbbf24' : '#888',
-              fontWeight: 600,
-            }}
-          >
+          <span className={`${styles.selectionCount} ${countClass}`}>
             {selectedCards.length}
           </span>
           {' / '}
@@ -1010,14 +710,10 @@ function GraveyardCardSelection({
 
       {/* Card ribbon */}
       <div
+        className={styles.cardRibbon}
         style={{
-          display: 'flex',
           gap,
-          padding: responsive.isMobile ? 12 : 24,
           justifyContent: sortedCards.length <= 6 ? 'center' : 'flex-start',
-          overflowX: 'auto',
-          maxWidth: '100%',
-          scrollBehavior: 'smooth',
         }}
       >
         {sortedCards.map((card) => (
@@ -1028,7 +724,6 @@ function GraveyardCardSelection({
             isHovered={hoveredCardId === card.id}
             onClick={() => toggleCard(card.id)}
             cardWidth={cardWidth}
-            isMobile={responsive.isMobile}
             onMouseEnter={() => handleMouseEnter(card.id)}
             onMouseLeave={handleMouseLeave}
           />
@@ -1037,7 +732,7 @@ function GraveyardCardSelection({
 
       {/* No cards message */}
       {sortedCards.length === 0 && (
-        <p style={{ color: '#666', fontSize: responsive.fontSize.normal }}>
+        <p className={styles.noCardsMessage}>
           No valid targets in this graveyard.
         </p>
       )}
@@ -1045,18 +740,8 @@ function GraveyardCardSelection({
       {/* Confirm button */}
       <button
         onClick={handleConfirmClick}
-        disabled={!canConfirm}
-        style={{
-          padding: responsive.isMobile ? '10px 24px' : '12px 36px',
-          fontSize: responsive.fontSize.large,
-          backgroundColor: canConfirm && selectedCards.length > 0 ? '#16a34a' : '#333',
-          color: canConfirm && selectedCards.length > 0 ? 'white' : '#666',
-          border: 'none',
-          borderRadius: 8,
-          cursor: canConfirm && selectedCards.length > 0 ? 'pointer' : 'not-allowed',
-          fontWeight: 600,
-          transition: 'all 0.15s',
-        }}
+        disabled={!canConfirm || selectedCards.length === 0}
+        className={styles.confirmButton}
       >
         Confirm Target
       </button>
@@ -1074,7 +759,6 @@ function GraveyardCard({
   isHovered,
   onClick,
   cardWidth,
-  isMobile,
   onMouseEnter,
   onMouseLeave,
 }: {
@@ -1083,7 +767,6 @@ function GraveyardCard({
   isHovered: boolean
   onClick: () => void
   cardWidth: number
-  isMobile: boolean
   onMouseEnter?: () => void
   onMouseLeave?: () => void
 }) {
@@ -1091,96 +774,49 @@ function GraveyardCard({
   const cardHeight = Math.round(cardWidth * 1.4)
   const showHoverEffect = isHovered && !isSelected
 
+  const cardClasses = [
+    styles.graveyardCard,
+    isSelected
+      ? styles.graveyardCardSelected
+      : showHoverEffect
+        ? styles.graveyardCardHovered
+        : styles.graveyardCardDefault,
+  ].filter(Boolean).join(' ')
+
   return (
     <div
       onClick={onClick}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
+      className={cardClasses}
       style={{
         width: cardWidth,
         height: cardHeight,
-        backgroundColor: isSelected ? '#1a3320' : '#1a1a1a',
-        border: isSelected
-          ? '3px solid #fbbf24'
-          : showHoverEffect
-            ? '2px solid #666'
-            : '2px solid #333',
-        borderRadius: isMobile ? 6 : 10,
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        cursor: 'pointer',
-        transition: 'all 0.2s ease-out',
-        transform: isSelected
-          ? 'translateY(-12px) scale(1.05)'
-          : showHoverEffect
-            ? 'translateY(-4px) scale(1.02)'
-            : 'none',
-        boxShadow: isSelected
-          ? '0 12px 28px rgba(251, 191, 36, 0.4), 0 0 20px rgba(251, 191, 36, 0.2)'
-          : showHoverEffect
-            ? '0 8px 20px rgba(255, 255, 255, 0.15)'
-            : '0 4px 12px rgba(0, 0, 0, 0.6)',
-        flexShrink: 0,
-        position: 'relative',
       }}
     >
       <img
         src={cardImageUrl}
         alt={card.name}
-        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+        className={styles.cardImage}
         onError={(e) => {
           e.currentTarget.style.display = 'none'
           const fallback = e.currentTarget.nextElementSibling as HTMLElement
           if (fallback) fallback.style.display = 'flex'
         }}
       />
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundColor: '#1a1a1a',
-          display: 'none',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: isMobile ? '6px' : '10px',
-          gap: 4,
-        }}
-      >
-        <span style={{ color: 'white', fontSize: isMobile ? 10 : 12, fontWeight: 600, textAlign: 'center' }}>
+      <div className={styles.cardFallback}>
+        <span className={styles.cardFallbackName}>
           {card.name}
         </span>
       </div>
       {isSelected && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 6,
-            right: 6,
-            width: 24,
-            height: 24,
-            backgroundColor: '#fbbf24',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#1a1a1a',
-            fontWeight: 'bold',
-            fontSize: 14,
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.4)',
-          }}
-        >
+        <div className={styles.selectionIndicatorGold}>
           &#10003;
         </div>
       )}
     </div>
   )
 }
-
-/**
- * Card preview for graveyard selection.
- */
 
 /**
  * Card preview overlay - shows enlarged card when hovering.
@@ -1192,32 +828,18 @@ function DecisionCardPreview({ cardName, imageUri }: { cardName: string; imageUr
   const previewHeight = Math.round(previewWidth * 1.4)
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        top: 20,
-        right: 20,
-        pointerEvents: 'none',
-        zIndex: 1001,
-      }}
-    >
+    <div className={styles.previewContainer}>
       <div
+        className={styles.previewCard}
         style={{
           width: previewWidth,
           height: previewHeight,
-          borderRadius: 12,
-          overflow: 'hidden',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6)',
         }}
       >
         <img
           src={cardImageUrl}
           alt={cardName}
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-          }}
+          className={styles.previewImage}
         />
       </div>
     </div>
@@ -1234,7 +856,6 @@ function DecisionCard({
   isSelected,
   onClick,
   cardWidth = 130,
-  isMobile = false,
   onMouseEnter,
   onMouseLeave,
 }: {
@@ -1244,7 +865,6 @@ function DecisionCard({
   isSelected: boolean
   onClick: () => void
   cardWidth?: number
-  isMobile?: boolean
   onMouseEnter?: () => void
   onMouseLeave?: () => void
 }) {
@@ -1253,39 +873,27 @@ function DecisionCard({
   const cardRatio = 1.4
   const cardHeight = Math.round(cardWidth * cardRatio)
 
+  const cardClasses = [
+    styles.decisionCard,
+    isSelected ? styles.decisionCardSelected : styles.decisionCardDefault,
+  ].filter(Boolean).join(' ')
+
   return (
     <div
       onClick={onClick}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
+      className={cardClasses}
       style={{
         width: cardWidth,
         height: cardHeight,
-        backgroundColor: isSelected ? '#330000' : '#1a1a1a',
-        border: isSelected ? '3px solid #ff4444' : '2px solid #444',
-        borderRadius: isMobile ? 6 : 10,
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        cursor: 'pointer',
-        transition: 'all 0.15s',
-        transform: isSelected ? 'translateY(-8px) scale(1.05)' : 'none',
-        boxShadow: isSelected
-          ? '0 8px 20px rgba(255, 68, 68, 0.3)'
-          : '0 4px 8px rgba(0, 0, 0, 0.5)',
-        flexShrink: 0,
-        position: 'relative',
       }}
     >
       {/* Card image */}
       <img
         src={cardImageUrl}
         alt={cardName}
-        style={{
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-        }}
+        className={styles.cardImage}
         onError={(e) => {
           e.currentTarget.style.display = 'none'
           const fallback = e.currentTarget.nextElementSibling as HTMLElement
@@ -1294,49 +902,15 @@ function DecisionCard({
       />
 
       {/* Fallback when image fails */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundColor: '#1a1a1a',
-          display: 'none',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: isMobile ? '4px' : '8px',
-        }}
-      >
-        <span
-          style={{
-            color: 'white',
-            fontSize: isMobile ? 9 : 11,
-            fontWeight: 500,
-            textAlign: 'center',
-          }}
-        >
+      <div className={styles.cardFallback}>
+        <span className={styles.cardFallbackName}>
           {cardName}
         </span>
       </div>
 
       {/* Selection indicator */}
       {isSelected && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 4,
-            right: 4,
-            width: 20,
-            height: 20,
-            backgroundColor: '#ff4444',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontWeight: 'bold',
-            fontSize: 12,
-          }}
-        >
+        <div className={styles.selectionIndicator}>
           ✓
         </div>
       )}

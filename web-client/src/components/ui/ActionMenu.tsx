@@ -5,6 +5,7 @@ import { useInteraction } from '../../hooks/useInteraction'
 import type { LegalActionInfo, ClientCard } from '../../types'
 import { ManaCost, AbilityText } from './ManaSymbols'
 import { getCardImageUrl } from '../../utils/cardImages'
+import styles from './ActionMenu.module.css'
 
 /**
  * Represents an action option in the modal (either available or unavailable).
@@ -206,44 +207,15 @@ export function ActionMenu() {
     const cardImageUrl = cardInfo ? getCardImageUrl(cardInfo.name, cardInfo.imageUri, 'large') : null
 
     return (
-      <div
-        style={{
-          position: 'fixed',
-          bottom: 140,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 1000,
-          pointerEvents: 'auto',
-        }}
-      >
-        <div
-          style={{
-            backgroundColor: 'rgba(20, 20, 28, 0.95)',
-            borderRadius: 12,
-            padding: 16,
-            minWidth: 220,
-            maxWidth: 320,
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1)',
-            backdropFilter: 'blur(8px)',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}
-        >
+      <div className={styles.container}>
+        <div className={styles.panel}>
           {/* Large card image */}
           {cardImageUrl && (
             <CardImage imageUrl={cardImageUrl} cardName={cardInfo?.name ?? 'Card'} />
           )}
 
           {/* Action buttons */}
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 8,
-              width: '100%',
-            }}
-          >
+          <div className={styles.actionsContainer}>
             {actionOptions.map((option) => (
               <ActionOptionButton
                 key={option.key}
@@ -258,29 +230,7 @@ export function ActionMenu() {
           </div>
 
           {/* Cancel button */}
-          <button
-            onClick={cancelAction}
-            style={{
-              marginTop: 12,
-              width: '100%',
-              padding: '8px 16px',
-              backgroundColor: 'transparent',
-              color: '#666',
-              border: '1px solid #333',
-              borderRadius: 6,
-              cursor: 'pointer',
-              fontSize: 12,
-              transition: 'all 0.15s',
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = '#333'
-              e.currentTarget.style.color = '#aaa'
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent'
-              e.currentTarget.style.color = '#666'
-            }}
-          >
+          <button onClick={cancelAction} className={styles.cancelButton}>
             Cancel (Esc)
           </button>
         </div>
@@ -290,23 +240,8 @@ export function ActionMenu() {
 
   // Fallback (shouldn't reach here normally)
   return (
-    <div
-      style={{
-        position: 'absolute',
-        bottom: 120,
-        left: '50%',
-        transform: 'translateX(-50%)',
-        backgroundColor: 'rgba(0, 0, 0, 0.9)',
-        borderRadius: 8,
-        padding: 16,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 8,
-        minWidth: 200,
-        pointerEvents: 'auto',
-      }}
-    >
-      <span style={{ color: '#888', fontSize: 12, marginBottom: 4 }}>
+    <div className={styles.fallbackContainer}>
+      <span className={styles.fallbackLabel}>
         Choose action:
       </span>
 
@@ -318,18 +253,7 @@ export function ActionMenu() {
         />
       ))}
 
-      <button
-        onClick={cancelAction}
-        style={{
-          padding: '8px 16px',
-          backgroundColor: '#333',
-          color: '#888',
-          border: 'none',
-          borderRadius: 4,
-          cursor: 'pointer',
-          marginTop: 4,
-        }}
-      >
+      <button onClick={cancelAction} className={styles.fallbackCancelButton}>
         Cancel
       </button>
     </div>
@@ -337,7 +261,63 @@ export function ActionMenu() {
 }
 
 /**
- * Individual action button.
+ * Get the style class for an action type.
+ */
+function getActionStyleClass(actionType: ActionOption['actionType'], isAvailable: boolean): string {
+  if (!isAvailable) {
+    return styles.actionDisabled ?? ''
+  }
+  switch (actionType) {
+    case 'cast':
+      return styles.actionCast ?? ''
+    case 'castFaceDown':
+      return styles.actionCastFaceDown ?? ''
+    case 'cycle':
+      return styles.actionCycle ?? ''
+    case 'playLand':
+      return styles.actionPlayLand ?? ''
+    case 'activate':
+      return styles.actionActivate ?? ''
+    case 'turnFaceUp':
+      return styles.actionTurnFaceUp ?? ''
+    default:
+      return styles.actionDisabled ?? ''
+  }
+}
+
+/**
+ * Action option button for the cast method selection.
+ * Compact design with mana costs.
+ */
+function ActionOptionButton({
+  option,
+  onClick,
+}: {
+  option: ActionOption
+  onClick: () => void
+}) {
+  const styleClass = getActionStyleClass(option.actionType, option.isAvailable)
+  // Only show separate mana cost if label doesn't already contain mana symbols
+  const showSeparateCost = option.manaCost && !option.label.includes('{')
+
+  return (
+    <button
+      onClick={onClick}
+      disabled={!option.isAvailable}
+      className={`${styles.actionButton} ${styleClass}`}
+    >
+      <span className={styles.actionButtonLabel}>
+        <AbilityText text={option.label} size={14} />
+      </span>
+      {showSeparateCost && (
+        <ManaCost cost={option.manaCost} size={16} gap={2} />
+      )}
+    </button>
+  )
+}
+
+/**
+ * Individual action button (fallback style).
  */
 function ActionButton({
   action,
@@ -346,30 +326,30 @@ function ActionButton({
   action: LegalActionInfo
   onClick: () => void
 }) {
-  const getActionColor = () => {
+  const getActionColorClass = () => {
     // Handle morph-specific action types first (these have actionType different from action.type)
     if (action.actionType === 'CastFaceDown') {
-      return '#555599' // Purple-blue for morph face-down
+      return styles.fallbackCastFaceDown
     }
     if (action.actionType === 'TurnFaceUp') {
-      return '#996633' // Brown-gold for turning face-up
+      return styles.fallbackTurnFaceUp
     }
 
     switch (action.action.type) {
       case 'PlayLand':
-        return '#00aa00'
+        return styles.fallbackPlayLand
       case 'CastSpell':
-        return '#0066cc'
+        return styles.fallbackCast
       case 'CycleCard':
-        return '#8855aa' // Purple for cycling
+        return styles.fallbackCycle
       case 'ActivateAbility':
-        return '#886600'
+        return styles.fallbackActivate
       case 'TurnFaceUp':
-        return '#996633' // Brown-gold for turning face-up
+        return styles.fallbackTurnFaceUp
       case 'PassPriority':
-        return '#888888'
+        return styles.fallbackPass
       default:
-        return '#666666'
+        return styles.fallbackDefault
     }
   }
 
@@ -388,112 +368,11 @@ function ActionButton({
   return (
     <button
       onClick={onClick}
-      style={{
-        padding: '10px 16px',
-        backgroundColor: getActionColor(),
-        color: 'white',
-        border: 'none',
-        borderRadius: 4,
-        cursor: 'pointer',
-        textAlign: 'left',
-        transition: 'background-color 0.15s',
-      }}
-      onMouseOver={(e) => {
-        e.currentTarget.style.filter = 'brightness(1.2)'
-      }}
-      onMouseOut={(e) => {
-        e.currentTarget.style.filter = 'brightness(1)'
-      }}
+      className={`${styles.fallbackActionButton} ${getActionColorClass()}`}
     >
-      <div style={{ fontWeight: 500, display: 'flex', alignItems: 'center' }}>
+      <div className={styles.fallbackActionLabel}>
         <AbilityText text={getActionLabel()} size={14} />
       </div>
-    </button>
-  )
-}
-
-/**
- * Get gradient colors for action type.
- */
-function getActionGradient(
-  actionType: ActionOption['actionType'],
-  isAvailable: boolean
-): string {
-  if (!isAvailable) {
-    return 'linear-gradient(135deg, #252528 0%, #1a1a1e 100%)'
-  }
-  switch (actionType) {
-    case 'cast':
-      return 'linear-gradient(135deg, #2563eb 0%, #1e40af 100%)'
-    case 'castFaceDown':
-      return 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)'
-    case 'cycle':
-      return 'linear-gradient(135deg, #9333ea 0%, #6b21a8 100%)'
-    case 'playLand':
-      return 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)'
-    case 'activate':
-      return 'linear-gradient(135deg, #d97706 0%, #b45309 100%)' // Orange/amber for abilities
-    case 'turnFaceUp':
-      return 'linear-gradient(135deg, #be185d 0%, #9d174d 100%)' // Pink for morph reveal
-    default:
-      return 'linear-gradient(135deg, #444 0%, #333 100%)'
-  }
-}
-
-/**
- * Action option button for the cast method selection.
- * Compact design with mana costs.
- */
-function ActionOptionButton({
-  option,
-  onClick,
-}: {
-  option: ActionOption
-  onClick: () => void
-}) {
-  const gradient = getActionGradient(option.actionType, option.isAvailable)
-  // Only show separate mana cost if label doesn't already contain mana symbols
-  const showSeparateCost = option.manaCost && !option.label.includes('{')
-
-  return (
-    <button
-      onClick={onClick}
-      disabled={!option.isAvailable}
-      style={{
-        padding: '8px 12px',
-        background: gradient,
-        color: option.isAvailable ? 'white' : '#555',
-        border: option.isAvailable
-          ? '1px solid rgba(255, 255, 255, 0.15)'
-          : '1px solid #333',
-        borderRadius: 6,
-        cursor: option.isAvailable ? 'pointer' : 'not-allowed',
-        textAlign: 'left',
-        transition: 'all 0.15s ease',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: 8,
-      }}
-      onMouseOver={(e) => {
-        if (option.isAvailable) {
-          e.currentTarget.style.filter = 'brightness(1.1)'
-          e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.25)'
-        }
-      }}
-      onMouseOut={(e) => {
-        e.currentTarget.style.filter = 'brightness(1)'
-        e.currentTarget.style.borderColor = option.isAvailable
-          ? 'rgba(255, 255, 255, 0.15)'
-          : '#333'
-      }}
-    >
-      <span style={{ fontWeight: 500, fontSize: 13 }}>
-        <AbilityText text={option.label} size={14} />
-      </span>
-      {showSeparateCost && (
-        <ManaCost cost={option.manaCost} size={16} gap={2} />
-      )}
     </button>
   )
 }
@@ -513,60 +392,21 @@ function CardImage({
   const [imageError, setImageError] = useState(false)
 
   return (
-    <div
-      style={{
-        width: 200,
-        height: 279, // Standard MTG card aspect ratio (63mm x 88mm ≈ 1:1.395)
-        marginBottom: 12,
-        borderRadius: 8,
-        overflow: 'hidden',
-        backgroundColor: '#1a1a1e',
-        position: 'relative',
-      }}
-    >
+    <div className={styles.cardImageContainer}>
       {!imageLoaded && !imageError && (
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#666',
-            fontSize: 12,
-          }}
-        >
+        <div className={styles.loadingIndicator}>
           Loading...
         </div>
       )}
       {imageError ? (
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#fbbf24',
-            fontSize: 14,
-            fontWeight: 600,
-            textAlign: 'center',
-            padding: 16,
-          }}
-        >
+        <div className={styles.errorFallback}>
           {cardName}
         </div>
       ) : (
         <img
           src={imageUrl}
           alt={cardName}
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            opacity: imageLoaded ? 1 : 0,
-            transition: 'opacity 0.2s ease',
-          }}
+          className={`${styles.cardImage} ${imageLoaded ? styles.cardImageLoaded : styles.cardImageLoading}`}
           onLoad={() => setImageLoaded(true)}
           onError={() => setImageError(true)}
         />
@@ -574,4 +414,3 @@ function CardImage({
     </div>
   )
 }
-
