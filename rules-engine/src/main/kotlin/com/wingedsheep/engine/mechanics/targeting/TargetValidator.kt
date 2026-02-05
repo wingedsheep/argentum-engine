@@ -87,7 +87,7 @@ class TargetValidator {
             is TargetCreatureOrPlayer -> validateCreatureOrPlayerTarget(state, target)
             is TargetCreatureOrPlaneswalker -> validateCreatureOrPlaneswalkerTarget(state, target)
             is TargetCardInGraveyard -> validateGraveyardTarget(state, target, requirement.filter, casterId)
-            is TargetSpell -> validateSpellTarget(state, target)
+            is TargetSpell -> validateSpellTarget(state, target, requirement.filter, casterId)
             is TargetOther -> validateSingleTarget(state, target, requirement.baseRequirement, casterId)
         }
     }
@@ -255,12 +255,24 @@ class TargetValidator {
         return null
     }
 
-    private fun validateSpellTarget(state: GameState, target: ChosenTarget): String? {
+    private fun validateSpellTarget(
+        state: GameState,
+        target: ChosenTarget,
+        filter: TargetFilter,
+        casterId: EntityId
+    ): String? {
         if (target !is ChosenTarget.Spell) {
             return "Target must be a spell on the stack"
         }
         if (target.spellEntityId !in state.stack) {
             return "Target spell not on the stack"
+        }
+
+        // Use unified filter
+        val predicateContext = PredicateContext(controllerId = casterId)
+        val matches = predicateEvaluator.matches(state, target.spellEntityId, filter.baseFilter, predicateContext)
+        if (!matches) {
+            return "Target does not match filter: ${filter.description}"
         }
         return null
     }

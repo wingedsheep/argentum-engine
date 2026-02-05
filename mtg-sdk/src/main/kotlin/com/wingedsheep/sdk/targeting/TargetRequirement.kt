@@ -275,12 +275,12 @@ data class TargetCardInGraveyard(
 data class TargetSpell(
     override val count: Int = 1,
     override val optional: Boolean = false,
-    val filter: SpellTargetFilter = SpellTargetFilter.Any
+    val filter: TargetFilter = TargetFilter.SpellOnStack
 ) : TargetRequirement {
     override val description: String = buildString {
         append("target ")
-        if (filter != SpellTargetFilter.Any) {
-            append(filter.description)
+        if (filter != TargetFilter.SpellOnStack) {
+            append(filter.baseFilter.description)
             append(" ")
         }
         append("spell")
@@ -292,6 +292,10 @@ data class TargetSpell(
  *
  * Filters are pure data - validation is handled by TargetValidator.
  */
+@Deprecated(
+    "Use TargetFilter with zone = Zone.Stack for spell targeting",
+    level = DeprecationLevel.WARNING
+)
 @Serializable
 sealed interface SpellTargetFilter {
     val description: String

@@ -6,7 +6,16 @@ import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TargetFilter
 import com.wingedsheep.sdk.scripting.Zone
-import com.wingedsheep.sdk.targeting.*
+import com.wingedsheep.sdk.targeting.AnyTarget
+import com.wingedsheep.sdk.targeting.TargetCardInGraveyard
+import com.wingedsheep.sdk.targeting.TargetCreature
+import com.wingedsheep.sdk.targeting.TargetCreatureOrPlaneswalker
+import com.wingedsheep.sdk.targeting.TargetCreatureOrPlayer
+import com.wingedsheep.sdk.targeting.TargetOpponent
+import com.wingedsheep.sdk.targeting.TargetPermanent
+import com.wingedsheep.sdk.targeting.TargetPlayer
+import com.wingedsheep.sdk.targeting.TargetRequirement
+import com.wingedsheep.sdk.targeting.TargetSpell
 
 /**
  * Facade object providing convenient access to TargetRequirement types.
@@ -185,23 +194,23 @@ object Targets {
     /**
      * Target creature spell.
      */
-    val CreatureSpell: TargetRequirement = TargetSpell(filter = SpellTargetFilter.Creature)
+    val CreatureSpell: TargetRequirement = TargetSpell(filter = TargetFilter.CreatureSpellOnStack)
 
     /**
      * Target noncreature spell.
      */
-    val NoncreatureSpell: TargetRequirement = TargetSpell(filter = SpellTargetFilter.Noncreature)
+    val NoncreatureSpell: TargetRequirement = TargetSpell(filter = TargetFilter.NoncreatureSpellOnStack)
 
     /**
      * Target creature or sorcery spell.
      */
-    val CreatureOrSorcerySpell: TargetRequirement = TargetSpell(filter = SpellTargetFilter.CreatureOrSorcery())
+    val CreatureOrSorcerySpell: TargetRequirement = TargetSpell(filter = TargetFilter.CreatureOrSorcerySpellOnStack)
 
     /**
      * Target spell with mana value N or less.
      */
     fun SpellWithManaValueAtMost(manaValue: Int): TargetRequirement =
-        TargetSpell(filter = SpellTargetFilter.WithManaValueAtMost(manaValue))
+        TargetSpell(filter = TargetFilter.SpellOnStack.manaValueAtMost(manaValue))
 
     // =========================================================================
     // Unified Target Filters (NEW - composable predicate-based targeting)

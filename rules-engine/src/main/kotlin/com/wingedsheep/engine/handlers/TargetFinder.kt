@@ -46,7 +46,7 @@ class TargetFinder(
             is TargetCreatureOrPlayer -> findCreatureOrPlayerTargets(state, controllerId, sourceId)
             is TargetCreatureOrPlaneswalker -> findCreatureOrPlaneswalkerTargets(state, controllerId, sourceId)
             is TargetCardInGraveyard -> findGraveyardTargets(state, requirement, controllerId)
-            is TargetSpell -> findSpellTargets(state, requirement)
+            is TargetSpell -> findSpellTargets(state, requirement, controllerId)
             is TargetOther -> {
                 // For TargetOther, find targets for the base requirement but exclude the source
                 val baseTargets = findLegalTargets(state, requirement.baseRequirement, controllerId, sourceId)
@@ -246,25 +246,13 @@ class TargetFinder(
 
     private fun findSpellTargets(
         state: GameState,
-        requirement: TargetSpell
+        requirement: TargetSpell,
+        controllerId: EntityId
     ): List<EntityId> {
         val filter = requirement.filter
+        val predicateContext = PredicateContext(controllerId = controllerId)
         return state.stack.filter { spellId ->
-            val container = state.getEntity(spellId) ?: return@filter false
-            val cardComponent = container.get<CardComponent>() ?: return@filter false
-
-            // Apply filter
-            when (filter) {
-                is SpellTargetFilter.Any -> true
-                is SpellTargetFilter.Creature -> cardComponent.typeLine.isCreature
-                is SpellTargetFilter.Noncreature -> !cardComponent.typeLine.isCreature
-                is SpellTargetFilter.Instant -> cardComponent.typeLine.isInstant
-                is SpellTargetFilter.Sorcery -> cardComponent.typeLine.isSorcery
-                is SpellTargetFilter.WithManaValue -> cardComponent.manaValue == filter.manaValue
-                is SpellTargetFilter.WithManaValueAtMost -> cardComponent.manaValue <= filter.manaValue
-                is SpellTargetFilter.WithManaValueAtLeast -> cardComponent.manaValue >= filter.manaValue
-                is SpellTargetFilter.CreatureOrSorcery -> cardComponent.typeLine.isCreature || cardComponent.typeLine.isSorcery
-            }
+            predicateEvaluator.matches(state, spellId, filter.baseFilter, predicateContext)
         }
     }
 }

@@ -10,7 +10,6 @@ import com.wingedsheep.sdk.targeting.AnyTarget
 import com.wingedsheep.sdk.targeting.TargetCardInGraveyard
 import com.wingedsheep.sdk.targeting.TargetCreature
 import com.wingedsheep.sdk.targeting.TargetSpell
-import com.wingedsheep.sdk.targeting.SpellTargetFilter
 import java.util.UUID
 
 /**
@@ -373,7 +372,7 @@ object TestCards {
         oracleText = "Counter target noncreature spell unless its controller pays {2}.",
         script = CardScript.spell(
             effect = CounterSpellEffect,  // Simplified - no tax mechanic for now
-            TargetSpell(filter = SpellTargetFilter.Noncreature)
+            TargetSpell(filter = TargetFilter.NoncreatureSpellOnStack)
         )
     )
 

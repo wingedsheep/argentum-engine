@@ -35,11 +35,11 @@
 - [x] **2f** Update engine: target validation for `TargetPermanent` and `DestroyAllEffect` resolution
 
 ## Phase 3 — Migrate `SpellTargetFilter`
-- [ ] **3a** Change `TargetSpell` to accept `TargetFilter` instead of `SpellTargetFilter` in `TargetRequirement.kt`
-- [ ] **3b** Update `Targets` DSL facade (Spell, CreatureSpell, NoncreatureSpell, CreatureOrSorcerySpell, SpellWithManaValueAtMost)
-- [ ] **3c** Verify card definitions (MysticDenial handled by DSL change — no card file edits needed)
-- [ ] **3d** Mark `SpellTargetFilter` as `@Deprecated`
-- [ ] **3e** Update engine: target validation for `TargetSpell`
+- [x] **3a** Change `TargetSpell` to accept `TargetFilter` instead of `SpellTargetFilter` in `TargetRequirement.kt`
+- [x] **3b** Update `Targets` DSL facade (Spell, CreatureSpell, NoncreatureSpell, CreatureOrSorcerySpell, SpellWithManaValueAtMost)
+- [x] **3c** Verify card definitions (MysticDenial handled by DSL change — no card file edits needed; TestCards.kt updated)
+- [x] **3d** Mark `SpellTargetFilter` as `@Deprecated`
+- [x] **3e** Update engine: target validation for `TargetSpell`
 
 ## Phase 4 — Migrate `CreatureFilter`
 - [ ] **4a** Change `GlobalEffect` to accept `GroupFilter` instead of `CreatureFilter` in `StaticAbility.kt`

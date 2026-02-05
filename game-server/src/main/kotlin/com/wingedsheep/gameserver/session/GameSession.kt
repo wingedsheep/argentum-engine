@@ -1439,7 +1439,7 @@ class GameSession(
             }
             is TargetPermanent -> findValidPermanentTargets(state, playerId, requirement.filter)
             is TargetCardInGraveyard -> findValidGraveyardTargets(state, playerId, requirement.filter)
-            is TargetSpell -> findValidSpellTargets(state, requirement.filter)
+            is TargetSpell -> findValidSpellTargets(state, playerId, requirement.filter)
             else -> emptyList() // Other target types not yet implemented
         }
     }
@@ -1529,23 +1529,12 @@ class GameSession(
      */
     private fun findValidSpellTargets(
         state: GameState,
-        filter: SpellTargetFilter
+        playerId: EntityId,
+        filter: TargetFilter
     ): List<EntityId> {
+        val context = PredicateContext(controllerId = playerId)
         return state.stack.filter { spellId ->
-            val container = state.getEntity(spellId) ?: return@filter false
-            val cardComponent = container.get<CardComponent>() ?: return@filter false
-
-            when (filter) {
-                is SpellTargetFilter.Any -> true
-                is SpellTargetFilter.Creature -> cardComponent.typeLine.isCreature
-                is SpellTargetFilter.Noncreature -> !cardComponent.typeLine.isCreature
-                is SpellTargetFilter.Instant -> cardComponent.typeLine.isInstant
-                is SpellTargetFilter.Sorcery -> cardComponent.typeLine.isSorcery
-                is SpellTargetFilter.CreatureOrSorcery -> cardComponent.typeLine.isCreature || cardComponent.typeLine.isSorcery
-                is SpellTargetFilter.WithManaValue -> cardComponent.manaValue == filter.manaValue
-                is SpellTargetFilter.WithManaValueAtMost -> cardComponent.manaValue <= filter.manaValue
-                is SpellTargetFilter.WithManaValueAtLeast -> cardComponent.manaValue >= filter.manaValue
-            }
+            predicateEvaluator.matches(state, spellId, filter.baseFilter, context)
         }
     }
 
