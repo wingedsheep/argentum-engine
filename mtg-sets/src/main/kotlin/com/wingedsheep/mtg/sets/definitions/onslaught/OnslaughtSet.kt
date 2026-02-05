@@ -31,6 +31,7 @@ object OnslaughtSet {
         SageAven,
 
         // Black creatures and spells
+        AccursedCentaur,
         AnuridMurkdiver,
         DiscipleOfMalice,
         FesteringGoblin,
