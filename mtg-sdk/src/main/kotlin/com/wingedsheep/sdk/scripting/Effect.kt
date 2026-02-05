@@ -23,7 +23,7 @@ import kotlinx.serialization.Serializable
  *
  * Supporting types are organized in subdirectories:
  * - values/ - DynamicAmount, PlayerReference, ZoneReference, EffectVariable
- * - filters/ - CardFilter, CountFilter, CreatureFilters, SpellFilter
+ * - filters/unified/ - GameObjectFilter, GroupFilter, TargetFilter
  * - targets/ - EffectTarget
  * - costs/ - PayCost
  */

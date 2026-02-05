@@ -115,34 +115,6 @@ enum class GlobalEffectType(val description: String) {
 }
 
 /**
- * Filter for which creatures are affected by a static ability.
- *
- * Filters are pure data - evaluation is handled by the ECS layer system
- * (ScriptModifierProvider converts these to ModifierFilter for the layer engine).
- */
-@Deprecated(
-    "Use GroupFilter instead",
-    level = DeprecationLevel.WARNING
-)
-@Serializable
-sealed interface CreatureFilter {
-    @Serializable
-    data object All : CreatureFilter
-
-    @Serializable
-    data object YouControl : CreatureFilter
-
-    @Serializable
-    data object OpponentsControl : CreatureFilter
-
-    @Serializable
-    data class WithKeyword(val keyword: Keyword) : CreatureFilter
-
-    @Serializable
-    data class WithoutKeyword(val keyword: Keyword) : CreatureFilter
-}
-
-/**
  * Target for static abilities (what the ability affects).
  */
 @Serializable

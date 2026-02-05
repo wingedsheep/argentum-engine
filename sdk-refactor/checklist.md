@@ -49,10 +49,10 @@
 - [x] **4e** Update engine: `GlobalEffect` application in state projector
 
 ## Phase 5 — Cleanup & Verification
-- [ ] **5a** Delete `PermanentTargetFilter` sealed interface and all variants
-- [ ] **5b** Delete `SpellTargetFilter` sealed interface and all variants
-- [ ] **5c** Delete `CreatureFilter` sealed interface and all variants
-- [ ] **5d** Remove empty `references/Zone.kt` comment file
-- [ ] **5e** Update `Filters` DSL documentation — deprecate scattered top-level aliases, point to `Filters.Group.*`
-- [ ] **5f** Add `GroupFilter` convenience companions for common destroy-all patterns (color, subtype)
-- [ ] **5g** Full test suite passes with no deprecation warnings from retired types
+- [x] **5a** Delete `PermanentTargetFilter` sealed interface and all variants
+- [x] **5b** Delete `SpellTargetFilter` sealed interface and all variants
+- [x] **5c** Delete `CreatureFilter` sealed interface and all variants
+- [x] **5d** Remove empty `references/Zone.kt` comment file
+- [x] **5e** Update `Filters` DSL documentation — deprecate scattered top-level aliases, point to `Filters.Group.*`
+- [x] **5f** Add `GroupFilter` convenience companions for common destroy-all patterns (color, subtype)
+- [x] **5g** Full test suite passes with no deprecation warnings from retired types

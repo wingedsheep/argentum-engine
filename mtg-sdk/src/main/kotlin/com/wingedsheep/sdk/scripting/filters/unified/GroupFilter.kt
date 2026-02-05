@@ -107,6 +107,22 @@ data class GroupFilter(
 
         /** All lands */
         val AllLands = GroupFilter(GameObjectFilter.Land)
+
+        // =============================================================================
+        // Convenience Builders for Common Destroy-All Patterns
+        // =============================================================================
+
+        /** All creatures of a specific color (e.g., "Destroy all black creatures") */
+        fun allCreaturesOfColor(color: Color) = GroupFilter(GameObjectFilter.Creature.withColor(color))
+
+        /** All lands with a specific subtype (e.g., "Destroy all Islands") */
+        fun allLandsWithSubtype(subtype: String) = GroupFilter(GameObjectFilter.Land.withSubtype(subtype))
+
+        /** All lands with a specific subtype (e.g., "Destroy all Islands") */
+        fun allLandsWithSubtype(subtype: Subtype) = GroupFilter(GameObjectFilter.Land.withSubtype(subtype))
+
+        /** All creatures with a specific subtype (e.g., "Destroy all Goblins") */
+        fun allCreaturesWithSubtype(subtype: String) = GroupFilter(GameObjectFilter.Creature.withSubtype(subtype))
     }
 
     // =============================================================================

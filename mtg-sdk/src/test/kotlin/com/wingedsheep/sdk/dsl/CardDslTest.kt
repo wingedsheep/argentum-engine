@@ -380,7 +380,7 @@ class CardDslTest : DescribeSpec({
 
                 staticAbility {
                     effect = Effects.ModifyStats(+1, +1)
-                    filter = Filters.CreaturesYouControl
+                    filter = Filters.Group.creaturesYouControl
                 }
             }
 

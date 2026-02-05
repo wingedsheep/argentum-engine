@@ -22,7 +22,7 @@ import com.wingedsheep.sdk.scripting.Zone
  * ```kotlin
  * Filters.Creature
  * Filters.BasicLand
- * Filters.CreaturesYouControl
+ * Filters.Group.creaturesYouControl
  * ```
  */
 object Filters {
@@ -117,35 +117,25 @@ object Filters {
     fun ManaValueAtMost(max: Int): GameObjectFilter = GameObjectFilter.Any.manaValueAtMost(max)
 
     // =========================================================================
-    // Creature Filters (for static abilities)
+    // Creature Filters (for static abilities) — use Filters.Group.* instead
     // =========================================================================
 
-    /**
-     * All creatures.
-     */
-    val AllCreatures: GroupFilter = GroupFilter.AllCreatures
+    @Deprecated("Use Filters.Group.allCreatures", ReplaceWith("Group.allCreatures"))
+    val AllCreatures: GroupFilter = Group.allCreatures
 
-    /**
-     * Creatures you control.
-     */
-    val CreaturesYouControl: GroupFilter = GroupFilter.AllCreaturesYouControl
+    @Deprecated("Use Filters.Group.creaturesYouControl", ReplaceWith("Group.creaturesYouControl"))
+    val CreaturesYouControl: GroupFilter = Group.creaturesYouControl
 
-    /**
-     * Creatures opponents control.
-     */
-    val CreaturesOpponentsControl: GroupFilter = GroupFilter.AllCreaturesOpponentsControl
+    @Deprecated("Use Filters.Group.creaturesOpponentsControl", ReplaceWith("Group.creaturesOpponentsControl"))
+    val CreaturesOpponentsControl: GroupFilter = Group.creaturesOpponentsControl
 
-    /**
-     * Creatures with a specific keyword.
-     */
+    @Deprecated("Use Filters.Group.allCreatures.withKeyword(keyword)", ReplaceWith("Group.allCreatures.withKeyword(keyword)"))
     fun CreaturesWithKeyword(keyword: Keyword): GroupFilter =
-        GroupFilter.AllCreatures.withKeyword(keyword)
+        Group.allCreatures.withKeyword(keyword)
 
-    /**
-     * Creatures without a specific keyword.
-     */
+    @Deprecated("Use Filters.Group.allCreatures.withoutKeyword(keyword)", ReplaceWith("Group.allCreatures.withoutKeyword(keyword)"))
     fun CreaturesWithoutKeyword(keyword: Keyword): GroupFilter =
-        GroupFilter.AllCreatures.withoutKeyword(keyword)
+        Group.allCreatures.withoutKeyword(keyword)
 
     // =========================================================================
     // Static Targets (for equipment/auras)

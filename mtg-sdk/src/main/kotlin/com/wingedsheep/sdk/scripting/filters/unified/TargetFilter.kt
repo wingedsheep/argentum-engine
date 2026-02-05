@@ -9,8 +9,7 @@ import kotlinx.serialization.Serializable
  * Filter for targeting game objects, with zone context.
  * Wraps GameObjectFilter and adds zone-specific targeting behavior.
  *
- * This replaces CreatureTargetFilter, PermanentTargetFilter, GraveyardCardFilter,
- * and SpellTargetFilter with a unified approach.
+ * Unified approach for targeting game objects across all zones.
  *
  * ## Usage Examples
  *
@@ -145,7 +144,7 @@ data class TargetFilter(
         val InstantOrSorcerySpellOnStack = TargetFilter(GameObjectFilter.InstantOrSorcery, zone = Zone.Stack)
 
         // =============================================================================
-        // Pre-built for PermanentTargetFilter migration
+        // Permanent Targeting
         // =============================================================================
 
         /** Target permanent an opponent controls */
@@ -158,7 +157,7 @@ data class TargetFilter(
         val NoncreaturePermanent = TargetFilter(GameObjectFilter.NoncreaturePermanent)
 
         // =============================================================================
-        // Pre-built for SpellTargetFilter migration
+        // Spell Targeting (additional)
         // =============================================================================
 
         /** Target sorcery spell on the stack */
