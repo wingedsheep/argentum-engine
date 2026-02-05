@@ -42,6 +42,7 @@ object OnslaughtSet {
         Swat,
 
         // Red creatures and spells
+        AetherCharge,
         BatteringCraghorn,
         ChargingSlateback,
         GoblinSkyRaider,
