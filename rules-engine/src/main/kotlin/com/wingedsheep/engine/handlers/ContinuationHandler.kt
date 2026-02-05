@@ -262,6 +262,12 @@ class ContinuationHandler(
             }
         }
 
+        // If player selected 0 targets for an optional ability (minTargets was 0),
+        // they are declining the ability - don't put it on the stack
+        if (selectedTargets.isEmpty()) {
+            return checkForMoreContinuations(state, emptyList())
+        }
+
         // Create the triggered ability component to put on stack
         val abilityComponent = TriggeredAbilityOnStackComponent(
             sourceId = continuation.sourceId,

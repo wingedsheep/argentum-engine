@@ -141,7 +141,7 @@ class SerpentAssassinTest : FunSpec({
         driver.findPermanent(opponent, "Serpent Assassin") shouldNotBe null
     }
 
-    test("Serpent Assassin ETB trigger requires target selection when used") {
+    test("Serpent Assassin ETB trigger allows declining optional ability") {
         val driver = createDriver()
         driver.initMirrorMatch(
             deck = Deck.of(
@@ -171,19 +171,18 @@ class SerpentAssassinTest : FunSpec({
         // Serpent Assassin should be on the battlefield
         driver.findPermanent(activePlayer, "Serpent Assassin") shouldNotBe null
 
-        // The ability fires and we must select a target
-        // "you may destroy" means the destruction is optional at resolution,
-        // but target selection is still required when the ability goes on the stack
+        // The ability fires and we can select a target or decline
+        // "you may destroy" means the player can choose not to use the ability
         driver.isPaused shouldBe true
         driver.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
 
         val targetDecision = driver.pendingDecision as ChooseTargetsDecision
         val minTargets = targetDecision.targetRequirements.firstOrNull()?.minTargets ?: 0
 
-        // Target selection is mandatory (min 1 target)
-        minTargets shouldBe 1
+        // For optional abilities, minTargets is 0 allowing the player to decline
+        minTargets shouldBe 0
 
-        // Submit the target selection
+        // Submit the target selection (choose Grizzly Bears to use the ability)
         driver.submitTargetSelection(activePlayer, listOf(grizzlyBears))
 
         // Resolve the ability
@@ -194,5 +193,51 @@ class SerpentAssassinTest : FunSpec({
         // Grizzly Bears should be destroyed
         driver.findPermanent(opponent, "Grizzly Bears") shouldBe null
         driver.getGraveyardCardNames(opponent) shouldContain "Grizzly Bears"
+    }
+
+    test("Serpent Assassin ETB trigger can be declined by selecting no targets") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of(
+                "Swamp" to 20,
+                "Forest" to 20
+            ),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+        val opponent = driver.getOpponent(activePlayer)
+
+        // Advance to main phase
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        // Put a nonblack creature on opponent's battlefield
+        driver.putCreatureOnBattlefield(opponent, "Grizzly Bears")
+
+        // Give active player Serpent Assassin and mana
+        val serpentAssassin = driver.putCardInHand(activePlayer, "Serpent Assassin")
+        driver.giveMana(activePlayer, Color.BLACK, 5)
+
+        // Cast Serpent Assassin
+        driver.castSpell(activePlayer, serpentAssassin)
+        driver.bothPass()
+
+        // Serpent Assassin should be on the battlefield
+        driver.findPermanent(activePlayer, "Serpent Assassin") shouldNotBe null
+
+        // The ability fires - player chooses to decline by selecting 0 targets
+        driver.isPaused shouldBe true
+        driver.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+
+        // Decline the ability by submitting empty target selection
+        val declineResult = driver.submitTargetSelection(activePlayer, emptyList())
+        declineResult.isSuccess shouldBe true
+
+        // The game should continue without the ability on the stack
+        // (ability was declined, not put on the stack)
+        driver.isPaused shouldBe false
+
+        // Grizzly Bears should still be on the battlefield (not destroyed)
+        driver.findPermanent(opponent, "Grizzly Bears") shouldNotBe null
     }
 })

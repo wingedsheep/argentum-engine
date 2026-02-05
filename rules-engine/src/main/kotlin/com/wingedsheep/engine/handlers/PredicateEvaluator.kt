@@ -434,26 +434,34 @@ class PredicateEvaluator {
         context: PredicateContext
     ): Boolean {
         val container = state.getEntity(entityId) ?: return false
-        val controllerId = container.get<ControllerComponent>()?.playerId ?: return false
 
+        // OwnedByYou/OwnedByOpponent check the card's owner, not controller.
+        // These predicates are used for cards in graveyards/exile which don't have ControllerComponent.
         return when (predicate) {
-            ControllerPredicate.ControlledByYou -> controllerId == context.controllerId
-            ControllerPredicate.ControlledByOpponent -> controllerId != context.controllerId
-            ControllerPredicate.ControlledByAny -> true
-            ControllerPredicate.ControlledByTargetOpponent -> {
-                context.targetOpponentId?.let { controllerId == it } ?: false
-            }
-            ControllerPredicate.ControlledByTargetPlayer -> {
-                context.targetPlayerId?.let { controllerId == it } ?: false
-            }
             ControllerPredicate.OwnedByYou -> {
-                // Owner is different from controller - check the card's owner
                 val card = container.get<CardComponent>()
                 card?.ownerId == context.controllerId
             }
             ControllerPredicate.OwnedByOpponent -> {
                 val card = container.get<CardComponent>()
                 card?.ownerId != null && card.ownerId != context.controllerId
+            }
+            // All other predicates require ControllerComponent
+            else -> {
+                val controllerId = container.get<ControllerComponent>()?.playerId ?: return false
+                when (predicate) {
+                    ControllerPredicate.ControlledByYou -> controllerId == context.controllerId
+                    ControllerPredicate.ControlledByOpponent -> controllerId != context.controllerId
+                    ControllerPredicate.ControlledByAny -> true
+                    ControllerPredicate.ControlledByTargetOpponent -> {
+                        context.targetOpponentId?.let { controllerId == it } ?: false
+                    }
+                    ControllerPredicate.ControlledByTargetPlayer -> {
+                        context.targetPlayerId?.let { controllerId == it } ?: false
+                    }
+                    // Already handled above
+                    ControllerPredicate.OwnedByYou, ControllerPredicate.OwnedByOpponent -> true
+                }
             }
         }
     }

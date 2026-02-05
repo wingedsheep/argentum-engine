@@ -150,10 +150,12 @@ class TriggerProcessor(
         }
 
         // Create target requirement info for the decision
+        // If the ability is optional (e.g., "you may"), allow selecting 0 targets to decline
+        val effectiveMinTargets = if (ability.optional) 0 else targetRequirement.effectiveMinCount
         val requirementInfo = TargetRequirementInfo(
             index = 0,
             description = targetRequirement.description,
-            minTargets = targetRequirement.effectiveMinCount,
+            minTargets = effectiveMinTargets,
             maxTargets = targetRequirement.count
         )
 
