@@ -39,7 +39,7 @@ class FleetFootedMonkScenarioTest : ScenarioTestBase() {
         manaCost = ManaCost.parse("{G}"),
         oracleText = "Target creature gets +2/+2 until end of turn.",
         script = CardScript.spell(
-            effect = ModifyStatsEffect(2, 2, EffectTarget.TargetCreature, Duration.EndOfTurn),
+            effect = ModifyStatsEffect(2, 2, EffectTarget.ContextTarget(0), Duration.EndOfTurn),
             TargetCreature()
         )
     )

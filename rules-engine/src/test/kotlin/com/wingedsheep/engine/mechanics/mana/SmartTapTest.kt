@@ -67,7 +67,7 @@ class SmartTapTest : FunSpec({
                 ActivatedAbility(
                     id = AbilityId(UUID.randomUUID().toString()),
                     cost = AbilityCost.Tap, // Simplified cost
-                    effect = ModifyStatsEffect(3, 0, EffectTarget.TargetCreature, Duration.EndOfTurn),
+                    effect = ModifyStatsEffect(3, 0, EffectTarget.ContextTarget(0), Duration.EndOfTurn),
                     isManaAbility = false
                 )
             )

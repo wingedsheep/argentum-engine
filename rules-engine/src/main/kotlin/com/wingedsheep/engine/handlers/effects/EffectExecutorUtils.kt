@@ -39,9 +39,6 @@ object EffectExecutorUtils {
             is EffectTarget.Self -> context.sourceId
             is EffectTarget.Controller -> context.controllerId
             is EffectTarget.ContextTarget -> context.targets.getOrNull(effectTarget.index)?.toEntityId()
-            is EffectTarget.TargetCreature,
-            is EffectTarget.TargetPermanent,
-            is EffectTarget.AnyTarget -> context.targets.firstOrNull()?.toEntityId()
             else -> null
         }
     }
@@ -52,8 +49,6 @@ object EffectExecutorUtils {
     fun resolvePlayerTarget(effectTarget: EffectTarget, context: EffectContext): EntityId? {
         return when (effectTarget) {
             is EffectTarget.Controller -> context.controllerId
-            is EffectTarget.Opponent -> context.opponentId
-            is EffectTarget.AnyPlayer -> context.targets.firstOrNull()?.toEntityId()
             is EffectTarget.ContextTarget -> context.targets.getOrNull(effectTarget.index)?.toEntityId()
             is EffectTarget.PlayerRef -> when (effectTarget.player) {
                 Player.You -> context.controllerId
@@ -70,10 +65,7 @@ object EffectExecutorUtils {
      */
     fun resolvePlayerTargets(effectTarget: EffectTarget, state: GameState, context: EffectContext): List<EntityId> {
         return when (effectTarget) {
-            is EffectTarget.EachPlayer -> state.turnOrder
-            is EffectTarget.EachOpponent -> state.turnOrder.filter { it != context.controllerId }
             is EffectTarget.Controller -> listOf(context.controllerId)
-            is EffectTarget.Opponent -> state.turnOrder.filter { it != context.controllerId }
             is EffectTarget.PlayerRef -> when (effectTarget.player) {
                 Player.Each -> state.turnOrder
                 Player.EachOpponent -> state.turnOrder.filter { it != context.controllerId }

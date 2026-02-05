@@ -89,13 +89,13 @@ object Effects {
     /**
      * Modify power and toughness.
      */
-    fun ModifyStats(power: Int, toughness: Int, target: EffectTarget = EffectTarget.TargetCreature): Effect =
+    fun ModifyStats(power: Int, toughness: Int, target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
         ModifyStatsEffect(power, toughness, target)
 
     /**
      * Grant a keyword until end of turn.
      */
-    fun GrantKeyword(keyword: Keyword, target: EffectTarget = EffectTarget.TargetCreature): Effect =
+    fun GrantKeyword(keyword: Keyword, target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
         GrantKeywordUntilEndOfTurnEffect(keyword, target)
 
     /**
@@ -241,7 +241,7 @@ object Effects {
     /**
      * Separate permanents into piles (Liliana ultimate style).
      */
-    fun SeparatePermanentsIntoPiles(target: EffectTarget = EffectTarget.AnyPlayer): Effect =
+    fun SeparatePermanentsIntoPiles(target: EffectTarget = EffectTarget.PlayerRef(Player.TargetPlayer)): Effect =
         SeparatePermanentsIntoPilesEffect(target)
 
     // =========================================================================
@@ -263,7 +263,7 @@ object Effects {
      * Deal damage to target and gain that much life.
      * "Deal X damage to target and you gain X life."
      */
-    fun Drain(amount: Int, target: EffectTarget = EffectTarget.AnyTarget): Effect = CompositeEffect(
+    fun Drain(amount: Int, target: EffectTarget): Effect = CompositeEffect(
         listOf(
             DealDamageEffect(amount, target),
             GainLifeEffect(amount, EffectTarget.Controller)

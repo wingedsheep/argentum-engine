@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.Player
 import com.wingedsheep.sdk.scripting.SkipCombatPhasesEffect
 import com.wingedsheep.sdk.targeting.TargetPlayer
 import io.kotest.core.spec.style.FunSpec
@@ -29,7 +30,7 @@ class SkipCombatPhasesTest : FunSpec({
         manaCost = ManaCost.parse("{W}"),
         oracleText = "Target player skips all combat phases of their next turn.",
         script = CardScript.spell(
-            effect = SkipCombatPhasesEffect(EffectTarget.AnyPlayer),
+            effect = SkipCombatPhasesEffect(EffectTarget.PlayerRef(Player.TargetPlayer)),
             TargetPlayer()
         )
     )

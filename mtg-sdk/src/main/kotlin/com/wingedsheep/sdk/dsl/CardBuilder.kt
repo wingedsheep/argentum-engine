@@ -401,7 +401,7 @@ class CardBuilder(private val name: String) {
  * ```kotlin
  * spell {
  *     target = Targets.Creature
- *     effect = Effects.Destroy(EffectTarget.TargetCreature)
+ *     effect = Effects.Destroy(EffectTarget.ContextTarget(0))
  * }
  * ```
  *

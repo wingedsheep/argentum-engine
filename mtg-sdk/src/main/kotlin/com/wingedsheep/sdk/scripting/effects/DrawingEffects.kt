@@ -23,8 +23,7 @@ data class DrawCardsEffect(
             is DynamicAmount.Fixed -> "Draw ${if (c.amount == 1) "a card" else "${c.amount} cards"}"
             else -> "Draw cards equal to ${c.description}"
         }
-        EffectTarget.Opponent -> "Target opponent draws cards equal to ${count.description}"
-        else -> "Target player draws cards equal to ${count.description}"
+        else -> "${target.description.replaceFirstChar { it.uppercase() }} draws cards equal to ${count.description}"
     }
 }
 
@@ -166,7 +165,7 @@ data class EachPlayerDiscardsDrawsEffect(
  */
 @Serializable
 data class LookAtTargetHandEffect(
-    val target: EffectTarget = EffectTarget.AnyPlayer
+    val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetPlayer)
 ) : Effect {
     override val description: String = "Look at ${target.description}'s hand"
 }
@@ -183,9 +182,7 @@ data class RevealHandEffect(
     val target: EffectTarget = EffectTarget.ContextTarget(0)
 ) : Effect {
     override val description: String = when (target) {
-        is EffectTarget.ContextTarget -> "Target opponent reveals their hand"
-        EffectTarget.Opponent -> "Target opponent reveals their hand"
         EffectTarget.Controller -> "Reveal your hand"
-        else -> "Target player reveals their hand"
+        else -> "${target.description.replaceFirstChar { it.uppercase() }} reveals their hand"
     }
 }

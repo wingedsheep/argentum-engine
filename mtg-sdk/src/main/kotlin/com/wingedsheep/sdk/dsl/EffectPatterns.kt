@@ -116,7 +116,7 @@ object EffectPatterns {
      * ```kotlin
      * reflexiveTrigger(
      *     action = SacrificeEffect(CardFilter.CreatureCard),
-     *     whenYouDo = DealDamageEffect(3, EffectTarget.AnyTarget)
+     *     whenYouDo = DealDamageEffect(3, EffectTarget.ContextTarget(0))
      * )
      * ```
      */

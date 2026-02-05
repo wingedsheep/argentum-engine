@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.Player
 import com.wingedsheep.sdk.scripting.TauntEffect
 import com.wingedsheep.sdk.targeting.TargetPlayer
 import io.kotest.core.spec.style.FunSpec
@@ -36,7 +37,7 @@ class TauntEffectTest : FunSpec({
         manaCost = ManaCost.parse("{U}"),
         oracleText = "During target player's next turn, creatures that player controls attack you if able.",
         script = CardScript.spell(
-            effect = TauntEffect(EffectTarget.AnyPlayer),
+            effect = TauntEffect(EffectTarget.PlayerRef(Player.TargetPlayer)),
             TargetPlayer()
         )
     )

@@ -127,7 +127,7 @@ data object SacrificeSelfEffect : Effect {
 data class ForceSacrificeEffect(
     val filter: GameObjectFilter,
     val count: Int = 1,
-    val target: EffectTarget = EffectTarget.Opponent
+    val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent)
 ) : Effect {
     override val description: String = buildString {
         append(target.description)
@@ -150,7 +150,7 @@ data class ForceSacrificeEffect(
  */
 @Serializable
 data class SeparatePermanentsIntoPilesEffect(
-    val target: EffectTarget = EffectTarget.AnyPlayer
+    val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetPlayer)
 ) : Effect {
     override val description: String =
         "Separate all permanents ${target.description} controls into two piles. " +

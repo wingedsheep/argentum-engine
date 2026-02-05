@@ -20,7 +20,7 @@ import kotlinx.serialization.Serializable
  *
  * Supporting filter types are organized in the events/ subdirectory:
  * - EventFilters.kt - RecipientFilter, SourceFilter, DamageType, ObjectFilter,
- *                     CounterTypeFilter, ControllerFilter, PlayerFilter
+ *                     CounterTypeFilter, ControllerFilter, Player
  * - Zone.kt - Zone enumeration
  */
 @Serializable

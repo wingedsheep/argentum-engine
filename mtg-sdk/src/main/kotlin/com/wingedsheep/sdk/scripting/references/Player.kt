@@ -4,23 +4,11 @@ import kotlinx.serialization.Serializable
 
 /**
  * Unified player reference type.
- * Replaces the overlapping PlayerReference and PlayerFilter types.
  *
  * Used for:
  * - Effect targets: "target player", "each opponent"
  * - Zone scoping: "your graveyard", "opponent's hand"
  * - Counting: "creatures you control"
- *
- * ## Migration
- * - PlayerReference.You -> Player.You
- * - PlayerReference.Opponent -> Player.Opponent
- * - PlayerReference.TargetOpponent -> Player.TargetOpponent
- * - PlayerReference.TargetPlayer -> Player.TargetPlayer
- * - PlayerReference.Each -> Player.Each
- * - PlayerFilter.You -> Player.You
- * - PlayerFilter.Opponent -> Player.Opponent
- * - PlayerFilter.Any -> Player.Any
- * - PlayerFilter.Each -> Player.Each
  */
 @Serializable
 sealed interface Player {

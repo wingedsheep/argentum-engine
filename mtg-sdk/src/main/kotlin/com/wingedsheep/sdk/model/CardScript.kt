@@ -23,7 +23,7 @@ import kotlinx.serialization.Serializable
  * ### Simple Instant (Lightning Bolt)
  * ```kotlin
  * CardScript(
- *     spellEffect = DealDamageEffect(3, EffectTarget.AnyTarget),
+ *     spellEffect = DealDamageEffect(3, EffectTarget.ContextTarget(0)),
  *     targetRequirements = listOf(AnyTarget())
  * )
  * ```
@@ -34,7 +34,7 @@ import kotlinx.serialization.Serializable
  *     triggeredAbilities = listOf(
  *         TriggeredAbility.create(
  *             trigger = OnEnterBattlefield(),
- *             effect = DealDamageEffect(4, EffectTarget.TargetCreature),
+ *             effect = DealDamageEffect(4, EffectTarget.ContextTarget(0)),
  *             targetRequirement = TargetCreature()
  *         )
  *     )

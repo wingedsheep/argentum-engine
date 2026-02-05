@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers.effects.library
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -37,9 +38,8 @@ class LookAtTopAndReorderExecutor : EffectExecutor<LookAtTopAndReorderEffect> {
         // Resolve target player (usually controller)
         val playerId = when (effect.target) {
             is EffectTarget.Controller -> context.controllerId
-            is EffectTarget.Opponent -> context.opponentId ?: return ExecutionResult.error(
-                state, "No opponent found for LookAtTopAndReorder effect"
-            )
+            is EffectTarget.PlayerRef -> EffectExecutorUtils.resolvePlayerTarget(effect.target, context)
+                ?: return ExecutionResult.error(state, "No player found for LookAtTopAndReorder effect")
             else -> context.controllerId
         }
 

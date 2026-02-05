@@ -16,7 +16,7 @@ import kotlinx.serialization.Serializable
  * ModifyStatsEffect(
  *     powerModifier = 3,
  *     toughnessModifier = 3,
- *     target = EffectTarget.TargetCreature,
+ *     target = EffectTarget.ContextTarget(0),
  *     duration = Duration.EndOfTurn
  * )
  * ```

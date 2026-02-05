@@ -76,34 +76,12 @@
 - [x] **6d** Update engine: replacement effect matcher evaluates `Player` (no engine code referenced PlayerFilter — already clean)
 
 ## Phase 7 — Deprecate Old `EffectTarget` Variants
-- [ ] **7a** Add `@Deprecated` to player/group variants:
-  - [ ] `Opponent`
-  - [ ] `AnyPlayer`
-  - [ ] `EachPlayer`
-  - [ ] `EachOpponent`
-  - [ ] `AllCreatures`
-  - [ ] `AllControlledCreatures`
-  - [ ] `AllOpponentCreatures`
-- [ ] **7b** Add `@Deprecated` to hardcoded filtered variants:
-  - [ ] `TargetCreature`
-  - [ ] `TargetOpponentCreature`
-  - [ ] `TargetControlledCreature`
-  - [ ] `TargetPermanent`
-  - [ ] `TargetNonlandPermanent`
-  - [ ] `TargetLand`
-  - [ ] `TargetNonblackCreature`
-  - [ ] `TargetTappedCreature`
-  - [ ] `TargetCreatureWithFlying`
-  - [ ] `AnyTarget`
-  - [ ] `TargetCardInGraveyard`
-  - [ ] `TargetEnchantment`
-  - [ ] `TargetArtifact`
-  - [ ] `TargetOpponentNonlandPermanent`
+*Skipped — went directly to deletion in Phase 8.*
 
 ## Phase 8 — Final Deletion
-- [ ] **8a** Delete all deprecated `EffectTarget` variants
-- [ ] **8b** Delete `PlayerFilter` sealed interface entirely from `EventFilters.kt`
-- [ ] **8c** Full test suite passes with no deprecation warnings from retired types
+- [x] **8a** Delete all deprecated `EffectTarget` variants (21 variants removed)
+- [x] **8b** Delete `PlayerFilter` sealed interface entirely from `EventFilters.kt`
+- [x] **8c** Full test suite passes with no deprecation warnings from retired types
 
 ## Phase 9 — Add `MoveToZoneEffect`, `ZonePlacement`, and `TargetObject`
 - [ ] **9a** Add `ZonePlacement` enum to SDK (`ZonePlacement.kt`)

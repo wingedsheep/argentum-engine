@@ -279,7 +279,7 @@ class CardDslTest : DescribeSpec({
 
                 triggeredAbility {
                     trigger = Triggers.EntersBattlefield
-                    effect = Effects.DealDamage(4, EffectTarget.TargetCreature)
+                    effect = Effects.DealDamage(4, EffectTarget.ContextTarget(0))
                     target = Targets.Creature
                 }
             }
@@ -289,7 +289,7 @@ class CardDslTest : DescribeSpec({
 
             val ability = kavu.triggeredAbilities.first()
             ability.trigger shouldBe OnEnterBattlefield()
-            ability.effect shouldBe DealDamageEffect(4, EffectTarget.TargetCreature)
+            ability.effect shouldBe DealDamageEffect(4, EffectTarget.ContextTarget(0))
         }
 
         it("should define Thragtusk with multiple triggers") {
@@ -578,7 +578,7 @@ class CardDslTest : DescribeSpec({
                             effect = Effects.ReturnToHand(permanent)
                         }
                         mode("Tap all creatures your opponents control") {
-                            effect = TapUntapEffect(EffectTarget.AllOpponentCreatures, tap = true)
+                            effect = TapUntapEffect(EffectTarget.GroupRef(GroupFilter.AllCreaturesOpponentsControl), tap = true)
                         }
                         mode("Draw a card", Effects.DrawCards(1))
                     }
@@ -613,7 +613,7 @@ class CardDslTest : DescribeSpec({
 
                 spell {
                     modal {
-                        mode("Destroy target artifact", Effects.Destroy(EffectTarget.TargetArtifact))
+                        mode("Destroy target artifact", Effects.Destroy(EffectTarget.ContextTarget(0)))
                         mode("Put target creature on the bottom of its owner's library") {
                             val creature = target("creature", Targets.Creature)
                             effect = PutOnTopOfLibraryEffect(creature)
@@ -828,21 +828,21 @@ class CardDslTest : DescribeSpec({
         it("should support may-pay-or-else pattern") {
             val optionalEffect = OptionalCostEffect(
                 cost = SacrificeEffect(GameObjectFilter.Creature),
-                ifPaid = DealDamageEffect(3, EffectTarget.AnyTarget),
+                ifPaid = DealDamageEffect(3, EffectTarget.ContextTarget(0)),
                 ifNotPaid = LoseLifeEffect(3, EffectTarget.Controller)
             )
 
-            optionalEffect.description shouldBe "You may sacrifice a creature. If you do, deal 3 damage to any target. Otherwise, you lose 3 life"
+            optionalEffect.description shouldBe "You may sacrifice a creature. If you do, deal 3 damage to target. Otherwise, you lose 3 life"
         }
 
         it("should support reflexive triggers") {
             val reflexive = ReflexiveTriggerEffect(
                 action = SacrificeEffect(GameObjectFilter.Creature),
                 optional = true,
-                reflexiveEffect = DealDamageEffect(5, EffectTarget.AnyTarget)
+                reflexiveEffect = DealDamageEffect(5, EffectTarget.ContextTarget(0))
             )
 
-            reflexive.description shouldBe "You may sacrifice a creature. When you do, deal 5 damage to any target"
+            reflexive.description shouldBe "You may sacrifice a creature. When you do, deal 5 damage to target"
         }
     }
 
@@ -884,7 +884,7 @@ class CardDslTest : DescribeSpec({
 
         it("should create store entity shorthand") {
             val effect = EffectPatterns.storeEntity(
-                effect = ExileEffect(EffectTarget.TargetCreature),
+                effect = ExileEffect(EffectTarget.ContextTarget(0)),
                 `as` = "exiledCreature"
             )
 
