@@ -232,26 +232,15 @@ sealed interface CostReductionSource {
 // =============================================================================
 
 /**
- * This creature can't be blocked by creatures of a specific color.
- * Used for cards like Sacred Knight: "can't be blocked by black creatures."
- */
-@Serializable
-data class CantBeBlockedByColor(
-    val color: Color,
-    val target: StaticTarget = StaticTarget.SourceCreature
-) : StaticAbility {
-    override val description: String = "can't be blocked by ${color.displayName.lowercase()} creatures"
-}
-
-/**
- * This creature can't be blocked by creatures of any of the specified colors.
- * Used for cards like Sacred Knight: "can't be blocked by black and/or red creatures."
+ * This creature can't be blocked by creatures of the specified color(s).
+ * Used for cards like Sacred Knight: "can't be blocked by black creatures"
+ * or "can't be blocked by black and/or red creatures."
  *
  * @property colors The set of colors that cannot block this creature
  * @property target What this ability applies to
  */
 @Serializable
-data class CantBeBlockedByColors(
+data class CantBeBlockedByColor(
     val colors: Set<Color>,
     val target: StaticTarget = StaticTarget.SourceCreature
 ) : StaticAbility {
@@ -264,19 +253,12 @@ data class CantBeBlockedByColors(
             else -> append(colorNames.dropLast(1).joinToString(", ") + ", and/or ${colorNames.last()} creatures")
         }
     }
+
+    /** Convenience constructor for a single color. */
+    constructor(color: Color, target: StaticTarget = StaticTarget.SourceCreature)
+        : this(setOf(color), target)
 }
 
-/**
- * Limits the maximum number of creatures that can block this creature.
- * Used for cards like Charging Rhino/Stalking Tiger: "can't be blocked by more than one creature."
- */
-@Serializable
-data class MaxBlockersRestriction(
-    val maxBlockers: Int,
-    val target: StaticTarget = StaticTarget.SourceCreature
-) : StaticAbility {
-    override val description: String = "can't be blocked by more than $maxBlockers creature${if (maxBlockers != 1) "s" else ""}"
-}
 
 /**
  * This creature can only block creatures with a specific keyword.

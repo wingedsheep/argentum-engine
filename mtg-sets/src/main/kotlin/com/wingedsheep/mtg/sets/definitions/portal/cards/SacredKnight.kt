@@ -3,7 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.CantBeBlockedByColors
+import com.wingedsheep.sdk.scripting.CantBeBlockedByColor
 
 /**
  * Sacred Knight
@@ -19,7 +19,7 @@ val SacredKnight = card("Sacred Knight") {
     toughness = 2
 
     staticAbility {
-        ability = CantBeBlockedByColors(setOf(Color.BLACK, Color.RED))
+        ability = CantBeBlockedByColor(setOf(Color.BLACK, Color.RED))
     }
 
     metadata {
