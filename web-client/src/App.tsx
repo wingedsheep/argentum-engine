@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { GameBoard } from './components/game/GameBoard'
 import { GameUI } from './components/ui/GameUI'
 import { MulliganUI } from './components/mulligan/MulliganUI'
@@ -12,6 +12,7 @@ import { OpponentDecisionIndicator } from './components/ui/OpponentDecisionIndic
 import { DeckBuilderOverlay } from './components/sealed/DeckBuilderOverlay'
 import { DraftPickOverlay } from './components/draft/DraftPickOverlay'
 import { SpectatorGameBoard } from './components/spectating/SpectatorGameBoard'
+import { trackPageView } from './utils/analytics'
 import { useGameStore } from './store/gameStore'
 import { useViewingPlayer, useBattlefieldCards } from './store/selectors'
 import type { EntityId } from './types'
@@ -140,6 +141,24 @@ export default function App() {
   const showDeckBuilder = deckBuildingState?.phase === 'building' ||
     (deckBuildingState?.phase === 'submitted' && !tournamentState)
   const showDraftPick = lobbyState?.state === 'DRAFTING'
+
+  // Track virtual page views for GA4 when the active screen changes
+  const currentScreen = useMemo(() => {
+    if (spectatingState) return 'spectate'
+    if (showDraftPick) return 'draft'
+    if (showDeckBuilder) return 'deck-builder'
+    if (mulliganState) return 'mulligan'
+    if (showGame) return 'game'
+    return 'lobby'
+  }, [spectatingState, showDraftPick, showDeckBuilder, mulliganState, showGame])
+
+  const prevScreenRef = useRef(currentScreen)
+  useEffect(() => {
+    if (currentScreen !== prevScreenRef.current) {
+      prevScreenRef.current = currentScreen
+      trackPageView(`/${currentScreen}`, currentScreen)
+    }
+  }, [currentScreen])
 
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>

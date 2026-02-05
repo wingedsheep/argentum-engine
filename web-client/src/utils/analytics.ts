@@ -23,6 +23,15 @@ export function initAnalytics() {
   window.gtag('config', GA_MEASUREMENT_ID)
 }
 
+export function trackPageView(pagePath: string, pageTitle: string) {
+  if (ANALYTICS_ENABLED && typeof window.gtag !== 'undefined') {
+    window.gtag('event', 'page_view', {
+      page_path: pagePath,
+      page_title: pageTitle,
+    })
+  }
+}
+
 export function trackEvent(name: string, params?: Record<string, unknown>) {
   if (ANALYTICS_ENABLED && typeof window.gtag !== 'undefined') {
     window.gtag('event', name, params)
