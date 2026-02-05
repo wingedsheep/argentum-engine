@@ -106,3 +106,47 @@ Phase 8  ←  deletion (after all sets + engine verified)
 ```
 
 Phases 3, 5, and 6 can run in parallel — they touch non-overlapping files. Phase 4 is the critical path.
+
+---
+
+## Future Roadmap: Unified `MoveToZoneEffect`
+
+After the EffectTarget refactor stabilizes, the natural next step is to unify all zone-moving effects into a single `MoveToZoneEffect(target, destination, placement)`. This collapses 6+ effect types into one:
+
+| Before | After |
+|--------|-------|
+| `ReturnFromGraveyardEffect(target, HAND)` | `MoveToZoneEffect(target, Zone.Hand)` |
+| `ReturnFromGraveyardEffect(target, BATTLEFIELD)` | `MoveToZoneEffect(target, Zone.Battlefield)` |
+| `ReturnToHandEffect(target)` | `MoveToZoneEffect(target, Zone.Hand)` |
+| `ExileEffect(target)` | `MoveToZoneEffect(target, Zone.Exile)` |
+| `ShuffleIntoLibraryEffect(target)` | `MoveToZoneEffect(target, Zone.Library, ZonePlacement.Shuffled)` |
+| `PutOnTopOfLibraryEffect(target)` | `MoveToZoneEffect(target, Zone.Library, ZonePlacement.Top)` |
+| `DestroyEffect(target)` | `MoveToZoneEffect(target, Zone.Graveyard, byDestruction = true)` |
+
+The effect definition:
+
+```kotlin
+data class MoveToZoneEffect(
+    val target: EffectTarget,
+    val destination: Zone,
+    val placement: ZonePlacement = ZonePlacement.Default,
+    val byDestruction: Boolean = false
+) : Effect
+
+enum class ZonePlacement { Default, Top, Bottom, Shuffled, Tapped }
+```
+
+Old effects become DSL convenience functions:
+
+```kotlin
+object Effects {
+    fun Destroy(target: EffectTarget) = MoveToZoneEffect(target, Zone.Graveyard, byDestruction = true)
+    fun Exile(target: EffectTarget) = MoveToZoneEffect(target, Zone.Exile)
+    fun ReturnToHand(target: EffectTarget) = MoveToZoneEffect(target, Zone.Hand)
+    // etc.
+}
+```
+
+Combined with `TargetObject(filter = TargetFilter.CreatureInYourGraveyard)`, every card reads as a simple statement: "target this, move it there." The what-to-target is in the `TargetFilter`, the where-to-put-it is in the `Zone`, and the binding between them is `ContextTarget(0)`.
+
+This is tracked separately and will be planned after Phase 8 completes.

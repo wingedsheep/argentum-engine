@@ -60,9 +60,10 @@ val Gravedigger = card("Gravedigger") {
     triggeredAbility {
         trigger = OnEnterBattlefield()
         optional = true
-        target = TargetCardInGraveyard(filter = GraveyardCardFilter.CreatureInYourGraveyard)
-        effect = ReturnFromGraveyardEffect(
-            destination = SearchDestination.HAND
+        target = TargetObject(filter = TargetFilter.CreatureInYourGraveyard)
+        effect = MoveToZoneEffect(
+            target = EffectTarget.ContextTarget(0),
+            destination = Zone.Hand
         )
     }
 
