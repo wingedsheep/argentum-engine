@@ -147,6 +147,33 @@ class ConnectionHandler(
                         cardPool = poolInfos,
                         basicLands = basicLandInfos
                     ))
+
+                    // If player has submitted deck and tournament exists, also send TournamentStarted
+                    // This allows them to stay on tournament standings screen after refresh
+                    val tournament = lobbyRepository.findTournamentById(lobbyId)
+                    if (playerState.hasSubmittedDeck && tournament != null) {
+                        val connectedIds = lobby.players.values
+                            .filter { it.identity.isConnected }
+                            .map { it.identity.playerId }
+                            .toSet()
+
+                        val nextRoundMatchups = tournament.peekNextRoundMatchups()
+                        val nextOpponentId = nextRoundMatchups[identity.playerId]
+                        val nextOpponentName = if (nextOpponentId != null) {
+                            lobby.players[nextOpponentId]?.identity?.playerName
+                        } else {
+                            null
+                        }
+                        val hasBye = nextRoundMatchups.containsKey(identity.playerId) && nextOpponentId == null
+
+                        sender.send(session, ServerMessage.TournamentStarted(
+                            lobbyId = lobbyId,
+                            totalRounds = tournament.totalRounds,
+                            standings = tournament.getStandingsInfo(connectedIds),
+                            nextOpponentName = nextOpponentName,
+                            nextRoundHasBye = hasBye
+                        ))
+                    }
                 }
             }
             "game" -> {
@@ -192,6 +219,20 @@ class ConnectionHandler(
                 val tournament = lobbyRepository.findTournamentById(lobbyId!!)
                 val lobby = lobbyRepository.findLobbyById(lobbyId)
                 if (tournament != null && lobby != null) {
+                    // Send card pool so client can edit deck if needed (before first match)
+                    val playerState = lobby.players[identity.playerId]
+                    if (playerState != null && playerState.cardPool.isNotEmpty()) {
+                        val basicLandInfos = lobby.basicLands.values.map { cardToSealedCardInfo(it) }
+                        val poolInfos = playerState.cardPool.map { cardToSealedCardInfo(it) }
+                        sender.send(session, ServerMessage.SealedPoolGenerated(
+                            setCodes = lobby.setCodes,
+                            setNames = lobby.setNames,
+                            cardPool = poolInfos,
+                            basicLands = basicLandInfos
+                        ))
+                    }
+                    sender.send(session, lobby.buildLobbyUpdate(identity.playerId))
+
                     val connectedIds = lobby.players.values
                         .filter { it.identity.isConnected }
                         .map { it.identity.playerId }

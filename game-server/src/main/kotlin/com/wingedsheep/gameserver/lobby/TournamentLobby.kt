@@ -466,7 +466,8 @@ class TournamentLobby(
      * Submit a deck for a player.
      */
     fun submitDeck(playerId: EntityId, deckList: Map<String, Int>): DeckSubmissionResult {
-        if (state != LobbyState.DECK_BUILDING) {
+        // Allow submissions during DECK_BUILDING or TOURNAMENT_ACTIVE (before match starts)
+        if (state != LobbyState.DECK_BUILDING && state != LobbyState.TOURNAMENT_ACTIVE) {
             return DeckSubmissionResult.Error("Not in deck building phase")
         }
 
@@ -490,10 +491,11 @@ class TournamentLobby(
 
     /**
      * Unsubmit a previously submitted deck to allow editing again.
-     * Only allowed while in deck building phase (before tournament starts).
+     * Allowed during deck building or tournament active (before match starts).
+     * The caller should verify the player's match hasn't started yet.
      */
     fun unsubmitDeck(playerId: EntityId): Boolean {
-        if (state != LobbyState.DECK_BUILDING) {
+        if (state != LobbyState.DECK_BUILDING && state != LobbyState.TOURNAMENT_ACTIVE) {
             return false
         }
 
@@ -503,7 +505,9 @@ class TournamentLobby(
             return false // Nothing to unsubmit
         }
 
+        // Clear deck and ready state
         players[playerId] = playerState.copy(submittedDeck = null)
+        playersReadyForNextRound.remove(playerId)
         return true
     }
 

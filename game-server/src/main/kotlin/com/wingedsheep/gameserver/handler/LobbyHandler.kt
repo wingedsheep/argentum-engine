@@ -398,6 +398,18 @@ class LobbyHandler(
                 broadcastLobbyUpdate(lobby)
             }
             LobbyState.TOURNAMENT_ACTIVE -> {
+                // Send card pool so client can edit deck if needed
+                val playerState = lobby.players[identity.playerId]
+                val basicLandInfos = lobby.basicLands.values.map { cardToSealedCardInfo(it) }
+                val poolInfos = playerState?.cardPool?.map { cardToSealedCardInfo(it) } ?: emptyList()
+                sender.send(session, ServerMessage.SealedPoolGenerated(
+                    setCodes = lobby.setCodes,
+                    setNames = lobby.setNames,
+                    cardPool = poolInfos,
+                    basicLands = basicLandInfos
+                ))
+                sender.send(session, lobby.buildLobbyUpdate(identity.playerId))
+
                 // Send tournament state
                 val tournament = lobbyRepository.findTournamentById(lobby.lobbyId)
                 if (tournament != null) {
@@ -838,8 +850,21 @@ class LobbyHandler(
             return
         }
 
+        // Check if player's match has already started (can't unsubmit after match starts)
+        val tournament = lobbyRepository.findTournamentById(lobbyId)
+        if (tournament != null) {
+            val match = tournament.getPlayerMatchInCurrentRound(identity.playerId)
+            if (match != null && match.gameSessionId != null) {
+                sender.sendError(session, ErrorCode.INVALID_ACTION, "Cannot edit deck - match already started")
+                return
+            }
+        }
+
         val success = lobby.unsubmitDeck(identity.playerId)
         if (!success) {
+            val playerState = lobby.players[identity.playerId]
+            logger.warn("Failed to unsubmit deck for player ${identity.playerName} (${identity.playerId.value}): " +
+                "lobbyState=${lobby.state}, playerFound=${playerState != null}, hasSubmittedDeck=${playerState?.hasSubmittedDeck}")
             sender.sendError(session, ErrorCode.INVALID_ACTION, "Cannot unsubmit deck")
             return
         }
@@ -848,6 +873,11 @@ class LobbyHandler(
 
         // Notify all players of the updated lobby state
         broadcastLobbyUpdate(lobby)
+
+        // If in tournament, broadcast the updated ready status
+        if (tournament != null) {
+            broadcastReadyStatus(lobby, identity)
+        }
     }
 
     private fun handleUpdateLobbySettings(session: WebSocketSession, message: ClientMessage.UpdateLobbySettings) {
@@ -946,11 +976,11 @@ class LobbyHandler(
                 // Ensure tournament is created (for matchup info)
                 val tournament = ensureTournamentCreated(lobby)
 
-                // Send TournamentStarted to this player
+                // Send TournamentStarted to this player (they can now ready up for round 1)
                 sendTournamentStartedToPlayer(lobby, tournament, identity)
 
-                // Try to start their match if opponent also submitted
-                tryStartMatchAfterDeckSubmit(lobby, tournament, identity)
+                // NOTE: Don't auto-start matches - require players to press Ready
+                // This allows them to return to deck building while waiting
 
                 // Transition lobby state when all decks are submitted
                 if (result.allReady && lobby.state == LobbyState.DECK_BUILDING) {
@@ -1422,6 +1452,9 @@ class LobbyHandler(
         }
 
         gamePlayHandler.startGame(gameSession)
+
+        // Broadcast updated active matches to waiting players (bye players, etc.)
+        broadcastActiveMatchesToWaitingPlayers(lobby.lobbyId)
     }
 
     /**
@@ -1556,6 +1589,43 @@ class LobbyHandler(
             matches = activeMatches,
             standings = tournament.getStandingsInfo(connectedIds)
         ))
+    }
+
+    /**
+     * Broadcast active matches to all players who are waiting (not in an active game).
+     * This includes players with byes and players whose matches haven't started yet.
+     */
+    fun broadcastActiveMatchesToWaitingPlayers(lobbyId: String) {
+        val lobby = lobbyRepository.findLobbyById(lobbyId) ?: return
+        val tournament = lobbyRepository.findTournamentById(lobbyId) ?: return
+
+        val connectedIds = lobby.players.values
+            .filter { it.identity.isConnected }
+            .map { it.identity.playerId }
+            .toSet()
+
+        val activeMatches = buildActiveMatchesList(tournament)
+        val message = ServerMessage.ActiveMatches(
+            lobbyId = lobbyId,
+            round = tournament.currentRound?.roundNumber ?: 0,
+            matches = activeMatches,
+            standings = tournament.getStandingsInfo(connectedIds)
+        )
+
+        // Send to all players who are not currently in an active game
+        for ((playerId, playerState) in lobby.players) {
+            val identity = playerState.identity
+            val ws = identity.webSocketSession ?: continue
+            if (!ws.isOpen) continue
+
+            // Skip players who are currently in a game
+            if (identity.currentGameSessionId != null) continue
+
+            // Skip players who are spectating (they'll get updates through spectating)
+            if (identity.currentSpectatingGameId != null) continue
+
+            sender.send(ws, message)
+        }
     }
 
     /**
