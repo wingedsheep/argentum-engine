@@ -1,6 +1,6 @@
 package com.wingedsheep.gameserver
 
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
@@ -26,7 +26,7 @@ class GameMaskingTest : GameServerTestBase() {
                 val ctx = setupGame(monoGreenLands)
                 val state = ctx.player1.client.requireLatestState()
                 val opponentHand = state.zones.find {
-                    it.zoneId.zoneType == ZoneType.HAND && it.zoneId.ownerId == ctx.player2.id
+                    it.zoneId.zoneType == Zone.HAND && it.zoneId.ownerId == ctx.player2.id
                 } ?: error("Opponent hand not found")
 
                 withClue("Opponent hand should be marked not visible") {

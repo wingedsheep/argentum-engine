@@ -14,7 +14,7 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.LossReason
 import com.wingedsheep.engine.state.components.player.PlayerLostComponent
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.WheelEffect
 import kotlin.reflect.KClass
@@ -43,8 +43,8 @@ class WheelEffectExecutor : EffectExecutor<WheelEffect> {
 
         // For each affected player: count hand, shuffle hand into library, draw that many
         for (playerId in affectedPlayers) {
-            val handZone = ZoneKey(playerId, ZoneType.HAND)
-            val libraryZone = ZoneKey(playerId, ZoneType.LIBRARY)
+            val handZone = ZoneKey(playerId, Zone.HAND)
+            val libraryZone = ZoneKey(playerId, Zone.LIBRARY)
 
             // Count cards in hand before shuffling
             val hand = newState.getZone(handZone)
@@ -65,8 +65,8 @@ class WheelEffectExecutor : EffectExecutor<WheelEffect> {
                     ZoneChangeEvent(
                         entityId = cardId,
                         entityName = cardComponent?.name ?: "Unknown",
-                        fromZone = ZoneType.HAND,
-                        toZone = ZoneType.LIBRARY,
+                        fromZone = Zone.HAND,
+                        toZone = Zone.LIBRARY,
                         ownerId = playerId
                     )
                 )

@@ -14,7 +14,7 @@ import com.wingedsheep.engine.state.components.identity.PlayerComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
@@ -436,7 +436,7 @@ class GameTestDriver {
      * Find a card by name in a player's hand.
      */
     fun findCardInHand(playerId: EntityId, cardName: String): EntityId? {
-        val handZone = ZoneKey(playerId, ZoneType.HAND)
+        val handZone = ZoneKey(playerId, Zone.HAND)
         return state.getZone(handZone).find { entityId ->
             state.getEntity(entityId)?.get<CardComponent>()?.name == cardName
         }
@@ -446,7 +446,7 @@ class GameTestDriver {
      * Find all cards by name in a player's hand.
      */
     fun findCardsInHand(playerId: EntityId, cardName: String): List<EntityId> {
-        val handZone = ZoneKey(playerId, ZoneType.HAND)
+        val handZone = ZoneKey(playerId, Zone.HAND)
         return state.getZone(handZone).filter { entityId ->
             state.getEntity(entityId)?.get<CardComponent>()?.name == cardName
         }
@@ -456,7 +456,7 @@ class GameTestDriver {
      * Find a card by name on a player's battlefield.
      */
     fun findPermanent(playerId: EntityId, cardName: String): EntityId? {
-        val battlefieldZone = ZoneKey(playerId, ZoneType.BATTLEFIELD)
+        val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
         return state.getZone(battlefieldZone).find { entityId ->
             state.getEntity(entityId)?.get<CardComponent>()?.name == cardName
         }
@@ -466,7 +466,7 @@ class GameTestDriver {
      * Find all permanents controlled by a player.
      */
     fun getPermanents(playerId: EntityId): List<EntityId> {
-        val battlefieldZone = ZoneKey(playerId, ZoneType.BATTLEFIELD)
+        val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
         return state.getZone(battlefieldZone)
     }
 
@@ -542,7 +542,7 @@ class GameTestDriver {
         _state = _state.withEntity(cardId, container)
 
         // Add to hand
-        val handZone = ZoneKey(playerId, ZoneType.HAND)
+        val handZone = ZoneKey(playerId, Zone.HAND)
         _state = _state.addToZone(handZone, cardId)
 
         return cardId
@@ -579,7 +579,7 @@ class GameTestDriver {
         _state = _state.withEntity(cardId, container)
 
         // Add to graveyard
-        val graveyardZone = ZoneKey(playerId, ZoneType.GRAVEYARD)
+        val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
         _state = _state.addToZone(graveyardZone, cardId)
 
         return cardId
@@ -622,7 +622,7 @@ class GameTestDriver {
         _state = _state.withEntity(cardId, container)
 
         // Add to battlefield
-        val battlefieldZone = ZoneKey(playerId, ZoneType.BATTLEFIELD)
+        val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
         _state = _state.addToZone(battlefieldZone, cardId)
 
         return cardId
@@ -687,7 +687,7 @@ class GameTestDriver {
         _state = _state.withEntity(cardId, container)
 
         // Add to battlefield
-        val battlefieldZone = ZoneKey(playerId, ZoneType.BATTLEFIELD)
+        val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
         _state = _state.addToZone(battlefieldZone, cardId)
 
         return cardId

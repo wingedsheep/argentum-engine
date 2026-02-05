@@ -4,7 +4,7 @@ import com.wingedsheep.engine.state.components.identity.RevealedToComponent
 import com.wingedsheep.gameserver.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
@@ -45,7 +45,7 @@ class WitheringGazeScenarioTest : ScenarioTestBase() {
                 // Record initial state - caster should NOT see opponent's hand
                 val clientStateBefore = game.getClientState(1)
                 val opponentHandBefore = clientStateBefore.zones.find {
-                    it.zoneId.zoneType == ZoneType.HAND && it.zoneId.ownerId == game.player2Id
+                    it.zoneId.zoneType == Zone.HAND && it.zoneId.ownerId == game.player2Id
                 }
 
                 withClue("Opponent's hand should be hidden before spell") {
@@ -75,7 +75,7 @@ class WitheringGazeScenarioTest : ScenarioTestBase() {
                 // Check client state - caster should now see opponent's hand
                 val clientStateAfter = game.getClientState(1)
                 val opponentHandAfter = clientStateAfter.zones.find {
-                    it.zoneId.zoneType == ZoneType.HAND && it.zoneId.ownerId == game.player2Id
+                    it.zoneId.zoneType == Zone.HAND && it.zoneId.ownerId == game.player2Id
                 }
 
                 withClue("Opponent's hand should be visible after spell") {
@@ -115,7 +115,7 @@ class WitheringGazeScenarioTest : ScenarioTestBase() {
 
                 // Opponent should NOT see caster's hand (only their own)
                 val casterHandFromOpponent = opponentClientState.zones.find {
-                    it.zoneId.zoneType == ZoneType.HAND && it.zoneId.ownerId == game.player1Id
+                    it.zoneId.zoneType == Zone.HAND && it.zoneId.ownerId == game.player1Id
                 }
 
                 withClue("Caster's hand should remain hidden from opponent") {
@@ -124,7 +124,7 @@ class WitheringGazeScenarioTest : ScenarioTestBase() {
 
                 // But opponent can see their own hand was revealed (to themselves too since reveal is public)
                 val opponentHandFromOpponent = opponentClientState.zones.find {
-                    it.zoneId.zoneType == ZoneType.HAND && it.zoneId.ownerId == game.player2Id
+                    it.zoneId.zoneType == Zone.HAND && it.zoneId.ownerId == game.player2Id
                 }
 
                 withClue("Opponent should still see their own hand") {
@@ -160,7 +160,7 @@ class WitheringGazeScenarioTest : ScenarioTestBase() {
                 // The revealed Forest should still be visible in client state
                 val clientState = game.getClientState(1)
                 val opponentHand = clientState.zones.find {
-                    it.zoneId.zoneType == ZoneType.HAND && it.zoneId.ownerId == game.player2Id
+                    it.zoneId.zoneType == Zone.HAND && it.zoneId.ownerId == game.player2Id
                 }
 
                 withClue("Previously revealed card should still be visible") {
@@ -189,7 +189,7 @@ class WitheringGazeScenarioTest : ScenarioTestBase() {
 
                 // Find the revealed card
                 val opponentHand = clientState.zones.find {
-                    it.zoneId.zoneType == ZoneType.HAND && it.zoneId.ownerId == game.player2Id
+                    it.zoneId.zoneType == Zone.HAND && it.zoneId.ownerId == game.player2Id
                 }
 
                 withClue("Opponent's hand should contain the revealed card") {

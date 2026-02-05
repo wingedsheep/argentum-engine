@@ -17,7 +17,7 @@ import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.engine.state.components.stack.*
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Effect
 
@@ -238,7 +238,7 @@ class StackResolver(
                     spellId,
                     cardComponent?.name ?: "Unknown",
                     null, // Was on stack
-                    ZoneType.BATTLEFIELD,
+                    Zone.BATTLEFIELD,
                     cardComponent?.ownerId ?: spellComponent.casterId
                 )
             )
@@ -293,7 +293,7 @@ class StackResolver(
         }
 
         // Add to battlefield
-        val battlefieldZone = ZoneKey(controllerId, ZoneType.BATTLEFIELD)
+        val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
         newState = newState.addToZone(battlefieldZone, spellId)
 
         return newState
@@ -332,7 +332,7 @@ class StackResolver(
             // determines how the effect completes.
             if (effectResult.isPaused) {
                 val ownerId = cardComponent?.ownerId ?: spellComponent.casterId
-                val graveyardZone = ZoneKey(ownerId, ZoneType.GRAVEYARD)
+                val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
 
                 // Move spell to graveyard even though effect is paused
                 var pausedState = effectResult.state.updateEntity(spellId) { c ->
@@ -345,7 +345,7 @@ class StackResolver(
                     spellId,
                     cardComponent?.name ?: "Unknown",
                     null,
-                    ZoneType.GRAVEYARD,
+                    Zone.GRAVEYARD,
                     ownerId
                 )
 
@@ -367,7 +367,7 @@ class StackResolver(
 
         // Move to graveyard
         val ownerId = cardComponent?.ownerId ?: spellComponent.casterId
-        val graveyardZone = ZoneKey(ownerId, ZoneType.GRAVEYARD)
+        val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
 
         newState = newState.updateEntity(spellId) { c ->
             c.without<SpellOnStackComponent>().without<TargetsComponent>()
@@ -379,7 +379,7 @@ class StackResolver(
                 spellId,
                 cardComponent?.name ?: "Unknown",
                 null,
-                ZoneType.GRAVEYARD,
+                Zone.GRAVEYARD,
                 ownerId
             )
         )
@@ -397,7 +397,7 @@ class StackResolver(
         spellComponent: SpellOnStackComponent
     ): ExecutionResult {
         val ownerId = cardComponent?.ownerId ?: spellComponent.casterId
-        val graveyardZone = ZoneKey(ownerId, ZoneType.GRAVEYARD)
+        val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
 
         var newState = state.updateEntity(spellId) { c ->
             c.without<SpellOnStackComponent>().without<TargetsComponent>()
@@ -412,7 +412,7 @@ class StackResolver(
                     spellId,
                     cardComponent?.name ?: "Unknown",
                     null,
-                    ZoneType.GRAVEYARD,
+                    Zone.GRAVEYARD,
                     ownerId
                 )
             )
@@ -573,7 +573,7 @@ class StackResolver(
         var newState = state.removeFromStack(spellId)
 
         // Put in graveyard
-        val graveyardZone = ZoneKey(ownerId, ZoneType.GRAVEYARD)
+        val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
         newState = newState.addToZone(graveyardZone, spellId)
 
         // Remove stack components
@@ -589,7 +589,7 @@ class StackResolver(
                     spellId,
                     cardComponent?.name ?: "Unknown",
                     null,
-                    ZoneType.GRAVEYARD,
+                    Zone.GRAVEYARD,
                     ownerId
                 )
             )
@@ -646,19 +646,19 @@ class StackResolver(
         playerId: EntityId
     ): GameState {
         // Try removing from hand first
-        val handZone = ZoneKey(playerId, ZoneType.HAND)
+        val handZone = ZoneKey(playerId, Zone.HAND)
         if (cardId in state.getZone(handZone)) {
             return state.removeFromZone(handZone, cardId)
         }
 
         // Also check graveyard (for flashback etc.)
-        val graveyardZone = ZoneKey(playerId, ZoneType.GRAVEYARD)
+        val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
         if (cardId in state.getZone(graveyardZone)) {
             return state.removeFromZone(graveyardZone, cardId)
         }
 
         // Check exile
-        val exileZone = ZoneKey(playerId, ZoneType.EXILE)
+        val exileZone = ZoneKey(playerId, Zone.EXILE)
         if (cardId in state.getZone(exileZone)) {
             return state.removeFromZone(exileZone, cardId)
         }

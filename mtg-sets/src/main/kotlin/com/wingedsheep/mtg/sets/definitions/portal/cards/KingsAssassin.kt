@@ -8,7 +8,7 @@ import com.wingedsheep.sdk.scripting.ActivationRestriction
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.TargetFilter
-import com.wingedsheep.sdk.scripting.Zone
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.targeting.TargetCreature
 
 /**
@@ -28,7 +28,7 @@ val KingsAssassin = card("King's Assassin") {
     activatedAbility {
         cost = AbilityCost.Tap
         target = TargetCreature(filter = TargetFilter.TappedCreature)
-        effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Graveyard, byDestruction = true)
+        effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.GRAVEYARD, byDestruction = true)
         restrictions = listOf(
             ActivationRestriction.All(
                 ActivationRestriction.OnlyDuringYourTurn,

@@ -8,7 +8,7 @@ import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.*
 
 /**
@@ -171,17 +171,17 @@ class ConditionEvaluator {
     }
 
     private fun evaluateEmptyHand(state: GameState, context: EffectContext): Boolean {
-        val handZone = ZoneKey(context.controllerId, ZoneType.HAND)
+        val handZone = ZoneKey(context.controllerId, Zone.HAND)
         return state.getZone(handZone).isEmpty()
     }
 
     private fun evaluateCardsInHand(state: GameState, condition: CardsInHandAtLeast, context: EffectContext): Boolean {
-        val handZone = ZoneKey(context.controllerId, ZoneType.HAND)
+        val handZone = ZoneKey(context.controllerId, Zone.HAND)
         return state.getZone(handZone).size >= condition.count
     }
 
     private fun evaluateCardsInHandAtMost(state: GameState, condition: CardsInHandAtMost, context: EffectContext): Boolean {
-        val handZone = ZoneKey(context.controllerId, ZoneType.HAND)
+        val handZone = ZoneKey(context.controllerId, Zone.HAND)
         return state.getZone(handZone).size <= condition.count
     }
 
@@ -190,7 +190,7 @@ class ConditionEvaluator {
         condition: CreatureCardsInGraveyardAtLeast,
         context: EffectContext
     ): Boolean {
-        val graveyardZone = ZoneKey(context.controllerId, ZoneType.GRAVEYARD)
+        val graveyardZone = ZoneKey(context.controllerId, Zone.GRAVEYARD)
         val creatureCount = state.getZone(graveyardZone).count { entityId ->
             state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.isCreature == true
         }
@@ -202,7 +202,7 @@ class ConditionEvaluator {
         condition: CardsInGraveyardAtLeast,
         context: EffectContext
     ): Boolean {
-        val graveyardZone = ZoneKey(context.controllerId, ZoneType.GRAVEYARD)
+        val graveyardZone = ZoneKey(context.controllerId, Zone.GRAVEYARD)
         return state.getZone(graveyardZone).size >= condition.count
     }
 
@@ -211,7 +211,7 @@ class ConditionEvaluator {
         condition: GraveyardContainsSubtype,
         context: EffectContext
     ): Boolean {
-        val graveyardZone = ZoneKey(context.controllerId, ZoneType.GRAVEYARD)
+        val graveyardZone = ZoneKey(context.controllerId, Zone.GRAVEYARD)
         return state.getZone(graveyardZone).any { entityId ->
             state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.hasSubtype(condition.subtype) == true
         }

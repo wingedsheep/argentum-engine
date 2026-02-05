@@ -8,7 +8,7 @@ import com.wingedsheep.engine.state.components.identity.*
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.player.MulliganStateComponent
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
@@ -134,7 +134,7 @@ class GameInitializer(
                 val cardContainer = createCardEntity(cardDef, playerId)
                 state = state.withEntity(cardId, cardContainer)
 
-                val libraryKey = ZoneKey(playerId, ZoneType.LIBRARY)
+                val libraryKey = ZoneKey(playerId, Zone.LIBRARY)
                 state = state.addToZone(libraryKey, cardId)
             }
         }
@@ -197,7 +197,7 @@ class GameInitializer(
      * Shuffle a player's library.
      */
     private fun shuffleLibrary(state: GameState, playerId: EntityId): GameState {
-        val libraryKey = ZoneKey(playerId, ZoneType.LIBRARY)
+        val libraryKey = ZoneKey(playerId, Zone.LIBRARY)
         val library = state.getZone(libraryKey).shuffled()
         return state.copy(zones = state.zones + (libraryKey to library))
     }
@@ -214,8 +214,8 @@ class GameInitializer(
         val events = mutableListOf<GameEvent>()
         val drawnCardIds = mutableListOf<EntityId>()
 
-        val libraryKey = ZoneKey(playerId, ZoneType.LIBRARY)
-        val handKey = ZoneKey(playerId, ZoneType.HAND)
+        val libraryKey = ZoneKey(playerId, Zone.LIBRARY)
+        val handKey = ZoneKey(playerId, Zone.HAND)
 
         repeat(count) {
             val library = currentState.getZone(libraryKey)
@@ -236,8 +236,8 @@ class GameInitializer(
                 entityId = cardId,
                 entityName = currentState.getEntity(cardId)
                     ?.get<CardComponent>()?.name ?: "Unknown",
-                fromZone = ZoneType.LIBRARY,
-                toZone = ZoneType.HAND,
+                fromZone = Zone.LIBRARY,
+                toZone = Zone.HAND,
                 ownerId = playerId
             ))
         }
@@ -276,8 +276,8 @@ class GameInitializer(
         count: Int,
         candidateCount: Int
     ): Pair<GameState, List<GameEvent>> {
-        val libraryKey = ZoneKey(playerId, ZoneType.LIBRARY)
-        val handKey = ZoneKey(playerId, ZoneType.HAND)
+        val libraryKey = ZoneKey(playerId, Zone.LIBRARY)
+        val handKey = ZoneKey(playerId, Zone.HAND)
         val library = state.getZone(libraryKey)
 
         // Need enough cards for the hand
@@ -327,8 +327,8 @@ class GameInitializer(
                 entityId = cardId,
                 entityName = currentState.getEntity(cardId)
                     ?.get<CardComponent>()?.name ?: "Unknown",
-                fromZone = ZoneType.LIBRARY,
-                toZone = ZoneType.HAND,
+                fromZone = Zone.LIBRARY,
+                toZone = Zone.HAND,
                 ownerId = playerId
             ))
         }

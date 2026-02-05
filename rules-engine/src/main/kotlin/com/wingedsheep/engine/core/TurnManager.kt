@@ -24,7 +24,7 @@ import com.wingedsheep.engine.state.components.player.LoseAtEndStepComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
 
@@ -198,8 +198,8 @@ class TurnManager(
         val events = mutableListOf<GameEvent>()
         val drawnCards = mutableListOf<EntityId>()
 
-        val libraryKey = ZoneKey(playerId, ZoneType.LIBRARY)
-        val handKey = ZoneKey(playerId, ZoneType.HAND)
+        val libraryKey = ZoneKey(playerId, Zone.LIBRARY)
+        val handKey = ZoneKey(playerId, Zone.HAND)
 
         repeat(count) {
             val library = newState.getZone(libraryKey)
@@ -464,7 +464,7 @@ class TurnManager(
         val events = mutableListOf<GameEvent>()
 
         // Check if player needs to discard
-        val handKey = ZoneKey(activePlayer, ZoneType.HAND)
+        val handKey = ZoneKey(activePlayer, Zone.HAND)
         val hand = newState.getZone(handKey)
         val maxHandSize = 7
         val cardsToDiscard = hand.size - maxHandSize

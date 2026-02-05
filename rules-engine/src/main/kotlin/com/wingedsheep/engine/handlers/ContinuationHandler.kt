@@ -12,7 +12,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.SearchDestination
 
@@ -92,8 +92,8 @@ class ContinuationHandler(
 
         // Move selected cards from hand to graveyard
         var newState = state
-        val handZone = ZoneKey(playerId, ZoneType.HAND)
-        val graveyardZone = ZoneKey(playerId, ZoneType.GRAVEYARD)
+        val handZone = ZoneKey(playerId, Zone.HAND)
+        val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
 
         for (cardId in selectedCards) {
             newState = newState.removeFromZone(handZone, cardId)
@@ -127,7 +127,7 @@ class ContinuationHandler(
         val bottomCards = response.piles.getOrElse(1) { emptyList() }
 
         var newState = state
-        val libraryZone = ZoneKey(playerId, ZoneType.LIBRARY)
+        val libraryZone = ZoneKey(playerId, Zone.LIBRARY)
 
         // Remove all scried cards from library first
         val allScried = topCards + bottomCards
@@ -248,11 +248,11 @@ class ContinuationHandler(
                     else -> {
                         // Look through all graveyards to find which player owns this card
                         val graveyardOwner = state.turnOrder.find { playerId ->
-                            val graveyardZone = ZoneKey(playerId, ZoneType.GRAVEYARD)
+                            val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
                             entityId in state.getZone(graveyardZone)
                         }
                         if (graveyardOwner != null) {
-                            ChosenTarget.Card(entityId, graveyardOwner, ZoneType.GRAVEYARD)
+                            ChosenTarget.Card(entityId, graveyardOwner, Zone.GRAVEYARD)
                         } else {
                             // Default to permanent (fallback for unknown cases)
                             ChosenTarget.Permanent(entityId)
@@ -340,7 +340,7 @@ class ContinuationHandler(
         }
 
         val cardId = selectedCards.first()
-        val graveyardZone = ZoneKey(playerId, ZoneType.GRAVEYARD)
+        val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
 
         // Validate card is still in graveyard
         if (cardId !in state.getZone(graveyardZone)) {
@@ -352,18 +352,18 @@ class ContinuationHandler(
 
         val toZone = when (continuation.destination) {
             SearchDestination.HAND -> {
-                val handZone = ZoneKey(playerId, ZoneType.HAND)
+                val handZone = ZoneKey(playerId, Zone.HAND)
                 newState = newState.addToZone(handZone, cardId)
-                ZoneType.HAND
+                Zone.HAND
             }
             SearchDestination.BATTLEFIELD -> {
-                val battlefieldZone = ZoneKey(playerId, ZoneType.BATTLEFIELD)
+                val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
                 newState = newState.addToZone(battlefieldZone, cardId)
                 newState = newState.updateEntity(cardId) { c ->
                     c.with(com.wingedsheep.engine.state.components.identity.ControllerComponent(playerId))
                         .with(com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent)
                 }
-                ZoneType.BATTLEFIELD
+                Zone.BATTLEFIELD
             }
             else -> return ExecutionResult.error(state, "Unsupported destination: ${continuation.destination}")
         }
@@ -372,7 +372,7 @@ class ContinuationHandler(
             ZoneChangeEvent(
                 entityId = cardId,
                 entityName = cardName,
-                fromZone = ZoneType.GRAVEYARD,
+                fromZone = Zone.GRAVEYARD,
                 toZone = toZone,
                 ownerId = playerId
             )
@@ -402,7 +402,7 @@ class ContinuationHandler(
 
         val playerId = continuation.playerId
         val selectedCards = response.selectedCards
-        val libraryZone = ZoneKey(playerId, ZoneType.LIBRARY)
+        val libraryZone = ZoneKey(playerId, Zone.LIBRARY)
         val events = mutableListOf<GameEvent>()
 
         var newState = state
@@ -450,8 +450,8 @@ class ContinuationHandler(
                     ZoneChangeEvent(
                         entityId = cardId,
                         entityName = cardName,
-                        fromZone = ZoneType.LIBRARY,
-                        toZone = ZoneType.LIBRARY,
+                        fromZone = Zone.LIBRARY,
+                        toZone = Zone.LIBRARY,
                         ownerId = playerId
                     )
                 )
@@ -475,9 +475,9 @@ class ContinuationHandler(
 
         // For other destinations: move cards, then shuffle
         val destinationZone = when (continuation.destination) {
-            SearchDestination.HAND -> ZoneKey(playerId, ZoneType.HAND)
-            SearchDestination.BATTLEFIELD -> ZoneKey(playerId, ZoneType.BATTLEFIELD)
-            SearchDestination.GRAVEYARD -> ZoneKey(playerId, ZoneType.GRAVEYARD)
+            SearchDestination.HAND -> ZoneKey(playerId, Zone.HAND)
+            SearchDestination.BATTLEFIELD -> ZoneKey(playerId, Zone.BATTLEFIELD)
+            SearchDestination.GRAVEYARD -> ZoneKey(playerId, Zone.GRAVEYARD)
             SearchDestination.TOP_OF_LIBRARY -> libraryZone // unreachable
         }
 
@@ -521,12 +521,12 @@ class ContinuationHandler(
                 ZoneChangeEvent(
                     entityId = cardId,
                     entityName = cardName,
-                    fromZone = ZoneType.LIBRARY,
+                    fromZone = Zone.LIBRARY,
                     toZone = when (continuation.destination) {
-                        SearchDestination.HAND -> ZoneType.HAND
-                        SearchDestination.BATTLEFIELD -> ZoneType.BATTLEFIELD
-                        SearchDestination.GRAVEYARD -> ZoneType.GRAVEYARD
-                        SearchDestination.TOP_OF_LIBRARY -> ZoneType.LIBRARY
+                        SearchDestination.HAND -> Zone.HAND
+                        SearchDestination.BATTLEFIELD -> Zone.BATTLEFIELD
+                        SearchDestination.GRAVEYARD -> Zone.GRAVEYARD
+                        SearchDestination.TOP_OF_LIBRARY -> Zone.LIBRARY
                     },
                     ownerId = playerId
                 )
@@ -573,7 +573,7 @@ class ContinuationHandler(
 
         val playerId = continuation.playerId
         val orderedCards = response.orderedObjects
-        val libraryZone = ZoneKey(playerId, ZoneType.LIBRARY)
+        val libraryZone = ZoneKey(playerId, Zone.LIBRARY)
 
         // Get current library
         val currentLibrary = state.getZone(libraryZone).toMutableList()
@@ -717,8 +717,8 @@ class ContinuationHandler(
 
         // Move selected permanents from battlefield to graveyard
         var newState = state
-        val battlefieldZone = ZoneKey(playerId, ZoneType.BATTLEFIELD)
-        val graveyardZone = ZoneKey(playerId, ZoneType.GRAVEYARD)
+        val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
+        val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
 
         for (permanentId in selectedPermanents) {
             newState = newState.removeFromZone(battlefieldZone, permanentId)
@@ -749,8 +749,8 @@ class ContinuationHandler(
 
         // Move selected cards from hand to graveyard
         var newState = state
-        val handZone = ZoneKey(playerId, ZoneType.HAND)
-        val graveyardZone = ZoneKey(playerId, ZoneType.GRAVEYARD)
+        val handZone = ZoneKey(playerId, Zone.HAND)
+        val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
 
         for (cardId in selectedCards) {
             newState = newState.removeFromZone(handZone, cardId)
@@ -819,8 +819,8 @@ class ContinuationHandler(
 
         // Discard the selected cards
         var newState = state
-        val handZone = ZoneKey(currentPlayerId, ZoneType.HAND)
-        val graveyardZone = ZoneKey(currentPlayerId, ZoneType.GRAVEYARD)
+        val handZone = ZoneKey(currentPlayerId, Zone.HAND)
+        val graveyardZone = ZoneKey(currentPlayerId, Zone.GRAVEYARD)
 
         for (cardId in selectedCards) {
             newState = newState.removeFromZone(handZone, cardId)
@@ -842,7 +842,7 @@ class ContinuationHandler(
             val nextPlayer = continuation.remainingPlayers.first()
             val nextRemainingPlayers = continuation.remainingPlayers.drop(1)
 
-            val nextHandZone = ZoneKey(nextPlayer, ZoneType.HAND)
+            val nextHandZone = ZoneKey(nextPlayer, Zone.HAND)
             val nextHand = newState.getZone(nextHandZone)
 
             // Determine selection bounds for next player
@@ -939,7 +939,7 @@ class ContinuationHandler(
         val nextPlayer = continuation.remainingPlayers.first()
         val nextRemainingPlayers = continuation.remainingPlayers.drop(1)
 
-        val nextHandZone = ZoneKey(nextPlayer, ZoneType.HAND)
+        val nextHandZone = ZoneKey(nextPlayer, Zone.HAND)
         val nextHand = state.getZone(nextHandZone)
 
         val minSelection = continuation.minSelection
@@ -1021,7 +1021,7 @@ class ContinuationHandler(
             val nextRemainingPlayers = continuation.remainingPlayers.drop(1)
 
             // Calculate actual max for next player (can't draw more than library size)
-            val libraryZone = ZoneKey(nextPlayer, ZoneType.LIBRARY)
+            val libraryZone = ZoneKey(nextPlayer, Zone.LIBRARY)
             val librarySize = state.getZone(libraryZone).size
             val actualMax = continuation.maxCards.coerceAtMost(librarySize)
 
@@ -1101,8 +1101,8 @@ class ContinuationHandler(
             )
         }
 
-        val libraryZone = ZoneKey(opponentId, ZoneType.LIBRARY)
-        val graveyardZone = ZoneKey(opponentId, ZoneType.GRAVEYARD)
+        val libraryZone = ZoneKey(opponentId, Zone.LIBRARY)
+        val graveyardZone = ZoneKey(opponentId, Zone.GRAVEYARD)
         val events = mutableListOf<GameEvent>()
 
         var newState = state
@@ -1117,8 +1117,8 @@ class ContinuationHandler(
                 ZoneChangeEvent(
                     entityId = cardId,
                     entityName = cardName,
-                    fromZone = ZoneType.LIBRARY,
-                    toZone = ZoneType.GRAVEYARD,
+                    fromZone = Zone.LIBRARY,
+                    toZone = Zone.GRAVEYARD,
                     ownerId = opponentId
                 )
             )
@@ -1201,7 +1201,7 @@ class ContinuationHandler(
 
         val opponentId = continuation.opponentId
         val orderedCards = response.orderedObjects
-        val libraryZone = ZoneKey(opponentId, ZoneType.LIBRARY)
+        val libraryZone = ZoneKey(opponentId, Zone.LIBRARY)
 
         // Get current library
         val currentLibrary = state.getZone(libraryZone).toMutableList()
@@ -1279,8 +1279,8 @@ class ContinuationHandler(
         }
 
         // Player paid the cost - discard the selected cards
-        val handZone = ZoneKey(playerId, ZoneType.HAND)
-        val graveyardZone = ZoneKey(playerId, ZoneType.GRAVEYARD)
+        val handZone = ZoneKey(playerId, Zone.HAND)
+        val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
         var newState = state
         val events = mutableListOf<GameEvent>()
 
@@ -1292,8 +1292,8 @@ class ContinuationHandler(
                 ZoneChangeEvent(
                     entityId = cardId,
                     entityName = cardName,
-                    fromZone = ZoneType.HAND,
-                    toZone = ZoneType.GRAVEYARD,
+                    fromZone = Zone.HAND,
+                    toZone = Zone.GRAVEYARD,
                     ownerId = playerId
                 )
             )
@@ -1351,8 +1351,8 @@ class ContinuationHandler(
         }
 
         // Player paid the cost - sacrifice the selected permanents
-        val battlefieldZone = ZoneKey(playerId, ZoneType.BATTLEFIELD)
-        val graveyardZone = ZoneKey(playerId, ZoneType.GRAVEYARD)
+        val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
+        val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
         var newState = state
         val events = mutableListOf<GameEvent>()
 
@@ -1364,8 +1364,8 @@ class ContinuationHandler(
                 ZoneChangeEvent(
                     entityId = permanentId,
                     entityName = permanentName,
-                    fromZone = ZoneType.BATTLEFIELD,
-                    toZone = ZoneType.GRAVEYARD,
+                    fromZone = Zone.BATTLEFIELD,
+                    toZone = Zone.GRAVEYARD,
                     ownerId = playerId
                 )
             )
@@ -1471,9 +1471,9 @@ class ContinuationHandler(
 
         val playerId = continuation.playerId
         val selectedCards = response.selectedCards.toSet()
-        val libraryZone = ZoneKey(playerId, ZoneType.LIBRARY)
-        val handZone = ZoneKey(playerId, ZoneType.HAND)
-        val graveyardZone = ZoneKey(playerId, ZoneType.GRAVEYARD)
+        val libraryZone = ZoneKey(playerId, Zone.LIBRARY)
+        val handZone = ZoneKey(playerId, Zone.HAND)
+        val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
         val events = mutableListOf<GameEvent>()
 
         var newState = state
@@ -1492,8 +1492,8 @@ class ContinuationHandler(
                     ZoneChangeEvent(
                         entityId = cardId,
                         entityName = cardName,
-                        fromZone = ZoneType.LIBRARY,
-                        toZone = ZoneType.HAND,
+                        fromZone = Zone.LIBRARY,
+                        toZone = Zone.HAND,
                         ownerId = playerId
                     )
                 )
@@ -1505,8 +1505,8 @@ class ContinuationHandler(
                         ZoneChangeEvent(
                             entityId = cardId,
                             entityName = cardName,
-                            fromZone = ZoneType.LIBRARY,
-                            toZone = ZoneType.GRAVEYARD,
+                            fromZone = Zone.LIBRARY,
+                            toZone = Zone.GRAVEYARD,
                             ownerId = playerId
                         )
                     )

@@ -1,7 +1,7 @@
 package com.wingedsheep.gameserver.dto
 
 import com.wingedsheep.sdk.core.Phase
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
@@ -85,8 +85,8 @@ class ClientStateTransformer(
         }
 
         // --- FIX START: Ensure Battlefield is always present ---
-        if (zones.none { it.zoneId.zoneType == ZoneType.BATTLEFIELD }) {
-            val bfZoneKey = ZoneKey(viewingPlayerId, ZoneType.BATTLEFIELD)
+        if (zones.none { it.zoneId.zoneType == Zone.BATTLEFIELD }) {
+            val bfZoneKey = ZoneKey(viewingPlayerId, Zone.BATTLEFIELD)
             val bfEntities = state.getBattlefield()
 
             zones.add(
@@ -111,8 +111,8 @@ class ClientStateTransformer(
         // --- FIX END ---
 
         // --- FIX START: Ensure Stack is always present ---
-        if (zones.none { it.zoneId.zoneType == ZoneType.STACK }) {
-            val stackZoneKey = ZoneKey(viewingPlayerId, ZoneType.STACK)
+        if (zones.none { it.zoneId.zoneType == Zone.STACK }) {
+            val stackZoneKey = ZoneKey(viewingPlayerId, Zone.STACK)
             zones.add(
                 ClientZone(
                     zoneId = stackZoneKey,
@@ -168,13 +168,13 @@ class ClientStateTransformer(
      */
     private fun isZoneVisibleTo(zoneKey: ZoneKey, viewingPlayerId: EntityId): Boolean {
         return when (zoneKey.zoneType) {
-            ZoneType.LIBRARY -> false
-            ZoneType.HAND -> zoneKey.ownerId == viewingPlayerId
-            ZoneType.BATTLEFIELD,
-            ZoneType.GRAVEYARD,
-            ZoneType.STACK,
-            ZoneType.EXILE,
-            ZoneType.COMMAND -> true
+            Zone.LIBRARY -> false
+            Zone.HAND -> zoneKey.ownerId == viewingPlayerId
+            Zone.BATTLEFIELD,
+            Zone.GRAVEYARD,
+            Zone.STACK,
+            Zone.EXILE,
+            Zone.COMMAND -> true
         }
     }
 
@@ -325,7 +325,7 @@ class ClientStateTransformer(
 
         // For battlefield permanents, use projected values from the layer system (Rule 613)
         // For cards in other zones, use base values
-        val projectedValues = if (zoneKey.zoneType == ZoneType.BATTLEFIELD) {
+        val projectedValues = if (zoneKey.zoneType == Zone.BATTLEFIELD) {
             projectedState.getProjectedValues(entityId)
         } else {
             null

@@ -10,7 +10,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.player.LossReason
 import com.wingedsheep.engine.state.components.player.PlayerLostComponent
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EachPlayerDrawsXEffect
 import kotlin.reflect.KClass
@@ -53,8 +53,8 @@ class EachPlayerDrawsXExecutor : EffectExecutor<EachPlayerDrawsXEffect> {
 
         // Each player draws X cards
         for (playerId in playersToDraw) {
-            val libraryZone = ZoneKey(playerId, ZoneType.LIBRARY)
-            val handZone = ZoneKey(playerId, ZoneType.HAND)
+            val libraryZone = ZoneKey(playerId, Zone.LIBRARY)
+            val handZone = ZoneKey(playerId, Zone.HAND)
             val drawnCards = mutableListOf<EntityId>()
 
             repeat(xValue) {

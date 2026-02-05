@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CompositeEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.MoveToZoneEffect
-import com.wingedsheep.sdk.scripting.Zone
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.OwnerGainsLifeEffect
 import com.wingedsheep.sdk.targeting.TargetCreature
 
@@ -23,7 +23,7 @@ val PathOfPeace = card("Path of Peace") {
         target = TargetCreature()
         effect = CompositeEffect(
             listOf(
-                MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Graveyard, byDestruction = true),
+                MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.GRAVEYARD, byDestruction = true),
                 OwnerGainsLifeEffect(4)
             )
         )

@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.OnDeath
-import com.wingedsheep.sdk.scripting.Zone
+import com.wingedsheep.sdk.core.Zone
 
 /**
  * Endless Cockroaches
@@ -22,7 +22,7 @@ val EndlessCockroaches = card("Endless Cockroaches") {
 
     triggeredAbility {
         trigger = OnDeath()
-        effect = MoveToZoneEffect(EffectTarget.Self, Zone.Hand)
+        effect = MoveToZoneEffect(EffectTarget.Self, Zone.HAND)
     }
 
     metadata {

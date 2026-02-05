@@ -7,7 +7,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolvePlayerTarget
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.DiscardRandomEffect
 import kotlin.reflect.KClass
@@ -31,7 +31,7 @@ class DiscardRandomExecutor : EffectExecutor<DiscardRandomEffect> {
         val playerId = resolvePlayerTarget(effect.target, context)
             ?: return ExecutionResult.error(state, "No valid player for random discard")
 
-        val handZone = ZoneKey(playerId, ZoneType.HAND)
+        val handZone = ZoneKey(playerId, Zone.HAND)
         val hand = state.getZone(handZone)
 
         if (hand.isEmpty()) {
@@ -53,8 +53,8 @@ class DiscardRandomExecutor : EffectExecutor<DiscardRandomEffect> {
         cardIds: List<EntityId>
     ): ExecutionResult {
         var newState = state
-        val handZone = ZoneKey(playerId, ZoneType.HAND)
-        val graveyardZone = ZoneKey(playerId, ZoneType.GRAVEYARD)
+        val handZone = ZoneKey(playerId, Zone.HAND)
+        val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
 
         for (cardId in cardIds) {
             newState = newState.removeFromZone(handZone, cardId)

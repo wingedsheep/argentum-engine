@@ -11,7 +11,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolvePlayer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.DiscardCardsEffect
 import kotlin.reflect.KClass
@@ -38,7 +38,7 @@ class DiscardCardsExecutor(
         val playerId = resolvePlayerTarget(effect.target, context)
             ?: return ExecutionResult.error(state, "No valid player for discard")
 
-        val handZone = ZoneKey(playerId, ZoneType.HAND)
+        val handZone = ZoneKey(playerId, Zone.HAND)
         val hand = state.getZone(handZone)
 
         // If hand is empty or has fewer cards than needed, discard all
@@ -92,8 +92,8 @@ class DiscardCardsExecutor(
         cardIds: List<EntityId>
     ): ExecutionResult {
         var newState = state
-        val handZone = ZoneKey(playerId, ZoneType.HAND)
-        val graveyardZone = ZoneKey(playerId, ZoneType.GRAVEYARD)
+        val handZone = ZoneKey(playerId, Zone.HAND)
+        val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
 
         for (cardId in cardIds) {
             newState = newState.removeFromZone(handZone, cardId)

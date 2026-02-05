@@ -134,8 +134,8 @@ class TriggerDetector(
         }
 
         // Handle death triggers (source might not be on battlefield anymore)
-        if (event is ZoneChangeEvent && event.toZone == com.wingedsheep.sdk.core.ZoneType.GRAVEYARD &&
-            event.fromZone == com.wingedsheep.sdk.core.ZoneType.BATTLEFIELD) {
+        if (event is ZoneChangeEvent && event.toZone == com.wingedsheep.sdk.core.Zone.GRAVEYARD &&
+            event.fromZone == com.wingedsheep.sdk.core.Zone.BATTLEFIELD) {
             detectDeathTriggers(state, event, triggers)
         }
 
@@ -217,34 +217,34 @@ class TriggerDetector(
         return when (trigger) {
             is OnEnterBattlefield -> {
                 event is ZoneChangeEvent &&
-                    event.toZone == com.wingedsheep.sdk.core.ZoneType.BATTLEFIELD &&
+                    event.toZone == com.wingedsheep.sdk.core.Zone.BATTLEFIELD &&
                     (!trigger.selfOnly || event.entityId == sourceId)
             }
 
             is OnOtherCreatureEnters -> {
                 event is ZoneChangeEvent &&
-                    event.toZone == com.wingedsheep.sdk.core.ZoneType.BATTLEFIELD &&
+                    event.toZone == com.wingedsheep.sdk.core.Zone.BATTLEFIELD &&
                     event.entityId != sourceId &&
                     (!trigger.youControlOnly || event.ownerId == controllerId)
             }
 
             is OnLeavesBattlefield -> {
                 event is ZoneChangeEvent &&
-                    event.fromZone == com.wingedsheep.sdk.core.ZoneType.BATTLEFIELD &&
+                    event.fromZone == com.wingedsheep.sdk.core.Zone.BATTLEFIELD &&
                     (!trigger.selfOnly || event.entityId == sourceId)
             }
 
             is OnDeath -> {
                 event is ZoneChangeEvent &&
-                    event.toZone == com.wingedsheep.sdk.core.ZoneType.GRAVEYARD &&
-                    event.fromZone == com.wingedsheep.sdk.core.ZoneType.BATTLEFIELD &&
+                    event.toZone == com.wingedsheep.sdk.core.Zone.GRAVEYARD &&
+                    event.fromZone == com.wingedsheep.sdk.core.Zone.BATTLEFIELD &&
                     (!trigger.selfOnly || event.entityId == sourceId)
             }
 
             is OnOtherCreatureWithSubtypeDies -> {
                 if (event !is ZoneChangeEvent ||
-                    event.toZone != com.wingedsheep.sdk.core.ZoneType.GRAVEYARD ||
-                    event.fromZone != com.wingedsheep.sdk.core.ZoneType.BATTLEFIELD ||
+                    event.toZone != com.wingedsheep.sdk.core.Zone.GRAVEYARD ||
+                    event.fromZone != com.wingedsheep.sdk.core.Zone.BATTLEFIELD ||
                     event.entityId == sourceId) {
                     false
                 } else {
@@ -259,7 +259,7 @@ class TriggerDetector(
 
             is OnOtherCreatureWithSubtypeEnters -> {
                 if (event !is ZoneChangeEvent ||
-                    event.toZone != com.wingedsheep.sdk.core.ZoneType.BATTLEFIELD ||
+                    event.toZone != com.wingedsheep.sdk.core.Zone.BATTLEFIELD ||
                     event.entityId == sourceId) {
                     false
                 } else {
@@ -274,7 +274,7 @@ class TriggerDetector(
 
             is OnCreatureWithSubtypeEnters -> {
                 if (event !is ZoneChangeEvent ||
-                    event.toZone != com.wingedsheep.sdk.core.ZoneType.BATTLEFIELD) {
+                    event.toZone != com.wingedsheep.sdk.core.Zone.BATTLEFIELD) {
                     false
                 } else {
                     // Check if entering creature has the required subtype using projected state

@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.OnEnterBattlefield
-import com.wingedsheep.sdk.scripting.Zone
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.targeting.TargetCreature
 
 /**
@@ -24,7 +24,7 @@ val ManOWar = card("Man-o'-War") {
     triggeredAbility {
         trigger = OnEnterBattlefield()
         target = TargetCreature()
-        effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Hand)
+        effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.HAND)
     }
 
     metadata {

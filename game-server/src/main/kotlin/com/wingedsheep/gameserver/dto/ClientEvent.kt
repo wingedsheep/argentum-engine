@@ -443,35 +443,35 @@ object ClientEventTransformer {
             is ZoneChangeEvent -> {
                 val isYours = event.ownerId == viewingPlayerId
                 when (event.toZone) {
-                    com.wingedsheep.sdk.core.ZoneType.BATTLEFIELD -> ClientEvent.PermanentEntered(
+                    com.wingedsheep.sdk.core.Zone.BATTLEFIELD -> ClientEvent.PermanentEntered(
                         cardId = event.entityId,
                         cardName = event.entityName,
                         controllerId = event.ownerId,
                         enteredTapped = false, // Would need to check state
                         isYours = isYours
                     )
-                    com.wingedsheep.sdk.core.ZoneType.GRAVEYARD -> ClientEvent.PermanentLeft(
+                    com.wingedsheep.sdk.core.Zone.GRAVEYARD -> ClientEvent.PermanentLeft(
                         cardId = event.entityId,
                         cardName = event.entityName,
                         destination = "graveyard",
                         ownerId = event.ownerId,
                         isYours = isYours
                     )
-                    com.wingedsheep.sdk.core.ZoneType.EXILE -> ClientEvent.PermanentLeft(
+                    com.wingedsheep.sdk.core.Zone.EXILE -> ClientEvent.PermanentLeft(
                         cardId = event.entityId,
                         cardName = event.entityName,
                         destination = "exile",
                         ownerId = event.ownerId,
                         isYours = isYours
                     )
-                    com.wingedsheep.sdk.core.ZoneType.HAND -> ClientEvent.PermanentLeft(
+                    com.wingedsheep.sdk.core.Zone.HAND -> ClientEvent.PermanentLeft(
                         cardId = event.entityId,
                         cardName = event.entityName,
                         destination = "hand",
                         ownerId = event.ownerId,
                         isYours = isYours
                     )
-                    com.wingedsheep.sdk.core.ZoneType.LIBRARY -> ClientEvent.PermanentLeft(
+                    com.wingedsheep.sdk.core.Zone.LIBRARY -> ClientEvent.PermanentLeft(
                         cardId = event.entityId,
                         cardName = event.entityName,
                         destination = "library",

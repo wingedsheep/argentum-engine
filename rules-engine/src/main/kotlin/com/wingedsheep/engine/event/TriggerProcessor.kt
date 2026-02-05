@@ -261,10 +261,10 @@ class TriggerProcessor(
         // Find which zone it's in
         for (playerId in state.turnOrder) {
             for (zoneType in listOf(
-                com.wingedsheep.sdk.core.ZoneType.GRAVEYARD,
-                com.wingedsheep.sdk.core.ZoneType.HAND,
-                com.wingedsheep.sdk.core.ZoneType.LIBRARY,
-                com.wingedsheep.sdk.core.ZoneType.EXILE
+                com.wingedsheep.sdk.core.Zone.GRAVEYARD,
+                com.wingedsheep.sdk.core.Zone.HAND,
+                com.wingedsheep.sdk.core.Zone.LIBRARY,
+                com.wingedsheep.sdk.core.Zone.EXILE
             )) {
                 val zoneKey = com.wingedsheep.engine.state.ZoneKey(playerId, zoneType)
                 if (state.getZone(zoneKey).contains(targetId)) {

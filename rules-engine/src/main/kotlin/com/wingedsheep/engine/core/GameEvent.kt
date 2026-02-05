@@ -2,7 +2,7 @@ package com.wingedsheep.engine.core
 
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -26,8 +26,8 @@ sealed interface GameEvent
 data class ZoneChangeEvent(
     val entityId: EntityId,
     val entityName: String,
-    val fromZone: ZoneType?,
-    val toZone: ZoneType,
+    val fromZone: Zone?,
+    val toZone: Zone,
     val ownerId: EntityId
 ) : GameEvent
 

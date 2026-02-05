@@ -11,7 +11,7 @@ import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
@@ -46,7 +46,7 @@ class EmptyLibraryLossTest : FunSpec({
      * Helper to empty a player's library.
      */
     fun GameTestDriver.emptyLibrary(playerId: com.wingedsheep.sdk.model.EntityId) {
-        val libraryZone = ZoneKey(playerId, ZoneType.LIBRARY)
+        val libraryZone = ZoneKey(playerId, Zone.LIBRARY)
         val library = state.getZone(libraryZone)
 
         // Remove all cards from the library
@@ -213,7 +213,7 @@ class EmptyLibraryLossTest : FunSpec({
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
 
         // Leave exactly 1 card in library (Divination draws 2, so it will fail on second draw)
-        val libraryZone = ZoneKey(activePlayer, ZoneType.LIBRARY)
+        val libraryZone = ZoneKey(activePlayer, Zone.LIBRARY)
         val library = driver.state.getLibrary(activePlayer)
 
         // Remove all but one card

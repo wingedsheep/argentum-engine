@@ -1,7 +1,7 @@
 package com.wingedsheep.engine.state.components.stack
 
 import com.wingedsheep.engine.state.Component
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.Effect
@@ -86,7 +86,7 @@ sealed interface ChosenTarget {
     data class Card(
         val cardId: EntityId,
         val ownerId: EntityId,
-        val zone: ZoneType
+        val zone: Zone
     ) : ChosenTarget
 
     @Serializable

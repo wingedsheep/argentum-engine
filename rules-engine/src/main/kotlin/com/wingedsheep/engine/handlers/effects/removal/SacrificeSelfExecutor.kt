@@ -6,7 +6,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.SacrificeSelfEffect
 import kotlin.reflect.KClass
 
@@ -28,8 +28,8 @@ class SacrificeSelfExecutor : EffectExecutor<SacrificeSelfEffect> {
             ?: return ExecutionResult.success(state) // No source to sacrifice
 
         val controllerId = context.controllerId
-        val battlefieldZone = ZoneKey(controllerId, ZoneType.BATTLEFIELD)
-        val graveyardZone = ZoneKey(controllerId, ZoneType.GRAVEYARD)
+        val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
+        val graveyardZone = ZoneKey(controllerId, Zone.GRAVEYARD)
 
         // Check if the source is still on the battlefield
         if (sourceId !in state.getZone(battlefieldZone)) {
@@ -46,8 +46,8 @@ class SacrificeSelfExecutor : EffectExecutor<SacrificeSelfEffect> {
             ZoneChangeEvent(
                 entityId = sourceId,
                 entityName = sourceName,
-                fromZone = ZoneType.BATTLEFIELD,
-                toZone = ZoneType.GRAVEYARD,
+                fromZone = Zone.BATTLEFIELD,
+                toZone = Zone.GRAVEYARD,
                 ownerId = controllerId
             )
         )

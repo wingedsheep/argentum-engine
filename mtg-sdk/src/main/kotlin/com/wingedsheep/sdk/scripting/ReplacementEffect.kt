@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting
 
+import com.wingedsheep.sdk.core.Zone
 import kotlinx.serialization.Serializable
 
 /**
@@ -144,7 +145,7 @@ data class RedirectZoneChange(
     override val appliesTo: GameEvent
 ) : ReplacementEffect {
     override val description: String =
-        "If ${appliesTo.description}, put it into ${newDestination.description} instead"
+        "If ${appliesTo.description}, put it into ${newDestination.displayName} instead"
 }
 
 /**
@@ -155,7 +156,7 @@ data class RedirectZoneChange(
 data class EntersTapped(
     override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
         objectFilter = ObjectFilter.Any,
-        to = Zone.Battlefield
+        to = Zone.BATTLEFIELD
     )
 ) : ReplacementEffect {
     override val description: String = "If ${appliesTo.description}, it enters tapped"
@@ -171,7 +172,7 @@ data class EntersWithCounters(
     val count: Int,
     override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
         objectFilter = ObjectFilter.CreatureYouControl,
-        to = Zone.Battlefield
+        to = Zone.BATTLEFIELD
     )
 ) : ReplacementEffect {
     override val description: String =
@@ -185,8 +186,8 @@ data class EntersWithCounters(
 data class UndyingEffect(
     override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
         objectFilter = ObjectFilter.CreatureYouControl,
-        from = Zone.Battlefield,
-        to = Zone.Graveyard
+        from = Zone.BATTLEFIELD,
+        to = Zone.GRAVEYARD
     )
 ) : ReplacementEffect {
     override val description: String =
@@ -200,8 +201,8 @@ data class UndyingEffect(
 data class PersistEffect(
     override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
         objectFilter = ObjectFilter.CreatureYouControl,
-        from = Zone.Battlefield,
-        to = Zone.Graveyard
+        from = Zone.BATTLEFIELD,
+        to = Zone.GRAVEYARD
     )
 ) : ReplacementEffect {
     override val description: String =

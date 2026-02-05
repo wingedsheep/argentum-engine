@@ -12,7 +12,7 @@ import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.TypeLine
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CreateTokenEffect
@@ -63,7 +63,7 @@ class CreateTokenExecutor : EffectExecutor<CreateTokenEffect> {
             newState = newState.withEntity(tokenId, container)
 
             // Add to battlefield
-            val battlefieldZone = ZoneKey(context.controllerId, ZoneType.BATTLEFIELD)
+            val battlefieldZone = ZoneKey(context.controllerId, Zone.BATTLEFIELD)
             newState = newState.addToZone(battlefieldZone, tokenId)
         }
 

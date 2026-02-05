@@ -7,7 +7,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.LookAtTopAndReorderEffect
 import java.util.UUID
@@ -43,7 +43,7 @@ class LookAtTopAndReorderExecutor : EffectExecutor<LookAtTopAndReorderEffect> {
             else -> context.controllerId
         }
 
-        val libraryZone = ZoneKey(playerId, ZoneType.LIBRARY)
+        val libraryZone = ZoneKey(playerId, Zone.LIBRARY)
         val library = state.getZone(libraryZone)
 
         // If library is empty, nothing to look at

@@ -10,7 +10,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.Deck
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -69,8 +69,8 @@ class CombatLethalDamageTest : FunSpec({
      * combat we need to bypass that.
      */
     fun putCreatureOnBattlefield(driver: GameTestDriver, playerId: com.wingedsheep.sdk.model.EntityId, cardName: String): com.wingedsheep.sdk.model.EntityId? {
-        val handZone = ZoneKey(playerId, ZoneType.HAND)
-        val battlefieldZone = ZoneKey(playerId, ZoneType.BATTLEFIELD)
+        val handZone = ZoneKey(playerId, Zone.HAND)
+        val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
 
         // Find the creature in hand
         val creatureId = driver.state.getZone(handZone).find { entityId ->

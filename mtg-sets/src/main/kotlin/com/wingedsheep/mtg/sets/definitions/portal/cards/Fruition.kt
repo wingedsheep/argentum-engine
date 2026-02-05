@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.scripting.DynamicAmount
 import com.wingedsheep.sdk.scripting.GainLifeEffect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.Player
-import com.wingedsheep.sdk.scripting.Zone
+import com.wingedsheep.sdk.core.Zone
 
 /**
  * Fruition
@@ -22,7 +22,7 @@ val Fruition = card("Fruition") {
         effect = GainLifeEffect(
             DynamicAmount.Count(
                 player = Player.Each,
-                zone = Zone.Battlefield,
+                zone = Zone.BATTLEFIELD,
                 filter = GameObjectFilter.Land.withSubtype("Forest")
             )
         )

@@ -33,7 +33,7 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.CastRestriction
@@ -83,7 +83,7 @@ class CastSpellHandler(
         val cardComponent = container.get<CardComponent>()
             ?: return "Not a card: ${action.cardId}"
 
-        val handZone = ZoneKey(action.playerId, ZoneType.HAND)
+        val handZone = ZoneKey(action.playerId, Zone.HAND)
         if (action.cardId !in state.getZone(handZone)) {
             return "Card is not in your hand"
         }
@@ -354,8 +354,8 @@ class CastSpellHandler(
                             val permCard = permContainer.get<CardComponent>() ?: continue
                             val controllerId = permContainer.get<ControllerComponent>()?.playerId ?: action.playerId
                             val ownerId = permCard.ownerId ?: action.playerId
-                            val battlefieldZone = ZoneKey(controllerId, ZoneType.BATTLEFIELD)
-                            val graveyardZone = ZoneKey(ownerId, ZoneType.GRAVEYARD)
+                            val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
+                            val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
 
                             currentState = currentState.removeFromZone(battlefieldZone, permId)
                             currentState = currentState.addToZone(graveyardZone, permId)
@@ -366,8 +366,8 @@ class CastSpellHandler(
                             events.add(ZoneChangeEvent(
                                 entityId = permId,
                                 entityName = permCard.name,
-                                fromZone = ZoneType.BATTLEFIELD,
-                                toZone = ZoneType.GRAVEYARD,
+                                fromZone = Zone.BATTLEFIELD,
+                                toZone = Zone.GRAVEYARD,
                                 ownerId = ownerId
                             ))
                         }

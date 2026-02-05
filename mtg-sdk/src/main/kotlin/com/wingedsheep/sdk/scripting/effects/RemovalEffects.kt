@@ -2,6 +2,7 @@ package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.Zone
 import kotlinx.serialization.Serializable
 
 // =============================================================================
@@ -193,17 +194,17 @@ data class MoveToZoneEffect(
     override val description: String = buildString {
         when {
             byDestruction -> append("Destroy ${target.description}")
-            destination == Zone.Hand -> append("Return ${target.description} to its owner's hand")
-            destination == Zone.Exile -> append("Exile ${target.description}")
-            destination == Zone.Library && placement == ZonePlacement.Shuffled ->
+            destination == Zone.HAND -> append("Return ${target.description} to its owner's hand")
+            destination == Zone.EXILE -> append("Exile ${target.description}")
+            destination == Zone.LIBRARY && placement == ZonePlacement.Shuffled ->
                 append("Shuffle ${target.description} into its owner's library")
-            destination == Zone.Library && placement == ZonePlacement.Top ->
+            destination == Zone.LIBRARY && placement == ZonePlacement.Top ->
                 append("Put ${target.description} on top of its owner's library")
-            destination == Zone.Battlefield && placement == ZonePlacement.Tapped ->
+            destination == Zone.BATTLEFIELD && placement == ZonePlacement.Tapped ->
                 append("Put ${target.description} onto the battlefield tapped")
-            destination == Zone.Battlefield ->
+            destination == Zone.BATTLEFIELD ->
                 append("Put ${target.description} onto the battlefield")
-            else -> append("Put ${target.description} into ${destination.description}")
+            else -> append("Put ${target.description} into ${destination.displayName}")
         }
     }
 }

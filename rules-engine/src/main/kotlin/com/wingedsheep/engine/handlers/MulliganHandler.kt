@@ -5,7 +5,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.MulliganStateComponent
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 
 /**
@@ -97,8 +97,8 @@ class MulliganHandler {
         var newState = state
 
         // 1. Put current hand on bottom of library
-        val handKey = ZoneKey(playerId, ZoneType.HAND)
-        val libraryKey = ZoneKey(playerId, ZoneType.LIBRARY)
+        val handKey = ZoneKey(playerId, Zone.HAND)
+        val libraryKey = ZoneKey(playerId, Zone.LIBRARY)
         val hand = newState.getZone(handKey)
 
         for (cardId in hand) {
@@ -135,8 +135,8 @@ class MulliganHandler {
                     entityId = cardId,
                     entityName = newState.getEntity(cardId)
                         ?.get<CardComponent>()?.name ?: "Unknown",
-                    fromZone = ZoneType.LIBRARY,
-                    toZone = ZoneType.HAND,
+                    fromZone = Zone.LIBRARY,
+                    toZone = Zone.HAND,
                     ownerId = playerId
                 ))
             }
@@ -218,8 +218,8 @@ class MulliganHandler {
 
         val events = mutableListOf<GameEvent>()
         var newState = state
-        val handKey = ZoneKey(playerId, ZoneType.HAND)
-        val libraryKey = ZoneKey(playerId, ZoneType.LIBRARY)
+        val handKey = ZoneKey(playerId, Zone.HAND)
+        val libraryKey = ZoneKey(playerId, Zone.LIBRARY)
 
         // Move cards to bottom of library (in order specified)
         for (cardId in action.cardIds) {
@@ -232,8 +232,8 @@ class MulliganHandler {
                 entityId = cardId,
                 entityName = newState.getEntity(cardId)
                     ?.get<CardComponent>()?.name ?: "Unknown",
-                fromZone = ZoneType.HAND,
-                toZone = ZoneType.LIBRARY,
+                fromZone = Zone.HAND,
+                toZone = Zone.LIBRARY,
                 ownerId = playerId
             ))
         }

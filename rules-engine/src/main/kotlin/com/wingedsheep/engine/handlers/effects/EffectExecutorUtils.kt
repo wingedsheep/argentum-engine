@@ -19,7 +19,7 @@ import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.Player
@@ -165,8 +165,8 @@ object EffectExecutorUtils {
         val ownerId = cardComponent.ownerId ?: controllerId
 
         // Move to graveyard
-        val battlefieldZone = ZoneKey(controllerId, ZoneType.BATTLEFIELD)
-        val graveyardZone = ZoneKey(ownerId, ZoneType.GRAVEYARD)
+        val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
+        val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
 
         var newState = state.removeFromZone(battlefieldZone, entityId)
         newState = newState.addToZone(graveyardZone, entityId)
@@ -186,8 +186,8 @@ object EffectExecutorUtils {
                 ZoneChangeEvent(
                     entityId,
                     cardComponent.name,
-                    ZoneType.BATTLEFIELD,
-                    ZoneType.GRAVEYARD,
+                    Zone.BATTLEFIELD,
+                    Zone.GRAVEYARD,
                     ownerId
                 )
             )
@@ -200,10 +200,10 @@ object EffectExecutorUtils {
      *
      * @param state The current game state
      * @param entityId The entity to move
-     * @param targetZoneType The destination zone type
+     * @param targetZone The destination zone type
      * @return The execution result with updated state and events
      */
-    fun moveCardToZone(state: GameState, entityId: EntityId, targetZoneType: ZoneType): ExecutionResult {
+    fun moveCardToZone(state: GameState, entityId: EntityId, targetZone: Zone): ExecutionResult {
         val container = state.getEntity(entityId)
             ?: return ExecutionResult.error(state, "Entity not found")
 
@@ -218,13 +218,13 @@ object EffectExecutorUtils {
             ?: return ExecutionResult.error(state, "Card not in any zone")
 
         // Move to target zone
-        val targetZone = ZoneKey(ownerId, targetZoneType)
+        val targetZoneKey = ZoneKey(ownerId, targetZone)
 
         var newState = state.removeFromZone(currentZone, entityId)
-        newState = newState.addToZone(targetZone, entityId)
+        newState = newState.addToZone(targetZoneKey, entityId)
 
         // Remove permanent-only components if moving from battlefield
-        if (currentZone.zoneType == ZoneType.BATTLEFIELD) {
+        if (currentZone.zoneType == Zone.BATTLEFIELD) {
             newState = newState.updateEntity(entityId) { c ->
                 c.without<ControllerComponent>()
                     .without<TappedComponent>()
@@ -240,7 +240,7 @@ object EffectExecutorUtils {
                     entityId,
                     cardComponent.name,
                     currentZone.zoneType,
-                    targetZoneType,
+                    targetZone,
                     ownerId
                 )
             )
@@ -252,10 +252,10 @@ object EffectExecutorUtils {
      *
      * @param state The current game state
      * @param entityId The entity to move
-     * @param targetZoneType The destination zone type
+     * @param targetZone The destination zone type
      * @return The execution result with updated state and events
      */
-    fun movePermanentToZone(state: GameState, entityId: EntityId, targetZoneType: ZoneType): ExecutionResult {
+    fun movePermanentToZone(state: GameState, entityId: EntityId, targetZone: Zone): ExecutionResult {
         val container = state.getEntity(entityId)
             ?: return ExecutionResult.error(state, "Entity not found")
 
@@ -269,11 +269,11 @@ object EffectExecutorUtils {
         val ownerId = cardComponent.ownerId ?: controllerId
 
         // Move to target zone
-        val battlefieldZone = ZoneKey(controllerId, ZoneType.BATTLEFIELD)
-        val targetZone = ZoneKey(ownerId, targetZoneType)
+        val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
+        val targetZoneKey = ZoneKey(ownerId, targetZone)
 
         var newState = state.removeFromZone(battlefieldZone, entityId)
-        newState = newState.addToZone(targetZone, entityId)
+        newState = newState.addToZone(targetZoneKey, entityId)
 
         // Remove permanent-only components
         newState = newState.updateEntity(entityId) { c ->
@@ -289,8 +289,8 @@ object EffectExecutorUtils {
                 ZoneChangeEvent(
                     entityId,
                     cardComponent.name,
-                    ZoneType.BATTLEFIELD,
-                    targetZoneType,
+                    Zone.BATTLEFIELD,
+                    targetZone,
                     ownerId
                 )
             )

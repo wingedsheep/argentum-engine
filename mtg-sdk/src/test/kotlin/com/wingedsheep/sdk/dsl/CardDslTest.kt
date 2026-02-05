@@ -616,7 +616,7 @@ class CardDslTest : DescribeSpec({
                         mode("Destroy target artifact", Effects.Destroy(EffectTarget.ContextTarget(0)))
                         mode("Put target creature on the bottom of its owner's library") {
                             val creature = target("creature", Targets.Creature)
-                            effect = MoveToZoneEffect(creature, Zone.Library, ZonePlacement.Top)
+                            effect = MoveToZoneEffect(creature, Zone.LIBRARY, ZonePlacement.Top)
                         }
                         mode("Counter target instant spell") {
                             val instant = target("instant", Targets.Spell)
@@ -688,7 +688,7 @@ class CardDslTest : DescribeSpec({
                     trigger = Triggers.EntersBattlefield
                     target = Targets.NonlandPermanent
                     effect = StoreResultEffect(
-                        effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Exile),
+                        effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.EXILE),
                         storeAs = EffectVariable.EntityRef("exiledCard")
                     )
                 }
@@ -696,7 +696,7 @@ class CardDslTest : DescribeSpec({
                 // LTB: Return the exiled card
                 triggeredAbility {
                     trigger = Triggers.LeavesBattlefield
-                    effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Battlefield)
+                    effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.BATTLEFIELD)
                 }
             }
 
@@ -778,17 +778,17 @@ class CardDslTest : DescribeSpec({
             val entersTapped = EntersTapped(
                 appliesTo = GameEvent.ZoneChangeEvent(
                     objectFilter = ObjectFilter.NonlandPermanent,
-                    to = Zone.Battlefield
+                    to = Zone.BATTLEFIELD
                 )
             )
             entersTapped.appliesTo.shouldBeInstanceOf<GameEvent.ZoneChangeEvent>()
 
             // Rest in Peace - redirect graveyard to exile
             val restInPeace = RedirectZoneChange(
-                newDestination = Zone.Exile,
-                appliesTo = GameEvent.ZoneChangeEvent(to = Zone.Graveyard)
+                newDestination = Zone.EXILE,
+                appliesTo = GameEvent.ZoneChangeEvent(to = Zone.GRAVEYARD)
             )
-            restInPeace.newDestination shouldBe Zone.Exile
+            restInPeace.newDestination shouldBe Zone.EXILE
 
             // Combat damage from red sources to creatures you control
             val damageFilter = GameEvent.DamageEvent(
@@ -882,7 +882,7 @@ class CardDslTest : DescribeSpec({
 
         it("should create store entity shorthand") {
             val effect = EffectPatterns.storeEntity(
-                effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Exile),
+                effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.EXILE),
                 `as` = "exiledCreature"
             )
 

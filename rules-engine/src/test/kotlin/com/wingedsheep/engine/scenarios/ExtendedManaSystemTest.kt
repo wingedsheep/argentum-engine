@@ -12,7 +12,7 @@ import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.AlternativePaymentChoice
 import com.wingedsheep.sdk.scripting.ConvokePayment
@@ -269,8 +269,8 @@ class ExtendedManaSystemTest : FunSpec({
             repeat(5) {
                 val bolt = driver.putCardInHand(activePlayer, "Lightning Bolt")
                 // Move to graveyard manually
-                val handZone = ZoneKey(activePlayer, ZoneType.HAND)
-                val graveyardZone = ZoneKey(activePlayer, ZoneType.GRAVEYARD)
+                val handZone = ZoneKey(activePlayer, Zone.HAND)
+                val graveyardZone = ZoneKey(activePlayer, Zone.GRAVEYARD)
                 val state = driver.state.removeFromZone(handZone, bolt)
                     .addToZone(graveyardZone, bolt)
                 // Update driver state via reflection or direct manipulation

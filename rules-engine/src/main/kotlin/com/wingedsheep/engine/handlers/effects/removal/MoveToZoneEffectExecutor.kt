@@ -15,12 +15,10 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.MoveToZoneEffect
-import com.wingedsheep.sdk.scripting.Zone
 import com.wingedsheep.sdk.scripting.ZonePlacement
-import com.wingedsheep.sdk.scripting.toZoneType
 import kotlin.reflect.KClass
 
 /**
@@ -58,14 +56,12 @@ class MoveToZoneEffectExecutor : EffectExecutor<MoveToZoneEffect> {
         val currentZone = findEntityZone(state, targetId)
             ?: return ExecutionResult.error(state, "Card not found in any zone: $targetId")
 
-        val destinationZoneType = effect.destination.toZoneType()
-
         return when (effect.placement) {
             ZonePlacement.Top -> moveToLibraryTop(state, targetId, cardComponent, ownerId, currentZone)
             ZonePlacement.Bottom -> moveToLibraryBottom(state, targetId, cardComponent, ownerId, currentZone)
             ZonePlacement.Shuffled -> moveToLibraryShuffled(state, targetId, cardComponent, ownerId, currentZone)
             ZonePlacement.Tapped -> moveToBattlefieldTapped(state, targetId, cardComponent, ownerId, currentZone)
-            ZonePlacement.Default -> moveCardToZone(state, targetId, destinationZoneType)
+            ZonePlacement.Default -> moveCardToZone(state, targetId, effect.destination)
         }
     }
 
@@ -78,7 +74,7 @@ class MoveToZoneEffectExecutor : EffectExecutor<MoveToZoneEffect> {
     ): ExecutionResult {
         var newState = state.removeFromZone(currentZone, entityId)
 
-        val libraryZone = ZoneKey(ownerId, ZoneType.LIBRARY)
+        val libraryZone = ZoneKey(ownerId, Zone.LIBRARY)
         val currentLibrary = newState.getZone(libraryZone)
         val newLibrary = listOf(entityId) + currentLibrary
         newState = newState.copy(zones = newState.zones + (libraryZone to newLibrary))
@@ -92,7 +88,7 @@ class MoveToZoneEffectExecutor : EffectExecutor<MoveToZoneEffect> {
                     entityId = entityId,
                     entityName = cardComponent.name,
                     fromZone = currentZone.zoneType,
-                    toZone = ZoneType.LIBRARY,
+                    toZone = Zone.LIBRARY,
                     ownerId = ownerId
                 )
             )
@@ -108,7 +104,7 @@ class MoveToZoneEffectExecutor : EffectExecutor<MoveToZoneEffect> {
     ): ExecutionResult {
         var newState = state.removeFromZone(currentZone, entityId)
 
-        val libraryZone = ZoneKey(ownerId, ZoneType.LIBRARY)
+        val libraryZone = ZoneKey(ownerId, Zone.LIBRARY)
         val currentLibrary = newState.getZone(libraryZone)
         val newLibrary = currentLibrary + entityId
         newState = newState.copy(zones = newState.zones + (libraryZone to newLibrary))
@@ -122,7 +118,7 @@ class MoveToZoneEffectExecutor : EffectExecutor<MoveToZoneEffect> {
                     entityId = entityId,
                     entityName = cardComponent.name,
                     fromZone = currentZone.zoneType,
-                    toZone = ZoneType.LIBRARY,
+                    toZone = Zone.LIBRARY,
                     ownerId = ownerId
                 )
             )
@@ -138,7 +134,7 @@ class MoveToZoneEffectExecutor : EffectExecutor<MoveToZoneEffect> {
     ): ExecutionResult {
         var newState = state.removeFromZone(currentZone, entityId)
 
-        val libraryZone = ZoneKey(ownerId, ZoneType.LIBRARY)
+        val libraryZone = ZoneKey(ownerId, Zone.LIBRARY)
         newState = newState.addToZone(libraryZone, entityId)
 
         // Shuffle the library
@@ -152,7 +148,7 @@ class MoveToZoneEffectExecutor : EffectExecutor<MoveToZoneEffect> {
                 entityId = entityId,
                 entityName = cardComponent.name,
                 fromZone = currentZone.zoneType,
-                toZone = ZoneType.LIBRARY,
+                toZone = Zone.LIBRARY,
                 ownerId = ownerId
             ),
             LibraryShuffledEvent(ownerId)
@@ -170,7 +166,7 @@ class MoveToZoneEffectExecutor : EffectExecutor<MoveToZoneEffect> {
     ): ExecutionResult {
         var newState = state.removeFromZone(currentZone, entityId)
 
-        val battlefieldZone = ZoneKey(ownerId, ZoneType.BATTLEFIELD)
+        val battlefieldZone = ZoneKey(ownerId, Zone.BATTLEFIELD)
         newState = newState.addToZone(battlefieldZone, entityId)
 
         newState = newState.updateEntity(entityId) { c ->
@@ -185,7 +181,7 @@ class MoveToZoneEffectExecutor : EffectExecutor<MoveToZoneEffect> {
                     entityId = entityId,
                     entityName = cardComponent.name,
                     fromZone = currentZone.zoneType,
-                    toZone = ZoneType.BATTLEFIELD,
+                    toZone = Zone.BATTLEFIELD,
                     ownerId = ownerId
                 )
             )
@@ -200,7 +196,7 @@ class MoveToZoneEffectExecutor : EffectExecutor<MoveToZoneEffect> {
         entityId: EntityId,
         fromZone: ZoneKey
     ): GameState {
-        if (fromZone.zoneType != ZoneType.BATTLEFIELD) return state
+        if (fromZone.zoneType != Zone.BATTLEFIELD) return state
         return state.updateEntity(entityId) { c ->
             c.without<ControllerComponent>()
                 .without<TappedComponent>()

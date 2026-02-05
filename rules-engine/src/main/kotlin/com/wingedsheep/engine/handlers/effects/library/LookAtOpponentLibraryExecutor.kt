@@ -6,7 +6,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.LookAtOpponentLibraryEffect
 import java.util.UUID
@@ -47,7 +47,7 @@ class LookAtOpponentLibraryExecutor : EffectExecutor<LookAtOpponentLibraryEffect
 
         val controllerId = context.controllerId
 
-        val libraryZone = ZoneKey(opponentId, ZoneType.LIBRARY)
+        val libraryZone = ZoneKey(opponentId, Zone.LIBRARY)
         val library = state.getZone(libraryZone)
 
         // If library is empty, nothing to look at
@@ -138,8 +138,8 @@ class LookAtOpponentLibraryExecutor : EffectExecutor<LookAtOpponentLibraryEffect
         cards: List<EntityId>,
         context: EffectContext
     ): ExecutionResult {
-        val libraryZone = ZoneKey(opponentId, ZoneType.LIBRARY)
-        val graveyardZone = ZoneKey(opponentId, ZoneType.GRAVEYARD)
+        val libraryZone = ZoneKey(opponentId, Zone.LIBRARY)
+        val graveyardZone = ZoneKey(opponentId, Zone.GRAVEYARD)
 
         var newState = state
         val events = mutableListOf<GameEvent>()
@@ -153,8 +153,8 @@ class LookAtOpponentLibraryExecutor : EffectExecutor<LookAtOpponentLibraryEffect
                 ZoneChangeEvent(
                     entityId = cardId,
                     entityName = cardName,
-                    fromZone = ZoneType.LIBRARY,
-                    toZone = ZoneType.GRAVEYARD,
+                    fromZone = Zone.LIBRARY,
+                    toZone = Zone.GRAVEYARD,
                     ownerId = opponentId
                 )
             )

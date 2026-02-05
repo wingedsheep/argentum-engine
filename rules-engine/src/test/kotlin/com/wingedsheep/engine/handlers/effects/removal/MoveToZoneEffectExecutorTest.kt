@@ -15,11 +15,10 @@ import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.TypeLine
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.MoveToZoneEffect
-import com.wingedsheep.sdk.scripting.Zone
 import com.wingedsheep.sdk.scripting.ZonePlacement
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
@@ -52,7 +51,7 @@ class MoveToZoneEffectExecutorTest : FunSpec({
             .with(cardComponent)
             .with(OwnerComponent(playerId))
             .with(ControllerComponent(playerId))
-        val battlefieldZone = ZoneKey(playerId, ZoneType.BATTLEFIELD)
+        val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
         return GameState()
             .withEntity(playerId, ComponentContainer())
             .withEntity(cardId, container)
@@ -67,7 +66,7 @@ class MoveToZoneEffectExecutorTest : FunSpec({
         val container = ComponentContainer()
             .with(cardComponent)
             .with(OwnerComponent(playerId))
-        val graveyardZone = ZoneKey(playerId, ZoneType.GRAVEYARD)
+        val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
         return GameState()
             .withEntity(playerId, ComponentContainer())
             .withEntity(cardId, container)
@@ -87,21 +86,21 @@ class MoveToZoneEffectExecutorTest : FunSpec({
 
         val effect = MoveToZoneEffect(
             target = EffectTarget.ContextTarget(0),
-            destination = Zone.Graveyard
+            destination = Zone.GRAVEYARD
         )
 
         val result = executor.execute(state, effect, context(cardId, playerId))
         result.isSuccess shouldBe true
 
-        val graveyardZone = ZoneKey(playerId, ZoneType.GRAVEYARD)
+        val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
         result.state.getZone(graveyardZone) shouldContain cardId
 
-        val battlefieldZone = ZoneKey(playerId, ZoneType.BATTLEFIELD)
+        val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
         result.state.getZone(battlefieldZone) shouldNotContain cardId
 
         val zoneEvent = result.events.filterIsInstance<ZoneChangeEvent>().first()
-        zoneEvent.fromZone shouldBe ZoneType.BATTLEFIELD
-        zoneEvent.toZone shouldBe ZoneType.GRAVEYARD
+        zoneEvent.fromZone shouldBe Zone.BATTLEFIELD
+        zoneEvent.toZone shouldBe Zone.GRAVEYARD
     }
 
     test("move from battlefield to hand (bounce)") {
@@ -110,16 +109,16 @@ class MoveToZoneEffectExecutorTest : FunSpec({
 
         val effect = MoveToZoneEffect(
             target = EffectTarget.ContextTarget(0),
-            destination = Zone.Hand
+            destination = Zone.HAND
         )
 
         val result = executor.execute(state, effect, context(cardId, playerId))
         result.isSuccess shouldBe true
 
-        val handZone = ZoneKey(playerId, ZoneType.HAND)
+        val handZone = ZoneKey(playerId, Zone.HAND)
         result.state.getZone(handZone) shouldContain cardId
 
-        val battlefieldZone = ZoneKey(playerId, ZoneType.BATTLEFIELD)
+        val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
         result.state.getZone(battlefieldZone) shouldNotContain cardId
     }
 
@@ -129,13 +128,13 @@ class MoveToZoneEffectExecutorTest : FunSpec({
 
         val effect = MoveToZoneEffect(
             target = EffectTarget.ContextTarget(0),
-            destination = Zone.Exile
+            destination = Zone.EXILE
         )
 
         val result = executor.execute(state, effect, context(cardId, playerId))
         result.isSuccess shouldBe true
 
-        val exileZone = ZoneKey(playerId, ZoneType.EXILE)
+        val exileZone = ZoneKey(playerId, Zone.EXILE)
         result.state.getZone(exileZone) shouldContain cardId
     }
 
@@ -145,14 +144,14 @@ class MoveToZoneEffectExecutorTest : FunSpec({
 
         val effect = MoveToZoneEffect(
             target = EffectTarget.ContextTarget(0),
-            destination = Zone.Library,
+            destination = Zone.LIBRARY,
             placement = ZonePlacement.Top
         )
 
         val result = executor.execute(state, effect, context(cardId, playerId))
         result.isSuccess shouldBe true
 
-        val libraryZone = ZoneKey(playerId, ZoneType.LIBRARY)
+        val libraryZone = ZoneKey(playerId, Zone.LIBRARY)
         val library = result.state.getZone(libraryZone)
         library.first() shouldBe cardId
     }
@@ -161,14 +160,14 @@ class MoveToZoneEffectExecutorTest : FunSpec({
         val card = creatureCard(playerId)
         // Add an existing card in the library first
         val existingLibraryCard = EntityId.generate()
-        val libraryZone = ZoneKey(playerId, ZoneType.LIBRARY)
+        val libraryZone = ZoneKey(playerId, Zone.LIBRARY)
         val state = battlefieldState(playerId, cardId, card)
             .withEntity(existingLibraryCard, ComponentContainer().with(creatureCard(playerId)))
             .addToZone(libraryZone, existingLibraryCard)
 
         val effect = MoveToZoneEffect(
             target = EffectTarget.ContextTarget(0),
-            destination = Zone.Library,
+            destination = Zone.LIBRARY,
             placement = ZonePlacement.Bottom
         )
 
@@ -186,17 +185,17 @@ class MoveToZoneEffectExecutorTest : FunSpec({
 
         val effect = MoveToZoneEffect(
             target = EffectTarget.ContextTarget(0),
-            destination = Zone.Library,
+            destination = Zone.LIBRARY,
             placement = ZonePlacement.Shuffled
         )
 
         val result = executor.execute(state, effect, context(cardId, playerId))
         result.isSuccess shouldBe true
 
-        val libraryZone = ZoneKey(playerId, ZoneType.LIBRARY)
+        val libraryZone = ZoneKey(playerId, Zone.LIBRARY)
         result.state.getZone(libraryZone) shouldContain cardId
 
-        result.events.filterIsInstance<ZoneChangeEvent>().first().toZone shouldBe ZoneType.LIBRARY
+        result.events.filterIsInstance<ZoneChangeEvent>().first().toZone shouldBe Zone.LIBRARY
         result.events.filterIsInstance<LibraryShuffledEvent>().first().playerId shouldBe playerId
     }
 
@@ -212,14 +211,14 @@ class MoveToZoneEffectExecutorTest : FunSpec({
 
         val effect = MoveToZoneEffect(
             target = EffectTarget.ContextTarget(0),
-            destination = Zone.Battlefield,
+            destination = Zone.BATTLEFIELD,
             placement = ZonePlacement.Tapped
         )
 
         val result = executor.execute(state, effect, ctx)
         result.isSuccess shouldBe true
 
-        val battlefieldZone = ZoneKey(playerId, ZoneType.BATTLEFIELD)
+        val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
         result.state.getZone(battlefieldZone) shouldContain cardId
 
         val entity = result.state.getEntity(cardId)!!
@@ -233,17 +232,17 @@ class MoveToZoneEffectExecutorTest : FunSpec({
 
         val effect = MoveToZoneEffect(
             target = EffectTarget.ContextTarget(0),
-            destination = Zone.Graveyard,
+            destination = Zone.GRAVEYARD,
             byDestruction = true
         )
 
         val result = executor.execute(state, effect, context(cardId, playerId))
         result.isSuccess shouldBe true
 
-        val graveyardZone = ZoneKey(playerId, ZoneType.GRAVEYARD)
+        val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
         result.state.getZone(graveyardZone) shouldContain cardId
 
-        val battlefieldZone = ZoneKey(playerId, ZoneType.BATTLEFIELD)
+        val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
         result.state.getZone(battlefieldZone) shouldNotContain cardId
     }
 
@@ -253,7 +252,7 @@ class MoveToZoneEffectExecutorTest : FunSpec({
 
         val effect = MoveToZoneEffect(
             target = EffectTarget.ContextTarget(0),
-            destination = Zone.Graveyard,
+            destination = Zone.GRAVEYARD,
             byDestruction = true
         )
 
@@ -261,10 +260,10 @@ class MoveToZoneEffectExecutorTest : FunSpec({
         result.isSuccess shouldBe true
 
         // Card stays on battlefield
-        val battlefieldZone = ZoneKey(playerId, ZoneType.BATTLEFIELD)
+        val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
         result.state.getZone(battlefieldZone) shouldContain cardId
 
-        val graveyardZone = ZoneKey(playerId, ZoneType.GRAVEYARD)
+        val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
         result.state.getZone(graveyardZone) shouldNotContain cardId
     }
 
@@ -274,7 +273,7 @@ class MoveToZoneEffectExecutorTest : FunSpec({
 
         val effect = MoveToZoneEffect(
             target = EffectTarget.ContextTarget(0),
-            destination = Zone.Hand
+            destination = Zone.HAND
         )
 
         val result = executor.execute(state, effect, context(cardId, playerId))

@@ -12,7 +12,7 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import kotlin.reflect.KClass
 
 /**
@@ -57,7 +57,7 @@ class PlayLandHandler(
         }
 
         // Check card is in hand
-        val handZone = ZoneKey(action.playerId, ZoneType.HAND)
+        val handZone = ZoneKey(action.playerId, Zone.HAND)
         if (action.cardId !in state.getZone(handZone)) {
             return "Land is not in your hand"
         }
@@ -75,11 +75,11 @@ class PlayLandHandler(
         var newState = state
 
         // Remove from hand
-        val handZone = ZoneKey(action.playerId, ZoneType.HAND)
+        val handZone = ZoneKey(action.playerId, Zone.HAND)
         newState = newState.removeFromZone(handZone, action.cardId)
 
         // Add to battlefield
-        val battlefieldZone = ZoneKey(action.playerId, ZoneType.BATTLEFIELD)
+        val battlefieldZone = ZoneKey(action.playerId, Zone.BATTLEFIELD)
         newState = newState.addToZone(battlefieldZone, action.cardId)
 
         // Add controller component
@@ -96,8 +96,8 @@ class PlayLandHandler(
         val zoneChangeEvent = ZoneChangeEvent(
             action.cardId,
             cardComponent.name,
-            ZoneType.HAND,
-            ZoneType.BATTLEFIELD,
+            Zone.HAND,
+            Zone.BATTLEFIELD,
             action.playerId
         )
 

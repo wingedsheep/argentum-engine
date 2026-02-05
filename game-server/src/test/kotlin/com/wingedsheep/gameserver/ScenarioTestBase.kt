@@ -23,7 +23,7 @@ import com.wingedsheep.gameserver.dto.ClientGameState
 import com.wingedsheep.gameserver.dto.ClientStateTransformer
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import io.kotest.core.spec.style.FunSpec
 import java.util.concurrent.atomic.AtomicLong
@@ -92,7 +92,7 @@ abstract class ScenarioTestBase : FunSpec() {
 
             // Initialize empty zones for both players
             for (playerId in listOf(player1Id!!, player2Id!!)) {
-                for (zoneType in listOf(ZoneType.HAND, ZoneType.LIBRARY, ZoneType.GRAVEYARD, ZoneType.BATTLEFIELD)) {
+                for (zoneType in listOf(Zone.HAND, Zone.LIBRARY, Zone.GRAVEYARD, Zone.BATTLEFIELD)) {
                     val zoneKey = ZoneKey(playerId, zoneType)
                     state = state.copy(zones = state.zones + (zoneKey to emptyList()))
                 }
@@ -107,7 +107,7 @@ abstract class ScenarioTestBase : FunSpec() {
         fun withCardInHand(playerNumber: Int, cardName: String): ScenarioBuilder {
             val playerId = if (playerNumber == 1) player1Id!! else player2Id!!
             val cardId = createCard(cardName, playerId)
-            state = state.addToZone(ZoneKey(playerId, ZoneType.HAND), cardId)
+            state = state.addToZone(ZoneKey(playerId, Zone.HAND), cardId)
             return this
         }
 
@@ -133,7 +133,7 @@ abstract class ScenarioTestBase : FunSpec() {
             val cardId = createCard(cardName, playerId)
 
             // Add to battlefield
-            state = state.addToZone(ZoneKey(playerId, ZoneType.BATTLEFIELD), cardId)
+            state = state.addToZone(ZoneKey(playerId, Zone.BATTLEFIELD), cardId)
 
             // Update card entity with battlefield-specific components
             var container = state.getEntity(cardId)!!
@@ -172,7 +172,7 @@ abstract class ScenarioTestBase : FunSpec() {
         fun withCardInLibrary(playerNumber: Int, cardName: String): ScenarioBuilder {
             val playerId = if (playerNumber == 1) player1Id!! else player2Id!!
             val cardId = createCard(cardName, playerId)
-            state = state.addToZone(ZoneKey(playerId, ZoneType.LIBRARY), cardId)
+            state = state.addToZone(ZoneKey(playerId, Zone.LIBRARY), cardId)
             return this
         }
 
@@ -182,7 +182,7 @@ abstract class ScenarioTestBase : FunSpec() {
         fun withCardInGraveyard(playerNumber: Int, cardName: String): ScenarioBuilder {
             val playerId = if (playerNumber == 1) player1Id!! else player2Id!!
             val cardId = createCard(cardName, playerId)
-            state = state.addToZone(ZoneKey(playerId, ZoneType.GRAVEYARD), cardId)
+            state = state.addToZone(ZoneKey(playerId, Zone.GRAVEYARD), cardId)
             return this
         }
 
@@ -380,7 +380,7 @@ abstract class ScenarioTestBase : FunSpec() {
             } ?: error("Card '$spellName' not found in player $playerNumber's hand")
 
             val targets = targetCardIds.map { targetCardId ->
-                ChosenTarget.Card(targetCardId, playerId, ZoneType.GRAVEYARD)
+                ChosenTarget.Card(targetCardId, playerId, Zone.GRAVEYARD)
             }
             return execute(CastSpell(playerId, cardId, targets))
         }
@@ -712,7 +712,7 @@ abstract class ScenarioTestBase : FunSpec() {
                 state.getEntity(entityId)?.get<CardComponent>()?.name == targetCardName
             } ?: error("Card '$targetCardName' not found in player $graveyardOwnerNumber's graveyard")
 
-            val targets = listOf(ChosenTarget.Card(targetCardId, graveyardOwnerId, ZoneType.GRAVEYARD))
+            val targets = listOf(ChosenTarget.Card(targetCardId, graveyardOwnerId, Zone.GRAVEYARD))
             return execute(CastSpell(playerId, cardId, targets))
         }
 

@@ -1,7 +1,7 @@
 package com.wingedsheep.gameserver.masking
 
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.PlayerComponent
@@ -99,17 +99,17 @@ class StateMasker {
     private fun isZoneVisibleTo(zoneKey: ZoneKey, viewingPlayerId: EntityId): Boolean {
         return when (zoneKey.zoneType) {
             // Library is hidden from everyone
-            ZoneType.LIBRARY -> false
+            Zone.LIBRARY -> false
 
             // Hand is only visible to its owner
-            ZoneType.HAND -> zoneKey.ownerId == viewingPlayerId
+            Zone.HAND -> zoneKey.ownerId == viewingPlayerId
 
             // All other zones are public
-            ZoneType.BATTLEFIELD,
-            ZoneType.GRAVEYARD,
-            ZoneType.STACK,
-            ZoneType.EXILE,
-            ZoneType.COMMAND -> true
+            Zone.BATTLEFIELD,
+            Zone.GRAVEYARD,
+            Zone.STACK,
+            Zone.EXILE,
+            Zone.COMMAND -> true
         }
     }
 

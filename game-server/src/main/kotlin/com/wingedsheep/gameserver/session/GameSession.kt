@@ -24,7 +24,7 @@ import com.wingedsheep.engine.state.components.player.MulliganStateComponent
 import com.wingedsheep.engine.state.components.player.PlayerLostComponent
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.targeting.*
@@ -49,7 +49,6 @@ import com.wingedsheep.sdk.scripting.TargetFilter
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.ControllerPredicate
 import com.wingedsheep.sdk.scripting.ActivationRestriction
-import com.wingedsheep.sdk.scripting.Zone
 import com.wingedsheep.sdk.scripting.CastRestriction
 import com.wingedsheep.sdk.scripting.DividedDamageEffect
 import com.wingedsheep.gameserver.priority.AutoPassManager
@@ -308,7 +307,7 @@ class GameSession(
 
         // Update zones to hide hand contents but keep sizes
         val maskedZones = baseState.zones.map { zone ->
-            if (zone.zoneId.zoneType == ZoneType.HAND) {
+            if (zone.zoneId.zoneType == Zone.HAND) {
                 // Keep size but hide card IDs for both hands
                 zone.copy(
                     cardIds = emptyList(),
@@ -372,10 +371,10 @@ class GameSession(
         val playerEntity = state.getEntity(playerId)
 
         val life = playerEntity?.get<LifeTotalComponent>()?.life ?: 20
-        val hand = state.getZone(playerId, ZoneType.HAND)
-        val library = state.getZone(playerId, ZoneType.LIBRARY)
-        val battlefield = state.getZone(playerId, ZoneType.BATTLEFIELD)
-        val graveyard = state.getZone(playerId, ZoneType.GRAVEYARD)
+        val hand = state.getZone(playerId, Zone.HAND)
+        val library = state.getZone(playerId, Zone.LIBRARY)
+        val battlefield = state.getZone(playerId, Zone.BATTLEFIELD)
+        val graveyard = state.getZone(playerId, Zone.GRAVEYARD)
 
         // Stack is shared between players - get all stack items
         val stack = state.stack
@@ -989,7 +988,7 @@ class GameSession(
         }
 
         // Check for mana abilities on battlefield permanents
-        val playerBattlefieldZone = ZoneKey(playerId, ZoneType.BATTLEFIELD)
+        val playerBattlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
         val battlefieldPermanents = state.getZone(playerBattlefieldZone)
         for (entityId in battlefieldPermanents) {
             val container = state.getEntity(entityId) ?: continue
@@ -1534,9 +1533,9 @@ class GameSession(
         filter: TargetFilter
     ): List<EntityId> {
         return when (filter.zone) {
-            Zone.Battlefield -> findValidPermanentTargets(state, playerId, filter)
-            Zone.Graveyard -> findValidGraveyardTargets(state, playerId, filter)
-            Zone.Stack -> findValidSpellTargets(state, playerId, filter)
+            Zone.BATTLEFIELD -> findValidPermanentTargets(state, playerId, filter)
+            Zone.GRAVEYARD -> findValidGraveyardTargets(state, playerId, filter)
+            Zone.STACK -> findValidSpellTargets(state, playerId, filter)
             else -> emptyList()
         }
     }
@@ -1633,7 +1632,7 @@ class GameSession(
         playerId: EntityId,
         cost: com.wingedsheep.sdk.scripting.AdditionalCost.SacrificePermanent
     ): List<EntityId> {
-        val playerBattlefield = ZoneKey(playerId, ZoneType.BATTLEFIELD)
+        val playerBattlefield = ZoneKey(playerId, Zone.BATTLEFIELD)
         val predicateContext = PredicateContext(controllerId = playerId)
 
         return state.getZone(playerBattlefield).filter { entityId ->
@@ -1655,7 +1654,7 @@ class GameSession(
         playerId: EntityId,
         filter: GameObjectFilter
     ): List<EntityId> {
-        val playerBattlefield = ZoneKey(playerId, ZoneType.BATTLEFIELD)
+        val playerBattlefield = ZoneKey(playerId, Zone.BATTLEFIELD)
         val predicateContext = PredicateContext(controllerId = playerId)
 
         return state.getZone(playerBattlefield).filter { entityId ->
@@ -1673,7 +1672,7 @@ class GameSession(
      * Creatures with summoning sickness CAN be used for Convoke.
      */
     private fun findConvokeCreatures(state: GameState, playerId: EntityId): List<ConvokeCreatureInfo> {
-        val playerBattlefield = ZoneKey(playerId, ZoneType.BATTLEFIELD)
+        val playerBattlefield = ZoneKey(playerId, Zone.BATTLEFIELD)
         return state.getZone(playerBattlefield).mapNotNull { entityId ->
             val container = state.getEntity(entityId) ?: return@mapNotNull null
             val cardComponent = container.get<CardComponent>() ?: return@mapNotNull null

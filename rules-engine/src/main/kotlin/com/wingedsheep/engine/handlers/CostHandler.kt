@@ -14,7 +14,7 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.ManaCost
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.AdditionalCost
@@ -70,16 +70,16 @@ class CostHandler {
                 findMatchingPermanentsUnified(state, controllerId, cost.filter).isNotEmpty()
             }
             is AbilityCost.Discard -> {
-                val handZone = ZoneKey(controllerId, ZoneType.HAND)
+                val handZone = ZoneKey(controllerId, Zone.HAND)
                 findMatchingCardsUnified(state, state.getZone(handZone), cost.filter, controllerId).isNotEmpty()
             }
             is AbilityCost.ExileFromGraveyard -> {
-                val graveyardZone = ZoneKey(controllerId, ZoneType.GRAVEYARD)
+                val graveyardZone = ZoneKey(controllerId, Zone.GRAVEYARD)
                 findMatchingCardsUnified(state, state.getZone(graveyardZone), cost.filter, controllerId).size >= cost.count
             }
             is AbilityCost.DiscardSelf -> {
                 // Card must be in hand
-                val handZone = ZoneKey(controllerId, ZoneType.HAND)
+                val handZone = ZoneKey(controllerId, Zone.HAND)
                 state.getZone(handZone).contains(sourceId)
             }
             is AbilityCost.Composite -> {
@@ -145,8 +145,8 @@ class CostHandler {
                 val sacrificeName = sacrificeContainer.get<CardComponent>()?.name ?: "Unknown"
 
                 // Move from battlefield to graveyard
-                val battlefieldZone = ZoneKey(sacrificeController, ZoneType.BATTLEFIELD)
-                val graveyardZone = ZoneKey(sacrificeController, ZoneType.GRAVEYARD)
+                val battlefieldZone = ZoneKey(sacrificeController, Zone.BATTLEFIELD)
+                val graveyardZone = ZoneKey(sacrificeController, Zone.GRAVEYARD)
 
                 var newState = state.removeFromZone(battlefieldZone, toSacrifice)
                 newState = newState.addToZone(graveyardZone, toSacrifice)
@@ -156,8 +156,8 @@ class CostHandler {
                     ZoneChangeEvent(
                         entityId = toSacrifice,
                         entityName = sacrificeName,
-                        fromZone = ZoneType.BATTLEFIELD,
-                        toZone = ZoneType.GRAVEYARD,
+                        fromZone = Zone.BATTLEFIELD,
+                        toZone = Zone.GRAVEYARD,
                         ownerId = sacrificeController
                     )
                 )
@@ -218,7 +218,7 @@ class CostHandler {
                 findMatchingPermanentsUnified(state, controllerId, cost.filter).size >= cost.count
             }
             is AdditionalCost.DiscardCards -> {
-                val handZone = ZoneKey(controllerId, ZoneType.HAND)
+                val handZone = ZoneKey(controllerId, Zone.HAND)
                 findMatchingCardsUnified(state, state.getZone(handZone), cost.filter, controllerId).size >= cost.count
             }
             is AdditionalCost.PayLife -> {
@@ -226,7 +226,7 @@ class CostHandler {
                 life > cost.amount
             }
             is AdditionalCost.ExileCards -> {
-                val zone = ZoneKey(controllerId, cost.fromZone.toZoneType())
+                val zone = ZoneKey(controllerId, cost.fromZone.toZone())
                 findMatchingCardsUnified(state, state.getZone(zone), cost.filter, controllerId).size >= cost.count
             }
             is AdditionalCost.TapPermanents -> {
@@ -274,11 +274,11 @@ class CostHandler {
         }
     }
 
-    private fun com.wingedsheep.sdk.scripting.CostZone.toZoneType(): ZoneType = when (this) {
-        com.wingedsheep.sdk.scripting.CostZone.HAND -> ZoneType.HAND
-        com.wingedsheep.sdk.scripting.CostZone.GRAVEYARD -> ZoneType.GRAVEYARD
-        com.wingedsheep.sdk.scripting.CostZone.LIBRARY -> ZoneType.LIBRARY
-        com.wingedsheep.sdk.scripting.CostZone.BATTLEFIELD -> ZoneType.BATTLEFIELD
+    private fun com.wingedsheep.sdk.scripting.CostZone.toZone(): Zone = when (this) {
+        com.wingedsheep.sdk.scripting.CostZone.HAND -> Zone.HAND
+        com.wingedsheep.sdk.scripting.CostZone.GRAVEYARD -> Zone.GRAVEYARD
+        com.wingedsheep.sdk.scripting.CostZone.LIBRARY -> Zone.LIBRARY
+        com.wingedsheep.sdk.scripting.CostZone.BATTLEFIELD -> Zone.BATTLEFIELD
     }
 }
 

@@ -17,7 +17,7 @@ import com.wingedsheep.gameserver.session.PlayerIdentity
 import com.wingedsheep.gameserver.session.SessionRegistry
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
@@ -443,7 +443,7 @@ class DevScenarioController(
 
             // Initialize empty zones for both players
             for (playerId in listOf(player1Id!!, player2Id!!)) {
-                for (zoneType in listOf(ZoneType.HAND, ZoneType.LIBRARY, ZoneType.GRAVEYARD, ZoneType.BATTLEFIELD)) {
+                for (zoneType in listOf(Zone.HAND, Zone.LIBRARY, Zone.GRAVEYARD, Zone.BATTLEFIELD)) {
                     val zoneKey = ZoneKey(playerId, zoneType)
                     state = state.copy(zones = state.zones + (zoneKey to emptyList()))
                 }
@@ -455,7 +455,7 @@ class DevScenarioController(
         fun withCardInHand(playerNumber: Int, cardName: String): ScenarioBuilder {
             val playerId = if (playerNumber == 1) player1Id!! else player2Id!!
             val cardId = createCard(cardName, playerId)
-            state = state.addToZone(ZoneKey(playerId, ZoneType.HAND), cardId)
+            state = state.addToZone(ZoneKey(playerId, Zone.HAND), cardId)
             return this
         }
 
@@ -468,7 +468,7 @@ class DevScenarioController(
             val playerId = if (playerNumber == 1) player1Id!! else player2Id!!
             val cardId = createCard(cardName, playerId)
 
-            state = state.addToZone(ZoneKey(playerId, ZoneType.BATTLEFIELD), cardId)
+            state = state.addToZone(ZoneKey(playerId, Zone.BATTLEFIELD), cardId)
 
             var container = state.getEntity(cardId)!!
             container = container.with(ControllerComponent(playerId))
@@ -488,14 +488,14 @@ class DevScenarioController(
         fun withCardInGraveyard(playerNumber: Int, cardName: String): ScenarioBuilder {
             val playerId = if (playerNumber == 1) player1Id!! else player2Id!!
             val cardId = createCard(cardName, playerId)
-            state = state.addToZone(ZoneKey(playerId, ZoneType.GRAVEYARD), cardId)
+            state = state.addToZone(ZoneKey(playerId, Zone.GRAVEYARD), cardId)
             return this
         }
 
         fun withCardInLibrary(playerNumber: Int, cardName: String): ScenarioBuilder {
             val playerId = if (playerNumber == 1) player1Id!! else player2Id!!
             val cardId = createCard(cardName, playerId)
-            state = state.addToZone(ZoneKey(playerId, ZoneType.LIBRARY), cardId)
+            state = state.addToZone(ZoneKey(playerId, Zone.LIBRARY), cardId)
             return this
         }
 

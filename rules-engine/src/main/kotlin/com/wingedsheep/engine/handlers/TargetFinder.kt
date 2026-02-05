@@ -6,11 +6,9 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.TargetFilter
-import com.wingedsheep.sdk.scripting.Zone
-import com.wingedsheep.sdk.scripting.toZoneType
 import com.wingedsheep.sdk.targeting.*
 
 /**
@@ -230,7 +228,7 @@ class TargetFinder(
 
         // Check all graveyards - the unified filter's OwnedByYou predicate handles "your graveyard" restriction
         for (playerId in state.turnOrder) {
-            val graveyardKey = ZoneKey(playerId, ZoneType.GRAVEYARD)
+            val graveyardKey = ZoneKey(playerId, Zone.GRAVEYARD)
             val graveyard = state.getZone(graveyardKey)
 
             for (cardId in graveyard) {
@@ -267,14 +265,14 @@ class TargetFinder(
     ): List<EntityId> {
         val filter = requirement.filter
         return when (filter.zone) {
-            Zone.Battlefield -> findPermanentTargets(
+            Zone.BATTLEFIELD -> findPermanentTargets(
                 state,
                 TargetPermanent(count = requirement.count, optional = requirement.optional, filter = filter),
                 controllerId,
                 sourceId
             )
-            Zone.Graveyard -> findGraveyardTargets(state, filter, controllerId)
-            Zone.Stack -> findSpellTargets(
+            Zone.GRAVEYARD -> findGraveyardTargets(state, filter, controllerId)
+            Zone.STACK -> findSpellTargets(
                 state,
                 TargetSpell(count = requirement.count, optional = requirement.optional, filter = filter),
                 controllerId
@@ -291,7 +289,7 @@ class TargetFinder(
         filter: TargetFilter,
         controllerId: EntityId
     ): List<EntityId> {
-        val zoneType = filter.zone.toZoneType()
+        val zoneType = filter.zone
         val targets = mutableListOf<EntityId>()
 
         for (playerId in state.turnOrder) {

@@ -3,6 +3,7 @@ package com.wingedsheep.sdk.scripting
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.core.Zone
 import kotlinx.serialization.Serializable
 
 /**
@@ -33,7 +34,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class TargetFilter(
     val baseFilter: GameObjectFilter,
-    val zone: Zone = Zone.Battlefield,
+    val zone: Zone = Zone.BATTLEFIELD,
     val excludeSelf: Boolean = false
 ) {
     val description: String
@@ -42,9 +43,9 @@ data class TargetFilter(
     private fun buildDescription(): String = buildString {
         if (excludeSelf) append("other ")
         append(baseFilter.description)
-        if (zone != Zone.Battlefield) {
+        if (zone != Zone.BATTLEFIELD) {
             append(" in ")
-            append(zone.description)
+            append(zone.displayName)
         }
     }
 
@@ -116,32 +117,32 @@ data class TargetFilter(
         // =============================================================================
 
         /** Target any card in a graveyard */
-        val CardInGraveyard = TargetFilter(GameObjectFilter.Any, zone = Zone.Graveyard)
+        val CardInGraveyard = TargetFilter(GameObjectFilter.Any, zone = Zone.GRAVEYARD)
 
         /** Target creature card in a graveyard */
-        val CreatureInGraveyard = TargetFilter(GameObjectFilter.Creature, zone = Zone.Graveyard)
+        val CreatureInGraveyard = TargetFilter(GameObjectFilter.Creature, zone = Zone.GRAVEYARD)
 
         /** Target creature card in your graveyard */
-        val CreatureInYourGraveyard = TargetFilter(GameObjectFilter.Creature.ownedByYou(), zone = Zone.Graveyard)
+        val CreatureInYourGraveyard = TargetFilter(GameObjectFilter.Creature.ownedByYou(), zone = Zone.GRAVEYARD)
 
         /** Target instant or sorcery card in a graveyard */
-        val InstantOrSorceryInGraveyard = TargetFilter(GameObjectFilter.InstantOrSorcery, zone = Zone.Graveyard)
+        val InstantOrSorceryInGraveyard = TargetFilter(GameObjectFilter.InstantOrSorcery, zone = Zone.GRAVEYARD)
 
         // =============================================================================
         // Pre-built Stack Targets
         // =============================================================================
 
         /** Target any spell on the stack */
-        val SpellOnStack = TargetFilter(GameObjectFilter.Any, zone = Zone.Stack)
+        val SpellOnStack = TargetFilter(GameObjectFilter.Any, zone = Zone.STACK)
 
         /** Target creature spell on the stack */
-        val CreatureSpellOnStack = TargetFilter(GameObjectFilter.Creature, zone = Zone.Stack)
+        val CreatureSpellOnStack = TargetFilter(GameObjectFilter.Creature, zone = Zone.STACK)
 
         /** Target noncreature spell on the stack */
-        val NoncreatureSpellOnStack = TargetFilter(GameObjectFilter.Noncreature, zone = Zone.Stack)
+        val NoncreatureSpellOnStack = TargetFilter(GameObjectFilter.Noncreature, zone = Zone.STACK)
 
         /** Target instant or sorcery spell on the stack */
-        val InstantOrSorcerySpellOnStack = TargetFilter(GameObjectFilter.InstantOrSorcery, zone = Zone.Stack)
+        val InstantOrSorcerySpellOnStack = TargetFilter(GameObjectFilter.InstantOrSorcery, zone = Zone.STACK)
 
         // =============================================================================
         // Permanent Targeting
@@ -161,13 +162,13 @@ data class TargetFilter(
         // =============================================================================
 
         /** Target sorcery spell on the stack */
-        val SorcerySpellOnStack = TargetFilter(GameObjectFilter.Sorcery, zone = Zone.Stack)
+        val SorcerySpellOnStack = TargetFilter(GameObjectFilter.Sorcery, zone = Zone.STACK)
 
         /** Target creature or sorcery spell on the stack */
-        val CreatureOrSorcerySpellOnStack = TargetFilter(GameObjectFilter.CreatureOrSorcery, zone = Zone.Stack)
+        val CreatureOrSorcerySpellOnStack = TargetFilter(GameObjectFilter.CreatureOrSorcery, zone = Zone.STACK)
 
         /** Target instant spell on the stack */
-        val InstantSpellOnStack = TargetFilter(GameObjectFilter.Instant, zone = Zone.Stack)
+        val InstantSpellOnStack = TargetFilter(GameObjectFilter.Instant, zone = Zone.STACK)
     }
 
     // =============================================================================

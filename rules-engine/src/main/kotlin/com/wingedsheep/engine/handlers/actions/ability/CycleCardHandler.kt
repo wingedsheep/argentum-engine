@@ -18,7 +18,7 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import kotlin.reflect.KClass
 
@@ -47,7 +47,7 @@ class CycleCardHandler(
         val cardComponent = container.get<CardComponent>()
             ?: return "Not a card: ${action.cardId}"
 
-        val handZone = ZoneKey(action.playerId, ZoneType.HAND)
+        val handZone = ZoneKey(action.playerId, Zone.HAND)
         if (action.cardId !in state.getZone(handZone)) {
             return "Card is not in your hand"
         }
@@ -129,8 +129,8 @@ class CycleCardHandler(
         )
 
         // Discard the card (move from hand to graveyard)
-        val handZone = ZoneKey(action.playerId, ZoneType.HAND)
-        val graveyardZone = ZoneKey(ownerId, ZoneType.GRAVEYARD)
+        val handZone = ZoneKey(action.playerId, Zone.HAND)
+        val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
         currentState = currentState.removeFromZone(handZone, action.cardId)
         currentState = currentState.addToZone(graveyardZone, action.cardId)
 
@@ -138,8 +138,8 @@ class CycleCardHandler(
             ZoneChangeEvent(
                 entityId = action.cardId,
                 entityName = cardComponent.name,
-                fromZone = ZoneType.HAND,
-                toZone = ZoneType.GRAVEYARD,
+                fromZone = Zone.HAND,
+                toZone = Zone.GRAVEYARD,
                 ownerId = ownerId
             )
         )
@@ -150,7 +150,7 @@ class CycleCardHandler(
             val drawnCardId = library.first()
             val drawnCardName = currentState.getEntity(drawnCardId)?.get<CardComponent>()?.name ?: "Unknown"
 
-            val libraryZone = ZoneKey(action.playerId, ZoneType.LIBRARY)
+            val libraryZone = ZoneKey(action.playerId, Zone.LIBRARY)
             currentState = currentState.removeFromZone(libraryZone, drawnCardId)
             currentState = currentState.addToZone(handZone, drawnCardId)
 
@@ -158,8 +158,8 @@ class CycleCardHandler(
                 ZoneChangeEvent(
                     entityId = drawnCardId,
                     entityName = drawnCardName,
-                    fromZone = ZoneType.LIBRARY,
-                    toZone = ZoneType.HAND,
+                    fromZone = Zone.LIBRARY,
+                    toZone = Zone.HAND,
                     ownerId = action.playerId
                 )
             )

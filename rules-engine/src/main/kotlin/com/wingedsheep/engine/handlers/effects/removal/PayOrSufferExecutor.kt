@@ -10,7 +10,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.PayCost
@@ -327,7 +327,7 @@ class PayOrSufferExecutor(
         playerId: EntityId,
         filter: GameObjectFilter
     ): List<EntityId> {
-        val handZone = ZoneKey(playerId, ZoneType.HAND)
+        val handZone = ZoneKey(playerId, Zone.HAND)
         val hand = state.getZone(handZone)
         val context = PredicateContext(controllerId = playerId)
 
@@ -346,7 +346,7 @@ class PayOrSufferExecutor(
         filter: GameObjectFilter,
         sourceId: EntityId
     ): List<EntityId> {
-        val battlefieldZone = ZoneKey(playerId, ZoneType.BATTLEFIELD)
+        val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
         val battlefield = state.getZone(battlefieldZone)
         val context = PredicateContext(controllerId = playerId)
 
@@ -400,8 +400,8 @@ class PayOrSufferExecutor(
         playerId: EntityId,
         permanentId: EntityId
     ): ExecutionResult {
-        val battlefieldZone = ZoneKey(playerId, ZoneType.BATTLEFIELD)
-        val graveyardZone = ZoneKey(playerId, ZoneType.GRAVEYARD)
+        val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
+        val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
 
         // Check if the permanent is still on the battlefield
         if (permanentId !in state.getZone(battlefieldZone)) {
@@ -418,8 +418,8 @@ class PayOrSufferExecutor(
             ZoneChangeEvent(
                 entityId = permanentId,
                 entityName = permanentName,
-                fromZone = ZoneType.BATTLEFIELD,
-                toZone = ZoneType.GRAVEYARD,
+                fromZone = Zone.BATTLEFIELD,
+                toZone = Zone.GRAVEYARD,
                 ownerId = playerId
             )
         )
@@ -466,8 +466,8 @@ class PayOrSufferExecutor(
             filter: GameObjectFilter,
             count: Int
         ): ExecutionResult {
-            val handZone = ZoneKey(playerId, ZoneType.HAND)
-            val graveyardZone = ZoneKey(playerId, ZoneType.GRAVEYARD)
+            val handZone = ZoneKey(playerId, Zone.HAND)
+            val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
             val hand = state.getZone(handZone)
             val context = PredicateContext(controllerId = playerId)
 
@@ -493,8 +493,8 @@ class PayOrSufferExecutor(
                     ZoneChangeEvent(
                         entityId = cardId,
                         entityName = cardName,
-                        fromZone = ZoneType.HAND,
-                        toZone = ZoneType.GRAVEYARD,
+                        fromZone = Zone.HAND,
+                        toZone = Zone.GRAVEYARD,
                         ownerId = playerId
                     )
                 )

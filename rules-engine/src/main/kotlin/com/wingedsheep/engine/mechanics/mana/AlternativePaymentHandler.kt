@@ -12,7 +12,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.ManaSymbol
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AlternativePaymentChoice
@@ -101,8 +101,8 @@ class AlternativePaymentHandler {
         val events = mutableListOf<GameEvent>()
         var genericReduction = 0
 
-        val graveyardZone = ZoneKey(playerId, ZoneType.GRAVEYARD)
-        val exileZone = ZoneKey(playerId, ZoneType.EXILE)
+        val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
+        val exileZone = ZoneKey(playerId, Zone.EXILE)
 
         for (cardId in delvedCards) {
             // Verify card is in player's graveyard
@@ -121,8 +121,8 @@ class AlternativePaymentHandler {
                 ZoneChangeEvent(
                     entityId = cardId,
                     entityName = cardComponent.name,
-                    fromZone = ZoneType.GRAVEYARD,
-                    toZone = ZoneType.EXILE,
+                    fromZone = Zone.GRAVEYARD,
+                    toZone = Zone.EXILE,
                     ownerId = playerId
                 )
             )
@@ -147,7 +147,7 @@ class AlternativePaymentHandler {
         var reducedCost = cost
         val events = mutableListOf<GameEvent>()
 
-        val battlefieldZone = ZoneKey(playerId, ZoneType.BATTLEFIELD)
+        val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
 
         for ((creatureId, payment) in convokedCreatures) {
             // Verify creature is on player's battlefield and is untapped

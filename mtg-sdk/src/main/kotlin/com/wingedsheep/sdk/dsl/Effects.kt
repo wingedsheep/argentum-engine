@@ -2,6 +2,7 @@ package com.wingedsheep.sdk.dsl
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.*
 
 /**
@@ -68,37 +69,37 @@ object Effects {
      * Destroy a target.
      */
     fun Destroy(target: EffectTarget): Effect =
-        MoveToZoneEffect(target, Zone.Graveyard, byDestruction = true)
+        MoveToZoneEffect(target, Zone.GRAVEYARD, byDestruction = true)
 
     /**
      * Exile a target.
      */
     fun Exile(target: EffectTarget): Effect =
-        MoveToZoneEffect(target, Zone.Exile)
+        MoveToZoneEffect(target, Zone.EXILE)
 
     /**
      * Return to hand.
      */
     fun ReturnToHand(target: EffectTarget): Effect =
-        MoveToZoneEffect(target, Zone.Hand)
+        MoveToZoneEffect(target, Zone.HAND)
 
     /**
      * Put on top of library.
      */
     fun PutOnTopOfLibrary(target: EffectTarget): Effect =
-        MoveToZoneEffect(target, Zone.Library, ZonePlacement.Top)
+        MoveToZoneEffect(target, Zone.LIBRARY, ZonePlacement.Top)
 
     /**
      * Shuffle into library.
      */
     fun ShuffleIntoLibrary(target: EffectTarget): Effect =
-        MoveToZoneEffect(target, Zone.Library, ZonePlacement.Shuffled)
+        MoveToZoneEffect(target, Zone.LIBRARY, ZonePlacement.Shuffled)
 
     /**
      * Put onto the battlefield.
      */
     fun PutOntoBattlefield(target: EffectTarget, tapped: Boolean = false): Effect =
-        MoveToZoneEffect(target, Zone.Battlefield, if (tapped) ZonePlacement.Tapped else ZonePlacement.Default)
+        MoveToZoneEffect(target, Zone.BATTLEFIELD, if (tapped) ZonePlacement.Tapped else ZonePlacement.Default)
 
     // =========================================================================
     // Stat Modification Effects

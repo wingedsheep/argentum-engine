@@ -164,7 +164,7 @@ object TestCards {
         script = CardScript.creature(
             TriggeredAbility.create(
                 trigger = OnEnterBattlefield(),
-                effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Graveyard, byDestruction = true),
+                effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.GRAVEYARD, byDestruction = true),
                 optional = true,
                 targetRequirement = TargetCreature(filter = TargetFilter.Creature.notColor(Color.BLACK))
             )
@@ -184,7 +184,7 @@ object TestCards {
         script = CardScript.creature(
             TriggeredAbility.create(
                 trigger = OnEnterBattlefield(),
-                effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Hand),
+                effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.HAND),
                 optional = true,
                 targetRequirement = TargetObject(filter = TargetFilter.CreatureInYourGraveyard)
             )
@@ -385,7 +385,7 @@ object TestCards {
         manaCost = ManaCost.parse("{1}{B}"),
         oracleText = "Destroy target nonblack creature.",
         script = CardScript.spell(
-            effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Graveyard, byDestruction = true),
+            effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.GRAVEYARD, byDestruction = true),
             TargetCreature(filter = TargetFilter.Creature.notColor(Color.BLACK))
         )
     )
@@ -412,8 +412,8 @@ object TestCards {
         oracleText = "Destroy two target nonblack creatures. You lose 5 life.",
         script = CardScript.spell(
             effect = CompositeEffect(listOf(
-                MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Graveyard, byDestruction = true),
-                MoveToZoneEffect(EffectTarget.ContextTarget(1), Zone.Graveyard, byDestruction = true),
+                MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.GRAVEYARD, byDestruction = true),
+                MoveToZoneEffect(EffectTarget.ContextTarget(1), Zone.GRAVEYARD, byDestruction = true),
                 LoseLifeEffect(5, EffectTarget.Controller)
             )),
             TargetCreature(filter = TargetFilter.Creature.notColor(Color.BLACK)),

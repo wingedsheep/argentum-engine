@@ -21,7 +21,7 @@ import com.wingedsheep.gameserver.protocol.LegalActionInfo
 import com.wingedsheep.gameserver.protocol.ServerMessage
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import io.kotest.assertions.nondeterministic.eventually
 import io.kotest.core.spec.style.FunSpec
@@ -152,7 +152,7 @@ abstract class ProtocolTestBase : FunSpec() {
 
             // Initialize empty zones for both players
             for (playerId in listOf(player1Id, player2Id)) {
-                for (zoneType in listOf(ZoneType.HAND, ZoneType.LIBRARY, ZoneType.GRAVEYARD, ZoneType.BATTLEFIELD)) {
+                for (zoneType in listOf(Zone.HAND, Zone.LIBRARY, Zone.GRAVEYARD, Zone.BATTLEFIELD)) {
                     val zoneKey = ZoneKey(playerId, zoneType)
                     state = state.copy(zones = state.zones + (zoneKey to emptyList()))
                 }
@@ -164,7 +164,7 @@ abstract class ProtocolTestBase : FunSpec() {
         fun withCardInHand(playerNumber: Int, cardName: String): ScenarioBuilder {
             val playerId = if (playerNumber == 1) player1Id else player2Id
             val cardId = createCard(cardName, playerId)
-            state = state.addToZone(ZoneKey(playerId, ZoneType.HAND), cardId)
+            state = state.addToZone(ZoneKey(playerId, Zone.HAND), cardId)
             return this
         }
 
@@ -182,7 +182,7 @@ abstract class ProtocolTestBase : FunSpec() {
             val playerId = if (playerNumber == 1) player1Id else player2Id
             val cardId = createCard(cardName, playerId)
 
-            state = state.addToZone(ZoneKey(playerId, ZoneType.BATTLEFIELD), cardId)
+            state = state.addToZone(ZoneKey(playerId, Zone.BATTLEFIELD), cardId)
 
             var container = state.getEntity(cardId)!!
             container = container.with(ControllerComponent(playerId))
@@ -207,14 +207,14 @@ abstract class ProtocolTestBase : FunSpec() {
         fun withCardInLibrary(playerNumber: Int, cardName: String): ScenarioBuilder {
             val playerId = if (playerNumber == 1) player1Id else player2Id
             val cardId = createCard(cardName, playerId)
-            state = state.addToZone(ZoneKey(playerId, ZoneType.LIBRARY), cardId)
+            state = state.addToZone(ZoneKey(playerId, Zone.LIBRARY), cardId)
             return this
         }
 
         fun withCardInGraveyard(playerNumber: Int, cardName: String): ScenarioBuilder {
             val playerId = if (playerNumber == 1) player1Id else player2Id
             val cardId = createCard(cardName, playerId)
-            state = state.addToZone(ZoneKey(playerId, ZoneType.GRAVEYARD), cardId)
+            state = state.addToZone(ZoneKey(playerId, Zone.GRAVEYARD), cardId)
             return this
         }
 
@@ -340,7 +340,7 @@ abstract class ProtocolTestBase : FunSpec() {
             var iterations = 0
             while (iterations++ < 20) {
                 val state = player1.client.requireLatestState()
-                val stack = state.zones.find { it.zoneId.zoneType == ZoneType.STACK }
+                val stack = state.zones.find { it.zoneId.zoneType == Zone.STACK }
                 if (stack == null || stack.size == 0) break
                 passPriority()
             }
@@ -348,7 +348,7 @@ abstract class ProtocolTestBase : FunSpec() {
 
         fun findPermanent(name: String): ClientCard? {
             val state = player1.client.requireLatestState()
-            val battlefield = state.zones.find { it.zoneId.zoneType == ZoneType.BATTLEFIELD }
+            val battlefield = state.zones.find { it.zoneId.zoneType == Zone.BATTLEFIELD }
                 ?: return null
             return battlefield.cardIds
                 .mapNotNull { state.cards[it] }
@@ -359,7 +359,7 @@ abstract class ProtocolTestBase : FunSpec() {
             val state = player1.client.requireLatestState()
             val playerId = if (playerNumber == 1) player1.id else player2.id
             val graveyard = state.zones.find {
-                it.zoneId.zoneType == ZoneType.GRAVEYARD && it.zoneId.ownerId == playerId
+                it.zoneId.zoneType == Zone.GRAVEYARD && it.zoneId.ownerId == playerId
             } ?: return false
             return graveyard.cardIds
                 .mapNotNull { state.cards[it] }

@@ -10,7 +10,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EachOpponentDiscardsEffect
 import kotlin.reflect.KClass
@@ -39,7 +39,7 @@ class EachOpponentDiscardsExecutor(
         val opponentId = context.opponentId
             ?: return ExecutionResult.error(state, "No opponent for each opponent discards effect")
 
-        val handZone = ZoneKey(opponentId, ZoneType.HAND)
+        val handZone = ZoneKey(opponentId, Zone.HAND)
         val hand = state.getZone(handZone)
 
         // If opponent's hand is empty, nothing to do
@@ -98,8 +98,8 @@ class EachOpponentDiscardsExecutor(
         cardIds: List<EntityId>
     ): ExecutionResult {
         var newState = state
-        val handZone = ZoneKey(playerId, ZoneType.HAND)
-        val graveyardZone = ZoneKey(playerId, ZoneType.GRAVEYARD)
+        val handZone = ZoneKey(playerId, Zone.HAND)
+        val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
 
         for (cardId in cardIds) {
             newState = newState.removeFromZone(handZone, cardId)

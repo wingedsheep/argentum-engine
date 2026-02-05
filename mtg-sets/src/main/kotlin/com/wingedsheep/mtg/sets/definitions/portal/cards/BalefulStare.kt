@@ -3,6 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.targeting.TargetOpponent
 
@@ -24,7 +25,7 @@ val BalefulStare = card("Baleful Stare") {
                 DrawCardsEffect(
                     count = DynamicAmount.Count(
                         player = Player.TargetOpponent,
-                        zone = Zone.Hand,
+                        zone = Zone.HAND,
                         filter = GameObjectFilter.Any.withSubtype("Mountain") or
                             GameObjectFilter.Any.withColor(Color.RED)
                     )

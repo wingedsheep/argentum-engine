@@ -6,7 +6,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolvePlayerTarget
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.MillEffect
 import kotlin.reflect.KClass
@@ -30,8 +30,8 @@ class MillExecutor : EffectExecutor<MillEffect> {
         var newState = state
         val milledCards = mutableListOf<EntityId>()
 
-        val libraryZone = ZoneKey(targetId, ZoneType.LIBRARY)
-        val graveyardZone = ZoneKey(targetId, ZoneType.GRAVEYARD)
+        val libraryZone = ZoneKey(targetId, Zone.LIBRARY)
+        val graveyardZone = ZoneKey(targetId, Zone.GRAVEYARD)
 
         repeat(effect.count) {
             val library = newState.getZone(libraryZone)

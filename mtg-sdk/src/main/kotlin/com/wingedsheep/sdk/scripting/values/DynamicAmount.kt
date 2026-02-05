@@ -2,6 +2,7 @@ package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.core.Zone
 import kotlinx.serialization.Serializable
 
 // Note: Player, Zone, and GameObjectFilter are in the same package (com.wingedsheep.sdk.scripting)
@@ -353,7 +354,7 @@ sealed interface DynamicAmount {
                 append(" ")
             }
             when (zone) {
-                Zone.Battlefield -> {
+                Zone.BATTLEFIELD -> {
                     when (player) {
                         Player.You -> append("you control")
                         Player.Opponent, Player.TargetOpponent -> append("${player.description} controls")
@@ -365,7 +366,7 @@ sealed interface DynamicAmount {
                     append("in ")
                     append(player.description)
                     append("'s ")
-                    append(zone.description)
+                    append(zone.displayName)
                 }
             }
         }

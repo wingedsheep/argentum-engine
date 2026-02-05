@@ -1,7 +1,7 @@
 package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.ManaCost
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.targeting.TargetRequirement
 import kotlinx.serialization.Serializable
 
@@ -19,7 +19,7 @@ data class ActivatedAbility(
     val restrictions: List<ActivationRestriction> = emptyList(),
     val isManaAbility: Boolean = false,
     val isPlaneswalkerAbility: Boolean = false,
-    val activateFromZone: ZoneType = ZoneType.BATTLEFIELD
+    val activateFromZone: Zone = Zone.BATTLEFIELD
 ) {
     val description: String
         get() = "${cost.description}: ${effect.description}"

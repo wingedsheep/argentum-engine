@@ -118,7 +118,7 @@ class KingsAssassinScenarioTest : ScenarioTestBase() {
                 val clientState = game.getClientState(1)
 
                 // Find the stack zone
-                val stackZone = clientState.zones.find { it.zoneId.zoneType == com.wingedsheep.sdk.core.ZoneType.STACK }
+                val stackZone = clientState.zones.find { it.zoneId.zoneType == com.wingedsheep.sdk.core.Zone.STACK }
                 withClue("Stack zone should exist") {
                     stackZone shouldNotBe null
                 }

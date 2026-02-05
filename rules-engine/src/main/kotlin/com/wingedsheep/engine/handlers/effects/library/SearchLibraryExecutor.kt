@@ -8,7 +8,7 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.SearchLibraryEffect
@@ -42,7 +42,7 @@ class SearchLibraryExecutor : EffectExecutor<SearchLibraryEffect> {
         context: EffectContext
     ): ExecutionResult {
         val playerId = context.controllerId
-        val libraryZone = ZoneKey(playerId, ZoneType.LIBRARY)
+        val libraryZone = ZoneKey(playerId, Zone.LIBRARY)
         val library = state.getZone(libraryZone)
 
         // If library is empty, just shuffle (if configured) and return

@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting
 
+import com.wingedsheep.sdk.core.Zone
 import kotlinx.serialization.Serializable
 
 /**
@@ -81,19 +82,19 @@ sealed interface GameEvent {
             append(objectFilter.description)
             append(" would ")
             when (to) {
-                Zone.Graveyard -> {
-                    if (from == Zone.Battlefield) append("die")
+                Zone.GRAVEYARD -> {
+                    if (from == Zone.BATTLEFIELD) append("die")
                     else append("be put into a graveyard")
                 }
-                Zone.Battlefield -> append("enter the battlefield")
-                Zone.Exile -> append("be exiled")
-                Zone.Hand -> append("be returned to a hand")
-                Zone.Library -> append("be put into a library")
-                Zone.Stack -> append("be put on the stack")
-                Zone.Command -> append("be put into the command zone")
+                Zone.BATTLEFIELD -> append("enter the battlefield")
+                Zone.EXILE -> append("be exiled")
+                Zone.HAND -> append("be returned to a hand")
+                Zone.LIBRARY -> append("be put into a library")
+                Zone.STACK -> append("be put on the stack")
+                Zone.COMMAND -> append("be put into the command zone")
             }
-            if (from != null && to != Zone.Graveyard) {
-                append(" from ${from.description}")
+            if (from != null && to != Zone.GRAVEYARD) {
+                append(" from ${from.displayName}")
             }
         }
     }

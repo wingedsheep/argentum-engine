@@ -7,7 +7,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.TargetFilter
-import com.wingedsheep.sdk.scripting.Zone
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.YouWereAttackedThisStep
 import com.wingedsheep.sdk.targeting.TargetCreature
 
@@ -28,7 +28,7 @@ val AssassinsBlade = card("Assassin's Blade") {
         castOnlyIf(YouWereAttackedThisStep)
 
         target = TargetCreature(filter = TargetFilter.AttackingCreature.notColor(Color.BLACK))
-        effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Graveyard, byDestruction = true)
+        effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.GRAVEYARD, byDestruction = true)
     }
 
     metadata {

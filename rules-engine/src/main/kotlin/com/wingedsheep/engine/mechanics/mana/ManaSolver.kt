@@ -14,7 +14,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.ManaSymbol
 import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.AddAnyColorManaEffect
@@ -277,7 +277,7 @@ class ManaSolver(
      * Returns map of Color -> minimum sources needed to cast the most color-demanding card of that color.
      */
     private fun analyzeHandRequirements(state: GameState, playerId: EntityId): Map<Color, Int> {
-        val handZone = ZoneKey(playerId, ZoneType.HAND)
+        val handZone = ZoneKey(playerId, Zone.HAND)
         val handCards = state.getZone(handZone)
 
         val colorRequirements = mutableMapOf<Color, Int>()
@@ -327,7 +327,7 @@ class ManaSolver(
      * - canAttack: true for creatures that can attack (no summoning sickness or has haste)
      */
     private fun findAvailableManaSources(state: GameState, playerId: EntityId): List<ManaSource> {
-        val battlefieldZone = ZoneKey(playerId, ZoneType.BATTLEFIELD)
+        val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
         val battlefieldCards = state.getZone(battlefieldZone)
 
         // Project state once to get all keywords (including granted abilities)

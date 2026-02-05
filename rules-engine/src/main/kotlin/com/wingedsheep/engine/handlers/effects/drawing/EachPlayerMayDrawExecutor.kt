@@ -10,7 +10,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.player.LossReason
 import com.wingedsheep.engine.state.components.player.PlayerLostComponent
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EachPlayerMayDrawEffect
 import kotlin.reflect.KClass
@@ -70,7 +70,7 @@ class EachPlayerMayDrawExecutor(
         lifeGainAmounts: Map<EntityId, Int>
     ): ExecutionResult {
         val playerId = playerOrder[currentPlayerIndex]
-        val libraryZone = ZoneKey(playerId, ZoneType.LIBRARY)
+        val libraryZone = ZoneKey(playerId, Zone.LIBRARY)
         val librarySize = state.getZone(libraryZone).size
 
         // Get source name for the prompt
@@ -174,8 +174,8 @@ class EachPlayerMayDrawExecutor(
             var newState = state
             val drawnCards = mutableListOf<EntityId>()
 
-            val libraryZone = ZoneKey(playerId, ZoneType.LIBRARY)
-            val handZone = ZoneKey(playerId, ZoneType.HAND)
+            val libraryZone = ZoneKey(playerId, Zone.LIBRARY)
+            val handZone = ZoneKey(playerId, Zone.HAND)
 
             repeat(count) {
                 val library = newState.getZone(libraryZone)

@@ -4,7 +4,7 @@ import com.wingedsheep.engine.core.ContinuationFrame
 import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import kotlinx.serialization.Serializable
 
@@ -116,7 +116,7 @@ data class GameState(
     /**
      * Get all entities in a player's zone.
      */
-    fun getZone(playerId: EntityId, zoneType: ZoneType): List<EntityId> =
+    fun getZone(playerId: EntityId, zoneType: Zone): List<EntityId> =
         getZone(ZoneKey(playerId, zoneType))
 
     /**
@@ -207,7 +207,7 @@ data class GameState(
      * Get all entities on the battlefield.
      */
     fun getBattlefield(): List<EntityId> {
-        return zones.filterKeys { it.zoneType == ZoneType.BATTLEFIELD }
+        return zones.filterKeys { it.zoneType == Zone.BATTLEFIELD }
             .values.flatten()
     }
 
@@ -215,31 +215,31 @@ data class GameState(
      * Get entities on a player's battlefield.
      */
     fun getBattlefield(playerId: EntityId): List<EntityId> =
-        getZone(playerId, ZoneType.BATTLEFIELD)
+        getZone(playerId, Zone.BATTLEFIELD)
 
     /**
      * Get a player's hand.
      */
     fun getHand(playerId: EntityId): List<EntityId> =
-        getZone(playerId, ZoneType.HAND)
+        getZone(playerId, Zone.HAND)
 
     /**
      * Get a player's library.
      */
     fun getLibrary(playerId: EntityId): List<EntityId> =
-        getZone(playerId, ZoneType.LIBRARY)
+        getZone(playerId, Zone.LIBRARY)
 
     /**
      * Get a player's graveyard.
      */
     fun getGraveyard(playerId: EntityId): List<EntityId> =
-        getZone(playerId, ZoneType.GRAVEYARD)
+        getZone(playerId, Zone.GRAVEYARD)
 
     /**
      * Get a player's exile zone.
      */
     fun getExile(playerId: EntityId): List<EntityId> =
-        getZone(playerId, ZoneType.EXILE)
+        getZone(playerId, Zone.EXILE)
 
     /**
      * Remove an entity completely from the game (from all zones).
@@ -353,7 +353,7 @@ data class GameState(
 @Serializable
 data class ZoneKey(
     val ownerId: EntityId,
-    val zoneType: ZoneType
+    val zoneType: Zone
 ) {
     override fun toString(): String = "${ownerId.value}:${zoneType.name}"
 }

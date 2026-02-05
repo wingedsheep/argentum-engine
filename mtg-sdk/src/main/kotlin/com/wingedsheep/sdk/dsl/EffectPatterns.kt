@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.dsl
 
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.*
 
 /**
@@ -194,7 +195,7 @@ object EffectPatterns {
         exileTarget: EffectTarget,
         variableName: String = "exiledCard"
     ): StoreResultEffect = StoreResultEffect(
-        effect = MoveToZoneEffect(exileTarget, Zone.Exile),
+        effect = MoveToZoneEffect(exileTarget, Zone.EXILE),
         storeAs = EffectVariable.EntityRef(variableName)
     )
 }

@@ -7,12 +7,11 @@ import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.DynamicAmount
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.Player
-import com.wingedsheep.sdk.scripting.Zone
 import kotlin.math.max
 import kotlin.math.min
 
@@ -78,12 +77,12 @@ class DynamicAmountEvaluator {
             }
 
             is DynamicAmount.CardsInYourGraveyard -> {
-                val graveyardZone = ZoneKey(context.controllerId, ZoneType.GRAVEYARD)
+                val graveyardZone = ZoneKey(context.controllerId, Zone.GRAVEYARD)
                 state.getZone(graveyardZone).size
             }
 
             is DynamicAmount.CreatureCardsInYourGraveyard -> {
-                val graveyardZone = ZoneKey(context.controllerId, ZoneType.GRAVEYARD)
+                val graveyardZone = ZoneKey(context.controllerId, Zone.GRAVEYARD)
                 state.getZone(graveyardZone).count { entityId ->
                     state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.isCreature == true
                 }
@@ -184,9 +183,9 @@ class DynamicAmountEvaluator {
             }
 
             is DynamicAmount.HandSizeDifferenceFromTargetOpponent -> {
-                val myHand = state.getZone(ZoneKey(context.controllerId, ZoneType.HAND)).size
+                val myHand = state.getZone(ZoneKey(context.controllerId, Zone.HAND)).size
                 val opponentHand = context.opponentId?.let {
-                    state.getZone(ZoneKey(it, ZoneType.HAND)).size
+                    state.getZone(ZoneKey(it, Zone.HAND)).size
                 } ?: 0
                 max(0, opponentHand - myHand)
             }
@@ -207,7 +206,7 @@ class DynamicAmountEvaluator {
             }
 
             is DynamicAmount.CountBattlefield -> {
-                evaluateUnifiedCount(state, amount.player, Zone.Battlefield, amount.filter, context)
+                evaluateUnifiedCount(state, amount.player, Zone.BATTLEFIELD, amount.filter, context)
             }
         }
     }
@@ -282,12 +281,12 @@ class DynamicAmountEvaluator {
         context: EffectContext
     ): Int {
         val playerIds = resolveUnifiedPlayerIds(state, player, context)
-        val zoneType = resolveUnifiedZoneType(zone)
+        val zoneType = resolveUnifiedZone(zone)
 
         val predicateContext = PredicateContext.fromEffectContext(context)
 
         return playerIds.sumOf { playerId ->
-            val entities = if (zoneType == ZoneType.BATTLEFIELD) {
+            val entities = if (zoneType == Zone.BATTLEFIELD) {
                 // Battlefield is shared, filter by controller
                 state.getBattlefield().filter { entityId ->
                     state.getEntity(entityId)?.get<ControllerComponent>()?.playerId == playerId
@@ -341,15 +340,5 @@ class DynamicAmountEvaluator {
         }
     }
 
-    private fun resolveUnifiedZoneType(zone: Zone): ZoneType {
-        return when (zone) {
-            Zone.Hand -> ZoneType.HAND
-            Zone.Battlefield -> ZoneType.BATTLEFIELD
-            Zone.Graveyard -> ZoneType.GRAVEYARD
-            Zone.Library -> ZoneType.LIBRARY
-            Zone.Exile -> ZoneType.EXILE
-            Zone.Stack -> ZoneType.STACK
-            Zone.Command -> ZoneType.COMMAND
-        }
-    }
+    private fun resolveUnifiedZone(zone: Zone): Zone = zone
 }

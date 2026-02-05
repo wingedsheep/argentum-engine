@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.MoveToZoneEffect
-import com.wingedsheep.sdk.scripting.Zone
+import com.wingedsheep.sdk.core.Zone
 
 /**
  * Breath of Life
@@ -19,7 +19,7 @@ val BreathOfLife = card("Breath of Life") {
 
     spell {
         target = Targets.CreatureCardInYourGraveyard
-        effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Battlefield)
+        effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.BATTLEFIELD)
     }
 
     metadata {

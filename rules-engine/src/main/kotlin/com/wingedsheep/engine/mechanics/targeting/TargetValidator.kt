@@ -8,10 +8,9 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.core.CardType
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.TargetFilter
-import com.wingedsheep.sdk.scripting.Zone
 import com.wingedsheep.sdk.targeting.*
 
 /**
@@ -238,11 +237,11 @@ class TargetValidator {
         if (target !is ChosenTarget.Card) {
             return "Target must be a card in a graveyard"
         }
-        if (target.zone != ZoneType.GRAVEYARD) {
+        if (target.zone != Zone.GRAVEYARD) {
             return "Target must be in a graveyard"
         }
 
-        val zoneKey = ZoneKey(target.ownerId, ZoneType.GRAVEYARD)
+        val zoneKey = ZoneKey(target.ownerId, Zone.GRAVEYARD)
         if (target.cardId !in state.getZone(zoneKey)) {
             return "Target not found in graveyard"
         }
@@ -288,9 +287,9 @@ class TargetValidator {
         casterId: EntityId
     ): String? {
         return when (filter.zone) {
-            Zone.Graveyard -> validateGraveyardTarget(state, target, filter, casterId)
-            Zone.Battlefield -> validatePermanentTarget(state, target, filter, casterId)
-            Zone.Stack -> validateSpellTarget(state, target, filter, casterId)
+            Zone.GRAVEYARD -> validateGraveyardTarget(state, target, filter, casterId)
+            Zone.BATTLEFIELD -> validatePermanentTarget(state, target, filter, casterId)
+            Zone.STACK -> validateSpellTarget(state, target, filter, casterId)
             else -> validateCardInZoneTarget(state, target, filter, casterId)
         }
     }
@@ -308,21 +307,15 @@ class TargetValidator {
             return "Target must be a card"
         }
 
-        val expectedZoneType = when (filter.zone) {
-            Zone.Hand -> ZoneType.HAND
-            Zone.Library -> ZoneType.LIBRARY
-            Zone.Exile -> ZoneType.EXILE
-            Zone.Command -> ZoneType.COMMAND
-            else -> return "Unsupported zone for card targeting: ${filter.zone}"
+        val expectedZone = filter.zone
+
+        if (target.zone != expectedZone) {
+            return "Target must be in ${filter.zone.displayName}"
         }
 
-        if (target.zone != expectedZoneType) {
-            return "Target must be in ${filter.zone.description}"
-        }
-
-        val zoneKey = ZoneKey(target.ownerId, expectedZoneType)
+        val zoneKey = ZoneKey(target.ownerId, expectedZone)
         if (target.cardId !in state.getZone(zoneKey)) {
-            return "Target not found in ${filter.zone.description}"
+            return "Target not found in ${filter.zone.displayName}"
         }
 
         val predicateContext = PredicateContext(controllerId = casterId, ownerId = target.ownerId)

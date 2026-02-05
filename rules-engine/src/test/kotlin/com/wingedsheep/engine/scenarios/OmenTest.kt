@@ -9,7 +9,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.TypeLine
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
@@ -85,7 +85,7 @@ class OmenTest : FunSpec({
         val initialHandSize = driver.getHandSize(activePlayer)
 
         // Get the top 3 cards of the library before casting
-        val libraryZone = ZoneKey(activePlayer, ZoneType.LIBRARY)
+        val libraryZone = ZoneKey(activePlayer, Zone.LIBRARY)
         val libraryBefore = driver.state.getZone(libraryZone)
         val topThreeBefore = libraryBefore.take(3)
 
@@ -152,7 +152,7 @@ class OmenTest : FunSpec({
         driver.giveMana(activePlayer, Color.BLUE, 2)
 
         // Get the top 3 cards of the library before casting
-        val libraryZone = ZoneKey(activePlayer, ZoneType.LIBRARY)
+        val libraryZone = ZoneKey(activePlayer, Zone.LIBRARY)
         val topThreeBefore = driver.state.getZone(libraryZone).take(3)
 
         // Cast and resolve
@@ -200,7 +200,7 @@ class OmenTest : FunSpec({
         val initialHandSize = driver.getHandSize(activePlayer)
 
         // Get the top 3 cards of the library
-        val libraryZone = ZoneKey(activePlayer, ZoneType.LIBRARY)
+        val libraryZone = ZoneKey(activePlayer, Zone.LIBRARY)
         val topThree = driver.state.getZone(libraryZone).take(3)
 
         // Cast Omen
@@ -241,7 +241,7 @@ class OmenTest : FunSpec({
         driver.giveMana(activePlayer, Color.BLUE, 2)
 
         // Get the top 3 cards and their names
-        val libraryZone = ZoneKey(activePlayer, ZoneType.LIBRARY)
+        val libraryZone = ZoneKey(activePlayer, Zone.LIBRARY)
         val topThree = driver.state.getZone(libraryZone).take(3)
         val cardNames = topThree.map { cardId ->
             driver.state.getEntity(cardId)?.get<CardComponent>()?.name

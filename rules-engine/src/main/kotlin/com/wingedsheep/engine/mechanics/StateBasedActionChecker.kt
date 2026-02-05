@@ -16,7 +16,7 @@ import com.wingedsheep.engine.state.components.player.PlayerLostComponent
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 
 /**
@@ -260,8 +260,8 @@ class StateBasedActionChecker {
                 val ownerId = cardComponent.ownerId ?: controllerId
 
                 // Move to graveyard
-                val battlefieldZone = ZoneKey(controllerId, ZoneType.BATTLEFIELD)
-                val graveyardZone = ZoneKey(ownerId, ZoneType.GRAVEYARD)
+                val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
+                val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
 
                 newState = newState.removeFromZone(battlefieldZone, entityId)
                 newState = newState.addToZone(graveyardZone, entityId)
@@ -277,8 +277,8 @@ class StateBasedActionChecker {
                     ZoneChangeEvent(
                         entityId,
                         cardComponent.name,
-                        ZoneType.BATTLEFIELD,
-                        ZoneType.GRAVEYARD,
+                        Zone.BATTLEFIELD,
+                        Zone.GRAVEYARD,
                         ownerId
                     )
                 )
@@ -297,7 +297,7 @@ class StateBasedActionChecker {
         val events = mutableListOf<GameEvent>()
 
         for (playerId in state.turnOrder) {
-            val battlefieldZone = ZoneKey(playerId, ZoneType.BATTLEFIELD)
+            val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
             val permanents = state.getZone(battlefieldZone)
 
             // Group legendary permanents by name
@@ -381,8 +381,8 @@ class StateBasedActionChecker {
                     ?: continue
                 val ownerId = cardComponent.ownerId ?: controllerId
 
-                val battlefieldZone = ZoneKey(controllerId, ZoneType.BATTLEFIELD)
-                val graveyardZone = ZoneKey(ownerId, ZoneType.GRAVEYARD)
+                val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
+                val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
 
                 newState = newState.removeFromZone(battlefieldZone, entityId)
                 newState = newState.addToZone(graveyardZone, entityId)
@@ -396,8 +396,8 @@ class StateBasedActionChecker {
                     ZoneChangeEvent(
                         entityId,
                         cardComponent.name,
-                        ZoneType.BATTLEFIELD,
-                        ZoneType.GRAVEYARD,
+                        Zone.BATTLEFIELD,
+                        Zone.GRAVEYARD,
                         ownerId
                     )
                 )
@@ -409,8 +409,8 @@ class StateBasedActionChecker {
                         ?: continue
                     val ownerId = cardComponent.ownerId ?: controllerId
 
-                    val battlefieldZone = ZoneKey(controllerId, ZoneType.BATTLEFIELD)
-                    val graveyardZone = ZoneKey(ownerId, ZoneType.GRAVEYARD)
+                    val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
+                    val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
 
                     newState = newState.removeFromZone(battlefieldZone, entityId)
                     newState = newState.addToZone(graveyardZone, entityId)
@@ -425,8 +425,8 @@ class StateBasedActionChecker {
                         ZoneChangeEvent(
                             entityId,
                             cardComponent.name,
-                            ZoneType.BATTLEFIELD,
-                            ZoneType.GRAVEYARD,
+                            Zone.BATTLEFIELD,
+                            Zone.GRAVEYARD,
                             ownerId
                         )
                     )
@@ -447,7 +447,7 @@ class StateBasedActionChecker {
         val tokensToRemove = mutableListOf<Pair<EntityId, ZoneKey>>()
 
         for (playerId in state.turnOrder) {
-            for (zoneType in listOf(ZoneType.HAND, ZoneType.GRAVEYARD, ZoneType.LIBRARY, ZoneType.EXILE)) {
+            for (zoneType in listOf(Zone.HAND, Zone.GRAVEYARD, Zone.LIBRARY, Zone.EXILE)) {
                 val zoneKey = ZoneKey(playerId, zoneType)
                 for (entityId in state.getZone(zoneKey)) {
                     val container = state.getEntity(entityId) ?: continue
@@ -536,8 +536,8 @@ class StateBasedActionChecker {
 
         val ownerId = cardComponent.ownerId ?: controllerId
 
-        val battlefieldZone = ZoneKey(controllerId, ZoneType.BATTLEFIELD)
-        val graveyardZone = ZoneKey(ownerId, ZoneType.GRAVEYARD)
+        val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
+        val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
 
         var newState = state.removeFromZone(battlefieldZone, entityId)
         newState = newState.addToZone(graveyardZone, entityId)
@@ -558,8 +558,8 @@ class StateBasedActionChecker {
                 ZoneChangeEvent(
                     entityId,
                     cardComponent.name,
-                    ZoneType.BATTLEFIELD,
-                    ZoneType.GRAVEYARD,
+                    Zone.BATTLEFIELD,
+                    Zone.GRAVEYARD,
                     ownerId
                 )
             )

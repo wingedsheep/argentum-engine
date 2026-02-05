@@ -6,7 +6,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.LookAtTopCardsEffect
 import java.util.UUID
@@ -33,7 +33,7 @@ class LookAtTopCardsExecutor : EffectExecutor<LookAtTopCardsEffect> {
         context: EffectContext
     ): ExecutionResult {
         val playerId = context.controllerId
-        val libraryZone = ZoneKey(playerId, ZoneType.LIBRARY)
+        val libraryZone = ZoneKey(playerId, Zone.LIBRARY)
         val library = state.getZone(libraryZone)
 
         // Get top N cards from library
@@ -125,7 +125,7 @@ class LookAtTopCardsExecutor : EffectExecutor<LookAtTopCardsEffect> {
         cards: List<EntityId>,
         libraryZone: ZoneKey
     ): ExecutionResult {
-        val handZone = ZoneKey(playerId, ZoneType.HAND)
+        val handZone = ZoneKey(playerId, Zone.HAND)
         val events = mutableListOf<GameEvent>()
         var newState = state
 
@@ -137,8 +137,8 @@ class LookAtTopCardsExecutor : EffectExecutor<LookAtTopCardsEffect> {
                 ZoneChangeEvent(
                     entityId = cardId,
                     entityName = cardName,
-                    fromZone = ZoneType.LIBRARY,
-                    toZone = ZoneType.HAND,
+                    fromZone = Zone.LIBRARY,
+                    toZone = Zone.HAND,
                     ownerId = playerId
                 )
             )

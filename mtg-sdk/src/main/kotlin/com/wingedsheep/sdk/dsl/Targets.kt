@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TargetFilter
-import com.wingedsheep.sdk.scripting.Zone
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.targeting.AnyTarget
 import com.wingedsheep.sdk.targeting.TargetCreature
 import com.wingedsheep.sdk.targeting.TargetCreatureOrPlaneswalker
@@ -282,12 +282,12 @@ object Targets {
 
         // Target in specific zone
         fun inGraveyard(builder: GameObjectFilter.() -> GameObjectFilter = { this }): TargetFilter =
-            TargetFilter(GameObjectFilter.Any.builder(), zone = Zone.Graveyard)
+            TargetFilter(GameObjectFilter.Any.builder(), zone = Zone.GRAVEYARD)
 
         fun onStack(builder: GameObjectFilter.() -> GameObjectFilter = { this }): TargetFilter =
-            TargetFilter(GameObjectFilter.Any.builder(), zone = Zone.Stack)
+            TargetFilter(GameObjectFilter.Any.builder(), zone = Zone.STACK)
 
         fun inExile(builder: GameObjectFilter.() -> GameObjectFilter = { this }): TargetFilter =
-            TargetFilter(GameObjectFilter.Any.builder(), zone = Zone.Exile)
+            TargetFilter(GameObjectFilter.Any.builder(), zone = Zone.EXILE)
     }
 }

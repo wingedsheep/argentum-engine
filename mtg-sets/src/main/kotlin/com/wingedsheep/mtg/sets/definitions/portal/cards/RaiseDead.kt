@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.TargetFilter
-import com.wingedsheep.sdk.scripting.Zone
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.targeting.TargetObject
 
 /**
@@ -20,7 +20,7 @@ val RaiseDead = card("Raise Dead") {
 
     spell {
         target = TargetObject(filter = TargetFilter.CreatureInYourGraveyard)
-        effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Hand)
+        effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.HAND)
     }
 
     metadata {

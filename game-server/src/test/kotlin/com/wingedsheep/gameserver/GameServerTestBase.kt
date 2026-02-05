@@ -8,7 +8,7 @@ import com.wingedsheep.gameserver.protocol.LegalActionInfo
 import com.wingedsheep.gameserver.protocol.ServerMessage
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.engine.core.*
-import com.wingedsheep.sdk.core.ZoneType
+import com.wingedsheep.sdk.core.Zone
 import io.kotest.assertions.nondeterministic.eventually
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -258,11 +258,11 @@ abstract class GameServerTestBase : FunSpec() {
     }
 
     protected fun ClientGameState.hand(playerId: EntityId): ClientZone =
-        zones.find { it.zoneId.zoneType == ZoneType.HAND && it.zoneId.ownerId == playerId }
+        zones.find { it.zoneId.zoneType == Zone.HAND && it.zoneId.ownerId == playerId }
             ?: error("Hand zone for $playerId not found")
 
     protected fun ClientGameState.battlefield(): ClientZone =
-        zones.find { it.zoneId.zoneType == ZoneType.BATTLEFIELD }
+        zones.find { it.zoneId.zoneType == Zone.BATTLEFIELD }
             ?: error("Battlefield zone not found")
 
     protected fun ClientGameState.player(playerId: EntityId): ClientPlayer =
