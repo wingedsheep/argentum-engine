@@ -348,20 +348,20 @@ export function ZoneSelectionUI({
         {/* Confirm button */}
         <button
           onClick={handleConfirm}
-          disabled={!canConfirm || selectedCards.length === 0}
+          disabled={!canConfirm}
           style={{
             padding: responsive.isMobile ? '10px 24px' : '12px 36px',
             fontSize: responsive.fontSize.large,
-            backgroundColor: canConfirm && selectedCards.length > 0 ? '#16a34a' : '#333',
-            color: canConfirm && selectedCards.length > 0 ? 'white' : '#666',
+            backgroundColor: canConfirm ? '#16a34a' : '#333',
+            color: canConfirm ? 'white' : '#666',
             border: 'none',
             borderRadius: 8,
-            cursor: canConfirm && selectedCards.length > 0 ? 'pointer' : 'not-allowed',
+            cursor: canConfirm ? 'pointer' : 'not-allowed',
             fontWeight: 600,
             transition: 'all 0.15s',
           }}
         >
-          {confirmText}
+          {selectedCards.length === 0 && minSelections === 0 ? 'Decline' : confirmText}
         </button>
       </div>
 

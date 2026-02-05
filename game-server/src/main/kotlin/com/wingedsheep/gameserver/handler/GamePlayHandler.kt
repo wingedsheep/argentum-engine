@@ -42,6 +42,9 @@ class GamePlayHandler(
     // Callback for tournament round complete
     var handleRoundCompleteCallback: ((String) -> Unit)? = null
 
+    // Callback to broadcast active matches when a tournament match ends
+    var broadcastActiveMatchesCallback: ((String) -> Unit)? = null
+
     fun handle(session: WebSocketSession, message: ClientMessage) {
         when (message) {
             is ClientMessage.CreateGame -> handleCreateGame(session, message)
@@ -417,6 +420,9 @@ class GamePlayHandler(
                 }
                 tournament.reportMatchResult(gameSessionId, winnerId, winnerLifeRemaining)
                 gameRepository.removeLobbyLink(gameSessionId)
+
+                // Broadcast updated active matches to waiting players
+                broadcastActiveMatchesCallback?.invoke(lobbyId)
 
                 if (tournament.isRoundComplete()) {
                     handleRoundCompleteCallback?.invoke(lobbyId)

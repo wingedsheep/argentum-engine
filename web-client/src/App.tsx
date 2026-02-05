@@ -26,6 +26,7 @@ export default function App() {
   const combatState = useGameStore((state) => state.combatState)
   const deckBuildingState = useGameStore((state) => state.deckBuildingState)
   const lobbyState = useGameStore((state) => state.lobbyState)
+  const tournamentState = useGameStore((state) => state.tournamentState)
   const spectatingState = useGameStore((state) => state.spectatingState)
   const startCombat = useGameStore((state) => state.startCombat)
   const connect = useGameStore((state) => state.connect)
@@ -134,7 +135,10 @@ export default function App() {
   // Show connection/game creation UI when not in a game
   const showLobby = connectionStatus !== 'connected' || !gameState
   const showGame = !showLobby && !mulliganState
-  const showDeckBuilder = deckBuildingState?.phase === 'building' || deckBuildingState?.phase === 'submitted'
+  // Show deck builder during building phase, or during submitted phase if no tournament yet
+  // When tournament exists and deck is submitted, TournamentOverlay (in GameUI) handles UI
+  const showDeckBuilder = deckBuildingState?.phase === 'building' ||
+    (deckBuildingState?.phase === 'submitted' && !tournamentState)
   const showDraftPick = lobbyState?.state === 'DRAFTING'
 
   return (

@@ -516,10 +516,9 @@ function GraveyardTargetingUI({
   }
 
   const handleConfirm = (selectedCards: EntityId[]) => {
-    if (selectedCards.length > 0) {
-      // Submit with the selected targets for target index 0
-      submitTargetsDecision({ 0: selectedCards })
-    }
+    // Submit with the selected targets for target index 0
+    // If minTargets is 0 (optional ability), submitting with 0 cards declines the ability
+    submitTargetsDecision({ 0: selectedCards })
   }
 
   // Get target requirements
@@ -740,10 +739,10 @@ function GraveyardCardSelection({
       {/* Confirm button */}
       <button
         onClick={handleConfirmClick}
-        disabled={!canConfirm || selectedCards.length === 0}
+        disabled={!canConfirm}
         className={styles.confirmButton}
       >
-        Confirm Target
+        {selectedCards.length === 0 && minSelections === 0 ? 'Decline' : 'Confirm Target'}
       </button>
       {/* Card preview is handled by the global CardPreview component in GameBoard */}
     </>

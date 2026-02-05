@@ -941,21 +941,17 @@ class GameSession(
             val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: continue
             val cardDef = cardRegistry.getCard(cardComponent.name)
             if (cardDef == null) {
-                logger.warn("Cycling check: No card definition found for '${cardComponent.name}'")
                 continue
             }
 
             // Check for cycling ability - log at info level to ensure visibility
             val allAbilities = cardDef.keywordAbilities
-            logger.info("Cycling check: ${cardComponent.name} has ${allAbilities.size} keyword abilities: ${allAbilities.map { "${it::class.simpleName}(${it})" }}")
             val cyclingAbility = allAbilities
                 .filterIsInstance<com.wingedsheep.sdk.scripting.KeywordAbility.Cycling>()
                 .firstOrNull()
             if (cyclingAbility == null) {
-                logger.info("Cycling check: No Cycling ability found for ${cardComponent.name}")
                 continue
             }
-            logger.info("Cycling check: Found cycling ability for ${cardComponent.name} with cost ${cyclingAbility.cost}")
 
             // Add cycling action (affordable or not) - client shows greyed out if unaffordable
             val canAffordCycling = manaSolver.canPay(state, playerId, cyclingAbility.cost)

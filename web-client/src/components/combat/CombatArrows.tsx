@@ -160,12 +160,17 @@ export function CombatArrows() {
   const opponentBlockerAssignments = useGameStore((state) => state.opponentBlockerAssignments)
   const draggingBlockerId = useGameStore((state) => state.draggingBlockerId)
   const isSpectating = useGameStore((state) => state.spectatingState !== null)
+  const pendingDecision = useGameStore((state) => state.pendingDecision)
   const [mousePos, setMousePos] = useState<Point | null>(null)
   const [arrows, setArrows] = useState<Array<{ start: Point; end: Point; blockerId: EntityId }>>([])
   const [attackerArrows, setAttackerArrows] = useState<AttackerArrowData[]>([])
 
   // Check if we're still in combat phase
   const isInCombatPhase = currentStep && COMBAT_STEPS.has(currentStep as Step)
+
+  // Check if we're selecting damage order (hide blocker arrows during this UI)
+  const isSelectingDamageOrder = pendingDecision?.type === 'OrderObjectsDecision' &&
+    pendingDecision?.context?.phase === 'COMBAT'
 
   // Track mouse position during drag
   useEffect(() => {
@@ -195,7 +200,11 @@ export function CombatArrows() {
     const updateArrows = () => {
       const newArrows: ArrowData[] = []
 
-      if (isDeclaringBlockers && combatState) {
+      // Skip blocker arrows during damage order selection (that UI shows blockers separately)
+      if (isSelectingDamageOrder) {
+        setArrows([])
+        // Still compute attacker arrows below
+      } else if (isDeclaringBlockers && combatState) {
         // Use local blocker assignments (real-time feedback during declaration)
         for (const [blockerIdStr, attackerId] of Object.entries(combatState.blockerAssignments)) {
           const blockerId = blockerIdStr as EntityId
@@ -214,6 +223,17 @@ export function CombatArrows() {
         // Use opponent's real-time blocker assignments (for attacking player, only during combat)
         for (const [blockerIdStr, attackerId] of Object.entries(opponentBlockerAssignments)) {
           const blockerId = blockerIdStr as EntityId
+
+          // Check that both blocker and attacker are still on the battlefield
+          const blockerCard = cards?.[blockerId]
+          const attackerCard = cards?.[attackerId]
+          const blockerOnBattlefield = blockerCard?.zone?.zoneType === ZoneType.BATTLEFIELD
+          const attackerOnBattlefield = attackerCard?.zone?.zoneType === ZoneType.BATTLEFIELD
+
+          if (!blockerOnBattlefield || !attackerOnBattlefield) {
+            continue
+          }
+
           const blockerPos = getCardCenter(blockerId)
           const attackerPos = getCardCenter(attackerId)
 
@@ -298,7 +318,7 @@ export function CombatArrows() {
     updateArrows()
     const interval = setInterval(updateArrows, 100)
     return () => clearInterval(interval)
-  }, [combatState, gameStateCombat, opponentBlockerAssignments, isDeclaringBlockers, isInCombatPhase, cards, isSpectating])
+  }, [combatState, gameStateCombat, opponentBlockerAssignments, isDeclaringBlockers, isInCombatPhase, cards, isSpectating, isSelectingDamageOrder])
 
   // Don't render if no arrows to show (only show during combat phase)
   const hasBlockers = isDeclaringBlockers ||

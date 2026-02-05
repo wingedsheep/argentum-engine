@@ -677,10 +677,12 @@
  * ========================================================================= */
 .standingsTable {
   width: 100%;
-  max-width: 500px;
-  background-color: var(--bg-surface-2);
-  border-radius: var(--radius-lg);
+  max-width: 520px;
+  background: linear-gradient(180deg, rgba(20, 20, 30, 0.95) 0%, rgba(15, 15, 22, 0.98) 100%);
+  border-radius: var(--radius-xl);
   overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .standingsTableInner {
@@ -689,77 +691,179 @@
 }
 
 .standingsHeader {
-  background-color: var(--bg-surface-5);
+  background: linear-gradient(180deg, rgba(40, 40, 55, 0.9) 0%, rgba(30, 30, 42, 0.9) 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .standingsTh {
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-3) var(--space-3);
   text-align: center;
-  font-size: 14px;
+  font-size: 11px;
   font-weight: var(--font-weight-semibold);
-  color: var(--text-muted);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .standingsThLeft {
   composes: standingsTh;
   text-align: left;
+  padding-left: var(--space-4);
 }
 
 .standingsTd {
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-3) var(--space-3);
   text-align: center;
   font-size: 14px;
-  border-bottom: 1px solid var(--bg-surface-5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background-color var(--transition-fast);
 }
 
 .standingsTdLeft {
   composes: standingsTd;
   text-align: left;
+  padding-left: var(--space-4);
+}
+
+.standingsRow {
+  transition: background-color var(--transition-fast);
+}
+
+.standingsRow:last-child td {
+  border-bottom: none;
 }
 
 .standingsRowMe {
-  background-color: #1a1a3a;
+  background: linear-gradient(90deg, rgba(37, 99, 235, 0.15) 0%, rgba(37, 99, 235, 0.08) 100%);
 }
 
 .standingsRowMe:hover {
-  background-color: #1a1a3a;
+  background: linear-gradient(90deg, rgba(37, 99, 235, 0.2) 0%, rgba(37, 99, 235, 0.12) 100%);
 }
 
 .standingsRow:hover {
-  background-color: #1a1a2a;
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+/* Rank column with podium styling */
+.standingsRank {
+  font-weight: var(--font-weight-bold);
+  min-width: 32px;
+}
+
+.standingsRankFirst {
+  color: #ffd700;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+}
+
+.standingsRankSecond {
+  color: #c0c0c0;
+  text-shadow: 0 0 6px rgba(192, 192, 192, 0.3);
+}
+
+.standingsRankThird {
+  color: #cd7f32;
+  text-shadow: 0 0 6px rgba(205, 127, 50, 0.3);
 }
 
 .standingsWins {
-  color: #00cc44;
-}
-
-.standingsLosses {
-  color: var(--color-error);
-}
-
-.standingsPoints {
+  color: var(--color-success-light);
   font-weight: var(--font-weight-semibold);
 }
 
+.standingsLosses {
+  color: #ef5350;
+  font-weight: var(--font-weight-medium);
+}
+
+.standingsDraws {
+  color: var(--text-muted);
+}
+
+.standingsPoints {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-highlight);
+  font-size: 15px;
+}
+
 .standingsGwr {
-  color: var(--text-tertiary);
+  color: var(--text-muted);
   font-size: 12px;
+  font-family: ui-monospace, monospace;
 }
 
 .meIndicator {
   color: var(--color-accent);
-  margin-left: var(--space-1);
+  margin-left: var(--space-2);
+  font-size: 12px;
+  font-weight: var(--font-weight-normal);
+  opacity: 0.9;
 }
 
 .disconnectedIndicator {
-  color: var(--color-error);
-  margin-left: var(--space-1);
-  font-size: 12px;
+  display: inline-block;
+  background-color: rgba(239, 83, 80, 0.2);
+  color: #ef5350;
+  margin-left: var(--space-2);
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .tiedIndicator {
-  color: var(--text-muted);
+  color: var(--text-disabled);
   margin-left: 2px;
+  font-size: 12px;
+}
+
+/* Standing row tooltip - shows instantly on hover */
+.standingsTooltip {
+  position: fixed;
+  background: linear-gradient(135deg, rgba(30, 30, 42, 0.98) 0%, rgba(20, 20, 30, 0.98) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  min-width: 200px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  z-index: var(--z-tooltip);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.tooltipName {
+  font-weight: var(--font-weight-semibold);
+  font-size: 14px;
+  margin-bottom: var(--space-2);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tooltipStat {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  padding: 2px 0;
+  color: var(--text-secondary);
+}
+
+.tooltipStatLabel {
+  color: var(--text-muted);
+}
+
+.tooltipStatValue {
+  font-weight: var(--font-weight-medium);
+  font-family: ui-monospace, monospace;
+}
+
+.tooltipTiebreaker {
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 11px;
+  color: var(--color-highlight);
 }
 
 /* =========================================================================
@@ -773,48 +877,81 @@
 }
 
 .statusBoxBye {
-  background-color: var(--color-success-bg);
+  background-color: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  border-radius: var(--radius-lg);
+  color: var(--color-highlight);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-md);
+  padding: var(--space-4) var(--space-6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.byeIcon {
+  font-size: 14px;
 }
 
 .statusBoxWaiting {
-  background-color: #2a2a4e;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-6);
+  color: var(--text-muted);
 }
 
 .statusBoxMatch {
-  background-color: #1a2a4e;
-  border: 1px solid #3a4a6e;
+  background-color: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  padding: var(--space-4) var(--space-6);
+  border-radius: var(--radius-lg);
 }
 
 .statusBoxMatchLabel {
   color: var(--text-muted);
-  font-size: var(--font-sm);
+  font-size: var(--font-xs);
   margin-bottom: var(--space-1);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .statusBoxMatchOpponent {
   font-weight: var(--font-weight-semibold);
-  font-size: var(--font-lg);
+  font-size: var(--font-xl);
+  color: var(--text-primary);
 }
 
 /* =========================================================================
  * Ready Button
  * ========================================================================= */
 .readyButton {
-  padding: 14px var(--space-7);
+  padding: 14px var(--space-8);
   font-size: var(--font-lg);
   font-weight: var(--font-weight-semibold);
-  background-color: var(--color-warning-light);
-  color: var(--text-primary);
+  background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+  color: #1a1a1a;
   border: none;
   border-radius: var(--radius-xl);
   cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 2px 12px rgba(230, 81, 0, 0.3);
+  transition: all var(--transition-normal);
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.readyButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.readyButton:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .readyButton:disabled {
-  background-color: var(--color-success-bg);
-  border: 2px solid var(--color-success-border);
+  background: linear-gradient(180deg, rgba(22, 163, 74, 0.3) 0%, rgba(21, 128, 61, 0.25) 100%);
+  border: 2px solid rgba(34, 197, 94, 0.4);
+  color: var(--color-success-light);
   cursor: default;
   box-shadow: none;
 }
@@ -825,18 +962,38 @@
   margin: 0;
 }
 
+.editDeckButton {
+  padding: 14px var(--space-6);
+  font-size: var(--font-lg);
+  font-weight: var(--font-weight-medium);
+  background: linear-gradient(180deg, rgba(60, 60, 80, 0.9) 0%, rgba(45, 45, 60, 0.9) 100%);
+  color: var(--text-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.editDeckButton:hover {
+  background: linear-gradient(180deg, rgba(75, 75, 100, 0.95) 0%, rgba(55, 55, 75, 0.95) 100%);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: var(--text-primary);
+}
+
 /* =========================================================================
  * Active Matches
  * ========================================================================= */
 .matchesSection {
   width: 100%;
-  max-width: 500px;
+  max-width: 520px;
 }
 
 .matchesSectionTitle {
-  margin: 0 0 var(--space-2) 0;
-  font-size: var(--font-md);
+  margin: 0 0 var(--space-3) 0;
+  font-size: var(--font-sm);
   color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .matchesList {
@@ -850,30 +1007,34 @@
   justify-content: space-between;
   align-items: center;
   padding: var(--space-3) var(--space-4);
-  background-color: var(--bg-surface-4);
-  border: 1px solid var(--border-solid-dark);
+  background: linear-gradient(135deg, rgba(30, 30, 45, 0.9) 0%, rgba(25, 25, 38, 0.9) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-lg);
   color: var(--text-primary);
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all var(--transition-fast);
 }
 
 .matchButton:hover {
-  background-color: #2a2a4e;
+  background: linear-gradient(135deg, rgba(40, 40, 60, 0.95) 0%, rgba(35, 35, 50, 0.95) 100%);
+  border-color: rgba(79, 195, 247, 0.3);
+  transform: translateX(2px);
 }
 
 .matchPlayers {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-3);
 }
 
 .matchPlayerName {
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--font-weight-medium);
+  font-size: 14px;
 }
 
 .matchVs {
-  color: var(--text-muted);
+  color: var(--text-disabled);
+  font-size: 12px;
 }
 
 .matchScore {
@@ -881,14 +1042,17 @@
   align-items: center;
   gap: var(--space-2);
   font-size: 14px;
+  font-family: ui-monospace, monospace;
 }
 
 .matchLifeHigh {
-  color: #4caf50;
+  color: var(--color-success-light);
+  font-weight: var(--font-weight-semibold);
 }
 
 .matchLifeLow {
-  color: var(--color-error);
+  color: #ef5350;
+  font-weight: var(--font-weight-semibold);
 }
 
 .matchScoreDash {
@@ -897,7 +1061,14 @@
 
 .matchWatch {
   color: var(--color-accent);
-  margin-left: var(--space-2);
+  margin-left: var(--space-3);
+  font-size: 12px;
+  opacity: 0.8;
+  transition: opacity var(--transition-fast);
+}
+
+.matchButton:hover .matchWatch {
+  opacity: 1;
 }
 
 /* =========================================================================
@@ -905,7 +1076,7 @@
  * ========================================================================= */
 .resultsSection {
   width: 100%;
-  max-width: 500px;
+  max-width: 520px;
 }
 
 .resultsSectionTitle {
@@ -915,15 +1086,21 @@
 .resultRow {
   display: flex;
   justify-content: space-between;
-  padding: var(--space-1) var(--space-3);
-  background-color: var(--bg-surface-2);
-  border-radius: var(--radius-sm);
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  background: rgba(20, 20, 28, 0.6);
+  border-radius: var(--radius-md);
   margin-bottom: var(--space-1);
   font-size: var(--font-sm);
+  border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .resultOutcome {
-  color: var(--text-muted);
+  color: var(--text-tertiary);
+  font-size: 12px;
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-sm);
 }
 
 /* =========================================================================

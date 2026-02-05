@@ -13,9 +13,11 @@ export function GameUI() {
   const sessionId = useGameStore((state) => state.sessionId)
   const lastError = useGameStore((state) => state.lastError)
   const deckBuildingState = useGameStore((state) => state.deckBuildingState)
+  const tournamentState = useGameStore((state) => state.tournamentState)
 
   // Don't show connection overlay if actively building deck (but show during 'waiting' phase)
-  if (deckBuildingState && deckBuildingState.phase !== 'waiting') return null
+  // Exception: always show if tournamentState exists (for TournamentOverlay)
+  if (deckBuildingState && deckBuildingState.phase !== 'waiting' && !tournamentState) return null
 
   return (
     <ConnectionOverlay
@@ -533,6 +535,20 @@ function LobbyOverlay({
 /**
  * Tournament overlay showing standings between rounds.
  */
+interface HoveredStanding {
+  playerId: string
+  playerName: string
+  wins: number
+  losses: number
+  draws: number
+  points: number
+  gamesWon: number
+  gamesLost: number
+  lifeDifferential: number | undefined
+  tiebreakerReason: string | null | undefined
+  rect: DOMRect
+}
+
 function TournamentOverlay({
   tournamentState,
 }: {
@@ -542,6 +558,8 @@ function TournamentOverlay({
   const spectateGame = useGameStore((state) => state.spectateGame)
   const readyForNextRound = useGameStore((state) => state.readyForNextRound)
   const leaveTournament = useGameStore((state) => state.leaveTournament)
+  const unsubmitDeck = useGameStore((state) => state.unsubmitDeck)
+  const [hoveredStanding, setHoveredStanding] = useState<HoveredStanding | null>(null)
 
   // Check if we're waiting for players to ready up (before first game OR between rounds)
   const isWaitingForReady = (
@@ -557,11 +575,12 @@ function TournamentOverlay({
   const totalPlayers = tournamentState.standings.filter(s => s.isConnected).length
 
   // Auto-ready when player has a bye - no need for manual confirmation
+  // Exception: Don't auto-ready before first round (round 0) so player can still edit deck
   useEffect(() => {
-    if (isWaitingForReady && tournamentState.nextRoundHasBye && !isPlayerReady) {
+    if (isWaitingForReady && tournamentState.nextRoundHasBye && !isPlayerReady && tournamentState.currentRound > 0) {
       readyForNextRound()
     }
-  }, [isWaitingForReady, tournamentState.nextRoundHasBye, isPlayerReady, readyForNextRound])
+  }, [isWaitingForReady, tournamentState.nextRoundHasBye, isPlayerReady, tournamentState.currentRound, readyForNextRound])
 
   return (
     <div className={styles.tournamentOverlay}>
@@ -577,38 +596,49 @@ function TournamentOverlay({
         </p>
       )}
 
-      {/* Next opponent info */}
-      {isWaitingForReady && (
+      {/* Next opponent info or BYE status */}
+      {isWaitingForReady && !tournamentState.nextRoundHasBye && (
         <div className={styles.statusBoxMatch}>
           <div className={styles.statusBoxMatchLabel}>
             Round {tournamentState.currentRound + 1}
           </div>
           <div className={styles.statusBoxMatchOpponent}>
-            {tournamentState.nextRoundHasBye
-              ? 'You have a BYE'
-              : tournamentState.nextOpponentName
-                ? `vs ${tournamentState.nextOpponentName}`
-                : 'Waiting for matchup...'}
+            {tournamentState.nextOpponentName
+              ? `vs ${tournamentState.nextOpponentName}`
+              : 'Waiting for matchup...'}
           </div>
         </div>
       )}
 
-      {tournamentState.isBye && !isWaitingForReady && (
+      {/* BYE status - shown when waiting for ready with bye, or during active round with bye */}
+      {((isWaitingForReady && tournamentState.nextRoundHasBye) || (tournamentState.isBye && !isWaitingForReady)) && (
         <div className={styles.statusBoxBye}>
-          You have a BYE this round
+          <span className={styles.byeIcon}>&#x2713;</span>
+          <span>Sitting out this round</span>
         </div>
       )}
 
       {/* Ready for next round button and status */}
       {isWaitingForReady && (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-          <button
-            onClick={readyForNextRound}
-            disabled={isPlayerReady}
-            className={styles.readyButton}
-          >
-            {isPlayerReady ? '✓ Ready' : 'Ready for Next Round'}
-          </button>
+          <div style={{ display: 'flex', gap: 12 }}>
+            <button
+              onClick={readyForNextRound}
+              disabled={isPlayerReady}
+              className={styles.readyButton}
+            >
+              {isPlayerReady ? '✓ Ready' : 'Ready for Next Round'}
+            </button>
+            {/* Show Edit Deck button before first round starts (can go back to deck building) */}
+            {tournamentState.currentRound === 0 && !isPlayerReady && (
+              <button
+                onClick={unsubmitDeck}
+                className={styles.editDeckButton}
+              >
+                Edit Deck
+              </button>
+            )}
+          </div>
           <p className={styles.readyCount}>
             {readyCount} of {totalPlayers} players ready
           </p>
@@ -683,45 +713,36 @@ function TournamentOverlay({
               const gamesLost = standing.gamesLost ?? 0
               const totalGames = gamesWon + gamesLost
               const winRate = totalGames > 0 ? ((gamesWon / totalGames) * 100).toFixed(0) : '-'
-              const gameRecord = totalGames > 0 ? `${gamesWon}-${gamesLost}` : '-'
 
-              // Build detailed standing breakdown for tooltip
-              const standingDetails: string[] = [
-                `${standing.playerName}`,
-                `Match Record: ${standing.wins}W-${standing.losses}L-${standing.draws}D`,
-                `Points: ${standing.points}`,
-              ]
-              if (totalGames > 0) {
-                standingDetails.push(`Game Record: ${gameRecord} (${winRate}%)`)
+              const handleMouseEnter = (e: React.MouseEvent<HTMLTableRowElement>) => {
+                const rect = e.currentTarget.getBoundingClientRect()
+                setHoveredStanding({
+                  playerId: standing.playerId,
+                  playerName: standing.playerName,
+                  wins: standing.wins,
+                  losses: standing.losses,
+                  draws: standing.draws,
+                  points: standing.points,
+                  gamesWon: gamesWon,
+                  gamesLost: gamesLost,
+                  lifeDifferential: standing.lifeDifferential,
+                  tiebreakerReason: standing.tiebreakerReason,
+                  rect,
+                })
               }
-              if (standing.lifeDifferential !== undefined) {
-                const lifeDiffStr = standing.lifeDifferential >= 0
-                  ? `+${standing.lifeDifferential}`
-                  : `${standing.lifeDifferential}`
-                standingDetails.push(`Life Differential: ${lifeDiffStr}`)
-              }
-              if (standing.tiebreakerReason && standing.tiebreakerReason !== 'TIED') {
-                const tiebreakerText =
-                  standing.tiebreakerReason === 'HEAD_TO_HEAD'
-                    ? 'Ranked by: Head-to-head record'
-                    : standing.tiebreakerReason === 'H2H_GAMES'
-                      ? 'Ranked by: H2H game record'
-                      : standing.tiebreakerReason === 'LIFE_DIFF'
-                        ? 'Ranked by: Life differential'
-                        : null
-                if (tiebreakerText) standingDetails.push(tiebreakerText)
-              } else if (standing.tiebreakerReason === 'TIED') {
-                standingDetails.push('Tied with another player')
-              }
-              const standingTooltip = standingDetails.join('\n')
 
               return (
                 <tr
                   key={standing.playerId}
                   className={`${styles.standingsRow} ${isMe ? styles.standingsRowMe : ''}`}
-                  title={standingTooltip}
+                  onMouseEnter={handleMouseEnter}
+                  onMouseLeave={() => setHoveredStanding(null)}
                 >
-                  <td className={styles.standingsTd}>
+                  <td className={`${styles.standingsTd} ${styles.standingsRank} ${
+                    displayRank === 1 ? styles.standingsRankFirst :
+                    displayRank === 2 ? styles.standingsRankSecond :
+                    displayRank === 3 ? styles.standingsRankThird : ''
+                  }`}>
                     {displayRank}
                     {standing.tiebreakerReason === 'TIED' && (
                       <span className={styles.tiedIndicator}>*</span>
@@ -736,14 +757,14 @@ function TournamentOverlay({
                   </td>
                   <td className={`${styles.standingsTd} ${styles.standingsWins}`}>{standing.wins}</td>
                   <td className={`${styles.standingsTd} ${styles.standingsLosses}`}>{standing.losses}</td>
-                  <td className={styles.standingsTd}>{standing.draws}</td>
+                  <td className={`${styles.standingsTd} ${styles.standingsDraws}`}>{standing.draws}</td>
                   <td className={`${styles.standingsTd} ${styles.standingsPoints}`}>{standing.points}</td>
                   <td className={`${styles.standingsTd} ${styles.standingsGwr}`}>
                     {totalGames > 0 ? `${winRate}%` : '-'}
                   </td>
                   {isWaitingForReady && (
-                    <td className={styles.standingsTd} style={{ color: isReady ? '#4caf50' : 'var(--text-disabled)' }}>
-                      {standing.isConnected ? (isReady ? '✓' : '...') : '-'}
+                    <td className={`${styles.standingsTd} ${styles.standingsReady}`} style={{ color: isReady ? 'var(--color-success-light)' : 'var(--text-disabled)' }}>
+                      {standing.isConnected ? (isReady ? '✓' : '···') : '-'}
                     </td>
                   )}
                 </tr>
@@ -751,6 +772,61 @@ function TournamentOverlay({
             })}
           </tbody>
         </table>
+
+        {/* Instant hover tooltip */}
+        {hoveredStanding && (
+          <div
+            className={styles.standingsTooltip}
+            style={{
+              top: hoveredStanding.rect.top + hoveredStanding.rect.height / 2,
+              left: hoveredStanding.rect.right + 12,
+              transform: 'translateY(-50%)',
+            }}
+          >
+            <div className={styles.tooltipName}>{hoveredStanding.playerName}</div>
+            <div className={styles.tooltipStat}>
+              <span className={styles.tooltipStatLabel}>Match Record</span>
+              <span className={styles.tooltipStatValue}>
+                {hoveredStanding.wins}W-{hoveredStanding.losses}L-{hoveredStanding.draws}D
+              </span>
+            </div>
+            <div className={styles.tooltipStat}>
+              <span className={styles.tooltipStatLabel}>Points</span>
+              <span className={styles.tooltipStatValue}>{hoveredStanding.points}</span>
+            </div>
+            {(hoveredStanding.gamesWon + hoveredStanding.gamesLost) > 0 && (
+              <div className={styles.tooltipStat}>
+                <span className={styles.tooltipStatLabel}>Game Record</span>
+                <span className={styles.tooltipStatValue}>
+                  {hoveredStanding.gamesWon}-{hoveredStanding.gamesLost} (
+                  {((hoveredStanding.gamesWon / (hoveredStanding.gamesWon + hoveredStanding.gamesLost)) * 100).toFixed(0)}%)
+                </span>
+              </div>
+            )}
+            {hoveredStanding.lifeDifferential !== undefined && (
+              <div className={styles.tooltipStat}>
+                <span className={styles.tooltipStatLabel}>Life Diff</span>
+                <span className={styles.tooltipStatValue}>
+                  {hoveredStanding.lifeDifferential >= 0 ? '+' : ''}{hoveredStanding.lifeDifferential}
+                </span>
+              </div>
+            )}
+            {hoveredStanding.tiebreakerReason && hoveredStanding.tiebreakerReason !== 'TIED' && (
+              <div className={styles.tooltipTiebreaker}>
+                {hoveredStanding.tiebreakerReason === 'HEAD_TO_HEAD'
+                  ? 'Ranked by head-to-head'
+                  : hoveredStanding.tiebreakerReason === 'H2H_GAMES'
+                    ? 'Ranked by H2H games'
+                    : hoveredStanding.tiebreakerReason === 'LIFE_DIFF'
+                      ? 'Ranked by life diff'
+                      : null}
+              </div>
+            )}
+            {hoveredStanding.tiebreakerReason === 'TIED' && (
+              <div className={styles.tooltipTiebreaker}>Tied</div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Last round results */}
