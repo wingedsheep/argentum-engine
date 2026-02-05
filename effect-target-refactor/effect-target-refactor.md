@@ -8,6 +8,7 @@
 4. **Simplify effect `description` logic** — eliminate growing `when` blocks in effect types
 5. **Bridge `PlayerFilter` → `Player`** — remove the duplicate type
 6. **Bundle four quick wins** identified in the analysis (thread safety, dummy defaults, dead field, CantBlock consistency)
+7. **Unify zone-moving effects** into a single `MoveToZoneEffect(target, destination, placement)` with `TargetObject` requirement
 
 ---
 
@@ -64,8 +65,11 @@ The Portal cards already overwhelmingly use `ContextTarget(0)`. Only **4 cards**
 | **6** | PlayerFilter → Player bridge | 2 (GameEvent.kt, EventFilters.kt) | Low — type swap |
 | **7** | Deprecate old variants | 1 (EffectTarget.kt) | Low — annotations only |
 | **8** | Delete deprecated code | 2 files | Low — after verification |
+| **9** | Add MoveToZoneEffect + TargetObject | 4 (SDK types + engine executor + registry) | Medium — new effect type |
+| **10** | Migrate cards to MoveToZoneEffect | ~57 card files + 6 old executors | High — largest migration |
+| **11** | DSL convenience functions + cleanup | ~3 (Effects.kt facade + deprecation + deletion) | Low — after migration |
 
-**Total**: ~28 files
+**Total**: ~40+ files
 
 ---
 
@@ -78,52 +82,63 @@ The Portal cards already overwhelmingly use `ContextTarget(0)`. Only **4 cards**
 | New `EffectTarget.GroupRef` | Effect resolver iterates `GroupRef.filter` (same path as existing `GroupFilter` effects) |
 | New `EffectTarget.FilteredTarget` | Target resolver evaluates `filter.baseFilter` against game state |
 | `GameEvent` uses `Player` instead of `PlayerFilter` | Replacement effect matcher evaluates `Player` (superset of `PlayerFilter`) |
+| New `MoveToZoneEffect` | New unified executor resolves target, moves to destination zone with placement/destruction semantics |
+| New `TargetObject` requirement | Target validator evaluates `TargetFilter` across any zone (generalizes `TargetCardInGraveyard`) |
 
 The `PlayerRef` and `GroupRef` resolvers are extensions of code paths that already handle `Player` and `GroupFilter` in other contexts (e.g., `DynamicAmount.Count`, `ModifyStatsForGroupEffect`). No fundamentally new evaluation logic is needed.
+
+The `MoveToZoneEffectExecutor` consolidates logic from 6 existing executors (Destroy, Exile, ReturnToHand, ReturnFromGraveyard, ShuffleIntoLibrary, PutOnTopOfLibrary). The `byDestruction` flag preserves indestructible/regeneration replacement effect handling.
 
 ---
 
 ## Recommended Execution Order
 
 ```
-Phase 0  ←  ship immediately (independent quick wins)
+Phase 0   ←  ship immediately (independent quick wins)
   ↓
-Phase 1  ←  ship next (additive, enables all later phases)
+Phase 1   ←  ship next (additive, enables all later phases)
   ↓
-Phase 2  ←  ReturnFromGraveyardEffect fix (correctness)
+Phase 2   ←  ReturnFromGraveyardEffect fix (correctness)
   ↓
-Phase 3  ←  card migrations (mechanical, small)
+Phase 3   ←  card migrations (mechanical, small)
   ↓
-Phase 4  ←  effect defaults + descriptions (largest logic change)
+Phase 4   ←  effect defaults + descriptions (largest logic change)
   ↓
-Phase 5  ←  DSL update (small follow-up)
+Phase 5   ←  DSL update (small follow-up)
   ↓
-Phase 6  ←  PlayerFilter bridge (independent, can parallelize with 3-5)
+Phase 6   ←  PlayerFilter bridge (independent, can parallelize with 3-5)
   ↓
-Phase 7  ←  deprecation annotations
+Phase 7   ←  deprecation annotations
   ↓
-Phase 8  ←  deletion (after all sets + engine verified)
+Phase 8   ←  deletion (after all sets + engine verified)
+  ↓
+Phase 9   ←  add MoveToZoneEffect + ZonePlacement + TargetObject (foundation)
+  ↓
+Phase 10  ←  migrate cards from old zone-moving effects (largest migration)
+  ↓
+Phase 11  ←  DSL convenience functions + deprecate/delete old effects
 ```
 
-Phases 3, 5, and 6 can run in parallel — they touch non-overlapping files. Phase 4 is the critical path.
+Phases 3, 5, and 6 can run in parallel — they touch non-overlapping files. Phase 4 is the critical path. Phase 10 is the largest migration (57 card files) and can be split into sub-batches by effect type.
 
 ---
 
-## Future Roadmap: Unified `MoveToZoneEffect`
+## Unified `MoveToZoneEffect` Design (Phases 9–11)
 
-After the EffectTarget refactor stabilizes, the natural next step is to unify all zone-moving effects into a single `MoveToZoneEffect(target, destination, placement)`. This collapses 6+ effect types into one:
+### Motivation
 
-| Before | After |
-|--------|-------|
-| `ReturnFromGraveyardEffect(target, HAND)` | `MoveToZoneEffect(target, Zone.Hand)` |
-| `ReturnFromGraveyardEffect(target, BATTLEFIELD)` | `MoveToZoneEffect(target, Zone.Battlefield)` |
-| `ReturnToHandEffect(target)` | `MoveToZoneEffect(target, Zone.Hand)` |
-| `ExileEffect(target)` | `MoveToZoneEffect(target, Zone.Exile)` |
-| `ShuffleIntoLibraryEffect(target)` | `MoveToZoneEffect(target, Zone.Library, ZonePlacement.Shuffled)` |
-| `PutOnTopOfLibraryEffect(target)` | `MoveToZoneEffect(target, Zone.Library, ZonePlacement.Top)` |
-| `DestroyEffect(target)` | `MoveToZoneEffect(target, Zone.Graveyard, byDestruction = true)` |
+Six separate effect types all do the same thing — move an object from one zone to another. They differ only in destination and semantics:
 
-The effect definition:
+| Current Effect | Cards | Unified Form |
+|----------------|-------|-------------|
+| `DestroyEffect(target)` | 32 | `MoveToZoneEffect(target, Zone.Graveyard, byDestruction = true)` |
+| `ReturnFromGraveyardEffect(target, dest)` | 10 | `MoveToZoneEffect(target, dest)` |
+| `ReturnToHandEffect(target)` | 9 | `MoveToZoneEffect(target, Zone.Hand)` |
+| `PutOnTopOfLibraryEffect(target)` | 4 | `MoveToZoneEffect(target, Zone.Library, ZonePlacement.Top)` |
+| `ShuffleIntoLibraryEffect(target)` | 2 | `MoveToZoneEffect(target, Zone.Library, ZonePlacement.Shuffled)` |
+| `ExileEffect(target)` | 0 | `MoveToZoneEffect(target, Zone.Exile)` |
+
+### New SDK Types
 
 ```kotlin
 data class MoveToZoneEffect(
@@ -131,22 +146,96 @@ data class MoveToZoneEffect(
     val destination: Zone,
     val placement: ZonePlacement = ZonePlacement.Default,
     val byDestruction: Boolean = false
-) : Effect
+) : Effect {
+    override val description: String = buildString {
+        when {
+            byDestruction -> append("Destroy ${target.description}")
+            destination == Zone.Hand -> append("Return ${target.description} to its owner's hand")
+            destination == Zone.Exile -> append("Exile ${target.description}")
+            destination == Zone.Library && placement == ZonePlacement.Shuffled ->
+                append("Shuffle ${target.description} into its owner's library")
+            destination == Zone.Library && placement == ZonePlacement.Top ->
+                append("Put ${target.description} on top of its owner's library")
+            destination == Zone.Battlefield && placement == ZonePlacement.Tapped ->
+                append("Put ${target.description} onto the battlefield tapped")
+            destination == Zone.Battlefield ->
+                append("Put ${target.description} onto the battlefield")
+            else -> append("Put ${target.description} into ${destination.description}")
+        }
+    }
+}
 
 enum class ZonePlacement { Default, Top, Bottom, Shuffled, Tapped }
 ```
 
-Old effects become DSL convenience functions:
+### New `TargetObject` Requirement
+
+Generalizes `TargetCardInGraveyard` to target objects in any zone based on a `TargetFilter`:
+
+```kotlin
+data class TargetObject(
+    override val count: Int = 1,
+    override val optional: Boolean = false,
+    val filter: TargetFilter
+) : TargetRequirement
+```
+
+The `TargetFilter` already carries zone information (e.g., `TargetFilter.CreatureInYourGraveyard`), so the requirement doesn't need a separate zone field.
+
+### DSL Convenience Functions
 
 ```kotlin
 object Effects {
-    fun Destroy(target: EffectTarget) = MoveToZoneEffect(target, Zone.Graveyard, byDestruction = true)
-    fun Exile(target: EffectTarget) = MoveToZoneEffect(target, Zone.Exile)
-    fun ReturnToHand(target: EffectTarget) = MoveToZoneEffect(target, Zone.Hand)
-    // etc.
+    fun Destroy(target: EffectTarget) =
+        MoveToZoneEffect(target, Zone.Graveyard, byDestruction = true)
+    fun Exile(target: EffectTarget) =
+        MoveToZoneEffect(target, Zone.Exile)
+    fun ReturnToHand(target: EffectTarget) =
+        MoveToZoneEffect(target, Zone.Hand)
+    fun PutOnTopOfLibrary(target: EffectTarget) =
+        MoveToZoneEffect(target, Zone.Library, ZonePlacement.Top)
+    fun ShuffleIntoLibrary(target: EffectTarget) =
+        MoveToZoneEffect(target, Zone.Library, ZonePlacement.Shuffled)
+    fun PutOntoBattlefield(target: EffectTarget, tapped: Boolean = false) =
+        MoveToZoneEffect(target, Zone.Battlefield,
+            if (tapped) ZonePlacement.Tapped else ZonePlacement.Default)
 }
 ```
 
-Combined with `TargetObject(filter = TargetFilter.CreatureInYourGraveyard)`, every card reads as a simple statement: "target this, move it there." The what-to-target is in the `TargetFilter`, the where-to-put-it is in the `Zone`, and the binding between them is `ContextTarget(0)`.
+### Card Examples (Target Pattern)
 
-This is tracked separately and will be planned after Phase 8 completes.
+Every card reads as "target this, move it there":
+
+```kotlin
+// Gravedigger — ETB reanimate to hand
+target = TargetObject(filter = TargetFilter.CreatureInYourGraveyard)
+effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Hand)
+
+// Breath of Life — reanimate to battlefield
+target = TargetObject(filter = TargetFilter.CreatureInYourGraveyard)
+effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Battlefield)
+
+// Time Ebb — tuck creature
+target = TargetObject(filter = TargetFilter.Creature)
+effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Library, ZonePlacement.Top)
+
+// Alabaster Dragon — death trigger shuffle self
+trigger = Triggers.Dies
+effect = MoveToZoneEffect(EffectTarget.Self, Zone.Library, ZonePlacement.Shuffled)
+
+// Man-o'-War — ETB bounce creature
+target = TargetObject(filter = TargetFilter.Creature)
+effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Hand)
+```
+
+### Out of Scope
+
+These effect types are **not** candidates for `MoveToZoneEffect` — they have complex semantics beyond simple zone movement:
+
+- `DestroyAllEffect` — group destruction with filter + noRegenerate flag
+- `ExileUntilLeavesEffect` — temporary exile with linked return trigger
+- `ExileAndReplaceWithTokenEffect` — composite exile + token creation
+- `SacrificeEffect` / `ForceSacrificeEffect` — sacrifice semantics (player choice)
+- `SearchLibraryEffect` — multi-step search UI with reveal/shuffle options
+- `DrawCardsEffect` — triggers "draw" events, not just zone movement
+- `DiscardCardsEffect` — triggers "discard" events, player choice involved

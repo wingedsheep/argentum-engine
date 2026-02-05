@@ -104,3 +104,38 @@
 - [ ] **8a** Delete all deprecated `EffectTarget` variants
 - [ ] **8b** Delete `PlayerFilter` sealed interface entirely from `EventFilters.kt`
 - [ ] **8c** Full test suite passes with no deprecation warnings from retired types
+
+## Phase 9 — Add `MoveToZoneEffect`, `ZonePlacement`, and `TargetObject`
+- [ ] **9a** Add `ZonePlacement` enum to SDK (`ZonePlacement.kt`)
+- [ ] **9b** Add `MoveToZoneEffect` data class to SDK (`RemovalEffects.kt` or new file)
+- [ ] **9c** Add `TargetObject` to `TargetRequirement.kt` (generalizes `TargetCardInGraveyard`)
+- [ ] **9d** Create `MoveToZoneEffectExecutor` in rules-engine
+- [ ] **9e** Register executor in `EffectExecutorRegistry`
+- [ ] **9f** Add `TargetObject` validation in `TargetValidator`
+
+## Phase 10 — Migrate Cards to `MoveToZoneEffect`
+- [ ] **10a** Migrate `ReturnFromGraveyardEffect` → `MoveToZoneEffect` (~10 cards):
+  - [ ] Gravedigger, RaiseDead, BreathOfLife, ElvenCache, DejaVu
+  - [ ] + any other cards using ReturnFromGraveyardEffect
+- [ ] **10b** Migrate `ReturnToHandEffect` → `MoveToZoneEffect` (~9 cards):
+  - [ ] Man-o'-War, Rescue, Time Ebb (bounce effects), etc.
+- [ ] **10c** Migrate `PutOnTopOfLibraryEffect` → `MoveToZoneEffect` (~4 cards)
+- [ ] **10d** Migrate `ShuffleIntoLibraryEffect` → `MoveToZoneEffect` (~2 cards)
+- [ ] **10e** Migrate `DestroyEffect` → `MoveToZoneEffect` (~32 cards):
+  - [ ] Terror, Dark Banishing, Wrath of God (single-target destroy), etc.
+- [ ] **10f** Migrate `ExileEffect` → `MoveToZoneEffect` (0 cards — just verify)
+- [ ] **10g** Migrate `TargetCardInGraveyard` → `TargetObject` in card target declarations
+- [ ] **10h** Update TestCards.kt and scenario tests
+
+## Phase 11 — DSL Convenience + Deprecate/Delete Old Zone Effects
+- [ ] **11a** Add DSL convenience functions (`Effects.Destroy()`, `Effects.Exile()`, `Effects.ReturnToHand()`, etc.)
+- [ ] **11b** Deprecate old effect types:
+  - [ ] `DestroyEffect`
+  - [ ] `ReturnToHandEffect`
+  - [ ] `ReturnFromGraveyardEffect`
+  - [ ] `ExileEffect`
+  - [ ] `ShuffleIntoLibraryEffect`
+  - [ ] `PutOnTopOfLibraryEffect`
+- [ ] **11c** Deprecate `TargetCardInGraveyard` in favor of `TargetObject`
+- [ ] **11d** Delete deprecated effect types and their executors
+- [ ] **11e** Full test suite passes
