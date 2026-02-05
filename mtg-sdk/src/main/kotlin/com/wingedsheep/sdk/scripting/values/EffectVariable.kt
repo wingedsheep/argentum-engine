@@ -14,12 +14,11 @@ import kotlinx.serialization.Serializable
  * ```kotlin
  * // Store the exiled card reference
  * StoreResultEffect(
- *     effect = ExileEffect(EffectTarget.ContextTarget(0)),
+ *     effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Exile),
  *     storeAs = EffectVariable.EntityRef("exiledCard")
  * )
  *
- * // Later, return it from exile
- * ReturnFromExileEffect(StoredEntityTarget("exiledCard"))
+ * // Later, return it from exile using StoredEntityTarget("exiledCard")
  * ```
  */
 @Serializable

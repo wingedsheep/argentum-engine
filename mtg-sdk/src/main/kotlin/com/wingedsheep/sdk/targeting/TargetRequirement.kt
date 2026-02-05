@@ -158,31 +158,6 @@ data class TargetCreatureOrPlaneswalker(
 // Card Targeting (other zones)
 // =============================================================================
 
-/**
- * Target card in a graveyard.
- *
- * @param count Maximum number of targets
- * @param optional If true, allows 0 targets ("up to X" style targeting)
- * @param filter Restrictions on which cards can be targeted.
- *        Use TargetFilter.CreatureInYourGraveyard or .ownedByYou() to restrict to your graveyard.
- */
-@Serializable
-data class TargetCardInGraveyard(
-    override val count: Int = 1,
-    override val optional: Boolean = false,
-    val filter: TargetFilter = TargetFilter.CardInGraveyard
-) : TargetRequirement {
-    override val description: String = buildString {
-        append("target ")
-        val filterDesc = filter.description.takeIf { filter != TargetFilter.CardInGraveyard }
-        if (filterDesc != null && filterDesc.isNotEmpty()) {
-            append(filterDesc)
-            append(" ")
-        }
-        append("card in a graveyard")
-    }
-}
-
 // =============================================================================
 // Spell Targeting (on stack)
 // =============================================================================

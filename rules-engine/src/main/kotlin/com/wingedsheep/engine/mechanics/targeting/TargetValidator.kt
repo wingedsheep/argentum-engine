@@ -87,7 +87,6 @@ class TargetValidator {
             is AnyTarget -> validateAnyTarget(state, target)
             is TargetCreatureOrPlayer -> validateCreatureOrPlayerTarget(state, target)
             is TargetCreatureOrPlaneswalker -> validateCreatureOrPlaneswalkerTarget(state, target)
-            is TargetCardInGraveyard -> validateGraveyardTarget(state, target, requirement.filter, casterId)
             is TargetSpell -> validateSpellTarget(state, target, requirement.filter, casterId)
             is TargetObject -> validateObjectTarget(state, target, requirement.filter, casterId)
             is TargetOther -> validateSingleTarget(state, target, requirement.baseRequirement, casterId)

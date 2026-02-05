@@ -12,7 +12,7 @@ import kotlin.reflect.KClass
  * Executor for CantBeRegeneratedEffect.
  * Marks target as unable to regenerate.
  *
- * This effect is designed to work AFTER DestroyEffect in a composite,
+ * This effect is designed to work AFTER a destroy effect in a composite,
  * so the target may be in the graveyard. The target resolution must
  * track the entity across zone changes.
  *
@@ -29,7 +29,7 @@ class CantBeRegeneratedExecutor : EffectExecutor<CantBeRegeneratedEffect> {
         effect: CantBeRegeneratedEffect,
         context: EffectContext
     ): ExecutionResult {
-        // Note: Target may be in graveyard after DestroyEffect
+        // Note: Target may be in graveyard after a destroy effect
         // resolveTarget should find the entity regardless of zone
         val targetId = resolveTarget(effect.target, context)
             ?: return ExecutionResult.error(state, "No valid target for can't be regenerated")

@@ -139,10 +139,10 @@ object EffectPatterns {
      * Example:
      * ```kotlin
      * storeEntity(
-     *     effect = ExileEffect(EffectTarget.ContextTarget(0)),
+     *     effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Exile),
      *     as = "exiledCard"
      * )
-     * // Later: ReturnFromExileEffect using StoredEntityTarget("exiledCard")
+     * // Later: return from exile using StoredEntityTarget("exiledCard")
      * ```
      */
     fun storeEntity(effect: Effect, `as`: String): StoreResultEffect =
@@ -194,7 +194,7 @@ object EffectPatterns {
         exileTarget: EffectTarget,
         variableName: String = "exiledCard"
     ): StoreResultEffect = StoreResultEffect(
-        effect = ExileEffect(exileTarget),
+        effect = MoveToZoneEffect(exileTarget, Zone.Exile),
         storeAs = EffectVariable.EntityRef(variableName)
     )
 }

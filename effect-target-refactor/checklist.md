@@ -110,15 +110,14 @@
 - [x] **10h** Update TestCards.kt, CardDslTest.kt, GravediggerTest.kt — all migrated
 - [x] **10i** Full build passes, all tests green
 
-## Phase 11 — DSL Convenience + Deprecate/Delete Old Zone Effects
-- [ ] **11a** Add DSL convenience functions (`Effects.Destroy()`, `Effects.Exile()`, `Effects.ReturnToHand()`, etc.)
-- [ ] **11b** Deprecate old effect types:
-  - [ ] `DestroyEffect`
-  - [ ] `ReturnToHandEffect`
-  - [ ] `ReturnFromGraveyardEffect`
-  - [ ] `ExileEffect`
-  - [ ] `ShuffleIntoLibraryEffect`
-  - [ ] `PutOnTopOfLibraryEffect`
-- [ ] **11c** Deprecate `TargetCardInGraveyard` in favor of `TargetObject`
-- [ ] **11d** Delete deprecated effect types and their executors
-- [ ] **11e** Full test suite passes
+## Phase 11 — DSL Convenience + Delete Old Zone Effects
+- [x] **11a** Add DSL convenience functions (`Effects.Destroy()`, `Effects.Exile()`, `Effects.ReturnToHand()`, etc.)
+- [x] **11b** ~~Deprecate~~ Skipped — went directly to deletion in 11d
+- [x] **11c** Delete `TargetCardInGraveyard` (replaced by `TargetObject` everywhere)
+- [x] **11d** Delete old effect types and their executors:
+  - [x] `DestroyEffect`, `ExileEffect`, `ReturnToHandEffect`, `ReturnFromGraveyardEffect`
+  - [x] `ShuffleIntoLibraryEffect`, `PutOnTopOfLibraryEffect`
+  - [x] 6 executor files + registry entries removed
+  - [x] `TargetCardInGraveyard` deleted from SDK, engine, and server
+  - [x] Added `TargetObject` handling in `GameSession.findValidTargets`
+- [x] **11e** Full test suite passes

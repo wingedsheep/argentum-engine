@@ -7,28 +7,6 @@ import kotlinx.serialization.Serializable
 // =============================================================================
 
 /**
- * Shuffle a card into its owner's library.
- * "Shuffle this card into its owner's library"
- */
-@Serializable
-data class ShuffleIntoLibraryEffect(
-    val target: EffectTarget
-) : Effect {
-    override val description: String = "Shuffle ${target.description} into its owner's library"
-}
-
-/**
- * Put a card on top of its owner's library.
- * "Put this card on top of its owner's library"
- */
-@Serializable
-data class PutOnTopOfLibraryEffect(
-    val target: EffectTarget
-) : Effect {
-    override val description: String = "Put ${target.description} on top of its owner's library"
-}
-
-/**
  * Look at the top N cards and choose some to keep.
  * "Look at the top N cards of your library. Put X of them into your hand and the rest into your graveyard."
  */

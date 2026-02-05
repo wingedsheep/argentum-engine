@@ -6,9 +6,7 @@
 - `DrawCardsEffect` - card draw
 - `DiscardCardsEffect`, `DiscardRandomEffect` - discard
 - `GainLifeEffect`, `LoseLifeEffect` - life changes
-- `DestroyEffect` - destroy permanents
-- `ExileEffect` - exile permanents
-- `ReturnToHandEffect` - bounce effects
+- `MoveToZoneEffect` - destroy, exile, bounce, shuffle-into-library, put-on-top (use `Effects.Destroy()`, `Effects.Exile()`, `Effects.ReturnToHand()`, etc.)
 - `TapUntapEffect` - tap/untap
 - `ModifyStatsEffect` - +X/+Y until end of turn
 - `AddCountersEffect`, `RemoveCountersEffect` - counter manipulation

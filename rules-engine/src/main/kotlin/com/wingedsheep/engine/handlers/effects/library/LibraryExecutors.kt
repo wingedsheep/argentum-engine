@@ -11,8 +11,6 @@ class LibraryExecutors : ExecutorModule {
         ScryExecutor(),
         MillExecutor(),
         ShuffleLibraryExecutor(),
-        ShuffleIntoLibraryExecutor(),
-        PutOnTopOfLibraryExecutor(),
         SearchLibraryExecutor(),
         LookAtTopAndReorderExecutor(),
         LookAtOpponentLibraryExecutor(),

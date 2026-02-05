@@ -88,12 +88,11 @@ grep -r "DealDamage\|Divide" mtg-sets/src/main/kotlin/
 |---------------------------|-----------------------------|--------------------------|
 | `DealDamageEffect`        | Deal fixed damage to target | Lightning Bolt           |
 | `DealDynamicDamageEffect` | Deal variable damage        | Blaze (X damage)         |
-| `DestroyEffect`           | Destroy target permanent    | Murder, Assassin's Blade |
+| `MoveToZoneEffect`        | Destroy/exile/bounce/etc    | Murder, Unsummon         |
 | `DrawCardsEffect`         | Draw cards                  | Divination               |
 | `DiscardEffect`           | Discard cards               | Mind Rot                 |
 | `GainLifeEffect`          | Gain life                   | Healing Salve            |
 | `ModifyStatsEffect`       | +X/+Y until end of turn     | Giant Growth             |
-| `ReturnToHandEffect`      | Bounce permanent            | Unsummon                 |
 | `SearchLibraryEffect`     | Tutor for cards             | Demonic Tutor            |
 
 ### Common Reusable Decisions

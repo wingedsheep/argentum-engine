@@ -47,7 +47,6 @@ class TargetFinder(
             is AnyTarget -> findAnyTargets(state, controllerId, sourceId)
             is TargetCreatureOrPlayer -> findCreatureOrPlayerTargets(state, controllerId, sourceId)
             is TargetCreatureOrPlaneswalker -> findCreatureOrPlaneswalkerTargets(state, controllerId, sourceId)
-            is TargetCardInGraveyard -> findGraveyardTargets(state, requirement, controllerId)
             is TargetSpell -> findSpellTargets(state, requirement, controllerId)
             is TargetObject -> findObjectTargets(state, requirement, controllerId, sourceId)
             is TargetOther -> {
@@ -224,11 +223,10 @@ class TargetFinder(
 
     private fun findGraveyardTargets(
         state: GameState,
-        requirement: TargetCardInGraveyard,
+        filter: TargetFilter,
         controllerId: EntityId
     ): List<EntityId> {
         val targets = mutableListOf<EntityId>()
-        val filter = requirement.filter
 
         // Check all graveyards - the unified filter's OwnedByYou predicate handles "your graveyard" restriction
         for (playerId in state.turnOrder) {
@@ -236,7 +234,6 @@ class TargetFinder(
             val graveyard = state.getZone(graveyardKey)
 
             for (cardId in graveyard) {
-                // Use unified filter - OwnedByYou predicate handles "your graveyard" restriction
                 val predicateContext = PredicateContext(controllerId = controllerId, ownerId = playerId)
                 if (predicateEvaluator.matches(state, cardId, filter.baseFilter, predicateContext)) {
                     targets.add(cardId)
@@ -276,11 +273,7 @@ class TargetFinder(
                 controllerId,
                 sourceId
             )
-            Zone.Graveyard -> findGraveyardTargets(
-                state,
-                TargetCardInGraveyard(count = requirement.count, optional = requirement.optional, filter = filter),
-                controllerId
-            )
+            Zone.Graveyard -> findGraveyardTargets(state, filter, controllerId)
             Zone.Stack -> findSpellTargets(
                 state,
                 TargetSpell(count = requirement.count, optional = requirement.optional, filter = filter),

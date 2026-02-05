@@ -7,9 +7,9 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TargetFilter
 import com.wingedsheep.sdk.scripting.Zone
 import com.wingedsheep.sdk.targeting.AnyTarget
-import com.wingedsheep.sdk.targeting.TargetCardInGraveyard
 import com.wingedsheep.sdk.targeting.TargetCreature
 import com.wingedsheep.sdk.targeting.TargetCreatureOrPlaneswalker
+import com.wingedsheep.sdk.targeting.TargetObject
 import com.wingedsheep.sdk.targeting.TargetCreatureOrPlayer
 import com.wingedsheep.sdk.targeting.TargetOpponent
 import com.wingedsheep.sdk.targeting.TargetPermanent
@@ -161,26 +161,26 @@ object Targets {
     /**
      * Target card in a graveyard.
      */
-    val CardInGraveyard: TargetRequirement = TargetCardInGraveyard()
+    val CardInGraveyard: TargetRequirement = TargetObject(filter = TargetFilter.CardInGraveyard)
 
     /**
      * Target creature card in a graveyard (any player's graveyard).
      */
     val CreatureCardInGraveyard: TargetRequirement =
-        TargetCardInGraveyard(filter = TargetFilter.CreatureInGraveyard)
+        TargetObject(filter = TargetFilter.CreatureInGraveyard)
 
     /**
      * Target creature card in YOUR graveyard.
      * Used for cards like Breath of Life, Zombify, etc.
      */
     val CreatureCardInYourGraveyard: TargetRequirement =
-        TargetCardInGraveyard(filter = TargetFilter.CreatureInYourGraveyard)
+        TargetObject(filter = TargetFilter.CreatureInYourGraveyard)
 
     /**
      * Target instant or sorcery card in a graveyard.
      */
     val InstantOrSorceryInGraveyard: TargetRequirement =
-        TargetCardInGraveyard(filter = TargetFilter.InstantOrSorceryInGraveyard)
+        TargetObject(filter = TargetFilter.InstantOrSorceryInGraveyard)
 
     // =========================================================================
     // Spell Targeting

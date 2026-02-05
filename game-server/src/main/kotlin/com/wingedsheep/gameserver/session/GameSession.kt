@@ -49,6 +49,7 @@ import com.wingedsheep.sdk.scripting.TargetFilter
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.ControllerPredicate
 import com.wingedsheep.sdk.scripting.ActivationRestriction
+import com.wingedsheep.sdk.scripting.Zone
 import com.wingedsheep.sdk.scripting.CastRestriction
 import com.wingedsheep.sdk.scripting.DividedDamageEffect
 import com.wingedsheep.gameserver.priority.AutoPassManager
@@ -1438,7 +1439,7 @@ class GameSession(
                 creatures + players
             }
             is TargetPermanent -> findValidPermanentTargets(state, playerId, requirement.filter)
-            is TargetCardInGraveyard -> findValidGraveyardTargets(state, playerId, requirement.filter)
+            is TargetObject -> findValidObjectTargets(state, playerId, requirement.filter)
             is TargetSpell -> findValidSpellTargets(state, playerId, requirement.filter)
             else -> emptyList() // Other target types not yet implemented
         }
@@ -1521,6 +1522,22 @@ class GameSession(
             state.getGraveyard(pid).filter { entityId ->
                 predicateEvaluator.matches(state, entityId, filter.baseFilter, context)
             }
+        }
+    }
+
+    /**
+     * Find valid targets for TargetObject, dispatching based on the filter's zone.
+     */
+    private fun findValidObjectTargets(
+        state: GameState,
+        playerId: EntityId,
+        filter: TargetFilter
+    ): List<EntityId> {
+        return when (filter.zone) {
+            Zone.Battlefield -> findValidPermanentTargets(state, playerId, filter)
+            Zone.Graveyard -> findValidGraveyardTargets(state, playerId, filter)
+            Zone.Stack -> findValidSpellTargets(state, playerId, filter)
+            else -> emptyList()
         }
     }
 

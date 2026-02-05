@@ -9,54 +9,21 @@ import kotlinx.serialization.Serializable
 // =============================================================================
 
 /**
- * Destroy target creature/permanent effect.
- * "Destroy target creature"
- */
-@Serializable
-data class DestroyEffect(
-    val target: EffectTarget
-) : Effect {
-    override val description: String = "Destroy ${target.description}"
-}
-
-/**
  * Mark target as unable to regenerate.
  * "It can't be regenerated."
  *
- * Designed to be used AFTER DestroyEffect via .then() for cards like Smother.
+ * Designed to be used AFTER a destroy effect via .then() for cards like Smother.
  * The target may be in the graveyard when this effect resolves.
  * When regeneration is implemented, this will mark the entity to prevent
  * regeneration effects from returning it to the battlefield.
  *
- * Example: DestroyEffect(target) then CantBeRegeneratedEffect(target)
+ * Example: MoveToZoneEffect(target, Zone.Graveyard, byDestruction = true) then CantBeRegeneratedEffect(target)
  */
 @Serializable
 data class CantBeRegeneratedEffect(
     val target: EffectTarget
 ) : Effect {
     override val description: String = "${target.description} can't be regenerated"
-}
-
-/**
- * Exile target effect.
- * "Exile target creature/permanent"
- */
-@Serializable
-data class ExileEffect(
-    val target: EffectTarget
-) : Effect {
-    override val description: String = "Exile ${target.description}"
-}
-
-/**
- * Return to hand effect.
- * "Return target creature to its owner's hand"
- */
-@Serializable
-data class ReturnToHandEffect(
-    val target: EffectTarget
-) : Effect {
-    override val description: String = "Return ${target.description} to its owner's hand"
 }
 
 /**
@@ -205,19 +172,6 @@ data class ExileAndReplaceWithTokenEffect(
             append(tokenKeywords.joinToString(", ") { it.displayName.lowercase() })
         }
     }
-}
-
-/**
- * Return a card from graveyard to another zone.
- * "Return target creature card from your graveyard to your hand"
- */
-@Serializable
-data class ReturnFromGraveyardEffect(
-    val target: EffectTarget = EffectTarget.ContextTarget(0),
-    val destination: SearchDestination = SearchDestination.HAND
-) : Effect {
-    override val description: String
-        get() = "Return ${target.description} from your graveyard ${destination.description}"
 }
 
 /**

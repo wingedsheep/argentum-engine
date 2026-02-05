@@ -68,19 +68,37 @@ object Effects {
      * Destroy a target.
      */
     fun Destroy(target: EffectTarget): Effect =
-        DestroyEffect(target)
+        MoveToZoneEffect(target, Zone.Graveyard, byDestruction = true)
 
     /**
      * Exile a target.
      */
     fun Exile(target: EffectTarget): Effect =
-        ExileEffect(target)
+        MoveToZoneEffect(target, Zone.Exile)
 
     /**
      * Return to hand.
      */
     fun ReturnToHand(target: EffectTarget): Effect =
-        ReturnToHandEffect(target)
+        MoveToZoneEffect(target, Zone.Hand)
+
+    /**
+     * Put on top of library.
+     */
+    fun PutOnTopOfLibrary(target: EffectTarget): Effect =
+        MoveToZoneEffect(target, Zone.Library, ZonePlacement.Top)
+
+    /**
+     * Shuffle into library.
+     */
+    fun ShuffleIntoLibrary(target: EffectTarget): Effect =
+        MoveToZoneEffect(target, Zone.Library, ZonePlacement.Shuffled)
+
+    /**
+     * Put onto the battlefield.
+     */
+    fun PutOntoBattlefield(target: EffectTarget, tapped: Boolean = false): Effect =
+        MoveToZoneEffect(target, Zone.Battlefield, if (tapped) ZonePlacement.Tapped else ZonePlacement.Default)
 
     // =========================================================================
     // Stat Modification Effects

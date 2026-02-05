@@ -77,7 +77,7 @@ data class Mode(
  * ModalEffect(
  *     modes = listOf(
  *         Mode.withTarget(CounterSpellEffect, TargetSpell(), "Counter target spell"),
- *         Mode.withTarget(ReturnToHandEffect(EffectTarget.ContextTarget(0)), TargetPermanent(), "Return target permanent to its owner's hand"),
+ *         Mode.withTarget(MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Hand), TargetPermanent(), "Return target permanent to its owner's hand"),
  *         Mode.noTarget(TapAllCreaturesEffect(CreatureGroupFilter.OpponentsControl), "Tap all creatures your opponents control"),
  *         Mode.noTarget(DrawCardsEffect(1), "Draw a card")
  *     ),

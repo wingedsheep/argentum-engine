@@ -25,7 +25,7 @@ Instead of `BounceAndDrawEffect`, script it as:
 ```kotlin
 CompositeEffect(
     effects = listOf(
-        ReturnToHandEffect(EffectTarget.TargetPermanent),
+        MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Hand),
         DrawCardsEffect(count = 1, target = EffectTarget.Controller)
     )
 )
@@ -39,8 +39,8 @@ CompositeEffect(
 ```kotlin
 ConditionalEffect(
     condition = TargetHasColor(Color.BLACK),
-    effect = DestroyEffect(EffectTarget.TargetCreature),
-    elseEffect = TapEffect(EffectTarget.TargetCreature)
+    effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Graveyard, byDestruction = true),
+    elseEffect = TapEffect(EffectTarget.ContextTarget(0))
 )
 
 ```
