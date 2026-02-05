@@ -777,7 +777,7 @@ class CardDslTest : DescribeSpec({
             // Enters tapped with compositional event
             val entersTapped = EntersTapped(
                 appliesTo = GameEvent.ZoneChangeEvent(
-                    objectFilter = ObjectFilter.NonlandPermanent,
+                    filter = GameObjectFilter.NonlandPermanent,
                     to = Zone.BATTLEFIELD
                 )
             )

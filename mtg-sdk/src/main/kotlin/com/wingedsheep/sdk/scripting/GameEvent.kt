@@ -20,7 +20,7 @@ import kotlinx.serialization.Serializable
  * ```
  *
  * Supporting filter types are organized in the events/ subdirectory:
- * - EventFilters.kt - RecipientFilter, SourceFilter, DamageType, ObjectFilter,
+ * - EventFilters.kt - RecipientFilter, SourceFilter, DamageType,
  *                     CounterTypeFilter, ControllerFilter, Player
  * - Zone.kt - Zone enumeration
  */
@@ -68,18 +68,18 @@ sealed interface GameEvent {
      * When an object would change zones.
      *
      * Examples:
-     * - "a card would be put into a graveyard" → ZoneChangeEvent(to = Zone.Graveyard)
-     * - "a creature would enter the battlefield" → ZoneChangeEvent(object = ObjectFilter.Creature, to = Zone.Battlefield)
-     * - "a creature would die" → ZoneChangeEvent(object = ObjectFilter.Creature, from = Zone.Battlefield, to = Zone.Graveyard)
+     * - "a card would be put into a graveyard" → ZoneChangeEvent(to = Zone.GRAVEYARD)
+     * - "a creature would enter the battlefield" → ZoneChangeEvent(filter = GameObjectFilter.Creature, to = Zone.BATTLEFIELD)
+     * - "a creature would die" → ZoneChangeEvent(filter = GameObjectFilter.Creature, from = Zone.BATTLEFIELD, to = Zone.GRAVEYARD)
      */
     @Serializable
     data class ZoneChangeEvent(
-        val objectFilter: ObjectFilter = ObjectFilter.Any,
+        val filter: GameObjectFilter = GameObjectFilter.Any,
         val from: Zone? = null,
         val to: Zone
     ) : GameEvent {
         override val description: String = buildString {
-            append(objectFilter.description)
+            append(describeObjectForEvent(filter))
             append(" would ")
             when (to) {
                 Zone.GRAVEYARD -> {
@@ -233,4 +233,39 @@ sealed interface GameEvent {
     ) : GameEvent {
         override val description: String = "${player.description} would search a library"
     }
+}
+
+/**
+ * Builds a natural-language description of a [GameObjectFilter] for use in
+ * event descriptions. Adds an article and places controller after the noun.
+ *
+ * Examples:
+ *   GameObjectFilter.Any                        -> "a card or permanent"
+ *   GameObjectFilter.Creature                   -> "a creature"
+ *   GameObjectFilter.Creature.youControl()      -> "a creature you control"
+ *   GameObjectFilter.NonlandPermanent            -> "a nonland permanent"
+ *   GameObjectFilter.Token                       -> "a token"
+ */
+private fun describeObjectForEvent(filter: GameObjectFilter): String {
+    if (filter.cardPredicates.isEmpty()
+        && filter.statePredicates.isEmpty()
+        && filter.controllerPredicate == null
+    ) {
+        return "a card or permanent"
+    }
+
+    val baseParts = buildString {
+        filter.statePredicates.forEach { append(it.description); append(" ") }
+        filter.cardPredicates.forEach { append(it.description); append(" ") }
+    }.trim()
+
+    val article = if (baseParts.first().lowercaseChar() in "aeiou") "an" else "a"
+
+    val controllerSuffix = filter.controllerPredicate
+        ?.description
+        ?.takeIf { it.isNotEmpty() }
+        ?.let { " $it" }
+        ?: ""
+
+    return "$article $baseParts$controllerSuffix"
 }

@@ -12,7 +12,7 @@ import kotlinx.serialization.Serializable
  * This replaces the scattered filter types (CardFilter, CountFilter, etc.) with a unified,
  * composable approach.
  *
- * Note: Named GameObjectFilter to avoid conflict with ObjectFilter in EventFilters.kt
+ * Note: Named GameObjectFilter to distinguish from other filter types in the SDK
  *
  * ## Usage Examples
  *
@@ -79,7 +79,7 @@ data class GameObjectFilter(
         val Sorcery = GameObjectFilter(cardPredicates = listOf(CardPredicate.IsSorcery))
         val Permanent = GameObjectFilter(cardPredicates = listOf(CardPredicate.IsPermanent))
         val NonlandPermanent = GameObjectFilter(
-            cardPredicates = listOf(CardPredicate.IsPermanent, CardPredicate.IsNonland)
+            cardPredicates = listOf(CardPredicate.IsNonland, CardPredicate.IsPermanent)
         )
         val Noncreature = GameObjectFilter(cardPredicates = listOf(CardPredicate.IsNoncreature))
         val Token = GameObjectFilter(cardPredicates = listOf(CardPredicate.IsToken))
@@ -106,7 +106,7 @@ data class GameObjectFilter(
             )
         )
         val NoncreaturePermanent = GameObjectFilter(
-            cardPredicates = listOf(CardPredicate.IsPermanent, CardPredicate.IsNoncreature)
+            cardPredicates = listOf(CardPredicate.IsNoncreature, CardPredicate.IsPermanent)
         )
     }
 

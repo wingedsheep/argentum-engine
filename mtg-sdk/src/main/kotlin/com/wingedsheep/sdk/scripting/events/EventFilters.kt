@@ -145,58 +145,6 @@ sealed interface DamageType {
 }
 
 // =============================================================================
-// Object Filters - For zone change events
-// =============================================================================
-
-/**
- * Filter for objects in zone change events.
- */
-@Serializable
-sealed interface ObjectFilter {
-    val description: String
-
-    @Serializable
-    data object Any : ObjectFilter {
-        override val description = "a card or permanent"
-    }
-
-    @Serializable
-    data object AnyCard : ObjectFilter {
-        override val description = "a card"
-    }
-
-    @Serializable
-    data object Creature : ObjectFilter {
-        override val description = "a creature"
-    }
-
-    @Serializable
-    data object CreatureYouControl : ObjectFilter {
-        override val description = "a creature you control"
-    }
-
-    @Serializable
-    data object PermanentYouControl : ObjectFilter {
-        override val description = "a permanent you control"
-    }
-
-    @Serializable
-    data object NonlandPermanent : ObjectFilter {
-        override val description = "a nonland permanent"
-    }
-
-    @Serializable
-    data object Token : ObjectFilter {
-        override val description = "a token"
-    }
-
-    @Serializable
-    data class Matching(val filter: GameObjectFilter) : ObjectFilter {
-        override val description = filter.description
-    }
-}
-
-// =============================================================================
 // Counter Type Filters
 // =============================================================================
 

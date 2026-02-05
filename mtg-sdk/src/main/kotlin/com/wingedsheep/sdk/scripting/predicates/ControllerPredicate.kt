@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
  * Predicates for matching controller/owner relationships.
  * These predicates check who controls or owns a permanent.
  *
- * ControllerPredicates are composed into ObjectFilter for use in effects, targeting, and counting.
+ * ControllerPredicates are composed into GameObjectFilter for use in effects, targeting, and counting.
  */
 @Serializable
 sealed interface ControllerPredicate {

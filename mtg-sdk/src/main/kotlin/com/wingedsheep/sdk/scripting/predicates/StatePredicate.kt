@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
  * Predicates for matching game state properties (runtime characteristics).
  * These predicates check properties that can change during the game.
  *
- * StatePredicates are composed into ObjectFilter for use in effects, targeting, and counting.
+ * StatePredicates are composed into GameObjectFilter for use in effects, targeting, and counting.
  */
 @Serializable
 sealed interface StatePredicate {

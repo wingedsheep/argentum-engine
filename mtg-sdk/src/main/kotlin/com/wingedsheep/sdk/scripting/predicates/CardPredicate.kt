@@ -9,7 +9,7 @@ import kotlinx.serialization.Serializable
  * Predicates for matching card properties (static characteristics).
  * These predicates check inherent card properties that don't change based on game state.
  *
- * CardPredicates are composed into ObjectFilter for use in effects, targeting, and counting.
+ * CardPredicates are composed into GameObjectFilter for use in effects, targeting, and counting.
  */
 @Serializable
 sealed interface CardPredicate {

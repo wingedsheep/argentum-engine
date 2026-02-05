@@ -155,7 +155,7 @@ data class RedirectZoneChange(
 @Serializable
 data class EntersTapped(
     override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
-        objectFilter = ObjectFilter.Any,
+        filter = GameObjectFilter.Any,
         to = Zone.BATTLEFIELD
     )
 ) : ReplacementEffect {
@@ -171,7 +171,7 @@ data class EntersWithCounters(
     val counterType: CounterTypeFilter = CounterTypeFilter.PlusOnePlusOne,
     val count: Int,
     override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
-        objectFilter = ObjectFilter.CreatureYouControl,
+        filter = GameObjectFilter.Creature.youControl(),
         to = Zone.BATTLEFIELD
     )
 ) : ReplacementEffect {
@@ -185,7 +185,7 @@ data class EntersWithCounters(
 @Serializable
 data class UndyingEffect(
     override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
-        objectFilter = ObjectFilter.CreatureYouControl,
+        filter = GameObjectFilter.Creature.youControl(),
         from = Zone.BATTLEFIELD,
         to = Zone.GRAVEYARD
     )
@@ -200,7 +200,7 @@ data class UndyingEffect(
 @Serializable
 data class PersistEffect(
     override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
-        objectFilter = ObjectFilter.CreatureYouControl,
+        filter = GameObjectFilter.Creature.youControl(),
         from = Zone.BATTLEFIELD,
         to = Zone.GRAVEYARD
     )
