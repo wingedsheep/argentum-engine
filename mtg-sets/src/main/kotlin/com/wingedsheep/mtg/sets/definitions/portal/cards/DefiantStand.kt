@@ -26,8 +26,8 @@ val DefiantStand = card("Defiant Stand") {
 
         target = Targets.Creature
         effect = Effects.Composite(
-            Effects.ModifyStats(1, 3, EffectTarget.TargetCreature),
-            Effects.Untap(EffectTarget.TargetCreature)
+            Effects.ModifyStats(1, 3, EffectTarget.ContextTarget(0)),
+            Effects.Untap(EffectTarget.ContextTarget(0))
         )
     }
 

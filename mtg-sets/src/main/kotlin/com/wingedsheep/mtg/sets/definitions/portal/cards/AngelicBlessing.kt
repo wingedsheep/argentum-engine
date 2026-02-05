@@ -20,8 +20,8 @@ val AngelicBlessing = card("Angelic Blessing") {
     spell {
         target = Targets.Creature
         effect = Effects.Composite(
-            Effects.ModifyStats(3, 3, EffectTarget.TargetCreature),
-            Effects.GrantKeyword(Keyword.FLYING, EffectTarget.TargetCreature)
+            Effects.ModifyStats(3, 3, EffectTarget.ContextTarget(0)),
+            Effects.GrantKeyword(Keyword.FLYING, EffectTarget.ContextTarget(0))
         )
     }
 

@@ -36,10 +36,10 @@
 - [x] **2e** Fix CastSpellHandler target validation gap (reject empty targets when spell requires them)
 
 ## Phase 3 — Migrate Hardcoded Filtered Targets → `ContextTarget(0)` in Cards
-- [ ] **3a** AngelicBlessing — `TargetCreature` → `ContextTarget(0)` (×2)
-- [ ] **3b** DefiantStand — `TargetCreature` → `ContextTarget(0)` (×2)
-- [ ] **3c** SternMarshal — `TargetCreature` → `ContextTarget(0)`
-- [ ] **3d** FalsePeace — `AnyPlayer` → `ContextTarget(0)`
+- [x] **3a** AngelicBlessing — `TargetCreature` → `ContextTarget(0)` (×2)
+- [x] **3b** DefiantStand — `TargetCreature` → `ContextTarget(0)` (×2)
+- [x] **3c** SternMarshal — `TargetCreature` → `ContextTarget(0)`
+- [x] **3d** FalsePeace — `AnyPlayer` → `ContextTarget(0)`
 
 ## Phase 4 — Migrate Player/Group `EffectTarget` Variants in Effect Defaults
 - [ ] **4a** Map old defaults to new composable variants (see phase4.md table)

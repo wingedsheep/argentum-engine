@@ -29,7 +29,7 @@ val SternMarshal = card("Stern Marshal") {
         effect = ModifyStatsEffect(
             powerModifier = 2,
             toughnessModifier = 2,
-            target = EffectTarget.TargetCreature,
+            target = EffectTarget.ContextTarget(0),
             duration = Duration.EndOfTurn
         )
         target = Targets.Creature

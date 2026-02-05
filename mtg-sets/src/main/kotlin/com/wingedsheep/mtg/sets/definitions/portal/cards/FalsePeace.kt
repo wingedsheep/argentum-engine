@@ -18,7 +18,7 @@ val FalsePeace = card("False Peace") {
 
     spell {
         target = Targets.Player
-        effect = SkipCombatPhasesEffect(EffectTarget.AnyPlayer)
+        effect = SkipCombatPhasesEffect(EffectTarget.ContextTarget(0))
     }
 
     metadata {
