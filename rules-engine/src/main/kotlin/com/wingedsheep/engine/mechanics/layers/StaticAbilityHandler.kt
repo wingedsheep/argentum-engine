@@ -4,6 +4,8 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.CardDefinition
+import com.wingedsheep.sdk.scripting.GlobalEffect
+import com.wingedsheep.sdk.scripting.GlobalEffectType
 import com.wingedsheep.sdk.scripting.GrantKeywordToCreatureGroup
 import com.wingedsheep.sdk.scripting.GroupFilter
 import com.wingedsheep.sdk.scripting.ControllerPredicate
@@ -90,12 +92,46 @@ class StaticAbilityHandler(
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
+            is GlobalEffect -> convertGlobalEffect(ability)
             // TODO: Add support for other static ability types as needed:
-            // - GlobalEffect (for effects like "All creatures get +1/+1")
             // - GrantKeyword (for equipment granting keywords)
             // - ModifyStats (for equipment granting P/T)
             else -> null
         }
+    }
+
+    /**
+     * Convert a GlobalEffect to ContinuousEffectData.
+     */
+    private fun convertGlobalEffect(effect: GlobalEffect): ContinuousEffectData {
+        val (layer, sublayer, modification) = when (effect.effectType) {
+            GlobalEffectType.ALL_CREATURES_GET_PLUS_ONE_PLUS_ONE,
+            GlobalEffectType.YOUR_CREATURES_GET_PLUS_ONE_PLUS_ONE ->
+                Triple(Layer.POWER_TOUGHNESS, Sublayer.MODIFICATIONS, Modification.ModifyPowerToughness(1, 1))
+
+            GlobalEffectType.OPPONENT_CREATURES_GET_MINUS_ONE_MINUS_ONE ->
+                Triple(Layer.POWER_TOUGHNESS, Sublayer.MODIFICATIONS, Modification.ModifyPowerToughness(-1, -1))
+
+            GlobalEffectType.ALL_CREATURES_HAVE_FLYING ->
+                Triple(Layer.ABILITY, null, Modification.GrantKeyword("FLYING"))
+
+            GlobalEffectType.YOUR_CREATURES_HAVE_VIGILANCE ->
+                Triple(Layer.ABILITY, null, Modification.GrantKeyword("VIGILANCE"))
+
+            GlobalEffectType.YOUR_CREATURES_HAVE_LIFELINK ->
+                Triple(Layer.ABILITY, null, Modification.GrantKeyword("LIFELINK"))
+
+            GlobalEffectType.CREATURES_CANT_ATTACK,
+            GlobalEffectType.CREATURES_CANT_BLOCK ->
+                Triple(Layer.ABILITY, null, Modification.NoOp)
+        }
+
+        return ContinuousEffectData(
+            layer = layer,
+            sublayer = sublayer,
+            modification = modification,
+            affectsFilter = convertGroupFilter(effect.filter)
+        )
     }
 
     /**

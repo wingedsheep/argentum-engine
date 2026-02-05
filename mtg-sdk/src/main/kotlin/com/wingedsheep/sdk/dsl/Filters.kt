@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.CardPredicate
-import com.wingedsheep.sdk.scripting.CreatureFilter
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GroupFilter
 import com.wingedsheep.sdk.scripting.StaticTarget
@@ -124,29 +123,29 @@ object Filters {
     /**
      * All creatures.
      */
-    val AllCreatures: CreatureFilter = CreatureFilter.All
+    val AllCreatures: GroupFilter = GroupFilter.AllCreatures
 
     /**
      * Creatures you control.
      */
-    val CreaturesYouControl: CreatureFilter = CreatureFilter.YouControl
+    val CreaturesYouControl: GroupFilter = GroupFilter.AllCreaturesYouControl
 
     /**
      * Creatures opponents control.
      */
-    val CreaturesOpponentsControl: CreatureFilter = CreatureFilter.OpponentsControl
+    val CreaturesOpponentsControl: GroupFilter = GroupFilter.AllCreaturesOpponentsControl
 
     /**
      * Creatures with a specific keyword.
      */
-    fun CreaturesWithKeyword(keyword: Keyword): CreatureFilter =
-        CreatureFilter.WithKeyword(keyword)
+    fun CreaturesWithKeyword(keyword: Keyword): GroupFilter =
+        GroupFilter.AllCreatures.withKeyword(keyword)
 
     /**
      * Creatures without a specific keyword.
      */
-    fun CreaturesWithoutKeyword(keyword: Keyword): CreatureFilter =
-        CreatureFilter.WithoutKeyword(keyword)
+    fun CreaturesWithoutKeyword(keyword: Keyword): GroupFilter =
+        GroupFilter.AllCreatures.withoutKeyword(keyword)
 
     // =========================================================================
     // Static Targets (for equipment/auras)

@@ -63,7 +63,7 @@ data class ModifyStats(
 @Serializable
 data class GlobalEffect(
     val effectType: GlobalEffectType,
-    val filter: CreatureFilter = CreatureFilter.All
+    val filter: GroupFilter = GroupFilter.AllCreatures
 ) : StaticAbility {
     override val description: String = effectType.description
 }
@@ -120,6 +120,10 @@ enum class GlobalEffectType(val description: String) {
  * Filters are pure data - evaluation is handled by the ECS layer system
  * (ScriptModifierProvider converts these to ModifierFilter for the layer engine).
  */
+@Deprecated(
+    "Use GroupFilter instead",
+    level = DeprecationLevel.WARNING
+)
 @Serializable
 sealed interface CreatureFilter {
     @Serializable

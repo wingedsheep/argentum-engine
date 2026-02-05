@@ -613,7 +613,7 @@ class ActivatedAbilityBuilder {
 @CardDsl
 class StaticAbilityBuilder {
     var effect: Effect? = null
-    var filter: Any? = null  // Can be CreatureFilter or StaticTarget
+    var filter: Any? = null  // Can be GroupFilter or StaticTarget
 
     /**
      * Condition that must be met for this static ability to apply.

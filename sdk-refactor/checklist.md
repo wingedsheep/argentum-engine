@@ -42,11 +42,11 @@
 - [x] **3e** Update engine: target validation for `TargetSpell`
 
 ## Phase 4 — Migrate `CreatureFilter`
-- [ ] **4a** Change `GlobalEffect` to accept `GroupFilter` instead of `CreatureFilter` in `StaticAbility.kt`
-- [ ] **4b** Update `Filters` DSL facade (AllCreatures, CreaturesYouControl, CreaturesOpponentsControl, CreaturesWithKeyword, CreaturesWithoutKeyword)
-- [ ] **4c** Scan all sets for `GlobalEffect` usage and update card definitions if needed
-- [ ] **4d** Mark `CreatureFilter` as `@Deprecated`
-- [ ] **4e** Update engine: `GlobalEffect` application in state projector
+- [x] **4a** Change `GlobalEffect` to accept `GroupFilter` instead of `CreatureFilter` in `StaticAbility.kt`
+- [x] **4b** Update `Filters` DSL facade (AllCreatures, CreaturesYouControl, CreaturesOpponentsControl, CreaturesWithKeyword, CreaturesWithoutKeyword)
+- [x] **4c** Scan all sets for `GlobalEffect` usage and update card definitions if needed
+- [x] **4d** Mark `CreatureFilter` as `@Deprecated`
+- [x] **4e** Update engine: `GlobalEffect` application in state projector
 
 ## Phase 5 — Cleanup & Verification
 - [ ] **5a** Delete `PermanentTargetFilter` sealed interface and all variants
