@@ -14,7 +14,7 @@ import com.wingedsheep.sdk.targeting.TargetRequirement
  *     manaCost = "{R}"
  *     typeLine = "Instant"
  *     spell {
- *         effect = Effects.DealDamage(3)
+ *         effect = Effects.DealDamage(3, EffectTarget.ContextTarget(0))
  *         target = Targets.Any
  *     }
  * }

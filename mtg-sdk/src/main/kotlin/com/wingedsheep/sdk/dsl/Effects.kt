@@ -9,7 +9,7 @@ import com.wingedsheep.sdk.scripting.*
  *
  * Usage:
  * ```kotlin
- * Effects.DealDamage(3)
+ * Effects.DealDamage(3, EffectTarget.ContextTarget(0))
  * Effects.DrawCards(2)
  * Effects.GainLife(5)
  * Effects.Composite(effect1, effect2)
@@ -23,9 +23,9 @@ object Effects {
 
     /**
      * Deal damage to a target.
-     * Default target is EffectTarget.AnyTarget for maximum flexibility.
+     * No default — every damage effect must explicitly declare its target.
      */
-    fun DealDamage(amount: Int, target: EffectTarget = EffectTarget.AnyTarget): Effect =
+    fun DealDamage(amount: Int, target: EffectTarget): Effect =
         DealDamageEffect(amount, target)
 
     // =========================================================================
@@ -39,9 +39,9 @@ object Effects {
         GainLifeEffect(amount, target)
 
     /**
-     * Lose life. Default target is an opponent.
+     * Lose life. Default target is target opponent.
      */
-    fun LoseLife(amount: Int, target: EffectTarget = EffectTarget.Opponent): Effect =
+    fun LoseLife(amount: Int, target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent)): Effect =
         LoseLifeEffect(amount, target)
 
     // =========================================================================
@@ -55,9 +55,9 @@ object Effects {
         DrawCardsEffect(count, target)
 
     /**
-     * Discard cards. Default target is an opponent.
+     * Discard cards. Default target is target opponent.
      */
-    fun Discard(count: Int, target: EffectTarget = EffectTarget.Opponent): Effect =
+    fun Discard(count: Int, target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent)): Effect =
         DiscardCardsEffect(count, target)
 
     // =========================================================================
@@ -215,7 +215,7 @@ object Effects {
     /**
      * Force a player to sacrifice permanents matching a filter.
      */
-    fun Sacrifice(filter: GameObjectFilter, count: Int = 1, target: EffectTarget = EffectTarget.Opponent): Effect =
+    fun Sacrifice(filter: GameObjectFilter, count: Int = 1, target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent)): Effect =
         ForceSacrificeEffect(filter, count, target)
 
     // =========================================================================

@@ -60,9 +60,9 @@
 - [x] **4f** Verify cards relying on updated defaults need no changes (DrySpell, FireTempest, Earthquake, Hurricane)
 
 ## Phase 5 — Update DSL Facades
-- [ ] **5a** Update `Effects.kt` facade defaults to use new composable variants
-- [ ] **5b** Remove default from `DealDamage` — force explicit target
-- [ ] **5c** Update `LoseLife`, `Discard`, `Sacrifice` defaults to `PlayerRef`
+- [x] **5a** Update `Effects.kt` facade defaults to use new composable variants
+- [x] **5b** Remove default from `DealDamage` — force explicit target
+- [x] **5c** Update `LoseLife`, `Discard`, `Sacrifice` defaults to `PlayerRef`
 
 ## Phase 6 — Bridge `PlayerFilter` → `Player`
 - [ ] **6a** Add `@Deprecated` with `ReplaceWith` to `PlayerFilter` and all variants
