@@ -19,9 +19,9 @@
   - [x] HulkingGoblin
 
 ## Phase 1 — Add New Composable `EffectTarget` Variants
-- [ ] **1a** Add `PlayerRef(player: Player)` variant to `EffectTarget`
-- [ ] **1b** Add `GroupRef(filter: GroupFilter)` variant to `EffectTarget`
-- [ ] **1c** Add `FilteredTarget(filter: TargetFilter)` variant to `EffectTarget`
+- [x] **1a** Add `PlayerRef(player: Player)` variant to `EffectTarget`
+- [x] **1b** Add `GroupRef(filter: GroupFilter)` variant to `EffectTarget`
+- [x] **1c** Add `FilteredTarget(filter: TargetFilter)` variant to `EffectTarget`
 
 ## Phase 2 — Fix `ReturnFromGraveyardEffect` Target Gap
 - [ ] **2a** Replace `filter: GameObjectFilter` with `target: EffectTarget` in `ReturnFromGraveyardEffect`

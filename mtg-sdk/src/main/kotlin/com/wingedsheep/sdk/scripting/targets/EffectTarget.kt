@@ -182,4 +182,43 @@ sealed interface EffectTarget {
     data class StoredEntityTarget(val variableName: String) : EffectTarget {
         override val description: String = "the stored $variableName"
     }
+
+    /**
+     * PLAYER REFERENCE: Refers to a player or set of players.
+     * Replaces the overlapping Opponent, AnyPlayer, EachOpponent, EachPlayer variants.
+     *
+     * Usage:
+     * - PlayerRef(Player.Each) → "each player"
+     * - PlayerRef(Player.EachOpponent) → "each opponent"
+     * - PlayerRef(Player.TargetOpponent) → "target opponent"
+     * - PlayerRef(Player.TargetPlayer) → "target player"
+     */
+    @Serializable
+    data class PlayerRef(val player: Player) : EffectTarget {
+        override val description: String = player.description
+    }
+
+    /**
+     * GROUP REFERENCE: Refers to a group of permanents for mass effects.
+     * Replaces AllCreatures, AllControlledCreatures, AllOpponentCreatures.
+     *
+     * Usage:
+     * - GroupRef(GroupFilter.AllCreatures) → "all creatures"
+     * - GroupRef(GroupFilter.AllCreaturesYouControl) → "creatures you control"
+     * - GroupRef(GroupFilter(GameObjectFilter.Creature.withColor(Color.RED))) → "all red creatures"
+     */
+    @Serializable
+    data class GroupRef(val filter: GroupFilter) : EffectTarget {
+        override val description: String = filter.description
+    }
+
+    /**
+     * FILTERED TARGET: Refers to a target matching a composable filter.
+     * For cases where ContextTarget isn't appropriate (e.g., dynamic effect targets
+     * not bound at cast time).
+     */
+    @Serializable
+    data class FilteredTarget(val filter: TargetFilter) : EffectTarget {
+        override val description: String = "target ${filter.description}"
+    }
 }
