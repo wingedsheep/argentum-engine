@@ -2,7 +2,6 @@ package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.targeting.PermanentTargetFilter
 import kotlinx.serialization.Serializable
 
 // =============================================================================
@@ -65,28 +64,22 @@ data class ReturnToHandEffect(
  * Unified effect that handles all "destroy all X" patterns.
  *
  * Examples:
- * - DestroyAllEffect(PermanentTargetFilter.Land) -> "Destroy all lands"
- * - DestroyAllEffect(PermanentTargetFilter.Creature, noRegenerate = true) -> Wrath of God
- * - DestroyAllEffect(PermanentTargetFilter.And(listOf(Creature, WithColor(WHITE)))) -> Virtue's Ruin
- * - DestroyAllEffect(PermanentTargetFilter.And(listOf(Land, WithSubtype(ISLAND)))) -> Boiling Seas
+ * - DestroyAllEffect(GroupFilter.AllLands) -> "Destroy all lands"
+ * - DestroyAllEffect(GroupFilter.AllCreatures, noRegenerate = true) -> Wrath of God
+ * - DestroyAllEffect(GroupFilter(GOF.Creature.withColor(Color.WHITE))) -> Virtue's Ruin
+ * - DestroyAllEffect(GroupFilter(GOF.Land.withSubtype(Subtype.ISLAND))) -> Boiling Seas
  *
- * @param filter Which permanents to destroy (defaults to Any = all permanents)
+ * @param filter Which permanents to destroy (defaults to AllPermanents)
  * @param noRegenerate If true, destroyed permanents can't be regenerated (for future regeneration support)
  */
 @Serializable
 data class DestroyAllEffect(
-    val filter: PermanentTargetFilter = PermanentTargetFilter.Any,
+    val filter: GroupFilter = GroupFilter.AllPermanents,
     val noRegenerate: Boolean = false
 ) : Effect {
     override val description: String = buildString {
-        append("Destroy all ")
-        when (filter) {
-            is PermanentTargetFilter.Any -> append("permanents")
-            is PermanentTargetFilter.Creature -> append("creatures")
-            is PermanentTargetFilter.Land -> append("lands")
-            is PermanentTargetFilter.CreatureOrLand -> append("creatures and lands")
-            else -> append(filter.description).append("s")
-        }
+        append("Destroy ")
+        append(filter.description)
         if (noRegenerate) append(". They can't be regenerated")
     }
 }

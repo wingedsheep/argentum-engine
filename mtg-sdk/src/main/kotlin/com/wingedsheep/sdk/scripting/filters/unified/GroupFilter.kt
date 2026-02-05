@@ -43,8 +43,7 @@ data class GroupFilter(
         append("all ")
         if (excludeSelf) append("other ")
         append(baseFilter.description)
-        if (baseFilter.description.endsWith("s").not() &&
-            !baseFilter.description.contains(" ")) {
+        if (!baseFilter.description.endsWith("s")) {
             append("s")  // Pluralize simple types
         }
     }

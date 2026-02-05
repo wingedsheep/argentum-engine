@@ -4,7 +4,8 @@ import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.DestroyAllEffect
-import com.wingedsheep.sdk.targeting.PermanentTargetFilter
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.GroupFilter
 
 /**
  * Boiling Seas
@@ -18,9 +19,7 @@ val BoilingSeas = card("Boiling Seas") {
 
     spell {
         effect = DestroyAllEffect(
-            PermanentTargetFilter.And(
-                listOf(PermanentTargetFilter.Land, PermanentTargetFilter.WithSubtype(Subtype.ISLAND))
-            )
+            GroupFilter(GameObjectFilter.Land.withSubtype(Subtype.ISLAND))
         )
     }
 

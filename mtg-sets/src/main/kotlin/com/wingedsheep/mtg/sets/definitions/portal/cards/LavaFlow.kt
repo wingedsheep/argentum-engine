@@ -4,7 +4,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.DestroyEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.targeting.PermanentTargetFilter
+import com.wingedsheep.sdk.scripting.TargetFilter
 import com.wingedsheep.sdk.targeting.TargetPermanent
 
 /**
@@ -18,7 +18,7 @@ val LavaFlow = card("Lava Flow") {
     typeLine = "Sorcery"
 
     spell {
-        target = TargetPermanent(filter = PermanentTargetFilter.CreatureOrLand)
+        target = TargetPermanent(filter = TargetFilter.CreatureOrLandPermanent)
         effect = DestroyEffect(EffectTarget.ContextTarget(0))
     }
 

@@ -106,11 +106,12 @@ data class TargetCreature(
 data class TargetPermanent(
     override val count: Int = 1,
     override val optional: Boolean = false,
-    val filter: PermanentTargetFilter = PermanentTargetFilter.Any
+    val filter: TargetFilter = TargetFilter.Permanent
 ) : TargetRequirement {
     override val description: String = buildString {
+        if (optional) append("up to ")
         append("target ")
-        if (filter != PermanentTargetFilter.Any) {
+        if (filter != TargetFilter.Permanent) {
             append(filter.description)
             append(" ")
         }
@@ -123,6 +124,10 @@ data class TargetPermanent(
  *
  * Filters are pure data - validation is handled by TargetValidator.
  */
+@Deprecated(
+    "Use TargetFilter for targeting or GroupFilter for mass effects",
+    level = DeprecationLevel.WARNING
+)
 @Serializable
 sealed interface PermanentTargetFilter {
     val description: String

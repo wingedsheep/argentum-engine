@@ -4,7 +4,8 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.DestroyAllEffect
-import com.wingedsheep.sdk.targeting.PermanentTargetFilter
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.GroupFilter
 
 /**
  * Nature's Ruin
@@ -18,9 +19,7 @@ val NaturesRuin = card("Nature's Ruin") {
 
     spell {
         effect = DestroyAllEffect(
-            PermanentTargetFilter.And(
-                listOf(PermanentTargetFilter.Creature, PermanentTargetFilter.WithColor(Color.GREEN))
-            )
+            GroupFilter(GameObjectFilter.Creature.withColor(Color.GREEN))
         )
     }
 

@@ -115,10 +115,11 @@ class TargetFinder(
     ): List<EntityId> {
         val projected = stateProjector.project(state)
         val battlefield = state.getBattlefield()
+        val filter = requirement.filter
 
         return battlefield.filter { entityId ->
             val container = state.getEntity(entityId) ?: return@filter false
-            val cardComponent = container.get<CardComponent>() ?: return@filter false
+            container.get<CardComponent>() ?: return@filter false
             val entityController = container.get<ControllerComponent>()?.playerId
 
             // Check hexproof/shroud
@@ -129,33 +130,9 @@ class TargetFinder(
                 return@filter false
             }
 
-            // Apply filter
-            matchesPermanentFilter(requirement.filter, cardComponent, entityController, controllerId)
-        }
-    }
-
-    private fun matchesPermanentFilter(
-        filter: PermanentTargetFilter,
-        cardComponent: CardComponent,
-        entityController: EntityId?,
-        controllerId: EntityId
-    ): Boolean {
-        return when (filter) {
-            is PermanentTargetFilter.Any -> true
-            is PermanentTargetFilter.YouControl -> entityController == controllerId
-            is PermanentTargetFilter.OpponentControls -> entityController != controllerId
-            is PermanentTargetFilter.Creature -> cardComponent.typeLine.isCreature
-            is PermanentTargetFilter.Artifact -> cardComponent.typeLine.isArtifact
-            is PermanentTargetFilter.Enchantment -> cardComponent.typeLine.isEnchantment
-            is PermanentTargetFilter.Land -> cardComponent.typeLine.isLand
-            is PermanentTargetFilter.NonCreature -> !cardComponent.typeLine.isCreature
-            is PermanentTargetFilter.NonLand -> !cardComponent.typeLine.isLand
-            is PermanentTargetFilter.CreatureOrLand -> cardComponent.typeLine.isCreature || cardComponent.typeLine.isLand
-            is PermanentTargetFilter.WithColor -> cardComponent.colors.contains(filter.color)
-            is PermanentTargetFilter.WithSubtype -> cardComponent.typeLine.hasSubtype(filter.subtype)
-            is PermanentTargetFilter.And -> filter.filters.all {
-                matchesPermanentFilter(it, cardComponent, entityController, controllerId)
-            }
+            // Use unified filter with projected state
+            val predicateContext = PredicateContext(controllerId = controllerId)
+            predicateEvaluator.matchesWithProjection(state, projected, entityId, filter.baseFilter, predicateContext)
         }
     }
 

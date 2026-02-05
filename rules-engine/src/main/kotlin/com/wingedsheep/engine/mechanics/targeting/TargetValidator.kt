@@ -129,84 +129,28 @@ class TargetValidator {
     private fun validatePermanentTarget(
         state: GameState,
         target: ChosenTarget,
-        filter: PermanentTargetFilter,
+        filter: TargetFilter,
         casterId: EntityId
     ): String? {
         if (target !is ChosenTarget.Permanent) {
             return "Target must be a permanent"
         }
 
-        val container = state.getEntity(target.entityId)
+        state.getEntity(target.entityId)
             ?: return "Target not found"
-
-        val cardComponent = container.get<CardComponent>()
-            ?: return "Target is not a card"
 
         // Check if target is on the battlefield
         if (target.entityId !in state.getBattlefield()) {
             return "Target must be on the battlefield"
         }
 
-        return validatePermanentFilter(cardComponent, container, filter, casterId)
-    }
-
-    private fun validatePermanentFilter(
-        cardComponent: CardComponent,
-        container: com.wingedsheep.engine.state.ComponentContainer,
-        filter: PermanentTargetFilter,
-        casterId: EntityId
-    ): String? {
-        return when (filter) {
-            is PermanentTargetFilter.Any -> null
-            is PermanentTargetFilter.YouControl -> {
-                val controller = container.get<ControllerComponent>()?.playerId
-                if (controller != casterId) "Target must be a permanent you control" else null
-            }
-            is PermanentTargetFilter.OpponentControls -> {
-                val controller = container.get<ControllerComponent>()?.playerId
-                if (controller == casterId) "Target must be a permanent an opponent controls" else null
-            }
-            is PermanentTargetFilter.Creature -> {
-                if (!cardComponent.typeLine.isCreature) "Target must be a creature" else null
-            }
-            is PermanentTargetFilter.Artifact -> {
-                if (!cardComponent.typeLine.isArtifact) "Target must be an artifact" else null
-            }
-            is PermanentTargetFilter.Enchantment -> {
-                if (!cardComponent.typeLine.isEnchantment) "Target must be an enchantment" else null
-            }
-            is PermanentTargetFilter.Land -> {
-                if (!cardComponent.typeLine.isLand) "Target must be a land" else null
-            }
-            is PermanentTargetFilter.NonCreature -> {
-                if (cardComponent.typeLine.isCreature) "Target must be a noncreature permanent" else null
-            }
-            is PermanentTargetFilter.NonLand -> {
-                if (cardComponent.typeLine.isLand) "Target must be a nonland permanent" else null
-            }
-            is PermanentTargetFilter.CreatureOrLand -> {
-                if (!cardComponent.typeLine.isCreature && !cardComponent.typeLine.isLand) {
-                    "Target must be a creature or land"
-                } else null
-            }
-            is PermanentTargetFilter.WithColor -> {
-                if (!cardComponent.colors.contains(filter.color)) {
-                    "Target must be ${filter.color.displayName.lowercase()}"
-                } else null
-            }
-            is PermanentTargetFilter.WithSubtype -> {
-                if (!cardComponent.typeLine.hasSubtype(filter.subtype)) {
-                    "Target must be a ${filter.subtype.value}"
-                } else null
-            }
-            is PermanentTargetFilter.And -> {
-                for (subFilter in filter.filters) {
-                    val error = validatePermanentFilter(cardComponent, container, subFilter, casterId)
-                    if (error != null) return error
-                }
-                null
-            }
+        // Use unified filter
+        val predicateContext = PredicateContext(controllerId = casterId)
+        val matches = predicateEvaluator.matches(state, target.entityId, filter.baseFilter, predicateContext)
+        if (!matches) {
+            return "Target does not match filter: ${filter.description}"
         }
+        return null
     }
 
     private fun validatePlayerTarget(state: GameState, target: ChosenTarget): String? {

@@ -4,7 +4,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.DestroyEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.targeting.PermanentTargetFilter
+import com.wingedsheep.sdk.scripting.TargetFilter
 import com.wingedsheep.sdk.targeting.TargetPermanent
 
 /**
@@ -18,7 +18,7 @@ val RainOfSalt = card("Rain of Salt") {
     typeLine = "Sorcery"
 
     spell {
-        target = TargetPermanent(count = 2, filter = PermanentTargetFilter.Land)
+        target = TargetPermanent(count = 2, filter = TargetFilter.Land)
         effect = DestroyEffect(EffectTarget.ContextTarget(0)) then
                 DestroyEffect(EffectTarget.ContextTarget(1))
     }

@@ -143,6 +143,32 @@ data class TargetFilter(
 
         /** Target instant or sorcery spell on the stack */
         val InstantOrSorcerySpellOnStack = TargetFilter(GameObjectFilter.InstantOrSorcery, zone = Zone.Stack)
+
+        // =============================================================================
+        // Pre-built for PermanentTargetFilter migration
+        // =============================================================================
+
+        /** Target permanent an opponent controls */
+        val PermanentOpponentControls = TargetFilter(GameObjectFilter.Permanent.opponentControls())
+
+        /** Target creature or land permanent */
+        val CreatureOrLandPermanent = TargetFilter(GameObjectFilter.CreatureOrLand)
+
+        /** Target noncreature permanent */
+        val NoncreaturePermanent = TargetFilter(GameObjectFilter.NoncreaturePermanent)
+
+        // =============================================================================
+        // Pre-built for SpellTargetFilter migration
+        // =============================================================================
+
+        /** Target sorcery spell on the stack */
+        val SorcerySpellOnStack = TargetFilter(GameObjectFilter.Sorcery, zone = Zone.Stack)
+
+        /** Target creature or sorcery spell on the stack */
+        val CreatureOrSorcerySpellOnStack = TargetFilter(GameObjectFilter.CreatureOrSorcery, zone = Zone.Stack)
+
+        /** Target instant spell on the stack */
+        val InstantSpellOnStack = TargetFilter(GameObjectFilter.Instant, zone = Zone.Stack)
     }
 
     // =============================================================================

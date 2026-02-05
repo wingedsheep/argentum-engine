@@ -109,22 +109,22 @@ object Targets {
     /**
      * Target nonland permanent.
      */
-    val NonlandPermanent: TargetRequirement = TargetPermanent(filter = PermanentTargetFilter.NonLand)
+    val NonlandPermanent: TargetRequirement = TargetPermanent(filter = TargetFilter.NonlandPermanent)
 
     /**
      * Target artifact.
      */
-    val Artifact: TargetRequirement = TargetPermanent(filter = PermanentTargetFilter.Artifact)
+    val Artifact: TargetRequirement = TargetPermanent(filter = TargetFilter.Artifact)
 
     /**
      * Target enchantment.
      */
-    val Enchantment: TargetRequirement = TargetPermanent(filter = PermanentTargetFilter.Enchantment)
+    val Enchantment: TargetRequirement = TargetPermanent(filter = TargetFilter.Enchantment)
 
     /**
      * Target land.
      */
-    val Land: TargetRequirement = TargetPermanent(filter = PermanentTargetFilter.Land)
+    val Land: TargetRequirement = TargetPermanent(filter = TargetFilter.Land)
 
     // =========================================================================
     // Combined Targeting

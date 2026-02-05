@@ -1486,28 +1486,18 @@ class GameSession(
 
     /**
      * Find valid permanent targets based on a filter.
+     * Uses PredicateEvaluator with projected state for unified filter matching.
      */
     private fun findValidPermanentTargets(
         state: GameState,
         playerId: EntityId,
-        filter: PermanentTargetFilter
+        filter: TargetFilter
     ): List<EntityId> {
+        val projected = stateProjector.project(state)
         val battlefield = state.getBattlefield()
+        val context = PredicateContext(controllerId = playerId)
         return battlefield.filter { entityId ->
-            val container = state.getEntity(entityId) ?: return@filter false
-            val cardComponent = container.get<CardComponent>() ?: return@filter false
-            val controllerId = container.get<ControllerComponent>()?.playerId
-
-            when (filter) {
-                PermanentTargetFilter.Any -> true
-                PermanentTargetFilter.YouControl -> controllerId == playerId
-                PermanentTargetFilter.OpponentControls -> controllerId != playerId
-                PermanentTargetFilter.Creature -> cardComponent.typeLine.isCreature
-                PermanentTargetFilter.Land -> cardComponent.typeLine.isLand
-                PermanentTargetFilter.NonCreature -> !cardComponent.typeLine.isCreature
-                PermanentTargetFilter.NonLand -> !cardComponent.typeLine.isLand
-                else -> true // Other filters not yet implemented
-            }
+            predicateEvaluator.matchesWithProjection(state, projected, entityId, filter.baseFilter, context)
         }
     }
 

@@ -3,7 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.DestroyAllEffect
-import com.wingedsheep.sdk.targeting.PermanentTargetFilter
+import com.wingedsheep.sdk.scripting.GroupFilter
 
 /**
  * Armageddon
@@ -16,7 +16,7 @@ val Armageddon = card("Armageddon") {
     typeLine = "Sorcery"
 
     spell {
-        effect = DestroyAllEffect(PermanentTargetFilter.Land)
+        effect = DestroyAllEffect(GroupFilter.AllLands)
     }
 
     metadata {

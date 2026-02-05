@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.DestroyEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.targeting.PermanentTargetFilter
+import com.wingedsheep.sdk.scripting.TargetFilter
 import com.wingedsheep.sdk.targeting.TargetPermanent
 
 /**
@@ -23,7 +23,7 @@ val FireSnake = card("Fire Snake") {
 
     triggeredAbility {
         trigger = Triggers.Dies
-        target = TargetPermanent(filter = PermanentTargetFilter.Land)
+        target = TargetPermanent(filter = TargetFilter.Land)
         effect = DestroyEffect(EffectTarget.ContextTarget(0))
     }
 

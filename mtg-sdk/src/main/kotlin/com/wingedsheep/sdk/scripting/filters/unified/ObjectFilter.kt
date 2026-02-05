@@ -95,6 +95,19 @@ data class GameObjectFilter(
                 CardPredicate.Or(listOf(CardPredicate.IsCreature, CardPredicate.IsPlaneswalker))
             )
         )
+        val CreatureOrLand = GameObjectFilter(
+            cardPredicates = listOf(
+                CardPredicate.Or(listOf(CardPredicate.IsCreature, CardPredicate.IsLand))
+            )
+        )
+        val CreatureOrSorcery = GameObjectFilter(
+            cardPredicates = listOf(
+                CardPredicate.Or(listOf(CardPredicate.IsCreature, CardPredicate.IsSorcery))
+            )
+        )
+        val NoncreaturePermanent = GameObjectFilter(
+            cardPredicates = listOf(CardPredicate.IsPermanent, CardPredicate.IsNoncreature)
+        )
     }
 
     // =============================================================================
