@@ -9,6 +9,8 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.TargetFilter
+import com.wingedsheep.sdk.scripting.Zone
+import com.wingedsheep.sdk.scripting.toZoneType
 import com.wingedsheep.sdk.targeting.*
 
 /**
@@ -47,6 +49,7 @@ class TargetFinder(
             is TargetCreatureOrPlaneswalker -> findCreatureOrPlaneswalkerTargets(state, controllerId, sourceId)
             is TargetCardInGraveyard -> findGraveyardTargets(state, requirement, controllerId)
             is TargetSpell -> findSpellTargets(state, requirement, controllerId)
+            is TargetObject -> findObjectTargets(state, requirement, controllerId, sourceId)
             is TargetOther -> {
                 // For TargetOther, find targets for the base requirement but exclude the source
                 val baseTargets = findLegalTargets(state, requirement.baseRequirement, controllerId, sourceId)
@@ -254,5 +257,62 @@ class TargetFinder(
         return state.stack.filter { spellId ->
             predicateEvaluator.matches(state, spellId, filter.baseFilter, predicateContext)
         }
+    }
+
+    /**
+     * Find targets for TargetObject, dispatching based on the filter's zone.
+     */
+    private fun findObjectTargets(
+        state: GameState,
+        requirement: TargetObject,
+        controllerId: EntityId,
+        sourceId: EntityId?
+    ): List<EntityId> {
+        val filter = requirement.filter
+        return when (filter.zone) {
+            Zone.Battlefield -> findPermanentTargets(
+                state,
+                TargetPermanent(count = requirement.count, optional = requirement.optional, filter = filter),
+                controllerId,
+                sourceId
+            )
+            Zone.Graveyard -> findGraveyardTargets(
+                state,
+                TargetCardInGraveyard(count = requirement.count, optional = requirement.optional, filter = filter),
+                controllerId
+            )
+            Zone.Stack -> findSpellTargets(
+                state,
+                TargetSpell(count = requirement.count, optional = requirement.optional, filter = filter),
+                controllerId
+            )
+            else -> findCardTargetsInZone(state, filter, controllerId)
+        }
+    }
+
+    /**
+     * Find card targets in non-battlefield, non-stack zones (hand, library, exile, command).
+     */
+    private fun findCardTargetsInZone(
+        state: GameState,
+        filter: TargetFilter,
+        controllerId: EntityId
+    ): List<EntityId> {
+        val zoneType = filter.zone.toZoneType()
+        val targets = mutableListOf<EntityId>()
+
+        for (playerId in state.turnOrder) {
+            val zoneKey = ZoneKey(playerId, zoneType)
+            val zone = state.getZone(zoneKey)
+
+            for (cardId in zone) {
+                val predicateContext = PredicateContext(controllerId = controllerId, ownerId = playerId)
+                if (predicateEvaluator.matches(state, cardId, filter.baseFilter, predicateContext)) {
+                    targets.add(cardId)
+                }
+            }
+        }
+
+        return targets
     }
 }

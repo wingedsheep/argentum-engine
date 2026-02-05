@@ -219,3 +219,37 @@ data class ReturnFromGraveyardEffect(
     override val description: String
         get() = "Return ${target.description} from your graveyard ${destination.description}"
 }
+
+/**
+ * Unified zone-moving effect.
+ * Consolidates destroy, exile, bounce, shuffle-into-library, put-on-top, etc.
+ *
+ * @property target The entity to move
+ * @property destination The destination zone
+ * @property placement How to place the card in the destination zone
+ * @property byDestruction If true, use destruction semantics (indestructible check)
+ */
+@Serializable
+data class MoveToZoneEffect(
+    val target: EffectTarget,
+    val destination: Zone,
+    val placement: ZonePlacement = ZonePlacement.Default,
+    val byDestruction: Boolean = false
+) : Effect {
+    override val description: String = buildString {
+        when {
+            byDestruction -> append("Destroy ${target.description}")
+            destination == Zone.Hand -> append("Return ${target.description} to its owner's hand")
+            destination == Zone.Exile -> append("Exile ${target.description}")
+            destination == Zone.Library && placement == ZonePlacement.Shuffled ->
+                append("Shuffle ${target.description} into its owner's library")
+            destination == Zone.Library && placement == ZonePlacement.Top ->
+                append("Put ${target.description} on top of its owner's library")
+            destination == Zone.Battlefield && placement == ZonePlacement.Tapped ->
+                append("Put ${target.description} onto the battlefield tapped")
+            destination == Zone.Battlefield ->
+                append("Put ${target.description} onto the battlefield")
+            else -> append("Put ${target.description} into ${destination.description}")
+        }
+    }
+}

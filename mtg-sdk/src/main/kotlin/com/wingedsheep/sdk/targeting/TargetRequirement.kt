@@ -207,6 +207,32 @@ data class TargetSpell(
 }
 
 // =============================================================================
+// Generic Object Targeting
+// =============================================================================
+
+/**
+ * Target any game object matching a filter.
+ * Generalizes zone-specific targeting — the TargetFilter's zone field
+ * determines which zone to look in.
+ *
+ * @param count Maximum number of targets
+ * @param optional If true, allows 0 targets ("up to X" style targeting)
+ * @param filter Determines what can be targeted and in which zone
+ */
+@Serializable
+data class TargetObject(
+    override val count: Int = 1,
+    override val optional: Boolean = false,
+    val filter: TargetFilter
+) : TargetRequirement {
+    override val description: String = buildString {
+        if (optional) append("up to ")
+        append("target ")
+        append(filter.description)
+    }
+}
+
+// =============================================================================
 // Special Targeting
 // =============================================================================
 

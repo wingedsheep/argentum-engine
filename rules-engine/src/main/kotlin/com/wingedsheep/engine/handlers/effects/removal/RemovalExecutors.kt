@@ -15,6 +15,7 @@ class RemovalExecutors : ExecutorModule {
         ReturnToHandExecutor(),
         ReturnFromGraveyardEffectExecutor(),
         PayOrSufferExecutor(),
-        SacrificeSelfExecutor()
+        SacrificeSelfExecutor(),
+        MoveToZoneEffectExecutor()
     )
 }

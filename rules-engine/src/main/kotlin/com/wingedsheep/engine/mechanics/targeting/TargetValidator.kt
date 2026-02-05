@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.TargetFilter
+import com.wingedsheep.sdk.scripting.Zone
 import com.wingedsheep.sdk.targeting.*
 
 /**
@@ -88,6 +89,7 @@ class TargetValidator {
             is TargetCreatureOrPlaneswalker -> validateCreatureOrPlaneswalkerTarget(state, target)
             is TargetCardInGraveyard -> validateGraveyardTarget(state, target, requirement.filter, casterId)
             is TargetSpell -> validateSpellTarget(state, target, requirement.filter, casterId)
+            is TargetObject -> validateObjectTarget(state, target, requirement.filter, casterId)
             is TargetOther -> validateSingleTarget(state, target, requirement.baseRequirement, casterId)
         }
     }
@@ -271,6 +273,61 @@ class TargetValidator {
         // Use unified filter
         val predicateContext = PredicateContext(controllerId = casterId)
         val matches = predicateEvaluator.matches(state, target.spellEntityId, filter.baseFilter, predicateContext)
+        if (!matches) {
+            return "Target does not match filter: ${filter.description}"
+        }
+        return null
+    }
+
+    /**
+     * Validate a target for TargetObject, dispatching based on the filter's zone.
+     */
+    private fun validateObjectTarget(
+        state: GameState,
+        target: ChosenTarget,
+        filter: TargetFilter,
+        casterId: EntityId
+    ): String? {
+        return when (filter.zone) {
+            Zone.Graveyard -> validateGraveyardTarget(state, target, filter, casterId)
+            Zone.Battlefield -> validatePermanentTarget(state, target, filter, casterId)
+            Zone.Stack -> validateSpellTarget(state, target, filter, casterId)
+            else -> validateCardInZoneTarget(state, target, filter, casterId)
+        }
+    }
+
+    /**
+     * Validate a card target in a non-battlefield, non-stack zone (hand, library, exile).
+     */
+    private fun validateCardInZoneTarget(
+        state: GameState,
+        target: ChosenTarget,
+        filter: TargetFilter,
+        casterId: EntityId
+    ): String? {
+        if (target !is ChosenTarget.Card) {
+            return "Target must be a card"
+        }
+
+        val expectedZoneType = when (filter.zone) {
+            Zone.Hand -> ZoneType.HAND
+            Zone.Library -> ZoneType.LIBRARY
+            Zone.Exile -> ZoneType.EXILE
+            Zone.Command -> ZoneType.COMMAND
+            else -> return "Unsupported zone for card targeting: ${filter.zone}"
+        }
+
+        if (target.zone != expectedZoneType) {
+            return "Target must be in ${filter.zone.description}"
+        }
+
+        val zoneKey = ZoneKey(target.ownerId, expectedZoneType)
+        if (target.cardId !in state.getZone(zoneKey)) {
+            return "Target not found in ${filter.zone.description}"
+        }
+
+        val predicateContext = PredicateContext(controllerId = casterId, ownerId = target.ownerId)
+        val matches = predicateEvaluator.matches(state, target.cardId, filter.baseFilter, predicateContext)
         if (!matches) {
             return "Target does not match filter: ${filter.description}"
         }
