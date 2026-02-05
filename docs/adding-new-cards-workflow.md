@@ -86,8 +86,7 @@ grep -r "DealDamage\|Divide" mtg-sets/src/main/kotlin/
 
 | Effect                    | Description                 | Example Cards            |
 |---------------------------|-----------------------------|--------------------------|
-| `DealDamageEffect`        | Deal fixed damage to target | Lightning Bolt           |
-| `DealDynamicDamageEffect` | Deal variable damage        | Blaze (X damage)         |
+| `DealDamageEffect`        | Deal damage (fixed or dynamic) | Lightning Bolt, Blaze |
 | `MoveToZoneEffect`        | Destroy/exile/bounce/etc    | Murder, Unsummon         |
 | `DrawCardsEffect`         | Draw cards                  | Divination               |
 | `DiscardEffect`           | Discard cards               | Mind Rot                 |

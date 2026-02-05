@@ -29,6 +29,20 @@ object Effects {
     fun DealDamage(amount: Int, target: EffectTarget): Effect =
         DealDamageEffect(amount, target)
 
+    /**
+     * Deal dynamic damage to a target.
+     * Used for effects like "deal damage equal to the number of lands you control".
+     */
+    fun DealDamage(amount: DynamicAmount, target: EffectTarget): Effect =
+        DealDamageEffect(amount, target)
+
+    /**
+     * Deal X damage to a target, where X is the spell's X value.
+     * Used for X spells like Blaze.
+     */
+    fun DealXDamage(target: EffectTarget): Effect =
+        DealDamageEffect(DynamicAmount.XValue, target)
+
     // =========================================================================
     // Life Effects
     // =========================================================================
@@ -43,6 +57,12 @@ object Effects {
      * Lose life. Default target is target opponent.
      */
     fun LoseLife(amount: Int, target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent)): Effect =
+        LoseLifeEffect(amount, target)
+
+    /**
+     * Lose dynamic life amount. Default target is target opponent.
+     */
+    fun LoseLife(amount: DynamicAmount, target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent)): Effect =
         LoseLifeEffect(amount, target)
 
     // =========================================================================

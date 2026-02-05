@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
+import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.AbilityCost
-import com.wingedsheep.sdk.scripting.DynamicAmount
 import com.wingedsheep.sdk.scripting.GainLifeEffect
 
 /**
@@ -22,7 +22,7 @@ val Wellwisher = card("Wellwisher") {
 
     activatedAbility {
         cost = AbilityCost.Tap
-        effect = GainLifeEffect(DynamicAmount.CreaturesWithSubtypeOnBattlefield(Subtype("Elf")))
+        effect = GainLifeEffect(DynamicAmounts.creaturesWithSubtype(Subtype("Elf")))
     }
 
     metadata {

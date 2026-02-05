@@ -30,12 +30,16 @@ data class GainLifeEffect(
  */
 @Serializable
 data class LoseLifeEffect(
-    val amount: Int,
+    val amount: DynamicAmount,
     val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent)
 ) : Effect {
+    /** Convenience constructor for fixed amounts */
+    constructor(amount: Int, target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent))
+        : this(DynamicAmount.Fixed(amount), target)
+
     override val description: String = when (target) {
-        EffectTarget.Controller -> "You lose $amount life"
-        else -> "${target.description.replaceFirstChar { it.uppercase() }} loses $amount life"
+        EffectTarget.Controller -> "You lose ${amount.description} life"
+        else -> "${target.description.replaceFirstChar { it.uppercase() }} loses ${amount.description} life"
     }
 }
 

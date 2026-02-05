@@ -1,9 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.portal.cards
 
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DynamicAmount
 import com.wingedsheep.sdk.scripting.GainLifeEffect
 import com.wingedsheep.sdk.scripting.YouWereAttackedThisStep
 
@@ -23,7 +23,7 @@ val BlessedReversal = card("Blessed Reversal") {
         castOnlyDuring(Step.DECLARE_ATTACKERS)
         castOnlyIf(YouWereAttackedThisStep)
 
-        effect = GainLifeEffect(DynamicAmount.CreaturesAttackingYou(multiplier = 3))
+        effect = GainLifeEffect(DynamicAmounts.creaturesAttackingYou(multiplier = 3))
     }
 
     metadata {

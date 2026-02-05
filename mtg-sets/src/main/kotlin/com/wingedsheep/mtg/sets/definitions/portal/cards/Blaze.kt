@@ -2,7 +2,8 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DealXDamageEffect
+import com.wingedsheep.sdk.scripting.DealDamageEffect
+import com.wingedsheep.sdk.scripting.DynamicAmount
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.targeting.AnyTarget
 
@@ -18,7 +19,7 @@ val Blaze = card("Blaze") {
 
     spell {
         target = AnyTarget()
-        effect = DealXDamageEffect(EffectTarget.ContextTarget(0))
+        effect = DealDamageEffect(DynamicAmount.XValue, EffectTarget.ContextTarget(0))
     }
 
     metadata {

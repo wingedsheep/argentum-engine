@@ -2,8 +2,6 @@ package com.wingedsheep.engine.handlers
 
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
-import com.wingedsheep.engine.state.components.battlefield.TappedComponent
-import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
@@ -40,80 +38,6 @@ class DynamicAmountEvaluator {
                 state.getEntity(context.controllerId)?.get<LifeTotalComponent>()?.life ?: 0
             }
 
-            is DynamicAmount.CreaturesYouControl -> {
-                countCreaturesControlledBy(state, context.controllerId)
-            }
-
-            is DynamicAmount.OtherCreaturesYouControl -> {
-                val total = countCreaturesControlledBy(state, context.controllerId)
-                // Subtract 1 for "other" (excluding self)
-                max(0, total - 1)
-            }
-
-            is DynamicAmount.OtherCreaturesWithSubtypeYouControl -> {
-                countCreaturesWithSubtype(state, context.controllerId, amount.subtype.value) -
-                    if (context.sourceId != null && hasSubtype(state, context.sourceId, amount.subtype.value)) 1 else 0
-            }
-
-            is DynamicAmount.AllCreatures -> {
-                state.getBattlefield().count { entityId ->
-                    state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.isCreature == true
-                }
-            }
-
-            is DynamicAmount.CreaturesWithSubtypeOnBattlefield -> {
-                state.getBattlefield().count { entityId ->
-                    val card = state.getEntity(entityId)?.get<CardComponent>()
-                    card?.typeLine?.isCreature == true && card.typeLine.hasSubtype(amount.subtype)
-                }
-            }
-
-            is DynamicAmount.LandsYouControl -> {
-                countLandsControlledBy(state, context.controllerId)
-            }
-
-            is DynamicAmount.LandsWithSubtypeYouControl -> {
-                countLandsOfTypeControlledBy(state, context.controllerId, amount.subtype.value)
-            }
-
-            is DynamicAmount.CardsInYourGraveyard -> {
-                val graveyardZone = ZoneKey(context.controllerId, Zone.GRAVEYARD)
-                state.getZone(graveyardZone).size
-            }
-
-            is DynamicAmount.CreatureCardsInYourGraveyard -> {
-                val graveyardZone = ZoneKey(context.controllerId, Zone.GRAVEYARD)
-                state.getZone(graveyardZone).count { entityId ->
-                    state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.isCreature == true
-                }
-            }
-
-            is DynamicAmount.AttackingCreaturesYouControl -> {
-                state.getBattlefield().count { entityId ->
-                    val container = state.getEntity(entityId) ?: return@count false
-                    container.get<ControllerComponent>()?.playerId == context.controllerId &&
-                        container.has<AttackingComponent>()
-                }
-            }
-
-            is DynamicAmount.CreaturesAttackingYou -> {
-                val attackingYou = state.getBattlefield().count { entityId ->
-                    state.getEntity(entityId)?.has<AttackingComponent>() == true
-                    // TODO: Check if attacking this specific player
-                }
-                attackingYou * amount.multiplier
-            }
-
-            is DynamicAmount.TappedCreaturesTargetOpponentControls -> {
-                val opponentId = context.opponentId ?: return 0
-                state.getBattlefield().count { entityId ->
-                    val container = state.getEntity(entityId) ?: return@count false
-                    container.get<ControllerComponent>()?.playerId == opponentId &&
-                        container.get<CardComponent>()?.typeLine?.isCreature == true &&
-                        container.has<TappedComponent>()
-                }
-            }
-
             is DynamicAmount.VariableReference -> {
                 // TODO: Implement variable storage
                 0
@@ -144,6 +68,7 @@ class DynamicAmountEvaluator {
                 min(evaluate(state, amount.left, context), evaluate(state, amount.right, context))
             }
 
+            // Context-based values
             is DynamicAmount.SacrificedPermanentPower -> {
                 val sacrificedId = context.sacrificedPermanents.firstOrNull() ?: return 0
                 val card = state.getEntity(sacrificedId)?.get<CardComponent>() ?: return 0
@@ -177,29 +102,6 @@ class DynamicAmountEvaluator {
                 0
             }
 
-            is DynamicAmount.CreaturesEnteredThisTurn -> {
-                // TODO: Track ETB this turn
-                0
-            }
-
-            is DynamicAmount.HandSizeDifferenceFromTargetOpponent -> {
-                val myHand = state.getZone(ZoneKey(context.controllerId, Zone.HAND)).size
-                val opponentHand = context.opponentId?.let {
-                    state.getZone(ZoneKey(it, Zone.HAND)).size
-                } ?: 0
-                max(0, opponentHand - myHand)
-            }
-
-            is DynamicAmount.LandsOfTypeTargetOpponentControls -> {
-                val opponentId = context.opponentId ?: return 0
-                countLandsOfTypeControlledBy(state, opponentId, amount.landType) * amount.multiplier
-            }
-
-            is DynamicAmount.CreaturesOfColorTargetOpponentControls -> {
-                val opponentId = context.opponentId ?: return 0
-                countCreaturesOfColorControlledBy(state, opponentId, amount.color) * amount.multiplier
-            }
-
             // Unified counting
             is DynamicAmount.Count -> {
                 evaluateUnifiedCount(state, amount.player, amount.zone, amount.filter, context)
@@ -209,62 +111,6 @@ class DynamicAmountEvaluator {
                 evaluateUnifiedCount(state, amount.player, Zone.BATTLEFIELD, amount.filter, context)
             }
         }
-    }
-
-    private fun countCreaturesControlledBy(state: GameState, playerId: EntityId): Int {
-        return state.getBattlefield().count { entityId ->
-            val container = state.getEntity(entityId) ?: return@count false
-            container.get<ControllerComponent>()?.playerId == playerId &&
-                container.get<CardComponent>()?.typeLine?.isCreature == true
-        }
-    }
-
-    private fun countLandsControlledBy(state: GameState, playerId: EntityId): Int {
-        return state.getBattlefield().count { entityId ->
-            val container = state.getEntity(entityId) ?: return@count false
-            container.get<ControllerComponent>()?.playerId == playerId &&
-                container.get<CardComponent>()?.typeLine?.isLand == true
-        }
-    }
-
-    private fun countLandsOfTypeControlledBy(state: GameState, playerId: EntityId, landType: String): Int {
-        return state.getBattlefield().count { entityId ->
-            val container = state.getEntity(entityId) ?: return@count false
-            container.get<ControllerComponent>()?.playerId == playerId &&
-                container.get<CardComponent>()?.typeLine?.let { typeLine ->
-                    typeLine.isLand && typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(landType))
-                } == true
-        }
-    }
-
-    private fun countCreaturesOfColorControlledBy(
-        state: GameState,
-        playerId: EntityId,
-        color: com.wingedsheep.sdk.core.Color
-    ): Int {
-        return state.getBattlefield().count { entityId ->
-            val container = state.getEntity(entityId) ?: return@count false
-            container.get<ControllerComponent>()?.playerId == playerId &&
-                container.get<CardComponent>()?.let { card ->
-                    card.typeLine.isCreature && color in card.colors
-                } == true
-        }
-    }
-
-    private fun countCreaturesWithSubtype(state: GameState, playerId: EntityId, subtype: String): Int {
-        return state.getBattlefield().count { entityId ->
-            val container = state.getEntity(entityId) ?: return@count false
-            container.get<ControllerComponent>()?.playerId == playerId &&
-                container.get<CardComponent>()?.typeLine?.hasSubtype(
-                    com.wingedsheep.sdk.core.Subtype(subtype)
-                ) == true
-        }
-    }
-
-    private fun hasSubtype(state: GameState, entityId: EntityId, subtype: String): Boolean {
-        return state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.hasSubtype(
-            com.wingedsheep.sdk.core.Subtype(subtype)
-        ) == true
     }
 
     // =========================================================================

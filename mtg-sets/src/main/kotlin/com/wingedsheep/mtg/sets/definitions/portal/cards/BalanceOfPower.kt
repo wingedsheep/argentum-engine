@@ -1,9 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.portal.cards
 
+import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.DrawCardsEffect
-import com.wingedsheep.sdk.scripting.DynamicAmount
 import com.wingedsheep.sdk.targeting.TargetOpponent
 
 /**
@@ -18,7 +18,7 @@ val BalanceOfPower = card("Balance of Power") {
 
     spell {
         target = TargetOpponent()
-        effect = DrawCardsEffect(DynamicAmount.HandSizeDifferenceFromTargetOpponent)
+        effect = DrawCardsEffect(DynamicAmounts.handSizeDifferenceFromTargetOpponent())
     }
 
     metadata {

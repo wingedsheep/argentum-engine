@@ -80,7 +80,7 @@ val Blaze = card("Blaze") {
 
     spell {
         target = AnyTarget()
-        effect = DealXDamageEffect(EffectTarget.ContextTarget(0))
+        effect = DealDamageEffect(DynamicAmount.XValue, EffectTarget.ContextTarget(0))
     }
 
     metadata { ... }

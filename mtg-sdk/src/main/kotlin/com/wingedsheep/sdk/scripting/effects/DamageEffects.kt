@@ -7,43 +7,28 @@ import kotlinx.serialization.Serializable
 // =============================================================================
 
 /**
- * Deal damage effect.
- * "Deal X damage to target creature/player"
+ * Deal damage to a target.
+ * Supports both fixed amounts and dynamic amounts (e.g., X value, creature count).
+ *
+ * Examples:
+ * - Lightning Bolt: DealDamageEffect(3, target)
+ * - Blaze: DealDamageEffect(DynamicAmount.XValue, target)
+ * - Final Strike: DealDamageEffect(DynamicAmount.SacrificedPermanentPower, target)
  */
 @Serializable
 data class DealDamageEffect(
-    val amount: Int,
+    val amount: DynamicAmount,
     val target: EffectTarget,
     val cantBePrevented: Boolean = false
 ) : Effect {
+    /** Convenience constructor for fixed amounts */
+    constructor(amount: Int, target: EffectTarget, cantBePrevented: Boolean = false)
+        : this(DynamicAmount.Fixed(amount), target, cantBePrevented)
+
     override val description: String = buildString {
-        append("Deal $amount damage to ${target.description}")
+        append("Deal ${amount.description} damage to ${target.description}")
         if (cantBePrevented) append(". This damage can't be prevented")
     }
-}
-
-/**
- * Deal dynamic damage to a target.
- * "Deal damage equal to X to target"
- * Used for effects like Final Strike where damage depends on a dynamic value.
- */
-@Serializable
-data class DealDynamicDamageEffect(
-    val amount: DynamicAmount,
-    val target: EffectTarget
-) : Effect {
-    override val description: String = "Deal damage equal to ${amount.description} to ${target.description}"
-}
-
-/**
- * Deal X damage where X is determined by the spell's X value.
- * Used for cards like Blaze.
- */
-@Serializable
-data class DealXDamageEffect(
-    val target: EffectTarget
-) : Effect {
-    override val description: String = "Deal X damage to ${target.description}"
 }
 
 /**

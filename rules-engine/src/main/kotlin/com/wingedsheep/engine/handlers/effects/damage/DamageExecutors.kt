@@ -13,9 +13,7 @@ class DamageExecutors(
     private val decisionHandler: DecisionHandler = DecisionHandler()
 ) : ExecutorModule {
     override fun executors(): List<EffectExecutor<*>> = listOf(
-        DealDamageExecutor(),
-        DealDynamicDamageExecutor(amountEvaluator),
-        DealXDamageExecutor(),
+        DealDamageExecutor(amountEvaluator),
         DealDamageToGroupExecutor(amountEvaluator),
         DealDamageToPlayersExecutor(amountEvaluator),
         DividedDamageExecutor(decisionHandler)

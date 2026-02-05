@@ -12,7 +12,7 @@ class LifeExecutors(
 ) : ExecutorModule {
     override fun executors(): List<EffectExecutor<*>> = listOf(
         GainLifeExecutor(amountEvaluator),
-        LoseLifeExecutor(),
+        LoseLifeExecutor(amountEvaluator),
         LoseHalfLifeExecutor(),
         OwnerGainsLifeExecutor()
     )

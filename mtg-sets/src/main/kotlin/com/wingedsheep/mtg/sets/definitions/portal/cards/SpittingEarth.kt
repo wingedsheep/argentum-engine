@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.portal.cards
 
 import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DealDynamicDamageEffect
-import com.wingedsheep.sdk.scripting.DynamicAmount
+import com.wingedsheep.sdk.scripting.DealDamageEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.targeting.TargetCreature
 
@@ -20,8 +20,8 @@ val SpittingEarth = card("Spitting Earth") {
 
     spell {
         target = TargetCreature()
-        effect = DealDynamicDamageEffect(
-            amount = DynamicAmount.LandsWithSubtypeYouControl(Subtype.MOUNTAIN),
+        effect = DealDamageEffect(
+            amount = DynamicAmounts.landsWithSubtype(Subtype.MOUNTAIN),
             target = EffectTarget.ContextTarget(0)
         )
     }

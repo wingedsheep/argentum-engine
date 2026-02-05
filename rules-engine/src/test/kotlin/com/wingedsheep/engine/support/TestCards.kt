@@ -142,8 +142,8 @@ object TestCards {
         script = CardScript.creature(
             TriggeredAbility.create(
                 trigger = OnEnterBattlefield(),
-                effect = DealDynamicDamageEffect(
-                    amount = DynamicAmount.LandsWithSubtypeYouControl(Subtype.MOUNTAIN),
+                effect = DealDamageEffect(
+                    amount = com.wingedsheep.sdk.dsl.DynamicAmounts.landsWithSubtype(Subtype.MOUNTAIN),
                     target = EffectTarget.ContextTarget(0)
                 ),
                 targetRequirement = TargetCreature()

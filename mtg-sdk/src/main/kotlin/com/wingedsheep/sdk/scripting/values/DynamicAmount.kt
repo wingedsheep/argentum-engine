@@ -1,7 +1,5 @@
 package com.wingedsheep.sdk.scripting
 
-import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import kotlinx.serialization.Serializable
 
@@ -14,46 +12,29 @@ import kotlinx.serialization.Serializable
 sealed interface DynamicAmount {
     val description: String
 
-    /**
-     * Count of other creatures you control.
-     */
-    @Serializable
-    data object OtherCreaturesYouControl : DynamicAmount {
-        override val description: String = "the number of other creatures you control"
-    }
+    companion object {
+        /**
+         * Pluralize the last word of a filter description for use in counting phrases.
+         * Examples: "creature" → "creatures", "land" → "lands", "sorcery" → "sorceries"
+         */
+        internal fun pluralize(filterDesc: String): String {
+            if (filterDesc.isEmpty()) return "cards"
+            val words = filterDesc.split(" ")
+            val lastWord = words.last()
+            val plural = when {
+                lastWord.endsWith("s") -> lastWord
+                lastWord.endsWith("y") && !lastWord.endsWith("ey") -> lastWord.dropLast(1) + "ies"
+                else -> lastWord + "s"
+            }
+            return (words.dropLast(1) + plural).joinToString(" ")
+        }
 
-    /**
-     * Count of other creatures with a specific subtype you control.
-     * "the number of other Goblins you control"
-     */
-    @Serializable
-    data class OtherCreaturesWithSubtypeYouControl(val subtype: Subtype) : DynamicAmount {
-        override val description: String = "the number of other ${subtype.value}s you control"
-    }
-
-    /**
-     * Count of creatures you control (including self).
-     */
-    @Serializable
-    data object CreaturesYouControl : DynamicAmount {
-        override val description: String = "the number of creatures you control"
-    }
-
-    /**
-     * Count of all creatures on the battlefield.
-     */
-    @Serializable
-    data object AllCreatures : DynamicAmount {
-        override val description: String = "the number of creatures on the battlefield"
-    }
-
-    /**
-     * Count of all creatures with a specific subtype on the battlefield.
-     * Used for tribal effects like Wellwisher ("for each Elf on the battlefield").
-     */
-    @Serializable
-    data class CreaturesWithSubtypeOnBattlefield(val subtype: Subtype) : DynamicAmount {
-        override val description: String = "the number of ${subtype.value}s on the battlefield"
+        /**
+         * Strip article from zone displayName for use with possessives.
+         * "a graveyard" → "graveyard", "the battlefield" → "battlefield"
+         */
+        internal fun zoneSimpleName(zone: Zone): String =
+            zone.displayName.removePrefix("a ").removePrefix("the ")
     }
 
     /**
@@ -70,22 +51,6 @@ sealed interface DynamicAmount {
     @Serializable
     data class Fixed(val amount: Int) : DynamicAmount {
         override val description: String = "$amount"
-    }
-
-    /**
-     * Count of creatures that entered the battlefield under your control this turn.
-     */
-    @Serializable
-    data object CreaturesEnteredThisTurn : DynamicAmount {
-        override val description: String = "the number of creatures that entered the battlefield under your control this turn"
-    }
-
-    /**
-     * Count of attacking creatures you control.
-     */
-    @Serializable
-    data object AttackingCreaturesYouControl : DynamicAmount {
-        override val description: String = "the number of attacking creatures you control"
     }
 
     /**
@@ -107,40 +72,6 @@ sealed interface DynamicAmount {
     @Serializable
     data object CardTypesInAllGraveyards : DynamicAmount {
         override val description: String = "the number of card types among cards in all graveyards"
-    }
-
-    /**
-     * Count of cards in your graveyard.
-     * Used for creatures like Lhurgoyf.
-     */
-    @Serializable
-    data object CardsInYourGraveyard : DynamicAmount {
-        override val description: String = "the number of cards in your graveyard"
-    }
-
-    /**
-     * Count of creature cards in your graveyard.
-     */
-    @Serializable
-    data object CreatureCardsInYourGraveyard : DynamicAmount {
-        override val description: String = "the number of creature cards in your graveyard"
-    }
-
-    /**
-     * Count of lands you control.
-     */
-    @Serializable
-    data object LandsYouControl : DynamicAmount {
-        override val description: String = "the number of lands you control"
-    }
-
-    /**
-     * Count of lands with a specific subtype you control.
-     * "the number of Mountains you control"
-     */
-    @Serializable
-    data class LandsWithSubtypeYouControl(val subtype: Subtype) : DynamicAmount {
-        override val description: String = "the number of ${subtype.value}s you control"
     }
 
     // =========================================================================
@@ -167,74 +98,6 @@ sealed interface DynamicAmount {
     }
 
     // =========================================================================
-    // Opponent-relative DynamicAmounts
-    // =========================================================================
-
-    /**
-     * Count of creatures attacking you, optionally with a multiplier.
-     * Used for effects like Blessed Reversal ("gain 3 life for each creature attacking you").
-     */
-    @Serializable
-    data class CreaturesAttackingYou(val multiplier: Int = 1) : DynamicAmount {
-        override val description: String = if (multiplier == 1) {
-            "the number of creatures attacking you"
-        } else {
-            "$multiplier for each creature attacking you"
-        }
-    }
-
-    /**
-     * Count of lands of a specific type target opponent controls.
-     * Used for color-hosers like Renewing Dawn.
-     */
-    @Serializable
-    data class LandsOfTypeTargetOpponentControls(
-        val landType: String,
-        val multiplier: Int = 1
-    ) : DynamicAmount {
-        override val description: String = if (multiplier == 1) {
-            "the number of ${landType}s target opponent controls"
-        } else {
-            "$multiplier for each $landType target opponent controls"
-        }
-    }
-
-    /**
-     * Count of creatures of a specific color target opponent controls.
-     * Used for color-hosers like Starlight.
-     */
-    @Serializable
-    data class CreaturesOfColorTargetOpponentControls(
-        val color: Color,
-        val multiplier: Int = 1
-    ) : DynamicAmount {
-        override val description: String = if (multiplier == 1) {
-            "the number of ${color.displayName.lowercase()} creatures target opponent controls"
-        } else {
-            "$multiplier for each ${color.displayName.lowercase()} creature target opponent controls"
-        }
-    }
-
-    /**
-     * Difference in hand sizes between target opponent and you (if positive).
-     * Used for effects like Balance of Power.
-     */
-    @Serializable
-    data object HandSizeDifferenceFromTargetOpponent : DynamicAmount {
-        override val description: String = "the difference if target opponent has more cards in hand than you"
-    }
-
-    /**
-     * Number of tapped creatures target opponent controls.
-     * Used for Theft of Dreams.
-     * @deprecated Use CountInZone with appropriate filter instead
-     */
-    @Serializable
-    data object TappedCreaturesTargetOpponentControls : DynamicAmount {
-        override val description: String = "the number of tapped creatures target opponent controls"
-    }
-
-    // =========================================================================
     // Math Operations - Composable arithmetic on DynamicAmounts
     // =========================================================================
 
@@ -249,8 +112,6 @@ sealed interface DynamicAmount {
 
     /**
      * Subtract one dynamic amount from another.
-     * Example: Subtract(CardsInHand(Opponent), CardsInHand(Controller))
-     * Replaces HandSizeDifferenceFromTargetOpponent
      */
     @Serializable
     data class Subtract(val left: DynamicAmount, val right: DynamicAmount) : DynamicAmount {
@@ -259,7 +120,7 @@ sealed interface DynamicAmount {
 
     /**
      * Multiply a dynamic amount by a fixed multiplier.
-     * Example: Multiply(CreaturesAttackingYou, 3) for Blessed Reversal
+     * Example: Multiply(CountBattlefield(Player.Opponent, GameObjectFilter.Creature.attacking()), 3)
      */
     @Serializable
     data class Multiply(val amount: DynamicAmount, val multiplier: Int) : DynamicAmount {
@@ -269,7 +130,7 @@ sealed interface DynamicAmount {
     /**
      * Take the maximum of zero and the amount (clamp negative to zero).
      * Useful for difference calculations that should not go negative.
-     * Example: IfPositive(Subtract(opponentHand, yourHand))
+     * Example: IfPositive(Subtract(Count(Player.TargetOpponent, Zone.HAND), Count(Player.You, Zone.HAND)))
      */
     @Serializable
     data class IfPositive(val amount: DynamicAmount) : DynamicAmount {
@@ -314,7 +175,7 @@ sealed interface DynamicAmount {
     }
 
     // =========================================================================
-    // Zone-based Counting
+    // Zone-based Counting — generic counting primitives
     // =========================================================================
 
     /**
@@ -323,17 +184,14 @@ sealed interface DynamicAmount {
      *
      * Examples:
      * ```kotlin
-     * // Cards in your hand
-     * Count(Player.You, Zone.Hand)
+     * // Cards in your graveyard
+     * Count(Player.You, Zone.GRAVEYARD)
      *
-     * // Forests on the battlefield (any player)
-     * Count(Player.Each, Zone.Battlefield, GameObjectFilter.Land.withSubtype("Forest"))
+     * // Creature cards in your graveyard
+     * Count(Player.You, Zone.GRAVEYARD, GameObjectFilter.Creature)
      *
-     * // Tapped creatures opponent controls
-     * Count(Player.Opponent, Zone.Battlefield, GameObjectFilter.Creature.tapped())
-     *
-     * // Green cards in target opponent's hand
-     * Count(Player.TargetOpponent, Zone.Hand, GameObjectFilter.Any.withColor(Color.GREEN))
+     * // Cards in target opponent's hand
+     * Count(Player.TargetOpponent, Zone.HAND)
      * ```
      *
      * @param player Whose zone to count in
@@ -348,11 +206,8 @@ sealed interface DynamicAmount {
     ) : DynamicAmount {
         override val description: String = buildString {
             append("the number of ")
-            val filterDesc = filter.description
-            if (filterDesc.isNotEmpty()) {
-                append(filterDesc)
-                append(" ")
-            }
+            append(pluralize(filter.description))
+            append(" ")
             when (zone) {
                 Zone.BATTLEFIELD -> {
                     when (player) {
@@ -364,9 +219,9 @@ sealed interface DynamicAmount {
                 }
                 else -> {
                     append("in ")
-                    append(player.description)
-                    append("'s ")
-                    append(zone.displayName)
+                    append(player.possessive)
+                    append(" ")
+                    append(zoneSimpleName(zone))
                 }
             }
         }
@@ -374,18 +229,21 @@ sealed interface DynamicAmount {
 
     /**
      * Count permanents on battlefield matching a unified filter.
-     * Convenience wrapper for Count with Zone.Battlefield.
+     * Convenience wrapper for Count with Zone.BATTLEFIELD.
      *
      * Examples:
      * ```kotlin
      * // Creatures you control
      * CountBattlefield(Player.You, GameObjectFilter.Creature)
      *
-     * // All Forests
-     * CountBattlefield(Player.Each, GameObjectFilter.Land.withSubtype("Forest"))
+     * // All creatures on the battlefield
+     * CountBattlefield(Player.Each, GameObjectFilter.Creature)
      *
      * // Attacking creatures you control
      * CountBattlefield(Player.You, GameObjectFilter.Creature.attacking())
+     *
+     * // Tapped creatures target opponent controls
+     * CountBattlefield(Player.TargetOpponent, GameObjectFilter.Creature.tapped())
      * ```
      */
     @Serializable
@@ -395,11 +253,8 @@ sealed interface DynamicAmount {
     ) : DynamicAmount {
         override val description: String = buildString {
             append("the number of ")
-            val filterDesc = filter.description
-            if (filterDesc.isNotEmpty()) {
-                append(filterDesc)
-                append(" ")
-            }
+            append(pluralize(filter.description))
+            append(" ")
             when (player) {
                 Player.You -> append("you control")
                 Player.Opponent, Player.TargetOpponent -> append("${player.description} controls")

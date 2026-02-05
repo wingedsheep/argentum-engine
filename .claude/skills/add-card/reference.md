@@ -2,7 +2,7 @@
 
 ## Existing Effects (in Effect.kt)
 
-- `DealDamageEffect`, `DealDynamicDamageEffect`, `DealXDamageEffect` - damage
+- `DealDamageEffect` - damage (supports fixed `Int` and `DynamicAmount` including `XValue`)
 - `DrawCardsEffect` - card draw
 - `DiscardCardsEffect`, `DiscardRandomEffect` - discard
 - `GainLifeEffect`, `LoseLifeEffect` - life changes

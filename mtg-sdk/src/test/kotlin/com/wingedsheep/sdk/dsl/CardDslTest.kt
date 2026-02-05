@@ -666,8 +666,8 @@ class CardDslTest : DescribeSpec({
                 manaCost = "{2}{G}{G}"
                 typeLine = "Creature — Lhurgoyf"
 
-                dynamicPower = com.wingedsheep.sdk.model.CharacteristicValue.Dynamic(DynamicAmount.CreatureCardsInYourGraveyard)
-                dynamicToughness = com.wingedsheep.sdk.model.CharacteristicValue.DynamicWithOffset(DynamicAmount.CreatureCardsInYourGraveyard, 1)
+                dynamicPower = com.wingedsheep.sdk.model.CharacteristicValue.Dynamic(DynamicAmounts.creatureCardsInYourGraveyard())
+                dynamicToughness = com.wingedsheep.sdk.model.CharacteristicValue.DynamicWithOffset(DynamicAmounts.creatureCardsInYourGraveyard(), 1)
             }
 
             lhurgoyf.creatureStats shouldNotBe null
