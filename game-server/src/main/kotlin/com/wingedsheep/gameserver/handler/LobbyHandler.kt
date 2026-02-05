@@ -45,6 +45,9 @@ class LobbyHandler(
     /** Coroutine scope for draft timers */
     private val draftScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
+    /** Per-lobby locks for round advancement to prevent concurrent ready/round-complete races */
+    private val roundLocks = java.util.concurrent.ConcurrentHashMap<String, Any>()
+
     fun handle(session: WebSocketSession, message: ClientMessage) {
         when (message) {
             is ClientMessage.CreateSealedGame -> handleCreateSealedGame(session, message)
@@ -1205,61 +1208,64 @@ class LobbyHandler(
     }
 
     fun handleRoundComplete(lobbyId: String) {
-        val lobby = lobbyRepository.findLobbyById(lobbyId) ?: return
-        val tournament = lobbyRepository.findTournamentById(lobbyId) ?: return
-        val round = tournament.currentRound ?: return
+        val lock = roundLocks.computeIfAbsent(lobbyId) { Any() }
+        synchronized(lock) {
+            val lobby = lobbyRepository.findLobbyById(lobbyId) ?: return
+            val tournament = lobbyRepository.findTournamentById(lobbyId) ?: return
+            val round = tournament.currentRound ?: return
 
-        logger.info("Round ${round.roundNumber} complete for tournament $lobbyId")
+            logger.info("Round ${round.roundNumber} complete for tournament $lobbyId")
 
-        // Clear ready state for the next round
-        lobby.clearReadyState()
+            // Clear ready state for the next round
+            lobby.clearReadyState()
 
-        val connectedIds = lobby.players.values
-            .filter { it.identity.isConnected }
-            .map { it.identity.playerId }
-            .toSet()
+            val connectedIds = lobby.players.values
+                .filter { it.identity.isConnected }
+                .map { it.identity.playerId }
+                .toSet()
 
-        // Get next round matchups to show who each player plays next
-        val nextRoundMatchups = if (!tournament.isComplete) {
-            tournament.peekNextRoundMatchups()
-        } else {
-            emptyMap()
-        }
-
-        lobby.players.forEach { (playerId, playerState) ->
-            playerState.identity.currentGameSessionId = null
-
-            val ws = playerState.identity.webSocketSession
-            if (ws != null && ws.isOpen) {
-                // Find this player's next opponent
-                val nextOpponentId = nextRoundMatchups[playerId]
-                val nextOpponentName = if (nextOpponentId != null) {
-                    lobby.players[nextOpponentId]?.identity?.playerName
-                } else if (nextRoundMatchups.containsKey(playerId)) {
-                    null // Player has a BYE
-                } else {
-                    null
-                }
-                val hasBye = nextRoundMatchups.containsKey(playerId) && nextOpponentId == null
-
-                val roundComplete = ServerMessage.RoundComplete(
-                    lobbyId = lobbyId,
-                    round = round.roundNumber,
-                    results = tournament.getCurrentRoundResults(),
-                    standings = tournament.getStandingsInfo(connectedIds),
-                    nextOpponentName = nextOpponentName,
-                    nextRoundHasBye = hasBye,
-                    isTournamentComplete = tournament.isComplete
-                )
-                sender.send(ws, roundComplete)
+            // Get next round matchups to show who each player plays next
+            val nextRoundMatchups = if (!tournament.isComplete) {
+                tournament.peekNextRoundMatchups()
+            } else {
+                emptyMap()
             }
-        }
 
-        // If tournament is complete, don't wait for ready - just finish
-        if (tournament.isComplete) {
-            completeTournament(lobbyId)
+            lobby.players.forEach { (playerId, playerState) ->
+                playerState.identity.currentGameSessionId = null
+
+                val ws = playerState.identity.webSocketSession
+                if (ws != null && ws.isOpen) {
+                    // Find this player's next opponent
+                    val nextOpponentId = nextRoundMatchups[playerId]
+                    val nextOpponentName = if (nextOpponentId != null) {
+                        lobby.players[nextOpponentId]?.identity?.playerName
+                    } else if (nextRoundMatchups.containsKey(playerId)) {
+                        null // Player has a BYE
+                    } else {
+                        null
+                    }
+                    val hasBye = nextRoundMatchups.containsKey(playerId) && nextOpponentId == null
+
+                    val roundComplete = ServerMessage.RoundComplete(
+                        lobbyId = lobbyId,
+                        round = round.roundNumber,
+                        results = tournament.getCurrentRoundResults(),
+                        standings = tournament.getStandingsInfo(connectedIds),
+                        nextOpponentName = nextOpponentName,
+                        nextRoundHasBye = hasBye,
+                        isTournamentComplete = tournament.isComplete
+                    )
+                    sender.send(ws, roundComplete)
+                }
+            }
+
+            // If tournament is complete, don't wait for ready - just finish
+            if (tournament.isComplete) {
+                completeTournament(lobbyId)
+            }
+            // Otherwise, wait for all players to signal ready before starting next round
         }
-        // Otherwise, wait for all players to signal ready before starting next round
     }
 
     /**
@@ -1293,35 +1299,42 @@ class LobbyHandler(
             return
         }
 
-        // Check if round needs to be prepared (first ready player triggers round preparation)
-        val needsPrepare = tournament.currentRound == null ||
-                tournament.currentRound?.isComplete == true
+        // Synchronize per-lobby to prevent concurrent round advancement races.
+        // Without this, two players sending ReadyForNextRound simultaneously could both
+        // see needsPrepare==true, double-increment the round index, and clear each other's
+        // ready state.
+        val lock = roundLocks.computeIfAbsent(lobbyId) { Any() }
+        synchronized(lock) {
+            // Check if round needs to be prepared (first ready player triggers round preparation)
+            val needsPrepare = tournament.currentRound == null ||
+                    tournament.currentRound?.isComplete == true
 
-        if (needsPrepare) {
-            // Prepare the next round (advance index, handle BYEs)
-            val round = tournament.startNextRound()
-            if (round == null) {
-                completeTournament(lobbyId)
-                return
+            if (needsPrepare) {
+                // Prepare the next round (advance index, handle BYEs)
+                val round = tournament.startNextRound()
+                if (round == null) {
+                    completeTournament(lobbyId)
+                    return
+                }
+                // Clear ready state for the new round
+                lobby.clearReadyState()
+                logger.info("Prepared round ${round.roundNumber} for tournament $lobbyId")
             }
-            // Clear ready state for the new round
-            lobby.clearReadyState()
-            logger.info("Prepared round ${round.roundNumber} for tournament $lobbyId")
+
+            // Mark player as ready
+            val wasNewlyReady = lobby.markPlayerReady(identity.playerId)
+            if (!wasNewlyReady) {
+                return // Already marked ready
+            }
+
+            logger.info("Player ${identity.playerName} ready for next round in tournament $lobbyId")
+
+            // Broadcast ready status to all players
+            broadcastReadyStatus(lobby, identity)
+
+            // Try to start this player's match eagerly
+            tryStartMatchForPlayer(lobby, tournament, identity)
         }
-
-        // Mark player as ready
-        val wasNewlyReady = lobby.markPlayerReady(identity.playerId)
-        if (!wasNewlyReady) {
-            return // Already marked ready
-        }
-
-        logger.info("Player ${identity.playerName} ready for next round in tournament $lobbyId")
-
-        // Broadcast ready status to all players
-        broadcastReadyStatus(lobby, identity)
-
-        // Try to start this player's match eagerly
-        tryStartMatchForPlayer(lobby, tournament, identity)
     }
 
     /**
