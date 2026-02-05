@@ -366,6 +366,26 @@ abstract class ScenarioTestBase : FunSpec() {
         }
 
         /**
+         * Cast a spell by name from a player's hand, targeting a card in a graveyard.
+         */
+        fun castSpellTargetingGraveyardCard(
+            playerNumber: Int,
+            spellName: String,
+            targetCardIds: List<EntityId>
+        ): ExecutionResult {
+            val playerId = if (playerNumber == 1) player1Id else player2Id
+            val hand = state.getHand(playerId)
+            val cardId = hand.find { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.name == spellName
+            } ?: error("Card '$spellName' not found in player $playerNumber's hand")
+
+            val targets = targetCardIds.map { targetCardId ->
+                ChosenTarget.Card(targetCardId, playerId, ZoneType.GRAVEYARD)
+            }
+            return execute(CastSpell(playerId, cardId, targets))
+        }
+
+        /**
          * Cast a spell with X in its mana cost.
          * @param playerNumber The player casting the spell (1 or 2)
          * @param spellName The name of the spell to cast

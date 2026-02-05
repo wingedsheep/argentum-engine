@@ -185,7 +185,6 @@ object TestCards {
             TriggeredAbility.create(
                 trigger = OnEnterBattlefield(),
                 effect = ReturnFromGraveyardEffect(
-                    filter = GameObjectFilter.Creature,
                     destination = SearchDestination.HAND
                 ),
                 optional = true,

@@ -236,7 +236,6 @@ data class EachPlayerSelectsThenDrawsContinuation(
  * @property sourceId The spell/ability that caused the search
  * @property sourceName Name of the source for event messages
  * @property destination Where to put the selected card (HAND or BATTLEFIELD)
- * @property filter The card filter that was used
  */
 @Serializable
 data class ReturnFromGraveyardContinuation(
@@ -244,8 +243,7 @@ data class ReturnFromGraveyardContinuation(
     val playerId: EntityId,
     val sourceId: EntityId?,
     val sourceName: String?,
-    val destination: SearchDestination,
-    val filter: GameObjectFilter
+    val destination: SearchDestination
 ) : ContinuationFrame
 
 /**

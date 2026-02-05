@@ -17,7 +17,7 @@ class ElvenCacheScenarioTest : ScenarioTestBase() {
 
     init {
         context("Elven Cache") {
-            test("returns selected card from graveyard to hand via decision UI") {
+            test("returns target card from graveyard to hand") {
                 val game = scenario()
                     .withPlayers("Player 1", "Player 2")
                     .withCardInHand(1, "Elven Cache")
@@ -31,22 +31,15 @@ class ElvenCacheScenarioTest : ScenarioTestBase() {
                     game.isInGraveyard(1, "Grizzly Bears") shouldBe true
                 }
 
-                // Cast Elven Cache (no targets needed at cast time)
-                val castResult = game.castSpell(1, "Elven Cache")
+                // Cast Elven Cache targeting Grizzly Bears in graveyard
+                val bearsInGraveyard = game.findCardsInGraveyard(1, "Grizzly Bears")
+                val castResult = game.castSpellTargetingGraveyardCard(1, "Elven Cache", bearsInGraveyard)
                 withClue("Elven Cache should be cast successfully") {
                     castResult.error shouldBe null
                 }
 
-                // Resolve the spell — should create a pending decision
+                // Resolve the spell
                 game.resolveStack()
-
-                withClue("There should be a pending decision to select a graveyard card") {
-                    game.hasPendingDecision() shouldBe true
-                }
-
-                // Select Grizzly Bears from the decision
-                val bearsInGraveyard = game.findCardsInGraveyard(1, "Grizzly Bears")
-                game.selectCards(bearsInGraveyard)
 
                 withClue("Grizzly Bears should now be in hand") {
                     game.isInHand(1, "Grizzly Bears") shouldBe true
@@ -71,15 +64,9 @@ class ElvenCacheScenarioTest : ScenarioTestBase() {
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
 
-                game.castSpell(1, "Elven Cache")
-                game.resolveStack()
-
-                withClue("There should be a pending decision") {
-                    game.hasPendingDecision() shouldBe true
-                }
-
                 val forestInGraveyard = game.findCardsInGraveyard(1, "Forest")
-                game.selectCards(forestInGraveyard)
+                game.castSpellTargetingGraveyardCard(1, "Elven Cache", forestInGraveyard)
+                game.resolveStack()
 
                 withClue("Forest should now be in hand") {
                     game.isInHand(1, "Forest") shouldBe true
@@ -95,16 +82,10 @@ class ElvenCacheScenarioTest : ScenarioTestBase() {
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
 
-                game.castSpell(1, "Elven Cache")
-                game.resolveStack()
-
-                withClue("No pending decision when graveyard is empty") {
-                    game.hasPendingDecision() shouldBe false
-                }
-
-                withClue("Player should be able to pass priority normally") {
-                    val passResult = game.passPriority()
-                    passResult.error shouldBe null
+                // Cannot cast — no valid targets in graveyard
+                val castResult = game.castSpellTargetingGraveyardCard(1, "Elven Cache", emptyList())
+                withClue("Casting with no targets should fail") {
+                    castResult.error shouldBe "No valid targets available"
                 }
             }
 
@@ -119,16 +100,10 @@ class ElvenCacheScenarioTest : ScenarioTestBase() {
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
 
-                game.castSpell(1, "Elven Cache")
-                game.resolveStack()
-
-                withClue("There should be a pending decision") {
-                    game.hasPendingDecision() shouldBe true
-                }
-
                 // Select Hill Giant specifically
                 val hillGiantInGraveyard = game.findCardsInGraveyard(1, "Hill Giant")
-                game.selectCards(hillGiantInGraveyard)
+                game.castSpellTargetingGraveyardCard(1, "Elven Cache", hillGiantInGraveyard)
+                game.resolveStack()
 
                 withClue("Hill Giant should now be in hand") {
                     game.isInHand(1, "Hill Giant") shouldBe true

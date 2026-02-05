@@ -62,7 +62,6 @@ val Gravedigger = card("Gravedigger") {
         optional = true
         target = TargetCardInGraveyard(filter = GraveyardCardFilter.CreatureInYourGraveyard)
         effect = ReturnFromGraveyardEffect(
-            filter = CardFilter.CreatureCard,
             destination = SearchDestination.HAND
         )
     }

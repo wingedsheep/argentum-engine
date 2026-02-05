@@ -24,15 +24,16 @@
 - [x] **1c** Add `FilteredTarget(filter: TargetFilter)` variant to `EffectTarget`
 
 ## Phase 2 — Fix `ReturnFromGraveyardEffect` Target Gap
-- [ ] **2a** Replace `filter: GameObjectFilter` with `target: EffectTarget` in `ReturnFromGraveyardEffect`
-- [ ] **2b** Fix card definitions missing target declarations:
-  - [ ] ElvenCache — add `TargetCardInGraveyard` requirement
-  - [ ] DejaVu — add `TargetCardInGraveyard` requirement
-- [ ] **2c** Update cards that already declare targets:
-  - [ ] Gravedigger — `filter` → `target = EffectTarget.ContextTarget(0)`
-  - [ ] RaiseDead — same pattern
-  - [ ] BreathOfLife — same pattern
-- [ ] **2d** Update engine: effect resolver reads `target` instead of inferring from context
+- [x] **2a** Replace `filter: GameObjectFilter` with `target: EffectTarget` in `ReturnFromGraveyardEffect`
+- [x] **2b** Fix card definitions missing target declarations:
+  - [x] ElvenCache — add `TargetCardInGraveyard` requirement
+  - [x] DejaVu — add `TargetCardInGraveyard` requirement
+- [x] **2c** Update cards that already declare targets:
+  - [x] Gravedigger — `filter` → `target = EffectTarget.ContextTarget(0)`
+  - [x] RaiseDead — same pattern
+  - [x] BreathOfLife — same pattern
+- [x] **2d** Update engine: effect resolver reads `target` instead of inferring from context
+- [x] **2e** Fix CastSpellHandler target validation gap (reject empty targets when spell requires them)
 
 ## Phase 3 — Migrate Hardcoded Filtered Targets → `ContextTarget(0)` in Cards
 - [ ] **3a** AngelicBlessing — `TargetCreature` → `ContextTarget(0)` (×2)

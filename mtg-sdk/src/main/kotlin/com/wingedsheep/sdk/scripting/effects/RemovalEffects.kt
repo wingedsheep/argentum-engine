@@ -213,9 +213,9 @@ data class ExileAndReplaceWithTokenEffect(
  */
 @Serializable
 data class ReturnFromGraveyardEffect(
-    val filter: GameObjectFilter = GameObjectFilter.Any,
+    val target: EffectTarget = EffectTarget.ContextTarget(0),
     val destination: SearchDestination = SearchDestination.HAND
 ) : Effect {
     override val description: String
-        get() = "Return ${filter.description} from your graveyard ${destination.description}"
+        get() = "Return ${target.description} from your graveyard ${destination.description}"
 }

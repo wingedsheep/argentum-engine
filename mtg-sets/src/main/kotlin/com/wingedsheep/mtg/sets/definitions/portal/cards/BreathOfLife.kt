@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.ReturnFromGraveyardEffect
 import com.wingedsheep.sdk.scripting.SearchDestination
 
@@ -20,7 +19,6 @@ val BreathOfLife = card("Breath of Life") {
     spell {
         target = Targets.CreatureCardInYourGraveyard
         effect = ReturnFromGraveyardEffect(
-            filter = GameObjectFilter.Creature,
             destination = SearchDestination.BATTLEFIELD
         )
     }

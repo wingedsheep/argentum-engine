@@ -140,9 +140,16 @@ class CastSpellHandler(
         }
 
         // Validate targets
-        if (cardDef != null && action.targets.isNotEmpty()) {
+        if (cardDef != null) {
             val targetRequirements = cardDef.script.targetRequirements
             if (targetRequirements.isNotEmpty()) {
+                // Reject casting if spell requires targets but none were provided
+                if (action.targets.isEmpty()) {
+                    val requiredCount = targetRequirements.sumOf { it.effectiveMinCount }
+                    if (requiredCount > 0) {
+                        return "No valid targets available"
+                    }
+                }
                 val targetError = targetValidator.validateTargets(
                     state,
                     action.targets,

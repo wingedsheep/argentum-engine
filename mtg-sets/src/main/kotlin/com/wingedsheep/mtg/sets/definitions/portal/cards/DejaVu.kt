@@ -4,6 +4,9 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.ReturnFromGraveyardEffect
+import com.wingedsheep.sdk.scripting.TargetFilter
+import com.wingedsheep.sdk.scripting.Zone
+import com.wingedsheep.sdk.targeting.TargetCardInGraveyard
 
 /**
  * Déjà Vu
@@ -16,7 +19,10 @@ val DejaVu = card("Déjà Vu") {
     typeLine = "Sorcery"
 
     spell {
-        effect = ReturnFromGraveyardEffect(GameObjectFilter.Sorcery)
+        target = TargetCardInGraveyard(
+            filter = TargetFilter(GameObjectFilter.Sorcery.ownedByYou(), zone = Zone.Graveyard)
+        )
+        effect = ReturnFromGraveyardEffect()
     }
 
     metadata {

@@ -27,15 +27,10 @@ class DejaVuScenarioTest : ScenarioTestBase() {
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
 
-                game.castSpell(1, "Déjà Vu")
-                game.resolveStack()
-
-                withClue("There should be a pending decision to select a sorcery from graveyard") {
-                    game.hasPendingDecision() shouldBe true
-                }
-
+                // Cast targeting Volcanic Hammer (a sorcery) in graveyard
                 val hammerInGraveyard = game.findCardsInGraveyard(1, "Volcanic Hammer")
-                game.selectCards(hammerInGraveyard)
+                game.castSpellTargetingGraveyardCard(1, "Déjà Vu", hammerInGraveyard)
+                game.resolveStack()
 
                 withClue("Volcanic Hammer should now be in hand") {
                     game.isInHand(1, "Volcanic Hammer") shouldBe true
@@ -60,12 +55,10 @@ class DejaVuScenarioTest : ScenarioTestBase() {
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
 
-                // Only a creature in graveyard, no sorceries
-                game.castSpell(1, "Déjà Vu")
-                game.resolveStack()
-
-                withClue("No pending decision when no sorcery cards in graveyard") {
-                    game.hasPendingDecision() shouldBe false
+                // Only a creature in graveyard, no sorceries — cannot cast
+                val castResult = game.castSpellTargetingGraveyardCard(1, "Déjà Vu", emptyList())
+                withClue("Casting with no valid sorcery targets should fail") {
+                    castResult.error shouldBe "No valid targets available"
                 }
             }
 
@@ -78,16 +71,10 @@ class DejaVuScenarioTest : ScenarioTestBase() {
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
 
-                game.castSpell(1, "Déjà Vu")
-                game.resolveStack()
-
-                withClue("No pending decision when graveyard is empty") {
-                    game.hasPendingDecision() shouldBe false
-                }
-
-                val passResult = game.passPriority()
-                withClue("Player should be able to pass priority normally") {
-                    passResult.error shouldBe null
+                // Cannot cast — no valid targets in graveyard
+                val castResult = game.castSpellTargetingGraveyardCard(1, "Déjà Vu", emptyList())
+                withClue("Casting with no targets should fail") {
+                    castResult.error shouldBe "No valid targets available"
                 }
             }
         }

@@ -697,7 +697,6 @@ class CardDslTest : DescribeSpec({
                 triggeredAbility {
                     trigger = Triggers.LeavesBattlefield
                     effect = ReturnFromGraveyardEffect(
-                        filter = GameObjectFilter.Any,
                         destination = SearchDestination.BATTLEFIELD
                     )
                 }
