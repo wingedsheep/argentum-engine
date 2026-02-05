@@ -616,7 +616,7 @@ class CardDslTest : DescribeSpec({
                         mode("Destroy target artifact", Effects.Destroy(EffectTarget.ContextTarget(0)))
                         mode("Put target creature on the bottom of its owner's library") {
                             val creature = target("creature", Targets.Creature)
-                            effect = PutOnTopOfLibraryEffect(creature)
+                            effect = MoveToZoneEffect(creature, Zone.Library, ZonePlacement.Top)
                         }
                         mode("Counter target instant spell") {
                             val instant = target("instant", Targets.Spell)
@@ -688,7 +688,7 @@ class CardDslTest : DescribeSpec({
                     trigger = Triggers.EntersBattlefield
                     target = Targets.NonlandPermanent
                     effect = StoreResultEffect(
-                        effect = ExileEffect(EffectTarget.ContextTarget(0)),
+                        effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Exile),
                         storeAs = EffectVariable.EntityRef("exiledCard")
                     )
                 }
@@ -696,9 +696,7 @@ class CardDslTest : DescribeSpec({
                 // LTB: Return the exiled card
                 triggeredAbility {
                     trigger = Triggers.LeavesBattlefield
-                    effect = ReturnFromGraveyardEffect(
-                        destination = SearchDestination.BATTLEFIELD
-                    )
+                    effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Battlefield)
                 }
             }
 
@@ -884,7 +882,7 @@ class CardDslTest : DescribeSpec({
 
         it("should create store entity shorthand") {
             val effect = EffectPatterns.storeEntity(
-                effect = ExileEffect(EffectTarget.ContextTarget(0)),
+                effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Exile),
                 `as` = "exiledCreature"
             )
 

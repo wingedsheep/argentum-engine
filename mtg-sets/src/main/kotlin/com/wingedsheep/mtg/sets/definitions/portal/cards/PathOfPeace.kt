@@ -3,8 +3,9 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CompositeEffect
-import com.wingedsheep.sdk.scripting.DestroyEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.MoveToZoneEffect
+import com.wingedsheep.sdk.scripting.Zone
 import com.wingedsheep.sdk.scripting.OwnerGainsLifeEffect
 import com.wingedsheep.sdk.targeting.TargetCreature
 
@@ -22,7 +23,7 @@ val PathOfPeace = card("Path of Peace") {
         target = TargetCreature()
         effect = CompositeEffect(
             listOf(
-                DestroyEffect(EffectTarget.ContextTarget(0)),
+                MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Graveyard, byDestruction = true),
                 OwnerGainsLifeEffect(4)
             )
         )

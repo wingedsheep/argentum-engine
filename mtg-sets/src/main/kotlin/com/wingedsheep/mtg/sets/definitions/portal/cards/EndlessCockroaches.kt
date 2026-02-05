@@ -3,8 +3,9 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.OnDeath
-import com.wingedsheep.sdk.scripting.ReturnToHandEffect
+import com.wingedsheep.sdk.scripting.Zone
 
 /**
  * Endless Cockroaches
@@ -21,7 +22,7 @@ val EndlessCockroaches = card("Endless Cockroaches") {
 
     triggeredAbility {
         trigger = OnDeath()
-        effect = ReturnToHandEffect(EffectTarget.Self)
+        effect = MoveToZoneEffect(EffectTarget.Self, Zone.Hand)
     }
 
     metadata {

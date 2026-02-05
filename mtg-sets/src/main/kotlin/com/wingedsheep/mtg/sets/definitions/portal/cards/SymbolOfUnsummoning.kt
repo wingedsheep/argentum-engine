@@ -5,7 +5,8 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CompositeEffect
 import com.wingedsheep.sdk.scripting.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.scripting.ReturnToHandEffect
+import com.wingedsheep.sdk.scripting.MoveToZoneEffect
+import com.wingedsheep.sdk.scripting.Zone
 import com.wingedsheep.sdk.targeting.TargetCreature
 
 /**
@@ -22,7 +23,7 @@ val SymbolOfUnsummoning = card("Symbol of Unsummoning") {
         target = TargetCreature()
         effect = CompositeEffect(
             listOf(
-                ReturnToHandEffect(EffectTarget.ContextTarget(0)),
+                MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Hand),
                 DrawCardsEffect(1)
             )
         )

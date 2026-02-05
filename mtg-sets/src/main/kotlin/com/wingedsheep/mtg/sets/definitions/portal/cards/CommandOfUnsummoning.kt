@@ -4,7 +4,8 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.scripting.ReturnToHandEffect
+import com.wingedsheep.sdk.scripting.MoveToZoneEffect
+import com.wingedsheep.sdk.scripting.Zone
 import com.wingedsheep.sdk.scripting.TargetFilter
 import com.wingedsheep.sdk.scripting.YouWereAttackedThisStep
 import com.wingedsheep.sdk.targeting.TargetCreature
@@ -29,8 +30,8 @@ val CommandOfUnsummoning = card("Command of Unsummoning") {
             minCount = 1,
             filter = TargetFilter.AttackingCreature
         )
-        effect = ReturnToHandEffect(EffectTarget.ContextTarget(0)) then
-                ReturnToHandEffect(EffectTarget.ContextTarget(1))
+        effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Hand) then
+                MoveToZoneEffect(EffectTarget.ContextTarget(1), Zone.Hand)
     }
 
     metadata {

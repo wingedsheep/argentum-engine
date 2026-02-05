@@ -5,7 +5,9 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.scripting.ShuffleIntoLibraryEffect
+import com.wingedsheep.sdk.scripting.MoveToZoneEffect
+import com.wingedsheep.sdk.scripting.Zone
+import com.wingedsheep.sdk.scripting.ZonePlacement
 
 /**
  * Alabaster Dragon
@@ -24,7 +26,7 @@ val AlabasterDragon = card("Alabaster Dragon") {
 
     triggeredAbility {
         trigger = Triggers.Dies
-        effect = ShuffleIntoLibraryEffect(EffectTarget.Self)
+        effect = MoveToZoneEffect(EffectTarget.Self, Zone.Library, ZonePlacement.Shuffled)
     }
 
     metadata {

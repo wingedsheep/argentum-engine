@@ -3,8 +3,9 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DestroyEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.MoveToZoneEffect
+import com.wingedsheep.sdk.scripting.Zone
 import com.wingedsheep.sdk.scripting.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.TargetFilter
 import com.wingedsheep.sdk.targeting.TargetCreature
@@ -28,8 +29,8 @@ val WickedPact = card("Wicked Pact") {
             filter = TargetFilter.Creature.notColor(Color.BLACK)
         ))
 
-        effect = DestroyEffect(creature1) then
-                DestroyEffect(creature2) then
+        effect = MoveToZoneEffect(creature1, Zone.Graveyard, byDestruction = true) then
+                MoveToZoneEffect(creature2, Zone.Graveyard, byDestruction = true) then
                 LoseLifeEffect(5, EffectTarget.Controller)
     }
 

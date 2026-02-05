@@ -3,8 +3,9 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.ReturnFromGraveyardEffect
-import com.wingedsheep.sdk.scripting.SearchDestination
+import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.MoveToZoneEffect
+import com.wingedsheep.sdk.scripting.Zone
 
 /**
  * Breath of Life
@@ -18,9 +19,7 @@ val BreathOfLife = card("Breath of Life") {
 
     spell {
         target = Targets.CreatureCardInYourGraveyard
-        effect = ReturnFromGraveyardEffect(
-            destination = SearchDestination.BATTLEFIELD
-        )
+        effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Battlefield)
     }
 
     metadata {

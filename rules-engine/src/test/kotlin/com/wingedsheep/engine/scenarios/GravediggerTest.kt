@@ -6,7 +6,7 @@ import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.targeting.TargetCardInGraveyard
+import com.wingedsheep.sdk.targeting.TargetObject
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -30,7 +30,7 @@ class GravediggerTest : FunSpec({
         val etbAbility = gravedigger.triggeredAbilities.first()
         etbAbility.optional shouldBe true
         etbAbility.targetRequirement.shouldNotBeNull()
-        etbAbility.targetRequirement.shouldBeInstanceOf<TargetCardInGraveyard>()
+        etbAbility.targetRequirement.shouldBeInstanceOf<TargetObject>()
     }
 
     test("Gravedigger ETB trigger prompts for creature in graveyard") {

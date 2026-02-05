@@ -4,9 +4,10 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DestroyEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.TargetFilter
+import com.wingedsheep.sdk.scripting.Zone
 import com.wingedsheep.sdk.scripting.YouWereAttackedThisStep
 import com.wingedsheep.sdk.targeting.TargetCreature
 
@@ -27,7 +28,7 @@ val AssassinsBlade = card("Assassin's Blade") {
         castOnlyIf(YouWereAttackedThisStep)
 
         target = TargetCreature(filter = TargetFilter.AttackingCreature.notColor(Color.BLACK))
-        effect = DestroyEffect(EffectTarget.ContextTarget(0))
+        effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Graveyard, byDestruction = true)
     }
 
     metadata {

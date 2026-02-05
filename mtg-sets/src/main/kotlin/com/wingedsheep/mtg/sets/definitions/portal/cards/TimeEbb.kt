@@ -3,7 +3,9 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.scripting.PutOnTopOfLibraryEffect
+import com.wingedsheep.sdk.scripting.MoveToZoneEffect
+import com.wingedsheep.sdk.scripting.Zone
+import com.wingedsheep.sdk.scripting.ZonePlacement
 import com.wingedsheep.sdk.targeting.TargetCreature
 
 /**
@@ -18,7 +20,7 @@ val TimeEbb = card("Time Ebb") {
 
     spell {
         target = TargetCreature()
-        effect = PutOnTopOfLibraryEffect(EffectTarget.ContextTarget(0))
+        effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Library, ZonePlacement.Top)
     }
 
     metadata {

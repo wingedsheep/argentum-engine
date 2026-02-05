@@ -7,8 +7,8 @@ import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.scripting.CantBeBlockedByPower
 import com.wingedsheep.sdk.targeting.AnyTarget
-import com.wingedsheep.sdk.targeting.TargetCardInGraveyard
 import com.wingedsheep.sdk.targeting.TargetCreature
+import com.wingedsheep.sdk.targeting.TargetObject
 import com.wingedsheep.sdk.targeting.TargetSpell
 import java.util.UUID
 
@@ -164,7 +164,7 @@ object TestCards {
         script = CardScript.creature(
             TriggeredAbility.create(
                 trigger = OnEnterBattlefield(),
-                effect = DestroyEffect(EffectTarget.ContextTarget(0)),
+                effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Graveyard, byDestruction = true),
                 optional = true,
                 targetRequirement = TargetCreature(filter = TargetFilter.Creature.notColor(Color.BLACK))
             )
@@ -184,11 +184,9 @@ object TestCards {
         script = CardScript.creature(
             TriggeredAbility.create(
                 trigger = OnEnterBattlefield(),
-                effect = ReturnFromGraveyardEffect(
-                    destination = SearchDestination.HAND
-                ),
+                effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Hand),
                 optional = true,
-                targetRequirement = TargetCardInGraveyard(filter = TargetFilter.CreatureInYourGraveyard)
+                targetRequirement = TargetObject(filter = TargetFilter.CreatureInYourGraveyard)
             )
         )
     )
@@ -387,7 +385,7 @@ object TestCards {
         manaCost = ManaCost.parse("{1}{B}"),
         oracleText = "Destroy target nonblack creature.",
         script = CardScript.spell(
-            effect = DestroyEffect(EffectTarget.ContextTarget(0)),
+            effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Graveyard, byDestruction = true),
             TargetCreature(filter = TargetFilter.Creature.notColor(Color.BLACK))
         )
     )
@@ -414,8 +412,8 @@ object TestCards {
         oracleText = "Destroy two target nonblack creatures. You lose 5 life.",
         script = CardScript.spell(
             effect = CompositeEffect(listOf(
-                DestroyEffect(EffectTarget.ContextTarget(0)),
-                DestroyEffect(EffectTarget.ContextTarget(1)),
+                MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Graveyard, byDestruction = true),
+                MoveToZoneEffect(EffectTarget.ContextTarget(1), Zone.Graveyard, byDestruction = true),
                 LoseLifeEffect(5, EffectTarget.Controller)
             )),
             TargetCreature(filter = TargetFilter.Creature.notColor(Color.BLACK)),

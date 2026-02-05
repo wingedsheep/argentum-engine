@@ -84,26 +84,31 @@
 - [x] **8c** Full test suite passes with no deprecation warnings from retired types
 
 ## Phase 9 — Add `MoveToZoneEffect`, `ZonePlacement`, and `TargetObject`
-- [ ] **9a** Add `ZonePlacement` enum to SDK (`ZonePlacement.kt`)
-- [ ] **9b** Add `MoveToZoneEffect` data class to SDK (`RemovalEffects.kt` or new file)
-- [ ] **9c** Add `TargetObject` to `TargetRequirement.kt` (generalizes `TargetCardInGraveyard`)
-- [ ] **9d** Create `MoveToZoneEffectExecutor` in rules-engine
-- [ ] **9e** Register executor in `EffectExecutorRegistry`
-- [ ] **9f** Add `TargetObject` validation in `TargetValidator`
+- [x] **9a** Add `ZonePlacement` enum to SDK (`ZonePlacement.kt`)
+- [x] **9b** Add `MoveToZoneEffect` data class to SDK (`RemovalEffects.kt`)
+- [x] **9c** Add `TargetObject` to `TargetRequirement.kt` (generalizes `TargetCardInGraveyard`)
+- [x] **9d** Create `MoveToZoneEffectExecutor` in rules-engine
+- [x] **9e** Register executor in `RemovalExecutors`
+- [x] **9f** Add `TargetObject` validation in `TargetValidator` and `TargetFinder`
 
 ## Phase 10 — Migrate Cards to `MoveToZoneEffect`
-- [ ] **10a** Migrate `ReturnFromGraveyardEffect` → `MoveToZoneEffect` (~10 cards):
-  - [ ] Gravedigger, RaiseDead, BreathOfLife, ElvenCache, DejaVu
-  - [ ] + any other cards using ReturnFromGraveyardEffect
-- [ ] **10b** Migrate `ReturnToHandEffect` → `MoveToZoneEffect` (~9 cards):
-  - [ ] Man-o'-War, Rescue, Time Ebb (bounce effects), etc.
-- [ ] **10c** Migrate `PutOnTopOfLibraryEffect` → `MoveToZoneEffect` (~4 cards)
-- [ ] **10d** Migrate `ShuffleIntoLibraryEffect` → `MoveToZoneEffect` (~2 cards)
-- [ ] **10e** Migrate `DestroyEffect` → `MoveToZoneEffect` (~32 cards):
-  - [ ] Terror, Dark Banishing, Wrath of God (single-target destroy), etc.
-- [ ] **10f** Migrate `ExileEffect` → `MoveToZoneEffect` (0 cards — just verify)
-- [ ] **10g** Migrate `TargetCardInGraveyard` → `TargetObject` in card target declarations
-- [ ] **10h** Update TestCards.kt and scenario tests
+- [x] **10a** Migrate `ReturnFromGraveyardEffect` → `MoveToZoneEffect` (5 cards):
+  - [x] Gravedigger, RaiseDead, BreathOfLife, ElvenCache, DejaVu
+- [x] **10b** Migrate `ReturnToHandEffect` → `MoveToZoneEffect` (4 cards):
+  - [x] Man-o'-War, EndlessCockroaches, CommandOfUnsummoning, SymbolOfUnsummoning
+- [x] **10c** Migrate `PutOnTopOfLibraryEffect` → `MoveToZoneEffect` (2 cards):
+  - [x] TimeEbb, UndyingBeast
+- [x] **10d** Migrate `ShuffleIntoLibraryEffect` → `MoveToZoneEffect` (1 card):
+  - [x] AlabasterDragon
+- [x] **10e** Migrate `DestroyEffect` → `MoveToZoneEffect` (15 cards):
+  - [x] Swat, Smother, AssassinsBlade, FireSnake, SerpentAssassin, WintersGrasp
+  - [x] WickedPact, HandOfDeath, KingsAssassin, PathOfPeace, Vengeance
+  - [x] RainOfSalt, StoneRain, RainOfTears, LavaFlow
+- [x] **10f** Migrate `ExileEffect` → `MoveToZoneEffect` (0 cards — verified none in mtg-sets)
+- [x] **10g** Migrate `TargetCardInGraveyard` → `TargetObject` in card target declarations
+  - [x] Gravedigger, RaiseDead, BreathOfLife, ElvenCache, DejaVu
+- [x] **10h** Update TestCards.kt, CardDslTest.kt, GravediggerTest.kt — all migrated
+- [x] **10i** Full build passes, all tests green
 
 ## Phase 11 — DSL Convenience + Deprecate/Delete Old Zone Effects
 - [ ] **11a** Add DSL convenience functions (`Effects.Destroy()`, `Effects.Exile()`, `Effects.ReturnToHand()`, etc.)

@@ -3,8 +3,9 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.ReturnFromGraveyardEffect
-import com.wingedsheep.sdk.scripting.SearchDestination
+import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.MoveToZoneEffect
+import com.wingedsheep.sdk.scripting.Zone
 
 /**
  * Elven Cache
@@ -18,9 +19,7 @@ val ElvenCache = card("Elven Cache") {
 
     spell {
         target = Targets.CardInGraveyard
-        effect = ReturnFromGraveyardEffect(
-            destination = SearchDestination.HAND
-        )
+        effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.Hand)
     }
 
     metadata {

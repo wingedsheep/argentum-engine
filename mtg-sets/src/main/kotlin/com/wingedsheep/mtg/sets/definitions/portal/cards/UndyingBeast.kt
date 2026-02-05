@@ -4,7 +4,9 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.scripting.PutOnTopOfLibraryEffect
+import com.wingedsheep.sdk.scripting.MoveToZoneEffect
+import com.wingedsheep.sdk.scripting.Zone
+import com.wingedsheep.sdk.scripting.ZonePlacement
 
 /**
  * Undying Beast
@@ -21,7 +23,7 @@ val UndyingBeast = card("Undying Beast") {
 
     triggeredAbility {
         trigger = Triggers.Dies
-        effect = PutOnTopOfLibraryEffect(EffectTarget.Self)
+        effect = MoveToZoneEffect(EffectTarget.Self, Zone.Library, ZonePlacement.Top)
     }
 
     metadata {
