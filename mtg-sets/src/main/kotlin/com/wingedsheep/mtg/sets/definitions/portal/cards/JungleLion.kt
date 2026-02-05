@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CantBlock
-import com.wingedsheep.sdk.scripting.StaticTarget
 
 /**
  * Jungle Lion
@@ -19,7 +18,7 @@ val JungleLion = card("Jungle Lion") {
     toughness = 1
 
     staticAbility {
-        ability = CantBlock(StaticTarget.SourceCreature)
+        ability = CantBlock()
     }
 
     metadata {

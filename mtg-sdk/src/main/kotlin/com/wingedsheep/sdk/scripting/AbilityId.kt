@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.scripting
 
 import kotlinx.serialization.Serializable
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * Unique identifier for an ability instance.
@@ -9,8 +10,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 value class AbilityId(val value: String) {
     companion object {
-        private var counter = 0L
+        private val counter = AtomicLong(0)
 
-        fun generate(): AbilityId = AbilityId("ability_${++counter}")
+        fun generate(): AbilityId = AbilityId("ability_${counter.incrementAndGet()}")
     }
 }

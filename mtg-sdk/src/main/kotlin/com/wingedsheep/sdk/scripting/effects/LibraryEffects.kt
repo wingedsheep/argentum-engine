@@ -155,8 +155,7 @@ data class SearchLibraryEffect(
     val destination: SearchDestination = SearchDestination.HAND,
     val entersTapped: Boolean = false,
     val shuffleAfter: Boolean = true,
-    val reveal: Boolean = false,
-    val selectedCardIds: List<com.wingedsheep.sdk.model.EntityId>? = null
+    val reveal: Boolean = false
 ) : Effect {
     override val description: String = buildString {
         append("Search your library for ")

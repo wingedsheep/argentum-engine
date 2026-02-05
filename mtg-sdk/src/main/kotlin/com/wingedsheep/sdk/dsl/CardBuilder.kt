@@ -540,7 +540,7 @@ class ModalBuilder(private val chooseCount: Int) {
  */
 @CardDsl
 class ModeBuilder(private val description: String) {
-    var effect: Effect = DrawCardsEffect(0, EffectTarget.Controller)
+    var effect: Effect? = null
     var target: TargetRequirement? = null
     private val targets: MutableList<TargetRequirement> = mutableListOf()
 
@@ -554,12 +554,13 @@ class ModeBuilder(private val description: String) {
     }
 
     internal fun build(): Mode {
+        requireNotNull(effect) { "Mode '$description' must have an effect" }
         val allTargets = if (targets.isNotEmpty()) {
             targets.toList()
         } else {
             listOfNotNull(target)
         }
-        return Mode(effect, allTargets, description)
+        return Mode(effect!!, allTargets, description)
     }
 }
 
@@ -570,16 +571,19 @@ class ModeBuilder(private val description: String) {
 @CardDsl
 class TriggeredAbilityBuilder {
     var trigger: Trigger = OnEnterBattlefield()
-    var effect: Effect = DrawCardsEffect(0, EffectTarget.Controller)
+    var effect: Effect? = null
     var target: TargetRequirement? = null
     var optional: Boolean = false
 
-    fun build(): TriggeredAbility = TriggeredAbility.create(
-        trigger = trigger,
-        effect = effect,
-        optional = optional,
-        targetRequirement = target
-    )
+    fun build(): TriggeredAbility {
+        requireNotNull(effect) { "Triggered ability must have an effect" }
+        return TriggeredAbility.create(
+            trigger = trigger,
+            effect = effect!!,
+            optional = optional,
+            targetRequirement = target
+        )
+    }
 }
 
 // =============================================================================
@@ -589,21 +593,24 @@ class TriggeredAbilityBuilder {
 @CardDsl
 class ActivatedAbilityBuilder {
     var cost: AbilityCost = AbilityCost.Tap
-    var effect: Effect = DrawCardsEffect(0, EffectTarget.Controller)
+    var effect: Effect? = null
     var target: TargetRequirement? = null
     var manaAbility: Boolean = false
     var timing: TimingRule = TimingRule.InstantSpeed
     var restrictions: List<ActivationRestriction> = emptyList()
 
-    fun build(): ActivatedAbility = ActivatedAbility(
-        id = AbilityId.generate(),
-        cost = cost,
-        effect = effect,
-        targetRequirement = target,
-        isManaAbility = manaAbility,
-        timing = timing,
-        restrictions = restrictions
-    )
+    fun build(): ActivatedAbility {
+        requireNotNull(effect) { "Activated ability must have an effect" }
+        return ActivatedAbility(
+            id = AbilityId.generate(),
+            cost = cost,
+            effect = effect!!,
+            targetRequirement = target,
+            isManaAbility = manaAbility,
+            timing = timing,
+            restrictions = restrictions
+        )
+    }
 }
 
 // =============================================================================
@@ -682,17 +689,20 @@ class StaticAbilityBuilder {
 
 @CardDsl
 class LoyaltyAbilityBuilder(private val loyaltyChange: Int) {
-    var effect: Effect = DrawCardsEffect(0, EffectTarget.Controller)
+    var effect: Effect? = null
     var target: TargetRequirement? = null
 
-    fun build(): ActivatedAbility = ActivatedAbility(
-        id = AbilityId.generate(),
-        cost = AbilityCost.Loyalty(loyaltyChange),
-        effect = effect,
-        targetRequirement = target,
-        isPlaneswalkerAbility = true,
-        timing = TimingRule.SorcerySpeed
-    )
+    fun build(): ActivatedAbility {
+        requireNotNull(effect) { "Loyalty ability must have an effect" }
+        return ActivatedAbility(
+            id = AbilityId.generate(),
+            cost = AbilityCost.Loyalty(loyaltyChange),
+            effect = effect!!,
+            targetRequirement = target,
+            isPlaneswalkerAbility = true,
+            timing = TimingRule.SorcerySpeed
+        )
+    }
 }
 
 // =============================================================================

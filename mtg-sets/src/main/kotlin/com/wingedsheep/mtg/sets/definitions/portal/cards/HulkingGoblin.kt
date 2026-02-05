@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CantBlock
-import com.wingedsheep.sdk.scripting.StaticTarget
 
 /**
  * Hulking Goblin
@@ -19,7 +18,7 @@ val HulkingGoblin = card("Hulking Goblin") {
     toughness = 2
 
     staticAbility {
-        ability = CantBlock(StaticTarget.SourceCreature)
+        ability = CantBlock()
     }
 
     metadata {
