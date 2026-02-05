@@ -24,7 +24,7 @@ data class MustBeBlockedEffect(
  */
 @Serializable
 data class TauntEffect(
-    val target: EffectTarget = EffectTarget.AnyPlayer
+    val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetPlayer)
 ) : Effect {
     override val description: String =
         "During ${target.description}'s next turn, creatures they control attack you if able"

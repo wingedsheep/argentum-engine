@@ -35,12 +35,11 @@ data class DrawCardsEffect(
 @Serializable
 data class DiscardCardsEffect(
     val count: Int,
-    val target: EffectTarget = EffectTarget.Opponent
+    val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent)
 ) : Effect {
     override val description: String = when (target) {
         EffectTarget.Controller -> "Discard ${if (count == 1) "a card" else "$count cards"}"
-        EffectTarget.Opponent -> "Target opponent discards ${if (count == 1) "a card" else "$count cards"}"
-        else -> "Target player discards ${if (count == 1) "a card" else "$count cards"}"
+        else -> "${target.description.replaceFirstChar { it.uppercase() }} discards ${if (count == 1) "a card" else "$count cards"}"
     }
 }
 
@@ -52,12 +51,11 @@ data class DiscardCardsEffect(
 @Serializable
 data class DiscardRandomEffect(
     val count: Int = 1,
-    val target: EffectTarget = EffectTarget.Opponent
+    val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent)
 ) : Effect {
     override val description: String = when (target) {
         EffectTarget.Controller -> "Discard ${if (count == 1) "a card" else "$count cards"} at random"
-        EffectTarget.Opponent -> "Target opponent discards ${if (count == 1) "a card" else "$count cards"} at random"
-        else -> "Target player discards ${if (count == 1) "a card" else "$count cards"} at random"
+        else -> "${target.description.replaceFirstChar { it.uppercase() }} discards ${if (count == 1) "a card" else "$count cards"} at random"
     }
 }
 
@@ -79,12 +77,11 @@ data class EachOpponentDiscardsEffect(
  */
 @Serializable
 data class WheelEffect(
-    val target: EffectTarget = EffectTarget.EachPlayer
+    val target: EffectTarget = EffectTarget.PlayerRef(Player.Each)
 ) : Effect {
     override val description: String = when (target) {
         EffectTarget.Controller -> "Shuffle your hand into your library, then draw that many cards"
-        EffectTarget.EachPlayer -> "Each player shuffles their hand into their library, then draws that many cards"
-        else -> "Shuffle hand into library, then draw that many cards"
+        else -> "${target.description.replaceFirstChar { it.uppercase() }} shuffles their hand into their library, then draws that many cards"
     }
 }
 

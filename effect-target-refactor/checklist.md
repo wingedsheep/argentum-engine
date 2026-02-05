@@ -42,22 +42,22 @@
 - [x] **3d** FalsePeace — `AnyPlayer` → `ContextTarget(0)`
 
 ## Phase 4 — Migrate Player/Group `EffectTarget` Variants in Effect Defaults
-- [ ] **4a** Map old defaults to new composable variants (see phase4.md table)
-- [ ] **4b** Update `DealDamageToPlayersEffect` — `EachPlayer` → `PlayerRef(Player.Each)`
-- [ ] **4c** Update `LoseLifeEffect` — `Opponent` → `PlayerRef(Player.TargetOpponent)`
-- [ ] **4d** Apply same pattern to remaining effects:
-  - [ ] `GainLifeEffect` (if applicable)
-  - [ ] `LoseHalfLifeEffect`
-  - [ ] `DiscardCardsEffect`
-  - [ ] `DiscardRandomEffect`
-  - [ ] `WheelEffect`
-  - [ ] `MillEffect`
-  - [ ] `ShuffleLibraryEffect`
-  - [ ] `SkipCombatPhasesEffect`
-  - [ ] `SkipUntapEffect`
-  - [ ] `TauntEffect`
-- [ ] **4e** Update WindsOfChange — `EachPlayer` → `PlayerRef(Player.Each)`
-- [ ] **4f** Verify cards relying on updated defaults need no changes (DrySpell, FireTempest, Earthquake, Hurricane)
+- [x] **4a** Map old defaults to new composable variants (see phase4.md table)
+- [x] **4b** Update `DealDamageToPlayersEffect` — `EachPlayer` → `PlayerRef(Player.Each)`
+- [x] **4c** Update `LoseLifeEffect` — `Opponent` → `PlayerRef(Player.TargetOpponent)`
+- [x] **4d** Apply same pattern to remaining effects:
+  - [x] `GainLifeEffect` (if applicable)
+  - [x] `LoseHalfLifeEffect`
+  - [x] `DiscardCardsEffect`
+  - [x] `DiscardRandomEffect`
+  - [x] `WheelEffect`
+  - [x] `MillEffect`
+  - [x] `ShuffleLibraryEffect`
+  - [x] `SkipCombatPhasesEffect`
+  - [x] `SkipUntapEffect`
+  - [x] `TauntEffect`
+- [x] **4e** Update WindsOfChange — `EachPlayer` → `PlayerRef(Player.Each)`
+- [x] **4f** Verify cards relying on updated defaults need no changes (DrySpell, FireTempest, Earthquake, Hurricane)
 
 ## Phase 5 — Update DSL Facades
 - [ ] **5a** Update `Effects.kt` facade defaults to use new composable variants

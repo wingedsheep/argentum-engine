@@ -6,9 +6,9 @@ import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.dealDamageToTarget
+import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolvePlayerTargets
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.sdk.scripting.DealDamageToPlayersEffect
-import com.wingedsheep.sdk.scripting.EffectTarget
 import kotlin.reflect.KClass
 
 /**
@@ -40,14 +40,7 @@ class DealDamageToPlayersExecutor(
         var newState = state
         val events = mutableListOf<EngineGameEvent>()
 
-        val playersToDamage = when (effect.target) {
-            EffectTarget.EachPlayer -> state.turnOrder
-            EffectTarget.Controller -> listOf(context.controllerId)
-            EffectTarget.Opponent, EffectTarget.EachOpponent -> {
-                state.turnOrder.filter { it != context.controllerId }
-            }
-            else -> state.turnOrder // Default to each player
-        }
+        val playersToDamage = resolvePlayerTargets(effect.target, state, context)
 
         for (playerId in playersToDamage) {
             val result = dealDamageToTarget(newState, playerId, damageAmount, context.sourceId)

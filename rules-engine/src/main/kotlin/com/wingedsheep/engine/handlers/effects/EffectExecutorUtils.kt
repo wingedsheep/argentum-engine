@@ -22,6 +22,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.Player
 
 /**
  * Utility functions shared across effect executors.
@@ -54,7 +55,36 @@ object EffectExecutorUtils {
             is EffectTarget.Opponent -> context.opponentId
             is EffectTarget.AnyPlayer -> context.targets.firstOrNull()?.toEntityId()
             is EffectTarget.ContextTarget -> context.targets.getOrNull(effectTarget.index)?.toEntityId()
+            is EffectTarget.PlayerRef -> when (effectTarget.player) {
+                Player.You -> context.controllerId
+                Player.Opponent, Player.TargetOpponent -> context.opponentId
+                Player.TargetPlayer, Player.Any -> context.targets.firstOrNull()?.toEntityId()
+                else -> null
+            }
             else -> null
+        }
+    }
+
+    /**
+     * Resolve a player target to a list of player IDs (for multi-player effects like "each player").
+     */
+    fun resolvePlayerTargets(effectTarget: EffectTarget, state: GameState, context: EffectContext): List<EntityId> {
+        return when (effectTarget) {
+            is EffectTarget.EachPlayer -> state.turnOrder
+            is EffectTarget.EachOpponent -> state.turnOrder.filter { it != context.controllerId }
+            is EffectTarget.Controller -> listOf(context.controllerId)
+            is EffectTarget.Opponent -> state.turnOrder.filter { it != context.controllerId }
+            is EffectTarget.PlayerRef -> when (effectTarget.player) {
+                Player.Each -> state.turnOrder
+                Player.EachOpponent -> state.turnOrder.filter { it != context.controllerId }
+                Player.You -> listOf(context.controllerId)
+                Player.Opponent, Player.TargetOpponent -> state.turnOrder.filter { it != context.controllerId }
+                Player.TargetPlayer, Player.Any -> {
+                    context.targets.firstOrNull()?.toEntityId()?.let { listOf(it) } ?: emptyList()
+                }
+                else -> emptyList()
+            }
+            else -> resolvePlayerTarget(effectTarget, context)?.let { listOf(it) } ?: emptyList()
         }
     }
 

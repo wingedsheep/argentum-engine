@@ -12,9 +12,9 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class SkipCombatPhasesEffect(
-    val target: EffectTarget = EffectTarget.AnyPlayer
+    val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetPlayer)
 ) : Effect {
-    override val description: String = "${target.description} skips all combat phases of their next turn"
+    override val description: String = "${target.description.replaceFirstChar { it.uppercase() }} skips all combat phases of their next turn"
 }
 
 /**
@@ -23,7 +23,7 @@ data class SkipCombatPhasesEffect(
  */
 @Serializable
 data class SkipUntapEffect(
-    val target: EffectTarget = EffectTarget.Opponent,
+    val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent),
     val affectsCreatures: Boolean = true,
     val affectsLands: Boolean = true
 ) : Effect {

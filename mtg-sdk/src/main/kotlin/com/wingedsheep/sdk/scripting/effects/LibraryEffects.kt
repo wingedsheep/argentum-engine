@@ -82,11 +82,8 @@ data class MillEffect(
     val target: EffectTarget = EffectTarget.Controller
 ) : Effect {
     override val description: String = when (target) {
-        is EffectTarget.Controller -> "Mill $count"
-        is EffectTarget.AnyPlayer -> "Target player mills $count"
-        is EffectTarget.EachOpponent -> "Each opponent mills $count"
-        is EffectTarget.Opponent -> "Target opponent mills $count"
-        else -> "${target.description} mills $count"
+        EffectTarget.Controller -> "Mill $count"
+        else -> "${target.description.replaceFirstChar { it.uppercase() }} mills $count"
     }
 }
 
@@ -139,8 +136,7 @@ data class ShuffleLibraryEffect(
 ) : Effect {
     override val description: String = when (target) {
         EffectTarget.Controller -> "Shuffle your library"
-        EffectTarget.Opponent -> "Target opponent shuffles their library"
-        else -> "Target player shuffles their library"
+        else -> "${target.description.replaceFirstChar { it.uppercase() }} shuffles their library"
     }
 }
 

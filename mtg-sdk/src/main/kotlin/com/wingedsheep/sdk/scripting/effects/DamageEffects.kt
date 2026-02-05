@@ -85,15 +85,12 @@ data class DealDamageToGroupEffect(
 @Serializable
 data class DealDamageToPlayersEffect(
     val amount: DynamicAmount,
-    val target: EffectTarget = EffectTarget.EachPlayer
+    val target: EffectTarget = EffectTarget.PlayerRef(Player.Each)
 ) : Effect {
-    constructor(amount: Int, target: EffectTarget = EffectTarget.EachPlayer) : this(DynamicAmount.Fixed(amount), target)
+    constructor(amount: Int, target: EffectTarget = EffectTarget.PlayerRef(Player.Each)) : this(DynamicAmount.Fixed(amount), target)
 
     override val description: String = when (target) {
-        EffectTarget.EachPlayer -> "Deal ${amount.description} damage to each player"
         EffectTarget.Controller -> "Deal ${amount.description} damage to you"
-        EffectTarget.Opponent -> "Deal ${amount.description} damage to target opponent"
-        EffectTarget.EachOpponent -> "Deal ${amount.description} damage to each opponent"
         else -> "Deal ${amount.description} damage to ${target.description}"
     }
 }

@@ -8,6 +8,7 @@ import com.wingedsheep.engine.core.LibraryShuffledEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolvePlayerTargets
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -15,7 +16,6 @@ import com.wingedsheep.engine.state.components.player.LossReason
 import com.wingedsheep.engine.state.components.player.PlayerLostComponent
 import com.wingedsheep.sdk.core.ZoneType
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.WheelEffect
 import kotlin.reflect.KClass
 
@@ -39,18 +39,7 @@ class WheelEffectExecutor : EffectExecutor<WheelEffect> {
         var newState = state
 
         // Determine which players are affected
-        val affectedPlayers = when (effect.target) {
-            is EffectTarget.Controller -> listOf(context.controllerId)
-            is EffectTarget.EachPlayer -> {
-                val players = mutableListOf(context.controllerId)
-                context.opponentId?.let { players.add(it) }
-                players
-            }
-            is EffectTarget.EachOpponent -> {
-                context.opponentId?.let { listOf(it) } ?: emptyList()
-            }
-            else -> listOf(context.controllerId)
-        }
+        val affectedPlayers = resolvePlayerTargets(effect.target, state, context)
 
         // For each affected player: count hand, shuffle hand into library, draw that many
         for (playerId in affectedPlayers) {

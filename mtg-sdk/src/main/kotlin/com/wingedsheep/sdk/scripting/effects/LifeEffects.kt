@@ -20,9 +20,7 @@ data class GainLifeEffect(
 
     override val description: String = when (target) {
         EffectTarget.Controller -> "You gain ${amount.description} life"
-        EffectTarget.Opponent -> "Target opponent gains ${amount.description} life"
-        EffectTarget.AnyPlayer -> "Target player gains ${amount.description} life"
-        else -> "Gain ${amount.description} life"
+        else -> "${target.description.replaceFirstChar { it.uppercase() }} gains ${amount.description} life"
     }
 }
 
@@ -33,13 +31,11 @@ data class GainLifeEffect(
 @Serializable
 data class LoseLifeEffect(
     val amount: Int,
-    val target: EffectTarget = EffectTarget.Opponent
+    val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent)
 ) : Effect {
     override val description: String = when (target) {
         EffectTarget.Controller -> "You lose $amount life"
-        EffectTarget.Opponent -> "Target opponent loses $amount life"
-        EffectTarget.AnyPlayer -> "Target player loses $amount life"
-        else -> "Lose $amount life"
+        else -> "${target.description.replaceFirstChar { it.uppercase() }} loses $amount life"
     }
 }
 
