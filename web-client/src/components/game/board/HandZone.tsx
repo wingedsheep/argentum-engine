@@ -28,10 +28,13 @@ export function CardRow({
   const responsive = useResponsiveContext()
 
   // For hidden zones (like opponent's hand), use zone size to show face-down placeholders
+  // If some cards are revealed, show them face-up plus placeholders for unrevealed cards
   const zoneSize = zone?.size ?? 0
+  const unrevealedCount = faceDown ? Math.max(0, zoneSize - cards.length) : 0
   const showPlaceholders = faceDown && cards.length === 0 && zoneSize > 0
 
-  if (cards.length === 0 && !showPlaceholders) {
+  // Show empty message only if no cards at all (no revealed, no placeholders needed)
+  if (cards.length === 0 && !showPlaceholders && unrevealedCount === 0) {
     return <div style={{ ...styles.emptyZone, fontSize: responsive.fontSize.small }}>No cards</div>
   }
 
@@ -39,8 +42,9 @@ export function CardRow({
   const sideZoneWidth = responsive.pileWidth + 20 // pile + margin
   const availableWidth = responsive.viewportWidth - (responsive.containerPadding * 2) - (sideZoneWidth * 2)
 
-  // Calculate card width that fits all cards
-  const cardCount = showPlaceholders ? zoneSize : cards.length
+  // Calculate card width that fits all cards (revealed + unrevealed)
+  const totalCardCount = faceDown ? zoneSize : cards.length
+  const cardCount = showPlaceholders ? zoneSize : totalCardCount
   const baseWidth = small ? responsive.smallCardWidth : responsive.cardWidth
   const minWidth = small ? 30 : 45
   const fittingWidth = calculateFittingCardWidth(
@@ -60,15 +64,20 @@ export function CardRow({
   const isSpectatorBottomHand = faceDown && !inverted && !interactive
   const cardHeight = Math.round(fittingWidth * 1.4)
 
-  if ((isPlayerHand || isOpponentHand || isSpectatorBottomHand) && (cards.length > 0 || showPlaceholders)) {
+  // For opponent's hand: show revealed cards face-up, plus placeholders for unrevealed cards
+  const hasRevealedCards = faceDown && cards.length > 0
+  const shouldShowFan = isPlayerHand || isOpponentHand || isSpectatorBottomHand
+
+  if (shouldShowFan && (cards.length > 0 || showPlaceholders || unrevealedCount > 0)) {
     return (
       <HandFan
         cards={cards}
-        placeholderCount={showPlaceholders ? zoneSize : 0}
+        placeholderCount={showPlaceholders ? zoneSize : unrevealedCount}
         fittingWidth={fittingWidth}
         cardHeight={cardHeight}
         cardGap={responsive.cardGap}
-        faceDown={faceDown}
+        faceDown={faceDown && !hasRevealedCards}
+        revealedCards={hasRevealedCards}
         interactive={interactive}
         small={small}
         inverted={inverted}
@@ -133,6 +142,7 @@ export function HandFan({
   fittingWidth,
   cardHeight,
   faceDown,
+  revealedCards = false,
   interactive,
   small,
   inverted = false,
@@ -143,13 +153,17 @@ export function HandFan({
   cardHeight: number
   cardGap: number
   faceDown: boolean
+  revealedCards?: boolean
   interactive: boolean
   small: boolean
   inverted?: boolean
 }) {
   const [, setHoveredIndex] = useState<number | null>(null)
 
-  const cardCount = placeholderCount > 0 ? placeholderCount : cards.length
+  // When we have revealed cards in opponent's hand, show both revealed cards AND placeholders
+  const cardCount = revealedCards
+    ? cards.length + placeholderCount
+    : (placeholderCount > 0 ? placeholderCount : cards.length)
 
   // Scale fan parameters based on card count
   // Fewer cards = more spread, more cards = tighter fan
@@ -169,10 +183,18 @@ export function HandFan({
   // For inverted fan, flip the arc and rotation direction
   const rotationMultiplier = inverted ? -1 : 1
 
-  // Create array of items to render (either cards or placeholder indices)
-  const items = placeholderCount > 0
-    ? Array.from({ length: placeholderCount }, (_, i) => ({ type: 'placeholder' as const, index: i }))
-    : cards.map((card, index) => ({ type: 'card' as const, card, index }))
+  // Create array of items to render
+  // - If revealedCards: show revealed cards face-up + placeholders for unrevealed
+  // - If placeholderCount > 0 and no revealed cards: all placeholders
+  // - Otherwise: show cards normally
+  const items = revealedCards
+    ? [
+        ...cards.map((card, index) => ({ type: 'card' as const, card, index, showFaceUp: true })),
+        ...Array.from({ length: placeholderCount }, (_, i) => ({ type: 'placeholder' as const, index: cards.length + i })),
+      ]
+    : placeholderCount > 0
+      ? Array.from({ length: placeholderCount }, (_, i) => ({ type: 'placeholder' as const, index: i }))
+      : cards.map((card, index) => ({ type: 'card' as const, card, index, showFaceUp: false }))
 
   return (
     <div
@@ -226,7 +248,7 @@ export function HandFan({
               <GameCard
                 card={item.card}
                 count={1}
-                faceDown={faceDown}
+                faceDown={faceDown && !item.showFaceUp}
                 interactive={interactive}
                 small={small}
                 overrideWidth={fittingWidth}
