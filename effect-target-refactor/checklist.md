@@ -65,15 +65,15 @@
 - [x] **5c** Update `LoseLife`, `Discard`, `Sacrifice` defaults to `PlayerRef`
 
 ## Phase 6 — Bridge `PlayerFilter` → `Player`
-- [ ] **6a** Add `@Deprecated` with `ReplaceWith` to `PlayerFilter` and all variants
-- [ ] **6b** Change `GameEvent` types to use `Player` instead of `PlayerFilter`:
-  - [ ] `DrawEvent`
-  - [ ] `LifeGainEvent`
-  - [ ] `LifeLossEvent`
-  - [ ] `DiscardEvent`
-  - [ ] `SearchLibraryEvent`
-- [ ] **6c** Verify `ReplacementEffect` usages — defaults should just work
-- [ ] **6d** Update engine: replacement effect matcher evaluates `Player`
+- [x] **6a** Add `@Deprecated` with `ReplaceWith` to `PlayerFilter` and all variants
+- [x] **6b** Change `GameEvent` types to use `Player` instead of `PlayerFilter`:
+  - [x] `DrawEvent`
+  - [x] `LifeGainEvent`
+  - [x] `LifeLossEvent`
+  - [x] `DiscardEvent`
+  - [x] `SearchLibraryEvent`
+- [x] **6c** Verify `ReplacementEffect` usages — defaults should just work
+- [x] **6d** Update engine: replacement effect matcher evaluates `Player` (no engine code referenced PlayerFilter — already clean)
 
 ## Phase 7 — Deprecate Old `EffectTarget` Variants
 - [ ] **7a** Add `@Deprecated` to player/group variants:

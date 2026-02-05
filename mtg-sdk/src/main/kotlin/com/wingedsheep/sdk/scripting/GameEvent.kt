@@ -162,12 +162,12 @@ sealed interface GameEvent {
      * When a player would draw a card.
      *
      * Examples:
-     * - "you would draw a card" → DrawEvent(player = PlayerFilter.You)
-     * - "an opponent would draw" → DrawEvent(player = PlayerFilter.Opponent)
+     * - "you would draw a card" → DrawEvent(player = Player.You)
+     * - "an opponent would draw" → DrawEvent(player = Player.Opponent)
      */
     @Serializable
     data class DrawEvent(
-        val player: PlayerFilter = PlayerFilter.You
+        val player: Player = Player.You
     ) : GameEvent {
         override val description: String = "${player.description} would draw a card"
     }
@@ -181,7 +181,7 @@ sealed interface GameEvent {
      */
     @Serializable
     data class LifeGainEvent(
-        val player: PlayerFilter = PlayerFilter.You
+        val player: Player = Player.You
     ) : GameEvent {
         override val description: String = "${player.description} would gain life"
     }
@@ -191,7 +191,7 @@ sealed interface GameEvent {
      */
     @Serializable
     data class LifeLossEvent(
-        val player: PlayerFilter = PlayerFilter.You
+        val player: Player = Player.You
     ) : GameEvent {
         override val description: String = "${player.description} would lose life"
     }
@@ -205,7 +205,7 @@ sealed interface GameEvent {
      */
     @Serializable
     data class DiscardEvent(
-        val player: PlayerFilter = PlayerFilter.You,
+        val player: Player = Player.You,
         val cardFilter: GameObjectFilter? = null
     ) : GameEvent {
         override val description: String = buildString {
@@ -228,7 +228,7 @@ sealed interface GameEvent {
      */
     @Serializable
     data class SearchLibraryEvent(
-        val player: PlayerFilter = PlayerFilter.You
+        val player: Player = Player.You
     ) : GameEvent {
         override val description: String = "${player.description} would search a library"
     }

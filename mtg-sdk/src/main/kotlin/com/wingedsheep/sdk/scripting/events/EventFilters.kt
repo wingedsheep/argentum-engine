@@ -267,25 +267,30 @@ sealed interface ControllerFilter {
 /**
  * Player filters for game events.
  */
+@Deprecated("Use Player instead", level = DeprecationLevel.WARNING)
 @Serializable
 sealed interface PlayerFilter {
     val description: String
 
+    @Deprecated("Use Player.You", ReplaceWith("Player.You"))
     @Serializable
     data object You : PlayerFilter {
         override val description = "you"
     }
 
+    @Deprecated("Use Player.Opponent", ReplaceWith("Player.Opponent"))
     @Serializable
     data object Opponent : PlayerFilter {
         override val description = "an opponent"
     }
 
+    @Deprecated("Use Player.Any", ReplaceWith("Player.Any"))
     @Serializable
     data object Any : PlayerFilter {
         override val description = "a player"
     }
 
+    @Deprecated("Use Player.Each", ReplaceWith("Player.Each"))
     @Serializable
     data object Each : PlayerFilter {
         override val description = "each player"
