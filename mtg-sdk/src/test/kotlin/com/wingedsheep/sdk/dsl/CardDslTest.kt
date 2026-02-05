@@ -511,6 +511,10 @@ class CardDslTest : DescribeSpec({
             }
 
             gift.spellEffect shouldNotBe null
+            gift.spellEffect.shouldBeInstanceOf<ConditionalEffect>()
+            val conditional = gift.spellEffect as ConditionalEffect
+            conditional.condition shouldBe Conditions.OpponentControlsMoreLands
+            conditional.effect.shouldBeInstanceOf<SearchLibraryEffect>()
         }
     }
 

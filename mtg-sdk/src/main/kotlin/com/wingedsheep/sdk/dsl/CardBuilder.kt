@@ -344,9 +344,15 @@ class CardBuilder(private val name: String) {
             else -> null
         }
 
-        // Build the script
+        // Build the script — wrap spell effect in ConditionalEffect if condition is set
+        val rawSpellEffect = spellBuilder?.effect
+        val spellEffect = if (spellBuilder?.condition != null && rawSpellEffect != null) {
+            ConditionalEffect(spellBuilder!!.condition!!, rawSpellEffect)
+        } else {
+            rawSpellEffect
+        }
         val script = CardScript(
-            spellEffect = spellBuilder?.effect,
+            spellEffect = spellEffect,
             targetRequirements = spellBuilder?.targetRequirements ?: emptyList(),
             triggeredAbilities = triggeredAbilities.toList(),
             activatedAbilities = activatedAbilities.toList(),
