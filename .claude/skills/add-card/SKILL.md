@@ -26,6 +26,7 @@ Parse the arguments: the card name is the main argument, and `--set <set-code>` 
    - **ALWAYS use the exact `image_uris.normal` URL from the Scryfall API response**
    - **NEVER generate, guess, or hallucinate an image URI** - they have specific hash-based paths
    - Format: `https://cards.scryfall.io/normal/front/X/X/XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX.jpg?XXXXXXXXXX`
+   - Validate that the URL really exists with a head request, if it doesn't exist find it on scryfall (always get the one with the correct series)
    - **Include the query parameter** (e.g., `?1562911270`) - it's part of the URL
 
 3. **Check for Oracle Errata**:
