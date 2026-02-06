@@ -846,23 +846,23 @@ class CombatManager(
             val hasFirstStrike = projected.hasKeyword(attackerId, Keyword.FIRST_STRIKE)
             val hasDoubleStrike = projected.hasKeyword(attackerId, Keyword.DOUBLE_STRIKE)
 
-            val dealsDamageThisStep = if (firstStrike) {
+            val attackerDealsDamageThisStep = if (firstStrike) {
                 hasFirstStrike || hasDoubleStrike
             } else {
                 !hasFirstStrike || hasDoubleStrike
             }
 
-            if (!dealsDamageThisStep) continue
-
-            // Get attacker's power (projected value includes buffs like +4/+4)
-            val power = projected.getPower(attackerId) ?: 0
-            if (power <= 0) continue
-
             // Check if blocked
             val blockedBy = attackerContainer.get<BlockedComponent>()
 
             if (blockedBy == null || blockedBy.blockerIds.isEmpty()) {
-                // Unblocked - deal damage to defending player/planeswalker
+                // Unblocked - only deal damage if attacker deals damage this step
+                if (!attackerDealsDamageThisStep) continue
+
+                // Get attacker's power (projected value includes buffs like +4/+4)
+                val power = projected.getPower(attackerId) ?: 0
+                if (power <= 0) continue
+
                 val defenderId = attackingComponent.defenderId
 
                 // Check if the defending player is protected from combat damage by attacking creatures
@@ -874,9 +874,9 @@ class CombatManager(
                 }
                 // If protected, damage is prevented - no events emitted
             } else {
-                // Blocked - deal damage to blockers and receive damage from them
+                // Blocked - always process so blockers can deal damage independently
                 val (attackerDamageState, attackerEvents) = dealCombatDamageBetweenCreatures(
-                    newState, attackerId, blockedBy.blockerIds, firstStrike
+                    newState, attackerId, blockedBy.blockerIds, firstStrike, attackerDealsDamageThisStep
                 )
                 newState = attackerDamageState
                 events.addAll(attackerEvents)
@@ -965,7 +965,8 @@ class CombatManager(
         state: GameState,
         attackerId: EntityId,
         blockerIds: List<EntityId>,
-        firstStrike: Boolean
+        firstStrike: Boolean,
+        attackerDealsDamageThisStep: Boolean
     ): Pair<GameState, List<GameEvent>> {
         var newState = state
         val events = mutableListOf<GameEvent>()
@@ -995,30 +996,32 @@ class CombatManager(
         }
 
         // Apply attacker's damage to blockers (and potentially defending player with trample)
-        for ((targetId, damage) in damageDistribution) {
-            if (damage <= 0) continue
+        if (attackerDealsDamageThisStep) {
+            for ((targetId, damage) in damageDistribution) {
+                if (damage <= 0) continue
 
-            // Check if target is a player or creature
-            val targetContainer = newState.getEntity(targetId)
-            val isPlayer = targetContainer?.get<LifeTotalComponent>() != null &&
-                           targetContainer.get<CardComponent>() == null
+                // Check if target is a player or creature
+                val targetContainer = newState.getEntity(targetId)
+                val isPlayer = targetContainer?.get<LifeTotalComponent>() != null &&
+                               targetContainer.get<CardComponent>() == null
 
-            if (isPlayer) {
-                // Deal damage to defending player (trample)
-                val currentLife = targetContainer?.get<LifeTotalComponent>()?.life ?: 0
-                val newLife = currentLife - damage
-                newState = newState.updateEntity(targetId) { container ->
-                    container.with(LifeTotalComponent(newLife))
+                if (isPlayer) {
+                    // Deal damage to defending player (trample)
+                    val currentLife = targetContainer?.get<LifeTotalComponent>()?.life ?: 0
+                    val newLife = currentLife - damage
+                    newState = newState.updateEntity(targetId) { container ->
+                        container.with(LifeTotalComponent(newLife))
+                    }
+                    events.add(DamageDealtEvent(attackerId, targetId, damage, true))
+                    events.add(LifeChangedEvent(targetId, currentLife, newLife, LifeChangeReason.DAMAGE))
+                } else {
+                    // Deal damage to blocker
+                    val currentDamage = targetContainer?.get<DamageComponent>()?.amount ?: 0
+                    newState = newState.updateEntity(targetId) { container ->
+                        container.with(DamageComponent(currentDamage + damage))
+                    }
+                    events.add(DamageDealtEvent(attackerId, targetId, damage, true))
                 }
-                events.add(DamageDealtEvent(attackerId, targetId, damage, true))
-                events.add(LifeChangedEvent(targetId, currentLife, newLife, LifeChangeReason.DAMAGE))
-            } else {
-                // Deal damage to blocker
-                val currentDamage = targetContainer?.get<DamageComponent>()?.amount ?: 0
-                newState = newState.updateEntity(targetId) { container ->
-                    container.with(DamageComponent(currentDamage + damage))
-                }
-                events.add(DamageDealtEvent(attackerId, targetId, damage, true))
             }
         }
 
@@ -1026,6 +1029,9 @@ class CombatManager(
         for (blockerId in orderedBlockers) {
             val blockerContainer = newState.getEntity(blockerId) ?: continue
             blockerContainer.get<CardComponent>() ?: continue
+
+            // Skip blockers no longer on the battlefield (killed by first strike damage)
+            if (blockerId !in newState.getBattlefield()) continue
 
             // Check if blocker deals damage in this step (using projected keywords)
             val hasFirstStrike = projected.hasKeyword(blockerId, Keyword.FIRST_STRIKE)

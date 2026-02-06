@@ -281,6 +281,19 @@ object TestCards {
     )
 
     /**
+     * 3/1 First Strike for {2}{W}
+     */
+    val FirstStrikeKnight = CardDefinition.creature(
+        name = "First Strike Knight",
+        manaCost = ManaCost.parse("{2}{W}"),
+        subtypes = setOf(Subtype("Human"), Subtype("Knight")),
+        power = 3,
+        toughness = 1,
+        oracleText = "First strike",
+        keywords = setOf(Keyword.FIRST_STRIKE)
+    )
+
+    /**
      * 2/2 Fear for {1}{B}{B}
      * Test card for fear evasion.
      */
@@ -704,6 +717,7 @@ object TestCards {
         FleetFootedMonk,
         PhantomWarrior,
         BladeOfTheNinthWatch,
+        FirstStrikeKnight,
         FearCreature,
         ArtifactCreature,
         BlackCreature,

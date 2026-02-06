@@ -186,7 +186,7 @@
 - [ ] Krosan Groundshaker
 - [ ] Krosan Tusker
 - [ ] Lavamancer's Skill
-- [ ] Lay Waste
+- [x] Lay Waste
 - [ ] Leery Fogbeast
 - [ ] Lightning Rift
 - [ ] Lonely Sandbar
