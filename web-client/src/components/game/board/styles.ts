@@ -582,6 +582,13 @@ export const styles: Record<string, React.CSSProperties> = {
     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.5)',
     zIndex: 10,
   } as React.CSSProperties,
+  stackActiveEffects: {
+    position: 'absolute',
+    bottom: 4,
+    left: 4,
+    right: 4,
+    zIndex: 10,
+  } as React.CSSProperties,
   // Card preview styles
   cardPreviewOverlay: {
     position: 'fixed',

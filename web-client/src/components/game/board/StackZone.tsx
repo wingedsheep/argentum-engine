@@ -2,6 +2,7 @@ import { useGameStore } from '../../../store/gameStore'
 import { useStackCards } from '../../../store/selectors'
 import type { EntityId } from '../../../types'
 import { getCardImageUrl } from '../../../utils/cardImages'
+import { ActiveEffectBadges } from '../card/CardOverlays'
 import { useResponsiveContext, handleImageError } from './shared'
 import { styles } from './styles'
 
@@ -85,6 +86,12 @@ export function StackDisplay() {
               {card.chosenX != null && (
                 <div style={styles.stackXBadge}>
                   X={card.chosenX}
+                </div>
+              )}
+              {/* Show text modification badges (e.g., Artificial Evolution) */}
+              {card.activeEffects && card.activeEffects.length > 0 && (
+                <div style={styles.stackActiveEffects}>
+                  <ActiveEffectBadges effects={card.activeEffects} />
                 </div>
               )}
             </div>
