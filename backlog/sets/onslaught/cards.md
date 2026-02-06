@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 46 / 335
+**Implemented:** 51 / 335
 
 ---
 
@@ -21,11 +21,11 @@
 - [x] Aphetto Dredging
 - [x] Aphetto Grifter
 - [x] Aphetto Vulture
-- [ ] Arcanis the Omnipotent
+- [x] Arcanis the Omnipotent
 - [ ] Artificial Evolution
-- [ ] Ascending Aven
-- [ ] Astral Slide
-- [ ] Aura Extraction
+- [x] Ascending Aven
+- [x] Astral Slide
+- [x] Aura Extraction
 - [ ] Aurification
 - [ ] Avarax
 - [ ] Aven Brigadier
@@ -89,7 +89,7 @@
 - [ ] Death Match
 - [ ] Death Pulse
 - [ ] Defensive Maneuvers
-- [ ] Demystify
+- [x] Demystify
 - [ ] Dirge of Dread
 - [x] Disciple of Grace
 - [x] Disciple of Malice
@@ -207,7 +207,7 @@
 - [ ] Mythic Proportions
 - [ ] Nameless One
 - [x] Nantuko Husk
-- [ ] Naturalize
+- [x] Naturalize
 - [ ] Nosy Goblin
 - [ ] Nova Cleric
 - [ ] Oblation

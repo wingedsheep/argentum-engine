@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting
 
+import com.wingedsheep.sdk.model.EntityId
 import kotlinx.serialization.Serializable
 
 /**
@@ -92,5 +93,14 @@ sealed interface EffectTarget {
     @Serializable
     data class FilteredTarget(val filter: TargetFilter) : EffectTarget {
         override val description: String = "target ${filter.description}"
+    }
+
+    /**
+     * SPECIFIC ENTITY: Refers to a specific entity by ID.
+     * Used by delayed triggers to return a specific exiled card.
+     */
+    @Serializable
+    data class SpecificEntity(val entityId: EntityId) : EffectTarget {
+        override val description: String = "specific entity"
     }
 }

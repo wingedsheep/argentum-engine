@@ -25,7 +25,10 @@ object OnslaughtSet {
         AkromasBlessing,
         AkromasVengeance,
         AncestorsProphet,
+        AstralSlide,
+        AuraExtraction,
         CrudeRampart,
+        Demystify,
         DaruLancer,
         DiscipleOfGrace,
         GlorySeeker,
@@ -36,6 +39,7 @@ object OnslaughtSet {
         AphettoAlchemist,
         AphettoGrifter,
         ArcanisTheOmnipotent,
+        AscendingAven,
         SageAven,
 
         // Black creatures and spells
@@ -64,6 +68,7 @@ object OnslaughtSet {
 
         // Green creatures and spells
         AnimalMagnetism,
+        Naturalize,
         BarkhideMauler,
         ElvishVanguard,
         ElvishWarrior,

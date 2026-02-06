@@ -664,6 +664,19 @@ object TestCards {
     )
 
     // =========================================================================
+    // Enchantments
+    // =========================================================================
+
+    /**
+     * Simple non-aura enchantment for testing enchantment targeting/removal.
+     */
+    val TestEnchantment = CardDefinition.enchantment(
+        name = "Test Enchantment",
+        manaCost = ManaCost.parse("{1}{W}"),
+        oracleText = "Test enchantment with no abilities."
+    )
+
+    // =========================================================================
     // All Test Cards
     // =========================================================================
 
@@ -708,6 +721,8 @@ object TestCards {
         // Alternative Payment Cards
         GurmagAngler,
         StokeBrillianceToken,
+        // Enchantments
+        TestEnchantment,
         // Instants
         LightningBolt,
         GiantGrowth,

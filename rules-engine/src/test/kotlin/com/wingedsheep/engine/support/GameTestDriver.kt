@@ -629,6 +629,45 @@ class GameTestDriver {
     }
 
     /**
+     * Put a non-creature permanent directly onto the battlefield (test helper).
+     * Works for enchantments, artifacts, and other non-creature permanents.
+     */
+    fun putPermanentOnBattlefield(playerId: EntityId, cardName: String): EntityId {
+        val cardDef = cardRegistry.requireCard(cardName)
+        val cardId = EntityId.generate()
+
+        val cardComponent = CardComponent(
+            cardDefinitionId = cardDef.name,
+            name = cardDef.name,
+            manaCost = cardDef.manaCost,
+            typeLine = cardDef.typeLine,
+            oracleText = cardDef.oracleText,
+            baseStats = cardDef.creatureStats,
+            baseKeywords = cardDef.keywords,
+            colors = cardDef.colors,
+            ownerId = playerId,
+            spellEffect = cardDef.spellEffect
+        )
+
+        var container = com.wingedsheep.engine.state.ComponentContainer.of(
+            cardComponent,
+            com.wingedsheep.engine.state.components.identity.OwnerComponent(playerId),
+            ControllerComponent(playerId)
+        )
+
+        // Add continuous effects from static abilities
+        val staticAbilityHandler = com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler(cardRegistry)
+        container = staticAbilityHandler.addContinuousEffectComponent(container, cardDef)
+
+        _state = _state.withEntity(cardId, container)
+
+        val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
+        _state = _state.addToZone(battlefieldZone, cardId)
+
+        return cardId
+    }
+
+    /**
      * Tap a permanent (test helper).
      */
     fun tapPermanent(entityId: EntityId) {
