@@ -35,6 +35,6 @@ val ProfanePrayers = card("Profane Prayers") {
         collectorNumber = "162"
         artist = "Matthew D. Wilson"
         flavorText = "\"Night after night the enemy squanders its dead on our swords. The Cabal does not squander its dead.\""
-        imageUri = "https://cards.scryfall.io/normal/front/f/2/f2b3e3e8-14a8-495a-97a4-eed4b06bef2e.jpg?1562943564"
+        imageUri = "https://cards.scryfall.io/normal/front/b/c/bc8320ef-af97-4cf6-9aaf-17818174d842.jpg?1562939500"
     }
 }
