@@ -2,49 +2,130 @@ import { useBattlefieldCards, groupCards } from '../../../store/selectors'
 import { useResponsiveContext } from './shared'
 import { styles } from './styles'
 import { CardStack } from '../card'
+import { GroupedCard } from '../../../store/selectors'
 
 /**
- * Battlefield area with lands and creatures.
- * For player: creatures first (closer to center), then lands (closer to player)
- * For opponent: lands first (closer to opponent), then creatures (closer to center)
+ * Battlefield area with two rows per player, each using a 3-column grid:
+ *
+ *   Front row: [planeswalkers (right-aligned)] | [creatures (centered)] | [spacer]
+ *   Back row:  [enchantments/artifacts (right-aligned)] | [lands (centered)] | [spacer]
+ *
+ * For player: front row on top (toward center), back row on bottom (near hand).
+ * For opponent: back row on top (near hand), front row on bottom (toward center).
  */
 export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent: boolean; spectatorMode?: boolean }) {
   const {
     playerLands,
     playerCreatures,
+    playerPlaneswalkers,
     playerOther,
     opponentLands,
     opponentCreatures,
+    opponentPlaneswalkers,
     opponentOther,
   } = useBattlefieldCards()
   const responsive = useResponsiveContext()
 
   const lands = isOpponent ? opponentLands : playerLands
   const creatures = isOpponent ? opponentCreatures : playerCreatures
+  const planeswalkers = isOpponent ? opponentPlaneswalkers : playerPlaneswalkers
   const other = isOpponent ? opponentOther : playerOther
 
-  // Group identical lands, display creatures and other individually
+  // Group identical lands, display creatures/planeswalkers/other individually
   const groupedLands = groupCards(lands)
-  const groupedCreatures = creatures.map((card) => ({
+  const toSingles = (cards: typeof creatures) => cards.map((card) => ({
     card,
     count: 1,
     cardIds: [card.id] as const,
     cards: [card] as const,
   }))
-  const groupedOther = other.map((card) => ({
-    card,
-    count: 1,
-    cardIds: [card.id] as const,
-    cards: [card] as const,
-  }))
+  const groupedCreatures = toSingles(creatures)
+  const groupedPlaneswalkers = toSingles(planeswalkers)
+  const groupedOther = toSingles(other)
 
-  // Layout: Lands anchored near hand, creatures toward center
-  // For player: lands at bottom (near hand), creatures above
-  // For opponent: lands at top (near hand), creatures below
   const hasCreatures = groupedCreatures.length > 0
+  const hasPlaneswalkers = groupedPlaneswalkers.length > 0
   const hasLands = groupedLands.length > 0
   const hasOther = groupedOther.length > 0
-  const showDivider = (hasCreatures || hasOther) && hasLands
+  const hasFrontRow = hasCreatures || hasPlaneswalkers
+  const hasBackRow = hasLands || hasOther
+  const showDivider = hasFrontRow && hasBackRow
+
+  const interactive = !spectatorMode && !isOpponent
+
+  /**
+   * Renders a 3-column grid row:
+   *   [side items (right-aligned)] | [center items (centered)] | [spacer]
+   * Used for both the creature row and the land row.
+   */
+  const renderGridRow = (
+    centerItems: readonly GroupedCard[],
+    sideItems: readonly GroupedCard[],
+    extra?: React.CSSProperties,
+  ) => (
+    <div style={{
+      display: 'grid',
+      gridTemplateColumns: '1fr auto 1fr',
+      alignItems: 'center',
+      width: '100%',
+      ...extra,
+    }}>
+      {/* Left column: side items, right-aligned to sit near center */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'flex-end',
+        flexWrap: 'wrap',
+        gap: responsive.cardGap,
+        paddingRight: sideItems.length > 0 && centerItems.length > 0 ? responsive.cardGap * 2 : 0,
+      }}>
+        {sideItems.map((group) => (
+          <CardStack
+            key={group.cardIds[0]}
+            group={group}
+            interactive={interactive}
+            isOpponentCard={isOpponent}
+          />
+        ))}
+      </div>
+
+      {/* Center column: main items */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        flexWrap: 'wrap',
+        gap: responsive.cardGap,
+      }}>
+        {centerItems.map((group) => (
+          <CardStack
+            key={group.cardIds[0]}
+            group={group}
+            interactive={interactive}
+            isOpponentCard={isOpponent}
+          />
+        ))}
+      </div>
+
+      {/* Right column: empty spacer to balance the grid */}
+      <div />
+    </div>
+  )
+
+  const renderDivider = () => showDivider ? (
+    <div
+      style={{
+        width: '40%',
+        height: 1,
+        backgroundColor: '#444',
+        margin: '6px 0',
+      }}
+    />
+  ) : null
+
+  const frontRow = renderGridRow(
+    groupedCreatures,
+    groupedPlaneswalkers,
+    { minHeight: responsive.battlefieldCardHeight + responsive.battlefieldRowPadding },
+  )
 
   return (
     <div
@@ -54,129 +135,21 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
         gap: 0,
       }}
     >
-      {/* For player: creatures first (top, toward center) */}
+      {/* For player: front row (top, toward center), then back row (bottom, near hand) */}
       {!isOpponent && (
         <>
-          {/* Creatures row */}
-          <div style={{
-            ...styles.battlefieldRow,
-            gap: responsive.cardGap,
-            minHeight: responsive.battlefieldCardHeight + responsive.battlefieldRowPadding,
-          }}>
-            {groupedCreatures.map((group) => (
-              <CardStack
-                key={group.cardIds[0]}
-                group={group}
-                interactive={!spectatorMode && !isOpponent}
-                isOpponentCard={isOpponent}
-              />
-            ))}
-          </div>
-
-          {/* Other permanents row */}
-          {hasOther && (
-            <div style={{ ...styles.battlefieldRow, gap: responsive.cardGap, marginTop: 4 }}>
-              {groupedOther.map((group) => (
-                <CardStack
-                  key={group.cardIds[0]}
-                  group={group}
-                  interactive={!spectatorMode && !isOpponent}
-                  isOpponentCard={isOpponent}
-                />
-              ))}
-            </div>
-          )}
-
-          {/* Divider */}
-          {showDivider && (
-            <div
-              style={{
-                width: '40%',
-                height: 1,
-                backgroundColor: '#444',
-                margin: '6px 0',
-              }}
-            />
-          )}
-
-          {/* Lands row (bottom, near hand) */}
-          <div style={{
-            ...styles.battlefieldRow,
-            gap: responsive.cardGap,
-            marginBottom: -40,
-          }}>
-            {groupedLands.map((group) => (
-              <CardStack
-                key={group.cardIds[0]}
-                group={group}
-                interactive={!spectatorMode && !isOpponent}
-                isOpponentCard={isOpponent}
-              />
-            ))}
-          </div>
+          {frontRow}
+          {renderDivider()}
+          {renderGridRow(groupedLands, groupedOther, { marginBottom: -40 })}
         </>
       )}
 
-      {/* For opponent: lands first (top, near hand) */}
+      {/* For opponent: back row (top, near hand), then front row (bottom, toward center) */}
       {isOpponent && (
         <>
-          {/* Lands row (top, near hand) */}
-          <div style={{
-            ...styles.battlefieldRow,
-            gap: responsive.cardGap,
-            marginTop: -40,
-          }}>
-            {groupedLands.map((group) => (
-              <CardStack
-                key={group.cardIds[0]}
-                group={group}
-                interactive={!spectatorMode && !isOpponent}
-                isOpponentCard={isOpponent}
-              />
-            ))}
-          </div>
-
-          {/* Divider */}
-          {showDivider && (
-            <div
-              style={{
-                width: '40%',
-                height: 1,
-                backgroundColor: '#444',
-                margin: '6px 0',
-              }}
-            />
-          )}
-
-          {/* Other permanents row */}
-          {hasOther && (
-            <div style={{ ...styles.battlefieldRow, gap: responsive.cardGap, marginBottom: 4 }}>
-              {groupedOther.map((group) => (
-                <CardStack
-                  key={group.cardIds[0]}
-                  group={group}
-                  interactive={!spectatorMode && !isOpponent}
-                  isOpponentCard={isOpponent}
-                />
-              ))}
-            </div>
-          )}
-
-          {/* Creatures row (bottom, toward center) */}
-          <div style={{
-            ...styles.battlefieldRow,
-            gap: responsive.cardGap,
-            minHeight: responsive.battlefieldCardHeight + responsive.battlefieldRowPadding,
-          }}>
-            {groupedCreatures.map((group) => (
-              <CardStack
-                key={group.cardIds[0]}
-                group={group}
-                interactive={!spectatorMode && !isOpponent}
-                isOpponentCard={isOpponent}
-              />
-            ))}
-          </div>
+          {renderGridRow(groupedLands, groupedOther, { marginTop: -40 })}
+          {renderDivider()}
+          {frontRow}
         </>
       )}
     </div>

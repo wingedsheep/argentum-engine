@@ -241,38 +241,33 @@ export function useHasLegalActions(cardId: EntityId | null): boolean {
 export function useBattlefieldCards(): {
   playerLands: readonly ClientCard[]
   playerCreatures: readonly ClientCard[]
+  playerPlaneswalkers: readonly ClientCard[]
   playerOther: readonly ClientCard[]
   opponentLands: readonly ClientCard[]
   opponentCreatures: readonly ClientCard[]
+  opponentPlaneswalkers: readonly ClientCard[]
   opponentOther: readonly ClientCard[]
 } {
   const gameState = useGameStore(selectGameState)
   const playerId = useGameStore(selectViewingPlayerId)
 
   return useMemo(() => {
-    if (!gameState || !playerId) {
-      return {
-        playerLands: [],
-        playerCreatures: [],
-        playerOther: [],
-        opponentLands: [],
-        opponentCreatures: [],
-        opponentOther: [],
-      }
+    const empty = {
+      playerLands: [] as readonly ClientCard[],
+      playerCreatures: [] as readonly ClientCard[],
+      playerPlaneswalkers: [] as readonly ClientCard[],
+      playerOther: [] as readonly ClientCard[],
+      opponentLands: [] as readonly ClientCard[],
+      opponentCreatures: [] as readonly ClientCard[],
+      opponentPlaneswalkers: [] as readonly ClientCard[],
+      opponentOther: [] as readonly ClientCard[],
     }
+
+    if (!gameState || !playerId) return empty
 
     // Find ALL battlefield zones (there's one per player)
     const battlefields = gameState.zones.filter((z) => z.zoneId.zoneType === ZoneType.BATTLEFIELD)
-    if (battlefields.length === 0) {
-      return {
-        playerLands: [],
-        playerCreatures: [],
-        playerOther: [],
-        opponentLands: [],
-        opponentCreatures: [],
-        opponentOther: [],
-      }
-    }
+    if (battlefields.length === 0) return empty
 
     // Aggregate all card IDs from all battlefield zones
     const allCardIds = battlefields.flatMap((z) => z.cardIds ?? [])
@@ -285,14 +280,17 @@ export function useBattlefieldCards(): {
 
     const isLand = (c: ClientCard) => c.cardTypes.includes('LAND')
     const isCreature = (c: ClientCard) => c.cardTypes.includes('CREATURE')
+    const isPlaneswalker = (c: ClientCard) => c.cardTypes.includes('PLANESWALKER')
 
     return {
       playerLands: playerCards.filter(isLand),
       playerCreatures: playerCards.filter((c) => isCreature(c) && !isLand(c)),
-      playerOther: playerCards.filter((c) => !isCreature(c) && !isLand(c)),
+      playerPlaneswalkers: playerCards.filter((c) => isPlaneswalker(c) && !isCreature(c) && !isLand(c)),
+      playerOther: playerCards.filter((c) => !isCreature(c) && !isPlaneswalker(c) && !isLand(c)),
       opponentLands: opponentCards.filter(isLand),
       opponentCreatures: opponentCards.filter((c) => isCreature(c) && !isLand(c)),
-      opponentOther: opponentCards.filter((c) => !isCreature(c) && !isLand(c)),
+      opponentPlaneswalkers: opponentCards.filter((c) => isPlaneswalker(c) && !isCreature(c) && !isLand(c)),
+      opponentOther: opponentCards.filter((c) => !isCreature(c) && !isPlaneswalker(c) && !isLand(c)),
     }
   }, [gameState, playerId])
 }
