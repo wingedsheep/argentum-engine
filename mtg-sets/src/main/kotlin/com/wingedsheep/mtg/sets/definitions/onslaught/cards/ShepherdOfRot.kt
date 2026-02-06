@@ -35,6 +35,6 @@ val ShepherdOfRot = card("Shepherd of Rot") {
         collectorNumber = "168"
         artist = "Carl Critchlow"
         flavorText = "The living want to join the dead, and the dead want the living to join them."
-        imageUri = "https://cards.scryfall.io/normal/front/6/e/6ee5a529-3f06-4a56-b6cf-fcb2d4728cc7.jpg?1562917558"
+        imageUri = "https://cards.scryfall.io/large/front/9/5/952c021f-74c9-455f-9cd9-f0d354e8bea8.jpg?1562930144"
     }
 }

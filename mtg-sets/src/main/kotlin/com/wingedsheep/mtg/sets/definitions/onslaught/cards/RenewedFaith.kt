@@ -35,6 +35,6 @@ val RenewedFaith = card("Renewed Faith") {
         collectorNumber = "50"
         artist = "Eric Peterson"
         flavorText = "Sometimes the clearest road to renewal is through utter devastation."
-        imageUri = "https://cards.scryfall.io/normal/front/a/d/ad4ad18b-5a6c-4cfa-99e5-f6e1bffc1d38.jpg?1562933660"
+        imageUri = "https://cards.scryfall.io/large/front/1/e/1ea572b5-ff68-45aa-8200-78ee7f64a0ce.jpg?1562902188"
     }
 }

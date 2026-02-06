@@ -31,8 +31,8 @@ val Pacifism = card("Pacifism") {
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "45"
-        artist = "Robert Bliss"
-        flavorText = "For the first time in his life, Grakk felt a strange sensation. It wouldn't be until later that he would recognize it as peace."
-        imageUri = "https://cards.scryfall.io/normal/front/9/e/9e0df325-ef60-4944-b326-535585e2ccbb.jpg?1562932414"
+        artist = "Matthew D. Wilson"
+        flavorText = "Even those born to battle could only lay their blades at Akroma’s feet."
+        imageUri = "https://cards.scryfall.io/large/front/e/e/ee262fde-8df1-431f-9e5c-0cafe9212b49.jpg?1562951573"
     }
 }

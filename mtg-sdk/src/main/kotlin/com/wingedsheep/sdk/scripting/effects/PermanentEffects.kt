@@ -248,3 +248,21 @@ data class ChangeCreatureTypeTextEffect(
         }
     }
 }
+
+/**
+ * Modify power/toughness by a dynamic amount.
+ * "Target creature gets -X/-X until end of turn, where X is the number of Zombies on the battlefield."
+ */
+@Serializable
+data class DynamicModifyStatsEffect(
+    val powerModifier: DynamicAmount,
+    val toughnessModifier: DynamicAmount,
+    val target: EffectTarget,
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    override val description: String = buildString {
+        append("${target.description} gets ")
+        append("${powerModifier.description}/${toughnessModifier.description}")
+        if (duration.description.isNotEmpty()) append(" ${duration.description}")
+    }
+}

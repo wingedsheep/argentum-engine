@@ -139,6 +139,13 @@ object Effects {
         ModifyStatsEffect(power, toughness, target)
 
     /**
+     * Modify power and toughness by dynamic amounts.
+     * Used for effects like "Target creature gets -X/-X where X is the number of Zombies."
+     */
+    fun ModifyStats(power: DynamicAmount, toughness: DynamicAmount, target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
+        DynamicModifyStatsEffect(power, toughness, target)
+
+    /**
      * Grant a keyword until end of turn.
      */
     fun GrantKeyword(keyword: Keyword, target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
@@ -159,6 +166,13 @@ object Effects {
      */
     fun AddMana(color: Color, amount: Int = 1): Effect =
         AddManaEffect(color, amount)
+
+    /**
+     * Add a dynamic amount of mana of a specific color.
+     * Used for effects like "Add {R} for each Goblin on the battlefield."
+     */
+    fun AddMana(color: Color, amount: DynamicAmount): Effect =
+        AddDynamicColorManaEffect(color, amount)
 
     /**
      * Add colorless mana.

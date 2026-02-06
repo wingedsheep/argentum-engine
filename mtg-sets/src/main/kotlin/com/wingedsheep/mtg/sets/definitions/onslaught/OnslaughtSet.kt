@@ -50,6 +50,7 @@ object OnslaughtSet {
         ArcanisTheOmnipotent,
         ArtificialEvolution,
         AscendingAven,
+        ChokingTethers,
         SageAven,
         SlipstreamEel,
 
@@ -59,8 +60,10 @@ object OnslaughtSet {
         AphettoVulture,
         AnuridMurkdiver,
         CabalArchon,
+        CruelRevival,
         DiscipleOfMalice,
         FadeFromMemory,
+        FeedingFrenzy,
         FesteringGoblin,
         GluttonousZombie,
         GrinningDemon,
@@ -73,11 +76,13 @@ object OnslaughtSet {
         SeveredLegion,
         Smother,
         Swat,
+        SyphonSoul,
         VisaraTheDreadful,
         WretchedAnurid,
 
         // Red creatures and spells
         AetherCharge,
+        BrightstoneRitual,
         AggravatedAssault,
         AirdropCondor,
         BatteringCraghorn,

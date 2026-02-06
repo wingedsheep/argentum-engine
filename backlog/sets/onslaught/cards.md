@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 91 / 335
+**Implemented:** 96 / 335
 
 ---
 
@@ -45,7 +45,7 @@
 - [ ] Bloodstained Mire
 - [ ] Boneknitter
 - [ ] Break Open
-- [ ] Brightstone Ritual
+- [x] Brightstone Ritual
 - [ ] Broodhatch Nantuko
 - [ ] Butcher Orgg
 - [x] Cabal Archon
@@ -61,7 +61,7 @@
 - [ ] Chain of Smog
 - [ ] Chain of Vapor
 - [x] Charging Slateback
-- [ ] Choking Tethers
+- [x] Choking Tethers
 - [ ] Circle of Solace
 - [ ] Clone
 - [ ] Commando Raid
@@ -77,7 +77,7 @@
 - [ ] Crown of Suspicion
 - [ ] Crown of Vigor
 - [x] Crude Rampart
-- [ ] Cruel Revival
+- [x] Cruel Revival
 - [ ] Cryptic Gateway
 - [ ] Custody Battle
 - [ ] Daru Cavalier
@@ -123,7 +123,7 @@
 - [x] Fade from Memory
 - [ ] Fallen Cleric
 - [ ] False Cure
-- [ ] Feeding Frenzy
+- [x] Feeding Frenzy
 - [x] Festering Goblin
 - [ ] Fever Charm
 - [x] Flamestick Courier
@@ -295,7 +295,7 @@
 - [x] Symbiotic Elf
 - [x] Symbiotic Wurm
 - [ ] Syphon Mind
-- [ ] Syphon Soul
+- [x] Syphon Soul
 - [ ] Taunting Elf
 - [ ] Tempting Wurm
 - [ ] Tephraderm
