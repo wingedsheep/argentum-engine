@@ -338,7 +338,9 @@ class ClientStateTransformer(
         val controllerId = projectedValues?.controllerId ?: baseControllerId
 
         // Face-down creatures are always 2/2 per MTG rules, regardless of viewer
-        val isFaceDown = container.has<FaceDownComponent>()
+        // A card is face-down if it has FaceDownComponent (on battlefield) OR is cast face-down on the stack
+        val spellOnStack = container.get<SpellOnStackComponent>()
+        val isFaceDown = container.has<FaceDownComponent>() || spellOnStack?.castFaceDown == true
         val power = if (isFaceDown) 2 else projectedValues?.power ?: cardComponent.baseStats?.basePower
         val toughness = if (isFaceDown) 2 else projectedValues?.toughness ?: cardComponent.baseStats?.baseToughness
         val rawKeywords = projectedValues?.keywords?.mapNotNull {
@@ -457,7 +459,6 @@ class ClientStateTransformer(
         } ?: emptyList()
 
         // Get chosen X value for spells on the stack
-        val spellOnStack = container.get<SpellOnStackComponent>()
         val chosenX = spellOnStack?.xValue
 
         // Build type line string from TypeLine, using projected subtypes if available
