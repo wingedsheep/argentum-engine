@@ -170,6 +170,49 @@ class AggravatedAssaultScenarioTest : ScenarioTestBase() {
                 }
             }
 
+            test("auto-tapping lands for activation cost properly consumes mana") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Aggravated Assault")
+                    .withCardOnBattlefield(1, "Raging Goblin")
+                    .withCardInHand(1, "Battering Craghorn")
+                    .withLandsOnBattlefield(1, "Mountain", 7)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.POSTCOMBAT_MAIN, Step.POSTCOMBAT_MAIN)
+                    .build()
+
+                // Activate Aggravated Assault, which costs {3}{R}{R} = 5 mana
+                // Player has 7 mountains, so 5 should be tapped, leaving 2 untapped
+                activateAggravatedAssault(game)
+
+                // Verify mana pool is empty after paying the cost
+                val poolAfterActivation = game.state.getEntity(game.player1Id)?.get<ManaPoolComponent>()
+                withClue("Mana pool should be empty after paying activation cost") {
+                    poolAfterActivation?.red shouldBe 0
+                    poolAfterActivation?.colorless shouldBe 0
+                }
+
+                // Count untapped mountains - should be exactly 2 (7 - 5)
+                val untappedMountains = game.state.getBattlefield().count { entityId ->
+                    val container = game.state.getEntity(entityId) ?: return@count false
+                    val card = container.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
+                    card?.name == "Mountain" && !container.has<TappedComponent>()
+                }
+                withClue("Should have 2 untapped mountains remaining (7 - 5 = 2)") {
+                    untappedMountains shouldBe 2
+                }
+
+                // Resolve the ability
+                game.resolveStack()
+
+                // Now try to cast Battering Craghorn ({2}{R}{R} = 4 mana)
+                // With only 2 untapped mountains, this should fail
+                val castResult = game.castSpell(1, "Battering Craghorn")
+                withClue("Should not be able to cast Battering Craghorn with only 2 untapped lands") {
+                    castResult.error shouldNotBe null
+                }
+            }
+
             test("cannot activate at instant speed") {
                 val game = scenario()
                     .withPlayers("Player1", "Player2")

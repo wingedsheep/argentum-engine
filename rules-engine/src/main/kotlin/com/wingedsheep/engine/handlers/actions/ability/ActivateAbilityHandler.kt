@@ -220,18 +220,18 @@ class ActivateAbilityHandler(
         // Collect events from cost payment (e.g., sacrifice events)
         events.addAll(costResult.events)
 
-        // Update mana pool if changed
-        if (manaPool != ManaPool(poolComponent.white, poolComponent.blue, poolComponent.black, poolComponent.red, poolComponent.green, poolComponent.colorless)) {
-            currentState = currentState.updateEntity(action.playerId) { c ->
-                c.with(ManaPoolComponent(
-                    white = manaPool.white,
-                    blue = manaPool.blue,
-                    black = manaPool.black,
-                    red = manaPool.red,
-                    green = manaPool.green,
-                    colorless = manaPool.colorless
-                ))
-            }
+        // Always update mana pool on state after cost payment.
+        // autoTapForManaCost writes the enriched (pre-payment) pool to state,
+        // so we must unconditionally write the post-payment pool.
+        currentState = currentState.updateEntity(action.playerId) { c ->
+            c.with(ManaPoolComponent(
+                white = manaPool.white,
+                blue = manaPool.blue,
+                black = manaPool.black,
+                red = manaPool.red,
+                green = manaPool.green,
+                colorless = manaPool.colorless
+            ))
         }
 
         // Emit events for cost types
