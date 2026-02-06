@@ -1312,65 +1312,145 @@ function getCardColors(card: SealedCardInfo): Set<string> {
   return colors
 }
 
+/**
+ * Detect which colors of mana a card can produce, based on available card info.
+ * Checks land subtypes in typeLine and "Add {X}" patterns in oracleText.
+ */
+function detectManaProduction(card: SealedCardInfo): string[] {
+  const colors: string[] = []
+  const typeLine = card.typeLine.toLowerCase()
+  const text = (card.oracleText || '').toLowerCase()
+
+  // Check basic land subtypes in typeLine (e.g., "Land — Plains Forest")
+  if (typeLine.includes('plains')) colors.push('W')
+  if (typeLine.includes('island')) colors.push('U')
+  if (typeLine.includes('swamp')) colors.push('B')
+  if (typeLine.includes('mountain')) colors.push('R')
+  if (typeLine.includes('forest')) colors.push('G')
+
+  // Check oracle text for mana production ("Add {G}", "add {R}{R}", etc.)
+  if (text.includes('add')) {
+    if (text.includes('{w}')) colors.push('W')
+    if (text.includes('{u}')) colors.push('U')
+    if (text.includes('{b}')) colors.push('B')
+    if (text.includes('{r}')) colors.push('R')
+    if (text.includes('{g}')) colors.push('G')
+    if (text.includes('any color')) colors.push('W', 'U', 'B', 'R', 'G')
+  }
+
+  return [...new Set(colors)]
+}
+
 function suggestLands(
   state: DeckBuildingState,
   spellCount: number,
   setLandCount: (name: string, count: number) => void,
 ) {
-  // Use standard limited ratio: 17 lands per 23 spells
-  // Formula: lands = spells * 17 / 23
-  const targetLands = Math.max(0, Math.round(spellCount * 17 / 23))
-  if (targetLands === 0) return
+  const MIN_DECK_SIZE = 40
+  const COLORS = ['W', 'U', 'B', 'R', 'G'] as const
+  const colorToLand: Record<string, string> = { W: 'Plains', U: 'Island', B: 'Swamp', R: 'Mountain', G: 'Forest' }
+  const basicLandNames = new Set(state.basicLands.map((l) => l.name))
 
-  // Count color symbols in deck spells
-  const symbols: Record<string, number> = { W: 0, U: 0, B: 0, R: 0, G: 0 }
+  // Step 1: Categorize deck cards — identify non-basic lands and mana sources
+  let nonBasicLandCount = 0
+  const existingSources: Record<string, number> = { W: 0, U: 0, B: 0, R: 0, G: 0 }
+
+  for (const cardName of state.deck) {
+    const info = state.cardPool.find((c) => c.name === cardName)
+    if (!info) continue
+
+    const isLand = info.typeLine.toLowerCase().includes('land') && !basicLandNames.has(info.name)
+    const producedColors = detectManaProduction(info)
+
+    if (isLand) {
+      nonBasicLandCount++
+      // Non-basic land: full credit as a mana source
+      for (const c of producedColors) existingSources[c] = (existingSources[c] ?? 0) + 1.0
+    } else if (producedColors.length > 0) {
+      // Mana dork / mana-producing non-land: half credit
+      for (const c of producedColors) existingSources[c] = (existingSources[c] ?? 0) + 0.5
+    }
+  }
+
+  // Step 2: Calculate target basic lands, accounting for non-basic lands and min deck size
+  const actualSpellCount = spellCount - nonBasicLandCount
+  // Standard ratio: 17 lands per 23 spells, minus non-basic lands already in deck
+  const ratioBasedLands = Math.round(actualSpellCount * 17 / 23) - nonBasicLandCount
+  // Ensure deck reaches minimum size
+  const minBasedLands = MIN_DECK_SIZE - spellCount
+  const targetBasicLands = Math.max(ratioBasedLands, minBasedLands, 0)
+  if (targetBasicLands === 0) {
+    for (const land of state.basicLands) setLandCount(land.name, 0)
+    return
+  }
+
+  // Step 3: Count weighted color demand from all cards in deck
+  // Multi-pip costs weigh more heavily (per Frank Karsten's analysis):
+  //   1 pip = 1.0, 2 pips = 2.5, 3 pips = 4.5, etc.
+  //   Formula: weight = pips + 0.5 * (pips - 1) for pips >= 1
+  const demand: Record<string, number> = { W: 0, U: 0, B: 0, R: 0, G: 0 }
   for (const cardName of state.deck) {
     const info = state.cardPool.find((c) => c.name === cardName)
     if (!info) continue
     const cost = info.manaCost || ''
+    const pipsPerColor: Record<string, number> = { W: 0, U: 0, B: 0, R: 0, G: 0 }
     const matches = cost.match(/\{([^}]+)\}/g) || []
     for (const match of matches) {
       const inner = match.slice(1, -1)
-      if (inner in symbols) {
-        symbols[inner] = (symbols[inner] ?? 0) + 1
+      if (inner in pipsPerColor) pipsPerColor[inner] = (pipsPerColor[inner] ?? 0) + 1
+    }
+    for (const c of COLORS) {
+      const pips = pipsPerColor[c] ?? 0
+      if (pips > 0) {
+        demand[c] = (demand[c] ?? 0) + pips + 0.5 * (pips - 1)
       }
     }
   }
 
-  const colorToLand: Record<string, string> = { W: 'Plains', U: 'Island', B: 'Swamp', R: 'Mountain', G: 'Forest' }
-  const totalSymbols = Object.values(symbols).reduce((a, b) => a + b, 0)
+  const totalDemand = Object.values(demand).reduce((a, b) => a + b, 0)
 
-  if (totalSymbols === 0) {
-    // No colored spells — split evenly across available land types or just give all one type
+  if (totalDemand === 0) {
+    // Colorless deck — give all to first available land type
     const availableLands = state.basicLands.map((l) => l.name)
-    for (const land of availableLands) {
-      setLandCount(land, 0)
-    }
-    if (availableLands.length > 0) {
-      setLandCount(availableLands[0]!, targetLands)
-    }
+    for (const land of availableLands) setLandCount(land, 0)
+    if (availableLands.length > 0) setLandCount(availableLands[0]!, targetBasicLands)
     return
   }
 
-  // Distribute lands proportionally to color symbols, with rounding
+  // Step 4: Adjust demand based on existing mana sources (non-basic lands, dorks)
+  // Convert sources to demand-units so they're comparable, then subtract
+  const targetTotalLands = targetBasicLands + nonBasicLandCount
+  const sourceScale = targetTotalLands > 0 ? totalDemand / targetTotalLands : 0
+  const adjustedDemand: Record<string, number> = {}
+  for (const c of COLORS) {
+    adjustedDemand[c] = Math.max(0, (demand[c] ?? 0) - (existingSources[c] ?? 0) * sourceScale)
+  }
+  const totalAdjustedDemand = Object.values(adjustedDemand).reduce((a, b) => a + b, 0)
+
+  // If existing sources cover everything, fall back to raw demand distribution
+  const distributionDemand = totalAdjustedDemand > 0 ? adjustedDemand : demand
+  const distributionTotal = totalAdjustedDemand > 0 ? totalAdjustedDemand : totalDemand
+
+  // Step 5: Distribute basic lands proportionally to demand
   const landCounts: Record<string, number> = {}
   let assigned = 0
-  const entries = Object.entries(symbols).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1])
+  const entries = COLORS.filter((c) => (distributionDemand[c] ?? 0) > 0).sort(
+    (a, b) => (distributionDemand[b] ?? 0) - (distributionDemand[a] ?? 0),
+  )
 
-  for (const [color, count] of entries) {
+  for (const color of entries) {
     const landName = colorToLand[color]
     if (!landName) continue
-    const share = Math.round((count / totalSymbols) * targetLands)
+    const share = Math.round(((distributionDemand[color] ?? 0) / distributionTotal) * targetBasicLands)
     landCounts[landName] = share
     assigned += share
   }
 
   // Fix rounding errors — adjust the largest share
-  if (assigned !== targetLands && entries.length > 0) {
-    const topColor = entries[0]?.[0]
-    const topLand = topColor ? colorToLand[topColor] : undefined
+  if (assigned !== targetBasicLands && entries.length > 0) {
+    const topLand = entries[0] ? colorToLand[entries[0]] : undefined
     if (topLand && landCounts[topLand] != null) {
-      landCounts[topLand] = (landCounts[topLand] ?? 0) + targetLands - assigned
+      landCounts[topLand] = (landCounts[topLand] ?? 0) + targetBasicLands - assigned
     }
   }
 
