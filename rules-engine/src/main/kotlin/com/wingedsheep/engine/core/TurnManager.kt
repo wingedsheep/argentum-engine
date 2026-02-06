@@ -17,6 +17,7 @@ import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.LossReason
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.player.PlayerLostComponent
+import com.wingedsheep.engine.state.components.player.AdditionalCombatPhasesComponent
 import com.wingedsheep.engine.state.components.player.SkipCombatPhasesComponent
 import com.wingedsheep.engine.state.components.player.SkipNextTurnComponent
 import com.wingedsheep.engine.state.components.player.SkipUntapComponent
@@ -235,6 +236,38 @@ class TurnManager(
         // Check if we're wrapping to next turn
         if (currentStep == Step.CLEANUP) {
             return endTurn(state)
+        }
+
+        // Check for additional combat phases (Aggravated Assault, etc.)
+        // When leaving POSTCOMBAT_MAIN, if additional combat phases are pending,
+        // redirect to BEGIN_COMBAT instead of END step.
+        if (currentStep == Step.POSTCOMBAT_MAIN) {
+            val additionalPhases = state.getEntity(activePlayer)?.get<AdditionalCombatPhasesComponent>()
+            if (additionalPhases != null && additionalPhases.count > 0) {
+                // Decrement or remove the component
+                var redirectedState = if (additionalPhases.count <= 1) {
+                    state.updateEntity(activePlayer) { it.without<AdditionalCombatPhasesComponent>() }
+                } else {
+                    state.updateEntity(activePlayer) { container ->
+                        container.with(AdditionalCombatPhasesComponent(additionalPhases.count - 1))
+                    }
+                }
+
+                // Redirect to BEGIN_COMBAT
+                redirectedState = redirectedState.copy(
+                    step = Step.BEGIN_COMBAT,
+                    phase = Phase.COMBAT,
+                    priorityPassedBy = emptySet()
+                )
+
+                val events = mutableListOf<GameEvent>(
+                    PhaseChangedEvent(Phase.COMBAT),
+                    StepChangedEvent(Step.BEGIN_COMBAT)
+                )
+
+                redirectedState = redirectedState.withPriority(activePlayer)
+                return ExecutionResult.success(redirectedState, events)
+            }
         }
 
         val nextStep = currentStep.next()
@@ -607,6 +640,17 @@ class TurnManager(
                 val landDrops = container.get<LandDropsComponent>()
                 if (landDrops != null) {
                     container.with(landDrops.reset())
+                } else {
+                    container
+                }
+            }
+        }
+
+        // 4. Remove any unconsumed additional combat phase components
+        for (playerId in newState.turnOrder) {
+            newState = newState.updateEntity(playerId) { container ->
+                if (container.has<AdditionalCombatPhasesComponent>()) {
+                    container.without<AdditionalCombatPhasesComponent>()
                 } else {
                     container
                 }

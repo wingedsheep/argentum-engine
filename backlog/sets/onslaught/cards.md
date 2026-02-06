@@ -2,14 +2,14 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 33 / 335
+**Implemented:** 35 / 335
 
 ---
 
 - [x] Accursed Centaur
 - [x] Aether Charge
-- [ ] Aggravated Assault
-- [ ] Airborne Aid
+- [x] Aggravated Assault
+- [x] Airborne Aid
 - [ ] Airdrop Condor
 - [ ] Akroma's Blessing
 - [ ] Akroma's Vengeance

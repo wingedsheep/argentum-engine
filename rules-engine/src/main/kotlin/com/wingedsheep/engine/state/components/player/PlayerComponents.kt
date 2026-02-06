@@ -149,6 +149,21 @@ data class MulliganStateComponent(
 }
 
 /**
+ * Component tracking additional combat phases to be inserted into the current turn.
+ * When the postcombat main phase would advance to the end step, if this component
+ * exists, the game instead transitions to an additional combat phase followed by
+ * a main phase. The count is decremented each time an additional combat phase begins.
+ *
+ * Applied by effects like Aggravated Assault.
+ *
+ * @param count Number of additional combat+main phase cycles remaining
+ */
+@Serializable
+data class AdditionalCombatPhasesComponent(
+    val count: Int = 1
+) : Component
+
+/**
  * Marker component indicating that a player should skip all combat phases
  * during their next turn. Applied by effects like False Peace.
  *

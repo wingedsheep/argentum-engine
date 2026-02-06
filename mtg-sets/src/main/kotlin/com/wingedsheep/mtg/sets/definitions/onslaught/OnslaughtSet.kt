@@ -27,7 +27,8 @@ object OnslaughtSet {
         DiscipleOfGrace,
         GlorySeeker,
 
-        // Blue creatures
+        // Blue creatures and spells
+        AirborneAid,
         SageAven,
 
         // Black creatures and spells
@@ -43,6 +44,7 @@ object OnslaughtSet {
 
         // Red creatures and spells
         AetherCharge,
+        AggravatedAssault,
         BatteringCraghorn,
         ChargingSlateback,
         GoblinSkyRaider,

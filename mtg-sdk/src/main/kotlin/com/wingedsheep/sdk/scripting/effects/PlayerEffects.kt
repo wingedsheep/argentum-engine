@@ -50,6 +50,17 @@ data class PlayAdditionalLandsEffect(
 }
 
 /**
+ * Add an additional combat phase followed by an additional main phase after the current main phase.
+ * Used for Aggravated Assault: "{3}{R}{R}: Untap all creatures you control. After this main phase,
+ * there is an additional combat phase followed by an additional main phase."
+ */
+@Serializable
+data object AddCombatPhaseEffect : Effect {
+    override val description: String =
+        "After this main phase, there is an additional combat phase followed by an additional main phase"
+}
+
+/**
  * Take an extra turn after this one, with a consequence at end of turn.
  * Used for Last Chance: "Take an extra turn after this one. At the beginning of that turn's end step, you lose the game."
  *

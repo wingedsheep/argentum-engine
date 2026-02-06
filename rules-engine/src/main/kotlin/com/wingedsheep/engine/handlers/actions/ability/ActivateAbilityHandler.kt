@@ -27,6 +27,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.ActivationRestriction
+import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.AddManaEffect
 import com.wingedsheep.engine.handlers.CostPaymentChoices
@@ -77,6 +78,13 @@ class ActivateAbilityHandler(
         if (ability.isPlaneswalkerAbility) {
             if (!turnManager.canPlaySorcerySpeed(state, action.playerId)) {
                 return "Loyalty abilities can only be activated at sorcery speed"
+            }
+        }
+
+        // Check timing for sorcery-speed abilities ("Activate only as a sorcery")
+        if (ability.timing == TimingRule.SorcerySpeed && !ability.isPlaneswalkerAbility) {
+            if (!turnManager.canPlaySorcerySpeed(state, action.playerId)) {
+                return "This ability can only be activated as a sorcery"
             }
         }
 
