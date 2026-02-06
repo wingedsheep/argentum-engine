@@ -1085,6 +1085,9 @@ class GameSession(
                             if (hasSummoningSickness && !hasHaste) continue
                         }
                     }
+                    is AbilityCost.Mana -> {
+                        if (!manaSolver.canPay(state, playerId, (ability.cost as AbilityCost.Mana).cost)) continue
+                    }
                     is AbilityCost.Sacrifice -> {
                         sacrificeCost = ability.cost as AbilityCost.Sacrifice
                         sacrificeTargets = findAbilitySacrificeTargets(state, playerId, sacrificeCost.filter)
@@ -1112,6 +1115,12 @@ class GameSession(
                                             costCanBePaid = false
                                             break
                                         }
+                                    }
+                                }
+                                is AbilityCost.Mana -> {
+                                    if (!manaSolver.canPay(state, playerId, subCost.cost)) {
+                                        costCanBePaid = false
+                                        break
                                     }
                                 }
                                 is AbilityCost.Sacrifice -> {
