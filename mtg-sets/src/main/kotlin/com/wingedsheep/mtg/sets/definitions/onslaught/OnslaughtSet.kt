@@ -32,6 +32,7 @@ object OnslaughtSet {
 
         // Blue creatures and spells
         AirborneAid,
+        Annex,
         AphettoAlchemist,
         SageAven,
 

@@ -283,6 +283,11 @@ class StateProjector {
                     state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.isCreature == true
                 }.toSet()
             }
+            is AffectsFilter.AttachedPermanent -> {
+                val attachedTo = state.getEntity(sourceId)
+                    ?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
+                if (attachedTo != null) setOf(attachedTo.targetId) else emptySet()
+            }
         }
     }
 
@@ -433,6 +438,13 @@ class StateProjector {
                 is Modification.ChangeController -> {
                     values.controllerId = mod.newControllerId
                 }
+                is Modification.ChangeControllerToSourceController -> {
+                    val sourceController = state.getEntity(effect.sourceId)
+                        ?.get<ControllerComponent>()?.playerId
+                    if (sourceController != null) {
+                        values.controllerId = sourceController
+                    }
+                }
                 is Modification.GrantProtectionFromColor -> {
                     values.keywords.add("PROTECTION_FROM_${mod.color}")
                 }
@@ -526,6 +538,13 @@ sealed interface AffectsFilter {
      */
     @Serializable
     data object AllOtherCreatures : AffectsFilter
+
+    /**
+     * The permanent this Aura is attached to.
+     * Used for Aura effects like "You control enchanted permanent."
+     */
+    @Serializable
+    data object AttachedPermanent : AffectsFilter
 }
 
 /**
@@ -592,6 +611,14 @@ sealed interface Modification {
     data class RemoveType(val type: String) : Modification
     @Serializable
     data class ChangeController(val newControllerId: EntityId) : Modification
+
+    /**
+     * Change controller to whoever controls the source of this effect.
+     * Used for Aura effects like "You control enchanted permanent" where
+     * the controller is resolved dynamically at projection time.
+     */
+    @Serializable
+    data object ChangeControllerToSourceController : Modification
 
     @Serializable
     data class GrantProtectionFromColor(val color: String) : Modification

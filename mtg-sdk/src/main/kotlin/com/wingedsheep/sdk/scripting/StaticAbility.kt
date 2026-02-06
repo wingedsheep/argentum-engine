@@ -58,6 +58,15 @@ data class ModifyStats(
 }
 
 /**
+ * You control enchanted permanent.
+ * Used for Auras like Annex that steal control of the enchanted permanent.
+ */
+@Serializable
+data object ControlEnchantedPermanent : StaticAbility {
+    override val description: String = "You control enchanted permanent"
+}
+
+/**
  * Global effect that affects multiple permanents.
  */
 @Serializable

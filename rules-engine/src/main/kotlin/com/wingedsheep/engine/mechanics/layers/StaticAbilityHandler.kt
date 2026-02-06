@@ -4,6 +4,7 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.CardDefinition
+import com.wingedsheep.sdk.scripting.ControlEnchantedPermanent
 import com.wingedsheep.sdk.scripting.GlobalEffect
 import com.wingedsheep.sdk.scripting.GlobalEffectType
 import com.wingedsheep.sdk.scripting.GrantKeywordToCreatureGroup
@@ -92,10 +93,18 @@ class StaticAbilityHandler(
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
+            is ControlEnchantedPermanent -> {
+                // "You control enchanted permanent" - Layer 2 control-changing effect
+                // The actual newControllerId is resolved dynamically by the StateProjector
+                // using a placeholder; the Aura's controller is used at projection time
+                ContinuousEffectData(
+                    layer = Layer.CONTROL,
+                    sublayer = null,
+                    modification = Modification.ChangeControllerToSourceController,
+                    affectsFilter = AffectsFilter.AttachedPermanent
+                )
+            }
             is GlobalEffect -> convertGlobalEffect(ability)
-            // TODO: Add support for other static ability types as needed:
-            // - GrantKeyword (for equipment granting keywords)
-            // - ModifyStats (for equipment granting P/T)
             else -> null
         }
     }

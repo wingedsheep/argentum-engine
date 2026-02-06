@@ -267,6 +267,16 @@ class StackResolver(
     ): GameState {
         val controllerId = spellComponent.casterId
 
+        // For Auras: get the target before removing TargetsComponent
+        val auraTargetId = if (cardComponent?.isAura == true) {
+            state.getEntity(spellId)?.get<TargetsComponent>()?.targets?.firstOrNull()?.let { target ->
+                when (target) {
+                    is ChosenTarget.Permanent -> target.entityId
+                    else -> null
+                }
+            }
+        } else null
+
         // Update entity: remove spell components, add permanent components
         var newState = state.updateEntity(spellId) { c ->
             var updated = c.without<SpellOnStackComponent>()
@@ -287,6 +297,13 @@ class StackResolver(
             // Add continuous effects from static abilities (but not for face-down creatures)
             if (!spellComponent.castFaceDown) {
                 updated = staticAbilityHandler.addContinuousEffectComponent(updated)
+            }
+
+            // Aura attachment: add AttachedToComponent pointing to the target
+            if (auraTargetId != null) {
+                updated = updated.with(
+                    com.wingedsheep.engine.state.components.battlefield.AttachedToComponent(auraTargetId)
+                )
             }
 
             updated
