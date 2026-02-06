@@ -182,6 +182,7 @@ export type {
   ChooseNumberDecision,
   ChooseOptionDecision,
   DistributeDecision,
+  ChooseColorDecision,
   // Sealed Draft types
   SealedCardInfo,
   SealedGameCreatedMessage,

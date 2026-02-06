@@ -7,11 +7,14 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.scripting.ControlEnchantedPermanent
 import com.wingedsheep.sdk.scripting.GlobalEffect
 import com.wingedsheep.sdk.scripting.GlobalEffectType
+import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.GrantKeywordToCreatureGroup
 import com.wingedsheep.sdk.scripting.GroupFilter
 import com.wingedsheep.sdk.scripting.ControllerPredicate
+import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.StatePredicate
 import com.wingedsheep.sdk.scripting.StaticAbility
+import com.wingedsheep.sdk.scripting.StaticTarget
 
 /**
  * Converts static abilities from card definitions into ContinuousEffectSourceComponent.
@@ -93,6 +96,22 @@ class StaticAbilityHandler(
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
+            is ModifyStats -> {
+                ContinuousEffectData(
+                    layer = Layer.POWER_TOUGHNESS,
+                    sublayer = Sublayer.MODIFICATIONS,
+                    modification = Modification.ModifyPowerToughness(ability.powerBonus, ability.toughnessBonus),
+                    affectsFilter = convertStaticTarget(ability.target)
+                )
+            }
+            is GrantKeyword -> {
+                ContinuousEffectData(
+                    layer = Layer.ABILITY,
+                    sublayer = null,
+                    modification = Modification.GrantKeyword(ability.keyword.name),
+                    affectsFilter = convertStaticTarget(ability.target)
+                )
+            }
             is ControlEnchantedPermanent -> {
                 // "You control enchanted permanent" - Layer 2 control-changing effect
                 // The actual newControllerId is resolved dynamically by the StateProjector
@@ -141,6 +160,19 @@ class StaticAbilityHandler(
             modification = modification,
             affectsFilter = convertGroupFilter(effect.filter)
         )
+    }
+
+    /**
+     * Convert a StaticTarget to an AffectsFilter.
+     */
+    private fun convertStaticTarget(target: StaticTarget): AffectsFilter {
+        return when (target) {
+            is StaticTarget.AttachedCreature -> AffectsFilter.AttachedPermanent
+            is StaticTarget.SourceCreature -> AffectsFilter.Self
+            is StaticTarget.AllControlledCreatures -> AffectsFilter.AllCreaturesYouControl
+            is StaticTarget.Controller -> AffectsFilter.Self
+            is StaticTarget.SpecificCard -> AffectsFilter.SpecificEntities(setOf(target.entityId))
+        }
     }
 
     /**

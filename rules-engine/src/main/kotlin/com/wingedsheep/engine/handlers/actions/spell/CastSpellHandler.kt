@@ -139,9 +139,12 @@ class CastSpellHandler(
             return paymentError
         }
 
-        // Validate targets
+        // Validate targets (include auraTarget as a target requirement for aura spells)
         if (cardDef != null) {
-            val targetRequirements = cardDef.script.targetRequirements
+            val targetRequirements = buildList {
+                addAll(cardDef.script.targetRequirements)
+                cardDef.script.auraTarget?.let { add(it) }
+            }
             if (targetRequirements.isNotEmpty()) {
                 // Reject casting if spell requires targets but none were provided
                 if (action.targets.isEmpty()) {

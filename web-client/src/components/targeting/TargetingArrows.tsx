@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useGameStore } from '../../store/gameStore'
 import { useStackCards } from '../../store/selectors'
 import type { EntityId, ClientChosenTarget } from '../../types'
 
@@ -149,7 +150,13 @@ interface TargetArrow {
  */
 export function TargetingArrows() {
   const stackCards = useStackCards()
+  const pendingDecision = useGameStore((state) => state.pendingDecision)
   const [arrows, setArrows] = useState<TargetArrow[]>([])
+
+  // Hide arrows during full-screen overlay decisions (e.g., ChooseColorDecision)
+  const hasOverlayDecision = pendingDecision != null &&
+    pendingDecision.type !== 'ChooseTargetsDecision' &&
+    !(pendingDecision.type === 'SelectCardsDecision' && pendingDecision.useTargetingUI)
 
   // Update arrow positions periodically
   useEffect(() => {
@@ -192,7 +199,7 @@ export function TargetingArrows() {
     return () => clearInterval(interval)
   }, [stackCards])
 
-  if (arrows.length === 0) {
+  if (arrows.length === 0 || hasOverlayDecision) {
     return null
   }
 

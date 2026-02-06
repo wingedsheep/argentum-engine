@@ -806,7 +806,10 @@ class GameSession(
                     }
 
                     if (canAfford) {
-                        val targetReqs = cardDef?.script?.targetRequirements ?: emptyList()
+                        val targetReqs = buildList {
+                            addAll(cardDef?.script?.targetRequirements ?: emptyList())
+                            cardDef?.script?.auraTarget?.let { add(it) }
+                        }
 
                         logger.debug("Card '${cardComponent.name}': cardDef=${cardDef != null}, targetReqs=${targetReqs.size}")
 

@@ -172,6 +172,11 @@ export function CombatArrows() {
   const isSelectingDamageOrder = pendingDecision?.type === 'OrderObjectsDecision' &&
     pendingDecision?.context?.phase === 'COMBAT'
 
+  // Hide all arrows during full-screen overlay decisions (e.g., ChooseColorDecision)
+  const hasOverlayDecision = pendingDecision != null &&
+    pendingDecision.type !== 'ChooseTargetsDecision' &&
+    !(pendingDecision.type === 'SelectCardsDecision' && pendingDecision.useTargetingUI)
+
   // Track mouse position during drag
   useEffect(() => {
     if (!draggingBlockerId) {
@@ -319,6 +324,11 @@ export function CombatArrows() {
     const interval = setInterval(updateArrows, 100)
     return () => clearInterval(interval)
   }, [combatState, gameStateCombat, opponentBlockerAssignments, isDeclaringBlockers, isInCombatPhase, cards, isSpectating, isSelectingDamageOrder])
+
+  // Don't render during full-screen overlay decisions
+  if (hasOverlayDecision) {
+    return null
+  }
 
   // Don't render if no arrows to show (only show during combat phase)
   const hasBlockers = isDeclaringBlockers ||

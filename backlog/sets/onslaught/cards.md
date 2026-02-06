@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 63 / 335
+**Implemented:** 78 / 335
 
 ---
 
@@ -53,7 +53,7 @@
 - [ ] Cabal Slaver
 - [ ] Callous Oppressor
 - [ ] Catapult Master
-- [ ] Catapult Squad
+- [x] Catapult Squad
 - [ ] Centaur Glade
 - [ ] Chain of Acid
 - [ ] Chain of Plasma
@@ -130,7 +130,7 @@
 - [ ] Fleeting Aven
 - [ ] Flooded Strand
 - [ ] Foothill Guide
-- [ ] Forest
+- [x] Forest
 - [ ] Forgotten Cave
 - [ ] Frightshroud Courier
 - [ ] Future Sight
@@ -147,7 +147,7 @@
 - [ ] Goblin Sharpshooter
 - [x] Goblin Sky Raider
 - [x] Goblin Sledder
-- [ ] Goblin Taskmaster
+- [x] Goblin Taskmaster
 - [ ] Grand Coliseum
 - [ ] Grand Melee
 - [x] Grassland Crusader
@@ -175,7 +175,7 @@
 - [ ] Insurrection
 - [ ] Invigorating Boon
 - [ ] Ironfist Crusher
-- [ ] Island
+- [x] Island
 - [ ] Ixidor, Reality Sculptor
 - [ ] Ixidor's Will
 - [ ] Jareth, Leonine Titan
@@ -183,7 +183,7 @@
 - [ ] Kamahl, Fist of Krosa
 - [ ] Kamahl's Summons
 - [x] Krosan Colossus
-- [ ] Krosan Groundshaker
+- [x] Krosan Groundshaker
 - [ ] Krosan Tusker
 - [ ] Lavamancer's Skill
 - [x] Lay Waste
@@ -203,7 +203,7 @@
 - [ ] Mistform Stalker
 - [ ] Mistform Wall
 - [ ] Mobilization
-- [ ] Mountain
+- [x] Mountain
 - [ ] Mythic Proportions
 - [ ] Nameless One
 - [x] Nantuko Husk
@@ -219,14 +219,14 @@
 - [ ] Peer Pressure
 - [ ] Piety Charm
 - [x] Pinpoint Avalanche
-- [ ] Plains
+- [x] Plains
 - [ ] Polluted Delta
 - [ ] Primal Boost
 - [ ] Profane Prayers
 - [ ] Prowling Pangolin
 - [ ] Psychic Trance
 - [ ] Quicksilver Dragon
-- [ ] Ravenous Baloth
+- [x] Ravenous Baloth
 - [ ] Read the Runes
 - [ ] Reckless One
 - [ ] Reminisce
@@ -239,7 +239,7 @@
 - [ ] Riptide Replicator
 - [ ] Riptide Shapeshifter
 - [ ] Risky Move
-- [ ] Rorix Bladewing
+- [x] Rorix Bladewing
 - [ ] Rotlung Reanimator
 - [ ] Rummaging Wizard
 - [ ] Run Wild
@@ -249,7 +249,7 @@
 - [x] Screeching Buzzard
 - [ ] Sea's Claim
 - [ ] Seaside Haven
-- [ ] Searing Flesh
+- [x] Searing Flesh
 - [ ] Secluded Steppe
 - [ ] Serpentine Basilisk
 - [x] Severed Legion
@@ -265,7 +265,7 @@
 - [ ] Silvos, Rogue Elemental
 - [ ] Skirk Commando
 - [ ] Skirk Fire Marshal
-- [ ] Skirk Prospector
+- [x] Skirk Prospector
 - [ ] Skittish Valesk
 - [ ] Slate of Ancestry
 - [ ] Slice and Dice
@@ -279,7 +279,7 @@
 - [x] Spined Basher
 - [ ] Spitfire Handler
 - [x] Spitting Gourna
-- [ ] Spurred Wolverine
+- [x] Spurred Wolverine
 - [ ] Spy Network
 - [ ] Stag Beetle
 - [ ] Standardize
@@ -289,7 +289,7 @@
 - [ ] Strongarm Tactics
 - [ ] Sunfire Balm
 - [ ] Supreme Inquisitor
-- [ ] Swamp
+- [x] Swamp
 - [x] Swat
 - [x] Symbiotic Beast
 - [x] Symbiotic Elf
@@ -303,7 +303,7 @@
 - [ ] Thrashing Mudspawn
 - [ ] Threaten
 - [ ] Thunder of Hooves
-- [ ] Towering Baloth
+- [x] Towering Baloth
 - [ ] Trade Secrets
 - [ ] Tranquil Thicket
 - [x] Treespring Lorian
@@ -315,7 +315,7 @@
 - [ ] Unholy Grotto
 - [ ] Unified Strike
 - [ ] Venomspout Brackus
-- [ ] Visara the Dreadful
+- [x] Visara the Dreadful
 - [ ] Vitality Charm
 - [ ] Voice of the Woods
 - [ ] Voidmage Prodigy

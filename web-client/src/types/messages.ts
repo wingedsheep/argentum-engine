@@ -283,6 +283,14 @@ export interface DistributeDecision extends PendingDecisionBase {
 }
 
 /**
+ * Player must choose a color (e.g., protection from color of your choice).
+ */
+export interface ChooseColorDecision extends PendingDecisionBase {
+  readonly type: 'ChooseColorDecision'
+  readonly availableColors: readonly string[]
+}
+
+/**
  * Union of all pending decision types.
  */
 export type PendingDecision =
@@ -295,6 +303,7 @@ export type PendingDecision =
   | ChooseNumberDecision
   | ChooseOptionDecision
   | DistributeDecision
+  | ChooseColorDecision
 
 /**
  * Information about a single target requirement for legal actions.

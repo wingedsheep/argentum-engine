@@ -37,6 +37,6 @@ val Whipcorder = card("Whipcorder") {
         collectorNumber = "56"
         artist = "Kev Walker"
         flavorText = "\"The bigger they are, the harder they fall.\""
-        imageUri = "https://cards.scryfall.io/normal/front/1/0/10f8e52a-7fef-4e16-b434-cfb8eb79f587.jpg?1562898742"
+        imageUri = "https://cards.scryfall.io/large/front/3/b/3bf6987e-a6e4-4a88-af0b-cf3b2d2b80c7.jpg?1562909065"
     }
 }

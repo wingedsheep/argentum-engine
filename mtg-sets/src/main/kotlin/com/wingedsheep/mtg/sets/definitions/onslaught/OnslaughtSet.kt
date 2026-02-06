@@ -27,6 +27,7 @@ object OnslaughtSet {
         AncestorsProphet,
         AstralSlide,
         AuraExtraction,
+        CatapultSquad,
         CrudeRampart,
         Demystify,
         GrasslandCrusader,
@@ -64,6 +65,7 @@ object OnslaughtSet {
         SeveredLegion,
         Smother,
         Swat,
+        VisaraTheDreadful,
 
         // Red creatures and spells
         AetherCharge,
@@ -74,15 +76,22 @@ object OnslaughtSet {
         FlamestickCourier,
         GoblinSkyRaider,
         GoblinSledder,
+        GoblinTaskmaster,
         LayWaste,
         PinpointAvalanche,
+        RorixBladewing,
+        SearingFlesh,
         Shock,
+        SkirkProspector,
+        SpurredWolverine,
 
         // Green creatures and spells
         AnimalMagnetism,
         EvergloveCourier,
         KrosanColossus,
+        KrosanGroundshaker,
         Naturalize,
+        RavenousBaloth,
         BarkhideMauler,
         ElvishVanguard,
         ElvishWarrior,
@@ -90,10 +99,13 @@ object OnslaughtSet {
         SymbioticBeast,
         SymbioticElf,
         SymbioticWurm,
+        ToweringBaloth,
         TreespringLorian,
         Wellwisher,
         WirewoodElf,
         WirewoodHerald,
         WirewoodSavage,
-    )
+
+        // Basic lands
+    ) + OnslaughtBasicLands
 }
