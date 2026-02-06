@@ -29,6 +29,7 @@ object OnslaughtSet {
         AuraExtraction,
         CrudeRampart,
         Demystify,
+        Inspirit,
         DaruLancer,
         DiscipleOfGrace,
         GlorySeeker,
