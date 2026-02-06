@@ -35,7 +35,11 @@ class GameBeansConfig(
 
     @Bean
     fun randomDeckGenerator(): RandomDeckGenerator = RandomDeckGenerator(
-        cardPool = PortalSet.allCards,
+        cardPool = if (gameProperties.sets.onslaughtEnabled) {
+            PortalSet.allCards + OnslaughtSet.allCards
+        } else {
+            PortalSet.allCards
+        },
         basicLandVariants = PortalSet.basicLands
     )
 }

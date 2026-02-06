@@ -45,6 +45,11 @@ check:
 server:
     @if [ -f .env ]; then set -a && source .env && set +a; fi && ./gradlew :game-server:bootRun
 
+# Start the game server with Onslaught set enabled
+[group: 'dev']
+server-ons:
+    @if [ -f .env ]; then set -a && source .env && set +a; fi && GAME_SETS_ONSLAUGHT_ENABLED=true ./gradlew :game-server:bootRun
+
 # Start the web client in dev mode
 [group: 'dev']
 client:
