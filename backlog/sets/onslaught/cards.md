@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 45 / 335
+**Implemented:** 46 / 335
 
 ---
 
@@ -20,7 +20,7 @@
 - [x] Aphetto Alchemist
 - [x] Aphetto Dredging
 - [x] Aphetto Grifter
-- [ ] Aphetto Vulture
+- [x] Aphetto Vulture
 - [ ] Arcanis the Omnipotent
 - [ ] Artificial Evolution
 - [ ] Ascending Aven

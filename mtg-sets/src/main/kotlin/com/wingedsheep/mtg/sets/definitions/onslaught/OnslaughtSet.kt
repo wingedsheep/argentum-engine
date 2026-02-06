@@ -40,6 +40,7 @@ object OnslaughtSet {
         // Black creatures and spells
         AccursedCentaur,
         AphettoDredging,
+        AphettoVulture,
         AnuridMurkdiver,
         DiscipleOfMalice,
         FesteringGoblin,
