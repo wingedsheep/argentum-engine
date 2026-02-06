@@ -80,8 +80,8 @@ class DevScenarioController(
                 mediaType = "application/json",
                 examples = [
                     ExampleObject(
-                        name = "Combat scenario",
-                        summary = "Player 1 attacking with creatures",
+                        name = "Combat Tricks - Giant Growth & Terror",
+                        summary = "Giant Growth pump vs Terror removal",
                         value = """
 {
   "player1Name": "Alice",
@@ -252,8 +252,8 @@ class DevScenarioController(
                         """
                     ),
                     ExampleObject(
-                        name = "Tribal Elves - Symbiotic Synergy",
-                        summary = "Elf tribal with token generators and Wellwisher",
+                        name = "Tribal Elves - Wellwisher & Symbiotic Elf",
+                        summary = "Elf tribal lifegain and token generation vs Infest",
                         value = """
 {
   "player1Name": "Alice",
