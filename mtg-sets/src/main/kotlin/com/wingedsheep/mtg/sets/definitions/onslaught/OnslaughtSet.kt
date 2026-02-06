@@ -45,6 +45,7 @@ object OnslaughtSet {
         // Red creatures and spells
         AetherCharge,
         AggravatedAssault,
+        AirdropCondor,
         BatteringCraghorn,
         ChargingSlateback,
         GoblinSkyRaider,
