@@ -46,6 +46,7 @@ object OnslaughtSet {
         // Blue creatures and spells
         AirborneAid,
         Annex,
+        NamelessOne,
         AphettoAlchemist,
         AphettoGrifter,
         ArcanisTheOmnipotent,
@@ -58,6 +59,7 @@ object OnslaughtSet {
         // Black creatures and spells
         AccursedCentaur,
         AphettoDredging,
+        DirgeOfDread,
         Headhunter,
         AphettoVulture,
         AnuridMurkdiver,
@@ -86,6 +88,7 @@ object OnslaughtSet {
         // Red creatures and spells
         AetherCharge,
         BrightstoneRitual,
+        SkirkCommando,
         AggravatedAssault,
         AirdropCondor,
         BatteringCraghorn,

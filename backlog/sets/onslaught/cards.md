@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 114 / 335
+**Implemented:** 117 / 335
 
 ---
 
@@ -90,7 +90,7 @@
 - [ ] Death Pulse
 - [ ] Defensive Maneuvers
 - [x] Demystify
-- [ ] Dirge of Dread
+- [x] Dirge of Dread
 - [x] Disciple of Grace
 - [x] Disciple of Malice
 - [ ] Discombobulate
@@ -205,7 +205,7 @@
 - [ ] Mobilization
 - [x] Mountain
 - [x] Mythic Proportions
-- [ ] Nameless One
+- [x] Nameless One
 - [x] Nantuko Husk
 - [x] Naturalize
 - [ ] Nosy Goblin
@@ -263,7 +263,7 @@
 - [ ] Silent Specter
 - [ ] Silklash Spider
 - [ ] Silvos, Rogue Elemental
-- [ ] Skirk Commando
+- [x] Skirk Commando
 - [ ] Skirk Fire Marshal
 - [x] Skirk Prospector
 - [ ] Skittish Valesk
