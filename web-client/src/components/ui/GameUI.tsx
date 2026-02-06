@@ -368,7 +368,7 @@ function LobbyOverlay({
                       }}
                       className={`${styles.settingsButton} ${isSelected ? (isDraft ? `${styles.settingsButtonActive} ${styles.settingsButtonDraft}` : styles.settingsButtonActive) : ''}`}
                     >
-                      {set.name}
+                      {set.name}{set.incomplete ? ' (Incomplete)' : ''}
                     </button>
                   )
                 })}

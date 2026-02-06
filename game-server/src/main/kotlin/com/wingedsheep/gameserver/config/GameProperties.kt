@@ -14,5 +14,5 @@ data class HandSmootherProperties(
 )
 
 data class SetsProperties(
-    val onslaughtEnabled: Boolean = false
+    val onslaughtEnabled: Boolean = true
 )

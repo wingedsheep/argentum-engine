@@ -24,6 +24,8 @@ interface GameCardProps {
   overrideWidth?: number
   isOpponentCard?: boolean
   inHand?: boolean
+  /** Force tapped visual (e.g. for attachments of tapped permanents) */
+  forceTapped?: boolean
 }
 
 /**
@@ -39,6 +41,7 @@ export function GameCard({
   overrideWidth,
   isOpponentCard = false,
   inHand = false,
+  forceTapped = false,
 }: GameCardProps) {
   const selectCard = useGameStore((state) => state.selectCard)
   const selectedCardId = useGameStore((state) => state.selectedCardId)
@@ -84,6 +87,7 @@ export function GameCard({
   const hoveredCardId = useGameStore((state) => state.hoveredCardId)
   const autoTapPreview = useGameStore((state) => state.autoTapPreview)
 
+  const isTapped = card.isTapped || forceTapped
   const isSelected = selectedCardId === card.id
   const isInAutoTapPreview = autoTapPreview?.includes(card.id) ?? false
   const isHovered = hoveredCardId === card.id
@@ -429,7 +433,7 @@ export function GameCard({
 
   // Container dimensions - expand width when tapped to prevent overlap
   // Tapped cards rotate 90deg, so they need width = height to not overlap
-  const containerWidth = card.isTapped && battlefield ? height + 8 : width
+  const containerWidth = isTapped && battlefield ? height + 8 : width
   const containerHeight = height
 
   const cardElement = (
@@ -448,7 +452,7 @@ export function GameCard({
         borderRadius: responsive.isMobile ? 4 : 8,
         cursor,
         border: borderStyle,
-        transform: `${card.isTapped ? 'rotate(90deg)' : ''} ${isSelected && !isInCombatMode ? 'translateY(-8px)' : ''}`,
+        transform: `${isTapped ? 'rotate(90deg)' : ''} ${isSelected && !isInCombatMode ? 'translateY(-8px)' : ''}`,
         transformOrigin: 'center',
         boxShadow,
         opacity: isBeingDragged ? 0.6 : 1,
@@ -488,7 +492,7 @@ export function GameCard({
       </div>
 
       {/* Tapped indicator */}
-      {card.isTapped && (
+      {isTapped && (
         <div style={styles.tappedOverlay} />
       )}
 
@@ -588,7 +592,7 @@ export function GameCard({
   )
 
   // Wrap in container for tapped battlefield cards to prevent overlap
-  if (card.isTapped && battlefield) {
+  if (isTapped && battlefield) {
     return (
       <div style={{
         width: containerWidth,

@@ -1,8 +1,11 @@
-import { useBattlefieldCards, groupCards } from '../../../store/selectors'
+import { useBattlefieldCards, groupCards, selectGameState } from '../../../store/selectors'
+import { useGameStore } from '../../../store/gameStore'
 import { useResponsiveContext } from './shared'
 import { styles } from './styles'
 import { CardStack } from '../card'
+import { GameCard } from '../card'
 import { GroupedCard } from '../../../store/selectors'
+import type { ClientCard } from '../../../types'
 
 /**
  * Battlefield area with two rows per player, each using a 3-column grid:
@@ -24,6 +27,7 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
     opponentPlaneswalkers,
     opponentOther,
   } = useBattlefieldCards()
+  const gameState = useGameStore(selectGameState)
   const responsive = useResponsiveContext()
 
   const lands = isOpponent ? opponentLands : playerLands
@@ -43,6 +47,14 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
   const groupedPlaneswalkers = toSingles(planeswalkers)
   const groupedOther = toSingles(other)
 
+  // Resolve attachment cards for a permanent
+  const getAttachments = (card: ClientCard): ClientCard[] => {
+    if (!gameState || card.attachments.length === 0) return []
+    return card.attachments
+      .map((id) => gameState.cards[id])
+      .filter((c): c is ClientCard => c != null)
+  }
+
   const hasCreatures = groupedCreatures.length > 0
   const hasPlaneswalkers = groupedPlaneswalkers.length > 0
   const hasLands = groupedLands.length > 0
@@ -52,6 +64,75 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
   const showDivider = hasFrontRow && hasBackRow
 
   const interactive = !spectatorMode && !isOpponent
+
+  // How much of each attachment card peeks out from behind its parent
+  const attachmentPeekUp = responsive.isMobile ? 14 : 18
+  const attachmentShiftLeft = responsive.isMobile ? 6 : 8
+  const cardHeight = Math.round(responsive.battlefieldCardWidth * 1.4)
+
+  /**
+   * Renders a permanent with any attached cards (auras, equipment) stacked underneath.
+   * Works for any permanent type - creatures, lands, planeswalkers, etc.
+   */
+  const renderWithAttachments = (group: GroupedCard) => {
+    const attachments = getAttachments(group.card)
+    if (attachments.length === 0) {
+      return (
+        <CardStack
+          key={group.cardIds[0]}
+          group={group}
+          interactive={interactive}
+          isOpponentCard={isOpponent}
+        />
+      )
+    }
+
+    const parentTapped = group.card.isTapped
+    const totalShiftLeft = attachments.length * attachmentShiftLeft
+    const totalExtraUp = attachments.length * attachmentPeekUp
+    // When tapped, cards rotate 90deg so their visual width becomes the height
+    const mainCardWidth = parentTapped ? cardHeight + 8 : responsive.battlefieldCardWidth
+
+    return (
+      <div
+        key={group.cardIds[0]}
+        style={{
+          position: 'relative',
+          width: mainCardWidth + totalShiftLeft,
+          height: cardHeight + totalExtraUp,
+        }}
+      >
+        {/* Attachments behind, shifted left and up from the main card */}
+        {attachments.map((attachment, index) => (
+          <div
+            key={attachment.id}
+            style={{
+              position: 'absolute',
+              left: (attachments.length - 1 - index) * attachmentShiftLeft,
+              top: (attachments.length - 1 - index) * attachmentPeekUp,
+              zIndex: index,
+            }}
+          >
+            <GameCard
+              card={attachment}
+              interactive={interactive}
+              battlefield
+              isOpponentCard={isOpponent}
+              forceTapped={parentTapped}
+            />
+          </div>
+        ))}
+        {/* Main card on top, offset to the right and bottom */}
+        <div style={{ position: 'absolute', left: totalShiftLeft, top: totalExtraUp, zIndex: attachments.length + 1 }}>
+          <CardStack
+            group={group}
+            interactive={interactive}
+            isOpponentCard={isOpponent}
+          />
+        </div>
+      </div>
+    )
+  }
 
   /**
    * Renders a 3-column grid row:
@@ -66,7 +147,7 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
     <div style={{
       display: 'grid',
       gridTemplateColumns: '1fr auto 1fr',
-      alignItems: 'center',
+      alignItems: 'end',
       width: '100%',
       ...extra,
     }}>
@@ -74,35 +155,23 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
       <div style={{
         display: 'flex',
         justifyContent: 'flex-end',
+        alignItems: 'flex-end',
         flexWrap: 'wrap',
         gap: responsive.cardGap,
         paddingRight: sideItems.length > 0 && centerItems.length > 0 ? responsive.cardGap * 2 : 0,
       }}>
-        {sideItems.map((group) => (
-          <CardStack
-            key={group.cardIds[0]}
-            group={group}
-            interactive={interactive}
-            isOpponentCard={isOpponent}
-          />
-        ))}
+        {sideItems.map((group) => renderWithAttachments(group))}
       </div>
 
       {/* Center column: main items */}
       <div style={{
         display: 'flex',
         justifyContent: 'center',
+        alignItems: 'flex-end',
         flexWrap: 'wrap',
         gap: responsive.cardGap,
       }}>
-        {centerItems.map((group) => (
-          <CardStack
-            key={group.cardIds[0]}
-            group={group}
-            interactive={interactive}
-            isOpponentCard={isOpponent}
-          />
-        ))}
+        {centerItems.map((group) => renderWithAttachments(group))}
       </div>
 
       {/* Right column: empty spacer to balance the grid */}

@@ -25,7 +25,8 @@ class BoosterGenerator(
         val setCode: String,
         val setName: String,
         val cards: List<CardDefinition>,
-        val basicLands: List<CardDefinition>
+        val basicLands: List<CardDefinition>,
+        val incomplete: Boolean = false
     )
 
     companion object {
@@ -40,13 +41,14 @@ class BoosterGenerator(
         )
 
         /**
-         * Onslaught set configuration (feature-toggled).
+         * Onslaught set configuration. Incomplete — not all cards are implemented yet.
          */
         val onslaughtSetConfig = SetConfig(
             setCode = OnslaughtSet.SET_CODE,
             setName = OnslaughtSet.SET_NAME,
             cards = OnslaughtSet.allCards,
-            basicLands = PortalSet.basicLands  // Use Portal lands for now
+            basicLands = PortalSet.basicLands,  // Use Portal lands for now
+            incomplete = true
         )
     }
 

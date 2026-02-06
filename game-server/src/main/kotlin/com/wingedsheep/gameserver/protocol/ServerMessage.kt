@@ -259,7 +259,8 @@ sealed interface ServerMessage {
     @Serializable
     data class AvailableSet(
         val code: String,
-        val name: String
+        val name: String,
+        val incomplete: Boolean = false
     )
 
     /**

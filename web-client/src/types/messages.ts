@@ -537,6 +537,7 @@ export interface LobbyPlayerInfo {
 export interface AvailableSet {
   readonly code: string
   readonly name: string
+  readonly incomplete?: boolean
 }
 
 export interface LobbySettings {

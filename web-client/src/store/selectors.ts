@@ -275,6 +275,10 @@ export function useBattlefieldCards(): {
       .map((id) => gameState.cards[id])
       .filter((card): card is ClientCard => card !== null && card !== undefined)
 
+    // Filter out cards attached to another permanent (auras, equipment) -
+    // they'll be rendered visually with the card they're attached to
+    const isNotAttached = (c: ClientCard) => !c.attachedTo
+
     const playerCards = cards.filter((c) => c.controllerId === playerId)
     const opponentCards = cards.filter((c) => c.controllerId !== playerId)
 
@@ -283,14 +287,14 @@ export function useBattlefieldCards(): {
     const isPlaneswalker = (c: ClientCard) => c.cardTypes.includes('PLANESWALKER')
 
     return {
-      playerLands: playerCards.filter(isLand),
-      playerCreatures: playerCards.filter((c) => isCreature(c) && !isLand(c)),
-      playerPlaneswalkers: playerCards.filter((c) => isPlaneswalker(c) && !isCreature(c) && !isLand(c)),
-      playerOther: playerCards.filter((c) => !isCreature(c) && !isPlaneswalker(c) && !isLand(c)),
-      opponentLands: opponentCards.filter(isLand),
-      opponentCreatures: opponentCards.filter((c) => isCreature(c) && !isLand(c)),
-      opponentPlaneswalkers: opponentCards.filter((c) => isPlaneswalker(c) && !isCreature(c) && !isLand(c)),
-      opponentOther: opponentCards.filter((c) => !isCreature(c) && !isPlaneswalker(c) && !isLand(c)),
+      playerLands: playerCards.filter((c) => isLand(c) && isNotAttached(c)),
+      playerCreatures: playerCards.filter((c) => isCreature(c) && !isLand(c) && isNotAttached(c)),
+      playerPlaneswalkers: playerCards.filter((c) => isPlaneswalker(c) && !isCreature(c) && !isLand(c) && isNotAttached(c)),
+      playerOther: playerCards.filter((c) => !isCreature(c) && !isPlaneswalker(c) && !isLand(c) && isNotAttached(c)),
+      opponentLands: opponentCards.filter((c) => isLand(c) && isNotAttached(c)),
+      opponentCreatures: opponentCards.filter((c) => isCreature(c) && !isLand(c) && isNotAttached(c)),
+      opponentPlaneswalkers: opponentCards.filter((c) => isPlaneswalker(c) && !isCreature(c) && !isLand(c) && isNotAttached(c)),
+      opponentOther: opponentCards.filter((c) => !isCreature(c) && !isPlaneswalker(c) && !isLand(c) && isNotAttached(c)),
     }
   }, [gameState, playerId])
 }
