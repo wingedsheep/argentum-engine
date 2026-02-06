@@ -106,6 +106,8 @@ object OnslaughtSet {
 
         // Green creatures and spells
         AnimalMagnetism,
+        BroodhatchNantuko,
+        ElvishPioneer,
         EvergloveCourier,
         ExplosiveVegetation,
         InvigoratingBoon,
@@ -120,6 +122,7 @@ object OnslaughtSet {
         BarkhideMauler,
         ElvishVanguard,
         ElvishWarrior,
+        HeedlessOne,
         SpittingGourna,
         SymbioticBeast,
         SymbioticElf,

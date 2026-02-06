@@ -78,6 +78,7 @@ class ContinuationHandler(
             is GraveyardToHandContinuation -> resumeGraveyardToHand(stateAfterPop, continuation, response)
             is ChooseFromCreatureTypeContinuation -> resumeChooseFromCreatureType(stateAfterPop, continuation, response)
             is ChooseToCreatureTypeContinuation -> resumeChooseToCreatureType(stateAfterPop, continuation, response)
+            is PutFromHandContinuation -> resumePutFromHand(stateAfterPop, continuation, response)
         }
     }
 
@@ -289,7 +290,8 @@ class ContinuationHandler(
             sourceName = continuation.sourceName,
             controllerId = continuation.controllerId,
             effect = continuation.effect,
-            description = continuation.description
+            description = continuation.description,
+            triggerDamageAmount = continuation.triggerDamageAmount
         )
 
         // Put the ability on the stack with the selected targets
@@ -2041,5 +2043,80 @@ class ContinuationHandler(
         }
 
         return ExecutionResult.success(state, events)
+    }
+
+    /**
+     * Resume putting a card from hand onto the battlefield after card selection.
+     */
+    private fun resumePutFromHand(
+        state: GameState,
+        continuation: PutFromHandContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for put-from-hand")
+        }
+
+        // Player selected 0 cards — declined
+        if (response.selectedCards.isEmpty()) {
+            return checkForMoreContinuations(state, emptyList())
+        }
+
+        val cardId = response.selectedCards.first()
+        val playerId = continuation.playerId
+        val handZone = ZoneKey(playerId, Zone.HAND)
+
+        // Verify card is still in hand
+        if (cardId !in state.getZone(handZone)) {
+            return checkForMoreContinuations(state, emptyList())
+        }
+
+        var newState = state
+
+        // Remove from hand
+        newState = newState.removeFromZone(handZone, cardId)
+
+        // Add to battlefield
+        val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
+        newState = newState.addToZone(battlefieldZone, cardId)
+
+        // Apply battlefield components
+        val container = newState.getEntity(cardId)
+        if (container != null) {
+            var newContainer = container
+                .with(com.wingedsheep.engine.state.components.identity.ControllerComponent(playerId))
+
+            // Creatures enter with summoning sickness
+            val cardComponent = container.get<CardComponent>()
+            if (cardComponent?.typeLine?.isCreature == true) {
+                newContainer = newContainer.with(
+                    com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
+                )
+            }
+
+            // Apply tapped status if entersTapped
+            if (continuation.entersTapped) {
+                newContainer = newContainer.with(TappedComponent)
+            }
+
+            newState = newState.copy(
+                entities = newState.entities + (cardId to newContainer)
+            )
+        }
+
+        // Emit zone change event
+        val cardComponent = newState.getEntity(cardId)?.get<CardComponent>()
+        val cardName = cardComponent?.name ?: "Unknown"
+        val events = listOf(
+            ZoneChangeEvent(
+                entityId = cardId,
+                entityName = cardName,
+                fromZone = Zone.HAND,
+                toZone = Zone.BATTLEFIELD,
+                ownerId = playerId
+            )
+        )
+
+        return checkForMoreContinuations(newState, events)
     }
 }

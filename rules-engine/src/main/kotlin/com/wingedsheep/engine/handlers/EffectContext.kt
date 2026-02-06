@@ -14,5 +14,7 @@ data class EffectContext(
     val xValue: Int? = null,
     val sacrificedPermanents: List<EntityId> = emptyList(),
     /** Pre-chosen damage distribution for DividedDamageEffect spells (target ID -> damage amount) */
-    val damageDistribution: Map<EntityId, Int>? = null
+    val damageDistribution: Map<EntityId, Int>? = null,
+    /** Amount of damage from a trigger context (e.g., "Whenever ~ is dealt damage") */
+    val triggerDamageAmount: Int? = null
 )

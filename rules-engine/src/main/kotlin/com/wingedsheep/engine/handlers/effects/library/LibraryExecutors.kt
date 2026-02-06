@@ -16,6 +16,7 @@ class LibraryExecutors : ExecutorModule {
         LookAtOpponentLibraryExecutor(),
         LookAtTopCardsExecutor(),
         RevealAndOpponentChoosesExecutor(),
-        WheelEffectExecutor()
+        WheelEffectExecutor(),
+        PutLandFromHandExecutor()
     )
 }

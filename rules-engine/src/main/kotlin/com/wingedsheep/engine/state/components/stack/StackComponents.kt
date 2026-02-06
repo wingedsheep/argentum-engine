@@ -31,7 +31,8 @@ data class TriggeredAbilityOnStackComponent(
     val sourceName: String,
     val controllerId: EntityId,
     val effect: Effect,
-    val description: String
+    val description: String,
+    val triggerDamageAmount: Int? = null
 ) : Component {
     val hasTargets: Boolean = false  // Will be updated based on effect
 }

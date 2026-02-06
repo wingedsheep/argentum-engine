@@ -479,7 +479,8 @@ class StackResolver(
             sourceId = abilityComponent.sourceId,
             controllerId = abilityComponent.controllerId,
             opponentId = state.getOpponent(abilityComponent.controllerId),
-            targets = targetsComponent?.targets ?: emptyList()
+            targets = targetsComponent?.targets ?: emptyList(),
+            triggerDamageAmount = abilityComponent.triggerDamageAmount
         )
 
         val effectResult = effectHandler.execute(state, abilityComponent.effect, context)

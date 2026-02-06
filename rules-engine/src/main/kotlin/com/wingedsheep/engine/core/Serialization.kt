@@ -136,6 +136,7 @@ val engineSerializersModule = SerializersModule {
         subclass(GraveyardToHandContinuation::class)
         subclass(ChooseFromCreatureTypeContinuation::class)
         subclass(ChooseToCreatureTypeContinuation::class)
+        subclass(PutFromHandContinuation::class)
     }
 
     // Component hierarchy (for GameState persistence)

@@ -101,6 +101,10 @@ class PassPriorityHandler(
             return result
         }
 
+        // Detect triggers from resolution events BEFORE SBAs (so damage triggers
+        // see the creature still on the battlefield, per MTG rules 603.10)
+        val preSbaTriggers = triggerDetector.detectTriggers(result.newState, result.events)
+
         // Check state-based actions after resolution
         val sbaResult = sbaChecker.checkAndApply(result.newState)
         var combinedEvents = result.events + sbaResult.events
@@ -109,8 +113,9 @@ class PassPriorityHandler(
             return ExecutionResult.success(sbaResult.newState, combinedEvents)
         }
 
-        // Detect and process triggers from resolution and SBA events
-        val triggers = triggerDetector.detectTriggers(sbaResult.newState, combinedEvents)
+        // Detect triggers from SBA events (e.g., death triggers) on post-SBA state
+        val sbaTriggers = triggerDetector.detectTriggers(sbaResult.newState, sbaResult.events)
+        val triggers = preSbaTriggers + sbaTriggers
         if (triggers.isNotEmpty()) {
             val triggerResult = triggerProcessor.processTriggers(sbaResult.newState, triggers)
 

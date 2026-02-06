@@ -174,6 +174,15 @@ sealed interface DynamicAmount {
         override val description: String = "the sacrificed creature's toughness"
     }
 
+    /**
+     * The amount of damage dealt, from a trigger context.
+     * Used for abilities like "Whenever ~ is dealt damage, create that many tokens."
+     */
+    @Serializable
+    data object TriggerDamageAmount : DynamicAmount {
+        override val description: String = "the damage dealt"
+    }
+
     // =========================================================================
     // Zone-based Counting — generic counting primitives
     // =========================================================================

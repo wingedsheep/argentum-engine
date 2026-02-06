@@ -9,6 +9,7 @@ import com.wingedsheep.engine.handlers.effects.ExecutorModule
 class TokenExecutors : ExecutorModule {
     override fun executors(): List<EffectExecutor<*>> = listOf(
         CreateTokenExecutor(),
-        CreateTreasureExecutor()
+        CreateTreasureExecutor(),
+        CreateDynamicTokensExecutor()
     )
 }

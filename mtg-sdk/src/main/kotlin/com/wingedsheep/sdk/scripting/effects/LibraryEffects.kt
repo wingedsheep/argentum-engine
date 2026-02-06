@@ -236,3 +236,21 @@ data class PutCreatureFromHandOntoBattlefieldEffect(
         if (entersAttacking) append(" and attacking")
     }
 }
+
+/**
+ * Put a land card from your hand onto the battlefield.
+ * "You may put a basic land card from your hand onto the battlefield tapped."
+ *
+ * @property filter Filter for which land cards qualify (default: BasicLand)
+ * @property entersTapped Whether the land enters tapped
+ */
+@Serializable
+data class PutLandFromHandOntoBattlefieldEffect(
+    val filter: GameObjectFilter = GameObjectFilter.BasicLand,
+    val entersTapped: Boolean = false
+) : Effect {
+    override val description: String = buildString {
+        append("Put a ${filter.description} card from your hand onto the battlefield")
+        if (entersTapped) append(" tapped")
+    }
+}

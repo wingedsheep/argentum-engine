@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.mechanics.layers
 
+import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
+import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
@@ -11,6 +13,7 @@ import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.model.CharacteristicValue
 import com.wingedsheep.sdk.model.EntityId
 import kotlinx.serialization.Serializable
 
@@ -34,7 +37,9 @@ import kotlinx.serialization.Serializable
  *    d. Counters (+1/+1, -1/-1)
  *    e. Effects that switch P/T
  */
-class StateProjector {
+class StateProjector(
+    private val dynamicAmountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator()
+) {
 
     /**
      * Project the full game state with all continuous effects applied.
@@ -42,6 +47,9 @@ class StateProjector {
     fun project(state: GameState): ProjectedState {
         // Initialize projected values from base state
         val projectedValues = mutableMapOf<EntityId, MutableProjectedValues>()
+
+        // Track entities with dynamic stats (CDAs) for resolution after initialization
+        val dynamicStatEntities = mutableListOf<Pair<EntityId, CardComponent>>()
 
         // Initialize all permanents with their base values
         for (entityId in state.getBattlefield()) {
@@ -61,9 +69,10 @@ class StateProjector {
                     isFaceDown = true
                 )
             } else {
+                val baseStats = cardComponent.baseStats
                 projectedValues[entityId] = MutableProjectedValues(
-                    power = cardComponent.baseStats?.basePower,
-                    toughness = cardComponent.baseStats?.baseToughness,
+                    power = baseStats?.basePower,  // null for dynamic stats
+                    toughness = baseStats?.baseToughness,  // null for dynamic stats
                     keywords = (cardComponent.baseKeywords.map { it.name } +
                         (container.get<ProtectionComponent>()?.colors?.map { "PROTECTION_FROM_${it.name}" } ?: emptyList())).toMutableSet(),
                     colors = cardComponent.colors.map { it.name }.toMutableSet(),
@@ -72,6 +81,38 @@ class StateProjector {
                     controllerId = container.get<ControllerComponent>()?.playerId,
                     isFaceDown = false
                 )
+
+                // Track entities with dynamic stats for CDA resolution
+                if (baseStats?.isDynamic == true) {
+                    dynamicStatEntities.add(entityId to cardComponent)
+                }
+            }
+        }
+
+        // Resolve CDAs (Layer 7a) - evaluate dynamic power/toughness
+        for ((entityId, cardComponent) in dynamicStatEntities) {
+            val values = projectedValues[entityId] ?: continue
+            val controllerId = values.controllerId ?: continue
+            val context = EffectContext(
+                sourceId = entityId,
+                controllerId = controllerId,
+                opponentId = state.getOpponent(controllerId)
+            )
+            val baseStats = cardComponent.baseStats ?: continue
+
+            when (val power = baseStats.power) {
+                is CharacteristicValue.Dynamic ->
+                    values.power = dynamicAmountEvaluator.evaluate(state, power.source, context)
+                is CharacteristicValue.DynamicWithOffset ->
+                    values.power = dynamicAmountEvaluator.evaluate(state, power.source, context) + power.offset
+                is CharacteristicValue.Fixed -> {} // Already set
+            }
+            when (val toughness = baseStats.toughness) {
+                is CharacteristicValue.Dynamic ->
+                    values.toughness = dynamicAmountEvaluator.evaluate(state, toughness.source, context)
+                is CharacteristicValue.DynamicWithOffset ->
+                    values.toughness = dynamicAmountEvaluator.evaluate(state, toughness.source, context) + toughness.offset
+                is CharacteristicValue.Fixed -> {} // Already set
             }
         }
 

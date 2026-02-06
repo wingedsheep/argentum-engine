@@ -5,6 +5,50 @@ import com.wingedsheep.sdk.core.Keyword
 import kotlinx.serialization.Serializable
 
 // =============================================================================
+// Dynamic Token Effects
+// =============================================================================
+
+/**
+ * Create tokens with a dynamic count determined at resolution time.
+ * "Create X 1/1 green Insect creature tokens, where X is the damage dealt."
+ *
+ * @property count Dynamic amount determining how many tokens to create
+ * @property power Token power
+ * @property toughness Token toughness
+ * @property colors Token colors
+ * @property creatureTypes Token creature types
+ * @property keywords Keywords the token has
+ * @property name Optional token name (defaults to creature types + "Token")
+ * @property imageUri Optional image URI for the token artwork
+ */
+@Serializable
+data class CreateDynamicTokensEffect(
+    val count: DynamicAmount,
+    val power: Int,
+    val toughness: Int,
+    val colors: Set<Color>,
+    val creatureTypes: Set<String>,
+    val keywords: Set<Keyword> = emptySet(),
+    val name: String? = null,
+    val imageUri: String? = null
+) : Effect {
+    override val description: String = buildString {
+        append("Create ")
+        append(count.description)
+        append(" $power/$toughness ")
+        append(colors.joinToString(" and ") { it.displayName.lowercase() })
+        append(" ")
+        append(creatureTypes.joinToString(" "))
+        append(" creature token")
+        append("s")
+        if (keywords.isNotEmpty()) {
+            append(" with ")
+            append(keywords.joinToString(", ") { it.name.lowercase() })
+        }
+    }
+}
+
+// =============================================================================
 // Token Effects
 // =============================================================================
 

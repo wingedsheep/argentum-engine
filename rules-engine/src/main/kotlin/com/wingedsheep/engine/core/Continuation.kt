@@ -106,7 +106,25 @@ data class TriggeredAbilityContinuation(
     val sourceName: String,
     val controllerId: EntityId,
     val effect: Effect,
-    val description: String
+    val description: String,
+    val triggerDamageAmount: Int? = null
+) : ContinuationFrame
+
+/**
+ * Resume putting a card from hand onto the battlefield after card selection.
+ *
+ * @property playerId The player selecting a card from their hand
+ * @property entersTapped Whether the card enters the battlefield tapped
+ * @property sourceId The source entity that triggered this effect
+ * @property sourceName Name of the source for display
+ */
+@Serializable
+data class PutFromHandContinuation(
+    override val decisionId: String,
+    val playerId: EntityId,
+    val entersTapped: Boolean,
+    val sourceId: EntityId?,
+    val sourceName: String?
 ) : ContinuationFrame
 
 /**

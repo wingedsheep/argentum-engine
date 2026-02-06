@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 108 / 335
+**Implemented:** 111 / 335
 
 ---
 
@@ -46,7 +46,7 @@
 - [ ] Boneknitter
 - [ ] Break Open
 - [x] Brightstone Ritual
-- [ ] Broodhatch Nantuko
+- [x] Broodhatch Nantuko
 - [ ] Butcher Orgg
 - [x] Cabal Archon
 - [ ] Cabal Executioner
@@ -107,7 +107,7 @@
 - [ ] Elven Riders
 - [ ] Elvish Guidance
 - [ ] Elvish Pathcutter
-- [ ] Elvish Pioneer
+- [x] Elvish Pioneer
 - [ ] Elvish Scrapper
 - [x] Elvish Vanguard
 - [x] Elvish Warrior
@@ -165,7 +165,7 @@
 - [ ] Haunted Cadaver
 - [ ] Head Games
 - [x] Headhunter
-- [ ] Heedless One
+- [x] Heedless One
 - [ ] Hystrodon
 - [ ] Imagecrafter
 - [x] Improvised Armor

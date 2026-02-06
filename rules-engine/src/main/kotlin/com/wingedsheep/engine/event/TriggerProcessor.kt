@@ -180,7 +180,8 @@ class TriggerProcessor(
             sourceName = trigger.sourceName,
             controllerId = trigger.controllerId,
             effect = ability.effect,
-            description = ability.description
+            description = ability.description,
+            triggerDamageAmount = trigger.triggerContext.damageAmount
         )
 
         // Push the continuation onto the stack
@@ -208,7 +209,8 @@ class TriggerProcessor(
             sourceName = trigger.sourceName,
             controllerId = trigger.controllerId,
             effect = ability.effect,
-            description = ability.description
+            description = ability.description,
+            triggerDamageAmount = trigger.triggerContext.damageAmount
         )
 
         return stackResolver.putTriggeredAbility(state, abilityComponent, targets)
