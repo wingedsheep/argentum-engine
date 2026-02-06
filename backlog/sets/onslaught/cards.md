@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 105 / 335
+**Implemented:** 108 / 335
 
 ---
 
@@ -119,7 +119,7 @@
 - [ ] Essence Fracture
 - [x] Everglove Courier
 - [ ] Exalted Angel
-- [ ] Explosive Vegetation
+- [x] Explosive Vegetation
 - [x] Fade from Memory
 - [ ] Fallen Cleric
 - [ ] False Cure
@@ -184,7 +184,7 @@
 - [ ] Kamahl's Summons
 - [x] Krosan Colossus
 - [x] Krosan Groundshaker
-- [ ] Krosan Tusker
+- [x] Krosan Tusker
 - [ ] Lavamancer's Skill
 - [x] Lay Waste
 - [ ] Leery Fogbeast
@@ -273,7 +273,7 @@
 - [x] Smother
 - [ ] Snapping Thragg
 - [x] Snarling Undorak
-- [ ] Solar Blast
+- [x] Solar Blast
 - [ ] Soulless One
 - [x] Sparksmith
 - [x] Spined Basher
