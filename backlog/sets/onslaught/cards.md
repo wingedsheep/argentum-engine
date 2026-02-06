@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 39 / 335
+**Implemented:** 41 / 335
 
 ---
 
@@ -11,13 +11,13 @@
 - [x] Aggravated Assault
 - [x] Airborne Aid
 - [x] Airdrop Condor
-- [ ] Akroma's Blessing
+- [x] Akroma's Blessing
 - [x] Akroma's Vengeance
 - [x] Ancestor's Prophet
 - [x] Animal Magnetism
 - [ ] Annex
 - [x] Anurid Murkdiver
-- [ ] Aphetto Alchemist
+- [x] Aphetto Alchemist
 - [ ] Aphetto Dredging
 - [ ] Aphetto Grifter
 - [ ] Aphetto Vulture
