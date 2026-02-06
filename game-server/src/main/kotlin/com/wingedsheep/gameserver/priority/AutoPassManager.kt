@@ -50,6 +50,15 @@ class AutoPassManager {
 
     private val logger = LoggerFactory.getLogger(AutoPassManager::class.java)
 
+    companion object {
+        /** Combat steps the engine auto-skips when no creatures are attacking (CR 508.8, 510.4, 511.4) */
+        private val COMBAT_STEPS_SKIPPED_WITHOUT_ATTACKERS = setOf(
+            Step.DECLARE_BLOCKERS,
+            Step.FIRST_STRIKE_COMBAT_DAMAGE,
+            Step.COMBAT_DAMAGE
+        )
+    }
+
     /**
      * Determines if the player with priority should automatically pass.
      *
@@ -504,6 +513,11 @@ class AutoPassManager {
                 onMyTurn = !onMyTurn
             }
             step = nextStep
+
+            // Skip combat steps that the engine auto-skips when there are no attackers (CR 508.8)
+            if (!hasAttackers && step in COMBAT_STEPS_SKIPPED_WITHOUT_ATTACKERS) {
+                continue
+            }
 
             // Check if we'd stop at this step
             if (wouldStopAtStep(step, onMyTurn, hasMeaningfulActions)) {

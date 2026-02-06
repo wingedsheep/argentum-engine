@@ -654,9 +654,10 @@ class AutoPassManagerTest : FunSpec({
             autoPassManager.getNextStopPoint(state, player1, false) shouldBe "Pass to Main"
         }
 
-        test("returns 'Pass to Blockers' from declare attackers on opponent's turn with meaningful actions") {
+        test("returns 'Pass to End Step' from declare attackers on opponent's turn with no attackers") {
+            // With no attacking creatures, engine skips blockers and combat damage steps (CR 508.8)
             val state = createMockState(player1, player2, Step.DECLARE_ATTACKERS)
-            autoPassManager.getNextStopPoint(state, player1, true) shouldBe "Pass to Blockers"
+            autoPassManager.getNextStopPoint(state, player1, true) shouldBe "Pass to End Step"
         }
 
         test("returns 'Pass to End Step' from opponent's combat with meaningful actions") {
