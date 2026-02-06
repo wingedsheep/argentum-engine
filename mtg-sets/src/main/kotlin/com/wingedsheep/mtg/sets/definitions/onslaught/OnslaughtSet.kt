@@ -23,6 +23,7 @@ object OnslaughtSet {
     val allCards = listOf(
         // White creatures and spells
         AkromasBlessing,
+        DoubtlessOne,
         AkromasVengeance,
         AncestorsProphet,
         AstralSlide,
@@ -73,6 +74,7 @@ object OnslaughtSet {
         ShepherdOfRot,
         SpinedBasher,
         NantukoHusk,
+        SoullessOne,
         ScreechingBuzzard,
         SeveredLegion,
         Smother,
@@ -95,6 +97,7 @@ object OnslaughtSet {
         LayWaste,
         LightningRift,
         PinpointAvalanche,
+        RecklessOne,
         RorixBladewing,
         SearingFlesh,
         Shock,

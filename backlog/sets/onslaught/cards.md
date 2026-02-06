@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 111 / 335
+**Implemented:** 114 / 335
 
 ---
 
@@ -99,7 +99,7 @@
 - [ ] Dive Bomber
 - [ ] Doom Cannon
 - [ ] Doomed Necromancer
-- [ ] Doubtless One
+- [x] Doubtless One
 - [ ] Dragon Roost
 - [ ] Dream Chisel
 - [ ] Dwarven Blastminer
@@ -228,7 +228,7 @@
 - [ ] Quicksilver Dragon
 - [x] Ravenous Baloth
 - [ ] Read the Runes
-- [ ] Reckless One
+- [x] Reckless One
 - [ ] Reminisce
 - [x] Renewed Faith
 - [ ] Righteous Cause
@@ -274,7 +274,7 @@
 - [ ] Snapping Thragg
 - [x] Snarling Undorak
 - [x] Solar Blast
-- [ ] Soulless One
+- [x] Soulless One
 - [x] Sparksmith
 - [x] Spined Basher
 - [ ] Spitfire Handler
