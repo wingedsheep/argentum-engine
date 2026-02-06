@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 102 / 335
+**Implemented:** 105 / 335
 
 ---
 
@@ -164,7 +164,7 @@
 - [ ] Harsh Mercy
 - [ ] Haunted Cadaver
 - [ ] Head Games
-- [ ] Headhunter
+- [x] Headhunter
 - [ ] Heedless One
 - [ ] Hystrodon
 - [ ] Imagecrafter
@@ -250,7 +250,7 @@
 - [ ] Sea's Claim
 - [ ] Seaside Haven
 - [x] Searing Flesh
-- [ ] Secluded Steppe
+- [x] Secluded Steppe
 - [ ] Serpentine Basilisk
 - [x] Severed Legion
 - [ ] Shade's Breath
@@ -305,7 +305,7 @@
 - [ ] Thunder of Hooves
 - [x] Towering Baloth
 - [ ] Trade Secrets
-- [ ] Tranquil Thicket
+- [x] Tranquil Thicket
 - [x] Treespring Lorian
 - [ ] Tribal Golem
 - [ ] Tribal Unity

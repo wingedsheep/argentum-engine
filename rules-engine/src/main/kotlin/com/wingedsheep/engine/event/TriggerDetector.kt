@@ -266,7 +266,7 @@ class TriggerDetector(
         for (ability in abilities) {
             val trigger = ability.trigger
             if (trigger is OnDealsDamage) {
-                if (matchesDealsDamageTrigger(trigger, event)) {
+                if (matchesDealsDamageTrigger(trigger, event, state)) {
                     triggers.add(
                         PendingTrigger(
                             ability = ability,
@@ -434,9 +434,9 @@ class TriggerDetector(
         }
     }
 
-    private fun matchesDealsDamageTrigger(trigger: OnDealsDamage, event: DamageDealtEvent): Boolean {
+    private fun matchesDealsDamageTrigger(trigger: OnDealsDamage, event: DamageDealtEvent, state: GameState): Boolean {
         val combatMatches = !trigger.combatOnly || event.isCombatDamage
-        val targetMatches = !trigger.toPlayerOnly // TODO: Check if target is a player
+        val targetMatches = !trigger.toPlayerOnly || event.targetId in state.turnOrder
         return combatMatches && targetMatches
     }
 

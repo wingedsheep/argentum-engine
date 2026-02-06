@@ -57,6 +57,7 @@ object OnslaughtSet {
         // Black creatures and spells
         AccursedCentaur,
         AphettoDredging,
+        Headhunter,
         AphettoVulture,
         AnuridMurkdiver,
         CabalArchon,
@@ -131,6 +132,8 @@ object OnslaughtSet {
         BarrenMoor,
         ForgottenCave,
         LonelySandbar,
+        SecludedSteppe,
+        TranquilThicket,
 
         // Basic lands
     ) + OnslaughtBasicLands
