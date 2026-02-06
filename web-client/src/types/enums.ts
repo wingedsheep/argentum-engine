@@ -223,16 +223,16 @@ export const KeywordDisplayNames: Record<Keyword, string> = {
 }
 
 /**
- * Zone type enum matching backend ZoneType.kt
+ * Zone type enum matching backend Zone.kt
  */
 export enum ZoneType {
-  LIBRARY = 'LIBRARY',
-  HAND = 'HAND',
-  BATTLEFIELD = 'BATTLEFIELD',
-  GRAVEYARD = 'GRAVEYARD',
-  STACK = 'STACK',
-  EXILE = 'EXILE',
-  COMMAND = 'COMMAND',
+  LIBRARY = 'Library',
+  HAND = 'Hand',
+  BATTLEFIELD = 'Battlefield',
+  GRAVEYARD = 'Graveyard',
+  STACK = 'Stack',
+  EXILE = 'Exile',
+  COMMAND = 'Command',
 }
 
 export function isPublicZone(zoneType: ZoneType): boolean {

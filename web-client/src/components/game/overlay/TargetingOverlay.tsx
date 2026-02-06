@@ -391,7 +391,7 @@ export function TargetingOverlay() {
   let allTargetsAreGraveyard = targetingState.validTargets.length > 0
   for (const targetId of targetingState.validTargets) {
     const card = gameState?.cards[targetId]
-    if (card && card.zone?.zoneType === 'GRAVEYARD') {
+    if (card && card.zone?.zoneType === 'Graveyard') {
       graveyardCards.push(card)
     } else {
       allTargetsAreGraveyard = false

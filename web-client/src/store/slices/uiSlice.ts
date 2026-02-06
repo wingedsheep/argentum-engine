@@ -268,15 +268,15 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
             return { type: 'Player' as const, playerId: targetId }
           }
           const card = gameState.cards[targetId]
-          if (card && card.zone?.zoneType === 'GRAVEYARD') {
+          if (card && card.zone?.zoneType === 'Graveyard') {
             return {
               type: 'Card' as const,
               cardId: targetId,
               ownerId: card.zone.ownerId,
-              zone: 'GRAVEYARD' as const,
+              zone: 'Graveyard' as const,
             }
           }
-          if (card && card.zone?.zoneType === 'STACK') {
+          if (card && card.zone?.zoneType === 'Stack') {
             return { type: 'Spell' as const, spellEntityId: targetId }
           }
           return { type: 'Permanent' as const, entityId: targetId }
@@ -298,15 +298,15 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
           return { type: 'Player' as const, playerId: targetId }
         }
         const card = gameState.cards[targetId]
-        if (card && card.zone?.zoneType === 'GRAVEYARD') {
+        if (card && card.zone?.zoneType === 'Graveyard') {
           return {
             type: 'Card' as const,
             cardId: targetId,
             ownerId: card.zone.ownerId,
-            zone: 'GRAVEYARD' as const,
+            zone: 'Graveyard' as const,
           }
         }
-        if (card && card.zone?.zoneType === 'STACK') {
+        if (card && card.zone?.zoneType === 'Stack') {
           return { type: 'Spell' as const, spellEntityId: targetId }
         }
         return { type: 'Permanent' as const, entityId: targetId }
