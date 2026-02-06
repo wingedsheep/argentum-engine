@@ -39,7 +39,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
   const submitAction = useGameStore((state) => state.submitAction)
   const combatState = useGameStore((state) => state.combatState)
   const confirmCombat = useGameStore((state) => state.confirmCombat)
-  const cancelCombat = useGameStore((state) => state.cancelCombat)
+  const clearAttackers = useGameStore((state) => state.clearAttackers)
   const clearBlockerAssignments = useGameStore((state) => state.clearBlockerAssignments)
   const attackWithAll = useGameStore((state) => state.attackWithAll)
   const priorityMode = useGameStore(selectPriorityMode)
@@ -362,7 +362,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
                   ...styles.combatButtonSecondary,
                 }}
               >
-                Skip
+                Skip Attacking
               </button>
             </>
           ) : (
@@ -377,13 +377,13 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
                 Attack with {combatState.selectedAttackers.length}
               </button>
               <button
-                onClick={cancelCombat}
+                onClick={clearAttackers}
                 style={{
                   ...styles.combatButton,
                   ...styles.combatButtonSecondary,
                 }}
               >
-                Cancel
+                Clear Attackers
               </button>
             </>
           )}

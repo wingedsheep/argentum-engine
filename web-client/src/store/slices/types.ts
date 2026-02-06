@@ -425,6 +425,7 @@ export type GameStore = {
   confirmCombat: () => void
   cancelCombat: () => void
   attackWithAll: () => void
+  clearAttackers: () => void
   clearCombat: () => void
   startXSelection: (state: XSelectionState) => void
   updateXValue: (x: number) => void

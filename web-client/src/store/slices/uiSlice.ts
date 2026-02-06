@@ -65,6 +65,7 @@ export interface UISliceActions {
   confirmCombat: () => void
   cancelCombat: () => void
   attackWithAll: () => void
+  clearAttackers: () => void
   clearCombat: () => void
   startXSelection: (state: XSelectionState) => void
   updateXValue: (x: number) => void
@@ -521,6 +522,20 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
     }
 
     set({ draggingBlockerId: null })
+  },
+
+  clearAttackers: () => {
+    set((state) => {
+      if (!state.combatState || state.combatState.mode !== 'declareAttackers') {
+        return state
+      }
+      return {
+        combatState: {
+          ...state.combatState,
+          selectedAttackers: [],
+        },
+      }
+    })
   },
 
   clearCombat: () => {
