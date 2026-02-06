@@ -34,52 +34,87 @@ Parse the arguments: the card name is the main argument, and `--set <set-code>` 
    - Common errata: "Bury" -> "Destroy + can't be regenerated", "Remove from game" -> "Exile", creature type updates
 
 4. Parse the oracle text to understand:
-   - Card type (creature, instant, sorcery, enchantment, etc.)
-   - Abilities (spell effect, triggered, activated, static)
+   - Card type (creature, instant, sorcery, enchantment, artifact, planeswalker, etc.)
+   - Abilities (spell effect, triggered, activated, static, replacement)
    - Targeting requirements
-   - Keywords
+   - Keywords (simple and parameterized)
+   - Conditions and restrictions
 
-## Phase 2: Check Existing Effects
+## Phase 2: Check Existing SDK Components
 
-Before implementing anything new, search for existing effects that can be reused.
+Before implementing anything new, check what already exists using the DSL facades and raw types.
 
-1. Search for effects in mtg-sdk:
-   ```bash
-   grep -r "data class.*Effect\|data object.*Effect" mtg-sdk/src/main/kotlin/
-   ```
+1. **Check DSL facades first** - these are the primary API:
+   - `Effects.*` - effect construction (`mtg-sdk/.../dsl/Effects.kt`)
+   - `Targets.*` - target requirements (`mtg-sdk/.../dsl/Targets.kt`)
+   - `Triggers.*` - trigger types (`mtg-sdk/.../dsl/Triggers.kt`)
+   - `Filters.*` - filter construction (`mtg-sdk/.../dsl/Filters.kt`)
+   - `Costs.*` - ability costs (`mtg-sdk/.../dsl/Costs.kt`)
+   - `Conditions.*` - conditions (`mtg-sdk/.../dsl/Conditions.kt`)
+   - `DynamicAmounts.*` - dynamic values (`mtg-sdk/.../dsl/DynamicAmounts.kt`)
+   - `EffectPatterns.*` - common patterns (`mtg-sdk/.../dsl/EffectPatterns.kt`)
 
-2. Check for existing executors:
-   ```bash
-   ls rules-engine/src/main/kotlin/com/wingedsheep/engine/handlers/effects/
-   ```
+2. **Check raw effect types** in `mtg-sdk/.../scripting/effect/`:
+   - `DamageEffects.kt`, `LifeEffects.kt`, `DrawingEffects.kt`, `RemovalEffects.kt`
+   - `PermanentEffects.kt`, `LibraryEffects.kt`, `ManaEffects.kt`, `TokenEffects.kt`
+   - `CompositeEffects.kt`, `CombatEffects.kt`, `PlayerEffects.kt`, `StackEffects.kt`
 
-3. Review existing card implementations with similar mechanics:
+3. **Check other SDK types**:
+   - `Keyword.kt` - keywords
+   - `KeywordAbility.kt` - parameterized keywords (Ward, Protection, Cycling, etc.)
+   - `StaticAbility` types - for permanent/global effects
+   - `ReplacementEffect.kt` - replacement effects
+   - `AdditionalCost.kt` - additional spell costs
+   - `ActivationRestriction.kt` - activation restrictions
+
+4. **Check existing card implementations** with similar mechanics:
    ```bash
    grep -r "<keyword-or-effect>" mtg-sets/src/main/kotlin/
    ```
 
-For a full list of existing effects and keywords, see [reference.md](reference.md).
+For a full inventory, see [reference.md](reference.md).
 
 ## Phase 3: Identify Missing Components
 
 Compare the card's needs against existing components:
 
-1. **Effect exists and can be used as-is** -> Skip to Phase 5
-2. **Effect exists but needs parameters** -> Skip to Phase 5
-3. **Effect does NOT exist** -> Phase 4 (implement new effect)
-4. **Keyword does NOT exist** -> Phase 4 (add keyword)
+1. **Everything exists** -> Skip to Phase 5
+2. **New effect needed** -> Phase 4 (implement new effect + executor)
+3. **New keyword needed** -> Phase 4 (add keyword)
+4. **New static ability needed** -> Phase 4
+5. **New replacement effect needed** -> Phase 4
+6. **New trigger needed** -> Phase 4
+7. **New condition needed** -> Phase 4
 
 ## Phase 4: Implement Missing Backend Components
 
-If new effects or keywords are needed:
+If new components are needed:
 
-**4.1 Add Effect Type** in `mtg-sdk/src/main/kotlin/com/wingedsheep/sdk/scripting/Effect.kt`
+**4.1 Add Effect Type** in the appropriate file under `mtg-sdk/.../scripting/effect/`:
+- `DamageEffects.kt`, `LifeEffects.kt`, `DrawingEffects.kt`, `RemovalEffects.kt`
+- `PermanentEffects.kt`, `LibraryEffects.kt`, `ManaEffects.kt`, `TokenEffects.kt`
+- `CompositeEffects.kt`, `CombatEffects.kt`, `PlayerEffects.kt`, `StackEffects.kt`
 
-**4.2 Create Effect Executor** in `rules-engine/src/main/kotlin/com/wingedsheep/engine/handlers/effects/{category}/`
+**4.2 Create Effect Executor** in `rules-engine/.../handlers/effects/{category}/`
+- Choose the matching category directory (combat/, damage/, drawing/, library/, life/, mana/, permanent/, player/, removal/, stack/, token/, composite/, information/)
 
-**4.3 Register Executor** in `rules-engine/src/main/kotlin/com/wingedsheep/engine/handlers/effects/{Category}Executors.kt`
+**4.3 Register Executor** in the appropriate `{Category}Executors.kt` module file
 
-**4.4 Add New Keyword** (if needed) in `mtg-sdk/src/main/kotlin/com/wingedsheep/sdk/core/Keyword.kt`
+**4.4 Add DSL Facade** (recommended) in `mtg-sdk/.../dsl/Effects.kt` for new effects
+
+**4.5 Add New Keyword** (if needed) in `mtg-sdk/.../core/Keyword.kt`
+- Also update `web-client/src/types/enums.ts` (Keyword enum + KeywordDisplayNames)
+- Also update `web-client/src/assets/icons/keywords/index.ts` if it should have an icon
+
+**4.6 Add Static Ability** (if needed) in `mtg-sdk/.../scripting/StaticAbility.kt`
+
+**4.7 Add Replacement Effect** (if needed) in `mtg-sdk/.../scripting/ReplacementEffect.kt`
+
+**4.8 Add Trigger** (if needed) in the appropriate file under `mtg-sdk/.../scripting/trigger/`
+- Also add a facade entry in `mtg-sdk/.../dsl/Triggers.kt`
+
+**4.9 Add Condition** (if needed) in the appropriate file under `mtg-sdk/.../scripting/condition/`
+- Also add a facade entry in `mtg-sdk/.../dsl/Conditions.kt`
 
 For code templates, see [examples.md](examples.md).
 
@@ -87,7 +122,7 @@ For code templates, see [examples.md](examples.md).
 
 **File**: `mtg-sets/src/main/kotlin/com/wingedsheep/mtg/sets/definitions/{set}/cards/{CardName}.kt`
 
-Use the `card` DSL. For complete examples of creatures, spells, triggered abilities, and X-cost spells, see [examples.md](examples.md).
+Use the `card` DSL. Prefer DSL facades (`Effects.*`, `Targets.*`, `Triggers.*`, `Filters.*`, etc.) over raw constructors. For complete examples of creatures, spells, triggered abilities, activated abilities, static abilities, equipment, auras, modal spells, and X-cost spells, see [examples.md](examples.md).
 
 ## Phase 6: Register Card in Set
 
@@ -97,7 +132,7 @@ Add the card to the `allCards` list (alphabetically or by collector number).
 
 ## Phase 7: Create Scenario Test (Required for New Effects/Keywords)
 
-If this card uses a NEW effect or keyword, create a scenario test.
+If this card uses a NEW effect, keyword, trigger, condition, or static ability, create a scenario test.
 
 **File**: `game-server/src/test/kotlin/com/wingedsheep/gameserver/scenarios/{CardName}ScenarioTest.kt`
 
@@ -128,16 +163,26 @@ just build
 
 **Card with New Effect**:
 - [ ] All of the above, plus:
-- [ ] Add effect type to `mtg-sdk/.../Effect.kt`
-- [ ] Create executor in `rules-engine/.../handlers/effects/`
-- [ ] Register in appropriate `*Executors.kt`
+- [ ] Add effect type to appropriate file in `mtg-sdk/.../scripting/effect/`
+- [ ] Add DSL facade in `Effects.kt` (recommended)
+- [ ] Create executor in `rules-engine/.../handlers/effects/{category}/`
+- [ ] Register in appropriate `{Category}Executors.kt`
 - [ ] Write scenario test
 - [ ] Run tests
 
 **Card with New Keyword**:
 - [ ] All of the simple card steps, plus:
-- [ ] Add keyword to `mtg-sdk/.../Keyword.kt`
+- [ ] Add keyword to `mtg-sdk/.../core/Keyword.kt`
+- [ ] Update `web-client/src/types/enums.ts` (enum + display names)
 - [ ] Update keyword handlers if needed
+- [ ] Write scenario test
+- [ ] Run tests
+
+**Card with Static/Replacement/Trigger/Condition**:
+- [ ] All of the simple card steps, plus:
+- [ ] Add type to appropriate SDK file
+- [ ] Add DSL facade entry if applicable
+- [ ] Implement handler/executor if needed
 - [ ] Write scenario test
 - [ ] Run tests
 
@@ -146,8 +191,9 @@ just build
 1. **Always fetch from Scryfall first** - Never guess card text or stats
 2. **ALWAYS use set-specific API URL** - Use `&set=<code>` to get correct metadata for the specific printing
 3. **NEVER hallucinate image URIs** - Always use the exact `image_uris.normal` from Scryfall API response
-4. **Check existing effects** - Most common effects already exist
-5. **Use immutable patterns** - Never modify state in place
-6. **Test new mechanics** - All new effects/keywords need tests
-7. **Follow naming conventions** - CardName should match file name
-8. **Keep effects data-only** - Logic goes in executors, not effect data classes
+4. **Check DSL facades first** - Use `Effects.*`, `Targets.*`, `Triggers.*`, etc. before checking raw types
+5. **Check existing effects** - Most common effects already exist
+6. **Use immutable patterns** - Never modify state in place
+7. **Test new mechanics** - All new effects/keywords/triggers/conditions need tests
+8. **Follow naming conventions** - CardName should match file name
+9. **Keep effects data-only** - Logic goes in executors, not effect data classes

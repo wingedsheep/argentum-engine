@@ -14,7 +14,6 @@ import genericIcon from './generic.svg'
 
 export const keywordIcons: Record<string, string> = {
   FLYING: flyingIcon,
-  FLYING_REACH: flyingIcon,
   REACH: reachIcon,
   TRAMPLE: trampleIcon,
   FIRST_STRIKE: firstStrikeIcon,
@@ -33,7 +32,7 @@ export const keywordIcons: Record<string, string> = {
 export const genericKeywordIcon = genericIcon
 
 export const displayableKeywords = new Set([
-  'FLYING', 'FLYING_REACH', 'REACH', 'TRAMPLE',
+  'FLYING', 'REACH', 'TRAMPLE',
   'FIRST_STRIKE', 'DOUBLE_STRIKE', 'DEATHTOUCH',
   'LIFELINK', 'VIGILANCE', 'HASTE', 'HEXPROOF',
   'SHROUD', 'INDESTRUCTIBLE', 'DEFENDER', 'MENACE'

@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 enum class Keyword(val displayName: String) {
-    // Evasion
+    // ── Evasion ──────────────────────────────────────────────
     FLYING("Flying"),
     MENACE("Menace"),
     INTIMIDATE("Intimidate"),
@@ -12,15 +12,17 @@ enum class Keyword(val displayName: String) {
     SHADOW("Shadow"),
     HORSEMANSHIP("Horsemanship"),
     UNBLOCKABLE("Unblockable"),
+    CANT_BE_BLOCKED("Can't be blocked"),
+    CANT_BE_BLOCKED_BY_MORE_THAN_ONE("Can't be blocked by more than one creature"),
 
-    // Landwalk
+    // ── Landwalk ─────────────────────────────────────────────
     SWAMPWALK("Swampwalk"),
     FORESTWALK("Forestwalk"),
     ISLANDWALK("Islandwalk"),
     MOUNTAINWALK("Mountainwalk"),
     PLAINSWALK("Plainswalk"),
 
-    // Combat modifiers
+    // ── Combat ───────────────────────────────────────────────
     FIRST_STRIKE("First strike"),
     DOUBLE_STRIKE("Double strike"),
     TRAMPLE("Trample"),
@@ -28,31 +30,30 @@ enum class Keyword(val displayName: String) {
     LIFELINK("Lifelink"),
     VIGILANCE("Vigilance"),
     REACH("Reach"),
+
+    // ── Defense ──────────────────────────────────────────────
     DEFENDER("Defender"),
     INDESTRUCTIBLE("Indestructible"),
-
-    // Speed modifiers
-    HASTE("Haste"),
-    FLASH("Flash"),
-
-    // Protection and prevention
     HEXPROOF("Hexproof"),
     SHROUD("Shroud"),
     WARD("Ward"),
     PROTECTION("Protection"),
 
-    // Other
-    FLYING_REACH("Flying, Reach"),
+    // ── Speed ────────────────────────────────────────────────
+    HASTE("Haste"),
+    FLASH("Flash"),
 
-    // Lorwyn Eclipsed Keywords
-    CHANGELING("Changeling"),
+    // ── Triggered/Static keyword abilities ───────────────────
     PROWESS("Prowess"),
+    CHANGELING("Changeling"),
+
+    // ── Cost reduction ───────────────────────────────────────
     CONVOKE("Convoke"),
     DELVE("Delve"),
     AFFINITY("Affinity"),
-    CANT_BE_BLOCKED("Can't be blocked"),
-    CANT_UNTAP("Can't untap"),
-    CANT_BE_BLOCKED_BY_MORE_THAN_ONE("Can't be blocked by more than one creature");
+
+    // ── Restrictions ─────────────────────────────────────────
+    CANT_UNTAP("Can't untap");
 
     companion object {
         fun fromString(value: String): Keyword? =

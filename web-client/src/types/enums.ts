@@ -147,13 +147,15 @@ export enum Keyword {
   SHADOW = 'SHADOW',
   HORSEMANSHIP = 'HORSEMANSHIP',
   UNBLOCKABLE = 'UNBLOCKABLE',
+  CANT_BE_BLOCKED = 'CANT_BE_BLOCKED',
+  CANT_BE_BLOCKED_BY_MORE_THAN_ONE = 'CANT_BE_BLOCKED_BY_MORE_THAN_ONE',
   // Landwalk
   SWAMPWALK = 'SWAMPWALK',
   FORESTWALK = 'FORESTWALK',
   ISLANDWALK = 'ISLANDWALK',
   MOUNTAINWALK = 'MOUNTAINWALK',
   PLAINSWALK = 'PLAINSWALK',
-  // Combat modifiers
+  // Combat
   FIRST_STRIKE = 'FIRST_STRIKE',
   DOUBLE_STRIKE = 'DOUBLE_STRIKE',
   TRAMPLE = 'TRAMPLE',
@@ -161,24 +163,25 @@ export enum Keyword {
   LIFELINK = 'LIFELINK',
   VIGILANCE = 'VIGILANCE',
   REACH = 'REACH',
+  // Defense
   DEFENDER = 'DEFENDER',
   INDESTRUCTIBLE = 'INDESTRUCTIBLE',
-  // Speed modifiers
-  HASTE = 'HASTE',
-  FLASH = 'FLASH',
-  // Protection and prevention
   HEXPROOF = 'HEXPROOF',
   SHROUD = 'SHROUD',
   WARD = 'WARD',
   PROTECTION = 'PROTECTION',
-  // Other
-  FLYING_REACH = 'FLYING_REACH',
-  CHANGELING = 'CHANGELING',
+  // Speed
+  HASTE = 'HASTE',
+  FLASH = 'FLASH',
+  // Triggered/Static keyword abilities
   PROWESS = 'PROWESS',
+  CHANGELING = 'CHANGELING',
+  // Cost reduction
   CONVOKE = 'CONVOKE',
-  CANT_BE_BLOCKED = 'CANT_BE_BLOCKED',
+  DELVE = 'DELVE',
+  AFFINITY = 'AFFINITY',
+  // Restrictions
   CANT_UNTAP = 'CANT_UNTAP',
-  CANT_BE_BLOCKED_BY_MORE_THAN_ONE = 'CANT_BE_BLOCKED_BY_MORE_THAN_ONE',
 }
 
 export const KeywordDisplayNames: Record<Keyword, string> = {
@@ -189,6 +192,8 @@ export const KeywordDisplayNames: Record<Keyword, string> = {
   [Keyword.SHADOW]: 'Shadow',
   [Keyword.HORSEMANSHIP]: 'Horsemanship',
   [Keyword.UNBLOCKABLE]: 'Unblockable',
+  [Keyword.CANT_BE_BLOCKED]: "Can't be blocked",
+  [Keyword.CANT_BE_BLOCKED_BY_MORE_THAN_ONE]: "Can't be blocked by more than one creature",
   [Keyword.SWAMPWALK]: 'Swampwalk',
   [Keyword.FORESTWALK]: 'Forestwalk',
   [Keyword.ISLANDWALK]: 'Islandwalk',
@@ -203,19 +208,18 @@ export const KeywordDisplayNames: Record<Keyword, string> = {
   [Keyword.REACH]: 'Reach',
   [Keyword.DEFENDER]: 'Defender',
   [Keyword.INDESTRUCTIBLE]: 'Indestructible',
-  [Keyword.HASTE]: 'Haste',
-  [Keyword.FLASH]: 'Flash',
   [Keyword.HEXPROOF]: 'Hexproof',
   [Keyword.SHROUD]: 'Shroud',
   [Keyword.WARD]: 'Ward',
   [Keyword.PROTECTION]: 'Protection',
-  [Keyword.FLYING_REACH]: 'Flying, Reach',
-  [Keyword.CHANGELING]: 'Changeling',
+  [Keyword.HASTE]: 'Haste',
+  [Keyword.FLASH]: 'Flash',
   [Keyword.PROWESS]: 'Prowess',
+  [Keyword.CHANGELING]: 'Changeling',
   [Keyword.CONVOKE]: 'Convoke',
-  [Keyword.CANT_BE_BLOCKED]: "Can't be blocked",
+  [Keyword.DELVE]: 'Delve',
+  [Keyword.AFFINITY]: 'Affinity',
   [Keyword.CANT_UNTAP]: "Can't untap",
-  [Keyword.CANT_BE_BLOCKED_BY_MORE_THAN_ONE]: "Can't be blocked by more than one creature",
 }
 
 /**
