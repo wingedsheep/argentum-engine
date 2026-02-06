@@ -179,6 +179,24 @@ data class LookAtOpponentLibraryEffect(
 }
 
 /**
+ * Choose a creature type, then return up to N creature cards of that type from your graveyard to your hand.
+ *
+ * Used for Aphetto Dredging: "Return up to three target creature cards of the creature type
+ * of your choice from your graveyard to your hand."
+ *
+ * @property count Maximum number of cards to return
+ */
+@Serializable
+data class ChooseCreatureTypeReturnFromGraveyardEffect(
+    val count: Int = 3
+) : Effect {
+    override val description: String = buildString {
+        append("Return up to $count target creature cards of the creature type of your choice ")
+        append("from your graveyard to your hand")
+    }
+}
+
+/**
  * Reveal the top N cards of your library. An opponent chooses a card matching the filter
  * from among them. Put that card onto the battlefield and the rest into your graveyard.
  *

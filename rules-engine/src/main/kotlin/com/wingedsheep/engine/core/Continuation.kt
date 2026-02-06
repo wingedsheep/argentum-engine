@@ -503,6 +503,48 @@ data class RevealAndOpponentChoosesContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after player chooses a creature type for graveyard retrieval.
+ *
+ * Used for Aphetto Dredging: "Return up to three target creature cards of the creature type
+ * of your choice from your graveyard to your hand."
+ *
+ * Step 1: Player chooses a creature type from types present in their graveyard.
+ * The continuation handler then presents a card selection for cards of that type.
+ *
+ * @property controllerId The player who cast the spell
+ * @property sourceId The spell/ability that caused this effect
+ * @property sourceName Name of the source for event messages
+ * @property count Maximum number of cards to return
+ * @property creatureTypes The creature type options presented (indexed by OptionChosenResponse.optionIndex)
+ */
+@Serializable
+data class ChooseCreatureTypeReturnContinuation(
+    override val decisionId: String,
+    val controllerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val count: Int,
+    val creatureTypes: List<String>
+) : ContinuationFrame
+
+/**
+ * Resume after player selects cards from graveyard to return to hand.
+ *
+ * Step 2 of the choose-type-then-return flow. Moves selected cards from graveyard to hand.
+ *
+ * @property controllerId The player whose graveyard and hand are involved
+ * @property sourceId The spell/ability that caused this effect
+ * @property sourceName Name of the source for event messages
+ */
+@Serializable
+data class GraveyardToHandContinuation(
+    override val decisionId: String,
+    val controllerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?
+) : ContinuationFrame
+
+/**
  * Resume after player chooses a color for protection granting effects.
  *
  * Used for effects like Akroma's Blessing: "Choose a color. Creatures you control

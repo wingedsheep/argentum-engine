@@ -74,6 +74,8 @@ class ContinuationHandler(
             is LookAtTopCardsContinuation -> resumeLookAtTopCards(stateAfterPop, continuation, response)
             is RevealAndOpponentChoosesContinuation -> resumeRevealAndOpponentChooses(stateAfterPop, continuation, response)
             is ChooseColorProtectionContinuation -> resumeChooseColorProtection(stateAfterPop, continuation, response)
+            is ChooseCreatureTypeReturnContinuation -> resumeChooseCreatureTypeReturn(stateAfterPop, continuation, response)
+            is GraveyardToHandContinuation -> resumeGraveyardToHand(stateAfterPop, continuation, response)
         }
     }
 
@@ -1681,6 +1683,134 @@ class ContinuationHandler(
         val newState = state.copy(
             floatingEffects = state.floatingEffects + floatingEffect
         )
+
+        return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume after player chose a creature type for graveyard retrieval.
+     * Filters graveyard for creatures of that type and presents a card selection.
+     */
+    private fun resumeChooseCreatureTypeReturn(
+        state: GameState,
+        continuation: ChooseCreatureTypeReturnContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is OptionChosenResponse) {
+            return ExecutionResult.error(state, "Expected option choice response for creature type selection")
+        }
+
+        val chosenType = continuation.creatureTypes.getOrNull(response.optionIndex)
+            ?: return ExecutionResult.error(state, "Invalid creature type index: ${response.optionIndex}")
+
+        val controllerId = continuation.controllerId
+        val graveyardZone = ZoneKey(controllerId, Zone.GRAVEYARD)
+        val graveyard = state.getZone(graveyardZone)
+
+        // Find creature cards of the chosen type in the graveyard
+        val matchingCards = graveyard.filter { cardId ->
+            val cardComponent = state.getEntity(cardId)?.get<CardComponent>()
+            val typeLine = cardComponent?.typeLine
+            typeLine != null && typeLine.isCreature && typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(chosenType))
+        }
+
+        // If no matching cards, nothing to return
+        if (matchingCards.isEmpty()) {
+            return checkForMoreContinuations(state, emptyList())
+        }
+
+        // Build card info for the UI
+        val cardInfoMap = matchingCards.associateWith { cardId ->
+            val container = state.getEntity(cardId)
+            val cardComponent = container?.get<CardComponent>()
+            SearchCardInfo(
+                name = cardComponent?.name ?: "Unknown",
+                manaCost = cardComponent?.manaCost?.toString() ?: "",
+                typeLine = cardComponent?.typeLine?.toString() ?: "",
+                imageUri = cardComponent?.imageUri
+            )
+        }
+
+        val actualMax = minOf(continuation.count, matchingCards.size)
+        val decisionId = java.util.UUID.randomUUID().toString()
+
+        val decision = SelectCardsDecision(
+            id = decisionId,
+            playerId = controllerId,
+            prompt = "Choose up to $actualMax ${chosenType} card${if (actualMax != 1) "s" else ""} to return to your hand",
+            context = DecisionContext(
+                sourceId = continuation.sourceId,
+                sourceName = continuation.sourceName,
+                phase = DecisionPhase.RESOLUTION
+            ),
+            options = matchingCards,
+            minSelections = 0,
+            maxSelections = actualMax,
+            ordered = false,
+            cardInfo = cardInfoMap
+        )
+
+        val nextContinuation = GraveyardToHandContinuation(
+            decisionId = decisionId,
+            controllerId = controllerId,
+            sourceId = continuation.sourceId,
+            sourceName = continuation.sourceName
+        )
+
+        val stateWithDecision = state.withPendingDecision(decision)
+        val stateWithContinuation = stateWithDecision.pushContinuation(nextContinuation)
+
+        return ExecutionResult.paused(
+            stateWithContinuation,
+            decision,
+            listOf(
+                DecisionRequestedEvent(
+                    decisionId = decisionId,
+                    playerId = controllerId,
+                    decisionType = "SELECT_CARDS",
+                    prompt = decision.prompt
+                )
+            )
+        )
+    }
+
+    /**
+     * Resume after player selected cards from graveyard to return to hand.
+     */
+    private fun resumeGraveyardToHand(
+        state: GameState,
+        continuation: GraveyardToHandContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for graveyard to hand")
+        }
+
+        val controllerId = continuation.controllerId
+        val selectedCards = response.selectedCards
+        val graveyardZone = ZoneKey(controllerId, Zone.GRAVEYARD)
+        val handZone = ZoneKey(controllerId, Zone.HAND)
+        val events = mutableListOf<GameEvent>()
+
+        var newState = state
+
+        for (cardId in selectedCards) {
+            // Validate card is still in graveyard
+            if (cardId !in newState.getZone(graveyardZone)) continue
+
+            val cardName = newState.getEntity(cardId)?.get<CardComponent>()?.name ?: "Unknown"
+            newState = newState.removeFromZone(graveyardZone, cardId)
+            newState = newState.addToZone(handZone, cardId)
+            events.add(
+                ZoneChangeEvent(
+                    entityId = cardId,
+                    entityName = cardName,
+                    fromZone = Zone.GRAVEYARD,
+                    toZone = Zone.HAND,
+                    ownerId = controllerId
+                )
+            )
+        }
 
         return checkForMoreContinuations(newState, events)
     }

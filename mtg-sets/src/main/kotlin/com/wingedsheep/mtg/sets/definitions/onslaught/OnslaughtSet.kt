@@ -34,10 +34,12 @@ object OnslaughtSet {
         AirborneAid,
         Annex,
         AphettoAlchemist,
+        AphettoGrifter,
         SageAven,
 
         // Black creatures and spells
         AccursedCentaur,
+        AphettoDredging,
         AnuridMurkdiver,
         DiscipleOfMalice,
         FesteringGoblin,

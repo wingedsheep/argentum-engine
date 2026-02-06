@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 42 / 335
+**Implemented:** 44 / 335
 
 ---
 
@@ -18,8 +18,8 @@
 - [ ] Annex
 - [x] Anurid Murkdiver
 - [x] Aphetto Alchemist
-- [ ] Aphetto Dredging
-- [ ] Aphetto Grifter
+- [x] Aphetto Dredging
+- [x] Aphetto Grifter
 - [ ] Aphetto Vulture
 - [ ] Arcanis the Omnipotent
 - [ ] Artificial Evolution
