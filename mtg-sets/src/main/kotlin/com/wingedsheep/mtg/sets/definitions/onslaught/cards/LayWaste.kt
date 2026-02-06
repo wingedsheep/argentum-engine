@@ -32,6 +32,6 @@ val LayWaste = card("Lay Waste") {
         collectorNumber = "207"
         artist = "Brian Snoddy"
         flavorText = "\"You built on top of a burial mound? Your fault, not mine.\"\n—Cabal patriarch"
-        imageUri = "https://cards.scryfall.io/normal/front/3/d/3d1a6572-1a65-4461-86d3-7a8e4f9547c2.jpg"
+        imageUri = "https://cards.scryfall.io/large/front/2/2/22061b5e-81d3-4c7f-ab39-7ee719c13cef.jpg?1562903003"
     }
 }

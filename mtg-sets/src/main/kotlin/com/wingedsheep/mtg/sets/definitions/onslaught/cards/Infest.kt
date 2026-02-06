@@ -28,6 +28,6 @@ val Infest = card("Infest") {
         collectorNumber = "156"
         artist = "Carl Critchlow"
         flavorText = "\"This is the end for you, insect. And for you. And you.\"\n—Braids, dementia summoner"
-        imageUri = "https://cards.scryfall.io/normal/front/8/6/8604f47a-1048-4b49-b3be-56bef48a5940.jpg?1562922221"
+        imageUri = "https://cards.scryfall.io/large/front/b/7/b7890ba2-aa42-4c8d-bbc1-94fb1d4150fc.jpg?1562938305"
     }
 }

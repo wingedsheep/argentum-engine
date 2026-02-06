@@ -27,6 +27,6 @@ val Annex = card("Annex") {
         collectorNumber = "57"
         artist = "Andrew Robinson"
         flavorText = "Physical and political boundaries mean nothing in the midst of conflict."
-        imageUri = "https://cards.scryfall.io/normal/front/b/0/b0e2c4fb-3be7-4e65-8abe-89a65bf96967.jpg?1562929065"
+        imageUri = "https://cards.scryfall.io/large/front/c/9/c95d5cb7-3121-430b-80c3-84c75e5f869e.jpg?1562942558"
     }
 }

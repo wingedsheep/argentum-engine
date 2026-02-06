@@ -38,6 +38,6 @@ val PearlspearCourier = card("Pearlspear Courier") {
         collectorNumber = "46"
         artist = "Mark Zug"
         flavorText = "Theirs is an order of action, not talk."
-        imageUri = "https://cards.scryfall.io/normal/front/a/5/a556e2a0-0c85-4e64-a7f0-0a21e3318fa8.jpg?1562929545"
+        imageUri = "https://cards.scryfall.io/large/front/a/1/a1ea7219-6ab6-471a-afe7-d7da1df434c7.jpg?1562933222"
     }
 }

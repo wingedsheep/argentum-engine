@@ -24,6 +24,6 @@ val GluttonousZombie = card("Gluttonous Zombie") {
         collectorNumber = "151"
         artist = "Carl Critchlow"
         flavorText = "It knows nothing of allegiance or honor. It knows only hunger."
-        imageUri = "https://cards.scryfall.io/normal/front/8/8/881c53b4-29e2-43c7-9891-75d7aafc0b6a.jpg?1562922074"
+        imageUri = "https://cards.scryfall.io/large/front/d/b/db909e95-7979-41f0-b17a-874c4137fcc1.jpg?1562947268"
     }
 }

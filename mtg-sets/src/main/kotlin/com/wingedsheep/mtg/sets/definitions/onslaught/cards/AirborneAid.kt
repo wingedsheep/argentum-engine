@@ -25,6 +25,6 @@ val AirborneAid = card("Airborne Aid") {
         collectorNumber = "62"
         artist = "Bradley Williams"
         flavorText = "The weights of war are heaviest on the ground."
-        imageUri = "https://cards.scryfall.io/normal/front/1/9/19f60273-a6fd-4edb-86b0-d8ca3472102f.jpg?1562899578"
+        imageUri = "https://cards.scryfall.io/large/front/0/a/0aaa43b0-601f-4b99-a328-541b04d5696d.jpg?1593017362"
     }
 }

@@ -23,6 +23,6 @@ val KrosanColossus = card("Krosan Colossus") {
         collectorNumber = "270"
         artist = "Arnie Swekel"
         flavorText = "It doesn't think. It doesn't feel. It just grows."
-        imageUri = "https://cards.scryfall.io/normal/front/2/d/2d4c8c32-4e28-40e6-8aa1-9a0e649b78ec.jpg?1562905078"
+        imageUri = "https://cards.scryfall.io/large/front/a/8/a804f3c0-5ebf-43ca-b200-09f7c1bbe902.jpg?1562934820"
     }
 }

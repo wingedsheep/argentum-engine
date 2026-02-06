@@ -38,6 +38,6 @@ val FlamestickCourier = card("Flamestick Courier") {
         collectorNumber = "199"
         artist = "Carl Critchlow"
         flavorText = "\"We've got a special delivery of pain for ya.\""
-        imageUri = "https://cards.scryfall.io/normal/front/6/2/625c27f1-690e-4802-972e-1e04d2eb4834.jpg?1562913385"
+        imageUri = "https://cards.scryfall.io/large/front/e/8/e822161d-0434-4578-aecd-c9ef0b84bd4e.jpg?1562950280"
     }
 }

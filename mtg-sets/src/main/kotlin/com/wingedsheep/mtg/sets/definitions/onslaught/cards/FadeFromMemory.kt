@@ -31,6 +31,6 @@ val FadeFromMemory = card("Fade from Memory") {
         collectorNumber = "144"
         artist = "Andrew Goldhawk"
         flavorText = "\"Our scholars can defeat your warriors simply by forgetting they ever existed.\"\n—Ambassador Laquatus"
-        imageUri = "https://cards.scryfall.io/normal/front/c/7/c74589bc-6adc-4a49-bdea-5e385d12ef12.jpg?1562941653"
+        imageUri = "https://cards.scryfall.io/large/front/5/6/56b34afa-0183-49aa-aa5f-03e070020136.jpg?1562915291"
     }
 }
