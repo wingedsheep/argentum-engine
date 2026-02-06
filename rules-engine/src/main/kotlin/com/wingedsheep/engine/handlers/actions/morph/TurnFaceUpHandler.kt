@@ -161,31 +161,64 @@ class TurnFaceUpHandler(
             }
 
             is PaymentStrategy.AutoPay -> {
-                val solution = manaSolver.solve(currentState, action.playerId, morphData.morphCost, 0)
-                    ?: return ExecutionResult.error(currentState, "Not enough mana to turn face up")
+                // Use floating mana first
+                val poolComponent = currentState.getEntity(action.playerId)?.get<ManaPoolComponent>()
+                    ?: ManaPoolComponent()
+                val pool = ManaPool(
+                    white = poolComponent.white,
+                    blue = poolComponent.blue,
+                    black = poolComponent.black,
+                    red = poolComponent.red,
+                    green = poolComponent.green,
+                    colorless = poolComponent.colorless
+                )
 
-                for (source in solution.sources) {
-                    currentState = currentState.updateEntity(source.entityId) { c ->
-                        c.with(TappedComponent)
-                    }
-                    events.add(TappedEvent(source.entityId, source.name))
+                val partialResult = pool.payPartial(morphData.morphCost)
+                val poolAfterPayment = partialResult.newPool
+                val remainingCost = partialResult.remainingCost
+                val manaSpentFromPool = partialResult.manaSpent
+
+                var whiteSpent = manaSpentFromPool.white
+                var blueSpent = manaSpentFromPool.blue
+                var blackSpent = manaSpentFromPool.black
+                var redSpent = manaSpentFromPool.red
+                var greenSpent = manaSpentFromPool.green
+                var colorlessSpent = manaSpentFromPool.colorless
+
+                currentState = currentState.updateEntity(action.playerId) { c ->
+                    c.with(
+                        ManaPoolComponent(
+                            white = poolAfterPayment.white,
+                            blue = poolAfterPayment.blue,
+                            black = poolAfterPayment.black,
+                            red = poolAfterPayment.red,
+                            green = poolAfterPayment.green,
+                            colorless = poolAfterPayment.colorless
+                        )
+                    )
                 }
 
-                var whiteSpent = 0
-                var blueSpent = 0
-                var blackSpent = 0
-                var redSpent = 0
-                var greenSpent = 0
-                var colorlessSpent = 0
+                // Tap lands for remaining cost
+                if (!remainingCost.isEmpty()) {
+                    val solution = manaSolver.solve(currentState, action.playerId, remainingCost, 0)
+                        ?: return ExecutionResult.error(currentState, "Not enough mana to turn face up")
 
-                for ((_, production) in solution.manaProduced) {
-                    when (production.color) {
-                        Color.WHITE -> whiteSpent++
-                        Color.BLUE -> blueSpent++
-                        Color.BLACK -> blackSpent++
-                        Color.RED -> redSpent++
-                        Color.GREEN -> greenSpent++
-                        null -> colorlessSpent += production.colorless
+                    for (source in solution.sources) {
+                        currentState = currentState.updateEntity(source.entityId) { c ->
+                            c.with(TappedComponent)
+                        }
+                        events.add(TappedEvent(source.entityId, source.name))
+                    }
+
+                    for ((_, production) in solution.manaProduced) {
+                        when (production.color) {
+                            Color.WHITE -> whiteSpent++
+                            Color.BLUE -> blueSpent++
+                            Color.BLACK -> blackSpent++
+                            Color.RED -> redSpent++
+                            Color.GREEN -> greenSpent++
+                            null -> colorlessSpent += production.colorless
+                        }
                     }
                 }
 
