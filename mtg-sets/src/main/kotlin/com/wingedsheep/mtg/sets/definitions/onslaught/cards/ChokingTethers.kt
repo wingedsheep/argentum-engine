@@ -41,6 +41,6 @@ val ChokingTethers = card("Choking Tethers") {
         rarity = Rarity.COMMON
         collectorNumber = "74"
         artist = "Carl Critchlow"
-        imageUri = "https://cards.scryfall.io/normal/front/d/4/de14d1-441f-4d65-bd12-df0506530015.jpg?1562945663"
+        imageUri = "https://cards.scryfall.io/normal/front/d/4/d4de14d1-441f-4d65-bd12-df0506530015.jpg?1562945663"
     }
 }
