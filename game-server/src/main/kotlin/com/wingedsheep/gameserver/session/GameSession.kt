@@ -991,17 +991,15 @@ class GameSession(
         }
 
         // Check for mana abilities on battlefield permanents
-        val playerBattlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
-        val battlefieldPermanents = state.getZone(playerBattlefieldZone)
+        // Use projected state to find all permanents controlled by this player
+        // (accounts for control-changing effects like Annex)
+        val projectedState = stateProjector.project(state)
+        val battlefieldPermanents = projectedState.getBattlefieldControlledBy(playerId)
         for (entityId in battlefieldPermanents) {
             val container = state.getEntity(entityId) ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue
 
-            // Must be controlled by the player
-            val controllerId = container.get<ControllerComponent>()?.playerId
-            if (controllerId != playerId) continue
-
-            // Look up card definition for mana abilities
+            // Projected controller already verified - look up card definition for mana abilities
             val cardDef = cardRegistry.getCard(cardComponent.name) ?: continue
             val manaAbilities = cardDef.script.activatedAbilities.filter { it.isManaAbility }
 
@@ -1041,10 +1039,6 @@ class GameSession(
             // Must be face-down
             if (!container.has<FaceDownComponent>()) continue
 
-            // Must be controlled by the player
-            val controllerId = container.get<ControllerComponent>()?.playerId
-            if (controllerId != playerId) continue
-
             // Must have morph data (to get the morph cost)
             val morphData = container.get<MorphDataComponent>() ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue
@@ -1064,10 +1058,6 @@ class GameSession(
         for (entityId in battlefieldPermanents) {
             val container = state.getEntity(entityId) ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue
-
-            // Must be controlled by the player
-            val controllerId = container.get<ControllerComponent>()?.playerId
-            if (controllerId != playerId) continue
 
             val cardDef = cardRegistry.getCard(cardComponent.name) ?: continue
             val nonManaAbilities = cardDef.script.activatedAbilities.filter { !it.isManaAbility }

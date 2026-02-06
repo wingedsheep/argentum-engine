@@ -14,6 +14,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.actions.ActionContext
 import com.wingedsheep.engine.handlers.actions.ActionHandler
 import com.wingedsheep.engine.handlers.effects.EffectExecutorRegistry
+import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.mechanics.stack.StackResolver
@@ -54,7 +55,8 @@ class ActivateAbilityHandler(
     private val effectExecutorRegistry: EffectExecutorRegistry,
     private val stackResolver: StackResolver,
     private val targetValidator: TargetValidator,
-    private val conditionEvaluator: ConditionEvaluator
+    private val conditionEvaluator: ConditionEvaluator,
+    private val stateProjector: StateProjector = StateProjector()
 ) : ActionHandler<ActivateAbility> {
     override val actionType: KClass<ActivateAbility> = ActivateAbility::class
 
@@ -66,7 +68,10 @@ class ActivateAbilityHandler(
         val container = state.getEntity(action.sourceId)
             ?: return "Source not found: ${action.sourceId}"
 
-        val controller = container.get<ControllerComponent>()?.playerId
+        // Use projected controller to account for control-changing effects (e.g., Annex)
+        val projected = stateProjector.project(state)
+        val controller = projected.getController(action.sourceId)
+            ?: container.get<ControllerComponent>()?.playerId
         if (controller != action.playerId) {
             return "You don't control this permanent"
         }
@@ -471,7 +476,8 @@ class ActivateAbilityHandler(
                 context.effectExecutorRegistry,
                 context.stackResolver,
                 context.targetValidator,
-                context.conditionEvaluator
+                context.conditionEvaluator,
+                context.stateProjector
             )
         }
     }

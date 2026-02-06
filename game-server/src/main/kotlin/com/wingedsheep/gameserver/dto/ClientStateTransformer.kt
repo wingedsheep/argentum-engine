@@ -318,13 +318,13 @@ class ClientStateTransformer(
         val container = state.getEntity(entityId) ?: return null
         val cardComponent = container.get<CardComponent>() ?: return null
 
-        // Get controller (default to owner if not set)
-        val controllerId = container.get<ControllerComponent>()?.playerId
+        // Get base controller (default to owner if not set)
+        val baseControllerId = container.get<ControllerComponent>()?.playerId
             ?: cardComponent.ownerId
             ?: return null
 
         // Get owner
-        val ownerId = cardComponent.ownerId ?: container.get<OwnerComponent>()?.playerId ?: controllerId
+        val ownerId = cardComponent.ownerId ?: container.get<OwnerComponent>()?.playerId ?: baseControllerId
 
         // For battlefield permanents, use projected values from the layer system (Rule 613)
         // For cards in other zones, use base values
@@ -333,6 +333,9 @@ class ClientStateTransformer(
         } else {
             null
         }
+
+        // Use projected controller for battlefield permanents (accounts for control-changing effects)
+        val controllerId = projectedValues?.controllerId ?: baseControllerId
 
         // Face-down creatures are always 2/2 per MTG rules, regardless of viewer
         val isFaceDown = container.has<FaceDownComponent>()

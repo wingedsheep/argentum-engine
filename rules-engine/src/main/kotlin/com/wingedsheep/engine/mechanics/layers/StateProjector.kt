@@ -798,4 +798,14 @@ class ProjectedState(
      * Get all entities on the battlefield with their projected values.
      */
     fun getAllProjectedValues(): Map<EntityId, ProjectedValues> = projectedValues
+
+    /**
+     * Get all battlefield entities whose projected controller is the given player.
+     * This accounts for control-changing effects (Rule 613 Layer 2).
+     */
+    fun getBattlefieldControlledBy(playerId: EntityId): List<EntityId> {
+        return baseState.getBattlefield().filter { entityId ->
+            getController(entityId) == playerId
+        }
+    }
 }

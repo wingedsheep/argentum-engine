@@ -10,6 +10,7 @@ import com.wingedsheep.engine.handlers.MulliganHandler
 import com.wingedsheep.engine.handlers.effects.EffectExecutorRegistry
 import com.wingedsheep.engine.mechanics.StateBasedActionChecker
 import com.wingedsheep.engine.mechanics.combat.CombatManager
+import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.mechanics.mana.AlternativePaymentHandler
 import com.wingedsheep.engine.mechanics.mana.CostCalculator
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
@@ -39,7 +40,8 @@ data class ActionContext(
     val triggerDetector: TriggerDetector,
     val triggerProcessor: TriggerProcessor,
     val conditionEvaluator: ConditionEvaluator,
-    val targetValidator: TargetValidator
+    val targetValidator: TargetValidator,
+    val stateProjector: StateProjector = StateProjector()
 ) {
     companion object {
         /**
@@ -65,7 +67,8 @@ data class ActionContext(
                 triggerDetector = TriggerDetector(cardRegistry),
                 triggerProcessor = TriggerProcessor(),
                 conditionEvaluator = ConditionEvaluator(),
-                targetValidator = TargetValidator()
+                targetValidator = TargetValidator(),
+                stateProjector = StateProjector()
             )
         }
     }

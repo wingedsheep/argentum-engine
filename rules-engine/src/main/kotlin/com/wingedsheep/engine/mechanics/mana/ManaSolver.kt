@@ -7,7 +7,6 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
@@ -327,21 +326,18 @@ class ManaSolver(
      * - canAttack: true for creatures that can attack (no summoning sickness or has haste)
      */
     private fun findAvailableManaSources(state: GameState, playerId: EntityId): List<ManaSource> {
-        val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
-        val battlefieldCards = state.getZone(battlefieldZone)
-
-        // Project state once to get all keywords (including granted abilities)
+        // Project state once to get all keywords and projected controllers
         val projected = stateProjector.project(state)
+
+        // Use projected controller to find all permanents controlled by this player
+        // (accounts for control-changing effects like Annex)
+        val battlefieldCards = projected.getBattlefieldControlledBy(playerId)
 
         return battlefieldCards.mapNotNull { entityId ->
             val container = state.getEntity(entityId) ?: return@mapNotNull null
 
             // Must be untapped
             if (container.has<TappedComponent>()) return@mapNotNull null
-
-            // Must be controlled by the player
-            val controller = container.get<ControllerComponent>()?.playerId
-            if (controller != playerId) return@mapNotNull null
 
             val card = container.get<CardComponent>() ?: return@mapNotNull null
 
