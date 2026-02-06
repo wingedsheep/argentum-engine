@@ -258,7 +258,8 @@ data class ChooseOptionDecision(
     override val playerId: EntityId,
     override val prompt: String,
     override val context: DecisionContext,
-    val options: List<String>
+    val options: List<String>,
+    val defaultSearch: String? = null
 ) : PendingDecision
 
 /**

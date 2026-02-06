@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useGameStore } from '../../store/gameStore'
 import type { DecisionSelectionState } from '../../store/gameStore'
-import type { EntityId, SelectCardsDecision, ChooseTargetsDecision, YesNoDecision, ChooseNumberDecision, ClientCard, ClientGameState } from '../../types'
+import type { EntityId, SelectCardsDecision, ChooseTargetsDecision, YesNoDecision, ChooseNumberDecision, ChooseOptionDecision, ClientCard, ClientGameState } from '../../types'
 import { ZoneType } from '../../types'
 import { useResponsive, calculateFittingCardWidth, type ResponsiveSizes } from '../../hooks/useResponsive'
 import { LibrarySearchUI } from './LibrarySearchUI'
@@ -85,6 +85,15 @@ export function DecisionUI() {
     return (
       <div className={styles.overlay}>
         <ChooseNumberDecisionUI decision={pendingDecision} />
+      </div>
+    )
+  }
+
+  // Handle ChooseOptionDecision (e.g., "Choose a creature type")
+  if (pendingDecision.type === 'ChooseOptionDecision') {
+    return (
+      <div className={styles.overlay}>
+        <ChooseOptionDecisionUI key={pendingDecision.id} decision={pendingDecision} />
       </div>
     )
   }
@@ -330,6 +339,86 @@ function ChooseNumberDecisionUI({
 
       {/* Confirm button */}
       <button onClick={handleConfirm} className={styles.confirmButton}>
+        Confirm
+      </button>
+    </>
+  )
+}
+
+/**
+ * Choose option decision - select from a list of string options.
+ * Uses a searchable scrollable list for large option sets (e.g., creature types).
+ */
+function ChooseOptionDecisionUI({
+  decision,
+}: {
+  decision: ChooseOptionDecision
+}) {
+  const [filter, setFilter] = useState(decision.defaultSearch ?? '')
+  const defaultIndex = decision.defaultSearch
+    ? decision.options.findIndex((opt) => opt.toLowerCase() === decision.defaultSearch!.toLowerCase())
+    : -1
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(defaultIndex >= 0 ? defaultIndex : null)
+  const submitOptionDecision = useGameStore((s) => s.submitOptionDecision)
+
+  const filteredOptions = useMemo(() => {
+    if (!filter) return decision.options.map((opt, i) => ({ label: opt, index: i }))
+    const lower = filter.toLowerCase()
+    return decision.options
+      .map((opt, i) => ({ label: opt, index: i }))
+      .filter((opt) => opt.label.toLowerCase().includes(lower))
+  }, [decision.options, filter])
+
+  const handleConfirm = () => {
+    if (selectedIndex !== null) {
+      submitOptionDecision(selectedIndex)
+    }
+  }
+
+  return (
+    <>
+      <h2 className={styles.title}>
+        {decision.prompt}
+      </h2>
+
+      {decision.context.sourceName && (
+        <p className={styles.subtitle}>
+          {decision.context.sourceName}
+        </p>
+      )}
+
+      {/* Search filter */}
+      <input
+        type="text"
+        value={filter}
+        onChange={(e) => setFilter(e.target.value)}
+        placeholder="Search..."
+        className={styles.optionSearchInput}
+        autoFocus
+      />
+
+      {/* Scrollable option list */}
+      <div className={styles.optionList}>
+        {filteredOptions.map((opt) => (
+          <button
+            key={opt.index}
+            onClick={() => setSelectedIndex(opt.index)}
+            className={`${styles.optionItem} ${selectedIndex === opt.index ? styles.optionItemSelected : ''}`}
+          >
+            {opt.label}
+          </button>
+        ))}
+        {filteredOptions.length === 0 && (
+          <p className={styles.noCardsMessage}>No matching options</p>
+        )}
+      </div>
+
+      {/* Confirm button */}
+      <button
+        onClick={handleConfirm}
+        disabled={selectedIndex === null}
+        className={styles.confirmButton}
+      >
         Confirm
       </button>
     </>

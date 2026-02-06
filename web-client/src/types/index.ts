@@ -180,6 +180,7 @@ export type {
   ReorderLibraryDecision,
   OrderObjectsDecision,
   ChooseNumberDecision,
+  ChooseOptionDecision,
   DistributeDecision,
   // Sealed Draft types
   SealedCardInfo,

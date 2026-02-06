@@ -342,6 +342,7 @@ export type GameStore = {
   submitOrderedDecision: (orderedObjects: readonly EntityId[]) => void
   submitYesNoDecision: (choice: boolean) => void
   submitNumberDecision: (number: number) => void
+  submitOptionDecision: (optionIndex: number) => void
   submitDistributeDecision: (distribution: Record<EntityId, number>) => void
   keepHand: () => void
   mulligan: () => void

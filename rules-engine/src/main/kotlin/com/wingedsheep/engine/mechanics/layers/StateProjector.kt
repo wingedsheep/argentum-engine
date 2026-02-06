@@ -6,6 +6,7 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
@@ -70,6 +71,26 @@ class StateProjector {
                     isFaceDown = false
                 )
             }
+        }
+
+        // Apply Layer 3 text-changing effects (TextReplacementComponent)
+        // This modifies subtypes before other layers are applied
+        for (entityId in state.getBattlefield()) {
+            val container = state.getEntity(entityId) ?: continue
+            val textReplacement = container.get<TextReplacementComponent>() ?: continue
+            val values = projectedValues[entityId] ?: continue
+
+            val transformedSubtypes = values.subtypes.map { textReplacement.applyToCreatureType(it) }.toMutableSet()
+            values.subtypes.clear()
+            values.subtypes.addAll(transformedSubtypes)
+
+            // Also update the 'types' set which includes subtypes
+            val oldSubtypesInTypes = values.types.filter { type ->
+                // Check if this type value was a subtype (not a card type or supertype)
+                container.get<CardComponent>()?.typeLine?.subtypes?.any { it.value == type } == true
+            }.toSet()
+            values.types.removeAll(oldSubtypesInTypes)
+            values.types.addAll(transformedSubtypes)
         }
 
         // Collect all active continuous effects

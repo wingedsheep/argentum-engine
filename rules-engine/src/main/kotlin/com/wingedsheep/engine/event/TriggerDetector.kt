@@ -38,16 +38,27 @@ class TriggerDetector(
     /**
      * Get triggered abilities for a card, checking both the AbilityRegistry
      * and falling back to the CardRegistry for card definitions.
+     *
+     * If the entity has a TextReplacementComponent (from Artificial Evolution etc.),
+     * creature type references in triggers and effects are transformed accordingly.
      */
-    private fun getTriggeredAbilities(entityId: EntityId, cardDefinitionId: String): List<TriggeredAbility> {
+    private fun getTriggeredAbilities(entityId: EntityId, cardDefinitionId: String, state: GameState): List<TriggeredAbility> {
         // First check the AbilityRegistry (for manually registered abilities)
         val registryAbilities = abilityRegistry.getTriggeredAbilities(entityId, cardDefinitionId)
-        if (registryAbilities.isNotEmpty()) {
-            return registryAbilities
+        val base = if (registryAbilities.isNotEmpty()) {
+            registryAbilities
+        } else {
+            // Fall back to looking up from CardRegistry
+            cardRegistry?.getCard(cardDefinitionId)?.triggeredAbilities ?: emptyList()
         }
 
-        // Fall back to looking up from CardRegistry
-        return cardRegistry?.getCard(cardDefinitionId)?.triggeredAbilities ?: emptyList()
+        // Apply text replacement if the entity has one
+        val textReplacement = state.getEntity(entityId)?.get<TextReplacementComponent>()
+        return if (textReplacement != null) {
+            base.map { SubtypeReplacer.replaceTriggeredAbility(it, textReplacement) }
+        } else {
+            base
+        }
     }
 
     /**
@@ -111,7 +122,7 @@ class TriggerDetector(
             val cardComponent = container.get<CardComponent>() ?: continue
             val controllerId = container.get<ControllerComponent>()?.playerId ?: continue
 
-            val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId)
+            val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
 
             for (ability in abilities) {
                 if (matchesStepTrigger(ability.trigger, step, controllerId, activePlayerId)) {
@@ -143,7 +154,7 @@ class TriggerDetector(
             val cardComponent = container.get<CardComponent>() ?: continue
             val controllerId = container.get<ControllerComponent>()?.playerId ?: continue
 
-            val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId)
+            val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
 
             for (ability in abilities) {
                 if (matchesTrigger(ability.trigger, event, entityId, controllerId, state)) {
@@ -185,7 +196,7 @@ class TriggerDetector(
 
         // For "When this creature dies" - the creature might be in graveyard now
         // Look up abilities by card definition
-        val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId)
+        val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
         val controllerId = event.ownerId
 
         for (ability in abilities) {
@@ -214,7 +225,7 @@ class TriggerDetector(
         val cardComponent = container.get<CardComponent>() ?: return
         val controllerId = container.get<ControllerComponent>()?.playerId ?: return
 
-        val abilities = getTriggeredAbilities(sourceId, cardComponent.cardDefinitionId)
+        val abilities = getTriggeredAbilities(sourceId, cardComponent.cardDefinitionId, state)
 
         for (ability in abilities) {
             val trigger = ability.trigger

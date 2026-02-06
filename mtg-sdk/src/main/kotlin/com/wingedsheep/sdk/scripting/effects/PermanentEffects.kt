@@ -221,3 +221,30 @@ data class TapTargetCreaturesEffect(
 ) : Effect {
     override val description: String = "Tap up to $maxTargets target creature${if (maxTargets > 1) "s" else ""}"
 }
+
+/**
+ * Change the text of target spell or permanent by replacing all instances of one
+ * creature type with another.
+ * (This effect lasts indefinitely.)
+ *
+ * Used by Artificial Evolution. Resolution involves two player decisions:
+ * 1. Choose the creature type to replace (FROM)
+ * 2. Choose the replacement creature type (TO)
+ *
+ * @param excludedTypes Creature types that cannot be chosen as the replacement (TO) type.
+ *   For Artificial Evolution this is listOf("Wall"). Other cards may have no restriction.
+ *
+ * The executor adds a TextReplacementComponent to the target entity.
+ */
+@Serializable
+data class ChangeCreatureTypeTextEffect(
+    val target: EffectTarget = EffectTarget.ContextTarget(0),
+    val excludedTypes: List<String> = emptyList()
+) : Effect {
+    override val description: String = buildString {
+        append("Change the text of ${target.description} by replacing all instances of one creature type with another.")
+        if (excludedTypes.isNotEmpty()) {
+            append(" The new creature type can't be ${excludedTypes.joinToString(" or ")}.")
+        }
+    }
+}

@@ -108,5 +108,23 @@ value class Subtype(val value: String) {
         val NISSA = Subtype("Nissa")
 
         fun of(value: String): Subtype = Subtype(value)
+
+        /**
+         * All recognized creature types for text-changing effects.
+         * Sorted alphabetically for presentation in choose-option decisions.
+         */
+        val ALL_CREATURE_TYPES: List<String> = listOf(
+            "Angel", "Ape", "Archer", "Assassin", "Barbarian", "Bear", "Beast",
+            "Berserker", "Bird", "Cat", "Citizen", "Cleric", "Crocodile", "Cyclops",
+            "Demon", "Djinn", "Dragon", "Drake", "Dryad", "Eel", "Elemental",
+            "Elf", "Faerie", "Fish", "Frog", "Giant", "Goat", "Goblin", "Griffin",
+            "Hippo", "Horror", "Horse", "Human", "Illusion", "Imp", "Insect",
+            "Jellyfish", "Kithkin", "Knight", "Leviathan", "Lizard", "Mercenary",
+            "Merfolk", "Minotaur", "Monk", "Nightstalker", "Octopus", "Pegasus",
+            "Pirate", "Ranger", "Rat", "Rhino", "Rogue", "Scout", "Serpent",
+            "Shapeshifter", "Skeleton", "Snake", "Soldier", "Sorcerer", "Spider",
+            "Spirit", "Treefolk", "Turtle", "Unicorn", "Vampire", "Wall",
+            "Warlock", "Warrior", "Wizard", "Wraith", "Wurm", "Zombie"
+        ).sorted()
     }
 }

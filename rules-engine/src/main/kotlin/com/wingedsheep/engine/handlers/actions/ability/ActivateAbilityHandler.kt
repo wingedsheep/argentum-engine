@@ -19,8 +19,10 @@ import com.wingedsheep.engine.mechanics.targeting.TargetValidator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
+import com.wingedsheep.engine.mechanics.text.SubtypeReplacer
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
 import com.wingedsheep.sdk.core.Color
@@ -236,6 +238,14 @@ class ActivateAbilityHandler(
             else -> {}
         }
 
+        // Apply text replacement if the source has a TextReplacementComponent
+        val textReplacement = state.getEntity(action.sourceId)?.get<TextReplacementComponent>()
+        val finalEffect = if (textReplacement != null) {
+            SubtypeReplacer.replaceEffect(ability.effect, textReplacement)
+        } else {
+            ability.effect
+        }
+
         // Mana abilities don't use the stack
         if (ability.isManaAbility) {
             val opponentId = state.turnOrder.firstOrNull { it != action.playerId }
@@ -247,7 +257,7 @@ class ActivateAbilityHandler(
                 xValue = null
             )
 
-            val effectResult = effectExecutorRegistry.execute(currentState, ability.effect, context)
+            val effectResult = effectExecutorRegistry.execute(currentState, finalEffect, context)
             if (!effectResult.isSuccess) {
                 return effectResult
             }
@@ -255,7 +265,7 @@ class ActivateAbilityHandler(
             currentState = effectResult.newState
 
             // Emit ManaAddedEvent
-            val manaEvent = when (val effect = ability.effect) {
+            val manaEvent = when (val effect = finalEffect) {
                 is AddManaEffect -> ManaAddedEvent(
                     playerId = action.playerId,
                     sourceId = action.sourceId,
@@ -288,7 +298,7 @@ class ActivateAbilityHandler(
             sourceId = action.sourceId,
             sourceName = cardComponent.name,
             controllerId = action.playerId,
-            effect = ability.effect
+            effect = finalEffect
         )
         val stackResult = stackResolver.putActivatedAbility(currentState, abilityOnStack, action.targets)
         return ExecutionResult.success(stackResult.newState, events + stackResult.events)

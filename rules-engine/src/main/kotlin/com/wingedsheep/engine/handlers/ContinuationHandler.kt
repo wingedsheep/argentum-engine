@@ -1833,16 +1833,20 @@ class ContinuationHandler(
         val fromType = continuation.creatureTypes.getOrNull(response.optionIndex)
             ?: return ExecutionResult.error(state, "Invalid creature type index: ${response.optionIndex}")
 
-        // Present TO creature type choice (excluding Wall per card text)
+        // Present TO creature type choice, excluding any types specified by the effect
+        val excludedTypes = continuation.excludedTypes.map { it.lowercase() }.toSet()
         val toOptions = com.wingedsheep.sdk.core.Subtype.ALL_CREATURE_TYPES.filter {
-            !it.equals("Wall", ignoreCase = true)
+            it.lowercase() !in excludedTypes
         }
 
         val decisionId = java.util.UUID.randomUUID().toString()
+        val promptSuffix = if (continuation.excludedTypes.isNotEmpty()) {
+            ", can't be ${continuation.excludedTypes.joinToString(" or ")}"
+        } else ""
         val decision = ChooseOptionDecision(
             id = decisionId,
             playerId = continuation.controllerId,
-            prompt = "Choose the replacement creature type (replacing $fromType)",
+            prompt = "Choose the replacement creature type (replacing $fromType$promptSuffix)",
             context = DecisionContext(
                 sourceId = continuation.sourceId,
                 sourceName = continuation.sourceName,

@@ -21,6 +21,7 @@ class PermanentExecutors(
         GrantKeywordToGroupExecutor(),
         AddCountersExecutor(),
         RemoveCountersExecutor(),
-        ChooseColorProtectionExecutor(decisionHandler)
+        ChooseColorProtectionExecutor(decisionHandler),
+        ChangeCreatureTypeTextExecutor(decisionHandler)
     )
 }

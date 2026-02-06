@@ -87,6 +87,7 @@ class TargetValidator {
             is TargetCreatureOrPlayer -> validateCreatureOrPlayerTarget(state, target)
             is TargetCreatureOrPlaneswalker -> validateCreatureOrPlaneswalkerTarget(state, target)
             is TargetSpell -> validateSpellTarget(state, target, requirement.filter, casterId)
+            is TargetSpellOrPermanent -> validateSpellOrPermanentTarget(state, target, casterId)
             is TargetObject -> validateObjectTarget(state, target, requirement.filter, casterId)
             is TargetOther -> validateSingleTarget(state, target, requirement.baseRequirement, casterId)
         }
@@ -291,6 +292,34 @@ class TargetValidator {
             Zone.BATTLEFIELD -> validatePermanentTarget(state, target, filter, casterId)
             Zone.STACK -> validateSpellTarget(state, target, filter, casterId)
             else -> validateCardInZoneTarget(state, target, filter, casterId)
+        }
+    }
+
+    /**
+     * Validate a target for TargetSpellOrPermanent.
+     * Accepts either a spell on the stack or a permanent on the battlefield.
+     */
+    private fun validateSpellOrPermanentTarget(
+        state: GameState,
+        target: ChosenTarget,
+        casterId: EntityId
+    ): String? {
+        return when (target) {
+            is ChosenTarget.Permanent -> {
+                state.getEntity(target.entityId)
+                    ?: return "Target not found"
+                if (target.entityId !in state.getBattlefield()) {
+                    return "Target must be on the battlefield or on the stack"
+                }
+                null
+            }
+            is ChosenTarget.Spell -> {
+                if (target.spellEntityId !in state.stack) {
+                    return "Target spell not on the stack"
+                }
+                null
+            }
+            else -> "Target must be a spell or permanent"
         }
     }
 

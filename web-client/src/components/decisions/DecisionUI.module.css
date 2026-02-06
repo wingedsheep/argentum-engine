@@ -598,3 +598,79 @@
   margin: var(--space-2) 0 0;
   font-size: var(--font-md);
 }
+
+/* =========================================================================
+ * Choose Option Decision (searchable list)
+ * ========================================================================= */
+.optionSearchInput {
+  width: 280px;
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+  background-color: var(--bg-surface-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: var(--font-md);
+  outline: none;
+}
+
+.optionSearchInput:focus {
+  border-color: var(--color-primary);
+}
+
+.optionSearchInput::placeholder {
+  color: var(--text-tertiary);
+}
+
+.optionList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 320px;
+  overflow-y: auto;
+  width: 280px;
+  margin-bottom: var(--space-4);
+  padding: var(--space-1);
+  background-color: var(--bg-surface-2);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+}
+
+.optionItem {
+  padding: var(--space-2) var(--space-4);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: var(--font-md);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.1s, color 0.1s;
+}
+
+.optionItem:hover {
+  background-color: var(--bg-surface-4);
+  color: var(--text-primary);
+}
+
+.optionItemSelected {
+  background-color: var(--color-primary);
+  color: var(--text-on-primary, #fff);
+  border-color: var(--color-primary);
+}
+
+.optionItemSelected:hover {
+  background-color: var(--color-primary);
+  filter: brightness(1.1);
+}
+
+@media (max-width: 639px) {
+  .optionSearchInput,
+  .optionList {
+    width: 240px;
+  }
+
+  .optionList {
+    max-height: 240px;
+  }
+}

@@ -437,15 +437,17 @@ class ClientStateTransformer(
         val spellOnStack = container.get<SpellOnStackComponent>()
         val chosenX = spellOnStack?.xValue
 
-        // Build type line string from TypeLine
+        // Build type line string from TypeLine, using projected subtypes if available
         val typeLine = cardComponent.typeLine
+        val projectedSubtypes = projectedValues?.subtypes?.toList()
+        val displaySubtypes = projectedSubtypes ?: typeLine.subtypes.map { it.value }
         val typeLineParts = mutableListOf<String>()
         if (typeLine.supertypes.isNotEmpty()) {
             typeLineParts.add(typeLine.supertypes.joinToString(" ") { it.displayName })
         }
         typeLineParts.add(typeLine.cardTypes.joinToString(" ") { it.displayName })
-        val typeLineString = if (typeLine.subtypes.isNotEmpty()) {
-            "${typeLineParts.joinToString(" ")} — ${typeLine.subtypes.joinToString(" ") { it.value }}"
+        val typeLineString = if (displaySubtypes.isNotEmpty()) {
+            "${typeLineParts.joinToString(" ")} — ${displaySubtypes.joinToString(" ")}"
         } else {
             typeLineParts.joinToString(" ")
         }
@@ -460,7 +462,7 @@ class ClientStateTransformer(
             manaValue = cardComponent.manaCost.cmc,
             typeLine = typeLineString,
             cardTypes = typeLine.cardTypes.map { it.name }.toSet(),
-            subtypes = typeLine.subtypes.map { it.value }.toSet(),
+            subtypes = displaySubtypes.toSet(),
             colors = colors,
             oracleText = cardComponent.oracleText,
             power = power,
@@ -660,6 +662,21 @@ class ClientStateTransformer(
         entityId: EntityId
     ): List<ClientCardEffect> {
         val effects = mutableListOf<ClientCardEffect>()
+
+        // Check for text replacements
+        val textReplacement = state.getEntity(entityId)?.get<TextReplacementComponent>()
+        if (textReplacement != null) {
+            for (r in textReplacement.replacements) {
+                effects.add(
+                    ClientCardEffect(
+                        effectId = "text_modified_${r.fromWord}_${r.toWord}",
+                        name = "Text Modified",
+                        description = "${r.fromWord} → ${r.toWord}",
+                        icon = "text-change"
+                    )
+                )
+            }
+        }
 
         // Check all floating effects that affect this entity
         for (floatingEffect in state.floatingEffects) {

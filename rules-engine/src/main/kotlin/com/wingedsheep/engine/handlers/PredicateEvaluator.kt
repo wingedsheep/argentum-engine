@@ -153,27 +153,31 @@ class PredicateEvaluator {
             CardPredicate.IsMulticolored -> colors.size > 1
             CardPredicate.IsMonocolored -> colors.size == 1
 
-            // Subtype predicates - face-down creatures have no subtypes (Rule 707.2)
+            // Subtype predicates - use projected subtypes when available (for text-changing effects)
+            // Face-down creatures have no subtypes (Rule 707.2)
             is CardPredicate.HasSubtype -> {
-                // Face-down permanents have no subtypes
                 if (projectedValues?.isFaceDown == true) {
                     false
                 } else {
-                    card.typeLine.hasSubtype(predicate.subtype)
+                    projectedValues?.subtypes?.any { it.equals(predicate.subtype.value, ignoreCase = true) }
+                        ?: card.typeLine.hasSubtype(predicate.subtype)
                 }
             }
             is CardPredicate.NotSubtype -> {
                 if (projectedValues?.isFaceDown == true) {
                     true  // Face-down has no subtypes
                 } else {
-                    !card.typeLine.hasSubtype(predicate.subtype)
+                    val hasSubtype = projectedValues?.subtypes?.any { it.equals(predicate.subtype.value, ignoreCase = true) }
+                        ?: card.typeLine.hasSubtype(predicate.subtype)
+                    !hasSubtype
                 }
             }
             is CardPredicate.HasBasicLandType -> {
                 if (projectedValues?.isFaceDown == true) {
                     false  // Face-down has no land types
                 } else {
-                    card.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(predicate.landType))
+                    projectedValues?.subtypes?.any { it.equals(predicate.landType, ignoreCase = true) }
+                        ?: card.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(predicate.landType))
                 }
             }
 

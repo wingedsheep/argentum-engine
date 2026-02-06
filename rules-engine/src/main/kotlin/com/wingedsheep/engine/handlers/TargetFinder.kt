@@ -47,6 +47,7 @@ class TargetFinder(
             is TargetCreatureOrPlaneswalker -> findCreatureOrPlaneswalkerTargets(state, controllerId, sourceId)
             is TargetSpell -> findSpellTargets(state, requirement, controllerId)
             is TargetObject -> findObjectTargets(state, requirement, controllerId, sourceId)
+            is TargetSpellOrPermanent -> findSpellOrPermanentTargets(state, controllerId, sourceId)
             is TargetOther -> {
                 // For TargetOther, find targets for the base requirement but exclude the source
                 val baseTargets = findLegalTargets(state, requirement.baseRequirement, controllerId, sourceId)
@@ -279,6 +280,38 @@ class TargetFinder(
             )
             else -> findCardTargetsInZone(state, filter, controllerId)
         }
+    }
+
+    /**
+     * Find targets that are either permanents on the battlefield or spells on the stack.
+     * Used by Artificial Evolution's "target spell or permanent" requirement.
+     */
+    private fun findSpellOrPermanentTargets(
+        state: GameState,
+        controllerId: EntityId,
+        sourceId: EntityId?
+    ): List<EntityId> {
+        val projected = stateProjector.project(state)
+        val targets = mutableListOf<EntityId>()
+
+        // Add all permanents on the battlefield
+        for (entityId in state.getBattlefield()) {
+            val container = state.getEntity(entityId) ?: continue
+            container.get<CardComponent>() ?: continue
+            val entityController = container.get<ControllerComponent>()?.playerId
+
+            if (projected.hasKeyword(entityId, Keyword.HEXPROOF) && entityController != controllerId) continue
+            if (projected.hasKeyword(entityId, Keyword.SHROUD)) continue
+
+            targets.add(entityId)
+        }
+
+        // Add all spells on the stack
+        targets.addAll(state.stack.filter { spellId ->
+            state.getEntity(spellId)?.get<CardComponent>() != null
+        })
+
+        return targets
     }
 
     /**

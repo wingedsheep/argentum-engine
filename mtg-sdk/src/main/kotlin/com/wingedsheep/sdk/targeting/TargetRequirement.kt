@@ -155,6 +155,24 @@ data class TargetCreatureOrPlaneswalker(
 }
 
 // =============================================================================
+// Spell or Permanent Targeting
+// =============================================================================
+
+/**
+ * "Target spell or permanent" - can target spells on the stack or permanents
+ * on the battlefield.
+ *
+ * Used by text-changing effects like Artificial Evolution.
+ */
+@Serializable
+data class TargetSpellOrPermanent(
+    override val count: Int = 1,
+    override val optional: Boolean = false
+) : TargetRequirement {
+    override val description: String = if (count == 1) "target spell or permanent" else "$count target spells or permanents"
+}
+
+// =============================================================================
 // Card Targeting (other zones)
 // =============================================================================
 

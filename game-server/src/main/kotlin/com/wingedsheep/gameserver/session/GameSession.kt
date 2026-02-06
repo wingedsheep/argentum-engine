@@ -1471,6 +1471,11 @@ class GameSession(
             is TargetPermanent -> findValidPermanentTargets(state, playerId, requirement.filter)
             is TargetObject -> findValidObjectTargets(state, playerId, requirement.filter)
             is TargetSpell -> findValidSpellTargets(state, playerId, requirement.filter)
+            is TargetSpellOrPermanent -> {
+                val permanents = findValidPermanentTargets(state, playerId, TargetFilter.Permanent)
+                val spells = findValidSpellTargets(state, playerId, TargetFilter.SpellOnStack)
+                permanents + spells
+            }
             else -> emptyList() // Other target types not yet implemented
         }
     }

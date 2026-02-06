@@ -40,6 +40,7 @@ object OnslaughtSet {
         AphettoAlchemist,
         AphettoGrifter,
         ArcanisTheOmnipotent,
+        ArtificialEvolution,
         AscendingAven,
         SageAven,
 
@@ -65,6 +66,7 @@ object OnslaughtSet {
         ChargingSlateback,
         GoblinSkyRaider,
         GoblinSledder,
+        LayWaste,
         PinpointAvalanche,
         Shock,
 

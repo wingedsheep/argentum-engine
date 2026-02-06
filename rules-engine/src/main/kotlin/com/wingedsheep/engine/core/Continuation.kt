@@ -583,6 +583,7 @@ data class ChooseColorProtectionContinuation(
  * @property sourceName Name of the source for event messages
  * @property targetId The entity whose text is being changed
  * @property creatureTypes The creature type options presented (indexed by OptionChosenResponse.optionIndex)
+ * @property excludedTypes Creature types that cannot be chosen as the TO type (e.g., "Wall" for Artificial Evolution)
  */
 @Serializable
 data class ChooseFromCreatureTypeContinuation(
@@ -591,13 +592,14 @@ data class ChooseFromCreatureTypeContinuation(
     val sourceId: EntityId?,
     val sourceName: String?,
     val targetId: EntityId,
-    val creatureTypes: List<String>
+    val creatureTypes: List<String>,
+    val excludedTypes: List<String> = emptyList()
 ) : ContinuationFrame
 
 /**
  * Resume after player chooses the TO creature type for text replacement.
  *
- * Step 2: Player chooses the replacement creature type (can't be Wall).
+ * Step 2: Player chooses the replacement creature type.
  * The continuation handler then applies the TextReplacementComponent.
  *
  * @property controllerId The player who controls the effect

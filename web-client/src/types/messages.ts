@@ -262,6 +262,16 @@ export interface ChooseNumberDecision extends PendingDecisionBase {
 }
 
 /**
+ * Player must choose from a list of string options (e.g., creature types).
+ * Used by effects like Artificial Evolution.
+ */
+export interface ChooseOptionDecision extends PendingDecisionBase {
+  readonly type: 'ChooseOptionDecision'
+  readonly options: readonly string[]
+  readonly defaultSearch?: string | null
+}
+
+/**
  * Player must distribute an amount (e.g., damage) among targets.
  * Used for effects like Forked Lightning that deal divided damage.
  */
@@ -283,6 +293,7 @@ export type PendingDecision =
   | ReorderLibraryDecision
   | OrderObjectsDecision
   | ChooseNumberDecision
+  | ChooseOptionDecision
   | DistributeDecision
 
 /**
