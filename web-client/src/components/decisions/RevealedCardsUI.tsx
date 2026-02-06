@@ -6,33 +6,56 @@ import { getCardImageUrl } from '../../utils/cardImages'
 import styles from './RevealedCardsUI.module.css'
 
 /**
- * Overlay that shows cards revealed by the opponent (e.g., from Sylvan Tutor).
- * Only shown to opponents - the revealing player already knows what they searched for.
- * Uses the same visual style as RevealedHandUI for consistency.
+ * Overlay that shows revealed cards - either from a "look at hand" / "reveal hand"
+ * effect or from a library reveal effect (e.g., Animal Magnetism, Sylvan Tutor).
+ *
+ * Can be minimized to "View Battlefield" so the player can see the board state
+ * while the reveal is active.
  */
 export function RevealedCardsUI() {
   const revealedCardsInfo = useGameStore((state) => state.revealedCardsInfo)
+  const revealedHandCardIds = useGameStore((state) => state.revealedHandCardIds)
   const gameState = useGameStore((state) => state.gameState)
   const dismissRevealedCards = useGameStore((state) => state.dismissRevealedCards)
+  const dismissRevealedHand = useGameStore((state) => state.dismissRevealedHand)
   const hoverCard = useGameStore((state) => state.hoverCard)
   const responsive = useResponsive()
   const [hoveredCardId, setHoveredCardId] = useState<EntityId | null>(null)
+  const [minimized, setMinimized] = useState(false)
 
-  if (!revealedCardsInfo || !gameState) return null
+  // Determine which reveal mode is active
+  const isHandReveal = !!revealedHandCardIds
+  const isCardReveal = !!revealedCardsInfo
 
-  // Get card info for each revealed card
-  const cards = revealedCardsInfo.cardIds
-    .map((cardId, index) => {
-      const card = gameState.cards[cardId]
-      // Fall back to the card names and imageUris from the event if card is not in state
-      // (e.g., it went to top of library and isn't visible)
-      return card ?? {
-        id: cardId,
-        name: revealedCardsInfo.cardNames[index] ?? 'Unknown Card',
-        imageUri: revealedCardsInfo.imageUris[index] ?? null,
-        typeLine: null,
-      }
-    })
+  if ((!isHandReveal && !isCardReveal) || !gameState) return null
+
+  // Build card list depending on the reveal type
+  const cards = isHandReveal
+    ? revealedHandCardIds
+        .map((cardId) => gameState.cards[cardId])
+        .filter((card) => card != null)
+    : revealedCardsInfo!.cardIds.map((cardId, index) => {
+        const card = gameState.cards[cardId]
+        return card ?? {
+          id: cardId,
+          name: revealedCardsInfo!.cardNames[index] ?? 'Unknown Card',
+          imageUri: revealedCardsInfo!.imageUris[index] ?? null,
+          typeLine: null,
+        }
+      })
+
+  const onDismiss = isHandReveal ? dismissRevealedHand : dismissRevealedCards
+
+  // Title and subtitle
+  const title = isHandReveal
+    ? "Opponent's Hand"
+    : `Opponent Revealed${revealedCardsInfo!.source ? ` (${revealedCardsInfo!.source})` : ''}`
+
+  const subtitle = isHandReveal
+    ? cards.length === 0
+      ? 'Opponent has no cards in hand'
+      : `${cards.length} card${cards.length !== 1 ? 's' : ''}`
+    : revealedCardsInfo!.cardNames.join(', ')
 
   // Calculate card size that fits all cards
   const availableWidth = responsive.viewportWidth - responsive.containerPadding * 2 - 64
@@ -58,18 +81,24 @@ export function RevealedCardsUI() {
     hoverCard(null)
   }
 
-  const sourceText = revealedCardsInfo.source ? ` (${revealedCardsInfo.source})` : ''
+  // When minimized, show floating button to restore
+  if (minimized) {
+    return (
+      <button
+        onClick={() => setMinimized(false)}
+        className={styles.restoreButton}
+      >
+        {isHandReveal ? "↑ Return to Opponent's Hand" : '↑ Return to Revealed Cards'}
+      </button>
+    )
+  }
 
   return (
     <div className={styles.overlay}>
       {/* Header */}
       <div className={styles.header}>
-        <h2 className={styles.title}>
-          Opponent Revealed{sourceText}
-        </h2>
-        <p className={styles.subtitle}>
-          {revealedCardsInfo.cardNames.join(', ')}
-        </p>
+        <h2 className={styles.title}>{title}</h2>
+        <p className={styles.subtitle}>{subtitle}</p>
       </div>
 
       {/* Card ribbon */}
@@ -120,10 +149,15 @@ export function RevealedCardsUI() {
         </div>
       )}
 
-      {/* OK button */}
-      <button onClick={dismissRevealedCards} className={styles.okButton}>
-        OK
-      </button>
+      {/* Action buttons */}
+      <div className={styles.buttonRow}>
+        <button onClick={() => setMinimized(true)} className={styles.viewBattlefieldButton}>
+          View Battlefield
+        </button>
+        <button onClick={onDismiss} className={styles.okButton}>
+          OK
+        </button>
+      </div>
       {/* Card preview is handled by the global CardPreview component in GameBoard */}
     </div>
   )

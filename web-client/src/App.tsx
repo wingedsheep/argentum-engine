@@ -3,7 +3,6 @@ import { GameBoard } from './components/game/GameBoard'
 import { GameUI } from './components/ui/GameUI'
 import { MulliganUI } from './components/mulligan/MulliganUI'
 import { DecisionUI } from './components/decisions/DecisionUI'
-import { RevealedHandUI } from './components/decisions/RevealedHandUI'
 import { RevealedCardsUI } from './components/decisions/RevealedCardsUI'
 import { XCostSelector } from './components/ui/XCostSelector'
 import { ConvokeSelector } from './components/ui/ConvokeSelector'
@@ -196,10 +195,7 @@ export default function App() {
       {/* Decision overlay (for pending decisions like discard to hand size) */}
       {showGame && <DecisionUI />}
 
-      {/* Revealed hand overlay (when looking at opponent's hand) */}
-      {showGame && <RevealedHandUI />}
-
-      {/* Revealed cards overlay (from effects like Sylvan Tutor) */}
+      {/* Revealed cards overlay (hand reveals and library reveals) */}
       {showGame && <RevealedCardsUI />}
 
       {/* Game over overlay */}

@@ -160,6 +160,38 @@
 }
 
 /* =========================================================================
+ * Button Row
+ * ========================================================================= */
+.buttonRow {
+  display: flex;
+  gap: var(--space-4);
+}
+
+/* =========================================================================
+ * View Battlefield Button
+ * ========================================================================= */
+.viewBattlefieldButton {
+  background-color: var(--color-primary-dark);
+  color: var(--text-primary);
+  border: none;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  padding: var(--space-3) var(--space-5);
+  font-size: var(--font-md);
+}
+
+@media (max-width: 639px) {
+  .viewBattlefieldButton {
+    padding: var(--space-2) var(--space-4);
+  }
+}
+
+.viewBattlefieldButton:hover {
+  filter: brightness(1.1);
+}
+
+/* =========================================================================
  * OK Button
  * ========================================================================= */
 .okButton {
@@ -181,5 +213,38 @@
 }
 
 .okButton:hover {
+  filter: brightness(1.1);
+}
+
+/* =========================================================================
+ * Restore Button (minimized state)
+ * ========================================================================= */
+.restoreButton {
+  position: fixed;
+  bottom: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: var(--space-3) var(--space-5);
+  font-size: var(--font-md);
+  background-color: var(--color-primary-dark);
+  color: var(--text-primary);
+  border: none;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  font-weight: var(--font-weight-semibold);
+  box-shadow: var(--shadow-lg);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+@media (max-width: 639px) {
+  .restoreButton {
+    padding: var(--space-2) var(--space-4);
+  }
+}
+
+.restoreButton:hover {
   filter: brightness(1.1);
 }

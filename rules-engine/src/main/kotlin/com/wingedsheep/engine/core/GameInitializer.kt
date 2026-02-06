@@ -186,7 +186,8 @@ class GameInitializer(
                 baseKeywords = cardDef.keywords,
                 colors = cardDef.colors,
                 ownerId = ownerId,
-                spellEffect = cardDef.spellEffect
+                spellEffect = cardDef.spellEffect,
+                imageUri = cardDef.metadata.imageUri
             ),
             OwnerComponent(ownerId),
             ControllerComponent(ownerId)
