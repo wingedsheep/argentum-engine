@@ -296,10 +296,16 @@ class TriggerDetector(
             }
 
             is OnOtherCreatureEnters -> {
-                event is ZoneChangeEvent &&
-                    event.toZone == com.wingedsheep.sdk.core.Zone.BATTLEFIELD &&
-                    event.entityId != sourceId &&
-                    (!trigger.youControlOnly || event.ownerId == controllerId)
+                if (event !is ZoneChangeEvent ||
+                    event.toZone != com.wingedsheep.sdk.core.Zone.BATTLEFIELD ||
+                    event.entityId == sourceId) {
+                    false
+                } else {
+                    val projected = stateProjector.project(state)
+                    val isCreature = projected.hasType(event.entityId, "Creature")
+                    val controllerMatches = !trigger.youControlOnly || event.ownerId == controllerId
+                    isCreature && controllerMatches
+                }
             }
 
             is OnLeavesBattlefield -> {
