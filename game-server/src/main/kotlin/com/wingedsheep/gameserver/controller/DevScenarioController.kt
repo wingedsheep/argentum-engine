@@ -110,6 +110,227 @@ class DevScenarioController(
                         """
                     ),
                     ExampleObject(
+                        name = "Forked Lightning - Divided Damage",
+                        summary = "Test damage division among 1-3 creatures",
+                        value = """
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Forked Lightning"],
+    "battlefield": [
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Mountain"}
+    ],
+    "library": ["Mountain", "Mountain"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Raging Goblin"},
+      {"name": "Grizzly Bears"},
+      {"name": "Hill Giant"}
+    ],
+    "library": ["Swamp", "Swamp"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1
+}
+                        """
+                    ),
+                    ExampleObject(
+                        name = "Wrath of God - Board Wipe Dilemma",
+                        summary = "Clear the board or attack with your army?",
+                        value = """
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 12,
+    "hand": ["Wrath of God"],
+    "battlefield": [
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Grizzly Bears"},
+      {"name": "Devoted Hero"}
+    ],
+    "library": ["Plains", "Plains"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "battlefield": [
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Arrogant Vampire"},
+      {"name": "Dread Reaper"},
+      {"name": "Feral Shadow"}
+    ],
+    "library": ["Swamp", "Swamp"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1
+}
+                        """
+                    ),
+                    ExampleObject(
+                        name = "Astral Slide - Cycling Synergy",
+                        summary = "Cycle cards to exile and return creatures",
+                        value = """
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Barkhide Mauler", "Daru Lancer", "Aura Extraction"],
+    "battlefield": [
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Astral Slide"},
+      {"name": "Grizzly Bears"}
+    ],
+    "library": ["Plains", "Forest", "Plains"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "battlefield": [
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Hill Giant"},
+      {"name": "Raging Goblin"}
+    ],
+    "library": ["Mountain", "Mountain"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1
+}
+                        """
+                    ),
+                    ExampleObject(
+                        name = "Gravedigger - Recursion",
+                        summary = "Recover creatures from the graveyard",
+                        value = """
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 14,
+    "hand": ["Gravedigger", "Raise Dead"],
+    "battlefield": [
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Bog Wraith"}
+    ],
+    "graveyard": ["Arrogant Vampire", "Feral Shadow", "Dread Reaper"],
+    "library": ["Swamp", "Swamp"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "battlefield": [
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Ardent Militia"},
+      {"name": "Wall of Swords"}
+    ],
+    "library": ["Plains", "Plains"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1
+}
+                        """
+                    ),
+                    ExampleObject(
+                        name = "Tribal Elves - Symbiotic Synergy",
+                        summary = "Elf tribal with token generators and Wellwisher",
+                        value = """
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Symbiotic Elf", "Elvish Vanguard"],
+    "battlefield": [
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Wellwisher"},
+      {"name": "Wirewood Elf"},
+      {"name": "Elvish Warrior"}
+    ],
+    "library": ["Forest", "Forest", "Forest"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": ["Infest"],
+    "battlefield": [
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Severed Legion"},
+      {"name": "Nantuko Husk"}
+    ],
+    "library": ["Swamp", "Swamp"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1
+}
+                        """
+                    ),
+                    ExampleObject(
+                        name = "Arcanis the Omnipotent - Card Advantage Engine",
+                        summary = "Tap to draw 3 or bounce to dodge removal",
+                        value = """
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Mystic Denial"],
+    "battlefield": [
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Arcanis the Omnipotent"},
+      {"name": "Phantom Warrior"}
+    ],
+    "library": ["Island", "Wind Drake", "Cloud Spirit", "Man-o'-War", "Time Ebb", "Island"]
+  },
+  "player2": {
+    "lifeTotal": 15,
+    "hand": ["Hand of Death", "Volcanic Hammer"],
+    "battlefield": [
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Hulking Cyclops"},
+      {"name": "Raging Minotaur"}
+    ],
+    "library": ["Swamp", "Mountain"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1
+}
+                        """
+                    ),
+                    ExampleObject(
                         name = "Minimal scenario",
                         summary = "Empty board, just lands",
                         value = """
