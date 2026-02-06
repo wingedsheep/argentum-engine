@@ -23,7 +23,7 @@ game:
     candidates: ${GAME_HAND_SMOOTHER_CANDIDATES:3}
   sets:
     # Feature toggle for unreleased sets
-    onslaught-enabled: ${GAME_SETS_ONSLAUGHT_ENABLED:true}
+    onslaught-enabled: ${GAME_SETS_ONSLAUGHT_ENABLED:false}
 
 # Swagger UI - only enabled when dev endpoints are enabled
 springdoc:
