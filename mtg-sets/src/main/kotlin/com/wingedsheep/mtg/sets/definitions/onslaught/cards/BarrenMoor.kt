@@ -35,6 +35,6 @@ val BarrenMoor = card("Barren Moor") {
         collectorNumber = "312"
         artist = "Don Hazeltine"
         flavorText = ""
-        imageUri = "https://cards.scryfall.io/normal/front/b/b/bb236caa-dbf0-4c75-9a56-e15866e7681b.jpg?1562929730"
+        imageUri = "https://cards.scryfall.io/large/front/4/5/45be3811-a223-4c45-9b24-0317f2d53c60.jpg?1562911376"
     }
 }

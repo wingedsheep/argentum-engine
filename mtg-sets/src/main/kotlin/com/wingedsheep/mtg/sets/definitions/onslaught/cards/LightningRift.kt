@@ -35,6 +35,6 @@ val LightningRift = card("Lightning Rift") {
         collectorNumber = "217"
         artist = "Dave Dorman"
         flavorText = "\"Never underestimate the power of a good storm.\""
-        imageUri = "https://cards.scryfall.io/normal/front/c/4/c4a4a901-a284-4322-b88c-bfa1f7e1598d.jpg?1562935348"
+        imageUri = "https://cards.scryfall.io/large/front/d/7/d775d729-0ad9-4b14-9d44-6282f6936e07.jpg?1562946381"
     }
 }
