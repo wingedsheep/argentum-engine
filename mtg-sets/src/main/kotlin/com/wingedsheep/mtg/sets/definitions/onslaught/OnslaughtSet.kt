@@ -21,7 +21,8 @@ object OnslaughtSet {
      * All cards implemented from this set.
      */
     val allCards = listOf(
-        // White creatures
+        // White creatures and spells
+        AkromasVengeance,
         CrudeRampart,
         DaruLancer,
         DiscipleOfGrace,
