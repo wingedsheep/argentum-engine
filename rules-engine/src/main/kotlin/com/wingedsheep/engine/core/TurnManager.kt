@@ -97,9 +97,12 @@ class TurnManager(
         // Check if the player has a SkipUntapComponent
         val skipUntap = newState.getEntity(activePlayer)?.get<SkipUntapComponent>()
 
+        // Use projected state for controller checks (control-changing effects like Annex)
+        val projected = stateProjector.project(state)
+
         // Find all tapped permanents controlled by the active player
-        val permanentsToUntap = state.entities.filter { (_, container) ->
-            container.get<ControllerComponent>()?.playerId == activePlayer &&
+        val permanentsToUntap = state.entities.filter { (entityId, container) ->
+            projected.getController(entityId) == activePlayer &&
                 container.has<TappedComponent>()
         }.keys.filter { entityId ->
             // If there's a skip untap component, check if this permanent should be skipped
@@ -132,9 +135,10 @@ class TurnManager(
             }
         }
 
-        // Remove summoning sickness from all creatures the player controls
-        val creaturesToRefresh = newState.entities.filter { (_, container) ->
-            container.get<ControllerComponent>()?.playerId == activePlayer &&
+        // Remove summoning sickness from all creatures the player controls (using projected state)
+        val projectedAfterUntap = stateProjector.project(newState)
+        val creaturesToRefresh = newState.entities.filter { (entityId, container) ->
+            projectedAfterUntap.getController(entityId) == activePlayer &&
                 container.has<SummoningSicknessComponent>()
         }.keys
 

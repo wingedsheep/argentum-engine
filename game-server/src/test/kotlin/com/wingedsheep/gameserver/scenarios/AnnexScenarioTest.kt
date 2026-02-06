@@ -4,6 +4,7 @@ import com.wingedsheep.gameserver.ScenarioTestBase
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.sdk.core.Phase
@@ -199,6 +200,75 @@ class AnnexScenarioTest : ScenarioTestBase() {
                 val opponentMana = manaSolver.getAvailableManaCount(game.state, game.player2Id)
                 withClue("Player 2 should not have access to the stolen Forest's mana") {
                     opponentMana shouldBe 0
+                }
+            }
+
+            test("stolen land untaps during controller's untap step, not original owner's") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardInHand(1, "Annex")
+                    .withLandsOnBattlefield(1, "Island", 4)
+                    .withLandsOnBattlefield(2, "Mountain", 1)
+                    .withCardInLibrary(1, "Island")
+                    .withCardInLibrary(1, "Island")
+                    .withCardInLibrary(2, "Mountain")
+                    .withCardInLibrary(2, "Mountain")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val opponentMountain = game.findPermanent("Mountain")!!
+
+                // Player 1 casts Annex targeting opponent's Mountain
+                game.castSpell(1, "Annex", opponentMountain)
+                game.resolveStack()
+
+                // Verify Player 1 now controls the Mountain
+                val projected = stateProjector.project(game.state)
+                withClue("Player 1 should control the stolen Mountain") {
+                    projected.getController(opponentMountain) shouldBe game.player1Id
+                }
+
+                // Tap the stolen Mountain (simulate using it)
+                game.state = game.state.updateEntity(opponentMountain) { it.with(TappedComponent) }
+                withClue("Mountain should be tapped") {
+                    game.state.getEntity(opponentMountain)?.has<TappedComponent>() shouldBe true
+                }
+
+                // Advance to Player 2's turn (pass through end of P1's turn)
+                game.passUntilPhase(Phase.ENDING, Step.END)
+                game.passPriority()
+                game.passPriority()
+
+                // Verify it's now Player 2's turn
+                withClue("It should now be Player 2's turn") {
+                    game.state.activePlayerId shouldBe game.player2Id
+                }
+
+                // Advance past the untap step (happens automatically) to upkeep
+                game.passUntilPhase(Phase.BEGINNING, Step.UPKEEP)
+
+                // The Mountain should still be tapped - Player 2 doesn't control it
+                withClue("Mountain should still be tapped after Player 2's untap step (Player 2 doesn't control it)") {
+                    game.state.getEntity(opponentMountain)?.has<TappedComponent>() shouldBe true
+                }
+
+                // Advance to Player 1's turn
+                game.passUntilPhase(Phase.ENDING, Step.END)
+                game.passPriority()
+                game.passPriority()
+
+                // Verify it's now Player 1's turn
+                withClue("It should now be Player 1's turn") {
+                    game.state.activePlayerId shouldBe game.player1Id
+                }
+
+                // Advance past Player 1's untap step
+                game.passUntilPhase(Phase.BEGINNING, Step.UPKEEP)
+
+                // The Mountain should now be untapped - Player 1 controls it
+                withClue("Mountain should be untapped after Player 1's untap step (Player 1 controls it)") {
+                    game.state.getEntity(opponentMountain)?.has<TappedComponent>() shouldBe false
                 }
             }
 
