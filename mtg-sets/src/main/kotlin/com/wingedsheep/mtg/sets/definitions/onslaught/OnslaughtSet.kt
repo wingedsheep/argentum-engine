@@ -29,10 +29,14 @@ object OnslaughtSet {
         AuraExtraction,
         CrudeRampart,
         Demystify,
+        GrasslandCrusader,
+        ImprovisedArmor,
         Inspirit,
         DaruLancer,
         DiscipleOfGrace,
         GlorySeeker,
+        PearlspearCourier,
+        Whipcorder,
 
         // Blue creatures and spells
         AirborneAid,
@@ -54,6 +58,7 @@ object OnslaughtSet {
         FesteringGoblin,
         GluttonousZombie,
         Infest,
+        SpinedBasher,
         NantukoHusk,
         ScreechingBuzzard,
         SeveredLegion,
@@ -66,6 +71,7 @@ object OnslaughtSet {
         AirdropCondor,
         BatteringCraghorn,
         ChargingSlateback,
+        FlamestickCourier,
         GoblinSkyRaider,
         GoblinSledder,
         LayWaste,
@@ -74,6 +80,8 @@ object OnslaughtSet {
 
         // Green creatures and spells
         AnimalMagnetism,
+        EvergloveCourier,
+        KrosanColossus,
         Naturalize,
         BarkhideMauler,
         ElvishVanguard,

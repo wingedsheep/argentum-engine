@@ -1,0 +1,46 @@
+package com.wingedsheep.mtg.sets.definitions.onslaught.cards
+
+import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.AbilityCost
+import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.ModifyStatsEffect
+import com.wingedsheep.sdk.scripting.TargetFilter
+import com.wingedsheep.sdk.targeting.TargetPermanent
+
+/**
+ * Grassland Crusader
+ * {5}{W}
+ * Creature — Human Cleric Soldier
+ * 2/4
+ * {T}: Target Elf or Soldier creature gets +2/+2 until end of turn.
+ */
+val GrasslandCrusader = card("Grassland Crusader") {
+    manaCost = "{5}{W}"
+    typeLine = "Creature — Human Cleric Soldier"
+    power = 2
+    toughness = 4
+
+    activatedAbility {
+        cost = AbilityCost.Tap
+        target = TargetPermanent(
+            filter = TargetFilter(
+                GameObjectFilter.Creature.withSubtype("Elf") or GameObjectFilter.Creature.withSubtype("Soldier")
+            )
+        )
+        effect = ModifyStatsEffect(
+            powerModifier = 2,
+            toughnessModifier = 2,
+            target = EffectTarget.ContextTarget(0)
+        )
+    }
+
+    metadata {
+        rarity = Rarity.COMMON
+        collectorNumber = "31"
+        artist = "Matthew D. Wilson"
+        flavorText = "When the ground shakes, the Order is not far behind."
+        imageUri = "https://cards.scryfall.io/normal/front/5/b/5b513508-df97-4bda-8566-be3c3b7e02c6.jpg?1562912584"
+    }
+}

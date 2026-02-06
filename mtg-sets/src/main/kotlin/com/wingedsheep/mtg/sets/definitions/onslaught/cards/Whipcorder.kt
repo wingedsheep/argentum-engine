@@ -1,0 +1,42 @@
+package com.wingedsheep.mtg.sets.definitions.onslaught.cards
+
+import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.TapUntapEffect
+import com.wingedsheep.sdk.targeting.TargetCreature
+
+/**
+ * Whipcorder
+ * {W}{W}
+ * Creature — Human Soldier Rebel
+ * 2/2
+ * {W}, {T}: Tap target creature.
+ * Morph {W}
+ */
+val Whipcorder = card("Whipcorder") {
+    manaCost = "{W}{W}"
+    typeLine = "Creature — Human Soldier Rebel"
+    power = 2
+    toughness = 2
+
+    activatedAbility {
+        cost = Costs.Composite(Costs.Mana("{W}"), Costs.Tap)
+        target = TargetCreature()
+        effect = TapUntapEffect(
+            target = EffectTarget.ContextTarget(0),
+            tap = true
+        )
+    }
+
+    morph = "{W}"
+
+    metadata {
+        rarity = Rarity.UNCOMMON
+        collectorNumber = "56"
+        artist = "Kev Walker"
+        flavorText = "\"The bigger they are, the harder they fall.\""
+        imageUri = "https://cards.scryfall.io/normal/front/1/0/10f8e52a-7fef-4e16-b434-cfb8eb79f587.jpg?1562898742"
+    }
+}
