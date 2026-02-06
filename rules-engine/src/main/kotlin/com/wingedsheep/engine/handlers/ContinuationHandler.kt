@@ -193,8 +193,17 @@ class ContinuationHandler(
 
             val result = effectExecutorRegistry.execute(stateForExecution, effect, context)
 
-            if (!result.isSuccess) {
-                return result
+            if (!result.isSuccess && !result.isPaused) {
+                // Sub-effect failed - skip it and continue with remaining effects.
+                // Per MTG rules, do as much as possible.
+                currentState = if (stillRemaining.isNotEmpty()) {
+                    val (_, stateWithoutCont) = result.state.popContinuation()
+                    stateWithoutCont
+                } else {
+                    result.state
+                }
+                allEvents.addAll(result.events)
+                continue
             }
 
             if (result.isPaused) {
@@ -1994,8 +2003,17 @@ class ContinuationHandler(
 
                 val result = effectExecutorRegistry.execute(stateForExecution, effect, context)
 
-                if (!result.isSuccess) {
-                    return ExecutionResult(result.state, allEvents + result.events, result.error)
+                if (!result.isSuccess && !result.isPaused) {
+                    // Sub-effect failed - skip it and continue with remaining effects.
+                    // Per MTG rules, do as much as possible.
+                    currentState = if (stillRemaining.isNotEmpty()) {
+                        val (_, stateWithoutCont) = result.state.popContinuation()
+                        stateWithoutCont
+                    } else {
+                        result.state
+                    }
+                    allEvents.addAll(result.events)
+                    continue
                 }
 
                 if (result.isPaused) {

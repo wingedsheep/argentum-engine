@@ -58,12 +58,18 @@ class CompositeEffectExecutor(
             val result = effectExecutor(stateForExecution, subEffect, context)
 
             if (!result.isSuccess && !result.isPaused) {
-                // Error occurred - return it with accumulated events
-                return ExecutionResult(
-                    state = result.state,
-                    events = allEvents + result.events,
-                    error = result.error
-                )
+                // Sub-effect failed - skip it and continue with remaining effects.
+                // Per MTG rules, when a spell or ability resolves, you do as much as
+                // possible even if some parts can't be performed (e.g., optional target
+                // wasn't selected, or target became invalid).
+                currentState = if (remainingEffects.isNotEmpty()) {
+                    val (_, stateWithoutCont) = result.state.popContinuation()
+                    stateWithoutCont
+                } else {
+                    result.state
+                }
+                allEvents.addAll(result.events)
+                continue
             }
 
             if (result.isPaused) {

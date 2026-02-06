@@ -373,13 +373,12 @@ class StackResolver(
                 )
             }
 
-            if (!effectResult.isSuccess) {
-                // Effect execution failed - spell still goes to graveyard
-                events.addAll(effectResult.events)
-            } else {
-                newState = effectResult.newState
-                events.addAll(effectResult.events)
-            }
+            // Always apply state changes from effect execution, even on partial
+            // failure. Per MTG rules, when a spell resolves, you do as much as
+            // possible. Partial state changes (e.g., first target destroyed but
+            // second target missing) should be preserved.
+            newState = effectResult.newState
+            events.addAll(effectResult.events)
         }
 
         // Move to graveyard
