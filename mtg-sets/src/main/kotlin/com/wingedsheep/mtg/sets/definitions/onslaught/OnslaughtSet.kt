@@ -49,6 +49,7 @@ object OnslaughtSet {
         AnuridMurkdiver,
         DiscipleOfMalice,
         FesteringGoblin,
+        Infest,
         NantukoHusk,
         ScreechingBuzzard,
         SeveredLegion,
