@@ -14,6 +14,8 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.MorphDataComponent
+import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
+import com.wingedsheep.engine.mechanics.text.SubtypeReplacer
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.engine.state.components.stack.*
@@ -329,8 +331,15 @@ class StackResolver(
         var newState = state
         val events = mutableListOf<GameEvent>()
 
-        // Execute the spell effect if present
-        val spellEffect = cardComponent?.spellEffect
+        // Execute the spell effect if present, applying text replacement if the spell
+        // was modified by a text-changing effect (e.g., Artificial Evolution)
+        val rawSpellEffect = cardComponent?.spellEffect
+        val textReplacement = state.getEntity(spellId)?.get<TextReplacementComponent>()
+        val spellEffect = if (rawSpellEffect != null && textReplacement != null) {
+            SubtypeReplacer.replaceEffect(rawSpellEffect, textReplacement)
+        } else {
+            rawSpellEffect
+        }
         if (spellEffect != null) {
             val context = EffectContext(
                 sourceId = spellId,

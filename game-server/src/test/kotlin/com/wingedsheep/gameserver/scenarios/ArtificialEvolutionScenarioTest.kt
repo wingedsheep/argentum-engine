@@ -223,6 +223,50 @@ class ArtificialEvolutionScenarioTest : ScenarioTestBase() {
                 }
             }
 
+            test("text replacement on spell changes effect when spell resolves") {
+                // Sage Aven (Bird) is on the battlefield.
+                // Player 2 casts Airborne Aid ("Draw a card for each Bird on the battlefield").
+                // Player 1 responds with Artificial Evolution targeting Airborne Aid,
+                // changing Bird → Ape. Since there are no Apes, Player 2 draws 0 cards.
+                val game = scenario()
+                    .withPlayers("Blue Mage", "Opponent")
+                    .withCardOnBattlefield(1, "Sage Aven", summoningSickness = false)
+                    .withCardInHand(1, "Artificial Evolution")
+                    .withLandsOnBattlefield(1, "Island", 1)
+                    .withCardInHand(2, "Airborne Aid")
+                    .withLandsOnBattlefield(2, "Island", 4)
+                    .withActivePlayer(2)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val initialHandSize = game.handSize(2)
+
+                // Player 2 casts Airborne Aid
+                game.castSpell(2, "Airborne Aid")
+
+                // Player 2 passes priority to Player 1
+                game.passPriority()
+
+                // Player 1 casts Artificial Evolution targeting Airborne Aid on the stack
+                game.castSpellTargetingStackSpell(1, "Artificial Evolution", "Airborne Aid")
+
+                // Resolve Artificial Evolution (top of stack)
+                game.resolveStack()
+
+                // Choose Bird as FROM type, Ape as TO type
+                game.chooseCreatureType("Bird")
+                game.chooseCreatureType("Ape")
+
+                // Now Airborne Aid resolves — it now reads "Draw a card for each Ape"
+                // There are no Apes on the battlefield, so Player 2 should draw 0 cards
+                game.resolveStack()
+
+                withClue("Player 2 should not have drawn any cards (no Apes on battlefield)") {
+                    // Hand had Airborne Aid which was cast, so hand should be initialHandSize - 1
+                    game.handSize(2) shouldBe initialHandSize - 1
+                }
+            }
+
             test("text replacement persists indefinitely") {
                 val game = scenario()
                     .withPlayers("Blue Mage", "Opponent")
