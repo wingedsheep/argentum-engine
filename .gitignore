@@ -173,5 +173,8 @@ gradle-app.setting
 
 # End of https://www.toptal.com/developers/gitignore/api/gradle,kotlin,intellij+all,osx
 
+# Kotlin compiler sessions
+.kotlin/
+
 # Local environment files
 .env
