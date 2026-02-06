@@ -46,6 +46,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
   const nextStopPoint = useGameStore((state) => state.nextStopPoint)
   const fullControl = useGameStore((state) => state.fullControl)
   const setFullControl = useGameStore((state) => state.setFullControl)
+  const opponentDecisionStatus = useGameStore((state) => state.opponentDecisionStatus)
   const responsive = useResponsive(topOffset)
 
   // In spectator mode, use spectatingState.gameState
@@ -73,6 +74,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
 
   // In spectator mode: disable all interaction
   const hasPriority = spectatorMode ? false : (gameState.priorityPlayerId === viewingPlayer?.playerId)
+  const canAct = hasPriority && !opponentDecisionStatus
   const isMyTurn = spectatorMode ? false : (gameState.activePlayerId === viewingPlayer?.playerId)
   const isInCombatMode = spectatorMode ? false : (combatState !== null)
 
@@ -288,7 +290,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
       </div>
 
       {/* Floating pass button (bottom-right) - hidden in spectator mode */}
-      {!spectatorMode && hasPriority && !isInCombatMode && viewingPlayer && (
+      {!spectatorMode && canAct && !isInCombatMode && viewingPlayer && (
         <button
           onClick={() => {
             submitAction({
