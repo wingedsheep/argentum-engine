@@ -22,7 +22,7 @@
 - [x] Aphetto Grifter
 - [x] Aphetto Vulture
 - [x] Arcanis the Omnipotent
-- [ ] Artificial Evolution
+- [x] Artificial Evolution
 - [x] Ascending Aven
 - [x] Astral Slide
 - [x] Aura Extraction
