@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 78 / 335
+**Implemented:** 86 / 335
 
 ---
 
@@ -48,7 +48,7 @@
 - [ ] Brightstone Ritual
 - [ ] Broodhatch Nantuko
 - [ ] Butcher Orgg
-- [ ] Cabal Archon
+- [x] Cabal Archon
 - [ ] Cabal Executioner
 - [ ] Cabal Slaver
 - [ ] Callous Oppressor
@@ -152,10 +152,10 @@
 - [ ] Grand Melee
 - [x] Grassland Crusader
 - [ ] Gratuitous Violence
-- [ ] Gravel Slinger
+- [x] Gravel Slinger
 - [ ] Gravespawn Sovereign
 - [ ] Graxiplon
-- [ ] Grinning Demon
+- [x] Grinning Demon
 - [ ] Gustcloak Harrier
 - [ ] Gustcloak Runner
 - [ ] Gustcloak Savior
@@ -204,7 +204,7 @@
 - [ ] Mistform Wall
 - [ ] Mobilization
 - [x] Mountain
-- [ ] Mythic Proportions
+- [x] Mythic Proportions
 - [ ] Nameless One
 - [x] Nantuko Husk
 - [x] Naturalize
@@ -269,10 +269,10 @@
 - [ ] Skittish Valesk
 - [ ] Slate of Ancestry
 - [ ] Slice and Dice
-- [ ] Slipstream Eel
+- [x] Slipstream Eel
 - [x] Smother
 - [ ] Snapping Thragg
-- [ ] Snarling Undorak
+- [x] Snarling Undorak
 - [ ] Solar Blast
 - [ ] Soulless One
 - [ ] Sparksmith
@@ -314,7 +314,7 @@
 - [ ] Undead Gladiator
 - [ ] Unholy Grotto
 - [ ] Unified Strike
-- [ ] Venomspout Brackus
+- [x] Venomspout Brackus
 - [x] Visara the Dreadful
 - [ ] Vitality Charm
 - [ ] Voice of the Woods
@@ -340,4 +340,4 @@
 - [ ] Words of Wilding
 - [ ] Words of Wind
 - [ ] Words of Worship
-- [ ] Wretched Anurid
+- [x] Wretched Anurid
