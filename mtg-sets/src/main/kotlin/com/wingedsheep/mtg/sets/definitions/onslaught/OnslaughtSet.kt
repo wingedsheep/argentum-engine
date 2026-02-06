@@ -35,6 +35,7 @@ object OnslaughtSet {
         Annex,
         AphettoAlchemist,
         AphettoGrifter,
+        ArcanisTheOmnipotent,
         SageAven,
 
         // Black creatures and spells
