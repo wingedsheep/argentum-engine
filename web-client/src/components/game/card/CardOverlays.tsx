@@ -1,16 +1,37 @@
 import React from 'react'
-import type { Keyword, ClientCardEffect } from '../../../types'
-import { keywordIcons, genericKeywordIcon, displayableKeywords } from '../../../assets/icons/keywords'
+import type { Keyword, ClientCardEffect, Color } from '../../../types'
+import { keywordIcons, genericKeywordIcon, displayableKeywords, protectionIcon } from '../../../assets/icons/keywords'
 import { styles } from '../board/styles'
+
+/** MTG color to CSS color mapping for protection shield icons */
+const PROTECTION_COLORS: Record<string, string> = {
+  WHITE: '#f5f0e0',
+  BLUE: '#4a90d9',
+  BLACK: '#888888',
+  RED: '#d04040',
+  GREEN: '#40a050',
+}
 
 /**
  * Container component for keyword ability icons on a card.
  * Uses SVG icons from assets/icons/keywords.
+ * Protection icons are rendered separately with color tinting.
  */
-export function KeywordIcons({ keywords, size }: { keywords: readonly Keyword[]; size: number }) {
-  const filteredKeywords = keywords.filter(k => displayableKeywords.has(k))
+export function KeywordIcons({
+  keywords,
+  protections,
+  size,
+}: {
+  keywords: readonly Keyword[]
+  protections: readonly Color[]
+  size: number
+}) {
+  // Filter out PROTECTION from normal keywords (rendered via protections array instead)
+  const filteredKeywords = keywords.filter(k => displayableKeywords.has(k) && k !== 'PROTECTION')
+  const hasProtections = protections.length > 0
+  const hasKeywords = filteredKeywords.length > 0
 
-  if (filteredKeywords.length === 0) return null
+  if (!hasKeywords && !hasProtections) return null
 
   return (
     <div style={styles.keywordIconsContainer}>
@@ -24,6 +45,29 @@ export function KeywordIcons({ keywords, size }: { keywords: readonly Keyword[];
               height: size,
               display: 'block',
               filter: 'brightness(0) invert(1)', // Make SVG white
+            }}
+          />
+        </div>
+      ))}
+      {protections.map((color) => (
+        <div
+          key={`prot-${color}`}
+          style={styles.keywordIconWrapper}
+          title={`Protection from ${color.toLowerCase()}`}
+        >
+          <div
+            style={{
+              width: size,
+              height: size,
+              backgroundColor: PROTECTION_COLORS[color] ?? '#aaa',
+              WebkitMaskImage: `url(${protectionIcon})`,
+              WebkitMaskSize: 'contain',
+              WebkitMaskRepeat: 'no-repeat',
+              WebkitMaskPosition: 'center',
+              maskImage: `url(${protectionIcon})`,
+              maskSize: 'contain',
+              maskRepeat: 'no-repeat',
+              maskPosition: 'center',
             }}
           />
         </div>

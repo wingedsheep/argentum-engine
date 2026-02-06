@@ -28,15 +28,16 @@ export const keywordIcons: Record<string, string> = {
   INDESTRUCTIBLE: indestructibleIcon,
   DEFENDER: defenderIcon,
   MENACE: menaceIcon,
-  PROTECTION: protectionIcon,
 }
 
 export const genericKeywordIcon = genericIcon
+
+/** Exported for use in CardOverlays colored protection icons */
+export { protectionIcon }
 
 export const displayableKeywords = new Set([
   'FLYING', 'REACH', 'TRAMPLE',
   'FIRST_STRIKE', 'DOUBLE_STRIKE', 'DEATHTOUCH',
   'LIFELINK', 'VIGILANCE', 'HASTE', 'HEXPROOF',
   'SHROUD', 'INDESTRUCTIBLE', 'DEFENDER', 'MENACE',
-  'PROTECTION'
 ])

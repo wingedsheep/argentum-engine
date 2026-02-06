@@ -36,6 +36,6 @@ val SpurredWolverine = card("Spurred Wolverine") {
         collectorNumber = "237"
         artist = "Daren Bader"
         flavorText = "In battle, all beasts fight more fiercely when you anger the wolverines."
-        imageUri = "https://cards.scryfall.io/normal/front/4/a/4aa5493e-55a0-49ba-9027-f7547826c1d5.jpg?1562910497"
+        imageUri = "https://cards.scryfall.io/large/front/4/6/46d7aaea-226b-4820-8db2-89dcdcbcc557.jpg?1562911611"
     }
 }

@@ -551,8 +551,8 @@ export function GameCard({
       )}
 
       {/* Keyword ability icons */}
-      {battlefield && !faceDown && card.keywords.length > 0 && (
-        <KeywordIcons keywords={card.keywords} size={responsive.isMobile ? 14 : 18} />
+      {battlefield && !faceDown && (card.keywords.length > 0 || (card.protections && card.protections.length > 0)) && (
+        <KeywordIcons keywords={card.keywords} protections={card.protections ?? []} size={responsive.isMobile ? 14 : 18} />
       )}
 
       {/* Active effect badges (evasion, etc.) */}

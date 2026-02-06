@@ -1,8 +1,11 @@
 package com.wingedsheep.gameserver.dto
 
+import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.*
@@ -335,11 +338,28 @@ class ClientStateTransformer(
         val isFaceDown = container.has<FaceDownComponent>()
         val power = if (isFaceDown) 2 else projectedValues?.power ?: cardComponent.baseStats?.basePower
         val toughness = if (isFaceDown) 2 else projectedValues?.toughness ?: cardComponent.baseStats?.baseToughness
-        val keywords = projectedValues?.keywords?.mapNotNull {
-            try { com.wingedsheep.sdk.core.Keyword.valueOf(it) } catch (_: Exception) { null }
+        val rawKeywords = projectedValues?.keywords?.mapNotNull {
+            try { Keyword.valueOf(it) } catch (_: Exception) { null }
         }?.toSet() ?: cardComponent.baseKeywords
+
+        // Extract protection colors from projected keywords (PROTECTION_FROM_*) and card definition
+        val protectionPrefix = "PROTECTION_FROM_"
+        val projectedProtections = projectedValues?.keywords
+            ?.filter { it.startsWith(protectionPrefix) }
+            ?.mapNotNull { try { Color.valueOf(it.removePrefix(protectionPrefix)) } catch (_: Exception) { null } }
+            ?: emptyList()
+        val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId)
+        val staticProtections = cardDef?.keywordAbilities
+            ?.filterIsInstance<KeywordAbility.ProtectionFromColor>()
+            ?.map { it.color }
+            ?: emptyList()
+        val protections = (projectedProtections.ifEmpty { staticProtections }).distinct()
+
+        // Add PROTECTION keyword when protections are present
+        val keywords = if (protections.isNotEmpty()) rawKeywords + Keyword.PROTECTION else rawKeywords
+
         val colors = projectedValues?.colors?.mapNotNull {
-            try { com.wingedsheep.sdk.core.Color.valueOf(it) } catch (_: Exception) { null }
+            try { Color.valueOf(it) } catch (_: Exception) { null }
         }?.toSet() ?: cardComponent.colors
 
         // Get state components
@@ -471,6 +491,7 @@ class ClientStateTransformer(
             baseToughness = cardComponent.baseStats?.baseToughness,
             damage = damage,
             keywords = keywords,
+            protections = protections,
             counters = counters,
             isTapped = isTapped,
             hasSummoningSickness = hasSummoningSickness,
@@ -488,10 +509,9 @@ class ClientStateTransformer(
             isFaceDown = isFaceDown,
             morphCost = if (isFaceDown && morphData != null) morphData.morphCost.toString() else null,
             targets = targets,
-            imageUri = cardRegistry.getCard(cardComponent.cardDefinitionId)?.metadata?.imageUri
-                ?: cardComponent.imageUri,
+            imageUri = cardDef?.metadata?.imageUri ?: cardComponent.imageUri,
             activeEffects = activeEffects,
-            rulings = cardRegistry.getCard(cardComponent.cardDefinitionId)?.metadata?.rulings?.map {
+            rulings = cardDef?.metadata?.rulings?.map {
                 ClientRuling(date = it.date, text = it.text)
             } ?: emptyList(),
             chosenX = chosenX

@@ -38,6 +38,6 @@ val EvergloveCourier = card("Everglove Courier") {
         collectorNumber = "257"
         artist = "Wayne Reynolds"
         flavorText = "Speed and power—an elf needs nothing else."
-        imageUri = "https://cards.scryfall.io/normal/front/d/0/d0044fca-e764-4a06-b0e5-0e5a419f13a0.jpg?1562939853"
+        imageUri = "https://cards.scryfall.io/large/front/1/3/13bf5786-e41a-4839-b8a0-5c7a413b23d0.jpg?1562899727"
     }
 }

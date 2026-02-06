@@ -115,6 +115,9 @@ data class ClientCard(
     /** Keywords the card has (flying, haste, etc.) */
     val keywords: Set<Keyword>,
 
+    /** Protection colors (for colored protection shield icons) */
+    val protections: List<Color> = emptyList(),
+
     /** Counters on the card */
     val counters: Map<CounterType, Int>,
 

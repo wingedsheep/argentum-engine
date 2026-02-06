@@ -88,48 +88,82 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
     }
 
     const parentTapped = group.card.isTapped
-    const totalShiftLeft = attachments.length * attachmentShiftLeft
+    const totalShift = attachments.length * attachmentShiftLeft
     const totalExtraUp = attachments.length * attachmentPeekUp
     // When tapped, cards rotate 90deg so their visual width becomes the height
-    const mainCardWidth = parentTapped ? cardHeight + 8 : responsive.battlefieldCardWidth
+    const cardVisualWidth = parentTapped ? cardHeight + 8 : responsive.battlefieldCardWidth
 
     return (
       <div
         key={group.cardIds[0]}
         style={{
           position: 'relative',
-          width: mainCardWidth + totalShiftLeft,
+          width: cardVisualWidth + totalShift,
           height: cardHeight + totalExtraUp,
         }}
       >
-        {/* Attachments behind, shifted left and up from the main card */}
-        {attachments.map((attachment, index) => (
-          <div
-            key={attachment.id}
-            style={{
-              position: 'absolute',
-              left: (attachments.length - 1 - index) * attachmentShiftLeft,
-              top: (attachments.length - 1 - index) * attachmentPeekUp,
-              zIndex: index,
-            }}
-          >
-            <GameCard
-              card={attachment}
-              interactive={interactive}
-              battlefield
-              isOpponentCard={isOpponent}
-              forceTapped={parentTapped}
-            />
-          </div>
-        ))}
-        {/* Main card on top, offset to the right and bottom */}
-        <div style={{ position: 'absolute', left: totalShiftLeft, top: totalExtraUp, zIndex: attachments.length + 1 }}>
-          <CardStack
-            group={group}
-            interactive={interactive}
-            isOpponentCard={isOpponent}
-          />
-        </div>
+        {parentTapped ? (
+          <>
+            {/* Tapped: attachments peek from top-RIGHT (card's top-left rotated 90deg CW) */}
+            {attachments.map((attachment, index) => (
+              <div
+                key={attachment.id}
+                style={{
+                  position: 'absolute',
+                  left: cardVisualWidth + (index + 1) * attachmentShiftLeft - cardVisualWidth,
+                  top: (attachments.length - 1 - index) * attachmentPeekUp,
+                  zIndex: index,
+                }}
+              >
+                <GameCard
+                  card={attachment}
+                  interactive={interactive}
+                  battlefield
+                  isOpponentCard={isOpponent}
+                  forceTapped={parentTapped}
+                />
+              </div>
+            ))}
+            {/* Main card on the left */}
+            <div style={{ position: 'absolute', left: 0, top: totalExtraUp, zIndex: attachments.length + 1 }}>
+              <CardStack
+                group={group}
+                interactive={interactive}
+                isOpponentCard={isOpponent}
+              />
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Untapped: attachments peek from top-LEFT */}
+            {attachments.map((attachment, index) => (
+              <div
+                key={attachment.id}
+                style={{
+                  position: 'absolute',
+                  left: (attachments.length - 1 - index) * attachmentShiftLeft,
+                  top: (attachments.length - 1 - index) * attachmentPeekUp,
+                  zIndex: index,
+                }}
+              >
+                <GameCard
+                  card={attachment}
+                  interactive={interactive}
+                  battlefield
+                  isOpponentCard={isOpponent}
+                />
+              </div>
+            ))}
+            {/* Main card on top, offset to the right and bottom */}
+            <div style={{ position: 'absolute', left: totalShift, top: totalExtraUp, zIndex: attachments.length + 1 }}>
+              <CardStack
+                group={group}
+                interactive={interactive}
+                isOpponentCard={isOpponent}
+              />
+            </div>
+          </>
+        )}
       </div>
     )
   }

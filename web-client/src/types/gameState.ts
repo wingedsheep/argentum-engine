@@ -95,6 +95,9 @@ export interface ClientCard {
   /** Keywords the card has (flying, haste, etc.) */
   readonly keywords: readonly Keyword[]
 
+  /** Protection colors (for colored protection shield icons) */
+  readonly protections?: readonly Color[]
+
   /** Counters on the card */
   readonly counters: Partial<Record<CounterType, number>>
 
