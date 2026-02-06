@@ -105,6 +105,7 @@ object OnslaughtSet {
         // Green creatures and spells
         AnimalMagnetism,
         EvergloveCourier,
+        InvigoratingBoon,
         KrosanColossus,
         KrosanGroundshaker,
         MythicProportions,
@@ -128,6 +129,8 @@ object OnslaughtSet {
 
         // Lands
         BarrenMoor,
+        ForgottenCave,
+        LonelySandbar,
 
         // Basic lands
     ) + OnslaughtBasicLands

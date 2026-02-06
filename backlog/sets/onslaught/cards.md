@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 99 / 335
+**Implemented:** 102 / 335
 
 ---
 
@@ -131,7 +131,7 @@
 - [ ] Flooded Strand
 - [ ] Foothill Guide
 - [x] Forest
-- [ ] Forgotten Cave
+- [x] Forgotten Cave
 - [ ] Frightshroud Courier
 - [ ] Future Sight
 - [ ] Gangrenous Goliath
@@ -173,7 +173,7 @@
 - [ ] Information Dealer
 - [x] Inspirit
 - [ ] Insurrection
-- [ ] Invigorating Boon
+- [x] Invigorating Boon
 - [ ] Ironfist Crusher
 - [x] Island
 - [ ] Ixidor, Reality Sculptor
@@ -189,7 +189,7 @@
 - [x] Lay Waste
 - [ ] Leery Fogbeast
 - [x] Lightning Rift
-- [ ] Lonely Sandbar
+- [x] Lonely Sandbar
 - [ ] Mage's Guile
 - [ ] Mana Echoes
 - [ ] Meddle
