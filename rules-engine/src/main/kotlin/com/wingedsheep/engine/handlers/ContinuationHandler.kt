@@ -76,6 +76,8 @@ class ContinuationHandler(
             is ChooseColorProtectionContinuation -> resumeChooseColorProtection(stateAfterPop, continuation, response)
             is ChooseCreatureTypeReturnContinuation -> resumeChooseCreatureTypeReturn(stateAfterPop, continuation, response)
             is GraveyardToHandContinuation -> resumeGraveyardToHand(stateAfterPop, continuation, response)
+            is ChooseFromCreatureTypeContinuation -> resumeChooseFromCreatureType(stateAfterPop, continuation, response)
+            is ChooseToCreatureTypeContinuation -> resumeChooseToCreatureType(stateAfterPop, continuation, response)
         }
     }
 
@@ -1813,6 +1815,112 @@ class ContinuationHandler(
         }
 
         return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume after player chooses the FROM creature type for text replacement.
+     * Presents the TO creature type choice (excluding Wall).
+     */
+    private fun resumeChooseFromCreatureType(
+        state: GameState,
+        continuation: ChooseFromCreatureTypeContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is OptionChosenResponse) {
+            return ExecutionResult.error(state, "Expected option choice response for creature type selection")
+        }
+
+        val fromType = continuation.creatureTypes.getOrNull(response.optionIndex)
+            ?: return ExecutionResult.error(state, "Invalid creature type index: ${response.optionIndex}")
+
+        // Present TO creature type choice (excluding Wall per card text)
+        val toOptions = com.wingedsheep.sdk.core.Subtype.ALL_CREATURE_TYPES.filter {
+            !it.equals("Wall", ignoreCase = true)
+        }
+
+        val decisionId = java.util.UUID.randomUUID().toString()
+        val decision = ChooseOptionDecision(
+            id = decisionId,
+            playerId = continuation.controllerId,
+            prompt = "Choose the replacement creature type (replacing $fromType)",
+            context = DecisionContext(
+                sourceId = continuation.sourceId,
+                sourceName = continuation.sourceName,
+                phase = DecisionPhase.RESOLUTION
+            ),
+            options = toOptions
+        )
+
+        val nextContinuation = ChooseToCreatureTypeContinuation(
+            decisionId = decisionId,
+            controllerId = continuation.controllerId,
+            sourceId = continuation.sourceId,
+            sourceName = continuation.sourceName,
+            targetId = continuation.targetId,
+            fromType = fromType,
+            creatureTypes = toOptions
+        )
+
+        val stateWithDecision = state.withPendingDecision(decision)
+        val stateWithContinuation = stateWithDecision.pushContinuation(nextContinuation)
+
+        return ExecutionResult.paused(
+            stateWithContinuation,
+            decision,
+            listOf(
+                DecisionRequestedEvent(
+                    decisionId = decisionId,
+                    playerId = continuation.controllerId,
+                    decisionType = "CHOOSE_OPTION",
+                    prompt = decision.prompt
+                )
+            )
+        )
+    }
+
+    /**
+     * Resume after player chooses the TO creature type for text replacement.
+     * Applies the TextReplacementComponent to the target entity.
+     */
+    private fun resumeChooseToCreatureType(
+        state: GameState,
+        continuation: ChooseToCreatureTypeContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is OptionChosenResponse) {
+            return ExecutionResult.error(state, "Expected option choice response for creature type selection")
+        }
+
+        val toType = continuation.creatureTypes.getOrNull(response.optionIndex)
+            ?: return ExecutionResult.error(state, "Invalid creature type index: ${response.optionIndex}")
+
+        val targetId = continuation.targetId
+
+        // Target must still exist
+        if (state.getEntity(targetId) == null) {
+            return checkForMoreContinuations(state, emptyList())
+        }
+
+        // Add or update TextReplacementComponent on the target
+        val existingComponent = state.getEntity(targetId)
+            ?.get<com.wingedsheep.engine.state.components.identity.TextReplacementComponent>()
+
+        val replacement = com.wingedsheep.engine.state.components.identity.TextReplacement(
+            fromWord = continuation.fromType,
+            toWord = toType,
+            category = com.wingedsheep.engine.state.components.identity.TextReplacementCategory.CREATURE_TYPE
+        )
+
+        val newComponent = existingComponent?.withReplacement(replacement)
+            ?: com.wingedsheep.engine.state.components.identity.TextReplacementComponent(
+                replacements = listOf(replacement)
+            )
+
+        val newState = state.updateEntity(targetId) { container ->
+            container.with(newComponent)
+        }
+
+        return checkForMoreContinuations(newState, emptyList())
     }
 
     /**

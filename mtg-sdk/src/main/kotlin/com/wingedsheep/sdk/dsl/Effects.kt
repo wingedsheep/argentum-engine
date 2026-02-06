@@ -98,6 +98,13 @@ object Effects {
         MoveToZoneEffect(target, Zone.EXILE)
 
     /**
+     * Exile a target until the beginning of the next end step.
+     * Used by Astral Slide-style effects.
+     */
+    fun ExileUntilEndStep(target: EffectTarget): Effect =
+        ExileUntilEndStepEffect(target)
+
+    /**
      * Return to hand.
      */
     fun ReturnToHand(target: EffectTarget): Effect =

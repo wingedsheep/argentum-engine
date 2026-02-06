@@ -643,7 +643,8 @@ object ClientEventTransformer {
             is LookedAtCardsEvent,
             is LibraryReorderedEvent,
             is KeywordGrantedEvent,
-            is TurnFaceUpEvent -> null
+            is TurnFaceUpEvent,
+            is CardCycledEvent -> null
         }
     }
 }

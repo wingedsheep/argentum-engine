@@ -600,3 +600,18 @@ data class TurnFaceUpEvent(
     val cardName: String,
     val controllerId: EntityId
 ) : GameEvent
+
+// =============================================================================
+// Cycling Events
+// =============================================================================
+
+/**
+ * A player cycled a card.
+ */
+@Serializable
+@SerialName("CardCycledEvent")
+data class CardCycledEvent(
+    val playerId: EntityId,
+    val cardId: EntityId,
+    val cardName: String
+) : GameEvent

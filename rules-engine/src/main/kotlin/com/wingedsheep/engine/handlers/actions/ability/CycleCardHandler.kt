@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.actions.ability
 
+import com.wingedsheep.engine.core.CardCycledEvent
 import com.wingedsheep.engine.core.CardsDrawnEvent
 import com.wingedsheep.engine.core.CycleCard
 import com.wingedsheep.engine.core.ExecutionResult
@@ -143,6 +144,9 @@ class CycleCardHandler(
                 ownerId = ownerId
             )
         )
+
+        // Emit cycling event (for cycling triggers like Astral Slide)
+        events.add(CardCycledEvent(action.playerId, action.cardId, cardComponent.name))
 
         // Draw a card
         val library = currentState.getLibrary(action.playerId)

@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.state
 
 import com.wingedsheep.engine.core.ContinuationFrame
+import com.wingedsheep.engine.event.DelayedTriggeredAbility
 import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -60,6 +61,9 @@ data class GameState(
 
     /** Active floating effects (temporary effects from spells like Giant Growth) */
     val floatingEffects: List<ActiveFloatingEffect> = emptyList(),
+
+    /** Delayed triggers waiting to fire at specific steps */
+    val delayedTriggers: List<DelayedTriggeredAbility> = emptyList(),
 
     /** Continuation stack for resuming after player decisions */
     val continuationStack: List<ContinuationFrame> = emptyList()
@@ -323,6 +327,18 @@ data class GameState(
      * Peek at the top continuation frame without removing it.
      */
     fun peekContinuation(): ContinuationFrame? = continuationStack.lastOrNull()
+
+    /**
+     * Add a delayed trigger to the state.
+     */
+    fun addDelayedTrigger(trigger: DelayedTriggeredAbility): GameState =
+        copy(delayedTriggers = delayedTriggers + trigger)
+
+    /**
+     * Remove delayed triggers by their IDs.
+     */
+    fun removeDelayedTriggers(ids: Set<String>): GameState =
+        copy(delayedTriggers = delayedTriggers.filter { it.id !in ids })
 
     /**
      * Get the next player in turn order after the given player.

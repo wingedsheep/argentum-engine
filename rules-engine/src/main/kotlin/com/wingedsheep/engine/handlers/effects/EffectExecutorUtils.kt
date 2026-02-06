@@ -39,6 +39,7 @@ object EffectExecutorUtils {
             is EffectTarget.Self -> context.sourceId
             is EffectTarget.Controller -> context.controllerId
             is EffectTarget.ContextTarget -> context.targets.getOrNull(effectTarget.index)?.toEntityId()
+            is EffectTarget.SpecificEntity -> effectTarget.entityId
             else -> null
         }
     }
@@ -230,6 +231,14 @@ object EffectExecutorUtils {
                     .without<TappedComponent>()
                     .without<SummoningSicknessComponent>()
                     .without<DamageComponent>()
+            }
+        }
+
+        // Add controller component when moving to battlefield
+        if (targetZone == Zone.BATTLEFIELD) {
+            newState = newState.updateEntity(entityId) { c ->
+                c.with(ControllerComponent(ownerId))
+                    .with(SummoningSicknessComponent)
             }
         }
 

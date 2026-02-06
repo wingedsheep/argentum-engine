@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers.actions.priority
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.PassPriority
 import com.wingedsheep.engine.core.PriorityChangedEvent
+import com.wingedsheep.engine.core.StepChangedEvent
 import com.wingedsheep.engine.core.TurnManager
 import com.wingedsheep.engine.event.TriggerDetector
 import com.wingedsheep.engine.event.TriggerProcessor
@@ -54,9 +55,21 @@ class PassPriorityHandler(
                     return advanceResult
                 }
                 // Detect triggers from step transition events
-                val triggers = triggerDetector.detectTriggers(advanceResult.newState, advanceResult.events)
+                var currentState = advanceResult.newState
+                val triggers = triggerDetector.detectTriggers(currentState, advanceResult.events).toMutableList()
+
+                // Also detect delayed triggers for the new step
+                val stepChangedEvent = advanceResult.events.filterIsInstance<StepChangedEvent>().lastOrNull()
+                if (stepChangedEvent != null) {
+                    val (delayedTriggers, consumedIds) = triggerDetector.detectDelayedTriggers(currentState, stepChangedEvent.newStep)
+                    if (consumedIds.isNotEmpty()) {
+                        currentState = currentState.removeDelayedTriggers(consumedIds)
+                    }
+                    triggers.addAll(delayedTriggers)
+                }
+
                 if (triggers.isNotEmpty()) {
-                    val triggerResult = triggerProcessor.processTriggers(advanceResult.newState, triggers)
+                    val triggerResult = triggerProcessor.processTriggers(currentState, triggers)
                     if (triggerResult.isPaused) {
                         return ExecutionResult.paused(
                             triggerResult.state,
@@ -69,7 +82,7 @@ class PassPriorityHandler(
                         advanceResult.events + triggerResult.events
                     )
                 }
-                advanceResult
+                ExecutionResult.success(currentState, advanceResult.events)
             }
         }
 

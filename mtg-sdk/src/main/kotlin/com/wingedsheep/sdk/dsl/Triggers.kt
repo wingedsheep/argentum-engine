@@ -195,6 +195,20 @@ object Triggers {
     val BecomesUntapped: Trigger = OnBecomesUntapped(selfOnly = true)
 
     // =========================================================================
+    // Cycling Triggers
+    // =========================================================================
+
+    /**
+     * Whenever you cycle a card.
+     */
+    val YouCycle: Trigger = OnCycle(controllerOnly = true)
+
+    /**
+     * Whenever a player cycles a card.
+     */
+    val AnyPlayerCycles: Trigger = OnCycle(controllerOnly = false)
+
+    // =========================================================================
     // Transform Triggers
     // =========================================================================
 

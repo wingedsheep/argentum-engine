@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.core
 
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.Effect
@@ -168,13 +169,15 @@ data class MayAbilityContinuation(
     val effectIfNo: Effect?,
     val controllerId: EntityId,
     val opponentId: EntityId?,
-    val xValue: Int?
+    val xValue: Int?,
+    val targets: List<ChosenTarget> = emptyList()
 ) : ContinuationFrame {
     fun toEffectContext(): EffectContext = EffectContext(
         sourceId = sourceId,
         controllerId = controllerId,
         opponentId = opponentId,
-        xValue = xValue
+        xValue = xValue,
+        targets = targets
     )
 }
 
@@ -564,4 +567,53 @@ data class ChooseColorProtectionContinuation(
     val sourceName: String?,
     val filter: GroupFilter,
     val duration: Duration
+) : ContinuationFrame
+
+/**
+ * Resume after player chooses the FROM creature type for text replacement.
+ *
+ * Used for Artificial Evolution: "Change the text of target spell or permanent
+ * by replacing all instances of one creature type with another."
+ *
+ * Step 1: Player chooses the creature type to replace.
+ * The continuation handler then presents a second choice for the TO type.
+ *
+ * @property controllerId The player who controls the effect
+ * @property sourceId The spell that created this effect
+ * @property sourceName Name of the source for event messages
+ * @property targetId The entity whose text is being changed
+ * @property creatureTypes The creature type options presented (indexed by OptionChosenResponse.optionIndex)
+ */
+@Serializable
+data class ChooseFromCreatureTypeContinuation(
+    override val decisionId: String,
+    val controllerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val targetId: EntityId,
+    val creatureTypes: List<String>
+) : ContinuationFrame
+
+/**
+ * Resume after player chooses the TO creature type for text replacement.
+ *
+ * Step 2: Player chooses the replacement creature type (can't be Wall).
+ * The continuation handler then applies the TextReplacementComponent.
+ *
+ * @property controllerId The player who controls the effect
+ * @property sourceId The spell that created this effect
+ * @property sourceName Name of the source for event messages
+ * @property targetId The entity whose text is being changed
+ * @property fromType The creature type being replaced (chosen in step 1)
+ * @property creatureTypes The creature type options presented (indexed by OptionChosenResponse.optionIndex)
+ */
+@Serializable
+data class ChooseToCreatureTypeContinuation(
+    override val decisionId: String,
+    val controllerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val targetId: EntityId,
+    val fromType: String,
+    val creatureTypes: List<String>
 ) : ContinuationFrame

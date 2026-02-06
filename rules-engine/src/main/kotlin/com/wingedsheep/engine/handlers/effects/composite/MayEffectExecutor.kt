@@ -59,7 +59,8 @@ class MayEffectExecutor(
             effectIfNo = null,
             controllerId = context.controllerId,
             opponentId = context.opponentId,
-            xValue = context.xValue
+            xValue = context.xValue,
+            targets = context.targets
         )
 
         // Push continuation and return paused state

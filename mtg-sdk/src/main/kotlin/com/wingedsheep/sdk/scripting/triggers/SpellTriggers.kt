@@ -61,3 +61,22 @@ enum class SpellTypeFilter {
     NONCREATURE,
     INSTANT_OR_SORCERY
 }
+
+// =============================================================================
+// Cycling Triggers
+// =============================================================================
+
+/**
+ * Triggers when a player cycles a card.
+ * "Whenever you cycle a card..." or "Whenever a player cycles a card..."
+ */
+@Serializable
+data class OnCycle(
+    val controllerOnly: Boolean = false
+) : Trigger {
+    override val description: String = if (controllerOnly) {
+        "Whenever you cycle a card"
+    } else {
+        "Whenever a player cycles a card"
+    }
+}

@@ -2,6 +2,7 @@ package com.wingedsheep.engine.event
 
 import com.wingedsheep.engine.core.AttackersDeclaredEvent
 import com.wingedsheep.engine.core.BlockersDeclaredEvent
+import com.wingedsheep.engine.core.CardCycledEvent
 import com.wingedsheep.engine.core.CardsDrawnEvent
 import com.wingedsheep.engine.core.DamageDealtEvent
 import com.wingedsheep.engine.core.LifeChangedEvent
@@ -12,10 +13,12 @@ import com.wingedsheep.engine.core.UntappedEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.mechanics.layers.StateProjector
+import com.wingedsheep.engine.mechanics.text.SubtypeReplacer
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.*
@@ -66,6 +69,30 @@ class TriggerDetector(
 
         // Sort by APNAP order
         return sortByApnapOrder(state, triggers)
+    }
+
+    /**
+     * Detect delayed triggers that should fire at the given step.
+     * Returns the pending triggers and the IDs of consumed delayed triggers.
+     */
+    fun detectDelayedTriggers(state: GameState, step: Step): Pair<List<PendingTrigger>, Set<String>> {
+        val matching = state.delayedTriggers.filter { it.fireAtStep == step }
+        if (matching.isEmpty()) return emptyList<PendingTrigger>() to emptySet()
+
+        val triggers = matching.map { delayed ->
+            PendingTrigger(
+                ability = TriggeredAbility.create(
+                    trigger = OnEndStep(controllerOnly = false),
+                    effect = delayed.effect
+                ),
+                sourceId = delayed.sourceId,
+                sourceName = delayed.sourceName,
+                controllerId = delayed.controllerId,
+                triggerContext = TriggerContext(step = step)
+            )
+        }
+        val consumedIds = matching.map { it.id }.toSet()
+        return sortByApnapOrder(state, triggers) to consumedIds
     }
 
     /**
@@ -324,6 +351,11 @@ class TriggerDetector(
                     matchesSpellTypeFilter(trigger, event, state)
             }
 
+            is OnCycle -> {
+                event is CardCycledEvent &&
+                    (!trigger.controllerOnly || event.playerId == controllerId)
+            }
+
             is OnBecomesTapped -> {
                 event is TappedEvent &&
                     (!trigger.selfOnly || event.entityId == sourceId)
@@ -465,6 +497,7 @@ data class TriggerContext(
                     triggeringPlayerId = event.casterId
                 )
                 is CardsDrawnEvent -> TriggerContext(triggeringPlayerId = event.playerId)
+                is CardCycledEvent -> TriggerContext(triggeringPlayerId = event.playerId)
                 is AttackersDeclaredEvent -> TriggerContext()
                 is BlockersDeclaredEvent -> TriggerContext()
                 is TappedEvent -> TriggerContext(triggeringEntityId = event.entityId)
