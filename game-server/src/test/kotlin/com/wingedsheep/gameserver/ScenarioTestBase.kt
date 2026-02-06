@@ -15,6 +15,7 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.state.components.identity.PlayerComponent
+import com.wingedsheep.engine.state.components.identity.ProtectionComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
@@ -25,6 +26,7 @@ import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.KeywordAbility
 import io.kotest.core.spec.style.FunSpec
 import java.util.concurrent.atomic.AtomicLong
 
@@ -256,11 +258,24 @@ abstract class ScenarioTestBase : FunSpec() {
                 spellEffect = cardDef.spellEffect
             )
 
-            val container = ComponentContainer.of(
+            var container = ComponentContainer.of(
                 cardComponent,
                 OwnerComponent(ownerId),
                 ControllerComponent(ownerId)
             )
+
+            // Attach ProtectionComponent for cards with static protection from color
+            val protectionColors = cardDef.keywordAbilities
+                .filterIsInstance<KeywordAbility.ProtectionFromColor>()
+                .map { it.color }
+                .toSet() +
+                cardDef.keywordAbilities
+                    .filterIsInstance<KeywordAbility.ProtectionFromColors>()
+                    .flatMap { it.colors }
+                    .toSet()
+            if (protectionColors.isNotEmpty()) {
+                container = container.with(ProtectionComponent(protectionColors))
+            }
 
             state = state.withEntity(cardId, container)
             return cardId

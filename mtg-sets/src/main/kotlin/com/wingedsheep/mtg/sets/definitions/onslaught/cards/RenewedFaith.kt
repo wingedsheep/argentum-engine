@@ -1,0 +1,40 @@
+package com.wingedsheep.mtg.sets.definitions.onslaught.cards
+
+import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.GainLifeEffect
+import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.sdk.scripting.MayEffect
+import com.wingedsheep.sdk.scripting.OnCycle
+
+/**
+ * Renewed Faith
+ * {2}{W}
+ * Instant
+ * You gain 6 life.
+ * Cycling {1}{W}
+ * When you cycle Renewed Faith, you may gain 2 life.
+ */
+val RenewedFaith = card("Renewed Faith") {
+    manaCost = "{2}{W}"
+    typeLine = "Instant"
+
+    spell {
+        effect = GainLifeEffect(6)
+    }
+
+    keywordAbility(KeywordAbility.cycling("{1}{W}"))
+
+    triggeredAbility {
+        trigger = OnCycle(controllerOnly = true)
+        effect = MayEffect(GainLifeEffect(2))
+    }
+
+    metadata {
+        rarity = Rarity.COMMON
+        collectorNumber = "50"
+        artist = "Eric Peterson"
+        flavorText = "Sometimes the clearest road to renewal is through utter devastation."
+        imageUri = "https://cards.scryfall.io/normal/front/a/d/ad4ad18b-5a6c-4cfa-99e5-f6e1bffc1d38.jpg?1562933660"
+    }
+}

@@ -4,6 +4,8 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.CardDefinition
+import com.wingedsheep.sdk.scripting.CantAttack
+import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.ControlEnchantedPermanent
 import com.wingedsheep.sdk.scripting.GlobalEffect
 import com.wingedsheep.sdk.scripting.GlobalEffectType
@@ -109,6 +111,22 @@ class StaticAbilityHandler(
                     layer = Layer.ABILITY,
                     sublayer = null,
                     modification = Modification.GrantKeyword(ability.keyword.name),
+                    affectsFilter = convertStaticTarget(ability.target)
+                )
+            }
+            is CantAttack -> {
+                ContinuousEffectData(
+                    layer = Layer.ABILITY,
+                    sublayer = null,
+                    modification = Modification.SetCantAttack,
+                    affectsFilter = convertStaticTarget(ability.target)
+                )
+            }
+            is CantBlock -> {
+                ContinuousEffectData(
+                    layer = Layer.ABILITY,
+                    sublayer = null,
+                    modification = Modification.SetCantBlock,
                     affectsFilter = convertStaticTarget(ability.target)
                 )
             }

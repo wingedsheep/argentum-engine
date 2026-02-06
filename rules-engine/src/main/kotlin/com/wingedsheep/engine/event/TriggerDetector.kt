@@ -177,12 +177,48 @@ class TriggerDetector(
             detectDeathTriggers(state, event, triggers)
         }
 
+        // Handle cycling triggers on the cycled card itself (e.g., Renewed Faith)
+        if (event is CardCycledEvent) {
+            detectCyclingCardTriggers(state, event, triggers)
+        }
+
         // Handle damage-source triggers
         if (event is DamageDealtEvent && event.sourceId != null) {
             detectDamageSourceTriggers(state, event, triggers)
         }
 
         return triggers
+    }
+
+    /**
+     * Detect cycling triggers on the card that was cycled.
+     * Cards like Renewed Faith have "When you cycle this card, you may gain 2 life."
+     * The card is now in the graveyard, but its cycling trigger still fires.
+     */
+    private fun detectCyclingCardTriggers(
+        state: GameState,
+        event: CardCycledEvent,
+        triggers: MutableList<PendingTrigger>
+    ) {
+        val entityId = event.cardId
+        val container = state.getEntity(entityId) ?: return
+        val cardComponent = container.get<CardComponent>() ?: return
+
+        val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
+
+        for (ability in abilities) {
+            if (ability.trigger is OnCycle) {
+                triggers.add(
+                    PendingTrigger(
+                        ability = ability,
+                        sourceId = entityId,
+                        sourceName = cardComponent.name,
+                        controllerId = event.playerId,
+                        triggerContext = TriggerContext(triggeringPlayerId = event.playerId)
+                    )
+                )
+            }
+        }
     }
 
     private fun detectDeathTriggers(

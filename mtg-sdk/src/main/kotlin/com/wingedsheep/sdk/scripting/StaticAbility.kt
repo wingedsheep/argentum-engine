@@ -78,6 +78,17 @@ data class GlobalEffect(
 }
 
 /**
+ * Prevents a creature from attacking.
+ * Used for auras like Pacifism or effects that prevent attacking.
+ */
+@Serializable
+data class CantAttack(
+    val target: StaticTarget = StaticTarget.SourceCreature
+) : StaticAbility {
+    override val description: String = "${target.toString().lowercase()} can't attack"
+}
+
+/**
  * Prevents a creature from blocking.
  * Used for cards like Jungle Lion or effects like "Target creature can't block".
  */

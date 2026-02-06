@@ -84,6 +84,16 @@ data object TokenComponent : Component
 data object FaceDownComponent : Component
 
 /**
+ * Static protection from one or more colors (Rule 702.16).
+ * Attached to permanents/cards that have innate protection (e.g., Disciple of Grace).
+ * Dynamic protection granted by spells (e.g., Akroma's Blessing) uses floating effects instead.
+ */
+@Serializable
+data class ProtectionComponent(
+    val colors: Set<Color>
+) : Component
+
+/**
  * Stores the morph cost and original card identity for face-down creatures.
  * This allows the creature to be turned face up by paying the morph cost.
  */

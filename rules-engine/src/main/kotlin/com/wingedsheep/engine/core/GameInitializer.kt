@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.KeywordAbility
 
 /**
  * Configuration for a player joining a game.
@@ -175,7 +176,16 @@ class GameInitializer(
      * Create a card entity from a card definition.
      */
     private fun createCardEntity(cardDef: CardDefinition, ownerId: EntityId): ComponentContainer {
-        return ComponentContainer.of(
+        val protectionColors = cardDef.keywordAbilities
+            .filterIsInstance<KeywordAbility.ProtectionFromColor>()
+            .map { it.color }
+            .toSet() +
+            cardDef.keywordAbilities
+                .filterIsInstance<KeywordAbility.ProtectionFromColors>()
+                .flatMap { it.colors }
+                .toSet()
+
+        var container = ComponentContainer.of(
             CardComponent(
                 cardDefinitionId = cardDef.name,
                 name = cardDef.name,
@@ -192,6 +202,12 @@ class GameInitializer(
             OwnerComponent(ownerId),
             ControllerComponent(ownerId)
         )
+
+        if (protectionColors.isNotEmpty()) {
+            container = container.with(ProtectionComponent(protectionColors))
+        }
+
+        return container
     }
 
     /**

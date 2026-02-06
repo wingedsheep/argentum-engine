@@ -2,12 +2,14 @@ package com.wingedsheep.engine.mechanics.targeting
 
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.core.CardType
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.TargetFilter
@@ -24,6 +26,7 @@ import com.wingedsheep.sdk.targeting.*
  */
 class TargetValidator {
     private val predicateEvaluator = PredicateEvaluator()
+    private val stateProjector = StateProjector()
 
     /**
      * Validate all targets for a spell/ability against their requirements.
@@ -32,13 +35,15 @@ class TargetValidator {
      * @param targets The chosen targets
      * @param requirements The target requirements from the card definition
      * @param casterId The player casting the spell
+     * @param sourceColors Colors of the source spell/ability (for protection checks)
      * @return Error message if any target is invalid, null if all targets are valid
      */
     fun validateTargets(
         state: GameState,
         targets: List<ChosenTarget>,
         requirements: List<TargetRequirement>,
-        casterId: EntityId
+        casterId: EntityId,
+        sourceColors: Set<Color> = emptySet()
     ): String? {
         // Use the game state for validation
         // StateProjector is used for P/T checks to account for continuous effects
@@ -61,7 +66,7 @@ class TargetValidator {
 
             // Validate each target against the requirement
             for (target in targetsForReq) {
-                val error = validateSingleTarget(state, target, requirement, casterId)
+                val error = validateSingleTarget(state, target, requirement, casterId, sourceColors)
                 if (error != null) return error
             }
         }
@@ -76,9 +81,10 @@ class TargetValidator {
         state: GameState,
         target: ChosenTarget,
         requirement: TargetRequirement,
-        casterId: EntityId
+        casterId: EntityId,
+        sourceColors: Set<Color> = emptySet()
     ): String? {
-        return when (requirement) {
+        val error = when (requirement) {
             is TargetCreature -> validateCreatureTarget(state, target, requirement.filter, casterId)
             is TargetPermanent -> validatePermanentTarget(state, target, requirement.filter, casterId)
             is TargetPlayer -> validatePlayerTarget(state, target)
@@ -89,8 +95,42 @@ class TargetValidator {
             is TargetSpell -> validateSpellTarget(state, target, requirement.filter, casterId)
             is TargetSpellOrPermanent -> validateSpellOrPermanentTarget(state, target, casterId)
             is TargetObject -> validateObjectTarget(state, target, requirement.filter, casterId)
-            is TargetOther -> validateSingleTarget(state, target, requirement.baseRequirement, casterId)
+            is TargetOther -> validateSingleTarget(state, target, requirement.baseRequirement, casterId, sourceColors)
         }
+        if (error != null) return error
+
+        // Check protection from color (Rule 702.16)
+        return checkProtection(state, target, sourceColors)
+    }
+
+    /**
+     * Check if a target has protection from any of the source's colors.
+     * Returns an error message if the target is protected, null otherwise.
+     */
+    private fun checkProtection(
+        state: GameState,
+        target: ChosenTarget,
+        sourceColors: Set<Color>
+    ): String? {
+        if (sourceColors.isEmpty()) return null
+
+        val entityId = when (target) {
+            is ChosenTarget.Permanent -> target.entityId
+            is ChosenTarget.Player -> return null  // Protection on players is handled separately
+            else -> return null
+        }
+
+        // Only check permanents on the battlefield
+        if (entityId !in state.getBattlefield()) return null
+
+        val projected = stateProjector.project(state)
+        for (color in sourceColors) {
+            if (projected.hasKeyword(entityId, "PROTECTION_FROM_${color.name}")) {
+                val cardName = state.getEntity(entityId)?.get<CardComponent>()?.name ?: "target"
+                return "$cardName has protection from ${color.displayName.lowercase()}"
+            }
+        }
+        return null
     }
 
     private fun validateCreatureTarget(

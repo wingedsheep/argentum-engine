@@ -6,6 +6,7 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.identity.ProtectionComponent
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
@@ -63,7 +64,8 @@ class StateProjector {
                 projectedValues[entityId] = MutableProjectedValues(
                     power = cardComponent.baseStats?.basePower,
                     toughness = cardComponent.baseStats?.baseToughness,
-                    keywords = cardComponent.baseKeywords.map { it.name }.toMutableSet(),
+                    keywords = (cardComponent.baseKeywords.map { it.name } +
+                        (container.get<ProtectionComponent>()?.colors?.map { "PROTECTION_FROM_${it.name}" } ?: emptyList())).toMutableSet(),
                     colors = cardComponent.colors.map { it.name }.toMutableSet(),
                     types = extractTypes(cardComponent),
                     subtypes = cardComponent.typeLine.subtypes.map { it.value }.toMutableSet(),
@@ -117,7 +119,9 @@ class StateProjector {
                 types = v.types.toSet(),
                 subtypes = v.subtypes.toSet(),
                 controllerId = v.controllerId,
-                isFaceDown = v.isFaceDown
+                isFaceDown = v.isFaceDown,
+                cantAttack = v.cantAttack,
+                cantBlock = v.cantBlock
             )
         }
 
@@ -469,6 +473,12 @@ class StateProjector {
                 is Modification.GrantProtectionFromColor -> {
                     values.keywords.add("PROTECTION_FROM_${mod.color}")
                 }
+                is Modification.SetCantAttack -> {
+                    values.cantAttack = true
+                }
+                is Modification.SetCantBlock -> {
+                    values.cantBlock = true
+                }
                 is Modification.NoOp -> {
                     // No-op: effect doesn't modify projected state (e.g., combat restrictions)
                 }
@@ -644,6 +654,11 @@ sealed interface Modification {
     @Serializable
     data class GrantProtectionFromColor(val color: String) : Modification
 
+    @Serializable
+    data object SetCantAttack : Modification
+    @Serializable
+    data object SetCantBlock : Modification
+
     /** No-op modification for effects that don't modify projected state (e.g., combat restrictions) */
     @Serializable
     data object NoOp : Modification
@@ -660,7 +675,9 @@ private data class MutableProjectedValues(
     val types: MutableSet<String> = mutableSetOf(),
     val subtypes: MutableSet<String> = mutableSetOf(),
     var controllerId: EntityId? = null,
-    var isFaceDown: Boolean = false
+    var isFaceDown: Boolean = false,
+    var cantAttack: Boolean = false,
+    var cantBlock: Boolean = false
 )
 
 /**
@@ -674,7 +691,9 @@ data class ProjectedValues(
     val types: Set<String> = emptySet(),
     val subtypes: Set<String> = emptySet(),
     val controllerId: EntityId? = null,
-    val isFaceDown: Boolean = false
+    val isFaceDown: Boolean = false,
+    val cantAttack: Boolean = false,
+    val cantBlock: Boolean = false
 )
 
 /**
@@ -754,6 +773,16 @@ class ProjectedState(
      * Check if an entity is face-down.
      */
     fun isFaceDown(entityId: EntityId): Boolean = projectedValues[entityId]?.isFaceDown == true
+
+    /**
+     * Check if an entity can't attack (e.g., enchanted by Pacifism).
+     */
+    fun cantAttack(entityId: EntityId): Boolean = projectedValues[entityId]?.cantAttack == true
+
+    /**
+     * Check if an entity can't block (e.g., enchanted by Pacifism).
+     */
+    fun cantBlock(entityId: EntityId): Boolean = projectedValues[entityId]?.cantBlock == true
 
     /**
      * Get the projected controller of an entity.

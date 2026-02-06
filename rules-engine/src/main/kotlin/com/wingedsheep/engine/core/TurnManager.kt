@@ -728,8 +728,8 @@ class TurnManager(
                 return@any false
             }
 
-            // Must not have defender
-            if (hasDefender) {
+            // Must not have defender or "can't attack"
+            if (hasDefender || projected.cantAttack(entityId)) {
                 return@any false
             }
 
@@ -775,8 +775,8 @@ class TurnManager(
                 return@filter false
             }
 
-            // Must not have defender
-            if (hasDefender) {
+            // Must not have defender or "can't attack"
+            if (hasDefender || projected.cantAttack(entityId)) {
                 return@filter false
             }
 

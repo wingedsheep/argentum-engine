@@ -136,7 +136,8 @@ class ActivateAbilityHandler(
                 state,
                 action.targets,
                 listOf(ability.targetRequirement!!),
-                action.playerId
+                action.playerId,
+                sourceColors = cardComponent.colors
             )
             if (targetError != null) {
                 return targetError

@@ -110,8 +110,17 @@ object EffectExecutorUtils {
     ): ExecutionResult {
         if (amount <= 0) return ExecutionResult.success(state)
 
-        // TODO: When damage prevention is implemented, check for prevention effects here.
-        // If cantBePrevented is true, skip the prevention check entirely.
+        // Protection from color: damage from sources of the stated color is prevented (Rule 702.16)
+        if (!cantBePrevented && sourceId != null) {
+            val projected = stateProjector.project(state)
+            val sourceColors = projected.getColors(sourceId)
+            for (colorName in sourceColors) {
+                if (projected.hasKeyword(targetId, "PROTECTION_FROM_$colorName")) {
+                    // Damage is prevented — return success with no state change
+                    return ExecutionResult.success(state)
+                }
+            }
+        }
 
         val events = mutableListOf<EngineGameEvent>()
         var newState = state

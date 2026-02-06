@@ -157,7 +157,8 @@ class CastSpellHandler(
                     state,
                     action.targets,
                     targetRequirements,
-                    action.playerId
+                    action.playerId,
+                    sourceColors = cardDef.colors
                 )
                 if (targetError != null) {
                     return targetError

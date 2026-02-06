@@ -137,6 +137,11 @@ class CombatManager(
             return "${cardComponent.name} has defender and cannot attack"
         }
 
+        // Cannot have "can't attack" (e.g., from Pacifism)
+        if (projected.cantAttack(attackerId)) {
+            return "${cardComponent.name} can't attack"
+        }
+
         // Cannot be already attacking
         if (container.has<AttackingComponent>()) {
             return "${cardComponent.name} is already attacking"
@@ -224,8 +229,8 @@ class CombatManager(
                 return@filter false
             }
 
-            // Must not have defender
-            if (hasDefender) {
+            // Must not have defender or "can't attack"
+            if (hasDefender || projected.cantAttack(entityId)) {
                 return@filter false
             }
 
@@ -439,6 +444,11 @@ class CombatManager(
         // Use projected keywords (includes floating effects)
         val projected = stateProjector.project(state)
 
+        // Check projected "can't block" (e.g., from Pacifism aura)
+        if (projected.cantBlock(blockerId)) {
+            return "${cardComponent.name} can't block"
+        }
+
         // Check if the blocker can only block creatures with a specific keyword (e.g., Cloud Pirates)
         val canOnlyBlockValidation = validateCanOnlyBlockWithKeyword(state, cardComponent, attackerIds, projected)
         if (canOnlyBlockValidation != null) {
@@ -540,6 +550,13 @@ class CombatManager(
 
         // Intimidate: Can only be blocked by artifact creatures or creatures sharing a color
         // TODO: Implement intimidate
+
+        // Protection from color: Can't be blocked by creatures of the stated color (Rule 702.16)
+        for (colorName in projected.getColors(blockerId)) {
+            if (projected.hasKeyword(attackerId, "PROTECTION_FROM_$colorName")) {
+                return "${attackerCard.name} has protection from ${colorName.lowercase()} and can't be blocked by ${blockerCard.name}"
+            }
+        }
 
         return null
     }
@@ -1015,12 +1032,19 @@ class CombatManager(
                     events.add(DamageDealtEvent(attackerId, targetId, damage, true))
                     events.add(LifeChangedEvent(targetId, currentLife, newLife, LifeChangeReason.DAMAGE))
                 } else {
-                    // Deal damage to blocker
-                    val currentDamage = targetContainer?.get<DamageComponent>()?.amount ?: 0
-                    newState = newState.updateEntity(targetId) { container ->
-                        container.with(DamageComponent(currentDamage + damage))
+                    // Check protection: blocker protected from attacker's colors?
+                    val attackerColors = projected.getColors(attackerId)
+                    val blockerProtected = attackerColors.any { colorName ->
+                        projected.hasKeyword(targetId, "PROTECTION_FROM_$colorName")
                     }
-                    events.add(DamageDealtEvent(attackerId, targetId, damage, true))
+                    if (!blockerProtected) {
+                        // Deal damage to blocker
+                        val currentDamage = targetContainer?.get<DamageComponent>()?.amount ?: 0
+                        newState = newState.updateEntity(targetId) { container ->
+                            container.with(DamageComponent(currentDamage + damage))
+                        }
+                        events.add(DamageDealtEvent(attackerId, targetId, damage, true))
+                    }
                 }
             }
         }
@@ -1047,11 +1071,18 @@ class CombatManager(
 
             val blockerPower = projected.getPower(blockerId) ?: 0
             if (blockerPower > 0) {
-                val currentDamage = newState.getEntity(attackerId)?.get<DamageComponent>()?.amount ?: 0
-                newState = newState.updateEntity(attackerId) { container ->
-                    container.with(DamageComponent(currentDamage + blockerPower))
+                // Check protection: attacker protected from blocker's colors?
+                val blockerColors = projected.getColors(blockerId)
+                val attackerProtected = blockerColors.any { colorName ->
+                    projected.hasKeyword(attackerId, "PROTECTION_FROM_$colorName")
                 }
-                events.add(DamageDealtEvent(blockerId, attackerId, blockerPower, true))
+                if (!attackerProtected) {
+                    val currentDamage = newState.getEntity(attackerId)?.get<DamageComponent>()?.amount ?: 0
+                    newState = newState.updateEntity(attackerId) { container ->
+                        container.with(DamageComponent(currentDamage + blockerPower))
+                    }
+                    events.add(DamageDealtEvent(blockerId, attackerId, blockerPower, true))
+                }
             }
         }
 
@@ -1271,6 +1302,10 @@ class CombatManager(
         if (!isFaceDown && hasCantBlockAbility(blockerCard)) return false
 
         val projected = stateProjector.project(state)
+
+        // Check projected "can't block" (e.g., from Pacifism aura)
+        if (projected.cantBlock(blockerId)) return false
+
         val attackers = state.entities.filter { (_, container) -> container.has<AttackingComponent>() }.keys
 
         return attackers.any { attackerId ->
@@ -1298,6 +1333,11 @@ class CombatManager(
         // Check if blocker has "can't block" restriction (face-down creatures have no abilities)
         val isFaceDown = blockerContainer.has<FaceDownComponent>()
         if (!isFaceDown && hasCantBlockAbility(blockerCard)) {
+            return false
+        }
+
+        // Check projected "can't block" (e.g., from Pacifism aura)
+        if (projected.cantBlock(blockerId)) {
             return false
         }
 

@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 86 / 335
+**Implemented:** 91 / 335
 
 ---
 
@@ -213,7 +213,7 @@
 - [ ] Oblation
 - [ ] Oversold Cemetery
 - [ ] Overwhelming Instinct
-- [ ] Pacifism
+- [x] Pacifism
 - [ ] Patriarch's Bidding
 - [x] Pearlspear Courier
 - [ ] Peer Pressure
@@ -222,7 +222,7 @@
 - [x] Plains
 - [ ] Polluted Delta
 - [ ] Primal Boost
-- [ ] Profane Prayers
+- [x] Profane Prayers
 - [ ] Prowling Pangolin
 - [ ] Psychic Trance
 - [ ] Quicksilver Dragon
@@ -230,7 +230,7 @@
 - [ ] Read the Runes
 - [ ] Reckless One
 - [ ] Reminisce
-- [ ] Renewed Faith
+- [x] Renewed Faith
 - [ ] Righteous Cause
 - [ ] Riptide Biologist
 - [ ] Riptide Chronologist
@@ -256,7 +256,7 @@
 - [ ] Shade's Breath
 - [ ] Shaleskin Bruiser
 - [ ] Shared Triumph
-- [ ] Shepherd of Rot
+- [x] Shepherd of Rot
 - [ ] Shieldmage Elder
 - [x] Shock
 - [ ] Sigil of the New Dawn
@@ -275,7 +275,7 @@
 - [x] Snarling Undorak
 - [ ] Solar Blast
 - [ ] Soulless One
-- [ ] Sparksmith
+- [x] Sparksmith
 - [x] Spined Basher
 - [ ] Spitfire Handler
 - [x] Spitting Gourna
