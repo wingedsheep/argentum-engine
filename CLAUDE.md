@@ -2,6 +2,11 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Notes
+
+- Focus on your own work. If a change not made by you breaks the build, report it to the user and stop your work. Don't
+  try to revert or fix changes that are not assigned to you.
+
 ## Project Overview
 
 Argentum Engine is a Magic: The Gathering rules engine and online play platform implemented in Kotlin using a pure
@@ -54,13 +59,13 @@ cd web-client && npm run typecheck  # Type checking
 
 The project follows a strict **Domain-Driven Design (DDD)** with clear separation of concerns:
 
-| Module           | Type            | Purpose                                            | Dependencies       |
-|------------------|-----------------|----------------------------------------------------|--------------------|
-| **mtg-sdk**      | Kotlin Library  | Shared contract - DSLs, data models, primitives    | None               |
-| **mtg-sets**     | Kotlin Library  | Card definitions using SDK (Portal, Alpha, Custom) | mtg-sdk            |
-| **rules-engine** | Kotlin Library  | Core MTG rules engine (zero server dependencies)   | mtg-sdk            |
-| **game-server**  | Spring Boot App | Game orchestration, WebSocket, state masking       | rules-engine, sdk  |
-| **web-client**   | React App       | Browser UI (dumb terminal, no game logic)          | None               |
+| Module           | Type            | Purpose                                            | Dependencies      |
+|------------------|-----------------|----------------------------------------------------|-------------------|
+| **mtg-sdk**      | Kotlin Library  | Shared contract - DSLs, data models, primitives    | None              |
+| **mtg-sets**     | Kotlin Library  | Card definitions using SDK (Portal, Alpha, Custom) | mtg-sdk           |
+| **rules-engine** | Kotlin Library  | Core MTG rules engine (zero server dependencies)   | mtg-sdk           |
+| **game-server**  | Spring Boot App | Game orchestration, WebSocket, state masking       | rules-engine, sdk |
+| **web-client**   | React App       | Browser UI (dumb terminal, no game logic)          | None              |
 
 **Key Principle:** The engine is "pure" (no card-specific code), content is "data-driven" (no execution logic), and the
 API provides an "anti-corruption layer" between engine internals and external clients.
@@ -99,19 +104,19 @@ ordering.
 
 ### Key Files (rules-engine)
 
-| File                                        | Purpose                                       |
-|---------------------------------------------|-----------------------------------------------|
-| `state/GameState.kt`                        | Immutable game state data class               |
-| `core/ActionProcessor.kt`                   | Processes GameActions, produces new state     |
-| `core/GameAction.kt`                        | Sealed interface of all action types          |
-| `core/GameInitializer.kt`                   | Sets up initial game state                    |
-| `core/TurnManager.kt`                       | Turn and phase progression                    |
-| `mechanics/layers/StateProjector.kt`        | Rule 613 continuous effect projection         |
-| `event/TriggerDetector.kt`                  | Detects triggered abilities from events       |
-| `event/TriggerProcessor.kt`                 | Processes detected triggers                   |
-| `state/components/`                         | All component types (identity, state, combat) |
-| `handlers/effects/EffectExecutorRegistry.kt`| Registry mapping effects to executors         |
-| `handlers/effects/*/`                       | Effect executors (damage, life, drawing, etc.)|
+| File                                         | Purpose                                        |
+|----------------------------------------------|------------------------------------------------|
+| `state/GameState.kt`                         | Immutable game state data class                |
+| `core/ActionProcessor.kt`                    | Processes GameActions, produces new state      |
+| `core/GameAction.kt`                         | Sealed interface of all action types           |
+| `core/GameInitializer.kt`                    | Sets up initial game state                     |
+| `core/TurnManager.kt`                        | Turn and phase progression                     |
+| `mechanics/layers/StateProjector.kt`         | Rule 613 continuous effect projection          |
+| `event/TriggerDetector.kt`                   | Detects triggered abilities from events        |
+| `event/TriggerProcessor.kt`                  | Processes detected triggers                    |
+| `state/components/`                          | All component types (identity, state, combat)  |
+| `handlers/effects/EffectExecutorRegistry.kt` | Registry mapping effects to executors          |
+| `handlers/effects/*/`                        | Effect executors (damage, life, drawing, etc.) |
 
 ### Key Files (mtg-sdk)
 
@@ -134,17 +139,17 @@ ordering.
 
 ### Key Files (game-server)
 
-| File                                | Purpose                                     |
-|-------------------------------------|---------------------------------------------|
-| `session/GameSession.kt`            | Runtime game management and state           |
-| `session/PlayerSession.kt`          | Per-player connection and session state     |
-| `masking/StateMasker.kt`            | Hides private information (Fog of War)      |
-| `masking/MaskedGameState.kt`        | Sanitized state for clients                 |
-| `websocket/GameWebSocketHandler.kt` | WebSocket message handling                  |
-| `protocol/ServerMessage.kt`         | Server-to-client message types              |
-| `protocol/ClientMessage.kt`         | Client-to-server message types              |
-| `dto/ClientDTO.kt`                  | Data transfer objects for client            |
-| `dto/ClientStateTransformer.kt`     | Transforms engine state to client format    |
+| File                                | Purpose                                  |
+|-------------------------------------|------------------------------------------|
+| `session/GameSession.kt`            | Runtime game management and state        |
+| `session/PlayerSession.kt`          | Per-player connection and session state  |
+| `masking/StateMasker.kt`            | Hides private information (Fog of War)   |
+| `masking/MaskedGameState.kt`        | Sanitized state for clients              |
+| `websocket/GameWebSocketHandler.kt` | WebSocket message handling               |
+| `protocol/ServerMessage.kt`         | Server-to-client message types           |
+| `protocol/ClientMessage.kt`         | Client-to-server message types           |
+| `dto/ClientDTO.kt`                  | Data transfer objects for client         |
+| `dto/ClientStateTransformer.kt`     | Transforms engine state to client format |
 
 ## Card Implementation Pattern
 
@@ -238,20 +243,20 @@ The web client follows the **dumb terminal** pattern:
 
 **Key Files (web-client):**
 
-| File                              | Purpose                                 |
-|-----------------------------------|-----------------------------------------|
-| `store/gameStore.ts`              | Zustand store for game state            |
-| `store/selectors.ts`              | Derived state selectors                 |
-| `network/websocket.ts`            | WebSocket connection management         |
-| `network/messageHandlers.ts`      | Server message processing               |
-| `components/game/GameBoard.tsx`   | Main game board layout                  |
-| `components/ui/GameUI.tsx`        | HUD elements (life, mana, phases)       |
-| `components/decisions/`           | Decision UI (scry, library search, etc.)|
-| `components/combat/`              | Combat UI (arrows, blockers)            |
-| `components/targeting/`           | Targeting arrows and overlays           |
-| `hooks/useInteraction.ts`         | Card interaction logic                  |
-| `hooks/useTargeting.ts`           | Targeting flow management               |
-| `hooks/useLegalActions.ts`        | Legal action queries                    |
+| File                            | Purpose                                  |
+|---------------------------------|------------------------------------------|
+| `store/gameStore.ts`            | Zustand store for game state             |
+| `store/selectors.ts`            | Derived state selectors                  |
+| `network/websocket.ts`          | WebSocket connection management          |
+| `network/messageHandlers.ts`    | Server message processing                |
+| `components/game/GameBoard.tsx` | Main game board layout                   |
+| `components/ui/GameUI.tsx`      | HUD elements (life, mana, phases)        |
+| `components/decisions/`         | Decision UI (scry, library search, etc.) |
+| `components/combat/`            | Combat UI (arrows, blockers)             |
+| `components/targeting/`         | Targeting arrows and overlays            |
+| `hooks/useInteraction.ts`       | Card interaction logic                   |
+| `hooks/useTargeting.ts`         | Targeting flow management                |
+| `hooks/useLegalActions.ts`      | Legal action queries                     |
 
 ## Adding New Content
 
