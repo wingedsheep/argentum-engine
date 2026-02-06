@@ -7,12 +7,15 @@ import com.wingedsheep.engine.event.TriggerDetector
 import com.wingedsheep.engine.event.TriggerProcessor
 import com.wingedsheep.engine.handlers.actions.ActionContext
 import com.wingedsheep.engine.handlers.actions.ActionHandler
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.scripting.EntersTapped
 import kotlin.reflect.KClass
 
 /**
@@ -22,6 +25,7 @@ import kotlin.reflect.KClass
  * It moves the land from hand to battlefield and uses up a land drop.
  */
 class PlayLandHandler(
+    private val cardRegistry: CardRegistry?,
     private val triggerDetector: TriggerDetector,
     private val triggerProcessor: TriggerProcessor
 ) : ActionHandler<PlayLand> {
@@ -87,6 +91,14 @@ class PlayLandHandler(
             c.with(ControllerComponent(action.playerId))
         }
 
+        // Check for "enters the battlefield tapped" replacement effect
+        val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId)
+        if (cardDef != null && cardDef.script.replacementEffects.any { it is EntersTapped }) {
+            newState = newState.updateEntity(action.cardId) { c ->
+                c.with(TappedComponent)
+            }
+        }
+
         // Use up a land drop
         newState = newState.updateEntity(action.playerId) { c ->
             val landDrops = c.get<LandDropsComponent>() ?: LandDropsComponent()
@@ -128,7 +140,7 @@ class PlayLandHandler(
 
     companion object {
         fun create(context: ActionContext): PlayLandHandler {
-            return PlayLandHandler(context.triggerDetector, context.triggerProcessor)
+            return PlayLandHandler(context.cardRegistry, context.triggerDetector, context.triggerProcessor)
         }
     }
 }

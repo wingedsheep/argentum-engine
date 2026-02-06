@@ -92,10 +92,12 @@ object OnslaughtSet {
         GoblinSledder,
         GoblinTaskmaster,
         LayWaste,
+        LightningRift,
         PinpointAvalanche,
         RorixBladewing,
         SearingFlesh,
         Shock,
+        SliceAndDice,
         Sparksmith,
         SkirkProspector,
         SpurredWolverine,
@@ -123,6 +125,9 @@ object OnslaughtSet {
         WirewoodElf,
         WirewoodHerald,
         WirewoodSavage,
+
+        // Lands
+        BarrenMoor,
 
         // Basic lands
     ) + OnslaughtBasicLands

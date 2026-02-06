@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 96 / 335
+**Implemented:** 99 / 335
 
 ---
 
@@ -33,7 +33,7 @@
 - [ ] Aven Soulgazer
 - [ ] Backslide
 - [x] Barkhide Mauler
-- [ ] Barren Moor
+- [x] Barren Moor
 - [x] Battering Craghorn
 - [ ] Battlefield Medic
 - [ ] Biorhythm
@@ -188,7 +188,7 @@
 - [ ] Lavamancer's Skill
 - [x] Lay Waste
 - [ ] Leery Fogbeast
-- [ ] Lightning Rift
+- [x] Lightning Rift
 - [ ] Lonely Sandbar
 - [ ] Mage's Guile
 - [ ] Mana Echoes
@@ -268,7 +268,7 @@
 - [x] Skirk Prospector
 - [ ] Skittish Valesk
 - [ ] Slate of Ancestry
-- [ ] Slice and Dice
+- [x] Slice and Dice
 - [x] Slipstream Eel
 - [x] Smother
 - [ ] Snapping Thragg

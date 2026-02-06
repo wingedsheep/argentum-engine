@@ -192,6 +192,7 @@ class CardBuilder(private val name: String) {
     private val activatedAbilities: MutableList<ActivatedAbility> = mutableListOf()
     private val staticAbilities: MutableList<StaticAbility> = mutableListOf()
     private val additionalCosts: MutableList<AdditionalCost> = mutableListOf()
+    private val replacementEffects: MutableList<ReplacementEffect> = mutableListOf()
     private var equipCost: ManaCost? = null
     private var metadataBuilder: MetadataBuilder? = null
 
@@ -310,6 +311,18 @@ class CardBuilder(private val name: String) {
     }
 
     // =========================================================================
+    // Replacement Effects
+    // =========================================================================
+
+    /**
+     * Add a replacement effect to this card.
+     * Used for cards like cycling lands that enter the battlefield tapped.
+     */
+    fun replacementEffect(effect: ReplacementEffect) {
+        replacementEffects.add(effect)
+    }
+
+    // =========================================================================
     // Metadata
     // =========================================================================
 
@@ -357,6 +370,7 @@ class CardBuilder(private val name: String) {
             triggeredAbilities = triggeredAbilities.toList(),
             activatedAbilities = activatedAbilities.toList(),
             staticAbilities = staticAbilities.toList(),
+            replacementEffects = replacementEffects.toList(),
             additionalCosts = additionalCosts.toList(),
             auraTarget = auraTarget,
             castRestrictions = spellBuilder?.restrictions ?: emptyList()
