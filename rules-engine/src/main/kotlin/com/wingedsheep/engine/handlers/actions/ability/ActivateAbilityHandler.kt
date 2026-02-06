@@ -5,6 +5,7 @@ import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.LoyaltyChangedEvent
 import com.wingedsheep.engine.core.ManaAddedEvent
+import com.wingedsheep.engine.core.ManaSpentEvent
 import com.wingedsheep.engine.core.TappedEvent
 import com.wingedsheep.engine.core.TurnManager
 import com.wingedsheep.engine.handlers.ConditionEvaluator
@@ -14,6 +15,7 @@ import com.wingedsheep.engine.handlers.actions.ActionContext
 import com.wingedsheep.engine.handlers.actions.ActionHandler
 import com.wingedsheep.engine.handlers.effects.EffectExecutorRegistry
 import com.wingedsheep.engine.mechanics.mana.ManaPool
+import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.mechanics.targeting.TargetValidator
 import com.wingedsheep.engine.registry.CardRegistry
@@ -27,6 +29,7 @@ import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.ActivationRestriction
 import com.wingedsheep.sdk.scripting.TimingRule
@@ -47,6 +50,7 @@ class ActivateAbilityHandler(
     private val cardRegistry: CardRegistry?,
     private val turnManager: TurnManager,
     private val costHandler: CostHandler,
+    private val manaSolver: ManaSolver,
     private val effectExecutorRegistry: EffectExecutorRegistry,
     private val stackResolver: StackResolver,
     private val targetValidator: TargetValidator,
@@ -90,20 +94,8 @@ class ActivateAbilityHandler(
             }
         }
 
-        // Get player's mana pool for cost validation
-        val poolComponent = state.getEntity(action.playerId)?.get<ManaPoolComponent>()
-            ?: ManaPoolComponent()
-        val manaPool = ManaPool(
-            white = poolComponent.white,
-            blue = poolComponent.blue,
-            black = poolComponent.black,
-            red = poolComponent.red,
-            green = poolComponent.green,
-            colorless = poolComponent.colorless
-        )
-
-        // Check cost requirements
-        if (!costHandler.canPayAbilityCost(state, ability.cost, action.sourceId, action.playerId, manaPool)) {
+        // Check cost requirements (using ManaSolver for mana costs to consider untapped sources)
+        if (!canPayAbilityCostWithSources(state, ability.cost, action.sourceId, action.playerId)) {
             return when (ability.cost) {
                 is AbilityCost.Tap -> "This permanent is already tapped"
                 is AbilityCost.Loyalty -> {
@@ -183,6 +175,16 @@ class ActivateAbilityHandler(
             green = poolComponent.green,
             colorless = poolComponent.colorless
         )
+
+        // Auto-tap lands for mana costs before paying
+        val manaCost = extractManaCost(ability.cost)
+        if (manaCost != null) {
+            val autoTapResult = autoTapForManaCost(currentState, action.playerId, manaPool, manaCost, cardComponent.name)
+                ?: return ExecutionResult.error(state, "Not enough mana to activate this ability")
+            currentState = autoTapResult.newState
+            manaPool = autoTapResult.newPool
+            events.addAll(autoTapResult.events)
+        }
 
         // Build cost payment choices from the action
         val costChoices = CostPaymentChoices(
@@ -304,6 +306,114 @@ class ActivateAbilityHandler(
         return ExecutionResult.success(stackResult.newState, events + stackResult.events)
     }
 
+    /**
+     * Check if an ability cost can be paid, using ManaSolver for mana costs
+     * to consider both floating mana and untapped mana sources.
+     */
+    private fun canPayAbilityCostWithSources(
+        state: GameState,
+        cost: AbilityCost,
+        sourceId: com.wingedsheep.sdk.model.EntityId,
+        playerId: com.wingedsheep.sdk.model.EntityId
+    ): Boolean {
+        val poolComponent = state.getEntity(playerId)?.get<ManaPoolComponent>() ?: ManaPoolComponent()
+        val manaPool = ManaPool(
+            white = poolComponent.white,
+            blue = poolComponent.blue,
+            black = poolComponent.black,
+            red = poolComponent.red,
+            green = poolComponent.green,
+            colorless = poolComponent.colorless
+        )
+        return when (cost) {
+            is AbilityCost.Mana -> manaSolver.canPay(state, playerId, cost.cost)
+            is AbilityCost.Composite -> {
+                cost.costs.all { subCost ->
+                    when (subCost) {
+                        is AbilityCost.Mana -> manaSolver.canPay(state, playerId, subCost.cost)
+                        else -> costHandler.canPayAbilityCost(state, subCost, sourceId, playerId, manaPool)
+                    }
+                }
+            }
+            else -> costHandler.canPayAbilityCost(state, cost, sourceId, playerId, manaPool)
+        }
+    }
+
+    /**
+     * Extract the ManaCost from an ability cost, if present.
+     */
+    private fun extractManaCost(cost: AbilityCost): ManaCost? = when (cost) {
+        is AbilityCost.Mana -> cost.cost
+        is AbilityCost.Composite -> cost.costs.filterIsInstance<AbilityCost.Mana>().firstOrNull()?.cost
+        else -> null
+    }
+
+    private data class AutoTapResult(
+        val newState: GameState,
+        val newPool: ManaPool,
+        val events: List<GameEvent>
+    )
+
+    /**
+     * Auto-tap mana sources to cover a mana cost that can't be fully paid from the floating pool.
+     * Taps sources for the shortfall and adds their mana to the pool so costHandler can consume it.
+     * Returns null if the cost cannot be paid.
+     */
+    private fun autoTapForManaCost(
+        state: GameState,
+        playerId: com.wingedsheep.sdk.model.EntityId,
+        pool: ManaPool,
+        cost: ManaCost,
+        sourceName: String
+    ): AutoTapResult? {
+        // Determine what the floating pool can cover
+        val partialResult = pool.payPartial(cost)
+        val remainingCost = partialResult.remainingCost
+
+        // If floating pool covers everything, no tapping needed
+        if (remainingCost.isEmpty()) {
+            return AutoTapResult(state, pool, emptyList())
+        }
+
+        // Tap sources for the remaining cost
+        val solution = manaSolver.solve(state, playerId, remainingCost)
+            ?: return null
+
+        var currentState = state
+        var currentPool = pool
+        val events = mutableListOf<GameEvent>()
+
+        for (source in solution.sources) {
+            currentState = currentState.updateEntity(source.entityId) { c ->
+                c.with(com.wingedsheep.engine.state.components.battlefield.TappedComponent)
+            }
+            events.add(TappedEvent(source.entityId, source.name))
+        }
+
+        // Add produced mana to floating pool so costHandler.payAbilityCost can consume it
+        for ((_, production) in solution.manaProduced) {
+            currentPool = if (production.color != null) {
+                currentPool.add(production.color)
+            } else {
+                currentPool.addColorless(production.colorless)
+            }
+        }
+
+        // Update state with enriched pool
+        currentState = currentState.updateEntity(playerId) { c ->
+            c.with(ManaPoolComponent(
+                white = currentPool.white,
+                blue = currentPool.blue,
+                black = currentPool.black,
+                red = currentPool.red,
+                green = currentPool.green,
+                colorless = currentPool.colorless
+            ))
+        }
+
+        return AutoTapResult(currentState, currentPool, events)
+    }
+
     private fun checkActivationRestriction(
         state: GameState,
         playerId: com.wingedsheep.sdk.model.EntityId,
@@ -356,6 +466,7 @@ class ActivateAbilityHandler(
                 context.cardRegistry,
                 context.turnManager,
                 context.costHandler,
+                context.manaSolver,
                 context.effectExecutorRegistry,
                 context.stackResolver,
                 context.targetValidator,

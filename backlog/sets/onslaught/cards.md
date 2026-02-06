@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 53 / 335
+**Implemented:** 55 / 335
 
 ---
 
@@ -120,7 +120,7 @@
 - [ ] Everglove Courier
 - [ ] Exalted Angel
 - [ ] Explosive Vegetation
-- [ ] Fade from Memory
+- [x] Fade from Memory
 - [ ] Fallen Cleric
 - [ ] False Cure
 - [ ] Feeding Frenzy
@@ -139,7 +139,7 @@
 - [ ] Gigapede
 - [ ] Glarecaster
 - [x] Glory Seeker
-- [ ] Gluttonous Zombie
+- [x] Gluttonous Zombie
 - [ ] Goblin Burrows
 - [ ] Goblin Machinist
 - [ ] Goblin Piledriver
