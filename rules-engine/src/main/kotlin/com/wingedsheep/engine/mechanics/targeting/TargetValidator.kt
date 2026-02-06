@@ -158,9 +158,10 @@ class TargetValidator {
             return "Target must be on the battlefield"
         }
 
-        // Use unified filter
+        // Use unified filter with projection (face-down creatures have CMC 0 per Rule 707.2)
+        val projected = stateProjector.project(state)
         val predicateContext = PredicateContext(controllerId = casterId)
-        val matches = predicateEvaluator.matches(state, target.entityId, filter.baseFilter, predicateContext)
+        val matches = predicateEvaluator.matchesWithProjection(state, projected, target.entityId, filter.baseFilter, predicateContext)
         if (!matches) {
             return "Target does not match filter: ${filter.description}"
         }
@@ -185,9 +186,10 @@ class TargetValidator {
             return "Target must be on the battlefield"
         }
 
-        // Use unified filter
+        // Use unified filter with projection (face-down creatures have CMC 0 per Rule 707.2)
+        val projected = stateProjector.project(state)
         val predicateContext = PredicateContext(controllerId = casterId)
-        val matches = predicateEvaluator.matches(state, target.entityId, filter.baseFilter, predicateContext)
+        val matches = predicateEvaluator.matchesWithProjection(state, projected, target.entityId, filter.baseFilter, predicateContext)
         if (!matches) {
             return "Target does not match filter: ${filter.description}"
         }

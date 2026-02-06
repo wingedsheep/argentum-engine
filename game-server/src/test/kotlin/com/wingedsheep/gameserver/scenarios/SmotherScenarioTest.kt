@@ -1,5 +1,7 @@
 package com.wingedsheep.gameserver.scenarios
 
+import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.gameserver.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -74,6 +76,53 @@ class SmotherScenarioTest : ScenarioTestBase() {
 
                 withClue("Festering Goblin should be destroyed") {
                     game.isOnBattlefield("Festering Goblin") shouldBe false
+                }
+            }
+
+            test("can target face-down morph creature (mana value 0 per Rule 707.2)") {
+                // Battering Craghorn costs 2RR (MV 4) face-up, but face-down it has MV 0
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardInHand(1, "Smother")
+                    .withCardInHand(2, "Battering Craghorn")
+                    .withLandsOnBattlefield(1, "Swamp", 2)
+                    .withLandsOnBattlefield(2, "Mountain", 3)
+                    .withActivePlayer(2)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                // Player 2 casts Battering Craghorn face-down for {3}
+                val craghornCardId = game.state.getHand(game.player2Id).first { entityId ->
+                    game.state.getEntity(entityId)?.get<CardComponent>()?.name == "Battering Craghorn"
+                }
+                val castMorphResult = game.execute(CastSpell(game.player2Id, craghornCardId, castFaceDown = true))
+                withClue("Cast morph should succeed") {
+                    castMorphResult.error shouldBe null
+                }
+                game.resolveStack()
+
+                // Switch to player 1's turn to cast Smother
+                game.advanceToPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                game.state = game.state.copy(activePlayerId = game.player1Id, priorityPlayerId = game.player1Id)
+
+                // Find the face-down creature on the battlefield
+                val faceDownId = game.state.getBattlefield().find { entityId ->
+                    game.state.getEntity(entityId)?.get<com.wingedsheep.engine.state.components.identity.FaceDownComponent>() != null
+                }!!
+
+                // Cast Smother targeting the face-down creature (MV 0 <= 3, should succeed)
+                val castResult = game.castSpell(1, "Smother", faceDownId)
+                withClue("Cast should succeed targeting face-down creature with MV 0") {
+                    castResult.error shouldBe null
+                }
+
+                game.resolveStack()
+
+                // Face-down creature should be destroyed
+                withClue("Face-down creature should no longer be on battlefield") {
+                    game.state.getBattlefield().none { entityId ->
+                        game.state.getEntity(entityId)?.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>() == true
+                    } shouldBe true
                 }
             }
 
