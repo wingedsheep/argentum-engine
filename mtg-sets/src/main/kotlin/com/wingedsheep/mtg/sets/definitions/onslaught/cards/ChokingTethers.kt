@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.KeywordAbility
-import com.wingedsheep.sdk.scripting.MayEffect
 import com.wingedsheep.sdk.scripting.OnCycle
 import com.wingedsheep.sdk.scripting.TapTargetCreaturesEffect
 import com.wingedsheep.sdk.scripting.TapUntapEffect
