@@ -1275,7 +1275,7 @@ class GameSession(
             val hasMeaningfulActions = legalActions.any { action ->
                 action.actionType != "PassPriority" && !action.isManaAbility
             }
-            autoPassManager.getNextStopPoint(state, playerId, hasMeaningfulActions)
+            autoPassManager.getNextStopPoint(state, playerId, hasMeaningfulActions, stateProjector)
         } else {
             null
         }

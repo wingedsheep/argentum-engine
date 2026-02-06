@@ -5,9 +5,14 @@ import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.PlayLand
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.DeclareAttackers
+import com.wingedsheep.engine.mechanics.layers.ProjectedState
+import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombatComponent
+import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.gameserver.protocol.LegalActionInfo
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.scripting.AbilityId
@@ -618,6 +623,152 @@ class AutoPassManagerTest : FunSpec({
             )
 
             autoPassManager.shouldAutoPass(state, player1, actions) shouldBe true
+        }
+    }
+
+    context("getNextStopPoint - button labels") {
+        test("returns Resolve when stack is non-empty") {
+            val state = createMockState(player1, player1, Step.PRECOMBAT_MAIN, stackEmpty = false, stackControllerId = player1)
+            autoPassManager.getNextStopPoint(state, player1, true) shouldBe "Resolve"
+        }
+
+        test("returns 'Pass to Main 2' from declare attackers on my turn") {
+            // On my turn at declare attackers with no attackers, next stop is postcombat main
+            val state = createMockState(player1, player1, Step.DECLARE_ATTACKERS)
+            autoPassManager.getNextStopPoint(state, player1, true) shouldBe "Pass to Main 2"
+        }
+
+        test("returns 'End Turn' from postcombat main on my turn") {
+            val state = createMockState(player1, player1, Step.POSTCOMBAT_MAIN)
+            autoPassManager.getNextStopPoint(state, player1, true) shouldBe "End Turn"
+        }
+
+        test("returns 'To my turn' from opponent's end step with meaningful actions") {
+            val state = createMockState(player1, player2, Step.END)
+            autoPassManager.getNextStopPoint(state, player1, true) shouldBe "To my turn"
+        }
+
+        test("returns 'Pass to Main' from my end step without meaningful actions") {
+            // Without meaningful actions, skips through opponent's entire turn back to my main phase
+            val state = createMockState(player1, player1, Step.END)
+            autoPassManager.getNextStopPoint(state, player1, false) shouldBe "Pass to Main"
+        }
+
+        test("returns 'Pass to Blockers' from declare attackers on opponent's turn with meaningful actions") {
+            val state = createMockState(player1, player2, Step.DECLARE_ATTACKERS)
+            autoPassManager.getNextStopPoint(state, player1, true) shouldBe "Pass to Blockers"
+        }
+
+        test("returns 'Pass to End Step' from opponent's combat with meaningful actions") {
+            val state = createMockState(player1, player2, Step.COMBAT_DAMAGE)
+            autoPassManager.getNextStopPoint(state, player1, true) shouldBe "Pass to End Step"
+        }
+    }
+
+    context("getNextStopPoint - combat damage labels") {
+        fun createCombatState(
+            step: Step,
+            attackerIds: List<EntityId>,
+            blockerIds: List<EntityId> = emptyList(),
+            firstStrikeEntityIds: Set<EntityId> = emptySet(),
+            doubleStrikeEntityIds: Set<EntityId> = emptySet()
+        ): Pair<GameState, StateProjector> {
+            val state = mockk<GameState>(relaxed = true)
+            every { state.priorityPlayerId } returns player1
+            every { state.activePlayerId } returns player1
+            every { state.step } returns step
+            every { state.phase } returns step.phase
+            every { state.stack } returns emptyList()
+            every { state.pendingDecision } returns null
+            every { state.turnOrder } returns listOf(player1, player2)
+
+            // Set up battlefield with attackers and blockers
+            val allEntities = attackerIds + blockerIds
+            every { state.getBattlefield() } returns allEntities
+
+            for (attackerId in attackerIds) {
+                val entity = mockk<com.wingedsheep.engine.state.ComponentContainer>(relaxed = true)
+                every { entity.get<AttackingComponent>() } returns AttackingComponent(player2)
+                every { entity.get<BlockingComponent>() } returns null
+                every { state.getEntity(attackerId) } returns entity
+            }
+
+            for (blockerId in blockerIds) {
+                val entity = mockk<com.wingedsheep.engine.state.ComponentContainer>(relaxed = true)
+                every { entity.get<AttackingComponent>() } returns null
+                every { entity.get<BlockingComponent>() } returns BlockingComponent(attackerIds)
+                every { state.getEntity(blockerId) } returns entity
+            }
+
+            // Set up state projector mock
+            val stateProjector = mockk<StateProjector>()
+            val projected = mockk<ProjectedState>()
+            every { stateProjector.project(state) } returns projected
+
+            for (entityId in allEntities) {
+                every { projected.hasKeyword(entityId, Keyword.FIRST_STRIKE) } returns (entityId in firstStrikeEntityIds)
+                every { projected.hasKeyword(entityId, Keyword.DOUBLE_STRIKE) } returns (entityId in doubleStrikeEntityIds)
+            }
+
+            return state to stateProjector
+        }
+
+        test("at DECLARE_BLOCKERS with attackers and no first strike returns 'Resolve combat damage'") {
+            val attacker = EntityId.generate()
+            val (state, projector) = createCombatState(
+                step = Step.DECLARE_BLOCKERS,
+                attackerIds = listOf(attacker)
+            )
+            autoPassManager.getNextStopPoint(state, player1, true, projector) shouldBe "Resolve combat damage"
+        }
+
+        test("at DECLARE_BLOCKERS with first strike attacker returns 'Resolve first strike damage'") {
+            val attacker = EntityId.generate()
+            val (state, projector) = createCombatState(
+                step = Step.DECLARE_BLOCKERS,
+                attackerIds = listOf(attacker),
+                firstStrikeEntityIds = setOf(attacker)
+            )
+            autoPassManager.getNextStopPoint(state, player1, true, projector) shouldBe "Resolve first strike damage"
+        }
+
+        test("at DECLARE_BLOCKERS with double strike blocker returns 'Resolve first strike damage'") {
+            val attacker = EntityId.generate()
+            val blocker = EntityId.generate()
+            val (state, projector) = createCombatState(
+                step = Step.DECLARE_BLOCKERS,
+                attackerIds = listOf(attacker),
+                blockerIds = listOf(blocker),
+                doubleStrikeEntityIds = setOf(blocker)
+            )
+            autoPassManager.getNextStopPoint(state, player1, true, projector) shouldBe "Resolve first strike damage"
+        }
+
+        test("at FIRST_STRIKE_COMBAT_DAMAGE with attackers returns 'Resolve combat damage'") {
+            val attacker = EntityId.generate()
+            val (state, _) = createCombatState(
+                step = Step.FIRST_STRIKE_COMBAT_DAMAGE,
+                attackerIds = listOf(attacker)
+            )
+            autoPassManager.getNextStopPoint(state, player1, true) shouldBe "Resolve combat damage"
+        }
+
+        test("at DECLARE_BLOCKERS with no attackers falls through to normal logic") {
+            // No attackers on battlefield - should not return combat label
+            val state = createMockState(player1, player1, Step.DECLARE_BLOCKERS)
+            val result = autoPassManager.getNextStopPoint(state, player1, true)
+            result shouldBe "Pass to Main 2"
+        }
+
+        test("at DECLARE_BLOCKERS with no stateProjector defaults to 'Resolve combat damage'") {
+            val attacker = EntityId.generate()
+            val (state, _) = createCombatState(
+                step = Step.DECLARE_BLOCKERS,
+                attackerIds = listOf(attacker),
+                firstStrikeEntityIds = setOf(attacker) // Has first strike but no projector
+            )
+            // Without stateProjector, hasCombatFirstStrike returns false
+            autoPassManager.getNextStopPoint(state, player1, true, null) shouldBe "Resolve combat damage"
         }
     }
 })

@@ -43,6 +43,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
   const clearBlockerAssignments = useGameStore((state) => state.clearBlockerAssignments)
   const attackWithAll = useGameStore((state) => state.attackWithAll)
   const priorityMode = useGameStore(selectPriorityMode)
+  const nextStopPoint = useGameStore((state) => state.nextStopPoint)
   const fullControl = useGameStore((state) => state.fullControl)
   const setFullControl = useGameStore((state) => state.setFullControl)
   const responsive = useResponsive(topOffset)
@@ -75,21 +76,17 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
   const isMyTurn = spectatorMode ? false : (gameState.activePlayerId === viewingPlayer?.playerId)
   const isInCombatMode = spectatorMode ? false : (combatState !== null)
 
-  // Compute pass button label
+  // Compute pass button label - prefer server-computed nextStopPoint, fall back to naive logic
   const getPassButtonLabel = () => {
-    // Show "Resolve" when there's something on the stack
+    if (nextStopPoint) {
+      return nextStopPoint
+    }
+    // Fallback for full control mode (server sends null)
     if (stackCards.length > 0) {
       return 'Resolve'
     }
-    // Show "To my turn" when at opponent's end step
-    const isOpponentsTurn = gameState.activePlayerId !== viewingPlayer?.playerId
-    if (isOpponentsTurn && gameState.currentStep === 'END') {
-      return 'To my turn'
-    }
-    // Otherwise show next step
     const nextStep = getNextStep(gameState.currentStep)
     if (nextStep) {
-      // "End Turn" when passing to end step on my turn
       if (nextStep === 'END' && isMyTurn) {
         return 'End Turn'
       }

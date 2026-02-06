@@ -1,13 +1,17 @@
 package com.wingedsheep.gameserver.priority
 
+import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombatComponent
+import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.gameserver.protocol.LegalActionInfo
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
 import org.slf4j.LoggerFactory
@@ -449,7 +453,8 @@ class AutoPassManager {
     fun getNextStopPoint(
         state: GameState,
         playerId: EntityId,
-        hasMeaningfulActions: Boolean
+        hasMeaningfulActions: Boolean,
+        stateProjector: StateProjector? = null
     ): String? {
         // If there's something on the stack, passing will resolve it
         if (state.stack.isNotEmpty()) {
@@ -457,7 +462,30 @@ class AutoPassManager {
         }
 
         val currentStep = state.step
+
+        // Special combat damage labels when there are attacking creatures
+        val hasAttackers = state.getBattlefield().any { entityId ->
+            state.getEntity(entityId)?.get<AttackingComponent>() != null
+        }
+
+        if (hasAttackers && currentStep == Step.DECLARE_BLOCKERS) {
+            return if (hasCombatFirstStrike(state, stateProjector)) {
+                "Resolve first strike damage"
+            } else {
+                "Resolve combat damage"
+            }
+        }
+
+        if (hasAttackers && currentStep == Step.FIRST_STRIKE_COMBAT_DAMAGE) {
+            return "Resolve combat damage"
+        }
+
         val isMyTurn = state.activePlayerId == playerId
+
+        // At postcombat main on my turn, passing effectively ends the turn
+        if (isMyTurn && currentStep == Step.POSTCOMBAT_MAIN) {
+            return "End Turn"
+        }
 
         // Simulate advancing through steps to find where we'll stop
         var step = currentStep
@@ -531,29 +559,48 @@ class AutoPassManager {
     }
 
     /**
-     * Format the stop point as a user-friendly string.
+     * Format the stop point as a complete button label.
      */
     private fun formatStopPoint(step: Step, willBeMyTurn: Boolean, currentlyMyTurn: Boolean): String {
-        // If the turn is changing, show "My turn" or "Opponent's turn"
+        // If the turn is changing, show "To my turn" or "To opponent's turn"
         if (willBeMyTurn != currentlyMyTurn) {
-            return if (willBeMyTurn) "My turn" else "Opponent's turn"
+            return if (willBeMyTurn) "To my turn" else "To opponent's turn"
         }
 
-        // Otherwise show the step/phase name
+        // END on own turn is "End Turn" (a distinct action feel)
+        if (step == Step.END && currentlyMyTurn) {
+            return "End Turn"
+        }
+
+        // Otherwise show "Pass to <step>"
         return when (step) {
-            Step.UNTAP -> "Untap"
-            Step.UPKEEP -> "Upkeep"
-            Step.DRAW -> "Draw"
-            Step.PRECOMBAT_MAIN -> "Main"
-            Step.BEGIN_COMBAT -> "Combat"
-            Step.DECLARE_ATTACKERS -> "Attackers"
-            Step.DECLARE_BLOCKERS -> "Blockers"
-            Step.FIRST_STRIKE_COMBAT_DAMAGE -> "First Strike"
-            Step.COMBAT_DAMAGE -> "Damage"
-            Step.END_COMBAT -> "End Combat"
-            Step.POSTCOMBAT_MAIN -> "Main 2"
-            Step.END -> "End Step"
-            Step.CLEANUP -> "Cleanup"
+            Step.UNTAP -> "Pass to Untap"
+            Step.UPKEEP -> "Pass to Upkeep"
+            Step.DRAW -> "Pass to Draw"
+            Step.PRECOMBAT_MAIN -> "Pass to Main"
+            Step.BEGIN_COMBAT -> "Pass to Combat"
+            Step.DECLARE_ATTACKERS -> "Pass to Attackers"
+            Step.DECLARE_BLOCKERS -> "Pass to Blockers"
+            Step.FIRST_STRIKE_COMBAT_DAMAGE -> "Pass to First Strike"
+            Step.COMBAT_DAMAGE -> "Pass to Damage"
+            Step.END_COMBAT -> "Pass to End Combat"
+            Step.POSTCOMBAT_MAIN -> "Pass to Main 2"
+            Step.END -> "Pass to End Step"
+            Step.CLEANUP -> "Pass to Cleanup"
+        }
+    }
+
+    /**
+     * Check if any attacker or blocker in combat has first strike or double strike.
+     */
+    private fun hasCombatFirstStrike(state: GameState, stateProjector: StateProjector?): Boolean {
+        if (stateProjector == null) return false
+
+        val projected = stateProjector.project(state)
+        return state.getBattlefield().any { entityId ->
+            val container = state.getEntity(entityId) ?: return@any false
+            val isInCombat = container.get<AttackingComponent>() != null || container.get<BlockingComponent>() != null
+            isInCombat && (projected.hasKeyword(entityId, Keyword.FIRST_STRIKE) || projected.hasKeyword(entityId, Keyword.DOUBLE_STRIKE))
         }
     }
 }
