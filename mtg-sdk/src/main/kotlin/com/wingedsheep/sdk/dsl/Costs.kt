@@ -108,6 +108,16 @@ object Costs {
         AbilityCost.Loyalty(change)
 
     // =========================================================================
+    // Tap Permanents Costs
+    // =========================================================================
+
+    /**
+     * Tap permanents you control (e.g., "Tap five untapped Clerics you control").
+     */
+    fun TapPermanents(count: Int, filter: GameObjectFilter = GameObjectFilter.Creature): AbilityCost =
+        AbilityCost.TapPermanents(count, filter)
+
+    // =========================================================================
     // Composite Costs
     // =========================================================================
 

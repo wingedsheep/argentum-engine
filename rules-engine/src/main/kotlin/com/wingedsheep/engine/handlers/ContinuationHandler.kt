@@ -72,6 +72,8 @@ class ContinuationHandler(
             is PayOrSufferContinuation -> resumePayOrSuffer(stateAfterPop, continuation, response)
             is DistributeDamageContinuation -> resumeDistributeDamage(stateAfterPop, continuation, response)
             is LookAtTopCardsContinuation -> resumeLookAtTopCards(stateAfterPop, continuation, response)
+            is RevealAndOpponentChoosesContinuation -> resumeRevealAndOpponentChooses(stateAfterPop, continuation, response)
+            is ChooseColorProtectionContinuation -> resumeChooseColorProtection(stateAfterPop, continuation, response)
         }
     }
 
@@ -1524,6 +1526,161 @@ class ContinuationHandler(
         if (selectedCards.isNotEmpty()) {
             events.add(0, CardsDrawnEvent(playerId, selectedCards.size, selectedCards.toList()))
         }
+
+        return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume after opponent chose a card from revealed top cards.
+     * Selected card goes to battlefield, rest go to graveyard.
+     */
+    private fun resumeRevealAndOpponentChooses(
+        state: GameState,
+        continuation: RevealAndOpponentChoosesContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for reveal and opponent chooses")
+        }
+
+        val controllerId = continuation.controllerId
+        val selectedCard = response.selectedCards.firstOrNull()
+            ?: return ExecutionResult.error(state, "No card selected by opponent")
+
+        val libraryZone = ZoneKey(controllerId, Zone.LIBRARY)
+        val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
+        val graveyardZone = ZoneKey(controllerId, Zone.GRAVEYARD)
+        val events = mutableListOf<GameEvent>()
+
+        var newState = state
+
+        for (cardId in continuation.allCards) {
+            val cardName = newState.getEntity(cardId)?.get<CardComponent>()?.name ?: "Unknown"
+
+            // Remove from library
+            newState = newState.removeFromZone(libraryZone, cardId)
+
+            if (cardId == selectedCard) {
+                // Selected card goes to battlefield
+                newState = newState.addToZone(battlefieldZone, cardId)
+
+                // Apply battlefield components (controller, summoning sickness)
+                val container = newState.getEntity(cardId)
+                if (container != null) {
+                    var newContainer = container
+                        .with(com.wingedsheep.engine.state.components.identity.ControllerComponent(controllerId))
+
+                    val cardComponent = container.get<CardComponent>()
+                    if (cardComponent?.typeLine?.isCreature == true) {
+                        newContainer = newContainer.with(
+                            com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
+                        )
+                    }
+
+                    newState = newState.copy(
+                        entities = newState.entities + (cardId to newContainer)
+                    )
+                }
+
+                events.add(
+                    ZoneChangeEvent(
+                        entityId = cardId,
+                        entityName = cardName,
+                        fromZone = Zone.LIBRARY,
+                        toZone = Zone.BATTLEFIELD,
+                        ownerId = controllerId
+                    )
+                )
+            } else {
+                // Non-selected cards go to graveyard
+                newState = newState.addToZone(graveyardZone, cardId)
+                events.add(
+                    ZoneChangeEvent(
+                        entityId = cardId,
+                        entityName = cardName,
+                        fromZone = Zone.LIBRARY,
+                        toZone = Zone.GRAVEYARD,
+                        ownerId = controllerId
+                    )
+                )
+            }
+        }
+
+        return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume after player chooses a color for protection granting effects.
+     *
+     * Creates floating effects granting protection from the chosen color to all
+     * creatures matching the filter that the controller controls.
+     */
+    private fun resumeChooseColorProtection(
+        state: GameState,
+        continuation: ChooseColorProtectionContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is ColorChosenResponse) {
+            return ExecutionResult.error(state, "Expected color choice response for protection effect")
+        }
+
+        val chosenColor = response.color
+        val controllerId = continuation.controllerId
+        val events = mutableListOf<GameEvent>()
+        val affectedEntities = mutableSetOf<com.wingedsheep.sdk.model.EntityId>()
+        val predicateEvaluator = PredicateEvaluator()
+        val predicateContext = PredicateContext(controllerId = controllerId, sourceId = continuation.sourceId)
+
+        for (entityId in state.getBattlefield()) {
+            val container = state.getEntity(entityId) ?: continue
+            val cardComponent = container.get<CardComponent>() ?: continue
+
+            if (!cardComponent.typeLine.isCreature) continue
+
+            // Check excludeSelf
+            if (continuation.filter.excludeSelf && entityId == continuation.sourceId) continue
+
+            // Apply unified filter
+            if (!predicateEvaluator.matches(state, entityId, continuation.filter.baseFilter, predicateContext)) {
+                continue
+            }
+
+            affectedEntities.add(entityId)
+
+            events.add(
+                KeywordGrantedEvent(
+                    targetId = entityId,
+                    targetName = cardComponent.name,
+                    keyword = "Protection from ${chosenColor.displayName.lowercase()}",
+                    sourceName = continuation.sourceName ?: "Unknown"
+                )
+            )
+        }
+
+        if (affectedEntities.isEmpty()) {
+            return checkForMoreContinuations(state, events)
+        }
+
+        val floatingEffect = com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect(
+            id = com.wingedsheep.sdk.model.EntityId.generate(),
+            effect = com.wingedsheep.engine.mechanics.layers.FloatingEffectData(
+                layer = com.wingedsheep.engine.mechanics.layers.Layer.ABILITY,
+                sublayer = null,
+                modification = com.wingedsheep.engine.mechanics.layers.SerializableModification.GrantProtectionFromColor(
+                    chosenColor.name
+                ),
+                affectedEntities = affectedEntities
+            ),
+            duration = continuation.duration,
+            sourceId = continuation.sourceId,
+            sourceName = continuation.sourceName,
+            controllerId = controllerId,
+            timestamp = System.currentTimeMillis()
+        )
+
+        val newState = state.copy(
+            floatingEffects = state.floatingEffects + floatingEffect
+        )
 
         return checkForMoreContinuations(newState, events)
     }

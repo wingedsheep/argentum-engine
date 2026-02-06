@@ -131,6 +131,7 @@ val engineSerializersModule = SerializersModule {
         subclass(BlockerOrderContinuation::class)
         subclass(EachPlayerChoosesDrawContinuation::class)
         subclass(PayOrSufferContinuation::class)
+        subclass(ChooseColorProtectionContinuation::class)
     }
 
     // Component hierarchy (for GameState persistence)

@@ -171,6 +171,22 @@ export function useInteraction() {
         return
       }
 
+      // Check if ability requires tapping permanents as a cost
+      if (action.type === 'ActivateAbility' && actionInfo.additionalCostInfo?.costType === 'TapPermanents') {
+        const costInfo = actionInfo.additionalCostInfo
+        startTargeting({
+          action,
+          validTargets: [...(costInfo.validTapTargets ?? [])],
+          selectedTargets: [],
+          minTargets: costInfo.tapCount ?? 1,
+          maxTargets: costInfo.tapCount ?? 1,
+          isSacrificeSelection: true,
+          pendingActionInfo: actionInfo,
+        })
+        selectCard(null)
+        return
+      }
+
       // Check if action requires targeting (for spells or activated abilities)
       if (actionInfo.requiresTargets && actionInfo.validTargets && actionInfo.validTargets.length > 0) {
         // Check for multi-target spells (e.g., Wicked Pact)

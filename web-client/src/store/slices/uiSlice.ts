@@ -200,11 +200,12 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
           return
         }
       } else if (action.type === 'ActivateAbility') {
+        const isTapCost = actionInfo.additionalCostInfo?.costType === 'TapPermanents'
         const actionWithCost = {
           ...action,
-          costPayment: {
-            sacrificedPermanents: [...targetingState.selectedTargets],
-          },
+          costPayment: isTapCost
+            ? { tappedPermanents: [...targetingState.selectedTargets] }
+            : { sacrificedPermanents: [...targetingState.selectedTargets] },
         }
 
         if (actionInfo.requiresTargets && actionInfo.validTargets && actionInfo.validTargets.length > 0) {

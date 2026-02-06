@@ -23,6 +23,7 @@ object OnslaughtSet {
     val allCards = listOf(
         // White creatures and spells
         AkromasVengeance,
+        AncestorsProphet,
         CrudeRampart,
         DaruLancer,
         DiscipleOfGrace,
@@ -54,7 +55,8 @@ object OnslaughtSet {
         PinpointAvalanche,
         Shock,
 
-        // Green creatures
+        // Green creatures and spells
+        AnimalMagnetism,
         BarkhideMauler,
         ElvishVanguard,
         ElvishWarrior,

@@ -104,6 +104,31 @@ sealed interface AbilityCost {
         override val description: String = "Discard this card"
     }
 
+    /**
+     * Tap permanents you control.
+     * Example: "Tap five untapped Clerics you control"
+     *
+     * @property count Number of permanents to tap
+     * @property filter Which permanents can be tapped
+     */
+    @Serializable
+    data class TapPermanents(
+        val count: Int,
+        val filter: GameObjectFilter = GameObjectFilter.Creature
+    ) : AbilityCost {
+        override val description: String = buildString {
+            append("Tap ")
+            if (count == 1) {
+                append("an untapped ")
+            } else {
+                append("$count untapped ")
+            }
+            append(filter.description)
+            if (count != 1) append("s")
+            append(" you control")
+        }
+    }
+
     /** Multiple costs combined */
     @Serializable
     data class Composite(val costs: List<AbilityCost>) : AbilityCost {

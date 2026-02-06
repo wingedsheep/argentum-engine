@@ -82,6 +82,9 @@ class CostHandler {
                 val handZone = ZoneKey(controllerId, Zone.HAND)
                 state.getZone(handZone).contains(sourceId)
             }
+            is AbilityCost.TapPermanents -> {
+                findUntappedMatchingPermanentsUnified(state, controllerId, cost.filter).size >= cost.count
+            }
             is AbilityCost.Composite -> {
                 cost.costs.all { canPayAbilityCost(state, it, sourceId, controllerId, manaPool) }
             }
@@ -177,6 +180,19 @@ class CostHandler {
             is AbilityCost.DiscardSelf -> {
                 // TODO: Discard self
                 CostPaymentResult.success(state, manaPool)
+            }
+            is AbilityCost.TapPermanents -> {
+                val toTap = choices.tapChoices
+                if (toTap.size < cost.count) {
+                    return CostPaymentResult.failure("Not enough permanents chosen to tap (need ${cost.count}, got ${toTap.size})")
+                }
+
+                var newState = state
+                for (permanentId in toTap) {
+                    newState = newState.updateEntity(permanentId) { it.with(TappedComponent) }
+                }
+
+                CostPaymentResult.success(newState, manaPool)
             }
             is AbilityCost.Composite -> {
                 var currentState = state

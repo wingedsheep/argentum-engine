@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 37 / 335
+**Implemented:** 39 / 335
 
 ---
 
@@ -13,8 +13,8 @@
 - [x] Airdrop Condor
 - [ ] Akroma's Blessing
 - [x] Akroma's Vengeance
-- [ ] Ancestor's Prophet
-- [ ] Animal Magnetism
+- [x] Ancestor's Prophet
+- [x] Animal Magnetism
 - [ ] Annex
 - [x] Anurid Murkdiver
 - [ ] Aphetto Alchemist

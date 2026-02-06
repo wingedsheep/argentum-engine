@@ -433,6 +433,9 @@ class StateProjector {
                 is Modification.ChangeController -> {
                     values.controllerId = mod.newControllerId
                 }
+                is Modification.GrantProtectionFromColor -> {
+                    values.keywords.add("PROTECTION_FROM_${mod.color}")
+                }
                 is Modification.NoOp -> {
                     // No-op: effect doesn't modify projected state (e.g., combat restrictions)
                 }
@@ -589,6 +592,9 @@ sealed interface Modification {
     data class RemoveType(val type: String) : Modification
     @Serializable
     data class ChangeController(val newControllerId: EntityId) : Modification
+
+    @Serializable
+    data class GrantProtectionFromColor(val color: String) : Modification
 
     /** No-op modification for effects that don't modify projected state (e.g., combat restrictions) */
     @Serializable

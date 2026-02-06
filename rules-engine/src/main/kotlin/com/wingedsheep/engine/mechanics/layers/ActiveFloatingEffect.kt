@@ -135,6 +135,13 @@ sealed interface SerializableModification {
      */
     @Serializable
     data class ReflectCombatDamage(val protectedPlayerId: String) : SerializableModification
+
+    /**
+     * Grant protection from a specific color.
+     * Used by Akroma's Blessing and similar effects.
+     */
+    @Serializable
+    data class GrantProtectionFromColor(val color: String) : SerializableModification
 }
 
 /**
@@ -159,4 +166,5 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.CantBeBlockedExceptByColor -> Modification.NoOp
     // ReflectCombatDamage doesn't map to a layer modification - it's checked by CombatManager directly
     is SerializableModification.ReflectCombatDamage -> Modification.NoOp
+    is SerializableModification.GrantProtectionFromColor -> Modification.GrantProtectionFromColor(color)
 }

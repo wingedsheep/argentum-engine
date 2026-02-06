@@ -1070,9 +1070,11 @@ class GameSession(
             val nonManaAbilities = cardDef.script.activatedAbilities.filter { !it.isManaAbility }
 
             for (ability in nonManaAbilities) {
-                // Check cost requirements and gather sacrifice targets if needed
+                // Check cost requirements and gather sacrifice/tap targets if needed
                 var sacrificeTargets: List<EntityId>? = null
                 var sacrificeCost: AbilityCost.Sacrifice? = null
+                var tapTargets: List<EntityId>? = null
+                var tapCost: AbilityCost.TapPermanents? = null
 
                 when (ability.cost) {
                     is AbilityCost.Tap -> {
@@ -1087,6 +1089,11 @@ class GameSession(
                         sacrificeCost = ability.cost as AbilityCost.Sacrifice
                         sacrificeTargets = findAbilitySacrificeTargets(state, playerId, sacrificeCost.filter)
                         if (sacrificeTargets.isEmpty()) continue
+                    }
+                    is AbilityCost.TapPermanents -> {
+                        tapCost = ability.cost as AbilityCost.TapPermanents
+                        tapTargets = findAbilityTapTargets(state, playerId, tapCost.filter)
+                        if (tapTargets.size < tapCost.count) continue
                     }
                     is AbilityCost.Composite -> {
                         val compositeCost = ability.cost as AbilityCost.Composite
@@ -1115,6 +1122,14 @@ class GameSession(
                                         break
                                     }
                                 }
+                                is AbilityCost.TapPermanents -> {
+                                    tapCost = subCost
+                                    tapTargets = findAbilityTapTargets(state, playerId, subCost.filter)
+                                    if (tapTargets.size < subCost.count) {
+                                        costCanBePaid = false
+                                        break
+                                    }
+                                }
                                 else -> {}
                             }
                         }
@@ -1133,8 +1148,15 @@ class GameSession(
                 }
                 if (!restrictionsMet) continue
 
-                // Build additional cost info for sacrifice costs
-                val costInfo = if (sacrificeTargets != null && sacrificeCost != null) {
+                // Build additional cost info for sacrifice or tap costs
+                val costInfo = if (tapTargets != null && tapCost != null) {
+                    AdditionalCostInfo(
+                        description = tapCost.description,
+                        costType = "TapPermanents",
+                        validTapTargets = tapTargets,
+                        tapCount = tapCost.count
+                    )
+                } else if (sacrificeTargets != null && sacrificeCost != null) {
                     AdditionalCostInfo(
                         description = sacrificeCost.description,
                         costType = "SacrificePermanent",
@@ -1662,6 +1684,38 @@ class GameSession(
             container.get<CardComponent>() ?: return@filter false
             val controllerId = container.get<ControllerComponent>()?.playerId
             if (controllerId != playerId) return@filter false
+
+            predicateEvaluator.matches(state, entityId, filter, predicateContext)
+        }
+    }
+
+    /**
+     * Find valid untapped permanents that can be tapped for a TapPermanents ability cost.
+     * Uses PredicateEvaluator for unified filter matching.
+     */
+    private fun findAbilityTapTargets(
+        state: GameState,
+        playerId: EntityId,
+        filter: GameObjectFilter
+    ): List<EntityId> {
+        val playerBattlefield = ZoneKey(playerId, Zone.BATTLEFIELD)
+        val predicateContext = PredicateContext(controllerId = playerId)
+
+        return state.getZone(playerBattlefield).filter { entityId ->
+            val container = state.getEntity(entityId) ?: return@filter false
+            val cardComponent = container.get<CardComponent>() ?: return@filter false
+            val controllerId = container.get<ControllerComponent>()?.playerId
+            if (controllerId != playerId) return@filter false
+
+            // Must be untapped
+            if (container.has<TappedComponent>()) return@filter false
+
+            // Creatures with summoning sickness can't be tapped for costs (unless they have haste)
+            if (cardComponent.typeLine.isCreature) {
+                val hasSummoningSickness = container.has<SummoningSicknessComponent>()
+                val hasHaste = cardComponent.baseKeywords.contains(Keyword.HASTE)
+                if (hasSummoningSickness && !hasHaste) return@filter false
+            }
 
             predicateEvaluator.matches(state, entityId, filter, predicateContext)
         }

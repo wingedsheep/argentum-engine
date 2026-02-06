@@ -742,7 +742,11 @@ data class AdditionalCostInfo(
     /** Valid targets for sacrifice costs */
     val validSacrificeTargets: List<EntityId> = emptyList(),
     /** Number of permanents to sacrifice */
-    val sacrificeCount: Int = 1
+    val sacrificeCount: Int = 1,
+    /** Valid targets for tap costs */
+    val validTapTargets: List<EntityId> = emptyList(),
+    /** Number of permanents to tap */
+    val tapCount: Int = 0
 )
 
 /**

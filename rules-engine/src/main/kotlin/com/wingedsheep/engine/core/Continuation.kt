@@ -2,8 +2,10 @@ package com.wingedsheep.engine.core
 
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.Effect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.GroupFilter
 import com.wingedsheep.sdk.scripting.SearchDestination
 import kotlinx.serialization.Serializable
 
@@ -473,4 +475,51 @@ data class LookAtTopCardsContinuation(
     val allCards: List<EntityId>,
     val keepCount: Int,
     val restToGraveyard: Boolean
+) : ContinuationFrame
+
+/**
+ * Resume after an opponent chooses a card from revealed top cards.
+ *
+ * Used for effects like Animal Magnetism: "Reveal the top five cards of your library.
+ * An opponent chooses a creature card from among them. Put that card onto the battlefield
+ * and the rest into your graveyard."
+ *
+ * @property controllerId The player who cast the spell (owns the library and battlefield)
+ * @property opponentId The opponent making the choice
+ * @property sourceId The spell/ability that caused this effect
+ * @property sourceName Name of the source for event messages
+ * @property allCards All the revealed cards
+ * @property creatureCards The subset of cards matching the filter (valid choices)
+ */
+@Serializable
+data class RevealAndOpponentChoosesContinuation(
+    override val decisionId: String,
+    val controllerId: EntityId,
+    val opponentId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val allCards: List<EntityId>,
+    val creatureCards: List<EntityId>
+) : ContinuationFrame
+
+/**
+ * Resume after player chooses a color for protection granting effects.
+ *
+ * Used for effects like Akroma's Blessing: "Choose a color. Creatures you control
+ * gain protection from the chosen color until end of turn."
+ *
+ * @property controllerId The player who controls the effect
+ * @property sourceId The spell/ability that created this effect
+ * @property sourceName Name of the source for event messages
+ * @property filter Which creatures are affected
+ * @property duration How long the effect lasts
+ */
+@Serializable
+data class ChooseColorProtectionContinuation(
+    override val decisionId: String,
+    val controllerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val filter: GroupFilter,
+    val duration: Duration
 ) : ContinuationFrame

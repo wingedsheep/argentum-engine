@@ -222,6 +222,19 @@ object Effects {
         MillEffect(count, target)
 
     // =========================================================================
+    // Protection Effects
+    // =========================================================================
+
+    /**
+     * Choose a color and grant protection from that color to a group of creatures.
+     * "Choose a color. Creatures you control gain protection from the chosen color until end of turn."
+     */
+    fun ChooseColorAndGrantProtection(
+        filter: GroupFilter = GroupFilter(GameObjectFilter.Creature.youControl()),
+        duration: Duration = Duration.EndOfTurn
+    ): Effect = ChooseColorAndGrantProtectionToGroupEffect(filter, duration)
+
+    // =========================================================================
     // Composite Effects
     // =========================================================================
 
