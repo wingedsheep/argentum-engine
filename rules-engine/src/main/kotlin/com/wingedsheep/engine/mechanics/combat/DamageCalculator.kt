@@ -131,12 +131,20 @@ class DamageCalculator {
         val assignments = mutableMapOf<EntityId, Int>()
         var remainingPower = attackerPower
 
-        // Assign lethal damage to each blocker in order
-        for (blockerId in orderedBlockers) {
+        // Assign lethal damage to each blocker in order.
+        // Per CR 510.1d, without trample ALL damage must be assigned to blockers.
+        // The last blocker receives all remaining damage (not just lethal).
+        for ((index, blockerId) in orderedBlockers.withIndex()) {
             if (remainingPower <= 0) break
 
+            val isLastBlocker = index == orderedBlockers.size - 1
             val lethalInfo = calculateLethalDamage(state, blockerId, attackerId)
-            val damageToAssign = minOf(remainingPower, lethalInfo.lethalAmount)
+            val damageToAssign = if (isLastBlocker && !hasTrample) {
+                // Last blocker without trample gets all remaining damage
+                remainingPower
+            } else {
+                minOf(remainingPower, lethalInfo.lethalAmount)
+            }
 
             assignments[blockerId] = damageToAssign
             remainingPower -= damageToAssign

@@ -101,10 +101,10 @@ class BroodhatchNantukoScenarioTest : ScenarioTestBase() {
         }
 
         context("Broodhatch Nantuko combat damage trigger") {
-            test("creates tokens when dealt lethal combat damage") {
+            test("creates 2 tokens when blocking a 2/2") {
                 // Broodhatch Nantuko (1/1) blocks Glory Seeker (2/2).
-                // Nantuko takes lethal combat damage, dies, but trigger still fires
-                // and creates Insect tokens.
+                // Per CR 510.1d, all 2 combat damage is assigned to the blocker.
+                // Nantuko dies but trigger still fires, creating 2 Insect tokens.
                 val game = scenario()
                     .withPlayers("Defender", "Attacker")
                     .withCardOnBattlefield(1, "Broodhatch Nantuko")
@@ -139,9 +139,47 @@ class BroodhatchNantukoScenarioTest : ScenarioTestBase() {
                     game.findPermanent("Broodhatch Nantuko") shouldBe null
                 }
 
-                // Should have created Insect tokens from combat damage trigger
-                withClue("Should have Insect tokens from combat damage trigger") {
-                    game.countTokens(1, "Insect Token") shouldBe 1
+                // Should have created 2 Insect tokens (Glory Seeker deals 2 damage)
+                withClue("Should have 2 Insect tokens from combat damage trigger") {
+                    game.countTokens(1, "Insect Token") shouldBe 2
+                }
+            }
+
+            test("creates 3 tokens when blocking a 3/3") {
+                // Broodhatch Nantuko (1/1) blocks Hill Giant (3/3).
+                // All 3 combat damage is assigned to the blocker per CR 510.1d.
+                // Nantuko dies but trigger still fires, creating 3 Insect tokens.
+                val game = scenario()
+                    .withPlayers("Defender", "Attacker")
+                    .withCardOnBattlefield(1, "Broodhatch Nantuko")
+                    .withCardOnBattlefield(2, "Hill Giant")
+                    .withActivePlayer(2)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                withClue("Should have no Insect tokens initially") {
+                    game.countTokens(1, "Insect Token") shouldBe 0
+                }
+
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                game.declareAttackers(mapOf("Hill Giant" to 1))
+
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+                game.declareBlockers(mapOf("Broodhatch Nantuko" to listOf("Hill Giant")))
+
+                var iterations = 0
+                while (game.state.step != Step.END_COMBAT && iterations < 50) {
+                    val p = game.state.priorityPlayerId ?: break
+                    game.execute(PassPriority(p))
+                    iterations++
+                }
+
+                withClue("Broodhatch Nantuko should be dead") {
+                    game.findPermanent("Broodhatch Nantuko") shouldBe null
+                }
+
+                withClue("Should have 3 Insect tokens from combat damage trigger") {
+                    game.countTokens(1, "Insect Token") shouldBe 3
                 }
             }
         }
