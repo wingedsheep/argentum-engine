@@ -18,11 +18,13 @@ export interface ConnectionSliceState {
   connectionStatus: ConnectionStatus
   playerId: EntityId | null
   sessionId: string | null
+  pendingTournamentId: string | null
 }
 
 export interface ConnectionSliceActions {
   connect: (playerName: string) => void
   disconnect: () => void
+  setPendingTournamentId: (lobbyId: string | null) => void
 }
 
 export type ConnectionSlice = ConnectionSliceState & ConnectionSliceActions
@@ -32,6 +34,7 @@ export const createConnectionSlice: SliceCreator<ConnectionSlice> = (set, get) =
   connectionStatus: 'disconnected' as ConnectionStatus,
   playerId: null,
   sessionId: null,
+  pendingTournamentId: null,
 
   // Actions
   connect: (playerName) => {
@@ -92,6 +95,7 @@ export const createConnectionSlice: SliceCreator<ConnectionSlice> = (set, get) =
       connectionStatus: 'disconnected',
       playerId: null,
       sessionId: null,
+      pendingTournamentId: null,
       opponentName: null,
       gameState: null,
       legalActions: [],
@@ -103,5 +107,9 @@ export const createConnectionSlice: SliceCreator<ConnectionSlice> = (set, get) =
       lobbyState: null,
       tournamentState: null,
     })
+  },
+
+  setPendingTournamentId: (lobbyId) => {
+    set({ pendingTournamentId: lobbyId })
   },
 })

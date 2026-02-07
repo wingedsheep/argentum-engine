@@ -581,6 +581,14 @@ function TournamentOverlay({
   const leaveTournament = useGameStore((state) => state.leaveTournament)
   const unsubmitDeck = useGameStore((state) => state.unsubmitDeck)
   const [hoveredStanding, setHoveredStanding] = useState<HoveredStanding | null>(null)
+  const [linkCopied, setLinkCopied] = useState(false)
+
+  const shareLink = `${window.location.origin}/tournament/${tournamentState.lobbyId}`
+  const copyShareLink = () => {
+    navigator.clipboard.writeText(shareLink)
+    setLinkCopied(true)
+    setTimeout(() => setLinkCopied(false), 2000)
+  }
 
   // Check if we're waiting for players to ready up (before first game OR between rounds)
   const isWaitingForReady = (
@@ -616,6 +624,14 @@ function TournamentOverlay({
             : `Round ${tournamentState.currentRound} of ${tournamentState.totalRounds}`}
         </p>
       )}
+
+      {/* Share link button */}
+      <button
+        onClick={copyShareLink}
+        className={styles.shareLinkButton}
+      >
+        {linkCopied ? 'Link Copied!' : 'Share Tournament Link'}
+      </button>
 
       {/* Next opponent info or BYE status */}
       {isWaitingForReady && !tournamentState.nextRoundHasBye && (

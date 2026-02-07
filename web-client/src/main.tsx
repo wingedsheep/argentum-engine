@@ -1,8 +1,10 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import './styles/variables.css'
 import './styles/responsive.css'
 import App from './App'
+import { TournamentEntryPage } from './components/tournament/TournamentEntryPage'
 import { initAnalytics } from './utils/analytics'
 
 initAnalytics()
@@ -14,6 +16,11 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <App />
+    <BrowserRouter>
+      <Routes>
+        <Route path="/tournament/:lobbyId" element={<TournamentEntryPage />} />
+        <Route path="*" element={<App />} />
+      </Routes>
+    </BrowserRouter>
   </StrictMode>
 )

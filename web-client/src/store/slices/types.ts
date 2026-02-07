@@ -317,8 +317,10 @@ export type GameStore = {
   connectionStatus: ConnectionStatus
   playerId: EntityId | null
   sessionId: string | null
+  pendingTournamentId: string | null
   connect: (playerName: string) => void
   disconnect: () => void
+  setPendingTournamentId: (lobbyId: string | null) => void
 
   // Gameplay slice
   gameState: ClientGameState | null

@@ -56,7 +56,15 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
         connectionStatus: 'connected',
         playerId: entityId(msg.playerId),
       })
-      clearLobbyId()
+
+      // Auto-join tournament if we have a pending tournament ID (from /tournament/:lobbyId route)
+      const { pendingTournamentId } = get()
+      if (pendingTournamentId) {
+        set({ pendingTournamentId: null })
+        getWebSocket()?.send(createJoinLobbyMessage(pendingTournamentId))
+      } else {
+        clearLobbyId()
+      }
     },
 
     onReconnected: (msg) => {

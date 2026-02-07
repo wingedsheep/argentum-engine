@@ -108,6 +108,9 @@ class TournamentLobby(
     /** Players indexed by player ID */
     val players = ConcurrentHashMap<EntityId, LobbyPlayerState>()
 
+    /** Tournament-level spectators (non-participants watching standings/matches) */
+    val spectators = ConcurrentHashMap<EntityId, PlayerIdentity>()
+
     /** The host player ID (first player to create the lobby) */
     @Volatile
     var hostPlayerId: EntityId? = null
@@ -703,5 +706,34 @@ class TournamentLobby(
     fun associatePlayer(identity: PlayerIdentity, playerState: LobbyPlayerState) {
         players[identity.playerId] = playerState
         identity.currentLobbyId = lobbyId
+    }
+
+    // =========================================================================
+    // Spectator Management
+    // =========================================================================
+
+    /**
+     * Add a spectator to the tournament.
+     */
+    fun addSpectator(identity: PlayerIdentity) {
+        spectators[identity.playerId] = identity
+        identity.currentLobbyId = lobbyId
+    }
+
+    /**
+     * Remove a spectator from the tournament.
+     */
+    fun removeSpectator(playerId: EntityId) {
+        val identity = spectators.remove(playerId)
+        if (identity != null) {
+            identity.currentLobbyId = null
+        }
+    }
+
+    /**
+     * Check if a player is a spectator (not a participant).
+     */
+    fun isSpectator(playerId: EntityId): Boolean {
+        return spectators.containsKey(playerId)
     }
 }

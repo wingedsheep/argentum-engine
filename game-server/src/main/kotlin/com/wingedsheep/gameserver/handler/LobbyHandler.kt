@@ -329,13 +329,14 @@ class LobbyHandler(
         }
 
         // Normal join logic for new players
-        if (lobby.isFull) {
-            sender.sendError(session, ErrorCode.GAME_FULL, "Lobby is full")
+        if (lobby.state != LobbyState.WAITING_FOR_PLAYERS) {
+            // Tournament already started — join as spectator
+            handleSpectatorJoin(session, identity, lobby)
             return
         }
 
-        if (lobby.state != LobbyState.WAITING_FOR_PLAYERS) {
-            sender.sendError(session, ErrorCode.INVALID_ACTION, "Lobby not accepting players")
+        if (lobby.isFull) {
+            sender.sendError(session, ErrorCode.GAME_FULL, "Lobby is full")
             return
         }
 
@@ -463,6 +464,61 @@ class LobbyHandler(
                     sender.send(session, ServerMessage.TournamentComplete(
                         lobbyId = lobby.lobbyId,
                         finalStandings = tournament.getStandingsInfo(connectedIds)
+                    ))
+                }
+            }
+        }
+    }
+
+    /**
+     * Handle a non-participant joining an active/complete tournament as a spectator.
+     */
+    private fun handleSpectatorJoin(
+        session: WebSocketSession,
+        identity: PlayerIdentity,
+        lobby: TournamentLobby
+    ) {
+        // Leave any other lobby first
+        leaveCurrentLobbyIfPresent(identity)
+
+        // Add as tournament-level spectator
+        lobby.addSpectator(identity)
+
+        logger.info("Player ${identity.playerName} joined tournament ${lobby.lobbyId} as spectator")
+
+        // Send lobby update so client shows lobby/tournament UI
+        sender.send(session, lobby.buildLobbyUpdate(identity.playerId))
+
+        // Send tournament state based on lobby phase
+        val tournament = lobbyRepository.findTournamentById(lobby.lobbyId)
+        if (tournament != null) {
+            val connectedIds = lobby.players.values
+                .filter { it.identity.isConnected }
+                .map { it.identity.playerId }
+                .toSet()
+
+            when (lobby.state) {
+                LobbyState.TOURNAMENT_ACTIVE -> {
+                    sender.send(session, ServerMessage.TournamentStarted(
+                        lobbyId = lobby.lobbyId,
+                        totalRounds = tournament.totalRounds,
+                        standings = tournament.getStandingsInfo(connectedIds)
+                    ))
+                    // Send active matches so they can spectate
+                    sendActiveMatchesToPlayer(identity, session)
+                }
+                LobbyState.TOURNAMENT_COMPLETE -> {
+                    sender.send(session, ServerMessage.TournamentComplete(
+                        lobbyId = lobby.lobbyId,
+                        finalStandings = tournament.getStandingsInfo(connectedIds)
+                    ))
+                }
+                else -> {
+                    // DECK_BUILDING or DRAFTING — still show standings
+                    sender.send(session, ServerMessage.TournamentStarted(
+                        lobbyId = lobby.lobbyId,
+                        totalRounds = tournament.totalRounds,
+                        standings = tournament.getStandingsInfo(connectedIds)
                     ))
                 }
             }
@@ -747,6 +803,13 @@ class LobbyHandler(
 
         val lobbyId = identity.currentLobbyId ?: return
         val lobby = lobbyRepository.findLobbyById(lobbyId) ?: return
+
+        // If the player is a spectator, just remove from spectators
+        if (lobby.isSpectator(identity.playerId)) {
+            lobby.removeSpectator(identity.playerId)
+            logger.info("Spectator ${identity.playerName} left lobby $lobbyId")
+            return
+        }
 
         // Use forceRemovePlayer for explicit leave - player cannot rejoin
         lobby.forceRemovePlayer(identity.playerId)
@@ -1260,6 +1323,21 @@ class LobbyHandler(
                 }
             }
 
+            // Also send round complete to tournament spectators
+            for ((_, spectatorIdentity) in lobby.spectators) {
+                val ws = spectatorIdentity.webSocketSession ?: continue
+                if (!ws.isOpen) continue
+
+                val roundComplete = ServerMessage.RoundComplete(
+                    lobbyId = lobbyId,
+                    round = round.roundNumber,
+                    results = tournament.getCurrentRoundResults(),
+                    standings = tournament.getStandingsInfo(connectedIds),
+                    isTournamentComplete = tournament.isComplete
+                )
+                sender.send(ws, roundComplete)
+            }
+
             // If tournament is complete, don't wait for ready - just finish
             if (tournament.isComplete) {
                 completeTournament(lobbyId)
@@ -1296,6 +1374,12 @@ class LobbyHandler(
         val tournament = lobbyRepository.findTournamentById(lobbyId)
         if (tournament == null || tournament.isComplete) {
             sender.sendError(session, ErrorCode.INVALID_ACTION, "Tournament not active")
+            return
+        }
+
+        // Spectators can't ready up
+        if (lobby.isSpectator(identity.playerId)) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "Spectators cannot ready up")
             return
         }
 
@@ -1502,6 +1586,14 @@ class LobbyHandler(
                 sender.send(ws, message)
             }
         }
+
+        // Also notify tournament spectators
+        lobby.spectators.forEach { (_, spectatorIdentity) ->
+            val ws = spectatorIdentity.webSocketSession
+            if (ws != null && ws.isOpen) {
+                sender.send(ws, message)
+            }
+        }
     }
 
     // =========================================================================
@@ -1637,6 +1729,14 @@ class LobbyHandler(
             // Skip players who are spectating (they'll get updates through spectating)
             if (identity.currentSpectatingGameId != null) continue
 
+            sender.send(ws, message)
+        }
+
+        // Also send to tournament-level spectators
+        for ((_, spectatorIdentity) in lobby.spectators) {
+            val ws = spectatorIdentity.webSocketSession ?: continue
+            if (!ws.isOpen) continue
+            if (spectatorIdentity.currentSpectatingGameId != null) continue
             sender.send(ws, message)
         }
     }
