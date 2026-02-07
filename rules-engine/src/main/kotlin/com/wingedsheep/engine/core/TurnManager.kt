@@ -128,8 +128,13 @@ class TurnManager(
             }
         }
 
+        // Filter out permanents with CANT_UNTAP keyword (e.g., Goblin Sharpshooter)
+        val permanentsAfterCantUntap = permanentsToUntap.filter { entityId ->
+            !projected.hasKeyword(entityId, Keyword.DOESNT_UNTAP)
+        }
+
         // Check if any permanents have MAY_NOT_UNTAP keyword (e.g., Everglove Courier)
-        val mayNotUntapPermanents = permanentsToUntap.filter { entityId ->
+        val mayNotUntapPermanents = permanentsAfterCantUntap.filter { entityId ->
             projected.hasKeyword(entityId, Keyword.MAY_NOT_UNTAP)
         }
 
@@ -152,7 +157,7 @@ class TurnManager(
             val continuation = UntapChoiceContinuation(
                 decisionId = decisionResult.pendingDecision!!.id,
                 playerId = activePlayer,
-                allPermanentsToUntap = permanentsToUntap
+                allPermanentsToUntap = permanentsAfterCantUntap
             )
 
             val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
@@ -165,7 +170,7 @@ class TurnManager(
         }
 
         // No MAY_NOT_UNTAP permanents - untap everything normally
-        for (entityId in permanentsToUntap) {
+        for (entityId in permanentsAfterCantUntap) {
             val cardName = newState.getEntity(entityId)?.get<CardComponent>()?.name ?: "Permanent"
             newState = newState.updateEntity(entityId) { it.without<TappedComponent>() }
             events.add(UntappedEvent(entityId, cardName))

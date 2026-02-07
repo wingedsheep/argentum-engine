@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 122 / 335
+**Implemented:** 124 / 335
 
 ---
 
@@ -142,9 +142,9 @@
 - [x] Gluttonous Zombie
 - [x] Goblin Burrows
 - [ ] Goblin Machinist
-- [ ] Goblin Piledriver
+- [x] Goblin Piledriver
 - [ ] Goblin Pyromancer
-- [ ] Goblin Sharpshooter
+- [x] Goblin Sharpshooter
 - [x] Goblin Sky Raider
 - [x] Goblin Sledder
 - [x] Goblin Taskmaster

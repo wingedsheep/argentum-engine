@@ -399,7 +399,7 @@ Always use these facades for card definitions. They provide type-safe factory me
 `CONVOKE`, `DELVE`, `AFFINITY`
 
 ### Restrictions
-`CANT_UNTAP`
+`DOESNT_UNTAP`
 
 ---
 

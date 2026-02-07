@@ -41,6 +41,6 @@ val GoblinBurrows = card("Goblin Burrows") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "142"
         artist = "Carl Critchlow"
-        imageUri = "https://cards.scryfall.io/large/front/2/4/24040a5c-1c10-4f25-8377-3e45298bed55.jpg?1562902131"
+        imageUri = "https://cards.scryfall.io/large/front/a/5/a5064cd2-8762-4e08-8c3c-be6f31e9ab61.jpg?1562933960"
     }
 }

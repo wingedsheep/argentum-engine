@@ -53,7 +53,7 @@ enum class Keyword(val displayName: String) {
     AFFINITY("Affinity"),
 
     // ── Restrictions ─────────────────────────────────────────
-    CANT_UNTAP("Can't untap"),
+    DOESNT_UNTAP("Doesn't untap during your untap step"),
     MAY_NOT_UNTAP("You may choose not to untap");
 
     companion object {
