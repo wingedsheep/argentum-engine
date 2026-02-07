@@ -260,8 +260,17 @@ class AutoPassManager {
             }
 
             Step.DECLARE_BLOCKERS -> {
-                logger.debug("AUTO-PASS: My declare blockers step (opponent declared, moving to damage)")
-                true
+                val hasResponses = meaningfulActions.any { action ->
+                    (action.actionType == "CastSpell" || action.actionType == "ActivateAbility" || action.actionType == "CycleCard") &&
+                    (!action.requiresTargets || !action.validTargets.isNullOrEmpty())
+                }
+                if (hasResponses) {
+                    logger.debug("STOP: My declare blockers step (have instant-speed responses)")
+                    false
+                } else {
+                    logger.debug("AUTO-PASS: My declare blockers step (no responses, moving to damage)")
+                    true
+                }
             }
 
             Step.FIRST_STRIKE_COMBAT_DAMAGE, Step.COMBAT_DAMAGE, Step.END_COMBAT -> {
@@ -339,13 +348,16 @@ class AutoPassManager {
                 }
             }
 
-            // Declare Blockers - STOP only if we have creatures that can block
+            // Declare Blockers - STOP if we have creatures that can block or instant-speed responses
             Step.DECLARE_BLOCKERS -> {
                 if (hasBlockers) {
                     logger.debug("STOP: Opponent's declare blockers (have blockers)")
                     false
+                } else if (hasInstantSpeedResponses) {
+                    logger.debug("STOP: Opponent's declare blockers (have instant-speed responses)")
+                    false
                 } else {
-                    logger.debug("AUTO-PASS: Opponent's declare blockers (no blockers)")
+                    logger.debug("AUTO-PASS: Opponent's declare blockers (no blockers, no responses)")
                     true
                 }
             }

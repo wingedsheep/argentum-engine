@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.PassPriority
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.PlayLand
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.TurnFaceUp
 import com.wingedsheep.engine.core.DeclareAttackers
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.layers.StateProjector
@@ -149,6 +150,13 @@ class AutoPassManagerTest : FunSpec({
         actionType = "CastSpell",
         description = "Cast Giant Growth",
         action = CastSpell(playerId, EntityId.generate()),
+        requiresTargets = false
+    )
+
+    fun turnFaceUpAction(playerId: EntityId) = LegalActionInfo(
+        actionType = "ActivateAbility",
+        description = "Turn face-up ({4}{G}{G})",
+        action = TurnFaceUp(playerId, EntityId.generate()),
         requiresTargets = false
     )
 
@@ -624,6 +632,40 @@ class AutoPassManagerTest : FunSpec({
             )
 
             autoPassManager.shouldAutoPass(state, player1, actions) shouldBe false
+        }
+
+        test("STOP during my declare blockers when I have morph to turn face up") {
+            // Attacker with a morph creature should be able to turn it face up before damage
+            val state = createMockState(
+                priorityPlayerId = player1,
+                activePlayerId = player1,
+                step = Step.DECLARE_BLOCKERS,
+                blockersHaveBeenDeclared = true,
+                defendingPlayerId = player2
+            )
+            val actions = listOf(
+                passPriorityAction(player1),
+                turnFaceUpAction(player1)
+            )
+
+            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe false
+        }
+
+        test("STOP during opponent's declare blockers when I have morph to turn face up") {
+            // Defender with a morph creature should be able to turn it face up before damage
+            val state = createMockState(
+                priorityPlayerId = player2,
+                activePlayerId = player1,
+                step = Step.DECLARE_BLOCKERS,
+                blockersHaveBeenDeclared = true,
+                defendingPlayerId = player2
+            )
+            val actions = listOf(
+                passPriorityAction(player2),
+                turnFaceUpAction(player2)
+            )
+
+            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe false
         }
     }
 
