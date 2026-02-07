@@ -58,7 +58,7 @@ class PassPriorityHandler(
                 var currentState = advanceResult.newState
                 val triggers = triggerDetector.detectTriggers(currentState, advanceResult.events).toMutableList()
 
-                // Also detect delayed triggers for the new step
+                // Also detect delayed triggers and phase/step triggers for the new step
                 val stepChangedEvent = advanceResult.events.filterIsInstance<StepChangedEvent>().lastOrNull()
                 if (stepChangedEvent != null) {
                     val (delayedTriggers, consumedIds) = triggerDetector.detectDelayedTriggers(currentState, stepChangedEvent.newStep)
@@ -66,6 +66,15 @@ class PassPriorityHandler(
                         currentState = currentState.removeDelayedTriggers(consumedIds)
                     }
                     triggers.addAll(delayedTriggers)
+
+                    // Detect phase/step triggers (e.g., "At the beginning of your upkeep")
+                    val activePlayer = currentState.activePlayerId
+                    if (activePlayer != null) {
+                        val phaseStepTriggers = triggerDetector.detectPhaseStepTriggers(
+                            currentState, stepChangedEvent.newStep, activePlayer
+                        )
+                        triggers.addAll(phaseStepTriggers)
+                    }
                 }
 
                 if (triggers.isNotEmpty()) {

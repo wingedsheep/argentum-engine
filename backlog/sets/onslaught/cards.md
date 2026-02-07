@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 124 / 335
+**Implemented:** 127 / 335
 
 ---
 
@@ -104,14 +104,14 @@
 - [ ] Dream Chisel
 - [ ] Dwarven Blastminer
 - [ ] Ebonblade Reaper
-- [ ] Elven Riders
+- [x] Elven Riders
 - [ ] Elvish Guidance
 - [ ] Elvish Pathcutter
 - [x] Elvish Pioneer
 - [x] Elvish Scrapper
 - [x] Elvish Vanguard
 - [x] Elvish Warrior
-- [ ] Embermage Goblin
+- [x] Embermage Goblin
 - [ ] Enchantress's Presence
 - [ ] Endemic Plague
 - [ ] Entrails Feaster
@@ -299,7 +299,7 @@
 - [x] Taunting Elf
 - [ ] Tempting Wurm
 - [ ] Tephraderm
-- [ ] Thoughtbound Primoc
+- [x] Thoughtbound Primoc
 - [ ] Thrashing Mudspawn
 - [ ] Threaten
 - [ ] Thunder of Hooves

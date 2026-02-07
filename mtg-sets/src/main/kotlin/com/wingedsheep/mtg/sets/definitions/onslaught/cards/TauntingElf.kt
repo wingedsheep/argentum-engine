@@ -26,9 +26,9 @@ val TauntingElf = card("Taunting Elf") {
 
     metadata {
         rarity = Rarity.COMMON
-        collectorNumber = "286"
-        artist = "Christopher Rush"
-        flavorText = "\"The bravest hero is the one who can make the enemy forget about everyone else.\"\n—Elvish warrior"
-        imageUri = "https://cards.scryfall.io/normal/front/6/b/6b24af94-0a93-40ed-8e34-8e62ddb8b650.jpg?1562920244"
+        collectorNumber = "290"
+        artist = "Rebecca Guay"
+        flavorText = "The safety of the village depends on the beast thinking with its stomach."
+        imageUri = "https://cards.scryfall.io/large/front/6/b/6b24af94-9632-47da-9bf3-e81bb743cd43.jpg?1562920244"
     }
 }

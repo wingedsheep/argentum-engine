@@ -19,6 +19,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CanOnlyBlockCreaturesWithKeyword
 import com.wingedsheep.sdk.scripting.CantBeBlockedByPower
+import com.wingedsheep.sdk.scripting.CantBeBlockedExceptByKeyword
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.StaticTarget
 import java.util.UUID
@@ -536,6 +537,14 @@ class CombatManager(
             return colorRestrictionValidation
         }
 
+        // CantBeBlockedExceptByKeyword: Can only be blocked by creatures with a specific keyword
+        val keywordEvasionValidation = validateCantBeBlockedExceptByKeyword(
+            attackerId, attackerCard, blockerId, blockerCard, projected
+        )
+        if (keywordEvasionValidation != null) {
+            return keywordEvasionValidation
+        }
+
         // Skulk: Cannot be blocked by creatures with greater power
         // TODO: Implement skulk
 
@@ -724,6 +733,56 @@ class CombatManager(
         // Check if blocker has the required color
         val requiredColor = com.wingedsheep.sdk.core.Color.valueOf(colorRestriction.color)
         return blockerCard.colors.contains(requiredColor)
+    }
+
+    /**
+     * Check if attacker has CantBeBlockedExceptByKeyword restriction and blocker lacks the keyword.
+     * Returns an error message if the blocker cannot block due to keyword evasion, null otherwise.
+     */
+    private fun validateCantBeBlockedExceptByKeyword(
+        attackerId: EntityId,
+        attackerCard: CardComponent,
+        blockerId: EntityId,
+        blockerCard: CardComponent,
+        projected: ProjectedState
+    ): String? {
+        val cardDef = cardRegistry?.getCard(attackerCard.cardDefinitionId) ?: return null
+        val keywordRestriction = cardDef.staticAbilities.filterIsInstance<CantBeBlockedExceptByKeyword>().firstOrNull()
+            ?: return null
+
+        val requiredKeyword = keywordRestriction.requiredKeyword
+
+        // Check if blocker has the required keyword
+        if (projected.hasKeyword(blockerId, requiredKeyword)) return null
+
+        // Per MTG rules, reach allows blocking creatures with "can't be blocked except by flying"
+        if (requiredKeyword == Keyword.FLYING && projected.hasKeyword(blockerId, Keyword.REACH)) return null
+
+        return "${blockerCard.name} cannot block ${attackerCard.name} (can only be blocked by creatures with ${requiredKeyword.displayName.lowercase()})"
+    }
+
+    /**
+     * Check if blocker can block despite CantBeBlockedExceptByKeyword evasion.
+     * Returns true if the blocker can block.
+     */
+    private fun canBlockDespiteKeywordEvasion(
+        attackerId: EntityId,
+        attackerCard: CardComponent,
+        blockerId: EntityId,
+        projected: ProjectedState
+    ): Boolean {
+        val cardDef = cardRegistry?.getCard(attackerCard.cardDefinitionId) ?: return true
+        val keywordRestriction = cardDef.staticAbilities.filterIsInstance<CantBeBlockedExceptByKeyword>().firstOrNull()
+            ?: return true
+
+        val requiredKeyword = keywordRestriction.requiredKeyword
+
+        if (projected.hasKeyword(blockerId, requiredKeyword)) return true
+
+        // Per MTG rules, reach allows blocking creatures with "can't be blocked except by flying"
+        if (requiredKeyword == Keyword.FLYING && projected.hasKeyword(blockerId, Keyword.REACH)) return true
+
+        return false
     }
 
     /**
@@ -1412,6 +1471,11 @@ class CombatManager(
 
         // CantBeBlockedExceptByColor: Can only be blocked by creatures of the specified color
         if (!canBlockDespiteColorRestriction(state, attackerId, blockerId)) {
+            return false
+        }
+
+        // CantBeBlockedExceptByKeyword: Can only be blocked by creatures with a specific keyword
+        if (!canBlockDespiteKeywordEvasion(attackerId, attackerCard, blockerId, projected)) {
             return false
         }
 
