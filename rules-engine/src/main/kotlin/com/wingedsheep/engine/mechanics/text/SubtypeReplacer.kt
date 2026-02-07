@@ -86,10 +86,11 @@ object SubtypeReplacer {
                 else CompositeEffect(newEffects)
             }
             is ConditionalEffect -> {
+                val newCondition = replaceCondition(effect.condition, component)
                 val newEffect = replaceEffect(effect.effect, component)
                 val newElseEffect = effect.elseEffect?.let { replaceEffect(it, component) }
-                if (newEffect === effect.effect && newElseEffect === effect.elseEffect) effect
-                else effect.copy(effect = newEffect, elseEffect = newElseEffect)
+                if (newCondition === effect.condition && newEffect === effect.effect && newElseEffect === effect.elseEffect) effect
+                else effect.copy(condition = newCondition, effect = newEffect, elseEffect = newElseEffect)
             }
             is MayEffect -> {
                 val newEffect = replaceEffect(effect.effect, component)
@@ -103,6 +104,10 @@ object SubtypeReplacer {
             is GrantKeywordToGroupEffect -> {
                 val newFilter = replaceGroupFilter(effect.filter, component)
                 if (newFilter === effect.filter) effect else effect.copy(filter = newFilter)
+            }
+            is GainControlByMostOfSubtypeEffect -> {
+                val newSubtype = component.applyToSubtype(effect.subtype)
+                if (newSubtype == effect.subtype) effect else effect.copy(subtype = newSubtype)
             }
             // Effects that don't contain creature type references pass through unchanged
             else -> effect
@@ -221,6 +226,28 @@ object SubtypeReplacer {
                 if (replaced == filter.subtype) filter else AffectsFilter.WithSubtype(replaced)
             }
             else -> filter
+        }
+    }
+
+    /**
+     * Replace creature type references in a Condition.
+     */
+    fun replaceCondition(condition: Condition, component: TextReplacementComponent): Condition {
+        return when (condition) {
+            is APlayerControlsMostOfSubtype -> {
+                val newSubtype = component.applyToSubtype(condition.subtype)
+                if (newSubtype == condition.subtype) condition else APlayerControlsMostOfSubtype(newSubtype)
+            }
+            is ControlCreatureOfType -> {
+                val newSubtype = component.applyToSubtype(condition.subtype)
+                if (newSubtype == condition.subtype) condition else ControlCreatureOfType(newSubtype)
+            }
+            is GraveyardContainsSubtype -> {
+                val newSubtype = component.applyToSubtype(condition.subtype)
+                if (newSubtype == condition.subtype) condition else GraveyardContainsSubtype(newSubtype)
+            }
+            // All other conditions don't reference creature types
+            else -> condition
         }
     }
 }

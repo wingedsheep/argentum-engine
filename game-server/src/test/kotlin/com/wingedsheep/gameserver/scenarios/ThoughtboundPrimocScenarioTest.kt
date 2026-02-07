@@ -1,12 +1,16 @@
 package com.wingedsheep.gameserver.scenarios
 
+import com.wingedsheep.engine.core.ChooseOptionDecision
+import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.core.PassPriority
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.gameserver.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
  * Scenario tests for Thoughtbound Primoc.
@@ -23,6 +27,18 @@ import io.kotest.matchers.shouldBe
  * - Grizzly Bears (Creature — Bear) — non-Wizard creature
  */
 class ThoughtboundPrimocScenarioTest : ScenarioTestBase() {
+
+    private fun ScenarioTestBase.TestGame.chooseCreatureType(typeName: String) {
+        val decision = getPendingDecision()
+        decision.shouldNotBeNull()
+        decision.shouldBeInstanceOf<ChooseOptionDecision>()
+        val options = (decision as ChooseOptionDecision).options
+        val index = options.indexOf(typeName)
+        withClue("Creature type '$typeName' should be in options $options") {
+            (index >= 0) shouldBe true
+        }
+        submitDecision(OptionChosenResponse(decision.id, index))
+    }
 
     init {
         context("Thoughtbound Primoc upkeep trigger") {
@@ -148,6 +164,55 @@ class ThoughtboundPrimocScenarioTest : ScenarioTestBase() {
                 }
 
                 withClue("Should NOT have any ChangeController floating effects (controller already has most)") {
+                    game.state.floatingEffects.none {
+                        it.effect.modification is SerializableModification.ChangeController
+                    } shouldBe true
+                }
+            }
+        }
+
+        context("Artificial Evolution interaction") {
+
+            test("Artificial Evolution changes subtype check from Wizard to Cleric") {
+                // P1: Primoc + Headhunter (Cleric) + Artificial Evolution in hand + 1 Island
+                // P2: 2 Wizards (Crafty Pathmage + Embermage Goblin)
+                // After Artificial Evolution: Wizard → Cleric on Primoc
+                // Upkeep should check for Clerics instead of Wizards
+                // P1 has 1 Cleric (most), so no control transfer
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Thoughtbound Primoc")
+                    .withCardOnBattlefield(1, "Headhunter")              // P1: 1 Cleric
+                    .withCardOnBattlefield(2, "Crafty Pathmage")         // P2: 1st Wizard
+                    .withCardOnBattlefield(2, "Embermage Goblin")        // P2: 2nd Wizard
+                    .withCardInHand(1, "Artificial Evolution")
+                    .withLandsOnBattlefield(1, "Island", 1)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                // Cast Artificial Evolution on Primoc: Wizard → Cleric
+                val primoc = game.findPermanent("Thoughtbound Primoc")!!
+                game.castSpell(1, "Artificial Evolution", primoc)
+                game.resolveStack()
+                game.chooseCreatureType("Wizard")
+                game.chooseCreatureType("Cleric")
+
+                // Advance to next upkeep (P2's turn → P1's turn → upkeep)
+                game.passUntilPhase(Phase.BEGINNING, Step.UPKEEP)
+
+                // Pass through the upkeep to let the trigger resolve
+                var iterations = 0
+                while (iterations < 50) {
+                    val p = game.state.priorityPlayerId ?: break
+                    game.execute(PassPriority(p))
+                    iterations++
+                    if (game.state.phase != Phase.BEGINNING || game.state.step != Step.UPKEEP) break
+                }
+
+                // P1 has 1 Cleric (Headhunter), P2 has 0 Clerics
+                // P1 controls the most Clerics, and P1 already controls Primoc → no transfer
+                withClue("Should NOT have any ChangeController floating effects (P1 already has most Clerics)") {
                     game.state.floatingEffects.none {
                         it.effect.modification is SerializableModification.ChangeController
                     } shouldBe true
