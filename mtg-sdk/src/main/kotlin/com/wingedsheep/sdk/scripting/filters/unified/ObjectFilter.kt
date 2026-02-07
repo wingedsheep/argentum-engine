@@ -226,6 +226,11 @@ data class GameObjectFilter(
         statePredicates = statePredicates + StatePredicate.EnteredThisTurn
     )
 
+    /** Must be face-down */
+    fun faceDown() = copy(
+        statePredicates = statePredicates + StatePredicate.IsFaceDown
+    )
+
     // =============================================================================
     // Fluent Builder Methods - Controller Predicates
     // =============================================================================

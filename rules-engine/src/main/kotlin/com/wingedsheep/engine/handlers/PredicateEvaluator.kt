@@ -7,6 +7,7 @@ import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CardPredicate
@@ -431,6 +432,9 @@ class PredicateEvaluator {
                 // TODO: Implement damage tracking
                 false
             }
+
+            // Face-down state
+            StatePredicate.IsFaceDown -> container.has<FaceDownComponent>()
         }
     }
 

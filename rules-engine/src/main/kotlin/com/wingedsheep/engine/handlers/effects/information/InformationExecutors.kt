@@ -9,6 +9,7 @@ import com.wingedsheep.engine.handlers.effects.ExecutorModule
 class InformationExecutors : ExecutorModule {
     override fun executors(): List<EffectExecutor<*>> = listOf(
         LookAtTargetHandExecutor(),
+        LookAtFaceDownCreatureExecutor(),
         RevealHandEffectExecutor()
     )
 }

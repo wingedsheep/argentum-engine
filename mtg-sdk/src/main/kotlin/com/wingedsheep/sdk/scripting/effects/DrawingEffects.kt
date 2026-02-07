@@ -171,6 +171,18 @@ data class LookAtTargetHandEffect(
 }
 
 /**
+ * Look at target face-down creature.
+ * Used for Aven Soulgazer and similar morph-interaction effects.
+ * Marks the face-down creature as revealed to the controller of the ability.
+ */
+@Serializable
+data class LookAtFaceDownCreatureEffect(
+    val target: EffectTarget = EffectTarget.ContextTarget(0)
+) : Effect {
+    override val description: String = "Look at target face-down creature"
+}
+
+/**
  * Reveal a player's hand (publicly visible to all players).
  * This is an atomic effect that just reveals - use with CompositeEffect for
  * "reveal and do something based on what's revealed" patterns.

@@ -88,4 +88,14 @@ sealed interface StatePredicate {
     data object HasDealtCombatDamageToPlayer : StatePredicate {
         override val description: String = "has dealt combat damage to a player"
     }
+
+    // =============================================================================
+    // Face-Down State
+    // =============================================================================
+
+    /** Is face-down (morph, manifest) */
+    @Serializable
+    data object IsFaceDown : StatePredicate {
+        override val description: String = "face-down"
+    }
 }
