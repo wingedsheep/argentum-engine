@@ -39,8 +39,8 @@ val GhosthelmCourier = card("Ghosthelm Courier") {
 
     metadata {
         rarity = Rarity.UNCOMMON
-        collectorNumber = "83"
-        artist = "Randy Gallegos"
+        collectorNumber = "85"
+        artist = "Edward P. Beard, Jr."
         imageUri = "https://cards.scryfall.io/large/front/c/d/cd6cc30a-9ed4-4f36-95cb-6f0a2b8dce02.jpg?1562943472"
     }
 }
