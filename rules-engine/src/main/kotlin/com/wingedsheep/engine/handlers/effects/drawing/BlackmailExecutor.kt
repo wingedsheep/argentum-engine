@@ -8,6 +8,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolvePlayer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.RevealedToComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.BlackmailEffect
 import kotlin.reflect.KClass
@@ -99,10 +100,23 @@ class BlackmailExecutor(
             sourceName: String?,
             revealedCards: List<com.wingedsheep.sdk.model.EntityId>
         ): ExecutionResult {
+            // Mark revealed cards as visible to the controller so they appear in client state
+            var revealedState = state
+            for (cardId in revealedCards) {
+                revealedState = revealedState.updateEntity(cardId) { container ->
+                    val existing = container.get<RevealedToComponent>()
+                    if (existing != null) {
+                        container.with(existing.withPlayer(controllerId))
+                    } else {
+                        container.with(RevealedToComponent.to(controllerId))
+                    }
+                }
+            }
+
             val decisionHandler = DecisionHandler()
 
             val decisionResult = decisionHandler.createCardSelectionDecision(
-                state = state,
+                state = revealedState,
                 playerId = controllerId,
                 sourceId = sourceId,
                 sourceName = sourceName,
