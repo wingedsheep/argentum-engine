@@ -225,6 +225,10 @@ object SubtypeReplacer {
                 val replaced = component.applyToCreatureType(filter.subtype)
                 if (replaced == filter.subtype) filter else AffectsFilter.WithSubtype(replaced)
             }
+            is AffectsFilter.OtherCreaturesWithSubtype -> {
+                val replaced = component.applyToCreatureType(filter.subtype)
+                if (replaced == filter.subtype) filter else AffectsFilter.OtherCreaturesWithSubtype(replaced)
+            }
             else -> filter
         }
     }

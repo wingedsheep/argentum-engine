@@ -297,6 +297,107 @@ class ArtificialEvolutionScenarioTest : ScenarioTestBase() {
                     textReplacement.replacements.size shouldBe 1
                 }
             }
+
+            test("text-replacing a lord changes which creatures it affects") {
+                // Aven Brigadier: "Other Bird creatures get +1/+1"
+                // Storm Crow: 1/2 Bird (should normally get +1/+1 from Brigadier)
+                // Grizzly Bears: 2/2 Bear (should not normally get +1/+1)
+                // After Artificial Evolution on Brigadier changing Bird → Bear:
+                //   - Storm Crow should NO LONGER get the Bird bonus
+                //   - Grizzly Bears SHOULD now get the Bear bonus
+                val game = scenario()
+                    .withPlayers("Blue Mage", "Opponent")
+                    .withCardOnBattlefield(1, "Aven Brigadier")
+                    .withCardOnBattlefield(1, "Storm Crow")
+                    .withCardOnBattlefield(1, "Grizzly Bears")
+                    .withCardInHand(1, "Artificial Evolution")
+                    .withLandsOnBattlefield(1, "Island", 1)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                // Before Artificial Evolution: Storm Crow should be 2/3 (1/2 + Bird bonus)
+                var clientState = game.getClientState(1)
+                var crowCard = clientState.cards.values.find { it.name == "Storm Crow" }
+                crowCard.shouldNotBeNull()
+                withClue("Storm Crow should be 2/3 with Bird lord bonus") {
+                    crowCard.power shouldBe 2
+                    crowCard.toughness shouldBe 3
+                }
+
+                // Grizzly Bears should be 2/2 (no bonus)
+                var bearsCard = clientState.cards.values.find { it.name == "Grizzly Bears" }
+                bearsCard.shouldNotBeNull()
+                withClue("Grizzly Bears should be 2/2 without lord bonus") {
+                    bearsCard.power shouldBe 2
+                    bearsCard.toughness shouldBe 2
+                }
+
+                // Cast Artificial Evolution on Aven Brigadier: Bird → Bear
+                val brigadier = game.findPermanent("Aven Brigadier")!!
+                game.castSpell(1, "Artificial Evolution", brigadier)
+                game.resolveStack()
+                game.chooseCreatureType("Bird")
+                game.chooseCreatureType("Bear")
+
+                // After: Storm Crow should be 1/2 (lost Bird bonus, not a Soldier)
+                clientState = game.getClientState(1)
+                crowCard = clientState.cards.values.find { it.name == "Storm Crow" }
+                crowCard.shouldNotBeNull()
+                withClue("Storm Crow should be 1/2 after lord no longer gives Bird bonus") {
+                    crowCard.power shouldBe 1
+                    crowCard.toughness shouldBe 2
+                }
+
+                // Grizzly Bears should be 3/3 (now gets Bear bonus)
+                bearsCard = clientState.cards.values.find { it.name == "Grizzly Bears" }
+                bearsCard.shouldNotBeNull()
+                withClue("Grizzly Bears should be 3/3 with new Bear lord bonus") {
+                    bearsCard.power shouldBe 3
+                    bearsCard.toughness shouldBe 3
+                }
+            }
+
+            test("creature with text-changed subtype is seen by existing lord") {
+                // Aven Brigadier: "Other Bird creatures get +1/+1"
+                // Grizzly Bears: 2/2 Bear (not a Bird, no bonus)
+                // After Artificial Evolution on Grizzly Bears changing Bear → Bird:
+                //   - Grizzly Bears should get the Bird lord bonus from Brigadier
+                val game = scenario()
+                    .withPlayers("Blue Mage", "Opponent")
+                    .withCardOnBattlefield(1, "Aven Brigadier")
+                    .withCardOnBattlefield(1, "Grizzly Bears")
+                    .withCardInHand(1, "Artificial Evolution")
+                    .withLandsOnBattlefield(1, "Island", 1)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                // Before: Grizzly Bears should be 2/2 (no bonus)
+                var clientState = game.getClientState(1)
+                var bearsCard = clientState.cards.values.find { it.name == "Grizzly Bears" }
+                bearsCard.shouldNotBeNull()
+                withClue("Grizzly Bears should be 2/2 without lord bonus") {
+                    bearsCard.power shouldBe 2
+                    bearsCard.toughness shouldBe 2
+                }
+
+                // Cast Artificial Evolution on Grizzly Bears: Bear → Bird
+                val bears = game.findPermanent("Grizzly Bears")!!
+                game.castSpell(1, "Artificial Evolution", bears)
+                game.resolveStack()
+                game.chooseCreatureType("Bear")
+                game.chooseCreatureType("Bird")
+
+                // After: Grizzly Bears is now a Bird, should get +1/+1 from Aven Brigadier
+                clientState = game.getClientState(1)
+                bearsCard = clientState.cards.values.find { it.name == "Grizzly Bears" }
+                bearsCard.shouldNotBeNull()
+                withClue("Grizzly Bears should be 3/3 as a Bird with lord bonus") {
+                    bearsCard.power shouldBe 3
+                    bearsCard.toughness shouldBe 3
+                }
+            }
         }
     }
 }

@@ -149,8 +149,8 @@ class StateProjector(
             values.types.addAll(transformedSubtypes)
         }
 
-        // Collect all active continuous effects
-        val effects = collectContinuousEffects(state)
+        // Collect all active continuous effects (pass projected values so subtype filters use Layer 3 results)
+        val effects = collectContinuousEffects(state, projectedValues)
 
         // Sort effects by layer and dependency
         val sortedEffects = sortByLayerAndDependency(effects, state)
@@ -241,7 +241,10 @@ class StateProjector(
     /**
      * Collect continuous effects from all sources.
      */
-    private fun collectContinuousEffects(state: GameState): List<ContinuousEffect> {
+    private fun collectContinuousEffects(
+        state: GameState,
+        projectedValues: Map<EntityId, MutableProjectedValues>
+    ): List<ContinuousEffect> {
         val effects = mutableListOf<ContinuousEffect>()
 
         // 1. Collect effects from static abilities on permanents
@@ -251,7 +254,14 @@ class StateProjector(
             // Check for continuous effect components
             val continuousEffectComponent = container.get<ContinuousEffectSourceComponent>()
             if (continuousEffectComponent != null) {
+                // Apply text replacement to AffectsFilter if source has been text-changed (Gap 1)
+                val textReplacement = container.get<TextReplacementComponent>()
                 effects.addAll(continuousEffectComponent.effects.map { effect ->
+                    val effectiveFilter = if (textReplacement != null && effect.affectsFilter != null) {
+                        SubtypeReplacer.replaceAffectsFilter(effect.affectsFilter, textReplacement)
+                    } else {
+                        effect.affectsFilter
+                    }
                     ContinuousEffect(
                         sourceId = entityId,
                         layer = effect.layer,
@@ -259,7 +269,7 @@ class StateProjector(
                         timestamp = container.get<com.wingedsheep.engine.state.components.battlefield.TimestampComponent>()?.timestamp
                             ?: state.timestamp,
                         modification = effect.modification,
-                        affectedEntities = resolveAffectedEntities(state, entityId, effect.affectsFilter)
+                        affectedEntities = resolveAffectedEntities(state, entityId, effectiveFilter, projectedValues)
                     )
                 })
             }
@@ -304,7 +314,8 @@ class StateProjector(
     private fun resolveAffectedEntities(
         state: GameState,
         sourceId: EntityId,
-        filter: AffectsFilter?
+        filter: AffectsFilter?,
+        projectedValues: Map<EntityId, MutableProjectedValues> = emptyMap()
     ): Set<EntityId> {
         if (filter == null) return setOf(sourceId) // Affects self by default
 
@@ -339,14 +350,25 @@ class StateProjector(
             is AffectsFilter.WithSubtype -> {
                 state.getBattlefield().filter { entityId ->
                     val card = state.getEntity(entityId)?.get<CardComponent>() ?: return@filter false
-                    card.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(filter.subtype))
+                    val projected = projectedValues[entityId]
+                    if (projected != null) {
+                        projected.subtypes.any { it.equals(filter.subtype, ignoreCase = true) }
+                    } else {
+                        card.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(filter.subtype))
+                    }
                 }.toSet()
             }
             is AffectsFilter.OtherCreaturesWithSubtype -> {
                 state.getBattlefield().filter { entityId ->
                     if (entityId == sourceId) return@filter false // Exclude self
                     val card = state.getEntity(entityId)?.get<CardComponent>() ?: return@filter false
-                    card.typeLine.isCreature && card.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(filter.subtype))
+                    val projected = projectedValues[entityId]
+                    val hasSubtype = if (projected != null) {
+                        projected.subtypes.any { it.equals(filter.subtype, ignoreCase = true) }
+                    } else {
+                        card.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(filter.subtype))
+                    }
+                    card.typeLine.isCreature && hasSubtype
                 }.toSet()
             }
             is AffectsFilter.OtherTappedCreaturesYouControl -> {
