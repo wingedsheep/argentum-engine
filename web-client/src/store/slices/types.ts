@@ -156,6 +156,19 @@ export interface DamageDistributionState {
 }
 
 /**
+ * Distribute decision state for inline damage distribution on the board.
+ * Used when the server sends a DistributeDecision (e.g., Butcher Orgg combat damage).
+ */
+export interface DistributeState {
+  decisionId: string
+  prompt: string
+  totalAmount: number
+  targets: readonly EntityId[]
+  minPerTarget: number
+  distribution: Record<EntityId, number>
+}
+
+/**
  * Selected creature for Convoke with its payment choice.
  */
 export interface ConvokeCreatureSelection {
@@ -336,6 +349,8 @@ export type GameStore = {
   fullControl: boolean
   nextStopPoint: string | null
   opponentName: string | null
+  /** Seconds remaining on opponent's disconnect countdown (null = connected) */
+  opponentDisconnectCountdown: number | null
   createGame: (deckList: Record<string, number>) => void
   joinGame: (sessionId: string, deckList: Record<string, number>) => void
   submitAction: (action: GameAction) => void
@@ -368,9 +383,13 @@ export type GameStore = {
   leaveLobby: () => void
   stopLobby: () => void
   updateLobbySettings: (settings: { setCodes?: string[]; format?: 'SEALED' | 'DRAFT'; boosterCount?: number; maxPlayers?: number; gamesPerMatch?: number; pickTimeSeconds?: number; picksPerRound?: number }) => void
+  /** Disconnected tournament players: playerId -> info */
+  disconnectedPlayers: Record<string, { playerName: string; secondsRemaining: number; disconnectedAt: number }>
   readyForNextRound: () => void
   spectateGame: (gameSessionId: string) => void
   stopSpectating: () => void
+  addDisconnectTime: (playerId: string) => void
+  kickPlayer: (playerId: string) => void
   leaveTournament: () => void
 
   // Draft slice
@@ -392,6 +411,7 @@ export type GameStore = {
   convokeSelectionState: ConvokeSelectionState | null
   decisionSelectionState: DecisionSelectionState | null
   damageDistributionState: DamageDistributionState | null
+  distributeState: DistributeState | null
   hoveredCardId: EntityId | null
   autoTapPreview: readonly EntityId[] | null
   draggingBlockerId: EntityId | null
@@ -443,6 +463,11 @@ export type GameStore = {
   updateDamageDistribution: (targetId: EntityId, amount: number) => void
   cancelDamageDistribution: () => void
   confirmDamageDistribution: () => void
+  initDistribute: (state: DistributeState) => void
+  incrementDistribute: (targetId: EntityId) => void
+  decrementDistribute: (targetId: EntityId) => void
+  confirmDistribute: () => void
+  clearDistribute: () => void
   showRevealedHand: (cardIds: readonly EntityId[]) => void
   dismissRevealedHand: () => void
   showRevealedCards: (cardIds: readonly EntityId[], cardNames: readonly string[], imageUris: readonly (string | null)[], source: string | null) => void

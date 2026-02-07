@@ -51,7 +51,7 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
     // Connection handlers
     // ========================================================================
     onConnected: (msg) => {
-      sessionStorage.setItem('argentum-token', msg.token)
+      localStorage.setItem('argentum-token', msg.token)
       set({
         connectionStatus: 'connected',
         playerId: entityId(msg.playerId),
@@ -68,7 +68,7 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
     },
 
     onReconnected: (msg) => {
-      sessionStorage.setItem('argentum-token', msg.token)
+      localStorage.setItem('argentum-token', msg.token)
       const updates: Partial<GameStore> = {
         connectionStatus: 'connected',
         playerId: entityId(msg.playerId),
@@ -218,6 +218,26 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
           : state.revealedCardsInfo,
         opponentBlockerAssignments: (msg.state.combat?.blockers?.length || !msg.state.combat) ? null : state.opponentBlockerAssignments,
       }))
+
+      // Auto-initialize inline distribute state for DistributeDecision
+      const decision = msg.pendingDecision
+      if (decision?.type === 'DistributeDecision') {
+        const initial: Record<string, number> = {}
+        for (const targetId of decision.targets) {
+          initial[targetId] = decision.minPerTarget
+        }
+        get().initDistribute({
+          decisionId: decision.id,
+          prompt: decision.prompt,
+          totalAmount: decision.totalAmount,
+          targets: decision.targets,
+          minPerTarget: decision.minPerTarget,
+          distribution: initial,
+        })
+      } else if (!decision && get().distributeState) {
+        // Clear distribute state when decision goes away
+        get().clearDistribute()
+      }
     },
 
     onMulliganDecision: (msg) => {
@@ -702,6 +722,34 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
     // ========================================================================
     onOpponentBlockerAssignments: (msg) => {
       set({ opponentBlockerAssignments: msg.assignments })
+    },
+
+    onOpponentDisconnected: (msg) => {
+      set({ opponentDisconnectCountdown: msg.secondsRemaining })
+    },
+
+    onOpponentReconnected: () => {
+      set({ opponentDisconnectCountdown: null })
+    },
+
+    onTournamentPlayerDisconnected: (msg) => {
+      set((state) => ({
+        disconnectedPlayers: {
+          ...state.disconnectedPlayers,
+          [msg.playerId]: {
+            playerName: msg.playerName,
+            secondsRemaining: msg.secondsRemaining,
+            disconnectedAt: Date.now(),
+          },
+        },
+      }))
+    },
+
+    onTournamentPlayerReconnected: (msg) => {
+      set((state) => {
+        const { [msg.playerId]: _, ...rest } = state.disconnectedPlayers
+        return { disconnectedPlayers: rest }
+      })
     },
   }
 }

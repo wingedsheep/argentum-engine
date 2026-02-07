@@ -68,6 +68,9 @@ export function GameCard({
   const submitTargetsDecision = useGameStore((state) => state.submitTargetsDecision)
   const decisionSelectionState = useGameStore((state) => state.decisionSelectionState)
   const toggleDecisionSelection = useGameStore((state) => state.toggleDecisionSelection)
+  const distributeState = useGameStore((state) => state.distributeState)
+  const incrementDistribute = useGameStore((state) => state.incrementDistribute)
+  const decrementDistribute = useGameStore((state) => state.decrementDistribute)
   const responsive = useResponsiveContext()
   const { handleCardClick, handleDoubleClick } = useInteraction()
   const dragStartPos = useRef<{ x: number; y: number } | null>(null)
@@ -104,6 +107,14 @@ export function GameCard({
   // Check if this card is a valid option in decision selection mode (SelectCardsDecision with useTargetingUI)
   const isValidDecisionSelection = decisionSelectionState?.validOptions.includes(card.id) ?? false
   const isSelectedDecisionOption = decisionSelectionState?.selectedOptions.includes(card.id) ?? false
+
+  // Inline damage distribution checks
+  const isDistributeTarget = distributeState?.targets.includes(card.id) ?? false
+  const distributeAllocated = isDistributeTarget ? (distributeState?.distribution[card.id] ?? 0) : 0
+  const distributeTotalAllocated = distributeState
+    ? Object.values(distributeState.distribution).reduce((sum, v) => sum + v, 0)
+    : 0
+  const distributeRemaining = distributeState ? distributeState.totalAmount - distributeTotalAllocated : 0
 
   // Combat mode checks
   const isInAttackerMode = combatState?.mode === 'declareAttackers'
@@ -297,6 +308,12 @@ export function GameCard({
       return
     }
 
+    // Handle inline distribute mode - click to add damage
+    if (isDistributeTarget && distributeRemaining > 0) {
+      incrementDistribute(card.id)
+      return
+    }
+
     // Handle targeting mode clicks - click to select, click again to unselect
     if (isInTargetingMode) {
       if (isSelectedTarget) {
@@ -392,6 +409,14 @@ export function GameCard({
     // Orange highlight for selected decision options
     borderStyle = '3px solid #ff9900'
     boxShadow = '0 0 20px rgba(255, 153, 0, 0.8), 0 0 40px rgba(255, 153, 0, 0.4)'
+  } else if (isDistributeTarget && distributeAllocated > 0) {
+    // Orange for distribute targets with damage allocated
+    borderStyle = '3px solid #ff6b35'
+    boxShadow = '0 0 16px rgba(255, 107, 53, 0.7), 0 0 32px rgba(255, 107, 53, 0.4)'
+  } else if (isDistributeTarget) {
+    // Dim orange for unallocated distribute targets
+    borderStyle = '2px solid #ff8c42'
+    boxShadow = '0 0 12px rgba(255, 140, 66, 0.5), 0 0 24px rgba(255, 140, 66, 0.3)'
   } else if (isSelected && !isInCombatMode) {
     borderStyle = '3px solid #ffff00'
     boxShadow = '0 8px 20px rgba(255, 255, 0, 0.4)'
@@ -425,7 +450,7 @@ export function GameCard({
   }
 
   // Determine cursor
-  const canInteract = interactive || isValidTarget || isValidDecisionTarget || isValidDecisionSelection || isValidAttacker || isValidBlocker || isAttackingInBlockerMode || canDragToPlay
+  const canInteract = interactive || isValidTarget || isValidDecisionTarget || isValidDecisionSelection || isValidAttacker || isValidBlocker || isAttackingInBlockerMode || canDragToPlay || isDistributeTarget
   const baseCursor = canInteract ? 'pointer' : 'default'
   const cursor = (isValidBlocker && !isSelectedAsBlocker) || canDragToPlay ? 'grab' : baseCursor
 
@@ -601,6 +626,102 @@ export function GameCard({
           zIndex: 10,
         }}>
           {count}
+        </div>
+      )}
+
+      {/* Inline damage distribution badge (top-right) */}
+      {isDistributeTarget && distributeAllocated > 0 && (
+        <div style={{
+          position: 'absolute',
+          top: responsive.isMobile ? 2 : 4,
+          right: responsive.isMobile ? 2 : 4,
+          backgroundColor: '#dc2626',
+          color: 'white',
+          width: responsive.isMobile ? 20 : 26,
+          height: responsive.isMobile ? 20 : 26,
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontWeight: 'bold',
+          fontSize: responsive.isMobile ? 11 : 14,
+          boxShadow: '0 2px 8px rgba(220, 38, 38, 0.6)',
+          zIndex: 15,
+        }}>
+          {distributeAllocated}
+        </div>
+      )}
+
+      {/* Inline +/- control strip (bottom) */}
+      {isDistributeTarget && (
+        <div
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 2,
+            padding: responsive.isMobile ? '2px 1px' : '3px 2px',
+            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            borderTop: '1px solid rgba(255, 140, 66, 0.5)',
+            zIndex: 15,
+          }}
+        >
+          <button
+            onClick={(e) => { e.stopPropagation(); decrementDistribute(card.id) }}
+            disabled={distributeAllocated <= (distributeState?.minPerTarget ?? 0)}
+            style={{
+              width: responsive.isMobile ? 20 : 26,
+              height: responsive.isMobile ? 20 : 26,
+              borderRadius: 4,
+              border: 'none',
+              backgroundColor: distributeAllocated <= (distributeState?.minPerTarget ?? 0) ? '#333' : '#dc2626',
+              color: distributeAllocated <= (distributeState?.minPerTarget ?? 0) ? '#666' : 'white',
+              fontSize: responsive.isMobile ? 14 : 16,
+              fontWeight: 'bold',
+              cursor: distributeAllocated <= (distributeState?.minPerTarget ?? 0) ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 0,
+            }}
+          >
+            -
+          </button>
+          <span style={{
+            color: 'white',
+            fontSize: responsive.isMobile ? 12 : 14,
+            fontWeight: 700,
+            minWidth: responsive.isMobile ? 18 : 24,
+            textAlign: 'center',
+          }}>
+            {distributeAllocated}
+          </span>
+          <button
+            onClick={(e) => { e.stopPropagation(); incrementDistribute(card.id) }}
+            disabled={distributeRemaining <= 0}
+            style={{
+              width: responsive.isMobile ? 20 : 26,
+              height: responsive.isMobile ? 20 : 26,
+              borderRadius: 4,
+              border: 'none',
+              backgroundColor: distributeRemaining <= 0 ? '#333' : '#16a34a',
+              color: distributeRemaining <= 0 ? '#666' : 'white',
+              fontSize: responsive.isMobile ? 14 : 16,
+              fontWeight: 'bold',
+              cursor: distributeRemaining <= 0 ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 0,
+            }}
+          >
+            +
+          </button>
         </div>
       )}
     </div>

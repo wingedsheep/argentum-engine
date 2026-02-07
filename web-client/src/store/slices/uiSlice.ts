@@ -10,6 +10,7 @@ import type {
   ConvokeSelectionState,
   DecisionSelectionState,
   DamageDistributionState,
+  DistributeState,
   DrawAnimation,
   DamageAnimation,
   ConvokeCreatureSelection,
@@ -29,6 +30,7 @@ export interface UISliceState {
   convokeSelectionState: ConvokeSelectionState | null
   decisionSelectionState: DecisionSelectionState | null
   damageDistributionState: DamageDistributionState | null
+  distributeState: DistributeState | null
   hoveredCardId: EntityId | null
   autoTapPreview: readonly EntityId[] | null
   draggingBlockerId: EntityId | null
@@ -83,6 +85,11 @@ export interface UISliceActions {
   updateDamageDistribution: (targetId: EntityId, amount: number) => void
   cancelDamageDistribution: () => void
   confirmDamageDistribution: () => void
+  initDistribute: (state: DistributeState) => void
+  incrementDistribute: (targetId: EntityId) => void
+  decrementDistribute: (targetId: EntityId) => void
+  confirmDistribute: () => void
+  clearDistribute: () => void
   showRevealedHand: (cardIds: readonly EntityId[]) => void
   dismissRevealedHand: () => void
   showRevealedCards: (cardIds: readonly EntityId[], cardNames: readonly string[], imageUris: readonly (string | null)[], source: string | null) => void
@@ -104,6 +111,7 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
   convokeSelectionState: null,
   decisionSelectionState: null,
   damageDistributionState: null,
+  distributeState: null,
   hoveredCardId: null,
   autoTapPreview: null,
   draggingBlockerId: null,
@@ -753,6 +761,60 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
 
     submitAction(actionWithDistribution)
     set({ damageDistributionState: null })
+  },
+
+  // Inline distribute actions (server-driven DistributeDecision)
+  initDistribute: (distributeState) => {
+    set({ distributeState })
+  },
+
+  incrementDistribute: (targetId) => {
+    set((state) => {
+      if (!state.distributeState) return state
+      const dist = state.distributeState
+      const totalAllocated = Object.values(dist.distribution).reduce((sum, v) => sum + v, 0)
+      if (totalAllocated >= dist.totalAmount) return state
+      return {
+        distributeState: {
+          ...dist,
+          distribution: {
+            ...dist.distribution,
+            [targetId]: (dist.distribution[targetId] ?? 0) + 1,
+          },
+        },
+      }
+    })
+  },
+
+  decrementDistribute: (targetId) => {
+    set((state) => {
+      if (!state.distributeState) return state
+      const dist = state.distributeState
+      const current = dist.distribution[targetId] ?? 0
+      if (current <= dist.minPerTarget) return state
+      return {
+        distributeState: {
+          ...dist,
+          distribution: {
+            ...dist.distribution,
+            [targetId]: current - 1,
+          },
+        },
+      }
+    })
+  },
+
+  confirmDistribute: () => {
+    const { distributeState, submitDistributeDecision } = get()
+    if (!distributeState) return
+    const totalAllocated = Object.values(distributeState.distribution).reduce((sum, v) => sum + v, 0)
+    if (totalAllocated !== distributeState.totalAmount) return
+    submitDistributeDecision(distributeState.distribution)
+    set({ distributeState: null })
+  },
+
+  clearDistribute: () => {
+    set({ distributeState: null })
   },
 
   // Revealed cards actions

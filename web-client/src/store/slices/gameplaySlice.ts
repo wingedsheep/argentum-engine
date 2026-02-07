@@ -31,6 +31,7 @@ export interface GameplaySliceState {
   fullControl: boolean
   nextStopPoint: string | null
   opponentName: string | null
+  opponentDisconnectCountdown: number | null
 }
 
 export interface GameplaySliceActions {
@@ -74,6 +75,7 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
   fullControl: false,
   nextStopPoint: null,
   opponentName: null,
+  opponentDisconnectCountdown: null,
 
   // Actions
   createGame: (deckList) => {
@@ -282,6 +284,7 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
       convokeSelectionState: null,
       decisionSelectionState: null,
       damageDistributionState: null,
+      distributeState: null,
       hoveredCardId: null,
       draggingBlockerId: null,
       draggingCardId: null,
@@ -289,6 +292,7 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
       revealedCardsInfo: null,
       fullControl: false,
       nextStopPoint: null,
+      opponentDisconnectCountdown: null,
       pendingEvents: [],
       eventLog: [],
       gameOverState: null,

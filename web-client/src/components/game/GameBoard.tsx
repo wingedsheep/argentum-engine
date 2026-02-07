@@ -47,6 +47,8 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
   const fullControl = useGameStore((state) => state.fullControl)
   const setFullControl = useGameStore((state) => state.setFullControl)
   const opponentDecisionStatus = useGameStore((state) => state.opponentDecisionStatus)
+  const distributeState = useGameStore((state) => state.distributeState)
+  const confirmDistribute = useGameStore((state) => state.confirmDistribute)
   const responsive = useResponsive(topOffset)
 
   // In spectator mode, use spectatingState.gameState
@@ -77,6 +79,11 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
   const canAct = hasPriority && !opponentDecisionStatus
   const isMyTurn = spectatorMode ? false : (gameState.activePlayerId === viewingPlayer?.playerId)
   const isInCombatMode = spectatorMode ? false : (combatState !== null)
+  const isInDistributeMode = !spectatorMode && distributeState !== null
+  const distributeTotalAllocated = distributeState
+    ? Object.values(distributeState.distribution).reduce((sum, v) => sum + v, 0)
+    : 0
+  const distributeRemaining = distributeState ? distributeState.totalAmount - distributeTotalAllocated : 0
 
   // Compute pass button label - prefer server-computed nextStopPoint, fall back to naive logic
   const getPassButtonLabel = () => {
@@ -289,8 +296,8 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
         ) : null}
       </div>
 
-      {/* Floating pass button (bottom-right) - hidden in spectator mode */}
-      {!spectatorMode && canAct && !isInCombatMode && viewingPlayer && (
+      {/* Floating pass button (bottom-right) - hidden in spectator mode and distribute mode */}
+      {!spectatorMode && canAct && !isInCombatMode && !isInDistributeMode && viewingPlayer && (
         <button
           onClick={() => {
             submitAction({
@@ -426,6 +433,56 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
         </div>
       )}
 
+
+      {/* Floating distribute bar (bottom-right) */}
+      {isInDistributeMode && distributeState && (
+        <div style={{
+          ...styles.combatButtonContainer,
+          flexDirection: 'column',
+          gap: 8,
+          alignItems: 'flex-end',
+        }}>
+          <div style={{
+            backgroundColor: distributeRemaining === 0 ? 'rgba(22, 163, 74, 0.9)' : 'rgba(220, 38, 38, 0.9)',
+            padding: responsive.isMobile ? '6px 12px' : '8px 16px',
+            borderRadius: 6,
+            border: distributeRemaining === 0 ? '1px solid #4ade80' : '1px solid #f87171',
+            textAlign: 'center',
+          }}>
+            <div style={{
+              color: 'white',
+              fontSize: responsive.fontSize.small,
+              fontWeight: 600,
+            }}>
+              {distributeRemaining === 0
+                ? 'All damage allocated'
+                : `${distributeRemaining} damage remaining`
+              }
+            </div>
+            <div style={{
+              color: 'rgba(255, 255, 255, 0.7)',
+              fontSize: responsive.isMobile ? 10 : 11,
+              marginTop: 2,
+            }}>
+              {distributeState.prompt}
+            </div>
+          </div>
+          <button
+            onClick={confirmDistribute}
+            disabled={distributeRemaining !== 0}
+            style={{
+              ...styles.combatButton,
+              ...(distributeRemaining === 0 ? styles.combatButtonPrimary : {}),
+              backgroundColor: distributeRemaining === 0 ? '#16a34a' : '#333',
+              color: distributeRemaining === 0 ? 'white' : '#666',
+              cursor: distributeRemaining === 0 ? 'pointer' : 'not-allowed',
+              borderColor: distributeRemaining === 0 ? '#4ade80' : '#555',
+            }}
+          >
+            Confirm Damage
+          </button>
+        </div>
+      )}
 
       {/* Action menu for selected card - hidden in spectator mode */}
       {!spectatorMode && <ActionMenu />}

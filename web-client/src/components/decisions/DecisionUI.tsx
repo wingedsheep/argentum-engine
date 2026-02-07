@@ -9,7 +9,6 @@ import { LibrarySearchUI } from './LibrarySearchUI'
 import { ReorderCardsUI } from './ReorderCardsUI'
 import { OrderBlockersUI } from './OrderBlockersUI'
 import { ZoneSelectionUI, type ZoneCardInfo } from './ZoneSelectionUI'
-import { DistributeDecisionUI } from './DistributeDecisionUI'
 import { getCardImageUrl } from '../../utils/cardImages'
 import styles from './DecisionUI.module.css'
 
@@ -97,9 +96,9 @@ export function DecisionUI() {
     )
   }
 
-  // Handle DistributeDecision (e.g., "Divide 4 damage among targets")
+  // DistributeDecision is handled inline on the board (GameCard + LifeDisplay + GameBoard confirm bar)
   if (pendingDecision.type === 'DistributeDecision') {
-    return <DistributeDecisionUI decision={pendingDecision} responsive={responsive} />
+    return null
   }
 
   // Handle ChooseColorDecision (e.g., "Choose a color for protection")
