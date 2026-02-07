@@ -17,6 +17,7 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
@@ -129,27 +130,36 @@ object EffectExecutorUtils {
             }
         }
 
-        val events = mutableListOf<EngineGameEvent>()
+        // Apply damage prevention shields (Prevent the next X damage)
+        var effectiveAmount = amount
         var newState = state
+        if (!cantBePrevented) {
+            val (shieldState, reducedAmount) = applyDamagePreventionShields(newState, targetId, effectiveAmount)
+            newState = shieldState
+            effectiveAmount = reducedAmount
+        }
+        if (effectiveAmount <= 0) return ExecutionResult.success(newState)
+
+        val events = mutableListOf<EngineGameEvent>()
 
         // Check if target is a player or creature
-        val lifeComponent = state.getEntity(targetId)?.get<LifeTotalComponent>()
+        val lifeComponent = newState.getEntity(targetId)?.get<LifeTotalComponent>()
         if (lifeComponent != null) {
             // It's a player - reduce life
-            val newLife = lifeComponent.life - amount
+            val newLife = lifeComponent.life - effectiveAmount
             newState = newState.updateEntity(targetId) { container ->
                 container.with(LifeTotalComponent(newLife))
             }
             events.add(LifeChangedEvent(targetId, lifeComponent.life, newLife, LifeChangeReason.DAMAGE))
         } else {
             // It's a creature - mark damage
-            val currentDamage = state.getEntity(targetId)?.get<DamageComponent>()?.amount ?: 0
+            val currentDamage = newState.getEntity(targetId)?.get<DamageComponent>()?.amount ?: 0
             newState = newState.updateEntity(targetId) { container ->
-                container.with(DamageComponent(currentDamage + amount))
+                container.with(DamageComponent(currentDamage + effectiveAmount))
             }
         }
 
-        events.add(DamageDealtEvent(sourceId, targetId, amount, false))
+        events.add(DamageDealtEvent(sourceId, targetId, effectiveAmount, false))
 
         return ExecutionResult.success(newState, events)
     }
@@ -270,6 +280,50 @@ object EffectExecutorUtils {
                 )
             )
         )
+    }
+
+    /**
+     * Apply damage prevention shields to reduce incoming damage.
+     *
+     * Finds all PreventNextDamage floating effects targeting the entity,
+     * consumes shield amounts, and returns the updated state and remaining damage.
+     *
+     * @param state The current game state
+     * @param targetId The entity receiving damage
+     * @param amount The incoming damage amount
+     * @return Pair of (updated state with consumed shields, remaining damage after prevention)
+     */
+    fun applyDamagePreventionShields(state: GameState, targetId: EntityId, amount: Int): Pair<GameState, Int> {
+        var remainingDamage = amount
+        val updatedEffects = state.floatingEffects.toMutableList()
+        val toRemove = mutableListOf<Int>()
+
+        for (i in updatedEffects.indices) {
+            if (remainingDamage <= 0) break
+            val effect = updatedEffects[i]
+            val mod = effect.effect.modification
+            if (mod is SerializableModification.PreventNextDamage && targetId in effect.effect.affectedEntities) {
+                val prevented = minOf(mod.remainingAmount, remainingDamage)
+                remainingDamage -= prevented
+                val newRemaining = mod.remainingAmount - prevented
+                if (newRemaining <= 0) {
+                    toRemove.add(i)
+                } else {
+                    updatedEffects[i] = effect.copy(
+                        effect = effect.effect.copy(
+                            modification = SerializableModification.PreventNextDamage(newRemaining)
+                        )
+                    )
+                }
+            }
+        }
+
+        // Remove fully consumed shields in reverse order to maintain indices
+        for (idx in toRemove.asReversed()) {
+            updatedEffects.removeAt(idx)
+        }
+
+        return state.copy(floatingEffects = updatedEffects) to remainingDamage
     }
 
     /**

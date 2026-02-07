@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 139 / 335
+**Implemented:** 140 / 335
 
 ---
 
@@ -35,8 +35,8 @@
 - [x] Barkhide Mauler
 - [x] Barren Moor
 - [x] Battering Craghorn
-- [ ] Battlefield Medic
-- [ ] Biorhythm
+- [x] Battlefield Medic
+- [x] Biorhythm
 - [ ] Birchlore Rangers
 - [ ] Blackmail
 - [ ] Blatant Thievery

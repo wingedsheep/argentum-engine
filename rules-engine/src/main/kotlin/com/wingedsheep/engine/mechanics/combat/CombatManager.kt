@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.mechanics.combat
 
 import com.wingedsheep.engine.core.*
+import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.StateProjector
@@ -983,19 +984,23 @@ class CombatManager(
         amount: Int,
         sourceId: EntityId
     ): ExecutionResult {
-        val playerContainer = state.getEntity(playerId)
-            ?: return ExecutionResult.error(state, "Player not found: $playerId")
+        // Apply damage prevention shields
+        val (shieldState, effectiveAmount) = EffectExecutorUtils.applyDamagePreventionShields(state, playerId, amount)
+        if (effectiveAmount <= 0) return ExecutionResult.success(shieldState)
+
+        val playerContainer = shieldState.getEntity(playerId)
+            ?: return ExecutionResult.error(shieldState, "Player not found: $playerId")
 
         val currentLife = playerContainer.get<LifeTotalComponent>()?.life
-            ?: return ExecutionResult.error(state, "Player has no life total")
+            ?: return ExecutionResult.error(shieldState, "Player has no life total")
 
-        val newLife = currentLife - amount
-        var newState = state.updateEntity(playerId) { container ->
+        val newLife = currentLife - effectiveAmount
+        var newState = shieldState.updateEntity(playerId) { container ->
             container.with(LifeTotalComponent(newLife))
         }
 
         val events = mutableListOf<GameEvent>(
-            DamageDealtEvent(sourceId, playerId, amount, true),
+            DamageDealtEvent(sourceId, playerId, effectiveAmount, true),
             LifeChangedEvent(playerId, currentLife, newLife, LifeChangeReason.DAMAGE)
         )
 
@@ -1089,14 +1094,18 @@ class CombatManager(
                                targetContainer.get<CardComponent>() == null
 
                 if (isPlayer) {
-                    // Deal damage to defending player (trample)
-                    val currentLife = targetContainer?.get<LifeTotalComponent>()?.life ?: 0
-                    val newLife = currentLife - damage
-                    newState = newState.updateEntity(targetId) { container ->
-                        container.with(LifeTotalComponent(newLife))
+                    // Deal damage to defending player (trample) - apply shields
+                    val (shieldState, effectiveTrampleDamage) = EffectExecutorUtils.applyDamagePreventionShields(newState, targetId, damage)
+                    newState = shieldState
+                    if (effectiveTrampleDamage > 0) {
+                        val currentLife = newState.getEntity(targetId)?.get<LifeTotalComponent>()?.life ?: 0
+                        val newLife = currentLife - effectiveTrampleDamage
+                        newState = newState.updateEntity(targetId) { container ->
+                            container.with(LifeTotalComponent(newLife))
+                        }
+                        events.add(DamageDealtEvent(attackerId, targetId, effectiveTrampleDamage, true))
+                        events.add(LifeChangedEvent(targetId, currentLife, newLife, LifeChangeReason.DAMAGE))
                     }
-                    events.add(DamageDealtEvent(attackerId, targetId, damage, true))
-                    events.add(LifeChangedEvent(targetId, currentLife, newLife, LifeChangeReason.DAMAGE))
                 } else {
                     // Check protection: blocker protected from attacker's colors or subtypes?
                     val attackerColors = projected.getColors(attackerId)
@@ -1107,12 +1116,16 @@ class CombatManager(
                         projected.hasKeyword(targetId, "PROTECTION_FROM_SUBTYPE_${subtype.uppercase()}")
                     }
                     if (!blockerProtected) {
-                        // Deal damage to blocker
-                        val currentDamage = targetContainer?.get<DamageComponent>()?.amount ?: 0
-                        newState = newState.updateEntity(targetId) { container ->
-                            container.with(DamageComponent(currentDamage + damage))
+                        // Apply damage prevention shields
+                        val (shieldState, effectiveDamage) = EffectExecutorUtils.applyDamagePreventionShields(newState, targetId, damage)
+                        newState = shieldState
+                        if (effectiveDamage > 0) {
+                            val currentDamage = newState.getEntity(targetId)?.get<DamageComponent>()?.amount ?: 0
+                            newState = newState.updateEntity(targetId) { container ->
+                                container.with(DamageComponent(currentDamage + effectiveDamage))
+                            }
+                            events.add(DamageDealtEvent(attackerId, targetId, effectiveDamage, true))
                         }
-                        events.add(DamageDealtEvent(attackerId, targetId, damage, true))
                     }
                 }
             }
@@ -1149,11 +1162,16 @@ class CombatManager(
                     projected.hasKeyword(attackerId, "PROTECTION_FROM_SUBTYPE_${subtype.uppercase()}")
                 }
                 if (!attackerProtected) {
-                    val currentDamage = newState.getEntity(attackerId)?.get<DamageComponent>()?.amount ?: 0
-                    newState = newState.updateEntity(attackerId) { container ->
-                        container.with(DamageComponent(currentDamage + blockerPower))
+                    // Apply damage prevention shields
+                    val (shieldState, effectiveBlockerDamage) = EffectExecutorUtils.applyDamagePreventionShields(newState, attackerId, blockerPower)
+                    newState = shieldState
+                    if (effectiveBlockerDamage > 0) {
+                        val currentDamage = newState.getEntity(attackerId)?.get<DamageComponent>()?.amount ?: 0
+                        newState = newState.updateEntity(attackerId) { container ->
+                            container.with(DamageComponent(currentDamage + effectiveBlockerDamage))
+                        }
+                        events.add(DamageDealtEvent(blockerId, attackerId, effectiveBlockerDamage, true))
                     }
-                    events.add(DamageDealtEvent(blockerId, attackerId, blockerPower, true))
                 }
             }
         }

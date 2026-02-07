@@ -22,6 +22,7 @@ object OnslaughtSet {
      */
     val allCards = listOf(
         // White creatures and spells
+        BattlefieldMedic,
         AvenBrigadier,
         AvenSoulgazer,
         AkromasBlessing,
@@ -128,6 +129,7 @@ object OnslaughtSet {
 
         // Green creatures and spells
         AnimalMagnetism,
+        Biorhythm,
         BroodhatchNantuko,
         ElvenRiders,
         ElvishPioneer,

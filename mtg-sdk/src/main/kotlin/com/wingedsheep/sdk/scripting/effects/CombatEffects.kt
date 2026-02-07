@@ -92,3 +92,19 @@ data class GrantCantBeBlockedExceptByColorEffect(
         append(" except by ${canOnlyBeBlockedByColor.displayName.lowercase()} creatures")
     }
 }
+
+/**
+ * Prevent the next X damage that would be dealt to target creature this turn.
+ * Used for Battlefield Medic and similar damage prevention effects.
+ *
+ * @property amount The amount of damage to prevent (can be dynamic, e.g., number of Clerics)
+ * @property target The creature receiving the prevention shield
+ */
+@Serializable
+data class PreventNextDamageEffect(
+    val amount: DynamicAmount,
+    val target: EffectTarget
+) : Effect {
+    override val description: String =
+        "Prevent the next ${amount.description} damage that would be dealt to ${target.description} this turn"
+}

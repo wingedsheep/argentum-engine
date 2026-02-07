@@ -51,7 +51,7 @@ class EffectExecutorRegistry(
         registerModule(StackExecutors())
         registerModule(PlayerExecutors())
         registerModule(InformationExecutors())
-        registerModule(CombatExecutors())
+        registerModule(CombatExecutors(amountEvaluator))
 
         // Deferred initialization for recursive executors
         compositeExecutors.initialize(::execute)

@@ -142,6 +142,14 @@ sealed interface SerializableModification {
      */
     @Serializable
     data class GrantProtectionFromColor(val color: String) : SerializableModification
+
+    /**
+     * Damage prevention shield: prevent the next X damage that would be dealt to target creature/player.
+     * Used by Battlefield Medic and similar effects.
+     * The shield is consumed as damage is dealt and removed when fully used or at end of turn.
+     */
+    @Serializable
+    data class PreventNextDamage(val remainingAmount: Int) : SerializableModification
 }
 
 /**
@@ -167,4 +175,6 @@ fun SerializableModification.toModification(): Modification = when (this) {
     // ReflectCombatDamage doesn't map to a layer modification - it's checked by CombatManager directly
     is SerializableModification.ReflectCombatDamage -> Modification.NoOp
     is SerializableModification.GrantProtectionFromColor -> Modification.GrantProtectionFromColor(color)
+    // PreventNextDamage doesn't map to a layer modification - it's checked during damage resolution directly
+    is SerializableModification.PreventNextDamage -> Modification.NoOp
 }

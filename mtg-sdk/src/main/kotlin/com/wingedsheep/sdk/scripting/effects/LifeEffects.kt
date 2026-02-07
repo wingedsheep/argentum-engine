@@ -95,3 +95,20 @@ data class GainLifeForEachLandOnBattlefieldEffect(
 ) : Effect {
     override val description: String = "You gain $lifePerLand life for each $landType on the battlefield"
 }
+
+/**
+ * Set each player's life total to a dynamic amount evaluated per-player.
+ * Used for Biorhythm: "Each player's life total becomes the number of creatures they control."
+ *
+ * The [perPlayerAmount] is evaluated with each player as the "controller" in the context,
+ * so Player.You in the DynamicAmount resolves to the player whose life is being set.
+ *
+ * Per MTG Rule 118.5, if an effect sets a player's life total to a specific number,
+ * the player gains or loses the necessary amount of life.
+ */
+@Serializable
+data class SetLifeTotalForEachPlayerEffect(
+    val perPlayerAmount: DynamicAmount
+) : Effect {
+    override val description: String = "Each player's life total becomes ${perPlayerAmount.description}"
+}
