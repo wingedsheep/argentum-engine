@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 128 / 335
+**Implemented:** 135 / 335
 
 ---
 
@@ -26,9 +26,9 @@
 - [x] Ascending Aven
 - [x] Astral Slide
 - [x] Aura Extraction
-- [ ] Aurification
+- [x] Aurification
 - [x] Avarax
-- [ ] Aven Brigadier
+- [x] Aven Brigadier
 - [ ] Aven Fateshaper
 - [ ] Aven Soulgazer
 - [ ] Backslide

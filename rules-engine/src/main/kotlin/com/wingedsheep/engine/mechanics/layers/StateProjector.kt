@@ -342,6 +342,13 @@ class StateProjector(
                     card.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(filter.subtype))
                 }.toSet()
             }
+            is AffectsFilter.OtherCreaturesWithSubtype -> {
+                state.getBattlefield().filter { entityId ->
+                    if (entityId == sourceId) return@filter false // Exclude self
+                    val card = state.getEntity(entityId)?.get<CardComponent>() ?: return@filter false
+                    card.typeLine.isCreature && card.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(filter.subtype))
+                }.toSet()
+            }
             is AffectsFilter.OtherTappedCreaturesYouControl -> {
                 val controller = state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
                     ?: return emptySet()
@@ -375,6 +382,25 @@ class StateProjector(
                 val attachedTo = state.getEntity(sourceId)
                     ?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
                 if (attachedTo != null) setOf(attachedTo.targetId) else emptySet()
+            }
+            is AffectsFilter.CreaturesWithCounter -> {
+                val counterType = try {
+                    CounterType.valueOf(
+                        filter.counterType.uppercase()
+                            .replace(' ', '_')
+                            .replace('+', 'P')
+                            .replace('-', 'M')
+                            .replace("/", "_")
+                    )
+                } catch (e: IllegalArgumentException) {
+                    return emptySet()
+                }
+                state.getBattlefield().filter { entityId ->
+                    val container = state.getEntity(entityId) ?: return@filter false
+                    val card = container.get<CardComponent>() ?: return@filter false
+                    val counters = container.get<CountersComponent>()
+                    card.typeLine.isCreature && (counters?.getCount(counterType) ?: 0) > 0
+                }.toSet()
             }
         }
     }
@@ -435,13 +461,15 @@ class StateProjector(
         }
 
         // Topological sort with timestamp as tiebreaker
+        // Use identity-based tracking to avoid deduplicating equal-but-distinct effects
+        // (e.g., two +1/+1 lord effects from the same source affecting the same entities)
         val result = mutableListOf<ContinuousEffect>()
-        val remaining = effects.toMutableSet()
+        val remaining = effects.toMutableList()
 
         while (remaining.isNotEmpty()) {
             // Find effects with no remaining dependencies
             val ready = remaining.filter { effect ->
-                dependencies[effect]?.none { it in remaining } ?: true
+                dependencies[effect]?.none { dep -> remaining.any { it === dep } } ?: true
             }.sortedBy { it.timestamp } // Timestamp tiebreaker
 
             if (ready.isEmpty()) {
@@ -452,7 +480,7 @@ class StateProjector(
 
             val next = ready.first()
             result.add(next)
-            remaining.remove(next)
+            remaining.removeAt(remaining.indexOfFirst { it === next })
         }
 
         return result
@@ -519,6 +547,10 @@ class StateProjector(
                 }
                 is Modification.AddType -> {
                     values.types.add(mod.type)
+                }
+                is Modification.AddSubtype -> {
+                    values.types.add(mod.subtype)
+                    values.subtypes.add(mod.subtype)
                 }
                 is Modification.RemoveType -> {
                     values.types.remove(mod.type)
@@ -614,6 +646,13 @@ sealed interface AffectsFilter {
     data class WithSubtype(val subtype: String) : AffectsFilter
 
     /**
+     * Other creatures with a specific subtype (excludes the source permanent).
+     * Used for lord effects like "Other Bird creatures get +1/+1."
+     */
+    @Serializable
+    data class OtherCreaturesWithSubtype(val subtype: String) : AffectsFilter
+
+    /**
      * Other tapped creatures you control (excludes the source permanent).
      * Used for effects like "Other tapped creatures you control have indestructible."
      */
@@ -639,6 +678,13 @@ sealed interface AffectsFilter {
      */
     @Serializable
     data object AttachedPermanent : AffectsFilter
+
+    /**
+     * All creatures that have a specific counter type.
+     * Used for Aurification: "Each creature with a gold counter on it..."
+     */
+    @Serializable
+    data class CreaturesWithCounter(val counterType: String) : AffectsFilter
 }
 
 /**
@@ -703,6 +749,13 @@ sealed interface Modification {
     data class AddType(val type: String) : Modification
     @Serializable
     data class RemoveType(val type: String) : Modification
+
+    /**
+     * Add a subtype (also adds to types set).
+     * Used for effects like "is a Wall in addition to its other creature types."
+     */
+    @Serializable
+    data class AddSubtype(val subtype: String) : Modification
     @Serializable
     data class ChangeController(val newControllerId: EntityId) : Modification
 

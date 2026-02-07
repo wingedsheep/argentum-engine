@@ -4,16 +4,20 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.CardDefinition
+import com.wingedsheep.sdk.scripting.AddCreatureTypeByCounter
 import com.wingedsheep.sdk.scripting.CantAttack
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.ControlEnchantedPermanent
+import com.wingedsheep.sdk.scripting.GrantKeywordByCounter
 import com.wingedsheep.sdk.scripting.GlobalEffect
 import com.wingedsheep.sdk.scripting.GlobalEffectType
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.GrantKeywordToCreatureGroup
 import com.wingedsheep.sdk.scripting.GroupFilter
+import com.wingedsheep.sdk.scripting.CardPredicate
 import com.wingedsheep.sdk.scripting.ControllerPredicate
 import com.wingedsheep.sdk.scripting.ModifyStats
+import com.wingedsheep.sdk.scripting.ModifyStatsForCreatureGroup
 import com.wingedsheep.sdk.scripting.StatePredicate
 import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.StaticTarget
@@ -98,6 +102,14 @@ class StaticAbilityHandler(
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
+            is ModifyStatsForCreatureGroup -> {
+                ContinuousEffectData(
+                    layer = Layer.POWER_TOUGHNESS,
+                    sublayer = Sublayer.MODIFICATIONS,
+                    modification = Modification.ModifyPowerToughness(ability.powerBonus, ability.toughnessBonus),
+                    affectsFilter = convertGroupFilter(ability.filter)
+                )
+            }
             is ModifyStats -> {
                 ContinuousEffectData(
                     layer = Layer.POWER_TOUGHNESS,
@@ -139,6 +151,22 @@ class StaticAbilityHandler(
                     sublayer = null,
                     modification = Modification.ChangeControllerToSourceController,
                     affectsFilter = AffectsFilter.AttachedPermanent
+                )
+            }
+            is GrantKeywordByCounter -> {
+                ContinuousEffectData(
+                    layer = Layer.ABILITY,
+                    sublayer = null,
+                    modification = Modification.GrantKeyword(ability.keyword.name),
+                    affectsFilter = AffectsFilter.CreaturesWithCounter(ability.counterType)
+                )
+            }
+            is AddCreatureTypeByCounter -> {
+                ContinuousEffectData(
+                    layer = Layer.TYPE,
+                    sublayer = null,
+                    modification = Modification.AddSubtype(ability.creatureType),
+                    affectsFilter = AffectsFilter.CreaturesWithCounter(ability.counterType)
                 )
             }
             is GlobalEffect -> convertGlobalEffect(ability)
@@ -201,6 +229,12 @@ class StaticAbilityHandler(
         val controllerPredicate = baseFilter.controllerPredicate
         val hasExcludeSelf = filter.excludeSelf
         val hasTappedPredicate = baseFilter.statePredicates.any { it == StatePredicate.IsTapped }
+        val subtypePredicate = baseFilter.cardPredicates.filterIsInstance<CardPredicate.HasSubtype>().firstOrNull()
+
+        // Handle "other [subtype] creatures" pattern (e.g., "Other Bird creatures get +1/+1")
+        if (hasExcludeSelf && subtypePredicate != null) {
+            return AffectsFilter.OtherCreaturesWithSubtype(subtypePredicate.subtype.value)
+        }
 
         // Handle "other tapped creatures you control" pattern
         if (hasExcludeSelf && hasTappedPredicate && controllerPredicate == ControllerPredicate.ControlledByYou) {

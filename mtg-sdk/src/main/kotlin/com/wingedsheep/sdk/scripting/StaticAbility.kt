@@ -42,6 +42,23 @@ data class GrantKeywordToCreatureGroup(
 }
 
 /**
+ * Modifies power/toughness for a group of creatures (continuous static ability).
+ * Used for lord effects like "Other Bird creatures get +1/+1."
+ */
+@Serializable
+data class ModifyStatsForCreatureGroup(
+    val powerBonus: Int,
+    val toughnessBonus: Int,
+    val filter: GroupFilter
+) : StaticAbility {
+    override val description: String = buildString {
+        val powerStr = if (powerBonus >= 0) "+$powerBonus" else "$powerBonus"
+        val toughStr = if (toughnessBonus >= 0) "+$toughnessBonus" else "$toughnessBonus"
+        append("${filter.description} get $powerStr/$toughStr")
+    }
+}
+
+/**
  * Modifies power/toughness (e.g., +2/+2 from an Equipment).
  */
 @Serializable
@@ -363,6 +380,42 @@ data class CantBeBlockedByMoreThan(
     override val description: String = "can't be blocked by more than ${
         if (maxBlockers == 1) "one creature" else "$maxBlockers creatures"
     }"
+}
+
+// =============================================================================
+// Counter-Based Static Abilities
+// =============================================================================
+
+/**
+ * Grants a keyword to all creatures that have a specific counter type.
+ * Used for Aurification: "Each creature with a gold counter on it has defender."
+ *
+ * @property keyword The keyword to grant
+ * @property counterType The counter type that creatures must have
+ */
+@Serializable
+data class GrantKeywordByCounter(
+    val keyword: Keyword,
+    val counterType: String
+) : StaticAbility {
+    override val description: String =
+        "Each creature with a $counterType counter on it has ${keyword.name.lowercase().replace('_', ' ')}"
+}
+
+/**
+ * Adds a creature type to all creatures that have a specific counter type.
+ * Used for Aurification: "Each creature with a gold counter on it is a Wall."
+ *
+ * @property creatureType The creature type to add
+ * @property counterType The counter type that creatures must have
+ */
+@Serializable
+data class AddCreatureTypeByCounter(
+    val creatureType: String,
+    val counterType: String
+) : StaticAbility {
+    override val description: String =
+        "Each creature with a $counterType counter on it is a $creatureType in addition to its other creature types"
 }
 
 // =============================================================================
