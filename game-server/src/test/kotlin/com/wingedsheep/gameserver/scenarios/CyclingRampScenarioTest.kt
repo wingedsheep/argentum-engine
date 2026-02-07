@@ -127,22 +127,17 @@ class CyclingRampScenarioTest : ScenarioTestBase() {
                 // Cycle Solar Blast
                 game.cycleCard(1, "Solar Blast")
 
-                // Cycling triggers - target selection pending
-                withClue("Solar Blast cycling trigger should require target selection") {
+                // Cycling triggers - MayEffect asks yes/no first
+                withClue("Solar Blast cycling trigger should present may decision") {
                     game.hasPendingDecision() shouldBe true
                 }
+                game.answerYesNo(true)
 
                 // Target the opponent player
                 game.selectTargets(listOf(game.player2Id))
 
                 // Resolve the triggered ability on the stack
                 game.resolveStack()
-
-                // MayEffect asks yes/no
-                withClue("Should have may decision") {
-                    game.hasPendingDecision() shouldBe true
-                }
-                game.answerYesNo(true)
 
                 withClue("Opponent should have lost 1 life from cycling trigger") {
                     game.getLifeTotal(2) shouldBe opponentLife - 1
@@ -162,11 +157,7 @@ class CyclingRampScenarioTest : ScenarioTestBase() {
 
                 game.cycleCard(1, "Solar Blast")
 
-                val targetId = game.findPermanent("Glory Seeker")!!
-                game.selectTargets(listOf(targetId))
-                game.resolveStack()
-
-                // Decline the may ability
+                // Decline the may ability (before target selection)
                 game.answerYesNo(false)
 
                 withClue("Glory Seeker should survive when player declines") {

@@ -5,9 +5,12 @@ import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.MayEffect
 import com.wingedsheep.sdk.targeting.TargetRequirement
+import java.util.UUID
 
 /**
  * Processes triggered abilities by putting them on the stack.
@@ -102,6 +105,12 @@ class TriggerProcessor(
         val ability = trigger.ability
         val targetRequirement = ability.targetRequirement
 
+        // If the effect is a MayEffect AND has targets, ask may first before target selection.
+        // This gives the player a chance to decline before having to pick targets.
+        if (targetRequirement != null && ability.effect is MayEffect) {
+            return processMayThenTargetTrigger(state, trigger, targetRequirement)
+        }
+
         // Check if this ability requires targets
         if (targetRequirement != null) {
             return processTargetedTrigger(state, trigger, targetRequirement)
@@ -112,13 +121,85 @@ class TriggerProcessor(
     }
 
     /**
+     * Process a triggered ability that has both MayEffect and targets.
+     *
+     * Asks the player yes/no first. If they say yes, proceeds to target selection
+     * via MayTriggerContinuation. If they say no, the trigger is skipped.
+     *
+     * Before asking, checks if legal targets exist — if not, the ability fizzles
+     * without even asking the may question.
+     */
+    private fun processMayThenTargetTrigger(
+        state: GameState,
+        trigger: PendingTrigger,
+        targetRequirement: TargetRequirement
+    ): ExecutionResult {
+        val ability = trigger.ability
+
+        // Check if legal targets exist before asking the may question
+        val legalTargets = targetFinder.findLegalTargets(
+            state = state,
+            requirement = targetRequirement,
+            controllerId = trigger.controllerId,
+            sourceId = trigger.sourceId
+        )
+
+        if (legalTargets.isEmpty() && targetRequirement.effectiveMinCount > 0) {
+            // No legal targets - ability doesn't go on stack
+            return ExecutionResult.success(
+                state,
+                listOf(
+                    AbilityFizzledEvent(
+                        trigger.sourceId,
+                        ability.description,
+                        "No legal targets available"
+                    )
+                )
+            )
+        }
+
+        // Get the MayEffect description for the prompt
+        val mayEffect = ability.effect as MayEffect
+        val sourceName = trigger.sourceName
+
+        // Create yes/no decision
+        val decisionResult = decisionHandler.createYesNoDecision(
+            state = state,
+            playerId = trigger.controllerId,
+            sourceId = trigger.sourceId,
+            sourceName = sourceName,
+            prompt = mayEffect.description,
+            phase = DecisionPhase.RESOLUTION
+        )
+
+        if (!decisionResult.isPaused || decisionResult.pendingDecision == null) {
+            return ExecutionResult.error(state, "Failed to create yes/no decision for may trigger")
+        }
+
+        // Create continuation to resume with target selection if player says yes
+        val continuation = MayTriggerContinuation(
+            decisionId = decisionResult.pendingDecision.id,
+            trigger = trigger,
+            targetRequirement = targetRequirement
+        )
+
+        val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
+
+        return ExecutionResult.paused(
+            stateWithContinuation,
+            decisionResult.pendingDecision,
+            decisionResult.events.toList()
+        )
+    }
+
+    /**
      * Process a triggered ability that requires targets.
      *
      * Creates a target selection decision and continuation frame.
      * If there's exactly one legal target and the requirement is for exactly one target,
      * auto-selects that target without prompting the player.
      */
-    private fun processTargetedTrigger(
+    internal fun processTargetedTrigger(
         state: GameState,
         trigger: PendingTrigger,
         targetRequirement: TargetRequirement

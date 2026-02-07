@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.scripting.Effect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GroupFilter
 import com.wingedsheep.sdk.scripting.SearchDestination
+import com.wingedsheep.sdk.targeting.TargetRequirement
 import kotlinx.serialization.Serializable
 
 /**
@@ -124,6 +125,24 @@ data class TriggeredAbilityContinuation(
 data class PendingTriggersContinuation(
     override val decisionId: String,
     val remainingTriggers: List<PendingTrigger>
+) : ContinuationFrame
+
+/**
+ * Resume placing a triggered ability on the stack after the player answers a "may" question.
+ *
+ * When a triggered ability has both a MayEffect wrapper and targets (like Invigorating Boon's
+ * "you may put a +1/+1 counter on target creature"), the may question is asked FIRST.
+ * If the player says yes, we then proceed to target selection.
+ * If the player says no, the trigger is skipped entirely.
+ *
+ * @property trigger The full pending trigger to process if the player says yes
+ * @property targetRequirement The target requirement for the ability
+ */
+@Serializable
+data class MayTriggerContinuation(
+    override val decisionId: String,
+    val trigger: PendingTrigger,
+    val targetRequirement: TargetRequirement
 ) : ContinuationFrame
 
 /**

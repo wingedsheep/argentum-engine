@@ -25,9 +25,11 @@ class LightningRiftScenarioTest : ScenarioTestBase() {
                 // Cycle - Lightning Rift triggers
                 game.cycleCard(1, "Disciple of Grace")
 
-                withClue("Lightning Rift should trigger - target selection pending") {
+                // MayEffect asks yes/no first
+                withClue("Lightning Rift should trigger - may decision pending") {
                     game.hasPendingDecision() shouldBe true
                 }
+                game.answerYesNo(true)
 
                 // Select Glory Seeker as target
                 val targetId = game.findPermanent("Glory Seeker")!!
@@ -35,12 +37,6 @@ class LightningRiftScenarioTest : ScenarioTestBase() {
 
                 // Resolve the triggered ability on the stack
                 game.resolveStack()
-
-                // MayEffect asks yes/no
-                withClue("Should have may decision") {
-                    game.hasPendingDecision() shouldBe true
-                }
-                game.answerYesNo(true)
 
                 // Glory Seeker is 2/2 and takes 2 damage - should die
                 withClue("Glory Seeker should be destroyed by 2 damage") {
@@ -62,11 +58,7 @@ class LightningRiftScenarioTest : ScenarioTestBase() {
 
                 game.cycleCard(1, "Disciple of Grace")
 
-                val targetId = game.findPermanent("Glory Seeker")!!
-                game.selectTargets(listOf(targetId))
-                game.resolveStack()
-
-                // Decline
+                // Decline the may effect (before target selection)
                 game.answerYesNo(false)
 
                 // Glory Seeker should survive
@@ -90,10 +82,10 @@ class LightningRiftScenarioTest : ScenarioTestBase() {
 
                 game.cycleCard(1, "Disciple of Grace")
 
-                // Target opponent
+                // May decision first, then target opponent
+                game.answerYesNo(true)
                 game.selectTargets(listOf(game.player2Id))
                 game.resolveStack()
-                game.answerYesNo(true)
 
                 withClue("Opponent should have lost 2 life") {
                     game.getLifeTotal(2) shouldBe opponentLife - 2

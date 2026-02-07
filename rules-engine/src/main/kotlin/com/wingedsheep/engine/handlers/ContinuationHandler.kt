@@ -88,6 +88,7 @@ class ContinuationHandler(
                 // It's handled by checkForMoreContinuations after the preceding trigger resolves.
                 ExecutionResult.error(state, "PendingTriggersContinuation should not be at top of stack during decision resume")
             }
+            is MayTriggerContinuation -> resumeMayTrigger(stateAfterPop, continuation, response)
         }
     }
 
@@ -313,6 +314,55 @@ class ContinuationHandler(
 
         // After putting the ability on stack, check for more continuations
         return checkForMoreContinuations(stackResult.newState, stackResult.events.toList())
+    }
+
+    /**
+     * Resume after player answered yes/no for a may-trigger-with-targets ability.
+     *
+     * If the player says yes, unwrap the MayEffect and proceed to target selection
+     * with the inner effect. If the player says no, skip the trigger entirely.
+     */
+    private fun resumeMayTrigger(
+        state: GameState,
+        continuation: MayTriggerContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is YesNoResponse) {
+            return ExecutionResult.error(state, "Expected yes/no response for may trigger")
+        }
+
+        if (!response.choice) {
+            // Player declined - skip the trigger entirely
+            return checkForMoreContinuations(state, emptyList())
+        }
+
+        // Player said yes - unwrap the MayEffect and proceed to target selection
+        val trigger = continuation.trigger
+        val mayEffect = trigger.ability.effect as com.wingedsheep.sdk.scripting.MayEffect
+        val innerEffect = mayEffect.effect
+
+        // Create a modified trigger with the inner effect (no MayEffect wrapper)
+        // so that when the ability resolves, it executes directly without another yes/no
+        val unwrappedAbility = trigger.ability.copy(effect = innerEffect)
+        val unwrappedTrigger = trigger.copy(ability = unwrappedAbility)
+
+        // Now process as a normal targeted trigger
+        val processor = triggerProcessor
+            ?: return ExecutionResult.error(state, "TriggerProcessor not available for may trigger continuation")
+
+        val result = processor.processTargetedTrigger(state, unwrappedTrigger, continuation.targetRequirement)
+
+        if (result.isPaused) {
+            // Target selection is needed - return paused directly
+            return result
+        }
+
+        if (!result.isSuccess) {
+            return result
+        }
+
+        // Target was auto-selected - check for more continuations
+        return checkForMoreContinuations(result.newState, result.events.toList())
     }
 
     /**

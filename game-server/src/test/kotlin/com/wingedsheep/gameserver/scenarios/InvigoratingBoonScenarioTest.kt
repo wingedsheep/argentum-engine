@@ -28,12 +28,13 @@ class InvigoratingBoonScenarioTest : ScenarioTestBase() {
                 // Cycle Barren Moor - Invigorating Boon triggers
                 game.cycleCard(1, "Barren Moor")
 
-                // Boon trigger should require target selection
-                withClue("Invigorating Boon should trigger - pending target selection") {
+                // MayEffect asks yes/no first (before target selection)
+                withClue("Invigorating Boon should trigger - pending may decision") {
                     game.hasPendingDecision() shouldBe true
                 }
+                game.answerYesNo(true)
 
-                // Select Glory Seeker as the target
+                // Now select the target
                 val targetId = game.findPermanent("Glory Seeker")
                 withClue("Glory Seeker should be on battlefield") {
                     targetId shouldNotBe null
@@ -42,12 +43,6 @@ class InvigoratingBoonScenarioTest : ScenarioTestBase() {
 
                 // Resolve the triggered ability on the stack
                 game.resolveStack()
-
-                // MayEffect should present a yes/no decision
-                withClue("Should have may decision after resolving stack") {
-                    game.hasPendingDecision() shouldBe true
-                }
-                game.answerYesNo(true)
 
                 // Glory Seeker should now have a +1/+1 counter
                 val counters = game.state.getEntity(targetId)?.get<CountersComponent>()
@@ -71,12 +66,8 @@ class InvigoratingBoonScenarioTest : ScenarioTestBase() {
 
                 game.cycleCard(1, "Barren Moor")
 
+                // Decline the may effect (before target selection)
                 val targetId = game.findPermanent("Glory Seeker")!!
-                game.selectTargets(listOf(targetId))
-
-                game.resolveStack()
-
-                // Decline the may effect
                 game.answerYesNo(false)
 
                 // Glory Seeker should NOT have any counters

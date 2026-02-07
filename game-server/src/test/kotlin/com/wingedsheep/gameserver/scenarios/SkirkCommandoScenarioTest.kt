@@ -55,9 +55,12 @@ class SkirkCommandoScenarioTest : ScenarioTestBase() {
                     iterations++
                 }
 
-                withClue("Should have pending decision for target selection") {
+                withClue("Should have pending may decision") {
                     game.hasPendingDecision() shouldBe true
                 }
+
+                // MayEffect asks yes/no first
+                game.answerYesNo(true)
 
                 // Select Glory Seeker as the target
                 val targetId = game.findPermanent("Glory Seeker")!!
@@ -65,12 +68,6 @@ class SkirkCommandoScenarioTest : ScenarioTestBase() {
 
                 // Resolve the triggered ability on the stack
                 game.resolveStack()
-
-                // MayEffect asks yes/no
-                withClue("Should have may decision") {
-                    game.hasPendingDecision() shouldBe true
-                }
-                game.answerYesNo(true)
 
                 // Glory Seeker is 2/2 and takes 2 damage - should die
                 withClue("Glory Seeker should be destroyed by 2 damage") {
@@ -136,14 +133,7 @@ class SkirkCommandoScenarioTest : ScenarioTestBase() {
                     iterations++
                 }
 
-                // Select target
-                val targetId = game.findPermanent("Glory Seeker")!!
-                game.selectTargets(listOf(targetId))
-
-                // Resolve the triggered ability
-                game.resolveStack()
-
-                // Decline the "you may" effect
+                // Decline the "you may" effect (before target selection)
                 game.answerYesNo(false)
 
                 // Glory Seeker should still be alive

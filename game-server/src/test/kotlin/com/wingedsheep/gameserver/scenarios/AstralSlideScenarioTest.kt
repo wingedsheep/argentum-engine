@@ -41,20 +41,17 @@ class AstralSlideScenarioTest : ScenarioTestBase() {
                     cycleResult.error shouldBe null
                 }
 
-                // Astral Slide triggers - Player1 gets target selection decision
-                withClue("Should have pending decision for target selection") {
+                // Astral Slide triggers - MayEffect asks yes/no first
+                withClue("Should have pending may decision") {
                     game.hasPendingDecision() shouldBe true
                 }
+                game.answerYesNo(true)
 
+                // Now select target
                 val targetId = game.findPermanent("Glory Seeker")!!
                 game.selectTargets(listOf(targetId))
 
                 game.resolveStack()
-
-                withClue("Should have may decision") {
-                    game.hasPendingDecision() shouldBe true
-                }
-                game.answerYesNo(true)
 
                 withClue("Glory Seeker should be in exile") {
                     game.isOnBattlefield("Glory Seeker") shouldBe false
@@ -86,12 +83,14 @@ class AstralSlideScenarioTest : ScenarioTestBase() {
 
                 game.cycleCard(1, "Disciple of Grace")
 
+                // May decision first
+                game.answerYesNo(true)
+
                 // Target own creature
                 val targetId = game.findPermanent("Glory Seeker")!!
                 game.selectTargets(listOf(targetId))
 
                 game.resolveStack()
-                game.answerYesNo(true)
 
                 withClue("Glory Seeker should be in exile") {
                     game.isOnBattlefield("Glory Seeker") shouldBe false
@@ -132,12 +131,13 @@ class AstralSlideScenarioTest : ScenarioTestBase() {
                     cycleResult.error shouldBe null
                 }
 
-                // Astral Slide triggers - pending decision for target selection
-                withClue("Should have pending decision for target selection") {
+                // Astral Slide triggers - MayEffect asks yes/no first
+                withClue("Should have pending may decision") {
                     game.hasPendingDecision() shouldBe true
                 }
+                game.answerYesNo(true)
 
-                // Select Glory Seeker as the target
+                // Now select the target
                 val targetId = game.findPermanent("Glory Seeker")
                 withClue("Glory Seeker should be on battlefield for targeting") {
                     targetId shouldNotBe null
@@ -146,12 +146,6 @@ class AstralSlideScenarioTest : ScenarioTestBase() {
 
                 // Ability is now on the stack - resolve it (both players pass priority)
                 game.resolveStack()
-
-                // MayEffect should now present a yes/no decision
-                withClue("Should have may decision after resolving stack") {
-                    game.hasPendingDecision() shouldBe true
-                }
-                game.answerYesNo(true)
 
                 // Glory Seeker should now be in exile
                 withClue("Glory Seeker should be in exile") {
@@ -190,14 +184,7 @@ class AstralSlideScenarioTest : ScenarioTestBase() {
                 // Cycle
                 game.cycleCard(1, "Disciple of Grace")
 
-                // Target selection
-                val targetId = game.findPermanent("Glory Seeker")!!
-                game.selectTargets(listOf(targetId))
-
-                // Resolve the triggered ability on the stack
-                game.resolveStack()
-
-                // Decline the "you may" effect
+                // Decline the "you may" effect (before target selection)
                 withClue("Should have may decision") {
                     game.hasPendingDecision() shouldBe true
                 }
@@ -229,36 +216,29 @@ class AstralSlideScenarioTest : ScenarioTestBase() {
                 // Cycle - both Astral Slides should trigger
                 game.cycleCard(1, "Disciple of Grace")
 
-                // First trigger - target selection
-                withClue("Should have pending decision for first trigger") {
+                // First trigger - may decision then target selection
+                withClue("Should have pending may decision for first trigger") {
                     game.hasPendingDecision() shouldBe true
                 }
+                game.answerYesNo(true)
+
                 val glorySeekerId = game.findPermanent("Glory Seeker")!!
                 game.selectTargets(listOf(glorySeekerId))
 
-                // Second trigger - target selection
-                withClue("Should have pending decision for second trigger") {
+                // Second trigger - may decision then target selection
+                withClue("Should have pending may decision for second trigger") {
                     game.hasPendingDecision() shouldBe true
                 }
+                game.answerYesNo(true)
+
                 val bearsId = game.findPermanent("Grizzly Bears")!!
                 game.selectTargets(listOf(bearsId))
 
-                // Resolve the first ability on the stack
+                // Resolve the first ability on the stack (no more may question - already answered)
                 game.resolveStack()
-
-                // May decision for first resolving ability
-                withClue("Should have may decision") {
-                    game.hasPendingDecision() shouldBe true
-                }
-                game.answerYesNo(true)
 
                 // Resolve the second ability
                 game.resolveStack()
-
-                withClue("Should have may decision for second ability") {
-                    game.hasPendingDecision() shouldBe true
-                }
-                game.answerYesNo(true)
 
                 // Both creatures should be in exile
                 withClue("Glory Seeker should be in exile") {
@@ -302,31 +282,27 @@ class AstralSlideScenarioTest : ScenarioTestBase() {
                 // Cycle - both enchantments should trigger
                 game.cycleCard(1, "Disciple of Grace")
 
-                // First trigger target selection (could be Astral Slide or Lightning Rift)
-                withClue("Should have pending decision for first trigger") {
-                    game.hasPendingDecision() shouldBe true
-                }
-                val targetId = game.findPermanent("Glory Seeker")!!
-                game.selectTargets(listOf(targetId))
-
-                // Second trigger target selection
-                withClue("Should have pending decision for second trigger") {
-                    game.hasPendingDecision() shouldBe true
-                }
-                game.selectTargets(listOf(targetId))
-
-                // Resolve first ability on stack and accept may
-                game.resolveStack()
-                withClue("Should have may decision") {
+                // First trigger - may decision then target selection
+                withClue("Should have pending may decision for first trigger") {
                     game.hasPendingDecision() shouldBe true
                 }
                 game.answerYesNo(true)
 
-                // Resolve second ability on stack and accept may
-                game.resolveStack()
-                if (game.hasPendingDecision()) {
-                    game.answerYesNo(true)
+                val targetId = game.findPermanent("Glory Seeker")!!
+                game.selectTargets(listOf(targetId))
+
+                // Second trigger - may decision then target selection
+                withClue("Should have pending may decision for second trigger") {
+                    game.hasPendingDecision() shouldBe true
                 }
+                game.answerYesNo(true)
+                game.selectTargets(listOf(targetId))
+
+                // Resolve first ability on stack (no more may question - already answered)
+                game.resolveStack()
+
+                // Resolve second ability on stack
+                game.resolveStack()
 
                 // At least one of the effects should have worked -
                 // either the creature was exiled or took damage (or both, in order)

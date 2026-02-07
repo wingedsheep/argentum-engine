@@ -37,10 +37,11 @@ class DirgeOfDreadScenarioTest : ScenarioTestBase() {
                     cycleResult.error shouldBe null
                 }
 
-                // Cycling trigger fires - pending decision for target selection
-                withClue("Should have pending decision for target selection") {
+                // Cycling trigger fires - MayEffect asks yes/no first
+                withClue("Should have pending may decision") {
                     game.hasPendingDecision() shouldBe true
                 }
+                game.answerYesNo(true)
 
                 // Select Glory Seeker as the target
                 val targetId = game.findPermanent("Glory Seeker")!!
@@ -48,12 +49,6 @@ class DirgeOfDreadScenarioTest : ScenarioTestBase() {
 
                 // Resolve the triggered ability on the stack
                 game.resolveStack()
-
-                // MayEffect asks yes/no
-                withClue("Should have may decision") {
-                    game.hasPendingDecision() shouldBe true
-                }
-                game.answerYesNo(true)
 
                 // Verify Glory Seeker has fear via client state
                 val clientState = game.getClientState(1)
@@ -77,17 +72,11 @@ class DirgeOfDreadScenarioTest : ScenarioTestBase() {
                 // Cycle
                 game.cycleCard(1, "Dirge of Dread")
 
-                // Target selection
-                val targetId = game.findPermanent("Glory Seeker")!!
-                game.selectTargets(listOf(targetId))
-
-                // Resolve the triggered ability
-                game.resolveStack()
-
-                // Decline
+                // Decline the may effect (before target selection)
                 game.answerYesNo(false)
 
                 // Glory Seeker should NOT have fear
+                val targetId = game.findPermanent("Glory Seeker")!!
                 val clientState = game.getClientState(1)
                 val glorySeeker = clientState.cards[targetId]
                 withClue("Glory Seeker should not have fear keyword") {
