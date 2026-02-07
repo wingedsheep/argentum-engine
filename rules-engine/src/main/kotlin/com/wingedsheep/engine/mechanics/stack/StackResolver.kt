@@ -83,16 +83,15 @@ class StackResolver(
             if (targets.isNotEmpty()) {
                 updated = updated.with(TargetsComponent(targets))
             }
-            // If casting face-down, add the morph data component with the morph cost
-            if (castFaceDown) {
-                val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId)
-                val morphAbility = cardDef?.keywordAbilities?.filterIsInstance<KeywordAbility.Morph>()?.firstOrNull()
-                if (morphAbility != null) {
-                    updated = updated.with(MorphDataComponent(
-                        morphCost = morphAbility.cost,
-                        originalCardDefinitionId = cardComponent.cardDefinitionId
-                    ))
-                }
+            // Add morph data for creatures with morph (needed for face-down casting and
+            // for effects like Backslide that target "creature with a morph ability")
+            val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId)
+            val morphAbility = cardDef?.keywordAbilities?.filterIsInstance<KeywordAbility.Morph>()?.firstOrNull()
+            if (morphAbility != null) {
+                updated = updated.with(MorphDataComponent(
+                    morphCost = morphAbility.cost,
+                    originalCardDefinitionId = cardComponent.cardDefinitionId
+                ))
             }
             updated
         }

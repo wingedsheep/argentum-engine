@@ -231,6 +231,11 @@ data class GameObjectFilter(
         statePredicates = statePredicates + StatePredicate.IsFaceDown
     )
 
+    /** Must have a morph ability */
+    fun withMorph() = copy(
+        statePredicates = statePredicates + StatePredicate.HasMorphAbility
+    )
+
     // =============================================================================
     // Fluent Builder Methods - Controller Predicates
     // =============================================================================

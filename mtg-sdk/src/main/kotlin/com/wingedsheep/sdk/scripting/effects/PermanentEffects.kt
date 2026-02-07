@@ -299,3 +299,15 @@ data class GainControlByMostOfSubtypeEffect(
     override val description: String =
         "the player who controls the most ${subtype.value}s gains control of ${target.description}"
 }
+
+/**
+ * Turn target creature face down.
+ * "Turn target creature with a morph ability face down."
+ * Used for Backslide and similar effects.
+ */
+@Serializable
+data class TurnFaceDownEffect(
+    val target: EffectTarget = EffectTarget.ContextTarget(0)
+) : Effect {
+    override val description: String = "Turn ${target.description} face down"
+}

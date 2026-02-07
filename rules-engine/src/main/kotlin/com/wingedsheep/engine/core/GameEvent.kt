@@ -601,6 +601,16 @@ data class TurnFaceUpEvent(
     val controllerId: EntityId
 ) : GameEvent
 
+/**
+ * A creature was turned face down (e.g., by Backslide).
+ */
+@Serializable
+@SerialName("TurnedFaceDownEvent")
+data class TurnedFaceDownEvent(
+    val entityId: EntityId,
+    val controllerId: EntityId
+) : GameEvent
+
 // =============================================================================
 // Control Events
 // =============================================================================

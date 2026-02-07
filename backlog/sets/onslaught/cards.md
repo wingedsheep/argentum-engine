@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 137 / 335
+**Implemented:** 138 / 335
 
 ---
 
@@ -31,7 +31,7 @@
 - [x] Aven Brigadier
 - [x] Aven Fateshaper
 - [x] Aven Soulgazer
-- [ ] Backslide
+- [x] Backslide
 - [x] Barkhide Mauler
 - [x] Barren Moor
 - [x] Battering Craghorn

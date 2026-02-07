@@ -51,6 +51,7 @@ object OnslaughtSet {
         AirborneAid,
         Annex,
         AvenFateshaper,
+        Backslide,
         CraftyPathmage,
         GhosthelmCourier,
         ThoughtboundPrimoc,
