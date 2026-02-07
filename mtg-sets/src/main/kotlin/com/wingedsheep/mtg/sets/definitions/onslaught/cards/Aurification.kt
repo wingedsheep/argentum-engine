@@ -44,6 +44,6 @@ val Aurification = card("Aurification") {
         collectorNumber = "6"
         artist = "Gary Ruddell"
         flavorText = "Trespassers will be decorated."
-        imageUri = "https://cards.scryfall.io/normal/front/9/3/93d9fa3d-dd94-4f3f-be7e-b677e5952d73.jpg?1562929867"
+        imageUri = "https://cards.scryfall.io/large/front/9/3/93d9e9ea-9f88-4206-8960-b5ebe839ee16.jpg?1562929867"
     }
 }
