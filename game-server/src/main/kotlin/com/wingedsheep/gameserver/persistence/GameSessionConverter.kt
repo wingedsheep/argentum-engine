@@ -86,6 +86,7 @@ fun restoreGameSession(
             playerName = info.playerName
         ).also {
             it.currentGameSessionId = persistent.sessionId
+            it.currentLobbyId = persistent.lobbyId
         }
     }
 

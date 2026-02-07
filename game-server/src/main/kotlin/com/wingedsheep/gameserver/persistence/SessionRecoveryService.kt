@@ -69,6 +69,10 @@ class SessionRecoveryService(
 
     /**
      * Register a player identity if one doesn't already exist with that token.
+     * If the token already exists, merge any additional context (lobbyId, spectatingGameId)
+     * from the new identity into the existing one. This handles the case where
+     * game session recovery and lobby recovery each provide partial state.
+     *
      * Restored identities have no WebSocket connection - they reconnect later.
      */
     private fun registerIdentityIfNew(identity: PlayerIdentity) {
@@ -78,11 +82,31 @@ class SessionRecoveryService(
             // The player will reconnect and their WebSocket will be associated then
             sessionRegistry.preRegisterIdentity(identity)
             logger.info(
-                "Recovered player identity: {} ({}) with token {} for game {}",
+                "Recovered player identity: {} ({}) with token {} for game {} lobby {}",
                 identity.playerName,
                 identity.playerId.value,
                 identity.token.take(8) + "...",
-                identity.currentGameSessionId
+                identity.currentGameSessionId,
+                identity.currentLobbyId
+            )
+        } else {
+            // Merge state from another recovery source (e.g., lobby recovery augmenting game recovery)
+            if (identity.currentLobbyId != null && existing.currentLobbyId == null) {
+                existing.currentLobbyId = identity.currentLobbyId
+            }
+            if (identity.currentGameSessionId != null && existing.currentGameSessionId == null) {
+                existing.currentGameSessionId = identity.currentGameSessionId
+            }
+            if (identity.currentSpectatingGameId != null && existing.currentSpectatingGameId == null) {
+                existing.currentSpectatingGameId = identity.currentSpectatingGameId
+            }
+            logger.info(
+                "Merged player identity: {} ({}) — game={}, lobby={}, spectating={}",
+                existing.playerName,
+                existing.playerId.value,
+                existing.currentGameSessionId,
+                existing.currentLobbyId,
+                existing.currentSpectatingGameId
             )
         }
     }

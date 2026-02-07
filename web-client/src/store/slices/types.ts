@@ -361,10 +361,8 @@ export type GameStore = {
   tournamentState: TournamentState | null
   spectatingState: SpectatingState | null
   createTournamentLobby: (setCodes: string[], format?: 'SEALED' | 'DRAFT', boosterCount?: number, maxPlayers?: number, pickTimeSeconds?: number) => void
-  createSealedLobby: (setCode: string, boosterCount?: number, maxPlayers?: number) => void
   joinLobby: (lobbyId: string) => void
   startLobby: () => void
-  startSealedLobby: () => void
   leaveLobby: () => void
   stopLobby: () => void
   updateLobbySettings: (settings: { setCodes?: string[]; format?: 'SEALED' | 'DRAFT'; boosterCount?: number; maxPlayers?: number; gamesPerMatch?: number; pickTimeSeconds?: number; picksPerRound?: number }) => void

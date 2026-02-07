@@ -24,12 +24,8 @@ export interface LobbySliceState {
 
 export interface LobbySliceActions {
   createTournamentLobby: (setCodes: string[], format?: 'SEALED' | 'DRAFT', boosterCount?: number, maxPlayers?: number, pickTimeSeconds?: number) => void
-  /** @deprecated Use createTournamentLobby instead */
-  createSealedLobby: (setCode: string, boosterCount?: number, maxPlayers?: number) => void
   joinLobby: (lobbyId: string) => void
   startLobby: () => void
-  /** @deprecated Use startLobby instead */
-  startSealedLobby: () => void
   leaveLobby: () => void
   stopLobby: () => void
   updateLobbySettings: (settings: { setCodes?: string[]; format?: 'SEALED' | 'DRAFT'; boosterCount?: number; maxPlayers?: number; gamesPerMatch?: number; pickTimeSeconds?: number; picksPerRound?: number }) => void
@@ -49,16 +45,15 @@ export const createLobbySlice: SliceCreator<LobbySlice> = (set, get) => ({
 
   // Actions
   createTournamentLobby: (setCodes, format = 'SEALED', boosterCount = 6, maxPlayers = 8, pickTimeSeconds = 45) => {
+    clearDeckState()
+    set({ deckBuildingState: null })
     trackEvent('tournament_lobby_created', { set_codes: setCodes, format, booster_count: boosterCount, max_players: maxPlayers })
     getWebSocket()?.send(createCreateTournamentLobbyMessage(setCodes, format, boosterCount, maxPlayers, pickTimeSeconds))
   },
 
-  createSealedLobby: (setCode, boosterCount = 6, maxPlayers = 8) => {
-    trackEvent('sealed_lobby_created', { set_code: setCode, booster_count: boosterCount, max_players: maxPlayers })
-    getWebSocket()?.send(createCreateTournamentLobbyMessage([setCode], 'SEALED', boosterCount, maxPlayers, 45))
-  },
-
   joinLobby: (lobbyId) => {
+    clearDeckState()
+    set({ deckBuildingState: null })
     trackEvent('lobby_joined')
     getWebSocket()?.send(createJoinLobbyMessage(lobbyId))
   },
@@ -66,11 +61,6 @@ export const createLobbySlice: SliceCreator<LobbySlice> = (set, get) => ({
   startLobby: () => {
     const { lobbyState } = get()
     trackEvent('lobby_started', { format: lobbyState?.settings.format })
-    getWebSocket()?.send(createStartTournamentLobbyMessage())
-  },
-
-  startSealedLobby: () => {
-    trackEvent('sealed_lobby_started')
     getWebSocket()?.send(createStartTournamentLobbyMessage())
   },
 
