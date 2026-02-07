@@ -1,12 +1,13 @@
 package com.wingedsheep.engine.handlers.effects.life
 
 import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.core.LifeChangedEvent
 import com.wingedsheep.engine.core.LifeChangeReason
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolvePlayerTarget
+import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolvePlayerTargets
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.sdk.scripting.LoseLifeEffect
@@ -27,21 +28,25 @@ class LoseLifeExecutor(
         effect: LoseLifeEffect,
         context: EffectContext
     ): ExecutionResult {
-        val targetId = resolvePlayerTarget(effect.target, context)
-            ?: return ExecutionResult.error(state, "No valid target for life loss")
-
-        val currentLife = state.getEntity(targetId)?.get<LifeTotalComponent>()?.life
-            ?: return ExecutionResult.error(state, "Target has no life total")
-
-        val amount = amountEvaluator.evaluate(state, effect.amount, context)
-        val newLife = currentLife - amount
-        val newState = state.updateEntity(targetId) { container ->
-            container.with(LifeTotalComponent(newLife))
+        val playerIds = resolvePlayerTargets(effect.target, state, context)
+        if (playerIds.isEmpty()) {
+            return ExecutionResult.error(state, "No valid target for life loss")
         }
 
-        return ExecutionResult.success(
-            newState,
-            listOf(LifeChangedEvent(targetId, currentLife, newLife, LifeChangeReason.LIFE_LOSS))
-        )
+        val amount = amountEvaluator.evaluate(state, effect.amount, context)
+
+        var newState = state
+        val events = mutableListOf<EngineGameEvent>()
+
+        for (playerId in playerIds) {
+            val currentLife = newState.getEntity(playerId)?.get<LifeTotalComponent>()?.life ?: continue
+            val newLife = currentLife - amount
+            newState = newState.updateEntity(playerId) { container ->
+                container.with(LifeTotalComponent(newLife))
+            }
+            events.add(LifeChangedEvent(playerId, currentLife, newLife, LifeChangeReason.LIFE_LOSS))
+        }
+
+        return ExecutionResult.success(newState, events)
     }
 }
