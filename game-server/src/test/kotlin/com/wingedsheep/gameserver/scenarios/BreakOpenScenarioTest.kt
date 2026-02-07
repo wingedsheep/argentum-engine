@@ -51,10 +51,13 @@ class BreakOpenScenarioTest : ScenarioTestBase() {
                     game.state.getEntity(entityId)?.has<FaceDownComponent>() == true
                 }!!
 
-                // Player 2 has priority after stack resolves; pass to give Player 1 priority
-                game.passPriority()
+                // Switch to Player 1's main phase
+                game.state = game.state.copy(
+                    activePlayerId = game.player1Id,
+                    priorityPlayerId = game.player1Id
+                )
 
-                // Player 1 casts Break Open (instant) targeting the face-down creature
+                // Player 1 casts Break Open targeting the face-down creature
                 val castBreakOpen = game.castSpell(1, "Break Open", faceDownId)
                 withClue("Cast Break Open should succeed: ${castBreakOpen.error}") {
                     castBreakOpen.error shouldBe null
