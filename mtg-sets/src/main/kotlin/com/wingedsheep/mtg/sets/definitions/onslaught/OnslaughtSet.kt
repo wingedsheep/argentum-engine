@@ -80,6 +80,7 @@ object OnslaughtSet {
         AnuridMurkdiver,
         CabalArchon,
         CruelRevival,
+        DeathPulse,
         DoomedNecromancer,
         DiscipleOfMalice,
         FadeFromMemory,
