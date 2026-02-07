@@ -974,17 +974,60 @@ class GameSession(
                 if (canCastTiming) {
                     // Check if we can afford to cast normally
                     val canAffordNormal = manaSolver.canPay(state, playerId, cardComponent.manaCost)
-                    // Check if a cast action was already added (affordable)
+                    // Check if a cast action was already added (affordable, with proper targeting)
                     val hasCastAction = result.any { it.action is CastSpell && (it.action as CastSpell).cardId == cardId }
                     if (!hasCastAction) {
-                        // Add cast action (always, but marked as unaffordable if can't pay)
-                        result.add(LegalActionInfo(
-                            actionType = "CastSpell",
-                            description = "Cast ${cardComponent.name}",
-                            action = CastSpell(playerId, cardId),
-                            isAffordable = canAffordNormal,
-                            manaCostString = cardComponent.manaCost.toString()
-                        ))
+                        // If the spell requires targets, check if valid targets exist.
+                        // Without this, a spell with cycling+targeting would be castable
+                        // without target selection when no valid targets are found.
+                        val targetReqs = cardDef.script.targetRequirements
+                        val hasRequiredTargets = targetReqs.any { it.effectiveMinCount > 0 }
+                        val canSatisfyTargets = if (hasRequiredTargets) {
+                            targetReqs.all { req ->
+                                val validTargets = findValidTargets(state, playerId, req)
+                                validTargets.isNotEmpty() || req.effectiveMinCount == 0
+                            }
+                        } else {
+                            true
+                        }
+
+                        if (canAffordNormal && canSatisfyTargets && targetReqs.isNotEmpty()) {
+                            // Spell is affordable and has valid targets — add with full targeting info
+                            val targetReqInfos = targetReqs.mapIndexed { index, req ->
+                                val validTargets = findValidTargets(state, playerId, req)
+                                LegalActionTargetInfo(
+                                    index = index,
+                                    description = req.description,
+                                    minTargets = req.effectiveMinCount,
+                                    maxTargets = req.count,
+                                    validTargets = validTargets
+                                )
+                            }
+                            val firstReq = targetReqs.first()
+                            val firstReqInfo = targetReqInfos.first()
+                            result.add(LegalActionInfo(
+                                actionType = "CastSpell",
+                                description = "Cast ${cardComponent.name}",
+                                action = CastSpell(playerId, cardId),
+                                validTargets = firstReqInfo.validTargets,
+                                requiresTargets = true,
+                                targetCount = firstReq.count,
+                                minTargets = firstReq.effectiveMinCount,
+                                targetDescription = firstReq.description,
+                                targetRequirements = if (targetReqInfos.size > 1) targetReqInfos else null,
+                                isAffordable = true,
+                                manaCostString = cardComponent.manaCost.toString()
+                            ))
+                        } else {
+                            // Spell is unaffordable or has no valid targets — show greyed out
+                            result.add(LegalActionInfo(
+                                actionType = "CastSpell",
+                                description = "Cast ${cardComponent.name}",
+                                action = CastSpell(playerId, cardId),
+                                isAffordable = false,
+                                manaCostString = cardComponent.manaCost.toString()
+                            ))
+                        }
                     }
                 }
             }
