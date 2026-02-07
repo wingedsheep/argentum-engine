@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 144 / 335
+**Implemented:** 146 / 335
 
 ---
 
@@ -43,8 +43,8 @@
 - [x] Blistering Firecat
 - [x] Bloodline Shaman
 - [x] Bloodstained Mire
-- [ ] Boneknitter
-- [ ] Break Open
+- [x] Boneknitter
+- [x] Break Open
 - [x] Brightstone Ritual
 - [x] Broodhatch Nantuko
 - [ ] Butcher Orgg

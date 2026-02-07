@@ -330,3 +330,15 @@ data class TurnFaceDownEffect(
 ) : Effect {
     override val description: String = "Turn ${target.description} face down"
 }
+
+/**
+ * Turn target face-down creature face up.
+ * "Turn target face-down creature an opponent controls face up."
+ * Used for Break Open and similar effects.
+ */
+@Serializable
+data class TurnFaceUpEffect(
+    val target: EffectTarget = EffectTarget.ContextTarget(0)
+) : Effect {
+    override val description: String = "Turn ${target.description} face up"
+}

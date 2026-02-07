@@ -70,6 +70,7 @@ object OnslaughtSet {
         // Black creatures and spells
         AccursedCentaur,
         Blackmail,
+        Boneknitter,
         AphettoDredging,
         DirgeOfDread,
         FrightshroudCourier,
@@ -103,6 +104,7 @@ object OnslaughtSet {
         AetherCharge,
         Avarax,
         BlisteringFirecat,
+        BreakOpen,
         BrightstoneRitual,
         SkirkCommando,
         AggravatedAssault,

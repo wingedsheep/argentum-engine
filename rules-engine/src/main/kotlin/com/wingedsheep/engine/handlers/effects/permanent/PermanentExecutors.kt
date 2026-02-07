@@ -29,6 +29,7 @@ class PermanentExecutors(
         ChangeCreatureTypeTextExecutor(decisionHandler),
         GainControlExecutor(),
         GainControlByMostOfSubtypeExecutor(),
-        TurnFaceDownExecutor()
+        TurnFaceDownExecutor(),
+        TurnFaceUpExecutor()
     )
 }
