@@ -137,6 +137,7 @@ val engineSerializersModule = SerializersModule {
         subclass(ChooseFromCreatureTypeContinuation::class)
         subclass(ChooseToCreatureTypeContinuation::class)
         subclass(PutFromHandContinuation::class)
+        subclass(UntapChoiceContinuation::class)
     }
 
     // Component hierarchy (for GameState persistence)
@@ -152,6 +153,7 @@ val engineSerializersModule = SerializersModule {
         subclass(RevealedToComponent::class)
         subclass(MorphDataComponent::class)
         subclass(TextReplacementComponent::class)
+        subclass(ProtectionComponent::class)
 
         // Battlefield components
         subclass(TappedComponent::class)
