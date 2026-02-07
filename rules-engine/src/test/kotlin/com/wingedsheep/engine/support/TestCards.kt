@@ -264,7 +264,7 @@ object TestCards {
         power = 2,
         toughness = 2,
         oracleText = "Phantom Warrior can't be blocked.",
-        keywords = setOf(Keyword.UNBLOCKABLE)
+        keywords = setOf(Keyword.CANT_BE_BLOCKED)
     )
 
     /**

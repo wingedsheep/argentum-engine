@@ -17,7 +17,7 @@ val PhantomWarrior = card("Phantom Warrior") {
     power = 2
     toughness = 2
 
-    keywords(Keyword.UNBLOCKABLE)
+    keywords(Keyword.CANT_BE_BLOCKED)
 
     metadata {
         rarity = Rarity.RARE

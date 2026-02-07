@@ -488,7 +488,7 @@ class CombatManager(
         val projected = stateProjector.project(state)
 
         // Unblockable: Cannot be blocked at all
-        if (projected.hasKeyword(attackerId, Keyword.UNBLOCKABLE)) {
+        if (projected.hasKeyword(attackerId, Keyword.CANT_BE_BLOCKED)) {
             return "${attackerCard.name} can't be blocked"
         }
 
@@ -1419,7 +1419,7 @@ class CombatManager(
         }
 
         // Unblockable: Cannot be blocked at all
-        if (projected.hasKeyword(attackerId, Keyword.UNBLOCKABLE)) {
+        if (projected.hasKeyword(attackerId, Keyword.CANT_BE_BLOCKED)) {
             return false
         }
 

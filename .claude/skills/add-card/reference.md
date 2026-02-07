@@ -378,7 +378,7 @@ Always use these facades for card definitions. They provide type-safe factory me
 ## Keywords (Keyword enum)
 
 ### Evasion
-`FLYING`, `MENACE`, `INTIMIDATE`, `FEAR`, `SHADOW`, `HORSEMANSHIP`, `UNBLOCKABLE`, `CANT_BE_BLOCKED`, `CANT_BE_BLOCKED_BY_MORE_THAN_ONE`
+`FLYING`, `MENACE`, `INTIMIDATE`, `FEAR`, `SHADOW`, `HORSEMANSHIP`, `CANT_BE_BLOCKED`, `CANT_BE_BLOCKED_BY_MORE_THAN_ONE`
 
 ### Landwalk
 `SWAMPWALK`, `FORESTWALK`, `ISLANDWALK`, `MOUNTAINWALK`, `PLAINSWALK`

@@ -146,7 +146,6 @@ export enum Keyword {
   FEAR = 'FEAR',
   SHADOW = 'SHADOW',
   HORSEMANSHIP = 'HORSEMANSHIP',
-  UNBLOCKABLE = 'UNBLOCKABLE',
   CANT_BE_BLOCKED = 'CANT_BE_BLOCKED',
   CANT_BE_BLOCKED_BY_MORE_THAN_ONE = 'CANT_BE_BLOCKED_BY_MORE_THAN_ONE',
   // Landwalk
@@ -192,7 +191,6 @@ export const KeywordDisplayNames: Record<Keyword, string> = {
   [Keyword.FEAR]: 'Fear',
   [Keyword.SHADOW]: 'Shadow',
   [Keyword.HORSEMANSHIP]: 'Horsemanship',
-  [Keyword.UNBLOCKABLE]: 'Unblockable',
   [Keyword.CANT_BE_BLOCKED]: "Can't be blocked",
   [Keyword.CANT_BE_BLOCKED_BY_MORE_THAN_ONE]: "Can't be blocked by more than one creature",
   [Keyword.SWAMPWALK]: 'Swampwalk',

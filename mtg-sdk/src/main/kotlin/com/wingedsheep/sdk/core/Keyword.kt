@@ -11,7 +11,6 @@ enum class Keyword(val displayName: String) {
     FEAR("Fear"),
     SHADOW("Shadow"),
     HORSEMANSHIP("Horsemanship"),
-    UNBLOCKABLE("Unblockable"),
     CANT_BE_BLOCKED("Can't be blocked"),
     CANT_BE_BLOCKED_BY_MORE_THAN_ONE("Can't be blocked by more than one creature"),
 
