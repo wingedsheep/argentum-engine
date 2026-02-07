@@ -14,6 +14,11 @@ import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.combat.AttackingComponent
+import com.wingedsheep.engine.state.components.combat.BlockedComponent
+import com.wingedsheep.engine.state.components.combat.BlockingComponent
+import com.wingedsheep.engine.state.components.combat.DamageAssignmentComponent
+import com.wingedsheep.engine.state.components.combat.DamageAssignmentOrderComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
@@ -169,9 +174,10 @@ object EffectExecutorUtils {
      *
      * @param state The current game state
      * @param entityId The entity to destroy
+     * @param canRegenerate If false, regeneration shields are not checked (e.g. Wrath of God)
      * @return The execution result with updated state and events
      */
-    fun destroyPermanent(state: GameState, entityId: EntityId): ExecutionResult {
+    fun destroyPermanent(state: GameState, entityId: EntityId, canRegenerate: Boolean = true): ExecutionResult {
         val container = state.getEntity(entityId)
             ?: return ExecutionResult.error(state, "Entity not found: $entityId")
 
@@ -182,6 +188,14 @@ object EffectExecutorUtils {
         if (stateProjector.hasProjectedKeyword(state, entityId, Keyword.INDESTRUCTIBLE)) {
             // Indestructible - the destroy effect has no effect (not an error)
             return ExecutionResult.success(state)
+        }
+
+        // Check for regeneration shields
+        if (canRegenerate) {
+            val (shieldState, wasRegenerated) = applyRegenerationShields(state, entityId)
+            if (wasRegenerated) {
+                return applyRegenerationReplacement(shieldState, entityId)
+            }
         }
 
         // Find which player's battlefield it's on
@@ -324,6 +338,59 @@ object EffectExecutorUtils {
         }
 
         return state.copy(floatingEffects = updatedEffects) to remainingDamage
+    }
+
+    /**
+     * Check for regeneration shields on an entity and consume one if found.
+     *
+     * Regeneration shields are floating effects with RegenerationShield modification.
+     * If a CantBeRegenerated floating effect targets the entity, regeneration is blocked.
+     *
+     * @param state The current game state
+     * @param entityId The entity being destroyed
+     * @return Pair of (updated state with consumed shield, whether regeneration occurred)
+     */
+    fun applyRegenerationShields(state: GameState, entityId: EntityId): Pair<GameState, Boolean> {
+        // Check if the entity has a CantBeRegenerated floating effect
+        val cantRegenerate = state.floatingEffects.any { effect ->
+            effect.effect.modification is SerializableModification.CantBeRegenerated &&
+                entityId in effect.effect.affectedEntities
+        }
+        if (cantRegenerate) return state to false
+
+        // Find the first regeneration shield targeting this entity
+        val shieldIndex = state.floatingEffects.indexOfFirst { effect ->
+            effect.effect.modification is SerializableModification.RegenerationShield &&
+                entityId in effect.effect.affectedEntities
+        }
+        if (shieldIndex == -1) return state to false
+
+        // Consume the shield (remove it)
+        val updatedEffects = state.floatingEffects.toMutableList()
+        updatedEffects.removeAt(shieldIndex)
+
+        return state.copy(floatingEffects = updatedEffects) to true
+    }
+
+    /**
+     * Apply regeneration replacement effect: tap the creature, remove all damage,
+     * and remove it from combat. The creature stays on the battlefield.
+     *
+     * @param state The current game state (shield already consumed)
+     * @param entityId The entity being regenerated
+     * @return ExecutionResult with the regenerated creature still on the battlefield
+     */
+    fun applyRegenerationReplacement(state: GameState, entityId: EntityId): ExecutionResult {
+        val newState = state.updateEntity(entityId) { c ->
+            c.with(TappedComponent)
+                .without<DamageComponent>()
+                .without<AttackingComponent>()
+                .without<BlockingComponent>()
+                .without<BlockedComponent>()
+                .without<DamageAssignmentComponent>()
+                .without<DamageAssignmentOrderComponent>()
+        }
+        return ExecutionResult.success(newState)
     }
 
     /**

@@ -914,6 +914,11 @@ class CombatManager(
      * @param firstStrike If true, only creatures with first strike/double strike deal damage
      */
     fun applyCombatDamage(state: GameState, firstStrike: Boolean = false): ExecutionResult {
+        // Check if all combat damage is prevented this turn
+        if (isAllCombatDamagePrevented(state)) {
+            return ExecutionResult.success(state)
+        }
+
         var newState = state
         val events = mutableListOf<GameEvent>()
 
@@ -1478,6 +1483,16 @@ class CombatManager(
         }
 
         return null
+    }
+
+    /**
+     * Check if all combat damage is prevented this turn.
+     * This is used by Leery Fogbeast and similar effects.
+     */
+    private fun isAllCombatDamagePrevented(state: GameState): Boolean {
+        return state.floatingEffects.any { floatingEffect ->
+            floatingEffect.effect.modification is SerializableModification.PreventAllCombatDamage
+        }
     }
 
     /**

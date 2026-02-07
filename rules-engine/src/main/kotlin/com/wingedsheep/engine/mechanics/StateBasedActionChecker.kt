@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.mechanics
 
 import com.wingedsheep.engine.core.*
+import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
@@ -207,26 +208,36 @@ class StateBasedActionChecker {
     /**
      * 704.5g - A creature that's been dealt lethal damage is destroyed.
      * Note: Indestructible creatures are not destroyed by lethal damage (Rule 702.12b).
+     * Creatures with regeneration shields are regenerated instead of destroyed.
      */
     private fun checkLethalDamage(state: GameState): ExecutionResult {
         var newState = state
         val events = mutableListOf<GameEvent>()
 
         for (entityId in state.getBattlefield().toList()) {
-            val container = state.getEntity(entityId) ?: continue
+            val container = newState.getEntity(entityId) ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue
             val damageComponent = container.get<DamageComponent>() ?: continue
 
             if (!cardComponent.typeLine.isCreature) continue
 
             // Check if creature has indestructible
-            if (stateProjector.hasProjectedKeyword(state, entityId, Keyword.INDESTRUCTIBLE)) {
+            if (stateProjector.hasProjectedKeyword(newState, entityId, Keyword.INDESTRUCTIBLE)) {
                 continue // Indestructible creatures can't be destroyed by lethal damage
             }
 
-            val effectiveToughness = stateProjector.getProjectedToughness(state, entityId)
+            val effectiveToughness = stateProjector.getProjectedToughness(newState, entityId)
 
             if (damageComponent.amount >= effectiveToughness) {
+                // Check for regeneration shields (lethal damage is destruction, so it can be regenerated)
+                val (shieldState, wasRegenerated) = EffectExecutorUtils.applyRegenerationShields(newState, entityId)
+                if (wasRegenerated) {
+                    val regenResult = EffectExecutorUtils.applyRegenerationReplacement(shieldState, entityId)
+                    newState = regenResult.newState
+                    events.addAll(regenResult.events)
+                    continue
+                }
+
                 val result = putCreatureInGraveyard(newState, entityId, cardComponent, "lethal damage")
                 newState = result.newState
                 events.addAll(result.events)

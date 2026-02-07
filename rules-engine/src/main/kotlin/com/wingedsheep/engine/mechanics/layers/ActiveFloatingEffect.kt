@@ -122,6 +122,13 @@ sealed interface SerializableModification {
     data object PreventDamageFromAttackingCreatures : SerializableModification
 
     /**
+     * Damage prevention: prevent all combat damage that would be dealt this turn.
+     * Used by Leery Fogbeast and similar effects.
+     */
+    @Serializable
+    data object PreventAllCombatDamage : SerializableModification
+
+    /**
      * Blocking restriction: creature can only be blocked by creatures of a specific color.
      * Used by Dread Charge and similar effects.
      */
@@ -150,6 +157,21 @@ sealed interface SerializableModification {
      */
     @Serializable
     data class PreventNextDamage(val remainingAmount: Int) : SerializableModification
+
+    /**
+     * Regeneration shield: the next time the target permanent would be destroyed this turn,
+     * instead tap it, remove all damage, and remove it from combat.
+     * Used by Boneknitter and similar effects.
+     */
+    @Serializable
+    data object RegenerationShield : SerializableModification
+
+    /**
+     * Marks a permanent as unable to be regenerated this turn.
+     * Used by Smother, Cruel Revival, Wrath of God (noRegenerate), etc.
+     */
+    @Serializable
+    data object CantBeRegenerated : SerializableModification
 }
 
 /**
@@ -177,4 +199,10 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.GrantProtectionFromColor -> Modification.GrantProtectionFromColor(color)
     // PreventNextDamage doesn't map to a layer modification - it's checked during damage resolution directly
     is SerializableModification.PreventNextDamage -> Modification.NoOp
+    // RegenerationShield doesn't map to a layer modification - it's checked during destruction
+    is SerializableModification.RegenerationShield -> Modification.NoOp
+    // CantBeRegenerated doesn't map to a layer modification - it's checked during destruction
+    is SerializableModification.CantBeRegenerated -> Modification.NoOp
+    // PreventAllCombatDamage doesn't map to a layer modification - it's checked by CombatManager directly
+    is SerializableModification.PreventAllCombatDamage -> Modification.NoOp
 }

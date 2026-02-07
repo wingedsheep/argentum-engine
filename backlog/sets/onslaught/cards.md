@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 146 / 335
+**Implemented:** 147 / 335
 
 ---
 
@@ -187,7 +187,7 @@
 - [x] Krosan Tusker
 - [ ] Lavamancer's Skill
 - [x] Lay Waste
-- [ ] Leery Fogbeast
+- [x] Leery Fogbeast
 - [x] Lightning Rift
 - [x] Lonely Sandbar
 - [ ] Mage's Guile

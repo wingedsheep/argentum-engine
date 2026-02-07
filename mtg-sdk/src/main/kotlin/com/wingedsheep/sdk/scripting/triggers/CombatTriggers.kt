@@ -41,7 +41,7 @@ data class OnYouAttack(
 }
 
 /**
- * Triggers when this creature blocks or becomes blocked.
+ * Triggers when this creature blocks.
  * "Whenever [this creature] blocks..."
  */
 @Serializable
@@ -52,6 +52,24 @@ data class OnBlock(
         "Whenever this creature blocks"
     } else {
         "Whenever a creature blocks"
+    }
+}
+
+/**
+ * Triggers when this creature becomes blocked.
+ * "Whenever [this creature] becomes blocked..."
+ *
+ * This fires for the ATTACKER when it is assigned one or more blockers.
+ * Different from OnBlock which fires for the BLOCKER.
+ */
+@Serializable
+data class OnBecomesBlocked(
+    val selfOnly: Boolean = true
+) : Trigger {
+    override val description: String = if (selfOnly) {
+        "Whenever this creature becomes blocked"
+    } else {
+        "Whenever a creature becomes blocked"
     }
 }
 

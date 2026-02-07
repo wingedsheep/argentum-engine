@@ -35,17 +35,12 @@ class DestroyAllExecutor : EffectExecutor<DestroyAllEffect> {
         val events = mutableListOf<EngineGameEvent>()
         val predicateContext = PredicateContext(controllerId = context.controllerId)
 
-        // Note: noRegenerate flag is stored but not yet enforced.
-        // Regeneration support will be added in a future update.
-        // When implemented, this executor will need to prevent regeneration
-        // replacement effects from being applied when noRegenerate is true.
-
         for (entityId in state.getBattlefield()) {
             if (!predicateEvaluator.matches(state, entityId, effect.filter.baseFilter, predicateContext)) {
                 continue
             }
 
-            val result = destroyPermanent(newState, entityId)
+            val result = destroyPermanent(newState, entityId, canRegenerate = !effect.noRegenerate)
             newState = result.newState
             events.addAll(result.events)
         }

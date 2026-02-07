@@ -147,6 +147,7 @@ object OnslaughtSet {
         InvigoratingBoon,
         KrosanColossus,
         KrosanGroundshaker,
+        LeeryFogbeast,
         KrosanTusker,
         MythicProportions,
         Naturalize,

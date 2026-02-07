@@ -72,6 +72,15 @@ data object PreventDamageFromAttackingCreaturesThisTurnEffect : Effect {
 }
 
 /**
+ * Prevent all combat damage that would be dealt this turn.
+ * Used for Leery Fogbeast: "Whenever this creature becomes blocked, prevent all combat damage that would be dealt this turn."
+ */
+@Serializable
+data object PreventAllCombatDamageThisTurnEffect : Effect {
+    override val description: String = "Prevent all combat damage that would be dealt this turn"
+}
+
+/**
  * Grant evasion to a group of creatures until end of turn.
  * "Black creatures you control can't be blocked this turn except by black creatures."
  * Used for Dread Charge.

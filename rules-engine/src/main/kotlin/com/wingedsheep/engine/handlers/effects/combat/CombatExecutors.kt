@@ -13,6 +13,7 @@ class CombatExecutors(
     override fun executors(): List<EffectExecutor<*>> = listOf(
         MustBeBlockedExecutor(),
         PreventDamageFromAttackingCreaturesExecutor(),
+        PreventAllCombatDamageThisTurnExecutor(),
         GrantCantBeBlockedExceptByColorExecutor(),
         ReflectCombatDamageExecutor(),
         TauntExecutor(),

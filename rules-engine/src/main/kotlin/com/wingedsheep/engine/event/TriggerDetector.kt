@@ -488,6 +488,11 @@ class TriggerDetector(
                     (!trigger.selfOnly || event.blockers.keys.contains(sourceId))
             }
 
+            is OnBecomesBlocked -> {
+                event is BlockersDeclaredEvent &&
+                    (!trigger.selfOnly || event.blockers.values.any { it.contains(sourceId) })
+            }
+
             is OnDealsDamage -> {
                 // Handled separately in detectDamageSourceTriggers
                 false

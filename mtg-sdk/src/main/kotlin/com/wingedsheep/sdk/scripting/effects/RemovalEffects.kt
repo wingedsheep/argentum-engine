@@ -10,15 +10,24 @@ import kotlinx.serialization.Serializable
 // =============================================================================
 
 /**
+ * Regenerate target creature.
+ * "Regenerate [permanent]" creates a one-shot shield that expires at end of turn.
+ * The next time that permanent would be destroyed this turn, instead:
+ * tap it, remove all damage from it, and remove it from combat.
+ */
+@Serializable
+data class RegenerateEffect(
+    val target: EffectTarget
+) : Effect {
+    override val description: String = "Regenerate ${target.description}"
+}
+
+/**
  * Mark target as unable to regenerate.
  * "It can't be regenerated."
  *
- * Designed to be used AFTER a destroy effect via .then() for cards like Smother.
- * The target may be in the graveyard when this effect resolves.
- * When regeneration is implemented, this will mark the entity to prevent
- * regeneration effects from returning it to the battlefield.
- *
- * Example: MoveToZoneEffect(target, Zone.Graveyard, byDestruction = true) then CantBeRegeneratedEffect(target)
+ * Designed to be used BEFORE a destroy effect via .then() for cards like Smother.
+ * Places a floating effect that prevents regeneration shields from being used.
  */
 @Serializable
 data class CantBeRegeneratedEffect(

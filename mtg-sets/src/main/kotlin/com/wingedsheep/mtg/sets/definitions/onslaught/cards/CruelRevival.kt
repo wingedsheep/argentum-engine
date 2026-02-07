@@ -39,8 +39,8 @@ val CruelRevival = card("Cruel Revival") {
             )
         )
 
-        effect = MoveToZoneEffect(creature, Zone.GRAVEYARD, byDestruction = true) then
-                CantBeRegeneratedEffect(creature) then
+        effect = CantBeRegeneratedEffect(creature) then
+                MoveToZoneEffect(creature, Zone.GRAVEYARD, byDestruction = true) then
                 MoveToZoneEffect(zombieCard, Zone.HAND)
     }
 
