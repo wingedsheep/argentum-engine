@@ -32,8 +32,8 @@ val SoullessOne = card("Soulless One") {
 
     metadata {
         rarity = Rarity.UNCOMMON
-        collectorNumber = "277"
-        artist = "Mark Zug"
+        collectorNumber = "171"
+        artist = "Thomas M. Baxa"
         flavorText = "\"Its residents dig their own graves and crawl in.\"\n—Phage the Untouchable"
         imageUri = "https://cards.scryfall.io/large/front/4/1/410a214b-09c4-49bd-a461-3330d0249ae5.jpg?1562841695"
     }

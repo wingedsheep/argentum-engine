@@ -14,7 +14,7 @@ import com.wingedsheep.sdk.scripting.KeywordAbility
  */
 val FoothillGuide = card("Foothill Guide") {
     manaCost = "{W}"
-    typeLine = "Creature — Human Cleric Soldier"
+    typeLine = "Creature — Human Cleric"
     power = 1
     toughness = 1
 
@@ -23,8 +23,8 @@ val FoothillGuide = card("Foothill Guide") {
 
     metadata {
         rarity = Rarity.COMMON
-        collectorNumber = "38"
-        artist = "Matt Cavotta"
+        collectorNumber = "29"
+        artist = "Eric Peterson"
         imageUri = "https://cards.scryfall.io/large/front/c/d/cd6cc30a-9ed4-4f36-95cb-6f0a2b8dce02.jpg?1562943472"
     }
 }

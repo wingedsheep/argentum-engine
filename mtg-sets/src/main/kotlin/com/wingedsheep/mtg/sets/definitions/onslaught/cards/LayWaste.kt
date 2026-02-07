@@ -29,8 +29,8 @@ val LayWaste = card("Lay Waste") {
 
     metadata {
         rarity = Rarity.COMMON
-        collectorNumber = "207"
-        artist = "Brian Snoddy"
+        collectorNumber = "216"
+        artist = "Carl Critchlow"
         flavorText = "\"You built on top of a burial mound? Your fault, not mine.\"\n—Cabal patriarch"
         imageUri = "https://cards.scryfall.io/large/front/2/2/22061b5e-81d3-4c7f-ab39-7ee719c13cef.jpg?1562903003"
     }

@@ -26,7 +26,7 @@ val Demystify = card("Demystify") {
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "24"
-        artist = "Greg Staples"
+        artist = "Christopher Rush"
         flavorText = "\"The diffusion of knowledge will eventually undermine all barriers to truth.\"\n—Ixidor, reality sculptor"
         imageUri = "https://cards.scryfall.io/normal/front/d/0/d0df839f-dc4c-44b0-82c7-cb2037172ac5.jpg?1562944804"
     }

@@ -34,7 +34,7 @@ val ElvishPioneer = card("Elvish Pioneer") {
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "257"
-        artist = "Daren Bader"
+        artist = "Christopher Rush"
         flavorText = "\"Ravaged or reborn, the land always provides.\""
         imageUri = "https://cards.scryfall.io/large/front/7/e/7e71fc2d-643b-4fad-89a8-624d330895d6.jpg?1562924784"
     }

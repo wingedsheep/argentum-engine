@@ -26,7 +26,7 @@ val HeedlessOne = card("Heedless One") {
 
     metadata {
         rarity = Rarity.UNCOMMON
-        collectorNumber = "296"
+        collectorNumber = "265"
         artist = "Mark Zug"
         flavorText = "\"The concerns of Wirewood are the concerns of all elves. They just don't know it yet.\""
         imageUri = "https://cards.scryfall.io/large/front/e/a/ea338499-26a0-44e5-8999-f264644184d1.jpg?1562950789"

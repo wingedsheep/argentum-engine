@@ -34,7 +34,7 @@ val SnarlingUndorak = card("Snarling Undorak") {
     morph = "{1}{G}{G}"
 
     metadata {
-        rarity = Rarity.UNCOMMON
+        rarity = Rarity.COMMON
         collectorNumber = "283"
         artist = "Justin Sweet"
         flavorText = "Most creatures in the Krosan Forest feared the Mirari's power. A few fed upon it."

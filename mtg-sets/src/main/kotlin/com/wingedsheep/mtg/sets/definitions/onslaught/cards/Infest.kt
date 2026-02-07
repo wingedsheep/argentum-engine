@@ -25,8 +25,8 @@ val Infest = card("Infest") {
 
     metadata {
         rarity = Rarity.UNCOMMON
-        collectorNumber = "156"
-        artist = "Carl Critchlow"
+        collectorNumber = "157"
+        artist = "Ben Thompson"
         flavorText = "\"This is the end for you, insect. And for you. And you.\"\n—Braids, dementia summoner"
         imageUri = "https://cards.scryfall.io/large/front/b/7/b7890ba2-aa42-4c8d-bbc1-94fb1d4150fc.jpg?1562938305"
     }

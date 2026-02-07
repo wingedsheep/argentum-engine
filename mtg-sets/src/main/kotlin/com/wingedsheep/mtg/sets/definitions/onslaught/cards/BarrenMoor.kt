@@ -33,7 +33,7 @@ val BarrenMoor = card("Barren Moor") {
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "312"
-        artist = "Don Hazeltine"
+        artist = "Heather Hudson"
         flavorText = ""
         imageUri = "https://cards.scryfall.io/large/front/4/5/45be3811-a223-4c45-9b24-0317f2d53c60.jpg?1562911376"
     }

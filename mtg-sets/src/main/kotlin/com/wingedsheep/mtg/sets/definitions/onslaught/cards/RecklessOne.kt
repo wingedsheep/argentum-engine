@@ -25,8 +25,8 @@ val RecklessOne = card("Reckless One") {
 
     metadata {
         rarity = Rarity.UNCOMMON
-        collectorNumber = "231"
-        artist = "Mark Romanoski"
+        collectorNumber = "222"
+        artist = "Ron Spencer"
         flavorText = "It counts only two things: the number of goblins on the battlefield and the number of goblins it takes to burn down a forest."
         imageUri = "https://cards.scryfall.io/large/front/3/7/37775f40-10de-4f5d-abb2-c49e682039de.jpg?1585512782"
     }

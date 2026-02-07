@@ -30,7 +30,7 @@ val ArtificialEvolution = card("Artificial Evolution") {
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "67"
-        artist = "Daniel Ljunggren"
+        artist = "Greg Staples"
         flavorText = ""
         imageUri = "https://cards.scryfall.io/normal/front/f/4/f46894d1-2503-43fa-938e-7bbf19101d13.jpg?1562952988"
     }

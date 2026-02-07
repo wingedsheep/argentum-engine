@@ -33,7 +33,7 @@ val ProfanePrayers = card("Profane Prayers") {
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "162"
-        artist = "Matthew D. Wilson"
+        artist = "Alan Pollack"
         flavorText = "\"Night after night the enemy squanders its dead on our swords. The Cabal does not squander its dead.\""
         imageUri = "https://cards.scryfall.io/normal/front/b/c/bc8320ef-af97-4cf6-9aaf-17818174d842.jpg?1562939500"
     }

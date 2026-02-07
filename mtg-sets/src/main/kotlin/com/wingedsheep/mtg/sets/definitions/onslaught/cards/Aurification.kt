@@ -42,7 +42,7 @@ val Aurification = card("Aurification") {
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "6"
-        artist = "Greg Staples"
+        artist = "Gary Ruddell"
         flavorText = "Trespassers will be decorated."
         imageUri = "https://cards.scryfall.io/normal/front/9/3/93d9fa3d-dd94-4f3f-be7e-b677e5952d73.jpg?1562929867"
     }

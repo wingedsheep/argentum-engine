@@ -31,8 +31,8 @@ val DragonRoost = card("Dragon Roost") {
 
     metadata {
         rarity = Rarity.RARE
-        collectorNumber = "197"
-        artist = "Greg Staples"
+        collectorNumber = "198"
+        artist = "Luca Zontini"
         flavorText = "\"The hellkites are content to eat goblins and leave us alone. It's the goblins I'm worried about.\"\n—Aven soldier"
         imageUri = "https://cards.scryfall.io/large/front/9/5/95e4f28b-c7a7-4450-b477-73e4559f0276.jpg?1562930321"
     }

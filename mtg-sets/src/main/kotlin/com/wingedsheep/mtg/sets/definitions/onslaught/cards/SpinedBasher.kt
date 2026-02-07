@@ -20,8 +20,8 @@ val SpinedBasher = card("Spined Basher") {
 
     metadata {
         rarity = Rarity.COMMON
-        collectorNumber = "169"
-        artist = "Mark Tedin"
+        collectorNumber = "172"
+        artist = "Thomas M. Baxa"
         flavorText = "This species of zombie is even more unpleasant than the garden variety."
         imageUri = "https://cards.scryfall.io/large/front/4/d/4d0d666a-8e31-466c-937f-54df910f664e.jpg?1562913024"
     }

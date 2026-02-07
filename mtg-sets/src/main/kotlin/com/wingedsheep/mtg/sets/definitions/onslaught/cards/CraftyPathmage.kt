@@ -29,8 +29,8 @@ val CraftyPathmage = card("Crafty Pathmage") {
 
     metadata {
         rarity = Rarity.COMMON
-        collectorNumber = "82"
-        artist = "Scott M. Fischer"
+        collectorNumber = "77"
+        artist = "Wayne England"
         flavorText = "\"If you want to get from here to there without being seen, I'm the one to call.\""
         imageUri = "https://cards.scryfall.io/large/front/c/5/c5d91378-f831-40ef-a79b-b044af1470e0.jpg?1562941736"
     }

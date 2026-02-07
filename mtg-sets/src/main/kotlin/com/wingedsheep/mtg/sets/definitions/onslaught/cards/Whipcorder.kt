@@ -34,8 +34,8 @@ val Whipcorder = card("Whipcorder") {
 
     metadata {
         rarity = Rarity.UNCOMMON
-        collectorNumber = "56"
-        artist = "Kev Walker"
+        collectorNumber = "60"
+        artist = "Ron Spencer"
         flavorText = "\"The bigger they are, the harder they fall.\""
         imageUri = "https://cards.scryfall.io/large/front/3/b/3bf6987e-a6e4-4a88-af0b-cf3b2d2b80c7.jpg?1562909065"
     }

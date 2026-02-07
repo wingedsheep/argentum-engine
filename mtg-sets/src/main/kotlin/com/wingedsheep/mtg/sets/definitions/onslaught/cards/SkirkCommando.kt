@@ -33,8 +33,8 @@ val SkirkCommando = card("Skirk Commando") {
 
     metadata {
         rarity = Rarity.COMMON
-        collectorNumber = "229"
-        artist = "Mark Romanoski"
+        collectorNumber = "228"
+        artist = "Dave Dorman"
         flavorText = "Physical prowess and a complete lack of morals are the only requirements for the job."
         imageUri = "https://cards.scryfall.io/large/front/8/c/8c870a66-4cd5-4a8d-9948-feffa7d4ff11.jpg?1562928132"
     }

@@ -24,8 +24,8 @@ val Annex = card("Annex") {
 
     metadata {
         rarity = Rarity.UNCOMMON
-        collectorNumber = "57"
-        artist = "Andrew Robinson"
+        collectorNumber = "63"
+        artist = "John Avon"
         flavorText = "Physical and political boundaries mean nothing in the midst of conflict."
         imageUri = "https://cards.scryfall.io/large/front/c/9/c95d5cb7-3121-430b-80c3-84c75e5f869e.jpg?1562942558"
     }

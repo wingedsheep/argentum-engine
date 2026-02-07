@@ -33,7 +33,7 @@ val SliceAndDice = card("Slice and Dice") {
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "232"
-        artist = "Matt Cavotta"
+        artist = "Mark Brill"
         flavorText = ""
         imageUri = "https://gatherer-static.wizards.com/Cards/medium/D51089E294D45760206DB9B12C753751003CDF5B5E74140CB66F52E9AD3FEA17.webp"
     }

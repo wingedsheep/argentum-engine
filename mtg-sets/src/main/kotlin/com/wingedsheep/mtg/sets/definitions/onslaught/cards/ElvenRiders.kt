@@ -24,8 +24,8 @@ val ElvenRiders = card("Elven Riders") {
 
     metadata {
         rarity = Rarity.UNCOMMON
-        collectorNumber = "253"
-        artist = "Dan Frazier"
+        collectorNumber = "254"
+        artist = "Darrell Riche"
         flavorText = "They are seldom combated, and never caught."
         imageUri = "https://cards.scryfall.io/large/front/f/7/f7c1aa30-0271-48d9-b9d0-3b1da26d98bf.jpg?1562953705"
     }

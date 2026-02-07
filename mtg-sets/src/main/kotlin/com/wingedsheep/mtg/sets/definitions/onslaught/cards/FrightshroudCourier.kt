@@ -39,8 +39,8 @@ val FrightshroudCourier = card("Frightshroud Courier") {
 
     metadata {
         rarity = Rarity.UNCOMMON
-        collectorNumber = "137"
-        artist = "Kev Walker"
+        collectorNumber = "149"
+        artist = "Ron Spears"
         imageUri = "https://cards.scryfall.io/large/front/4/a/4a0fa75a-a82b-44cd-965f-07e0fe7a111a.jpg?1562912314"
     }
 }

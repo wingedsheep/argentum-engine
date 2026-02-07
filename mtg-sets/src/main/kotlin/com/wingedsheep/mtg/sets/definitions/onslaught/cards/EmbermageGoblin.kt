@@ -49,8 +49,8 @@ val EmbermageGoblin = card("Embermage Goblin") {
 
     metadata {
         rarity = Rarity.UNCOMMON
-        collectorNumber = "195"
-        artist = "Alan Pollack"
+        collectorNumber = "200"
+        artist = "Pete Venters"
         flavorText = "Skirk Ridge goblins are known to have short tempers and even shorter fuses."
         imageUri = "https://cards.scryfall.io/large/front/f/5/f50f60a8-e99a-4891-b474-a21abee38970.jpg?1643753588"
     }

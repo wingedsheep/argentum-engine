@@ -24,7 +24,7 @@ val BatteringCraghorn = card("Battering Craghorn") {
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "188"
-        artist = "Edward P. Beard, Jr."
+        artist = "Matt Cavotta"
         flavorText = "Tread silently: Even the clatter of a pebble can trigger a craghorn stampede."
         imageUri = "https://cards.scryfall.io/normal/front/9/e/9ef71f42-87e5-4b1d-aac1-3752b81cee7c.jpg"
     }

@@ -33,7 +33,7 @@ val LightningRift = card("Lightning Rift") {
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "217"
-        artist = "Dave Dorman"
+        artist = "Eric Peterson"
         flavorText = "\"Never underestimate the power of a good storm.\""
         imageUri = "https://cards.scryfall.io/large/front/d/7/d775d729-0ad9-4b14-9d44-6282f6936e07.jpg?1562946381"
     }
