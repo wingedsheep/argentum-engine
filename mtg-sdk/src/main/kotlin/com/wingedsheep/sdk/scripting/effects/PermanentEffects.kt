@@ -83,6 +83,17 @@ data class RemoveCountersEffect(
 }
 
 /**
+ * Remove all counters of a specific type from all creatures.
+ * Used for Aurification: "remove all gold counters from all creatures."
+ */
+@Serializable
+data class RemoveAllCountersOfTypeEffect(
+    val counterType: String
+) : Effect {
+    override val description: String = "Remove all $counterType counters from all creatures"
+}
+
+/**
  * Grant a keyword to a target until end of turn.
  * "Target creature gains flying until end of turn."
  */

@@ -10,6 +10,7 @@ import {
   getPTColor,
   getCounterStatModifier,
   hasStatCounters,
+  getGoldCounters,
 } from '../board/shared'
 import { styles } from '../board/styles'
 import { KeywordIcons, ActiveEffectBadges } from './CardOverlays'
@@ -546,6 +547,20 @@ export function GameCard({
           <span style={styles.counterBadgeIcon}>⬡</span>
           <span style={styles.counterBadgeText}>
             {getCounterStatModifier(card) >= 0 ? '+' : ''}{getCounterStatModifier(card)}
+          </span>
+        </div>
+      )}
+
+      {/* Gold counter badge */}
+      {battlefield && !faceDown && getGoldCounters(card) > 0 && (
+        <div style={{
+          ...styles.goldCounterBadge,
+          fontSize: responsive.isMobile ? 9 : 11,
+          padding: responsive.isMobile ? '1px 4px' : '2px 6px',
+        }}>
+          <span style={{ fontSize: responsive.isMobile ? 8 : 10 }}>&#x2B22;</span>
+          <span style={{ fontWeight: 700 }}>
+            {getGoldCounters(card)}
           </span>
         </div>
       )}

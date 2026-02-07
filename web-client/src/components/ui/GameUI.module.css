@@ -12,7 +12,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: var(--bg-overlay-darker);
+  background: var(--bg-overlay-darker) center center / cover no-repeat;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -30,6 +30,27 @@
   }
 }
 
+.contentBackdrop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-6);
+  padding: var(--space-5) var(--space-8);
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: var(--radius-xl);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+@media (max-width: 639px) {
+  .contentBackdrop {
+    gap: var(--space-4);
+    padding: var(--space-6) var(--space-4);
+  }
+}
+
 /* =========================================================================
  * Lobby Overlay
  * ========================================================================= */
@@ -39,7 +60,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: var(--gradient-page);
+  background: var(--gradient-page) center center / cover no-repeat;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -60,6 +81,13 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: var(--radius-xl);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  padding: var(--space-5) var(--space-6);
 }
 
 @media (max-width: 639px) {
@@ -135,7 +163,7 @@
   gap: var(--space-3);
   align-items: center;
   width: 100%;
-  max-width: 520px;
+  max-width: 480px;
 }
 
 .inputLabel {
@@ -221,10 +249,11 @@
 
 .joinButton {
   composes: primaryButton;
-  background-color: #00aa44;
+  background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
   white-space: nowrap;
   max-width: 100px;
   flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
 }
 
 .joinButton:disabled {
@@ -1111,9 +1140,11 @@
   top: var(--space-3);
   left: var(--space-3);
   z-index: var(--z-controls);
-  background-color: rgba(255, 255, 255, 0.1);
-  color: var(--text-muted);
-  border: 1px solid var(--border-solid-medium);
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--text-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-md);
   cursor: pointer;
   display: flex;

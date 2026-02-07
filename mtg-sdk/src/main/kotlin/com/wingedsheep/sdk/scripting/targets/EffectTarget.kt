@@ -103,4 +103,14 @@ sealed interface EffectTarget {
     data class SpecificEntity(val entityId: EntityId) : EffectTarget {
         override val description: String = "specific entity"
     }
+
+    /**
+     * TRIGGERING ENTITY: Refers to the entity that caused the trigger to fire.
+     * Used for effects like Aurification: "put a gold counter on it" where "it"
+     * refers to the creature that dealt damage.
+     */
+    @Serializable
+    data object TriggeringEntity : EffectTarget {
+        override val description: String = "that creature"
+    }
 }

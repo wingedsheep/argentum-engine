@@ -16,5 +16,7 @@ data class EffectContext(
     /** Pre-chosen damage distribution for DividedDamageEffect spells (target ID -> damage amount) */
     val damageDistribution: Map<EntityId, Int>? = null,
     /** Amount of damage from a trigger context (e.g., "Whenever ~ is dealt damage") */
-    val triggerDamageAmount: Int? = null
+    val triggerDamageAmount: Int? = null,
+    /** The entity that caused the trigger to fire (e.g., creature that dealt damage for Aurification) */
+    val triggeringEntityId: EntityId? = null
 )

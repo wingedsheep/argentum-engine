@@ -72,3 +72,16 @@ data class OnDealsDamage(
         if (toPlayerOnly) append(" to a player")
     }
 }
+
+/**
+ * Triggers when a creature deals damage to this permanent's controller.
+ * "Whenever a creature deals damage to you..."
+ *
+ * Unlike OnDealsDamage (which is checked on the damage SOURCE creature),
+ * this trigger is checked on the permanent that observes the damage.
+ * The triggering entity ID is set to the damage SOURCE creature.
+ */
+@Serializable
+data object OnCreatureDealsDamageToYou : Trigger {
+    override val description: String = "Whenever a creature deals damage to you"
+}

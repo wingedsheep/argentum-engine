@@ -2,6 +2,25 @@ import { useState, useEffect } from 'react'
 import { useGameStore, type LobbyState, type TournamentState } from '../../store/gameStore'
 import styles from './GameUI.module.css'
 
+const backgroundModules = import.meta.glob('../../assets/backgrounds/*.jpeg', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
+const backgroundUrls = Object.values(backgroundModules)
+
+function pickBackground(): string {
+  const HOUR_MS = 60 * 60 * 1000
+  const stored = localStorage.getItem('argentum-bg')
+  if (stored) {
+    const { index, timestamp } = JSON.parse(stored)
+    if (Date.now() - timestamp < HOUR_MS && backgroundUrls[index]) {
+      return backgroundUrls[index]
+    }
+  }
+  const index = Math.floor(Math.random() * backgroundUrls.length)
+  localStorage.setItem('argentum-bg', JSON.stringify({ index, timestamp: Date.now() }))
+  return backgroundUrls[index]
+}
+
+const randomBackground = pickBackground()
+
 type GameMode = 'normal' | 'tournament'
 
 /**
@@ -94,103 +113,105 @@ function ConnectionOverlay({
   }
 
   return (
-    <div className={styles.connectionOverlay}>
+    <div className={styles.connectionOverlay} style={{ backgroundImage: `url(${randomBackground})` }}>
       <FullscreenButton />
-      <h1 className={styles.title}>Argentum Engine</h1>
+      <div className={styles.contentBackdrop}>
+        <h1 className={styles.title}>Argentum Engine</h1>
 
-      {error && (
-        <p className={styles.errorMessage}>Error: {error}</p>
-      )}
+        {error && (
+          <p className={styles.errorMessage}>Error: {error}</p>
+        )}
 
-      {!nameConfirmed && (
-        <div className={styles.inputGroup}>
-          <label className={styles.inputLabel}>Enter your name</label>
-          <input
-            type="text"
-            value={playerName}
-            onChange={(e) => setPlayerName(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') confirmName() }}
-            placeholder="Your name"
-            autoFocus
-            maxLength={20}
-            className={styles.textInput}
-          />
-          <button
-            onClick={confirmName}
-            disabled={!playerName.trim()}
-            className={styles.primaryButton}
-          >
-            Continue
-          </button>
-        </div>
-      )}
-
-      {status === 'connected' && !sessionId && (
-        <div className={styles.inputGroup}>
-          {/* Game Mode Toggle */}
-          <div className={styles.modeToggle}>
-            <ModeButton
-              label="Quick Game"
-              active={gameMode === 'normal'}
-              onClick={() => setGameMode('normal')}
-              title="Play with a random deck"
-            />
-            <ModeButton
-              label="Tournament"
-              active={gameMode === 'tournament'}
-              onClick={() => setGameMode('tournament')}
-              title="Sealed or Draft with up to 8 players"
-            />
-          </div>
-
-          {/* Game mode description */}
-          {gameMode === 'normal' && (
-            <p className={styles.modeDescription}>
-              Play with a randomly generated deck for quick 1v1 matches.
-            </p>
-          )}
-          {gameMode === 'tournament' && (
-            <p className={styles.modeDescription}>
-              Create a lobby for Sealed or Draft. Configure format and set after creating.
-            </p>
-          )}
-
-          <button
-            onClick={handleCreate}
-            className={gameMode === 'tournament' ? styles.tournamentButton : styles.primaryButton}
-          >
-            {gameMode === 'tournament' ? 'Create Lobby' : 'Create Game'}
-          </button>
-
-          <div className={styles.divider}>
-            <div className={styles.dividerLine} />
-            <span className={styles.dividerText}>or join existing</span>
-            <div className={styles.dividerLine} />
-          </div>
-
-          <div className={styles.joinRow}>
+        {!nameConfirmed && (
+          <div className={styles.inputGroup}>
+            <label className={styles.inputLabel}>Enter your name</label>
             <input
               type="text"
-              value={joinSessionId}
-              onChange={(e) => setJoinSessionId(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
-              placeholder={gameMode === 'tournament' ? 'Enter Lobby ID' : 'Enter Session ID'}
-              className={styles.sessionInput}
+              value={playerName}
+              onChange={(e) => setPlayerName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') confirmName() }}
+              placeholder="Your name"
+              autoFocus
+              maxLength={20}
+              className={styles.textInput}
             />
             <button
-              onClick={handleJoin}
-              disabled={!joinSessionId.trim()}
-              className={styles.joinButton}
+              onClick={confirmName}
+              disabled={!playerName.trim()}
+              className={styles.primaryButton}
             >
-              Join
+              Continue
             </button>
           </div>
-        </div>
-      )}
+        )}
 
-      {sessionId && (
-        <WaitingForOpponent sessionId={sessionId} />
-      )}
+        {status === 'connected' && !sessionId && (
+          <div className={styles.inputGroup}>
+            {/* Game Mode Toggle */}
+            <div className={styles.modeToggle}>
+              <ModeButton
+                label="Quick Game"
+                active={gameMode === 'normal'}
+                onClick={() => setGameMode('normal')}
+                title="Play with a random deck"
+              />
+              <ModeButton
+                label="Tournament"
+                active={gameMode === 'tournament'}
+                onClick={() => setGameMode('tournament')}
+                title="Sealed or Draft with up to 8 players"
+              />
+            </div>
+
+            {/* Game mode description */}
+            {gameMode === 'normal' && (
+              <p className={styles.modeDescription}>
+                Play with a randomly generated deck for quick 1v1 matches.
+              </p>
+            )}
+            {gameMode === 'tournament' && (
+              <p className={styles.modeDescription}>
+                Create a lobby for Sealed or Draft. Configure format and set after creating.
+              </p>
+            )}
+
+            <button
+              onClick={handleCreate}
+              className={gameMode === 'tournament' ? styles.tournamentButton : styles.primaryButton}
+            >
+              {gameMode === 'tournament' ? 'Create Lobby' : 'Create Game'}
+            </button>
+
+            <div className={styles.divider}>
+              <div className={styles.dividerLine} />
+              <span className={styles.dividerText}>or join existing</span>
+              <div className={styles.dividerLine} />
+            </div>
+
+            <div className={styles.joinRow}>
+              <input
+                type="text"
+                value={joinSessionId}
+                onChange={(e) => setJoinSessionId(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
+                placeholder={gameMode === 'tournament' ? 'Enter Lobby ID' : 'Enter Session ID'}
+                className={styles.sessionInput}
+              />
+              <button
+                onClick={handleJoin}
+                disabled={!joinSessionId.trim()}
+                className={styles.joinButton}
+              >
+                Join
+              </button>
+            </div>
+          </div>
+        )}
+
+        {sessionId && (
+          <WaitingForOpponent sessionId={sessionId} />
+        )}
+      </div>
     </div>
   )
 }
@@ -292,7 +313,7 @@ function LobbyOverlay({
   }
 
   return (
-    <div className={styles.lobbyOverlay}>
+    <div className={styles.lobbyOverlay} style={{ backgroundImage: `url(${randomBackground})` }}>
       <FullscreenButton />
       <div className={styles.lobbyContent}>
         {/* Header */}

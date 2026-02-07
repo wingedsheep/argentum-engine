@@ -737,6 +737,21 @@ export const styles: Record<string, React.CSSProperties> = {
   counterBadgeText: {
     fontWeight: 700,
   } as React.CSSProperties,
+  // Gold counter badge (for Aurification etc.)
+  goldCounterBadge: {
+    position: 'absolute',
+    bottom: 22,
+    left: 4,
+    backgroundColor: 'rgba(140, 100, 20, 0.95)',
+    borderRadius: 4,
+    border: '1px solid rgba(218, 165, 32, 0.6)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 2,
+    color: '#ffd700',
+    fontWeight: 700,
+    zIndex: 5,
+  } as React.CSSProperties,
   // Enhanced preview stats box styles
   cardPreviewStatsBox: {
     display: 'flex',

@@ -40,6 +40,7 @@ object EffectExecutorUtils {
             is EffectTarget.Controller -> context.controllerId
             is EffectTarget.ContextTarget -> context.targets.getOrNull(effectTarget.index)?.toEntityId()
             is EffectTarget.SpecificEntity -> effectTarget.entityId
+            is EffectTarget.TriggeringEntity -> context.triggeringEntityId
             else -> null
         }
     }

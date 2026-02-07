@@ -108,6 +108,13 @@ export function hasStatCounters(card: ClientCard): boolean {
 }
 
 /**
+ * Get the number of gold counters on a card.
+ */
+export function getGoldCounters(card: ClientCard): number {
+  return card.counters[CounterType.GOLD] ?? 0
+}
+
+/**
  * Get an emoji or icon for an effect based on its icon identifier.
  */
 export function getEffectIcon(icon: string): string {
