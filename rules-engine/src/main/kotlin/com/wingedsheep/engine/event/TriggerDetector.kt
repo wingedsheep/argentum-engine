@@ -342,7 +342,10 @@ class TriggerDetector(
         val entityId = event.targetId
         val container = state.getEntity(entityId) ?: return
         val cardComponent = container.get<CardComponent>() ?: return
-        val controllerId = container.get<ControllerComponent>()?.playerId ?: return
+        // ControllerComponent is stripped when creature dies via SBAs, fall back to ownerId
+        val controllerId = container.get<ControllerComponent>()?.playerId
+            ?: cardComponent.ownerId
+            ?: return
 
         // Face-down creatures have no abilities (Rule 707.2)
         if (container.has<FaceDownComponent>()) return

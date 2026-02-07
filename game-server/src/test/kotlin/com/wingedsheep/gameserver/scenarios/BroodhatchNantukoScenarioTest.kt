@@ -1,5 +1,6 @@
 package com.wingedsheep.gameserver.scenarios
 
+import com.wingedsheep.engine.core.PassPriority
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.gameserver.ScenarioTestBase
@@ -95,6 +96,52 @@ class BroodhatchNantukoScenarioTest : ScenarioTestBase() {
                 // Tokens should still have been created
                 withClue("Should still have 2 Insect tokens even though Nantuko died") {
                     game.countTokens(1, "Insect Token") shouldBe 2
+                }
+            }
+        }
+
+        context("Broodhatch Nantuko combat damage trigger") {
+            test("creates tokens when dealt lethal combat damage") {
+                // Broodhatch Nantuko (1/1) blocks Glory Seeker (2/2).
+                // Nantuko takes lethal combat damage, dies, but trigger still fires
+                // and creates Insect tokens.
+                val game = scenario()
+                    .withPlayers("Defender", "Attacker")
+                    .withCardOnBattlefield(1, "Broodhatch Nantuko")
+                    .withCardOnBattlefield(2, "Glory Seeker")
+                    .withActivePlayer(2)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                // Verify no tokens initially
+                withClue("Should have no Insect tokens initially") {
+                    game.countTokens(1, "Insect Token") shouldBe 0
+                }
+
+                // Advance to declare attackers
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                game.declareAttackers(mapOf("Glory Seeker" to 1))
+
+                // Advance to declare blockers
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+                game.declareBlockers(mapOf("Broodhatch Nantuko" to listOf("Glory Seeker")))
+
+                // Pass priority through combat damage step - trigger should fire
+                var iterations = 0
+                while (game.state.step != Step.END_COMBAT && iterations < 50) {
+                    val p = game.state.priorityPlayerId ?: break
+                    game.execute(PassPriority(p))
+                    iterations++
+                }
+
+                // Broodhatch Nantuko should be dead (1/1 took lethal damage)
+                withClue("Broodhatch Nantuko should be dead") {
+                    game.findPermanent("Broodhatch Nantuko") shouldBe null
+                }
+
+                // Should have created Insect tokens from combat damage trigger
+                withClue("Should have Insect tokens from combat damage trigger") {
+                    game.countTokens(1, "Insect Token") shouldBe 1
                 }
             }
         }
