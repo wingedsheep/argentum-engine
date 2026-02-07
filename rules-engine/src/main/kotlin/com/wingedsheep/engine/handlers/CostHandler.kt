@@ -82,6 +82,11 @@ class CostHandler {
                 val handZone = ZoneKey(controllerId, Zone.HAND)
                 state.getZone(handZone).contains(sourceId)
             }
+            is AbilityCost.SacrificeSelf -> {
+                // Source must be on the battlefield
+                val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
+                state.getZone(battlefieldZone).contains(sourceId)
+            }
             is AbilityCost.TapPermanents -> {
                 findUntappedMatchingPermanentsUnified(state, controllerId, cost.filter).size >= cost.count
             }
@@ -180,6 +185,33 @@ class CostHandler {
             is AbilityCost.DiscardSelf -> {
                 // TODO: Discard self
                 CostPaymentResult.success(state, manaPool)
+            }
+            is AbilityCost.SacrificeSelf -> {
+                // Sacrifice the source permanent
+                val sourceContainer = state.getEntity(sourceId)
+                    ?: return CostPaymentResult.failure("Source permanent not found")
+                val sourceController = sourceContainer.get<ControllerComponent>()?.playerId
+                    ?: return CostPaymentResult.failure("Source permanent has no controller")
+                val sourceName = sourceContainer.get<CardComponent>()?.name ?: "Unknown"
+
+                val battlefieldZone = ZoneKey(sourceController, Zone.BATTLEFIELD)
+                val graveyardZone = ZoneKey(sourceController, Zone.GRAVEYARD)
+
+                var newState = state.removeFromZone(battlefieldZone, sourceId)
+                newState = newState.addToZone(graveyardZone, sourceId)
+
+                val events = listOf(
+                    PermanentsSacrificedEvent(sourceController, listOf(sourceId)),
+                    ZoneChangeEvent(
+                        entityId = sourceId,
+                        entityName = sourceName,
+                        fromZone = Zone.BATTLEFIELD,
+                        toZone = Zone.GRAVEYARD,
+                        ownerId = sourceController
+                    )
+                )
+
+                CostPaymentResult.success(newState, manaPool, events)
             }
             is AbilityCost.TapPermanents -> {
                 val toTap = choices.tapChoices

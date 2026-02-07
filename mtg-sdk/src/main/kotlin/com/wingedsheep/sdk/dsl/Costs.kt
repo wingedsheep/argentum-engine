@@ -87,6 +87,11 @@ object Costs {
      */
     val DiscardSelf: AbilityCost = AbilityCost.DiscardSelf
 
+    /**
+     * Sacrifice this permanent (for abilities that sacrifice themselves as cost).
+     */
+    val SacrificeSelf: AbilityCost = AbilityCost.SacrificeSelf
+
     // =========================================================================
     // Exile Costs
     // =========================================================================

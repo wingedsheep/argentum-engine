@@ -1091,6 +1091,10 @@ class GameSession(
                         tapTargets = findAbilityTapTargets(state, playerId, tapCost.filter)
                         if (tapTargets.size < tapCost.count) continue
                     }
+                    is AbilityCost.SacrificeSelf -> {
+                        // Source must be on battlefield (always true when iterating battlefield)
+                        sacrificeTargets = listOf(entityId)
+                    }
                     is AbilityCost.Composite -> {
                         val compositeCost = ability.cost as AbilityCost.Composite
                         var costCanBePaid = true
@@ -1123,6 +1127,10 @@ class GameSession(
                                         costCanBePaid = false
                                         break
                                     }
+                                }
+                                is AbilityCost.SacrificeSelf -> {
+                                    // Source must be on battlefield (always true when iterating battlefield)
+                                    sacrificeTargets = listOf(entityId)
                                 }
                                 is AbilityCost.TapPermanents -> {
                                     tapCost = subCost
@@ -1161,6 +1169,14 @@ class GameSession(
                 } else if (sacrificeTargets != null && sacrificeCost != null) {
                     AdditionalCostInfo(
                         description = sacrificeCost.description,
+                        costType = "SacrificePermanent",
+                        validSacrificeTargets = sacrificeTargets,
+                        sacrificeCount = 1
+                    )
+                } else if (sacrificeTargets != null) {
+                    // SacrificeSelf cost — sacrifice target is the source itself
+                    AdditionalCostInfo(
+                        description = "Sacrifice this permanent",
                         costType = "SacrificePermanent",
                         validSacrificeTargets = sacrificeTargets,
                         sacrificeCount = 1

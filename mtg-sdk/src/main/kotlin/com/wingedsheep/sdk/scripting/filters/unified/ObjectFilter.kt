@@ -147,6 +147,11 @@ data class GameObjectFilter(
         cardPredicates = cardPredicates + CardPredicate.NotKeyword(keyword)
     )
 
+    /** Match by exact card name */
+    fun named(name: String) = copy(
+        cardPredicates = cardPredicates + CardPredicate.NameEquals(name)
+    )
+
     /** Mana value equals */
     fun manaValue(value: Int) = copy(
         cardPredicates = cardPredicates + CardPredicate.ManaValueEquals(value)

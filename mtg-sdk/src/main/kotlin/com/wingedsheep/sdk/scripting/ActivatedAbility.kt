@@ -104,6 +104,12 @@ sealed interface AbilityCost {
         override val description: String = "Discard this card"
     }
 
+    /** Sacrifice self (the permanent with this ability) */
+    @Serializable
+    data object SacrificeSelf : AbilityCost {
+        override val description: String = "Sacrifice this permanent"
+    }
+
     /**
      * Tap permanents you control.
      * Example: "Tap five untapped Clerics you control"

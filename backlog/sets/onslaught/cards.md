@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 117 / 335
+**Implemented:** 122 / 335
 
 ---
 
@@ -69,7 +69,7 @@
 - [ ] Contested Cliffs
 - [ ] Convalescent Care
 - [ ] Cover of Darkness
-- [ ] Crafty Pathmage
+- [x] Crafty Pathmage
 - [ ] Crowd Favorites
 - [ ] Crown of Ascension
 - [ ] Crown of Awe
@@ -100,7 +100,7 @@
 - [ ] Doom Cannon
 - [ ] Doomed Necromancer
 - [x] Doubtless One
-- [ ] Dragon Roost
+- [x] Dragon Roost
 - [ ] Dream Chisel
 - [ ] Dwarven Blastminer
 - [ ] Ebonblade Reaper
@@ -108,7 +108,7 @@
 - [ ] Elvish Guidance
 - [ ] Elvish Pathcutter
 - [x] Elvish Pioneer
-- [ ] Elvish Scrapper
+- [x] Elvish Scrapper
 - [x] Elvish Vanguard
 - [x] Elvish Warrior
 - [ ] Embermage Goblin
@@ -140,7 +140,7 @@
 - [ ] Glarecaster
 - [x] Glory Seeker
 - [x] Gluttonous Zombie
-- [ ] Goblin Burrows
+- [x] Goblin Burrows
 - [ ] Goblin Machinist
 - [ ] Goblin Piledriver
 - [ ] Goblin Pyromancer
@@ -296,7 +296,7 @@
 - [x] Symbiotic Wurm
 - [ ] Syphon Mind
 - [x] Syphon Soul
-- [ ] Taunting Elf
+- [x] Taunting Elf
 - [ ] Tempting Wurm
 - [ ] Tephraderm
 - [ ] Thoughtbound Primoc

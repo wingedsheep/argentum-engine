@@ -181,6 +181,9 @@ class PredicateEvaluator {
                 }
             }
 
+            // Name predicates
+            is CardPredicate.NameEquals -> card.name == predicate.name
+
             // Keyword predicates - use projected keywords
             is CardPredicate.HasKeyword -> predicate.keyword.name in keywords
             is CardPredicate.NotKeyword -> predicate.keyword.name !in keywords
@@ -315,6 +318,9 @@ class PredicateEvaluator {
             is CardPredicate.HasBasicLandType -> {
                 typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(predicate.landType))
             }
+
+            // Name predicates
+            is CardPredicate.NameEquals -> card.name == predicate.name
 
             // Keyword predicates
             is CardPredicate.HasKeyword -> {
