@@ -36,6 +36,6 @@ val SkirkCommando = card("Skirk Commando") {
         collectorNumber = "229"
         artist = "Mark Romanoski"
         flavorText = "Physical prowess and a complete lack of morals are the only requirements for the job."
-        imageUri = "https://cards.scryfall.io/large/front/a/9/a9a824f3-457e-4a36-b3e5-c485455ad999.jpg?1562931440"
+        imageUri = "https://cards.scryfall.io/large/front/8/c/8c870a66-4cd5-4a8d-9948-feffa7d4ff11.jpg?1562928132"
     }
 }
