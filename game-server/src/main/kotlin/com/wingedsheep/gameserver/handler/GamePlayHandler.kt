@@ -115,9 +115,11 @@ class GamePlayHandler(
             return
         }
 
-        // Only allow cancelling if game hasn't started yet (still waiting for opponent)
+        // If the game has already started, treat cancel as a concede
         if (gameSession.isStarted) {
-            sender.sendError(session, ErrorCode.INVALID_ACTION, "Cannot cancel a game that has already started. Use concede instead.")
+            logger.info("Player ${playerSession.playerName} cancelled started game ${gameSession.sessionId} - treating as concede")
+            gameSession.playerConcedes(playerSession.playerId)
+            handleGameOver(gameSession, GameOverReason.CONCESSION)
             return
         }
 
