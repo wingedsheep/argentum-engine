@@ -112,6 +112,17 @@ class DynamicAmountEvaluator {
             is DynamicAmount.CountBattlefield -> {
                 evaluateUnifiedCount(state, amount.player, Zone.BATTLEFIELD, amount.filter, context)
             }
+
+            is DynamicAmount.SourcePower -> {
+                val sourceId = context.sourceId ?: return 0
+                val card = state.getEntity(sourceId)?.get<CardComponent>() ?: return 0
+                when (val power = card.baseStats?.power) {
+                    is com.wingedsheep.sdk.model.CharacteristicValue.Fixed -> power.value
+                    is com.wingedsheep.sdk.model.CharacteristicValue.Dynamic -> evaluate(state, power.source, context)
+                    is com.wingedsheep.sdk.model.CharacteristicValue.DynamicWithOffset -> evaluate(state, power.source, context) + power.offset
+                    null -> 0
+                }
+            }
         }
     }
 

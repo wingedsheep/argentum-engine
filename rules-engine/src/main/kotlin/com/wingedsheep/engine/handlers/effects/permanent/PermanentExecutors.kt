@@ -30,6 +30,7 @@ class PermanentExecutors(
         GainControlExecutor(),
         GainControlByMostOfSubtypeExecutor(),
         TurnFaceDownExecutor(),
-        TurnFaceUpExecutor()
+        TurnFaceUpExecutor(),
+        GrantTriggeredAbilityUntilEndOfTurnExecutor()
     )
 }

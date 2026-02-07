@@ -2,6 +2,7 @@ package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.scripting.TriggeredAbility
 import kotlinx.serialization.Serializable
 
 // =============================================================================
@@ -262,6 +263,26 @@ data class ChangeCreatureTypeTextEffect(
         if (excludedTypes.isNotEmpty()) {
             append(" The new creature type can't be ${excludedTypes.joinToString(" or ")}.")
         }
+    }
+}
+
+/**
+ * Grant a triggered ability to a target until end of turn.
+ * "Target creature gains 'When this creature deals combat damage to a player, ...'"
+ *
+ * @property ability The triggered ability to grant
+ * @property target The creature to grant the ability to
+ * @property duration How long the grant lasts
+ */
+@Serializable
+data class GrantTriggeredAbilityUntilEndOfTurnEffect(
+    val ability: TriggeredAbility,
+    val target: EffectTarget,
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    override val description: String = buildString {
+        append("${target.description} gains \"${ability.description}\"")
+        if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
 }
 

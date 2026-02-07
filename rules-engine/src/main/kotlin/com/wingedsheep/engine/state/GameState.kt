@@ -2,6 +2,7 @@ package com.wingedsheep.engine.state
 
 import com.wingedsheep.engine.core.ContinuationFrame
 import com.wingedsheep.engine.event.DelayedTriggeredAbility
+import com.wingedsheep.engine.event.GrantedTriggeredAbility
 import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -64,6 +65,9 @@ data class GameState(
 
     /** Delayed triggers waiting to fire at specific steps */
     val delayedTriggers: List<DelayedTriggeredAbility> = emptyList(),
+
+    /** Triggered abilities granted to entities temporarily (e.g., Commando Raid) */
+    val grantedTriggeredAbilities: List<GrantedTriggeredAbility> = emptyList(),
 
     /** Continuation stack for resuming after player decisions */
     val continuationStack: List<ContinuationFrame> = emptyList()

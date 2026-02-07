@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 147 / 335
+**Implemented:** 149 / 335
 
 ---
 
@@ -64,7 +64,7 @@
 - [x] Choking Tethers
 - [ ] Circle of Solace
 - [ ] Clone
-- [ ] Commando Raid
+- [x] Commando Raid
 - [ ] Complicate
 - [ ] Contested Cliffs
 - [ ] Convalescent Care
@@ -96,7 +96,7 @@
 - [ ] Discombobulate
 - [ ] Dispersing Orb
 - [ ] Disruptive Pitmage
-- [ ] Dive Bomber
+- [x] Dive Bomber
 - [ ] Doom Cannon
 - [x] Doomed Necromancer
 - [x] Doubtless One

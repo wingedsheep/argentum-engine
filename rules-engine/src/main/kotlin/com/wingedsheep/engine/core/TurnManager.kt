@@ -725,6 +725,14 @@ class TurnManager(
             }
         }
 
+        // 5. Expire granted triggered abilities with EndOfTurn duration
+        if (newState.grantedTriggeredAbilities.isNotEmpty()) {
+            val remainingGrants = newState.grantedTriggeredAbilities.filter { grant ->
+                grant.duration !is Duration.EndOfTurn
+            }
+            newState = newState.copy(grantedTriggeredAbilities = remainingGrants)
+        }
+
         return newState
     }
 

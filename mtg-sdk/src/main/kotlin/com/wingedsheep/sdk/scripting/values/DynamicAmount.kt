@@ -183,6 +183,15 @@ sealed interface DynamicAmount {
         override val description: String = "the damage dealt"
     }
 
+    /**
+     * Power of the source entity (the permanent that has the ability).
+     * Used for effects like "deal damage equal to its power" on triggered abilities.
+     */
+    @Serializable
+    data object SourcePower : DynamicAmount {
+        override val description: String = "its power"
+    }
+
     // =========================================================================
     // Zone-based Counting — generic counting primitives
     // =========================================================================

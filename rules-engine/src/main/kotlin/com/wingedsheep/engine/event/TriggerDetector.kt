@@ -53,12 +53,18 @@ class TriggerDetector(
             cardRegistry?.getCard(cardDefinitionId)?.triggeredAbilities ?: emptyList()
         }
 
+        // Merge in any temporarily granted triggered abilities (e.g., from Commando Raid)
+        val grantedAbilities = state.grantedTriggeredAbilities
+            .filter { it.entityId == entityId }
+            .map { it.ability }
+        val combined = if (grantedAbilities.isNotEmpty()) base + grantedAbilities else base
+
         // Apply text replacement if the entity has one
         val textReplacement = state.getEntity(entityId)?.get<TextReplacementComponent>()
         return if (textReplacement != null) {
-            base.map { SubtypeReplacer.replaceTriggeredAbility(it, textReplacement) }
+            combined.map { SubtypeReplacer.replaceTriggeredAbility(it, textReplacement) }
         } else {
-            base
+            combined
         }
     }
 
