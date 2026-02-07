@@ -16,7 +16,7 @@ import {
   createKickPlayerMessage,
 } from '../../types'
 import { trackEvent } from '../../utils/analytics'
-import { getWebSocket, clearLobbyId, clearDeckState } from './shared'
+import { getWebSocket, clearLobbyId, clearDeckState, loadLobbyId } from './shared'
 
 export interface LobbySliceState {
   lobbyState: LobbyState | null
@@ -58,8 +58,11 @@ export const createLobbySlice: SliceCreator<LobbySlice> = (set, get) => ({
   },
 
   joinLobby: (lobbyId) => {
-    clearDeckState()
-    set({ deckBuildingState: null })
+    // Only clear deck state when joining a different lobby (preserve on rejoin/reconnect)
+    if (loadLobbyId() !== lobbyId) {
+      clearDeckState()
+      set({ deckBuildingState: null })
+    }
     trackEvent('lobby_joined')
     getWebSocket()?.send(createJoinLobbyMessage(lobbyId))
   },
