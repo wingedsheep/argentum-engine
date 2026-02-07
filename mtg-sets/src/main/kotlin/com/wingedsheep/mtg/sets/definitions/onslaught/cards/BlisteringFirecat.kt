@@ -35,6 +35,6 @@ val BlisteringFirecat = card("Blistering Firecat") {
         collectorNumber = "189"
         artist = "Dario Calmese"
         flavorText = "\"The next one who summons a cat is going to get it.\"\n—Arcanis the Omnipotent"
-        imageUri = "https://cards.scryfall.io/large/front/e/1/e1645d02-e485-4fcd-a0f5-1842fb5eb2a0.jpg?1562948513"
+        imageUri = "https://cards.scryfall.io/large/front/e/0/e0ddcf4a-1943-49dd-a02c-75804ce4bc3e.jpg?1562948535"
     }
 }
