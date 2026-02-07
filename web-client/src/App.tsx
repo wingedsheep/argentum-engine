@@ -53,6 +53,19 @@ export default function App() {
     }
   }, [connectionStatus, connect])
 
+  // Keep the URL bar in sync with tournament state so the link is shareable
+  useEffect(() => {
+    const lobbyId = tournamentState?.lobbyId ?? lobbyState?.lobbyId
+    if (lobbyId) {
+      const target = `/tournament/${lobbyId}`
+      if (window.location.pathname !== target) {
+        window.history.replaceState(null, '', target)
+      }
+    } else if (window.location.pathname !== '/') {
+      window.history.replaceState(null, '', '/')
+    }
+  }, [tournamentState?.lobbyId, lobbyState?.lobbyId])
+
   // Get the clearCombat action
   const clearCombat = useGameStore((state) => state.clearCombat)
 
