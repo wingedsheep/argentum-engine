@@ -27,7 +27,8 @@ import com.wingedsheep.sdk.scripting.SearchDestination
  */
 class ContinuationHandler(
     private val effectExecutorRegistry: EffectExecutorRegistry,
-    private val stackResolver: StackResolver = StackResolver()
+    private val stackResolver: StackResolver = StackResolver(),
+    private val triggerProcessor: com.wingedsheep.engine.event.TriggerProcessor? = null
 ) {
 
     /**
@@ -82,6 +83,11 @@ class ContinuationHandler(
             is ChooseToCreatureTypeContinuation -> resumeChooseToCreatureType(stateAfterPop, continuation, response)
             is PutFromHandContinuation -> resumePutFromHand(stateAfterPop, continuation, response)
             is UntapChoiceContinuation -> resumeUntapChoice(stateAfterPop, continuation, response)
+            is PendingTriggersContinuation -> {
+                // This should not be popped directly by a decision response.
+                // It's handled by checkForMoreContinuations after the preceding trigger resolves.
+                ExecutionResult.error(state, "PendingTriggersContinuation should not be at top of stack during decision resume")
+            }
         }
     }
 
@@ -294,7 +300,8 @@ class ContinuationHandler(
             controllerId = continuation.controllerId,
             effect = continuation.effect,
             description = continuation.description,
-            triggerDamageAmount = continuation.triggerDamageAmount
+            triggerDamageAmount = continuation.triggerDamageAmount,
+            triggeringEntityId = continuation.triggeringEntityId
         )
 
         // Put the ability on the stack with the selected targets
@@ -1979,6 +1986,30 @@ class ContinuationHandler(
         events: List<GameEvent>
     ): ExecutionResult {
         val nextContinuation = state.peekContinuation()
+
+        if (nextContinuation is PendingTriggersContinuation && triggerProcessor != null) {
+            // Pop and process the remaining triggers
+            val (_, stateAfterPop) = state.popContinuation()
+            val triggerResult = triggerProcessor.processTriggers(stateAfterPop, nextContinuation.remainingTriggers)
+
+            if (triggerResult.isPaused) {
+                return ExecutionResult.paused(
+                    triggerResult.state,
+                    triggerResult.pendingDecision!!,
+                    events + triggerResult.events
+                )
+            }
+
+            if (!triggerResult.isSuccess) {
+                return ExecutionResult(
+                    state = triggerResult.state,
+                    events = events + triggerResult.events,
+                    error = triggerResult.error
+                )
+            }
+
+            return ExecutionResult.success(triggerResult.newState, events + triggerResult.events)
+        }
 
         if (nextContinuation is EffectContinuation && nextContinuation.remainingEffects.isNotEmpty()) {
             // Pop and process the effect continuation

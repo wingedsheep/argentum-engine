@@ -53,10 +53,10 @@ class ActionProcessor(
     costHandler: CostHandler = CostHandler(),
     mulliganHandler: MulliganHandler = MulliganHandler(),
     effectExecutorRegistry: EffectExecutorRegistry = EffectExecutorRegistry(),
-    continuationHandler: ContinuationHandler = ContinuationHandler(effectExecutorRegistry),
     sbaChecker: StateBasedActionChecker = StateBasedActionChecker(),
     triggerDetector: TriggerDetector = TriggerDetector(cardRegistry),
     triggerProcessor: TriggerProcessor = TriggerProcessor(),
+    continuationHandler: ContinuationHandler = ContinuationHandler(effectExecutorRegistry, triggerProcessor = triggerProcessor),
     conditionEvaluator: ConditionEvaluator = ConditionEvaluator(),
     targetValidator: TargetValidator = TargetValidator()
 ) {

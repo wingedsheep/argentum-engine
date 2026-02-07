@@ -51,6 +51,7 @@ data class ActionContext(
         fun create(cardRegistry: CardRegistry? = null): ActionContext {
             val combatManager = CombatManager(cardRegistry)
             val effectExecutorRegistry = EffectExecutorRegistry()
+            val triggerProcessor = TriggerProcessor()
             return ActionContext(
                 cardRegistry = cardRegistry,
                 combatManager = combatManager,
@@ -62,10 +63,10 @@ data class ActionContext(
                 costHandler = CostHandler(),
                 mulliganHandler = MulliganHandler(),
                 effectExecutorRegistry = effectExecutorRegistry,
-                continuationHandler = ContinuationHandler(effectExecutorRegistry),
+                continuationHandler = ContinuationHandler(effectExecutorRegistry, triggerProcessor = triggerProcessor),
                 sbaChecker = StateBasedActionChecker(),
                 triggerDetector = TriggerDetector(cardRegistry),
-                triggerProcessor = TriggerProcessor(),
+                triggerProcessor = triggerProcessor,
                 conditionEvaluator = ConditionEvaluator(),
                 targetValidator = TargetValidator(),
                 stateProjector = StateProjector()

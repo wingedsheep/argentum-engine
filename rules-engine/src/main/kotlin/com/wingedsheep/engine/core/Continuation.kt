@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.core
 
+import com.wingedsheep.engine.event.PendingTrigger
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.model.EntityId
@@ -107,7 +108,22 @@ data class TriggeredAbilityContinuation(
     val controllerId: EntityId,
     val effect: Effect,
     val description: String,
-    val triggerDamageAmount: Int? = null
+    val triggerDamageAmount: Int? = null,
+    val triggeringEntityId: EntityId? = null
+) : ContinuationFrame
+
+/**
+ * Stores remaining pending triggers that still need to be processed.
+ *
+ * When multiple triggered abilities fire from the same event and the first
+ * requires target selection (pausing execution), the remaining triggers are
+ * stored in this continuation frame. After the first trigger's targets are
+ * selected, the remaining triggers are processed.
+ */
+@Serializable
+data class PendingTriggersContinuation(
+    override val decisionId: String,
+    val remainingTriggers: List<PendingTrigger>
 ) : ContinuationFrame
 
 /**

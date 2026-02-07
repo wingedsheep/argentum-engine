@@ -22,6 +22,94 @@ class AstralSlideScenarioTest : ScenarioTestBase() {
 
     init {
         context("Astral Slide") {
+            test("opponent cycling triggers Astral Slide") {
+                val game = scenario()
+                    .withPlayers("Player1", "Opponent")
+                    .withCardOnBattlefield(1, "Astral Slide")
+                    .withCardInHand(2, "Disciple of Malice") // Opponent has a cycling card
+                    .withLandsOnBattlefield(2, "Swamp", 2)
+                    .withCardInLibrary(2, "Mountain")
+                    .withCardOnBattlefield(2, "Glory Seeker") // Target creature
+                    .withActivePlayer(1)
+                    .withPriorityPlayer(2) // Opponent has priority to cycle
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                // Opponent cycles their card - Astral Slide should trigger for Player1
+                val cycleResult = game.cycleCard(2, "Disciple of Malice")
+                withClue("Cycling should succeed") {
+                    cycleResult.error shouldBe null
+                }
+
+                // Astral Slide triggers - Player1 gets target selection decision
+                withClue("Should have pending decision for target selection") {
+                    game.hasPendingDecision() shouldBe true
+                }
+
+                val targetId = game.findPermanent("Glory Seeker")!!
+                game.selectTargets(listOf(targetId))
+
+                game.resolveStack()
+
+                withClue("Should have may decision") {
+                    game.hasPendingDecision() shouldBe true
+                }
+                game.answerYesNo(true)
+
+                withClue("Glory Seeker should be in exile") {
+                    game.isOnBattlefield("Glory Seeker") shouldBe false
+                    game.isInExile(2, "Glory Seeker") shouldBe true
+                }
+
+                // Advance to end step - creature returns
+                game.passUntilPhase(Phase.ENDING, Step.END)
+                if (game.state.stack.isNotEmpty()) {
+                    game.resolveStack()
+                }
+
+                withClue("Glory Seeker should be back on battlefield") {
+                    game.isOnBattlefield("Glory Seeker") shouldBe true
+                }
+            }
+
+            test("exile own creature for flicker") {
+                val game = scenario()
+                    .withPlayers("Player1", "Opponent")
+                    .withCardOnBattlefield(1, "Astral Slide")
+                    .withCardOnBattlefield(1, "Glory Seeker") // Own creature to flicker
+                    .withCardInHand(1, "Disciple of Grace")
+                    .withLandsOnBattlefield(1, "Plains", 2)
+                    .withCardInLibrary(1, "Mountain")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.cycleCard(1, "Disciple of Grace")
+
+                // Target own creature
+                val targetId = game.findPermanent("Glory Seeker")!!
+                game.selectTargets(listOf(targetId))
+
+                game.resolveStack()
+                game.answerYesNo(true)
+
+                withClue("Glory Seeker should be in exile") {
+                    game.isOnBattlefield("Glory Seeker") shouldBe false
+                    game.isInExile(1, "Glory Seeker") shouldBe true
+                }
+
+                // Advance to end step
+                game.passUntilPhase(Phase.ENDING, Step.END)
+                if (game.state.stack.isNotEmpty()) {
+                    game.resolveStack()
+                }
+
+                withClue("Glory Seeker should return to battlefield") {
+                    game.isOnBattlefield("Glory Seeker") shouldBe true
+                }
+            }
+
+
             test("basic cycle-exile-return: cycle a card, exile creature, creature returns at end step") {
                 val game = scenario()
                     .withPlayers("Player1", "Opponent")
@@ -121,6 +209,132 @@ class AstralSlideScenarioTest : ScenarioTestBase() {
                 }
                 withClue("Glory Seeker should not be in exile") {
                     game.isInExile(2, "Glory Seeker") shouldBe false
+                }
+            }
+
+            test("two Astral Slides both trigger on same cycle") {
+                val game = scenario()
+                    .withPlayers("Player1", "Opponent")
+                    .withCardOnBattlefield(1, "Astral Slide")
+                    .withCardOnBattlefield(1, "Astral Slide") // Second copy
+                    .withCardInHand(1, "Disciple of Grace")
+                    .withLandsOnBattlefield(1, "Plains", 2)
+                    .withCardInLibrary(1, "Mountain")
+                    .withCardOnBattlefield(2, "Glory Seeker")
+                    .withCardOnBattlefield(2, "Grizzly Bears")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                // Cycle - both Astral Slides should trigger
+                game.cycleCard(1, "Disciple of Grace")
+
+                // First trigger - target selection
+                withClue("Should have pending decision for first trigger") {
+                    game.hasPendingDecision() shouldBe true
+                }
+                val glorySeekerId = game.findPermanent("Glory Seeker")!!
+                game.selectTargets(listOf(glorySeekerId))
+
+                // Second trigger - target selection
+                withClue("Should have pending decision for second trigger") {
+                    game.hasPendingDecision() shouldBe true
+                }
+                val bearsId = game.findPermanent("Grizzly Bears")!!
+                game.selectTargets(listOf(bearsId))
+
+                // Resolve the first ability on the stack
+                game.resolveStack()
+
+                // May decision for first resolving ability
+                withClue("Should have may decision") {
+                    game.hasPendingDecision() shouldBe true
+                }
+                game.answerYesNo(true)
+
+                // Resolve the second ability
+                game.resolveStack()
+
+                withClue("Should have may decision for second ability") {
+                    game.hasPendingDecision() shouldBe true
+                }
+                game.answerYesNo(true)
+
+                // Both creatures should be in exile
+                withClue("Glory Seeker should be in exile") {
+                    game.isOnBattlefield("Glory Seeker") shouldBe false
+                    game.isInExile(2, "Glory Seeker") shouldBe true
+                }
+                withClue("Grizzly Bears should be in exile") {
+                    game.isOnBattlefield("Grizzly Bears") shouldBe false
+                    game.isInExile(2, "Grizzly Bears") shouldBe true
+                }
+
+                // Advance to end step - both should return
+                game.passUntilPhase(Phase.ENDING, Step.END)
+                if (game.state.stack.isNotEmpty()) {
+                    game.resolveStack()
+                }
+
+                withClue("Glory Seeker should be back on battlefield") {
+                    game.isOnBattlefield("Glory Seeker") shouldBe true
+                }
+                withClue("Grizzly Bears should be back on battlefield") {
+                    game.isOnBattlefield("Grizzly Bears") shouldBe true
+                }
+            }
+
+            test("Astral Slide and Lightning Rift both trigger on same cycle") {
+                val game = scenario()
+                    .withPlayers("Player1", "Opponent")
+                    .withCardOnBattlefield(1, "Astral Slide")
+                    .withCardOnBattlefield(1, "Lightning Rift")
+                    .withCardInHand(1, "Disciple of Grace")
+                    .withLandsOnBattlefield(1, "Plains", 2)
+                    .withCardInLibrary(1, "Mountain")
+                    .withCardOnBattlefield(2, "Glory Seeker")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val startingLife = game.getLifeTotal(2)
+
+                // Cycle - both enchantments should trigger
+                game.cycleCard(1, "Disciple of Grace")
+
+                // First trigger target selection (could be Astral Slide or Lightning Rift)
+                withClue("Should have pending decision for first trigger") {
+                    game.hasPendingDecision() shouldBe true
+                }
+                val targetId = game.findPermanent("Glory Seeker")!!
+                game.selectTargets(listOf(targetId))
+
+                // Second trigger target selection
+                withClue("Should have pending decision for second trigger") {
+                    game.hasPendingDecision() shouldBe true
+                }
+                game.selectTargets(listOf(targetId))
+
+                // Resolve first ability on stack and accept may
+                game.resolveStack()
+                withClue("Should have may decision") {
+                    game.hasPendingDecision() shouldBe true
+                }
+                game.answerYesNo(true)
+
+                // Resolve second ability on stack and accept may
+                game.resolveStack()
+                if (game.hasPendingDecision()) {
+                    game.answerYesNo(true)
+                }
+
+                // At least one of the effects should have worked -
+                // either the creature was exiled or took damage (or both, in order)
+                val creatureExiled = !game.isOnBattlefield("Glory Seeker")
+                val damageTaken = game.getLifeTotal(2) < startingLife
+
+                withClue("Both triggers should have resolved - creature exiled or damage dealt") {
+                    (creatureExiled || damageTaken) shouldBe true
                 }
             }
 

@@ -61,11 +61,24 @@ class TriggerProcessor(
                 // Store the remaining triggers to process after the decision
                 val remainingTriggers = triggers.drop(index + 1)
 
-                // If there are more triggers to process, we need to chain them
-                // For now, we handle one at a time and rely on the game loop
-                // to call processTriggers again after the decision is resolved
+                // Push remaining triggers as a continuation so they are processed
+                // after this trigger's target selection is resolved
+                var stateWithContinuations = result.state
+                if (remainingTriggers.isNotEmpty()) {
+                    val pendingContinuation = PendingTriggersContinuation(
+                        decisionId = "pending-triggers-${java.util.UUID.randomUUID()}",
+                        remainingTriggers = remainingTriggers
+                    )
+                    // Push BELOW the TriggeredAbilityContinuation that was just pushed
+                    // by inserting at the bottom of what was just added
+                    val stack = stateWithContinuations.continuationStack
+                    // The TriggeredAbilityContinuation is at the top; insert pending triggers below it
+                    val newStack = stack.dropLast(1) + pendingContinuation + stack.last()
+                    stateWithContinuations = stateWithContinuations.copy(continuationStack = newStack)
+                }
+
                 return ExecutionResult.paused(
-                    result.state,
+                    stateWithContinuations,
                     result.pendingDecision!!,
                     allEvents + result.events
                 )
@@ -181,7 +194,8 @@ class TriggerProcessor(
             controllerId = trigger.controllerId,
             effect = ability.effect,
             description = ability.description,
-            triggerDamageAmount = trigger.triggerContext.damageAmount
+            triggerDamageAmount = trigger.triggerContext.damageAmount,
+            triggeringEntityId = trigger.triggerContext.triggeringEntityId
         )
 
         // Push the continuation onto the stack
@@ -210,7 +224,8 @@ class TriggerProcessor(
             controllerId = trigger.controllerId,
             effect = ability.effect,
             description = ability.description,
-            triggerDamageAmount = trigger.triggerContext.damageAmount
+            triggerDamageAmount = trigger.triggerContext.damageAmount,
+            triggeringEntityId = trigger.triggerContext.triggeringEntityId
         )
 
         return stackResolver.putTriggeredAbility(state, abilityComponent, targets)

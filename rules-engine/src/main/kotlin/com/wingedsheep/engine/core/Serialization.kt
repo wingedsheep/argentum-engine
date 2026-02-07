@@ -138,6 +138,7 @@ val engineSerializersModule = SerializersModule {
         subclass(ChooseToCreatureTypeContinuation::class)
         subclass(PutFromHandContinuation::class)
         subclass(UntapChoiceContinuation::class)
+        subclass(PendingTriggersContinuation::class)
     }
 
     // Component hierarchy (for GameState persistence)

@@ -184,6 +184,11 @@ class TriggerDetector(
             detectDeathTriggers(state, event, triggers)
         }
 
+        // Handle leaves-the-battlefield triggers (source is no longer on battlefield)
+        if (event is ZoneChangeEvent && event.fromZone == com.wingedsheep.sdk.core.Zone.BATTLEFIELD) {
+            detectLeavesBattlefieldTriggers(state, event, triggers)
+        }
+
         // Handle cycling triggers on the cycled card itself (e.g., Renewed Faith)
         if (event is CardCycledEvent) {
             detectCyclingCardTriggers(state, event, triggers)
@@ -192,6 +197,11 @@ class TriggerDetector(
         // Handle damage-source triggers
         if (event is DamageDealtEvent && event.sourceId != null) {
             detectDamageSourceTriggers(state, event, triggers)
+        }
+
+        // Handle "whenever a creature deals damage to you" triggers (e.g., Aurification)
+        if (event is DamageDealtEvent && event.sourceId != null && event.targetId in state.turnOrder) {
+            detectDamageToControllerTriggers(state, event, triggers)
         }
 
         return triggers
@@ -254,6 +264,89 @@ class TriggerDetector(
                         triggerContext = TriggerContext.fromEvent(event)
                     )
                 )
+            }
+        }
+    }
+
+    /**
+     * Detect "leaves the battlefield" triggers on permanents that just left.
+     * Similar to detectDeathTriggers, but handles OnLeavesBattlefield(selfOnly=true).
+     */
+    private fun detectLeavesBattlefieldTriggers(
+        state: GameState,
+        event: ZoneChangeEvent,
+        triggers: MutableList<PendingTrigger>
+    ) {
+        val entityId = event.entityId
+        val container = state.getEntity(entityId) ?: return
+        val cardComponent = container.get<CardComponent>() ?: return
+
+        val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
+        val controllerId = event.ownerId
+
+        for (ability in abilities) {
+            val trigger = ability.trigger
+            if (trigger is OnLeavesBattlefield && trigger.selfOnly) {
+                triggers.add(
+                    PendingTrigger(
+                        ability = ability,
+                        sourceId = entityId,
+                        sourceName = cardComponent.name,
+                        controllerId = controllerId,
+                        triggerContext = TriggerContext.fromEvent(event)
+                    )
+                )
+            }
+        }
+    }
+
+    /**
+     * Detect "whenever a creature deals damage to you" triggers on permanents
+     * controlled by the damaged player. The triggeringEntityId is set to the
+     * damage SOURCE creature (the creature that dealt the damage).
+     */
+    private fun detectDamageToControllerTriggers(
+        state: GameState,
+        event: DamageDealtEvent,
+        triggers: MutableList<PendingTrigger>
+    ) {
+        val damageSourceId = event.sourceId ?: return
+        val damagedPlayerId = event.targetId
+
+        // Verify the damage source is a creature on the battlefield
+        val sourceContainer = state.getEntity(damageSourceId) ?: return
+        val sourceCard = sourceContainer.get<CardComponent>() ?: return
+        if (!sourceCard.typeLine.isCreature) return
+
+        // Check all permanents controlled by the damaged player for OnCreatureDealsDamageToYou triggers
+        for (entityId in state.getBattlefield()) {
+            val container = state.getEntity(entityId) ?: continue
+            val cardComponent = container.get<CardComponent>() ?: continue
+            val controllerId = container.get<ControllerComponent>()?.playerId ?: continue
+
+            // Only triggers on permanents controlled by the damaged player
+            if (controllerId != damagedPlayerId) continue
+
+            // Face-down creatures have no abilities (Rule 707.2)
+            if (container.has<FaceDownComponent>()) continue
+
+            val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
+
+            for (ability in abilities) {
+                if (ability.trigger is OnCreatureDealsDamageToYou) {
+                    triggers.add(
+                        PendingTrigger(
+                            ability = ability,
+                            sourceId = entityId,
+                            sourceName = cardComponent.name,
+                            controllerId = controllerId,
+                            triggerContext = TriggerContext(
+                                triggeringEntityId = damageSourceId,
+                                damageAmount = event.amount
+                            )
+                        )
+                    )
+                }
             }
         }
     }
@@ -426,6 +519,9 @@ class TriggerDetector(
                     (!trigger.selfOnly || event.entityId == sourceId)
             }
 
+            // Handled separately in detectDamageToControllerTriggers
+            is OnCreatureDealsDamageToYou -> false
+
             // Phase/step triggers are handled separately
             is OnUpkeep, is OnEndStep, is OnBeginCombat, is OnFirstMainPhase -> false
 
@@ -527,6 +623,7 @@ class TriggerDetector(
 /**
  * A triggered ability that is waiting to go on the stack.
  */
+@kotlinx.serialization.Serializable
 data class PendingTrigger(
     val ability: TriggeredAbility,
     val sourceId: EntityId,
@@ -538,6 +635,7 @@ data class PendingTrigger(
 /**
  * Context information about what caused a trigger.
  */
+@kotlinx.serialization.Serializable
 data class TriggerContext(
     val triggeringEntityId: EntityId? = null,
     val triggeringPlayerId: EntityId? = null,
