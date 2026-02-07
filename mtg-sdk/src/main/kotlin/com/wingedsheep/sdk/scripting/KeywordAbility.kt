@@ -118,6 +118,15 @@ sealed interface KeywordAbility {
     }
 
     /**
+     * Protection from a creature subtype.
+     * "Protection from Goblins"
+     */
+    @Serializable
+    data class ProtectionFromCreatureSubtype(val subtype: String) : KeywordAbility {
+        override val description: String = "Protection from ${subtype}s"
+    }
+
+    /**
      * Protection from everything.
      * "Protection from everything"
      */
@@ -371,6 +380,12 @@ sealed interface KeywordAbility {
          */
         fun protectionFrom(vararg colors: Color): KeywordAbility =
             ProtectionFromColors(colors.toSet())
+
+        /**
+         * Create Protection from a creature subtype.
+         */
+        fun protectionFromSubtype(subtype: String): KeywordAbility =
+            ProtectionFromCreatureSubtype(subtype)
 
         /**
          * Create Cycling with mana cost from string.

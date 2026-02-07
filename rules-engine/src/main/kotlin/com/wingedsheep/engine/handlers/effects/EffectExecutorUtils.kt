@@ -110,13 +110,19 @@ object EffectExecutorUtils {
     ): ExecutionResult {
         if (amount <= 0) return ExecutionResult.success(state)
 
-        // Protection from color: damage from sources of the stated color is prevented (Rule 702.16)
+        // Protection from color/subtype: damage from sources of the stated quality is prevented (Rule 702.16)
         if (!cantBePrevented && sourceId != null) {
             val projected = stateProjector.project(state)
             val sourceColors = projected.getColors(sourceId)
             for (colorName in sourceColors) {
                 if (projected.hasKeyword(targetId, "PROTECTION_FROM_$colorName")) {
                     // Damage is prevented — return success with no state change
+                    return ExecutionResult.success(state)
+                }
+            }
+            val sourceSubtypes = projected.getSubtypes(sourceId)
+            for (subtype in sourceSubtypes) {
+                if (projected.hasKeyword(targetId, "PROTECTION_FROM_SUBTYPE_${subtype.uppercase()}")) {
                     return ExecutionResult.success(state)
                 }
             }

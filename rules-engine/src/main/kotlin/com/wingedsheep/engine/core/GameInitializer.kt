@@ -185,6 +185,11 @@ class GameInitializer(
                 .flatMap { it.colors }
                 .toSet()
 
+        val protectionSubtypes = cardDef.keywordAbilities
+            .filterIsInstance<KeywordAbility.ProtectionFromCreatureSubtype>()
+            .map { it.subtype }
+            .toSet()
+
         var container = ComponentContainer.of(
             CardComponent(
                 cardDefinitionId = cardDef.name,
@@ -203,8 +208,8 @@ class GameInitializer(
             ControllerComponent(ownerId)
         )
 
-        if (protectionColors.isNotEmpty()) {
-            container = container.with(ProtectionComponent(protectionColors))
+        if (protectionColors.isNotEmpty() || protectionSubtypes.isNotEmpty()) {
+            container = container.with(ProtectionComponent(protectionColors, protectionSubtypes))
         }
 
         return container

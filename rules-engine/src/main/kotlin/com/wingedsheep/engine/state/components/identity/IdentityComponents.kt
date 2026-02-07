@@ -90,7 +90,8 @@ data object FaceDownComponent : Component
  */
 @Serializable
 data class ProtectionComponent(
-    val colors: Set<Color>
+    val colors: Set<Color>,
+    val subtypes: Set<String> = emptySet()
 ) : Component
 
 /**

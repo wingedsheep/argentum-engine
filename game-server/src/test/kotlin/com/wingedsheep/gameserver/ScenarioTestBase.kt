@@ -264,7 +264,7 @@ abstract class ScenarioTestBase : FunSpec() {
                 ControllerComponent(ownerId)
             )
 
-            // Attach ProtectionComponent for cards with static protection from color
+            // Attach ProtectionComponent for cards with static protection from color/subtype
             val protectionColors = cardDef.keywordAbilities
                 .filterIsInstance<KeywordAbility.ProtectionFromColor>()
                 .map { it.color }
@@ -273,8 +273,12 @@ abstract class ScenarioTestBase : FunSpec() {
                     .filterIsInstance<KeywordAbility.ProtectionFromColors>()
                     .flatMap { it.colors }
                     .toSet()
-            if (protectionColors.isNotEmpty()) {
-                container = container.with(ProtectionComponent(protectionColors))
+            val protectionSubtypes = cardDef.keywordAbilities
+                .filterIsInstance<KeywordAbility.ProtectionFromCreatureSubtype>()
+                .map { it.subtype }
+                .toSet()
+            if (protectionColors.isNotEmpty() || protectionSubtypes.isNotEmpty()) {
+                container = container.with(ProtectionComponent(protectionColors, protectionSubtypes))
             }
 
             state = state.withEntity(cardId, container)

@@ -32,6 +32,6 @@ val DoubtlessOne = card("Doubtless One") {
         collectorNumber = "102"
         artist = "Eric Peterson"
         flavorText = "It is the duty of the cleric to provide comfort to the flock and to provide the wolves a worthy opponent."
-        imageUri = "https://cards.scryfall.io/large/front/0/8/08e61468-ab0c-4660-89e0-76034e17e5a4.jpg?1562896428"
+        imageUri = "https://cards.scryfall.io/large/front/0/d/0dedef8a-5527-40dc-9ad9-bcee4cf30a76.jpg?1562898196"
     }
 }

@@ -558,6 +558,13 @@ class CombatManager(
             }
         }
 
+        // Protection from creature subtype: Can't be blocked by creatures of the stated subtype
+        for (subtype in projected.getSubtypes(blockerId)) {
+            if (projected.hasKeyword(attackerId, "PROTECTION_FROM_SUBTYPE_${subtype.uppercase()}")) {
+                return "${attackerCard.name} has protection from ${subtype.lowercase()}s and can't be blocked by ${blockerCard.name}"
+            }
+        }
+
         return null
     }
 
@@ -1032,10 +1039,13 @@ class CombatManager(
                     events.add(DamageDealtEvent(attackerId, targetId, damage, true))
                     events.add(LifeChangedEvent(targetId, currentLife, newLife, LifeChangeReason.DAMAGE))
                 } else {
-                    // Check protection: blocker protected from attacker's colors?
+                    // Check protection: blocker protected from attacker's colors or subtypes?
                     val attackerColors = projected.getColors(attackerId)
+                    val attackerSubtypes = projected.getSubtypes(attackerId)
                     val blockerProtected = attackerColors.any { colorName ->
                         projected.hasKeyword(targetId, "PROTECTION_FROM_$colorName")
+                    } || attackerSubtypes.any { subtype ->
+                        projected.hasKeyword(targetId, "PROTECTION_FROM_SUBTYPE_${subtype.uppercase()}")
                     }
                     if (!blockerProtected) {
                         // Deal damage to blocker
@@ -1071,10 +1081,13 @@ class CombatManager(
 
             val blockerPower = projected.getPower(blockerId) ?: 0
             if (blockerPower > 0) {
-                // Check protection: attacker protected from blocker's colors?
+                // Check protection: attacker protected from blocker's colors or subtypes?
                 val blockerColors = projected.getColors(blockerId)
+                val blockerSubtypes = projected.getSubtypes(blockerId)
                 val attackerProtected = blockerColors.any { colorName ->
                     projected.hasKeyword(attackerId, "PROTECTION_FROM_$colorName")
+                } || blockerSubtypes.any { subtype ->
+                    projected.hasKeyword(attackerId, "PROTECTION_FROM_SUBTYPE_${subtype.uppercase()}")
                 }
                 if (!attackerProtected) {
                     val currentDamage = newState.getEntity(attackerId)?.get<DamageComponent>()?.amount ?: 0

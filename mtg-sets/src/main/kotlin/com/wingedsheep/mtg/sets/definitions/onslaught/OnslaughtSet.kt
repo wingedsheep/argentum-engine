@@ -31,6 +31,7 @@ object OnslaughtSet {
         CatapultSquad,
         CrudeRampart,
         Demystify,
+        FoothillGuide,
         GrasslandCrusader,
         GravelSlinger,
         ImprovisedArmor,
@@ -46,6 +47,7 @@ object OnslaughtSet {
         // Blue creatures and spells
         AirborneAid,
         Annex,
+        GhosthelmCourier,
         NamelessOne,
         AphettoAlchemist,
         AphettoGrifter,
@@ -60,6 +62,7 @@ object OnslaughtSet {
         AccursedCentaur,
         AphettoDredging,
         DirgeOfDread,
+        FrightshroudCourier,
         Headhunter,
         AphettoVulture,
         AnuridMurkdiver,

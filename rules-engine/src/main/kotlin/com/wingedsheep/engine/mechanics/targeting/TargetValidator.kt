@@ -43,7 +43,8 @@ class TargetValidator {
         targets: List<ChosenTarget>,
         requirements: List<TargetRequirement>,
         casterId: EntityId,
-        sourceColors: Set<Color> = emptySet()
+        sourceColors: Set<Color> = emptySet(),
+        sourceSubtypes: Set<String> = emptySet()
     ): String? {
         // Use the game state for validation
         // StateProjector is used for P/T checks to account for continuous effects
@@ -66,7 +67,7 @@ class TargetValidator {
 
             // Validate each target against the requirement
             for (target in targetsForReq) {
-                val error = validateSingleTarget(state, target, requirement, casterId, sourceColors)
+                val error = validateSingleTarget(state, target, requirement, casterId, sourceColors, sourceSubtypes)
                 if (error != null) return error
             }
         }
@@ -82,7 +83,8 @@ class TargetValidator {
         target: ChosenTarget,
         requirement: TargetRequirement,
         casterId: EntityId,
-        sourceColors: Set<Color> = emptySet()
+        sourceColors: Set<Color> = emptySet(),
+        sourceSubtypes: Set<String> = emptySet()
     ): String? {
         val error = when (requirement) {
             is TargetCreature -> validateCreatureTarget(state, target, requirement.filter, casterId)
@@ -95,24 +97,25 @@ class TargetValidator {
             is TargetSpell -> validateSpellTarget(state, target, requirement.filter, casterId)
             is TargetSpellOrPermanent -> validateSpellOrPermanentTarget(state, target, casterId)
             is TargetObject -> validateObjectTarget(state, target, requirement.filter, casterId)
-            is TargetOther -> validateSingleTarget(state, target, requirement.baseRequirement, casterId, sourceColors)
+            is TargetOther -> validateSingleTarget(state, target, requirement.baseRequirement, casterId, sourceColors, sourceSubtypes)
         }
         if (error != null) return error
 
-        // Check protection from color (Rule 702.16)
-        return checkProtection(state, target, sourceColors)
+        // Check protection from color and creature subtype (Rule 702.16)
+        return checkProtection(state, target, sourceColors, sourceSubtypes)
     }
 
     /**
-     * Check if a target has protection from any of the source's colors.
+     * Check if a target has protection from any of the source's colors or creature subtypes.
      * Returns an error message if the target is protected, null otherwise.
      */
     private fun checkProtection(
         state: GameState,
         target: ChosenTarget,
-        sourceColors: Set<Color>
+        sourceColors: Set<Color>,
+        sourceSubtypes: Set<String> = emptySet()
     ): String? {
-        if (sourceColors.isEmpty()) return null
+        if (sourceColors.isEmpty() && sourceSubtypes.isEmpty()) return null
 
         val entityId = when (target) {
             is ChosenTarget.Permanent -> target.entityId
@@ -128,6 +131,12 @@ class TargetValidator {
             if (projected.hasKeyword(entityId, "PROTECTION_FROM_${color.name}")) {
                 val cardName = state.getEntity(entityId)?.get<CardComponent>()?.name ?: "target"
                 return "$cardName has protection from ${color.displayName.lowercase()}"
+            }
+        }
+        for (subtype in sourceSubtypes) {
+            if (projected.hasKeyword(entityId, "PROTECTION_FROM_SUBTYPE_${subtype.uppercase()}")) {
+                val cardName = state.getEntity(entityId)?.get<CardComponent>()?.name ?: "target"
+                return "$cardName has protection from ${subtype.lowercase()}s"
             }
         }
         return null

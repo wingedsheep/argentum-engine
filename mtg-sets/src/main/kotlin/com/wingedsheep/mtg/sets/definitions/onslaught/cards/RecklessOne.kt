@@ -28,6 +28,6 @@ val RecklessOne = card("Reckless One") {
         collectorNumber = "231"
         artist = "Mark Romanoski"
         flavorText = "It counts only two things: the number of goblins on the battlefield and the number of goblins it takes to burn down a forest."
-        imageUri = "https://cards.scryfall.io/large/front/2/0/2062c279-2e06-4c3c-98e8-775b1fe8d4fb.jpg?1562901246"
+        imageUri = "https://cards.scryfall.io/large/front/3/7/37775f40-10de-4f5d-abb2-c49e682039de.jpg?1585512782"
     }
 }

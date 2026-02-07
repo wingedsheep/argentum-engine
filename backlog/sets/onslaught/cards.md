@@ -129,13 +129,13 @@
 - [x] Flamestick Courier
 - [ ] Fleeting Aven
 - [ ] Flooded Strand
-- [ ] Foothill Guide
+- [x] Foothill Guide
 - [x] Forest
 - [x] Forgotten Cave
-- [ ] Frightshroud Courier
+- [x] Frightshroud Courier
 - [ ] Future Sight
 - [ ] Gangrenous Goliath
-- [ ] Ghosthelm Courier
+- [x] Ghosthelm Courier
 - [ ] Gigapede
 - [ ] Glarecaster
 - [x] Glory Seeker
