@@ -16,7 +16,7 @@ function pickBackground(): string {
   }
   const index = Math.floor(Math.random() * backgroundUrls.length)
   localStorage.setItem('argentum-bg', JSON.stringify({ index, timestamp: Date.now() }))
-  return backgroundUrls[index]
+  return backgroundUrls[index] ?? ''
 }
 
 const randomBackground = pickBackground()
