@@ -1,11 +1,15 @@
 package com.wingedsheep.gameserver.scenarios
 
+import com.wingedsheep.engine.core.ChooseOptionDecision
+import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.gameserver.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
  * Scenario test for Heedless One.
@@ -18,6 +22,18 @@ import io.kotest.matchers.shouldBe
 class HeedlessOneScenarioTest : ScenarioTestBase() {
 
     private val stateProjector = StateProjector()
+
+    private fun ScenarioTestBase.TestGame.chooseCreatureType(typeName: String) {
+        val decision = getPendingDecision()
+        decision.shouldNotBeNull()
+        decision.shouldBeInstanceOf<ChooseOptionDecision>()
+        val options = (decision as ChooseOptionDecision).options
+        val index = options.indexOf(typeName)
+        withClue("Creature type '$typeName' should be in options $options") {
+            (index >= 0) shouldBe true
+        }
+        submitDecision(OptionChosenResponse(decision.id, index))
+    }
 
     init {
         context("Heedless One CDA power/toughness") {
@@ -69,6 +85,39 @@ class HeedlessOneScenarioTest : ScenarioTestBase() {
                 withClue("Heedless One should be 2/2 with 2 Elves on battlefield") {
                     projectedAfter.getPower(heedlessOne) shouldBe 2
                     projectedAfter.getToughness(heedlessOne) shouldBe 2
+                }
+            }
+
+            test("Artificial Evolution changing Elf to Crocodile makes CDA count Crocodiles") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Heedless One")
+                    .withCardOnBattlefield(1, "Wirewood Elf")
+                    .withCardInHand(2, "Artificial Evolution")
+                    .withLandsOnBattlefield(2, "Island", 1)
+                    .withActivePlayer(2)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val heedlessOne = game.findPermanent("Heedless One")!!
+
+                // Initially 2 Elves on battlefield → 2/2
+                val projectedBefore = stateProjector.project(game.state)
+                withClue("Heedless One should be 2/2 with 2 Elves") {
+                    projectedBefore.getPower(heedlessOne) shouldBe 2
+                    projectedBefore.getToughness(heedlessOne) shouldBe 2
+                }
+
+                // Cast Artificial Evolution targeting Heedless One, change Elf → Crocodile
+                game.castSpell(2, "Artificial Evolution", heedlessOne)
+                game.resolveStack()
+                game.chooseCreatureType("Elf")
+                game.chooseCreatureType("Crocodile")
+
+                // Now Heedless One counts Crocodiles instead of Elves → 0/0
+                // SBAs will put it in the graveyard since it has 0 toughness
+                withClue("Heedless One should die to SBAs (0/0 with no Crocodiles)") {
+                    game.isInGraveyard(1, "Heedless One") shouldBe true
                 }
             }
 

@@ -10,6 +10,7 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.ProtectionComponent
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
+import com.wingedsheep.engine.mechanics.text.SubtypeReplacer
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
@@ -101,19 +102,29 @@ class StateProjector(
                 opponentId = state.getOpponent(controllerId)
             )
             val baseStats = cardComponent.baseStats ?: continue
+            val textReplacement = state.getEntity(entityId)?.get<TextReplacementComponent>()
+
+            fun resolveDynamicAmount(source: com.wingedsheep.sdk.scripting.DynamicAmount): Int {
+                val effective = if (textReplacement != null) {
+                    SubtypeReplacer.replaceDynamicAmount(source, textReplacement)
+                } else {
+                    source
+                }
+                return dynamicAmountEvaluator.evaluate(state, effective, context)
+            }
 
             when (val power = baseStats.power) {
                 is CharacteristicValue.Dynamic ->
-                    values.power = dynamicAmountEvaluator.evaluate(state, power.source, context)
+                    values.power = resolveDynamicAmount(power.source)
                 is CharacteristicValue.DynamicWithOffset ->
-                    values.power = dynamicAmountEvaluator.evaluate(state, power.source, context) + power.offset
+                    values.power = resolveDynamicAmount(power.source) + power.offset
                 is CharacteristicValue.Fixed -> {} // Already set
             }
             when (val toughness = baseStats.toughness) {
                 is CharacteristicValue.Dynamic ->
-                    values.toughness = dynamicAmountEvaluator.evaluate(state, toughness.source, context)
+                    values.toughness = resolveDynamicAmount(toughness.source)
                 is CharacteristicValue.DynamicWithOffset ->
-                    values.toughness = dynamicAmountEvaluator.evaluate(state, toughness.source, context) + toughness.offset
+                    values.toughness = resolveDynamicAmount(toughness.source) + toughness.offset
                 is CharacteristicValue.Fixed -> {} // Already set
             }
         }
