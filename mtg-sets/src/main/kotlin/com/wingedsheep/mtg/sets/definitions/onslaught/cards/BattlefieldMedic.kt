@@ -38,6 +38,6 @@ val BattlefieldMedic = card("Battlefield Medic") {
         collectorNumber = "9"
         artist = "Kev Walker"
         flavorText = "\"Death never stops to rest. Neither can we.\""
-        imageUri = "https://cards.scryfall.io/large/front/c/f/cf23e979-41ce-4e48-8e0b-f2a66e79b2ab.jpg?1562935974"
+        imageUri = "https://cards.scryfall.io/large/front/9/c/9c444503-42a8-4952-819b-bbca89b06abc.jpg?1562931867"
     }
 }
