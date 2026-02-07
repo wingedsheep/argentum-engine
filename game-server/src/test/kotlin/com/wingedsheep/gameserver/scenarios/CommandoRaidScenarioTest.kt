@@ -37,11 +37,18 @@ class CommandoRaidScenarioTest : ScenarioTestBase() {
 
                 // Advance to declare blockers step
                 game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+                game.declareNoBlockers()
 
-                // Cast Commando Raid targeting Glory Seeker BEFORE declaring blockers
+                // Cast Commando Raid targeting Glory Seeker after blockers declared
                 val seekerId = game.findPermanent("Glory Seeker")!!
+
+                // Pass priority if defending player has it first
+                if (game.state.priorityPlayerId != null && game.state.priorityPlayerId != game.state.activePlayerId) {
+                    game.passPriority()
+                }
+
                 val castResult = game.castSpell(1, "Commando Raid", seekerId)
-                withClue("Commando Raid should cast successfully") {
+                withClue("Commando Raid should cast successfully (error: ${castResult.error}, priority: ${game.state.priorityPlayerId}, active: ${game.state.activePlayerId}, step: ${game.state.step})") {
                     castResult.error shouldBe null
                 }
 
@@ -51,9 +58,6 @@ class CommandoRaidScenarioTest : ScenarioTestBase() {
                 withClue("Granted trigger should be stored in game state") {
                     game.state.grantedTriggeredAbilities.size shouldBe 1
                 }
-
-                // Declare no blockers
-                game.declareNoBlockers()
 
                 // Now advance through combat damage - trigger fires
                 var iterations = 0
