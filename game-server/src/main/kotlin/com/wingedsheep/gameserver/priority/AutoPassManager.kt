@@ -471,10 +471,15 @@ class AutoPassManager {
         }
 
         val currentStep = state.step
+        val isMyTurn = state.activePlayerId == playerId
 
         // Special combat damage labels when there are attacking creatures
         val hasAttackers = state.getBattlefield().any { entityId ->
             state.getEntity(entityId)?.get<AttackingComponent>() != null
+        }
+
+        if (hasAttackers && currentStep == Step.DECLARE_ATTACKERS && isMyTurn) {
+            return "To Blockers"
         }
 
         if (hasAttackers && currentStep == Step.DECLARE_BLOCKERS) {
@@ -488,8 +493,6 @@ class AutoPassManager {
         if (hasAttackers && currentStep == Step.FIRST_STRIKE_COMBAT_DAMAGE) {
             return "Resolve combat damage"
         }
-
-        val isMyTurn = state.activePlayerId == playerId
 
         // At postcombat main on my turn, passing effectively ends the turn
         if (isMyTurn && currentStep == Step.POSTCOMBAT_MAIN) {
