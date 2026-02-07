@@ -1,9 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AbilityCost
+import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantKeywordUntilEndOfTurnEffect
@@ -16,7 +17,8 @@ import com.wingedsheep.sdk.targeting.TargetPermanent
  * {2}{R}
  * Creature — Goblin
  * 2/1
- * {T}: Target Goblin creature gets +2/+2 and gains haste until end of turn.
+ * You may choose not to untap Flamestick Courier during your untap step.
+ * {2}{R}, {T}: Target Goblin creature gets +2/+2 and gains haste for as long as Flamestick Courier remains tapped.
  */
 val FlamestickCourier = card("Flamestick Courier") {
     manaCost = "{2}{R}"
@@ -24,20 +26,21 @@ val FlamestickCourier = card("Flamestick Courier") {
     power = 2
     toughness = 1
 
+    keywords(Keyword.MAY_NOT_UNTAP)
+
     activatedAbility {
-        cost = AbilityCost.Tap
+        cost = Costs.Composite(Costs.Mana("{2}{R}"), Costs.Tap)
         target = TargetPermanent(
             filter = TargetFilter(GameObjectFilter.Creature.withSubtype("Goblin"))
         )
-        effect = ModifyStatsEffect(2, 2, EffectTarget.ContextTarget(0)) then
-                GrantKeywordUntilEndOfTurnEffect(Keyword.HASTE, EffectTarget.ContextTarget(0))
+        effect = ModifyStatsEffect(2, 2, EffectTarget.ContextTarget(0), Duration.WhileSourceTapped()) then
+                GrantKeywordUntilEndOfTurnEffect(Keyword.HASTE, EffectTarget.ContextTarget(0), Duration.WhileSourceTapped())
     }
 
     metadata {
         rarity = Rarity.UNCOMMON
-        collectorNumber = "199"
-        artist = "Carl Critchlow"
-        flavorText = "\"We've got a special delivery of pain for ya.\""
+        collectorNumber = "203"
+        artist = "Luca Zontini"
         imageUri = "https://cards.scryfall.io/large/front/e/8/e822161d-0434-4578-aecd-c9ef0b84bd4e.jpg?1562950280"
     }
 }

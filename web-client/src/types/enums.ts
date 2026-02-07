@@ -182,6 +182,7 @@ export enum Keyword {
   AFFINITY = 'AFFINITY',
   // Restrictions
   CANT_UNTAP = 'CANT_UNTAP',
+  MAY_NOT_UNTAP = 'MAY_NOT_UNTAP',
 }
 
 export const KeywordDisplayNames: Record<Keyword, string> = {
@@ -220,6 +221,7 @@ export const KeywordDisplayNames: Record<Keyword, string> = {
   [Keyword.DELVE]: 'Delve',
   [Keyword.AFFINITY]: 'Affinity',
   [Keyword.CANT_UNTAP]: "Can't untap",
+  [Keyword.MAY_NOT_UNTAP]: 'You may choose not to untap',
 }
 
 /**

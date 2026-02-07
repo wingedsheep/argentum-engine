@@ -615,6 +615,22 @@ data class ChooseFromCreatureTypeContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after player selects which permanents to keep tapped during untap step.
+ *
+ * Used for permanents with "You may choose not to untap" keyword (MAY_NOT_UNTAP).
+ * The player selects which permanents to keep tapped; everything else untaps normally.
+ *
+ * @property playerId The active player making the choice
+ * @property allPermanentsToUntap All permanents that would normally untap
+ */
+@Serializable
+data class UntapChoiceContinuation(
+    override val decisionId: String,
+    val playerId: EntityId,
+    val allPermanentsToUntap: List<EntityId>
+) : ContinuationFrame
+
+/**
  * Resume after player chooses the TO creature type for text replacement.
  *
  * Step 2: Player chooses the replacement creature type.

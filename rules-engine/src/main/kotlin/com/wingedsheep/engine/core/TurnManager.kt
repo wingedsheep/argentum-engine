@@ -121,18 +121,54 @@ class TurnManager(
             }
         }
 
-        // Untap them
-        for (entityId in permanentsToUntap) {
-            val cardName = newState.getEntity(entityId)?.get<CardComponent>()?.name ?: "Permanent"
-            newState = newState.updateEntity(entityId) { it.without<TappedComponent>() }
-            events.add(UntappedEvent(entityId, cardName))
-        }
-
         // Remove the SkipUntapComponent after processing (it's been consumed)
         if (skipUntap != null) {
             newState = newState.updateEntity(activePlayer) { container ->
                 container.without<SkipUntapComponent>()
             }
+        }
+
+        // Check if any permanents have MAY_NOT_UNTAP keyword (e.g., Everglove Courier)
+        val mayNotUntapPermanents = permanentsToUntap.filter { entityId ->
+            projected.hasKeyword(entityId, Keyword.MAY_NOT_UNTAP)
+        }
+
+        if (mayNotUntapPermanents.isNotEmpty()) {
+            // Ask the player which permanents to keep tapped
+            val decisionResult = decisionHandler.createCardSelectionDecision(
+                state = newState,
+                playerId = activePlayer,
+                sourceId = null,
+                sourceName = null,
+                prompt = "Choose permanents to keep tapped (you may choose not to untap them)",
+                options = mayNotUntapPermanents,
+                minSelections = 0,
+                maxSelections = mayNotUntapPermanents.size,
+                ordered = false,
+                phase = DecisionPhase.STATE_BASED,
+                useTargetingUI = true
+            )
+
+            val continuation = UntapChoiceContinuation(
+                decisionId = decisionResult.pendingDecision!!.id,
+                playerId = activePlayer,
+                allPermanentsToUntap = permanentsToUntap
+            )
+
+            val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
+
+            return ExecutionResult.paused(
+                stateWithContinuation,
+                decisionResult.pendingDecision,
+                events + decisionResult.events
+            )
+        }
+
+        // No MAY_NOT_UNTAP permanents - untap everything normally
+        for (entityId in permanentsToUntap) {
+            val cardName = newState.getEntity(entityId)?.get<CardComponent>()?.name ?: "Permanent"
+            newState = newState.updateEntity(entityId) { it.without<TappedComponent>() }
+            events.add(UntappedEvent(entityId, cardName))
         }
 
         // Remove summoning sickness from all creatures the player controls (using projected state)
@@ -297,6 +333,14 @@ class TurnManager(
             Step.UNTAP -> {
                 val untapResult = performUntapStep(newState)
                 if (!untapResult.isSuccess) return untapResult
+                // If paused for MAY_NOT_UNTAP decision, return paused result
+                if (untapResult.isPaused) {
+                    return ExecutionResult.paused(
+                        untapResult.newState,
+                        untapResult.pendingDecision!!,
+                        events + untapResult.events
+                    )
+                }
                 newState = untapResult.newState
                 events.addAll(untapResult.events)
                 // Immediately advance past untap (no priority)
@@ -587,6 +631,15 @@ class TurnManager(
         val untapResult = performUntapStep(turnResult.newState)
         if (!untapResult.isSuccess) return untapResult
 
+        // If paused for MAY_NOT_UNTAP decision, return paused result
+        if (untapResult.isPaused) {
+            return ExecutionResult.paused(
+                untapResult.newState,
+                untapResult.pendingDecision!!,
+                turnResult.events + untapResult.events
+            )
+        }
+
         // Advance to upkeep (this sets priority to the active player)
         val advanceResult = advanceStep(untapResult.newState)
 
@@ -619,6 +672,12 @@ class TurnManager(
                     // Keep if source is still on battlefield
                     val sourceId = floatingEffect.sourceId
                     sourceId != null && newState.getBattlefield().contains(sourceId)
+                }
+                is Duration.WhileSourceTapped -> {
+                    // Keep if source is still on battlefield AND tapped
+                    val sourceId = floatingEffect.sourceId
+                    sourceId != null && newState.getBattlefield().contains(sourceId) &&
+                        newState.getEntity(sourceId)?.has<TappedComponent>() == true
                 }
                 is Duration.UntilPhase -> true  // Handle in phase transitions
                 is Duration.UntilCondition -> true  // Handle condition checking elsewhere

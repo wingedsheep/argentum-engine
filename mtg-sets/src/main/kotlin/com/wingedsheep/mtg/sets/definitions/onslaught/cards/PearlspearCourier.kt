@@ -1,9 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AbilityCost
+import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantKeywordUntilEndOfTurnEffect
@@ -16,7 +17,8 @@ import com.wingedsheep.sdk.targeting.TargetPermanent
  * {2}{W}
  * Creature — Human Soldier
  * 2/1
- * {T}: Target Soldier creature gets +2/+2 and gains vigilance until end of turn.
+ * You may choose not to untap Pearlspear Courier during your untap step.
+ * {2}{W}, {T}: Target Soldier creature gets +2/+2 and has vigilance for as long as Pearlspear Courier remains tapped.
  */
 val PearlspearCourier = card("Pearlspear Courier") {
     manaCost = "{2}{W}"
@@ -24,20 +26,21 @@ val PearlspearCourier = card("Pearlspear Courier") {
     power = 2
     toughness = 1
 
+    keywords(Keyword.MAY_NOT_UNTAP)
+
     activatedAbility {
-        cost = AbilityCost.Tap
+        cost = Costs.Composite(Costs.Mana("{2}{W}"), Costs.Tap)
         target = TargetPermanent(
             filter = TargetFilter(GameObjectFilter.Creature.withSubtype("Soldier"))
         )
-        effect = ModifyStatsEffect(2, 2, EffectTarget.ContextTarget(0)) then
-                GrantKeywordUntilEndOfTurnEffect(Keyword.VIGILANCE, EffectTarget.ContextTarget(0))
+        effect = ModifyStatsEffect(2, 2, EffectTarget.ContextTarget(0), Duration.WhileSourceTapped()) then
+                GrantKeywordUntilEndOfTurnEffect(Keyword.VIGILANCE, EffectTarget.ContextTarget(0), Duration.WhileSourceTapped())
     }
 
     metadata {
         rarity = Rarity.UNCOMMON
-        collectorNumber = "46"
-        artist = "Mark Zug"
-        flavorText = "Theirs is an order of action, not talk."
+        collectorNumber = "48"
+        artist = "Dany Orizio"
         imageUri = "https://cards.scryfall.io/large/front/a/1/a1ea7219-6ab6-471a-afe7-d7da1df434c7.jpg?1562933222"
     }
 }

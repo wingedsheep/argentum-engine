@@ -74,6 +74,20 @@ class SubmitDecisionHandler(
                 )
             }
 
+            // Handle untap step completion (MAY_NOT_UNTAP decision resolved)
+            if (result.isSuccess && !result.isPaused &&
+                result.state.step == Step.UNTAP &&
+                result.state.pendingDecision == null
+            ) {
+                val untapAdvanceResult = turnManager.advanceStep(result.state)
+                return ExecutionResult(
+                    state = untapAdvanceResult.state,
+                    events = listOf(submittedEvent) + result.events + untapAdvanceResult.events,
+                    error = untapAdvanceResult.error,
+                    pendingDecision = untapAdvanceResult.pendingDecision
+                )
+            }
+
             // Check SBAs after continuation completes
             if (result.isSuccess && !result.isPaused) {
                 val sbaResult = sbaChecker.checkAndApply(result.state)

@@ -51,7 +51,7 @@ class GrantKeywordUntilEndOfTurnExecutor : EffectExecutor<GrantKeywordUntilEndOf
                 modification = SerializableModification.GrantKeyword(effect.keyword.name),
                 affectedEntities = setOf(targetId)
             ),
-            duration = Duration.EndOfTurn,
+            duration = effect.duration,
             sourceId = context.sourceId,
             sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name },
             controllerId = context.controllerId,

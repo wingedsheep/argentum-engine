@@ -10,6 +10,7 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.ProtectionComponent
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
+import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
@@ -74,7 +75,8 @@ class StateProjector(
                     power = baseStats?.basePower,  // null for dynamic stats
                     toughness = baseStats?.baseToughness,  // null for dynamic stats
                     keywords = (cardComponent.baseKeywords.map { it.name } +
-                        (container.get<ProtectionComponent>()?.colors?.map { "PROTECTION_FROM_${it.name}" } ?: emptyList())).toMutableSet(),
+                        (container.get<ProtectionComponent>()?.colors?.map { "PROTECTION_FROM_${it.name}" } ?: emptyList()) +
+                        (container.get<ProtectionComponent>()?.subtypes?.map { "PROTECTION_FROM_SUBTYPE_${it.uppercase()}" } ?: emptyList())).toMutableSet(),
                     colors = cardComponent.colors.map { it.name }.toMutableSet(),
                     types = extractTypes(cardComponent),
                     subtypes = cardComponent.typeLine.subtypes.map { it.value }.toMutableSet(),
@@ -254,6 +256,15 @@ class StateProjector(
 
         // 2. Collect floating effects (from resolved spells like Giant Growth)
         for (floating in state.floatingEffects) {
+            // Skip WhileSourceTapped effects if source is no longer tapped or on battlefield
+            if (floating.duration is Duration.WhileSourceTapped) {
+                val sourceId = floating.sourceId
+                if (sourceId == null || !state.getBattlefield().contains(sourceId) ||
+                    state.getEntity(sourceId)?.has<TappedComponent>() != true) {
+                    continue
+                }
+            }
+
             // Only include effects whose affected entities still exist on battlefield
             val validAffectedEntities = floating.effect.affectedEntities.filter { entityId ->
                 state.getBattlefield().contains(entityId)

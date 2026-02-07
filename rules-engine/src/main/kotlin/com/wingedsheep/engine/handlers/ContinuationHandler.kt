@@ -79,6 +79,7 @@ class ContinuationHandler(
             is ChooseFromCreatureTypeContinuation -> resumeChooseFromCreatureType(stateAfterPop, continuation, response)
             is ChooseToCreatureTypeContinuation -> resumeChooseToCreatureType(stateAfterPop, continuation, response)
             is PutFromHandContinuation -> resumePutFromHand(stateAfterPop, continuation, response)
+            is UntapChoiceContinuation -> resumeUntapChoice(stateAfterPop, continuation, response)
         }
     }
 
@@ -2118,5 +2119,50 @@ class ContinuationHandler(
         )
 
         return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume after player selected which permanents to keep tapped during untap step.
+     *
+     * Selected cards are permanents the player chose to keep tapped.
+     * Everything else in allPermanentsToUntap gets untapped.
+     */
+    private fun resumeUntapChoice(
+        state: GameState,
+        continuation: UntapChoiceContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for untap choice")
+        }
+
+        val keepTapped = response.selectedCards.toSet()
+        val toUntap = continuation.allPermanentsToUntap.filter { it !in keepTapped }
+
+        var newState = state
+        val events = mutableListOf<GameEvent>()
+
+        // Untap the permanents that the player did NOT choose to keep tapped
+        for (entityId in toUntap) {
+            val cardName = newState.getEntity(entityId)?.get<CardComponent>()?.name ?: "Permanent"
+            newState = newState.updateEntity(entityId) { it.without<TappedComponent>() }
+            events.add(UntappedEvent(entityId, cardName))
+        }
+
+        // Remove summoning sickness from all creatures the active player controls
+        val activePlayer = continuation.playerId
+        val projected = com.wingedsheep.engine.mechanics.layers.StateProjector().project(newState)
+        val creaturesToRefresh = newState.entities.filter { (entityId, container) ->
+            projected.getController(entityId) == activePlayer &&
+                container.has<com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent>()
+        }.keys
+
+        for (entityId in creaturesToRefresh) {
+            newState = newState.updateEntity(entityId) {
+                it.without<com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent>()
+            }
+        }
+
+        return ExecutionResult.success(newState, events)
     }
 }

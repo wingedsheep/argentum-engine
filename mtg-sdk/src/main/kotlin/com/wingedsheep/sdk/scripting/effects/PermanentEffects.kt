@@ -89,9 +89,13 @@ data class RemoveCountersEffect(
 @Serializable
 data class GrantKeywordUntilEndOfTurnEffect(
     val keyword: Keyword,
-    val target: EffectTarget
+    val target: EffectTarget,
+    val duration: Duration = Duration.EndOfTurn
 ) : Effect {
-    override val description: String = "${target.description} gains ${keyword.displayName.lowercase()} until end of turn"
+    override val description: String = buildString {
+        append("${target.description} gains ${keyword.displayName.lowercase()}")
+        if (duration.description.isNotEmpty()) append(" ${duration.description}")
+    }
 }
 
 /**

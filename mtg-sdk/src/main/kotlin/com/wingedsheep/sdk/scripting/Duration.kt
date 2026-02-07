@@ -98,6 +98,17 @@ sealed interface Duration {
     data class UntilCondition(val conditionDescription: String) : Duration {
         override val description = "until $conditionDescription"
     }
+
+    /**
+     * Effect lasts while the source permanent remains tapped.
+     * Example: Everglove Courier "for as long as Everglove Courier remains tapped"
+     */
+    @Serializable
+    data class WhileSourceTapped(
+        val sourceDescription: String = "this creature"
+    ) : Duration {
+        override val description = "for as long as $sourceDescription remains tapped"
+    }
 }
 
 /**
@@ -111,6 +122,9 @@ object Durations {
 
     fun whileOnBattlefield(source: String = "this permanent") =
         Duration.WhileSourceOnBattlefield(source)
+
+    fun whileSourceTapped(source: String = "this creature") =
+        Duration.WhileSourceTapped(source)
 
     fun untilPhase(phase: String) = Duration.UntilPhase(phase)
     fun until(condition: String) = Duration.UntilCondition(condition)
