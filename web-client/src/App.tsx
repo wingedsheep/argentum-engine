@@ -263,22 +263,26 @@ function GameOverlay() {
     const title =
       gameOverState.result === 'win' ? 'Victory!' : gameOverState.result === 'draw' ? 'Draw' : 'Defeat'
     return (
-      <div style={overlayStyles.container}>
-        <h1 style={{
-          ...overlayStyles.title,
-          color: titleColor,
-        }}>
-          {title}
-        </h1>
-        <span style={{ color: '#555', fontSize: 20, userSelect: 'none' }}>|</span>
-        <p style={overlayStyles.subtitle}>{reasonText}</p>
-        <button
-          onClick={returnToMenu}
-          style={overlayStyles.button}
-        >
-          Return to Menu
-        </button>
-      </div>
+      <>
+        {/* Transparent layer to block board interaction */}
+        <div style={overlayStyles.clickBlocker} />
+        <div style={overlayStyles.container}>
+          <h1 style={{
+            ...overlayStyles.title,
+            color: titleColor,
+          }}>
+            {title}
+          </h1>
+          <span style={{ color: '#555', fontSize: 20, userSelect: 'none' }}>|</span>
+          <p style={overlayStyles.subtitle}>{reasonText}</p>
+          <button
+            onClick={returnToMenu}
+            style={overlayStyles.button}
+          >
+            Return to Menu
+          </button>
+        </div>
+      </>
     )
   }
 
@@ -297,6 +301,14 @@ function GameOverlay() {
 }
 
 const overlayStyles: Record<string, React.CSSProperties> = {
+  clickBlocker: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 1999,
+  },
   container: {
     position: 'absolute',
     top: 0,
