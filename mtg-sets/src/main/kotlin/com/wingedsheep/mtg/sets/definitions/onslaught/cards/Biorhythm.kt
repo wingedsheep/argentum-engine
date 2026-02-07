@@ -24,6 +24,6 @@ val Biorhythm = card("Biorhythm") {
         collectorNumber = "247"
         artist = "Ron Spears"
         flavorText = "\"I have seen life's purpose, and now it is my own.\"\n—Kamahl, druid acolyte"
-        imageUri = "https://cards.scryfall.io/normal/front/1/7/17d1a10f-ce21-4571-948c-d6b9c3db3805.jpg?1562898858"
+        imageUri = "https://cards.scryfall.io/large/front/2/a/2a02d6d5-27be-4301-a467-5b49491d0d4f.jpg?1593017428"
     }
 }
