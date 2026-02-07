@@ -10,7 +10,6 @@ import hexproofIcon from './hexproof.svg'
 import indestructibleIcon from './indestructible.svg'
 import defenderIcon from './defender.svg'
 import menaceIcon from './menace.svg'
-import protectionIcon from './protection.svg'
 import genericIcon from './generic.svg'
 
 export const keywordIcons: Record<string, string> = {
@@ -31,9 +30,6 @@ export const keywordIcons: Record<string, string> = {
 }
 
 export const genericKeywordIcon = genericIcon
-
-/** Exported for use in CardOverlays colored protection icons */
-export { protectionIcon }
 
 export const displayableKeywords = new Set([
   'FLYING', 'REACH', 'TRAMPLE',
