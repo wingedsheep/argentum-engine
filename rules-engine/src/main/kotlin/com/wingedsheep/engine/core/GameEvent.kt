@@ -602,6 +602,22 @@ data class TurnFaceUpEvent(
 ) : GameEvent
 
 // =============================================================================
+// Control Events
+// =============================================================================
+
+/**
+ * Control of a permanent changed.
+ */
+@Serializable
+@SerialName("ControlChangedEvent")
+data class ControlChangedEvent(
+    val permanentId: EntityId,
+    val permanentName: String,
+    val oldControllerId: EntityId,
+    val newControllerId: EntityId
+) : GameEvent
+
+// =============================================================================
 // Cycling Events
 // =============================================================================
 

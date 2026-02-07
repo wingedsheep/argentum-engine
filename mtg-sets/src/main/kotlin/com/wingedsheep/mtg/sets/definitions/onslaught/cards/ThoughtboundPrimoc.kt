@@ -11,15 +11,15 @@ import com.wingedsheep.sdk.scripting.ConditionalEffect
 
 /**
  * Thoughtbound Primoc
- * {2}{U}
+ * {2}{R}
  * Creature — Bird Beast
  * 2/3
  * Flying
- * At the beginning of your upkeep, if you control a Wizard,
- * draw a card, then discard a card.
+ * At the beginning of your upkeep, if a player controls more Wizards
+ * than each other player, that player gains control of Thoughtbound Primoc.
  */
 val ThoughtboundPrimoc = card("Thoughtbound Primoc") {
-    manaCost = "{2}{U}"
+    manaCost = "{2}{R}"
     typeLine = "Creature — Bird Beast"
     power = 2
     toughness = 3
@@ -29,8 +29,8 @@ val ThoughtboundPrimoc = card("Thoughtbound Primoc") {
     triggeredAbility {
         trigger = Triggers.YourUpkeep
         effect = ConditionalEffect(
-            condition = Conditions.ControlCreatureOfType(Subtype("Wizard")),
-            effect = Effects.Loot()
+            condition = Conditions.APlayerControlsMostOfSubtype(Subtype("Wizard")),
+            effect = Effects.GainControlByMostOfSubtype(Subtype("Wizard"))
         )
     }
 

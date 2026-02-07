@@ -80,3 +80,13 @@ data object OpponentControlsMoreCreatures : Condition {
 data object OpponentControlsMoreLands : Condition {
     override val description: String = "if an opponent controls more lands than you"
 }
+
+/**
+ * Condition: "If a player controls more [subtype] creatures than each other player"
+ * Used by Thoughtbound Primoc and similar Onslaught "tribal war" cards.
+ * Returns true only if exactly one player has strictly more than all others.
+ */
+@Serializable
+data class APlayerControlsMostOfSubtype(val subtype: Subtype) : Condition {
+    override val description: String = "if a player controls more ${subtype.value}s than each other player"
+}

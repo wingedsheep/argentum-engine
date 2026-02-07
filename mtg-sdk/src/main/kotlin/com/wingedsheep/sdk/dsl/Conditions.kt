@@ -75,6 +75,12 @@ object Conditions {
     fun ControlCreatureOfType(subtype: Subtype): ConditionInterface =
         com.wingedsheep.sdk.scripting.ControlCreatureOfType(subtype)
 
+    /**
+     * If a player controls more creatures of the given subtype than each other player.
+     */
+    fun APlayerControlsMostOfSubtype(subtype: Subtype): ConditionInterface =
+        com.wingedsheep.sdk.scripting.APlayerControlsMostOfSubtype(subtype)
+
     // =========================================================================
     // Life Total Conditions
     // =========================================================================

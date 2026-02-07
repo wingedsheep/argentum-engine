@@ -41,6 +41,7 @@ class ConditionEvaluator {
             is OpponentControlsCreature -> evaluateOpponentControlsCreature(state, context)
             is OpponentControlsMoreCreatures -> evaluateOpponentControlsMoreCreatures(state, context)
             is OpponentControlsMoreLands -> evaluateOpponentControlsMoreLands(state, context)
+            is APlayerControlsMostOfSubtype -> evaluateAPlayerControlsMostOfSubtype(state, condition)
 
             // Hand conditions
             is EmptyHand -> evaluateEmptyHand(state, context)
@@ -285,6 +286,22 @@ class ConditionEvaluator {
             val container = state.getEntity(entityId) ?: return@any false
             container.get<com.wingedsheep.engine.state.components.stack.SpellOnStackComponent>()?.casterId == opponentId
         }
+    }
+
+    private fun evaluateAPlayerControlsMostOfSubtype(
+        state: GameState,
+        condition: APlayerControlsMostOfSubtype
+    ): Boolean {
+        val counts = state.turnOrder.associateWith { playerId ->
+            state.entities.count { (_, container) ->
+                container.get<ControllerComponent>()?.playerId == playerId &&
+                container.get<CardComponent>()?.typeLine?.hasSubtype(condition.subtype) == true
+            }
+        }
+        val maxCount = counts.values.maxOrNull() ?: return false
+        if (maxCount == 0) return false
+        val playersWithMax = counts.count { it.value == maxCount }
+        return playersWithMax == 1
     }
 
     // Helper functions

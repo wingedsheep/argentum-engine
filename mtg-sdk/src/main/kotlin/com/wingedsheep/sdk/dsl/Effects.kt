@@ -2,6 +2,7 @@ package com.wingedsheep.sdk.dsl
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.*
 
@@ -254,6 +255,16 @@ object Effects {
         filter: GroupFilter = GroupFilter(GameObjectFilter.Creature.youControl()),
         duration: Duration = Duration.EndOfTurn
     ): Effect = ChooseColorAndGrantProtectionToGroupEffect(filter, duration)
+
+    // =========================================================================
+    // Control Effects
+    // =========================================================================
+
+    /**
+     * The player who controls the most creatures of the given subtype gains control of the target.
+     */
+    fun GainControlByMostOfSubtype(subtype: Subtype, target: EffectTarget = EffectTarget.Self): Effect =
+        GainControlByMostOfSubtypeEffect(subtype, target)
 
     // =========================================================================
     // Composite Effects

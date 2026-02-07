@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.Subtype
 import kotlinx.serialization.Serializable
 
 // =============================================================================
@@ -280,4 +281,21 @@ data class DynamicModifyStatsEffect(
         append("${powerModifier.description}/${toughnessModifier.description}")
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
+}
+
+/**
+ * Gain control of a permanent based on who controls the most creatures of a subtype.
+ * The player with strictly more creatures of the given subtype than all other players
+ * gains control of the target permanent.
+ *
+ * Used by Thoughtbound Primoc: "At the beginning of your upkeep, if a player controls
+ * more Wizards than each other player, that player gains control of Thoughtbound Primoc."
+ */
+@Serializable
+data class GainControlByMostOfSubtypeEffect(
+    val subtype: Subtype,
+    val target: EffectTarget = EffectTarget.Self
+) : Effect {
+    override val description: String =
+        "the player who controls the most ${subtype.value}s gains control of ${target.description}"
 }

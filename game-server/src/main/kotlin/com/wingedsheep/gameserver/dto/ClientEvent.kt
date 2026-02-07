@@ -644,7 +644,8 @@ object ClientEventTransformer {
             is LibraryReorderedEvent,
             is KeywordGrantedEvent,
             is TurnFaceUpEvent,
-            is CardCycledEvent -> null
+            is CardCycledEvent,
+            is ControlChangedEvent -> null
         }
     }
 }
