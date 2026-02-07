@@ -1,8 +1,11 @@
 package com.wingedsheep.gameserver.scenarios
 
+import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.mechanics.layers.StateProjector
+import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.gameserver.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -118,6 +121,51 @@ class HeedlessOneScenarioTest : ScenarioTestBase() {
                 // SBAs will put it in the graveyard since it has 0 toughness
                 withClue("Heedless One should die to SBAs (0/0 with no Crocodiles)") {
                     game.isInGraveyard(1, "Heedless One") shouldBe true
+                }
+            }
+
+            test("face-down Elf does not count as an Elf (Rule 707.2)") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Heedless One")
+                    .withCardInHand(1, "Birchlore Rangers") // Elf with morph {G}
+                    .withLandsOnBattlefield(1, "Forest", 4) // Enough for morph {3}
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val heedlessOne = game.findPermanent("Heedless One")!!
+
+                // Initially just Heedless One = 1 Elf
+                val projectedBefore = stateProjector.project(game.state)
+                withClue("Heedless One should be 1/1 with only itself") {
+                    projectedBefore.getPower(heedlessOne) shouldBe 1
+                    projectedBefore.getToughness(heedlessOne) shouldBe 1
+                }
+
+                // Cast Birchlore Rangers face-down for {3}
+                val rangersId = game.state.getHand(game.player1Id).first { entityId ->
+                    game.state.getEntity(entityId)?.get<CardComponent>()?.name == "Birchlore Rangers"
+                }
+                val castResult = game.execute(CastSpell(game.player1Id, rangersId, castFaceDown = true))
+                withClue("Cast morph should succeed") {
+                    castResult.error shouldBe null
+                }
+                game.resolveStack()
+
+                // Verify it's face-down on the battlefield
+                val faceDownId = game.state.getBattlefield().find { entityId ->
+                    game.state.getEntity(entityId)?.has<FaceDownComponent>() == true
+                }
+                withClue("Face-down creature should be on battlefield") {
+                    faceDownId.shouldNotBeNull()
+                }
+
+                // Face-down Elf should NOT count as an Elf - Heedless One should still be 1/1
+                val projectedAfter = stateProjector.project(game.state)
+                withClue("Heedless One should still be 1/1 - face-down Elf doesn't count as Elf") {
+                    projectedAfter.getPower(heedlessOne) shouldBe 1
+                    projectedAfter.getToughness(heedlessOne) shouldBe 1
                 }
             }
 

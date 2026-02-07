@@ -314,11 +314,18 @@ class PredicateEvaluator {
             CardPredicate.IsMulticolored -> card.colors.size > 1
             CardPredicate.IsMonocolored -> card.colors.size == 1
 
-            // Subtype predicates
-            is CardPredicate.HasSubtype -> typeLine.hasSubtype(predicate.subtype)
-            is CardPredicate.NotSubtype -> !typeLine.hasSubtype(predicate.subtype)
+            // Subtype predicates - face-down creatures have no subtypes (Rule 707.2)
+            is CardPredicate.HasSubtype -> {
+                if (container.has<FaceDownComponent>()) false
+                else typeLine.hasSubtype(predicate.subtype)
+            }
+            is CardPredicate.NotSubtype -> {
+                if (container.has<FaceDownComponent>()) true
+                else !typeLine.hasSubtype(predicate.subtype)
+            }
             is CardPredicate.HasBasicLandType -> {
-                typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(predicate.landType))
+                if (container.has<FaceDownComponent>()) false
+                else typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(predicate.landType))
             }
 
             // Name predicates
