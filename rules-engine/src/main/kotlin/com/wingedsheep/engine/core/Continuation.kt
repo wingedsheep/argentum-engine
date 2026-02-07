@@ -650,6 +650,45 @@ data class ChooseFromCreatureTypeContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after target player reveals cards for Blackmail-style effects.
+ *
+ * Step 1: Target player has selected cards to reveal (or all were auto-revealed).
+ * Now the controller must choose one of the revealed cards for the target to discard.
+ *
+ * @property controllerId The player who cast Blackmail (chooses which card to discard)
+ * @property targetPlayerId The target player whose hand is being revealed
+ * @property sourceId The spell that caused this effect
+ * @property sourceName Name of the source for display
+ * @property revealedCards The cards that were revealed (controller picks from these)
+ */
+@Serializable
+data class BlackmailRevealContinuation(
+    override val decisionId: String,
+    val controllerId: EntityId,
+    val targetPlayerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val revealedCards: List<EntityId>
+) : ContinuationFrame
+
+/**
+ * Resume after controller chooses a card from revealed hand for Blackmail-style effects.
+ *
+ * Step 2: Controller has chosen a card. Now discard it from the target player's hand.
+ *
+ * @property targetPlayerId The target player who discards the chosen card
+ * @property sourceId The spell that caused this effect
+ * @property sourceName Name of the source for display
+ */
+@Serializable
+data class BlackmailChooseContinuation(
+    override val decisionId: String,
+    val targetPlayerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?
+) : ContinuationFrame
+
+/**
  * Resume after player selects which permanents to keep tapped during untap step.
  *
  * Used for permanents with "You may choose not to untap" keyword (MAY_NOT_UNTAP).

@@ -183,6 +183,23 @@ data class LookAtFaceDownCreatureEffect(
 }
 
 /**
+ * Blackmail effect - target player reveals three cards from their hand
+ * and the controller chooses one of them. That player discards that card.
+ * If the target player has three or fewer cards, they reveal all of them.
+ *
+ * @property revealCount How many cards the target player reveals (default 3)
+ * @property target The player whose hand is being targeted
+ */
+@Serializable
+data class BlackmailEffect(
+    val revealCount: Int = 3,
+    val target: EffectTarget = EffectTarget.ContextTarget(0)
+) : Effect {
+    override val description: String =
+        "Target player reveals $revealCount cards from their hand and you choose one of them. That player discards that card."
+}
+
+/**
  * Reveal a player's hand (publicly visible to all players).
  * This is an atomic effect that just reveals - use with CompositeEffect for
  * "reveal and do something based on what's revealed" patterns.

@@ -19,6 +19,7 @@ class DrawingExecutors(
         EachOpponentDiscardsExecutor(decisionHandler),
         EachPlayerDiscardsDrawsExecutor(decisionHandler),
         EachPlayerDrawsXExecutor(),
-        EachPlayerMayDrawExecutor(decisionHandler)
+        EachPlayerMayDrawExecutor(decisionHandler),
+        BlackmailExecutor(decisionHandler)
     )
 }

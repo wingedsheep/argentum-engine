@@ -139,6 +139,8 @@ val engineSerializersModule = SerializersModule {
         subclass(PutFromHandContinuation::class)
         subclass(UntapChoiceContinuation::class)
         subclass(PendingTriggersContinuation::class)
+        subclass(BlackmailRevealContinuation::class)
+        subclass(BlackmailChooseContinuation::class)
     }
 
     // Component hierarchy (for GameState persistence)

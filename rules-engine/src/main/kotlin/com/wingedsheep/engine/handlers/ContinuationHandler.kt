@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.effects.EffectExecutorRegistry
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
+import com.wingedsheep.engine.handlers.effects.drawing.BlackmailExecutor
 import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerDiscardsDrawsExecutor
 import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerMayDrawExecutor
 import com.wingedsheep.engine.mechanics.layers.StateProjector
@@ -83,6 +84,8 @@ class ContinuationHandler(
             is ChooseToCreatureTypeContinuation -> resumeChooseToCreatureType(stateAfterPop, continuation, response)
             is PutFromHandContinuation -> resumePutFromHand(stateAfterPop, continuation, response)
             is UntapChoiceContinuation -> resumeUntapChoice(stateAfterPop, continuation, response)
+            is BlackmailRevealContinuation -> resumeBlackmailReveal(stateAfterPop, continuation, response)
+            is BlackmailChooseContinuation -> resumeBlackmailChoose(stateAfterPop, continuation, response)
             is PendingTriggersContinuation -> {
                 // This should not be popped directly by a decision response.
                 // It's handled by checkForMoreContinuations after the preceding trigger resolves.
@@ -2025,6 +2028,66 @@ class ContinuationHandler(
         } else {
             checkForMoreContinuations(result.state, result.events.toList())
         }
+    }
+
+    /**
+     * Resume after target player revealed cards for Blackmail.
+     * Now the controller must choose one of the revealed cards for the target to discard.
+     */
+    private fun resumeBlackmailReveal(
+        state: GameState,
+        continuation: BlackmailRevealContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for Blackmail reveal")
+        }
+
+        val revealedCards = response.selectedCards
+
+        // Now ask the controller to choose one of the revealed cards
+        return BlackmailExecutor.askControllerToChoose(
+            state = state,
+            controllerId = continuation.controllerId,
+            targetPlayerId = continuation.targetPlayerId,
+            sourceId = continuation.sourceId,
+            sourceName = continuation.sourceName,
+            revealedCards = revealedCards
+        )
+    }
+
+    /**
+     * Resume after controller chose a card from Blackmail reveal.
+     * Discard the chosen card from the target player's hand.
+     */
+    private fun resumeBlackmailChoose(
+        state: GameState,
+        continuation: BlackmailChooseContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for Blackmail choose")
+        }
+
+        val selectedCards = response.selectedCards
+        if (selectedCards.isEmpty()) {
+            return checkForMoreContinuations(state, emptyList())
+        }
+
+        val cardToDiscard = selectedCards.first()
+        val targetPlayerId = continuation.targetPlayerId
+        val handZone = ZoneKey(targetPlayerId, Zone.HAND)
+        val graveyardZone = ZoneKey(targetPlayerId, Zone.GRAVEYARD)
+
+        var newState = state
+        newState = newState.removeFromZone(handZone, cardToDiscard)
+        newState = newState.addToZone(graveyardZone, cardToDiscard)
+
+        val events = listOf(
+            CardsDiscardedEvent(targetPlayerId, listOf(cardToDiscard))
+        )
+
+        return checkForMoreContinuations(newState, events)
     }
 
     /**

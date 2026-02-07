@@ -68,6 +68,7 @@ object OnslaughtSet {
 
         // Black creatures and spells
         AccursedCentaur,
+        Blackmail,
         AphettoDredging,
         DirgeOfDread,
         FrightshroudCourier,
