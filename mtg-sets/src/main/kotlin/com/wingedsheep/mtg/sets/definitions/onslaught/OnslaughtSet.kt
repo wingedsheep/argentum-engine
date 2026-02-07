@@ -49,6 +49,7 @@ object OnslaughtSet {
         // Blue creatures and spells
         AirborneAid,
         Annex,
+        AvenFateshaper,
         CraftyPathmage,
         GhosthelmCourier,
         ThoughtboundPrimoc,

@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 135 / 335
+**Implemented:** 136 / 335
 
 ---
 
@@ -29,7 +29,7 @@
 - [x] Aurification
 - [x] Avarax
 - [x] Aven Brigadier
-- [ ] Aven Fateshaper
+- [x] Aven Fateshaper
 - [ ] Aven Soulgazer
 - [ ] Backslide
 - [x] Barkhide Mauler
