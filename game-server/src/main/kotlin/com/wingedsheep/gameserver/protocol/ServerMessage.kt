@@ -106,6 +106,45 @@ sealed interface ServerMessage {
     ) : ServerMessage
 
     /**
+     * Opponent has disconnected from the game. A countdown timer is running
+     * and they will auto-concede if they don't reconnect in time.
+     */
+    @Serializable
+    @SerialName("opponentDisconnected")
+    data class OpponentDisconnected(
+        val secondsRemaining: Int
+    ) : ServerMessage
+
+    /**
+     * Opponent has reconnected to the game. Cancels the disconnect countdown.
+     */
+    @Serializable
+    @SerialName("opponentReconnected")
+    data object OpponentReconnected : ServerMessage
+
+    /**
+     * A tournament player has disconnected. Shown to all players in the lobby
+     * so they can optionally add time.
+     */
+    @Serializable
+    @SerialName("tournamentPlayerDisconnected")
+    data class TournamentPlayerDisconnected(
+        val playerId: String,
+        val playerName: String,
+        val secondsRemaining: Int
+    ) : ServerMessage
+
+    /**
+     * A disconnected tournament player has reconnected.
+     */
+    @Serializable
+    @SerialName("tournamentPlayerReconnected")
+    data class TournamentPlayerReconnected(
+        val playerId: String,
+        val playerName: String
+    ) : ServerMessage
+
+    /**
      * Basic card info for display in mulligan UI.
      */
     @Serializable

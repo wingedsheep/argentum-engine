@@ -49,7 +49,7 @@ export const createConnectionSlice: SliceCreator<ConnectionSlice> = (set, get) =
     }
 
     // Store player name for reconnection
-    sessionStorage.setItem('argentum-player-name', playerName)
+    localStorage.setItem('argentum-player-name', playerName)
 
     // Build message handlers from the full store
     const handlers = createMessageHandlers(set, get)
@@ -63,8 +63,8 @@ export const createConnectionSlice: SliceCreator<ConnectionSlice> = (set, get) =
       onStatusChange: (status) => {
         set({ connectionStatus: status })
         if (status === 'connected' && getWebSocket()) {
-          const token = sessionStorage.getItem('argentum-token') ?? undefined
-          const storedName = sessionStorage.getItem('argentum-player-name') ?? playerName
+          const token = localStorage.getItem('argentum-token') ?? undefined
+          const storedName = localStorage.getItem('argentum-player-name') ?? playerName
           getWebSocket()?.send(createConnectMessage(storedName, token))
         }
       },
@@ -87,8 +87,8 @@ export const createConnectionSlice: SliceCreator<ConnectionSlice> = (set, get) =
     const ws = getWebSocket()
     ws?.disconnect()
     setWebSocket(null)
-    sessionStorage.removeItem('argentum-token')
-    sessionStorage.removeItem('argentum-player-name')
+    localStorage.removeItem('argentum-token')
+    localStorage.removeItem('argentum-player-name')
     clearLobbyId()
     clearDeckState()
     set({

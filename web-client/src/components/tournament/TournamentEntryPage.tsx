@@ -23,7 +23,7 @@ export function TournamentEntryPage() {
   const lastError = useGameStore((state) => state.lastError)
   const setPendingTournamentId = useGameStore((state) => state.setPendingTournamentId)
 
-  const [playerName, setPlayerName] = useState(() => sessionStorage.getItem('argentum-player-name') || '')
+  const [playerName, setPlayerName] = useState(() => localStorage.getItem('argentum-player-name') || '')
   const [joining, setJoining] = useState(false)
   const [tournamentInfo, setTournamentInfo] = useState<{ exists: boolean; state: string; playerCount: number; format: string } | null>(null)
   const [fetchError, setFetchError] = useState<string | null>(null)
@@ -44,7 +44,7 @@ export function TournamentEntryPage() {
 
   // Auto-connect if we have a stored name (returning user)
   useEffect(() => {
-    const storedName = sessionStorage.getItem('argentum-player-name')
+    const storedName = localStorage.getItem('argentum-player-name')
     if (storedName && connectionStatus === 'disconnected' && !hasConnectedRef.current) {
       hasConnectedRef.current = true
       connect(storedName)
@@ -69,7 +69,7 @@ export function TournamentEntryPage() {
 
   const handleConnect = () => {
     if (playerName.trim() && lobbyId) {
-      sessionStorage.setItem('argentum-player-name', playerName.trim())
+      localStorage.setItem('argentum-player-name', playerName.trim())
       setPendingTournamentId(lobbyId)
       connect(playerName.trim())
     }

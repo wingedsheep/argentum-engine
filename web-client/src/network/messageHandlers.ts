@@ -35,6 +35,10 @@ import type {
   SpectatingStartedMessage,
   SpectatingStoppedMessage,
   OpponentBlockerAssignmentsMessage,
+  OpponentDisconnectedMessage,
+  OpponentReconnectedMessage,
+  TournamentPlayerDisconnectedMessage,
+  TournamentPlayerReconnectedMessage,
 } from '../types'
 
 /**
@@ -83,6 +87,11 @@ export interface MessageHandlers {
   onSpectatingStopped: (message: SpectatingStoppedMessage) => void
   // Combat UI handlers
   onOpponentBlockerAssignments: (message: OpponentBlockerAssignmentsMessage) => void
+  // Disconnect handlers
+  onOpponentDisconnected: (message: OpponentDisconnectedMessage) => void
+  onOpponentReconnected: (message: OpponentReconnectedMessage) => void
+  onTournamentPlayerDisconnected: (message: TournamentPlayerDisconnectedMessage) => void
+  onTournamentPlayerReconnected: (message: TournamentPlayerReconnectedMessage) => void
 }
 
 /**
@@ -203,6 +212,18 @@ export function handleServerMessage(message: ServerMessage, handlers: MessageHan
     // Combat UI messages
     case 'opponentBlockerAssignments':
       handlers.onOpponentBlockerAssignments(message)
+      break
+    case 'opponentDisconnected':
+      handlers.onOpponentDisconnected(message)
+      break
+    case 'opponentReconnected':
+      handlers.onOpponentReconnected(message)
+      break
+    case 'tournamentPlayerDisconnected':
+      handlers.onTournamentPlayerDisconnected(message)
+      break
+    case 'tournamentPlayerReconnected':
+      handlers.onTournamentPlayerReconnected(message)
       break
     default: {
       // TypeScript exhaustiveness check
@@ -366,6 +387,23 @@ export function createLoggingHandlers(handlers: MessageHandlers): MessageHandler
     onOpponentBlockerAssignments: (msg) => {
       console.log('[Server] Opponent blocker assignments:', msg)
       handlers.onOpponentBlockerAssignments(msg)
+    },
+    // Disconnect handlers
+    onOpponentDisconnected: (msg) => {
+      console.log('[Server] Opponent disconnected:', msg)
+      handlers.onOpponentDisconnected(msg)
+    },
+    onOpponentReconnected: (msg) => {
+      console.log('[Server] Opponent reconnected:', msg)
+      handlers.onOpponentReconnected(msg)
+    },
+    onTournamentPlayerDisconnected: (msg) => {
+      console.log('[Server] Tournament player disconnected:', msg)
+      handlers.onTournamentPlayerDisconnected(msg)
+    },
+    onTournamentPlayerReconnected: (msg) => {
+      console.log('[Server] Tournament player reconnected:', msg)
+      handlers.onTournamentPlayerReconnected(msg)
     },
   }
 }

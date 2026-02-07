@@ -8,6 +8,7 @@ import { XCostSelector } from './components/ui/XCostSelector'
 import { ConvokeSelector } from './components/ui/ConvokeSelector'
 import { DamageDistributionModal } from './components/decisions/DamageDistributionModal'
 import { OpponentDecisionIndicator } from './components/ui/OpponentDecisionIndicator'
+import { DisconnectCountdown } from './components/ui/DisconnectCountdown'
 import { DeckBuilderOverlay } from './components/sealed/DeckBuilderOverlay'
 import { DraftPickOverlay } from './components/draft/DraftPickOverlay'
 import { SpectatorGameBoard } from './components/spectating/SpectatorGameBoard'
@@ -46,7 +47,7 @@ export default function App() {
   useEffect(() => {
     // Only auto-connect if we already have a stored player name (returning user)
     // Otherwise, GameUI will show the name entry screen first
-    const storedName = sessionStorage.getItem('argentum-player-name')
+    const storedName = localStorage.getItem('argentum-player-name')
     if (storedName && connectionStatus === 'disconnected' && !hasConnectedRef.current) {
       hasConnectedRef.current = true
       connect(storedName)
@@ -179,6 +180,9 @@ export default function App() {
 
       {/* Opponent decision indicator (shown during game when opponent is deciding) */}
       {showGame && <OpponentDecisionIndicator />}
+
+      {/* Disconnect countdown (shown when opponent disconnects during game) */}
+      {showGame && <DisconnectCountdown />}
 
       {/* Connection/lobby UI overlay */}
       {showLobby && <GameUI />}

@@ -55,6 +55,11 @@ export type ServerMessage =
   | SpectatingStoppedMessage
   // Combat UI Messages
   | OpponentBlockerAssignmentsMessage
+  // Disconnect Messages
+  | OpponentDisconnectedMessage
+  | OpponentReconnectedMessage
+  | TournamentPlayerDisconnectedMessage
+  | TournamentPlayerReconnectedMessage
 
 /**
  * Connection confirmed with assigned player ID.
@@ -832,6 +837,41 @@ export interface OpponentBlockerAssignmentsMessage {
   readonly assignments: Record<EntityId, EntityId>
 }
 
+/**
+ * Opponent has disconnected. A countdown timer is running and they will
+ * auto-concede if they don't reconnect in time.
+ */
+export interface OpponentDisconnectedMessage {
+  readonly type: 'opponentDisconnected'
+  readonly secondsRemaining: number
+}
+
+/**
+ * Opponent has reconnected. Cancels the disconnect countdown.
+ */
+export interface OpponentReconnectedMessage {
+  readonly type: 'opponentReconnected'
+}
+
+/**
+ * A tournament player has disconnected. Shown to all players in the lobby.
+ */
+export interface TournamentPlayerDisconnectedMessage {
+  readonly type: 'tournamentPlayerDisconnected'
+  readonly playerId: string
+  readonly playerName: string
+  readonly secondsRemaining: number
+}
+
+/**
+ * A disconnected tournament player has reconnected.
+ */
+export interface TournamentPlayerReconnectedMessage {
+  readonly type: 'tournamentPlayerReconnected'
+  readonly playerId: string
+  readonly playerName: string
+}
+
 // ============================================================================
 // Client Messages (sent to server)
 // ============================================================================
@@ -867,6 +907,8 @@ export type ClientMessage =
   | ReadyForNextRoundMessage
   | SpectateGameMessage
   | StopSpectatingMessage
+  | AddDisconnectTimeMessage
+  | KickPlayerMessage
   // Combat UI Messages
   | UpdateBlockerAssignmentsMessage
   // Game Settings Messages
@@ -1157,6 +1199,16 @@ export interface StopSpectatingMessage {
   readonly type: 'stopSpectating'
 }
 
+export interface AddDisconnectTimeMessage {
+  readonly type: 'addDisconnectTime'
+  readonly playerId: string
+}
+
+export interface KickPlayerMessage {
+  readonly type: 'kickPlayer'
+  readonly playerId: string
+}
+
 // Combat UI Client Messages
 
 /**
@@ -1253,6 +1305,14 @@ export function createSpectateGameMessage(gameSessionId: string): SpectateGameMe
 
 export function createStopSpectatingMessage(): StopSpectatingMessage {
   return { type: 'stopSpectating' }
+}
+
+export function createAddDisconnectTimeMessage(playerId: string): AddDisconnectTimeMessage {
+  return { type: 'addDisconnectTime', playerId }
+}
+
+export function createKickPlayerMessage(playerId: string): KickPlayerMessage {
+  return { type: 'kickPlayer', playerId }
 }
 
 export function createUpdateBlockerAssignmentsMessage(

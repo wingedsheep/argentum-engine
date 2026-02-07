@@ -63,13 +63,13 @@ export function clearDeckState(): void {
 const LOBBY_ID_KEY = 'argentum-lobby-id'
 
 export function saveLobbyId(lobbyId: string): void {
-  sessionStorage.setItem(LOBBY_ID_KEY, lobbyId)
+  localStorage.setItem(LOBBY_ID_KEY, lobbyId)
 }
 
 export function loadLobbyId(): string | null {
-  return sessionStorage.getItem(LOBBY_ID_KEY)
+  return localStorage.getItem(LOBBY_ID_KEY)
 }
 
 export function clearLobbyId(): void {
-  sessionStorage.removeItem(LOBBY_ID_KEY)
+  localStorage.removeItem(LOBBY_ID_KEY)
 }

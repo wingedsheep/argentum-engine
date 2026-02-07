@@ -33,6 +33,7 @@ class GameWebSocketHandler(
         gamePlayHandler.joinLobbyCallback = { session, msg -> lobbyHandler.handleJoinLobby(session, msg) }
         connectionHandler.handleGameOverCallback = { gameSession, reason -> gamePlayHandler.handleGameOver(gameSession, reason) }
         connectionHandler.handleRoundCompleteCallback = { lobbyId -> lobbyHandler.handleRoundComplete(lobbyId) }
+        connectionHandler.broadcastActiveMatchesCallback = { lobbyId -> lobbyHandler.broadcastActiveMatchesToWaitingPlayers(lobbyId) }
         connectionHandler.broadcastStateUpdateCallback = { gameSession, events -> gamePlayHandler.broadcastStateUpdate(gameSession, events) }
         connectionHandler.sendActiveMatchesToPlayerCallback = { identity, wsSession -> lobbyHandler.sendActiveMatchesToPlayer(identity, wsSession) }
         connectionHandler.restoreSpectatingCallback = { identity, playerSession, wsSession, gameSessionId ->
@@ -77,6 +78,13 @@ class GameWebSocketHandler(
 
                 is ClientMessage.ReadyForNextRound -> {
                     lobbyHandler.handleReadyForNextRound(session)
+                }
+
+                is ClientMessage.AddDisconnectTime -> {
+                    connectionHandler.handleAddDisconnectTime(session, clientMessage)
+                }
+                is ClientMessage.KickPlayer -> {
+                    connectionHandler.handleKickPlayer(session, clientMessage)
                 }
 
                 is ClientMessage.SpectateGame,

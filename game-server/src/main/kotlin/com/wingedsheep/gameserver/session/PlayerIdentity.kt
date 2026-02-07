@@ -36,6 +36,14 @@ class PlayerIdentity(
     @Volatile
     var disconnectTimer: ScheduledFuture<*>? = null
 
+    /** Scheduled in-game disconnect timer — auto-concedes after 2 minutes */
+    @Volatile
+    var gameDisconnectTimer: ScheduledFuture<*>? = null
+
+    /** Timestamp (epoch millis) when the disconnect timer expires */
+    @Volatile
+    var disconnectExpiresAt: Long? = null
+
     val isConnected: Boolean get() = webSocketSession?.isOpen == true
 
     /**

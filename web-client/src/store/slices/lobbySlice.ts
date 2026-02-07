@@ -12,6 +12,8 @@ import {
   createReadyForNextRoundMessage,
   createSpectateGameMessage,
   createStopSpectatingMessage,
+  createAddDisconnectTimeMessage,
+  createKickPlayerMessage,
 } from '../../types'
 import { trackEvent } from '../../utils/analytics'
 import { getWebSocket, clearLobbyId, clearDeckState } from './shared'
@@ -20,6 +22,7 @@ export interface LobbySliceState {
   lobbyState: LobbyState | null
   tournamentState: TournamentState | null
   spectatingState: SpectatingState | null
+  disconnectedPlayers: Record<string, { playerName: string; secondsRemaining: number; disconnectedAt: number }>
 }
 
 export interface LobbySliceActions {
@@ -32,6 +35,8 @@ export interface LobbySliceActions {
   readyForNextRound: () => void
   spectateGame: (gameSessionId: string) => void
   stopSpectating: () => void
+  addDisconnectTime: (playerId: string) => void
+  kickPlayer: (playerId: string) => void
   leaveTournament: () => void
 }
 
@@ -42,6 +47,7 @@ export const createLobbySlice: SliceCreator<LobbySlice> = (set, get) => ({
   lobbyState: null,
   tournamentState: null,
   spectatingState: null,
+  disconnectedPlayers: {},
 
   // Actions
   createTournamentLobby: (setCodes, format = 'SEALED', boosterCount = 6, maxPlayers = 8, pickTimeSeconds = 45) => {
@@ -92,6 +98,14 @@ export const createLobbySlice: SliceCreator<LobbySlice> = (set, get) => ({
 
   stopSpectating: () => {
     getWebSocket()?.send(createStopSpectatingMessage())
+  },
+
+  addDisconnectTime: (playerId) => {
+    getWebSocket()?.send(createAddDisconnectTimeMessage(playerId))
+  },
+
+  kickPlayer: (playerId) => {
+    getWebSocket()?.send(createKickPlayerMessage(playerId))
   },
 
   leaveTournament: () => {

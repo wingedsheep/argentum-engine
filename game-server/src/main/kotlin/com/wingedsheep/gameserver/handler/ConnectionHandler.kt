@@ -65,6 +65,48 @@ class ConnectionHandler(
 
         identity.disconnectTimer?.cancel(false)
         identity.disconnectTimer = null
+        val wasDisconnectedFromTournament = identity.disconnectExpiresAt != null
+        identity.disconnectExpiresAt = null
+
+        // Broadcast reconnection to tournament lobby
+        if (wasDisconnectedFromTournament) {
+            val lobbyId = identity.currentLobbyId
+            if (lobbyId != null) {
+                val lobby = lobbyRepository.findLobbyById(lobbyId)
+                if (lobby != null) {
+                    val msg = ServerMessage.TournamentPlayerReconnected(
+                        playerId = identity.playerId.value,
+                        playerName = identity.playerName
+                    )
+                    lobby.players.forEach { (_, playerState) ->
+                        val ws = playerState.identity.webSocketSession
+                        if (ws != null && ws.isOpen) sender.send(ws, msg)
+                    }
+                    for ((_, spectatorIdentity) in lobby.spectators) {
+                        val ws = spectatorIdentity.webSocketSession
+                        if (ws != null && ws.isOpen) sender.send(ws, msg)
+                    }
+                }
+            }
+        }
+
+        // Cancel in-game disconnect timer and notify opponent
+        if (identity.gameDisconnectTimer != null) {
+            identity.gameDisconnectTimer?.cancel(false)
+            identity.gameDisconnectTimer = null
+
+            val gameSessionId = identity.currentGameSessionId
+            if (gameSessionId != null) {
+                val gameSession = gameRepository.findById(gameSessionId)
+                if (gameSession != null) {
+                    val opponentId = gameSession.getOpponentId(identity.playerId)
+                    val opponentSession = if (opponentId != null) gameSession.getPlayerSession(opponentId) else null
+                    if (opponentSession?.isConnected == true) {
+                        sender.send(opponentSession.webSocketSession, ServerMessage.OpponentReconnected)
+                    }
+                }
+            }
+        }
 
         sessionRegistry.removeOldWsMapping(identity.token)
 
@@ -418,9 +460,46 @@ class ConnectionHandler(
                 logger.info("Player disconnected: ${identity.playerName} (starting ${gracePeriodMinutes}m grace period, tournament=$isInTournament)")
                 identity.webSocketSession = null
 
+                val gracePeriodSeconds = gracePeriodMinutes * 60
+                identity.disconnectExpiresAt = System.currentTimeMillis() + gracePeriodSeconds * 1000
                 identity.disconnectTimer = sessionRegistry.disconnectScheduler.schedule({
                     handleDisconnectTimeout(token)
                 }, gracePeriodMinutes, TimeUnit.MINUTES)
+
+                // Broadcast to tournament lobby so other players can see disconnect + add time
+                if (isInTournament) {
+                    val msg = ServerMessage.TournamentPlayerDisconnected(
+                        playerId = identity.playerId.value,
+                        playerName = identity.playerName,
+                        secondsRemaining = gracePeriodSeconds.toInt()
+                    )
+                    lobby.players.forEach { (_, playerState) ->
+                        val ws = playerState.identity.webSocketSession
+                        if (ws != null && ws.isOpen) sender.send(ws, msg)
+                    }
+                    for ((_, spectatorIdentity) in lobby.spectators) {
+                        val ws = spectatorIdentity.webSocketSession
+                        if (ws != null && ws.isOpen) sender.send(ws, msg)
+                    }
+                }
+
+                // Start 2-minute in-game auto-concede timer and notify opponent
+                val gameSessionId = identity.currentGameSessionId
+                if (gameSessionId != null) {
+                    val gameSession = gameRepository.findById(gameSessionId)
+                    if (gameSession != null && !gameSession.isGameOver()) {
+                        val opponentId = gameSession.getOpponentId(identity.playerId)
+                        val opponentSession = if (opponentId != null) gameSession.getPlayerSession(opponentId) else null
+                        if (opponentSession?.isConnected == true) {
+                            sender.send(opponentSession.webSocketSession,
+                                ServerMessage.OpponentDisconnected(secondsRemaining = GAME_DISCONNECT_SECONDS))
+                        }
+
+                        identity.gameDisconnectTimer = sessionRegistry.disconnectScheduler.schedule({
+                            handleGameDisconnectTimeout(token)
+                        }, GAME_DISCONNECT_SECONDS.toLong(), TimeUnit.SECONDS)
+                    }
+                }
 
                 if (lobby != null) broadcastLobbyUpdate(lobby)
                 return
@@ -455,6 +534,8 @@ class ConnectionHandler(
                     LobbyState.TOURNAMENT_ACTIVE -> {
                         val tournament = lobbyRepository.findTournamentById(lobbyId)
                         tournament?.recordAbandon(identity.playerId)
+                        // Broadcast updated standings/matches to waiting players
+                        broadcastActiveMatchesCallback?.invoke(lobbyId)
                         if (tournament?.isRoundComplete() == true) {
                             handleRoundCompleteCallback?.invoke(lobbyId)
                         }
@@ -477,6 +558,130 @@ class ConnectionHandler(
                 }
             }
         }
+    }
+
+    /**
+     * Handles the in-game 2-minute disconnect timer expiring.
+     * Forces the disconnected player to concede.
+     */
+    private fun handleGameDisconnectTimeout(token: String) {
+        val identity = sessionRegistry.getIdentityByToken(token) ?: return
+        identity.gameDisconnectTimer = null
+
+        // Only concede if still disconnected and still in a game
+        if (identity.isConnected) return
+        val gameSessionId = identity.currentGameSessionId ?: return
+        val gameSession = gameRepository.findById(gameSessionId) ?: return
+        if (gameSession.isGameOver()) return
+
+        logger.info("Game disconnect timeout for ${identity.playerName} — auto-conceding")
+        gameSession.playerConcedes(identity.playerId)
+        handleGameOverCallback?.invoke(gameSession, GameOverReason.DISCONNECTION)
+    }
+
+    /**
+     * Handle a request from a tournament player to add 5 minutes to a disconnected
+     * player's timer, giving them more time to reconnect.
+     */
+    fun handleAddDisconnectTime(session: WebSocketSession, message: ClientMessage.AddDisconnectTime) {
+        val targetPlayerId = EntityId(message.playerId)
+
+        // Find the disconnected player's identity by scanning tokens
+        var targetIdentity: PlayerIdentity? = null
+        var targetToken: String? = null
+        sessionRegistry.forEachIdentity { token, identity ->
+            if (identity.playerId == targetPlayerId && identity.disconnectExpiresAt != null) {
+                targetIdentity = identity
+                targetToken = token
+            }
+        }
+
+        val identity = targetIdentity ?: return
+        val token = targetToken ?: return
+
+        // Cancel old timer
+        identity.disconnectTimer?.cancel(false)
+
+        // Extend by 5 minutes
+        val addedMs = ADD_DISCONNECT_TIME_SECONDS * 1000L
+        val newExpiresAt = (identity.disconnectExpiresAt ?: System.currentTimeMillis()) + addedMs
+        identity.disconnectExpiresAt = newExpiresAt
+        val remainingMs = newExpiresAt - System.currentTimeMillis()
+        val remainingSeconds = (remainingMs / 1000).coerceAtLeast(0).toInt()
+
+        // Schedule new timer
+        identity.disconnectTimer = sessionRegistry.disconnectScheduler.schedule({
+            handleDisconnectTimeout(token)
+        }, remainingMs, TimeUnit.MILLISECONDS)
+
+        logger.info("Added ${ADD_DISCONNECT_TIME_SECONDS}s to disconnect timer for ${identity.playerName} (${remainingSeconds}s remaining)")
+
+        // Broadcast updated timer to lobby
+        val lobbyId = identity.currentLobbyId ?: return
+        val lobby = lobbyRepository.findLobbyById(lobbyId) ?: return
+
+        val msg = ServerMessage.TournamentPlayerDisconnected(
+            playerId = identity.playerId.value,
+            playerName = identity.playerName,
+            secondsRemaining = remainingSeconds
+        )
+        lobby.players.forEach { (_, playerState) ->
+            val ws = playerState.identity.webSocketSession
+            if (ws != null && ws.isOpen) sender.send(ws, msg)
+        }
+        for ((_, spectatorIdentity) in lobby.spectators) {
+            val ws = spectatorIdentity.webSocketSession
+            if (ws != null && ws.isOpen) sender.send(ws, msg)
+        }
+    }
+
+    /**
+     * Handle a request to kick a disconnected tournament player.
+     * Only allowed after the player has been disconnected for 2+ minutes.
+     */
+    fun handleKickPlayer(session: WebSocketSession, message: ClientMessage.KickPlayer) {
+        val targetPlayerId = EntityId(message.playerId)
+
+        var targetIdentity: PlayerIdentity? = null
+        var targetToken: String? = null
+        sessionRegistry.forEachIdentity { token, identity ->
+            if (identity.playerId == targetPlayerId && identity.disconnectExpiresAt != null) {
+                targetIdentity = identity
+                targetToken = token
+            }
+        }
+
+        val identity = targetIdentity ?: return
+        val token = targetToken ?: return
+
+        // Check minimum disconnect time (2 minutes)
+        val disconnectedAt = identity.disconnectExpiresAt?.let { expiresAt ->
+            // Original disconnect time = expiresAt - original grace period
+            // But we can't know the original grace. Instead, track elapsed time differently.
+            // Since we store disconnectExpiresAt, just check: has enough time passed?
+            val lobbyId = identity.currentLobbyId
+            val lobby = if (lobbyId != null) lobbyRepository.findLobbyById(lobbyId) else null
+            val isInTournament = lobby?.state == LobbyState.TOURNAMENT_ACTIVE
+            val originalGracePeriodMs = (if (isInTournament) sessionRegistry.tournamentDisconnectGracePeriodMinutes else sessionRegistry.disconnectGracePeriodMinutes) * 60 * 1000
+            val remainingMs = expiresAt - System.currentTimeMillis()
+            val elapsedMs = originalGracePeriodMs - remainingMs
+            elapsedMs
+        } ?: return
+
+        if (disconnectedAt < KICK_MINIMUM_DISCONNECT_SECONDS * 1000L) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "Player must be disconnected for at least 2 minutes before kicking")
+            return
+        }
+
+        logger.info("Player ${identity.playerName} kicked from tournament by vote")
+
+        // Cancel existing timers and immediately trigger timeout
+        identity.disconnectTimer?.cancel(false)
+        identity.disconnectTimer = null
+        identity.gameDisconnectTimer?.cancel(false)
+        identity.gameDisconnectTimer = null
+
+        handleDisconnectTimeout(token)
     }
 
     private fun legacyHandleDisconnect(playerSession: PlayerSession) {
@@ -527,9 +732,19 @@ class ConnectionHandler(
     var handleRoundCompleteCallback: ((String) -> Unit)? = null
     var broadcastStateUpdateCallback: ((com.wingedsheep.gameserver.session.GameSession, List<com.wingedsheep.engine.core.GameEvent>) -> Unit)? = null
     var sendActiveMatchesToPlayerCallback: ((PlayerIdentity, WebSocketSession) -> Unit)? = null
+    var broadcastActiveMatchesCallback: ((String) -> Unit)? = null
     var restoreSpectatingCallback: ((PlayerIdentity, PlayerSession, WebSocketSession, String) -> Unit)? = null
 
     companion object {
+        /** Time in seconds before a disconnected player auto-concedes their game */
+        const val GAME_DISCONNECT_SECONDS = 120
+
+        /** Time in seconds added per "Add Time" click */
+        const val ADD_DISCONNECT_TIME_SECONDS = 60
+
+        /** Minimum seconds a player must be disconnected before they can be kicked */
+        const val KICK_MINIMUM_DISCONNECT_SECONDS = 120
+
         fun cardToSealedCardInfo(card: com.wingedsheep.sdk.model.CardDefinition): ServerMessage.SealedCardInfo {
             return ServerMessage.SealedCardInfo(
                 name = card.name,

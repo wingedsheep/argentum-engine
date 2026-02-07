@@ -39,6 +39,10 @@ class GamePlayHandler(
 
     private val mulliganBroadcastSent = ConcurrentHashMap<String, AtomicBoolean>()
 
+    // Throttle active-match broadcasts to at most once per second per lobby
+    private val lastActiveMatchBroadcast = ConcurrentHashMap<String, Long>()
+    private val activeMatchBroadcastIntervalMs = 1000L
+
     // Callback for tournament round complete
     var handleRoundCompleteCallback: ((String) -> Unit)? = null
 
@@ -466,6 +470,17 @@ class GamePlayHandler(
 
             // Persist state after every update
             gameRepository.save(gameSession)
+
+            // Update tournament overview life totals for waiting players (throttled)
+            val lobbyId = gameRepository.getLobbyForGame(gameSession.sessionId)
+            if (lobbyId != null) {
+                val now = System.currentTimeMillis()
+                val lastBroadcast = lastActiveMatchBroadcast[lobbyId] ?: 0L
+                if (now - lastBroadcast >= activeMatchBroadcastIntervalMs) {
+                    lastActiveMatchBroadcast[lobbyId] = now
+                    broadcastActiveMatchesCallback?.invoke(lobbyId)
+                }
+            }
         } catch (e: Exception) {
             logger.error("Error broadcasting state update", e)
         }

@@ -67,13 +67,13 @@ function ConnectionOverlay({
   const lobbyState = useGameStore((state) => state.lobbyState)
   const [joinSessionId, setJoinSessionId] = useState('')
   const [gameMode, setGameMode] = useState<GameMode>('normal')
-  const [playerName, setPlayerName] = useState(() => sessionStorage.getItem('argentum-player-name') || '')
+  const [playerName, setPlayerName] = useState(() => localStorage.getItem('argentum-player-name') || '')
 
-  const [nameConfirmed, setNameConfirmed] = useState(() => !!sessionStorage.getItem('argentum-player-name'))
+  const [nameConfirmed, setNameConfirmed] = useState(() => !!localStorage.getItem('argentum-player-name'))
 
   const confirmName = () => {
     if (playerName.trim()) {
-      sessionStorage.setItem('argentum-player-name', playerName.trim())
+      localStorage.setItem('argentum-player-name', playerName.trim())
       setNameConfirmed(true)
       connect(playerName.trim())
     }
@@ -580,8 +580,19 @@ function TournamentOverlay({
   const readyForNextRound = useGameStore((state) => state.readyForNextRound)
   const leaveTournament = useGameStore((state) => state.leaveTournament)
   const unsubmitDeck = useGameStore((state) => state.unsubmitDeck)
+  const disconnectedPlayers = useGameStore((state) => state.disconnectedPlayers)
+  const addDisconnectTime = useGameStore((state) => state.addDisconnectTime)
+  const kickPlayer = useGameStore((state) => state.kickPlayer)
   const [hoveredStanding, setHoveredStanding] = useState<HoveredStanding | null>(null)
   const [linkCopied, setLinkCopied] = useState(false)
+  // Tick every second to update disconnect countdown timers
+  const [, setTick] = useState(0)
+  const hasDisconnected = Object.keys(disconnectedPlayers).length > 0
+  useEffect(() => {
+    if (!hasDisconnected) return
+    const timer = setInterval(() => setTick((t) => t + 1), 1000)
+    return () => clearInterval(timer)
+  }, [hasDisconnected])
 
   const shareLink = `${window.location.origin}/tournament/${tournamentState.lobbyId}`
   const copyShareLink = () => {
@@ -689,6 +700,43 @@ function TournamentOverlay({
       {!isSpectator && !isWaitingForReady && !tournamentState.isBye && !tournamentState.currentMatchGameSessionId && !tournamentState.isComplete && (
         <div className={styles.statusBoxWaiting}>
           Waiting for other matches to complete...
+        </div>
+      )}
+
+      {/* Disconnected players banner */}
+      {Object.keys(disconnectedPlayers).length > 0 && (
+        <div className={styles.disconnectedBanner}>
+          {Object.entries(disconnectedPlayers).map(([pid, info]) => {
+            const elapsed = Math.floor((Date.now() - info.disconnectedAt) / 1000)
+            const remaining = Math.max(0, info.secondsRemaining - elapsed)
+            const mins = Math.floor(remaining / 60)
+            const secs = remaining % 60
+            const canKick = elapsed >= 120
+            return (
+              <div key={pid} className={styles.disconnectedPlayer}>
+                <span className={styles.disconnectedName}>{info.playerName} disconnected</span>
+                <span className={styles.disconnectedTimer}>{mins}:{secs.toString().padStart(2, '0')}</span>
+                {!isSpectator && (
+                  <>
+                    <button
+                      className={styles.addTimeButton}
+                      onClick={() => addDisconnectTime(pid)}
+                    >
+                      +1 min
+                    </button>
+                    {canKick && (
+                      <button
+                        className={styles.kickButton}
+                        onClick={() => kickPlayer(pid)}
+                      >
+                        Kick
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
+            )
+          })}
         </div>
       )}
 

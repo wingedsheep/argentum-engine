@@ -1031,6 +1031,70 @@
 }
 
 /* =========================================================================
+ * Disconnected Players
+ * ========================================================================= */
+.disconnectedBanner {
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.disconnectedPlayer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background-color: rgba(255, 60, 60, 0.1);
+  border: 1px solid rgba(255, 60, 60, 0.3);
+  border-radius: var(--radius-md);
+}
+
+.disconnectedName {
+  color: #ff6b6b;
+  font-size: var(--font-sm);
+  font-weight: var(--font-weight-medium);
+  flex: 1;
+}
+
+.disconnectedTimer {
+  color: #ff9999;
+  font-size: var(--font-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.addTimeButton {
+  padding: 2px 8px;
+  font-size: var(--font-xs);
+  background: transparent;
+  color: #66bb6a;
+  border: 1px solid rgba(102, 187, 106, 0.4);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.addTimeButton:hover {
+  background-color: rgba(102, 187, 106, 0.15);
+}
+
+.kickButton {
+  padding: 2px 8px;
+  font-size: var(--font-xs);
+  background: transparent;
+  color: #ff6b6b;
+  border: 1px solid rgba(255, 107, 107, 0.4);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.kickButton:hover {
+  background-color: rgba(255, 107, 107, 0.15);
+}
+
+/* =========================================================================
  * Active Matches
  * ========================================================================= */
 .matchesSection {

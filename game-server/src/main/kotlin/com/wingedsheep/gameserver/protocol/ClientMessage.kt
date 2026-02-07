@@ -195,6 +195,21 @@ sealed interface ClientMessage {
     data object ReadyForNextRound : ClientMessage
 
     /**
+     * Add 1 minute to a disconnected tournament player's timer.
+     */
+    @Serializable
+    @SerialName("addDisconnectTime")
+    data class AddDisconnectTime(val playerId: String) : ClientMessage
+
+    /**
+     * Kick a disconnected tournament player (available after 2+ minutes of disconnect).
+     * Immediately treats them as abandoned.
+     */
+    @Serializable
+    @SerialName("kickPlayer")
+    data class KickPlayer(val playerId: String) : ClientMessage
+
+    /**
      * Start spectating a game in the current tournament.
      */
     @Serializable

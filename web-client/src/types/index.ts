@@ -239,6 +239,13 @@ export type {
   // Combat UI types
   OpponentBlockerAssignmentsMessage,
   UpdateBlockerAssignmentsMessage,
+  // Disconnect types
+  OpponentDisconnectedMessage,
+  OpponentReconnectedMessage,
+  TournamentPlayerDisconnectedMessage,
+  TournamentPlayerReconnectedMessage,
+  AddDisconnectTimeMessage,
+  KickPlayerMessage,
   // Game Settings types
   SetFullControlMessage,
 } from './messages'
@@ -304,6 +311,8 @@ export {
   // Spectating factories & guards
   createSpectateGameMessage,
   createStopSpectatingMessage,
+  createAddDisconnectTimeMessage,
+  createKickPlayerMessage,
   isActiveMatchesMessage,
   isSpectatorStateUpdateMessage,
   isSpectatingStartedMessage,
