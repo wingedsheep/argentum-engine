@@ -28,6 +28,6 @@ val LeeryFogbeast = card("Leery Fogbeast") {
         collectorNumber = "273"
         artist = "Matt Cavotta"
         flavorText = "It emerges from the mists only to feed."
-        imageUri = "https://cards.scryfall.io/large/front/0/0/003dc550-3f14-4267-95f6-3c94db4e51ad.jpg?1562895001"
+        imageUri = "https://cards.scryfall.io/large/front/5/6/56125660-2307-4270-a947-f1f4ad63841c.jpg?1562915161"
     }
 }
