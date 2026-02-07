@@ -20,7 +20,9 @@ import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.combat.DamageAssignmentComponent
 import com.wingedsheep.engine.state.components.combat.DamageAssignmentOrderComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
+import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.StateProjector
@@ -219,6 +221,8 @@ object EffectExecutorUtils {
                 .without<SummoningSicknessComponent>()
                 .without<DamageComponent>()
                 .without<CountersComponent>()
+                .without<FaceDownComponent>()
+                .without<MorphDataComponent>()
         }
 
         return ExecutionResult.success(
@@ -271,6 +275,8 @@ object EffectExecutorUtils {
                     .without<TappedComponent>()
                     .without<SummoningSicknessComponent>()
                     .without<DamageComponent>()
+                    .without<FaceDownComponent>()
+                    .without<MorphDataComponent>()
             }
         }
 
@@ -427,6 +433,8 @@ object EffectExecutorUtils {
                 .without<TappedComponent>()
                 .without<SummoningSicknessComponent>()
                 .without<DamageComponent>()
+                .without<FaceDownComponent>()
+                .without<MorphDataComponent>()
         }
 
         return ExecutionResult.success(

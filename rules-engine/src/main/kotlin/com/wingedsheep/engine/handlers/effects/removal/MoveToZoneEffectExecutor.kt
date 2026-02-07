@@ -14,6 +14,8 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
@@ -202,6 +204,8 @@ class MoveToZoneEffectExecutor : EffectExecutor<MoveToZoneEffect> {
                 .without<TappedComponent>()
                 .without<com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent>()
                 .without<com.wingedsheep.engine.state.components.battlefield.DamageComponent>()
+                .without<FaceDownComponent>()
+                .without<MorphDataComponent>()
         }
     }
 
