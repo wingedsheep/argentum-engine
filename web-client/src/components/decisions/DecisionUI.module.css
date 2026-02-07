@@ -674,3 +674,55 @@
     max-height: 240px;
   }
 }
+
+.optionButtonRow {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.viewBattlefieldButton {
+  border: none;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  font-weight: var(--font-weight-semibold);
+  transition: filter var(--transition-fast);
+  padding: var(--space-4) var(--space-8);
+  font-size: var(--font-lg);
+  min-width: 120px;
+  background-color: var(--color-primary);
+  color: var(--text-primary);
+}
+
+.viewBattlefieldButton:hover {
+  filter: brightness(1.1);
+}
+
+.floatingReturnButton {
+  position: fixed;
+  bottom: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--z-modal);
+  padding: var(--space-3) var(--space-6);
+  font-size: var(--font-md);
+  font-weight: var(--font-weight-semibold);
+  background-color: var(--color-primary);
+  color: var(--text-primary);
+  border: none;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: filter var(--transition-fast);
+  white-space: nowrap;
+  pointer-events: auto;
+}
+
+.floatingReturnButton:hover {
+  filter: brightness(1.1);
+}
+
+@media (max-width: 639px) {
+  .viewBattlefieldButton {
+    padding: var(--space-3) var(--space-7);
+    min-width: 100px;
+  }
+}

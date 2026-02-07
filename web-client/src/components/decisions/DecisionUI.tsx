@@ -93,9 +93,7 @@ export function DecisionUI() {
   // Handle ChooseOptionDecision (e.g., "Choose a creature type")
   if (pendingDecision.type === 'ChooseOptionDecision') {
     return (
-      <div className={styles.overlay}>
-        <ChooseOptionDecisionUI key={pendingDecision.id} decision={pendingDecision} />
-      </div>
+      <ChooseOptionDecisionUI key={pendingDecision.id} decision={pendingDecision} />
     )
   }
 
@@ -365,6 +363,7 @@ function ChooseOptionDecisionUI({
   decision: ChooseOptionDecision
 }) {
   const [filter, setFilter] = useState(decision.defaultSearch ?? '')
+  const [minimized, setMinimized] = useState(false)
   const defaultIndex = decision.defaultSearch
     ? decision.options.findIndex((opt) => opt.toLowerCase() === decision.defaultSearch!.toLowerCase())
     : -1
@@ -385,8 +384,19 @@ function ChooseOptionDecisionUI({
     }
   }
 
+  if (minimized) {
+    return (
+      <button
+        className={styles.floatingReturnButton}
+        onClick={() => setMinimized(false)}
+      >
+        Return to {decision.prompt}
+      </button>
+    )
+  }
+
   return (
-    <>
+    <div className={styles.overlay}>
       <h2 className={styles.title}>
         {decision.prompt}
       </h2>
@@ -423,15 +433,23 @@ function ChooseOptionDecisionUI({
         )}
       </div>
 
-      {/* Confirm button */}
-      <button
-        onClick={handleConfirm}
-        disabled={selectedIndex === null}
-        className={styles.confirmButton}
-      >
-        Confirm
-      </button>
-    </>
+      {/* Action buttons */}
+      <div className={styles.optionButtonRow}>
+        <button
+          onClick={() => setMinimized(true)}
+          className={styles.viewBattlefieldButton}
+        >
+          View Battlefield
+        </button>
+        <button
+          onClick={handleConfirm}
+          disabled={selectedIndex === null}
+          className={styles.confirmButton}
+        >
+          Confirm
+        </button>
+      </div>
+    </div>
   )
 }
 
