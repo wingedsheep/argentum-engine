@@ -1042,6 +1042,9 @@ class GameSession(
             val container = state.getEntity(entityId) ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue
 
+            // Face-down creatures have no abilities (Rule 707.2)
+            if (container.has<FaceDownComponent>()) continue
+
             // Projected controller already verified - look up card definition for mana abilities
             val cardDef = cardRegistry.getCard(cardComponent.name) ?: continue
             val manaAbilities = cardDef.script.activatedAbilities.filter { it.isManaAbility }
@@ -1101,6 +1104,9 @@ class GameSession(
         for (entityId in battlefieldPermanents) {
             val container = state.getEntity(entityId) ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue
+
+            // Face-down creatures have no abilities (Rule 707.2)
+            if (container.has<FaceDownComponent>()) continue
 
             val cardDef = cardRegistry.getCard(cardComponent.name) ?: continue
             val nonManaAbilities = cardDef.script.activatedAbilities.filter { !it.isManaAbility }

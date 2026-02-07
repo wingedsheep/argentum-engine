@@ -5,10 +5,12 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutorRegistry
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
 import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerDiscardsDrawsExecutor
 import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerMayDrawExecutor
+import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
@@ -1646,27 +1648,28 @@ class ContinuationHandler(
         val affectedEntities = mutableSetOf<com.wingedsheep.sdk.model.EntityId>()
         val predicateEvaluator = PredicateEvaluator()
         val predicateContext = PredicateContext(controllerId = controllerId, sourceId = continuation.sourceId)
+        val projected = StateProjector().project(state)
 
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue
 
-            if (!cardComponent.typeLine.isCreature) continue
-
             // Check excludeSelf
             if (continuation.filter.excludeSelf && entityId == continuation.sourceId) continue
 
-            // Apply unified filter
-            if (!predicateEvaluator.matches(state, entityId, continuation.filter.baseFilter, predicateContext)) {
+            // Use projected state for correct face-down creature handling (Rule 707.2)
+            if (!predicateEvaluator.matchesWithProjection(state, projected, entityId, continuation.filter.baseFilter, predicateContext)) {
                 continue
             }
 
             affectedEntities.add(entityId)
 
+            // Use projected name for face-down creatures (they have no name)
+            val displayName = if (container.has<FaceDownComponent>()) "Face-down creature" else cardComponent.name
             events.add(
                 KeywordGrantedEvent(
                     targetId = entityId,
-                    targetName = cardComponent.name,
+                    targetName = displayName,
                     keyword = "Protection from ${chosenColor.displayName.lowercase()}",
                     sourceName = continuation.sourceName ?: "Unknown"
                 )

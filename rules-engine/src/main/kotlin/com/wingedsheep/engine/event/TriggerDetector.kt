@@ -18,6 +18,7 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
@@ -122,6 +123,9 @@ class TriggerDetector(
             val cardComponent = container.get<CardComponent>() ?: continue
             val controllerId = container.get<ControllerComponent>()?.playerId ?: continue
 
+            // Face-down creatures have no abilities (Rule 707.2)
+            if (container.has<FaceDownComponent>()) continue
+
             val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
 
             for (ability in abilities) {
@@ -153,6 +157,9 @@ class TriggerDetector(
             val container = state.getEntity(entityId) ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue
             val controllerId = container.get<ControllerComponent>()?.playerId ?: continue
+
+            // Face-down creatures have no abilities (Rule 707.2)
+            if (container.has<FaceDownComponent>()) continue
 
             val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
 

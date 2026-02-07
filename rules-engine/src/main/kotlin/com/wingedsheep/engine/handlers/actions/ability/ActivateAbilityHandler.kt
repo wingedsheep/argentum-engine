@@ -25,6 +25,7 @@ import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComp
 import com.wingedsheep.engine.mechanics.text.SubtypeReplacer
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
@@ -78,6 +79,11 @@ class ActivateAbilityHandler(
 
         val cardComponent = container.get<CardComponent>()
             ?: return "Source is not a card"
+
+        // Face-down creatures have no abilities (Rule 707.2)
+        if (container.has<FaceDownComponent>()) {
+            return "Face-down creatures have no abilities"
+        }
 
         val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId)
             ?: return "Card definition not found"
