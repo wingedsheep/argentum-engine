@@ -14,6 +14,7 @@ import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.Sublayer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ModifyStatsForGroupEffect
 import kotlin.reflect.KClass
@@ -43,7 +44,8 @@ class ModifyStatsForGroupExecutor : EffectExecutor<ModifyStatsForGroupEffect> {
             val container = state.getEntity(entityId) ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue
 
-            if (!cardComponent.typeLine.isCreature) continue
+            // Face-down permanents are always creatures (Rule 707.2)
+            if (!cardComponent.typeLine.isCreature && !container.has<FaceDownComponent>()) continue
 
             // Check excludeSelf
             if (filter.excludeSelf && entityId == context.sourceId) continue

@@ -7,6 +7,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Color
@@ -158,7 +159,8 @@ class TargetValidator {
         val cardComponent = container.get<CardComponent>()
             ?: return "Target is not a card"
 
-        if (!cardComponent.typeLine.isCreature) {
+        // Face-down permanents are always creatures (Rule 707.2)
+        if (!cardComponent.typeLine.isCreature && !container.has<FaceDownComponent>()) {
             return "Target must be a creature"
         }
 
@@ -250,7 +252,8 @@ class TargetValidator {
                     ?: return "Target not found"
                 val cardComponent = container.get<CardComponent>()
                     ?: return "Target is not a card"
-                if (!cardComponent.typeLine.isCreature) {
+                // Face-down permanents are always creatures (Rule 707.2)
+                if (!cardComponent.typeLine.isCreature && !container.has<FaceDownComponent>()) {
                     return "Target must be a creature or player"
                 }
                 if (target.entityId !in state.getBattlefield()) {
@@ -271,7 +274,9 @@ class TargetValidator {
         val cardComponent = container.get<CardComponent>()
             ?: return "Target is not a card"
         val isPlaneswalker = CardType.PLANESWALKER in cardComponent.typeLine.cardTypes
-        if (!cardComponent.typeLine.isCreature && !isPlaneswalker) {
+        // Face-down permanents are always creatures (Rule 707.2)
+        val isFaceDown = container.has<FaceDownComponent>()
+        if (!cardComponent.typeLine.isCreature && !isPlaneswalker && !isFaceDown) {
             return "Target must be a creature or planeswalker"
         }
         if (target.entityId !in state.getBattlefield()) {

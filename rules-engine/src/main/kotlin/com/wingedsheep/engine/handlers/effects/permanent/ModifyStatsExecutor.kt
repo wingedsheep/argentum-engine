@@ -12,6 +12,7 @@ import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.Sublayer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ModifyStatsEffect
 import kotlin.reflect.KClass
@@ -38,7 +39,8 @@ class ModifyStatsExecutor : EffectExecutor<ModifyStatsEffect> {
             ?: return ExecutionResult.error(state, "Target creature no longer exists")
         val cardComponent = targetContainer.get<CardComponent>()
             ?: return ExecutionResult.error(state, "Target is not a card")
-        if (!cardComponent.typeLine.isCreature) {
+        // Face-down permanents are always creatures (Rule 707.2)
+        if (!cardComponent.typeLine.isCreature && !targetContainer.has<FaceDownComponent>()) {
             return ExecutionResult.error(state, "Target is not a creature")
         }
 

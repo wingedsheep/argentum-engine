@@ -337,12 +337,12 @@ class ClientStateTransformer(
         // Use projected controller for battlefield permanents (accounts for control-changing effects)
         val controllerId = projectedValues?.controllerId ?: baseControllerId
 
-        // Face-down creatures are always 2/2 per MTG rules, regardless of viewer
         // A card is face-down if it has FaceDownComponent (on battlefield) OR is cast face-down on the stack
         val spellOnStack = container.get<SpellOnStackComponent>()
         val isFaceDown = container.has<FaceDownComponent>() || spellOnStack?.castFaceDown == true
-        val power = if (isFaceDown) 2 else projectedValues?.power ?: cardComponent.baseStats?.basePower
-        val toughness = if (isFaceDown) 2 else projectedValues?.toughness ?: cardComponent.baseStats?.baseToughness
+        // Use projected P/T which correctly handles face-down base 2/2 + any modifications
+        val power = projectedValues?.power ?: if (isFaceDown) 2 else cardComponent.baseStats?.basePower
+        val toughness = projectedValues?.toughness ?: if (isFaceDown) 2 else cardComponent.baseStats?.baseToughness
         val rawKeywords = projectedValues?.keywords?.mapNotNull {
             try { Keyword.valueOf(it) } catch (_: Exception) { null }
         }?.toSet() ?: cardComponent.baseKeywords
@@ -378,7 +378,7 @@ class ClientStateTransformer(
         val morphData = container.get<MorphDataComponent>()
 
         // Handle face-down creature masking
-        // Opponents see a generic 2/2 with no information
+        // Opponents see modified stats but no card information
         // Controller sees real card info + morph cost
         if (isFaceDown && controllerId != viewingPlayerId) {
             return ClientCard(
@@ -391,8 +391,8 @@ class ClientStateTransformer(
                 subtypes = emptySet(),
                 colors = emptySet(),
                 oracleText = "",
-                power = 2,
-                toughness = 2,
+                power = power,
+                toughness = toughness,
                 basePower = 2,
                 baseToughness = 2,
                 damage = container.get<DamageComponent>()?.amount,

@@ -328,12 +328,15 @@ class StateProjector(
                     val container = state.getEntity(entityId) ?: return@filter false
                     val card = container.get<CardComponent>() ?: return@filter false
                     val entityController = container.get<ControllerComponent>()?.playerId
-                    card.typeLine.isCreature && entityController == controller
+                    // Face-down permanents are always creatures (Rule 707.2)
+                    (card.typeLine.isCreature || container.has<FaceDownComponent>()) && entityController == controller
                 }.toSet()
             }
             is AffectsFilter.AllCreatures -> {
                 state.getBattlefield().filter { entityId ->
-                    state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.isCreature == true
+                    val container = state.getEntity(entityId) ?: return@filter false
+                    // Face-down permanents are always creatures (Rule 707.2)
+                    container.get<CardComponent>()?.typeLine?.isCreature == true || container.has<FaceDownComponent>()
                 }.toSet()
             }
             is AffectsFilter.AllCreaturesOpponentsControl -> {
@@ -343,7 +346,8 @@ class StateProjector(
                     val container = state.getEntity(entityId) ?: return@filter false
                     val card = container.get<CardComponent>() ?: return@filter false
                     val entityController = container.get<ControllerComponent>()?.playerId
-                    card.typeLine.isCreature && entityController != controller
+                    // Face-down permanents are always creatures (Rule 707.2)
+                    (card.typeLine.isCreature || container.has<FaceDownComponent>()) && entityController != controller
                 }.toSet()
             }
             is AffectsFilter.SpecificEntities -> filter.entityIds
@@ -361,14 +365,16 @@ class StateProjector(
             is AffectsFilter.OtherCreaturesWithSubtype -> {
                 state.getBattlefield().filter { entityId ->
                     if (entityId == sourceId) return@filter false // Exclude self
-                    val card = state.getEntity(entityId)?.get<CardComponent>() ?: return@filter false
+                    val container = state.getEntity(entityId) ?: return@filter false
+                    val card = container.get<CardComponent>() ?: return@filter false
                     val projected = projectedValues[entityId]
                     val hasSubtype = if (projected != null) {
                         projected.subtypes.any { it.equals(filter.subtype, ignoreCase = true) }
                     } else {
                         card.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(filter.subtype))
                     }
-                    card.typeLine.isCreature && hasSubtype
+                    // Face-down permanents are always creatures (Rule 707.2)
+                    (card.typeLine.isCreature || container.has<FaceDownComponent>()) && hasSubtype
                 }.toSet()
             }
             is AffectsFilter.OtherTappedCreaturesYouControl -> {
@@ -380,7 +386,8 @@ class StateProjector(
                     val card = container.get<CardComponent>() ?: return@filter false
                     val entityController = container.get<ControllerComponent>()?.playerId
                     val isTapped = container.has<TappedComponent>()
-                    card.typeLine.isCreature && entityController == controller && isTapped
+                    // Face-down permanents are always creatures (Rule 707.2)
+                    (card.typeLine.isCreature || container.has<FaceDownComponent>()) && entityController == controller && isTapped
                 }.toSet()
             }
             is AffectsFilter.OtherCreaturesYouControl -> {
@@ -391,13 +398,16 @@ class StateProjector(
                     val container = state.getEntity(entityId) ?: return@filter false
                     val card = container.get<CardComponent>() ?: return@filter false
                     val entityController = container.get<ControllerComponent>()?.playerId
-                    card.typeLine.isCreature && entityController == controller
+                    // Face-down permanents are always creatures (Rule 707.2)
+                    (card.typeLine.isCreature || container.has<FaceDownComponent>()) && entityController == controller
                 }.toSet()
             }
             is AffectsFilter.AllOtherCreatures -> {
                 state.getBattlefield().filter { entityId ->
                     if (entityId == sourceId) return@filter false // Exclude self
-                    state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.isCreature == true
+                    val container = state.getEntity(entityId) ?: return@filter false
+                    // Face-down permanents are always creatures (Rule 707.2)
+                    container.get<CardComponent>()?.typeLine?.isCreature == true || container.has<FaceDownComponent>()
                 }.toSet()
             }
             is AffectsFilter.AttachedPermanent -> {
@@ -421,7 +431,8 @@ class StateProjector(
                     val container = state.getEntity(entityId) ?: return@filter false
                     val card = container.get<CardComponent>() ?: return@filter false
                     val counters = container.get<CountersComponent>()
-                    card.typeLine.isCreature && (counters?.getCount(counterType) ?: 0) > 0
+                    // Face-down permanents are always creatures (Rule 707.2)
+                    (card.typeLine.isCreature || container.has<FaceDownComponent>()) && (counters?.getCount(counterType) ?: 0) > 0
                 }.toSet()
             }
         }
