@@ -4,6 +4,7 @@ import com.wingedsheep.engine.event.PendingTrigger
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.Effect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -747,4 +748,26 @@ data class ChooseCreatureTypeRevealTopContinuation(
     val sourceId: EntityId?,
     val sourceName: String?,
     val creatureTypes: List<String>
+) : ContinuationFrame
+
+/**
+ * Resume after the spell's controller decides whether to pay a mana cost
+ * to prevent their spell from being countered.
+ *
+ * "Counter target spell unless its controller pays {cost}."
+ *
+ * @property payingPlayerId The spell's controller who must decide whether to pay
+ * @property spellEntityId The spell that will be countered if they don't pay
+ * @property manaCost The mana cost to pay
+ * @property sourceId The source of the counter-unless-pays effect
+ * @property sourceName Name of the source for event messages
+ */
+@Serializable
+data class CounterUnlessPaysContinuation(
+    override val decisionId: String,
+    val payingPlayerId: EntityId,
+    val spellEntityId: EntityId,
+    val manaCost: ManaCost,
+    val sourceId: EntityId?,
+    val sourceName: String?
 ) : ContinuationFrame

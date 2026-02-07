@@ -171,15 +171,32 @@ class TriggerDetector(
 
             for (ability in abilities) {
                 if (matchesTrigger(ability.trigger, event, entityId, controllerId, state)) {
-                    triggers.add(
-                        PendingTrigger(
-                            ability = ability,
-                            sourceId = entityId,
-                            sourceName = cardComponent.name,
-                            controllerId = controllerId,
-                            triggerContext = TriggerContext.fromEvent(event)
+                    // For "whenever a creature attacks" (OnAttack with selfOnly = false),
+                    // create one trigger per attacking creature (Rule 603.2c)
+                    if (ability.trigger is OnAttack && !(ability.trigger as OnAttack).selfOnly &&
+                        event is AttackersDeclaredEvent) {
+                        for (attackerId in event.attackers) {
+                            triggers.add(
+                                PendingTrigger(
+                                    ability = ability,
+                                    sourceId = entityId,
+                                    sourceName = cardComponent.name,
+                                    controllerId = controllerId,
+                                    triggerContext = TriggerContext(triggeringEntityId = attackerId)
+                                )
+                            )
+                        }
+                    } else {
+                        triggers.add(
+                            PendingTrigger(
+                                ability = ability,
+                                sourceId = entityId,
+                                sourceName = cardComponent.name,
+                                controllerId = controllerId,
+                                triggerContext = TriggerContext.fromEvent(event)
+                            )
                         )
-                    )
+                    }
                 }
             }
         }
@@ -198,6 +215,12 @@ class TriggerDetector(
         // Handle cycling triggers on the cycled card itself (e.g., Renewed Faith)
         if (event is CardCycledEvent) {
             detectCyclingCardTriggers(state, event, triggers)
+        }
+
+        // Handle damage-received triggers for creatures no longer on the battlefield
+        // (e.g., Broodhatch Nantuko dies from combat damage but trigger still fires)
+        if (event is DamageDealtEvent && event.targetId !in state.getBattlefield()) {
+            detectDamageReceivedTriggers(state, event, triggers)
         }
 
         // Handle damage-source triggers
@@ -293,6 +316,42 @@ class TriggerDetector(
         for (ability in abilities) {
             val trigger = ability.trigger
             if (trigger is OnLeavesBattlefield && trigger.selfOnly) {
+                triggers.add(
+                    PendingTrigger(
+                        ability = ability,
+                        sourceId = entityId,
+                        sourceName = cardComponent.name,
+                        controllerId = controllerId,
+                        triggerContext = TriggerContext.fromEvent(event)
+                    )
+                )
+            }
+        }
+    }
+
+    /**
+     * Detect "whenever this creature is dealt damage" triggers on creatures that
+     * are no longer on the battlefield (e.g., died from the damage via SBAs).
+     * Similar to detectDeathTriggers pattern.
+     */
+    private fun detectDamageReceivedTriggers(
+        state: GameState,
+        event: DamageDealtEvent,
+        triggers: MutableList<PendingTrigger>
+    ) {
+        val entityId = event.targetId
+        val container = state.getEntity(entityId) ?: return
+        val cardComponent = container.get<CardComponent>() ?: return
+        val controllerId = container.get<ControllerComponent>()?.playerId ?: return
+
+        // Face-down creatures have no abilities (Rule 707.2)
+        if (container.has<FaceDownComponent>()) return
+
+        val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
+
+        for (ability in abilities) {
+            val trigger = ability.trigger
+            if (trigger is OnDamageReceived && trigger.selfOnly) {
                 triggers.add(
                     PendingTrigger(
                         ability = ability,

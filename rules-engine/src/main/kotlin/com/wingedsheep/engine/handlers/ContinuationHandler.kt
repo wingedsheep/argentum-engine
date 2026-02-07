@@ -7,12 +7,14 @@ import com.wingedsheep.engine.handlers.effects.drawing.BlackmailExecutor
 import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerDiscardsDrawsExecutor
 import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerMayDrawExecutor
 import com.wingedsheep.engine.mechanics.layers.StateProjector
+import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.core.Zone
@@ -87,6 +89,7 @@ class ContinuationHandler(
             is BlackmailRevealContinuation -> resumeBlackmailReveal(stateAfterPop, continuation, response)
             is BlackmailChooseContinuation -> resumeBlackmailChoose(stateAfterPop, continuation, response)
             is ChooseCreatureTypeRevealTopContinuation -> resumeChooseCreatureTypeRevealTop(stateAfterPop, continuation, response)
+            is CounterUnlessPaysContinuation -> resumeCounterUnlessPays(stateAfterPop, continuation, response)
             is PendingTriggersContinuation -> {
                 // This should not be popped directly by a decision response.
                 // It's handled by checkForMoreContinuations after the preceding trigger resolves.
@@ -878,6 +881,60 @@ class ContinuationHandler(
         }
 
         return checkForMoreContinuations(result.state, result.events.toList())
+    }
+
+    /**
+     * Resume after the spell's controller decides whether to pay to prevent countering.
+     */
+    private fun resumeCounterUnlessPays(
+        state: GameState,
+        continuation: CounterUnlessPaysContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is YesNoResponse) {
+            return ExecutionResult.error(state, "Expected yes/no response for counter unless pays")
+        }
+
+        if (response.choice) {
+            // Player chose to pay — deduct mana from their pool
+            val playerEntity = state.getEntity(continuation.payingPlayerId)
+                ?: return ExecutionResult.error(state, "Paying player not found")
+
+            val manaPoolComponent = playerEntity.get<ManaPoolComponent>()
+                ?: return ExecutionResult.error(state, "Player has no mana pool")
+
+            val manaPool = ManaPool(
+                manaPoolComponent.white,
+                manaPoolComponent.blue,
+                manaPoolComponent.black,
+                manaPoolComponent.red,
+                manaPoolComponent.green,
+                manaPoolComponent.colorless
+            )
+
+            val newPool = manaPool.pay(continuation.manaCost)
+                ?: return ExecutionResult.error(state, "Cannot pay mana cost")
+
+            val newState = state.updateEntity(continuation.payingPlayerId) { container ->
+                container.with(
+                    ManaPoolComponent(
+                        white = newPool.white,
+                        blue = newPool.blue,
+                        black = newPool.black,
+                        red = newPool.red,
+                        green = newPool.green,
+                        colorless = newPool.colorless
+                    )
+                )
+            }
+
+            // Spell resolves normally — don't counter it
+            return checkForMoreContinuations(newState, emptyList())
+        } else {
+            // Player chose not to pay — counter the spell
+            val counterResult = stackResolver.counterSpell(state, continuation.spellEntityId)
+            return checkForMoreContinuations(counterResult.newState, counterResult.events)
+        }
     }
 
     /**

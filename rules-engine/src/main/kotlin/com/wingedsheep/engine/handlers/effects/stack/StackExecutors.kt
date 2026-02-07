@@ -9,6 +9,7 @@ import com.wingedsheep.engine.handlers.effects.ExecutorModule
 class StackExecutors : ExecutorModule {
     override fun executors(): List<EffectExecutor<*>> = listOf(
         CounterSpellExecutor(),
-        CounterSpellWithFilterExecutor()
+        CounterSpellWithFilterExecutor(),
+        CounterUnlessPaysExecutor()
     )
 }

@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting
 
+import com.wingedsheep.sdk.core.ManaCost
 import kotlinx.serialization.Serializable
 
 // =============================================================================
@@ -27,4 +28,19 @@ data class CounterSpellWithFilterEffect(
     val filter: TargetFilter = TargetFilter.SpellOnStack
 ) : Effect {
     override val description: String = "Counter target ${filter.baseFilter.description} spell"
+}
+
+/**
+ * Counter target spell unless its controller pays a mana cost.
+ * "Counter target spell unless its controller pays {cost}."
+ *
+ * If the spell's controller can pay the cost, they are given a yes/no choice.
+ * If they choose to pay, the mana is deducted and the spell resolves normally.
+ * If they cannot pay or choose not to, the spell is countered.
+ */
+@Serializable
+data class CounterUnlessPaysEffect(
+    val cost: ManaCost
+) : Effect {
+    override val description: String = "Counter target spell unless its controller pays $cost"
 }

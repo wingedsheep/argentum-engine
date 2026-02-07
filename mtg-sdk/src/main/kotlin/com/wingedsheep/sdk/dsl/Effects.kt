@@ -2,6 +2,7 @@ package com.wingedsheep.sdk.dsl
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.*
@@ -304,6 +305,13 @@ object Effects {
      */
     fun CounterSpell(): Effect =
         CounterSpellEffect
+
+    /**
+     * Counter target spell unless its controller pays a mana cost.
+     * "Counter target spell unless its controller pays {cost}."
+     */
+    fun CounterUnlessPays(cost: String): Effect =
+        CounterUnlessPaysEffect(ManaCost.parse(cost))
 
     // =========================================================================
     // Sacrifice Effects
