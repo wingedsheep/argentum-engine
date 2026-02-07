@@ -75,6 +75,7 @@ object OnslaughtSet {
         AnuridMurkdiver,
         CabalArchon,
         CruelRevival,
+        DoomedNecromancer,
         DiscipleOfMalice,
         FadeFromMemory,
         FeedingFrenzy,
