@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 153 / 335
+**Implemented:** 154 / 335
 
 ---
 
@@ -284,7 +284,7 @@
 - [ ] Stag Beetle
 - [ ] Standardize
 - [ ] Starlit Sanctum
-- [ ] Starstorm
+- [x] Starstorm
 - [ ] Steely Resolve
 - [ ] Strongarm Tactics
 - [ ] Sunfire Balm

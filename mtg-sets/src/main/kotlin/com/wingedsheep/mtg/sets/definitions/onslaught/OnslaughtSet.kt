@@ -134,6 +134,7 @@ object OnslaughtSet {
         Shock,
         SliceAndDice,
         SolarBlast,
+        Starstorm,
         Sparksmith,
         SkirkProspector,
         SnappingThragg,
