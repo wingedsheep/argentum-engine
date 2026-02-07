@@ -136,6 +136,7 @@ object OnslaughtSet {
         SolarBlast,
         Sparksmith,
         SkirkProspector,
+        SnappingThragg,
         SpurredWolverine,
 
         // Green creatures and spells
