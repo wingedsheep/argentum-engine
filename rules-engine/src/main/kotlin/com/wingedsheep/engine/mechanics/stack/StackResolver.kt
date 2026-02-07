@@ -3,6 +3,7 @@ package com.wingedsheep.engine.mechanics.stack
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.EffectHandler
+import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.ComponentContainer
@@ -17,6 +18,7 @@ import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.engine.mechanics.text.SubtypeReplacer
 import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.engine.state.components.stack.*
 import com.wingedsheep.sdk.core.Zone
@@ -37,7 +39,8 @@ import com.wingedsheep.sdk.scripting.Effect
 class StackResolver(
     private val effectHandler: EffectHandler = EffectHandler(),
     private val cardRegistry: CardRegistry? = null,
-    private val staticAbilityHandler: StaticAbilityHandler = StaticAbilityHandler(cardRegistry)
+    private val staticAbilityHandler: StaticAbilityHandler = StaticAbilityHandler(cardRegistry),
+    private val stateProjector: StateProjector = StateProjector()
 ) {
 
     // =========================================================================
@@ -215,13 +218,18 @@ class StackResolver(
         val spellComponent = container.get<SpellOnStackComponent>()!!
         val targetsComponent = container.get<TargetsComponent>()
 
-        // Validate targets if spell has any
-        if (targetsComponent != null && targetsComponent.targets.isNotEmpty()) {
-            val validTargets = validateTargets(state, targetsComponent.targets)
+        // Validate targets if spell has any (including protection check - Rule 702.16)
+        val sourceColors = cardComponent?.colors ?: emptySet()
+        val sourceSubtypes = cardComponent?.typeLine?.subtypes?.map { it.value }?.toSet() ?: emptySet()
+        val resolvedTargets = if (targetsComponent != null && targetsComponent.targets.isNotEmpty()) {
+            val validTargets = validateTargets(state, targetsComponent.targets, sourceColors, sourceSubtypes)
             if (validTargets.isEmpty()) {
                 // All targets invalid - spell fizzles
                 return fizzleSpell(state, spellId, cardComponent, spellComponent)
             }
+            validTargets
+        } else {
+            targetsComponent?.targets ?: emptyList()
         }
 
         var newState = state
@@ -247,7 +255,7 @@ class StackResolver(
             // Execute effects and put in graveyard
             val effectResult = resolveNonPermanentSpell(
                 newState, spellId, spellComponent, cardComponent,
-                targetsComponent?.targets ?: emptyList()
+                resolvedTargets
             )
             newState = effectResult.newState
             events.addAll(effectResult.events)
@@ -454,9 +462,12 @@ class StackResolver(
         val abilityComponent = container.get<TriggeredAbilityOnStackComponent>()!!
         val targetsComponent = container.get<TargetsComponent>()
 
-        // Validate targets
+        // Validate targets (including protection check - Rule 702.16)
+        val sourceCard = state.getEntity(abilityComponent.sourceId)?.get<CardComponent>()
+        val sourceColors = sourceCard?.colors ?: emptySet()
+        val sourceSubtypes = sourceCard?.typeLine?.subtypes?.map { it.value }?.toSet() ?: emptySet()
         if (targetsComponent != null && targetsComponent.targets.isNotEmpty()) {
-            val validTargets = validateTargets(state, targetsComponent.targets)
+            val validTargets = validateTargets(state, targetsComponent.targets, sourceColors, sourceSubtypes)
             if (validTargets.isEmpty()) {
                 // Fizzle - remove ability entity
                 val newState = state.removeEntity(abilityId)
@@ -521,9 +532,12 @@ class StackResolver(
         val abilityComponent = container.get<ActivatedAbilityOnStackComponent>()!!
         val targetsComponent = container.get<TargetsComponent>()
 
-        // Validate targets
+        // Validate targets (including protection check - Rule 702.16)
+        val sourceCard = state.getEntity(abilityComponent.sourceId)?.get<CardComponent>()
+        val sourceColors = sourceCard?.colors ?: emptySet()
+        val sourceSubtypes = sourceCard?.typeLine?.subtypes?.map { it.value }?.toSet() ?: emptySet()
         if (targetsComponent != null && targetsComponent.targets.isNotEmpty()) {
-            val validTargets = validateTargets(state, targetsComponent.targets)
+            val validTargets = validateTargets(state, targetsComponent.targets, sourceColors, sourceSubtypes)
             if (validTargets.isEmpty()) {
                 val newState = state.removeEntity(abilityId)
                 return ExecutionResult.success(
@@ -629,11 +643,21 @@ class StackResolver(
 
     /**
      * Validate targets and return only valid ones.
+     *
+     * Checks both zone existence and protection (Rule 702.16).
+     * A permanent with protection from a source's color or creature subtype
+     * cannot be targeted by that source.
      */
     private fun validateTargets(
         state: GameState,
-        targets: List<ChosenTarget>
+        targets: List<ChosenTarget>,
+        sourceColors: Set<Color> = emptySet(),
+        sourceSubtypes: Set<String> = emptySet()
     ): List<ChosenTarget> {
+        val needProtectionCheck = sourceColors.isNotEmpty() || sourceSubtypes.isNotEmpty()
+        // Project state once for all protection checks (avoids repeated projection)
+        val projected = if (needProtectionCheck) stateProjector.project(state) else null
+
         return targets.filter { target ->
             when (target) {
                 is ChosenTarget.Player -> {
@@ -643,7 +667,22 @@ class StackResolver(
 
                 is ChosenTarget.Permanent -> {
                     // Permanent is valid if still on battlefield
-                    target.entityId in state.getBattlefield()
+                    if (target.entityId !in state.getBattlefield()) return@filter false
+
+                    // Check protection from source colors/subtypes (Rule 702.16)
+                    if (needProtectionCheck && projected != null) {
+                        for (color in sourceColors) {
+                            if (projected.hasKeyword(target.entityId, "PROTECTION_FROM_${color.name}")) {
+                                return@filter false
+                            }
+                        }
+                        for (subtype in sourceSubtypes) {
+                            if (projected.hasKeyword(target.entityId, "PROTECTION_FROM_SUBTYPE_${subtype.uppercase()}")) {
+                                return@filter false
+                            }
+                        }
+                    }
+                    true
                 }
 
                 is ChosenTarget.Card -> {
