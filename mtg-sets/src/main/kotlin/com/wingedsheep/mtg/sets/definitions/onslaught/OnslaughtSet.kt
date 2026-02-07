@@ -22,6 +22,7 @@ object OnslaughtSet {
      */
     val allCards = listOf(
         // White creatures and spells
+        AvenBrigadier,
         AkromasBlessing,
         DoubtlessOne,
         AkromasVengeance,
@@ -92,6 +93,7 @@ object OnslaughtSet {
 
         // Red creatures and spells
         AetherCharge,
+        Avarax,
         BrightstoneRitual,
         SkirkCommando,
         AggravatedAssault,
