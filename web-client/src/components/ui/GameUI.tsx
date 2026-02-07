@@ -590,6 +590,9 @@ function TournamentOverlay({
     setTimeout(() => setLinkCopied(false), 2000)
   }
 
+  // Spectators are not in the standings list
+  const isSpectator = !playerId || !tournamentState.standings.some(s => s.playerId === playerId)
+
   // Check if we're waiting for players to ready up (before first game OR between rounds)
   const isWaitingForReady = (
     // Before first round (round 0)
@@ -606,10 +609,10 @@ function TournamentOverlay({
   // Auto-ready when player has a bye - no need for manual confirmation
   // Exception: Don't auto-ready before first round (round 0) so player can still edit deck
   useEffect(() => {
-    if (isWaitingForReady && tournamentState.nextRoundHasBye && !isPlayerReady && tournamentState.currentRound > 0) {
+    if (!isSpectator && isWaitingForReady && tournamentState.nextRoundHasBye && !isPlayerReady && tournamentState.currentRound > 0) {
       readyForNextRound()
     }
-  }, [isWaitingForReady, tournamentState.nextRoundHasBye, isPlayerReady, tournamentState.currentRound, readyForNextRound])
+  }, [isSpectator, isWaitingForReady, tournamentState.nextRoundHasBye, isPlayerReady, tournamentState.currentRound, readyForNextRound])
 
   return (
     <div className={styles.tournamentOverlay}>
@@ -633,8 +636,8 @@ function TournamentOverlay({
         {linkCopied ? 'Link Copied!' : 'Share Tournament Link'}
       </button>
 
-      {/* Next opponent info or BYE status */}
-      {isWaitingForReady && !tournamentState.nextRoundHasBye && (
+      {/* Next opponent info or BYE status (participants only) */}
+      {!isSpectator && isWaitingForReady && !tournamentState.nextRoundHasBye && (
         <div className={styles.statusBoxMatch}>
           <div className={styles.statusBoxMatchLabel}>
             Round {tournamentState.currentRound + 1}
@@ -647,16 +650,16 @@ function TournamentOverlay({
         </div>
       )}
 
-      {/* BYE status - shown when waiting for ready with bye, or during active round with bye */}
-      {((isWaitingForReady && tournamentState.nextRoundHasBye) || (tournamentState.isBye && !isWaitingForReady)) && (
+      {/* BYE status (participants only) */}
+      {!isSpectator && ((isWaitingForReady && tournamentState.nextRoundHasBye) || (tournamentState.isBye && !isWaitingForReady)) && (
         <div className={styles.statusBoxBye}>
           <span className={styles.byeIcon}>&#x2713;</span>
           <span>Sitting out this round</span>
         </div>
       )}
 
-      {/* Ready for next round button and status */}
-      {isWaitingForReady && (
+      {/* Ready for next round button and status (participants only) */}
+      {!isSpectator && isWaitingForReady && (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
           <div style={{ display: 'flex', gap: 12 }}>
             <button
@@ -682,8 +685,8 @@ function TournamentOverlay({
         </div>
       )}
 
-      {/* Show "waiting for others" message when in active round but match is done */}
-      {!isWaitingForReady && !tournamentState.isBye && !tournamentState.currentMatchGameSessionId && !tournamentState.isComplete && (
+      {/* Show "waiting for others" message when in active round but match is done (participants only) */}
+      {!isSpectator && !isWaitingForReady && !tournamentState.isBye && !tournamentState.currentMatchGameSessionId && !tournamentState.isComplete && (
         <div className={styles.statusBoxWaiting}>
           Waiting for other matches to complete...
         </div>
