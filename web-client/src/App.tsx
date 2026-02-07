@@ -270,6 +270,7 @@ function GameOverlay() {
         }}>
           {title}
         </h1>
+        <span style={{ color: '#555', fontSize: 20, userSelect: 'none' }}>|</span>
         <p style={overlayStyles.subtitle}>{reasonText}</p>
         <button
           onClick={returnToMenu}
@@ -301,31 +302,33 @@ const overlayStyles: Record<string, React.CSSProperties> = {
     top: 0,
     left: 0,
     right: 0,
-    bottom: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.85)',
     display: 'flex',
-    flexDirection: 'column',
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 24,
+    gap: 16,
+    padding: '14px 24px',
     zIndex: 2000,
   },
   title: {
     margin: 0,
-    fontSize: 48,
+    fontSize: 26,
   },
   subtitle: {
-    fontSize: 18,
-    color: '#888',
+    fontSize: 15,
+    color: '#aaa',
+    margin: 0,
   },
   button: {
-    padding: '12px 24px',
-    fontSize: 18,
+    padding: '8px 18px',
+    fontSize: 15,
     backgroundColor: '#333',
     color: 'white',
     border: 'none',
     borderRadius: 8,
     cursor: 'pointer',
+    whiteSpace: 'nowrap',
   },
   errorToast: {
     position: 'absolute',
