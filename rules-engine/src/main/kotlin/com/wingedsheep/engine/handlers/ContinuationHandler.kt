@@ -86,6 +86,7 @@ class ContinuationHandler(
             is UntapChoiceContinuation -> resumeUntapChoice(stateAfterPop, continuation, response)
             is BlackmailRevealContinuation -> resumeBlackmailReveal(stateAfterPop, continuation, response)
             is BlackmailChooseContinuation -> resumeBlackmailChoose(stateAfterPop, continuation, response)
+            is ChooseCreatureTypeRevealTopContinuation -> resumeChooseCreatureTypeRevealTop(stateAfterPop, continuation, response)
             is PendingTriggersContinuation -> {
                 // This should not be popped directly by a decision response.
                 // It's handled by checkForMoreContinuations after the preceding trigger resolves.
@@ -2086,6 +2087,87 @@ class ContinuationHandler(
         val events = listOf(
             CardsDiscardedEvent(targetPlayerId, listOf(cardToDiscard))
         )
+
+        return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume after player chose a creature type for "reveal top card" effects.
+     *
+     * Reveals the top card. If it's a creature of the chosen type, put it into hand.
+     * Otherwise, put it into graveyard.
+     */
+    private fun resumeChooseCreatureTypeRevealTop(
+        state: GameState,
+        continuation: ChooseCreatureTypeRevealTopContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is OptionChosenResponse) {
+            return ExecutionResult.error(state, "Expected option choice response for creature type selection")
+        }
+
+        val chosenType = continuation.creatureTypes.getOrNull(response.optionIndex)
+            ?: return ExecutionResult.error(state, "Invalid creature type index: ${response.optionIndex}")
+
+        val controllerId = continuation.controllerId
+        val libraryZone = ZoneKey(controllerId, Zone.LIBRARY)
+        val library = state.getZone(libraryZone)
+
+        // If library became empty since the ability was activated, nothing happens
+        if (library.isEmpty()) {
+            return checkForMoreContinuations(state, emptyList())
+        }
+
+        val topCardId = library.first()
+        val cardComponent = state.getEntity(topCardId)?.get<CardComponent>()
+        val cardName = cardComponent?.name ?: "Unknown"
+        val cardImageUri = cardComponent?.imageUri
+
+        // Reveal the card
+        val revealEvent = CardsRevealedEvent(
+            revealingPlayerId = controllerId,
+            cardIds = listOf(topCardId),
+            cardNames = listOf(cardName),
+            imageUris = listOf(cardImageUri),
+            source = continuation.sourceName
+        )
+
+        // Check if the card is a creature of the chosen type
+        val typeLine = cardComponent?.typeLine
+        val isMatch = typeLine != null &&
+            typeLine.isCreature &&
+            typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(chosenType))
+
+        var newState = state.removeFromZone(libraryZone, topCardId)
+        val events = mutableListOf<GameEvent>(revealEvent)
+
+        if (isMatch) {
+            // Put into hand
+            val handZone = ZoneKey(controllerId, Zone.HAND)
+            newState = newState.addToZone(handZone, topCardId)
+            events.add(
+                ZoneChangeEvent(
+                    entityId = topCardId,
+                    entityName = cardName,
+                    fromZone = Zone.LIBRARY,
+                    toZone = Zone.HAND,
+                    ownerId = controllerId
+                )
+            )
+        } else {
+            // Put into graveyard
+            val graveyardZone = ZoneKey(controllerId, Zone.GRAVEYARD)
+            newState = newState.addToZone(graveyardZone, topCardId)
+            events.add(
+                ZoneChangeEvent(
+                    entityId = topCardId,
+                    entityName = cardName,
+                    fromZone = Zone.LIBRARY,
+                    toZone = Zone.GRAVEYARD,
+                    ownerId = controllerId
+                )
+            )
+        }
 
         return checkForMoreContinuations(newState, events)
     }

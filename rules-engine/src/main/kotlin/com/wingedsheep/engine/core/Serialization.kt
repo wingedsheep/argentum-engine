@@ -141,6 +141,7 @@ val engineSerializersModule = SerializersModule {
         subclass(PendingTriggersContinuation::class)
         subclass(BlackmailRevealContinuation::class)
         subclass(BlackmailChooseContinuation::class)
+        subclass(ChooseCreatureTypeRevealTopContinuation::class)
     }
 
     // Component hierarchy (for GameState persistence)

@@ -133,6 +133,7 @@ object OnslaughtSet {
         // Green creatures and spells
         AnimalMagnetism,
         BirchloreRangers,
+        BloodlineShaman,
         Biorhythm,
         BroodhatchNantuko,
         ElvenRiders,
@@ -166,6 +167,7 @@ object OnslaughtSet {
         WirewoodSavage,
 
         // Lands
+        BloodstainedMire,
         BarrenMoor,
         ForgottenCave,
         GoblinBurrows,

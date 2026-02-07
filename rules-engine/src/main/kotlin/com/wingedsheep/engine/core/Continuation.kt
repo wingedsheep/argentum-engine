@@ -727,3 +727,24 @@ data class ChooseToCreatureTypeContinuation(
     val fromType: String,
     val creatureTypes: List<String>
 ) : ContinuationFrame
+
+/**
+ * Resume after player chooses a creature type for Bloodline Shaman-style effects.
+ *
+ * "Choose a creature type. Reveal the top card of your library.
+ * If that card is a creature card of the chosen type, put it into your hand.
+ * Otherwise, put it into your graveyard."
+ *
+ * @property controllerId The player who activated the ability
+ * @property sourceId The source permanent
+ * @property sourceName Name of the source for event messages
+ * @property creatureTypes The creature type options (indexed by OptionChosenResponse.optionIndex)
+ */
+@Serializable
+data class ChooseCreatureTypeRevealTopContinuation(
+    override val decisionId: String,
+    val controllerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val creatureTypes: List<String>
+) : ContinuationFrame

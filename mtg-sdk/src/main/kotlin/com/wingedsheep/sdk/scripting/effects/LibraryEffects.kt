@@ -238,6 +238,23 @@ data class PutCreatureFromHandOntoBattlefieldEffect(
 }
 
 /**
+ * Choose a creature type, then reveal the top card of your library.
+ * If that card is a creature card of the chosen type, put it into your hand.
+ * Otherwise, put it into your graveyard.
+ *
+ * Used for Bloodline Shaman: "{T}: Choose a creature type. Reveal the top card
+ * of your library. If that card is a creature card of the chosen type, put it
+ * into your hand. Otherwise, put it into your graveyard."
+ */
+@Serializable
+data object ChooseCreatureTypeRevealTopEffect : Effect {
+    override val description: String =
+        "Choose a creature type. Reveal the top card of your library. " +
+        "If that card is a creature card of the chosen type, put it into your hand. " +
+        "Otherwise, put it into your graveyard"
+}
+
+/**
  * Put a land card from your hand onto the battlefield.
  * "You may put a basic land card from your hand onto the battlefield tapped."
  *
