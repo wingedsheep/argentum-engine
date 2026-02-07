@@ -3,7 +3,6 @@ package com.wingedsheep.gameserver.priority
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
-import com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombatComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
@@ -134,25 +133,20 @@ class AutoPassManager {
             return true
         }
 
-        // Special handling for DECLARE_BLOCKERS step after blockers are declared.
+        // Special handling for DECLARE_BLOCKERS step.
         // Both players should get a chance to cast combat tricks (like Giant Growth)
-        // after blockers are assigned and before combat damage.
+        // or use activated abilities before combat damage.
+        // By the time any player gets priority here, the defending player has already
+        // had their chance to declare blockers (or auto-passed without blocking).
         if (state.step == Step.DECLARE_BLOCKERS) {
-            val blockersHaveBeenDeclared = state.turnOrder.any { pid ->
-                state.getEntity(pid)?.get<BlockersDeclaredThisCombatComponent>() != null
+            val hasInstantSpeedResponses = meaningfulActions.any { action ->
+                (action.actionType == "CastSpell" || action.actionType == "ActivateAbility" || action.actionType == "CycleCard") &&
+                (!action.requiresTargets || !action.validTargets.isNullOrEmpty())
             }
 
-            if (blockersHaveBeenDeclared) {
-                // After blockers are declared, stop if player has instant-speed responses
-                val hasInstantSpeedResponses = meaningfulActions.any { action ->
-                    (action.actionType == "CastSpell" || action.actionType == "ActivateAbility" || action.actionType == "CycleCard") &&
-                    (!action.requiresTargets || !action.validTargets.isNullOrEmpty())
-                }
-
-                if (hasInstantSpeedResponses) {
-                    logger.debug("STOP: Declare blockers step after blockers declared (have instant-speed responses)")
-                    return false
-                }
+            if (hasInstantSpeedResponses) {
+                logger.debug("STOP: Declare blockers step (have instant-speed responses)")
+                return false
             }
         }
 

@@ -283,14 +283,14 @@ class AutoPassManagerTest : FunSpec({
             autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
         }
 
-        test("Auto-pass during declare blockers when only instants available (no blockers)") {
+        test("STOP during declare blockers when instants available even without blockers") {
             val state = createMockState(player2, player1, Step.DECLARE_BLOCKERS)
             val actions = listOf(
                 passPriorityAction(player2),
                 instantSpellAction(player2) // Has instant but no blockers
             )
 
-            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
+            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe false
         }
 
         test("STOP during declare blockers when blockers available") {
@@ -386,15 +386,15 @@ class AutoPassManagerTest : FunSpec({
             autoPassManager.shouldAutoPass(state, player1, actions) shouldBe false
         }
 
-        test("Auto-pass during my declare blockers even with combat tricks (Arena-style)") {
-            // Arena auto-passes here - if you want to use combat tricks, use Full Control
+        test("STOP during my declare blockers when I have combat tricks") {
+            // Attacking player should get a chance to use combat tricks before damage
             val state = createMockState(player1, player1, Step.DECLARE_BLOCKERS)
             val actions = listOf(
                 passPriorityAction(player1),
                 instantSpellAction(player1)
             )
 
-            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe true
+            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe false
         }
 
         test("Auto-pass during my first strike damage even with instants (Arena-style)") {
@@ -609,20 +609,21 @@ class AutoPassManagerTest : FunSpec({
             autoPassManager.shouldAutoPass(state, player2, actions) shouldBe false
         }
 
-        test("Auto-pass during my declare blockers step BEFORE blockers declared even with combat tricks") {
-            // Before blockers are declared, attacker should auto-pass (Arena-style)
+        test("STOP during my declare blockers step even when defender passed without blocking") {
+            // When defender auto-passes (no blockers), attacker should still get
+            // a chance to use combat tricks before damage
             val state = createMockState(
                 priorityPlayerId = player1,
                 activePlayerId = player1,
                 step = Step.DECLARE_BLOCKERS,
-                blockersHaveBeenDeclared = false  // Not yet declared
+                blockersHaveBeenDeclared = false  // Defender passed without declaring
             )
             val actions = listOf(
                 passPriorityAction(player1),
                 instantSpellAction(player1)
             )
 
-            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe true
+            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe false
         }
     }
 
