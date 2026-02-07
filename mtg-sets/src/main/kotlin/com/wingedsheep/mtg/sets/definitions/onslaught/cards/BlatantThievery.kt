@@ -29,6 +29,6 @@ val BlatantThievery = card("Blatant Thievery") {
         collectorNumber = "71"
         artist = "Greg Staples"
         flavorText = "\"I'll leave subtlety to the rich.\""
-        imageUri = "https://cards.scryfall.io/large/front/0/2/0210b3b4-d012-42bc-b1f4-b3571c0f9c5f.jpg?1562895484"
+        imageUri = "https://cards.scryfall.io/large/front/8/2/8284476c-a7c8-4a6c-8021-ee997e9270ce.jpg?1562925810"
     }
 }
