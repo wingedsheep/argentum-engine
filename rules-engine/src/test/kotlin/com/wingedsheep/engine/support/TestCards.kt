@@ -677,6 +677,27 @@ object TestCards {
     )
 
     // =========================================================================
+    // Special Combat Creatures
+    // =========================================================================
+
+    /**
+     * 6/6 for {4}{R}{R}{R} with "divide combat damage freely" ability.
+     * Test card for Butcher Orgg's combat damage assignment.
+     */
+    val ButcherOrgg = CardDefinition(
+        name = "Butcher Orgg",
+        manaCost = ManaCost.parse("{4}{R}{R}{R}"),
+        typeLine = TypeLine.creature(setOf(Subtype("Orgg"))),
+        oracleText = "You may assign Butcher Orgg's combat damage divided as you choose among defending player and/or any number of creatures they control.",
+        creatureStats = CreatureStats(6, 6),
+        script = CardScript(
+            staticAbilities = listOf(
+                DivideCombatDamageFreely()
+            )
+        )
+    )
+
+    // =========================================================================
     // Enchantments
     // =========================================================================
 
@@ -721,6 +742,7 @@ object TestCards {
         FearCreature,
         ArtifactCreature,
         BlackCreature,
+        ButcherOrgg,
         // Mana Dorks
         LlanowarElves,
         PalladiumMyr,

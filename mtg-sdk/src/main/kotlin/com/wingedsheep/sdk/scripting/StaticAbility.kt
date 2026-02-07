@@ -137,6 +137,21 @@ data class AssignDamageEqualToToughness(
 }
 
 /**
+ * This creature's combat damage may be divided as its controller chooses among
+ * the defending player and/or any number of creatures they control.
+ * Used for Butcher Orgg.
+ *
+ * Auto-assigns: lethal to each blocker in order, remainder to defending player.
+ */
+@Serializable
+data class DivideCombatDamageFreely(
+    val target: StaticTarget = StaticTarget.SourceCreature
+) : StaticAbility {
+    override val description: String =
+        "You may assign this creature's combat damage divided as you choose among defending player and/or any number of creatures they control"
+}
+
+/**
  * Types of global effects from enchantments.
  */
 @Serializable

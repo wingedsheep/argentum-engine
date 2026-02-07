@@ -104,6 +104,7 @@ object OnslaughtSet {
         AetherCharge,
         Avarax,
         BlisteringFirecat,
+        ButcherOrgg,
         BreakOpen,
         BrightstoneRitual,
         SkirkCommando,

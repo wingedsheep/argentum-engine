@@ -22,6 +22,7 @@ import com.wingedsheep.sdk.scripting.CanOnlyBlockCreaturesWithKeyword
 import com.wingedsheep.sdk.scripting.CantBeBlockedByPower
 import com.wingedsheep.sdk.scripting.CantBeBlockedExceptByKeyword
 import com.wingedsheep.sdk.scripting.CantBlock
+import com.wingedsheep.sdk.scripting.DivideCombatDamageFreely
 import com.wingedsheep.sdk.scripting.StaticTarget
 import java.util.UUID
 
@@ -939,7 +940,20 @@ class CombatManager(
             // Check if blocked
             val blockedBy = attackerContainer.get<BlockedComponent>()
 
-            if (blockedBy == null || blockedBy.blockerIds.isEmpty()) {
+            // Check for "divide combat damage freely" ability (Butcher Orgg)
+            val attackerCard = attackerContainer.get<CardComponent>()!!
+            val cardDef = cardRegistry?.getCard(attackerCard.cardDefinitionId)
+            val hasDivideDamageFreely = cardDef?.staticAbilities?.any { it is DivideCombatDamageFreely } == true
+
+            if (hasDivideDamageFreely && blockedBy != null && blockedBy.blockerIds.isNotEmpty()) {
+                // Divide damage freely: assign lethal to blockers, remainder to defending player
+                val (dmgState, dmgEvents) = dealDividedCombatDamage(
+                    newState, attackerId, blockedBy.blockerIds,
+                    attackingComponent.defenderId, firstStrike, attackerDealsDamageThisStep
+                )
+                newState = dmgState
+                events.addAll(dmgEvents)
+            } else if (blockedBy == null || blockedBy.blockerIds.isEmpty()) {
                 // Unblocked - only deal damage if attacker deals damage this step
                 if (!attackerDealsDamageThisStep) continue
 
@@ -1163,6 +1177,138 @@ class CombatManager(
                 }
                 if (!attackerProtected) {
                     // Apply damage prevention shields
+                    val (shieldState, effectiveBlockerDamage) = EffectExecutorUtils.applyDamagePreventionShields(newState, attackerId, blockerPower)
+                    newState = shieldState
+                    if (effectiveBlockerDamage > 0) {
+                        val currentDamage = newState.getEntity(attackerId)?.get<DamageComponent>()?.amount ?: 0
+                        newState = newState.updateEntity(attackerId) { container ->
+                            container.with(DamageComponent(currentDamage + effectiveBlockerDamage))
+                        }
+                        events.add(DamageDealtEvent(blockerId, attackerId, effectiveBlockerDamage, true))
+                    }
+                }
+            }
+        }
+
+        return newState to events
+    }
+
+    /**
+     * Deal combat damage for a creature with "divide combat damage freely" ability (Butcher Orgg).
+     *
+     * Auto-assigns lethal damage to each blocker in order, then assigns any
+     * remaining damage to the defending player. Blockers still deal damage back
+     * to the attacker normally.
+     */
+    private fun dealDividedCombatDamage(
+        state: GameState,
+        attackerId: EntityId,
+        blockerIds: List<EntityId>,
+        defenderId: EntityId,
+        firstStrike: Boolean,
+        attackerDealsDamageThisStep: Boolean
+    ): Pair<GameState, List<GameEvent>> {
+        var newState = state
+        val events = mutableListOf<GameEvent>()
+
+        val attackerContainer = newState.getEntity(attackerId) ?: return newState to events
+        attackerContainer.get<CardComponent>() ?: return newState to events
+
+        val projected = stateProjector.project(newState)
+
+        // Get blockers in damage assignment order (or default order)
+        val orderedBlockers = attackerContainer.get<DamageAssignmentOrderComponent>()?.orderedBlockers
+            ?: blockerIds
+
+        // Attacker deals damage: lethal to each blocker, remainder to defending player
+        if (attackerDealsDamageThisStep) {
+            val attackerPower = projected.getPower(attackerId) ?: 0
+            if (attackerPower > 0) {
+                var remainingDamage = attackerPower
+
+                // Assign lethal to each blocker in order
+                for (blockerId in orderedBlockers) {
+                    if (remainingDamage <= 0) break
+                    // Skip blockers no longer on the battlefield
+                    if (blockerId !in newState.getBattlefield()) continue
+
+                    val lethalInfo = damageCalculator.calculateLethalDamage(newState, blockerId, attackerId)
+                    val damageToAssign = minOf(remainingDamage, lethalInfo.lethalAmount)
+
+                    // Check protection
+                    val attackerColors = projected.getColors(attackerId)
+                    val attackerSubtypes = projected.getSubtypes(attackerId)
+                    val blockerProtected = attackerColors.any { colorName ->
+                        projected.hasKeyword(blockerId, "PROTECTION_FROM_$colorName")
+                    } || attackerSubtypes.any { subtype ->
+                        projected.hasKeyword(blockerId, "PROTECTION_FROM_SUBTYPE_${subtype.uppercase()}")
+                    }
+
+                    if (!blockerProtected) {
+                        val (shieldState, effectiveDamage) = EffectExecutorUtils.applyDamagePreventionShields(newState, blockerId, damageToAssign)
+                        newState = shieldState
+                        if (effectiveDamage > 0) {
+                            val currentDamage = newState.getEntity(blockerId)?.get<DamageComponent>()?.amount ?: 0
+                            newState = newState.updateEntity(blockerId) { container ->
+                                container.with(DamageComponent(currentDamage + effectiveDamage))
+                            }
+                            events.add(DamageDealtEvent(attackerId, blockerId, effectiveDamage, true))
+                        }
+                    }
+
+                    remainingDamage -= damageToAssign
+                }
+
+                // Remaining damage goes to defending player
+                if (remainingDamage > 0) {
+                    val isProtected = isProtectedFromAttackingCreatureDamage(newState, defenderId)
+                    if (!isProtected) {
+                        val (shieldState, effectivePlayerDamage) = EffectExecutorUtils.applyDamagePreventionShields(newState, defenderId, remainingDamage)
+                        newState = shieldState
+                        if (effectivePlayerDamage > 0) {
+                            val currentLife = newState.getEntity(defenderId)?.get<LifeTotalComponent>()?.life ?: 0
+                            val newLife = currentLife - effectivePlayerDamage
+                            newState = newState.updateEntity(defenderId) { container ->
+                                container.with(LifeTotalComponent(newLife))
+                            }
+                            events.add(DamageDealtEvent(attackerId, defenderId, effectivePlayerDamage, true))
+                            events.add(LifeChangedEvent(defenderId, currentLife, newLife, LifeChangeReason.DAMAGE))
+                        }
+                    }
+                }
+            }
+        }
+
+        // Each blocker deals damage to attacker (same as normal combat)
+        for (blockerId in orderedBlockers) {
+            val blockerContainer = newState.getEntity(blockerId) ?: continue
+            blockerContainer.get<CardComponent>() ?: continue
+
+            // Skip blockers no longer on the battlefield
+            if (blockerId !in newState.getBattlefield()) continue
+
+            val hasFirstStrike = projected.hasKeyword(blockerId, Keyword.FIRST_STRIKE)
+            val hasDoubleStrike = projected.hasKeyword(blockerId, Keyword.DOUBLE_STRIKE)
+
+            val dealsDamageThisStep = if (firstStrike) {
+                hasFirstStrike || hasDoubleStrike
+            } else {
+                !hasFirstStrike || hasDoubleStrike
+            }
+
+            if (!dealsDamageThisStep) continue
+
+            val blockerPower = projected.getPower(blockerId) ?: 0
+            if (blockerPower > 0) {
+                // Check protection
+                val blockerColors = projected.getColors(blockerId)
+                val blockerSubtypes = projected.getSubtypes(blockerId)
+                val attackerProtected = blockerColors.any { colorName ->
+                    projected.hasKeyword(attackerId, "PROTECTION_FROM_$colorName")
+                } || blockerSubtypes.any { subtype ->
+                    projected.hasKeyword(attackerId, "PROTECTION_FROM_SUBTYPE_${subtype.uppercase()}")
+                }
+                if (!attackerProtected) {
                     val (shieldState, effectiveBlockerDamage) = EffectExecutorUtils.applyDamagePreventionShields(newState, attackerId, blockerPower)
                     newState = shieldState
                     if (effectiveBlockerDamage > 0) {

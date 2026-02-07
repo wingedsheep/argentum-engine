@@ -47,7 +47,7 @@
 - [x] Break Open
 - [x] Brightstone Ritual
 - [x] Broodhatch Nantuko
-- [ ] Butcher Orgg
+- [x] Butcher Orgg
 - [x] Cabal Archon
 - [ ] Cabal Executioner
 - [ ] Cabal Slaver
