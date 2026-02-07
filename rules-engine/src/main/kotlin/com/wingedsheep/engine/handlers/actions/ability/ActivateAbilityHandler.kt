@@ -329,7 +329,8 @@ class ActivateAbilityHandler(
             sourceId = action.sourceId,
             sourceName = cardComponent.name,
             controllerId = action.playerId,
-            effect = finalEffect
+            effect = finalEffect,
+            sacrificedPermanents = action.costPayment?.sacrificedPermanents ?: emptyList()
         )
         val stackResult = stackResolver.putActivatedAbility(currentState, abilityOnStack, action.targets)
         return ExecutionResult.success(stackResult.newState, events + stackResult.events)
