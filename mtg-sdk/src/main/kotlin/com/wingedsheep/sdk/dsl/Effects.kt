@@ -268,6 +268,12 @@ object Effects {
     // =========================================================================
 
     /**
+     * Gain control of target permanent.
+     */
+    fun GainControl(target: EffectTarget, duration: Duration = Duration.Permanent): Effect =
+        GainControlEffect(target, duration)
+
+    /**
      * The player who controls the most creatures of the given subtype gains control of the target.
      */
     fun GainControlByMostOfSubtype(subtype: Subtype, target: EffectTarget = EffectTarget.Self): Effect =

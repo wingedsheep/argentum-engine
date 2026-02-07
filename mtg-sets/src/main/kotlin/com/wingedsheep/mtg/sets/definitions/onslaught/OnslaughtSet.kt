@@ -53,6 +53,7 @@ object OnslaughtSet {
         Annex,
         AvenFateshaper,
         Backslide,
+        BlatantThievery,
         CraftyPathmage,
         GhosthelmCourier,
         ThoughtboundPrimoc,
@@ -101,6 +102,7 @@ object OnslaughtSet {
         // Red creatures and spells
         AetherCharge,
         Avarax,
+        BlisteringFirecat,
         BrightstoneRitual,
         SkirkCommando,
         AggravatedAssault,
@@ -130,6 +132,7 @@ object OnslaughtSet {
 
         // Green creatures and spells
         AnimalMagnetism,
+        BirchloreRangers,
         Biorhythm,
         BroodhatchNantuko,
         ElvenRiders,

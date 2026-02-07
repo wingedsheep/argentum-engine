@@ -88,6 +88,8 @@ export interface ActivateAbilityAction {
   readonly targets?: readonly ChosenTarget[]
   /** Payment choices for ability costs (sacrifice, etc.) */
   readonly costPayment?: AdditionalCostPayment
+  /** Color chosen for "add one mana of any color" abilities */
+  readonly manaColorChoice?: string
 }
 
 // =============================================================================

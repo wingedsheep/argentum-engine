@@ -35,6 +35,7 @@ import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.ActivationRestriction
 import com.wingedsheep.sdk.scripting.TimingRule
+import com.wingedsheep.sdk.scripting.AddAnyColorManaEffect
 import com.wingedsheep.sdk.scripting.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.AddManaEffect
 import com.wingedsheep.engine.handlers.CostPaymentChoices
@@ -269,7 +270,8 @@ class ActivateAbilityHandler(
                 controllerId = action.playerId,
                 opponentId = opponentId,
                 targets = action.targets,
-                xValue = null
+                xValue = null,
+                manaColorChoice = action.manaColorChoice
             )
 
             val effectResult = effectExecutorRegistry.execute(currentState, finalEffect, context)
@@ -298,6 +300,20 @@ class ActivateAbilityHandler(
                     sourceName = cardComponent.name,
                     colorless = effect.amount
                 )
+                is AddAnyColorManaEffect -> {
+                    val chosenColor = action.manaColorChoice ?: Color.GREEN
+                    ManaAddedEvent(
+                        playerId = action.playerId,
+                        sourceId = action.sourceId,
+                        sourceName = cardComponent.name,
+                        white = if (chosenColor == Color.WHITE) effect.amount else 0,
+                        blue = if (chosenColor == Color.BLUE) effect.amount else 0,
+                        black = if (chosenColor == Color.BLACK) effect.amount else 0,
+                        red = if (chosenColor == Color.RED) effect.amount else 0,
+                        green = if (chosenColor == Color.GREEN) effect.amount else 0,
+                        colorless = 0
+                    )
+                }
                 else -> null
             }
 

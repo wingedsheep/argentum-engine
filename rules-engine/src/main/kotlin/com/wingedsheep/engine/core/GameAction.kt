@@ -110,6 +110,7 @@ sealed interface PaymentStrategy {
  * @property abilityId The ID of the ability being activated
  * @property targets Chosen targets for the ability's effect
  * @property costPayment Payment choices for costs (sacrifice, etc.)
+ * @property manaColorChoice Color chosen for "add one mana of any color" abilities
  */
 @Serializable
 @SerialName("ActivateAbility")
@@ -118,7 +119,8 @@ data class ActivateAbility(
     val sourceId: EntityId,
     val abilityId: AbilityId,
     val targets: List<ChosenTarget> = emptyList(),
-    val costPayment: AdditionalCostPayment? = null
+    val costPayment: AdditionalCostPayment? = null,
+    val manaColorChoice: Color? = null
 ) : GameAction
 
 // =============================================================================

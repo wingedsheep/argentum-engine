@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers
 
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
 
 /**
@@ -18,5 +19,7 @@ data class EffectContext(
     /** Amount of damage from a trigger context (e.g., "Whenever ~ is dealt damage") */
     val triggerDamageAmount: Int? = null,
     /** The entity that caused the trigger to fire (e.g., creature that dealt damage for Aurification) */
-    val triggeringEntityId: EntityId? = null
+    val triggeringEntityId: EntityId? = null,
+    /** Color chosen for "add one mana of any color" abilities */
+    val manaColorChoice: Color? = null
 )

@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 141 / 335
+**Implemented:** 143 / 335
 
 ---
 
@@ -37,10 +37,10 @@
 - [x] Battering Craghorn
 - [x] Battlefield Medic
 - [x] Biorhythm
-- [ ] Birchlore Rangers
+- [x] Birchlore Rangers
 - [x] Blackmail
-- [ ] Blatant Thievery
-- [ ] Blistering Firecat
+- [x] Blatant Thievery
+- [x] Blistering Firecat
 - [ ] Bloodline Shaman
 - [ ] Bloodstained Mire
 - [ ] Boneknitter

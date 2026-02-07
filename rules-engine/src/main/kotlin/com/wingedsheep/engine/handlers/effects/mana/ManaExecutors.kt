@@ -13,6 +13,7 @@ class ManaExecutors(
     override fun executors(): List<EffectExecutor<*>> = listOf(
         AddManaExecutor(),
         AddColorlessManaExecutor(),
+        AddAnyColorManaExecutor(),
         AddDynamicColorManaExecutor(amountEvaluator)
     )
 }

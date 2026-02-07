@@ -301,6 +301,25 @@ data class GainControlByMostOfSubtypeEffect(
 }
 
 /**
+ * Gain control of target permanent.
+ * "Gain control of target permanent."
+ *
+ * Used by Blatant Thievery and similar control-stealing effects.
+ */
+@Serializable
+data class GainControlEffect(
+    val target: EffectTarget,
+    val duration: Duration = Duration.Permanent
+) : Effect {
+    override val description: String = buildString {
+        append("gain control of ${target.description}")
+        if (duration != Duration.Permanent && duration.description.isNotEmpty()) {
+            append(" ${duration.description}")
+        }
+    }
+}
+
+/**
  * Turn target creature face down.
  * "Turn target creature with a morph ability face down."
  * Used for Backslide and similar effects.

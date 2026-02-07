@@ -135,6 +135,11 @@ object Targets {
      */
     val Land: TargetRequirement = TargetPermanent(filter = TargetFilter.Land)
 
+    /**
+     * Target permanent an opponent controls.
+     */
+    val PermanentOpponentControls: TargetRequirement = TargetPermanent(filter = TargetFilter.PermanentOpponentControls)
+
     // =========================================================================
     // Combined Targeting
     // =========================================================================
