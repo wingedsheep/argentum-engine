@@ -293,9 +293,8 @@ export function useInteraction() {
         }
       }
 
-      // Multiple actions or complex action - use executeAction for the first one
-      // This handles X cost, targeting, convoke, etc.
-      executeAction(actions[0]!)
+      // Multiple actions or complex action - open the action menu
+      selectCard(cardId)
     },
     [getCardActions, canAutoExecute, submitAction, selectCard, executeAction]
   )
