@@ -144,6 +144,7 @@ object OnslaughtSet {
         SkirkProspector,
         SnappingThragg,
         SpurredWolverine,
+        Threaten,
 
         // Green creatures and spells
         AnimalMagnetism,
