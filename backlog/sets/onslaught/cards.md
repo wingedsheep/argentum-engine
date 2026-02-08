@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 158 / 335
+**Implemented:** 159 / 335
 
 ---
 
@@ -106,7 +106,7 @@
 - [ ] Ebonblade Reaper
 - [x] Elven Riders
 - [ ] Elvish Guidance
-- [ ] Elvish Pathcutter
+- [x] Elvish Pathcutter
 - [x] Elvish Pioneer
 - [x] Elvish Scrapper
 - [x] Elvish Vanguard
