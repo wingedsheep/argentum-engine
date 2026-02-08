@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 154 / 335
+**Implemented:** 156 / 335
 
 ---
 
@@ -80,7 +80,7 @@
 - [x] Cruel Revival
 - [ ] Cryptic Gateway
 - [ ] Custody Battle
-- [ ] Daru Cavalier
+- [x] Daru Cavalier
 - [ ] Daru Encampment
 - [ ] Daru Healer
 - [x] Daru Lancer
@@ -166,7 +166,7 @@
 - [ ] Head Games
 - [x] Headhunter
 - [x] Heedless One
-- [ ] Hystrodon
+- [x] Hystrodon
 - [ ] Imagecrafter
 - [x] Improvised Armor
 - [x] Infest
