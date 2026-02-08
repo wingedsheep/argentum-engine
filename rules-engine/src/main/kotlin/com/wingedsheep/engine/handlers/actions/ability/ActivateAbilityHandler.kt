@@ -8,6 +8,8 @@ import com.wingedsheep.engine.core.ManaAddedEvent
 import com.wingedsheep.engine.core.ManaSpentEvent
 import com.wingedsheep.engine.core.TappedEvent
 import com.wingedsheep.engine.core.TurnManager
+import com.wingedsheep.engine.event.TriggerDetector
+import com.wingedsheep.engine.event.TriggerProcessor
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.CostHandler
 import com.wingedsheep.engine.handlers.EffectContext
@@ -58,6 +60,8 @@ class ActivateAbilityHandler(
     private val stackResolver: StackResolver,
     private val targetValidator: TargetValidator,
     private val conditionEvaluator: ConditionEvaluator,
+    private val triggerDetector: TriggerDetector,
+    private val triggerProcessor: TriggerProcessor,
     private val stateProjector: StateProjector = StateProjector()
 ) : ActionHandler<ActivateAbility> {
     override val actionType: KClass<ActivateAbility> = ActivateAbility::class
@@ -333,7 +337,28 @@ class ActivateAbilityHandler(
             sacrificedPermanents = action.costPayment?.sacrificedPermanents ?: emptyList()
         )
         val stackResult = stackResolver.putActivatedAbility(currentState, abilityOnStack, action.targets)
-        return ExecutionResult.success(stackResult.newState, events + stackResult.events)
+        val allEvents = events + stackResult.events
+
+        // Detect and process triggers from cost payment (e.g., sacrifice death triggers)
+        val triggers = triggerDetector.detectTriggers(stackResult.newState, allEvents)
+        if (triggers.isNotEmpty()) {
+            val triggerResult = triggerProcessor.processTriggers(stackResult.newState, triggers)
+
+            if (triggerResult.isPaused) {
+                return ExecutionResult.paused(
+                    triggerResult.state.withPriority(state.activePlayerId),
+                    triggerResult.pendingDecision!!,
+                    allEvents + triggerResult.events
+                )
+            }
+
+            return ExecutionResult.success(
+                triggerResult.newState.withPriority(state.activePlayerId),
+                allEvents + triggerResult.events
+            )
+        }
+
+        return ExecutionResult.success(stackResult.newState, allEvents)
     }
 
     /**
@@ -501,6 +526,8 @@ class ActivateAbilityHandler(
                 context.stackResolver,
                 context.targetValidator,
                 context.conditionEvaluator,
+                context.triggerDetector,
+                context.triggerProcessor,
                 context.stateProjector
             )
         }
