@@ -747,6 +747,13 @@
   flex-shrink: 0;
   position: relative;
   border: 1px solid var(--border-solid-medium);
+  cursor: default;
+  transition: border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.optionPreviewCard:hover {
+  border-color: var(--color-highlight);
+  transform: translateY(-2px);
 }
 
 .optionPreviewImage {

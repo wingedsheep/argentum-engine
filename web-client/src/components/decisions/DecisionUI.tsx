@@ -363,12 +363,33 @@ function ChooseOptionDecisionUI({
 }) {
   const [filter, setFilter] = useState(decision.defaultSearch ?? '')
   const [minimized, setMinimized] = useState(false)
-  const defaultIndex = decision.defaultSearch
-    ? decision.options.findIndex((opt) => opt.toLowerCase() === decision.defaultSearch!.toLowerCase())
-    : -1
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(defaultIndex >= 0 ? defaultIndex : null)
+  const [hoveredPreviewCard, setHoveredPreviewCard] = useState<{ name: string; imageUri: string | null | undefined } | null>(null)
+
+  // Auto-select: defaultSearch match, or the option with the most cards
+  const initialIndex = useMemo(() => {
+    if (decision.defaultSearch) {
+      const idx = decision.options.findIndex((opt) => opt.toLowerCase() === decision.defaultSearch!.toLowerCase())
+      if (idx >= 0) return idx
+    }
+    if (decision.optionCardIds) {
+      let bestIndex = -1
+      let bestCount = 0
+      for (let i = 0; i < decision.options.length; i++) {
+        const count = decision.optionCardIds[i]?.length ?? 0
+        if (count > bestCount) {
+          bestCount = count
+          bestIndex = i
+        }
+      }
+      if (bestIndex >= 0) return bestIndex
+    }
+    return null
+  }, [decision.defaultSearch, decision.options, decision.optionCardIds])
+
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(initialIndex)
   const submitOptionDecision = useGameStore((s) => s.submitOptionDecision)
   const gameState = useGameStore((s) => s.gameState)
+  const responsive = useResponsive()
 
   const hasCardIds = !!decision.optionCardIds
 
@@ -458,7 +479,12 @@ function ChooseOptionDecisionUI({
           {previewCards.map((card) => {
             const imgUrl = getCardImageUrl(card.name, card.imageUri)
             return (
-              <div key={card.id} className={styles.optionPreviewCard}>
+              <div
+                key={card.id}
+                className={styles.optionPreviewCard}
+                onMouseEnter={() => setHoveredPreviewCard({ name: card.name, imageUri: card.imageUri })}
+                onMouseLeave={() => setHoveredPreviewCard(null)}
+              >
                 <img
                   src={imgUrl}
                   alt={card.name}
@@ -476,6 +502,11 @@ function ChooseOptionDecisionUI({
             )
           })}
         </div>
+      )}
+
+      {/* Hover-to-zoom preview */}
+      {hoveredPreviewCard && !responsive.isMobile && (
+        <DecisionCardPreview cardName={hoveredPreviewCard.name} imageUri={hoveredPreviewCard.imageUri} />
       )}
 
       {/* Action buttons */}
