@@ -66,13 +66,15 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
   const interactive = !spectatorMode && !isOpponent
 
   // How much of each attachment card peeks out from behind its parent
-  const attachmentPeekUp = responsive.isMobile ? 14 : 18
-  const attachmentShiftLeft = responsive.isMobile ? 6 : 8
+  const attachmentPeek = responsive.isMobile ? 16 : 22
   const cardHeight = Math.round(responsive.battlefieldCardWidth * 1.4)
 
   /**
    * Renders a permanent with any attached cards (auras, equipment) stacked underneath.
    * Works for any permanent type - creatures, lands, planeswalkers, etc.
+   *
+   * Untapped: attachments peek vertically from above the parent card.
+   * Tapped: attachments peek horizontally to the right of the parent card.
    */
   const renderWithAttachments = (group: GroupedCard) => {
     const attachments = getAttachments(group.card)
@@ -88,8 +90,7 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
     }
 
     const parentTapped = group.card.isTapped
-    const totalShift = attachments.length * attachmentShiftLeft
-    const totalExtraUp = attachments.length * attachmentPeekUp
+    const totalPeek = attachments.length * attachmentPeek
     // When tapped, cards rotate 90deg so their visual width becomes the height
     const cardVisualWidth = parentTapped ? cardHeight + 8 : responsive.battlefieldCardWidth
 
@@ -98,20 +99,20 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
         key={group.cardIds[0]}
         style={{
           position: 'relative',
-          width: cardVisualWidth + totalShift,
-          height: cardHeight + totalExtraUp,
+          width: parentTapped ? cardVisualWidth + totalPeek : responsive.battlefieldCardWidth,
+          height: parentTapped ? cardHeight : cardHeight + totalPeek,
         }}
       >
         {parentTapped ? (
           <>
-            {/* Tapped: attachments peek from top-RIGHT (card's top-left rotated 90deg CW) */}
+            {/* Tapped: attachments peek horizontally to the right */}
             {attachments.map((attachment, index) => (
               <div
                 key={attachment.id}
                 style={{
                   position: 'absolute',
-                  left: cardVisualWidth + (index + 1) * attachmentShiftLeft - cardVisualWidth,
-                  top: (attachments.length - 1 - index) * attachmentPeekUp,
+                  left: (index + 1) * attachmentPeek,
+                  top: 0,
                   zIndex: index,
                 }}
               >
@@ -120,12 +121,12 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
                   interactive={interactive}
                   battlefield
                   isOpponentCard={isOpponent}
-                  forceTapped={parentTapped}
+                  forceTapped={true}
                 />
               </div>
             ))}
-            {/* Main card on the left */}
-            <div style={{ position: 'absolute', left: 0, top: totalExtraUp, zIndex: attachments.length + 1 }}>
+            {/* Main card on the left, on top */}
+            <div style={{ position: 'absolute', left: 0, top: 0, zIndex: attachments.length + 1 }}>
               <CardStack
                 group={group}
                 interactive={interactive}
@@ -135,14 +136,14 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
           </>
         ) : (
           <>
-            {/* Untapped: attachments peek from top-LEFT */}
+            {/* Untapped: attachments peek vertically from above */}
             {attachments.map((attachment, index) => (
               <div
                 key={attachment.id}
                 style={{
                   position: 'absolute',
-                  left: (attachments.length - 1 - index) * attachmentShiftLeft,
-                  top: (attachments.length - 1 - index) * attachmentPeekUp,
+                  left: 0,
+                  top: index * attachmentPeek,
                   zIndex: index,
                 }}
               >
@@ -154,8 +155,8 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
                 />
               </div>
             ))}
-            {/* Main card on top, offset to the right and bottom */}
-            <div style={{ position: 'absolute', left: totalShift, top: totalExtraUp, zIndex: attachments.length + 1 }}>
+            {/* Main card at the bottom, on top */}
+            <div style={{ position: 'absolute', left: 0, top: totalPeek, zIndex: attachments.length + 1 }}>
               <CardStack
                 group={group}
                 interactive={interactive}
