@@ -62,12 +62,22 @@ data class DiscardRandomEffect(
  * Each opponent discards cards.
  * "Each opponent discards a card."
  * Used for cards like Noxious Toad.
+ *
+ * @param count Number of cards each opponent discards
+ * @param controllerDrawsPerDiscard If > 0, the controller draws this many cards
+ *   for each card actually discarded by opponents. Used for Syphon Mind.
  */
 @Serializable
 data class EachOpponentDiscardsEffect(
-    val count: Int = 1
+    val count: Int = 1,
+    val controllerDrawsPerDiscard: Int = 0
 ) : Effect {
-    override val description: String = "Each opponent discards ${if (count == 1) "a card" else "$count cards"}"
+    override val description: String = buildString {
+        append("Each opponent discards ${if (count == 1) "a card" else "$count cards"}")
+        if (controllerDrawsPerDiscard > 0) {
+            append(". You draw a card for each card discarded this way")
+        }
+    }
 }
 
 /**

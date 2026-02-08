@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.effects.EffectExecutorRegistry
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
 import com.wingedsheep.engine.handlers.effects.drawing.BlackmailExecutor
+import com.wingedsheep.engine.handlers.effects.drawing.EachOpponentDiscardsExecutor
 import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerDiscardsDrawsExecutor
 import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerMayDrawExecutor
 import com.wingedsheep.engine.mechanics.combat.CombatManager
@@ -126,9 +127,19 @@ class ContinuationHandler(
             newState = newState.addToZone(graveyardZone, cardId)
         }
 
-        val events = listOf(
+        val events = mutableListOf<GameEvent>(
             CardsDiscardedEvent(playerId, selectedCards)
         )
+
+        // Controller draws for each card discarded (Syphon Mind)
+        if (continuation.controllerDrawsPerDiscard > 0 && continuation.controllerId != null) {
+            val drawCount = selectedCards.size * continuation.controllerDrawsPerDiscard
+            val drawResult = EachOpponentDiscardsExecutor.drawCards(
+                newState, continuation.controllerId, drawCount
+            )
+            newState = drawResult.state
+            events.addAll(drawResult.events)
+        }
 
         // Check if there are more continuations to process
         return checkForMoreContinuations(newState, events)

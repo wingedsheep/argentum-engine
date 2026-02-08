@@ -103,6 +103,7 @@ object OnslaughtSet {
         SeveredLegion,
         Smother,
         Swat,
+        SyphonMind,
         SyphonSoul,
         VisaraTheDreadful,
         WretchedAnurid,

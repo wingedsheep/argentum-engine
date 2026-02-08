@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 161 / 335
+**Implemented:** 162 / 335
 
 ---
 
@@ -294,7 +294,7 @@
 - [x] Symbiotic Beast
 - [x] Symbiotic Elf
 - [x] Symbiotic Wurm
-- [ ] Syphon Mind
+- [x] Syphon Mind
 - [x] Syphon Soul
 - [x] Taunting Elf
 - [ ] Tempting Wurm
