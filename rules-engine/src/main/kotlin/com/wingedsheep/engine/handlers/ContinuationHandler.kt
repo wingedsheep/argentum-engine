@@ -21,6 +21,7 @@ import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.PayCost
 import com.wingedsheep.sdk.scripting.SearchDestination
 
 /**
@@ -98,6 +99,7 @@ class ContinuationHandler(
             is PutOnBottomOfLibraryContinuation -> resumePutOnBottomOfLibrary(stateAfterPop, continuation, response)
             is ModalContinuation -> resumeModal(stateAfterPop, continuation, response)
             is ModalTargetContinuation -> resumeModalTarget(stateAfterPop, continuation, response)
+            is AnyPlayerMayPayContinuation -> resumeAnyPlayerMayPay(stateAfterPop, continuation, response)
             is PendingTriggersContinuation -> {
                 // This should not be popped directly by a decision response.
                 // It's handled by checkForMoreContinuations after the preceding trigger resolves.
@@ -1628,6 +1630,127 @@ class ContinuationHandler(
         )
 
         return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume after a player decides whether to pay for "any player may [cost]" effects.
+     */
+    private fun resumeAnyPlayerMayPay(
+        state: GameState,
+        continuation: AnyPlayerMayPayContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for any player may pay")
+        }
+
+        val selectedPermanents = response.selectedCards
+        val playerId = continuation.currentPlayerId
+
+        // If player selected enough permanents, they paid the cost
+        if (selectedPermanents.size >= continuation.requiredCount) {
+            // Sacrifice the selected permanents
+            val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
+            val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
+            var newState = state
+            val events = mutableListOf<GameEvent>()
+
+            for (permanentId in selectedPermanents) {
+                val permanentName = newState.getEntity(permanentId)?.get<CardComponent>()?.name ?: "Unknown"
+                newState = newState.removeFromZone(battlefieldZone, permanentId)
+                newState = newState.addToZone(graveyardZone, permanentId)
+                events.add(
+                    ZoneChangeEvent(
+                        entityId = permanentId,
+                        entityName = permanentName,
+                        fromZone = Zone.BATTLEFIELD,
+                        toZone = Zone.GRAVEYARD,
+                        ownerId = playerId
+                    )
+                )
+            }
+            events.add(0, PermanentsSacrificedEvent(playerId, selectedPermanents))
+
+            // Now execute the consequence (e.g., sacrifice the source)
+            val context = EffectContext(
+                sourceId = continuation.sourceId,
+                controllerId = continuation.controllerId,
+                opponentId = null
+            )
+            val consequenceResult = effectExecutorRegistry.execute(newState, continuation.consequence, context)
+            val allEvents = events + consequenceResult.events
+
+            return if (consequenceResult.isPaused) {
+                consequenceResult
+            } else {
+                checkForMoreContinuations(consequenceResult.state, allEvents)
+            }
+        }
+
+        // Player declined - find next player who can pay
+        return askNextPlayerForAnyPlayerMayPay(state, continuation)
+    }
+
+    /**
+     * Find and ask the next eligible player for "any player may [cost]" effects.
+     * If no player can pay, nothing happens and execution continues.
+     */
+    private fun askNextPlayerForAnyPlayerMayPay(
+        state: GameState,
+        continuation: AnyPlayerMayPayContinuation
+    ): ExecutionResult {
+        val predicateEvaluator = PredicateEvaluator()
+        val cost = continuation.cost
+
+        // Find next player who can pay among remaining players
+        for ((index, nextPlayerId) in continuation.remainingPlayers.withIndex()) {
+            if (cost is PayCost.Sacrifice) {
+                val battlefieldZone = ZoneKey(nextPlayerId, Zone.BATTLEFIELD)
+                val battlefield = state.getZone(battlefieldZone)
+                val context = PredicateContext(controllerId = nextPlayerId)
+
+                val validPermanents = battlefield.filter { permanentId ->
+                    predicateEvaluator.matches(state, permanentId, cost.filter, context)
+                }
+
+                if (validPermanents.size >= cost.count) {
+                    // This player can pay - ask them
+                    val prompt = "You may sacrifice ${cost.count} ${cost.filter.description}s to cause ${continuation.sourceName} to be sacrificed, or skip"
+                    val decisionHandler = DecisionHandler()
+
+                    val decisionResult = decisionHandler.createCardSelectionDecision(
+                        state = state,
+                        playerId = nextPlayerId,
+                        sourceId = continuation.sourceId,
+                        sourceName = continuation.sourceName,
+                        prompt = prompt,
+                        options = validPermanents,
+                        minSelections = 0,
+                        maxSelections = cost.count,
+                        ordered = false,
+                        phase = DecisionPhase.RESOLUTION,
+                        useTargetingUI = true
+                    )
+
+                    val newContinuation = continuation.copy(
+                        decisionId = decisionResult.pendingDecision!!.id,
+                        currentPlayerId = nextPlayerId,
+                        remainingPlayers = continuation.remainingPlayers.drop(index + 1)
+                    )
+
+                    val stateWithContinuation = decisionResult.state.pushContinuation(newContinuation)
+
+                    return ExecutionResult.paused(
+                        stateWithContinuation,
+                        decisionResult.pendingDecision,
+                        decisionResult.events
+                    )
+                }
+            }
+        }
+
+        // No player can pay - nothing happens, Pangolin stays
+        return checkForMoreContinuations(state, emptyList())
     }
 
     /**

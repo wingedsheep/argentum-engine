@@ -8,6 +8,7 @@ import com.wingedsheep.engine.handlers.effects.ExecutorModule
  */
 class RemovalExecutors : ExecutorModule {
     override fun executors(): List<EffectExecutor<*>> = listOf(
+        AnyPlayerMayPayExecutor(),
         ChooseCreatureTypeReturnExecutor(),
         DestroyAllExecutor(),
         CantBeRegeneratedExecutor(),

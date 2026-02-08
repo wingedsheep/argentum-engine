@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.Effect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GroupFilter
+import com.wingedsheep.sdk.scripting.PayCost
 import com.wingedsheep.sdk.scripting.SearchDestination
 import com.wingedsheep.sdk.targeting.TargetRequirement
 import kotlinx.serialization.Serializable
@@ -865,4 +866,34 @@ data class ModalTargetContinuation(
     val effect: Effect,
     val xValue: Int? = null,
     val opponentId: EntityId? = null
+) : ContinuationFrame
+
+/**
+ * Resume after a player decides whether to pay a cost for "any player may [cost]" effects.
+ *
+ * Each player in APNAP order gets the chance to pay. If the current player pays,
+ * the consequence is executed immediately. If they decline, we move to the next player.
+ *
+ * @property currentPlayerId The player currently being asked
+ * @property remainingPlayers Players still to be asked after the current one
+ * @property sourceId The source permanent
+ * @property sourceName Name of the source for display
+ * @property controllerId The controller of the source permanent
+ * @property cost The cost being offered
+ * @property consequence The effect to execute if any player pays
+ * @property requiredCount Number of items required (for sacrifice costs)
+ * @property filter The filter for valid selections (for sacrifice costs)
+ */
+@Serializable
+data class AnyPlayerMayPayContinuation(
+    override val decisionId: String,
+    val currentPlayerId: EntityId,
+    val remainingPlayers: List<EntityId>,
+    val sourceId: EntityId,
+    val sourceName: String,
+    val controllerId: EntityId,
+    val cost: PayCost,
+    val consequence: Effect,
+    val requiredCount: Int,
+    val filter: GameObjectFilter
 ) : ContinuationFrame

@@ -281,3 +281,25 @@ data class TapCreatureForEffectEffect(
         append(innerEffect.description.replaceFirstChar { it.lowercase() })
     }
 }
+
+/**
+ * "Any player may [cost]. If a player does, [consequence]."
+ *
+ * Each player in APNAP order gets the chance to pay the cost. As soon as
+ * any player does, the consequence is executed and no further players are asked.
+ * If no player pays, nothing happens.
+ *
+ * Example: Prowling Pangolin - "Any player may sacrifice two creatures.
+ * If a player does, sacrifice Prowling Pangolin."
+ *
+ * @property cost The cost any player may choose to pay
+ * @property consequence The effect that happens if a player pays
+ */
+@Serializable
+data class AnyPlayerMayPayEffect(
+    val cost: PayCost,
+    val consequence: Effect
+) : Effect {
+    override val description: String =
+        "Any player may ${cost.description}. If a player does, ${consequence.description}"
+}

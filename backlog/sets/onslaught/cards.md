@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 191 / 335
+**Implemented:** 192 / 335
 
 ---
 
@@ -223,7 +223,7 @@
 - [ ] Polluted Delta
 - [ ] Primal Boost
 - [x] Profane Prayers
-- [ ] Prowling Pangolin
+- [x] Prowling Pangolin
 - [ ] Psychic Trance
 - [ ] Quicksilver Dragon
 - [x] Ravenous Baloth

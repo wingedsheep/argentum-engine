@@ -1,0 +1,40 @@
+package com.wingedsheep.mtg.sets.definitions.onslaught.cards
+
+import com.wingedsheep.sdk.dsl.Triggers
+import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.AnyPlayerMayPayEffect
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.PayCost
+import com.wingedsheep.sdk.scripting.SacrificeSelfEffect
+
+/**
+ * Prowling Pangolin
+ * {3}{B}{B}
+ * Creature — Pangolin Beast
+ * 6/5
+ * When Prowling Pangolin enters the battlefield, any player may sacrifice
+ * two creatures. If a player does, sacrifice Prowling Pangolin.
+ */
+val ProwlingPangolin = card("Prowling Pangolin") {
+    manaCost = "{3}{B}{B}"
+    typeLine = "Creature — Pangolin Beast"
+    power = 6
+    toughness = 5
+
+    triggeredAbility {
+        trigger = Triggers.EntersBattlefield
+        effect = AnyPlayerMayPayEffect(
+            cost = PayCost.Sacrifice(GameObjectFilter.Creature, count = 2),
+            consequence = SacrificeSelfEffect
+        )
+    }
+
+    metadata {
+        rarity = Rarity.UNCOMMON
+        collectorNumber = "163"
+        artist = "Heather Hudson"
+        flavorText = "\"It's always hungry, yet easily sated.\""
+        imageUri = "https://cards.scryfall.io/large/front/b/6/b6bf8191-3154-48d7-a49b-4d07b5e35a15.jpg?1580014350"
+    }
+}
