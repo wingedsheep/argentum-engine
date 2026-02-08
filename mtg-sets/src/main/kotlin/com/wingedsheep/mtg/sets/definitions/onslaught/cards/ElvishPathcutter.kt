@@ -36,6 +36,6 @@ val ElvishPathcutter = card("Elvish Pathcutter") {
         collectorNumber = "256"
         artist = "Todd Lockwood"
         flavorText = "In harsh times, the strongest currency is cooperation."
-        imageUri = "https://cards.scryfall.io/large/front/6/0/60aa6e4a-6ce5-42e0-89c5-71fa3b7a67f2.jpg?1562913274"
+        imageUri = "https://cards.scryfall.io/large/front/c/7/c7d810b8-1a15-46cc-9d9d-871ac43b7036.jpg?1562942208"
     }
 }
