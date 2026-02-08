@@ -48,6 +48,7 @@ object OnslaughtSet {
         DaruLancer,
         DiscipleOfGrace,
         GlorySeeker,
+        IronfistCrusher,
         PearlspearCourier,
         Whipcorder,
 

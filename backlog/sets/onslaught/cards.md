@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 167 / 335
+**Implemented:** 168 / 335
 
 ---
 
@@ -174,7 +174,7 @@
 - [x] Inspirit
 - [ ] Insurrection
 - [x] Invigorating Boon
-- [ ] Ironfist Crusher
+- [x] Ironfist Crusher
 - [x] Island
 - [ ] Ixidor, Reality Sculptor
 - [ ] Ixidor's Will

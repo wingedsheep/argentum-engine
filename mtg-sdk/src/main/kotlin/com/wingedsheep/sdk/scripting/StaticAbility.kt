@@ -397,6 +397,19 @@ data class CantBeBlockedByMoreThan(
     }"
 }
 
+/**
+ * This creature can block any number of creatures.
+ * Used for Ironfist Crusher and similar cards.
+ *
+ * @property target What this ability applies to
+ */
+@Serializable
+data class CanBlockAnyNumber(
+    val target: StaticTarget = StaticTarget.SourceCreature
+) : StaticAbility {
+    override val description: String = "can block any number of creatures"
+}
+
 // =============================================================================
 // Counter-Based Static Abilities
 // =============================================================================
