@@ -90,3 +90,13 @@ data object OpponentControlsMoreLands : Condition {
 data class APlayerControlsMostOfSubtype(val subtype: Subtype) : Condition {
     override val description: String = "if a player controls more ${subtype.value}s than each other player"
 }
+
+/**
+ * Condition: "If target creature's power is less than or equal to [amount]"
+ * Used by Unified Strike and similar cards that compare a target's power to a dynamic count.
+ * Checks the first target (ContextTarget(0)) by default.
+ */
+@Serializable
+data class TargetPowerAtMost(val amount: DynamicAmount, val targetIndex: Int = 0) : Condition {
+    override val description: String = "if its power is less than or equal to ${amount.description}"
+}

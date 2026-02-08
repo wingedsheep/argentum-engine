@@ -81,6 +81,13 @@ object Conditions {
     fun APlayerControlsMostOfSubtype(subtype: Subtype): ConditionInterface =
         com.wingedsheep.sdk.scripting.APlayerControlsMostOfSubtype(subtype)
 
+    /**
+     * If the target creature's power is at most the given dynamic amount.
+     * Used for cards like Unified Strike.
+     */
+    fun TargetPowerAtMost(amount: com.wingedsheep.sdk.scripting.DynamicAmount, targetIndex: Int = 0): ConditionInterface =
+        com.wingedsheep.sdk.scripting.TargetPowerAtMost(amount, targetIndex)
+
     // =========================================================================
     // Life Total Conditions
     // =========================================================================

@@ -51,6 +51,7 @@ object OnslaughtSet {
         GlorySeeker,
         IronfistCrusher,
         PearlspearCourier,
+        UnifiedStrike,
         Whipcorder,
 
         // Blue creatures and spells

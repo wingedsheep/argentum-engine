@@ -313,7 +313,7 @@
 - [ ] True Believer
 - [ ] Undead Gladiator
 - [ ] Unholy Grotto
-- [ ] Unified Strike
+- [x] Unified Strike
 - [x] Venomspout Brackus
 - [x] Visara the Dreadful
 - [x] Vitality Charm
