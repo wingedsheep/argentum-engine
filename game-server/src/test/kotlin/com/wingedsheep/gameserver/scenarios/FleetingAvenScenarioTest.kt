@@ -94,8 +94,8 @@ class FleetingAvenScenarioTest : ScenarioTestBase() {
                     .build()
 
                 // Pass priority without cycling anything
-                game.passPriority(1)
-                game.passPriority(2)
+                game.passPriority()
+                game.passPriority()
 
                 // Fleeting Aven should still be on the battlefield
                 withClue("Fleeting Aven should remain on the battlefield when no cycling occurs") {
