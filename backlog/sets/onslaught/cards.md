@@ -125,7 +125,7 @@
 - [ ] False Cure
 - [x] Feeding Frenzy
 - [x] Festering Goblin
-- [ ] Fever Charm
+- [x] Fever Charm
 - [x] Flamestick Courier
 - [x] Fleeting Aven
 - [ ] Flooded Strand

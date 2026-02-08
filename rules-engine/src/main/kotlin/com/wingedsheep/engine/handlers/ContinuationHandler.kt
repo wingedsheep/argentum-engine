@@ -34,7 +34,8 @@ class ContinuationHandler(
     private val effectExecutorRegistry: EffectExecutorRegistry,
     private val stackResolver: StackResolver = StackResolver(),
     private val triggerProcessor: com.wingedsheep.engine.event.TriggerProcessor? = null,
-    private val combatManager: CombatManager? = null
+    private val combatManager: CombatManager? = null,
+    private val targetFinder: TargetFinder = TargetFinder()
 ) {
 
     /**
@@ -94,14 +95,14 @@ class ContinuationHandler(
             is ChooseCreatureTypeRevealTopContinuation -> resumeChooseCreatureTypeRevealTop(stateAfterPop, continuation, response)
             is CounterUnlessPaysContinuation -> resumeCounterUnlessPays(stateAfterPop, continuation, response)
             is PutOnBottomOfLibraryContinuation -> resumePutOnBottomOfLibrary(stateAfterPop, continuation, response)
+            is ModalContinuation -> resumeModal(stateAfterPop, continuation, response)
+            is ModalTargetContinuation -> resumeModalTarget(stateAfterPop, continuation, response)
             is PendingTriggersContinuation -> {
                 // This should not be popped directly by a decision response.
                 // It's handled by checkForMoreContinuations after the preceding trigger resolves.
                 ExecutionResult.error(state, "PendingTriggersContinuation should not be at top of stack during decision resume")
             }
             is MayTriggerContinuation -> resumeMayTrigger(stateAfterPop, continuation, response)
-            is ModalContinuation -> ExecutionResult.error(state, "ModalContinuation not yet implemented")
-            is ModalTargetContinuation -> ExecutionResult.error(state, "ModalTargetContinuation not yet implemented")
         }
     }
 
@@ -2305,6 +2306,170 @@ class ContinuationHandler(
     }
 
     /**
+     * Resume after player chose a mode for a modal spell.
+     *
+     * After mode selection:
+     * - If the chosen mode has target requirements, pause for target selection.
+     * - If the chosen mode has no targets, execute the effect directly.
+     */
+    private fun resumeModal(
+        state: GameState,
+        continuation: ModalContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is OptionChosenResponse) {
+            return ExecutionResult.error(state, "Expected option response for modal spell")
+        }
+
+        val modeIndex = response.optionIndex
+        if (modeIndex < 0 || modeIndex >= continuation.modes.size) {
+            return ExecutionResult.error(state, "Invalid mode index: $modeIndex")
+        }
+
+        val chosenMode = continuation.modes[modeIndex]
+
+        // If the chosen mode has target requirements, pause for target selection
+        if (chosenMode.targetRequirements.isNotEmpty()) {
+            val sourceId = continuation.sourceId
+            val sourceName = continuation.sourceName ?: "modal spell"
+
+            // Find valid targets for each requirement
+            val legalTargetsMap = mutableMapOf<Int, List<EntityId>>()
+            val requirementInfos = chosenMode.targetRequirements.mapIndexed { index, req ->
+                val legalTargets = targetFinder.findLegalTargets(
+                    state = state,
+                    requirement = req,
+                    controllerId = continuation.controllerId,
+                    sourceId = sourceId
+                )
+                legalTargetsMap[index] = legalTargets
+                TargetRequirementInfo(
+                    index = index,
+                    description = req.description,
+                    minTargets = req.effectiveMinCount,
+                    maxTargets = req.count
+                )
+            }
+
+            // Check if all requirements can be satisfied
+            val allSatisfied = requirementInfos.all { info ->
+                (legalTargetsMap[info.index]?.isNotEmpty() == true) || info.minTargets == 0
+            }
+
+            if (!allSatisfied) {
+                // No valid targets for the chosen mode - fizzle
+                return checkForMoreContinuations(state, emptyList())
+            }
+
+            // If single target requirement with exactly one valid target, auto-select
+            if (chosenMode.targetRequirements.size == 1) {
+                val req = chosenMode.targetRequirements[0]
+                val targets = legalTargetsMap[0] ?: emptyList()
+                if (targets.size == 1 && req.count == 1) {
+                    // Auto-select the single target
+                    val chosenTarget = entityIdToChosenTarget(state, targets[0])
+                    val context = EffectContext(
+                        sourceId = sourceId,
+                        controllerId = continuation.controllerId,
+                        opponentId = continuation.opponentId,
+                        xValue = continuation.xValue,
+                        targets = listOf(chosenTarget)
+                    )
+                    val result = effectExecutorRegistry.execute(state, chosenMode.effect, context)
+                    if (result.isPaused) return result
+                    return checkForMoreContinuations(result.state, result.events.toList())
+                }
+            }
+
+            // Create target selection decision
+            val decisionId = java.util.UUID.randomUUID().toString()
+            val decision = ChooseTargetsDecision(
+                id = decisionId,
+                playerId = continuation.controllerId,
+                prompt = "Choose targets for $sourceName",
+                context = DecisionContext(
+                    sourceId = sourceId,
+                    sourceName = sourceName,
+                    phase = DecisionPhase.RESOLUTION
+                ),
+                targetRequirements = requirementInfos,
+                legalTargets = legalTargetsMap
+            )
+
+            val modalTargetContinuation = ModalTargetContinuation(
+                decisionId = decisionId,
+                controllerId = continuation.controllerId,
+                sourceId = sourceId,
+                sourceName = sourceName,
+                effect = chosenMode.effect,
+                xValue = continuation.xValue,
+                opponentId = continuation.opponentId
+            )
+
+            val stateWithDecision = state.withPendingDecision(decision)
+            val stateWithContinuation = stateWithDecision.pushContinuation(modalTargetContinuation)
+
+            return ExecutionResult.paused(
+                stateWithContinuation,
+                decision,
+                listOf(
+                    DecisionRequestedEvent(
+                        decisionId = decisionId,
+                        playerId = continuation.controllerId,
+                        decisionType = "CHOOSE_TARGETS",
+                        prompt = decision.prompt
+                    )
+                )
+            )
+        }
+
+        // No targets needed - execute the effect directly
+        val context = EffectContext(
+            sourceId = continuation.sourceId,
+            controllerId = continuation.controllerId,
+            opponentId = continuation.opponentId,
+            xValue = continuation.xValue
+        )
+
+        val result = effectExecutorRegistry.execute(state, chosenMode.effect, context)
+        if (result.isPaused) return result
+        return checkForMoreContinuations(result.state, result.events.toList())
+    }
+
+    /**
+     * Resume after player selected targets for a modal spell mode.
+     * Execute the chosen mode's effect with the selected targets.
+     */
+    private fun resumeModalTarget(
+        state: GameState,
+        continuation: ModalTargetContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is TargetsResponse) {
+            return ExecutionResult.error(state, "Expected targets response for modal spell")
+        }
+
+        // Convert selected targets to ChosenTargets
+        val chosenTargets = response.selectedTargets.flatMap { (_, targetIds) ->
+            targetIds.map { targetId ->
+                entityIdToChosenTarget(state, targetId)
+            }
+        }
+
+        val context = EffectContext(
+            sourceId = continuation.sourceId,
+            controllerId = continuation.controllerId,
+            opponentId = continuation.opponentId,
+            xValue = continuation.xValue,
+            targets = chosenTargets
+        )
+
+        val result = effectExecutorRegistry.execute(state, continuation.effect, context)
+        if (result.isPaused) return result
+        return checkForMoreContinuations(result.state, result.events.toList())
+    }
+
+    /**
      * Check if there are more continuation frames to process.
      * If there's an EffectContinuation waiting, process it.
      */
@@ -2525,5 +2690,27 @@ class ContinuationHandler(
         }
 
         return ExecutionResult.success(newState, events)
+    }
+
+    /**
+     * Convert an EntityId to the appropriate ChosenTarget type based on where it is in the game.
+     */
+    private fun entityIdToChosenTarget(state: GameState, entityId: EntityId): ChosenTarget {
+        return when {
+            entityId in state.turnOrder -> ChosenTarget.Player(entityId)
+            entityId in state.getBattlefield() -> ChosenTarget.Permanent(entityId)
+            entityId in state.stack -> ChosenTarget.Spell(entityId)
+            else -> {
+                val graveyardOwner = state.turnOrder.find { playerId ->
+                    val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
+                    entityId in state.getZone(graveyardZone)
+                }
+                if (graveyardOwner != null) {
+                    ChosenTarget.Card(entityId, graveyardOwner, Zone.GRAVEYARD)
+                } else {
+                    ChosenTarget.Permanent(entityId)
+                }
+            }
+        }
     }
 }
