@@ -82,6 +82,7 @@ object OnslaughtSet {
         SageAven,
         ScreamingSeahawk,
         SlipstreamEel,
+        TrickeryCharm,
 
         // Black creatures and spells
         AccursedCentaur,

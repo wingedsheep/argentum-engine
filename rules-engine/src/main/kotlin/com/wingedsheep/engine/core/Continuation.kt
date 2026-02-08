@@ -757,6 +757,28 @@ data class ChooseCreatureTypeRevealTopContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after player chooses a creature type for a "becomes the creature type
+ * of your choice" effect.
+ *
+ * @property controllerId The player who controls the spell/ability
+ * @property sourceId The spell/ability that caused this effect
+ * @property sourceName Name of the source for event messages
+ * @property targetId The creature whose type will change
+ * @property creatureTypes The creature type options (indexed by OptionChosenResponse.optionIndex)
+ * @property duration How long the type change lasts
+ */
+@Serializable
+data class BecomeCreatureTypeContinuation(
+    override val decisionId: String,
+    val controllerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val targetId: EntityId,
+    val creatureTypes: List<String>,
+    val duration: Duration
+) : ContinuationFrame
+
+/**
  * Resume after the spell's controller decides whether to pay a mana cost
  * to prevent their spell from being countered.
  *

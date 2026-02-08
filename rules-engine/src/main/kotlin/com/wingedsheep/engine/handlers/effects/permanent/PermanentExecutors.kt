@@ -32,6 +32,7 @@ class PermanentExecutors(
         TurnFaceDownExecutor(),
         TurnFaceUpExecutor(),
         GrantTriggeredAbilityUntilEndOfTurnExecutor(),
-        GrantToEnchantedCreatureTypeGroupExecutor()
+        GrantToEnchantedCreatureTypeGroupExecutor(),
+        BecomeCreatureTypeExecutor()
     )
 }

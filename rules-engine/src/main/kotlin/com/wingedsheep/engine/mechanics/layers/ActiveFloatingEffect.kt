@@ -172,6 +172,13 @@ sealed interface SerializableModification {
      */
     @Serializable
     data object CantBeRegenerated : SerializableModification
+
+    /**
+     * Replace all creature subtypes with the given set of subtypes.
+     * Used by Trickery Charm: "Target creature becomes the creature type of your choice until end of turn."
+     */
+    @Serializable
+    data class SetCreatureSubtypes(val subtypes: Set<String>) : SerializableModification
 }
 
 /**
@@ -205,4 +212,5 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.CantBeRegenerated -> Modification.NoOp
     // PreventAllCombatDamage doesn't map to a layer modification - it's checked by CombatManager directly
     is SerializableModification.PreventAllCombatDamage -> Modification.NoOp
+    is SerializableModification.SetCreatureSubtypes -> Modification.SetCreatureSubtypes(subtypes)
 }

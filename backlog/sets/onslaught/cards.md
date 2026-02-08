@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 188 / 335
+**Implemented:** 189 / 335
 
 ---
 
@@ -309,7 +309,7 @@
 - [x] Treespring Lorian
 - [ ] Tribal Golem
 - [ ] Tribal Unity
-- [ ] Trickery Charm
+- [x] Trickery Charm
 - [ ] True Believer
 - [ ] Undead Gladiator
 - [ ] Unholy Grotto

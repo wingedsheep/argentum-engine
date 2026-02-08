@@ -646,7 +646,8 @@ object ClientEventTransformer {
             is TurnFaceUpEvent,
             is TurnedFaceDownEvent,
             is CardCycledEvent,
-            is ControlChangedEvent -> null
+            is ControlChangedEvent,
+            is CreatureTypeChangedEvent -> null
         }
     }
 }

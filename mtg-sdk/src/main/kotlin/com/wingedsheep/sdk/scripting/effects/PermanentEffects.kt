@@ -366,6 +366,24 @@ data class TurnFaceUpEffect(
 }
 
 /**
+ * Target creature becomes the creature type of your choice until end of turn.
+ * This replaces all creature subtypes with the chosen type.
+ *
+ * @property target The creature to change
+ * @property duration How long the type change lasts
+ */
+@Serializable
+data class BecomeCreatureTypeEffect(
+    val target: EffectTarget,
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    override val description: String = buildString {
+        append("${target.description} becomes the creature type of your choice")
+        if (duration.description.isNotEmpty()) append(" ${duration.description}")
+    }
+}
+
+/**
  * Grant stats and/or a keyword to the enchanted creature and all other creatures
  * that share a creature type with it.
  *

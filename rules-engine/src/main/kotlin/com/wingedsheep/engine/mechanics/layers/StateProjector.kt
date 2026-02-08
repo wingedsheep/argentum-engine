@@ -588,6 +588,15 @@ class StateProjector(
                 is Modification.RemoveType -> {
                     values.types.remove(mod.type)
                 }
+                is Modification.SetCreatureSubtypes -> {
+                    // Remove all creature subtypes from types and subtypes sets
+                    val creatureTypes = com.wingedsheep.sdk.core.Subtype.ALL_CREATURE_TYPES.toSet()
+                    values.subtypes.removeAll { it in creatureTypes }
+                    values.types.removeAll { it in creatureTypes }
+                    // Add the new creature subtypes
+                    values.subtypes.addAll(mod.subtypes)
+                    values.types.addAll(mod.subtypes)
+                }
                 is Modification.ChangeController -> {
                     values.controllerId = mod.newControllerId
                 }
@@ -789,6 +798,13 @@ sealed interface Modification {
      */
     @Serializable
     data class AddSubtype(val subtype: String) : Modification
+
+    /**
+     * Replace all creature subtypes with the given set.
+     * Used by "becomes the creature type of your choice" effects.
+     */
+    @Serializable
+    data class SetCreatureSubtypes(val subtypes: Set<String>) : Modification
     @Serializable
     data class ChangeController(val newControllerId: EntityId) : Modification
 

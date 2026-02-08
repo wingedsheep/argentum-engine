@@ -96,6 +96,18 @@ data class KeywordGrantedEvent(
     val sourceName: String
 ) : GameEvent
 
+/**
+ * A creature's type was changed (e.g., "becomes a Goblin until end of turn").
+ */
+@Serializable
+@SerialName("CreatureTypeChangedEvent")
+data class CreatureTypeChangedEvent(
+    val targetId: EntityId,
+    val targetName: String,
+    val newType: String,
+    val sourceName: String
+) : GameEvent
+
 // =============================================================================
 // Spell/Ability Events
 // =============================================================================

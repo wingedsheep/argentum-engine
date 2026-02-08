@@ -93,6 +93,7 @@ class ContinuationHandler(
             is BlackmailRevealContinuation -> resumeBlackmailReveal(stateAfterPop, continuation, response)
             is BlackmailChooseContinuation -> resumeBlackmailChoose(stateAfterPop, continuation, response)
             is ChooseCreatureTypeRevealTopContinuation -> resumeChooseCreatureTypeRevealTop(stateAfterPop, continuation, response)
+            is BecomeCreatureTypeContinuation -> resumeBecomeCreatureType(stateAfterPop, continuation, response)
             is CounterUnlessPaysContinuation -> resumeCounterUnlessPays(stateAfterPop, continuation, response)
             is PutOnBottomOfLibraryContinuation -> resumePutOnBottomOfLibrary(stateAfterPop, continuation, response)
             is ModalContinuation -> resumeModal(stateAfterPop, continuation, response)
@@ -2301,6 +2302,67 @@ class ContinuationHandler(
                 )
             )
         }
+
+        return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume after player chose a creature type for a "becomes the creature type
+     * of your choice" effect. Creates a floating effect that replaces all creature
+     * subtypes with the chosen type.
+     */
+    private fun resumeBecomeCreatureType(
+        state: GameState,
+        continuation: BecomeCreatureTypeContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is OptionChosenResponse) {
+            return ExecutionResult.error(state, "Expected option choice response for creature type selection")
+        }
+
+        val chosenType = continuation.creatureTypes.getOrNull(response.optionIndex)
+            ?: return ExecutionResult.error(state, "Invalid creature type index: ${response.optionIndex}")
+
+        val targetId = continuation.targetId
+
+        // Target must still be on the battlefield
+        if (targetId !in state.getBattlefield()) {
+            return checkForMoreContinuations(state, emptyList())
+        }
+
+        val targetCard = state.getEntity(targetId)?.get<CardComponent>()
+        val targetName = targetCard?.name ?: "creature"
+
+        // Create a floating effect that sets creature subtypes
+        val floatingEffect = com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect(
+            id = EntityId.generate(),
+            effect = com.wingedsheep.engine.mechanics.layers.FloatingEffectData(
+                layer = com.wingedsheep.engine.mechanics.layers.Layer.TYPE,
+                sublayer = null,
+                modification = com.wingedsheep.engine.mechanics.layers.SerializableModification.SetCreatureSubtypes(
+                    subtypes = setOf(chosenType)
+                ),
+                affectedEntities = setOf(targetId)
+            ),
+            duration = continuation.duration,
+            sourceId = continuation.sourceId,
+            sourceName = continuation.sourceName,
+            controllerId = continuation.controllerId,
+            timestamp = System.currentTimeMillis()
+        )
+
+        val newState = state.copy(
+            floatingEffects = state.floatingEffects + floatingEffect
+        )
+
+        val events = listOf(
+            CreatureTypeChangedEvent(
+                targetId = targetId,
+                targetName = targetName,
+                newType = chosenType,
+                sourceName = continuation.sourceName ?: "Unknown"
+            )
+        )
 
         return checkForMoreContinuations(newState, events)
     }
