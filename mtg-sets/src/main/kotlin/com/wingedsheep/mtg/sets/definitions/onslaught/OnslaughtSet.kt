@@ -193,6 +193,7 @@ object OnslaughtSet {
         WirewoodHerald,
         WirewoodSavage,
         WirewoodPride,
+        VitalityCharm,
 
         // Lands
         BloodstainedMire,

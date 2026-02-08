@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 168 / 335
+**Implemented:** 169 / 335
 
 ---
 
@@ -316,7 +316,7 @@
 - [ ] Unified Strike
 - [x] Venomspout Brackus
 - [x] Visara the Dreadful
-- [ ] Vitality Charm
+- [x] Vitality Charm
 - [ ] Voice of the Woods
 - [ ] Voidmage Prodigy
 - [ ] Walking Desecration
