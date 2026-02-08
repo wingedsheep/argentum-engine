@@ -1839,12 +1839,9 @@ class GameSession(
             // Must be untapped
             if (container.has<TappedComponent>()) return@filter false
 
-            // Creatures with summoning sickness can't be tapped for costs (unless they have haste)
-            if (cardComponent.typeLine.isCreature) {
-                val hasSummoningSickness = container.has<SummoningSicknessComponent>()
-                val hasHaste = cardComponent.baseKeywords.contains(Keyword.HASTE)
-                if (hasSummoningSickness && !hasHaste) return@filter false
-            }
+            // Note: summoning sickness does NOT prevent creatures from being tapped by
+            // another permanent's TapPermanents cost (it only restricts attacking and
+            // activating the creature's own {T} abilities)
 
             predicateEvaluator.matches(state, entityId, filter, predicateContext)
         }

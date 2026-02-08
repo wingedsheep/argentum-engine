@@ -80,6 +80,59 @@ class AncestorsProphetScenarioTest : ScenarioTestBase() {
                 }
             }
 
+            test("can tap clerics with summoning sickness for the cost") {
+                // Summoning sickness only prevents a creature from attacking or
+                // activating its own {T} abilities. Other permanents can still tap it.
+                val game = scenario()
+                    .withPlayers("ClericMaster", "Opponent")
+                    .withCardOnBattlefield(1, "Ancestor's Prophet", summoningSickness = false)
+                    .withCardOnBattlefield(1, "Nova Cleric", summoningSickness = true)
+                    .withCardOnBattlefield(1, "Battlefield Medic", summoningSickness = true)
+                    .withCardOnBattlefield(1, "Daru Healer", summoningSickness = true)
+                    .withCardOnBattlefield(1, "Whipcorder", summoningSickness = true)
+                    .withCardOnBattlefield(1, "Disciple of Grace", summoningSickness = true)
+                    .withLifeTotal(1, 10)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val prophet = game.findPermanent("Ancestor's Prophet")!!
+                val otherClerics = game.findAllPermanents("Nova Cleric") +
+                    game.findAllPermanents("Battlefield Medic") +
+                    game.findAllPermanents("Daru Healer") +
+                    game.findAllPermanents("Whipcorder") +
+                    game.findAllPermanents("Disciple of Grace")
+
+                // Use prophet + 4 summoning-sick clerics = 5 total
+                val clericsToPay = listOf(prophet) + otherClerics.take(4)
+
+                val cardDef = cardRegistry.getCard("Ancestor's Prophet")!!
+                val ability = cardDef.script.activatedAbilities.first()
+
+                val costPayment = AdditionalCostPayment(
+                    tappedPermanents = clericsToPay
+                )
+
+                val activateResult = game.execute(
+                    ActivateAbility(
+                        playerId = game.player1Id,
+                        sourceId = prophet,
+                        abilityId = ability.id,
+                        costPayment = costPayment
+                    )
+                )
+
+                withClue("Ability should activate successfully even with summoning-sick clerics") {
+                    activateResult.error shouldBe null
+                }
+
+                game.resolveStack()
+
+                withClue("Player 1 should gain 10 life (10 -> 20)") {
+                    game.getLifeTotal(1) shouldBe 20
+                }
+            }
+
             test("cannot activate with fewer than five clerics") {
                 // Setup: Player 1 has only 3 Clerics
                 val game = scenario()
