@@ -69,6 +69,7 @@ object OnslaughtSet {
         ArtificialEvolution,
         AscendingAven,
         ChokingTethers,
+        Complicate,
         SageAven,
         SlipstreamEel,
 

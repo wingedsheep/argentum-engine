@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 165 / 335
+**Implemented:** 166 / 335
 
 ---
 
@@ -65,7 +65,7 @@
 - [ ] Circle of Solace
 - [ ] Clone
 - [x] Commando Raid
-- [ ] Complicate
+- [x] Complicate
 - [ ] Contested Cliffs
 - [ ] Convalescent Care
 - [ ] Cover of Darkness
