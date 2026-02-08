@@ -470,7 +470,7 @@ class TriggerDetector(
                     false
                 } else {
                     val projected = stateProjector.project(state)
-                    val isCreature = projected.hasType(event.entityId, "Creature")
+                    val isCreature = projected.hasType(event.entityId, "CREATURE")
                     val controllerMatches = !trigger.youControlOnly || event.ownerId == controllerId
                     isCreature && controllerMatches
                 }
