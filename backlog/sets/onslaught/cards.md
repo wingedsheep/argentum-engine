@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 173 / 335
+**Implemented:** 174 / 335
 
 ---
 
@@ -190,7 +190,7 @@
 - [x] Leery Fogbeast
 - [x] Lightning Rift
 - [x] Lonely Sandbar
-- [ ] Mage's Guile
+- [x] Mage's Guile
 - [ ] Mana Echoes
 - [ ] Meddle
 - [ ] Menacing Ogre
