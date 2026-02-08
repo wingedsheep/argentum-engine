@@ -15,6 +15,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
@@ -879,10 +880,8 @@ class ContinuationHandler(
         val playerId = continuation.playerId
         val selectedPermanents = response.selectedCards
 
-        // Move selected permanents from battlefield to graveyard
+        // Move selected permanents from battlefield to owner's graveyard
         var newState = state
-        val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
-        val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
         val events = mutableListOf<GameEvent>()
 
         if (selectedPermanents.isNotEmpty()) {
@@ -890,19 +889,29 @@ class ContinuationHandler(
         }
 
         for (permanentId in selectedPermanents) {
-            if (permanentId !in newState.getZone(battlefieldZone)) continue
+            val container = newState.getEntity(permanentId) ?: continue
+            val cardComponent = container.get<CardComponent>() ?: continue
 
-            val permanentName = newState.getEntity(permanentId)?.get<CardComponent>()?.name ?: "Unknown"
-            newState = newState.removeFromZone(battlefieldZone, permanentId)
+            // Find the actual zone (may differ from controller's zone for stolen creatures)
+            val currentZone = newState.zones.entries.find { (_, cards) -> permanentId in cards }?.key
+                ?: continue
+
+            // Sacrificed cards go to their owner's graveyard
+            val ownerId = container.get<OwnerComponent>()?.playerId
+                ?: cardComponent.ownerId
+                ?: playerId
+            val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
+
+            newState = newState.removeFromZone(currentZone, permanentId)
             newState = newState.addToZone(graveyardZone, permanentId)
 
             events.add(
                 ZoneChangeEvent(
                     entityId = permanentId,
-                    entityName = permanentName,
+                    entityName = cardComponent.name,
                     fromZone = Zone.BATTLEFIELD,
                     toZone = Zone.GRAVEYARD,
-                    ownerId = playerId
+                    ownerId = ownerId
                 )
             )
         }

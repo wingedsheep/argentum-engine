@@ -2,13 +2,16 @@ package com.wingedsheep.gameserver.scenarios
 
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.gameserver.ScenarioTestBase
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.Duration
 import io.kotest.assertions.withClue
+import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
@@ -153,6 +156,123 @@ class ThreatenScenarioTest : ScenarioTestBase() {
                 }
                 withClue("Floating control effect with EndOfTurn duration should exist") {
                     controlEffect shouldNotBe null
+                }
+            }
+        }
+
+        context("Threaten interacts with sacrifice effects") {
+            test("can sacrifice a stolen creature via Accursed Centaur ETB") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardInHand(1, "Threaten")
+                    .withCardInHand(1, "Accursed Centaur")
+                    .withLandsOnBattlefield(1, "Mountain", 3)
+                    .withLandsOnBattlefield(1, "Swamp", 1)
+                    .withCardOnBattlefield(2, "Grizzly Bears")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val opponentCreature = game.findPermanent("Grizzly Bears")!!
+
+                // Steal the opponent's creature with Threaten
+                game.castSpell(1, "Threaten", opponentCreature)
+                game.resolveStack()
+
+                // Verify we control the stolen creature
+                val projected = stateProjector.project(game.state)
+                withClue("Player 1 should control the stolen creature") {
+                    projected.getController(opponentCreature) shouldBe game.player1Id
+                }
+
+                // Cast Accursed Centaur - its ETB will require sacrificing a creature
+                val castResult = game.castSpell(1, "Accursed Centaur")
+                withClue("Cast Accursed Centaur should succeed") {
+                    castResult.error shouldBe null
+                }
+
+                // Resolve the creature spell (puts Centaur on battlefield, ETB trigger goes on stack)
+                game.resolveStack()
+
+                // ETB trigger should now be on the stack - resolve it
+                game.resolveStack()
+
+                // Player should be prompted to choose which creature to sacrifice
+                // (Accursed Centaur + stolen Grizzly Bears = 2 creatures)
+                val decision = game.state.pendingDecision
+                withClue("Should have a pending sacrifice decision") {
+                    decision shouldNotBe null
+                }
+
+                // Choose to sacrifice the stolen creature
+                game.selectCards(listOf(opponentCreature))
+
+                // The stolen creature should be in its OWNER's graveyard (Player 2), not Player 1's
+                withClue("Stolen creature should be in owner's (Player 2) graveyard") {
+                    game.isInGraveyard(2, "Grizzly Bears") shouldBe true
+                }
+                withClue("Stolen creature should NOT be in Player 1's graveyard") {
+                    game.isInGraveyard(1, "Grizzly Bears") shouldBe false
+                }
+
+                // Accursed Centaur should still be on the battlefield
+                withClue("Accursed Centaur should remain on the battlefield") {
+                    game.findPermanent("Accursed Centaur") shouldNotBe null
+                }
+
+                // The creature should no longer be on the battlefield
+                withClue("Grizzly Bears should no longer be on battlefield") {
+                    game.findPermanent("Grizzly Bears") shouldBe null
+                }
+            }
+
+            test("stolen creature is auto-sacrificed when it's the only creature") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardInHand(1, "Threaten")
+                    .withCardInHand(1, "Accursed Centaur")
+                    .withLandsOnBattlefield(1, "Mountain", 3)
+                    .withLandsOnBattlefield(1, "Swamp", 1)
+                    .withCardOnBattlefield(1, "Grizzly Bears")
+                    .withCardOnBattlefield(2, "Hill Giant")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val opponentCreature = game.findPermanent("Hill Giant")!!
+                val ownCreature = game.findPermanent("Grizzly Bears")!!
+
+                // Steal opponent's Hill Giant
+                game.castSpell(1, "Threaten", opponentCreature)
+                game.resolveStack()
+
+                // Sacrifice our own Grizzly Bears (to set up a scenario where
+                // after Centaur ETB, we only have Centaur + stolen Hill Giant)
+                // Actually, let's just cast Accursed Centaur and pick the stolen creature
+                game.castSpell(1, "Accursed Centaur")
+                game.resolveStack() // resolve creature spell
+                game.resolveStack() // resolve ETB trigger
+
+                // Should have a sacrifice decision (Accursed Centaur, Grizzly Bears, stolen Hill Giant = 3 creatures)
+                val decision = game.state.pendingDecision
+                withClue("Should have a pending sacrifice decision") {
+                    decision shouldNotBe null
+                }
+
+                // Sacrifice the stolen Hill Giant
+                game.selectCards(listOf(opponentCreature))
+
+                // Hill Giant should be in Player 2's graveyard (the owner)
+                withClue("Hill Giant should be in owner's (Player 2) graveyard") {
+                    game.isInGraveyard(2, "Hill Giant") shouldBe true
+                }
+
+                // Player 1 should still have Accursed Centaur and Grizzly Bears
+                withClue("Accursed Centaur should remain") {
+                    game.findPermanent("Accursed Centaur") shouldNotBe null
+                }
+                withClue("Grizzly Bears should remain") {
+                    game.findPermanent("Grizzly Bears") shouldNotBe null
                 }
             }
         }
