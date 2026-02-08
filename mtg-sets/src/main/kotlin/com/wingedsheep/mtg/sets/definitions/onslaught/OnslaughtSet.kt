@@ -54,6 +54,7 @@ object OnslaughtSet {
         DiscipleOfGrace,
         GlorySeeker,
         IronfistCrusher,
+        NovaCleric,
         PearlspearCourier,
         UnifiedStrike,
         Whipcorder,
