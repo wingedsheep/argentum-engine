@@ -1,6 +1,5 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
-import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
@@ -8,7 +7,7 @@ import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.GrantKeywordUntilEndOfTurnEffect
+import com.wingedsheep.sdk.scripting.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.TargetFilter
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.targeting.TargetPermanent
@@ -17,7 +16,7 @@ import com.wingedsheep.sdk.targeting.TargetPermanent
  * Goblin Burrows
  * Land
  * {T}: Add {C}.
- * {1}{R}, {T}: Target Goblin creature can't be blocked this turn.
+ * {1}{R}, {T}: Target Goblin creature gets +2/+0 until end of turn.
  */
 val GoblinBurrows = card("Goblin Burrows") {
     typeLine = "Land"
@@ -34,7 +33,7 @@ val GoblinBurrows = card("Goblin Burrows") {
         target = TargetPermanent(
             filter = TargetFilter(GameObjectFilter.Creature.withSubtype("Goblin"))
         )
-        effect = GrantKeywordUntilEndOfTurnEffect(Keyword.CANT_BE_BLOCKED, EffectTarget.ContextTarget(0))
+        effect = ModifyStatsEffect(2, 0, EffectTarget.ContextTarget(0))
     }
 
     metadata {
