@@ -378,13 +378,15 @@ class AutoPassManager {
                 true
             }
 
-            // End Step - AUTO-PASS (use per-step stop override to hold here)
-            // Players already had a chance to act during the main phase; stopping
-            // again at end step is redundant. The stop override system lets control
-            // players opt in to the classic "end of turn" window.
+            // End Step - stop if we have instant-speed responses
             Step.END -> {
-                logger.debug("AUTO-PASS: Opponent's end step")
-                true
+                if (hasInstantSpeedResponses) {
+                    logger.debug("STOP: Opponent's end step (have instant-speed responses)")
+                    false
+                } else {
+                    logger.debug("AUTO-PASS: Opponent's end step (no responses)")
+                    true
+                }
             }
 
             // Cleanup - no priority normally
