@@ -113,6 +113,7 @@ object OnslaughtSet {
         ShepherdOfRot,
         SpinedBasher,
         NantukoHusk,
+        ProwlingPangolin,
         SoullessOne,
         ScreechingBuzzard,
         SeveredLegion,
