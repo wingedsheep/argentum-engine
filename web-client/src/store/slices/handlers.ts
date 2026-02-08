@@ -596,8 +596,8 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
               activeMatches: [], // Clear - round is over, no active matches
             }
           : null,
-        gameState: null,
-        gameOverState: null,
+        // Preserve game state while game-over banner is showing so the board remains visible
+        gameState: state.gameOverState ? state.gameState : null,
         mulliganState: null,
         waitingForOpponentMulligan: false,
         legalActions: [],
@@ -624,8 +624,7 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
               currentMatchOpponentName: null,
             }
           : null,
-        gameState: null,
-        gameOverState: null,
+        gameState: state.gameOverState ? state.gameState : null,
       }))
     },
 
@@ -643,8 +642,7 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
               currentMatchOpponentName: null,
             }
           : null,
-        gameState: null,
-        gameOverState: null,
+        gameState: state.gameOverState ? state.gameState : null,
         mulliganState: null,
         waitingForOpponentMulligan: false,
         legalActions: [],

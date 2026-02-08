@@ -21,6 +21,7 @@ import { GameOverReason } from './types'
 export default function App() {
   const connectionStatus = useGameStore((state) => state.connectionStatus)
   const gameState = useGameStore((state) => state.gameState)
+  const gameOverState = useGameStore((state) => state.gameOverState)
   const mulliganState = useGameStore((state) => state.mulliganState)
   const waitingForOpponentMulligan = useGameStore((state) => state.waitingForOpponentMulligan)
   const legalActions = useGameStore((state) => state.legalActions)
@@ -184,8 +185,8 @@ export default function App() {
       {/* Disconnect countdown (shown when opponent disconnects during game) */}
       {showGame && <DisconnectCountdown />}
 
-      {/* Connection/lobby UI overlay */}
-      {showLobby && <GameUI />}
+      {/* Connection/lobby UI overlay (suppressed while game-over banner is showing) */}
+      {showLobby && !gameOverState && <GameUI />}
 
       {/* Deck building overlay (sealed/draft) */}
       {showDeckBuilder && <DeckBuilderOverlay />}
@@ -215,8 +216,8 @@ export default function App() {
       {/* Revealed cards overlay (hand reveals and library reveals) */}
       {showGame && <RevealedCardsUI />}
 
-      {/* Game over overlay */}
-      {showGame && <GameOverlay />}
+      {/* Game over overlay (rendered independently so it persists after game state clears) */}
+      <GameOverlay />
 
       {/* Spectator view (when watching another game) */}
       {spectatingState && <SpectatorGameBoard />}
