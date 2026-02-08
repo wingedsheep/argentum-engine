@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 189 / 335
+**Implemented:** 190 / 335
 
 ---
 
@@ -254,7 +254,7 @@
 - [ ] Serpentine Basilisk
 - [x] Severed Legion
 - [ ] Shade's Breath
-- [ ] Shaleskin Bruiser
+- [x] Shaleskin Bruiser
 - [ ] Shared Triumph
 - [x] Shepherd of Rot
 - [ ] Shieldmage Elder

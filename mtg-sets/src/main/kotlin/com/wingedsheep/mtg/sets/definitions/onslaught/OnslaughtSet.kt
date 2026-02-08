@@ -161,6 +161,7 @@ object OnslaughtSet {
         Starstorm,
         Sparksmith,
         SkirkProspector,
+        ShaleskinBruiser,
         SnappingThragg,
         SpurredWolverine,
         Threaten,
