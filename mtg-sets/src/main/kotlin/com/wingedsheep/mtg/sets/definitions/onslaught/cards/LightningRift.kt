@@ -1,11 +1,12 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
+import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.DealDamageEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.scripting.MayEffect
+import com.wingedsheep.sdk.scripting.MayPayManaEffect
 import com.wingedsheep.sdk.scripting.OnCycle
 
 /**
@@ -14,9 +15,6 @@ import com.wingedsheep.sdk.scripting.OnCycle
  * Enchantment
  * Whenever a player cycles a card, you may pay {1}. If you do,
  * Lightning Rift deals 2 damage to any target.
- *
- * Note: The "pay {1}" cost is approximated as a MayEffect (yes/no choice).
- * Full mana payment on triggered ability resolution would require additional engine support.
  */
 val LightningRift = card("Lightning Rift") {
     manaCost = "{1}{R}"
@@ -25,8 +23,9 @@ val LightningRift = card("Lightning Rift") {
     triggeredAbility {
         trigger = OnCycle(controllerOnly = false)
         target = Targets.Any
-        effect = MayEffect(
-            DealDamageEffect(2, EffectTarget.ContextTarget(0))
+        effect = MayPayManaEffect(
+            cost = ManaCost.parse("{1}"),
+            effect = DealDamageEffect(2, EffectTarget.ContextTarget(0))
         )
     }
 

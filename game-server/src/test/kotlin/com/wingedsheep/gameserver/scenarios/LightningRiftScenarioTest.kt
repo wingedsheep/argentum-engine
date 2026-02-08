@@ -10,33 +10,34 @@ class LightningRiftScenarioTest : ScenarioTestBase() {
 
     init {
         context("Lightning Rift") {
-            test("deals 2 damage to target creature when a card is cycled and player chooses yes") {
+            test("deals 2 damage to target creature when a card is cycled and player pays {1}") {
                 val game = scenario()
                     .withPlayers("Player1", "Opponent")
                     .withCardOnBattlefield(1, "Lightning Rift")
                     .withCardInHand(1, "Disciple of Grace") // Cycling {2}
                     .withLandsOnBattlefield(1, "Plains", 2)
+                    .withLandsOnBattlefield(1, "Mountain", 1) // Extra land for Lightning Rift's {1} cost
                     .withCardInLibrary(1, "Mountain") // Card to draw
                     .withCardOnBattlefield(2, "Glory Seeker") // 2/2 target
                     .withActivePlayer(1)
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
 
-                // Cycle - Lightning Rift triggers
+                // Cycle - Lightning Rift triggers, target selection first
                 game.cycleCard(1, "Disciple of Grace")
 
-                // MayEffect asks yes/no first
-                withClue("Lightning Rift should trigger - may decision pending") {
-                    game.hasPendingDecision() shouldBe true
-                }
-                game.answerYesNo(true)
-
-                // Select Glory Seeker as target
+                // Select Glory Seeker as target (before ability goes on stack)
                 val targetId = game.findPermanent("Glory Seeker")!!
                 game.selectTargets(listOf(targetId))
 
-                // Resolve the triggered ability on the stack
+                // Resolve the triggered ability - pauses for mana payment decision
                 game.resolveStack()
+
+                // MayPayManaEffect asks "pay {1}?"
+                withClue("Lightning Rift should ask to pay {1}") {
+                    game.hasPendingDecision() shouldBe true
+                }
+                game.answerYesNo(true)
 
                 // Glory Seeker is 2/2 and takes 2 damage - should die
                 withClue("Glory Seeker should be destroyed by 2 damage") {
@@ -44,12 +45,13 @@ class LightningRiftScenarioTest : ScenarioTestBase() {
                 }
             }
 
-            test("does not deal damage when player declines may ability") {
+            test("does not deal damage when player declines to pay") {
                 val game = scenario()
                     .withPlayers("Player1", "Opponent")
                     .withCardOnBattlefield(1, "Lightning Rift")
                     .withCardInHand(1, "Disciple of Grace")
                     .withLandsOnBattlefield(1, "Plains", 2)
+                    .withLandsOnBattlefield(1, "Mountain", 1)
                     .withCardInLibrary(1, "Mountain")
                     .withCardOnBattlefield(2, "Glory Seeker")
                     .withActivePlayer(1)
@@ -58,8 +60,43 @@ class LightningRiftScenarioTest : ScenarioTestBase() {
 
                 game.cycleCard(1, "Disciple of Grace")
 
-                // Decline the may effect (before target selection)
+                // Select target, then resolve
+                val targetId = game.findPermanent("Glory Seeker")!!
+                game.selectTargets(listOf(targetId))
+                game.resolveStack()
+
+                // Decline to pay {1}
                 game.answerYesNo(false)
+
+                // Glory Seeker should survive
+                withClue("Glory Seeker should still be on battlefield") {
+                    game.isOnBattlefield("Glory Seeker") shouldBe true
+                }
+            }
+
+            test("does not ask to pay when player has no mana available") {
+                val game = scenario()
+                    .withPlayers("Player1", "Opponent")
+                    .withCardOnBattlefield(1, "Lightning Rift")
+                    .withCardInHand(1, "Disciple of Grace")
+                    .withLandsOnBattlefield(1, "Plains", 2) // Just enough for cycling, none left for {1}
+                    .withCardInLibrary(1, "Mountain")
+                    .withCardOnBattlefield(2, "Glory Seeker")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.cycleCard(1, "Disciple of Grace")
+
+                // Select target, then resolve
+                val targetId = game.findPermanent("Glory Seeker")!!
+                game.selectTargets(listOf(targetId))
+                game.resolveStack()
+
+                // No pending decision - player can't pay, so effect is skipped automatically
+                withClue("No decision should be pending when player can't pay") {
+                    game.hasPendingDecision() shouldBe false
+                }
 
                 // Glory Seeker should survive
                 withClue("Glory Seeker should still be on battlefield") {
@@ -73,6 +110,7 @@ class LightningRiftScenarioTest : ScenarioTestBase() {
                     .withCardOnBattlefield(1, "Lightning Rift")
                     .withCardInHand(1, "Disciple of Grace")
                     .withLandsOnBattlefield(1, "Plains", 2)
+                    .withLandsOnBattlefield(1, "Mountain", 1)
                     .withCardInLibrary(1, "Mountain")
                     .withActivePlayer(1)
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
@@ -82,10 +120,10 @@ class LightningRiftScenarioTest : ScenarioTestBase() {
 
                 game.cycleCard(1, "Disciple of Grace")
 
-                // May decision first, then target opponent
-                game.answerYesNo(true)
+                // Target opponent, resolve, then pay
                 game.selectTargets(listOf(game.player2Id))
                 game.resolveStack()
+                game.answerYesNo(true)
 
                 withClue("Opponent should have lost 2 life") {
                     game.getLifeTotal(2) shouldBe opponentLife - 2

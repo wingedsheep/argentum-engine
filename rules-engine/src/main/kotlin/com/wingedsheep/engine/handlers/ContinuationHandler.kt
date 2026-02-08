@@ -10,6 +10,7 @@ import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerMayDrawExecutor
 import com.wingedsheep.engine.mechanics.combat.CombatManager
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.mechanics.mana.ManaPool
+import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
@@ -102,6 +103,7 @@ class ContinuationHandler(
             is ModalContinuation -> resumeModal(stateAfterPop, continuation, response)
             is ModalTargetContinuation -> resumeModalTarget(stateAfterPop, continuation, response)
             is AnyPlayerMayPayContinuation -> resumeAnyPlayerMayPay(stateAfterPop, continuation, response)
+            is MayPayManaContinuation -> resumeMayPayMana(stateAfterPop, continuation, response)
             is PendingTriggersContinuation -> {
                 // This should not be popped directly by a decision response.
                 // It's handled by checkForMoreContinuations after the preceding trigger resolves.
@@ -1038,6 +1040,99 @@ class ContinuationHandler(
             val counterResult = stackResolver.counterSpell(state, continuation.spellEntityId)
             return checkForMoreContinuations(counterResult.newState, counterResult.events)
         }
+    }
+
+    /**
+     * Resume after the controller decides whether to pay a mana cost for "you may pay {cost}" effects.
+     */
+    private fun resumeMayPayMana(
+        state: GameState,
+        continuation: MayPayManaContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is YesNoResponse) {
+            return ExecutionResult.error(state, "Expected yes/no response for may pay mana")
+        }
+
+        if (!response.choice) {
+            // Player declined to pay — nothing happens
+            return checkForMoreContinuations(state, emptyList())
+        }
+
+        // Player chose to pay — auto-tap sources and deduct mana
+        val playerId = continuation.playerId
+        val playerEntity = state.getEntity(playerId)
+            ?: return ExecutionResult.error(state, "Paying player not found")
+
+        val manaPoolComponent = playerEntity.get<ManaPoolComponent>()
+            ?: return ExecutionResult.error(state, "Player has no mana pool")
+
+        val manaPool = ManaPool(
+            manaPoolComponent.white,
+            manaPoolComponent.blue,
+            manaPoolComponent.black,
+            manaPoolComponent.red,
+            manaPoolComponent.green,
+            manaPoolComponent.colorless
+        )
+
+        // Try to pay from floating mana first, then tap sources for the rest
+        val partialResult = manaPool.payPartial(continuation.manaCost)
+        val remainingCost = partialResult.remainingCost
+        var currentPool = manaPool
+        var currentState = state
+        val events = mutableListOf<GameEvent>()
+
+        if (!remainingCost.isEmpty()) {
+            // Need to tap sources for the remaining cost
+            val manaSolver = ManaSolver()
+            val solution = manaSolver.solve(currentState, playerId, remainingCost)
+                ?: return ExecutionResult.error(state, "Cannot pay mana cost")
+
+            // Tap sources and add their mana to the pool
+            for (source in solution.sources) {
+                currentState = currentState.updateEntity(source.entityId) { c ->
+                    c.with(TappedComponent)
+                }
+                events.add(TappedEvent(source.entityId, source.name))
+            }
+
+            for ((_, production) in solution.manaProduced) {
+                currentPool = if (production.color != null) {
+                    currentPool.add(production.color)
+                } else {
+                    currentPool.addColorless(production.colorless)
+                }
+            }
+        }
+
+        // Deduct the cost from the pool
+        val newPool = currentPool.pay(continuation.manaCost)
+            ?: return ExecutionResult.error(state, "Cannot pay mana cost after auto-tap")
+
+        currentState = currentState.updateEntity(playerId) { container ->
+            container.with(
+                ManaPoolComponent(
+                    white = newPool.white,
+                    blue = newPool.blue,
+                    black = newPool.black,
+                    red = newPool.red,
+                    green = newPool.green,
+                    colorless = newPool.colorless
+                )
+            )
+        }
+
+        // Execute the inner effect
+        val context = continuation.toEffectContext()
+        val effectResult = effectExecutorRegistry.execute(currentState, continuation.effect, context)
+
+        if (effectResult.error != null) {
+            return effectResult
+        }
+
+        val allEvents = events + effectResult.events
+        return checkForMoreContinuations(effectResult.state, allEvents)
     }
 
     /**

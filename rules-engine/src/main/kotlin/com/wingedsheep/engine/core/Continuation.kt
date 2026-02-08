@@ -897,3 +897,41 @@ data class AnyPlayerMayPayContinuation(
     val requiredCount: Int,
     val filter: GameObjectFilter
 ) : ContinuationFrame
+
+/**
+ * Resume after the controller decides whether to pay a mana cost for an optional
+ * mana payment effect (e.g., Lightning Rift's "you may pay {1}").
+ *
+ * If the player pays, the inner effect is executed. If not, nothing happens.
+ *
+ * @property playerId The player who may pay
+ * @property sourceId The source of the effect
+ * @property sourceName Name of the source for display
+ * @property manaCost The mana cost to pay
+ * @property effect The effect to execute if the player pays
+ * @property controllerId The controller for effect context
+ * @property opponentId The opponent for effect context
+ * @property xValue The X value if applicable
+ * @property targets The chosen targets for effect context
+ */
+@Serializable
+data class MayPayManaContinuation(
+    override val decisionId: String,
+    val playerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val manaCost: ManaCost,
+    val effect: Effect,
+    val controllerId: EntityId,
+    val opponentId: EntityId?,
+    val xValue: Int?,
+    val targets: List<ChosenTarget> = emptyList()
+) : ContinuationFrame {
+    fun toEffectContext(): EffectContext = EffectContext(
+        sourceId = sourceId,
+        controllerId = controllerId,
+        opponentId = opponentId,
+        xValue = xValue,
+        targets = targets
+    )
+}

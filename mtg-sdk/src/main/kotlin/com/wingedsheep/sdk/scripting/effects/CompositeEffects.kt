@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting
 
+import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.targeting.TargetRequirement
 import kotlinx.serialization.Serializable
@@ -280,6 +281,26 @@ data class TapCreatureForEffectEffect(
         append("You may tap another untapped creature you control. If you do, ")
         append(innerEffect.description.replaceFirstChar { it.lowercase() })
     }
+}
+
+/**
+ * "You may pay [manaCost]. If you do, [effect]."
+ *
+ * Optional mana payment during resolution. The controller may pay a mana cost
+ * (auto-tapping lands if needed). If they pay, the inner effect is executed.
+ * If they can't pay or decline, nothing happens.
+ *
+ * Example: Lightning Rift - "you may pay {1}. If you do, Lightning Rift deals 2 damage to any target."
+ *
+ * @property cost The mana cost the player may pay
+ * @property effect The effect that happens if the player pays
+ */
+@Serializable
+data class MayPayManaEffect(
+    val cost: ManaCost,
+    val effect: Effect
+) : Effect {
+    override val description: String = "You may pay $cost. If you do, ${effect.description.replaceFirstChar { it.lowercase() }}"
 }
 
 /**
