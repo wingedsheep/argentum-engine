@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 159 / 335
+**Implemented:** 160 / 335
 
 ---
 
@@ -162,7 +162,7 @@
 - [ ] Gustcloak Sentinel
 - [ ] Gustcloak Skirmisher
 - [ ] Harsh Mercy
-- [ ] Haunted Cadaver
+- [x] Haunted Cadaver
 - [ ] Head Games
 - [x] Headhunter
 - [x] Heedless One
