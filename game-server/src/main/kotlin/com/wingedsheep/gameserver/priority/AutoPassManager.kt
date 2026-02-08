@@ -142,12 +142,11 @@ class AutoPassManager {
             return true
         }
 
-        // Special handling for DECLARE_BLOCKERS step.
-        // Both players should get a chance to cast combat tricks (like Giant Growth)
-        // or use activated abilities before combat damage.
-        // By the time any player gets priority here, the defending player has already
-        // had their chance to declare blockers (or auto-passed without blocking).
-        if (state.step == Step.DECLARE_BLOCKERS) {
+        // Special handling for DECLARE_BLOCKERS on your own turn.
+        // After the opponent declares blockers, you may want to cast combat tricks
+        // (like Giant Growth) before damage. On opponent's turn, this is handled
+        // by shouldAutoPassOnOpponentTurn which only stops if you have blockers.
+        if (state.step == Step.DECLARE_BLOCKERS && isMyTurn) {
             val hasInstantSpeedResponses = meaningfulActions.any { action ->
                 (action.actionType == "CastSpell" || action.actionType == "ActivateAbility" || action.actionType == "CycleCard") &&
                 (!action.requiresTargets || !action.validTargets.isNullOrEmpty())
@@ -249,10 +248,17 @@ class AutoPassManager {
                 false
             }
 
-            // Declare Attackers - STOP (need to declare attacks)
+            // Declare Attackers - STOP only if we still need to declare attacks
+            // Once attackers are confirmed, auto-pass to let opponent declare blockers.
             Step.DECLARE_ATTACKERS -> {
-                logger.debug("STOP: My declare attackers step")
-                false
+                val needsToDeclare = meaningfulActions.any { it.actionType == "DeclareAttackers" }
+                if (needsToDeclare) {
+                    logger.debug("STOP: My declare attackers step (need to declare)")
+                    false
+                } else {
+                    logger.debug("AUTO-PASS: My declare attackers step (already declared)")
+                    true
+                }
             }
 
             // EVERYTHING ELSE - AUTO-PASS (Arena-style aggressive passing)
@@ -308,9 +314,9 @@ class AutoPassManager {
      *
      * - Upkeep/Draw/Main: AUTO-PASS
      * - Begin Combat/Declare Attackers: AUTO-PASS (Arena doesn't stop here by default)
-     * - Declare Blockers: STOP only if you have creatures that can block
+     * - Declare Blockers: STOP if you have blockers or instant-speed actions
      * - Combat Damage: AUTO-PASS
-     * - End Step: STOP only if you have meaningful instant-speed actions
+     * - End Step: AUTO-PASS (use per-step stop override to hold here)
      */
     private fun shouldAutoPassOnOpponentTurn(
         step: Step,
@@ -344,29 +350,24 @@ class AutoPassManager {
                 true
             }
 
-            // Declare Attackers - STOP if we have instant-speed responses
-            // This is crucial for cards like Blessed Reversal and Scorching Winds
-            // that can ONLY be cast during the declare attackers step when being attacked
+            // Declare Attackers - AUTO-PASS (use per-step stop override to hold here)
+            // Players get priority at Declare Blockers anyway where they can both
+            // block and cast instants, so stopping here is redundant by default.
             Step.DECLARE_ATTACKERS -> {
-                if (hasInstantSpeedResponses) {
-                    logger.debug("STOP: Opponent's declare attackers (have instant-speed actions)")
-                    false
-                } else {
-                    logger.debug("AUTO-PASS: Opponent's declare attackers (no instant-speed actions)")
-                    true
-                }
+                logger.debug("AUTO-PASS: Opponent's declare attackers")
+                true
             }
 
-            // Declare Blockers - STOP if we have creatures that can block or instant-speed responses
+            // Declare Blockers - STOP if we have creatures that can block OR
+            // instant-speed actions we can actually perform (combat tricks, cycling with mana, etc.)
+            // The server only sends legal actions, so having them in meaningfulActions
+            // means the player can actually pay for them.
             Step.DECLARE_BLOCKERS -> {
-                if (hasBlockers) {
-                    logger.debug("STOP: Opponent's declare blockers (have blockers)")
-                    false
-                } else if (hasInstantSpeedResponses) {
-                    logger.debug("STOP: Opponent's declare blockers (have instant-speed responses)")
+                if (hasBlockers || hasInstantSpeedResponses) {
+                    logger.debug("STOP: Opponent's declare blockers (have ${if (hasBlockers) "blockers" else "instant-speed responses"})")
                     false
                 } else {
-                    logger.debug("AUTO-PASS: Opponent's declare blockers (no blockers, no responses)")
+                    logger.debug("AUTO-PASS: Opponent's declare blockers (no blockers or responses)")
                     true
                 }
             }
@@ -377,16 +378,13 @@ class AutoPassManager {
                 true
             }
 
-            // End Step - STOP only if we have instant-speed actions to use
-            // This is the classic "end of turn" window for casting instants
+            // End Step - AUTO-PASS (use per-step stop override to hold here)
+            // Players already had a chance to act during the main phase; stopping
+            // again at end step is redundant. The stop override system lets control
+            // players opt in to the classic "end of turn" window.
             Step.END -> {
-                if (hasInstantSpeedResponses) {
-                    logger.debug("STOP: Opponent's end step (have instant-speed actions)")
-                    false
-                } else {
-                    logger.debug("AUTO-PASS: Opponent's end step (no instant-speed actions)")
-                    true
-                }
+                logger.debug("AUTO-PASS: Opponent's end step")
+                true
             }
 
             // Cleanup - no priority normally
@@ -588,10 +586,10 @@ class AutoPassManager {
             Step.UPKEEP, Step.DRAW -> true
             Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN -> true
             Step.BEGIN_COMBAT -> true
-            Step.DECLARE_ATTACKERS -> !hasMeaningfulActions // Stop if we have instant-speed actions
-            Step.DECLARE_BLOCKERS -> !hasMeaningfulActions // Stop only if we have blockers
+            Step.DECLARE_ATTACKERS -> true // Auto-pass; use per-step stop override to hold here
+            Step.DECLARE_BLOCKERS -> !hasMeaningfulActions // Stop only if we have blockers/responses
             Step.FIRST_STRIKE_COMBAT_DAMAGE, Step.COMBAT_DAMAGE, Step.END_COMBAT -> true
-            Step.END -> !hasMeaningfulActions // Stop only if we have instant-speed actions
+            Step.END -> true // Auto-pass; use per-step stop override to hold here
             Step.CLEANUP, Step.UNTAP -> true
         }
     }
