@@ -66,7 +66,7 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
   const interactive = !spectatorMode && !isOpponent
 
   // How much of each attachment card peeks out from behind its parent
-  const attachmentPeek = responsive.isMobile ? 16 : 22
+  const attachmentPeek = responsive.isMobile ? 12 : 16
   const cardHeight = Math.round(responsive.battlefieldCardWidth * 1.4)
 
   /**
@@ -99,72 +99,38 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
         key={group.cardIds[0]}
         style={{
           position: 'relative',
-          width: parentTapped ? cardVisualWidth + totalPeek : responsive.battlefieldCardWidth,
-          height: parentTapped ? cardHeight : cardHeight + totalPeek,
+          width: cardVisualWidth,
+          height: cardHeight + totalPeek,
         }}
       >
-        {parentTapped ? (
-          <>
-            {/* Tapped: attachments peek horizontally to the right */}
-            {attachments.map((attachment, index) => (
-              <div
-                key={attachment.id}
-                style={{
-                  position: 'absolute',
-                  left: (index + 1) * attachmentPeek,
-                  top: 0,
-                  zIndex: index,
-                }}
-              >
-                <GameCard
-                  card={attachment}
-                  interactive={interactive}
-                  battlefield
-                  isOpponentCard={isOpponent}
-                  forceTapped={true}
-                />
-              </div>
-            ))}
-            {/* Main card on the left, on top */}
-            <div style={{ position: 'absolute', left: 0, top: 0, zIndex: attachments.length + 1 }}>
-              <CardStack
-                group={group}
-                interactive={interactive}
-                isOpponentCard={isOpponent}
-              />
-            </div>
-          </>
-        ) : (
-          <>
-            {/* Untapped: attachments peek vertically from above */}
-            {attachments.map((attachment, index) => (
-              <div
-                key={attachment.id}
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  top: index * attachmentPeek,
-                  zIndex: index,
-                }}
-              >
-                <GameCard
-                  card={attachment}
-                  interactive={interactive}
-                  battlefield
-                  isOpponentCard={isOpponent}
-                />
-              </div>
-            ))}
-            {/* Main card at the bottom, on top */}
-            <div style={{ position: 'absolute', left: 0, top: totalPeek, zIndex: attachments.length + 1 }}>
-              <CardStack
-                group={group}
-                interactive={interactive}
-                isOpponentCard={isOpponent}
-              />
-            </div>
-          </>
-        )}
+        {/* Attachments peek vertically from above the parent */}
+        {attachments.map((attachment, index) => (
+          <div
+            key={attachment.id}
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: index * attachmentPeek,
+              zIndex: index,
+            }}
+          >
+            <GameCard
+              card={attachment}
+              interactive={interactive}
+              battlefield
+              isOpponentCard={isOpponent}
+              forceTapped={parentTapped}
+            />
+          </div>
+        ))}
+        {/* Main card at the bottom, on top */}
+        <div style={{ position: 'absolute', left: 0, top: totalPeek, zIndex: attachments.length + 1 }}>
+          <CardStack
+            group={group}
+            interactive={interactive}
+            isOpponentCard={isOpponent}
+          />
+        </div>
       </div>
     )
   }
