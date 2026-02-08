@@ -32,10 +32,12 @@ data class LookAtTopCardsEffect(
  */
 @Serializable
 data class LookAtTopAndReorderEffect(
-    val count: Int,
+    val count: DynamicAmount,
     val target: EffectTarget = EffectTarget.Controller
 ) : Effect {
-    override val description: String = "Look at the top $count cards of your library and put them back in any order"
+    constructor(count: Int, target: EffectTarget = EffectTarget.Controller) : this(DynamicAmount.Fixed(count), target)
+
+    override val description: String = "Look at the top ${count.description} cards of your library and put them back in any order"
 }
 
 /**

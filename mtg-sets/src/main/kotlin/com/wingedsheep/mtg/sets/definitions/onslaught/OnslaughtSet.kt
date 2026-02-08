@@ -68,6 +68,7 @@ object OnslaughtSet {
         DisruptivePitmage,
         FleetingAven,
         GhosthelmCourier,
+        InformationDealer,
         MagesGuile,
         ThoughtboundPrimoc,
         NamelessOne,
@@ -79,6 +80,7 @@ object OnslaughtSet {
         ChokingTethers,
         Complicate,
         SageAven,
+        ScreamingSeahawk,
         SlipstreamEel,
 
         // Black creatures and spells
