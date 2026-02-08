@@ -1011,6 +1011,9 @@ class CombatManager(
         }
 
         for ((attackerId, attackingComponent) in attackers) {
+            // Skip attackers no longer on the battlefield (killed by first strike damage)
+            if (attackerId !in state.getBattlefield()) continue
+
             val attackerContainer = state.getEntity(attackerId) ?: continue
             attackerContainer.get<CardComponent>() ?: continue
 
@@ -1233,7 +1236,13 @@ class CombatManager(
             }
         }
 
-        // Each blocker deals damage to attacker
+        // Each blocker deals damage to attacker (only if attacker is still on the battlefield)
+        // Per CR 510.1d: if the creature a blocker is blocking ceases to exist,
+        // the blocker doesn't deal combat damage.
+        if (attackerId !in newState.getBattlefield()) {
+            return newState to events
+        }
+
         for (blockerId in orderedBlockers) {
             val blockerContainer = newState.getEntity(blockerId) ?: continue
             blockerContainer.get<CardComponent>() ?: continue
@@ -1451,6 +1460,11 @@ class CombatManager(
         projected: ProjectedState
     ): Pair<GameState, List<GameEvent>> {
         var newState = state
+
+        // If the attacker is no longer on the battlefield, blockers don't deal combat damage
+        if (attackerId !in newState.getBattlefield()) {
+            return newState to events
+        }
 
         for (blockerId in orderedBlockers) {
             val blockerContainer = newState.getEntity(blockerId) ?: continue

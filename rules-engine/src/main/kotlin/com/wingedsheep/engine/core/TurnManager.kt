@@ -921,8 +921,9 @@ class TurnManager(
      * Check if there are any creatures currently attacking.
      */
     fun hasAttackingCreatures(state: GameState): Boolean {
-        return state.entities.any { (_, container) ->
-            container.has<AttackingComponent>()
+        val battlefield = state.getBattlefield()
+        return battlefield.any { entityId ->
+            state.getEntity(entityId)?.has<AttackingComponent>() == true
         }
     }
 }
