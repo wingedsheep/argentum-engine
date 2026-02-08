@@ -32,6 +32,7 @@ object OnslaughtSet {
         AstralSlide,
         AuraExtraction,
         Aurification,
+        CatapultMaster,
         CatapultSquad,
         CrudeRampart,
         Demystify,

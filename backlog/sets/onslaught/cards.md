@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 167 / 335
+**Implemented:** 168 / 335
 
 ---
 
@@ -52,7 +52,7 @@
 - [x] Cabal Executioner
 - [ ] Cabal Slaver
 - [ ] Callous Oppressor
-- [ ] Catapult Master
+- [x] Catapult Master
 - [x] Catapult Squad
 - [ ] Centaur Glade
 - [ ] Chain of Acid
