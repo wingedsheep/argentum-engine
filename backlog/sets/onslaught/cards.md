@@ -174,7 +174,7 @@
 - [x] Inspirit
 - [ ] Insurrection
 - [x] Invigorating Boon
-- [ ] Ironfist Crusher
+- [x] Ironfist Crusher
 - [x] Island
 - [ ] Ixidor, Reality Sculptor
 - [ ] Ixidor's Will
