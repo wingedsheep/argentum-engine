@@ -259,7 +259,9 @@ data class ChooseOptionDecision(
     override val prompt: String,
     override val context: DecisionContext,
     val options: List<String>,
-    val defaultSearch: String? = null
+    val defaultSearch: String? = null,
+    /** Maps option index to entity IDs of cards associated with that option (for preview) */
+    val optionCardIds: Map<Int, List<EntityId>>? = null
 ) : PendingDecision
 
 /**

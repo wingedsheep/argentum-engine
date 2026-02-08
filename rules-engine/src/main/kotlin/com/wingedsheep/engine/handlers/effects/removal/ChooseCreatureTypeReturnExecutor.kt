@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers.effects.removal
 
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.DecisionHandler
+import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
@@ -40,25 +41,30 @@ class ChooseCreatureTypeReturnExecutor(
         val graveyardZone = ZoneKey(controllerId, Zone.GRAVEYARD)
         val graveyard = state.getZone(graveyardZone)
 
-        // Collect distinct creature subtypes from creatures in graveyard
-        val creatureTypes = mutableSetOf<String>()
+        // Collect creature subtypes and which cards have each type
+        val typeToCardIds = mutableMapOf<String, MutableList<EntityId>>()
         for (cardId in graveyard) {
             val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: continue
             val typeLine = cardComponent.typeLine ?: continue
             if (typeLine.isCreature) {
                 for (subtype in typeLine.subtypes) {
-                    creatureTypes.add(subtype.value)
+                    typeToCardIds.getOrPut(subtype.value) { mutableListOf() }.add(cardId)
                 }
             }
         }
 
         // If no creature types in graveyard, nothing to do
-        if (creatureTypes.isEmpty()) {
+        if (typeToCardIds.isEmpty()) {
             return ExecutionResult.success(state.tick())
         }
 
-        val sortedTypes = creatureTypes.sorted()
+        val sortedTypes = typeToCardIds.keys.sorted()
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
+
+        // Build option index → card IDs mapping for client preview
+        val optionCardIds = sortedTypes.mapIndexed { index, type ->
+            index to typeToCardIds[type]!!.toList()
+        }.toMap()
 
         // Create a choose-option decision for the creature type
         val decisionId = UUID.randomUUID().toString()
@@ -71,7 +77,8 @@ class ChooseCreatureTypeReturnExecutor(
                 sourceName = sourceName,
                 phase = DecisionPhase.RESOLUTION
             ),
-            options = sortedTypes
+            options = sortedTypes,
+            optionCardIds = optionCardIds
         )
 
         // Push continuation

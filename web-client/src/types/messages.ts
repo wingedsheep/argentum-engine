@@ -274,6 +274,8 @@ export interface ChooseOptionDecision extends PendingDecisionBase {
   readonly type: 'ChooseOptionDecision'
   readonly options: readonly string[]
   readonly defaultSearch?: string | null
+  /** Maps option index to entity IDs of cards associated with that option (for preview) */
+  readonly optionCardIds?: Record<number, readonly EntityId[]> | null
 }
 
 /**

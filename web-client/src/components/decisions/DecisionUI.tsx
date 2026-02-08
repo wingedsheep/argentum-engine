@@ -368,14 +368,34 @@ function ChooseOptionDecisionUI({
     : -1
   const [selectedIndex, setSelectedIndex] = useState<number | null>(defaultIndex >= 0 ? defaultIndex : null)
   const submitOptionDecision = useGameStore((s) => s.submitOptionDecision)
+  const gameState = useGameStore((s) => s.gameState)
+
+  const hasCardIds = !!decision.optionCardIds
 
   const filteredOptions = useMemo(() => {
-    if (!filter) return decision.options.map((opt, i) => ({ label: opt, index: i }))
+    const mapped = decision.options.map((opt, i) => {
+      const cardCount = decision.optionCardIds?.[i]?.length
+      const label = cardCount != null ? `${opt} (${cardCount})` : opt
+      return { label, index: i }
+    })
+    if (!filter) return mapped
     const lower = filter.toLowerCase()
-    return decision.options
-      .map((opt, i) => ({ label: opt, index: i }))
-      .filter((opt) => opt.label.toLowerCase().includes(lower))
-  }, [decision.options, filter])
+    return mapped.filter((opt) => opt.label.toLowerCase().includes(lower))
+  }, [decision.options, decision.optionCardIds, filter])
+
+  // Get card previews for the selected option
+  const previewCards = useMemo(() => {
+    if (selectedIndex === null || !decision.optionCardIds || !gameState) return []
+    const cardIds = decision.optionCardIds[selectedIndex] ?? []
+    const results: { id: EntityId; name: string; imageUri: string | null | undefined }[] = []
+    for (const id of cardIds) {
+      const card = gameState.cards[id]
+      if (card) {
+        results.push({ id, name: card.name, imageUri: card.imageUri })
+      }
+    }
+    return results
+  }, [selectedIndex, decision.optionCardIds, gameState])
 
   const handleConfirm = () => {
     if (selectedIndex !== null) {
@@ -431,6 +451,32 @@ function ChooseOptionDecisionUI({
           <p className={styles.noCardsMessage}>No matching options</p>
         )}
       </div>
+
+      {/* Card previews for selected option */}
+      {hasCardIds && previewCards.length > 0 && (
+        <div className={styles.optionCardPreview}>
+          {previewCards.map((card) => {
+            const imgUrl = getCardImageUrl(card.name, card.imageUri)
+            return (
+              <div key={card.id} className={styles.optionPreviewCard}>
+                <img
+                  src={imgUrl}
+                  alt={card.name}
+                  className={styles.optionPreviewImage}
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none'
+                    const fallback = e.currentTarget.nextElementSibling as HTMLElement
+                    if (fallback) fallback.style.display = 'flex'
+                  }}
+                />
+                <div className={styles.optionPreviewFallback}>
+                  <span className={styles.cardFallbackName}>{card.name}</span>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
 
       {/* Action buttons */}
       <div className={styles.optionButtonRow}>
@@ -592,9 +638,10 @@ function CardSelectionDecision({
       </h2>
 
       <p className={styles.hint}>
-        Selected: {selectedCards.length} / {decision.minSelections}
-        {decision.minSelections !== decision.maxSelections &&
-          ` - ${decision.maxSelections}`}
+        {decision.minSelections === 0
+          ? `Select up to ${decision.maxSelections}`
+          : `Selected: ${selectedCards.length} / ${decision.minSelections}${decision.minSelections !== decision.maxSelections ? ` - ${decision.maxSelections}` : ''}`
+        }
       </p>
 
       {/* Card options */}
@@ -628,7 +675,9 @@ function CardSelectionDecision({
         disabled={!canConfirm}
         className={styles.confirmButton}
       >
-        Confirm
+        {decision.minSelections === 0 && selectedCards.length === 0
+          ? 'Select None'
+          : 'Confirm Selection'}
       </button>
 
       {/* Card preview on hover */}
