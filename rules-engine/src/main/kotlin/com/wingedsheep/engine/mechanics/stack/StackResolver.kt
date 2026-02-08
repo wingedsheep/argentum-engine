@@ -23,7 +23,11 @@ import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.engine.state.components.stack.*
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.Effect
+import com.wingedsheep.sdk.scripting.EntersWithCounters
+import com.wingedsheep.sdk.scripting.EntersWithDynamicCounters
+import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 
 /**
  * Manages the stack: casting spells, activating abilities, and resolution.
@@ -318,6 +322,12 @@ class StackResolver(
             updated
         }
 
+        // Handle "enters with counters" replacement effects (before adding to battlefield)
+        val cardDef = cardComponent?.cardDefinitionId?.let { cardRegistry?.getCard(it) }
+        if (cardDef != null && !spellComponent.castFaceDown) {
+            newState = applyEntersWithCounters(newState, spellId, cardDef, controllerId)
+        }
+
         // Add to battlefield
         val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
         newState = newState.addToZone(battlefieldZone, spellId)
@@ -587,6 +597,69 @@ class StackResolver(
                 abilityComponent.sourceName
             )
         )
+    }
+
+    // =========================================================================
+    // Enters With Counters
+    // =========================================================================
+
+    private val dynamicAmountEvaluator = DynamicAmountEvaluator()
+
+    /**
+     * Apply "enters with counters" replacement effects to a permanent.
+     * Handles both fixed count (EntersWithCounters) and dynamic count (EntersWithDynamicCounters).
+     */
+    private fun applyEntersWithCounters(
+        state: GameState,
+        entityId: EntityId,
+        cardDef: com.wingedsheep.sdk.model.CardDefinition,
+        controllerId: EntityId
+    ): GameState {
+        var newState = state
+        for (effect in cardDef.script.replacementEffects) {
+            when (effect) {
+                is EntersWithCounters -> {
+                    val counterType = resolveCounterType(effect.counterType)
+                    val current = newState.getEntity(entityId)?.get<CountersComponent>() ?: CountersComponent()
+                    newState = newState.updateEntity(entityId) { c ->
+                        c.with(current.withAdded(counterType, effect.count))
+                    }
+                }
+                is EntersWithDynamicCounters -> {
+                    val counterType = resolveCounterType(effect.counterType)
+                    val context = EffectContext(
+                        sourceId = entityId,
+                        controllerId = controllerId,
+                        opponentId = newState.turnOrder.firstOrNull { it != controllerId }
+                    )
+                    val count = dynamicAmountEvaluator.evaluate(newState, effect.count, context)
+                    if (count > 0) {
+                        val current = newState.getEntity(entityId)?.get<CountersComponent>() ?: CountersComponent()
+                        newState = newState.updateEntity(entityId) { c ->
+                            c.with(current.withAdded(counterType, count))
+                        }
+                    }
+                }
+                else -> { /* Other replacement effects handled elsewhere */ }
+            }
+        }
+        return newState
+    }
+
+    private fun resolveCounterType(filter: CounterTypeFilter): CounterType {
+        return when (filter) {
+            is CounterTypeFilter.Any -> CounterType.PLUS_ONE_PLUS_ONE
+            is CounterTypeFilter.PlusOnePlusOne -> CounterType.PLUS_ONE_PLUS_ONE
+            is CounterTypeFilter.MinusOneMinusOne -> CounterType.MINUS_ONE_MINUS_ONE
+            is CounterTypeFilter.Loyalty -> CounterType.LOYALTY
+            is CounterTypeFilter.Named -> {
+                try {
+                    CounterType.valueOf(filter.name.uppercase().replace(' ', '_'))
+                } catch (_: IllegalArgumentException) {
+                    CounterType.PLUS_ONE_PLUS_ONE
+                }
+            }
+        }
     }
 
     // =========================================================================

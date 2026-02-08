@@ -178,6 +178,7 @@ object OnslaughtSet {
         TreespringLorian,
         Wellwisher,
         ElvishPathcutter,
+        StagBeetle,
         WirewoodElf,
         WirewoodHerald,
         WirewoodSavage,

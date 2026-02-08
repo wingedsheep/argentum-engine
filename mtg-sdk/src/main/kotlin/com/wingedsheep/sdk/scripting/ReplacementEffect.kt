@@ -180,6 +180,23 @@ data class EntersWithCounters(
 }
 
 /**
+ * Permanent/creature enters with a dynamic number of counters.
+ * Example: Stag Beetle (enters with X +1/+1 counters where X = number of other creatures)
+ */
+@Serializable
+data class EntersWithDynamicCounters(
+    val counterType: CounterTypeFilter = CounterTypeFilter.PlusOnePlusOne,
+    val count: DynamicAmount,
+    override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
+        filter = GameObjectFilter.Creature.youControl(),
+        to = Zone.BATTLEFIELD
+    )
+) : ReplacementEffect {
+    override val description: String =
+        "If ${appliesTo.description}, it enters with ${count.description} ${counterType.description} counters"
+}
+
+/**
  * Undying - if creature dies without +1/+1 counters, return it with one.
  */
 @Serializable

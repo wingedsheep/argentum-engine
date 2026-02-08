@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 160 / 335
+**Implemented:** 161 / 335
 
 ---
 
@@ -281,7 +281,7 @@
 - [x] Spitting Gourna
 - [x] Spurred Wolverine
 - [ ] Spy Network
-- [ ] Stag Beetle
+- [x] Stag Beetle
 - [ ] Standardize
 - [ ] Starlit Sanctum
 - [x] Starstorm
