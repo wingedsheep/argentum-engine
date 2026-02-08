@@ -270,16 +270,15 @@ class AutoPassManagerTest : FunSpec({
             autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
         }
 
-        test("STOP during opponent's declare attackers when have instant-speed responses") {
-            // This is important for cards like Blessed Reversal and Scorching Winds
-            // that can ONLY be cast during the declare attackers step
+        test("Auto-pass during opponent's declare attackers even with instant-speed responses (Arena-style)") {
+            // Arena-style: auto-pass at declare attackers, use per-step stop override to hold here
             val state = createMockState(player2, player1, Step.DECLARE_ATTACKERS)
             val actions = listOf(
                 passPriorityAction(player2),
                 instantSpellAction(player2)
             )
 
-            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe false
+            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
         }
 
         test("Auto-pass during opponent's declare attackers with no instant-speed responses") {
@@ -329,14 +328,15 @@ class AutoPassManagerTest : FunSpec({
             autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
         }
 
-        test("STOP during opponent's end step when you have instant-speed actions") {
+        test("Auto-pass during opponent's end step even with instant-speed actions (Arena-style)") {
+            // Arena-style: auto-pass at end step, use per-step stop override to hold here
             val state = createMockState(player2, player1, Step.END)
             val actions = listOf(
                 passPriorityAction(player2),
                 instantSpellAction(player2)
             )
 
-            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe false
+            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
         }
 
         test("Auto-pass during opponent's end step when no instant-speed actions") {
@@ -384,14 +384,15 @@ class AutoPassManagerTest : FunSpec({
             autoPassManager.shouldAutoPass(state, player1, actions) shouldBe false
         }
 
-        test("STOP during my declare attackers") {
+        test("Auto-pass during my declare attackers when already declared (no DeclareAttackers action)") {
+            // After attackers are confirmed (no DeclareAttackers action), auto-pass
             val state = createMockState(player1, player1, Step.DECLARE_ATTACKERS)
             val actions = listOf(
                 passPriorityAction(player1),
                 instantSpellAction(player1)
             )
 
-            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe false
+            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe true
         }
 
         test("STOP during my declare blockers when I have combat tricks") {
@@ -697,15 +698,16 @@ class AutoPassManagerTest : FunSpec({
             autoPassManager.getNextStopPoint(state, player1, false) shouldBe "Pass to Main"
         }
 
-        test("returns 'Pass to End Step' from declare attackers on opponent's turn with no attackers") {
-            // With no attacking creatures, engine skips blockers and combat damage steps (CR 508.8)
+        test("returns 'To my turn' from declare attackers on opponent's turn with no attackers") {
+            // Arena-style: auto-passes through opponent's end step, so next stop is my turn
             val state = createMockState(player1, player2, Step.DECLARE_ATTACKERS)
-            autoPassManager.getNextStopPoint(state, player1, true) shouldBe "Pass to End Step"
+            autoPassManager.getNextStopPoint(state, player1, true) shouldBe "To my turn"
         }
 
-        test("returns 'Pass to End Step' from opponent's combat with meaningful actions") {
+        test("returns 'To my turn' from opponent's combat with meaningful actions") {
+            // Arena-style: auto-passes through opponent's end step, so next stop is my turn
             val state = createMockState(player1, player2, Step.COMBAT_DAMAGE)
-            autoPassManager.getNextStopPoint(state, player1, true) shouldBe "Pass to End Step"
+            autoPassManager.getNextStopPoint(state, player1, true) shouldBe "To my turn"
         }
     }
 
@@ -877,10 +879,10 @@ class AutoPassManagerTest : FunSpec({
             val state = createMockState(player1, player1, Step.END)
             // Without override and no meaningful actions → skips to next main
             autoPassManager.getNextStopPoint(state, player1, false) shouldBe "Pass to Main"
-            // With my-turn override on END → would stop there, but we're already there
-            // So check from COMBAT_DAMAGE → should stop at END (overridden)
+            // With my-turn override on END from COMBAT_DAMAGE → POSTCOMBAT_MAIN stops first
+            // (main phases always stop on my turn)
             val combatState = createMockState(player1, player1, Step.COMBAT_DAMAGE)
-            autoPassManager.getNextStopPoint(combatState, player1, false, myTurnStops = setOf(Step.END)) shouldBe "End Turn"
+            autoPassManager.getNextStopPoint(combatState, player1, false, myTurnStops = setOf(Step.END)) shouldBe "Pass to Main 2"
         }
 
         test("Opponent-turn stop override in getNextStopPoint") {
