@@ -297,6 +297,17 @@
   color: var(--text-tertiary);
 }
 
+.leaveButtonConfirm {
+  composes: leaveButton;
+  border-color: rgba(239, 83, 80, 0.5);
+  color: #ef5350;
+}
+
+.leaveButtonConfirm:hover {
+  background-color: rgba(239, 83, 80, 0.12);
+  color: #ff6b6b;
+}
+
 .returnButton {
   composes: leaveButton;
   background-color: var(--color-warning-light);
@@ -1007,6 +1018,197 @@
   background: linear-gradient(180deg, rgba(75, 75, 100, 0.95) 0%, rgba(55, 55, 75, 0.95) 100%);
   border-color: rgba(255, 255, 255, 0.25);
   color: var(--text-primary);
+}
+
+.viewDeckButton {
+  padding: var(--space-2) var(--space-5);
+  font-size: var(--font-md);
+  font-weight: var(--font-weight-medium);
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.viewDeckButton:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.22);
+  color: var(--text-secondary);
+}
+
+/* =========================================================================
+ * Deck Viewer Modal
+ * ========================================================================= */
+.deckViewerBackdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+}
+
+.deckViewerPanel {
+  background: linear-gradient(180deg, rgba(25, 25, 38, 0.98) 0%, rgba(18, 18, 28, 0.99) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+  width: 100%;
+  max-width: 420px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.deckViewerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.deckViewerTitle {
+  font-size: var(--font-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.deckViewerClose {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 18px;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+  line-height: 1;
+}
+
+.deckViewerClose:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+
+.deckViewerBody {
+  overflow-y: auto;
+  padding: var(--space-3) var(--space-5);
+  flex: 1;
+}
+
+.deckViewerStats {
+  display: flex;
+  gap: var(--space-4);
+  padding: var(--space-3) 0;
+  margin-bottom: var(--space-3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.deckViewerStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.deckViewerStatValue {
+  font-size: var(--font-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+}
+
+.deckViewerStatLabel {
+  font-size: 10px;
+  color: var(--text-disabled);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.deckViewerGroup {
+  margin-bottom: var(--space-3);
+}
+
+.deckViewerGroupHeader {
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-1);
+  padding-bottom: var(--space-1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.deckViewerRow {
+  display: flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-sm);
+}
+
+.deckViewerRow:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.deckViewerCount {
+  width: 22px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.deckViewerCardName {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: var(--space-2);
+}
+
+.deckViewerManaCost {
+  flex-shrink: 0;
+}
+
+.deckViewerLandsSection {
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.deckViewerLandRow {
+  display: flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 var(--space-1);
+}
+
+.deckViewerLandName {
+  flex: 1;
+  font-size: 13px;
+  color: #a1887f;
+}
+
+.deckViewerLandCount {
+  font-size: 12px;
+  font-weight: var(--font-weight-bold);
+  color: var(--text-muted);
 }
 
 /* =========================================================================

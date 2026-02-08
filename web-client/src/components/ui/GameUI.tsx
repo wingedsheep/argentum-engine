@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useGameStore, type LobbyState, type TournamentState } from '../../store/gameStore'
+import type { SealedCardInfo } from '../../types'
+import { getCardImageUrl } from '../../utils/cardImages'
+import { ManaCost } from './ManaSymbols'
 import styles from './GameUI.module.css'
 
 const backgroundModules = import.meta.glob('../../assets/backgrounds/*.jpeg', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
@@ -580,11 +583,14 @@ function TournamentOverlay({
   const readyForNextRound = useGameStore((state) => state.readyForNextRound)
   const leaveTournament = useGameStore((state) => state.leaveTournament)
   const unsubmitDeck = useGameStore((state) => state.unsubmitDeck)
+  const deckBuildingState = useGameStore((state) => state.deckBuildingState)
   const disconnectedPlayers = useGameStore((state) => state.disconnectedPlayers)
   const addDisconnectTime = useGameStore((state) => state.addDisconnectTime)
   const kickPlayer = useGameStore((state) => state.kickPlayer)
   const [hoveredStanding, setHoveredStanding] = useState<HoveredStanding | null>(null)
   const [linkCopied, setLinkCopied] = useState(false)
+  const [showDeckViewer, setShowDeckViewer] = useState(false)
+  const [confirmLeave, setConfirmLeave] = useState(false)
   // Tick every second to update disconnect countdown timers
   const [, setTick] = useState(0)
   const hasDisconnected = Object.keys(disconnectedPlayers).length > 0
@@ -694,6 +700,24 @@ function TournamentOverlay({
             {readyCount} of {totalPlayers} players ready
           </p>
         </div>
+      )}
+
+      {/* View Deck button - show when deck is submitted and Edit Deck is not available */}
+      {!isSpectator && deckBuildingState && (tournamentState.currentRound > 0 || isPlayerReady) && (
+        <button
+          onClick={() => setShowDeckViewer(true)}
+          className={styles.viewDeckButton}
+        >
+          View Deck
+        </button>
+      )}
+
+      {/* Deck Viewer Modal */}
+      {showDeckViewer && deckBuildingState && (
+        <DeckViewerModal
+          deckBuildingState={deckBuildingState}
+          onClose={() => setShowDeckViewer(false)}
+        />
       )}
 
       {/* Show "waiting for others" message when in active round but match is done (participants only) */}
@@ -940,13 +964,246 @@ function TournamentOverlay({
       )}
 
       {/* Leave/Return button */}
-      <button
-        onClick={leaveTournament}
-        className={tournamentState.isComplete ? styles.returnButton : styles.leaveButton}
-        style={{ marginTop: tournamentState.isComplete ? 0 : 8 }}
+      {tournamentState.isComplete ? (
+        <button
+          onClick={leaveTournament}
+          className={styles.returnButton}
+        >
+          Return to Menu
+        </button>
+      ) : (
+        <button
+          onClick={() => {
+            if (confirmLeave) {
+              leaveTournament()
+            } else {
+              setConfirmLeave(true)
+              setTimeout(() => setConfirmLeave(false), 3000)
+            }
+          }}
+          className={confirmLeave ? styles.leaveButtonConfirm : styles.leaveButton}
+          style={{ marginTop: 8 }}
+        >
+          {confirmLeave ? 'Confirm Leave?' : 'Leave Tournament'}
+        </button>
+      )}
+    </div>
+  )
+}
+
+/**
+ * Read-only deck viewer modal for viewing submitted deck during tournament.
+ */
+function DeckViewerModal({
+  deckBuildingState,
+  onClose,
+}: {
+  deckBuildingState: { cardPool: readonly SealedCardInfo[]; basicLands: readonly SealedCardInfo[]; deck: readonly string[]; landCounts: Record<string, number> }
+  onClose: () => void
+}) {
+  const [hoveredCard, setHoveredCard] = useState<SealedCardInfo | null>(null)
+  const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(null)
+
+  const handleHover = (card: SealedCardInfo | null, e?: React.MouseEvent) => {
+    setHoveredCard(card)
+    if (card && e) {
+      setHoverPos({ x: e.clientX, y: e.clientY })
+    } else {
+      setHoverPos(null)
+    }
+  }
+
+  const cardInfoMap = new Map<string, SealedCardInfo>()
+  for (const card of deckBuildingState.cardPool) {
+    cardInfoMap.set(card.name, card)
+  }
+  for (const land of deckBuildingState.basicLands) {
+    cardInfoMap.set(land.name, land)
+  }
+
+  // Count cards in deck
+  const deckCounts = new Map<string, number>()
+  for (const name of deckBuildingState.deck) {
+    deckCounts.set(name, (deckCounts.get(name) ?? 0) + 1)
+  }
+
+  // Calculate CMC for a card
+  const getCmc = (card: SealedCardInfo): number => {
+    if (!card.manaCost) return 0
+    let cmc = 0
+    for (const match of card.manaCost.matchAll(/\{([^}]+)\}/g)) {
+      const sym = match[1] ?? ''
+      const num = parseInt(sym, 10)
+      if (!isNaN(num)) cmc += num
+      else if (sym !== 'X') cmc += 1
+    }
+    return cmc
+  }
+
+  // Group cards by CMC
+  const grouped = new Map<number, { card: SealedCardInfo; count: number }[]>()
+  for (const [name, count] of deckCounts) {
+    const card = cardInfoMap.get(name)
+    if (!card) continue
+    const cmc = getCmc(card)
+    if (!grouped.has(cmc)) grouped.set(cmc, [])
+    grouped.get(cmc)!.push({ card, count })
+  }
+  // Sort groups by CMC, cards within by name
+  const sortedGroups = [...grouped.entries()].sort((a, b) => a[0] - b[0])
+  for (const [, cards] of sortedGroups) {
+    cards.sort((a, b) => a.card.name.localeCompare(b.card.name))
+  }
+
+  // Calculate stats
+  const totalLands = Object.values(deckBuildingState.landCounts).reduce((s, n) => s + n, 0)
+  const totalSpellCards = deckBuildingState.deck.length
+  let creatures = 0
+  let nonCreatureSpells = 0
+  for (const [name, count] of deckCounts) {
+    const card = cardInfoMap.get(name)
+    if (!card) continue
+    if (card.typeLine.toLowerCase().includes('creature')) creatures += count
+    else nonCreatureSpells += count
+  }
+  const totalCards = totalSpellCards + totalLands
+
+  return (
+    <div className={styles.deckViewerBackdrop} onClick={onClose}>
+      <div className={styles.deckViewerPanel} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.deckViewerHeader}>
+          <h3 className={styles.deckViewerTitle}>Your Deck ({totalCards})</h3>
+          <button className={styles.deckViewerClose} onClick={onClose}>
+            &#x2715;
+          </button>
+        </div>
+        <div className={styles.deckViewerBody}>
+          {/* Stats */}
+          <div className={styles.deckViewerStats}>
+            <div className={styles.deckViewerStat}>
+              <span className={styles.deckViewerStatValue}>{creatures}</span>
+              <span className={styles.deckViewerStatLabel}>Creatures</span>
+            </div>
+            <div className={styles.deckViewerStat}>
+              <span className={styles.deckViewerStatValue}>{nonCreatureSpells}</span>
+              <span className={styles.deckViewerStatLabel}>Spells</span>
+            </div>
+            <div className={styles.deckViewerStat}>
+              <span className={styles.deckViewerStatValue}>{totalLands}</span>
+              <span className={styles.deckViewerStatLabel}>Lands</span>
+            </div>
+          </div>
+
+          {/* Card list grouped by CMC */}
+          {sortedGroups.map(([cmc, cards]) => (
+            <div key={cmc} className={styles.deckViewerGroup}>
+              <div className={styles.deckViewerGroupHeader}>
+                {cmc === 0 ? 'CMC 0' : `CMC ${cmc}`} ({cards.reduce((s, c) => s + c.count, 0)})
+              </div>
+              {cards.map(({ card, count }) => (
+                <div
+                  key={card.name}
+                  className={styles.deckViewerRow}
+                  onMouseEnter={(e) => handleHover(card, e)}
+                  onMouseMove={(e) => handleHover(card, e)}
+                  onMouseLeave={() => handleHover(null)}
+                >
+                  <span className={styles.deckViewerCount}>{count}</span>
+                  <span className={styles.deckViewerCardName}>{card.name}</span>
+                  <span className={styles.deckViewerManaCost}>
+                    {card.manaCost
+                      ? <ManaCost cost={card.manaCost} size={12} />
+                      : <span style={{ color: '#666', fontSize: 10 }}>({getCmc(card)})</span>}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ))}
+
+          {/* Basic lands */}
+          {totalLands > 0 && (
+            <div className={styles.deckViewerLandsSection}>
+              <div className={styles.deckViewerGroupHeader}>
+                Lands ({totalLands})
+              </div>
+              {Object.entries(deckBuildingState.landCounts)
+                .filter(([, count]) => count > 0)
+                .map(([name, count]) => {
+                  const landCard = cardInfoMap.get(name)
+                  return (
+                    <div
+                      key={name}
+                      className={styles.deckViewerLandRow}
+                      onMouseEnter={(e) => landCard && handleHover(landCard, e)}
+                      onMouseMove={(e) => landCard && handleHover(landCard, e)}
+                      onMouseLeave={() => handleHover(null)}
+                    >
+                      <span className={styles.deckViewerCount}>{count}</span>
+                      <span className={styles.deckViewerLandName}>{name}</span>
+                    </div>
+                  )
+                })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Card image preview on hover */}
+      {hoveredCard && <DeckViewerCardPreview card={hoveredCard} pos={hoverPos} />}
+    </div>
+  )
+}
+
+/**
+ * Card image preview that follows the cursor, shown when hovering cards in the deck viewer.
+ */
+function DeckViewerCardPreview({ card, pos }: { card: SealedCardInfo; pos: { x: number; y: number } | null }) {
+  const imageUrl = getCardImageUrl(card.name, card.imageUri, 'large')
+  const previewWidth = 250
+  const previewHeight = Math.round(previewWidth * 1.4)
+
+  let top = 80
+  let left = 20
+  if (pos) {
+    const margin = 20
+    if (pos.x + previewWidth + margin + 20 < window.innerWidth) {
+      left = pos.x + margin
+    } else {
+      left = pos.x - previewWidth - margin
+    }
+    top = Math.max(10, Math.min(pos.y - previewHeight / 2, window.innerHeight - previewHeight - 10))
+  }
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        top,
+        left,
+        pointerEvents: 'none',
+        zIndex: 1002,
+        transition: 'top 0.05s, left 0.05s',
+      }}
+    >
+      <div
+        style={{
+          width: previewWidth,
+          height: previewHeight,
+          borderRadius: 12,
+          overflow: 'hidden',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.8)',
+        }}
       >
-        {tournamentState.isComplete ? 'Return to Menu' : 'Leave Tournament'}
-      </button>
+        <img
+          src={imageUrl}
+          alt={card.name}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+          }}
+        />
+      </div>
     </div>
   )
 }
