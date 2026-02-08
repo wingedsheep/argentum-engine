@@ -12,6 +12,7 @@ class RemovalExecutors : ExecutorModule {
         DestroyAllExecutor(),
         CantBeRegeneratedExecutor(),
         ExileUntilEndStepExecutor(),
+        ForceSacrificeExecutor(),
         PayOrSufferExecutor(),
         RegenerateExecutor(),
         SacrificeExecutor(),

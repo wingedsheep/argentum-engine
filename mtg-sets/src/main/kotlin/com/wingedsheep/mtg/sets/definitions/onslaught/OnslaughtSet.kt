@@ -85,6 +85,7 @@ object OnslaughtSet {
         AphettoVulture,
         AnuridMurkdiver,
         CabalArchon,
+        CabalExecutioner,
         CruelRevival,
         DeathPulse,
         DoomedNecromancer,
