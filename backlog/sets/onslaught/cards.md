@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 169 / 335
+**Implemented:** 170 / 335
 
 ---
 
@@ -73,7 +73,7 @@
 - [ ] Crowd Favorites
 - [ ] Crown of Ascension
 - [ ] Crown of Awe
-- [ ] Crown of Fury
+- [x] Crown of Fury
 - [ ] Crown of Suspicion
 - [ ] Crown of Vigor
 - [x] Crude Rampart

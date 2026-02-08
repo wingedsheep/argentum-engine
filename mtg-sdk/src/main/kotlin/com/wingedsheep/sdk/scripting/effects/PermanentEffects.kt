@@ -363,3 +363,42 @@ data class TurnFaceUpEffect(
 ) : Effect {
     override val description: String = "Turn ${target.description} face up"
 }
+
+/**
+ * Grant stats and/or a keyword to the enchanted creature and all other creatures
+ * that share a creature type with it.
+ *
+ * Used by the Crown cycle from Onslaught (Crown of Fury, Crown of Vigor, etc.)
+ * which sacrifice themselves to buff creatures sharing a type with the enchanted creature.
+ *
+ * At resolution time, the executor:
+ * 1. Finds the enchanted creature via AttachedToComponent on the source (aura)
+ * 2. Gets the enchanted creature's creature subtypes
+ * 3. Applies the effect to all creatures sharing at least one subtype
+ *
+ * @property powerModifier Power bonus (can be negative)
+ * @property toughnessModifier Toughness bonus (can be negative)
+ * @property keyword Optional keyword to grant
+ * @property duration How long the effect lasts
+ */
+@Serializable
+data class GrantToEnchantedCreatureTypeGroupEffect(
+    val powerModifier: Int = 0,
+    val toughnessModifier: Int = 0,
+    val keyword: Keyword? = null,
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    override val description: String = buildString {
+        append("Enchanted creature and other creatures that share a creature type with it")
+        if (powerModifier != 0 || toughnessModifier != 0) {
+            val powerStr = if (powerModifier >= 0) "+$powerModifier" else "$powerModifier"
+            val toughStr = if (toughnessModifier >= 0) "+$toughnessModifier" else "$toughnessModifier"
+            append(" get $powerStr/$toughStr")
+        }
+        if (keyword != null) {
+            if (powerModifier != 0 || toughnessModifier != 0) append(" and")
+            append(" gain ${keyword.displayName.lowercase()}")
+        }
+        if (duration.description.isNotEmpty()) append(" ${duration.description}")
+    }
+}

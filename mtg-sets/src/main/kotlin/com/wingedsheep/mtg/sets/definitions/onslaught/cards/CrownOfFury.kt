@@ -1,0 +1,51 @@
+package com.wingedsheep.mtg.sets.definitions.onslaught.cards
+
+import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.dsl.Targets
+import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.GrantKeyword
+import com.wingedsheep.sdk.scripting.GrantToEnchantedCreatureTypeGroupEffect
+import com.wingedsheep.sdk.scripting.ModifyStats
+
+/**
+ * Crown of Fury
+ * {1}{R}
+ * Enchantment — Aura
+ * Enchant creature
+ * Enchanted creature gets +1/+0 and has first strike.
+ * Sacrifice Crown of Fury: Enchanted creature and other creatures that share
+ * a creature type with it get +1/+0 and gain first strike until end of turn.
+ */
+val CrownOfFury = card("Crown of Fury") {
+    manaCost = "{1}{R}"
+    typeLine = "Enchantment — Aura"
+
+    auraTarget = Targets.Creature
+
+    staticAbility {
+        ability = ModifyStats(1, 0)
+    }
+
+    staticAbility {
+        ability = GrantKeyword(Keyword.FIRST_STRIKE)
+    }
+
+    activatedAbility {
+        cost = Costs.SacrificeSelf
+        effect = GrantToEnchantedCreatureTypeGroupEffect(
+            powerModifier = 1,
+            toughnessModifier = 0,
+            keyword = Keyword.FIRST_STRIKE
+        )
+    }
+
+    metadata {
+        rarity = Rarity.COMMON
+        collectorNumber = "196"
+        artist = "Kev Walker"
+        flavorText = "The crown never rests easy on a peaceful brow."
+        imageUri = "https://cards.scryfall.io/normal/front/7/f/7f65a47a-e793-4629-a523-6b7850fc3657.jpg?1562924199"
+    }
+}
