@@ -144,7 +144,7 @@ class TurnManager(
                 playerId = activePlayer,
                 sourceId = null,
                 sourceName = null,
-                prompt = "Choose permanents to keep tapped (you may choose not to untap them)",
+                prompt = "Select permanents to keep tapped",
                 options = mayNotUntapPermanents,
                 minSelections = 0,
                 maxSelections = mayNotUntapPermanents.size,

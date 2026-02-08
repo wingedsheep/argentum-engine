@@ -388,6 +388,8 @@ export interface LegalActionInfo {
   readonly minDamagePerTarget?: number
   /** Preview of which lands/sources would be auto-tapped if this spell is cast (for UI highlighting) */
   readonly autoTapPreview?: readonly EntityId[]
+  /** Whether this ability produces mana of any color and needs a color choice from the player */
+  readonly requiresManaColorChoice?: boolean
 }
 
 /**

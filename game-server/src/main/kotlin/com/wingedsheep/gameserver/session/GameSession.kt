@@ -1058,7 +1058,10 @@ class GameSession(
             val manaAbilities = cardDef.script.activatedAbilities.filter { it.isManaAbility }
 
             for (ability in manaAbilities) {
-                // Check if the ability can be activated
+                // Check if the ability can be activated and gather cost info
+                var tapTargets: List<EntityId>? = null
+                var tapCost: AbilityCost.TapPermanents? = null
+
                 when (ability.cost) {
                     is AbilityCost.Tap -> {
                         // Must be untapped
@@ -1071,16 +1074,32 @@ class GameSession(
                             if (hasSummoningSickness && !hasHaste) continue
                         }
                     }
+                    is AbilityCost.TapPermanents -> {
+                        tapCost = ability.cost as AbilityCost.TapPermanents
+                        tapTargets = findAbilityTapTargets(state, playerId, tapCost.filter)
+                        if (tapTargets.size < tapCost.count) continue
+                    }
                     else -> {
                         // Other cost types - allow for now, engine will validate
                     }
                 }
 
+                val costInfo = if (tapTargets != null && tapCost != null) {
+                    AdditionalCostInfo(
+                        description = tapCost.description,
+                        costType = "TapPermanents",
+                        validTapTargets = tapTargets,
+                        tapCount = tapCost.count
+                    )
+                } else null
+
                 result.add(LegalActionInfo(
                     actionType = "ActivateAbility",
                     description = ability.description,
                     action = ActivateAbility(playerId, entityId, ability.id),
-                    isManaAbility = true
+                    isManaAbility = true,
+                    additionalCostInfo = costInfo,
+                    requiresManaColorChoice = ability.effect is com.wingedsheep.sdk.scripting.AddAnyColorManaEffect
                 ))
             }
         }

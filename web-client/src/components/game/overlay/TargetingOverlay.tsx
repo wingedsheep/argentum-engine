@@ -6,6 +6,7 @@ import { calculateFittingCardWidth } from '../../../hooks/useResponsive'
 import { getCardImageUrl } from '../../../utils/cardImages'
 import { useResponsiveContext, handleImageError } from '../board/shared'
 import { styles } from '../board/styles'
+import { TARGET_COLOR, TARGET_COLOR_BRIGHT } from '../../../styles/targetingColors'
 
 /**
  * Graveyard targeting overlay - shows when targeting mode requires selecting cards from graveyards.
@@ -402,6 +403,7 @@ export function TargetingOverlay() {
   const hasEnoughTargets = selectedCount >= minTargets
   const hasMaxTargets = selectedCount >= maxTargets
   const isSacrifice = targetingState.isSacrificeSelection
+  const isTapPermanent = targetingState.isTapPermanentSelection
 
   // Check if targets are graveyard cards — use explicit targetZone when available,
   // fall back to inspecting gameState.cards for backward compatibility
@@ -459,23 +461,25 @@ export function TargetingOverlay() {
     : null
 
   // Build the prompt text based on selection type
-  const promptText = isSacrifice
-    ? `Select creature to sacrifice (${targetDisplay})`
-    : targetingState.targetDescription
-      ? `Select ${targetingState.targetDescription} (${targetDisplay})`
-      : `Select targets (${targetDisplay})`
+  const promptText = isTapPermanent
+    ? `Select permanents to tap (${targetDisplay})`
+    : isSacrifice
+      ? `Select creature to sacrifice (${targetDisplay})`
+      : targetingState.targetDescription
+        ? `Select ${targetingState.targetDescription} (${targetDisplay})`
+        : `Select targets (${targetDisplay})`
 
   const hintText = hasMaxTargets
-    ? isSacrifice ? 'Creature selected' : 'Maximum targets selected'
+    ? isTapPermanent ? 'Permanents selected' : isSacrifice ? 'Creature selected' : 'Maximum targets selected'
     : hasEnoughTargets
       ? 'Click Confirm or select more'
-      : isSacrifice ? 'Click a creature you control' : 'Click a highlighted target'
+      : isTapPermanent ? 'Click a highlighted permanent' : isSacrifice ? 'Click a creature you control' : 'Click a highlighted target'
 
   return (
     <div style={{
       ...styles.targetingOverlay,
       padding: responsive.isMobile ? '12px 16px' : '16px 24px',
-      borderColor: isSacrifice ? '#ff8800' : '#ff4444',
+      borderColor: TARGET_COLOR,
     }}>
       {stepLabel && (
         <div style={{
@@ -491,7 +495,7 @@ export function TargetingOverlay() {
       <div style={{
         ...styles.targetingPrompt,
         fontSize: responsive.fontSize.normal,
-        color: isSacrifice ? '#ff8800' : '#ff4444',
+        color: TARGET_COLOR_BRIGHT,
       }}>
         {promptText}
       </div>

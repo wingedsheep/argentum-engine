@@ -8,6 +8,7 @@ import type {
   CombatState,
   XSelectionState,
   ConvokeSelectionState,
+  ManaColorSelectionState,
   DecisionSelectionState,
   DamageDistributionState,
   DistributeState,
@@ -28,6 +29,7 @@ export interface UISliceState {
   combatState: CombatState | null
   xSelectionState: XSelectionState | null
   convokeSelectionState: ConvokeSelectionState | null
+  manaColorSelectionState: ManaColorSelectionState | null
   decisionSelectionState: DecisionSelectionState | null
   damageDistributionState: DamageDistributionState | null
   distributeState: DistributeState | null
@@ -78,6 +80,9 @@ export interface UISliceActions {
   toggleConvokeCreature: (entityId: EntityId, name: string, payingColor: string | null) => void
   cancelConvokeSelection: () => void
   confirmConvokeSelection: () => void
+  startManaColorSelection: (state: ManaColorSelectionState) => void
+  confirmManaColorSelection: (color: string) => void
+  cancelManaColorSelection: () => void
   startDecisionSelection: (state: DecisionSelectionState) => void
   toggleDecisionSelection: (cardId: EntityId) => void
   cancelDecisionSelection: () => void
@@ -110,6 +115,7 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
   combatState: null,
   xSelectionState: null,
   convokeSelectionState: null,
+  manaColorSelectionState: null,
   decisionSelectionState: null,
   damageDistributionState: null,
   distributeState: null,
@@ -228,6 +234,10 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
             maxTargets: actionInfo.targetCount ?? 1,
             ...(actionInfo.requiresDamageDistribution ? { pendingActionInfo: actionInfo } : {}),
           })
+          return
+        } else if (actionInfo.requiresManaColorChoice) {
+          // Need mana color selection before submitting (e.g., Birchlore Rangers)
+          set({ targetingState: null, manaColorSelectionState: { action: actionWithCost } })
           return
         } else {
           submitAction(actionWithCost)
@@ -677,6 +687,28 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
     }
 
     set({ convokeSelectionState: null })
+  },
+
+  // Mana color selection actions
+  startManaColorSelection: (manaColorSelectionState) => {
+    set({ manaColorSelectionState })
+  },
+
+  confirmManaColorSelection: (color) => {
+    const { manaColorSelectionState, submitAction } = get()
+    if (!manaColorSelectionState) return
+
+    const action = manaColorSelectionState.action
+    if (action.type === 'ActivateAbility') {
+      submitAction({ ...action, manaColorChoice: color })
+    } else {
+      submitAction(action)
+    }
+    set({ manaColorSelectionState: null })
+  },
+
+  cancelManaColorSelection: () => {
+    set({ manaColorSelectionState: null })
   },
 
   // Decision selection actions

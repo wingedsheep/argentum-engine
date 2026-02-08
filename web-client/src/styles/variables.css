@@ -109,11 +109,19 @@
   --color-selection-bg: #003300;
   --color-selection-shadow: rgba(0, 255, 0, 0.3);
 
-  /* Targeting */
-  --color-target: #ff4444;
-  --color-target-secondary: #ff9900;
-  --color-target-shadow: rgba(255, 68, 68, 0.4);
-  --color-target-secondary-shadow: rgba(255, 153, 0, 0.4);
+  /* Targeting / Selection - valid options (light blue) */
+  --color-target: #66bbff;
+  --color-target-bright: #88ccff;
+  --color-target-shadow: rgba(102, 187, 255, 0.4);
+  --color-target-glow: rgba(102, 187, 255, 0.6);
+  --color-target-glow-bright: rgba(136, 204, 255, 0.9);
+  --color-target-glow-outer: rgba(100, 180, 255, 0.6);
+
+  /* Targeting / Selection - selected (green) */
+  --color-selected: #44dd44;
+  --color-selected-bg: #0a2a1a;
+  --color-selected-shadow: rgba(68, 221, 68, 0.4);
+  --color-selected-glow: rgba(68, 221, 68, 0.8);
 
   /* =========================================================================
    * Colors - Mana (MTG)

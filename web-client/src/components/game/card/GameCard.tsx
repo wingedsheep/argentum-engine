@@ -13,6 +13,10 @@ import {
   getGoldCounters,
 } from '../board/shared'
 import { styles } from '../board/styles'
+import {
+  TARGET_COLOR, TARGET_COLOR_BRIGHT, TARGET_GLOW, TARGET_GLOW_BRIGHT, TARGET_GLOW_OUTER, TARGET_SHADOW,
+  SELECTED_COLOR, SELECTED_GLOW, SELECTED_SHADOW,
+} from '../../../styles/targetingColors'
 import { KeywordIcons, ActiveEffectBadges } from './CardOverlays'
 
 interface GameCardProps {
@@ -421,13 +425,13 @@ export function GameCard({
     borderStyle = '3px solid #ff8800'
     boxShadow = '0 0 12px rgba(255, 136, 0, 0.6), 0 0 24px rgba(255, 136, 0, 0.3)'
   } else if (isSelectedTarget) {
-    // Yellow highlight for selected targets (already chosen in targeting mode)
-    borderStyle = '3px solid #ffff00'
-    boxShadow = '0 0 20px rgba(255, 255, 0, 0.8), 0 0 40px rgba(255, 255, 0, 0.4)'
+    // Green highlight for selected targets (already chosen in targeting mode)
+    borderStyle = `3px solid ${SELECTED_COLOR}`
+    boxShadow = `0 0 20px ${SELECTED_GLOW}, 0 0 40px ${SELECTED_SHADOW}`
   } else if (isSelectedDecisionOption) {
     // Green highlight for selected decision options
-    borderStyle = '3px solid #44dd44'
-    boxShadow = '0 0 20px rgba(68, 221, 68, 0.8), 0 0 40px rgba(68, 221, 68, 0.4)'
+    borderStyle = `3px solid ${SELECTED_COLOR}`
+    boxShadow = `0 0 20px ${SELECTED_GLOW}, 0 0 40px ${SELECTED_SHADOW}`
   } else if (isDistributeTarget && distributeAllocated > 0) {
     // Orange for distribute targets with damage allocated
     borderStyle = '3px solid #ff6b35'
@@ -439,21 +443,14 @@ export function GameCard({
   } else if (isSelected && !isInCombatMode) {
     borderStyle = '3px solid #ffff00'
     boxShadow = '0 8px 20px rgba(255, 255, 0, 0.4)'
-  } else if (isValidDecisionSelection && isHovered) {
-    // Brighter blue-gray highlight when hovering over a valid decision selection option
-    borderStyle = '3px solid #8899bb'
-    boxShadow = '0 0 20px rgba(136, 153, 187, 0.8), 0 0 40px rgba(120, 140, 170, 0.5)'
-  } else if (isValidDecisionSelection) {
-    // Blue-gray highlight for valid decision selection options
-    borderStyle = '2px solid #667799'
-    boxShadow = '0 0 12px rgba(102, 119, 153, 0.5), 0 0 24px rgba(102, 119, 153, 0.25)'
-  } else if ((isValidTarget || isValidDecisionTarget) && isHovered) {
-    // Bright highlight when hovering over a valid target
-    borderStyle = '3px solid #ff6666'
-    boxShadow = '0 0 20px rgba(255, 100, 100, 0.9), 0 0 40px rgba(255, 68, 68, 0.6)'
-  } else if (isValidTarget || isValidDecisionTarget) {
-    borderStyle = '3px solid #ff4444'
-    boxShadow = '0 4px 15px rgba(255, 68, 68, 0.6)'
+  } else if ((isValidDecisionSelection || isValidTarget || isValidDecisionTarget) && isHovered) {
+    // Bright light-blue highlight when hovering over a valid target/option
+    borderStyle = `3px solid ${TARGET_COLOR_BRIGHT}`
+    boxShadow = `0 0 20px ${TARGET_GLOW_BRIGHT}, 0 0 40px ${TARGET_GLOW_OUTER}`
+  } else if (isValidDecisionSelection || isValidTarget || isValidDecisionTarget) {
+    // Light-blue highlight for valid targets/options
+    borderStyle = `2px solid ${TARGET_COLOR}`
+    boxShadow = `0 0 12px ${TARGET_GLOW}, 0 0 24px ${TARGET_SHADOW}`
   } else if ((isValidAttacker || isValidBlocker) && isHovered) {
     // Bright highlight when hovering over a valid attacker/blocker
     borderStyle = '3px solid #44ff44'

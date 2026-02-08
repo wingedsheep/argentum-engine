@@ -15,7 +15,7 @@ import { useResponsive } from '../../hooks/useResponsive'
 // Import extracted components
 import { Battlefield, CardRow, StackDisplay, ZonePile, ResponsiveContext } from './board'
 import { CardPreview } from './card'
-import { TargetingOverlay, LifeDisplay, ActiveEffectsBadges, ConcedeButton, FullscreenButton } from './overlay'
+import { TargetingOverlay, ManaColorSelectionOverlay, LifeDisplay, ActiveEffectsBadges, ConcedeButton, FullscreenButton } from './overlay'
 import { styles } from './board/styles'
 
 /**
@@ -494,6 +494,9 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
 
       {/* Targeting overlay for spell/ability target selection */}
       {!spectatorMode && <TargetingOverlay />}
+
+      {/* Mana color selection overlay */}
+      {!spectatorMode && <ManaColorSelectionOverlay />}
 
       {/* Combat arrows for blocker assignments - rendered by SpectatorGameBoard in spectator mode to avoid stacking context issues */}
       {!spectatorMode && <CombatArrows />}

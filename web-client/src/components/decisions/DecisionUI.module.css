@@ -74,8 +74,8 @@
 
 .sideBannerSelection {
   composes: sideBanner;
-  border: 2px solid var(--color-target-secondary);
-  box-shadow: 0 4px 24px var(--color-target-secondary-shadow);
+  border: 2px solid var(--color-target);
+  box-shadow: 0 4px 24px var(--color-target-shadow);
 }
 
 /* =========================================================================
@@ -106,7 +106,7 @@
 }
 
 .bannerTitle {
-  color: var(--color-target);
+  color: var(--color-target-bright);
   font-size: var(--font-md);
   font-weight: var(--font-weight-bold);
   text-transform: uppercase;
@@ -115,7 +115,6 @@
 
 .bannerTitleSelection {
   composes: bannerTitle;
-  color: var(--color-target-secondary);
 }
 
 .subtitle {
@@ -359,15 +358,15 @@
 }
 
 .decisionCardDefault:hover:not(.decisionCardSelected) {
-  border-color: var(--color-highlight);
+  border-color: var(--color-target);
   transform: translateY(-4px);
 }
 
 .decisionCardSelected {
-  background-color: #330000;
-  border: 3px solid var(--color-target);
+  background-color: var(--color-selected-bg);
+  border: 3px solid var(--color-selected);
   transform: translateY(-8px) scale(1.05);
-  box-shadow: 0 8px 20px rgba(255, 68, 68, 0.3);
+  box-shadow: 0 8px 20px var(--color-selected-shadow);
 }
 
 /* =========================================================================
@@ -448,12 +447,12 @@
   right: 4px;
   width: 20px;
   height: 20px;
-  background-color: var(--color-target);
+  background-color: var(--color-selected);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-primary);
+  color: var(--color-selected-bg);
   font-weight: var(--font-weight-bold);
   font-size: 12px;
 }

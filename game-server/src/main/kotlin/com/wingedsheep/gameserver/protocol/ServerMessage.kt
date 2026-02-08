@@ -770,7 +770,9 @@ data class LegalActionInfo(
     /** Minimum damage per target (usually 1 per MTG rules) */
     val minDamagePerTarget: Int? = null,
     /** Preview of which lands/sources would be auto-tapped if this spell is cast (for UI highlighting) */
-    val autoTapPreview: List<EntityId>? = null
+    val autoTapPreview: List<EntityId>? = null,
+    /** Whether this ability produces mana of any color and needs a color choice from the player */
+    val requiresManaColorChoice: Boolean = false
 )
 
 /**

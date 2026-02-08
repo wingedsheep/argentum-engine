@@ -59,6 +59,8 @@ export interface TargetingState {
   maxTargets: number
   /** If set, this targeting phase is for sacrifice selection, not spell targets */
   isSacrificeSelection?: boolean
+  /** If set, this targeting phase is for tapping permanents as a cost */
+  isTapPermanentSelection?: boolean
   /** The original action info, used to chain sacrifice -> spell targeting -> damage distribution */
   pendingActionInfo?: LegalActionInfo
   /** Current target requirement index for multi-target spells (0-indexed) */
@@ -183,6 +185,14 @@ export interface ConvokeCreatureSelection {
   name: string
   /** If set, this creature pays for this color. If null, pays for generic. */
   payingColor: string | null
+}
+
+/**
+ * Mana color selection state when activating "add one mana of any color" abilities.
+ */
+export interface ManaColorSelectionState {
+  /** The action ready to submit (with costPayment already set) */
+  action: GameAction
 }
 
 /**
@@ -418,6 +428,7 @@ export type GameStore = {
   combatState: CombatState | null
   xSelectionState: XSelectionState | null
   convokeSelectionState: ConvokeSelectionState | null
+  manaColorSelectionState: ManaColorSelectionState | null
   decisionSelectionState: DecisionSelectionState | null
   damageDistributionState: DamageDistributionState | null
   distributeState: DistributeState | null
@@ -465,6 +476,9 @@ export type GameStore = {
   toggleConvokeCreature: (entityId: EntityId, name: string, payingColor: string | null) => void
   cancelConvokeSelection: () => void
   confirmConvokeSelection: () => void
+  startManaColorSelection: (state: ManaColorSelectionState) => void
+  confirmManaColorSelection: (color: string) => void
+  cancelManaColorSelection: () => void
   startDecisionSelection: (state: DecisionSelectionState) => void
   toggleDecisionSelection: (cardId: EntityId) => void
   cancelDecisionSelection: () => void

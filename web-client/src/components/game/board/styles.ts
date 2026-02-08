@@ -1,4 +1,5 @@
 import React from 'react'
+import { TARGET_COLOR, TARGET_COLOR_BRIGHT } from '../../../styles/targetingColors'
 
 export const styles: Record<string, React.CSSProperties> = {
   container: {
@@ -489,10 +490,10 @@ export const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     gap: 12,
     zIndex: 100,
-    border: '2px solid #ff4444',
+    border: `2px solid ${TARGET_COLOR}`,
   },
   targetingPrompt: {
-    color: '#ff4444',
+    color: TARGET_COLOR_BRIGHT,
     fontSize: 16,
     fontWeight: 600,
   },

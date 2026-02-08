@@ -223,33 +223,31 @@ function BattlefieldSelectionUI({
   return (
     <div className={styles.sideBannerSelection}>
       <div className={styles.bannerTitleSelection}>
-        Select Cards
-      </div>
-      <div className={styles.prompt}>
         {decision.prompt}
       </div>
       <div className={styles.hint}>
-        {selectedCount} / {maxSelections} selected
+        {selectedCount > 0
+          ? `${selectedCount} / ${maxSelections} selected`
+          : 'Click cards to select'}
         {minSelections > 0 && ` (min ${minSelections})`}
-      </div>
-      <div className={styles.hintSmall}>
-        Click valid cards to select
       </div>
 
       {/* Confirm/Skip buttons */}
       <div className={styles.buttonContainerSmall}>
-        {canSkip && (
-          <button onClick={handleSkip} className={`${styles.skipButton}`}>
-            Skip
+        {canSkip && selectedCount === 0 && (
+          <button onClick={handleSkip} className={`${styles.confirmButton} ${styles.confirmButtonSmall}`}>
+            Select None
           </button>
         )}
-        <button
-          onClick={handleConfirm}
-          disabled={!canConfirm}
-          className={`${styles.confirmButton} ${styles.confirmButtonSmall}`}
-        >
-          Confirm
-        </button>
+        {selectedCount > 0 && (
+          <button
+            onClick={handleConfirm}
+            disabled={!canConfirm}
+            className={`${styles.confirmButton} ${styles.confirmButtonSmall}`}
+          >
+            Confirm ({selectedCount})
+          </button>
+        )}
       </div>
     </div>
   )

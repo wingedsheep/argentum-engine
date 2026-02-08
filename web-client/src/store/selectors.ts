@@ -222,17 +222,19 @@ export function useCardLegalActions(cardId: EntityId | null): readonly LegalActi
 }
 
 /**
- * Hook to check if a card has any legal actions (excluding mana abilities and unaffordable actions).
- * Mana abilities are always available but shouldn't cause cards to be highlighted.
+ * Hook to check if a card has any legal actions (excluding simple mana abilities and unaffordable actions).
+ * Simple mana abilities (tap-for-mana) are always available but shouldn't cause cards to be highlighted.
+ * Mana abilities with additional costs (e.g., TapPermanents) DO cause highlighting since they need interaction.
  * Unaffordable actions (isAffordable = false) are shown in the modal but shouldn't cause highlighting.
  */
 export function useHasLegalActions(cardId: EntityId | null): boolean {
   const actions = useCardLegalActions(cardId)
-  // Filter out mana abilities and unaffordable actions - they shouldn't cause highlighting
-  const affordableNonManaActions = actions.filter(
-    (a) => !a.isManaAbility && a.isAffordable !== false
+  // Filter out simple mana abilities and unaffordable actions - they shouldn't cause highlighting
+  // Mana abilities with additional costs (TapPermanents, SacrificePermanent) still need highlighting
+  const affordableHighlightableActions = actions.filter(
+    (a) => (!a.isManaAbility || a.additionalCostInfo != null) && a.isAffordable !== false
   )
-  return affordableNonManaActions.length > 0
+  return affordableHighlightableActions.length > 0
 }
 
 /**

@@ -29,6 +29,7 @@ export function useInteraction() {
   const startXSelection = useGameStore((state) => state.startXSelection)
   const startTargeting = useGameStore((state) => state.startTargeting)
   const startConvokeSelection = useGameStore((state) => state.startConvokeSelection)
+  const startManaColorSelection = useGameStore((state) => state.startManaColorSelection)
 
   /**
    * Get legal actions for a card.
@@ -181,8 +182,16 @@ export function useInteraction() {
           minTargets: costInfo.tapCount ?? 1,
           maxTargets: costInfo.tapCount ?? 1,
           isSacrificeSelection: true,
+          isTapPermanentSelection: true,
           pendingActionInfo: actionInfo,
         })
+        selectCard(null)
+        return
+      }
+
+      // Check if ability requires mana color selection (e.g., "add one mana of any color")
+      if (action.type === 'ActivateAbility' && actionInfo.requiresManaColorChoice) {
+        startManaColorSelection({ action })
         selectCard(null)
         return
       }
@@ -233,7 +242,7 @@ export function useInteraction() {
       submitAction(action)
       selectCard(null)
     },
-    [submitAction, selectCard, startXSelection, startTargeting, startConvokeSelection]
+    [submitAction, selectCard, startXSelection, startTargeting, startConvokeSelection, startManaColorSelection]
   )
 
   /**
@@ -255,6 +264,11 @@ export function useInteraction() {
 
       // Sacrifice costs need selection
       if ((action.type === 'CastSpell' || action.type === 'ActivateAbility') && actionInfo.additionalCostInfo?.costType === 'SacrificePermanent') {
+        return false
+      }
+
+      // TapPermanents costs need selection (e.g., Birchlore Rangers)
+      if (action.type === 'ActivateAbility' && actionInfo.additionalCostInfo?.costType === 'TapPermanents') {
         return false
       }
 
