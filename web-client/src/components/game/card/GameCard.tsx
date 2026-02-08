@@ -267,16 +267,35 @@ export function GameCard({
           })
         } else if (playableAction.requiresTargets && playableAction.validTargets && playableAction.validTargets.length > 0) {
           // Check if action requires targeting
-          // Enter targeting mode
-          startTargeting({
-            action: playableAction.action,
-            validTargets: playableAction.validTargets,
-            selectedTargets: [],
-            minTargets: playableAction.minTargets ?? playableAction.targetCount ?? 1,
-            maxTargets: playableAction.targetCount ?? 1,
-            // Pass pendingActionInfo for damage distribution spells (e.g., Forked Lightning)
-            ...(playableAction.requiresDamageDistribution ? { pendingActionInfo: playableAction } : {}),
-          })
+          if (playableAction.targetRequirements && playableAction.targetRequirements.length > 1) {
+            // Multi-target spell (e.g., Cruel Revival) — set up full multi-target state
+            const firstReq = playableAction.targetRequirements[0]!
+            startTargeting({
+              action: playableAction.action,
+              validTargets: [...firstReq.validTargets],
+              selectedTargets: [],
+              minTargets: firstReq.minTargets,
+              maxTargets: firstReq.maxTargets,
+              currentRequirementIndex: 0,
+              allSelectedTargets: [],
+              targetRequirements: playableAction.targetRequirements,
+              ...(firstReq.targetZone ? { targetZone: firstReq.targetZone } : {}),
+              targetDescription: firstReq.description,
+              totalRequirements: playableAction.targetRequirements.length,
+              ...(playableAction.requiresDamageDistribution ? { pendingActionInfo: playableAction } : {}),
+            })
+          } else {
+            // Single-target spell — enter targeting mode
+            startTargeting({
+              action: playableAction.action,
+              validTargets: playableAction.validTargets,
+              selectedTargets: [],
+              minTargets: playableAction.minTargets ?? playableAction.targetCount ?? 1,
+              maxTargets: playableAction.targetCount ?? 1,
+              // Pass pendingActionInfo for damage distribution spells (e.g., Forked Lightning)
+              ...(playableAction.requiresDamageDistribution ? { pendingActionInfo: playableAction } : {}),
+            })
+          }
         } else {
           // Play the card directly
           submitAction(playableAction.action)
@@ -406,9 +425,9 @@ export function GameCard({
     borderStyle = '3px solid #ffff00'
     boxShadow = '0 0 20px rgba(255, 255, 0, 0.8), 0 0 40px rgba(255, 255, 0, 0.4)'
   } else if (isSelectedDecisionOption) {
-    // Orange highlight for selected decision options
-    borderStyle = '3px solid #ff9900'
-    boxShadow = '0 0 20px rgba(255, 153, 0, 0.8), 0 0 40px rgba(255, 153, 0, 0.4)'
+    // Green highlight for selected decision options
+    borderStyle = '3px solid #44dd44'
+    boxShadow = '0 0 20px rgba(68, 221, 68, 0.8), 0 0 40px rgba(68, 221, 68, 0.4)'
   } else if (isDistributeTarget && distributeAllocated > 0) {
     // Orange for distribute targets with damage allocated
     borderStyle = '3px solid #ff6b35'
@@ -420,11 +439,19 @@ export function GameCard({
   } else if (isSelected && !isInCombatMode) {
     borderStyle = '3px solid #ffff00'
     boxShadow = '0 8px 20px rgba(255, 255, 0, 0.4)'
-  } else if ((isValidTarget || isValidDecisionTarget || isValidDecisionSelection) && isHovered) {
+  } else if (isValidDecisionSelection && isHovered) {
+    // Brighter blue-gray highlight when hovering over a valid decision selection option
+    borderStyle = '3px solid #8899bb'
+    boxShadow = '0 0 20px rgba(136, 153, 187, 0.8), 0 0 40px rgba(120, 140, 170, 0.5)'
+  } else if (isValidDecisionSelection) {
+    // Blue-gray highlight for valid decision selection options
+    borderStyle = '2px solid #667799'
+    boxShadow = '0 0 12px rgba(102, 119, 153, 0.5), 0 0 24px rgba(102, 119, 153, 0.25)'
+  } else if ((isValidTarget || isValidDecisionTarget) && isHovered) {
     // Bright highlight when hovering over a valid target
     borderStyle = '3px solid #ff6666'
     boxShadow = '0 0 20px rgba(255, 100, 100, 0.9), 0 0 40px rgba(255, 68, 68, 0.6)'
-  } else if (isValidTarget || isValidDecisionTarget || isValidDecisionSelection) {
+  } else if (isValidTarget || isValidDecisionTarget) {
     borderStyle = '3px solid #ff4444'
     boxShadow = '0 4px 15px rgba(255, 68, 68, 0.6)'
   } else if ((isValidAttacker || isValidBlocker) && isHovered) {
