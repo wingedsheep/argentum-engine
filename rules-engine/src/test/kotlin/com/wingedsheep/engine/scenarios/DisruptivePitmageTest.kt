@@ -221,6 +221,59 @@ class DisruptivePitmageTest : FunSpec({
         driver.getGraveyardCardNames(activePlayer) shouldContain "Lightning Bolt"
     }
 
+    test("offers pay decision when opponent has untapped lands but no floating mana") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Island" to 20, "Mountain" to 20),
+            startingLife = 20
+        )
+
+        val player1 = driver.activePlayer!!
+        val player2 = driver.getOpponent(player1)
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        // Player 1 has Pitmage on battlefield
+        val pitmage = driver.putCreatureOnBattlefield(player1, "Disruptive Pitmage")
+        driver.removeSummoningSickness(pitmage)
+
+        // Player 2 has 4 untapped lands (no floating mana)
+        driver.putLandOnBattlefield(player2, "Mountain")
+        driver.putLandOnBattlefield(player2, "Mountain")
+        driver.putLandOnBattlefield(player2, "Mountain")
+        driver.putLandOnBattlefield(player2, "Mountain")
+
+        // Player 2 casts a 3-mana spell using floating mana (simulating tapping 3 lands)
+        val bolt = driver.putCardInHand(player2, "Lightning Bolt")
+        driver.giveMana(player2, Color.RED, 1)
+        driver.passPriority(player1) // Pass to player 2
+        driver.castSpell(player2, bolt, listOf(player1))
+
+        val spellOnStack = driver.getTopOfStack()!!
+
+        // Player 1 responds by activating Pitmage
+        val result = driver.submit(
+            ActivateAbility(
+                playerId = player1,
+                sourceId = pitmage,
+                abilityId = pitmageAbilityId,
+                targets = listOf(ChosenTarget.Spell(spellOnStack))
+            )
+        )
+        result.isSuccess shouldBe true
+
+        // Both pass to resolve the Pitmage ability
+        driver.bothPass()
+
+        // Player 2 has no floating mana but has 4 untapped lands — should still get the decision
+        driver.isPaused shouldBe true
+        driver.pendingDecision.shouldNotBeNull()
+        driver.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
+
+        val decision = driver.pendingDecision as YesNoDecision
+        decision.playerId shouldBe player2
+    }
+
     test("Pitmage taps when ability is activated") {
         val driver = createDriver()
         driver.initMirrorMatch(

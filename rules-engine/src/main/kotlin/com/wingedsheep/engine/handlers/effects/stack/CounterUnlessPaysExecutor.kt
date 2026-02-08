@@ -5,10 +5,9 @@ import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.mechanics.mana.ManaPool
+import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.sdk.scripting.CounterUnlessPaysEffect
@@ -50,12 +49,9 @@ class CounterUnlessPaysExecutor : EffectExecutor<CounterUnlessPaysEffect> {
         val payingPlayerId = spellComponent.casterId
 
         // Check if the paying player has enough mana to pay
-        val manaPool = state.getEntity(payingPlayerId)
-            ?.get<ManaPoolComponent>()
-            ?.let { ManaPool(it.white, it.blue, it.black, it.red, it.green, it.colorless) }
-            ?: ManaPool.EMPTY
-
-        if (!manaPool.canPay(effect.cost)) {
+        // Uses ManaSolver to consider both floating mana pool AND untapped mana sources (lands, etc.)
+        val manaSolver = ManaSolver()
+        if (!manaSolver.canPay(state, payingPlayerId, effect.cost)) {
             // Can't pay → auto-counter
             return StackResolver().counterSpell(state, targetSpell.spellEntityId)
         }
