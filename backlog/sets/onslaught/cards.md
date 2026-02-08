@@ -82,7 +82,7 @@
 - [ ] Custody Battle
 - [x] Daru Cavalier
 - [ ] Daru Encampment
-- [ ] Daru Healer
+- [x] Daru Healer
 - [x] Daru Lancer
 - [x] Daunting Defender
 - [ ] Dawning Purist
