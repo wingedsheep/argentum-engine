@@ -172,9 +172,6 @@ export function StepStrip({
             : isPastGroup
             ? 'rgba(255,255,255,0.35)'
             : 'rgba(255,255,255,0.15)'
-          // Show sub-step label for active groups with multiple steps
-          const showSubLabel = isActiveGroup && group.steps.length > 1
-
           return (
             <div key={group.id} style={{
               display: 'flex',
@@ -211,8 +208,8 @@ export function StepStrip({
                 })}
               </div>
 
-              {/* Sub-step label for active multi-step groups */}
-              {showSubLabel && (
+              {/* Active step label */}
+              {isActiveGroup && (
                 <span style={{
                   fontSize: isMobile ? 6 : 7,
                   color: colors.highlight,
@@ -221,7 +218,7 @@ export function StepStrip({
                   lineHeight: 1,
                   opacity: 0.8,
                 }}>
-                  {STEP_PIP_LABELS[step]}
+                  {STEP_PIP_LABELS[step] || StepShortNames[step]}
                 </span>
               )}
             </div>
