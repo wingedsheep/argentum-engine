@@ -217,7 +217,7 @@
 - [ ] Patriarch's Bidding
 - [x] Pearlspear Courier
 - [ ] Peer Pressure
-- [ ] Piety Charm
+- [x] Piety Charm
 - [x] Pinpoint Avalanche
 - [x] Plains
 - [ ] Polluted Delta

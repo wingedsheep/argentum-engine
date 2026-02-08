@@ -44,6 +44,7 @@ object OnslaughtSet {
         ImprovisedArmor,
         Inspirit,
         Pacifism,
+        PietyCharm,
         RenewedFaith,
         RighteousCause,
         DauntingDefender,
