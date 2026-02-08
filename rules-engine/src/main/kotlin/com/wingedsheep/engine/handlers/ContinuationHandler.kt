@@ -883,15 +883,29 @@ class ContinuationHandler(
         var newState = state
         val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
         val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
+        val events = mutableListOf<GameEvent>()
 
-        for (permanentId in selectedPermanents) {
-            newState = newState.removeFromZone(battlefieldZone, permanentId)
-            newState = newState.addToZone(graveyardZone, permanentId)
+        if (selectedPermanents.isNotEmpty()) {
+            events.add(PermanentsSacrificedEvent(playerId, selectedPermanents))
         }
 
-        val events = listOf(
-            PermanentsSacrificedEvent(playerId, selectedPermanents)
-        )
+        for (permanentId in selectedPermanents) {
+            if (permanentId !in newState.getZone(battlefieldZone)) continue
+
+            val permanentName = newState.getEntity(permanentId)?.get<CardComponent>()?.name ?: "Unknown"
+            newState = newState.removeFromZone(battlefieldZone, permanentId)
+            newState = newState.addToZone(graveyardZone, permanentId)
+
+            events.add(
+                ZoneChangeEvent(
+                    entityId = permanentId,
+                    entityName = permanentName,
+                    fromZone = Zone.BATTLEFIELD,
+                    toZone = Zone.GRAVEYARD,
+                    ownerId = playerId
+                )
+            )
+        }
 
         return checkForMoreContinuations(newState, events)
     }
