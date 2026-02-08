@@ -47,6 +47,7 @@ object OnslaughtSet {
         RighteousCause,
         DauntingDefender,
         DaruCavalier,
+        DaruHealer,
         DaruLancer,
         DiscipleOfGrace,
         GlorySeeker,
