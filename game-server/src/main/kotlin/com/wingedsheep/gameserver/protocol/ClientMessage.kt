@@ -1,5 +1,6 @@
 package com.wingedsheep.gameserver.protocol
 
+import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.engine.core.GameAction
 import kotlinx.serialization.SerialName
@@ -249,4 +250,15 @@ sealed interface ClientMessage {
     @Serializable
     @SerialName("setFullControl")
     data class SetFullControl(val enabled: Boolean) : ClientMessage
+
+    /**
+     * Set per-step stop overrides for the current game.
+     * When a stop is set for a step, auto-pass will not skip that step (even if it normally would).
+     */
+    @Serializable
+    @SerialName("setStopOverrides")
+    data class SetStopOverrides(
+        val myTurnStops: Set<Step>,
+        val opponentTurnStops: Set<Step>
+    ) : ClientMessage
 }

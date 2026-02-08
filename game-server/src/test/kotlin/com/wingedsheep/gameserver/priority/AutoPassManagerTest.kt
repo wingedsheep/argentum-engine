@@ -815,4 +815,80 @@ class AutoPassManagerTest : FunSpec({
             autoPassManager.getNextStopPoint(state, player1, true, null) shouldBe "Resolve combat damage"
         }
     }
+
+    context("Per-Step Stop Overrides") {
+        test("Stop override forces stop at normally auto-passed step (my upkeep)") {
+            val state = createMockState(player1, player1, Step.UPKEEP)
+            val actions = listOf(
+                passPriorityAction(player1),
+                instantSpellAction(player1)
+            )
+            // Without override: auto-pass
+            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe true
+            // With my-turn override on UPKEEP: stop
+            autoPassManager.shouldAutoPass(state, player1, actions, myTurnStops = setOf(Step.UPKEEP)) shouldBe false
+        }
+
+        test("Stop override forces stop at opponent's upkeep") {
+            val state = createMockState(player2, player1, Step.UPKEEP)
+            val actions = listOf(
+                passPriorityAction(player2),
+                instantSpellAction(player2)
+            )
+            // Without override: auto-pass
+            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
+            // With opponent-turn override on UPKEEP: stop
+            autoPassManager.shouldAutoPass(state, player2, actions, opponentTurnStops = setOf(Step.UPKEEP)) shouldBe false
+        }
+
+        test("Stop override does not apply when stack is non-empty") {
+            // When stack is non-empty, Rule 4 takes precedence (own spell on stack → auto-pass)
+            val state = createMockState(player1, player1, Step.UPKEEP, stackEmpty = false, stackControllerId = player1)
+            val actions = listOf(
+                passPriorityAction(player1),
+                instantSpellAction(player1)
+            )
+            // Own spell on stack → auto-pass even with override
+            autoPassManager.shouldAutoPass(state, player1, actions, myTurnStops = setOf(Step.UPKEEP)) shouldBe true
+        }
+
+        test("My-turn stop override does not affect opponent's turn") {
+            val state = createMockState(player2, player1, Step.UPKEEP)
+            val actions = listOf(
+                passPriorityAction(player2),
+                instantSpellAction(player2)
+            )
+            // My-turn override on UPKEEP should not affect when it's opponent's turn
+            autoPassManager.shouldAutoPass(state, player2, actions, myTurnStops = setOf(Step.UPKEEP)) shouldBe true
+        }
+
+        test("Opponent-turn stop override does not affect my turn") {
+            val state = createMockState(player1, player1, Step.UPKEEP)
+            val actions = listOf(
+                passPriorityAction(player1),
+                instantSpellAction(player1)
+            )
+            // Opponent-turn override on UPKEEP should not affect when it's my turn
+            autoPassManager.shouldAutoPass(state, player1, actions, opponentTurnStops = setOf(Step.UPKEEP)) shouldBe true
+        }
+
+        test("getNextStopPoint returns overridden step") {
+            // On my turn at end step, normally passes to next main phase
+            val state = createMockState(player1, player1, Step.END)
+            // Without override and no meaningful actions → skips to next main
+            autoPassManager.getNextStopPoint(state, player1, false) shouldBe "Pass to Main"
+            // With my-turn override on END → would stop there, but we're already there
+            // So check from COMBAT_DAMAGE → should stop at END (overridden)
+            val combatState = createMockState(player1, player1, Step.COMBAT_DAMAGE)
+            autoPassManager.getNextStopPoint(combatState, player1, false, myTurnStops = setOf(Step.END)) shouldBe "End Turn"
+        }
+
+        test("Opponent-turn stop override in getNextStopPoint") {
+            // On opponent's turn at main phase, next stop is normally declare attackers or end step
+            val state = createMockState(player1, player2, Step.PRECOMBAT_MAIN)
+            // With opponent-turn override on UPKEEP → irrelevant since we're past it
+            // With opponent-turn override on BEGIN_COMBAT → should stop there
+            autoPassManager.getNextStopPoint(state, player1, false, opponentTurnStops = setOf(Step.BEGIN_COMBAT)) shouldBe "Pass to Combat"
+        }
+    }
 })

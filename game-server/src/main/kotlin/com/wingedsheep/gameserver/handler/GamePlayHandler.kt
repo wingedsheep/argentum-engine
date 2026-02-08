@@ -61,6 +61,7 @@ class GamePlayHandler(
             is ClientMessage.ChooseBottomCards -> handleChooseBottomCards(session, message)
             is ClientMessage.UpdateBlockerAssignments -> handleUpdateBlockerAssignments(session, message)
             is ClientMessage.SetFullControl -> handleSetFullControl(session, message)
+            is ClientMessage.SetStopOverrides -> handleSetStopOverrides(session, message)
             else -> {}
         }
     }
@@ -568,6 +569,22 @@ class GamePlayHandler(
         logger.info("Player ${playerSession.playerName} set full control to ${message.enabled}")
 
         // Broadcast state update so the UI reflects the change
+        broadcastStateUpdate(gameSession, emptyList())
+    }
+
+    private fun handleSetStopOverrides(session: WebSocketSession, message: ClientMessage.SetStopOverrides) {
+        val playerSession = sessionRegistry.getPlayerSession(session.id)
+        if (playerSession == null) {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        val gameSession = getGameSession(session, playerSession) ?: return
+
+        gameSession.setStopOverrides(playerSession.playerId, message.myTurnStops, message.opponentTurnStops)
+        logger.info("Player ${playerSession.playerName} set stop overrides: myTurn=${message.myTurnStops}, opponentTurn=${message.opponentTurnStops}")
+
+        // Broadcast state update so the UI reflects the change (and next stop point updates)
         broadcastStateUpdate(gameSession, emptyList())
     }
 

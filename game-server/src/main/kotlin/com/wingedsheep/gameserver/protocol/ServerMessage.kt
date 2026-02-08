@@ -3,6 +3,7 @@ package com.wingedsheep.gameserver.protocol
 import com.wingedsheep.gameserver.dto.ClientEvent
 import com.wingedsheep.gameserver.dto.ClientGameState
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.engine.core.GameAction
 import com.wingedsheep.engine.core.PendingDecision
@@ -81,8 +82,19 @@ sealed interface ServerMessage {
         /** Where passing priority will take the player (e.g., "Combat", "End Step", "My turn") */
         val nextStopPoint: String? = null,
         /** Summary of opponent's pending decision (null if opponent has no decision) */
-        val opponentDecisionStatus: OpponentDecisionStatus? = null
+        val opponentDecisionStatus: OpponentDecisionStatus? = null,
+        /** Per-step stop overrides for this player (echoed back for client sync) */
+        val stopOverrides: StopOverrideInfo? = null
     ) : ServerMessage
+
+    /**
+     * Per-step stop overrides echoed back to the client.
+     */
+    @Serializable
+    data class StopOverrideInfo(
+        val myTurnStops: Set<Step>,
+        val opponentTurnStops: Set<Step>
+    )
 
     /**
      * Error response from the server.

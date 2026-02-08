@@ -13,7 +13,9 @@ import {
   createConcedeMessage,
   createCancelGameMessage,
   createSetFullControlMessage,
+  createSetStopOverridesMessage,
 } from '../../types'
+import type { Step } from '../../types'
 import { trackEvent } from '../../utils/analytics'
 import { getWebSocket } from './shared'
 
@@ -29,6 +31,7 @@ export interface GameplaySliceState {
   gameOverState: GameOverState | null
   lastError: ErrorState | null
   fullControl: boolean
+  stopOverrides: { myTurnStops: Step[]; opponentTurnStops: Step[] }
   nextStopPoint: string | null
   opponentName: string | null
   opponentDisconnectCountdown: number | null
@@ -53,6 +56,7 @@ export interface GameplaySliceActions {
   concede: () => void
   cancelGame: () => void
   setFullControl: (enabled: boolean) => void
+  toggleStopOverride: (step: Step, isMyTurn: boolean) => void
   returnToMenu: () => void
   clearError: () => void
   consumeEvent: () => ClientEvent | undefined
@@ -73,6 +77,7 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
   gameOverState: null,
   lastError: null,
   fullControl: false,
+  stopOverrides: { myTurnStops: [], opponentTurnStops: [] },
   nextStopPoint: null,
   opponentName: null,
   opponentDisconnectCountdown: null,
@@ -266,6 +271,20 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
     set({ fullControl: enabled })
   },
 
+  toggleStopOverride: (step, isMyTurn) => {
+    const { stopOverrides } = get()
+    const key = isMyTurn ? 'myTurnStops' : 'opponentTurnStops'
+    const current = stopOverrides[key]
+    const newStops = current.includes(step)
+      ? current.filter((s) => s !== step)
+      : [...current, step]
+    const newOverrides = { ...stopOverrides, [key]: newStops }
+    set({ stopOverrides: newOverrides })
+    getWebSocket()?.send(createSetStopOverridesMessage(newOverrides.myTurnStops, newOverrides.opponentTurnStops))
+    // Persist to localStorage
+    localStorage.setItem('argentum-stop-overrides', JSON.stringify(newOverrides))
+  },
+
   returnToMenu: () => {
     const state = get()
     const isInTournament = state.tournamentState != null
@@ -291,6 +310,7 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
       revealedHandCardIds: null,
       revealedCardsInfo: null,
       fullControl: false,
+      stopOverrides: { myTurnStops: [], opponentTurnStops: [] },
       nextStopPoint: null,
       opponentDisconnectCountdown: null,
       pendingEvents: [],

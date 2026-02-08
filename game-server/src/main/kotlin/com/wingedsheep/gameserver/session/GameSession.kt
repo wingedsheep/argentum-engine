@@ -100,6 +100,12 @@ class GameSession(
 
     /** Per-player full control setting (disables auto-pass when enabled) */
     private val fullControlEnabled = java.util.concurrent.ConcurrentHashMap<EntityId, Boolean>()
+    private val stopOverrides = java.util.concurrent.ConcurrentHashMap<EntityId, StopOverrideSettings>()
+
+    data class StopOverrideSettings(
+        val myTurnStops: Set<Step> = emptySet(),
+        val opponentTurnStops: Set<Step> = emptySet()
+    )
 
     val player1: PlayerSession? get() = players.values.firstOrNull()
     val player2: PlayerSession? get() = players.values.drop(1).firstOrNull()
@@ -1336,11 +1342,12 @@ class GameSession(
         }
 
         // Calculate next stop point for the Pass button (only if player has priority)
+        val playerOverrides = getStopOverrides(playerId)
         val nextStopPoint = if (state.priorityPlayerId == playerId && !isFullControlEnabled(playerId)) {
             val hasMeaningfulActions = legalActions.any { action ->
                 action.actionType != "PassPriority" && !action.isManaAbility
             }
-            autoPassManager.getNextStopPoint(state, playerId, hasMeaningfulActions, stateProjector)
+            autoPassManager.getNextStopPoint(state, playerId, hasMeaningfulActions, stateProjector, playerOverrides.myTurnStops, playerOverrides.opponentTurnStops)
         } else {
             null
         }
@@ -1351,7 +1358,12 @@ class GameSession(
         }
 
         val stateWithLog = clientState.copy(gameLog = playerLog.toList())
-        return ServerMessage.StateUpdate(stateWithLog, clientEvents, legalActions, pendingDecision, nextStopPoint, opponentDecisionStatus)
+        val stopOverrideInfo = if (playerOverrides.myTurnStops.isNotEmpty() || playerOverrides.opponentTurnStops.isNotEmpty()) {
+            ServerMessage.StopOverrideInfo(playerOverrides.myTurnStops, playerOverrides.opponentTurnStops)
+        } else {
+            null
+        }
+        return ServerMessage.StateUpdate(stateWithLog, clientEvents, legalActions, pendingDecision, nextStopPoint, opponentDecisionStatus, stopOverrideInfo)
     }
 
     /**
@@ -1402,6 +1414,26 @@ class GameSession(
     }
 
     // =========================================================================
+    // Stop Override Settings
+    // =========================================================================
+
+    /**
+     * Set per-step stop overrides for a player.
+     * When a stop is set for a step, auto-pass will not skip that step.
+     */
+    fun setStopOverrides(playerId: EntityId, myTurnStops: Set<Step>, opponentTurnStops: Set<Step>) {
+        stopOverrides[playerId] = StopOverrideSettings(myTurnStops, opponentTurnStops)
+        logger.info("Player $playerId set stop overrides: myTurn=$myTurnStops, opponentTurn=$opponentTurnStops")
+    }
+
+    /**
+     * Get per-step stop overrides for a player.
+     */
+    fun getStopOverrides(playerId: EntityId): StopOverrideSettings {
+        return stopOverrides[playerId] ?: StopOverrideSettings()
+    }
+
+    // =========================================================================
     // Auto-Pass Management
     // =========================================================================
 
@@ -1429,7 +1461,8 @@ class GameSession(
         val legalActions = getLegalActions(priorityPlayer)
 
         // Check if they should auto-pass
-        return if (autoPassManager.shouldAutoPass(state, priorityPlayer, legalActions)) {
+        val overrides = getStopOverrides(priorityPlayer)
+        return if (autoPassManager.shouldAutoPass(state, priorityPlayer, legalActions, overrides.myTurnStops, overrides.opponentTurnStops)) {
             priorityPlayer
         } else {
             null

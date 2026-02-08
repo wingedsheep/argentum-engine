@@ -117,6 +117,17 @@ export interface OpponentDecisionStatus {
 /**
  * Game state update after an action is executed.
  */
+/**
+ * Per-step stop overrides echoed back from the server.
+ */
+export interface StopOverrideInfo {
+  readonly myTurnStops: readonly string[]
+  readonly opponentTurnStops: readonly string[]
+}
+
+/**
+ * Game state update after an action is executed.
+ */
 export interface StateUpdateMessage {
   readonly type: 'stateUpdate'
   readonly state: ClientGameState
@@ -128,6 +139,8 @@ export interface StateUpdateMessage {
   readonly nextStopPoint?: string | null
   /** Summary of opponent's pending decision (null if opponent has no decision) */
   readonly opponentDecisionStatus?: OpponentDecisionStatus | null
+  /** Per-step stop overrides echoed back for client sync */
+  readonly stopOverrides?: StopOverrideInfo | null
 }
 
 // ============================================================================
@@ -915,6 +928,7 @@ export type ClientMessage =
   | UpdateBlockerAssignmentsMessage
   // Game Settings Messages
   | SetFullControlMessage
+  | SetStopOverridesMessage
 
 /**
  * Connect to the server with a player name.
@@ -1234,6 +1248,16 @@ export interface SetFullControlMessage {
   readonly enabled: boolean
 }
 
+/**
+ * Set per-step stop overrides for the current game.
+ * When a stop is set for a step, auto-pass will not skip that step.
+ */
+export interface SetStopOverridesMessage {
+  readonly type: 'setStopOverrides'
+  readonly myTurnStops: readonly string[]
+  readonly opponentTurnStops: readonly string[]
+}
+
 // Lobby Message Factories
 export function createCreateTournamentLobbyMessage(
   setCodes: readonly string[],
@@ -1327,6 +1351,10 @@ export function createUpdateBlockerAssignmentsMessage(
 
 export function createSetFullControlMessage(enabled: boolean): SetFullControlMessage {
   return { type: 'setFullControl', enabled }
+}
+
+export function createSetStopOverridesMessage(myTurnStops: readonly string[], opponentTurnStops: readonly string[]): SetStopOverridesMessage {
+  return { type: 'setStopOverrides', myTurnStops, opponentTurnStops }
 }
 
 // Draft Type Guards

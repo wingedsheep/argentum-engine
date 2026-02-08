@@ -20,6 +20,7 @@ import type {
   ActiveMatchInfo,
   SpectatorPlayerState,
   SealedCardInfo,
+  Step,
 } from '../../types'
 import type { ConnectionStatus } from '../../network/websocket'
 import type { SpectatorCombatState, SpectatorDecisionStatus } from '../../types/messages'
@@ -347,6 +348,7 @@ export type GameStore = {
   gameOverState: GameOverState | null
   lastError: ErrorState | null
   fullControl: boolean
+  stopOverrides: { myTurnStops: Step[]; opponentTurnStops: Step[] }
   nextStopPoint: string | null
   opponentName: string | null
   /** Seconds remaining on opponent's disconnect countdown (null = connected) */
@@ -369,6 +371,7 @@ export type GameStore = {
   concede: () => void
   cancelGame: () => void
   setFullControl: (enabled: boolean) => void
+  toggleStopOverride: (step: Step, isMyTurn: boolean) => void
   returnToMenu: () => void
   clearError: () => void
   consumeEvent: () => ClientEvent | undefined

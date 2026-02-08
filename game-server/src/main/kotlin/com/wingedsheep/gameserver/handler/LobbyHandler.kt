@@ -349,6 +349,13 @@ class LobbyHandler(
     }
 
     /**
+     * Find a lobby by ID for reconnection purposes.
+     */
+    fun findLobbyForReconnect(lobbyId: String): TournamentLobby? {
+        return lobbyRepository.findLobbyById(lobbyId)
+    }
+
+    /**
      * Handle a player rejoining a tournament they were previously in.
      */
     private fun handleTournamentRejoin(
@@ -367,14 +374,26 @@ class LobbyHandler(
 
         logger.info("Player ${identity.playerName} rejoined tournament ${lobby.lobbyId}")
 
-        // Send appropriate state based on lobby phase
+        val playerSession = sessionRegistry.getPlayerSession(session.id)
+        sendLobbyReconnectionState(session, identity, playerSession, lobby)
+    }
+
+    /**
+     * Send lobby/tournament state to a reconnecting player.
+     * Called from both handleTournamentRejoin (JoinLobby flow) and ConnectionHandler (reconnect flow).
+     */
+    fun sendLobbyReconnectionState(
+        session: WebSocketSession,
+        identity: PlayerIdentity,
+        playerSession: PlayerSession?,
+        lobby: TournamentLobby
+    ) {
         when (lobby.state) {
             LobbyState.WAITING_FOR_PLAYERS -> {
                 broadcastLobbyUpdate(lobby)
             }
             LobbyState.DRAFTING -> {
                 sender.send(session, lobby.buildLobbyUpdate(identity.playerId))
-                // Send draft state
                 val playerState = lobby.players[identity.playerId]
                 if (playerState?.currentPack != null) {
                     sender.send(session, ServerMessage.DraftPackReceived(
@@ -400,58 +419,17 @@ class LobbyHandler(
                     basicLands = basicLandInfos
                 ))
                 broadcastLobbyUpdate(lobby)
-            }
-            LobbyState.TOURNAMENT_ACTIVE -> {
-                // Send card pool so client can edit deck if needed
-                val playerState = lobby.players[identity.playerId]
-                val basicLandInfos = lobby.basicLands.values.map { cardToSealedCardInfo(it) }
-                val poolInfos = playerState?.cardPool?.map { cardToSealedCardInfo(it) } ?: emptyList()
-                sender.send(session, ServerMessage.SealedPoolGenerated(
-                    setCodes = lobby.setCodes,
-                    setNames = lobby.setNames,
-                    cardPool = poolInfos,
-                    basicLands = basicLandInfos
-                ))
-                sender.send(session, lobby.buildLobbyUpdate(identity.playerId))
 
-                // Send tournament state
-                val tournament = lobbyRepository.findTournamentById(lobby.lobbyId)
-                if (tournament != null) {
-                    sendTournamentStartedToPlayer(lobby, tournament, identity)
-
-                    // Check if they have an active game
-                    val match = tournament.getPlayerMatchInCurrentRound(identity.playerId)
-                    val gameSessionId = match?.gameSessionId
-                    if (gameSessionId != null) {
-                        // They have an active game - reconnect them to it
-                        identity.currentGameSessionId = gameSessionId
-                        val gameSession = gameRepository.findById(gameSessionId)
-                        if (gameSession != null && !gameSession.isGameOver()) {
-                            val playerSession = sessionRegistry.getPlayerSession(session.id)
-                            if (playerSession != null) {
-                                playerSession.currentGameSessionId = gameSessionId
-                                if (gameSession.getPlayerSession(identity.playerId) != null) {
-                                    gameSession.removePlayer(identity.playerId)
-                                }
-                                gameSession.associatePlayer(playerSession)
-                                // Send game state update
-                                if (gameSession.isStarted) {
-                                    gamePlayHandler.broadcastStateUpdate(gameSession, emptyList())
-                                }
-                            }
-                        }
-                    } else if (match?.isBye == true) {
-                        // They have a bye
-                        val round = tournament.currentRound
-                        if (round != null) {
-                            sender.send(session, ServerMessage.TournamentBye(
-                                lobbyId = lobby.lobbyId,
-                                round = round.roundNumber
-                            ))
-                            sendActiveMatchesToPlayer(identity, session)
-                        }
+                // If this player already submitted their deck, restore tournament state
+                if (playerState?.hasSubmittedDeck == true) {
+                    val tournament = lobbyRepository.findTournamentById(lobby.lobbyId)
+                    if (tournament != null) {
+                        sendTournamentStartedToPlayer(lobby, tournament, identity)
                     }
                 }
+            }
+            LobbyState.TOURNAMENT_ACTIVE -> {
+                sendTournamentActiveState(session, identity, playerSession, lobby)
             }
             LobbyState.TOURNAMENT_COMPLETE -> {
                 val tournament = lobbyRepository.findTournamentById(lobby.lobbyId)
@@ -464,6 +442,148 @@ class LobbyHandler(
                     sender.send(session, ServerMessage.TournamentComplete(
                         lobbyId = lobby.lobbyId,
                         finalStandings = tournament.getStandingsInfo(connectedIds)
+                    ))
+                }
+            }
+        }
+    }
+
+    /**
+     * Send full tournament state to a reconnecting player during TOURNAMENT_ACTIVE.
+     */
+    private fun sendTournamentActiveState(
+        session: WebSocketSession,
+        identity: PlayerIdentity,
+        playerSession: PlayerSession?,
+        lobby: TournamentLobby
+    ) {
+        // Send card pool so client can edit deck if needed (before first match)
+        val playerState = lobby.players[identity.playerId]
+        val basicLandInfos = lobby.basicLands.values.map { cardToSealedCardInfo(it) }
+        val poolInfos = playerState?.cardPool?.map { cardToSealedCardInfo(it) } ?: emptyList()
+        sender.send(session, ServerMessage.SealedPoolGenerated(
+            setCodes = lobby.setCodes,
+            setNames = lobby.setNames,
+            cardPool = poolInfos,
+            basicLands = basicLandInfos
+        ))
+        sender.send(session, lobby.buildLobbyUpdate(identity.playerId))
+
+        val tournament = lobbyRepository.findTournamentById(lobby.lobbyId) ?: return
+        sendTournamentStartedToPlayer(lobby, tournament, identity)
+
+        val currentRound = tournament.currentRound
+        val playerMatch = currentRound?.matches?.find {
+            it.player1Id == identity.playerId || it.player2Id == identity.playerId
+        }
+
+        val connectedIds = lobby.players.values
+            .filter { it.identity.isConnected }
+            .map { it.identity.playerId }
+            .toSet()
+
+        when {
+            // Before first round starts, waiting for players to ready up
+            currentRound == null -> {
+                // TournamentStarted + ready status already sent by sendTournamentStartedToPlayer
+            }
+
+            // Player has a bye this round (and round is still in progress)
+            playerMatch?.isBye == true && !tournament.isRoundComplete() -> {
+                sender.send(session, ServerMessage.TournamentBye(
+                    lobbyId = lobby.lobbyId,
+                    round = currentRound.roundNumber
+                ))
+                val spectatingGameId = identity.currentSpectatingGameId
+                if (spectatingGameId != null && playerSession != null) {
+                    restoreSpectating(identity, playerSession, session, spectatingGameId)
+                } else {
+                    sendActiveMatchesToPlayer(identity, session)
+                }
+            }
+
+            // Player has an active game in progress
+            playerMatch?.gameSessionId != null && !playerMatch.isComplete && !tournament.isRoundComplete() -> {
+                val gs = gameRepository.findById(playerMatch.gameSessionId!!)
+                if (gs != null && gs.isStarted && !gs.isGameOver() && playerSession != null) {
+                    identity.currentGameSessionId = playerMatch.gameSessionId
+                    playerSession.currentGameSessionId = playerMatch.gameSessionId
+                    val opponentId = if (playerMatch.player1Id == identity.playerId) playerMatch.player2Id else playerMatch.player1Id
+                    val opponentName = lobby.players[opponentId]?.identity?.playerName ?: "Unknown"
+                    sender.send(session, ServerMessage.TournamentMatchStarting(
+                        lobbyId = lobby.lobbyId,
+                        round = currentRound.roundNumber,
+                        gameSessionId = playerMatch.gameSessionId!!,
+                        opponentName = opponentName
+                    ))
+                    if (gs.getPlayerSession(identity.playerId) != null) {
+                        gs.removePlayer(identity.playerId)
+                    }
+                    gs.associatePlayer(playerSession)
+                    when {
+                        gs.isAwaitingBottomCards(identity.playerId) -> {
+                            val hand = gs.getHand(identity.playerId)
+                            val cardsToBottom = gs.getCardsToBottom(identity.playerId)
+                            sender.send(session, ServerMessage.ChooseBottomCards(hand, cardsToBottom))
+                        }
+                        gs.isMulliganPhase && !gs.hasMulliganComplete(identity.playerId) -> {
+                            val decision = gs.getMulliganDecision(identity.playerId)
+                            sender.send(session, decision)
+                        }
+                        gs.isMulliganPhase -> {
+                            sender.send(session, ServerMessage.WaitingForOpponentMulligan)
+                        }
+                        else -> {
+                            gamePlayHandler.broadcastStateUpdate(gs, emptyList())
+                        }
+                    }
+                }
+            }
+
+            // Player's match is complete but round isn't (waiting for others)
+            playerMatch?.isComplete == true && !tournament.isRoundComplete() -> {
+                val spectatingGameId = identity.currentSpectatingGameId
+                if (spectatingGameId != null && playerSession != null) {
+                    restoreSpectating(identity, playerSession, session, spectatingGameId)
+                } else {
+                    sendActiveMatchesToPlayer(identity, session)
+                }
+            }
+
+            // Round is complete, waiting for players to ready up for next round
+            tournament.isRoundComplete() -> {
+                val nextRoundMatchups = if (!tournament.isComplete) {
+                    tournament.peekNextRoundMatchups()
+                } else {
+                    emptyMap()
+                }
+                val nextOpponentId = nextRoundMatchups[identity.playerId]
+                val nextOpponentName = if (nextOpponentId != null) {
+                    lobby.players[nextOpponentId]?.identity?.playerName
+                } else {
+                    null
+                }
+                val hasBye = nextRoundMatchups.containsKey(identity.playerId) && nextOpponentId == null
+
+                sender.send(session, ServerMessage.RoundComplete(
+                    lobbyId = lobby.lobbyId,
+                    round = currentRound!!.roundNumber,
+                    results = tournament.getCurrentRoundResults(),
+                    standings = tournament.getStandingsInfo(connectedIds),
+                    nextOpponentName = nextOpponentName,
+                    nextRoundHasBye = hasBye,
+                    isTournamentComplete = tournament.isComplete
+                ))
+
+                // Send ready status (RoundComplete resets readyPlayerIds on the client)
+                val readyPlayerIds = lobby.getReadyPlayerIds()
+                if (readyPlayerIds.isNotEmpty()) {
+                    sender.send(session, ServerMessage.PlayerReadyForRound(
+                        lobbyId = lobby.lobbyId,
+                        playerId = identity.playerId.value,
+                        playerName = identity.playerName,
+                        readyPlayerIds = readyPlayerIds.map { it.value },
+                        totalConnectedPlayers = connectedIds.size
                     ))
                 }
             }
@@ -1115,6 +1235,19 @@ class LobbyHandler(
             nextOpponentName = nextOpponentName,
             nextRoundHasBye = hasBye
         ))
+
+        // Send current ready status so the client knows who is already ready
+        // (TournamentStarted resets readyPlayerIds on the client)
+        val readyPlayerIds = lobby.getReadyPlayerIds()
+        if (readyPlayerIds.isNotEmpty()) {
+            sender.send(ws, ServerMessage.PlayerReadyForRound(
+                lobbyId = lobby.lobbyId,
+                playerId = identity.playerId.value,
+                playerName = identity.playerName,
+                readyPlayerIds = readyPlayerIds.map { it.value },
+                totalConnectedPlayers = connectedIds.size
+            ))
+        }
     }
 
     /**

@@ -96,6 +96,25 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
     onGameStarted: (msg) => {
       trackEvent('game_started', { opponent_name: msg.opponentName })
       setInGame(true)
+
+      // Load persisted stop overrides and send to server
+      try {
+        const saved = localStorage.getItem('argentum-stop-overrides')
+        if (saved) {
+          const parsed = JSON.parse(saved) as { myTurnStops: string[]; opponentTurnStops: string[] }
+          if (parsed.myTurnStops?.length || parsed.opponentTurnStops?.length) {
+            set({
+              stopOverrides: parsed as { myTurnStops: import('../../types').Step[]; opponentTurnStops: import('../../types').Step[] },
+            })
+            getWebSocket()?.send({
+              type: 'setStopOverrides' as const,
+              myTurnStops: parsed.myTurnStops,
+              opponentTurnStops: parsed.opponentTurnStops,
+            })
+          }
+        }
+      } catch { /* ignore invalid localStorage data */ }
+
       set({
         opponentName: msg.opponentName,
         mulliganState: null,
@@ -199,12 +218,21 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
         }
       })
 
+      // Sync stop overrides from server echo
+      const serverOverrides = msg.stopOverrides
+        ? {
+            myTurnStops: msg.stopOverrides.myTurnStops as unknown as import('../../types').Step[],
+            opponentTurnStops: msg.stopOverrides.opponentTurnStops as unknown as import('../../types').Step[],
+          }
+        : undefined
+
       set((state) => ({
         gameState: msg.state,
         legalActions: msg.legalActions,
         pendingDecision: msg.pendingDecision ?? null,
         opponentDecisionStatus: msg.opponentDecisionStatus ?? null,
         nextStopPoint: msg.nextStopPoint ?? null,
+        ...(serverOverrides ? { stopOverrides: serverOverrides } : {}),
         pendingEvents: [...state.pendingEvents, ...msg.events],
         eventLog: (msg.state.gameLog ?? []).map((e) => ({
           description: e.description,

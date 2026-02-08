@@ -248,6 +248,8 @@ export type {
   KickPlayerMessage,
   // Game Settings types
   SetFullControlMessage,
+  SetStopOverridesMessage,
+  StopOverrideInfo,
 } from './messages'
 export {
   isConnectedMessage,
@@ -321,4 +323,5 @@ export {
   createUpdateBlockerAssignmentsMessage,
   // Game Settings factories
   createSetFullControlMessage,
+  createSetStopOverridesMessage,
 } from './messages'

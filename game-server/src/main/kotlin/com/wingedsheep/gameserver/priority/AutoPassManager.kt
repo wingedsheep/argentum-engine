@@ -69,7 +69,9 @@ class AutoPassManager {
     fun shouldAutoPass(
         state: GameState,
         playerId: EntityId,
-        legalActions: List<LegalActionInfo>
+        legalActions: List<LegalActionInfo>,
+        myTurnStops: Set<Step> = emptySet(),
+        opponentTurnStops: Set<Step> = emptySet()
     ): Boolean {
         // If player doesn't have priority, can't pass
         if (state.priorityPlayerId != playerId) {
@@ -120,6 +122,13 @@ class AutoPassManager {
 
         // Determine if this is our turn or opponent's turn
         val isMyTurn = state.activePlayerId == playerId
+
+        // Check per-step stop overrides (only when stack is empty, which it is at this point)
+        val relevantStops = if (isMyTurn) myTurnStops else opponentTurnStops
+        if (state.step in relevantStops) {
+            logger.debug("STOP: Per-step stop override set for ${state.step}")
+            return false
+        }
 
         // Never auto-pass the active player's own main phases
         if (isMyTurn && (state.step == Step.PRECOMBAT_MAIN || state.step == Step.POSTCOMBAT_MAIN)) {
@@ -469,7 +478,9 @@ class AutoPassManager {
         state: GameState,
         playerId: EntityId,
         hasMeaningfulActions: Boolean,
-        stateProjector: StateProjector? = null
+        stateProjector: StateProjector? = null,
+        myTurnStops: Set<Step> = emptySet(),
+        opponentTurnStops: Set<Step> = emptySet()
     ): String? {
         // If there's something on the stack, passing will resolve it
         if (state.stack.isNotEmpty()) {
@@ -529,7 +540,7 @@ class AutoPassManager {
             }
 
             // Check if we'd stop at this step
-            if (wouldStopAtStep(step, onMyTurn, hasMeaningfulActions)) {
+            if (wouldStopAtStep(step, onMyTurn, hasMeaningfulActions, myTurnStops, opponentTurnStops)) {
                 return formatStopPoint(step, onMyTurn, isMyTurn)
             }
         }
@@ -540,7 +551,11 @@ class AutoPassManager {
     /**
      * Determines if the player would stop at a given step (assuming no stack and no pending decision).
      */
-    private fun wouldStopAtStep(step: Step, isMyTurn: Boolean, hasMeaningfulActions: Boolean): Boolean {
+    private fun wouldStopAtStep(step: Step, isMyTurn: Boolean, hasMeaningfulActions: Boolean, myTurnStops: Set<Step> = emptySet(), opponentTurnStops: Set<Step> = emptySet()): Boolean {
+        // Check per-step stop overrides first
+        val relevantStops = if (isMyTurn) myTurnStops else opponentTurnStops
+        if (step in relevantStops) return true
+
         return if (isMyTurn) {
             !shouldAutoPassOnMyTurnForStep(step, hasMeaningfulActions)
         } else {

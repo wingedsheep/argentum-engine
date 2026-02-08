@@ -1,7 +1,7 @@
 import { useGameStore } from '../../store/gameStore'
 import { useViewingPlayer, useOpponent, useStackCards, selectPriorityMode } from '../../store/selectors'
 import { hand, getNextStep, StepShortNames } from '../../types'
-import { PhaseIndicator } from '../ui/PhaseIndicator'
+import { StepStrip } from '../ui/StepStrip'
 import { ManaPool } from '../ui/ManaPool'
 import { ActionMenu } from '../ui/ActionMenu'
 import { CombatArrows } from '../combat/CombatArrows'
@@ -47,6 +47,8 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
   const fullControl = useGameStore((state) => state.fullControl)
   const setFullControl = useGameStore((state) => state.setFullControl)
   const opponentDecisionStatus = useGameStore((state) => state.opponentDecisionStatus)
+  const stopOverrides = useGameStore((state) => state.stopOverrides)
+  const toggleStopOverride = useGameStore((state) => state.toggleStopOverride)
   const distributeState = useGameStore((state) => state.distributeState)
   const confirmDistribute = useGameStore((state) => state.confirmDistribute)
   const responsive = useResponsive(topOffset)
@@ -207,8 +209,8 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
           )}
         </div>
 
-        {/* Phase indicator (center) */}
-        <PhaseIndicator
+        {/* Step strip (center) */}
+        <StepStrip
           phase={gameState.currentPhase}
           step={gameState.currentStep}
           turnNumber={gameState.turnNumber}
@@ -219,6 +221,9 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
             ? gameState.players.find(p => p.playerId === gameState.activePlayerId)?.name
             : undefined
           }
+          stopOverrides={stopOverrides}
+          onToggleStop={toggleStopOverride}
+          isSpectator={spectatorMode}
         />
 
         {/* Player life (right side) */}

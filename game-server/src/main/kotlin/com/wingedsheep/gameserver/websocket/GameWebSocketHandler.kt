@@ -39,6 +39,12 @@ class GameWebSocketHandler(
         connectionHandler.restoreSpectatingCallback = { identity, playerSession, wsSession, gameSessionId ->
             lobbyHandler.restoreSpectating(identity, playerSession, wsSession, gameSessionId)
         }
+        connectionHandler.lobbyReconnectCallback = { wsSession, identity, playerSession, lobbyId ->
+            val lobby = lobbyHandler.findLobbyForReconnect(lobbyId)
+            if (lobby != null) {
+                lobbyHandler.sendLobbyReconnectionState(wsSession, identity, playerSession, lobby)
+            }
+        }
     }
 
     override fun afterConnectionEstablished(session: WebSocketSession) {
@@ -62,7 +68,8 @@ class GameWebSocketHandler(
                 is ClientMessage.Mulligan,
                 is ClientMessage.ChooseBottomCards,
                 is ClientMessage.UpdateBlockerAssignments,
-                is ClientMessage.SetFullControl -> gamePlayHandler.handle(session, clientMessage)
+                is ClientMessage.SetFullControl,
+                is ClientMessage.SetStopOverrides -> gamePlayHandler.handle(session, clientMessage)
 
                 is ClientMessage.CreateSealedGame,
                 is ClientMessage.JoinSealedGame,
