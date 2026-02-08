@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.DistributeDecision
+import com.wingedsheep.engine.core.DistributionResponse
 import com.wingedsheep.engine.core.OrderObjectsDecision
 import com.wingedsheep.engine.core.OrderedResponse
 import com.wingedsheep.engine.support.GameTestDriver
@@ -16,8 +18,7 @@ import io.kotest.matchers.shouldNotBe
  *
  * Butcher Orgg is a 6/6 creature that can assign its combat damage divided
  * as its controller chooses among the defending player and/or any creatures
- * they control. Auto-assignment: lethal to each blocker in order, remainder
- * to defending player.
+ * they control. The player gets a DistributeDecision to choose the distribution.
  */
 class ButcherOrggTest : FunSpec({
 
@@ -48,6 +49,7 @@ class ButcherOrggTest : FunSpec({
         driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
         driver.declareNoBlockers(opponent)
 
+        // No defending creatures, so no distribution decision (auto-assigns all to player)
         driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
 
         // Unblocked 6/6 deals 6 damage to opponent
@@ -75,6 +77,16 @@ class ButcherOrggTest : FunSpec({
 
         driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
         driver.declareBlockers(opponent, mapOf(blocker to listOf(orgg))).isSuccess shouldBe true
+
+        // Pass priority to reach combat damage step (where the distribution decision is created)
+        driver.passPriorityUntil(Step.COMBAT_DAMAGE)
+
+        // Submit damage distribution: 2 to blocker (lethal), 4 to player
+        val decision = driver.pendingDecision as DistributeDecision
+        driver.submitDecision(
+            activePlayer,
+            DistributionResponse(decision.id, mapOf(blocker to 2, opponent to 4))
+        )
 
         driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
 
@@ -116,10 +128,20 @@ class ButcherOrggTest : FunSpec({
         ))
 
         // Multiple blockers require damage assignment order decision
-        val decision = driver.pendingDecision as OrderObjectsDecision
+        val orderDecision = driver.pendingDecision as OrderObjectsDecision
         driver.submitDecision(
             activePlayer,
-            OrderedResponse(decision.id, listOf(blocker1, blocker2))
+            OrderedResponse(orderDecision.id, listOf(blocker1, blocker2))
+        )
+
+        // Pass priority to reach combat damage step
+        driver.passPriorityUntil(Step.COMBAT_DAMAGE)
+
+        // Submit damage distribution: 2 to bears (lethal), 1 to goblin (lethal), 3 to player
+        val distributeDecision = driver.pendingDecision as DistributeDecision
+        driver.submitDecision(
+            activePlayer,
+            DistributionResponse(distributeDecision.id, mapOf(blocker1 to 2, blocker2 to 1, opponent to 3))
         )
 
         driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
@@ -154,6 +176,16 @@ class ButcherOrggTest : FunSpec({
         driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
         driver.declareBlockers(opponent, mapOf(bigBlocker to listOf(orgg))).isSuccess shouldBe true
 
+        // Pass priority to reach combat damage step
+        driver.passPriorityUntil(Step.COMBAT_DAMAGE)
+
+        // Submit damage distribution: 5 to big blocker (lethal), 1 to player
+        val decision = driver.pendingDecision as DistributeDecision
+        driver.submitDecision(
+            activePlayer,
+            DistributionResponse(decision.id, mapOf(bigBlocker to 5, opponent to 1))
+        )
+
         driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
 
         // 5/5 blocker needs 5 lethal damage; Orgg only has 6 power, so 1 excess to player
@@ -181,6 +213,16 @@ class ButcherOrggTest : FunSpec({
 
         driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
         driver.declareBlockers(opponent, mapOf(blocker to listOf(orgg))).isSuccess shouldBe true
+
+        // Pass priority to reach combat damage step
+        driver.passPriorityUntil(Step.COMBAT_DAMAGE)
+
+        // Submit damage distribution: 3 to blocker (lethal), 3 to player
+        val decision = driver.pendingDecision as DistributeDecision
+        driver.submitDecision(
+            activePlayer,
+            DistributionResponse(decision.id, mapOf(blocker to 3, opponent to 3))
+        )
 
         driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
 

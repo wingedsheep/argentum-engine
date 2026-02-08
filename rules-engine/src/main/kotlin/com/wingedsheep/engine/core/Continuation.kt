@@ -164,16 +164,18 @@ data class PutFromHandContinuation(
 ) : ContinuationFrame
 
 /**
- * Resume combat damage assignment.
+ * Resume combat damage assignment for creatures with DivideCombatDamageFreely.
  *
  * @property attackerId The attacking creature assigning damage
  * @property defendingPlayerId The defending player
+ * @property firstStrike Whether this is during the first strike combat damage step
  */
 @Serializable
 data class DamageAssignmentContinuation(
     override val decisionId: String,
     val attackerId: EntityId,
-    val defendingPlayerId: EntityId
+    val defendingPlayerId: EntityId,
+    val firstStrike: Boolean = false
 ) : ContinuationFrame
 
 /**

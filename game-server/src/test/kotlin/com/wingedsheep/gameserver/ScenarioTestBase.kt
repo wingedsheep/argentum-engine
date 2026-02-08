@@ -619,12 +619,16 @@ abstract class ScenarioTestBase : FunSpec() {
             val maxIterations = 100
 
             while ((state.phase != phase || state.step != step) && iterations < maxIterations) {
-                val priorityPlayer = state.priorityPlayerId
-                if (priorityPlayer != null) {
-                    execute(PassPriority(priorityPlayer))
+                if (state.pendingDecision != null) {
+                    autoResolveDecision()
                 } else {
-                    // No priority player - might be in a step transition, try advancing
-                    break
+                    val priorityPlayer = state.priorityPlayerId
+                    if (priorityPlayer != null) {
+                        execute(PassPriority(priorityPlayer))
+                    } else {
+                        // No priority player - might be in a step transition, try advancing
+                        break
+                    }
                 }
                 iterations++
             }
@@ -634,6 +638,34 @@ abstract class ScenarioTestBase : FunSpec() {
             }
 
             return state
+        }
+
+        /**
+         * Auto-resolve a pending decision by picking the first valid option.
+         * Used by passUntilPhase to handle decisions that arise during phase advancement.
+         */
+        private fun autoResolveDecision() {
+            val decision = state.pendingDecision
+                ?: error("No pending decision to auto-resolve")
+            when (decision) {
+                is SelectCardsDecision -> {
+                    val selected = decision.options.take(decision.minSelections)
+                    selectCards(selected)
+                }
+                is YesNoDecision -> answerYesNo(false)
+                is ReorderLibraryDecision -> {
+                    submitDecision(OrderedResponse(decision.id, decision.cards))
+                }
+                is OrderObjectsDecision -> {
+                    submitDecision(OrderedResponse(decision.id, decision.objects))
+                }
+                is DistributeDecision -> {
+                    val distribution = decision.targets.associateWith { 0 }.toMutableMap()
+                    distribution[decision.targets.first()] = decision.totalAmount
+                    submitDecision(DistributionResponse(decision.id, distribution))
+                }
+                else -> error("Cannot auto-resolve decision of type ${decision::class.simpleName}")
+            }
         }
 
         /**

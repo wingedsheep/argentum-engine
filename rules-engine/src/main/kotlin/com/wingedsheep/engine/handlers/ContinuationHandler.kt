@@ -6,6 +6,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
 import com.wingedsheep.engine.handlers.effects.drawing.BlackmailExecutor
 import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerDiscardsDrawsExecutor
 import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerMayDrawExecutor
+import com.wingedsheep.engine.mechanics.combat.CombatManager
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.stack.StackResolver
@@ -31,7 +32,8 @@ import com.wingedsheep.sdk.scripting.SearchDestination
 class ContinuationHandler(
     private val effectExecutorRegistry: EffectExecutorRegistry,
     private val stackResolver: StackResolver = StackResolver(),
-    private val triggerProcessor: com.wingedsheep.engine.event.TriggerProcessor? = null
+    private val triggerProcessor: com.wingedsheep.engine.event.TriggerProcessor? = null,
+    private val combatManager: CombatManager? = null
 ) {
 
     /**
@@ -373,21 +375,34 @@ class ContinuationHandler(
     }
 
     /**
-     * Resume combat damage assignment.
+     * Resume combat damage assignment for DivideCombatDamageFreely.
+     *
+     * Stores the player's chosen distribution on the attacker entity and
+     * re-runs applyCombatDamage. If another attacker also needs a decision,
+     * the result will be paused again; otherwise all combat damage is applied.
      */
     private fun resumeDamageAssignment(
         state: GameState,
         continuation: DamageAssignmentContinuation,
         response: DecisionResponse
     ): ExecutionResult {
-        if (response !is DamageAssignmentResponse) {
-            return ExecutionResult.error(state, "Expected damage assignment response")
+        if (response !is DistributionResponse) {
+            return ExecutionResult.error(state, "Expected distribution response")
         }
 
-        // TODO: Apply the damage assignments from the response
-        // This would need to work with the CombatManager
+        // Store the distribution as DamageAssignmentComponent on the attacker
+        val newState = state.updateEntity(continuation.attackerId) { container ->
+            container.with(
+                com.wingedsheep.engine.state.components.combat.DamageAssignmentComponent(
+                    response.distribution
+                )
+            )
+        }
 
-        return ExecutionResult.success(state)
+        // Re-run combat damage — this attacker now has an assignment and will be skipped
+        // in the pre-check. If another attacker needs a decision, it will pause again.
+        return combatManager?.applyCombatDamage(newState, firstStrike = continuation.firstStrike)
+            ?: ExecutionResult.success(newState)
     }
 
     /**

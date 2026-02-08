@@ -981,6 +981,15 @@ class GameTestDriver {
             is ReorderLibraryDecision -> {
                 submitOrderedResponse(decision.playerId, decision.cards)
             }
+            is DistributeDecision -> {
+                // Auto-resolve: assign all to the first target
+                val distribution = decision.targets.associateWith { 0 }.toMutableMap()
+                distribution[decision.targets.first()] = decision.totalAmount
+                submitDecision(
+                    decision.playerId,
+                    DistributionResponse(decision.id, distribution)
+                )
+            }
             else -> throw IllegalStateException(
                 "Cannot auto-resolve decision of type ${decision::class.simpleName}"
             )
