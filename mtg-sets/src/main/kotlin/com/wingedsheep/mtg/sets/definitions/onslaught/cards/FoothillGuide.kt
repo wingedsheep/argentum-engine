@@ -25,6 +25,6 @@ val FoothillGuide = card("Foothill Guide") {
         rarity = Rarity.COMMON
         collectorNumber = "29"
         artist = "Eric Peterson"
-        imageUri = "https://cards.scryfall.io/large/front/c/d/cd6cc30a-9ed4-4f36-95cb-6f0a2b8dce02.jpg?1562943472"
+        imageUri = "https://cards.scryfall.io/large/front/4/0/409adb7b-6dcb-4e7f-a5dd-c0adf12140a4.jpg?1562910177"
     }
 }
