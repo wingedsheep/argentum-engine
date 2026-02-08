@@ -16,6 +16,8 @@ import com.wingedsheep.sdk.scripting.*
  */
 class ConditionEvaluator {
 
+    private val dynamicAmountEvaluator = DynamicAmountEvaluator()
+
     /**
      * Evaluate a condition and return true if met.
      */
@@ -42,6 +44,7 @@ class ConditionEvaluator {
             is OpponentControlsMoreCreatures -> evaluateOpponentControlsMoreCreatures(state, context)
             is OpponentControlsMoreLands -> evaluateOpponentControlsMoreLands(state, context)
             is APlayerControlsMostOfSubtype -> evaluateAPlayerControlsMostOfSubtype(state, condition)
+            is TargetPowerAtMost -> evaluateTargetPowerAtMost(state, condition, context)
 
             // Hand conditions
             is EmptyHand -> evaluateEmptyHand(state, context)
@@ -302,6 +305,27 @@ class ConditionEvaluator {
         if (maxCount == 0) return false
         val playersWithMax = counts.count { it.value == maxCount }
         return playersWithMax == 1
+    }
+
+    private fun evaluateTargetPowerAtMost(
+        state: GameState,
+        condition: TargetPowerAtMost,
+        context: EffectContext
+    ): Boolean {
+        val target = context.targets.getOrNull(condition.targetIndex) ?: return false
+        val targetEntityId = when (target) {
+            is com.wingedsheep.engine.state.components.stack.ChosenTarget.Permanent -> target.entityId
+            else -> return false
+        }
+        val card = state.getEntity(targetEntityId)?.get<CardComponent>() ?: return false
+        val power = when (val p = card.baseStats?.power) {
+            is com.wingedsheep.sdk.model.CharacteristicValue.Fixed -> p.value
+            is com.wingedsheep.sdk.model.CharacteristicValue.Dynamic -> dynamicAmountEvaluator.evaluate(state, p.source, context)
+            is com.wingedsheep.sdk.model.CharacteristicValue.DynamicWithOffset -> dynamicAmountEvaluator.evaluate(state, p.source, context) + p.offset
+            null -> return false
+        }
+        val threshold = dynamicAmountEvaluator.evaluate(state, condition.amount, context)
+        return power <= threshold
     }
 
     // Helper functions
