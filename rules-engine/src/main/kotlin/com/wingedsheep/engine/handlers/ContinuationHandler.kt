@@ -22,6 +22,7 @@ import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComp
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.PayCost
+import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.SearchDestination
 
 /**
@@ -2859,6 +2860,19 @@ class ContinuationHandler(
             newState = newState.updateEntity(entityId) { it.without<TappedComponent>() }
             events.add(UntappedEvent(entityId, cardName))
         }
+
+        // Remove WhileSourceTapped floating effects whose source is no longer tapped
+        newState = newState.copy(
+            floatingEffects = newState.floatingEffects.filter { floatingEffect ->
+                if (floatingEffect.duration is Duration.WhileSourceTapped) {
+                    val sourceId = floatingEffect.sourceId
+                    sourceId != null && newState.getBattlefield().contains(sourceId) &&
+                        newState.getEntity(sourceId)?.has<TappedComponent>() == true
+                } else {
+                    true
+                }
+            }
+        )
 
         // Remove summoning sickness from all creatures the active player controls
         val activePlayer = continuation.playerId

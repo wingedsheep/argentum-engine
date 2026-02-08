@@ -243,6 +243,86 @@ class EvergloveCourierTest : FunSpec({
         projector.getProjectedToughness(driver.state, elf) shouldBe 5
     }
 
+    test("Buff does not accumulate when courier is untapped and re-activated each turn") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Forest" to 40),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        // Put courier and an Elf on the battlefield
+        val courier = driver.putCreatureOnBattlefield(activePlayer, "Everglove Courier")
+        val elf = driver.putCreatureOnBattlefield(activePlayer, "Elvish Warrior")
+        driver.removeSummoningSickness(courier)
+        driver.removeSummoningSickness(elf)
+
+        // -- Turn 1: Activate courier --
+        driver.giveMana(activePlayer, Color.GREEN, 3)
+        driver.submit(
+            ActivateAbility(
+                playerId = activePlayer,
+                sourceId = courier,
+                abilityId = courierAbilityId,
+                targets = listOf(ChosenTarget.Permanent(elf))
+            )
+        )
+        driver.bothPass()
+
+        // Elf should have +2/+2 (2/3 -> 4/5)
+        projector.getProjectedPower(driver.state, elf) shouldBe 4
+        projector.getProjectedToughness(driver.state, elf) shouldBe 5
+
+        // -- Turn 2: Untap courier and re-activate --
+        driver.passPriorityUntil(Step.UNTAP)
+        // Choose NOT to keep courier tapped (untap it)
+        driver.submitCardSelection(activePlayer, emptyList())
+
+        // After untapping, old floating effects should be cleaned up
+        driver.state.getEntity(courier)?.has<TappedComponent>() shouldBe false
+        projector.getProjectedPower(driver.state, elf) shouldBe 2
+        projector.getProjectedToughness(driver.state, elf) shouldBe 3
+
+        // Now re-activate in precombat main
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        driver.giveMana(activePlayer, Color.GREEN, 3)
+        driver.submit(
+            ActivateAbility(
+                playerId = activePlayer,
+                sourceId = courier,
+                abilityId = courierAbilityId,
+                targets = listOf(ChosenTarget.Permanent(elf))
+            )
+        )
+        driver.bothPass()
+
+        // Elf should have +2/+2, NOT +4/+4
+        projector.getProjectedPower(driver.state, elf) shouldBe 4
+        projector.getProjectedToughness(driver.state, elf) shouldBe 5
+
+        // -- Turn 3: Untap and re-activate again --
+        driver.passPriorityUntil(Step.UNTAP)
+        driver.submitCardSelection(activePlayer, emptyList())
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        driver.giveMana(activePlayer, Color.GREEN, 3)
+        driver.submit(
+            ActivateAbility(
+                playerId = activePlayer,
+                sourceId = courier,
+                abilityId = courierAbilityId,
+                targets = listOf(ChosenTarget.Permanent(elf))
+            )
+        )
+        driver.bothPass()
+
+        // Elf should STILL have +2/+2, NOT +6/+6
+        projector.getProjectedPower(driver.state, elf) shouldBe 4
+        projector.getProjectedToughness(driver.state, elf) shouldBe 5
+    }
+
     test("Buff removed when courier is untapped during untap step") {
         val driver = createDriver()
         driver.initMirrorMatch(

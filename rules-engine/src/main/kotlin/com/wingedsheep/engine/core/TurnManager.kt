@@ -175,6 +175,9 @@ class TurnManager(
             events.add(UntappedEvent(entityId, cardName))
         }
 
+        // Remove WhileSourceTapped floating effects whose source is no longer tapped
+        newState = cleanupWhileSourceTappedEffects(newState)
+
         // Remove summoning sickness from all creatures the player controls (using projected state)
         val projectedAfterUntap = stateProjector.project(newState)
         val creaturesToRefresh = newState.entities.filter { (entityId, container) ->
@@ -651,6 +654,27 @@ class TurnManager(
             advanceResult.newState,
             turnResult.events + untapResult.events + advanceResult.events
         )
+    }
+
+    /**
+     * Remove WhileSourceTapped floating effects whose source is no longer tapped.
+     * Called during untap step to prevent stale effects from accumulating.
+     */
+    private fun cleanupWhileSourceTappedEffects(state: GameState): GameState {
+        val remaining = state.floatingEffects.filter { floatingEffect ->
+            if (floatingEffect.duration is Duration.WhileSourceTapped) {
+                val sourceId = floatingEffect.sourceId
+                sourceId != null && state.getBattlefield().contains(sourceId) &&
+                    state.getEntity(sourceId)?.has<TappedComponent>() == true
+            } else {
+                true
+            }
+        }
+        return if (remaining.size != state.floatingEffects.size) {
+            state.copy(floatingEffects = remaining)
+        } else {
+            state
+        }
     }
 
     /**
