@@ -506,31 +506,43 @@ class TriggerDetector(
             }
 
             is OnOtherCreatureWithSubtypeEnters -> {
-                if (event !is ZoneChangeEvent ||
-                    event.toZone != com.wingedsheep.sdk.core.Zone.BATTLEFIELD ||
-                    event.entityId == sourceId) {
-                    false
-                } else {
-                    // Check if entering creature has the required subtype using projected state
-                    // This correctly handles face-down creatures which have no subtypes (Rule 707.2)
-                    val projected = stateProjector.project(state)
-                    val hasSubtype = projected.hasSubtype(event.entityId, trigger.subtype.value)
-                    val controllerMatches = !trigger.youControlOnly || event.ownerId == controllerId
-                    hasSubtype && controllerMatches
+                when {
+                    event is ZoneChangeEvent &&
+                        event.toZone == com.wingedsheep.sdk.core.Zone.BATTLEFIELD &&
+                        event.entityId != sourceId -> {
+                        val projected = stateProjector.project(state)
+                        val hasSubtype = projected.hasSubtype(event.entityId, trigger.subtype.value)
+                        val controllerMatches = !trigger.youControlOnly || event.ownerId == controllerId
+                        hasSubtype && controllerMatches
+                    }
+                    // Turning a face-down creature face up reveals its subtypes
+                    event is TurnFaceUpEvent && event.entityId != sourceId -> {
+                        val projected = stateProjector.project(state)
+                        val hasSubtype = projected.hasSubtype(event.entityId, trigger.subtype.value)
+                        val controllerMatches = !trigger.youControlOnly || event.controllerId == controllerId
+                        hasSubtype && controllerMatches
+                    }
+                    else -> false
                 }
             }
 
             is OnCreatureWithSubtypeEnters -> {
-                if (event !is ZoneChangeEvent ||
-                    event.toZone != com.wingedsheep.sdk.core.Zone.BATTLEFIELD) {
-                    false
-                } else {
-                    // Check if entering creature has the required subtype using projected state
-                    // This correctly handles face-down creatures which have no subtypes (Rule 707.2)
-                    val projected = stateProjector.project(state)
-                    val hasSubtype = projected.hasSubtype(event.entityId, trigger.subtype.value)
-                    val controllerMatches = !trigger.youControlOnly || event.ownerId == controllerId
-                    hasSubtype && controllerMatches
+                when {
+                    event is ZoneChangeEvent &&
+                        event.toZone == com.wingedsheep.sdk.core.Zone.BATTLEFIELD -> {
+                        val projected = stateProjector.project(state)
+                        val hasSubtype = projected.hasSubtype(event.entityId, trigger.subtype.value)
+                        val controllerMatches = !trigger.youControlOnly || event.ownerId == controllerId
+                        hasSubtype && controllerMatches
+                    }
+                    // Turning a face-down creature face up reveals its subtypes
+                    event is TurnFaceUpEvent -> {
+                        val projected = stateProjector.project(state)
+                        val hasSubtype = projected.hasSubtype(event.entityId, trigger.subtype.value)
+                        val controllerMatches = !trigger.youControlOnly || event.controllerId == controllerId
+                        hasSubtype && controllerMatches
+                    }
+                    else -> false
                 }
             }
 
