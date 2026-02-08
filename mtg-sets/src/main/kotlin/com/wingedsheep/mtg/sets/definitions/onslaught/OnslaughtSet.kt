@@ -126,6 +126,7 @@ object OnslaughtSet {
         BrightstoneRitual,
         CommandoRaid,
         CrownOfFury,
+        CrownOfSuspicion,
         SkirkCommando,
         AggravatedAssault,
         AirdropCondor,
