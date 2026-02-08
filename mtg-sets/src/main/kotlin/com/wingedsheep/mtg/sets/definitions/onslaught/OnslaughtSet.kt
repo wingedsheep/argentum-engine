@@ -159,6 +159,7 @@ object OnslaughtSet {
         Threaten,
 
         // Green creatures and spells
+        CrownOfVigor,
         AnimalMagnetism,
         BirchloreRangers,
         BloodlineShaman,
