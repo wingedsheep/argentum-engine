@@ -71,6 +71,10 @@ export interface TargetingState {
   requiresDamageDistribution?: boolean
   /** The zone the current targets are in (e.g., "Graveyard"). Set by server via targetRequirements. */
   targetZone?: string
+  /** Description of the current target requirement (e.g., "non-Zombie creature") */
+  targetDescription?: string
+  /** Total number of target requirements for multi-target spells (for step indicator) */
+  totalRequirements?: number
 }
 
 /**

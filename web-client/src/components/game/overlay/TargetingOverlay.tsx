@@ -21,7 +21,7 @@ function GraveyardTargetingOverlay({
   onCancel,
 }: {
   graveyardCards: ClientCard[]
-  targetingState: { selectedTargets: readonly EntityId[]; minTargets: number; maxTargets: number }
+  targetingState: { selectedTargets: readonly EntityId[]; minTargets: number; maxTargets: number; targetDescription?: string; currentRequirementIndex?: number; totalRequirements?: number }
   responsive: ResponsiveSizes
   onSelect: (cardId: EntityId) => void
   onDeselect: (cardId: EntityId) => void
@@ -129,6 +129,19 @@ function GraveyardTargetingOverlay({
     >
       {/* Header */}
       <div style={{ textAlign: 'center' }}>
+        {targetingState.totalRequirements && targetingState.totalRequirements > 1 && (
+          <div
+            style={{
+              color: '#888',
+              fontSize: responsive.fontSize.small,
+              marginBottom: 6,
+              textTransform: 'uppercase',
+              letterSpacing: 1,
+            }}
+          >
+            Step {(targetingState.currentRequirementIndex ?? 0) + 1} of {targetingState.totalRequirements}
+          </div>
+        )}
         <h2
           style={{
             color: 'white',
@@ -137,7 +150,9 @@ function GraveyardTargetingOverlay({
             fontWeight: 600,
           }}
         >
-          Choose Target from Graveyard
+          {targetingState.targetDescription
+            ? `Select ${targetingState.targetDescription}`
+            : 'Choose Target from Graveyard'}
         </h2>
         <p
           style={{
@@ -146,7 +161,9 @@ function GraveyardTargetingOverlay({
             fontSize: responsive.fontSize.normal,
           }}
         >
-          Select {minTargets === maxTargets ? minTargets : `${minTargets}-${maxTargets}`} target{maxTargets > 1 ? 's' : ''}
+          {minTargets === 0
+            ? `Select up to ${maxTargets} target${maxTargets > 1 ? 's' : ''} (optional)`
+            : `Select ${minTargets === maxTargets ? minTargets : `${minTargets}-${maxTargets}`} target${maxTargets > 1 ? 's' : ''}`}
         </p>
       </div>
 
@@ -339,7 +356,7 @@ function GraveyardTargetingOverlay({
             transition: 'all 0.15s',
           }}
         >
-          Confirm Target
+          {minTargets === 0 && selectedCount === 0 ? 'Skip' : selectedCount > 0 ? `Confirm (${selectedCount})` : 'Confirm Target'}
         </button>
         <button
           onClick={onCancel}
@@ -435,10 +452,18 @@ export function TargetingOverlay() {
     ? `${selectedCount}/${maxTargets}`
     : `${selectedCount} (${minTargets}-${maxTargets})`
 
+  // Multi-target step info
+  const isMultiTarget = targetingState.totalRequirements && targetingState.totalRequirements > 1
+  const stepLabel = isMultiTarget
+    ? `Step ${(targetingState.currentRequirementIndex ?? 0) + 1}/${targetingState.totalRequirements}`
+    : null
+
   // Build the prompt text based on selection type
   const promptText = isSacrifice
     ? `Select creature to sacrifice (${targetDisplay})`
-    : `Select targets (${targetDisplay})`
+    : targetingState.targetDescription
+      ? `Select ${targetingState.targetDescription} (${targetDisplay})`
+      : `Select targets (${targetDisplay})`
 
   const hintText = hasMaxTargets
     ? isSacrifice ? 'Creature selected' : 'Maximum targets selected'
@@ -452,6 +477,17 @@ export function TargetingOverlay() {
       padding: responsive.isMobile ? '12px 16px' : '16px 24px',
       borderColor: isSacrifice ? '#ff8800' : '#ff4444',
     }}>
+      {stepLabel && (
+        <div style={{
+          color: '#888',
+          fontSize: responsive.fontSize.small,
+          textTransform: 'uppercase',
+          letterSpacing: 1,
+          marginBottom: 2,
+        }}>
+          {stepLabel}
+        </div>
+      )}
       <div style={{
         ...styles.targetingPrompt,
         fontSize: responsive.fontSize.normal,

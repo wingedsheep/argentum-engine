@@ -158,6 +158,16 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
         },
       }
     })
+    // Auto-advance for multi-target spells when max targets reached
+    const currentState = get().targetingState
+    if (
+      currentState &&
+      currentState.targetRequirements &&
+      currentState.targetRequirements.length > 1 &&
+      currentState.selectedTargets.length >= currentState.maxTargets
+    ) {
+      get().confirmTargeting()
+    }
   },
 
   removeTarget: (targetId) => {
@@ -267,6 +277,8 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
           targetRequirements: targetingState.targetRequirements,
           ...(targetingState.pendingActionInfo ? { pendingActionInfo: targetingState.pendingActionInfo } : {}),
           ...(nextReq.targetZone ? { targetZone: nextReq.targetZone } : {}),
+          targetDescription: nextReq.description,
+          ...(targetingState.totalRequirements ? { totalRequirements: targetingState.totalRequirements } : {}),
         })
         return
       }
