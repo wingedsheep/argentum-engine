@@ -103,6 +103,7 @@ object OnslaughtSet {
         GluttonousZombie,
         GrinningDemon,
         Infest,
+        MiseryCharm,
         ProfanePrayers,
         ShepherdOfRot,
         SpinedBasher,

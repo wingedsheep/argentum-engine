@@ -194,7 +194,7 @@
 - [ ] Mana Echoes
 - [ ] Meddle
 - [ ] Menacing Ogre
-- [ ] Misery Charm
+- [x] Misery Charm
 - [ ] Mistform Dreamer
 - [ ] Mistform Mask
 - [ ] Mistform Mutant
