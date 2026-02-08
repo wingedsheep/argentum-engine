@@ -425,6 +425,7 @@ export type GameStore = {
     cardNames: readonly string[]
     imageUris: readonly (string | null)[]
     source: string | null
+    isYourReveal: boolean
   } | null
   opponentBlockerAssignments: Record<EntityId, EntityId> | null
   drawAnimations: readonly DrawAnimation[]
@@ -473,7 +474,7 @@ export type GameStore = {
   clearDistribute: () => void
   showRevealedHand: (cardIds: readonly EntityId[]) => void
   dismissRevealedHand: () => void
-  showRevealedCards: (cardIds: readonly EntityId[], cardNames: readonly string[], imageUris: readonly (string | null)[], source: string | null) => void
+  showRevealedCards: (cardIds: readonly EntityId[], cardNames: readonly string[], imageUris: readonly (string | null)[], source: string | null, isYourReveal: boolean) => void
   dismissRevealedCards: () => void
   addDrawAnimation: (animation: DrawAnimation) => void
   removeDrawAnimation: (id: string) => void

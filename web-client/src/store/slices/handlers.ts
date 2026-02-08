@@ -148,8 +148,8 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
       ) as { type: 'handRevealed'; cardIds: readonly EntityId[] } | undefined
 
       const cardsRevealedEvent = msg.events.find(
-        (e) => e.type === 'cardsRevealed' && (e as { revealingPlayerId: EntityId }).revealingPlayerId !== playerId
-      ) as { type: 'cardsRevealed'; cardIds: readonly EntityId[]; cardNames: readonly string[]; imageUris: readonly (string | null)[]; source: string | null } | undefined
+        (e) => e.type === 'cardsRevealed'
+      ) as { type: 'cardsRevealed'; revealingPlayerId: EntityId; cardIds: readonly EntityId[]; cardNames: readonly string[]; imageUris: readonly (string | null)[]; source: string | null } | undefined
 
       // Process card draw events for animations
       const cardDrawnEvents = msg.events.filter((e) => e.type === 'cardDrawn') as {
@@ -242,7 +242,7 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
         waitingForOpponentMulligan: false,
         revealedHandCardIds: handLookedAtEvent?.cardIds ?? handRevealedEvent?.cardIds ?? state.revealedHandCardIds,
         revealedCardsInfo: cardsRevealedEvent
-          ? { cardIds: cardsRevealedEvent.cardIds, cardNames: cardsRevealedEvent.cardNames, imageUris: cardsRevealedEvent.imageUris, source: cardsRevealedEvent.source }
+          ? { cardIds: cardsRevealedEvent.cardIds, cardNames: cardsRevealedEvent.cardNames, imageUris: cardsRevealedEvent.imageUris, source: cardsRevealedEvent.source, isYourReveal: cardsRevealedEvent.revealingPlayerId === playerId }
           : state.revealedCardsInfo,
         opponentBlockerAssignments: (msg.state.combat?.blockers?.length || !msg.state.combat) ? null : state.opponentBlockerAssignments,
       }))

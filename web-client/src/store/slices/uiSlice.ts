@@ -41,6 +41,7 @@ export interface UISliceState {
     cardNames: readonly string[]
     imageUris: readonly (string | null)[]
     source: string | null
+    isYourReveal: boolean
   } | null
   opponentBlockerAssignments: Record<EntityId, EntityId> | null
   drawAnimations: readonly DrawAnimation[]
@@ -92,7 +93,7 @@ export interface UISliceActions {
   clearDistribute: () => void
   showRevealedHand: (cardIds: readonly EntityId[]) => void
   dismissRevealedHand: () => void
-  showRevealedCards: (cardIds: readonly EntityId[], cardNames: readonly string[], imageUris: readonly (string | null)[], source: string | null) => void
+  showRevealedCards: (cardIds: readonly EntityId[], cardNames: readonly string[], imageUris: readonly (string | null)[], source: string | null, isYourReveal: boolean) => void
   dismissRevealedCards: () => void
   addDrawAnimation: (animation: DrawAnimation) => void
   removeDrawAnimation: (id: string) => void
@@ -826,8 +827,8 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
     set({ revealedHandCardIds: null })
   },
 
-  showRevealedCards: (cardIds, cardNames, imageUris, source) => {
-    set({ revealedCardsInfo: { cardIds, cardNames, imageUris, source } })
+  showRevealedCards: (cardIds, cardNames, imageUris, source, isYourReveal) => {
+    set({ revealedCardsInfo: { cardIds, cardNames, imageUris, source, isYourReveal } })
   },
 
   dismissRevealedCards: () => {

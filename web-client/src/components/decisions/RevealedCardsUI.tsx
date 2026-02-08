@@ -47,9 +47,12 @@ export function RevealedCardsUI() {
   const onDismiss = isHandReveal ? dismissRevealedHand : dismissRevealedCards
 
   // Title and subtitle
+  const isYourReveal = !isHandReveal && revealedCardsInfo!.isYourReveal
   const title = isHandReveal
     ? "Opponent's Hand"
-    : `Opponent Revealed${revealedCardsInfo!.source ? ` (${revealedCardsInfo!.source})` : ''}`
+    : isYourReveal
+      ? `Revealed${revealedCardsInfo!.source ? ` — ${revealedCardsInfo!.source}` : ''}`
+      : `Opponent Revealed${revealedCardsInfo!.source ? ` — ${revealedCardsInfo!.source}` : ''}`
 
   const subtitle = isHandReveal
     ? cards.length === 0
