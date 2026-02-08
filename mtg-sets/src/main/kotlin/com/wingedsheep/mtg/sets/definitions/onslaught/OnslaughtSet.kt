@@ -86,6 +86,7 @@ object OnslaughtSet {
         DeathPulse,
         DoomedNecromancer,
         DiscipleOfMalice,
+        FallenCleric,
         FadeFromMemory,
         FeedingFrenzy,
         FesteringGoblin,
@@ -178,6 +179,7 @@ object OnslaughtSet {
         WirewoodElf,
         WirewoodHerald,
         WirewoodSavage,
+        WirewoodPride,
 
         // Lands
         BloodstainedMire,

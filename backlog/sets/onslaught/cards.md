@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 156 / 335
+**Implemented:** 158 / 335
 
 ---
 
@@ -121,7 +121,7 @@
 - [ ] Exalted Angel
 - [x] Explosive Vegetation
 - [x] Fade from Memory
-- [ ] Fallen Cleric
+- [x] Fallen Cleric
 - [ ] False Cure
 - [x] Feeding Frenzy
 - [x] Festering Goblin
@@ -331,7 +331,7 @@
 - [x] Wirewood Elf
 - [x] Wirewood Herald
 - [ ] Wirewood Lodge
-- [ ] Wirewood Pride
+- [x] Wirewood Pride
 - [x] Wirewood Savage
 - [ ] Withering Hex
 - [ ] Wooded Foothills
