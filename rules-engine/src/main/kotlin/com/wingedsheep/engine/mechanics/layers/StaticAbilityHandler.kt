@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.scripting.CantAttack
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.ControlEnchantedPermanent
 import com.wingedsheep.sdk.scripting.GrantKeywordByCounter
+import com.wingedsheep.sdk.scripting.GrantProtection
 import com.wingedsheep.sdk.scripting.GlobalEffect
 import com.wingedsheep.sdk.scripting.GlobalEffectType
 import com.wingedsheep.sdk.scripting.GrantKeyword
@@ -169,6 +170,14 @@ class StaticAbilityHandler(
                     sublayer = null,
                     modification = Modification.AddSubtype(ability.creatureType),
                     affectsFilter = AffectsFilter.CreaturesWithCounter(ability.counterType)
+                )
+            }
+            is GrantProtection -> {
+                ContinuousEffectData(
+                    layer = Layer.ABILITY,
+                    sublayer = null,
+                    modification = Modification.GrantProtectionFromColor(ability.color.name),
+                    affectsFilter = convertStaticTarget(ability.target)
                 )
             }
             is GlobalEffect -> convertGlobalEffect(ability)

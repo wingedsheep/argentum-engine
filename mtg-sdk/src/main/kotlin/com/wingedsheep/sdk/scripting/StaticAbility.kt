@@ -411,6 +411,25 @@ data class CanBlockAnyNumber(
 }
 
 // =============================================================================
+// Protection Abilities
+// =============================================================================
+
+/**
+ * Grants protection from a color to the target creature.
+ * Used for auras like Crown of Awe: "Enchanted creature has protection from black and from red."
+ *
+ * @property color The color to grant protection from
+ * @property target What this ability applies to (typically AttachedCreature for auras)
+ */
+@Serializable
+data class GrantProtection(
+    val color: Color,
+    val target: StaticTarget = StaticTarget.AttachedCreature
+) : StaticAbility {
+    override val description: String = "Grants protection from ${color.displayName.lowercase()}"
+}
+
+// =============================================================================
 // Counter-Based Static Abilities
 // =============================================================================
 

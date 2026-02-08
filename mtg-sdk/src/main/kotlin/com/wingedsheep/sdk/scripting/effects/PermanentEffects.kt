@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting
 
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.TriggeredAbility
@@ -379,6 +380,7 @@ data class TurnFaceUpEffect(
  * @property powerModifier Power bonus (can be negative)
  * @property toughnessModifier Toughness bonus (can be negative)
  * @property keyword Optional keyword to grant
+ * @property protectionColors Optional set of colors to grant protection from
  * @property duration How long the effect lasts
  */
 @Serializable
@@ -386,6 +388,7 @@ data class GrantToEnchantedCreatureTypeGroupEffect(
     val powerModifier: Int = 0,
     val toughnessModifier: Int = 0,
     val keyword: Keyword? = null,
+    val protectionColors: Set<Color> = emptySet(),
     val duration: Duration = Duration.EndOfTurn
 ) : Effect {
     override val description: String = buildString {
@@ -398,6 +401,11 @@ data class GrantToEnchantedCreatureTypeGroupEffect(
         if (keyword != null) {
             if (powerModifier != 0 || toughnessModifier != 0) append(" and")
             append(" gain ${keyword.displayName.lowercase()}")
+        }
+        if (protectionColors.isNotEmpty()) {
+            if (powerModifier != 0 || toughnessModifier != 0 || keyword != null) append(" and")
+            append(" gain protection from ")
+            append(protectionColors.joinToString(" and from ") { it.displayName.lowercase() })
         }
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }

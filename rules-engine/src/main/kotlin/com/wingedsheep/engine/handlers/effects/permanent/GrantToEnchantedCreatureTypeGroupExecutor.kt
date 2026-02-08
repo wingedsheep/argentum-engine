@@ -149,6 +149,25 @@ class GrantToEnchantedCreatureTypeGroupExecutor : EffectExecutor<GrantToEnchante
             )
         }
 
+        for (color in effect.protectionColors) {
+            floatingEffects.add(
+                ActiveFloatingEffect(
+                    id = EntityId.generate(),
+                    effect = FloatingEffectData(
+                        layer = Layer.ABILITY,
+                        sublayer = null,
+                        modification = SerializableModification.GrantProtectionFromColor(color.name),
+                        affectedEntities = affectedEntities
+                    ),
+                    duration = effect.duration,
+                    sourceId = context.sourceId,
+                    sourceName = sourceName,
+                    controllerId = context.controllerId,
+                    timestamp = timestamp
+                )
+            )
+        }
+
         val newState = state.copy(
             floatingEffects = state.floatingEffects + floatingEffects
         )

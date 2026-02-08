@@ -34,6 +34,7 @@ object OnslaughtSet {
         Aurification,
         CatapultMaster,
         CatapultSquad,
+        CrownOfAwe,
         CrudeRampart,
         Demystify,
         DiveBomber,
