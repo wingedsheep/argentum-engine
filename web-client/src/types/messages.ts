@@ -335,6 +335,8 @@ export interface LegalActionTargetInfo {
   readonly minTargets: number
   readonly maxTargets: number
   readonly validTargets: readonly EntityId[]
+  /** The zone these targets are in (e.g., "Graveyard" for graveyard targets). Null for battlefield targets. */
+  readonly targetZone?: string
 }
 
 /**

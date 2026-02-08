@@ -266,6 +266,7 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
           allSelectedTargets: allSelected,
           targetRequirements: targetingState.targetRequirements,
           ...(targetingState.pendingActionInfo ? { pendingActionInfo: targetingState.pendingActionInfo } : {}),
+          ...(nextReq.targetZone ? { targetZone: nextReq.targetZone } : {}),
         })
         return
       }

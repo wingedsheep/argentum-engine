@@ -716,7 +716,9 @@ data class LegalActionTargetInfo(
     val description: String,
     val minTargets: Int,
     val maxTargets: Int,
-    val validTargets: List<EntityId>
+    val validTargets: List<EntityId>,
+    /** The zone these targets are in (e.g., "Graveyard" for graveyard targets). Null for battlefield targets. */
+    val targetZone: String? = null
 )
 
 /**

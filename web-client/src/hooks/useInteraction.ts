@@ -201,6 +201,7 @@ export function useInteraction() {
             currentRequirementIndex: 0,
             allSelectedTargets: [] as readonly (readonly import('../types').EntityId[])[],
             targetRequirements: actionInfo.targetRequirements,
+            ...(firstReq.targetZone ? { targetZone: firstReq.targetZone } : {}),
           }
           // Pass actionInfo for damage distribution spells
           if (actionInfo.requiresDamageDistribution) {

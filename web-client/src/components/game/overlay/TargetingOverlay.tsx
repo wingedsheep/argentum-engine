@@ -386,21 +386,37 @@ export function TargetingOverlay() {
   const hasMaxTargets = selectedCount >= maxTargets
   const isSacrifice = targetingState.isSacrificeSelection
 
-  // Check if all valid targets are graveyard cards
+  // Check if targets are graveyard cards — use explicit targetZone when available,
+  // fall back to inspecting gameState.cards for backward compatibility
   const graveyardCards: ClientCard[] = []
-  let allTargetsAreGraveyard = targetingState.validTargets.length > 0
-  for (const targetId of targetingState.validTargets) {
-    const card = gameState?.cards[targetId]
-    if (card && card.zone?.zoneType === 'Graveyard') {
-      graveyardCards.push(card)
-    } else {
-      allTargetsAreGraveyard = false
-      break
+  const isGraveyardTargeting = targetingState.targetZone === 'Graveyard'
+  if (isGraveyardTargeting) {
+    // Server told us this is a graveyard targeting requirement — collect cards
+    for (const targetId of targetingState.validTargets) {
+      const card = gameState?.cards[targetId]
+      if (card) {
+        graveyardCards.push(card)
+      }
+    }
+  } else {
+    // Fallback: check if all valid targets happen to be graveyard cards
+    let allTargetsAreGraveyard = targetingState.validTargets.length > 0
+    for (const targetId of targetingState.validTargets) {
+      const card = gameState?.cards[targetId]
+      if (card && card.zone?.zoneType === 'Graveyard') {
+        graveyardCards.push(card)
+      } else {
+        allTargetsAreGraveyard = false
+        break
+      }
+    }
+    if (!allTargetsAreGraveyard) {
+      graveyardCards.length = 0
     }
   }
 
-  // If all targets are graveyard cards, show graveyard selection UI
-  if (allTargetsAreGraveyard && graveyardCards.length > 0) {
+  // If targets are graveyard cards, show graveyard selection UI
+  if (graveyardCards.length > 0) {
     return (
       <GraveyardTargetingOverlay
         graveyardCards={graveyardCards}

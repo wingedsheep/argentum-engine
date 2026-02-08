@@ -861,7 +861,8 @@ class GameSession(
                                     description = req.description,
                                     minTargets = req.effectiveMinCount,
                                     maxTargets = req.count,
-                                    validTargets = validTargets
+                                    validTargets = validTargets,
+                                    targetZone = getTargetZone(req)
                                 )
                             }
 
@@ -1006,7 +1007,8 @@ class GameSession(
                                     description = req.description,
                                     minTargets = req.effectiveMinCount,
                                     maxTargets = req.count,
-                                    validTargets = validTargets
+                                    validTargets = validTargets,
+                                    targetZone = getTargetZone(req)
                                 )
                             }
                             val firstReq = targetReqs.first()
@@ -1678,6 +1680,28 @@ class GameSession(
         val context = PredicateContext(controllerId = playerId)
         return state.stack.filter { spellId ->
             predicateEvaluator.matches(state, spellId, filter.baseFilter, context)
+        }
+    }
+
+    /**
+     * Get the target zone for a requirement (e.g., "Graveyard" for graveyard targets).
+     * Returns null for battlefield targets (the default).
+     */
+    private fun getTargetZone(requirement: TargetRequirement): String? {
+        return when (requirement) {
+            is TargetObject -> requirement.filter.zone.takeIf { it != Zone.BATTLEFIELD }?.name?.let {
+                // Use the serialization name to match client Zone enum
+                when (requirement.filter.zone) {
+                    Zone.GRAVEYARD -> "Graveyard"
+                    Zone.STACK -> "Stack"
+                    Zone.EXILE -> "Exile"
+                    Zone.HAND -> "Hand"
+                    Zone.LIBRARY -> "Library"
+                    Zone.COMMAND -> "Command"
+                    else -> null
+                }
+            }
+            else -> null
         }
     }
 

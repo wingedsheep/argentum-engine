@@ -69,6 +69,8 @@ export interface TargetingState {
   targetRequirements?: LegalActionInfo['targetRequirements']
   /** If set, this spell requires damage distribution after target selection */
   requiresDamageDistribution?: boolean
+  /** The zone the current targets are in (e.g., "Graveyard"). Set by server via targetRequirements. */
+  targetZone?: string
 }
 
 /**
