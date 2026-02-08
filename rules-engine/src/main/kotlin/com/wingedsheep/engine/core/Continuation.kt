@@ -777,3 +777,70 @@ data class CounterUnlessPaysContinuation(
     val sourceId: EntityId?,
     val sourceName: String?
 ) : ContinuationFrame
+
+/**
+ * Resume after player reorders revealed cards to put on the bottom of their library.
+ *
+ * Used for effects like Erratic Explosion that reveal cards and then put them
+ * on the bottom of the library in any order.
+ *
+ * @property playerId The player whose library is being manipulated
+ * @property sourceId The spell/ability that caused this
+ * @property sourceName Name of the source for event messages
+ */
+@Serializable
+data class PutOnBottomOfLibraryContinuation(
+    override val decisionId: String,
+    val playerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?
+) : ContinuationFrame
+
+/**
+ * Resume after player chooses a mode for a modal spell/ability.
+ *
+ * When a modal effect (e.g., "Choose one —") is executed, the player is presented
+ * with a list of modes. After they choose, we need to execute the chosen mode's
+ * effect, potentially after target selection.
+ *
+ * @property controllerId The player who controls the spell/ability
+ * @property sourceId The spell/ability that has the modal effect
+ * @property sourceName Name of the source for event messages
+ * @property modes The serialized modes (effects + target requirements)
+ * @property xValue The X value if applicable
+ * @property opponentId The opponent player ID
+ */
+@Serializable
+data class ModalContinuation(
+    override val decisionId: String,
+    val controllerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val modes: List<@Serializable com.wingedsheep.sdk.scripting.Mode>,
+    val xValue: Int? = null,
+    val opponentId: EntityId? = null
+) : ContinuationFrame
+
+/**
+ * Resume after player selects targets for a chosen mode of a modal spell.
+ *
+ * After mode selection, if the chosen mode requires targets, this continuation
+ * is pushed while the player selects targets.
+ *
+ * @property controllerId The player who controls the spell/ability
+ * @property sourceId The spell/ability that has the modal effect
+ * @property sourceName Name of the source for event messages
+ * @property effect The chosen mode's effect to execute
+ * @property xValue The X value if applicable
+ * @property opponentId The opponent player ID
+ */
+@Serializable
+data class ModalTargetContinuation(
+    override val decisionId: String,
+    val controllerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val effect: Effect,
+    val xValue: Int? = null,
+    val opponentId: EntityId? = null
+) : ContinuationFrame

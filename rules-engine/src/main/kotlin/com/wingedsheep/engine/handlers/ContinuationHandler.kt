@@ -93,12 +93,15 @@ class ContinuationHandler(
             is BlackmailChooseContinuation -> resumeBlackmailChoose(stateAfterPop, continuation, response)
             is ChooseCreatureTypeRevealTopContinuation -> resumeChooseCreatureTypeRevealTop(stateAfterPop, continuation, response)
             is CounterUnlessPaysContinuation -> resumeCounterUnlessPays(stateAfterPop, continuation, response)
+            is PutOnBottomOfLibraryContinuation -> resumePutOnBottomOfLibrary(stateAfterPop, continuation, response)
             is PendingTriggersContinuation -> {
                 // This should not be popped directly by a decision response.
                 // It's handled by checkForMoreContinuations after the preceding trigger resolves.
                 ExecutionResult.error(state, "PendingTriggersContinuation should not be at top of stack during decision resume")
             }
             is MayTriggerContinuation -> resumeMayTrigger(stateAfterPop, continuation, response)
+            is ModalContinuation -> ExecutionResult.error(state, "ModalContinuation not yet implemented")
+            is ModalTargetContinuation -> ExecutionResult.error(state, "ModalTargetContinuation not yet implemented")
         }
     }
 
@@ -694,6 +697,52 @@ class ContinuationHandler(
 
         // Place the cards back on top in the new order
         val newLibrary = orderedCards + remainingLibrary
+
+        // Update the library zone
+        val newState = state.copy(
+            zones = state.zones + (libraryZone to newLibrary)
+        )
+
+        val events = listOf(
+            LibraryReorderedEvent(
+                playerId = playerId,
+                cardCount = orderedCards.size,
+                source = continuation.sourceName
+            )
+        )
+
+        return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume after player ordered cards to put on the bottom of their library.
+     *
+     * Same as resumeReorderLibrary but places cards on the BOTTOM of the library
+     * instead of the top. Used for effects like Erratic Explosion.
+     */
+    private fun resumePutOnBottomOfLibrary(
+        state: GameState,
+        continuation: PutOnBottomOfLibraryContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is OrderedResponse) {
+            return ExecutionResult.error(state, "Expected ordered response for library bottom reorder")
+        }
+
+        val playerId = continuation.playerId
+        val orderedCards = response.orderedObjects
+        val libraryZone = ZoneKey(playerId, Zone.LIBRARY)
+
+        // Get current library
+        val currentLibrary = state.getZone(libraryZone).toMutableList()
+
+        // Remove the reordered cards from the library (they should already be removed by the executor,
+        // but filter just in case)
+        val cardsSet = orderedCards.toSet()
+        val remainingLibrary = currentLibrary.filter { it !in cardsSet }
+
+        // Place the cards on the BOTTOM in the player's chosen order
+        val newLibrary = remainingLibrary + orderedCards
 
         // Update the library zone
         val newState = state.copy(

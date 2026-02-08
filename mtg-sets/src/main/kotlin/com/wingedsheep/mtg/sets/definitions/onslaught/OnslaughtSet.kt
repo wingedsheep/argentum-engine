@@ -125,6 +125,8 @@ object OnslaughtSet {
         ChargingSlateback,
         DragonRoost,
         EmbermageGoblin,
+        ErraticExplosion,
+        FeverCharm,
         FlamestickCourier,
         GoblinPiledriver,
         GoblinPyromancer,

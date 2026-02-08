@@ -69,6 +69,11 @@ class GameTestDriver {
     /** Current game state */
     val state: GameState get() = _state
 
+    /** Replace the game state directly (test helper for edge cases like empty library). */
+    fun replaceState(newState: GameState) {
+        _state = newState
+    }
+
     /** All events since game start */
     val events: List<GameEvent> get() = _events.toList()
 
@@ -581,6 +586,43 @@ class GameTestDriver {
         // Add to graveyard
         val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
         _state = _state.addToZone(graveyardZone, cardId)
+
+        return cardId
+    }
+
+    /**
+     * Put a specific card on top of a player's library (test helper).
+     * Creates a new card entity from the registry and prepends it to the library.
+     */
+    fun putCardOnTopOfLibrary(playerId: EntityId, cardName: String): EntityId {
+        val cardDef = cardRegistry.requireCard(cardName)
+        val cardId = EntityId.generate()
+
+        val cardComponent = CardComponent(
+            cardDefinitionId = cardDef.name,
+            name = cardDef.name,
+            manaCost = cardDef.manaCost,
+            typeLine = cardDef.typeLine,
+            oracleText = cardDef.oracleText,
+            baseStats = cardDef.creatureStats,
+            baseKeywords = cardDef.keywords,
+            colors = cardDef.colors,
+            ownerId = playerId,
+            spellEffect = cardDef.spellEffect
+        )
+
+        val container = com.wingedsheep.engine.state.ComponentContainer.of(
+            cardComponent,
+            com.wingedsheep.engine.state.components.identity.OwnerComponent(playerId),
+            ControllerComponent(playerId)
+        )
+
+        _state = _state.withEntity(cardId, container)
+
+        // Prepend to library (top = index 0)
+        val libraryZone = ZoneKey(playerId, Zone.LIBRARY)
+        val currentLibrary = _state.getZone(libraryZone)
+        _state = _state.copy(zones = _state.zones + (libraryZone to listOf(cardId) + currentLibrary))
 
         return cardId
     }

@@ -18,6 +18,7 @@ class LibraryExecutors : ExecutorModule {
         RevealAndOpponentChoosesExecutor(),
         WheelEffectExecutor(),
         PutLandFromHandExecutor(),
-        ChooseCreatureTypeRevealTopExecutor()
+        ChooseCreatureTypeRevealTopExecutor(),
+        RevealUntilNonlandDealDamageExecutor()
     )
 }

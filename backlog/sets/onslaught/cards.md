@@ -115,7 +115,7 @@
 - [ ] Enchantress's Presence
 - [ ] Endemic Plague
 - [ ] Entrails Feaster
-- [ ] Erratic Explosion
+- [x] Erratic Explosion
 - [ ] Essence Fracture
 - [x] Everglove Courier
 - [ ] Exalted Angel

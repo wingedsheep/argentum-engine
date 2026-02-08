@@ -255,6 +255,28 @@ data object ChooseCreatureTypeRevealTopEffect : Effect {
 }
 
 /**
+ * Reveal cards from the top of your library until you reveal a nonland card.
+ * Deal damage equal to that card's mana value to the target.
+ * Put the revealed cards on the bottom of your library in any order.
+ *
+ * Used for Erratic Explosion: "Choose any target. Reveal cards from the top of your library
+ * until you reveal a nonland card. Erratic Explosion deals damage equal to that card's
+ * mana value to that permanent or player. Put the revealed cards on the bottom of your
+ * library in any order."
+ *
+ * @property target The target to deal damage to
+ */
+@Serializable
+data class RevealUntilNonlandDealDamageEffect(
+    val target: EffectTarget
+) : Effect {
+    override val description: String =
+        "Reveal cards from the top of your library until you reveal a nonland card. " +
+        "Deal damage equal to that card's mana value to ${target.description}. " +
+        "Put the revealed cards on the bottom of your library in any order"
+}
+
+/**
  * Put a land card from your hand onto the battlefield.
  * "You may put a basic land card from your hand onto the battlefield tapped."
  *
