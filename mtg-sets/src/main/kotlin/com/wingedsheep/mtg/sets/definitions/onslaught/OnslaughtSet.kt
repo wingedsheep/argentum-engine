@@ -125,6 +125,7 @@ object OnslaughtSet {
         EmbermageGoblin,
         FlamestickCourier,
         GoblinPiledriver,
+        GoblinPyromancer,
         GoblinSharpshooter,
         GoblinSkyRaider,
         GoblinSledder,

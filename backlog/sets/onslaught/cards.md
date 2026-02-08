@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 162 / 335
+**Implemented:** 163 / 335
 
 ---
 
@@ -143,7 +143,7 @@
 - [x] Goblin Burrows
 - [ ] Goblin Machinist
 - [x] Goblin Piledriver
-- [ ] Goblin Pyromancer
+- [x] Goblin Pyromancer
 - [x] Goblin Sharpshooter
 - [x] Goblin Sky Raider
 - [x] Goblin Sledder
