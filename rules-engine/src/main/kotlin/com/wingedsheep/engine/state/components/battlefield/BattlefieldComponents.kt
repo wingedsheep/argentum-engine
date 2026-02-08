@@ -3,6 +3,7 @@ package com.wingedsheep.engine.state.components.battlefield
 import com.wingedsheep.engine.state.Component
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.ReplacementEffect
 import kotlinx.serialization.Serializable
 
 /**
@@ -84,6 +85,16 @@ data class AttachmentsComponent(
  */
 @Serializable
 data object EnteredThisTurnComponent : Component
+
+/**
+ * Stores replacement effects on a permanent (e.g., Daunting Defender's damage prevention).
+ * These are static replacement effects that are continuously active while the permanent
+ * is on the battlefield, as opposed to one-shot floating effect shields.
+ */
+@Serializable
+data class ReplacementEffectSourceComponent(
+    val replacementEffects: List<ReplacementEffect>
+) : Component
 
 /**
  * Timestamp for ordering effects (Rule 613).

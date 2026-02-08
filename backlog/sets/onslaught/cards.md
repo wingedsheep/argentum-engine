@@ -84,7 +84,7 @@
 - [ ] Daru Encampment
 - [ ] Daru Healer
 - [x] Daru Lancer
-- [ ] Daunting Defender
+- [x] Daunting Defender
 - [ ] Dawning Purist
 - [ ] Death Match
 - [x] Death Pulse

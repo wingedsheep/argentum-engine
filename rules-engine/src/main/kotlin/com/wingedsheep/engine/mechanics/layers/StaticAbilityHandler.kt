@@ -2,8 +2,10 @@ package com.wingedsheep.engine.mechanics.layers
 
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.ComponentContainer
+import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.CardDefinition
+import com.wingedsheep.sdk.scripting.PreventDamage
 import com.wingedsheep.sdk.scripting.AddCreatureTypeByCounter
 import com.wingedsheep.sdk.scripting.CantAttack
 import com.wingedsheep.sdk.scripting.CantBlock
@@ -219,6 +221,29 @@ class StaticAbilityHandler(
             is StaticTarget.Controller -> AffectsFilter.Self
             is StaticTarget.SpecificCard -> AffectsFilter.SpecificEntities(setOf(target.entityId))
         }
+    }
+
+    /**
+     * Creates a ReplacementEffectSourceComponent for a permanent if it has any
+     * runtime-relevant replacement effects (e.g., PreventDamage).
+     * Zone-change replacement effects like EntersTapped are handled elsewhere.
+     */
+    fun addReplacementEffectComponent(container: ComponentContainer): ComponentContainer {
+        val cardComponent = container.get<CardComponent>() ?: return container
+        val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId) ?: return container
+        return addReplacementEffectComponent(container, cardDef)
+    }
+
+    /**
+     * Creates a ReplacementEffectSourceComponent using a CardDefinition directly.
+     */
+    fun addReplacementEffectComponent(
+        container: ComponentContainer,
+        cardDefinition: CardDefinition
+    ): ComponentContainer {
+        val runtimeEffects = cardDefinition.script.replacementEffects.filter { it is PreventDamage }
+        if (runtimeEffects.isEmpty()) return container
+        return container.with(ReplacementEffectSourceComponent(runtimeEffects))
     }
 
     /**

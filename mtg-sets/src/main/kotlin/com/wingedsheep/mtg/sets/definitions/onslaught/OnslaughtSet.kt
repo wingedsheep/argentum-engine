@@ -44,6 +44,7 @@ object OnslaughtSet {
         Pacifism,
         RenewedFaith,
         RighteousCause,
+        DauntingDefender,
         DaruCavalier,
         DaruLancer,
         DiscipleOfGrace,

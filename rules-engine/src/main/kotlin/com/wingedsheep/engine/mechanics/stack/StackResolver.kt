@@ -310,6 +310,7 @@ class StackResolver(
             // Add continuous effects from static abilities (but not for face-down creatures)
             if (!spellComponent.castFaceDown) {
                 updated = staticAbilityHandler.addContinuousEffectComponent(updated)
+                updated = staticAbilityHandler.addReplacementEffectComponent(updated)
             }
 
             // Aura attachment: add AttachedToComponent pointing to the target
