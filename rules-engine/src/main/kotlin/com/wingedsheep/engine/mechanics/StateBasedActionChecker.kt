@@ -10,7 +10,9 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
+import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.engine.state.components.player.LossReason
 import com.wingedsheep.engine.state.components.player.PlayerLostComponent
@@ -560,6 +562,8 @@ class StateBasedActionChecker {
                 .without<SummoningSicknessComponent>()
                 .without<DamageComponent>()
                 .without<CountersComponent>()
+                .without<FaceDownComponent>()
+                .without<MorphDataComponent>()
         }
 
         return ExecutionResult.success(
