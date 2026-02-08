@@ -1,0 +1,48 @@
+package com.wingedsheep.mtg.sets.definitions.onslaught.cards
+
+import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.dsl.Triggers
+import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.MayEffect
+import com.wingedsheep.sdk.scripting.SearchDestination
+import com.wingedsheep.sdk.scripting.SearchLibraryEffect
+
+/**
+ * Screaming Seahawk
+ * {4}{U}
+ * Creature — Bird
+ * 2/2
+ * Flying
+ * When Screaming Seahawk enters the battlefield, you may search your library for a card
+ * named Screaming Seahawk, reveal it, put it into your hand, then shuffle.
+ */
+val ScreamingSeahawk = card("Screaming Seahawk") {
+    manaCost = "{4}{U}"
+    typeLine = "Creature — Bird"
+    power = 2
+    toughness = 2
+
+    keywords(Keyword.FLYING)
+
+    triggeredAbility {
+        trigger = Triggers.EntersBattlefield
+        effect = MayEffect(
+            SearchLibraryEffect(
+                filter = GameObjectFilter.Any.named("Screaming Seahawk"),
+                count = 1,
+                destination = SearchDestination.HAND,
+                reveal = true,
+                shuffleAfter = true
+            )
+        )
+    }
+
+    metadata {
+        rarity = Rarity.COMMON
+        collectorNumber = "112"
+        artist = "Heather Hudson"
+        imageUri = "https://cards.scryfall.io/large/front/e/6/e6e6e437-1543-47a5-b04c-0f4095703d7a.jpg?1562940085"
+    }
+}

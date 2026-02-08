@@ -77,6 +77,7 @@ object OnslaughtSet {
         ChokingTethers,
         Complicate,
         SageAven,
+        ScreamingSeahawk,
         SlipstreamEel,
 
         // Black creatures and spells
