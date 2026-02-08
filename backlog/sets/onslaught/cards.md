@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 174 / 335
+**Implemented:** 175 / 335
 
 ---
 
@@ -170,7 +170,7 @@
 - [ ] Imagecrafter
 - [x] Improvised Armor
 - [x] Infest
-- [ ] Information Dealer
+- [x] Information Dealer
 - [x] Inspirit
 - [ ] Insurrection
 - [x] Invigorating Boon

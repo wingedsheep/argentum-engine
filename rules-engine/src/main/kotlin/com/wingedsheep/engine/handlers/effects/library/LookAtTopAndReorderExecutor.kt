@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.library
 
 import com.wingedsheep.engine.core.*
+import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
@@ -30,6 +31,8 @@ class LookAtTopAndReorderExecutor : EffectExecutor<LookAtTopAndReorderEffect> {
 
     override val effectType: KClass<LookAtTopAndReorderEffect> = LookAtTopAndReorderEffect::class
 
+    private val dynamicAmountEvaluator = DynamicAmountEvaluator()
+
     override fun execute(
         state: GameState,
         effect: LookAtTopAndReorderEffect,
@@ -46,13 +49,16 @@ class LookAtTopAndReorderExecutor : EffectExecutor<LookAtTopAndReorderEffect> {
         val libraryZone = ZoneKey(playerId, Zone.LIBRARY)
         val library = state.getZone(libraryZone)
 
-        // If library is empty, nothing to look at
-        if (library.isEmpty()) {
+        // Evaluate the dynamic count
+        val dynamicCount = dynamicAmountEvaluator.evaluate(state, effect.count, context)
+
+        // If library is empty or count is zero, nothing to look at
+        if (library.isEmpty() || dynamicCount <= 0) {
             return ExecutionResult.success(state)
         }
 
         // Get top N cards (or fewer if library is smaller)
-        val count = minOf(effect.count, library.size)
+        val count = minOf(dynamicCount, library.size)
         val topCards = library.take(count)
 
         // If only 1 card, no reordering needed - player sees it and it stays on top
