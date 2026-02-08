@@ -46,6 +46,6 @@ val CrownOfFury = card("Crown of Fury") {
         collectorNumber = "196"
         artist = "Kev Walker"
         flavorText = "The crown never rests easy on a peaceful brow."
-        imageUri = "https://cards.scryfall.io/normal/front/7/f/7f65a47a-e793-4629-a523-6b7850fc3657.jpg?1562924199"
+        imageUri = "https://cards.scryfall.io/large/front/6/c/6caae974-f531-469d-8c6a-2077c4f3294a.jpg?1562920593"
     }
 }
