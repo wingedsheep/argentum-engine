@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers.actions.decision
 
 import com.wingedsheep.engine.core.DecisionSubmittedEvent
 import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.StepChangedEvent
 import com.wingedsheep.engine.core.SubmitDecision
 import com.wingedsheep.engine.core.TurnManager
@@ -66,11 +67,9 @@ class SubmitDecisionHandler(
                 result.state.pendingDecision == null
             ) {
                 val cleanupAdvanceResult = turnManager.advanceStep(result.state)
-                return ExecutionResult(
-                    state = cleanupAdvanceResult.state,
-                    events = listOf(submittedEvent) + result.events + cleanupAdvanceResult.events,
-                    error = cleanupAdvanceResult.error,
-                    pendingDecision = cleanupAdvanceResult.pendingDecision
+                return advanceWithTriggerDetection(
+                    cleanupAdvanceResult,
+                    listOf(submittedEvent) + result.events
                 )
             }
 
@@ -80,11 +79,9 @@ class SubmitDecisionHandler(
                 result.state.pendingDecision == null
             ) {
                 val untapAdvanceResult = turnManager.advanceStep(result.state)
-                return ExecutionResult(
-                    state = untapAdvanceResult.state,
-                    events = listOf(submittedEvent) + result.events + untapAdvanceResult.events,
-                    error = untapAdvanceResult.error,
-                    pendingDecision = untapAdvanceResult.pendingDecision
+                return advanceWithTriggerDetection(
+                    untapAdvanceResult,
+                    listOf(submittedEvent) + result.events
                 )
             }
 
@@ -138,6 +135,66 @@ class SubmitDecisionHandler(
 
         // No continuation - just return with cleared state
         return ExecutionResult.success(clearedState, listOf(submittedEvent))
+    }
+
+    /**
+     * After advancing the game step, detect any triggers that should fire
+     * (phase/step triggers, delayed triggers, event-based triggers).
+     * Mirrors the trigger detection logic in PassPriorityHandler.
+     */
+    private fun advanceWithTriggerDetection(
+        advanceResult: ExecutionResult,
+        precedingEvents: List<GameEvent>
+    ): ExecutionResult {
+        if (!advanceResult.isSuccess || advanceResult.events.isEmpty()) {
+            return ExecutionResult(
+                state = advanceResult.state,
+                events = precedingEvents + advanceResult.events,
+                error = advanceResult.error,
+                pendingDecision = advanceResult.pendingDecision
+            )
+        }
+
+        var currentState = advanceResult.newState
+        val triggers = triggerDetector.detectTriggers(currentState, advanceResult.events).toMutableList()
+
+        val stepChangedEvent = advanceResult.events.filterIsInstance<StepChangedEvent>().lastOrNull()
+        if (stepChangedEvent != null) {
+            val (delayedTriggers, consumedIds) = triggerDetector.detectDelayedTriggers(
+                currentState, stepChangedEvent.newStep
+            )
+            if (consumedIds.isNotEmpty()) {
+                currentState = currentState.removeDelayedTriggers(consumedIds)
+            }
+            triggers.addAll(delayedTriggers)
+
+            val activePlayer = currentState.activePlayerId
+            if (activePlayer != null) {
+                val phaseStepTriggers = triggerDetector.detectPhaseStepTriggers(
+                    currentState, stepChangedEvent.newStep, activePlayer
+                )
+                triggers.addAll(phaseStepTriggers)
+            }
+        }
+
+        val allEvents = precedingEvents + advanceResult.events
+
+        if (triggers.isNotEmpty()) {
+            val triggerResult = triggerProcessor.processTriggers(currentState, triggers)
+            if (triggerResult.isPaused) {
+                return ExecutionResult.paused(
+                    triggerResult.state,
+                    triggerResult.pendingDecision!!,
+                    allEvents + triggerResult.events
+                )
+            }
+            return ExecutionResult.success(
+                triggerResult.newState.withPriority(currentState.activePlayerId),
+                allEvents + triggerResult.events
+            )
+        }
+
+        return ExecutionResult.success(currentState, allEvents)
     }
 
     companion object {

@@ -115,8 +115,11 @@ class CombatManager(
             return "Only creatures can attack: ${cardComponent.name}"
         }
 
-        // Must be controlled by attacking player
-        val controller = container.get<ControllerComponent>()?.playerId
+        // Use projected state for controller and keywords (includes floating effects)
+        val projected = stateProjector.project(state)
+
+        // Must be controlled by attacking player (use projected controller for control-changing effects)
+        val controller = projected.getController(attackerId)
         if (controller != attackingPlayer) {
             return "You don't control ${cardComponent.name}"
         }
@@ -125,9 +128,6 @@ class CombatManager(
         if (container.has<TappedComponent>()) {
             return "${cardComponent.name} is tapped and cannot attack"
         }
-
-        // Use projected keywords (includes floating effects)
-        val projected = stateProjector.project(state)
 
         // Cannot have summoning sickness (unless it has haste)
         val hasHaste = projected.hasKeyword(attackerId, Keyword.HASTE)
@@ -418,8 +418,9 @@ class CombatManager(
             return "Only creatures can block: ${cardComponent.name}"
         }
 
-        // Must be controlled by blocking player
-        val controller = container.get<ControllerComponent>()?.playerId
+        // Must be controlled by blocking player (use projected controller for control-changing effects)
+        val projected = stateProjector.project(state)
+        val controller = projected.getController(blockerId)
         if (controller != blockingPlayer) {
             return "You don't control ${cardComponent.name}"
         }
@@ -443,9 +444,6 @@ class CombatManager(
                 return cantBlockValidation
             }
         }
-
-        // Use projected keywords (includes floating effects)
-        val projected = stateProjector.project(state)
 
         // Check projected "can't block" (e.g., from Pacifism aura)
         if (projected.cantBlock(blockerId)) {

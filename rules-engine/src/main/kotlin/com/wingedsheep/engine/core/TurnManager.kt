@@ -12,7 +12,6 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.MustAttackPlayerComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.LossReason
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
@@ -783,7 +782,7 @@ class TurnManager(
         return battlefield.any { entityId ->
             val container = state.getEntity(entityId) ?: return@any false
             val cardComponent = container.get<CardComponent>() ?: return@any false
-            val controller = container.get<ControllerComponent>()?.playerId
+            val controller = projected.getController(entityId)
 
             // Must be a creature controlled by the player
             if (!cardComponent.typeLine.isCreature || controller != playerId) {
@@ -830,7 +829,7 @@ class TurnManager(
         return battlefield.filter { entityId ->
             val container = state.getEntity(entityId) ?: return@filter false
             val cardComponent = container.get<CardComponent>() ?: return@filter false
-            val controller = container.get<ControllerComponent>()?.playerId
+            val controller = projected.getController(entityId)
 
             // Must be a creature controlled by the player
             if (!cardComponent.typeLine.isCreature || controller != playerId) {
@@ -868,11 +867,12 @@ class TurnManager(
      */
     fun getValidBlockers(state: GameState, playerId: EntityId): List<EntityId> {
         val battlefield = state.getBattlefield()
+        val projected = stateProjector.project(state)
 
         return battlefield.filter { entityId ->
             val container = state.getEntity(entityId) ?: return@filter false
             val cardComponent = container.get<CardComponent>() ?: return@filter false
-            val controller = container.get<ControllerComponent>()?.playerId
+            val controller = projected.getController(entityId)
 
             // Must be a creature controlled by the player
             if (!cardComponent.typeLine.isCreature || controller != playerId) {
