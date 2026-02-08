@@ -7,11 +7,14 @@ import com.wingedsheep.engine.core.LifeChangeReason
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
+import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
@@ -31,6 +34,8 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.Player
+import com.wingedsheep.sdk.scripting.PreventDamage
+import com.wingedsheep.sdk.scripting.RecipientFilter
 
 /**
  * Utility functions shared across effect executors.
@@ -38,6 +43,7 @@ import com.wingedsheep.sdk.scripting.Player
 object EffectExecutorUtils {
 
     private val stateProjector = StateProjector()
+    private val predicateEvaluator = PredicateEvaluator()
 
     /**
      * Resolve a target from the effect target definition and context.
@@ -343,7 +349,69 @@ object EffectExecutorUtils {
             updatedEffects.removeAt(idx)
         }
 
-        return state.copy(floatingEffects = updatedEffects) to remainingDamage
+        var newState = state.copy(floatingEffects = updatedEffects)
+
+        // Apply static damage reduction from permanents with ReplacementEffectSourceComponent
+        remainingDamage = applyStaticDamageReduction(newState, targetId, remainingDamage)
+
+        return newState to remainingDamage
+    }
+
+    /**
+     * Apply static damage reduction from permanents on the battlefield.
+     *
+     * Scans all battlefield entities for ReplacementEffectSourceComponent containing
+     * PreventDamage effects, and reduces damage if the target matches the effect's filter.
+     *
+     * @param state The current game state
+     * @param targetId The entity receiving damage
+     * @param amount The incoming damage amount
+     * @return The reduced damage amount (minimum 0)
+     */
+    private fun applyStaticDamageReduction(state: GameState, targetId: EntityId, amount: Int): Int {
+        if (amount <= 0) return 0
+
+        var remainingDamage = amount
+        val projected = stateProjector.project(state)
+
+        for (entityId in state.getBattlefield()) {
+            if (remainingDamage <= 0) break
+            val container = state.getEntity(entityId) ?: continue
+            val replacementComponent = container.get<ReplacementEffectSourceComponent>() ?: continue
+            val sourceControllerId = container.get<ControllerComponent>()?.playerId ?: continue
+
+            for (effect in replacementComponent.replacementEffects) {
+                if (remainingDamage <= 0) break
+                if (effect !is PreventDamage) continue
+
+                val damageEvent = effect.appliesTo
+                if (damageEvent !is com.wingedsheep.sdk.scripting.GameEvent.DamageEvent) continue
+
+                // Check if the target matches the recipient filter
+                val recipientMatches = when (val recipient = damageEvent.recipient) {
+                    is RecipientFilter.Matching -> {
+                        val context = PredicateContext(controllerId = sourceControllerId)
+                        predicateEvaluator.matchesWithProjection(state, projected, targetId, recipient.filter, context)
+                    }
+                    is RecipientFilter.CreatureYouControl -> {
+                        val context = PredicateContext(controllerId = sourceControllerId)
+                        val isCreature = state.getEntity(targetId)?.get<CardComponent>()?.typeLine?.isCreature == true
+                        val isControlled = state.getEntity(targetId)?.get<ControllerComponent>()?.playerId == sourceControllerId
+                        isCreature && isControlled
+                    }
+                    is RecipientFilter.Any -> true
+                    else -> false
+                }
+
+                if (recipientMatches) {
+                    val preventAmount = effect.amount
+                    val prevented = if (preventAmount == null) remainingDamage else minOf(preventAmount, remainingDamage)
+                    remainingDamage -= prevented
+                }
+            }
+        }
+
+        return remainingDamage.coerceAtLeast(0)
     }
 
     /**
