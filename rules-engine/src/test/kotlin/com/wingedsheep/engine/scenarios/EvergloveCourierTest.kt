@@ -180,6 +180,69 @@ class EvergloveCourierTest : FunSpec({
         projectedAfter.hasKeyword(elf, Keyword.TRAMPLE) shouldBe true
     }
 
+    test("Buff does not stack across multiple turns when courier stays tapped") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Forest" to 40),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        // Put courier and an Elf on the battlefield
+        val courier = driver.putCreatureOnBattlefield(activePlayer, "Everglove Courier")
+        val elf = driver.putCreatureOnBattlefield(activePlayer, "Elvish Warrior")
+        driver.removeSummoningSickness(courier)
+        driver.removeSummoningSickness(elf)
+
+        // Activate the courier's ability
+        driver.giveMana(activePlayer, Color.GREEN, 3)
+        driver.submit(
+            ActivateAbility(
+                playerId = activePlayer,
+                sourceId = courier,
+                abilityId = courierAbilityId,
+                targets = listOf(ChosenTarget.Permanent(elf))
+            )
+        )
+        driver.bothPass()
+
+        // Verify buff is active: 2/3 -> 4/5
+        projector.getProjectedPower(driver.state, elf) shouldBe 4
+        projector.getProjectedToughness(driver.state, elf) shouldBe 5
+
+        // -- First untap cycle: keep courier tapped --
+        driver.passPriorityUntil(Step.UNTAP)
+        driver.submitCardSelection(activePlayer, listOf(courier))
+
+        // Buff should still be +2/+2, NOT +4/+4
+        projector.getProjectedPower(driver.state, elf) shouldBe 4
+        projector.getProjectedToughness(driver.state, elf) shouldBe 5
+
+        // Verify floating effects count
+        val effectsAfterTurn1 = driver.state.floatingEffects.size
+
+        // -- Second untap cycle: keep courier tapped again --
+        driver.passPriorityUntil(Step.UNTAP)
+        driver.submitCardSelection(activePlayer, listOf(courier))
+
+        // Buff should STILL be +2/+2, NOT +4/+4
+        projector.getProjectedPower(driver.state, elf) shouldBe 4
+        projector.getProjectedToughness(driver.state, elf) shouldBe 5
+
+        // Floating effects count should not have grown
+        driver.state.floatingEffects.size shouldBe effectsAfterTurn1
+
+        // -- Third untap cycle: keep courier tapped yet again --
+        driver.passPriorityUntil(Step.UNTAP)
+        driver.submitCardSelection(activePlayer, listOf(courier))
+
+        // Buff should STILL be +2/+2, NOT +6/+6
+        projector.getProjectedPower(driver.state, elf) shouldBe 4
+        projector.getProjectedToughness(driver.state, elf) shouldBe 5
+    }
+
     test("Buff removed when courier is untapped during untap step") {
         val driver = createDriver()
         driver.initMirrorMatch(
