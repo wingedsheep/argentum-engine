@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 164 / 335
+**Implemented:** 165 / 335
 
 ---
 
@@ -127,7 +127,7 @@
 - [x] Festering Goblin
 - [ ] Fever Charm
 - [x] Flamestick Courier
-- [ ] Fleeting Aven
+- [x] Fleeting Aven
 - [ ] Flooded Strand
 - [x] Foothill Guide
 - [x] Forest

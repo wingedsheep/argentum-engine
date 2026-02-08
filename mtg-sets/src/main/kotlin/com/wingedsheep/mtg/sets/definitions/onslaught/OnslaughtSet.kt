@@ -59,6 +59,7 @@ object OnslaughtSet {
         BlatantThievery,
         CraftyPathmage,
         DisruptivePitmage,
+        FleetingAven,
         GhosthelmCourier,
         ThoughtboundPrimoc,
         NamelessOne,
