@@ -86,6 +86,13 @@ class TriggerDetector(
             triggers.addAll(detectTriggersForEvent(state, event))
         }
 
+        // Rule 603.10: "Look back in time" for simultaneous deaths.
+        // When multiple creatures die at the same time (e.g., from Infest),
+        // each creature's death triggers should still see the others dying.
+        // The main loop in detectTriggersForEvent only checks battlefield creatures,
+        // so dead creatures miss each other's death events. Fix that here.
+        detectSimultaneousDeathTriggers(state, events, triggers)
+
         // Sort by APNAP order
         return sortByApnapOrder(state, triggers)
     }
@@ -304,6 +311,62 @@ class TriggerDetector(
     }
 
     /**
+     * Rule 603.10: Handle "look back in time" for simultaneous deaths.
+     * When multiple creatures die at the same time, each dead creature should
+     * still see the others dying for trigger purposes. The main battlefield loop
+     * misses these because the creatures are already in the graveyard.
+     *
+     * This checks dead creatures' non-self death triggers (e.g., OnOtherCreatureWithSubtypeDies,
+     * OnDeath with selfOnly=false) against other death events in the same batch.
+     */
+    private fun detectSimultaneousDeathTriggers(
+        state: GameState,
+        events: List<EngineGameEvent>,
+        triggers: MutableList<PendingTrigger>
+    ) {
+        // Collect all death events from this batch
+        val deathEvents = events.filterIsInstance<ZoneChangeEvent>().filter {
+            it.toZone == com.wingedsheep.sdk.core.Zone.GRAVEYARD &&
+                it.fromZone == com.wingedsheep.sdk.core.Zone.BATTLEFIELD
+        }
+        if (deathEvents.size < 2) return // Need at least 2 simultaneous deaths
+
+        // For each dead creature, check its triggers against OTHER death events
+        for (deadEvent in deathEvents) {
+            val deadEntityId = deadEvent.entityId
+            val container = state.getEntity(deadEntityId) ?: continue
+            val cardComponent = container.get<CardComponent>() ?: continue
+
+            // Face-down creatures have no abilities (Rule 707.2)
+            if (container.has<FaceDownComponent>()) continue
+
+            // Skip if this creature is still on the battlefield (already handled by main loop)
+            if (deadEntityId in state.getBattlefield()) continue
+
+            val abilities = getTriggeredAbilities(deadEntityId, cardComponent.cardDefinitionId, state)
+            val controllerId = deadEvent.ownerId
+
+            for (ability in abilities) {
+                for (otherDeathEvent in deathEvents) {
+                    if (otherDeathEvent.entityId == deadEntityId) continue // Skip self
+
+                    if (matchesTrigger(ability.trigger, otherDeathEvent, deadEntityId, controllerId, state)) {
+                        triggers.add(
+                            PendingTrigger(
+                                ability = ability,
+                                sourceId = deadEntityId,
+                                sourceName = cardComponent.name,
+                                controllerId = controllerId,
+                                triggerContext = TriggerContext.fromEvent(otherDeathEvent)
+                            )
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * Detect "leaves the battlefield" triggers on permanents that just left.
      * Similar to detectDeathTriggers, but handles OnLeavesBattlefield(selfOnly=true).
      */
@@ -511,10 +574,17 @@ class TriggerDetector(
                     event.entityId == sourceId) {
                     false
                 } else {
-                    // Check if dying creature has the required subtype using projected state
-                    // This correctly handles face-down creatures which have no subtypes (Rule 707.2)
-                    val projected = stateProjector.project(state)
-                    val hasSubtype = projected.hasSubtype(event.entityId, trigger.subtype.value)
+                    // The dying creature is no longer on the battlefield, so projected state
+                    // won't have its subtypes. Use base state CardComponent instead.
+                    // Face-down creatures have no subtypes (Rule 707.2).
+                    val dyingEntity = state.getEntity(event.entityId)
+                    val isFaceDown = dyingEntity?.has<FaceDownComponent>() == true
+                    val hasSubtype = if (isFaceDown) {
+                        false
+                    } else {
+                        val cardComponent = dyingEntity?.get<CardComponent>()
+                        cardComponent?.typeLine?.hasSubtype(com.wingedsheep.sdk.core.Subtype(trigger.subtype.value)) == true
+                    }
                     val controllerMatches = !trigger.youControlOnly || event.ownerId == controllerId
                     hasSubtype && controllerMatches
                 }

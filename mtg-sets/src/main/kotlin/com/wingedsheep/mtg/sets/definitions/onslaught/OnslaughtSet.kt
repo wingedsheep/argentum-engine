@@ -126,6 +126,7 @@ object OnslaughtSet {
         SpinedBasher,
         NantukoHusk,
         ProwlingPangolin,
+        RotlungReanimator,
         SoullessOne,
         ScreechingBuzzard,
         SeveredLegion,
