@@ -10,6 +10,7 @@ import { ReorderCardsUI } from './ReorderCardsUI'
 import { OrderBlockersUI } from './OrderBlockersUI'
 import { ZoneSelectionUI, type ZoneCardInfo } from './ZoneSelectionUI'
 import { getCardImageUrl } from '../../utils/cardImages'
+import { AbilityText } from '../ui/ManaSymbols'
 import styles from './DecisionUI.module.css'
 
 /**
@@ -279,7 +280,7 @@ function YesNoDecisionUI({
   return (
     <>
       <h2 className={styles.title}>
-        {decision.prompt}
+        <AbilityText text={decision.prompt} size={20} />
       </h2>
 
       {decision.context.sourceName && (
@@ -291,10 +292,10 @@ function YesNoDecisionUI({
       {/* Yes/No buttons */}
       <div className={styles.buttonContainer}>
         <button onClick={handleYes} className={styles.yesButton}>
-          {decision.yesText}
+          <AbilityText text={decision.yesText} size={16} />
         </button>
         <button onClick={handleNo} className={styles.noButton}>
-          {decision.noText}
+          <AbilityText text={decision.noText} size={16} />
         </button>
       </div>
     </>
@@ -1245,7 +1246,7 @@ function ManaSourceSelectionUI({
       </div>
       {decision.context.sourceName && (
         <div className={styles.hint}>
-          {decision.prompt} for {decision.context.sourceName}
+          <AbilityText text={`${decision.prompt} for ${decision.context.sourceName}`} size={13} />
         </div>
       )}
       <div className={styles.hint}>
