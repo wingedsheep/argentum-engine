@@ -480,6 +480,23 @@ data class AddCreatureTypeByCounter(
         "Each creature with a $counterType counter on it is a $creatureType in addition to its other creature types"
 }
 
+/**
+ * This creature can't be blocked unless defending player controls N or more
+ * creatures that share a creature type.
+ * Used for Graxiplon: "can't be blocked unless defending player controls
+ * three or more creatures that share a creature type."
+ *
+ * @property minSharedCount The minimum number of creatures sharing a type required to allow blocking
+ * @property target What this ability applies to
+ */
+@Serializable
+data class CantBeBlockedUnlessDefenderSharesCreatureType(
+    val minSharedCount: Int,
+    val target: StaticTarget = StaticTarget.SourceCreature
+) : StaticAbility {
+    override val description: String = "can't be blocked unless defending player controls $minSharedCount or more creatures that share a creature type"
+}
+
 // =============================================================================
 // Attack Restrictions
 // =============================================================================

@@ -21,6 +21,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CanOnlyBlockCreaturesWithKeyword
 import com.wingedsheep.sdk.scripting.CantBeBlockedByPower
 import com.wingedsheep.sdk.scripting.CantBeBlockedExceptByKeyword
+import com.wingedsheep.sdk.scripting.CantBeBlockedUnlessDefenderSharesCreatureType
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.CantBlockCreaturesWithGreaterPower
 import com.wingedsheep.sdk.scripting.DivideCombatDamageFreely
@@ -554,6 +555,14 @@ class CombatManager(
             return keywordEvasionValidation
         }
 
+        // CantBeBlockedUnlessDefenderSharesCreatureType: e.g. Graxiplon
+        val sharedTypeRestrictionValidation = validateCantBeBlockedUnlessDefenderSharesCreatureType(
+            state, attackerId, attackerCard, blockingPlayer, projected
+        )
+        if (sharedTypeRestrictionValidation != null) {
+            return sharedTypeRestrictionValidation
+        }
+
         // Skulk: Cannot be blocked by creatures with greater power
         // TODO: Implement skulk
 
@@ -792,6 +801,78 @@ class CombatManager(
         if (requiredKeyword == Keyword.FLYING && projected.hasKeyword(blockerId, Keyword.REACH)) return true
 
         return false
+    }
+
+    /**
+     * Check if attacker has CantBeBlockedUnlessDefenderSharesCreatureType restriction.
+     * The attacker can't be blocked unless the defending player controls N or more
+     * creatures that share a creature type (e.g., three Goblins or three Elves).
+     *
+     * Returns an error message if blocking is not allowed, null otherwise.
+     */
+    private fun validateCantBeBlockedUnlessDefenderSharesCreatureType(
+        state: GameState,
+        attackerId: EntityId,
+        attackerCard: CardComponent,
+        blockingPlayer: EntityId,
+        projected: ProjectedState
+    ): String? {
+        val cardDef = cardRegistry?.getCard(attackerCard.cardDefinitionId) ?: return null
+        val restriction = cardDef.staticAbilities
+            .filterIsInstance<CantBeBlockedUnlessDefenderSharesCreatureType>().firstOrNull()
+            ?: return null
+
+        if (!defenderHasEnoughSharedCreatureTypes(state, blockingPlayer, restriction.minSharedCount, projected)) {
+            return "${attackerCard.name} can't be blocked unless you control ${restriction.minSharedCount} or more creatures that share a creature type"
+        }
+
+        return null
+    }
+
+    /**
+     * Check if the defending player controls enough creatures sharing a creature type.
+     * Returns true if any creature subtype appears on [minCount] or more creatures
+     * controlled by [playerId].
+     */
+    private fun defenderHasEnoughSharedCreatureTypes(
+        state: GameState,
+        playerId: EntityId,
+        minCount: Int,
+        projected: ProjectedState
+    ): Boolean {
+        val creatures = projected.getBattlefieldControlledBy(playerId).filter { entityId ->
+            val card = state.getEntity(entityId)?.get<CardComponent>() ?: return@filter false
+            card.typeLine.isCreature
+        }
+
+        // Count occurrences of each creature subtype
+        val subtypeCounts = mutableMapOf<String, Int>()
+        for (entityId in creatures) {
+            for (subtype in projected.getSubtypes(entityId)) {
+                subtypeCounts[subtype] = (subtypeCounts[subtype] ?: 0) + 1
+            }
+        }
+
+        return subtypeCounts.values.any { it >= minCount }
+    }
+
+    /**
+     * Check if a blocker can block despite CantBeBlockedUnlessDefenderSharesCreatureType.
+     * Returns true if the defending player meets the shared creature type requirement.
+     */
+    private fun canBlockDespiteSharedCreatureTypeRestriction(
+        state: GameState,
+        attackerId: EntityId,
+        attackerCard: CardComponent,
+        blockingPlayer: EntityId,
+        projected: ProjectedState
+    ): Boolean {
+        val cardDef = cardRegistry?.getCard(attackerCard.cardDefinitionId) ?: return true
+        val restriction = cardDef.staticAbilities
+            .filterIsInstance<CantBeBlockedUnlessDefenderSharesCreatureType>().firstOrNull()
+            ?: return true
+
+        return defenderHasEnoughSharedCreatureTypes(state, blockingPlayer, restriction.minSharedCount, projected)
     }
 
     /**
@@ -1907,6 +1988,11 @@ class CombatManager(
 
         // CantBeBlockedExceptByKeyword: Can only be blocked by creatures with a specific keyword
         if (!canBlockDespiteKeywordEvasion(attackerId, attackerCard, blockerId, projected)) {
+            return false
+        }
+
+        // CantBeBlockedUnlessDefenderSharesCreatureType: e.g. Graxiplon
+        if (!canBlockDespiteSharedCreatureTypeRestriction(state, attackerId, attackerCard, blockingPlayer, projected)) {
             return false
         }
 

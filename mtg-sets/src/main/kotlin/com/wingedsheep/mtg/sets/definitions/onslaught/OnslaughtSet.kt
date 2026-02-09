@@ -72,6 +72,7 @@ object OnslaughtSet {
         DisruptivePitmage,
         FleetingAven,
         GhosthelmCourier,
+        Graxiplon,
         InformationDealer,
         MagesGuile,
         ThoughtboundPrimoc,
