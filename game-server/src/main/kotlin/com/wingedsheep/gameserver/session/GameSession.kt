@@ -1062,6 +1062,8 @@ class GameSession(
                 // Check if the ability can be activated and gather cost info
                 var tapTargets: List<EntityId>? = null
                 var tapCost: AbilityCost.TapPermanents? = null
+                var sacrificeTargets: List<EntityId>? = null
+                var sacrificeCost: AbilityCost.Sacrifice? = null
 
                 when (ability.cost) {
                     is AbilityCost.Tap -> {
@@ -1080,6 +1082,11 @@ class GameSession(
                         tapTargets = findAbilityTapTargets(state, playerId, tapCost.filter)
                         if (tapTargets.size < tapCost.count) continue
                     }
+                    is AbilityCost.Sacrifice -> {
+                        sacrificeCost = ability.cost as AbilityCost.Sacrifice
+                        sacrificeTargets = findAbilitySacrificeTargets(state, playerId, sacrificeCost.filter)
+                        if (sacrificeTargets.isEmpty()) continue
+                    }
                     else -> {
                         // Other cost types - allow for now, engine will validate
                     }
@@ -1091,6 +1098,13 @@ class GameSession(
                         costType = "TapPermanents",
                         validTapTargets = tapTargets,
                         tapCount = tapCost.count
+                    )
+                } else if (sacrificeTargets != null && sacrificeCost != null) {
+                    AdditionalCostInfo(
+                        description = sacrificeCost.description,
+                        costType = "SacrificePermanent",
+                        validSacrificeTargets = sacrificeTargets,
+                        sacrificeCount = 1
                     )
                 } else null
 
