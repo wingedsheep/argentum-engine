@@ -28,8 +28,6 @@ val SoullessOne = card("Soulless One") {
         )
     )
 
-    keywords(Keyword.TRAMPLE)
-
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "171"
