@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 201 / 335
+**Implemented:** 202 / 335
 
 ---
 
@@ -116,7 +116,7 @@
 - [ ] Endemic Plague
 - [ ] Entrails Feaster
 - [x] Erratic Explosion
-- [ ] Essence Fracture
+- [x] Essence Fracture
 - [x] Everglove Courier
 - [ ] Exalted Angel
 - [x] Explosive Vegetation

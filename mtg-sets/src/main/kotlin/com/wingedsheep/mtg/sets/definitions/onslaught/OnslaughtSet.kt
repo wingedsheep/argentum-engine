@@ -90,6 +90,7 @@ object OnslaughtSet {
         ScreamingSeahawk,
         SlipstreamEel,
         TrickeryCharm,
+        EssenceFracture,
 
         // Black creatures and spells
         AccursedCentaur,
