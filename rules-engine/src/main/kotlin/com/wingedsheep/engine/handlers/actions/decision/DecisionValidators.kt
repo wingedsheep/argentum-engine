@@ -22,6 +22,8 @@ import com.wingedsheep.engine.core.PilesSplitResponse
 import com.wingedsheep.engine.core.ReorderLibraryDecision
 import com.wingedsheep.engine.core.SearchLibraryDecision
 import com.wingedsheep.engine.core.SelectCardsDecision
+import com.wingedsheep.engine.core.SelectManaSourcesDecision
+import com.wingedsheep.engine.core.ManaSourcesSelectedResponse
 import com.wingedsheep.engine.core.SplitPilesDecision
 import com.wingedsheep.engine.core.TargetsResponse
 import com.wingedsheep.engine.core.YesNoDecision
@@ -57,6 +59,7 @@ object DecisionValidators {
             is AssignDamageDecision -> validateDamageAssignment(decision, response)
             is SearchLibraryDecision -> validateLibrarySearch(decision, response)
             is ReorderLibraryDecision -> validateLibraryReorder(decision, response)
+            is SelectManaSourcesDecision -> validateManaSourcesSelection(response)
         }
     }
 
@@ -293,6 +296,13 @@ object DecisionValidators {
         }
         if (response.orderedObjects.size != decision.cards.size) {
             return "Invalid reorder: response must contain exactly ${decision.cards.size} cards"
+        }
+        return null
+    }
+
+    private fun validateManaSourcesSelection(response: DecisionResponse): String? {
+        if (response !is ManaSourcesSelectedResponse) {
+            return "Expected mana sources selected response"
         }
         return null
     }

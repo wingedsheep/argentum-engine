@@ -49,6 +49,7 @@ export interface GameplaySliceActions {
   submitOptionDecision: (optionIndex: number) => void
   submitDistributeDecision: (distribution: Record<EntityId, number>) => void
   submitColorDecision: (color: string) => void
+  submitManaSourcesDecision: (selectedSources: readonly EntityId[], autoPay: boolean) => void
   keepHand: () => void
   mulligan: () => void
   chooseBottomCards: (cardIds: readonly EntityId[]) => void
@@ -219,6 +220,23 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
         type: 'ColorChosenResponse' as const,
         decisionId: pendingDecision.id,
         color,
+      },
+    }
+    getWebSocket()?.send(createSubmitActionMessage(action))
+  },
+
+  submitManaSourcesDecision: (selectedSources: readonly EntityId[], autoPay: boolean) => {
+    const { pendingDecision, playerId } = get()
+    if (!pendingDecision || !playerId) return
+
+    const action = {
+      type: 'SubmitDecision' as const,
+      playerId,
+      response: {
+        type: 'ManaSourcesSelectedResponse' as const,
+        decisionId: pendingDecision.id,
+        selectedSources: [...selectedSources],
+        autoPay,
       },
     }
     getWebSocket()?.send(createSubmitActionMessage(action))

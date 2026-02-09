@@ -325,7 +325,7 @@ class ManaSolver(
      * - hasPainCost/painAmount: true if the mana ability costs life
      * - canAttack: true for creatures that can attack (no summoning sickness or has haste)
      */
-    private fun findAvailableManaSources(state: GameState, playerId: EntityId): List<ManaSource> {
+    internal fun findAvailableManaSources(state: GameState, playerId: EntityId): List<ManaSource> {
         // Project state once to get all keywords and projected controllers
         val projected = stateProjector.project(state)
 

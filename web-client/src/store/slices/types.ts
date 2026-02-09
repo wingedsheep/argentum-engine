@@ -380,6 +380,7 @@ export type GameStore = {
   submitOptionDecision: (optionIndex: number) => void
   submitDistributeDecision: (distribution: Record<EntityId, number>) => void
   submitColorDecision: (color: string) => void
+  submitManaSourcesDecision: (selectedSources: readonly EntityId[], autoPay: boolean) => void
   keepHand: () => void
   mulligan: () => void
   chooseBottomCards: (cardIds: readonly EntityId[]) => void

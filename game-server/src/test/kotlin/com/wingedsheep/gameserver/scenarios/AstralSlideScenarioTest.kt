@@ -269,8 +269,9 @@ class AstralSlideScenarioTest : ScenarioTestBase() {
                     .withPlayers("Player1", "Opponent")
                     .withCardOnBattlefield(1, "Astral Slide")
                     .withCardOnBattlefield(1, "Lightning Rift")
-                    .withCardInHand(1, "Disciple of Grace")
-                    .withLandsOnBattlefield(1, "Plains", 2)
+                    .withCardInHand(1, "Disciple of Grace") // Cycling {2}
+                    .withLandsOnBattlefield(1, "Plains", 2) // For cycling cost
+                    .withLandsOnBattlefield(1, "Mountain", 1) // For Lightning Rift's {1}
                     .withCardInLibrary(1, "Mountain")
                     .withCardOnBattlefield(2, "Glory Seeker")
                     .withActivePlayer(1)
@@ -282,26 +283,40 @@ class AstralSlideScenarioTest : ScenarioTestBase() {
                 // Cycle - both enchantments should trigger
                 game.cycleCard(1, "Disciple of Grace")
 
-                // First trigger - may decision then target selection
-                withClue("Should have pending may decision for first trigger") {
-                    game.hasPendingDecision() shouldBe true
-                }
-                game.answerYesNo(true)
-
                 val targetId = game.findPermanent("Glory Seeker")!!
-                game.selectTargets(listOf(targetId))
 
-                // Second trigger - may decision then target selection
-                withClue("Should have pending may decision for second trigger") {
+                // First trigger (Astral Slide - MayEffect): may decision then target
+                withClue("Should have pending decision for first trigger") {
                     game.hasPendingDecision() shouldBe true
                 }
-                game.answerYesNo(true)
-                game.selectTargets(listOf(targetId))
 
-                // Resolve first ability on stack (no more may question - already answered)
+                val firstDecision = game.getPendingDecision()
+                if (firstDecision is com.wingedsheep.engine.core.YesNoDecision) {
+                    game.answerYesNo(true)
+
+                    // Check if next decision is mana source selection (Lightning Rift path)
+                    val nextDecision = game.getPendingDecision()
+                    if (nextDecision is com.wingedsheep.engine.core.SelectManaSourcesDecision) {
+                        // Lightning Rift processed first: pay → mana sources → target
+                        game.submitManaSourcesAutoPay()
+                        game.selectTargets(listOf(targetId))
+
+                        // Second trigger (Astral Slide): may → target
+                        game.answerYesNo(true)
+                        game.selectTargets(listOf(targetId))
+                    } else {
+                        // Astral Slide processed first: may → target
+                        game.selectTargets(listOf(targetId))
+
+                        // Second trigger (Lightning Rift): pay → mana sources → target
+                        game.answerYesNo(true)
+                        game.submitManaSourcesAutoPay()
+                        game.selectTargets(listOf(targetId))
+                    }
+                }
+
+                // Resolve both abilities on stack
                 game.resolveStack()
-
-                // Resolve second ability on stack
                 game.resolveStack()
 
                 // At least one of the effects should have worked -

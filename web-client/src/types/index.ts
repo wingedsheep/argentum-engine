@@ -183,6 +183,8 @@ export type {
   ChooseOptionDecision,
   DistributeDecision,
   ChooseColorDecision,
+  ManaSourceOption,
+  SelectManaSourcesDecision,
   // Sealed Draft types
   SealedCardInfo,
   SealedGameCreatedMessage,

@@ -3,12 +3,14 @@ package com.wingedsheep.engine.event
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.TargetFinder
+import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.MayEffect
+import com.wingedsheep.sdk.scripting.MayPayManaEffect
 import com.wingedsheep.sdk.targeting.TargetRequirement
 import java.util.UUID
 
@@ -105,6 +107,12 @@ class TriggerProcessor(
         val ability = trigger.ability
         val targetRequirement = ability.targetRequirement
 
+        // If the effect is a MayPayManaEffect AND has targets, ask payment first, then targets.
+        // This reverses the old flow where targets were chosen before the pay question.
+        if (targetRequirement != null && ability.effect is MayPayManaEffect) {
+            return processMayPayManaThenTargetTrigger(state, trigger, targetRequirement)
+        }
+
         // If the effect is a MayEffect AND has targets, ask may first before target selection.
         // This gives the player a chance to decline before having to pick targets.
         if (targetRequirement != null && ability.effect is MayEffect) {
@@ -181,6 +189,89 @@ class TriggerProcessor(
             decisionId = decisionResult.pendingDecision.id,
             trigger = trigger,
             targetRequirement = targetRequirement
+        )
+
+        val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
+
+        return ExecutionResult.paused(
+            stateWithContinuation,
+            decisionResult.pendingDecision,
+            decisionResult.events.toList()
+        )
+    }
+
+    /**
+     * Process a triggered ability that has both MayPayManaEffect and targets.
+     *
+     * Asks "Pay {cost}?" first. If the player says yes, proceeds to mana source selection,
+     * then target selection. If the player says no, the trigger is skipped entirely.
+     * If the player can't pay, the trigger is skipped silently.
+     *
+     * Before asking, checks if legal targets exist — if not, the ability fizzles
+     * without even asking the pay question.
+     */
+    private fun processMayPayManaThenTargetTrigger(
+        state: GameState,
+        trigger: PendingTrigger,
+        targetRequirement: TargetRequirement
+    ): ExecutionResult {
+        val ability = trigger.ability
+        val mayPayEffect = ability.effect as MayPayManaEffect
+        val manaCost = mayPayEffect.cost
+
+        // Check if the player can pay the mana cost
+        val manaSolver = ManaSolver()
+        if (!manaSolver.canPay(state, trigger.controllerId, manaCost)) {
+            // Can't pay - skip silently
+            return ExecutionResult.success(state)
+        }
+
+        // Check if legal targets exist before asking the pay question
+        val legalTargets = targetFinder.findLegalTargets(
+            state = state,
+            requirement = targetRequirement,
+            controllerId = trigger.controllerId,
+            sourceId = trigger.sourceId
+        )
+
+        if (legalTargets.isEmpty() && targetRequirement.effectiveMinCount > 0) {
+            // No legal targets - ability doesn't go on stack
+            return ExecutionResult.success(
+                state,
+                listOf(
+                    AbilityFizzledEvent(
+                        trigger.sourceId,
+                        ability.description,
+                        "No legal targets available"
+                    )
+                )
+            )
+        }
+
+        val sourceName = trigger.sourceName
+
+        // Create yes/no decision: "Pay {cost}?"
+        val decisionResult = decisionHandler.createYesNoDecision(
+            state = state,
+            playerId = trigger.controllerId,
+            sourceId = trigger.sourceId,
+            sourceName = sourceName,
+            prompt = "Pay $manaCost?",
+            yesText = "Pay $manaCost",
+            noText = "Don't pay",
+            phase = DecisionPhase.RESOLUTION
+        )
+
+        if (!decisionResult.isPaused || decisionResult.pendingDecision == null) {
+            return ExecutionResult.error(state, "Failed to create yes/no decision for may pay mana trigger")
+        }
+
+        // Create continuation to resume with mana source selection if player says yes
+        val continuation = MayPayManaTriggerContinuation(
+            decisionId = decisionResult.pendingDecision.id,
+            trigger = trigger,
+            targetRequirement = targetRequirement,
+            manaCost = manaCost
         )
 
         val stateWithContinuation = decisionResult.state.pushContinuation(continuation)

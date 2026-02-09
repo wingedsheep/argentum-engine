@@ -355,6 +355,28 @@ data class ReorderLibraryDecision(
     val cardInfo: Map<EntityId, SearchCardInfo>
 ) : PendingDecision
 
+/**
+ * Player must select mana sources to pay a cost (e.g., Lightning Rift's {1}).
+ *
+ * Shown after the player agrees to pay, before target selection.
+ * Includes an "Auto Pay" shortcut that uses the solver's suggestion.
+ *
+ * @property availableSources List of mana source entity IDs + metadata for display
+ * @property requiredCost The mana cost string to display
+ * @property autoPaySuggestion Pre-computed auto-tap suggestion (entity IDs to tap)
+ */
+@Serializable
+@SerialName("SelectManaSourcesDecision")
+data class SelectManaSourcesDecision(
+    override val id: String,
+    override val playerId: EntityId,
+    override val prompt: String,
+    override val context: DecisionContext,
+    val availableSources: List<ManaSourceOption>,
+    val requiredCost: String,
+    val autoPaySuggestion: List<EntityId>
+) : PendingDecision
+
 // =============================================================================
 // Decision Responses
 // =============================================================================
@@ -480,4 +502,18 @@ data class DamageAssignmentResponse(
     override val decisionId: String,
     /** Map of target ID (creature or player) to damage amount */
     val assignments: Map<EntityId, Int>
+) : DecisionResponse
+
+/**
+ * Response to SelectManaSourcesDecision.
+ *
+ * @property selectedSources Entity IDs of the mana sources to tap (ignored if autoPay is true)
+ * @property autoPay If true, use the auto-tap suggestion instead of manual selection
+ */
+@Serializable
+@SerialName("ManaSourcesSelectedResponse")
+data class ManaSourcesSelectedResponse(
+    override val decisionId: String,
+    val selectedSources: List<EntityId> = emptyList(),
+    val autoPay: Boolean = false
 ) : DecisionResponse

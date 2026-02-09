@@ -786,6 +786,24 @@ abstract class ScenarioTestBase : FunSpec() {
         }
 
         /**
+         * Submit a mana sources selection response.
+         * Use autoPay=true to auto-tap, or provide specific source entity IDs.
+         */
+        fun submitManaSourcesDecision(
+            selectedSources: List<EntityId> = emptyList(),
+            autoPay: Boolean = false
+        ): ExecutionResult {
+            val decisionId = state.pendingDecision?.id
+                ?: error("No pending decision to respond to")
+            return submitDecision(ManaSourcesSelectedResponse(decisionId, selectedSources, autoPay))
+        }
+
+        /**
+         * Shorthand for auto-pay mana sources.
+         */
+        fun submitManaSourcesAutoPay(): ExecutionResult = submitManaSourcesDecision(autoPay = true)
+
+        /**
          * Submit a distribution response (for divided damage, etc.).
          * @param distribution Map of target ID to amount assigned
          */

@@ -311,6 +311,27 @@ export interface ChooseColorDecision extends PendingDecisionBase {
 }
 
 /**
+ * Information about a mana source available for manual selection.
+ */
+export interface ManaSourceOption {
+  readonly entityId: EntityId
+  readonly name: string
+  readonly producesColors: readonly string[]
+  readonly producesColorless: boolean
+}
+
+/**
+ * Player must select mana sources to pay a cost.
+ * Includes an "Auto Pay" shortcut.
+ */
+export interface SelectManaSourcesDecision extends PendingDecisionBase {
+  readonly type: 'SelectManaSourcesDecision'
+  readonly availableSources: readonly ManaSourceOption[]
+  readonly requiredCost: string
+  readonly autoPaySuggestion: readonly EntityId[]
+}
+
+/**
  * Union of all pending decision types.
  */
 export type PendingDecision =
@@ -324,6 +345,7 @@ export type PendingDecision =
   | ChooseOptionDecision
   | DistributeDecision
   | ChooseColorDecision
+  | SelectManaSourcesDecision
 
 /**
  * Information about a single target requirement for legal actions.

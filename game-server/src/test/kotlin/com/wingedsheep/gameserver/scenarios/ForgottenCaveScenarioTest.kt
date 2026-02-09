@@ -69,8 +69,8 @@ class ForgottenCaveScenarioTest : ScenarioTestBase() {
                 val game = scenario()
                     .withPlayers("Player1", "Opponent")
                     .withCardOnBattlefield(1, "Lightning Rift")
-                    .withCardInHand(1, "Forgotten Cave")
-                    .withLandsOnBattlefield(1, "Mountain", 1)
+                    .withCardInHand(1, "Forgotten Cave") // Cycling {R}
+                    .withLandsOnBattlefield(1, "Mountain", 2) // 1 for cycling, 1 for Lightning Rift's {1}
                     .withCardInLibrary(1, "Forest")
                     .withActivePlayer(1)
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
@@ -78,7 +78,7 @@ class ForgottenCaveScenarioTest : ScenarioTestBase() {
 
                 game.cycleCard(1, "Forgotten Cave")
 
-                withClue("Lightning Rift should trigger - pending target selection") {
+                withClue("Lightning Rift should trigger - pending pay {1} decision") {
                     game.hasPendingDecision() shouldBe true
                 }
             }

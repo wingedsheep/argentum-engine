@@ -277,6 +277,7 @@ class GameSession(
             is ReorderLibraryDecision -> "Reordering cards"
             is AssignDamageDecision -> "Assigning damage"
             is ChooseOptionDecision -> "Making a choice"
+            is SelectManaSourcesDecision -> "Selecting mana sources"
         }
         return ServerMessage.SpectatorDecisionStatus(
             playerName = playerName,
@@ -1406,6 +1407,7 @@ class GameSession(
             is ReorderLibraryDecision -> "Reordering cards"
             is AssignDamageDecision -> "Assigning damage"
             is ChooseOptionDecision -> "Making a choice"
+            is SelectManaSourcesDecision -> "Selecting mana sources"
         }
         return ServerMessage.OpponentDecisionStatus(
             decisionType = decision::class.simpleName ?: "Unknown",

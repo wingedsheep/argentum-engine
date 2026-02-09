@@ -3,6 +3,7 @@ package com.wingedsheep.engine.core
 import com.wingedsheep.engine.event.PendingTrigger
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.scripting.Duration
@@ -935,3 +936,55 @@ data class MayPayManaContinuation(
         targets = targets
     )
 }
+
+/**
+ * Resume after the controller decides whether to pay a mana cost for a triggered
+ * ability that also requires targets (e.g., Lightning Rift).
+ *
+ * The flow is: ask "pay {cost}?" → if yes, show mana source selection → then target selection.
+ * This is different from MayPayManaContinuation which asks about targets first.
+ *
+ * @property trigger The full pending trigger to process if the player pays
+ * @property targetRequirement The target requirement for the ability
+ * @property manaCost The mana cost to pay
+ */
+@Serializable
+data class MayPayManaTriggerContinuation(
+    override val decisionId: String,
+    val trigger: PendingTrigger,
+    val targetRequirement: TargetRequirement,
+    val manaCost: ManaCost
+) : ContinuationFrame
+
+/**
+ * Resume after the controller selects mana sources to pay a cost for a triggered
+ * ability that also requires targets.
+ *
+ * After mana sources are selected and cost is paid, proceeds to target selection.
+ *
+ * @property trigger The full pending trigger to process after payment
+ * @property targetRequirement The target requirement for the ability
+ * @property manaCost The mana cost to pay
+ * @property availableSources Available mana sources the player can choose from
+ * @property autoPaySuggestion Pre-computed auto-tap suggestion
+ */
+@Serializable
+data class ManaSourceSelectionContinuation(
+    override val decisionId: String,
+    val trigger: PendingTrigger,
+    val targetRequirement: TargetRequirement,
+    val manaCost: ManaCost,
+    val availableSources: List<ManaSourceOption>,
+    val autoPaySuggestion: List<EntityId>
+) : ContinuationFrame
+
+/**
+ * Information about a mana source available for manual selection.
+ */
+@Serializable
+data class ManaSourceOption(
+    val entityId: EntityId,
+    val name: String,
+    val producesColors: Set<Color>,
+    val producesColorless: Boolean
+)
