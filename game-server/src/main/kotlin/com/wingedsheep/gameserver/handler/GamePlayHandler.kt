@@ -428,6 +428,14 @@ class GamePlayHandler(
                 tournament.reportMatchResult(gameSessionId, winnerId, winnerLifeRemaining)
                 gameRepository.removeLobbyLink(gameSessionId)
 
+                // Clear currentGameSessionId for both players so they are
+                // considered "waiting" and receive the active matches broadcast
+                listOfNotNull(gameSession.player1, gameSession.player2).forEach { player ->
+                    player.currentGameSessionId = null
+                    sessionRegistry.getIdentityByWsId(player.webSocketSession.id)
+                        ?.currentGameSessionId = null
+                }
+
                 // Broadcast updated active matches to waiting players
                 broadcastActiveMatchesCallback?.invoke(lobbyId)
 
