@@ -65,6 +65,7 @@ object OnslaughtSet {
         // Blue creatures and spells
         AirborneAid,
         Annex,
+        CrownOfAscension,
         AvenFateshaper,
         Backslide,
         BlatantThievery,

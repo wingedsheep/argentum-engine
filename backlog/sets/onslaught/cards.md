@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 198 / 335
+**Implemented:** 199 / 335
 
 ---
 
@@ -71,7 +71,7 @@
 - [ ] Cover of Darkness
 - [x] Crafty Pathmage
 - [ ] Crowd Favorites
-- [ ] Crown of Ascension
+- [x] Crown of Ascension
 - [x] Crown of Awe
 - [x] Crown of Fury
 - [x] Crown of Suspicion
