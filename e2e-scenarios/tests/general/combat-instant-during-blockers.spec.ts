@@ -42,7 +42,7 @@ test.describe('Combat — instant-speed actions during declare blockers', () => 
     await p2.clickCard('Spitfire Handler')
     await p2.selectAction('+1/+0')
 
-    // P2 auto-passes, P1 resolves the ability on the stack
+    // P1 resolves the ability on the stack
     await p1.pass()
 
     // Spitfire Handler is now 2/1
@@ -52,9 +52,7 @@ test.describe('Combat — instant-speed actions during declare blockers', () => 
     await p2.clickCard('Spitfire Handler')
     await p2.selectAction('+1/+0')
 
-    // P1 resolves
-    await p1.pass()
-
+    // P1 auto-passes (enabled after first manual pass) — ability resolves automatically
     // Spitfire Handler is now 3/1 — can block Hill Giant (power 3 >= 3)
     await p2.expectStats('Spitfire Handler', '3/1')
 

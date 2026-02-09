@@ -136,9 +136,10 @@ export function GameCard({
   const isAttackingInBlockerMode = isInBlockerMode && isOpponentCard && combatState.attackingCreatures.includes(card.id)
   const isMustBeBlocked = isInBlockerMode && isOpponentCard && combatState.mustBeBlockedAttackers.includes(card.id)
 
-  // Show playable highlight for cards that aren't combat-role cards (attackers/blockers/attacking creatures)
+  // Show playable highlight for cards that aren't purely combat-role cards.
+  // Valid blockers with legal actions (e.g., activated abilities) are still playable since blocking uses drag.
   // Face-down cards can be playable too (for TurnFaceUp action)
-  const isCombatRoleCard = isValidAttacker || isValidBlocker || isAttackingInBlockerMode
+  const isCombatRoleCard = isValidAttacker || (isValidBlocker && !hasLegalActions) || isAttackingInBlockerMode
   const isPlayable = interactive && hasLegalActions && (!isInCombatMode || !isCombatRoleCard)
 
   const cardImageUrl = faceDown
@@ -377,8 +378,11 @@ export function GameCard({
         removeBlockerAssignment(card.id)
         return
       }
-      if (isValidBlocker || isAttackingInBlockerMode) {
+      if (isAttackingInBlockerMode) {
         return  // Handled by drag-and-drop mouseup
+      }
+      if (isValidBlocker && !hasLegalActions) {
+        return  // Pure blocker with no abilities, handled by drag-and-drop
       }
       // Non-blocker/non-attacker cards fall through to normal selection
     }
