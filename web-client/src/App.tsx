@@ -87,6 +87,19 @@ export default function App() {
         clearCombat()
         return
       }
+      // Update valid creatures if server sent updated list (e.g., after ability resolution during declare blockers)
+      if (combatState.mode === 'declareBlockers' && hasDeclareBlockersAction) {
+        const blockersAction = legalActions.find(
+          (a) => a.actionType === 'DeclareBlockers' || a.action.type === 'DeclareBlockers'
+        )
+        const updatedValidCreatures = blockersAction?.validBlockers ?? []
+        if (JSON.stringify(updatedValidCreatures) !== JSON.stringify([...combatState.validCreatures])) {
+          startCombat({
+            ...combatState,
+            validCreatures: [...updatedValidCreatures],
+          })
+        }
+      }
       // Already in combat mode, don't re-enter
       return
     }

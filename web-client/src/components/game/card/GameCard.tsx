@@ -136,9 +136,10 @@ export function GameCard({
   const isAttackingInBlockerMode = isInBlockerMode && isOpponentCard && combatState.attackingCreatures.includes(card.id)
   const isMustBeBlocked = isInBlockerMode && isOpponentCard && combatState.mustBeBlockedAttackers.includes(card.id)
 
-  // Only show playable highlight outside of combat mode (and when not targeting)
+  // Show playable highlight for cards that aren't combat-role cards (attackers/blockers/attacking creatures)
   // Face-down cards can be playable too (for TurnFaceUp action)
-  const isPlayable = interactive && hasLegalActions && !isInCombatMode
+  const isCombatRoleCard = isValidAttacker || isValidBlocker || isAttackingInBlockerMode
+  const isPlayable = interactive && hasLegalActions && (!isInCombatMode || !isCombatRoleCard)
 
   const cardImageUrl = faceDown
     ? MORPH_FACE_DOWN_IMAGE_URL
@@ -365,8 +366,9 @@ export function GameCard({
     if (isInAttackerMode) {
       if (isValidAttacker) {
         toggleAttacker(card.id)
+        return
       }
-      return
+      // Non-attacker cards fall through to normal selection
     }
 
     // Handle blocker mode clicks - clicking an assigned blocker removes it
@@ -375,8 +377,10 @@ export function GameCard({
         removeBlockerAssignment(card.id)
         return
       }
-      // Clicking is also handled by mouseup for drag & drop
-      return
+      if (isValidBlocker || isAttackingInBlockerMode) {
+        return  // Handled by drag-and-drop mouseup
+      }
+      // Non-blocker/non-attacker cards fall through to normal selection
     }
 
     // Normal card selection (outside combat mode)
@@ -393,7 +397,11 @@ export function GameCard({
   // Double-click handler - auto-cast if possible
   const handleDoubleClickEvent = () => {
     // Skip if in special modes
-    if (isInTargetingMode || isInCombatMode || isChooseTargetsDecision || isValidDecisionSelection) {
+    if (isInTargetingMode || isChooseTargetsDecision || isValidDecisionSelection) {
+      return
+    }
+    // Skip for combat-role cards during combat (attackers, blockers, attacking creatures)
+    if (isInCombatMode && (isValidAttacker || isValidBlocker || isAttackingInBlockerMode)) {
       return
     }
 
@@ -440,7 +448,7 @@ export function GameCard({
     // Dim orange for unallocated distribute targets
     borderStyle = '2px solid #ff8c42'
     boxShadow = '0 0 12px rgba(255, 140, 66, 0.5), 0 0 24px rgba(255, 140, 66, 0.3)'
-  } else if (isSelected && !isInCombatMode) {
+  } else if (isSelected && (!isInCombatMode || !isCombatRoleCard)) {
     borderStyle = '3px solid #ffff00'
     boxShadow = '0 8px 20px rgba(255, 255, 0, 0.4)'
   } else if ((isValidDecisionSelection || isValidTarget || isValidDecisionTarget) && isHovered) {
@@ -503,7 +511,7 @@ export function GameCard({
         cursor,
         border: borderStyle,
         pointerEvents: 'auto',
-        transform: `${isTapped ? 'rotate(90deg)' : ''} ${isSelected && !isInCombatMode ? 'translateY(-8px)' : ''}`,
+        transform: `${isTapped ? 'rotate(90deg)' : ''} ${isSelected && (!isInCombatMode || !isCombatRoleCard) ? 'translateY(-8px)' : ''}`,
         transformOrigin: 'center',
         boxShadow,
         opacity: isBeingDragged ? 0.6 : 1,
