@@ -125,6 +125,7 @@ object OnslaughtSet {
         ShepherdOfRot,
         SpinedBasher,
         NantukoHusk,
+        OversoldCemetery,
         ProwlingPangolin,
         SoullessOne,
         ScreechingBuzzard,

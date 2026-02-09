@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 203 / 335
+**Implemented:** 204 / 335
 
 ---
 
@@ -211,7 +211,7 @@
 - [ ] Nosy Goblin
 - [x] Nova Cleric
 - [x] Oblation
-- [ ] Oversold Cemetery
+- [x] Oversold Cemetery
 - [x] Overwhelming Instinct
 - [x] Pacifism
 - [ ] Patriarch's Bidding
