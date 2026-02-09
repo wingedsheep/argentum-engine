@@ -96,6 +96,7 @@ object OnslaughtSet {
         Blackmail,
         Boneknitter,
         AphettoDredging,
+        CrownOfSuspicion,
         DirgeOfDread,
         FrightshroudCourier,
         HauntedCadaver,
@@ -140,7 +141,6 @@ object OnslaughtSet {
         BrightstoneRitual,
         CommandoRaid,
         CrownOfFury,
-        CrownOfSuspicion,
         SkirkCommando,
         AggravatedAssault,
         AirdropCondor,
@@ -218,6 +218,7 @@ object OnslaughtSet {
         WirewoodSavage,
         WirewoodPride,
         VitalityCharm,
+        OverwhelmingInstinct,
 
         // Lands
         BloodstainedMire,
