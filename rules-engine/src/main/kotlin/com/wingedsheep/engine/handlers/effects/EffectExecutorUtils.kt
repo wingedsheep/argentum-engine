@@ -12,16 +12,23 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.ComponentContainer
+import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
+import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
+import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.battlefield.TimestampComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockedComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.combat.DamageAssignmentComponent
 import com.wingedsheep.engine.state.components.combat.DamageAssignmentOrderComponent
+import com.wingedsheep.engine.state.components.combat.DealtFirstStrikeDamageComponent
+import com.wingedsheep.engine.state.components.combat.RequiresManualDamageAssignmentComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
@@ -44,6 +51,38 @@ object EffectExecutorUtils {
 
     private val stateProjector = StateProjector()
     private val predicateEvaluator = PredicateEvaluator()
+
+    /**
+     * Strip all battlefield-specific components from an entity leaving the battlefield.
+     * Per MTG Rule 400.7, when an object changes zones it becomes a new object with no
+     * memory of its previous existence. This removes all transient battlefield state:
+     * tapped, damage, counters, summoning sickness, combat state, attachments, etc.
+     */
+    fun stripBattlefieldComponents(container: ComponentContainer): ComponentContainer {
+        return container
+            // Identity
+            .without<ControllerComponent>()
+            .without<FaceDownComponent>()
+            .without<MorphDataComponent>()
+            // Battlefield
+            .without<TappedComponent>()
+            .without<SummoningSicknessComponent>()
+            .without<DamageComponent>()
+            .without<CountersComponent>()
+            .without<AttachedToComponent>()
+            .without<AttachmentsComponent>()
+            .without<EnteredThisTurnComponent>()
+            .without<ReplacementEffectSourceComponent>()
+            .without<TimestampComponent>()
+            // Combat
+            .without<AttackingComponent>()
+            .without<BlockingComponent>()
+            .without<BlockedComponent>()
+            .without<DamageAssignmentComponent>()
+            .without<DamageAssignmentOrderComponent>()
+            .without<DealtFirstStrikeDamageComponent>()
+            .without<RequiresManualDamageAssignmentComponent>()
+    }
 
     /**
      * Resolve a target from the effect target definition and context.
@@ -249,15 +288,7 @@ object EffectExecutorUtils {
         newState = newState.addToZone(graveyardZone, entityId)
 
         // Remove permanent-only components
-        newState = newState.updateEntity(entityId) { c ->
-            c.without<ControllerComponent>()
-                .without<TappedComponent>()
-                .without<SummoningSicknessComponent>()
-                .without<DamageComponent>()
-                .without<CountersComponent>()
-                .without<FaceDownComponent>()
-                .without<MorphDataComponent>()
-        }
+        newState = newState.updateEntity(entityId) { c -> stripBattlefieldComponents(c) }
 
         return ExecutionResult.success(
             newState,
@@ -304,14 +335,7 @@ object EffectExecutorUtils {
 
         // Remove permanent-only components if moving from battlefield
         if (currentZone.zoneType == Zone.BATTLEFIELD) {
-            newState = newState.updateEntity(entityId) { c ->
-                c.without<ControllerComponent>()
-                    .without<TappedComponent>()
-                    .without<SummoningSicknessComponent>()
-                    .without<DamageComponent>()
-                    .without<FaceDownComponent>()
-                    .without<MorphDataComponent>()
-            }
+            newState = newState.updateEntity(entityId) { c -> stripBattlefieldComponents(c) }
         }
 
         // Add controller component when moving to battlefield
@@ -524,14 +548,7 @@ object EffectExecutorUtils {
         newState = newState.addToZone(targetZoneKey, entityId)
 
         // Remove permanent-only components
-        newState = newState.updateEntity(entityId) { c ->
-            c.without<ControllerComponent>()
-                .without<TappedComponent>()
-                .without<SummoningSicknessComponent>()
-                .without<DamageComponent>()
-                .without<FaceDownComponent>()
-                .without<MorphDataComponent>()
-        }
+        newState = newState.updateEntity(entityId) { c -> stripBattlefieldComponents(c) }
 
         return ExecutionResult.success(
             newState,

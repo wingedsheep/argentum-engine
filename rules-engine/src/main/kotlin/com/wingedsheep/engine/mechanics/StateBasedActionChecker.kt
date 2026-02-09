@@ -2,6 +2,7 @@ package com.wingedsheep.engine.mechanics
 
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
+import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.stripBattlefieldComponents
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
@@ -280,11 +281,7 @@ class StateBasedActionChecker {
                 newState = newState.addToZone(graveyardZone, entityId)
 
                 // Remove permanent components
-                newState = newState.updateEntity(entityId) { c ->
-                    c.without<ControllerComponent>()
-                        .without<TappedComponent>()
-                        .without<CountersComponent>()
-                }
+                newState = newState.updateEntity(entityId) { c -> stripBattlefieldComponents(c) }
 
                 events.add(
                     ZoneChangeEvent(
@@ -400,10 +397,7 @@ class StateBasedActionChecker {
                 newState = newState.removeFromZone(battlefieldZone, entityId)
                 newState = newState.addToZone(graveyardZone, entityId)
 
-                newState = newState.updateEntity(entityId) { c ->
-                    c.without<ControllerComponent>()
-                        .without<TappedComponent>()
-                }
+                newState = newState.updateEntity(entityId) { c -> stripBattlefieldComponents(c) }
 
                 events.add(
                     ZoneChangeEvent(
@@ -428,11 +422,7 @@ class StateBasedActionChecker {
                     newState = newState.removeFromZone(battlefieldZone, entityId)
                     newState = newState.addToZone(graveyardZone, entityId)
 
-                    newState = newState.updateEntity(entityId) { c ->
-                        c.without<ControllerComponent>()
-                            .without<TappedComponent>()
-                            .without<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
-                    }
+                    newState = newState.updateEntity(entityId) { c -> stripBattlefieldComponents(c) }
 
                     events.add(
                         ZoneChangeEvent(
@@ -556,15 +546,7 @@ class StateBasedActionChecker {
         newState = newState.addToZone(graveyardZone, entityId)
 
         // Remove permanent components
-        newState = newState.updateEntity(entityId) { c ->
-            c.without<ControllerComponent>()
-                .without<TappedComponent>()
-                .without<SummoningSicknessComponent>()
-                .without<DamageComponent>()
-                .without<CountersComponent>()
-                .without<FaceDownComponent>()
-                .without<MorphDataComponent>()
-        }
+        newState = newState.updateEntity(entityId) { c -> stripBattlefieldComponents(c) }
 
         return ExecutionResult.success(
             newState,
