@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 199 / 335
+**Implemented:** 200 / 335
 
 ---
 
@@ -93,7 +93,7 @@
 - [x] Dirge of Dread
 - [x] Disciple of Grace
 - [x] Disciple of Malice
-- [ ] Discombobulate
+- [x] Discombobulate
 - [ ] Dispersing Orb
 - [x] Disruptive Pitmage
 - [x] Dive Bomber

@@ -70,6 +70,7 @@ object OnslaughtSet {
         Backslide,
         BlatantThievery,
         CraftyPathmage,
+        Discombobulate,
         DisruptivePitmage,
         FleetingAven,
         GhosthelmCourier,
