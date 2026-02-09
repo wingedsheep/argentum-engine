@@ -957,6 +957,32 @@ data class MayPayManaTriggerContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after player chooses a creature type for stat modification.
+ *
+ * Used for Defensive Maneuvers: "Creatures of the creature type of your choice get +0/+4
+ * until end of turn."
+ *
+ * @property controllerId The player who controls the effect
+ * @property sourceId The spell/ability that caused this effect
+ * @property sourceName Name of the source for event messages
+ * @property creatureTypes The creature type options (indexed by OptionChosenResponse.optionIndex)
+ * @property powerModifier Power bonus
+ * @property toughnessModifier Toughness bonus
+ * @property duration How long the effect lasts
+ */
+@Serializable
+data class ChooseCreatureTypeModifyStatsContinuation(
+    override val decisionId: String,
+    val controllerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val creatureTypes: List<String>,
+    val powerModifier: Int,
+    val toughnessModifier: Int,
+    val duration: Duration
+) : ContinuationFrame
+
+/**
  * Resume after the controller selects mana sources to pay a cost for a triggered
  * ability that also requires targets.
  *

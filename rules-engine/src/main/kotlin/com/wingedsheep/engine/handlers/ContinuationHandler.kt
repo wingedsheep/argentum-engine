@@ -98,6 +98,7 @@ class ContinuationHandler(
             is BlackmailChooseContinuation -> resumeBlackmailChoose(stateAfterPop, continuation, response)
             is ChooseCreatureTypeRevealTopContinuation -> resumeChooseCreatureTypeRevealTop(stateAfterPop, continuation, response)
             is BecomeCreatureTypeContinuation -> resumeBecomeCreatureType(stateAfterPop, continuation, response)
+            is ChooseCreatureTypeModifyStatsContinuation -> resumeChooseCreatureTypeModifyStats(stateAfterPop, continuation, response)
             is CounterUnlessPaysContinuation -> resumeCounterUnlessPays(stateAfterPop, continuation, response)
             is PutOnBottomOfLibraryContinuation -> resumePutOnBottomOfLibrary(stateAfterPop, continuation, response)
             is ModalContinuation -> resumeModal(stateAfterPop, continuation, response)
@@ -2821,6 +2822,78 @@ class ContinuationHandler(
                 newType = chosenType,
                 sourceName = continuation.sourceName ?: "Unknown"
             )
+        )
+
+        return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume after player chose a creature type for stat modification.
+     *
+     * Creates a floating effect that modifies P/T for all creatures of the chosen type.
+     */
+    private fun resumeChooseCreatureTypeModifyStats(
+        state: GameState,
+        continuation: ChooseCreatureTypeModifyStatsContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is OptionChosenResponse) {
+            return ExecutionResult.error(state, "Expected option choice response for creature type selection")
+        }
+
+        val chosenType = continuation.creatureTypes.getOrNull(response.optionIndex)
+            ?: return ExecutionResult.error(state, "Invalid creature type index: ${response.optionIndex}")
+
+        // Find all creatures of the chosen type on the battlefield
+        val affectedEntities = mutableSetOf<EntityId>()
+        val events = mutableListOf<GameEvent>()
+
+        for (entityId in state.getBattlefield()) {
+            val container = state.getEntity(entityId) ?: continue
+            val cardComponent = container.get<CardComponent>() ?: continue
+
+            // Check if creature (face-down permanents are always creatures per Rule 707.2)
+            if (!cardComponent.typeLine.isCreature && !container.has<FaceDownComponent>()) continue
+
+            // Check if creature has the chosen subtype
+            if (!cardComponent.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(chosenType))) continue
+
+            affectedEntities.add(entityId)
+            events.add(
+                StatsModifiedEvent(
+                    targetId = entityId,
+                    targetName = cardComponent.name,
+                    powerChange = continuation.powerModifier,
+                    toughnessChange = continuation.toughnessModifier,
+                    sourceName = continuation.sourceName ?: "Unknown"
+                )
+            )
+        }
+
+        if (affectedEntities.isEmpty()) {
+            return checkForMoreContinuations(state, emptyList())
+        }
+
+        val floatingEffect = com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect(
+            id = EntityId.generate(),
+            effect = com.wingedsheep.engine.mechanics.layers.FloatingEffectData(
+                layer = com.wingedsheep.engine.mechanics.layers.Layer.POWER_TOUGHNESS,
+                sublayer = com.wingedsheep.engine.mechanics.layers.Sublayer.MODIFICATIONS,
+                modification = com.wingedsheep.engine.mechanics.layers.SerializableModification.ModifyPowerToughness(
+                    powerMod = continuation.powerModifier,
+                    toughnessMod = continuation.toughnessModifier
+                ),
+                affectedEntities = affectedEntities
+            ),
+            duration = continuation.duration,
+            sourceId = continuation.sourceId,
+            sourceName = continuation.sourceName,
+            controllerId = continuation.controllerId,
+            timestamp = System.currentTimeMillis()
+        )
+
+        val newState = state.copy(
+            floatingEffects = state.floatingEffects + floatingEffect
         )
 
         return checkForMoreContinuations(newState, events)

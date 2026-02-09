@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 195 / 335
+**Implemented:** 196 / 335
 
 ---
 
@@ -88,7 +88,7 @@
 - [x] Dawning Purist
 - [ ] Death Match
 - [x] Death Pulse
-- [ ] Defensive Maneuvers
+- [x] Defensive Maneuvers
 - [x] Demystify
 - [x] Dirge of Dread
 - [x] Disciple of Grace

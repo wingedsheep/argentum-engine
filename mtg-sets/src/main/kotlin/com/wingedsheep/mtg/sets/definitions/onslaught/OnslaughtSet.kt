@@ -49,6 +49,7 @@ object OnslaughtSet {
         RighteousCause,
         DawningPurist,
         DauntingDefender,
+        DefensiveManeuvers,
         DaruCavalier,
         DaruHealer,
         DaruLancer,
