@@ -1005,6 +1005,28 @@ data class ManaSourceSelectionContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after player selects a creature to copy for Clone-style effects.
+ *
+ * When a permanent with EntersAsCopy resolves, the player is asked to choose
+ * a creature on the battlefield. This continuation handles the response
+ * and completes the permanent's entry to the battlefield.
+ *
+ * @property spellId The spell entity being resolved
+ * @property controllerId The player who cast the spell
+ * @property ownerId The owner of the card
+ * @property castFaceDown Whether the spell was cast face-down
+ * @property optional Whether the copy is optional (Clone is optional)
+ */
+@Serializable
+data class CloneEntersContinuation(
+    override val decisionId: String,
+    val spellId: EntityId,
+    val controllerId: EntityId,
+    val ownerId: EntityId,
+    val castFaceDown: Boolean
+) : ContinuationFrame
+
+/**
  * Information about a mana source available for manual selection.
  */
 @Serializable

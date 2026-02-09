@@ -20,6 +20,7 @@ import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
@@ -113,6 +114,7 @@ class ContinuationHandler(
                 ExecutionResult.error(state, "PendingTriggersContinuation should not be at top of stack during decision resume")
             }
             is MayTriggerContinuation -> resumeMayTrigger(stateAfterPop, continuation, response)
+            is CloneEntersContinuation -> resumeCloneEnters(stateAfterPop, continuation, response)
         }
     }
 
@@ -3061,6 +3063,90 @@ class ContinuationHandler(
         val result = effectExecutorRegistry.execute(state, continuation.effect, context)
         if (result.isPaused) return result
         return checkForMoreContinuations(result.state, result.events.toList())
+    }
+
+    /**
+     * Resume after player selects a creature to copy for Clone-style effects.
+     */
+    private fun resumeCloneEnters(
+        state: GameState,
+        continuation: CloneEntersContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for clone")
+        }
+
+        val spellId = continuation.spellId
+        val controllerId = continuation.controllerId
+        val ownerId = continuation.ownerId
+        val events = mutableListOf<GameEvent>()
+
+        val spellContainer = state.getEntity(spellId)
+            ?: return ExecutionResult.error(state, "Clone spell entity not found: $spellId")
+
+        val originalCardComponent = spellContainer.get<CardComponent>()
+            ?: return ExecutionResult.error(state, "Clone spell has no CardComponent")
+
+        val spellComponent = spellContainer.get<SpellOnStackComponent>()
+            ?: return ExecutionResult.error(state, "Clone spell has no SpellOnStackComponent")
+
+        var newState = state
+
+        // If a creature was selected, copy its CardComponent
+        val selectedCreatureId = response.selectedCards.firstOrNull()
+        val copiedCardDef: com.wingedsheep.sdk.model.CardDefinition?
+
+        if (selectedCreatureId != null) {
+            val targetContainer = newState.getEntity(selectedCreatureId)
+            val targetCardComponent = targetContainer?.get<CardComponent>()
+
+            if (targetCardComponent != null) {
+                // Create a copy of the target's CardComponent, keeping Clone's ownerId
+                val copiedCardComponent = targetCardComponent.copy(
+                    ownerId = ownerId
+                )
+
+                // Update entity with copied card component and copy tracking
+                newState = newState.updateEntity(spellId) { c ->
+                    c.with(copiedCardComponent)
+                        .with(com.wingedsheep.engine.state.components.identity.CopyOfComponent(
+                            originalCardDefinitionId = originalCardComponent.cardDefinitionId,
+                            copiedCardDefinitionId = targetCardComponent.cardDefinitionId
+                        ))
+                }
+
+                // Look up the card definition for the copied creature
+                copiedCardDef = stackResolver.cardRegistry?.getCard(targetCardComponent.cardDefinitionId)
+            } else {
+                // Target creature no longer exists - enter as itself
+                copiedCardDef = stackResolver.cardRegistry?.getCard(originalCardComponent.cardDefinitionId)
+            }
+        } else {
+            // Player declined to copy - enter as itself (0/0 Clone)
+            copiedCardDef = stackResolver.cardRegistry?.getCard(originalCardComponent.cardDefinitionId)
+        }
+
+        // Get the (possibly updated) card component for event names
+        val finalCardComponent = newState.getEntity(spellId)?.get<CardComponent>() ?: originalCardComponent
+
+        // Complete the permanent entry using the shared helper
+        newState = stackResolver.enterPermanentOnBattlefield(
+            newState, spellId, spellComponent, finalCardComponent, copiedCardDef
+        )
+
+        events.add(ResolvedEvent(spellId, finalCardComponent.name))
+        events.add(
+            ZoneChangeEvent(
+                spellId,
+                finalCardComponent.name,
+                null,
+                Zone.BATTLEFIELD,
+                ownerId
+            )
+        )
+
+        return checkForMoreContinuations(newState, events)
     }
 
     /**

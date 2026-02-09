@@ -25,6 +25,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.Effect
+import com.wingedsheep.sdk.scripting.EntersAsCopy
 import com.wingedsheep.sdk.scripting.EntersWithCounters
 import com.wingedsheep.sdk.scripting.EntersWithDynamicCounters
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
@@ -42,7 +43,7 @@ import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
  */
 class StackResolver(
     private val effectHandler: EffectHandler = EffectHandler(),
-    private val cardRegistry: CardRegistry? = null,
+    internal val cardRegistry: CardRegistry? = null,
     private val staticAbilityHandler: StaticAbilityHandler = StaticAbilityHandler(cardRegistry),
     private val stateProjector: StateProjector = StateProjector()
 ) {
@@ -244,7 +245,16 @@ class StackResolver(
 
         if (isPermanent) {
             // Put permanent on battlefield
-            newState = resolvePermanentSpell(newState, spellId, spellComponent, cardComponent)
+            val permanentResult = resolvePermanentSpell(newState, spellId, spellComponent, cardComponent)
+            if (permanentResult.isPaused) {
+                return ExecutionResult.paused(
+                    permanentResult.state,
+                    permanentResult.pendingDecision!!,
+                    events + permanentResult.events
+                )
+            }
+            newState = permanentResult.state
+            events.addAll(permanentResult.events)
             events.add(ResolvedEvent(spellId, cardComponent?.name ?: "Unknown"))
             events.add(
                 ZoneChangeEvent(
@@ -271,12 +281,81 @@ class StackResolver(
 
     /**
      * Resolve a permanent spell - put it on the battlefield.
+     * May pause for player input (e.g., Clone choosing a creature to copy).
      */
     private fun resolvePermanentSpell(
         state: GameState,
         spellId: EntityId,
         spellComponent: SpellOnStackComponent,
         cardComponent: CardComponent?
+    ): ExecutionResult {
+        val controllerId = spellComponent.casterId
+        val ownerId = cardComponent?.ownerId ?: controllerId
+
+        // Check for EntersAsCopy replacement effect before entering the battlefield
+        val cardDef = cardComponent?.cardDefinitionId?.let { cardRegistry?.getCard(it) }
+        if (cardDef != null && !spellComponent.castFaceDown) {
+            val entersAsCopy = cardDef.script.replacementEffects.filterIsInstance<EntersAsCopy>().firstOrNull()
+            if (entersAsCopy != null) {
+                // Find all creatures on the battlefield
+                val creatures = state.getBattlefield().filter { entityId ->
+                    state.getEntity(entityId)?.get<CardComponent>()?.isCreature == true
+                }
+
+                if (creatures.isNotEmpty()) {
+                    // Present the selection decision
+                    val decisionId = "clone-enters-${spellId.value}"
+                    val decision = SelectCardsDecision(
+                        id = decisionId,
+                        playerId = controllerId,
+                        prompt = if (entersAsCopy.optional) {
+                            "You may choose a creature to copy"
+                        } else {
+                            "Choose a creature to copy"
+                        },
+                        context = DecisionContext(
+                            sourceId = spellId,
+                            sourceName = cardComponent?.name,
+                            phase = DecisionPhase.RESOLUTION
+                        ),
+                        options = creatures,
+                        minSelections = if (entersAsCopy.optional) 0 else 1,
+                        maxSelections = 1,
+                        useTargetingUI = true
+                    )
+
+                    // Push continuation
+                    val continuation = CloneEntersContinuation(
+                        decisionId = decisionId,
+                        spellId = spellId,
+                        controllerId = controllerId,
+                        ownerId = ownerId,
+                        castFaceDown = spellComponent.castFaceDown
+                    )
+
+                    val pausedState = state
+                        .pushContinuation(continuation)
+                        .withPendingDecision(decision)
+                    return ExecutionResult.paused(pausedState, decision)
+                }
+                // No creatures on battlefield - fall through to enter as itself (0/0)
+            }
+        }
+
+        // Normal permanent entry
+        val newState = enterPermanentOnBattlefield(state, spellId, spellComponent, cardComponent, cardDef)
+        return ExecutionResult.success(newState)
+    }
+
+    /**
+     * Complete the permanent entry to the battlefield (shared between normal resolution and clone continuation).
+     */
+    internal fun enterPermanentOnBattlefield(
+        state: GameState,
+        spellId: EntityId,
+        spellComponent: SpellOnStackComponent,
+        cardComponent: CardComponent?,
+        cardDef: com.wingedsheep.sdk.model.CardDefinition?
     ): GameState {
         val controllerId = spellComponent.casterId
 
@@ -324,7 +403,6 @@ class StackResolver(
         }
 
         // Handle "enters with counters" replacement effects (before adding to battlefield)
-        val cardDef = cardComponent?.cardDefinitionId?.let { cardRegistry?.getCard(it) }
         if (cardDef != null && !spellComponent.castFaceDown) {
             newState = applyEntersWithCounters(newState, spellId, cardDef, controllerId)
         }
@@ -611,7 +689,7 @@ class StackResolver(
      * Apply "enters with counters" replacement effects to a permanent.
      * Handles both fixed count (EntersWithCounters) and dynamic count (EntersWithDynamicCounters).
      */
-    private fun applyEntersWithCounters(
+    internal fun applyEntersWithCounters(
         state: GameState,
         entityId: EntityId,
         cardDef: com.wingedsheep.sdk.model.CardDefinition,

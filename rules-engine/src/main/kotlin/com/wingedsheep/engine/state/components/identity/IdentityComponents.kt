@@ -78,6 +78,17 @@ data class LifeTotalComponent(
 data object TokenComponent : Component
 
 /**
+ * Tracks that an entity is a copy of another card.
+ * The originalCardDefinitionId preserves what the card originally was (e.g., Clone),
+ * while copiedCardDefinitionId tracks what it's currently copying.
+ */
+@Serializable
+data class CopyOfComponent(
+    val originalCardDefinitionId: String,
+    val copiedCardDefinitionId: String
+) : Component
+
+/**
  * Face-down status for morph/manifest.
  */
 @Serializable

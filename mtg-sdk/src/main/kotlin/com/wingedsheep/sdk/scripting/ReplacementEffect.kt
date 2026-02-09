@@ -349,6 +349,33 @@ data class ModifyLifeGain(
 }
 
 // =============================================================================
+// Copy Replacement Effects
+// =============================================================================
+
+/**
+ * Enter the battlefield as a copy of a creature.
+ * Example: Clone ("You may have this creature enter as a copy of any creature on the battlefield")
+ *
+ * When this permanent would enter the battlefield, the controller may choose a creature
+ * on the battlefield. If they do, the permanent enters as a copy of that creature.
+ * If they don't (or can't), the permanent enters as itself (typically 0/0 and dies).
+ */
+@Serializable
+data class EntersAsCopy(
+    val optional: Boolean = true,
+    override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
+        filter = GameObjectFilter.Any,
+        to = Zone.BATTLEFIELD
+    )
+) : ReplacementEffect {
+    override val description: String = if (optional) {
+        "You may have this creature enter as a copy of any creature on the battlefield"
+    } else {
+        "This creature enters as a copy of any creature on the battlefield"
+    }
+}
+
+// =============================================================================
 // Generic Replacement Effect
 // =============================================================================
 
