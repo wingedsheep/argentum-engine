@@ -63,7 +63,7 @@
 - [x] Charging Slateback
 - [x] Choking Tethers
 - [ ] Circle of Solace
-- [ ] Clone
+- [x] Clone
 - [x] Commando Raid
 - [x] Complicate
 - [ ] Contested Cliffs
@@ -118,7 +118,7 @@
 - [x] Erratic Explosion
 - [x] Essence Fracture
 - [x] Everglove Courier
-- [ ] Exalted Angel
+- [x] Exalted Angel
 - [x] Explosive Vegetation
 - [x] Fade from Memory
 - [x] Fallen Cleric
@@ -176,7 +176,7 @@
 - [x] Invigorating Boon
 - [x] Ironfist Crusher
 - [x] Island
-- [ ] Ixidor, Reality Sculptor
+- [x] Ixidor, Reality Sculptor
 - [ ] Ixidor's Will
 - [ ] Jareth, Leonine Titan
 - [ ] Kaboom!

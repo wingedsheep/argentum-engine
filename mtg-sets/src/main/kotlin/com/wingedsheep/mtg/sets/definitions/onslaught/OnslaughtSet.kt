@@ -38,6 +38,7 @@ object OnslaughtSet {
         CrudeRampart,
         Demystify,
         DiveBomber,
+        ExaltedAngel,
         FoothillGuide,
         GrasslandCrusader,
         GravelSlinger,
@@ -65,6 +66,7 @@ object OnslaughtSet {
         // Blue creatures and spells
         AirborneAid,
         Annex,
+        Clone,
         CrownOfAscension,
         AvenFateshaper,
         Backslide,
@@ -91,6 +93,7 @@ object OnslaughtSet {
         SlipstreamEel,
         TrickeryCharm,
         EssenceFracture,
+        IxidorRealitySculptor,
 
         // Black creatures and spells
         AccursedCentaur,
