@@ -328,15 +328,14 @@ class AutoPassManagerTest : FunSpec({
             autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
         }
 
-        test("Auto-pass during opponent's end step even with instant-speed actions (Arena-style)") {
-            // Arena-style: auto-pass at end step, use per-step stop override to hold here
+        test("Stop during opponent's end step when player has instant-speed actions") {
             val state = createMockState(player2, player1, Step.END)
             val actions = listOf(
                 passPriorityAction(player2),
                 instantSpellAction(player2)
             )
 
-            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
+            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe false
         }
 
         test("Auto-pass during opponent's end step when no instant-speed actions") {
@@ -688,6 +687,7 @@ class AutoPassManagerTest : FunSpec({
         }
 
         test("returns 'To my turn' from opponent's end step with meaningful actions") {
+            // We already stopped at end step (due to having responses), so next stop is my turn
             val state = createMockState(player1, player2, Step.END)
             autoPassManager.getNextStopPoint(state, player1, true) shouldBe "To my turn"
         }
@@ -698,16 +698,16 @@ class AutoPassManagerTest : FunSpec({
             autoPassManager.getNextStopPoint(state, player1, false) shouldBe "Pass to Main"
         }
 
-        test("returns 'To my turn' from declare attackers on opponent's turn with no attackers") {
-            // Arena-style: auto-passes through opponent's end step, so next stop is my turn
+        test("returns 'Pass to End Step' from declare attackers on opponent's turn with no attackers") {
+            // Now stops at opponent's end step when player has meaningful actions
             val state = createMockState(player1, player2, Step.DECLARE_ATTACKERS)
-            autoPassManager.getNextStopPoint(state, player1, true) shouldBe "To my turn"
+            autoPassManager.getNextStopPoint(state, player1, true) shouldBe "Pass to End Step"
         }
 
-        test("returns 'To my turn' from opponent's combat with meaningful actions") {
-            // Arena-style: auto-passes through opponent's end step, so next stop is my turn
+        test("returns 'Pass to End Step' from opponent's combat with meaningful actions") {
+            // Now stops at opponent's end step when player has meaningful actions
             val state = createMockState(player1, player2, Step.COMBAT_DAMAGE)
-            autoPassManager.getNextStopPoint(state, player1, true) shouldBe "To my turn"
+            autoPassManager.getNextStopPoint(state, player1, true) shouldBe "Pass to End Step"
         }
     }
 

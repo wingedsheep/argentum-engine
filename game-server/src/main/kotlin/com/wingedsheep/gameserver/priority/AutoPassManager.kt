@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory
  * - Upkeep/Draw: AUTO-PASS
  * - Main Phase: AUTO-PASS
  * - Combat (Start/Attackers): STOP (crucial window for tapping/killing attackers)
- * - End Step: ALWAYS STOP (golden rule for control players)
+ * - End Step: STOP if you have instant-speed responses (golden rule for control players)
  *
  * ## Rule 3: The "My Turn" Optimization
  * When it's your own turn:
@@ -378,10 +378,15 @@ class AutoPassManager {
                 true
             }
 
-            // End Step - AUTO-PASS (use per-step stop override to hold here)
+            // End Step - STOP if we have instant-speed responses
             Step.END -> {
-                logger.debug("AUTO-PASS: Opponent's end step (Arena-style)")
-                true
+                if (hasInstantSpeedResponses) {
+                    logger.debug("STOP: Opponent's end step (have instant-speed responses)")
+                    false
+                } else {
+                    logger.debug("AUTO-PASS: Opponent's end step (no responses)")
+                    true
+                }
             }
 
             // Cleanup - no priority normally
@@ -586,7 +591,7 @@ class AutoPassManager {
             Step.DECLARE_ATTACKERS -> true // Auto-pass; use per-step stop override to hold here
             Step.DECLARE_BLOCKERS -> !hasMeaningfulActions // Stop only if we have blockers/responses
             Step.FIRST_STRIKE_COMBAT_DAMAGE, Step.COMBAT_DAMAGE, Step.END_COMBAT -> true
-            Step.END -> true // Auto-pass; use per-step stop override to hold here
+            Step.END -> !hasMeaningfulActions // Stop if we have responses
             Step.CLEANUP, Step.UNTAP -> true
         }
     }
