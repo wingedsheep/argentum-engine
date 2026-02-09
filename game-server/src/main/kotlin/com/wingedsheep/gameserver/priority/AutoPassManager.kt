@@ -378,15 +378,10 @@ class AutoPassManager {
                 true
             }
 
-            // End Step - stop if we have instant-speed responses
+            // End Step - AUTO-PASS (use per-step stop override to hold here)
             Step.END -> {
-                if (hasInstantSpeedResponses) {
-                    logger.debug("STOP: Opponent's end step (have instant-speed responses)")
-                    false
-                } else {
-                    logger.debug("AUTO-PASS: Opponent's end step (no responses)")
-                    true
-                }
+                logger.debug("AUTO-PASS: Opponent's end step (Arena-style)")
+                true
             }
 
             // Cleanup - no priority normally
