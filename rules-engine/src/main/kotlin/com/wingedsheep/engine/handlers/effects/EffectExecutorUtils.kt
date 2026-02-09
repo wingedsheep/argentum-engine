@@ -77,6 +77,31 @@ object EffectExecutorUtils {
     }
 
     /**
+     * Resolve a player target with access to game state (for relational references like OwnerOf/ControllerOf).
+     */
+    fun resolvePlayerTarget(effectTarget: EffectTarget, context: EffectContext, state: GameState): EntityId? {
+        // Try stateless resolution first
+        resolvePlayerTarget(effectTarget, context)?.let { return it }
+
+        // Handle state-dependent relational references
+        return when (effectTarget) {
+            is EffectTarget.PlayerRef -> when (val player = effectTarget.player) {
+                is Player.OwnerOf -> {
+                    val targetEntity = context.targets.firstOrNull()?.toEntityId() ?: return null
+                    state.getEntity(targetEntity)?.get<CardComponent>()?.ownerId
+                }
+                is Player.ControllerOf -> {
+                    val targetEntity = context.targets.firstOrNull()?.toEntityId() ?: return null
+                    state.getEntity(targetEntity)?.get<ControllerComponent>()?.playerId
+                        ?: state.getEntity(targetEntity)?.get<CardComponent>()?.ownerId
+                }
+                else -> null
+            }
+            else -> null
+        }
+    }
+
+    /**
      * Resolve a player target to a list of player IDs (for multi-player effects like "each player").
      */
     fun resolvePlayerTargets(effectTarget: EffectTarget, state: GameState, context: EffectContext): List<EntityId> {
@@ -89,6 +114,9 @@ object EffectExecutorUtils {
                 Player.Opponent, Player.TargetOpponent -> state.turnOrder.filter { it != context.controllerId }
                 Player.TargetPlayer, Player.Any -> {
                     context.targets.firstOrNull()?.toEntityId()?.let { listOf(it) } ?: emptyList()
+                }
+                is Player.OwnerOf, is Player.ControllerOf -> {
+                    resolvePlayerTarget(effectTarget, context, state)?.let { listOf(it) } ?: emptyList()
                 }
                 else -> emptyList()
             }

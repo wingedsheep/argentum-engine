@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 196 / 335
+**Implemented:** 197 / 335
 
 ---
 
@@ -210,7 +210,7 @@
 - [x] Naturalize
 - [ ] Nosy Goblin
 - [x] Nova Cleric
-- [ ] Oblation
+- [x] Oblation
 - [ ] Oversold Cemetery
 - [ ] Overwhelming Instinct
 - [x] Pacifism
