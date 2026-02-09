@@ -502,6 +502,7 @@ export function GameCard({
         borderRadius: responsive.isMobile ? 4 : 8,
         cursor,
         border: borderStyle,
+        pointerEvents: 'auto',
         transform: `${isTapped ? 'rotate(90deg)' : ''} ${isSelected && !isInCombatMode ? 'translateY(-8px)' : ''}`,
         transformOrigin: 'center',
         boxShadow,

@@ -124,7 +124,7 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
           </div>
         ))}
         {/* Main card at the bottom, on top */}
-        <div style={{ position: 'absolute', left: 0, top: totalPeek, zIndex: attachments.length + 1 }}>
+        <div style={{ position: 'absolute', left: 0, top: totalPeek, zIndex: attachments.length + 1, pointerEvents: 'none' }}>
           <CardStack
             group={group}
             interactive={interactive}
