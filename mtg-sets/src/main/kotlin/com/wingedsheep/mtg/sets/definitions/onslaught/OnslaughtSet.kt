@@ -223,6 +223,7 @@ object OnslaughtSet {
         WirewoodPride,
         VitalityCharm,
         OverwhelmingInstinct,
+        PrimalBoost,
 
         // Lands
         BloodstainedMire,

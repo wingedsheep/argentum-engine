@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 202 / 335
+**Implemented:** 203 / 335
 
 ---
 
@@ -221,7 +221,7 @@
 - [x] Pinpoint Avalanche
 - [x] Plains
 - [ ] Polluted Delta
-- [ ] Primal Boost
+- [x] Primal Boost
 - [x] Profane Prayers
 - [x] Prowling Pangolin
 - [ ] Psychic Trance
