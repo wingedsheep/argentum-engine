@@ -303,9 +303,9 @@ export class GamePage {
 
   /** Turn a face-down creature face-up by clicking it and selecting the morph action. */
   async turnFaceUp(name: string) {
-    // Face-down creatures show as generic morph image — click by position or alt text
+    // Face-down creatures show as "Card back" alt text
     await this.page.locator(cardByName(name)).first().click()
-    await this.selectAction('Turn Face Up')
+    await this.selectAction('Turn Face-Up')
   }
 
   /** Select a card from hand (for discard or other hand-targeting decisions). */
@@ -449,5 +449,53 @@ export class GamePage {
     await btn.waitFor({ state: 'visible', timeout: 10_000 })
     await btn.click()
     await this.screenshot('Dismiss revealed cards')
+  }
+
+  /** Confirm blocker damage assignment order by clicking "Confirm Order". */
+  async confirmBlockerOrder() {
+    const btn = this.page.getByRole('button', { name: 'Confirm Order' })
+    await btn.waitFor({ state: 'visible', timeout: 10_000 })
+    // Button can be outside viewport in the OrderBlockers modal — use JS click
+    await btn.evaluate((el: HTMLElement) => el.click())
+    await this.screenshot('Confirm blocker order')
+  }
+
+  /** Click "Fail to Find" in a library search overlay. */
+  async failToFind() {
+    const btn = this.page.getByRole('button', { name: 'Fail to Find' })
+    await btn.waitFor({ state: 'visible', timeout: 10_000 })
+    await btn.click()
+    await this.screenshot('Fail to find')
+  }
+
+  /** Assert a card's power/toughness display on the battlefield. */
+  async expectStats(name: string, stats: string) {
+    const card = this.page.locator(BATTLEFIELD).locator(cardByName(name)).first().locator('..')
+    await expect(card).toContainText(stats, { timeout: 10_000 })
+  }
+
+  /**
+   * Increase damage allocation for a card in the DamageDistributionModal.
+   * Clicks the "+" button in the section containing the named card's image.
+   */
+  async increaseDamageAllocation(name: string, times: number = 1) {
+    const section = this.page
+      .locator('div')
+      .filter({ has: this.page.locator(`img[alt="${name}"]`) })
+      .filter({ has: this.page.locator('button', { hasText: '+' }) })
+      .last()
+    const plusBtn = section.locator('button').filter({ hasText: '+' })
+    for (let i = 0; i < times; i++) {
+      await plusBtn.click()
+    }
+    await this.screenshot(`Increase damage to ${name} by ${times}`)
+  }
+
+  /** Confirm spell cast from the DamageDistributionModal by clicking "Cast Spell". */
+  async castSpellFromDistribution() {
+    const btn = this.page.getByRole('button', { name: 'Cast Spell' })
+    await btn.waitFor({ state: 'visible', timeout: 10_000 })
+    await btn.click()
+    await this.screenshot('Cast spell from distribution')
   }
 }
