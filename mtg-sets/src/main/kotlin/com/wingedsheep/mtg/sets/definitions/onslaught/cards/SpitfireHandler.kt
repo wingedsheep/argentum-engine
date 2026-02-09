@@ -36,6 +36,6 @@ val SpitfireHandler = card("Spitfire Handler") {
         collectorNumber = "236"
         artist = "Jim Nelson"
         flavorText = "\"Wait 'til Toggo sees this!\""
-        imageUri = "https://cards.scryfall.io/normal/front/c/4/c47a3426-ee83-4083-89a6-7863d7bd6a96.jpg?1562941742"
+        imageUri = "https://cards.scryfall.io/large/front/e/f/efe72820-952f-4c53-9ee7-ea7ea54fc848.jpg?1595099913"
     }
 }
