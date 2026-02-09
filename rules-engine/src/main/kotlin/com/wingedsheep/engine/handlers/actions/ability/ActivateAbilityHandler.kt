@@ -96,6 +96,19 @@ class ActivateAbilityHandler(
         val ability = cardDef.script.activatedAbilities.find { it.id == action.abilityId }
             ?: return "Ability not found on this card"
 
+        // Apply text-changing effects to cost and target filters
+        val textReplacement = container.get<TextReplacementComponent>()
+        val effectiveCost = if (textReplacement != null) {
+            SubtypeReplacer.replaceAbilityCost(ability.cost, textReplacement)
+        } else {
+            ability.cost
+        }
+        val effectiveTargetReq = if (textReplacement != null && ability.targetRequirement != null) {
+            SubtypeReplacer.replaceTargetRequirement(ability.targetRequirement!!, textReplacement)
+        } else {
+            ability.targetRequirement
+        }
+
         // Check timing for planeswalker abilities
         if (ability.isPlaneswalkerAbility) {
             if (!turnManager.canPlaySorcerySpeed(state, action.playerId)) {
@@ -111,12 +124,11 @@ class ActivateAbilityHandler(
         }
 
         // Check cost requirements (using ManaSolver for mana costs to consider untapped sources)
-        if (!canPayAbilityCostWithSources(state, ability.cost, action.sourceId, action.playerId)) {
-            return when (ability.cost) {
+        if (!canPayAbilityCostWithSources(state, effectiveCost, action.sourceId, action.playerId)) {
+            return when (effectiveCost) {
                 is AbilityCost.Tap -> "This permanent is already tapped"
                 is AbilityCost.Loyalty -> {
-                    val cost = ability.cost as AbilityCost.Loyalty
-                    if (cost.change < 0) {
+                    if (effectiveCost.change < 0) {
                         "Not enough loyalty to activate this ability"
                     } else {
                         "Cannot pay loyalty cost"
@@ -129,8 +141,8 @@ class ActivateAbilityHandler(
         }
 
         // Check summoning sickness for tap abilities
-        if (ability.cost is AbilityCost.Tap ||
-            (ability.cost is AbilityCost.Composite && (ability.cost as AbilityCost.Composite).costs.any { it is AbilityCost.Tap })) {
+        if (effectiveCost is AbilityCost.Tap ||
+            (effectiveCost is AbilityCost.Composite && effectiveCost.costs.any { it is AbilityCost.Tap })) {
             if (!cardComponent.typeLine.isLand && cardComponent.typeLine.isCreature) {
                 val hasSummoningSickness = container.has<SummoningSicknessComponent>()
                 val hasHaste = cardComponent.baseKeywords.contains(Keyword.HASTE)
@@ -147,11 +159,11 @@ class ActivateAbilityHandler(
         }
 
         // Validate targets
-        if (ability.targetRequirement != null && action.targets.isNotEmpty()) {
+        if (effectiveTargetReq != null && action.targets.isNotEmpty()) {
             val targetError = targetValidator.validateTargets(
                 state,
                 action.targets,
-                listOf(ability.targetRequirement!!),
+                listOf(effectiveTargetReq),
                 action.playerId,
                 sourceColors = cardComponent.colors,
                 sourceSubtypes = cardComponent.typeLine.subtypes.map { it.value }.toSet()
@@ -159,7 +171,7 @@ class ActivateAbilityHandler(
             if (targetError != null) {
                 return targetError
             }
-        } else if (ability.targetRequirement != null && action.targets.isEmpty()) {
+        } else if (effectiveTargetReq != null && action.targets.isEmpty()) {
             return "This ability requires a target"
         }
 
@@ -179,6 +191,14 @@ class ActivateAbilityHandler(
         val ability = cardDef.script.activatedAbilities.find { it.id == action.abilityId }
             ?: return ExecutionResult.error(state, "Ability not found")
 
+        // Apply text-changing effects to cost
+        val textReplacement = container.get<TextReplacementComponent>()
+        val effectiveCost = if (textReplacement != null) {
+            SubtypeReplacer.replaceAbilityCost(ability.cost, textReplacement)
+        } else {
+            ability.cost
+        }
+
         var currentState = state
         val events = mutableListOf<GameEvent>()
 
@@ -195,7 +215,7 @@ class ActivateAbilityHandler(
         )
 
         // Auto-tap lands for mana costs before paying
-        val manaCost = extractManaCost(ability.cost)
+        val manaCost = extractManaCost(effectiveCost)
         val xValue = action.xValue ?: 0
         if (manaCost != null) {
             val autoTapResult = autoTapForManaCost(currentState, action.playerId, manaPool, manaCost, cardComponent.name, xValue)
@@ -213,10 +233,10 @@ class ActivateAbilityHandler(
             tapChoices = action.costPayment?.tappedPermanents ?: emptyList()
         )
 
-        // Pay the cost
+        // Pay the cost (using effective cost with text replacements applied)
         val costResult = costHandler.payAbilityCost(
             currentState,
-            ability.cost,
+            effectiveCost,
             action.sourceId,
             action.playerId,
             manaPool,
@@ -260,7 +280,6 @@ class ActivateAbilityHandler(
         }
 
         // Apply text replacement if the source has a TextReplacementComponent
-        val textReplacement = state.getEntity(action.sourceId)?.get<TextReplacementComponent>()
         val finalEffect = if (textReplacement != null) {
             SubtypeReplacer.replaceEffect(ability.effect, textReplacement)
         } else {

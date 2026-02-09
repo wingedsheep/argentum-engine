@@ -5,6 +5,7 @@ import com.wingedsheep.engine.state.components.identity.TextReplacementCategory
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.*
+import com.wingedsheep.sdk.targeting.*
 
 /**
  * Central utility for transforming creature type references in triggers, effects,
@@ -230,6 +231,76 @@ object SubtypeReplacer {
                 if (replaced == filter.subtype) filter else AffectsFilter.OtherCreaturesWithSubtype(replaced)
             }
             else -> filter
+        }
+    }
+
+    /**
+     * Replace creature type references in a TargetFilter.
+     */
+    fun replaceTargetFilter(filter: TargetFilter, component: TextReplacementComponent): TargetFilter {
+        val newBase = replaceGameObjectFilter(filter.baseFilter, component)
+        return if (newBase === filter.baseFilter) filter else filter.copy(baseFilter = newBase)
+    }
+
+    /**
+     * Replace creature type references in a TargetRequirement.
+     */
+    fun replaceTargetRequirement(requirement: TargetRequirement, component: TextReplacementComponent): TargetRequirement {
+        return when (requirement) {
+            is TargetCreature -> {
+                val newFilter = replaceTargetFilter(requirement.filter, component)
+                if (newFilter === requirement.filter) requirement else requirement.copy(filter = newFilter)
+            }
+            is TargetPermanent -> {
+                val newFilter = replaceTargetFilter(requirement.filter, component)
+                if (newFilter === requirement.filter) requirement else requirement.copy(filter = newFilter)
+            }
+            is TargetObject -> {
+                val newFilter = replaceTargetFilter(requirement.filter, component)
+                if (newFilter === requirement.filter) requirement else requirement.copy(filter = newFilter)
+            }
+            is TargetSpell -> {
+                val newFilter = replaceTargetFilter(requirement.filter, component)
+                if (newFilter === requirement.filter) requirement else requirement.copy(filter = newFilter)
+            }
+            is TargetOther -> {
+                val newBase = replaceTargetRequirement(requirement.baseRequirement, component)
+                if (newBase === requirement.baseRequirement) requirement else requirement.copy(baseRequirement = newBase)
+            }
+            // TargetPlayer, TargetOpponent, AnyTarget, TargetCreatureOrPlayer,
+            // TargetCreatureOrPlaneswalker, TargetSpellOrPermanent don't have filters
+            else -> requirement
+        }
+    }
+
+    /**
+     * Replace creature type references in an AbilityCost.
+     */
+    fun replaceAbilityCost(cost: AbilityCost, component: TextReplacementComponent): AbilityCost {
+        return when (cost) {
+            is AbilityCost.Sacrifice -> {
+                val newFilter = replaceGameObjectFilter(cost.filter, component)
+                if (newFilter === cost.filter) cost else cost.copy(filter = newFilter)
+            }
+            is AbilityCost.TapPermanents -> {
+                val newFilter = replaceGameObjectFilter(cost.filter, component)
+                if (newFilter === cost.filter) cost else cost.copy(filter = newFilter)
+            }
+            is AbilityCost.Discard -> {
+                val newFilter = replaceGameObjectFilter(cost.filter, component)
+                if (newFilter === cost.filter) cost else cost.copy(filter = newFilter)
+            }
+            is AbilityCost.ExileFromGraveyard -> {
+                val newFilter = replaceGameObjectFilter(cost.filter, component)
+                if (newFilter === cost.filter) cost else cost.copy(filter = newFilter)
+            }
+            is AbilityCost.Composite -> {
+                val newCosts = cost.costs.map { replaceAbilityCost(it, component) }
+                if (newCosts.zip(cost.costs).all { (a, b) -> a === b }) cost
+                else AbilityCost.Composite(newCosts)
+            }
+            // Tap, Untap, Mana, PayLife, DiscardSelf, SacrificeSelf, Loyalty don't have filters
+            else -> cost
         }
     }
 

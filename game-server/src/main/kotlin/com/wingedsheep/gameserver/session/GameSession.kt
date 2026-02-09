@@ -43,6 +43,8 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.mechanics.layers.StateProjector
+import com.wingedsheep.engine.mechanics.text.SubtypeReplacer
+import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.TargetFilter
@@ -1058,14 +1060,24 @@ class GameSession(
             val cardDef = cardRegistry.getCard(cardComponent.name) ?: continue
             val manaAbilities = cardDef.script.activatedAbilities.filter { it.isManaAbility }
 
+            // Apply text-changing effects to mana ability costs
+            val manaTextReplacement = container.get<TextReplacementComponent>()
+
             for (ability in manaAbilities) {
+                // Apply text replacement to cost filters
+                val effectiveCost = if (manaTextReplacement != null) {
+                    SubtypeReplacer.replaceAbilityCost(ability.cost, manaTextReplacement)
+                } else {
+                    ability.cost
+                }
+
                 // Check if the ability can be activated and gather cost info
                 var tapTargets: List<EntityId>? = null
                 var tapCost: AbilityCost.TapPermanents? = null
                 var sacrificeTargets: List<EntityId>? = null
                 var sacrificeCost: AbilityCost.Sacrifice? = null
 
-                when (ability.cost) {
+                when (effectiveCost) {
                     is AbilityCost.Tap -> {
                         // Must be untapped
                         if (container.has<TappedComponent>()) continue
@@ -1078,12 +1090,12 @@ class GameSession(
                         }
                     }
                     is AbilityCost.TapPermanents -> {
-                        tapCost = ability.cost as AbilityCost.TapPermanents
+                        tapCost = effectiveCost
                         tapTargets = findAbilityTapTargets(state, playerId, tapCost.filter)
                         if (tapTargets.size < tapCost.count) continue
                     }
                     is AbilityCost.Sacrifice -> {
-                        sacrificeCost = ability.cost as AbilityCost.Sacrifice
+                        sacrificeCost = effectiveCost
                         sacrificeTargets = findAbilitySacrificeTargets(state, playerId, sacrificeCost.filter)
                         if (sacrificeTargets.isEmpty()) continue
                     }
@@ -1153,14 +1165,24 @@ class GameSession(
             val cardDef = cardRegistry.getCard(cardComponent.name) ?: continue
             val nonManaAbilities = cardDef.script.activatedAbilities.filter { !it.isManaAbility }
 
+            // Apply text-changing effects to ability costs and targets
+            val textReplacement = container.get<TextReplacementComponent>()
+
             for (ability in nonManaAbilities) {
+                // Apply text replacement to cost filters (e.g., "Sacrifice a Goblin" → "Sacrifice a Bird")
+                val effectiveCost = if (textReplacement != null) {
+                    SubtypeReplacer.replaceAbilityCost(ability.cost, textReplacement)
+                } else {
+                    ability.cost
+                }
+
                 // Check cost requirements and gather sacrifice/tap targets if needed
                 var sacrificeTargets: List<EntityId>? = null
                 var sacrificeCost: AbilityCost.Sacrifice? = null
                 var tapTargets: List<EntityId>? = null
                 var tapCost: AbilityCost.TapPermanents? = null
 
-                when (ability.cost) {
+                when (effectiveCost) {
                     is AbilityCost.Tap -> {
                         if (container.has<TappedComponent>()) continue
                         if (!cardComponent.typeLine.isLand && cardComponent.typeLine.isCreature) {
@@ -1170,15 +1192,15 @@ class GameSession(
                         }
                     }
                     is AbilityCost.Mana -> {
-                        if (!manaSolver.canPay(state, playerId, (ability.cost as AbilityCost.Mana).cost)) continue
+                        if (!manaSolver.canPay(state, playerId, effectiveCost.cost)) continue
                     }
                     is AbilityCost.Sacrifice -> {
-                        sacrificeCost = ability.cost as AbilityCost.Sacrifice
+                        sacrificeCost = effectiveCost
                         sacrificeTargets = findAbilitySacrificeTargets(state, playerId, sacrificeCost.filter)
                         if (sacrificeTargets.isEmpty()) continue
                     }
                     is AbilityCost.TapPermanents -> {
-                        tapCost = ability.cost as AbilityCost.TapPermanents
+                        tapCost = effectiveCost
                         tapTargets = findAbilityTapTargets(state, playerId, tapCost.filter)
                         if (tapTargets.size < tapCost.count) continue
                     }
@@ -1187,7 +1209,7 @@ class GameSession(
                         sacrificeTargets = listOf(entityId)
                     }
                     is AbilityCost.Composite -> {
-                        val compositeCost = ability.cost as AbilityCost.Composite
+                        val compositeCost = effectiveCost
                         var costCanBePaid = true
                         for (subCost in compositeCost.costs) {
                             when (subCost) {
@@ -1288,8 +1310,12 @@ class GameSession(
                     (availableSources - fixedCost).coerceAtLeast(0)
                 } else null
 
-                // Check for target requirements
-                val targetReq = ability.targetRequirement
+                // Check for target requirements (apply text-changing effects to filter)
+                val targetReq = if (textReplacement != null && ability.targetRequirement != null) {
+                    SubtypeReplacer.replaceTargetRequirement(ability.targetRequirement!!, textReplacement)
+                } else {
+                    ability.targetRequirement
+                }
                 if (targetReq != null) {
                     val validTargets = findValidTargets(state, playerId, targetReq)
                     if (validTargets.isEmpty()) continue
