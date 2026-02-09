@@ -162,6 +162,7 @@ object OnslaughtSet {
         SolarBlast,
         Starstorm,
         Sparksmith,
+        SpitfireHandler,
         SkirkProspector,
         ShaleskinBruiser,
         SnappingThragg,

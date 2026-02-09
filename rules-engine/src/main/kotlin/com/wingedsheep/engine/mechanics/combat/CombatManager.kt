@@ -22,6 +22,7 @@ import com.wingedsheep.sdk.scripting.CanOnlyBlockCreaturesWithKeyword
 import com.wingedsheep.sdk.scripting.CantBeBlockedByPower
 import com.wingedsheep.sdk.scripting.CantBeBlockedExceptByKeyword
 import com.wingedsheep.sdk.scripting.CantBlock
+import com.wingedsheep.sdk.scripting.CantBlockCreaturesWithGreaterPower
 import com.wingedsheep.sdk.scripting.DivideCombatDamageFreely
 import com.wingedsheep.sdk.scripting.StaticTarget
 import java.util.UUID
@@ -456,6 +457,14 @@ class CombatManager(
             return canOnlyBlockValidation
         }
 
+        // Check if blocker can't block creatures with greater power (e.g., Spitfire Handler)
+        val cantBlockGreaterPowerValidation = validateCantBlockCreaturesWithGreaterPower(
+            state, blockerId, cardComponent, attackerIds, projected
+        )
+        if (cantBlockGreaterPowerValidation != null) {
+            return cantBlockGreaterPowerValidation
+        }
+
         // Check evasion abilities of each attacker
         for (attackerId in attackerIds) {
             val evasionValidation = validateCanBlock(state, blockerId, attackerId, blockingPlayer)
@@ -867,6 +876,63 @@ class CombatManager(
         }
 
         return projected.hasKeyword(attackerId, restriction.keyword)
+    }
+
+    /**
+     * Check if blocker has "can't block creatures with greater power" restriction.
+     * Returns an error message if any attacker has power greater than the blocker's power, null otherwise.
+     *
+     * Used for Spitfire Handler: "This creature can't block creatures with power greater than
+     * this creature's power."
+     */
+    private fun validateCantBlockCreaturesWithGreaterPower(
+        state: GameState,
+        blockerId: EntityId,
+        blockerCard: CardComponent,
+        attackerIds: List<EntityId>,
+        projected: ProjectedState
+    ): String? {
+        val cardDef = cardRegistry?.getCard(blockerCard.cardDefinitionId) ?: return null
+        val restriction = cardDef.staticAbilities.filterIsInstance<CantBlockCreaturesWithGreaterPower>().firstOrNull()
+            ?: return null
+
+        if (restriction.target != StaticTarget.SourceCreature) return null
+
+        val blockerPower = projected.getPower(blockerId) ?: 0
+
+        for (attackerId in attackerIds) {
+            val attackerCard = state.getEntity(attackerId)?.get<CardComponent>() ?: continue
+            val attackerPower = projected.getPower(attackerId) ?: 0
+
+            if (attackerPower > blockerPower) {
+                return "${blockerCard.name} can't block ${attackerCard.name} (power $attackerPower is greater than ${blockerCard.name}'s power $blockerPower)"
+            }
+        }
+
+        return null
+    }
+
+    /**
+     * Check if blocker can block despite "can't block creatures with greater power" restriction.
+     * Returns true if the blocker can block.
+     */
+    private fun canBlockDespiteGreaterPowerRestriction(
+        state: GameState,
+        blockerId: EntityId,
+        attackerId: EntityId,
+        projected: ProjectedState
+    ): Boolean {
+        val blockerCard = state.getEntity(blockerId)?.get<CardComponent>() ?: return true
+        val cardDef = cardRegistry?.getCard(blockerCard.cardDefinitionId) ?: return true
+        val restriction = cardDef.staticAbilities.filterIsInstance<CantBlockCreaturesWithGreaterPower>().firstOrNull()
+            ?: return true
+
+        if (restriction.target != StaticTarget.SourceCreature) return true
+
+        val blockerPower = projected.getPower(blockerId) ?: 0
+        val attackerPower = projected.getPower(attackerId) ?: 0
+
+        return attackerPower <= blockerPower
     }
 
     /**
@@ -1775,6 +1841,11 @@ class CombatManager(
 
         // Check if blocker can only block creatures with a specific keyword (e.g., Cloud Pirates)
         if (!canBlockDespiteKeywordRestriction(state, blockerId, attackerId, projected)) {
+            return false
+        }
+
+        // CantBlockCreaturesWithGreaterPower: Can't block creatures with power > this creature's power
+        if (!canBlockDespiteGreaterPowerRestriction(state, blockerId, attackerId, projected)) {
             return false
         }
 

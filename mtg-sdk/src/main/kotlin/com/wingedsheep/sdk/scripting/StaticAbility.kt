@@ -366,6 +366,21 @@ data class CantBeBlockedByPower(
 }
 
 /**
+ * This creature can't block creatures with power greater than this creature's power.
+ * Used for cards like Spitfire Handler.
+ *
+ * The comparison uses projected power (accounts for buffs/debuffs).
+ *
+ * @property target What this ability applies to (typically SourceCreature)
+ */
+@Serializable
+data class CantBlockCreaturesWithGreaterPower(
+    val target: StaticTarget = StaticTarget.SourceCreature
+) : StaticAbility {
+    override val description: String = "can't block creatures with power greater than this creature's power"
+}
+
+/**
  * This creature can't be blocked except by creatures with a specific keyword.
  * Used for Flying, Shadow, Horsemanship, etc.
  *
