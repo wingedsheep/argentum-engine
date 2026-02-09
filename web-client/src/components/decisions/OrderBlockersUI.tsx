@@ -27,6 +27,7 @@ export function OrderBlockersUI({ decision, responsive }: OrderBlockersUIProps) 
   const [orderedBlockers, setOrderedBlockers] = useState<EntityId[]>([...decision.objects])
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
+  const [minimized, setMinimized] = useState(false)
   const submitOrderedDecision = useGameStore((s) => s.submitOrderedDecision)
   const gameState = useGameStore((s) => s.gameState)
 
@@ -99,6 +100,33 @@ export function OrderBlockersUI({ decision, responsive }: OrderBlockersUIProps) 
 
   const handleConfirm = () => {
     submitOrderedDecision(orderedBlockers)
+  }
+
+  if (minimized) {
+    return (
+      <button
+        onClick={() => setMinimized(false)}
+        style={{
+          position: 'fixed',
+          bottom: 70,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 1000,
+          padding: '8px 20px',
+          fontSize: 15,
+          fontWeight: 600,
+          backgroundColor: '#2563eb',
+          color: 'white',
+          border: 'none',
+          borderRadius: 8,
+          cursor: 'pointer',
+          whiteSpace: 'nowrap',
+          pointerEvents: 'auto',
+        }}
+      >
+        Return to Damage Assignment
+      </button>
+    )
   }
 
   return (
@@ -269,23 +297,41 @@ export function OrderBlockersUI({ decision, responsive }: OrderBlockersUIProps) 
         </div>
       </div>
 
-      {/* Confirm button */}
-      <button
-        onClick={handleConfirm}
-        style={{
-          padding: responsive.isMobile ? '10px 24px' : '12px 36px',
-          fontSize: responsive.fontSize.large,
-          backgroundColor: '#dc2626',
-          color: 'white',
-          border: 'none',
-          borderRadius: 8,
-          cursor: 'pointer',
-          fontWeight: 600,
-          transition: 'all 0.15s',
-        }}
-      >
-        Confirm Order
-      </button>
+      {/* Action buttons */}
+      <div style={{ display: 'flex', gap: 16 }}>
+        <button
+          onClick={() => setMinimized(true)}
+          style={{
+            padding: responsive.isMobile ? '10px 24px' : '12px 36px',
+            fontSize: responsive.fontSize.large,
+            backgroundColor: '#2563eb',
+            color: 'white',
+            border: 'none',
+            borderRadius: 8,
+            cursor: 'pointer',
+            fontWeight: 600,
+            transition: 'all 0.15s',
+          }}
+        >
+          View Battlefield
+        </button>
+        <button
+          onClick={handleConfirm}
+          style={{
+            padding: responsive.isMobile ? '10px 24px' : '12px 36px',
+            fontSize: responsive.fontSize.large,
+            backgroundColor: '#dc2626',
+            color: 'white',
+            border: 'none',
+            borderRadius: 8,
+            cursor: 'pointer',
+            fontWeight: 600,
+            transition: 'all 0.15s',
+          }}
+        >
+          Confirm Order
+        </button>
+      </div>
     </div>
   )
 }

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useGameStore } from '../../store/gameStore'
 import type { EntityId } from '../../types'
 import { useResponsive } from '../../hooks/useResponsive'
@@ -25,8 +26,36 @@ export function DamageDistributionModal() {
   const gameState = useGameStore((s) => s.gameState)
   const hoverCard = useGameStore((s) => s.hoverCard)
   const responsive = useResponsive()
+  const [minimized, setMinimized] = useState(false)
 
   if (!damageDistributionState) return null
+
+  if (minimized) {
+    return (
+      <button
+        onClick={() => setMinimized(false)}
+        style={{
+          position: 'fixed',
+          bottom: 70,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 1000,
+          padding: '8px 20px',
+          fontSize: 15,
+          fontWeight: 600,
+          backgroundColor: '#2563eb',
+          color: 'white',
+          border: 'none',
+          borderRadius: 8,
+          cursor: 'pointer',
+          whiteSpace: 'nowrap',
+          pointerEvents: 'auto',
+        }}
+      >
+        Return to Damage Distribution
+      </button>
+    )
+  }
 
   const { cardName, targetIds, totalDamage, minPerTarget, distribution } = damageDistributionState
 
@@ -349,6 +378,21 @@ export function DamageDistributionModal() {
           }}
         >
           Cancel
+        </button>
+        <button
+          onClick={() => setMinimized(true)}
+          style={{
+            padding: responsive.isMobile ? '12px 24px' : '16px 32px',
+            fontSize: responsive.fontSize.normal,
+            backgroundColor: '#2563eb',
+            color: 'white',
+            border: 'none',
+            borderRadius: 8,
+            cursor: 'pointer',
+            fontWeight: 600,
+          }}
+        >
+          View Battlefield
         </button>
         <button
           onClick={confirmDamageDistribution}

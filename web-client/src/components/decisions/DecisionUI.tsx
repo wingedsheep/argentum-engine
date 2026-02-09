@@ -129,9 +129,7 @@ export function DecisionUI() {
 
     // Default: full-screen modal
     return (
-      <div className={styles.overlay}>
-        <CardSelectionDecision decision={pendingDecision} responsive={responsive} />
-      </div>
+      <CardSelectionDecision key={pendingDecision.id} decision={pendingDecision} responsive={responsive} />
     )
   }
 
@@ -621,6 +619,7 @@ function CardSelectionDecision({
 }) {
   const [selectedCards, setSelectedCards] = useState<EntityId[]>([])
   const [hoveredCardId, setHoveredCardId] = useState<EntityId | null>(null)
+  const [minimized, setMinimized] = useState(false)
   const submitDecision = useGameStore((s) => s.submitDecision)
   const gameState = useGameStore((s) => s.gameState)
 
@@ -666,8 +665,19 @@ function CardSelectionDecision({
     setSelectedCards([])
   }
 
+  if (minimized) {
+    return (
+      <button
+        className={styles.floatingReturnButton}
+        onClick={() => setMinimized(false)}
+      >
+        Return to Card Selection
+      </button>
+    )
+  }
+
   return (
-    <>
+    <div className={styles.overlay}>
       <h2 className={styles.title}>
         {decision.prompt}
       </h2>
@@ -704,22 +714,30 @@ function CardSelectionDecision({
         })}
       </div>
 
-      {/* Confirm button */}
-      <button
-        onClick={handleConfirm}
-        disabled={!canConfirm}
-        className={styles.confirmButton}
-      >
-        {decision.minSelections === 0 && selectedCards.length === 0
-          ? 'Select None'
-          : 'Confirm Selection'}
-      </button>
+      {/* Action buttons */}
+      <div className={styles.optionButtonRow}>
+        <button
+          onClick={() => setMinimized(true)}
+          className={styles.viewBattlefieldButton}
+        >
+          View Battlefield
+        </button>
+        <button
+          onClick={handleConfirm}
+          disabled={!canConfirm}
+          className={styles.confirmButton}
+        >
+          {decision.minSelections === 0 && selectedCards.length === 0
+            ? 'Select None'
+            : 'Confirm Selection'}
+        </button>
+      </div>
 
       {/* Card preview on hover */}
       {hoveredCardInfo?.name && !responsive.isMobile && (
         <DecisionCardPreview cardName={hoveredCardInfo.name} imageUri={hoveredCardInfo.imageUri} />
       )}
-    </>
+    </div>
   )
 }
 
