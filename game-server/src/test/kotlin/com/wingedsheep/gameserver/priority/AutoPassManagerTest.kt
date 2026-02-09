@@ -2,6 +2,7 @@ package com.wingedsheep.gameserver.priority
 
 import com.wingedsheep.engine.core.PassPriority
 import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.core.CycleCard
 import com.wingedsheep.engine.core.PlayLand
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.TurnFaceUp
@@ -158,6 +159,13 @@ class AutoPassManagerTest : FunSpec({
         description = "Turn face-up ({4}{G}{G})",
         action = TurnFaceUp(playerId, EntityId.generate()),
         requiresTargets = false
+    )
+
+    fun cycleAction(playerId: EntityId, affordable: Boolean = true) = LegalActionInfo(
+        actionType = "CycleCard",
+        description = "Cycle Lonely Sandbar",
+        action = CycleCard(playerId, EntityId.generate()),
+        isAffordable = affordable
     )
 
     fun playLandAction(playerId: EntityId) = LegalActionInfo(
@@ -815,6 +823,48 @@ class AutoPassManagerTest : FunSpec({
             )
             // Without stateProjector, hasCombatFirstStrike returns false
             autoPassManager.getNextStopPoint(state, player1, true, null) shouldBe "Resolve combat damage"
+        }
+    }
+
+    context("Cycling Affordability") {
+        test("Affordable cycling stops auto-pass at opponent's end step") {
+            val state = createMockState(player2, player1, Step.END)
+            val actions = listOf(
+                passPriorityAction(player2),
+                cycleAction(player2, affordable = true)
+            )
+
+            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe false
+        }
+
+        test("Unaffordable cycling does NOT stop auto-pass at opponent's end step") {
+            val state = createMockState(player2, player1, Step.END)
+            val actions = listOf(
+                passPriorityAction(player2),
+                cycleAction(player2, affordable = false)
+            )
+
+            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
+        }
+
+        test("Unaffordable cycling does NOT stop auto-pass at declare blockers") {
+            val state = createMockState(player2, player1, Step.DECLARE_BLOCKERS)
+            val actions = listOf(
+                passPriorityAction(player2),
+                cycleAction(player2, affordable = false)
+            )
+
+            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
+        }
+
+        test("Unaffordable cycling does NOT stop auto-pass on my declare blockers step") {
+            val state = createMockState(player1, player1, Step.DECLARE_BLOCKERS)
+            val actions = listOf(
+                passPriorityAction(player1),
+                cycleAction(player1, affordable = false)
+            )
+
+            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe true
         }
     }
 

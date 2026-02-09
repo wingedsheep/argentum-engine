@@ -219,6 +219,11 @@ class AutoPassManager {
                 return@filter true
             }
 
+            // Cycling is meaningful only if the player can afford it
+            if (action.actionType == "CycleCard") {
+                return@filter action.isAffordable
+            }
+
             // Other actions are meaningful by default
             true
         }
