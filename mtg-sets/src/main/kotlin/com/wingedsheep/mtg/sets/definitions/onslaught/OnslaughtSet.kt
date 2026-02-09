@@ -136,6 +136,7 @@ object OnslaughtSet {
         SyphonSoul,
         VisaraTheDreadful,
         WretchedAnurid,
+        ThrashingMudspawn,
 
         // Red creatures and spells
         AetherCharge,

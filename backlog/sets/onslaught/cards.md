@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 204 / 335
+**Implemented:** 205 / 335
 
 ---
 
@@ -300,7 +300,7 @@
 - [ ] Tempting Wurm
 - [ ] Tephraderm
 - [x] Thoughtbound Primoc
-- [ ] Thrashing Mudspawn
+- [x] Thrashing Mudspawn
 - [x] Threaten
 - [ ] Thunder of Hooves
 - [x] Towering Baloth
