@@ -134,10 +134,15 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
     }
   }, [])
 
-  // Count cards in deck
-  const nonLandCount = state.deck.length
-  const landCount = Object.values(state.landCounts).reduce((a, b) => a + b, 0)
-  const totalCount = nonLandCount + landCount
+  // Count cards in deck — separate non-basic lands from spells
+  const basicLandCount = Object.values(state.landCounts).reduce((a, b) => a + b, 0)
+  const nonBasicLandCount = state.deck.filter((cardName) => {
+    const info = state.cardPool.find((c) => c.name === cardName)
+    return info != null && info.typeLine.toLowerCase().includes('land')
+  }).length
+  const spellCount = state.deck.length - nonBasicLandCount
+  const landCount = basicLandCount + nonBasicLandCount
+  const totalCount = state.deck.length + basicLandCount
   const isValidDeck = totalCount >= 40
 
   // Deck analytics
@@ -151,6 +156,7 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
     let creatureCount = 0
     let nonCreatureCount = 0
     for (const card of cardInfos) {
+      if (card.typeLine.toLowerCase().includes('land')) continue
       if (card.typeLine.toLowerCase().includes('creature')) {
         creatureCount++
       } else {
@@ -750,7 +756,7 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
               Your Deck
             </span>
             <span style={{ color: '#888', fontSize: 11 }}>
-              ({nonLandCount} spells + {landCount} lands)
+              ({spellCount} spells + {landCount} lands)
             </span>
           </div>
 
@@ -779,9 +785,9 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
                 <span style={{ color: '#666', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>
                   Basic Lands
                 </span>
-                {!isSubmitted && nonLandCount > 0 && (
+                {!isSubmitted && state.deck.length > 0 && (
                   <button
-                    onClick={() => suggestLands(state, nonLandCount, setLandCount)}
+                    onClick={() => suggestLands(state, state.deck.length, setLandCount)}
                     style={{
                       padding: '2px 8px',
                       fontSize: 10,
