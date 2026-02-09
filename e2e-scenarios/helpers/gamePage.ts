@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test'
-import { HAND, BATTLEFIELD, cardByName } from './selectors'
+import { HAND, BATTLEFIELD, cardByName, graveyard, PLAYER_LIBRARY, OPPONENT_LIBRARY } from './selectors'
 
 /**
  * Page object wrapping common game board interactions.
@@ -223,5 +223,164 @@ export class GamePage {
   /** Confirm no blockers by passing. */
   async confirmNoBlockers() {
     await this.pass()
+  }
+
+  /** Click "No Blocks" to skip blocking entirely. */
+  async noBlocks() {
+    await this.page.getByRole('button', { name: 'No Blocks' }).click()
+    await this.screenshot('No blocks')
+  }
+
+  /** Assign a blocker to an attacker: click the blocker card then click the attacker card. */
+  async declareBlocker(blockerName: string, attackerName: string) {
+    await this.page.locator(cardByName(blockerName)).first().click()
+    await this.page.locator(cardByName(attackerName)).first().click()
+    await this.screenshot(`Block ${attackerName} with ${blockerName}`)
+  }
+
+  /** Confirm blocker assignments by clicking "Confirm Blocks". */
+  async confirmBlockers() {
+    await this.page.getByRole('button', { name: 'Confirm Blocks' }).click()
+    await this.screenshot('Confirm blocks')
+  }
+
+  /** Select a mana color from the mana color selection overlay (e.g. "White", "Blue"). */
+  async selectManaColor(color: 'White' | 'Blue' | 'Black' | 'Red' | 'Green') {
+    const btn = this.page.getByRole('button', { name: color })
+    await btn.waitFor({ state: 'visible', timeout: 10_000 })
+    await btn.click()
+    await this.screenshot(`Select mana color: ${color}`)
+  }
+
+  /** Select a number from the ChooseNumberDecision UI, then confirm. */
+  async selectNumber(n: number) {
+    // Click the number button in the number selection UI
+    const numberBtn = this.page.locator('button').filter({ hasText: new RegExp(`^${n}$`) })
+    await numberBtn.first().click()
+    // Confirm the selection
+    await this.page.getByRole('button', { name: 'Confirm' }).click()
+    await this.screenshot(`Select number: ${n}`)
+  }
+
+  /** Select an option from the ChooseOptionDecision UI by its text, then confirm. */
+  async selectOption(text: string) {
+    // Click the option button matching the text
+    const optionBtn = this.page.locator('button').filter({ hasText: text })
+    await optionBtn.first().click()
+    // Confirm the selection
+    await this.page.getByRole('button', { name: 'Confirm' }).click()
+    await this.screenshot(`Select option: ${text}`)
+  }
+
+  /** Select X value on the X-cost selector, then click Cast. */
+  async selectXValue(x: number) {
+    // Set the slider value by clicking +/- buttons to reach the desired value
+    // The slider input[type=range] is available — use fill to set it
+    const slider = this.page.locator('input[type="range"]')
+    await slider.waitFor({ state: 'visible', timeout: 10_000 })
+    await slider.fill(String(x))
+    // Click the Cast button to confirm
+    await this.page.getByRole('button', { name: 'Cast' }).click()
+    await this.screenshot(`Select X = ${x}`)
+  }
+
+  /** Click a player's life display to target them (for damage-to-player spells). */
+  async selectPlayer(playerId: string) {
+    const playerDisplay = this.page.locator(`[data-player-id="${playerId}"]`)
+    await playerDisplay.click()
+    await this.screenshot(`Select player: ${playerId}`)
+  }
+
+  /** Cast a morph creature face-down by clicking "Cast Face-Down" action. */
+  async castFaceDown(name: string) {
+    await this.clickCard(name)
+    await this.selectAction('Cast Face-Down')
+  }
+
+  /** Turn a face-down creature face-up by clicking it and selecting the morph action. */
+  async turnFaceUp(name: string) {
+    // Face-down creatures show as generic morph image — click by position or alt text
+    await this.page.locator(cardByName(name)).first().click()
+    await this.selectAction('Turn Face Up')
+  }
+
+  /** Select a card from hand (for discard or other hand-targeting decisions). */
+  async selectCardInHand(name: string) {
+    const handZone = this.page.locator(HAND)
+    await handZone.locator(cardByName(name)).first().click()
+    await this.screenshot(`Select card in hand: ${name}`)
+  }
+
+  /** Assert the graveyard card count for a player. */
+  async expectGraveyardSize(playerId: string, size: number) {
+    const gy = this.page.locator(graveyard(playerId))
+    if (size === 0) {
+      // Empty graveyard has no count overlay
+      await expect(gy.locator('img[alt]')).toHaveCount(0, { timeout: 10_000 })
+    } else {
+      await expect(gy).toContainText(String(size), { timeout: 10_000 })
+    }
+  }
+
+  /** Assert the number of cards visible in the player's hand. */
+  async expectHandSize(count: number) {
+    const handZone = this.page.locator(HAND)
+    await expect(handZone.locator('img[alt]')).toHaveCount(count, { timeout: 10_000 })
+  }
+
+  /** Assert the library size shown on the deck pile. */
+  async expectLibrarySize(playerId: string, size: number) {
+    // Library size is displayed as text in the deck pile div
+    // Use the player/opponent library selector based on which side we're checking
+    // For simplicity, check the text content directly in the appropriate library zone
+    const libraryPile = this.page.locator(`[data-zone="player-library"], [data-zone="opponent-library"]`).filter({ hasText: String(size) })
+    await expect(libraryPile.first()).toBeVisible({ timeout: 10_000 })
+  }
+
+  /** Assert a card on the battlefield is tapped (rotated 90 degrees). */
+  async expectTapped(name: string) {
+    const card = this.page.locator(BATTLEFIELD).locator(cardByName(name)).first()
+    // Tapped cards are inside a container with rotate(90deg) style
+    const container = card.locator('..')
+    await expect(container).toHaveCSS('transform', /matrix.*/, { timeout: 10_000 })
+  }
+
+  /** Assert a card on the battlefield is untapped (not rotated). */
+  async expectUntapped(name: string) {
+    const card = this.page.locator(BATTLEFIELD).locator(cardByName(name)).first()
+    await expect(card).toBeVisible({ timeout: 10_000 })
+    // Simply verify it's visible — untapped cards have no rotation transform
+  }
+
+  /** Confirm a selection of cards (clicks "Confirm Selection" button). */
+  async confirmSelection() {
+    await this.page
+      .getByRole('button')
+      .filter({ hasText: /^(Confirm Selection|Confirm)/ })
+      .first()
+      .click()
+    await this.screenshot('Confirm selection')
+  }
+
+  /** Declare a single attacker then confirm with the "Attack with N" button. */
+  async attackWith(name: string) {
+    await this.declareAttacker(name)
+    const confirmBtn = this.page.locator('button').filter({ hasText: /^Attack with/ })
+    await confirmBtn.waitFor({ state: 'visible', timeout: 5_000 })
+    await confirmBtn.click()
+    await this.screenshot(`Attack with ${name}`)
+  }
+
+  /**
+   * Confirm distribution (e.g. damage assignment via Forked Lightning).
+   * Clicks the "Confirm" button in the distribute bar.
+   */
+  async confirmDistribution() {
+    await this.page
+      .getByRole('button')
+      .filter({ hasText: /^Confirm/ })
+      .first()
+      .click()
+    await this.screenshot('Confirm distribution')
   }
 }

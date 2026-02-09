@@ -31,3 +31,7 @@ export const BATTLEFIELD =
 /** Library pile */
 export const PLAYER_LIBRARY = '[data-zone="player-library"]'
 export const OPPONENT_LIBRARY = '[data-zone="opponent-library"]'
+
+/** Opponent's hand zone */
+export const OPPONENT_BATTLEFIELD = '[data-zone="opponent-battlefield"]'
+export const PLAYER_BATTLEFIELD = '[data-zone="player-battlefield"]'
