@@ -120,7 +120,8 @@ data class ActivateAbility(
     val abilityId: AbilityId,
     val targets: List<ChosenTarget> = emptyList(),
     val costPayment: AdditionalCostPayment? = null,
-    val manaColorChoice: Color? = null
+    val manaColorChoice: Color? = null,
+    val xValue: Int? = null
 ) : GameAction
 
 // =============================================================================

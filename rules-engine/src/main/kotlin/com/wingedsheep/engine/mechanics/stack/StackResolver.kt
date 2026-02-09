@@ -570,7 +570,8 @@ class StackResolver(
             controllerId = abilityComponent.controllerId,
             opponentId = state.getOpponent(abilityComponent.controllerId),
             targets = targetsComponent?.targets ?: emptyList(),
-            sacrificedPermanents = abilityComponent.sacrificedPermanents
+            sacrificedPermanents = abilityComponent.sacrificedPermanents,
+            xValue = abilityComponent.xValue
         )
 
         val effectResult = effectHandler.execute(state, abilityComponent.effect, context)

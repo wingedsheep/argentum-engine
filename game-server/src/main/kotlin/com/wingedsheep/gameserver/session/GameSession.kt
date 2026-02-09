@@ -1260,6 +1260,20 @@ class GameSession(
                     )
                 } else null
 
+                // Calculate X cost info for activated abilities with X in their mana cost
+                val abilityManaCost = when (ability.cost) {
+                    is AbilityCost.Mana -> (ability.cost as AbilityCost.Mana).cost
+                    is AbilityCost.Composite -> (ability.cost as AbilityCost.Composite).costs
+                        .filterIsInstance<AbilityCost.Mana>().firstOrNull()?.cost
+                    else -> null
+                }
+                val abilityHasXCost = abilityManaCost?.hasX == true
+                val abilityMaxAffordableX: Int? = if (abilityHasXCost && abilityManaCost != null) {
+                    val availableSources = manaSolver.getAvailableManaCount(state, playerId)
+                    val fixedCost = abilityManaCost.cmc  // X contributes 0 to CMC
+                    (availableSources - fixedCost).coerceAtLeast(0)
+                } else null
+
                 // Check for target requirements
                 val targetReq = ability.targetRequirement
                 if (targetReq != null) {
@@ -1273,7 +1287,9 @@ class GameSession(
                             actionType = "ActivateAbility",
                             description = ability.description,
                             action = ActivateAbility(playerId, entityId, ability.id, targets = listOf(autoSelectedTarget)),
-                            additionalCostInfo = costInfo
+                            additionalCostInfo = costInfo,
+                            hasXCost = abilityHasXCost,
+                            maxAffordableX = abilityMaxAffordableX
                         ))
                     } else {
                         result.add(LegalActionInfo(
@@ -1285,7 +1301,9 @@ class GameSession(
                             targetCount = targetReq.count,
                             minTargets = targetReq.effectiveMinCount,
                             targetDescription = targetReq.description,
-                            additionalCostInfo = costInfo
+                            additionalCostInfo = costInfo,
+                            hasXCost = abilityHasXCost,
+                            maxAffordableX = abilityMaxAffordableX
                         ))
                     }
                 } else {
@@ -1293,7 +1311,9 @@ class GameSession(
                         actionType = "ActivateAbility",
                         description = ability.description,
                         action = ActivateAbility(playerId, entityId, ability.id),
-                        additionalCostInfo = costInfo
+                        additionalCostInfo = costInfo,
+                        hasXCost = abilityHasXCost,
+                        maxAffordableX = abilityMaxAffordableX
                     ))
                 }
             }

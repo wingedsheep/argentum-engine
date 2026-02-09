@@ -195,6 +195,7 @@ object OnslaughtSet {
         ElvishWarrior,
         HeedlessOne,
         Hystrodon,
+        SilklashSpider,
         SpittingGourna,
         SymbioticBeast,
         TauntingElf,

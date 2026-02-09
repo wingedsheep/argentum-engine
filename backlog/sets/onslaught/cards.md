@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 192 / 335
+**Implemented:** 193 / 335
 
 ---
 
@@ -261,7 +261,7 @@
 - [x] Shock
 - [ ] Sigil of the New Dawn
 - [ ] Silent Specter
-- [ ] Silklash Spider
+- [x] Silklash Spider
 - [ ] Silvos, Rogue Elemental
 - [x] Skirk Commando
 - [ ] Skirk Fire Marshal

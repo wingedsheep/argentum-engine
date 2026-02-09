@@ -196,8 +196,9 @@ class ActivateAbilityHandler(
 
         // Auto-tap lands for mana costs before paying
         val manaCost = extractManaCost(ability.cost)
+        val xValue = action.xValue ?: 0
         if (manaCost != null) {
-            val autoTapResult = autoTapForManaCost(currentState, action.playerId, manaPool, manaCost, cardComponent.name)
+            val autoTapResult = autoTapForManaCost(currentState, action.playerId, manaPool, manaCost, cardComponent.name, xValue)
                 ?: return ExecutionResult.error(state, "Not enough mana to activate this ability")
             currentState = autoTapResult.newState
             manaPool = autoTapResult.newPool
@@ -334,7 +335,8 @@ class ActivateAbilityHandler(
             sourceName = cardComponent.name,
             controllerId = action.playerId,
             effect = finalEffect,
-            sacrificedPermanents = action.costPayment?.sacrificedPermanents ?: emptyList()
+            sacrificedPermanents = action.costPayment?.sacrificedPermanents ?: emptyList(),
+            xValue = action.xValue
         )
         val stackResult = stackResolver.putActivatedAbility(currentState, abilityOnStack, action.targets)
         val allEvents = events + stackResult.events
@@ -419,19 +421,20 @@ class ActivateAbilityHandler(
         playerId: com.wingedsheep.sdk.model.EntityId,
         pool: ManaPool,
         cost: ManaCost,
-        sourceName: String
+        sourceName: String,
+        xValue: Int = 0
     ): AutoTapResult? {
         // Determine what the floating pool can cover
         val partialResult = pool.payPartial(cost)
         val remainingCost = partialResult.remainingCost
 
-        // If floating pool covers everything, no tapping needed
-        if (remainingCost.isEmpty()) {
+        // If floating pool covers everything (and no X to pay), no tapping needed
+        if (remainingCost.isEmpty() && xValue == 0) {
             return AutoTapResult(state, pool, emptyList())
         }
 
-        // Tap sources for the remaining cost
-        val solution = manaSolver.solve(state, playerId, remainingCost)
+        // Tap sources for the remaining cost (xValue is treated as additional generic mana)
+        val solution = manaSolver.solve(state, playerId, remainingCost, xValue)
             ?: return null
 
         var currentState = state
