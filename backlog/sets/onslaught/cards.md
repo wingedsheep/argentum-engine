@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 194 / 335
+**Implemented:** 195 / 335
 
 ---
 
@@ -85,7 +85,7 @@
 - [x] Daru Healer
 - [x] Daru Lancer
 - [x] Daunting Defender
-- [ ] Dawning Purist
+- [x] Dawning Purist
 - [ ] Death Match
 - [x] Death Pulse
 - [ ] Defensive Maneuvers

@@ -47,6 +47,7 @@ object OnslaughtSet {
         PietyCharm,
         RenewedFaith,
         RighteousCause,
+        DawningPurist,
         DauntingDefender,
         DaruCavalier,
         DaruHealer,
