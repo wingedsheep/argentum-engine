@@ -133,11 +133,23 @@ Add the card to the `allCards` list (alphabetically or by collector number).
 
 ## Phase 7: Create Scenario Test (Required for New Effects/Keywords)
 
-If this card uses a NEW effect, keyword, trigger, condition, or static ability, create a scenario test.
+If this card uses a NEW effect, keyword, trigger, condition, or static ability, create a scenario test in `game-server`.
 
 **File**: `game-server/src/test/kotlin/com/wingedsheep/gameserver/scenarios/{CardName}ScenarioTest.kt`
 
 For test template and available helper methods, see [examples.md](examples.md) and [reference.md](reference.md).
+
+## Phase 7b: Create E2E Test (Required for New Frontend/UI Mechanics)
+
+If the card introduces a new **frontend or UI mechanic** (e.g., a new decision type, overlay, targeting flow, zone interaction, or player prompt that didn't exist before), create an E2E browser test.
+
+**File**: `e2e-scenarios/tests/{set}/{card-name}.spec.ts`
+
+- Mirror the scenario test from Phase 7 but run against the full stack (server + client)
+- Use the `createGame` fixture to set up the board state
+- Use `GamePage` helpers (`clickCard`, `selectAction`, `answerYes`, `resolveStack`, `expectOnBattlefield`, etc.)
+- See existing tests in `e2e-scenarios/tests/` for patterns
+- **Tip**: Give both players at least one card in their library to prevent draw-from-empty-library losses when the game auto-advances turns
 
 ## Phase 8: Run Tests and Verify
 
@@ -169,6 +181,7 @@ just build
 - [ ] Create executor in `rules-engine/.../handlers/effects/{category}/`
 - [ ] Register in appropriate `{Category}Executors.kt`
 - [ ] Write scenario test
+- [ ] Write E2E test if a new frontend/UI mechanic was introduced
 - [ ] Run tests
 
 **Card with New Keyword**:
@@ -185,6 +198,7 @@ just build
 - [ ] Add DSL facade entry if applicable
 - [ ] Implement handler/executor if needed
 - [ ] Write scenario test
+- [ ] Write E2E test if a new frontend/UI mechanic was introduced
 - [ ] Run tests
 
 ## Important Rules

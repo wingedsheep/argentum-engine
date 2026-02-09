@@ -22,6 +22,7 @@ test.describe('Astral Slide', () => {
       },
       player2: {
         battlefield: [{ name: 'Glory Seeker' }],
+        library: ['Mountain'], // prevent draw-from-empty-library loss on P2's turn
       },
       phase: 'PRECOMBAT_MAIN',
       activePlayer: 1,
@@ -46,7 +47,20 @@ test.describe('Astral Slide', () => {
     // Verify: Glory Seeker is no longer on the battlefield (exiled)
     await p1.expectNotOnBattlefield('Glory Seeker')
 
-    await p1.screenshot('End state')
+    await p1.screenshot('Glory Seeker exiled')
+
+    // Pass through remaining phases to reach end step
+    await p1.pass()
+    await p1.pass()
+
+    // At the beginning of the end step, the delayed trigger fires
+    // — opponent resolves the delayed return trigger
+    await p2.resolveStack('Astral Slide trigger')
+
+    // Glory Seeker returns to the battlefield under its owner's control
+    await p2.expectOnBattlefield('Glory Seeker')
+
+    await p1.screenshot('Glory Seeker returned from exile')
   })
 
   test('may decline exile - creature stays on battlefield', async ({ createGame }) => {
