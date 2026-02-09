@@ -415,6 +415,11 @@ class StateProjector(
                     ?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
                 if (attachedTo != null) setOf(attachedTo.targetId) else emptySet()
             }
+            is AffectsFilter.FaceDownCreatures -> {
+                state.getBattlefield().filter { entityId ->
+                    state.getEntity(entityId)?.has<FaceDownComponent>() == true
+                }.toSet()
+            }
             is AffectsFilter.CreaturesWithCounter -> {
                 val counterType = try {
                     CounterType.valueOf(
@@ -727,6 +732,13 @@ sealed interface AffectsFilter {
      */
     @Serializable
     data class CreaturesWithCounter(val counterType: String) : AffectsFilter
+
+    /**
+     * All face-down creatures.
+     * Used for Ixidor, Reality Sculptor: "Face-down creatures get +1/+1."
+     */
+    @Serializable
+    data object FaceDownCreatures : AffectsFilter
 }
 
 /**

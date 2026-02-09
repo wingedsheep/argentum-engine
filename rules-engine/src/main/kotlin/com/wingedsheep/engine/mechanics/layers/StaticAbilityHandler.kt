@@ -263,7 +263,13 @@ class StaticAbilityHandler(
         val controllerPredicate = baseFilter.controllerPredicate
         val hasExcludeSelf = filter.excludeSelf
         val hasTappedPredicate = baseFilter.statePredicates.any { it == StatePredicate.IsTapped }
+        val hasFaceDownPredicate = baseFilter.statePredicates.any { it == StatePredicate.IsFaceDown }
         val subtypePredicate = baseFilter.cardPredicates.filterIsInstance<CardPredicate.HasSubtype>().firstOrNull()
+
+        // Handle "face-down creatures" pattern (e.g., "Face-down creatures get +1/+1")
+        if (hasFaceDownPredicate) {
+            return AffectsFilter.FaceDownCreatures
+        }
 
         // Handle "other [subtype] creatures" pattern (e.g., "Other Bird creatures get +1/+1")
         if (hasExcludeSelf && subtypePredicate != null) {
