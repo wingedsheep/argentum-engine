@@ -1,0 +1,17 @@
+{
+  "name": "e2e-scenarios",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "test:portal": "playwright test tests/portal/",
+    "test:onslaught": "playwright test tests/onslaught/",
+    "test:general": "playwright test tests/general/",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "typescript": "~5.6.0"
+  }
+}

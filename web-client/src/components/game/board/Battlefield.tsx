@@ -199,6 +199,7 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
 
   return (
     <div
+      data-zone={isOpponent ? 'opponent-battlefield' : 'player-battlefield'}
       style={{
         ...styles.battlefieldArea,
         justifyContent: isOpponent ? 'flex-start' : 'flex-end',

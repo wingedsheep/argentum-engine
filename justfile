@@ -109,3 +109,33 @@ test-e2e-ui:
 [group: 'test']
 test-e2e-headed:
     cd web-client && npm run test:e2e:headed
+
+# Run E2E scenario browser tests
+[group: 'test']
+test-e2e-scenarios:
+    cd e2e-scenarios && npm run test
+
+# Run E2E scenario tests with Playwright UI
+[group: 'test']
+test-e2e-scenarios-ui:
+    cd e2e-scenarios && npm run test:ui
+
+# Run E2E scenario tests with visible browser
+[group: 'test']
+test-e2e-scenarios-headed:
+    cd e2e-scenarios && npm run test:headed
+
+# Run only portal E2E scenarios
+[group: 'test']
+test-e2e-portal:
+    cd e2e-scenarios && npm run test:portal
+
+# Run only onslaught E2E scenarios
+[group: 'test']
+test-e2e-onslaught:
+    cd e2e-scenarios && npm run test:onslaught
+
+# Install E2E scenario test dependencies
+[group: 'test']
+e2e-scenarios-install:
+    cd e2e-scenarios && npm install
