@@ -210,9 +210,10 @@ export class GamePage {
     await this.screenshot('Skip attacking')
   }
 
-  /** Declare a creature as attacker by clicking it. */
+  /** Declare a creature as attacker by clicking it (force-clicks through combat overlay). */
   async declareAttacker(name: string) {
-    await this.clickCard(name)
+    await this.page.locator(cardByName(name)).first().click({ force: true })
+    await this.screenshot(`Declare attacker: ${name}`)
   }
 
   /** Confirm attackers / move to next combat step by passing. */
@@ -231,16 +232,19 @@ export class GamePage {
     await this.screenshot('No blocks')
   }
 
-  /** Assign a blocker to an attacker: click the blocker card then click the attacker card. */
+  /** Assign a blocker to an attacker via drag-and-drop (blocker → attacker). */
   async declareBlocker(blockerName: string, attackerName: string) {
-    await this.page.locator(cardByName(blockerName)).first().click()
-    await this.page.locator(cardByName(attackerName)).first().click()
+    const blocker = this.page.locator(cardByName(blockerName)).first()
+    const attacker = this.page.locator(cardByName(attackerName)).first()
+    await blocker.dragTo(attacker, { force: true })
     await this.screenshot(`Block ${attackerName} with ${blockerName}`)
   }
 
   /** Confirm blocker assignments by clicking "Confirm Blocks". */
   async confirmBlockers() {
-    await this.page.getByRole('button', { name: 'Confirm Blocks' }).click()
+    const btn = this.page.getByRole('button', { name: 'Confirm Blocks' })
+    await btn.waitFor({ state: 'visible', timeout: 10_000 })
+    await btn.click()
     await this.screenshot('Confirm blocks')
   }
 
@@ -382,5 +386,68 @@ export class GamePage {
       .first()
       .click()
     await this.screenshot('Confirm distribution')
+  }
+
+  /**
+   * Click a card N times to allocate damage in distribute mode (e.g. Butcher Orgg combat).
+   * Each click increments the damage allocation by 1.
+   */
+  async allocateDamage(name: string, amount: number) {
+    for (let i = 0; i < amount; i++) {
+      await this.page.locator(cardByName(name)).first().click({ force: true })
+    }
+    await this.screenshot(`Allocate ${amount} damage to ${name}`)
+  }
+
+  /**
+   * Click a player's life display N times to allocate damage in distribute mode.
+   * Each click increments the damage allocation by 1.
+   */
+  async allocateDamageToPlayer(playerId: string, amount: number) {
+    const display = this.page.locator(`[data-player-id="${playerId}"]`)
+    for (let i = 0; i < amount; i++) {
+      await display.click({ force: true })
+    }
+    await this.screenshot(`Allocate ${amount} damage to player`)
+  }
+
+  /** Confirm damage distribution by clicking "Confirm Damage" (Butcher Orgg etc.). */
+  async confirmDamage() {
+    const btn = this.page.getByRole('button', { name: 'Confirm Damage' })
+    await btn.waitFor({ state: 'visible', timeout: 10_000 })
+    await btn.click()
+    await this.screenshot('Confirm damage')
+  }
+
+  /**
+   * Select a card inside a full-screen decision overlay (discard, sacrifice, etc.).
+   * Scopes the click to the overlay to avoid hitting same-named cards on the board.
+   */
+  async selectCardInDecision(name: string) {
+    // Wait for the decision overlay heading to appear
+    await this.page
+      .getByRole('heading', { level: 2 })
+      .first()
+      .waitFor({ state: 'visible', timeout: 15_000 })
+
+    // Scope to the overlay: div containing both a heading and confirm/select buttons
+    const overlay = this.page
+      .locator('div')
+      .filter({ has: this.page.getByRole('heading', { level: 2 }) })
+      .filter({
+        has: this.page.getByRole('button', { name: /Confirm Selection|Select None/ }),
+      })
+      .last()
+
+    await overlay.locator(cardByName(name)).click()
+    await this.screenshot(`Select in decision: ${name}`)
+  }
+
+  /** Dismiss a revealed cards overlay by clicking the "OK" button. */
+  async dismissRevealedCards() {
+    const btn = this.page.getByRole('button', { name: 'OK' })
+    await btn.waitFor({ state: 'visible', timeout: 10_000 })
+    await btn.click()
+    await this.screenshot('Dismiss revealed cards')
   }
 }
