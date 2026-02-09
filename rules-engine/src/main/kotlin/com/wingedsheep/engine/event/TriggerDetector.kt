@@ -276,6 +276,9 @@ class TriggerDetector(
         val container = state.getEntity(entityId) ?: return
         val cardComponent = container.get<CardComponent>() ?: return
 
+        // Face-down creatures have no abilities (Rule 707.2)
+        if (container.has<FaceDownComponent>()) return
+
         // For "When this creature dies" - the creature might be in graveyard now
         // Look up abilities by card definition
         val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
@@ -309,6 +312,9 @@ class TriggerDetector(
         val entityId = event.entityId
         val container = state.getEntity(entityId) ?: return
         val cardComponent = container.get<CardComponent>() ?: return
+
+        // Face-down creatures have no abilities (Rule 707.2)
+        if (container.has<FaceDownComponent>()) return
 
         val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
         val controllerId = event.ownerId
@@ -428,6 +434,9 @@ class TriggerDetector(
         val container = state.getEntity(sourceId) ?: return
         val cardComponent = container.get<CardComponent>() ?: return
         val controllerId = container.get<ControllerComponent>()?.playerId ?: return
+
+        // Face-down creatures have no abilities (Rule 707.2)
+        if (container.has<FaceDownComponent>()) return
 
         val abilities = getTriggeredAbilities(sourceId, cardComponent.cardDefinitionId, state)
 

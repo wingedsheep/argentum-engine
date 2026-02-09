@@ -1,6 +1,7 @@
 package com.wingedsheep.gameserver.scenarios
 
 import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.core.DeclareAttackers
 import com.wingedsheep.engine.core.PassPriority
 import com.wingedsheep.engine.core.TurnFaceUp
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -185,6 +186,40 @@ class HystrodonScenarioTest : ScenarioTestBase() {
         }
 
         context("Hystrodon morph") {
+
+            test("face-down Hystrodon does not trigger draw on combat damage (Rule 707.2)") {
+                val game = scenario()
+                    .withPlayers("Attacker", "Defender")
+                    .withCardOnBattlefield(1, "Hystrodon")
+                    .withCardInLibrary(1, "Forest")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                // Manually make Hystrodon face-down (simulates morph from a prior turn)
+                val hystrodonId = game.findPermanent("Hystrodon")!!
+                val container = game.state.getEntity(hystrodonId)!!.with(FaceDownComponent)
+                game.state = game.state.withEntity(hystrodonId, container)
+
+                val initialHandSize = game.handSize(1)
+
+                // Attack with the face-down creature
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                game.execute(DeclareAttackers(game.player1Id, mapOf(hystrodonId to game.player2Id)))
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+                game.declareNoBlockers()
+
+                // Pass through combat damage — should NOT get a may decision
+                game.passUntilPhase(Phase.POSTCOMBAT_MAIN, Step.POSTCOMBAT_MAIN)
+
+                withClue("Should not have drawn (face-down creature has no abilities)") {
+                    game.handSize(1) shouldBe initialHandSize
+                }
+
+                withClue("Opponent should have taken 2 combat damage (face-down is 2/2)") {
+                    game.getLifeTotal(2) shouldBe 18
+                }
+            }
 
             test("can be cast face-down and turned face-up") {
                 val game = scenario()
