@@ -18,6 +18,7 @@ import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.actions.ActionContext
 import com.wingedsheep.engine.handlers.actions.ActionHandler
+import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.mechanics.mana.AlternativePaymentHandler
 import com.wingedsheep.engine.mechanics.mana.CostCalculator
 import com.wingedsheep.engine.mechanics.mana.ManaPool
@@ -66,7 +67,8 @@ class CastSpellHandler(
     private val targetValidator: TargetValidator,
     private val conditionEvaluator: ConditionEvaluator,
     private val triggerDetector: TriggerDetector,
-    private val triggerProcessor: TriggerProcessor
+    private val triggerProcessor: TriggerProcessor,
+    private val stateProjector: StateProjector = StateProjector()
 ) : ActionHandler<CastSpell> {
     override val actionType: KClass<CastSpell> = CastSpell::class
 
@@ -295,6 +297,7 @@ class CastSpellHandler(
         additionalCosts: List<AdditionalCost>,
         action: CastSpell
     ): String? {
+        val projected = stateProjector.project(state)
         for (additionalCost in additionalCosts) {
             when (additionalCost) {
                 is AdditionalCost.SacrificePermanent -> {
@@ -308,8 +311,8 @@ class CastSpellHandler(
                             ?: return "Sacrificed permanent not found: $permId"
                         val permCard = permContainer.get<CardComponent>()
                             ?: return "Sacrificed entity is not a card: $permId"
-                        val permController = permContainer.get<ControllerComponent>()
-                        if (permController?.playerId != action.playerId) {
+                        val permController = projected.getController(permId)
+                        if (permController != action.playerId) {
                             return "You can only sacrifice permanents you control"
                         }
                         if (permId !in state.getBattlefield()) {
@@ -701,7 +704,8 @@ class CastSpellHandler(
                 context.targetValidator,
                 context.conditionEvaluator,
                 context.triggerDetector,
-                context.triggerProcessor
+                context.triggerProcessor,
+                context.stateProjector
             )
         }
     }

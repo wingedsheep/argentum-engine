@@ -213,7 +213,7 @@ class CombatManager(
         return battlefield.filter { entityId ->
             val container = state.getEntity(entityId) ?: return@filter false
             val cardComponent = container.get<CardComponent>() ?: return@filter false
-            val controller = container.get<ControllerComponent>()?.playerId
+            val controller = projected.getController(entityId)
 
             // Must be a creature controlled by the player
             if (!cardComponent.typeLine.isCreature || controller != playerId) {
@@ -635,10 +635,11 @@ class CombatManager(
         playerId: EntityId,
         landSubtype: com.wingedsheep.sdk.core.Subtype
     ): Boolean {
+        val projected = stateProjector.project(state)
         return state.getBattlefield().any { entityId ->
             val container = state.getEntity(entityId) ?: return@any false
             val cardComponent = container.get<CardComponent>() ?: return@any false
-            val controller = container.get<ControllerComponent>()?.playerId
+            val controller = projected.getController(entityId)
 
             controller == playerId &&
                 cardComponent.typeLine.isLand &&
@@ -1115,7 +1116,7 @@ class CombatManager(
                 // Unblocked: can assign to any creature the defending player controls
                 val defendingCreatures = state.getBattlefield().filter { entityId ->
                     val container = state.getEntity(entityId) ?: return@filter false
-                    container.get<ControllerComponent>()?.playerId == defenderId &&
+                    projected.getController(entityId) == defenderId &&
                         container.get<CardComponent>()?.typeLine?.isCreature == true
                 }
                 targets.addAll(defendingCreatures)
@@ -1127,7 +1128,7 @@ class CombatManager(
 
             // Create distribution decision
             val decisionId = UUID.randomUUID().toString()
-            val attackingPlayer = attackerContainer.get<ControllerComponent>()?.playerId ?: continue
+            val attackingPlayer = projected.getController(attackerId) ?: continue
 
             val decision = DistributeDecision(
                 id = decisionId,
@@ -1259,8 +1260,9 @@ class CombatManager(
         // Check for damage reflection (Harsh Justice)
         val hasReflection = hasReflectCombatDamage(state, playerId)
         if (hasReflection) {
-            // Get the attacker's controller
-            val attackerController = state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
+            // Get the attacker's controller (use projected state for control-changing effects)
+            val projected = stateProjector.project(state)
+            val attackerController = projected.getController(sourceId)
 
             // Only reflect if attacker is controlled by a different player
             if (attackerController != null && attackerController != playerId) {
@@ -1856,11 +1858,12 @@ class CombatManager(
      * Find all potential blockers (untapped creatures controlled by the blocking player).
      */
     private fun findPotentialBlockers(state: GameState, blockingPlayer: EntityId): List<EntityId> {
+        val projected = stateProjector.project(state)
         return state.getBattlefield()
             .filter { entityId ->
                 val container = state.getEntity(entityId) ?: return@filter false
                 val cardComponent = container.get<CardComponent>() ?: return@filter false
-                val controller = container.get<ControllerComponent>()?.playerId
+                val controller = projected.getController(entityId)
 
                 // Must be a creature controlled by blocking player and untapped
                 cardComponent.typeLine.isCreature &&

@@ -160,6 +160,55 @@ class ThreatenScenarioTest : ScenarioTestBase() {
             }
         }
 
+        context("Threaten interacts with triggered abilities") {
+            test("stolen Exalted Angel's damage trigger gives life to current controller, not owner") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardInHand(1, "Threaten")
+                    .withLandsOnBattlefield(1, "Mountain", 3)
+                    .withCardOnBattlefield(2, "Exalted Angel")
+                    .withActivePlayer(1)
+                    .withLifeTotal(1, 15)
+                    .withLifeTotal(2, 20)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val angel = game.findPermanent("Exalted Angel")!!
+
+                // Steal Exalted Angel with Threaten
+                game.castSpell(1, "Threaten", angel)
+                game.resolveStack()
+
+                // Verify Player 1 now controls the Angel
+                val projected = stateProjector.project(game.state)
+                withClue("Player 1 should control the stolen Exalted Angel") {
+                    projected.getController(angel) shouldBe game.player1Id
+                }
+
+                // Move to combat and attack with the stolen Angel
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                game.declareAttackers(mapOf("Exalted Angel" to 2))
+
+                // Opponent declares no blockers
+                game.passPriority()
+                game.declareNoBlockers()
+
+                // Pass through to combat damage
+                game.passUntilPhase(Phase.COMBAT, Step.COMBAT_DAMAGE)
+
+                // Exalted Angel's trigger should fire - resolve it
+                game.resolveStack()
+
+                // Player 1 (controller) should gain 4 life, NOT Player 2 (owner)
+                withClue("Player 1 (controller) should gain 4 life from Exalted Angel's trigger") {
+                    game.getLifeTotal(1) shouldBe 19 // 15 + 4
+                }
+                withClue("Player 2 (owner) should NOT gain life - only lose 4 from damage") {
+                    game.getLifeTotal(2) shouldBe 16 // 20 - 4
+                }
+            }
+        }
+
         context("Threaten interacts with sacrifice effects") {
             test("can sacrifice a stolen creature via Accursed Centaur ETB") {
                 val game = scenario()

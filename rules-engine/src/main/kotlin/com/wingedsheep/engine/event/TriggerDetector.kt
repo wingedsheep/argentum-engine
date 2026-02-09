@@ -12,6 +12,7 @@ import com.wingedsheep.engine.core.TurnFaceUpEvent
 import com.wingedsheep.engine.core.UntappedEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
+import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.mechanics.text.SubtypeReplacer
 import com.wingedsheep.engine.registry.CardRegistry
@@ -122,12 +123,13 @@ class TriggerDetector(
         activePlayerId: EntityId
     ): List<PendingTrigger> {
         val triggers = mutableListOf<PendingTrigger>()
+        val projected = stateProjector.project(state)
 
         // Check all permanents on the battlefield for step-based triggers
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue
-            val controllerId = container.get<ControllerComponent>()?.playerId ?: continue
+            val controllerId = projected.getController(entityId) ?: continue
 
             // Face-down creatures have no abilities (Rule 707.2)
             if (container.has<FaceDownComponent>()) continue
@@ -157,12 +159,13 @@ class TriggerDetector(
         event: EngineGameEvent
     ): List<PendingTrigger> {
         val triggers = mutableListOf<PendingTrigger>()
+        val projected = stateProjector.project(state)
 
         // Check all permanents on the battlefield
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue
-            val controllerId = container.get<ControllerComponent>()?.playerId ?: continue
+            val controllerId = projected.getController(entityId) ?: continue
 
             // Face-down creatures have no abilities (Rule 707.2)
             if (container.has<FaceDownComponent>()) continue
@@ -225,12 +228,12 @@ class TriggerDetector(
 
         // Handle damage-source triggers
         if (event is DamageDealtEvent && event.sourceId != null) {
-            detectDamageSourceTriggers(state, event, triggers)
+            detectDamageSourceTriggers(state, event, triggers, projected)
         }
 
         // Handle "whenever a creature deals damage to you" triggers (e.g., Aurification)
         if (event is DamageDealtEvent && event.sourceId != null && event.targetId in state.turnOrder) {
-            detectDamageToControllerTriggers(state, event, triggers)
+            detectDamageToControllerTriggers(state, event, triggers, projected)
         }
 
         return triggers
@@ -382,7 +385,8 @@ class TriggerDetector(
     private fun detectDamageToControllerTriggers(
         state: GameState,
         event: DamageDealtEvent,
-        triggers: MutableList<PendingTrigger>
+        triggers: MutableList<PendingTrigger>,
+        projected: ProjectedState
     ) {
         val damageSourceId = event.sourceId ?: return
         val damagedPlayerId = event.targetId
@@ -396,7 +400,7 @@ class TriggerDetector(
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue
-            val controllerId = container.get<ControllerComponent>()?.playerId ?: continue
+            val controllerId = projected.getController(entityId) ?: continue
 
             // Only triggers on permanents controlled by the damaged player
             if (controllerId != damagedPlayerId) continue
@@ -428,12 +432,14 @@ class TriggerDetector(
     private fun detectDamageSourceTriggers(
         state: GameState,
         event: DamageDealtEvent,
-        triggers: MutableList<PendingTrigger>
+        triggers: MutableList<PendingTrigger>,
+        projected: ProjectedState
     ) {
         val sourceId = event.sourceId ?: return
         val container = state.getEntity(sourceId) ?: return
         val cardComponent = container.get<CardComponent>() ?: return
-        val controllerId = container.get<ControllerComponent>()?.playerId ?: return
+        val controllerId = projected.getController(sourceId)
+            ?: container.get<ControllerComponent>()?.playerId ?: return
 
         // Face-down creatures have no abilities (Rule 707.2)
         if (container.has<FaceDownComponent>()) return
