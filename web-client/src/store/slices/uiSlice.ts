@@ -375,6 +375,10 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
   // Combat actions
   startCombat: (combatState) => {
     set({ combatState })
+    // Sync pre-populated blocker assignments with opponent
+    if (combatState.mode === 'declareBlockers' && Object.keys(combatState.blockerAssignments).length > 0) {
+      getWebSocket()?.send(createUpdateBlockerAssignmentsMessage(combatState.blockerAssignments))
+    }
   },
 
   toggleAttacker: (creatureId) => {

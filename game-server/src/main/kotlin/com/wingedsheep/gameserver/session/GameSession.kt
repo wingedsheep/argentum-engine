@@ -43,6 +43,7 @@ import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.mechanics.combat.CombatManager
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.mechanics.text.SubtypeReplacer
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
@@ -92,7 +93,7 @@ class GameSession(
     private val conditionEvaluator = ConditionEvaluator()
     private val predicateEvaluator = PredicateEvaluator()
     private val stateProjector = StateProjector()
-    private val turnManager = TurnManager()
+    private val turnManager = TurnManager(combatManager = CombatManager(cardRegistry))
     private val autoPassManager = AutoPassManager()
 
     /** Tracks the last processed messageId per player for idempotency */
