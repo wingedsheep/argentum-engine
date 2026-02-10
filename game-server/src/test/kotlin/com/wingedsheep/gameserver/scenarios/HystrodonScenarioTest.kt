@@ -1,9 +1,6 @@
 package com.wingedsheep.gameserver.scenarios
 
-import com.wingedsheep.engine.core.CastSpell
-import com.wingedsheep.engine.core.DeclareAttackers
-import com.wingedsheep.engine.core.PassPriority
-import com.wingedsheep.engine.core.TurnFaceUp
+import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.gameserver.ScenarioTestBase
@@ -160,10 +157,19 @@ class HystrodonScenarioTest : ScenarioTestBase() {
                 game.declareBlockers(mapOf("Elvish Pioneer" to listOf("Hystrodon")))
 
                 // Hystrodon (3/4 trample) blocked by Elvish Pioneer (1/1)
-                // 1 damage assigned to blocker, 2 tramples through to player
-                // Trigger should fire since combat damage reached the player
+                // Trample requires damage assignment: 1 to blocker, 2 to player
+                // After damage is dealt, trigger should fire since combat damage reached the player
                 var iterations = 0
-                while (!game.hasPendingDecision() && iterations < 50) {
+                while (iterations < 50) {
+                    if (game.hasPendingDecision()) {
+                        val decision = game.getPendingDecision()
+                        if (decision is AssignDamageDecision) {
+                            // Accept the default trample damage assignment
+                            game.submitDefaultDamageAssignment()
+                            continue
+                        }
+                        break  // Found a non-damage-assignment decision (the may trigger)
+                    }
                     val p = game.state.priorityPlayerId ?: break
                     game.execute(PassPriority(p))
                     iterations++

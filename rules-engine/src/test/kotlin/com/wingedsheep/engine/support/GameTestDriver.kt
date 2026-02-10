@@ -1033,6 +1033,13 @@ class GameTestDriver {
                     DistributionResponse(decision.id, distribution)
                 )
             }
+            is AssignDamageDecision -> {
+                // Auto-resolve: use the pre-computed default assignments
+                submitDecision(
+                    decision.playerId,
+                    DamageAssignmentResponse(decision.id, decision.defaultAssignments)
+                )
+            }
             else -> throw IllegalStateException(
                 "Cannot auto-resolve decision of type ${decision::class.simpleName}"
             )

@@ -182,6 +182,7 @@ export type {
   ChooseNumberDecision,
   ChooseOptionDecision,
   DistributeDecision,
+  AssignDamageDecision,
   ChooseColorDecision,
   ManaSourceOption,
   SelectManaSourcesDecision,

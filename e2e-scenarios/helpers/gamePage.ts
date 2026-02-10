@@ -491,6 +491,42 @@ export class GamePage {
     await this.screenshot(`Increase damage to ${name} by ${times}`)
   }
 
+  /**
+   * Decrease damage allocation for a target in the CombatDamageAssignmentModal.
+   * Finds the section containing the target name text and clicks the "-" button.
+   * Works for both creature cards (by card name) and player targets (by player name).
+   */
+  async decreaseCombatDamage(name: string, times: number = 1) {
+    const section = this.page
+      .locator('div')
+      .filter({ hasText: name })
+      .filter({ has: this.page.locator('button', { hasText: '+' }) })
+      .last()
+    const minusBtn = section.locator('button').filter({ hasText: '-' })
+    for (let i = 0; i < times; i++) {
+      await minusBtn.click()
+    }
+    await this.screenshot(`Decrease damage to ${name} by ${times}`)
+  }
+
+  /**
+   * Increase damage allocation for a target in the CombatDamageAssignmentModal.
+   * Finds the section containing the target name text and clicks the "+" button.
+   * Works for both creature cards (by card name) and player targets (by player name).
+   */
+  async increaseCombatDamage(name: string, times: number = 1) {
+    const section = this.page
+      .locator('div')
+      .filter({ hasText: name })
+      .filter({ has: this.page.locator('button', { hasText: '+' }) })
+      .last()
+    const plusBtn = section.locator('button').filter({ hasText: '+' })
+    for (let i = 0; i < times; i++) {
+      await plusBtn.click()
+    }
+    await this.screenshot(`Increase damage to ${name} by ${times}`)
+  }
+
   /** Confirm spell cast from the DamageDistributionModal by clicking "Cast Spell". */
   async castSpellFromDistribution() {
     const btn = this.page.getByRole('button', { name: 'Cast Spell' })

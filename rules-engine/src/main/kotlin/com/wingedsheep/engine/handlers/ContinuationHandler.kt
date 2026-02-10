@@ -418,7 +418,10 @@ class ContinuationHandler(
     }
 
     /**
-     * Resume combat damage assignment for DivideCombatDamageFreely.
+     * Resume combat damage assignment.
+     *
+     * Accepts both DistributionResponse (from DivideCombatDamageFreely / Butcher Orgg)
+     * and DamageAssignmentResponse (from regular blocked attacker damage assignment).
      *
      * Stores the player's chosen distribution on the attacker entity and
      * re-runs applyCombatDamage. If another attacker also needs a decision,
@@ -429,15 +432,17 @@ class ContinuationHandler(
         continuation: DamageAssignmentContinuation,
         response: DecisionResponse
     ): ExecutionResult {
-        if (response !is DistributionResponse) {
-            return ExecutionResult.error(state, "Expected distribution response")
+        val assignments = when (response) {
+            is DistributionResponse -> response.distribution
+            is DamageAssignmentResponse -> response.assignments
+            else -> return ExecutionResult.error(state, "Expected distribution or damage assignment response")
         }
 
         // Store the distribution as DamageAssignmentComponent on the attacker
         val newState = state.updateEntity(continuation.attackerId) { container ->
             container.with(
                 com.wingedsheep.engine.state.components.combat.DamageAssignmentComponent(
-                    response.distribution
+                    assignments
                 )
             )
         }

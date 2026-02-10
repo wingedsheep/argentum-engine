@@ -332,6 +332,22 @@ export interface SelectManaSourcesDecision extends PendingDecisionBase {
 }
 
 /**
+ * Player must assign combat damage from an attacker to blockers (and defending player for trample).
+ * Used when a creature with trample or multiple blockers needs manual damage assignment.
+ */
+export interface AssignDamageDecision extends PendingDecisionBase {
+  readonly type: 'AssignDamageDecision'
+  readonly attackerId: EntityId
+  readonly availablePower: number
+  readonly orderedTargets: readonly EntityId[]
+  readonly defenderId: EntityId | null
+  readonly minimumAssignments: Record<EntityId, number>
+  readonly defaultAssignments: Record<EntityId, number>
+  readonly hasTrample: boolean
+  readonly hasDeathtouch: boolean
+}
+
+/**
  * Union of all pending decision types.
  */
 export type PendingDecision =
@@ -346,6 +362,7 @@ export type PendingDecision =
   | DistributeDecision
   | ChooseColorDecision
   | SelectManaSourcesDecision
+  | AssignDamageDecision
 
 /**
  * Information about a single target requirement for legal actions.

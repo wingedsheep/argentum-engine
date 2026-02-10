@@ -276,6 +276,7 @@ data class ChooseOptionDecision(
  * @property orderedTargets Blockers in damage assignment order (first = first to receive damage)
  * @property defenderId The defending player (only receives damage if attacker has trample)
  * @property minimumAssignments Minimum damage each blocker must receive (lethal damage)
+ * @property defaultAssignments Pre-computed optimal damage distribution (lethal to each blocker in order, remainder to last/player)
  * @property hasTrample Whether excess damage can go to defending player
  * @property hasDeathtouch If true, 1 damage is lethal to any creature
  */
@@ -291,6 +292,7 @@ data class AssignDamageDecision(
     val orderedTargets: List<EntityId>,
     val defenderId: EntityId?,
     val minimumAssignments: Map<EntityId, Int>,
+    val defaultAssignments: Map<EntityId, Int>,
     val hasTrample: Boolean,
     val hasDeathtouch: Boolean
 ) : PendingDecision
