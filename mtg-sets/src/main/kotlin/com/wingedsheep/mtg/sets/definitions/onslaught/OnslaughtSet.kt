@@ -156,6 +156,7 @@ object OnslaughtSet {
         BatteringCraghorn,
         ChargingSlateback,
         DragonRoost,
+        DwarvenBlastminer,
         EmbermageGoblin,
         ErraticExplosion,
         FeverCharm,

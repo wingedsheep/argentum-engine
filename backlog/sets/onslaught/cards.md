@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 209 / 335
+**Implemented:** 210 / 335
 
 ---
 
@@ -102,7 +102,7 @@
 - [x] Doubtless One
 - [x] Dragon Roost
 - [ ] Dream Chisel
-- [ ] Dwarven Blastminer
+- [x] Dwarven Blastminer
 - [ ] Ebonblade Reaper
 - [x] Elven Riders
 - [ ] Elvish Guidance
