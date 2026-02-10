@@ -13,6 +13,7 @@ import { DeckBuilderOverlay } from './components/sealed/DeckBuilderOverlay'
 import { DraftPickOverlay } from './components/draft/DraftPickOverlay'
 import { SpectatorGameBoard } from './components/spectating/SpectatorGameBoard'
 import { trackPageView } from './utils/analytics'
+import { randomBackground } from './utils/background'
 import { useGameStore } from './store/gameStore'
 import { useViewingPlayer, useBattlefieldCards } from './store/selectors'
 import type { EntityId } from './types'
@@ -198,8 +199,17 @@ export default function App() {
       {/* Disconnect countdown (shown when opponent disconnects during game) */}
       {showGame && <DisconnectCountdown />}
 
-      {/* Connection/lobby UI overlay (suppressed while game-over banner is showing) */}
-      {showLobby && !gameOverState && <GameUI />}
+      {/* Connection/lobby UI overlay (suppressed during mulligan and game-over) */}
+      {showLobby && !gameOverState && !mulliganState && !waitingForOpponentMulligan && <GameUI />}
+
+      {/* Background image behind mulligan overlay */}
+      {(mulliganState || waitingForOpponentMulligan) && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundImage: `url(${randomBackground})`,
+          backgroundSize: 'cover', backgroundPosition: 'center',
+        }} />
+      )}
 
       {/* Deck building overlay (sealed/draft) */}
       {showDeckBuilder && <DeckBuilderOverlay />}
