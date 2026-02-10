@@ -4,7 +4,7 @@
 
 *Before the oil. Before the corruption. There was only perfection.*
 
-A Magic: The Gathering rules engine and online play platform.
+An unofficial Magic: The Gathering rules engine and online play platform. Not affiliated with, endorsed, sponsored, or specifically approved by Wizards of the Coast LLC.
 
 ---
 
