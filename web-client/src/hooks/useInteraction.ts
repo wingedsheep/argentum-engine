@@ -159,12 +159,60 @@ export function useInteraction() {
       // Check if spell or ability requires sacrifice as a cost
       if ((action.type === 'CastSpell' || action.type === 'ActivateAbility') && actionInfo.additionalCostInfo?.costType === 'SacrificePermanent') {
         const costInfo = actionInfo.additionalCostInfo
+        const sacrificeCount = costInfo.sacrificeCount ?? 1
+        const validSacTargets = costInfo.validSacrificeTargets ?? []
+
+        // Auto-select when there are exactly as many valid targets as required
+        if (validSacTargets.length === sacrificeCount) {
+          if (action.type === 'CastSpell') {
+            const actionWithCost = {
+              ...action,
+              additionalCostPayment: {
+                sacrificedPermanents: [...validSacTargets],
+              },
+            }
+            if (actionInfo.requiresTargets && actionInfo.validTargets && actionInfo.validTargets.length > 0) {
+              startTargeting({
+                action: actionWithCost,
+                validTargets: [...actionInfo.validTargets],
+                selectedTargets: [],
+                minTargets: actionInfo.minTargets ?? actionInfo.targetCount ?? 1,
+                maxTargets: actionInfo.targetCount ?? 1,
+                ...(actionInfo.requiresDamageDistribution ? { pendingActionInfo: actionInfo } : {}),
+              })
+            } else {
+              submitAction(actionWithCost)
+            }
+          } else if (action.type === 'ActivateAbility') {
+            const actionWithCost = {
+              ...action,
+              costPayment: { sacrificedPermanents: [...validSacTargets] },
+            }
+            if (actionInfo.requiresTargets && actionInfo.validTargets && actionInfo.validTargets.length > 0) {
+              startTargeting({
+                action: actionWithCost,
+                validTargets: [...actionInfo.validTargets],
+                selectedTargets: [],
+                minTargets: actionInfo.minTargets ?? actionInfo.targetCount ?? 1,
+                maxTargets: actionInfo.targetCount ?? 1,
+                ...(actionInfo.requiresDamageDistribution ? { pendingActionInfo: actionInfo } : {}),
+              })
+            } else if (actionInfo.requiresManaColorChoice) {
+              startManaColorSelection({ action: actionWithCost })
+            } else {
+              submitAction(actionWithCost)
+            }
+          }
+          selectCard(null)
+          return
+        }
+
         startTargeting({
           action,
-          validTargets: [...(costInfo.validSacrificeTargets ?? [])],
+          validTargets: [...validSacTargets],
           selectedTargets: [],
-          minTargets: costInfo.sacrificeCount ?? 1,
-          maxTargets: costInfo.sacrificeCount ?? 1,
+          minTargets: sacrificeCount,
+          maxTargets: sacrificeCount,
           isSacrificeSelection: true,
           pendingActionInfo: actionInfo,
         })
@@ -262,9 +310,14 @@ export function useInteraction() {
         return false
       }
 
-      // Sacrifice costs need selection
+      // Sacrifice costs need selection (unless there are exactly as many valid targets as required)
       if ((action.type === 'CastSpell' || action.type === 'ActivateAbility') && actionInfo.additionalCostInfo?.costType === 'SacrificePermanent') {
-        return false
+        const costInfo = actionInfo.additionalCostInfo
+        const sacrificeCount = costInfo.sacrificeCount ?? 1
+        const validSacTargets = costInfo.validSacrificeTargets ?? []
+        if (validSacTargets.length !== sacrificeCount) {
+          return false
+        }
       }
 
       // TapPermanents costs need selection (e.g., Birchlore Rangers)
