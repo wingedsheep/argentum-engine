@@ -62,6 +62,7 @@ object OnslaughtSet {
         PearlspearCourier,
         UnifiedStrike,
         Whipcorder,
+        Mobilization,
 
         // Blue creatures and spells
         AirborneAid,

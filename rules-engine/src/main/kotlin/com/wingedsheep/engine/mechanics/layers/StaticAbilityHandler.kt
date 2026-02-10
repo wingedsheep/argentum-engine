@@ -286,6 +286,11 @@ class StaticAbilityHandler(
             return AffectsFilter.AllOtherCreatures
         }
 
+        // Handle "[subtype] creatures" pattern (e.g., "Soldier creatures have vigilance")
+        if (subtypePredicate != null) {
+            return AffectsFilter.WithSubtype(subtypePredicate.subtype.value)
+        }
+
         // Handle controller-based filters
         return when (controllerPredicate) {
             ControllerPredicate.ControlledByYou -> AffectsFilter.AllCreaturesYouControl
