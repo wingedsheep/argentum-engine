@@ -68,6 +68,10 @@ function MulliganDecision({ state, responsive, onHoverCard }: { state: MulliganS
           : `Mulligan ${state.mulliganCount}`}
       </h2>
 
+      <p className={styles.playDrawIndicator}>
+        {state.isOnThePlay ? 'You are on the play' : 'You are on the draw'}
+      </p>
+
       <p className={styles.subtitle}>
         {state.mulliganCount > 0 &&
           `If you keep, you'll put ${state.cardsToPutOnBottom} card(s) on the bottom.`}

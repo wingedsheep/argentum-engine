@@ -178,7 +178,9 @@ sealed interface ServerMessage {
         /** If keeping, how many cards must be put on bottom */
         val cardsToPutOnBottom: Int,
         /** Card info for display (entity ID -> card info) */
-        val cards: Map<EntityId, MulliganCardInfo> = emptyMap()
+        val cards: Map<EntityId, MulliganCardInfo> = emptyMap(),
+        /** Whether this player is on the play (goes first) */
+        val isOnThePlay: Boolean = false
     ) : ServerMessage
 
     /**

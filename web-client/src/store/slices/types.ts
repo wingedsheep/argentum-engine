@@ -46,6 +46,7 @@ export interface MulliganState {
   cardsToPutOnBottom: number
   selectedCards: readonly EntityId[]
   cards: Record<EntityId, MulliganCardInfo>
+  isOnThePlay: boolean
 }
 
 /**

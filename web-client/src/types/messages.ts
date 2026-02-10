@@ -470,6 +470,7 @@ export interface MulliganDecisionMessage {
   readonly mulliganCount: number
   readonly cardsToPutOnBottom: number
   readonly cards: Record<EntityId, MulliganCardInfo>
+  readonly isOnThePlay: boolean
 }
 
 /**

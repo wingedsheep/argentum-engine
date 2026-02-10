@@ -277,6 +277,7 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
           cardsToPutOnBottom: msg.cardsToPutOnBottom,
           selectedCards: [],
           cards: msg.cards || {},
+          isOnThePlay: msg.isOnThePlay,
         },
       })
     },
@@ -290,6 +291,7 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
           cardsToPutOnBottom: msg.cardsToPutOnBottom,
           selectedCards: [],
           cards: state.mulliganState?.cards || {},
+          isOnThePlay: state.mulliganState?.isOnThePlay ?? false,
         },
       }))
     },

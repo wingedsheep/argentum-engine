@@ -609,11 +609,13 @@ class GameSession(
         } else {
             emptyMap()
         }
+        val isOnThePlay = gameState?.activePlayerId == playerId
         return ServerMessage.MulliganDecision(
             hand = hand,
             mulliganCount = count,
             cardsToPutOnBottom = count,
-            cards = cards
+            cards = cards,
+            isOnThePlay = isOnThePlay
         )
     }
 
