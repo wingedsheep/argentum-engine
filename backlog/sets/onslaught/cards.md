@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 210 / 335
+**Implemented:** 211 / 335
 
 ---
 
@@ -97,7 +97,7 @@
 - [ ] Dispersing Orb
 - [x] Disruptive Pitmage
 - [x] Dive Bomber
-- [ ] Doom Cannon
+- [x] Doom Cannon
 - [x] Doomed Necromancer
 - [x] Doubtless One
 - [x] Dragon Roost

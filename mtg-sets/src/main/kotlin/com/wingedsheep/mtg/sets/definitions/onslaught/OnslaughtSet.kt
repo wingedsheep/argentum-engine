@@ -232,6 +232,9 @@ object OnslaughtSet {
         PrimalBoost,
         CentaurGlade,
 
+        // Artifacts
+        DoomCannon,
+
         // Lands
         BloodstainedMire,
         BarrenMoor,

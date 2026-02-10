@@ -169,7 +169,10 @@ data class ClientCard(
     val rulings: List<ClientRuling> = emptyList(),
 
     /** Chosen X value for spells with X in their cost (only present on stack) */
-    val chosenX: Int? = null
+    val chosenX: Int? = null,
+
+    /** Chosen creature type for "as enters, choose a creature type" permanents (e.g., Doom Cannon) */
+    val chosenCreatureType: String? = null
 )
 
 /**

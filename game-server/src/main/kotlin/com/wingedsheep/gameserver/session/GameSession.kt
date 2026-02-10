@@ -16,6 +16,7 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.ChosenCreatureTypeComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
@@ -1099,6 +1100,14 @@ class GameSession(
                         sacrificeTargets = findAbilitySacrificeTargets(state, playerId, sacrificeCost.filter)
                         if (sacrificeTargets.isEmpty()) continue
                     }
+                    is AbilityCost.SacrificeChosenCreatureType -> {
+                        val chosenType = container.get<ChosenCreatureTypeComponent>()?.creatureType
+                        if (chosenType == null) continue
+                        val dynamicFilter = GameObjectFilter.Creature.withSubtype(chosenType)
+                        sacrificeCost = AbilityCost.Sacrifice(dynamicFilter)
+                        sacrificeTargets = findAbilitySacrificeTargets(state, playerId, dynamicFilter)
+                        if (sacrificeTargets.isEmpty()) continue
+                    }
                     else -> {
                         // Other cost types - allow for now, engine will validate
                     }
@@ -1199,6 +1208,14 @@ class GameSession(
                         sacrificeTargets = findAbilitySacrificeTargets(state, playerId, sacrificeCost.filter)
                         if (sacrificeTargets.isEmpty()) continue
                     }
+                    is AbilityCost.SacrificeChosenCreatureType -> {
+                        val chosenType = container.get<ChosenCreatureTypeComponent>()?.creatureType
+                        if (chosenType == null) continue
+                        val dynamicFilter = GameObjectFilter.Creature.withSubtype(chosenType)
+                        sacrificeCost = AbilityCost.Sacrifice(dynamicFilter)
+                        sacrificeTargets = findAbilitySacrificeTargets(state, playerId, dynamicFilter)
+                        if (sacrificeTargets.isEmpty()) continue
+                    }
                     is AbilityCost.TapPermanents -> {
                         tapCost = effectiveCost
                         tapTargets = findAbilityTapTargets(state, playerId, tapCost.filter)
@@ -1236,6 +1253,20 @@ class GameSession(
                                 is AbilityCost.Sacrifice -> {
                                     sacrificeCost = subCost
                                     sacrificeTargets = findAbilitySacrificeTargets(state, playerId, subCost.filter)
+                                    if (sacrificeTargets.isEmpty()) {
+                                        costCanBePaid = false
+                                        break
+                                    }
+                                }
+                                is AbilityCost.SacrificeChosenCreatureType -> {
+                                    val chosenType = container.get<ChosenCreatureTypeComponent>()?.creatureType
+                                    if (chosenType == null) {
+                                        costCanBePaid = false
+                                        break
+                                    }
+                                    val dynamicFilter = GameObjectFilter.Creature.withSubtype(chosenType)
+                                    sacrificeCost = AbilityCost.Sacrifice(dynamicFilter)
+                                    sacrificeTargets = findAbilitySacrificeTargets(state, playerId, dynamicFilter)
                                     if (sacrificeTargets.isEmpty()) {
                                         costCanBePaid = false
                                         break

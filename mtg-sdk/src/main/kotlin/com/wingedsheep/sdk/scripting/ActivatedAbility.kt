@@ -111,6 +111,15 @@ sealed interface AbilityCost {
     }
 
     /**
+     * Sacrifice a creature of the type chosen when this permanent entered the battlefield.
+     * Used by cards like Doom Cannon that choose a creature type on entry and reference it in costs.
+     */
+    @Serializable
+    data object SacrificeChosenCreatureType : AbilityCost {
+        override val description: String = "Sacrifice a creature of the chosen type"
+    }
+
+    /**
      * Tap permanents you control.
      * Example: "Tap five untapped Clerics you control"
      *

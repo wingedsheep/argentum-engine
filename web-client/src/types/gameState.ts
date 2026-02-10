@@ -150,6 +150,9 @@ export interface ClientCard {
 
   /** Chosen X value for spells with X in their cost (only present on stack) */
   readonly chosenX?: number | null
+
+  /** Chosen creature type for "as enters, choose a creature type" permanents (e.g., Doom Cannon) */
+  readonly chosenCreatureType?: string | null
 }
 
 /**

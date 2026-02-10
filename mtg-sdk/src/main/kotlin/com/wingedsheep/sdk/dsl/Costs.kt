@@ -92,6 +92,12 @@ object Costs {
      */
     val SacrificeSelf: AbilityCost = AbilityCost.SacrificeSelf
 
+    /**
+     * Sacrifice a creature of the type chosen when this permanent entered the battlefield.
+     * Used by cards like Doom Cannon.
+     */
+    val SacrificeChosenCreatureType: AbilityCost = AbilityCost.SacrificeChosenCreatureType
+
     // =========================================================================
     // Exile Costs
     // =========================================================================

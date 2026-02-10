@@ -376,6 +376,25 @@ data class EntersAsCopy(
 }
 
 // =============================================================================
+// Creature Type Choice Replacement Effects
+// =============================================================================
+
+/**
+ * As this permanent enters, choose a creature type.
+ * The chosen type is stored on the permanent for use by other abilities.
+ * Example: Doom Cannon, Cover of Darkness, Steely Resolve
+ */
+@Serializable
+data class EntersWithCreatureTypeChoice(
+    override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
+        filter = GameObjectFilter.Any,
+        to = Zone.BATTLEFIELD
+    )
+) : ReplacementEffect {
+    override val description: String = "As this permanent enters, choose a creature type"
+}
+
+// =============================================================================
 // Generic Replacement Effect
 // =============================================================================
 

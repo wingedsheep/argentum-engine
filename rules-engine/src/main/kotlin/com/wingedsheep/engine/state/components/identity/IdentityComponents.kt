@@ -145,6 +145,15 @@ data class RevealedToComponent(
 }
 
 /**
+ * Stores the creature type chosen when this permanent entered the battlefield.
+ * Used by cards like Doom Cannon ("As this artifact enters, choose a creature type").
+ */
+@Serializable
+data class ChosenCreatureTypeComponent(
+    val creatureType: String
+) : Component
+
+/**
  * Category of text replacement for Layer 3 text-changing effects.
  */
 @Serializable

@@ -1028,6 +1028,27 @@ data class CloneEntersContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after player chooses a creature type for an "as enters, choose a creature type" effect.
+ *
+ * When a permanent with EntersWithCreatureTypeChoice resolves, the player is asked to choose
+ * a creature type. This continuation handles the response and completes the permanent's
+ * entry to the battlefield with the chosen type stored as a component.
+ *
+ * @property spellId The spell entity being resolved
+ * @property controllerId The player who cast the spell
+ * @property ownerId The owner of the card
+ * @property creatureTypes The list of creature types presented to the player
+ */
+@Serializable
+data class ChooseCreatureTypeEntersContinuation(
+    override val decisionId: String,
+    val spellId: EntityId,
+    val controllerId: EntityId,
+    val ownerId: EntityId,
+    val creatureTypes: List<String>
+) : ContinuationFrame
+
+/**
  * Information about a mana source available for manual selection.
  */
 @Serializable

@@ -27,6 +27,7 @@ import com.wingedsheep.sdk.scripting.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.Effect
 import com.wingedsheep.sdk.scripting.EntersAsCopy
 import com.wingedsheep.sdk.scripting.EntersWithCounters
+import com.wingedsheep.sdk.scripting.EntersWithCreatureTypeChoice
 import com.wingedsheep.sdk.scripting.EntersWithDynamicCounters
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 
@@ -339,6 +340,38 @@ class StackResolver(
                     return ExecutionResult.paused(pausedState, decision)
                 }
                 // No creatures on battlefield - fall through to enter as itself (0/0)
+            }
+
+            // Check for EntersWithCreatureTypeChoice replacement effect
+            val entersWithChoice = cardDef.script.replacementEffects.filterIsInstance<EntersWithCreatureTypeChoice>().firstOrNull()
+            if (entersWithChoice != null) {
+                val allCreatureTypes = com.wingedsheep.sdk.core.Subtype.ALL_CREATURE_TYPES
+                val decisionId = "choose-creature-type-enters-${spellId.value}"
+                val decision = ChooseOptionDecision(
+                    id = decisionId,
+                    playerId = controllerId,
+                    prompt = "Choose a creature type",
+                    context = DecisionContext(
+                        sourceId = spellId,
+                        sourceName = cardComponent?.name,
+                        phase = DecisionPhase.RESOLUTION
+                    ),
+                    options = allCreatureTypes,
+                    defaultSearch = ""
+                )
+
+                val continuation = ChooseCreatureTypeEntersContinuation(
+                    decisionId = decisionId,
+                    spellId = spellId,
+                    controllerId = controllerId,
+                    ownerId = ownerId,
+                    creatureTypes = allCreatureTypes
+                )
+
+                val pausedState = state
+                    .pushContinuation(continuation)
+                    .withPendingDecision(decision)
+                return ExecutionResult.paused(pausedState, decision)
             }
         }
 

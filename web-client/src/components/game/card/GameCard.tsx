@@ -632,6 +632,26 @@ export function GameCard({
         <KeywordIcons keywords={card.keywords} protections={card.protections ?? []} size={responsive.isMobile ? 14 : 18} />
       )}
 
+      {/* Chosen creature type badge (e.g., Doom Cannon) */}
+      {battlefield && !faceDown && card.chosenCreatureType && (
+        <div style={{
+          position: 'absolute',
+          bottom: card.power != null ? 22 : 4,
+          left: 4,
+          backgroundColor: 'rgba(80, 60, 30, 0.9)',
+          color: '#f0d890',
+          fontSize: responsive.isMobile ? 8 : 10,
+          padding: '1px 4px',
+          borderRadius: 3,
+          border: '1px solid rgba(200, 170, 80, 0.6)',
+          whiteSpace: 'nowrap',
+          pointerEvents: 'none',
+          zIndex: 5,
+        }}>
+          {card.chosenCreatureType}
+        </div>
+      )}
+
       {/* Active effect badges (evasion, etc.) */}
       {battlefield && !faceDown && card.activeEffects && card.activeEffects.length > 0 && (
         <ActiveEffectBadges effects={card.activeEffects} />

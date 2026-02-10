@@ -115,6 +115,7 @@ class ContinuationHandler(
             }
             is MayTriggerContinuation -> resumeMayTrigger(stateAfterPop, continuation, response)
             is CloneEntersContinuation -> resumeCloneEnters(stateAfterPop, continuation, response)
+            is ChooseCreatureTypeEntersContinuation -> resumeChooseCreatureTypeEnters(stateAfterPop, continuation, response)
         }
     }
 
@@ -3156,6 +3157,60 @@ class ContinuationHandler(
             ZoneChangeEvent(
                 spellId,
                 finalCardComponent.name,
+                null,
+                Zone.BATTLEFIELD,
+                ownerId
+            )
+        )
+
+        return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume after player chooses a creature type for an "as enters" effect (e.g., Doom Cannon).
+     */
+    private fun resumeChooseCreatureTypeEnters(
+        state: GameState,
+        continuation: ChooseCreatureTypeEntersContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is OptionChosenResponse) {
+            return ExecutionResult.error(state, "Expected option chosen response for creature type choice")
+        }
+
+        val chosenType = continuation.creatureTypes.getOrNull(response.optionIndex)
+            ?: return ExecutionResult.error(state, "Invalid creature type index: ${response.optionIndex}")
+
+        val spellId = continuation.spellId
+        val controllerId = continuation.controllerId
+        val ownerId = continuation.ownerId
+        val events = mutableListOf<GameEvent>()
+
+        val spellContainer = state.getEntity(spellId)
+            ?: return ExecutionResult.error(state, "Spell entity not found: $spellId")
+
+        val cardComponent = spellContainer.get<CardComponent>()
+            ?: return ExecutionResult.error(state, "Spell has no CardComponent")
+
+        val spellComponent = spellContainer.get<SpellOnStackComponent>()
+            ?: return ExecutionResult.error(state, "Spell has no SpellOnStackComponent")
+
+        // Store the chosen creature type on the entity
+        var newState = state.updateEntity(spellId) { c ->
+            c.with(com.wingedsheep.engine.state.components.identity.ChosenCreatureTypeComponent(chosenType))
+        }
+
+        // Complete the permanent entry
+        val cardDef = stackResolver.cardRegistry?.getCard(cardComponent.cardDefinitionId)
+        newState = stackResolver.enterPermanentOnBattlefield(
+            newState, spellId, spellComponent, cardComponent, cardDef
+        )
+
+        events.add(ResolvedEvent(spellId, cardComponent.name))
+        events.add(
+            ZoneChangeEvent(
+                spellId,
+                cardComponent.name,
                 null,
                 Zone.BATTLEFIELD,
                 ownerId

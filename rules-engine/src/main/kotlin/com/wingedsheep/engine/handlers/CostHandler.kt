@@ -10,6 +10,7 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.ChosenCreatureTypeComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.sdk.core.CounterType
@@ -68,6 +69,12 @@ class CostHandler {
             }
             is AbilityCost.Sacrifice -> {
                 findMatchingPermanentsUnified(state, controllerId, cost.filter).isNotEmpty()
+            }
+            is AbilityCost.SacrificeChosenCreatureType -> {
+                val chosenType = state.getEntity(sourceId)?.get<ChosenCreatureTypeComponent>()?.creatureType
+                    ?: return false
+                val filter = GameObjectFilter.Creature.withSubtype(chosenType)
+                findMatchingPermanentsUnified(state, controllerId, filter).isNotEmpty()
             }
             is AbilityCost.Discard -> {
                 val handZone = ZoneKey(controllerId, Zone.HAND)
@@ -141,7 +148,7 @@ class CostHandler {
                 }
                 CostPaymentResult.success(newState, manaPool)
             }
-            is AbilityCost.Sacrifice -> {
+            is AbilityCost.Sacrifice, is AbilityCost.SacrificeChosenCreatureType -> {
                 val toSacrifice = choices.sacrificeChoices.firstOrNull()
                     ?: return CostPaymentResult.failure("No sacrifice target chosen")
 
