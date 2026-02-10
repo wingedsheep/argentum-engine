@@ -405,10 +405,12 @@ data class ChooseCreatureTypeModifyStatsEffect(
 @Serializable
 data class BecomeCreatureTypeEffect(
     val target: EffectTarget,
-    val duration: Duration = Duration.EndOfTurn
+    val duration: Duration = Duration.EndOfTurn,
+    val excludedTypes: List<String> = emptyList()
 ) : Effect {
     override val description: String = buildString {
         append("${target.description} becomes the creature type of your choice")
+        if (excludedTypes.isNotEmpty()) append(" other than ${excludedTypes.joinToString(", ")}")
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
 }

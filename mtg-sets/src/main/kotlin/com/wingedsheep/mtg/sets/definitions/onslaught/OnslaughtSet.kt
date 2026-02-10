@@ -93,6 +93,7 @@ object OnslaughtSet {
         SlipstreamEel,
         TrickeryCharm,
         EssenceFracture,
+        Imagecrafter,
         IxidorRealitySculptor,
 
         // Black creatures and spells
@@ -228,6 +229,7 @@ object OnslaughtSet {
         VitalityCharm,
         OverwhelmingInstinct,
         PrimalBoost,
+        CentaurGlade,
 
         // Lands
         BloodstainedMire,

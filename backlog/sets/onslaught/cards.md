@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 207 / 335
+**Implemented:** 209 / 335
 
 ---
 
@@ -54,7 +54,7 @@
 - [ ] Callous Oppressor
 - [x] Catapult Master
 - [x] Catapult Squad
-- [ ] Centaur Glade
+- [x] Centaur Glade
 - [ ] Chain of Acid
 - [ ] Chain of Plasma
 - [ ] Chain of Silence
@@ -167,7 +167,7 @@
 - [x] Headhunter
 - [x] Heedless One
 - [x] Hystrodon
-- [ ] Imagecrafter
+- [x] Imagecrafter
 - [x] Improvised Armor
 - [x] Infest
 - [x] Information Dealer
