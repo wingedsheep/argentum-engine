@@ -179,6 +179,13 @@ sealed interface SerializableModification {
      */
     @Serializable
     data class SetCreatureSubtypes(val subtypes: Set<String>) : SerializableModification
+
+    /**
+     * Blocking restriction: creature can't block this turn.
+     * Used by Wave of Indifference and similar effects.
+     */
+    @Serializable
+    data object SetCantBlock : SerializableModification
 }
 
 /**
@@ -213,4 +220,6 @@ fun SerializableModification.toModification(): Modification = when (this) {
     // PreventAllCombatDamage doesn't map to a layer modification - it's checked by CombatManager directly
     is SerializableModification.PreventAllCombatDamage -> Modification.NoOp
     is SerializableModification.SetCreatureSubtypes -> Modification.SetCreatureSubtypes(subtypes)
+    // SetCantBlock maps to the layer modification for "can't block" projection
+    is SerializableModification.SetCantBlock -> Modification.SetCantBlock
 }

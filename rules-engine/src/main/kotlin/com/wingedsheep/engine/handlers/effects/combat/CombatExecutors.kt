@@ -18,6 +18,7 @@ class CombatExecutors(
         GrantCantBeBlockedExceptByColorExecutor(),
         ReflectCombatDamageExecutor(),
         TauntExecutor(),
-        PreventNextDamageExecutor(amountEvaluator)
+        PreventNextDamageExecutor(amountEvaluator),
+        CantBlockTargetCreaturesExecutor()
     )
 }

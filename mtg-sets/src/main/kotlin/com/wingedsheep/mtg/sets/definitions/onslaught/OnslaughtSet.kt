@@ -185,6 +185,7 @@ object OnslaughtSet {
         SnappingThragg,
         SpurredWolverine,
         Threaten,
+        WaveOfIndifference,
 
         // Green creatures and spells
         CrownOfVigor,

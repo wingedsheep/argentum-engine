@@ -103,6 +103,20 @@ data class GrantCantBeBlockedExceptByColorEffect(
 }
 
 /**
+ * Target creatures can't block this turn.
+ * Used for Wave of Indifference: "X target creatures can't block this turn."
+ *
+ * Works with multi-target spells - applies "can't block" to all creatures
+ * in context.targets by creating a floating effect until end of turn.
+ */
+@Serializable
+data class CantBlockTargetCreaturesEffect(
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    override val description: String = "Target creatures can't block this turn"
+}
+
+/**
  * Prevent the next X damage that would be dealt to target creature this turn.
  * Used for Battlefield Medic and similar damage prevention effects.
  *
