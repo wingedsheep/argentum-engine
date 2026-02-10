@@ -425,8 +425,8 @@ class CastSpellHandler(
 
         var allEvents = events + castResult.events
 
-        // Detect and process triggers from casting
-        val triggers = triggerDetector.detectTriggers(castResult.newState, castResult.events)
+        // Detect and process triggers from casting (including additional cost events like sacrifice)
+        val triggers = triggerDetector.detectTriggers(castResult.newState, allEvents)
         if (triggers.isNotEmpty()) {
             val triggerResult = triggerProcessor.processTriggers(castResult.newState, triggers)
 
