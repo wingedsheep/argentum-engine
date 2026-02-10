@@ -276,15 +276,15 @@ export class GamePage {
     await this.screenshot(`Select option: ${text}`)
   }
 
-  /** Select X value on the X-cost selector, then click Cast. */
+  /** Select X value on the X-cost selector, then click Cast/Activate. */
   async selectXValue(x: number) {
     // Set the slider value by clicking +/- buttons to reach the desired value
     // The slider input[type=range] is available — use fill to set it
     const slider = this.page.locator('input[type="range"]')
     await slider.waitFor({ state: 'visible', timeout: 10_000 })
     await slider.fill(String(x))
-    // Click the Cast button to confirm
-    await this.page.getByRole('button', { name: 'Cast' }).click()
+    // Click the Cast or Activate button to confirm
+    await this.page.getByRole('button', { name: /^(Cast|Activate)$/ }).click()
     await this.screenshot(`Select X = ${x}`)
   }
 

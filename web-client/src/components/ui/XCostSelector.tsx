@@ -85,7 +85,7 @@ export function XCostSelector() {
             Cancel
           </button>
           <button onClick={confirmXSelection} style={styles.confirmButton}>
-            Cast
+            {xSelectionState.actionInfo.action.type === 'ActivateAbility' ? 'Activate' : 'Cast'}
           </button>
         </div>
       </div>
