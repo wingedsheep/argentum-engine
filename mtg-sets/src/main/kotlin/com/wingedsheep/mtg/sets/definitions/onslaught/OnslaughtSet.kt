@@ -97,6 +97,7 @@ object OnslaughtSet {
         EssenceFracture,
         Imagecrafter,
         IxidorRealitySculptor,
+        MistformDreamer,
 
         // Black creatures and spells
         AccursedCentaur,
