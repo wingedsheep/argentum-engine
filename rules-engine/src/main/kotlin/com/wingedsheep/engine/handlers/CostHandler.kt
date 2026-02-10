@@ -159,6 +159,23 @@ class CostHandler {
                     ?: return CostPaymentResult.failure("Sacrifice target has no controller")
                 val sacrificeName = sacrificeContainer.get<CardComponent>()?.name ?: "Unknown"
 
+                // Validate the chosen sacrifice matches the required filter
+                val sacrificeFilter = when (cost) {
+                    is AbilityCost.Sacrifice -> cost.filter
+                    is AbilityCost.SacrificeChosenCreatureType -> {
+                        val chosenType = state.getEntity(sourceId)?.get<ChosenCreatureTypeComponent>()?.creatureType
+                            ?: return CostPaymentResult.failure("No creature type chosen")
+                        GameObjectFilter.Creature.withSubtype(chosenType)
+                    }
+                    else -> null
+                }
+                if (sacrificeFilter != null) {
+                    val context = PredicateContext(controllerId = controllerId)
+                    if (!predicateEvaluator.matches(state, toSacrifice, sacrificeFilter, context)) {
+                        return CostPaymentResult.failure("Sacrifice target does not match the required filter")
+                    }
+                }
+
                 // Move from battlefield to graveyard
                 val battlefieldZone = ZoneKey(sacrificeController, Zone.BATTLEFIELD)
                 val graveyardZone = ZoneKey(sacrificeController, Zone.GRAVEYARD)

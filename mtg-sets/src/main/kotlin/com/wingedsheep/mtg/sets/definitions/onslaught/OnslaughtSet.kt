@@ -231,6 +231,7 @@ object OnslaughtSet {
         OverwhelmingInstinct,
         PrimalBoost,
         CentaurGlade,
+        WallOfMulch,
 
         // Artifacts
         DoomCannon,

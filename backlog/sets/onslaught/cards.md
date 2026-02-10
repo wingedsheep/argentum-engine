@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 211 / 335
+**Implemented:** 212 / 335
 
 ---
 
@@ -320,7 +320,7 @@
 - [ ] Voice of the Woods
 - [ ] Voidmage Prodigy
 - [ ] Walking Desecration
-- [ ] Wall of Mulch
+- [x] Wall of Mulch
 - [ ] Wave of Indifference
 - [ ] Weathered Wayfarer
 - [ ] Weird Harvest
