@@ -95,47 +95,37 @@ docker-logs:
 redis-clear:
     docker exec $(docker ps -q -f ancestor=redis:7-alpine) redis-cli FLUSHALL
 
-# Run e2e browser tests (requires server and client running, or starts them)
-[group: 'test']
-test-e2e:
-    cd web-client && npm run test:e2e
-
-# Run e2e browser tests with UI
-[group: 'test']
-test-e2e-ui:
-    cd web-client && npm run test:e2e:ui
-
-# Run e2e browser tests with visible browser
-[group: 'test']
-test-e2e-headed:
-    cd web-client && npm run test:e2e:headed
-
-# Run E2E scenario browser tests
-[group: 'test']
-test-e2e-scenarios:
+# Run all E2E browser tests
+[group: 'e2e']
+e2e:
     cd e2e-scenarios && npm run test
 
-# Run E2E scenario tests with Playwright UI
-[group: 'test']
-test-e2e-scenarios-ui:
+# Run E2E tests with Playwright UI
+[group: 'e2e']
+e2e-ui:
     cd e2e-scenarios && npm run test:ui
 
-# Run E2E scenario tests with visible browser
-[group: 'test']
-test-e2e-scenarios-headed:
+# Run E2E tests with visible browser
+[group: 'e2e']
+e2e-headed:
     cd e2e-scenarios && npm run test:headed
 
-# Run only portal E2E scenarios
-[group: 'test']
-test-e2e-portal:
+# Run only general E2E tests (combat, tournaments)
+[group: 'e2e']
+e2e-general:
+    cd e2e-scenarios && npm run test:general
+
+# Run only Portal set E2E tests
+[group: 'e2e']
+e2e-portal:
     cd e2e-scenarios && npm run test:portal
 
-# Run only onslaught E2E scenarios
-[group: 'test']
-test-e2e-onslaught:
+# Run only Onslaught set E2E tests
+[group: 'e2e']
+e2e-onslaught:
     cd e2e-scenarios && npm run test:onslaught
 
-# Install E2E scenario test dependencies
-[group: 'test']
-e2e-scenarios-install:
+# Install E2E test dependencies
+[group: 'e2e']
+e2e-install:
     cd e2e-scenarios && npm install
