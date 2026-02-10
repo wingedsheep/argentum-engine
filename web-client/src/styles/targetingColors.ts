@@ -5,12 +5,12 @@
  */
 
 /** Light blue - valid/selectable targets */
-export const TARGET_COLOR = '#66bbff'
-export const TARGET_COLOR_BRIGHT = '#88ccff'
-export const TARGET_GLOW = 'rgba(102, 187, 255, 0.6)'
-export const TARGET_GLOW_BRIGHT = 'rgba(136, 204, 255, 0.9)'
-export const TARGET_GLOW_OUTER = 'rgba(100, 180, 255, 0.6)'
-export const TARGET_SHADOW = 'rgba(102, 187, 255, 0.4)'
+export const TARGET_COLOR = '#55ccff'
+export const TARGET_COLOR_BRIGHT = '#77ddff'
+export const TARGET_GLOW = 'rgba(85, 204, 255, 0.7)'
+export const TARGET_GLOW_BRIGHT = 'rgba(119, 221, 255, 0.95)'
+export const TARGET_GLOW_OUTER = 'rgba(85, 204, 255, 0.7)'
+export const TARGET_SHADOW = 'rgba(85, 204, 255, 0.5)'
 
 /** Green - selected/confirmed targets */
 export const SELECTED_COLOR = '#44dd44'
