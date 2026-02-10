@@ -30,6 +30,7 @@ export function OrderBlockersUI({ decision, responsive }: OrderBlockersUIProps) 
   const [minimized, setMinimized] = useState(false)
   const submitOrderedDecision = useGameStore((s) => s.submitOrderedDecision)
   const gameState = useGameStore((s) => s.gameState)
+  const hoverCard = useGameStore((s) => s.hoverCard)
 
   // Get the attacker card from game state using sourceId from decision context
   const attackerId = decision.context.sourceId
@@ -167,6 +168,8 @@ export function OrderBlockersUI({ decision, responsive }: OrderBlockersUIProps) 
         <AttackerCardDisplay
           card={attackerCard}
           isMobile={responsive.isMobile}
+          onMouseEnter={() => hoverCard(attackerCard.id)}
+          onMouseLeave={() => hoverCard(null)}
         />
       )}
 
@@ -277,6 +280,8 @@ export function OrderBlockersUI({ decision, responsive }: OrderBlockersUIProps) 
                   onDragEnd={handleDragEnd}
                   onMoveLeft={() => moveCard(index, 'left')}
                   onMoveRight={() => moveCard(index, 'right')}
+                  onMouseEnter={() => hoverCard(blockerId)}
+                  onMouseLeave={() => hoverCard(null)}
                 />
               </div>
             )
@@ -356,6 +361,8 @@ function BlockerCard({
   onDragEnd,
   onMoveLeft,
   onMoveRight,
+  onMouseEnter,
+  onMouseLeave,
 }: {
   blockerId: EntityId
   cardInfo: SearchCardInfo | undefined
@@ -373,6 +380,8 @@ function BlockerCard({
   onDragEnd: () => void
   onMoveLeft: () => void
   onMoveRight: () => void
+  onMouseEnter: () => void
+  onMouseLeave: () => void
 }) {
   const cardName = cardInfo?.name || 'Unknown Card'
   // Use the imageUri from cardInfo if available, otherwise fall back to Scryfall API
@@ -447,6 +456,8 @@ function BlockerCard({
         onDragLeave={onDragLeave}
         onDrop={onDrop}
         onDragEnd={onDragEnd}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
         style={{
           width: cardWidth,
           height: cardHeight,
@@ -569,9 +580,13 @@ function getOrdinalSuffix(n: number): string {
 function AttackerCardDisplay({
   card,
   isMobile,
+  onMouseEnter,
+  onMouseLeave,
 }: {
   card: ClientCard
   isMobile: boolean
+  onMouseEnter: () => void
+  onMouseLeave: () => void
 }) {
   const cardWidth = isMobile ? 120 : 160
   const cardHeight = Math.round(cardWidth * 1.4)
@@ -607,6 +622,8 @@ function AttackerCardDisplay({
 
       {/* Card container */}
       <div
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
         style={{
           position: 'relative',
           width: cardWidth,

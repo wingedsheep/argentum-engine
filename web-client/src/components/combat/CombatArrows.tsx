@@ -20,6 +20,10 @@ interface ArrowData {
   start: Point
   end: Point
   blockerId: EntityId
+  /** 1-based damage order position (1 = first to receive damage). Undefined if not yet ordered. */
+  damageOrder?: number
+  /** Damage assigned to this blocker. Undefined if not yet assigned. */
+  damageAmount?: number
 }
 
 interface AttackerArrowData {
@@ -162,7 +166,7 @@ export function CombatArrows() {
   const isSpectating = useGameStore((state) => state.spectatingState !== null)
   const pendingDecision = useGameStore((state) => state.pendingDecision)
   const [mousePos, setMousePos] = useState<Point | null>(null)
-  const [arrows, setArrows] = useState<Array<{ start: Point; end: Point; blockerId: EntityId }>>([])
+  const [arrows, setArrows] = useState<ArrowData[]>([])
   const [attackerArrows, setAttackerArrows] = useState<AttackerArrowData[]>([])
 
   // Check if we're still in combat phase
@@ -251,6 +255,22 @@ export function CombatArrows() {
           }
         }
       } else if (gameStateCombat && gameStateCombat.blockers.length > 0 && isInCombatPhase) {
+        // Build lookup maps for damage order and assignments from attacker data
+        const blockerDamageOrder = new Map<EntityId, number>()
+        const blockerDamageAmount = new Map<EntityId, number>()
+        for (const attacker of gameStateCombat.attackers) {
+          if (attacker.damageAssignmentOrder) {
+            attacker.damageAssignmentOrder.forEach((blockerId, index) => {
+              blockerDamageOrder.set(blockerId, index + 1)
+            })
+          }
+          if (attacker.damageAssignments) {
+            for (const [targetId, amount] of Object.entries(attacker.damageAssignments)) {
+              blockerDamageAmount.set(targetId as EntityId, amount)
+            }
+          }
+        }
+
         // Use server-sent combat data (shows to both players after blockers declared, only during combat)
         for (const blocker of gameStateCombat.blockers) {
           // Only draw arrows for creatures still on the battlefield
@@ -268,11 +288,16 @@ export function CombatArrows() {
           const attackerPos = getCardCenter(blocker.blockingAttacker)
 
           if (blockerPos && attackerPos) {
-            newArrows.push({
+            const arrow: ArrowData = {
               start: blockerPos,
               end: attackerPos,
               blockerId: blocker.creatureId,
-            })
+            }
+            const order = blockerDamageOrder.get(blocker.creatureId)
+            if (order != null) arrow.damageOrder = order
+            const amount = blockerDamageAmount.get(blocker.creatureId)
+            if (amount != null) arrow.damageAmount = amount
+            newArrows.push(arrow)
           }
         }
       }
@@ -370,13 +395,91 @@ export function CombatArrows() {
       ))}
 
       {/* Blocker assignments */}
-      {arrows.map(({ start, end, blockerId }) => (
-        <Arrow
-          key={`blocker-${blockerId}`}
-          start={start}
-          end={end}
-          color="#4488ff"
-        />
+      {arrows.map(({ start, end, blockerId, damageOrder, damageAmount }) => (
+        <g key={`blocker-${blockerId}`}>
+          <Arrow
+            start={start}
+            end={end}
+            color="#4488ff"
+          />
+          {/* Damage order and assignment badges near the blocker (creature receiving damage) */}
+          {(damageOrder != null || damageAmount != null) && (() => {
+            const midX = (start.x + end.x) / 2
+            const midY = (start.y + end.y) / 2
+            const dx = end.x - start.x
+            const dy = end.y - start.y
+            const dist = Math.sqrt(dx * dx + dy * dy)
+            const arcHeight = Math.min(dist * 0.2, 60)
+            const controlX = midX
+            const controlY = midY - arcHeight
+            // Position on the bezier curve at t=0.25 (closer to blocker/start)
+            const t = 0.25
+            const mt = 1 - t
+            const badgeX = mt * mt * start.x + 2 * mt * t * controlX + t * t * end.x
+            const badgeY = mt * mt * start.y + 2 * mt * t * controlY + t * t * end.y
+
+            if (damageAmount != null) {
+              // Show damage assignment: "order: amount" or just "amount"
+              const label = damageOrder != null ? `#${damageOrder}: ${damageAmount} dmg` : `${damageAmount} dmg`
+              const textWidth = label.length * 7 + 12
+              return (
+                <g>
+                  <rect
+                    x={badgeX - textWidth / 2}
+                    y={badgeY - 11}
+                    width={textWidth}
+                    height={22}
+                    rx={11}
+                    fill="#000000"
+                    fillOpacity={0.85}
+                    stroke="#dc2626"
+                    strokeWidth={1.5}
+                  />
+                  <text
+                    x={badgeX}
+                    y={badgeY + 4}
+                    textAnchor="middle"
+                    fill="#f87171"
+                    fontSize={12}
+                    fontWeight={700}
+                    fontFamily="system-ui, sans-serif"
+                    style={{ pointerEvents: 'none' }}
+                  >
+                    {label}
+                  </text>
+                </g>
+              )
+            } else if (damageOrder != null) {
+              // Show just the damage order number
+              return (
+                <g>
+                  <circle
+                    cx={badgeX}
+                    cy={badgeY}
+                    r={13}
+                    fill="#000000"
+                    fillOpacity={0.85}
+                    stroke="#f59e0b"
+                    strokeWidth={1.5}
+                  />
+                  <text
+                    x={badgeX}
+                    y={badgeY + 5}
+                    textAnchor="middle"
+                    fill="#fbbf24"
+                    fontSize={14}
+                    fontWeight={700}
+                    fontFamily="system-ui, sans-serif"
+                    style={{ pointerEvents: 'none' }}
+                  >
+                    {damageOrder}
+                  </text>
+                </g>
+              )
+            }
+            return null
+          })()}
+        </g>
       ))}
 
       {/* Dragging arrow */}

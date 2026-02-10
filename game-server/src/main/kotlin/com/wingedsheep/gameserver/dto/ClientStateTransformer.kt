@@ -808,13 +808,18 @@ class ClientStateTransformer(
                     defendingPlayerId = attackingComponent.defenderId
                 }
 
+                val damageOrderComponent = container.get<DamageAssignmentOrderComponent>()
+                val damageAssignmentComponent = container.get<DamageAssignmentComponent>()
+
                 attackers.add(
                     ClientAttacker(
                         creatureId = entityId,
                         creatureName = cardComponent.name,
                         attackingTarget = ClientCombatTarget.Player(attackingComponent.defenderId),
                         blockedBy = blockedComponent?.blockerIds ?: emptyList(),
-                        mustBeBlockedByAll = entityId in mustBeBlockedCreatures
+                        mustBeBlockedByAll = entityId in mustBeBlockedCreatures,
+                        damageAssignmentOrder = damageOrderComponent?.orderedBlockers,
+                        damageAssignments = damageAssignmentComponent?.assignments
                     )
                 )
             }

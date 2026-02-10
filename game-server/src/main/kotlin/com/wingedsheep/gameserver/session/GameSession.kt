@@ -2280,11 +2280,17 @@ class GameSession(
             }
             is OrderObjectsDecision -> {
                 val enrichedCardInfo = decision.cardInfo?.mapValues { (entityId, cardInfo) ->
-                    val cardComponent = state.getEntity(entityId)?.get<CardComponent>()
-                    val imageUri = cardComponent?.cardDefinitionId?.let { defId ->
-                        cardRegistry.getCard(defId)?.metadata?.imageUri
+                    val entity = state.getEntity(entityId)
+                    // Don't enrich face-down creatures - would leak their identity
+                    if (entity?.has<FaceDownComponent>() == true) {
+                        cardInfo
+                    } else {
+                        val cardComponent = entity?.get<CardComponent>()
+                        val imageUri = cardComponent?.cardDefinitionId?.let { defId ->
+                            cardRegistry.getCard(defId)?.metadata?.imageUri
+                        }
+                        cardInfo.copy(imageUri = imageUri)
                     }
-                    cardInfo.copy(imageUri = imageUri)
                 }
                 decision.copy(cardInfo = enrichedCardInfo)
             }

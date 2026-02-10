@@ -302,7 +302,11 @@ data class ClientAttacker(
     val attackingTarget: ClientCombatTarget,
     val blockedBy: List<EntityId>,
     /** True if all creatures that can block this creature must do so (Alluring Scent) */
-    val mustBeBlockedByAll: Boolean = false
+    val mustBeBlockedByAll: Boolean = false,
+    /** Ordered list of blockers for damage assignment (first receives damage first). Null if not yet ordered. */
+    val damageAssignmentOrder: List<EntityId>? = null,
+    /** Damage assigned to each target (blocker ID or player ID -> damage amount). Null if not yet assigned. */
+    val damageAssignments: Map<EntityId, Int>? = null
 )
 
 /**

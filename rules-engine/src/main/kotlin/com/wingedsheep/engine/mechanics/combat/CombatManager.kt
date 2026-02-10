@@ -351,13 +351,24 @@ class CombatManager(
         val blockerIds = blockedComponent.blockerIds
 
         // Build card info for blockers (for UI display)
+        // Face-down creatures must not reveal their identity
         val cardInfo = blockerIds.associateWith { blockerId ->
-            val blockerCard = state.getEntity(blockerId)?.get<CardComponent>()
-            SearchCardInfo(
-                name = blockerCard?.name ?: "Unknown",
-                manaCost = blockerCard?.manaCost?.toString() ?: "",
-                typeLine = blockerCard?.typeLine?.toString() ?: ""
-            )
+            val blockerContainer = state.getEntity(blockerId)
+            val isFaceDown = blockerContainer?.has<FaceDownComponent>() == true
+            if (isFaceDown) {
+                SearchCardInfo(
+                    name = "Morph",
+                    manaCost = "{3}",
+                    typeLine = "Creature"
+                )
+            } else {
+                val blockerCard = blockerContainer?.get<CardComponent>()
+                SearchCardInfo(
+                    name = blockerCard?.name ?: "Unknown",
+                    manaCost = blockerCard?.manaCost?.toString() ?: "",
+                    typeLine = blockerCard?.typeLine?.toString() ?: ""
+                )
+            }
         }
 
         val decisionId = UUID.randomUUID().toString()
