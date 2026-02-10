@@ -10,6 +10,7 @@ import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
+import com.wingedsheep.engine.state.components.combat.MarkedForDestructionAtEndOfCombatComponent
 import com.wingedsheep.engine.state.components.combat.MustAttackPlayerComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
@@ -468,6 +469,24 @@ class TurnManager(
             }
 
             Step.END_COMBAT -> {
+                // Process delayed "destroy at end of combat" effects (e.g. Serpentine Basilisk)
+                val markedForDestruction = newState.findEntitiesWith<MarkedForDestructionAtEndOfCombatComponent>()
+                for ((entityId, _) in markedForDestruction) {
+                    // Only destroy if still on the battlefield
+                    if (newState.getBattlefield().contains(entityId)) {
+                        val destroyResult = com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
+                            .destroyPermanent(newState, entityId)
+                        if (destroyResult.isSuccess) {
+                            newState = destroyResult.newState
+                            events.addAll(destroyResult.events)
+                        }
+                    }
+                    // Remove the marker component regardless
+                    newState = newState.updateEntity(entityId) { container ->
+                        container.without<MarkedForDestructionAtEndOfCombatComponent>()
+                    }
+                }
+
                 // Clean up combat state (remove attacking/blocking components)
                 val endCombatResult = combatManager.endCombat(newState)
                 if (!endCombatResult.isSuccess) return endCombatResult

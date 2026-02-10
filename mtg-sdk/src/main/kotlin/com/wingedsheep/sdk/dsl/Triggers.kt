@@ -104,6 +104,11 @@ object Triggers {
      */
     val DealsCombatDamageToPlayer: Trigger = OnDealsDamage(selfOnly = true, combatOnly = true, toPlayerOnly = true)
 
+    /**
+     * When this creature deals combat damage to a creature.
+     */
+    val DealsCombatDamageToCreature: Trigger = OnDealsDamage(selfOnly = true, combatOnly = true, toCreatureOnly = true)
+
     // =========================================================================
     // Phase/Step Triggers
     // =========================================================================

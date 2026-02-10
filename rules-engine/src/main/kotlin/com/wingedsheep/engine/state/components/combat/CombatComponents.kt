@@ -98,6 +98,16 @@ data object AttackersDeclaredThisCombatComponent : Component
 data object BlockersDeclaredThisCombatComponent : Component
 
 /**
+ * Marks a creature for destruction at end of combat.
+ * Used by Serpentine Basilisk and similar "basilisk" abilities that say
+ * "destroy that creature at end of combat."
+ *
+ * Cleared at END_COMBAT after the destruction is processed.
+ */
+@Serializable
+data object MarkedForDestructionAtEndOfCombatComponent : Component
+
+/**
  * Marks a player whose creatures must attack a specific defender if able.
  * Used by Taunt and similar effects.
  *

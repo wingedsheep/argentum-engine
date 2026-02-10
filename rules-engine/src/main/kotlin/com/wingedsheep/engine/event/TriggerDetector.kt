@@ -501,8 +501,11 @@ class TriggerDetector(
         val sourceId = event.sourceId ?: return
         val container = state.getEntity(sourceId) ?: return
         val cardComponent = container.get<CardComponent>() ?: return
+        // Fall back to ownerId if ControllerComponent was stripped (e.g., creature died to SBA
+        // during combat damage, but its damage trigger should still fire per Rule 603.10)
         val controllerId = projected.getController(sourceId)
-            ?: container.get<ControllerComponent>()?.playerId ?: return
+            ?: container.get<ControllerComponent>()?.playerId
+            ?: cardComponent.ownerId ?: return
 
         // Face-down creatures have no abilities (Rule 707.2)
         if (container.has<FaceDownComponent>()) return
@@ -710,7 +713,8 @@ class TriggerDetector(
     private fun matchesDealsDamageTrigger(trigger: OnDealsDamage, event: DamageDealtEvent, state: GameState): Boolean {
         val combatMatches = !trigger.combatOnly || event.isCombatDamage
         val targetMatches = !trigger.toPlayerOnly || event.targetId in state.turnOrder
-        return combatMatches && targetMatches
+        val creatureMatches = !trigger.toCreatureOnly || event.targetId !in state.turnOrder
+        return combatMatches && targetMatches && creatureMatches
     }
 
     private fun matchesStepTrigger(

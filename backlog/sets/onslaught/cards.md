@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 209 / 335
+**Implemented:** 210 / 335
 
 ---
 
@@ -251,7 +251,7 @@
 - [ ] Seaside Haven
 - [x] Searing Flesh
 - [x] Secluded Steppe
-- [ ] Serpentine Basilisk
+- [x] Serpentine Basilisk
 - [x] Severed Legion
 - [ ] Shade's Breath
 - [x] Shaleskin Bruiser
