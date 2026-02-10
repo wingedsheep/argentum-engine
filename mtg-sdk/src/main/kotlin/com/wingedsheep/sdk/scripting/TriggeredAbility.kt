@@ -18,7 +18,8 @@ data class TriggeredAbility(
     val trigger: Trigger,
     val effect: Effect,
     val optional: Boolean = false,
-    val targetRequirement: TargetRequirement? = null
+    val targetRequirement: TargetRequirement? = null,
+    val elseEffect: Effect? = null
 ) {
     val description: String
         get() = buildString {
@@ -30,6 +31,10 @@ data class TriggeredAbility(
                 append(" ")
             }
             append(effect.description.replaceFirstChar { it.lowercase() })
+            if (elseEffect != null) {
+                append(". If you don't, ")
+                append(elseEffect.description.replaceFirstChar { it.lowercase() })
+            }
             append(".")
         }
 
@@ -42,14 +47,16 @@ data class TriggeredAbility(
             trigger: Trigger,
             effect: Effect,
             optional: Boolean = false,
-            targetRequirement: TargetRequirement? = null
+            targetRequirement: TargetRequirement? = null,
+            elseEffect: Effect? = null
         ): TriggeredAbility =
             TriggeredAbility(
                 id = AbilityId.generate(),
                 trigger = trigger,
                 effect = effect,
                 optional = optional,
-                targetRequirement = targetRequirement
+                targetRequirement = targetRequirement,
+                elseEffect = elseEffect
             )
     }
 }

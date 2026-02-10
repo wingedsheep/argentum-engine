@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 206 / 335
+**Implemented:** 207 / 335
 
 ---
 
@@ -114,7 +114,7 @@
 - [x] Embermage Goblin
 - [ ] Enchantress's Presence
 - [ ] Endemic Plague
-- [ ] Entrails Feaster
+- [x] Entrails Feaster
 - [x] Erratic Explosion
 - [x] Essence Fracture
 - [x] Everglove Courier

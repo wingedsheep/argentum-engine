@@ -113,6 +113,7 @@ object OnslaughtSet {
         DeathPulse,
         DoomedNecromancer,
         DiscipleOfMalice,
+        EntrailsFeaster,
         FallenCleric,
         FadeFromMemory,
         FeedingFrenzy,

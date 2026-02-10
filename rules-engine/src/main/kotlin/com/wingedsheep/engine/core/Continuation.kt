@@ -117,7 +117,8 @@ data class TriggeredAbilityContinuation(
     val effect: Effect,
     val description: String,
     val triggerDamageAmount: Int? = null,
-    val triggeringEntityId: EntityId? = null
+    val triggeringEntityId: EntityId? = null,
+    val elseEffect: Effect? = null
 ) : ContinuationFrame
 
 /**

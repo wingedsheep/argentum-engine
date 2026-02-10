@@ -9,6 +9,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.Effect
 import com.wingedsheep.sdk.scripting.MayEffect
 import com.wingedsheep.sdk.scripting.MayPayManaEffect
 import com.wingedsheep.sdk.targeting.TargetRequirement
@@ -308,6 +309,11 @@ class TriggerProcessor(
         // If no legal targets exist and targets are required (not optional),
         // the ability is removed from the stack without resolving (Rule 603.3d)
         if (legalTargets.isEmpty() && targetRequirement.effectiveMinCount > 0) {
+            // If the ability has an else effect (e.g., "If you don't, tap this creature"),
+            // put it on the stack with the else effect instead of fizzling
+            if (ability.elseEffect != null) {
+                return putTriggerOnStack(state, trigger, emptyList(), ability.elseEffect)
+            }
             // No legal targets - ability doesn't go on stack
             return ExecutionResult.success(
                 state,
@@ -367,7 +373,8 @@ class TriggerProcessor(
             effect = ability.effect,
             description = ability.description,
             triggerDamageAmount = trigger.triggerContext.damageAmount,
-            triggeringEntityId = trigger.triggerContext.triggeringEntityId
+            triggeringEntityId = trigger.triggerContext.triggeringEntityId,
+            elseEffect = ability.elseEffect
         )
 
         // Push the continuation onto the stack
@@ -382,11 +389,16 @@ class TriggerProcessor(
 
     /**
      * Put a triggered ability directly on the stack (no targets required).
+     *
+     * @param effectOverride If provided, use this effect instead of the ability's main effect.
+     *                       Used when the ability's else branch should execute (e.g., player
+     *                       can't or didn't choose targets for an optional ability).
      */
     private fun putTriggerOnStack(
         state: GameState,
         trigger: PendingTrigger,
-        targets: List<com.wingedsheep.engine.state.components.stack.ChosenTarget>
+        targets: List<com.wingedsheep.engine.state.components.stack.ChosenTarget>,
+        effectOverride: Effect? = null
     ): ExecutionResult {
         val ability = trigger.ability
 
@@ -394,7 +406,7 @@ class TriggerProcessor(
             sourceId = trigger.sourceId,
             sourceName = trigger.sourceName,
             controllerId = trigger.controllerId,
-            effect = ability.effect,
+            effect = effectOverride ?: ability.effect,
             description = ability.description,
             triggerDamageAmount = trigger.triggerContext.damageAmount,
             triggeringEntityId = trigger.triggerContext.triggeringEntityId

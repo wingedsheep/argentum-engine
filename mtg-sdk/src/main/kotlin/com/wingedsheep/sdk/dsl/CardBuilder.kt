@@ -588,6 +588,7 @@ class TriggeredAbilityBuilder {
     var effect: Effect? = null
     var target: TargetRequirement? = null
     var optional: Boolean = false
+    var elseEffect: Effect? = null
 
     fun build(): TriggeredAbility {
         requireNotNull(effect) { "Triggered ability must have an effect" }
@@ -595,7 +596,8 @@ class TriggeredAbilityBuilder {
             trigger = trigger,
             effect = effect!!,
             optional = optional,
-            targetRequirement = target
+            targetRequirement = target,
+            elseEffect = elseEffect
         )
     }
 }

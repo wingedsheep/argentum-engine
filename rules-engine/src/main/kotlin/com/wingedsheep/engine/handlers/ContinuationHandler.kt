@@ -325,8 +325,24 @@ class ContinuationHandler(
         }
 
         // If player selected 0 targets for an optional ability (minTargets was 0),
-        // they are declining the ability - don't put it on the stack
+        // they are declining the ability
         if (selectedTargets.isEmpty()) {
+            // If the ability has an else effect (e.g., "If you don't, tap this creature"),
+            // put it on the stack with the else effect
+            if (continuation.elseEffect != null) {
+                val elseComponent = TriggeredAbilityOnStackComponent(
+                    sourceId = continuation.sourceId,
+                    sourceName = continuation.sourceName,
+                    controllerId = continuation.controllerId,
+                    effect = continuation.elseEffect,
+                    description = continuation.description,
+                    triggerDamageAmount = continuation.triggerDamageAmount,
+                    triggeringEntityId = continuation.triggeringEntityId
+                )
+                val stackResult = stackResolver.putTriggeredAbility(state, elseComponent, emptyList())
+                if (!stackResult.isSuccess) return stackResult
+                return checkForMoreContinuations(stackResult.newState, stackResult.events.toList())
+            }
             return checkForMoreContinuations(state, emptyList())
         }
 
