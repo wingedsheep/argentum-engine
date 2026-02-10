@@ -32,6 +32,13 @@ interface AttackerArrowData {
   attackerId: EntityId
 }
 
+interface AttackIndicatorData {
+  x: number
+  y: number
+  direction: 'up' | 'down'
+  attackerId: EntityId
+}
+
 /**
  * SVG arrow component with curved path and arrowhead.
  */
@@ -138,6 +145,58 @@ function getPlayerLifeCenter(playerId: EntityId): Point | null {
 }
 
 /**
+ * Get the edge positions of a card element for attack indicators.
+ */
+function getCardEdgeCenter(cardId: EntityId): { topCenter: Point; bottomCenter: Point; centerY: number } | null {
+  const element = document.querySelector(`[data-card-id="${cardId}"]`)
+  if (!element) return null
+
+  const rect = element.getBoundingClientRect()
+  return {
+    topCenter: { x: rect.left + rect.width / 2, y: rect.top },
+    bottomCenter: { x: rect.left + rect.width / 2, y: rect.bottom },
+    centerY: rect.top + rect.height / 2,
+  }
+}
+
+/**
+ * Animated attack direction indicator — red triangles streaming toward the opponent.
+ */
+function AttackIndicator({ x, y, direction }: { x: number; y: number; direction: 'up' | 'down' }) {
+  const halfWidth = 10
+  const triHeight = 12
+  const dir = direction === 'up' ? -1 : 1
+  const baseY = y + dir * 6
+  const tipY = baseY + dir * triHeight
+  const points = `${x - halfWidth},${baseY} ${x},${tipY} ${x + halfWidth},${baseY}`
+
+  return (
+    <g>
+      {/* Glow */}
+      <polygon
+        points={points}
+        fill="#ff4444"
+        fillOpacity={0.15}
+        stroke="#ff4444"
+        strokeWidth={5}
+        strokeOpacity={0.2}
+        strokeLinejoin="round"
+      />
+      {/* Filled triangle */}
+      <polygon
+        points={points}
+        fill="#ff4444"
+        fillOpacity={0.85}
+        stroke="#ff6666"
+        strokeWidth={1}
+        strokeOpacity={0.6}
+        strokeLinejoin="round"
+      />
+    </g>
+  )
+}
+
+/**
  * Combat arrows overlay - draws arrows between blockers and attackers.
  *
  * Shows arrows in three scenarios:
@@ -168,6 +227,7 @@ export function CombatArrows() {
   const [mousePos, setMousePos] = useState<Point | null>(null)
   const [arrows, setArrows] = useState<ArrowData[]>([])
   const [attackerArrows, setAttackerArrows] = useState<AttackerArrowData[]>([])
+  const [attackIndicators, setAttackIndicators] = useState<AttackIndicatorData[]>([])
 
   // Check if we're still in combat phase
   const isInCombatPhase = currentStep && COMBAT_STEPS.has(currentStep as Step)
@@ -342,6 +402,36 @@ export function CombatArrows() {
         }
       }
       setAttackerArrows(newAttackerArrows)
+
+      // Compute attack direction indicators (red triangles)
+      const newIndicators: AttackIndicatorData[] = []
+      const viewportCenterY = window.innerHeight / 2
+
+      if (combatState?.mode === 'declareAttackers' && combatState.selectedAttackers.length > 0) {
+        // During declare attackers: show for locally selected attackers
+        for (const attackerId of combatState.selectedAttackers) {
+          const edge = getCardEdgeCenter(attackerId)
+          if (edge) {
+            const direction = edge.centerY > viewportCenterY ? 'up' : 'down'
+            const pos = direction === 'up' ? edge.topCenter : edge.bottomCenter
+            newIndicators.push({ x: pos.x, y: pos.y, direction, attackerId })
+          }
+        }
+      } else if (gameStateCombat && gameStateCombat.attackers.length > 0 && isInCombatPhase) {
+        // During other combat phases: show for all confirmed attackers
+        for (const attacker of gameStateCombat.attackers) {
+          const attackerCard = cards?.[attacker.creatureId]
+          if (attackerCard?.zone?.zoneType !== ZoneType.BATTLEFIELD) continue
+
+          const edge = getCardEdgeCenter(attacker.creatureId)
+          if (edge) {
+            const direction = edge.centerY > viewportCenterY ? 'up' : 'down'
+            const pos = direction === 'up' ? edge.topCenter : edge.bottomCenter
+            newIndicators.push({ x: pos.x, y: pos.y, direction, attackerId: attacker.creatureId })
+          }
+        }
+      }
+      setAttackIndicators(newIndicators)
     }
 
     // Update immediately and on animation frames for smooth updates
@@ -360,7 +450,8 @@ export function CombatArrows() {
     (opponentBlockerAssignments && Object.keys(opponentBlockerAssignments).length > 0 && isInCombatPhase) ||
     (gameStateCombat && gameStateCombat.blockers.length > 0 && isInCombatPhase)
   const hasAttackers = gameStateCombat && gameStateCombat.attackers.length > 0 && isInCombatPhase
-  if (!hasBlockers && !hasAttackers && !draggingBlockerId) {
+  const hasSelectedAttackers = combatState?.mode === 'declareAttackers' && combatState.selectedAttackers.length > 0
+  if (!hasBlockers && !hasAttackers && !hasSelectedAttackers && !draggingBlockerId) {
     return null
   }
 
@@ -384,6 +475,16 @@ export function CombatArrows() {
         zIndex: 2000, // Above spectator container (1500)
       }}
     >
+      {/* Attack direction indicators (red triangles pointing toward opponent) */}
+      {attackIndicators.map(({ x, y, direction, attackerId }) => (
+        <AttackIndicator
+          key={`indicator-${attackerId}`}
+          x={x}
+          y={y}
+          direction={direction}
+        />
+      ))}
+
       {/* Attacker arrows (unblocked attackers to defending player) */}
       {attackerArrows.map(({ start, end, attackerId }) => (
         <Arrow
