@@ -404,12 +404,30 @@ class GameSession(
     private fun buildSpectatorCardInfo(state: GameState, cardId: EntityId): ServerMessage.SpectatorCardInfo? {
         val card = state.getEntity(cardId) ?: return null
         val cardComponent = card.get<CardComponent>() ?: return null
-        val cardDef = cardRegistry.getCard(cardComponent.name)
 
+        val isFaceDown = card.has<FaceDownComponent>()
         val tapped = card.has<TappedComponent>()
         val damage = card.get<DamageComponent>()?.amount ?: 0
-        val cardTypes = cardComponent.typeLine.cardTypes.map { it.name }
         val isAttacking = card.has<AttackingComponent>()
+
+        // Spectators should not see the identity of face-down cards
+        if (isFaceDown) {
+            return ServerMessage.SpectatorCardInfo(
+                entityId = cardId.value,
+                name = "Face-down creature",
+                imageUri = null,
+                isTapped = tapped,
+                power = 2,
+                toughness = 2,
+                damage = damage,
+                cardTypes = listOf("CREATURE"),
+                isAttacking = isAttacking,
+                targets = emptyList()
+            )
+        }
+
+        val cardDef = cardRegistry.getCard(cardComponent.name)
+        val cardTypes = cardComponent.typeLine.cardTypes.map { it.name }
 
         // Get targets for spells/abilities on the stack
         val targetsComponent = card.get<TargetsComponent>()
