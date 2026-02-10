@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 215 / 335
+**Implemented:** 216 / 335
 
 ---
 
@@ -195,7 +195,7 @@
 - [ ] Meddle
 - [ ] Menacing Ogre
 - [x] Misery Charm
-- [ ] Mistform Dreamer
+- [x] Mistform Dreamer
 - [ ] Mistform Mask
 - [ ] Mistform Mutant
 - [ ] Mistform Shrieker
