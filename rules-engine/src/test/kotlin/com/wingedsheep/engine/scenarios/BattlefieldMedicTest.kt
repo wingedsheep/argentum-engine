@@ -1,11 +1,13 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.AbilityFizzledEvent
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
@@ -17,8 +19,10 @@ import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.GrantKeywordUntilEndOfTurnEffect
 import com.wingedsheep.sdk.scripting.PreventNextDamageEffect
 import com.wingedsheep.sdk.scripting.TargetFilter
+import com.wingedsheep.sdk.targeting.TargetCreature
 import com.wingedsheep.sdk.targeting.TargetPermanent
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -310,5 +314,68 @@ class BattlefieldMedicTest : FunSpec({
         if (damage2 != null) {
             damage2 shouldBe 5
         }
+    }
+
+    test("ability fizzles when target gains shroud while ability is on the stack (Rule 608.2b)") {
+        val MagesGuile = CardDefinition.instant(
+            name = "Mage's Guile",
+            manaCost = ManaCost.parse("{1}{U}"),
+            oracleText = "Target creature gains shroud until end of turn.",
+            script = CardScript.spell(
+                effect = GrantKeywordUntilEndOfTurnEffect(Keyword.SHROUD, EffectTarget.ContextTarget(0)),
+                TargetCreature()
+            )
+        )
+
+        val driver = GameTestDriver()
+        driver.registerCards(TestCards.all + listOf(BattlefieldMedic, HillGiant, MagesGuile))
+        driver.initMirrorMatch(
+            deck = Deck.of("Plains" to 20, "Island" to 20),
+            startingLife = 20
+        )
+
+        val p1 = driver.activePlayer!!
+        val p2 = driver.getOpponent(p1)
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        // P1: Medic + target creature on battlefield
+        val medic = driver.putCreatureOnBattlefield(p1, "Battlefield Medic")
+        val target = driver.putCreatureOnBattlefield(p1, "Hill Giant")
+        driver.removeSummoningSickness(medic)
+
+        // P1 activates Medic ability targeting Hill Giant → goes on stack
+        val activateResult = driver.submit(
+            ActivateAbility(
+                playerId = p1,
+                sourceId = medic,
+                abilityId = medicAbilityId,
+                targets = listOf(ChosenTarget.Permanent(target))
+            )
+        )
+        activateResult.isSuccess shouldBe true
+
+        // P1 passes priority
+        driver.passPriority(p1)
+
+        // P2 casts Mage's Guile targeting Hill Giant in response → goes on stack above
+        val guile = driver.putCardInHand(p2, "Mage's Guile")
+        driver.giveMana(p2, Color.BLUE, 2)
+        val castResult = driver.castSpellWithTargets(p2, guile, listOf(ChosenTarget.Permanent(target)))
+        castResult.isSuccess shouldBe true
+
+        // Both pass → Mage's Guile resolves (LIFO) → Hill Giant gains shroud
+        driver.bothPass()
+
+        // Both pass → Medic ability resolves → target has shroud → fizzle!
+        driver.bothPass()
+
+        // The ability should have fizzled
+        val fizzled = driver.events.any { it is AbilityFizzledEvent }
+        fizzled shouldBe true
+
+        // No damage prevention shield should exist (ability fizzled, never created the shield)
+        driver.state.floatingEffects.none {
+            it.effect.modification is com.wingedsheep.engine.mechanics.layers.SerializableModification.PreventNextDamage
+        } shouldBe true
     }
 })

@@ -228,7 +228,7 @@ class StackResolver(
         val sourceColors = cardComponent?.colors ?: emptySet()
         val sourceSubtypes = cardComponent?.typeLine?.subtypes?.map { it.value }?.toSet() ?: emptySet()
         val resolvedTargets = if (targetsComponent != null && targetsComponent.targets.isNotEmpty()) {
-            val validTargets = validateTargets(state, targetsComponent.targets, sourceColors, sourceSubtypes)
+            val validTargets = validateTargets(state, targetsComponent.targets, sourceColors, sourceSubtypes, spellComponent.casterId)
             if (validTargets.isEmpty()) {
                 // All targets invalid - spell fizzles
                 return fizzleSpell(state, spellId, cardComponent, spellComponent)
@@ -589,7 +589,7 @@ class StackResolver(
         val sourceColors = sourceCard?.colors ?: emptySet()
         val sourceSubtypes = sourceCard?.typeLine?.subtypes?.map { it.value }?.toSet() ?: emptySet()
         if (targetsComponent != null && targetsComponent.targets.isNotEmpty()) {
-            val validTargets = validateTargets(state, targetsComponent.targets, sourceColors, sourceSubtypes)
+            val validTargets = validateTargets(state, targetsComponent.targets, sourceColors, sourceSubtypes, abilityComponent.controllerId)
             if (validTargets.isEmpty()) {
                 // Fizzle - remove ability entity
                 val newState = state.removeEntity(abilityId)
@@ -659,7 +659,7 @@ class StackResolver(
         val sourceColors = sourceCard?.colors ?: emptySet()
         val sourceSubtypes = sourceCard?.typeLine?.subtypes?.map { it.value }?.toSet() ?: emptySet()
         if (targetsComponent != null && targetsComponent.targets.isNotEmpty()) {
-            val validTargets = validateTargets(state, targetsComponent.targets, sourceColors, sourceSubtypes)
+            val validTargets = validateTargets(state, targetsComponent.targets, sourceColors, sourceSubtypes, abilityComponent.controllerId)
             if (validTargets.isEmpty()) {
                 val newState = state.removeEntity(abilityId)
                 return ExecutionResult.success(
@@ -838,11 +838,11 @@ class StackResolver(
         state: GameState,
         targets: List<ChosenTarget>,
         sourceColors: Set<Color> = emptySet(),
-        sourceSubtypes: Set<String> = emptySet()
+        sourceSubtypes: Set<String> = emptySet(),
+        controllerId: EntityId
     ): List<ChosenTarget> {
-        val needProtectionCheck = sourceColors.isNotEmpty() || sourceSubtypes.isNotEmpty()
-        // Project state once for all protection checks (avoids repeated projection)
-        val projected = if (needProtectionCheck) stateProjector.project(state) else null
+        // Always project state for shroud/hexproof checks (Rule 702.18, 702.11)
+        val projected = stateProjector.project(state)
 
         return targets.filter { target ->
             when (target) {
@@ -855,17 +855,22 @@ class StackResolver(
                     // Permanent is valid if still on battlefield
                     if (target.entityId !in state.getBattlefield()) return@filter false
 
+                    // Check shroud — can't be targeted by anyone (Rule 702.18)
+                    if (projected.hasKeyword(target.entityId, "SHROUD")) return@filter false
+
+                    // Check hexproof — can't be targeted by opponents (Rule 702.11)
+                    val entityController = state.getEntity(target.entityId)?.get<ControllerComponent>()?.playerId
+                    if (projected.hasKeyword(target.entityId, "HEXPROOF") && entityController != controllerId) return@filter false
+
                     // Check protection from source colors/subtypes (Rule 702.16)
-                    if (needProtectionCheck && projected != null) {
-                        for (color in sourceColors) {
-                            if (projected.hasKeyword(target.entityId, "PROTECTION_FROM_${color.name}")) {
-                                return@filter false
-                            }
+                    for (color in sourceColors) {
+                        if (projected.hasKeyword(target.entityId, "PROTECTION_FROM_${color.name}")) {
+                            return@filter false
                         }
-                        for (subtype in sourceSubtypes) {
-                            if (projected.hasKeyword(target.entityId, "PROTECTION_FROM_SUBTYPE_${subtype.uppercase()}")) {
-                                return@filter false
-                            }
+                    }
+                    for (subtype in sourceSubtypes) {
+                        if (projected.hasKeyword(target.entityId, "PROTECTION_FROM_SUBTYPE_${subtype.uppercase()}")) {
+                            return@filter false
                         }
                     }
                     true
