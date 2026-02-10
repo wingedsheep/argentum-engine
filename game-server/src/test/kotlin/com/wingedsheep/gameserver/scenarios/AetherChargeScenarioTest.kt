@@ -21,9 +21,12 @@ import io.kotest.matchers.shouldBe
 class AetherChargeScenarioTest : ScenarioTestBase() {
 
     init {
-        context("Aether Charge triggers when morph Beast is turned face up") {
+        context("Aether Charge and morph interactions (Rule 702.37e)") {
 
-            test("turning a Beast morph face up triggers Aether Charge") {
+            test("turning a Beast morph face up does NOT trigger Aether Charge") {
+                // Rule 702.37e: Turning a face-down permanent face up doesn't cause the
+                // creature to enter or leave the battlefield, so "enters the battlefield"
+                // triggers don't fire.
                 val game = scenario()
                     .withPlayers("Beast Player", "Opponent")
                     .withCardOnBattlefield(1, "Aether Charge")
@@ -59,58 +62,14 @@ class AetherChargeScenarioTest : ScenarioTestBase() {
                     (faceDownId != null) shouldBe true
                 }
 
-                // Turn face up - this SHOULD trigger Aether Charge (now it's a Beast)
+                // Turn face up - should NOT trigger Aether Charge (Rule 702.37e)
                 val turnUpResult = game.execute(TurnFaceUp(game.player1Id, faceDownId!!))
                 withClue("Turn face up should succeed: ${turnUpResult.error}") {
                     turnUpResult.error shouldBe null
                 }
 
-                // Aether Charge trigger: "you may have it deal 4 damage to target opponent"
-                // Select target opponent
-                game.selectTargets(listOf(game.player2Id))
-
-                // Answer yes to the may ability
-                game.answerYesNo(true)
-                game.resolveStack()
-
-                withClue("Opponent should have taken 4 damage from Aether Charge trigger") {
-                    game.getLifeTotal(2) shouldBe 16
-                }
-            }
-
-            test("can decline Aether Charge trigger when morph is turned face up") {
-                val game = scenario()
-                    .withPlayers("Beast Player", "Opponent")
-                    .withCardOnBattlefield(1, "Aether Charge")
-                    .withCardInHand(1, "Snarling Undorak")
-                    .withLandsOnBattlefield(1, "Forest", 3)
-                    .withLandsOnBattlefield(1, "Mountain", 3)
-                    .withActivePlayer(1)
-                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
-                    .build()
-
-                // Cast face-down
-                val hand = game.state.getHand(game.player1Id)
-                val undorakCardId = hand.find { entityId ->
-                    game.state.getEntity(entityId)?.get<CardComponent>()?.name == "Snarling Undorak"
-                }!!
-                game.execute(CastSpell(game.player1Id, undorakCardId, castFaceDown = true))
-                game.resolveStack()
-
-                // Turn face up
-                val faceDownId = game.state.getBattlefield().find { entityId ->
-                    game.state.getEntity(entityId)?.has<FaceDownComponent>() == true
-                }!!
-                game.execute(TurnFaceUp(game.player1Id, faceDownId))
-
-                // Select target opponent
-                game.selectTargets(listOf(game.player2Id))
-
-                // Decline the may ability
-                game.answerYesNo(false)
-                game.resolveStack()
-
-                withClue("Opponent should still be at 20 life (declined trigger)") {
+                // Opponent should still be at 20 - turning face up is not entering the battlefield
+                withClue("Opponent should still be at 20 life (turning face up is not entering)") {
                     game.getLifeTotal(2) shouldBe 20
                 }
             }
@@ -119,7 +78,6 @@ class AetherChargeScenarioTest : ScenarioTestBase() {
                 val game = scenario()
                     .withPlayers("Player", "Opponent")
                     .withCardOnBattlefield(1, "Aether Charge")
-                    .withCardInHand(1, "Hystrodon") // Beast - but let's test with a non-Beast
                     .withCardInHand(1, "Ironfist Crusher") // Soldier, not a Beast
                     .withLandsOnBattlefield(1, "Plains", 6)
                     .withActivePlayer(1)

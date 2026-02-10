@@ -594,44 +594,28 @@ class TriggerDetector(
             }
 
             is OnOtherCreatureWithSubtypeEnters -> {
-                when {
-                    event is ZoneChangeEvent &&
-                        event.toZone == com.wingedsheep.sdk.core.Zone.BATTLEFIELD &&
-                        event.entityId != sourceId -> {
+                // Rule 702.37e: Turning face-up doesn't cause entering the battlefield
+                event is ZoneChangeEvent &&
+                    event.toZone == com.wingedsheep.sdk.core.Zone.BATTLEFIELD &&
+                    event.entityId != sourceId &&
+                    run {
                         val projected = stateProjector.project(state)
                         val hasSubtype = projected.hasSubtype(event.entityId, trigger.subtype.value)
                         val controllerMatches = !trigger.youControlOnly || event.ownerId == controllerId
                         hasSubtype && controllerMatches
                     }
-                    // Turning a face-down creature face up reveals its subtypes
-                    event is TurnFaceUpEvent && event.entityId != sourceId -> {
-                        val projected = stateProjector.project(state)
-                        val hasSubtype = projected.hasSubtype(event.entityId, trigger.subtype.value)
-                        val controllerMatches = !trigger.youControlOnly || event.controllerId == controllerId
-                        hasSubtype && controllerMatches
-                    }
-                    else -> false
-                }
             }
 
             is OnCreatureWithSubtypeEnters -> {
-                when {
-                    event is ZoneChangeEvent &&
-                        event.toZone == com.wingedsheep.sdk.core.Zone.BATTLEFIELD -> {
+                // Rule 702.37e: Turning face-up doesn't cause entering the battlefield
+                event is ZoneChangeEvent &&
+                    event.toZone == com.wingedsheep.sdk.core.Zone.BATTLEFIELD &&
+                    run {
                         val projected = stateProjector.project(state)
                         val hasSubtype = projected.hasSubtype(event.entityId, trigger.subtype.value)
                         val controllerMatches = !trigger.youControlOnly || event.ownerId == controllerId
                         hasSubtype && controllerMatches
                     }
-                    // Turning a face-down creature face up reveals its subtypes
-                    event is TurnFaceUpEvent -> {
-                        val projected = stateProjector.project(state)
-                        val hasSubtype = projected.hasSubtype(event.entityId, trigger.subtype.value)
-                        val controllerMatches = !trigger.youControlOnly || event.controllerId == controllerId
-                        hasSubtype && controllerMatches
-                    }
-                    else -> false
-                }
             }
 
             is OnDraw -> {

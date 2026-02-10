@@ -135,5 +135,6 @@ class MorphFaceDownRulesTest : ScenarioTestBase() {
                 }
             }
         }
+
     }
 }
