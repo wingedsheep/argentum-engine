@@ -735,6 +735,16 @@ class ClientStateTransformer(
                         )
                     )
                 }
+                is SerializableModification.SetCantBlock -> {
+                    effects.add(
+                        ClientCardEffect(
+                            effectId = "cant_block",
+                            name = "Can't Block",
+                            description = "This creature can't block this turn",
+                            icon = "cant-block"
+                        )
+                    )
+                }
                 is SerializableModification.PreventNextDamage -> {
                     preventDamageTotal += modification.remainingAmount
                 }
