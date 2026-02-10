@@ -19,6 +19,7 @@ interface ReorderCardsUIProps {
  * - "Confirm Order" button to submit the new arrangement
  */
 export function ReorderCardsUI({ decision, responsive }: ReorderCardsUIProps) {
+  const isSingleCard = decision.cards.length === 1
   const [orderedCards, setOrderedCards] = useState<EntityId[]>([...decision.cards])
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
@@ -160,7 +161,7 @@ export function ReorderCardsUI({ decision, responsive }: ReorderCardsUIProps) {
             fontWeight: 600,
           }}
         >
-          Reorder Cards
+          {isSingleCard ? 'View Card' : 'Reorder Cards'}
         </h2>
         <p
           style={{
@@ -174,16 +175,18 @@ export function ReorderCardsUI({ decision, responsive }: ReorderCardsUIProps) {
       </div>
 
       {/* Instruction */}
-      <p
-        style={{
-          color: '#888',
-          margin: 0,
-          fontSize: responsive.fontSize.small,
-          textAlign: 'center',
-        }}
-      >
-        Drag cards to reorder, or use the arrow buttons. The leftmost card will be on top of your library.
-      </p>
+      {!isSingleCard && (
+        <p
+          style={{
+            color: '#888',
+            margin: 0,
+            fontSize: responsive.fontSize.small,
+            textAlign: 'center',
+          }}
+        >
+          Drag cards to reorder, or use the arrow buttons. The leftmost card will be on top of your library.
+        </p>
+      )}
 
       {/* Card arrangement with TOP indicator */}
       <div
@@ -195,36 +198,38 @@ export function ReorderCardsUI({ decision, responsive }: ReorderCardsUIProps) {
         }}
       >
         {/* TOP indicator */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            color: '#4ade80',
-            fontSize: responsive.fontSize.normal,
-            fontWeight: 600,
-          }}
-        >
+        {!isSingleCard && (
           <div
             style={{
-              width: 0,
-              height: 0,
-              borderLeft: '8px solid transparent',
-              borderRight: '8px solid transparent',
-              borderBottom: '12px solid #4ade80',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              color: '#4ade80',
+              fontSize: responsive.fontSize.normal,
+              fontWeight: 600,
             }}
-          />
-          TOP OF LIBRARY
-          <div
-            style={{
-              width: 0,
-              height: 0,
-              borderLeft: '8px solid transparent',
-              borderRight: '8px solid transparent',
-              borderBottom: '12px solid #4ade80',
-            }}
-          />
-        </div>
+          >
+            <div
+              style={{
+                width: 0,
+                height: 0,
+                borderLeft: '8px solid transparent',
+                borderRight: '8px solid transparent',
+                borderBottom: '12px solid #4ade80',
+              }}
+            />
+            TOP OF LIBRARY
+            <div
+              style={{
+                width: 0,
+                height: 0,
+                borderLeft: '8px solid transparent',
+                borderRight: '8px solid transparent',
+                borderBottom: '12px solid #4ade80',
+              }}
+            />
+          </div>
+        )}
 
         {/* Cards */}
         <div
@@ -288,17 +293,19 @@ export function ReorderCardsUI({ decision, responsive }: ReorderCardsUIProps) {
         </div>
 
         {/* BOTTOM indicator */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            color: '#666',
-            fontSize: responsive.fontSize.small,
-          }}
-        >
-          (rightmost = bottom)
-        </div>
+        {!isSingleCard && (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              color: '#666',
+              fontSize: responsive.fontSize.small,
+            }}
+          >
+            (rightmost = bottom)
+          </div>
+        )}
       </div>
 
       {/* Action buttons */}
@@ -333,7 +340,7 @@ export function ReorderCardsUI({ decision, responsive }: ReorderCardsUIProps) {
             transition: 'all 0.15s',
           }}
         >
-          Confirm Order
+          {isSingleCard ? 'OK' : 'Confirm Order'}
         </button>
       </div>
 

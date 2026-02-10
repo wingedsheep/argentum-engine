@@ -61,21 +61,6 @@ class LookAtTopAndReorderExecutor : EffectExecutor<LookAtTopAndReorderEffect> {
         val count = minOf(dynamicCount, library.size)
         val topCards = library.take(count)
 
-        // If only 1 card, no reordering needed - player sees it and it stays on top
-        if (topCards.size == 1) {
-            // Just emit a "looked at cards" event and continue
-            return ExecutionResult.success(
-                state,
-                listOf(
-                    LookedAtCardsEvent(
-                        playerId = playerId,
-                        cardIds = topCards,
-                        source = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
-                    )
-                )
-            )
-        }
-
         // Build card info map for the UI
         val cardInfoMap = topCards.associateWith { cardId ->
             val container = state.getEntity(cardId)
@@ -97,7 +82,8 @@ class LookAtTopAndReorderExecutor : EffectExecutor<LookAtTopAndReorderEffect> {
         val decision = ReorderLibraryDecision(
             id = decisionId,
             playerId = playerId,
-            prompt = "Look at the top $count cards of your library. Put them back in any order.",
+            prompt = if (count == 1) "Look at the top card of your library."
+                else "Look at the top $count cards of your library. Put them back in any order.",
             context = DecisionContext(
                 sourceId = context.sourceId,
                 sourceName = sourceName,

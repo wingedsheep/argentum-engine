@@ -39,7 +39,7 @@ class InformationDealerScenarioTest : ScenarioTestBase() {
     init {
         context("Information Dealer - look at top X cards where X = Wizards you control") {
 
-            test("with only Information Dealer (1 Wizard), looks at top 1 card - no reorder needed") {
+            test("with only Information Dealer (1 Wizard), looks at top 1 card and shows it") {
                 val game = scenario()
                     .withPlayers("Player1", "Player2")
                     .withCardOnBattlefield(1, "Information Dealer")
@@ -53,10 +53,17 @@ class InformationDealerScenarioTest : ScenarioTestBase() {
                 game.activateInformationDealer()
                 game.resolveStack()
 
-                // With 1 Wizard, X=1, so only 1 card - no reorder decision needed
-                withClue("No reorder decision needed for 1 card") {
-                    game.hasPendingDecision() shouldBe false
+                // With 1 Wizard, X=1, player still sees the card
+                game.hasPendingDecision() shouldBe true
+                val decision = game.getPendingDecision()
+                decision.shouldBeInstanceOf<ReorderLibraryDecision>()
+                decision as ReorderLibraryDecision
+                withClue("Should see 1 card") {
+                    decision.cards.size shouldBe 1
                 }
+
+                // Submit the single card back
+                game.submitDecision(OrderedResponse(decision.id, decision.cards))
 
                 // Library should still have all 3 cards
                 withClue("Library size unchanged") {
@@ -148,10 +155,16 @@ class InformationDealerScenarioTest : ScenarioTestBase() {
                 game.activateInformationDealer()
                 game.resolveStack()
 
-                // Only 1 Wizard you control, so X=1, no reorder
-                withClue("No reorder decision for 1 card") {
-                    game.hasPendingDecision() shouldBe false
+                // Only 1 Wizard you control, so X=1, still shows the card
+                game.hasPendingDecision() shouldBe true
+                val decision = game.getPendingDecision()
+                decision.shouldBeInstanceOf<ReorderLibraryDecision>()
+                decision as ReorderLibraryDecision
+                withClue("Should see 1 card") {
+                    decision.cards.size shouldBe 1
                 }
+
+                game.submitDecision(OrderedResponse(decision.id, decision.cards))
             }
 
             test("fewer cards in library than Wizards - looks at all available") {
@@ -168,10 +181,16 @@ class InformationDealerScenarioTest : ScenarioTestBase() {
                 game.activateInformationDealer()
                 game.resolveStack()
 
-                // 3 Wizards but only 1 card - no reorder needed for single card
-                withClue("No reorder decision for 1 card") {
-                    game.hasPendingDecision() shouldBe false
+                // 3 Wizards but only 1 card - still shows it
+                game.hasPendingDecision() shouldBe true
+                val decision = game.getPendingDecision()
+                decision.shouldBeInstanceOf<ReorderLibraryDecision>()
+                decision as ReorderLibraryDecision
+                withClue("Should see 1 card") {
+                    decision.cards.size shouldBe 1
                 }
+
+                game.submitDecision(OrderedResponse(decision.id, decision.cards))
             }
 
             test("empty library - nothing happens") {
