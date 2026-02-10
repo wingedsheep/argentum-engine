@@ -7,7 +7,9 @@ import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ChosenCreatureTypeComponent
@@ -96,6 +98,20 @@ class CostHandler {
             }
             is AbilityCost.TapPermanents -> {
                 findUntappedMatchingPermanentsUnified(state, controllerId, cost.filter).size >= cost.count
+            }
+            is AbilityCost.TapAttachedCreature -> {
+                val attachedId = state.getEntity(sourceId)?.get<AttachedToComponent>()?.targetId
+                    ?: return false
+                val attachedEntity = state.getEntity(attachedId) ?: return false
+                if (attachedEntity.has<TappedComponent>()) return false
+                // Check summoning sickness on the attached creature
+                val card = attachedEntity.get<CardComponent>()
+                if (card != null && card.typeLine.isCreature) {
+                    val hasSummoningSickness = attachedEntity.has<SummoningSicknessComponent>()
+                    val hasHaste = card.baseKeywords.contains(com.wingedsheep.sdk.core.Keyword.HASTE)
+                    if (hasSummoningSickness && !hasHaste) return false
+                }
+                true
             }
             is AbilityCost.Composite -> {
                 cost.costs.all { canPayAbilityCost(state, it, sourceId, controllerId, manaPool) }
@@ -236,6 +252,12 @@ class CostHandler {
                 )
 
                 CostPaymentResult.success(newState, manaPool, events)
+            }
+            is AbilityCost.TapAttachedCreature -> {
+                val attachedId = state.getEntity(sourceId)?.get<AttachedToComponent>()?.targetId
+                    ?: return CostPaymentResult.failure("Source is not attached to a creature")
+                val newState = state.updateEntity(attachedId) { it.with(TappedComponent) }
+                CostPaymentResult.success(newState, manaPool)
             }
             is AbilityCost.TapPermanents -> {
                 val toTap = choices.tapChoices

@@ -19,7 +19,9 @@ import kotlin.math.min
  * DynamicAmount represents values that depend on game state, like
  * "the number of creatures you control" or "your life total".
  */
-class DynamicAmountEvaluator {
+class DynamicAmountEvaluator(
+    private val conditionEvaluator: ConditionEvaluator? = null
+) {
 
     /**
      * Evaluate a DynamicAmount to get an actual integer value.
@@ -122,6 +124,12 @@ class DynamicAmountEvaluator {
                     is com.wingedsheep.sdk.model.CharacteristicValue.DynamicWithOffset -> evaluate(state, power.source, context) + power.offset
                     null -> 0
                 }
+            }
+
+            is DynamicAmount.Conditional -> {
+                val eval = conditionEvaluator ?: ConditionEvaluator()
+                val met = eval.evaluate(state, amount.condition, context)
+                if (met) evaluate(state, amount.ifTrue, context) else evaluate(state, amount.ifFalse, context)
             }
         }
     }

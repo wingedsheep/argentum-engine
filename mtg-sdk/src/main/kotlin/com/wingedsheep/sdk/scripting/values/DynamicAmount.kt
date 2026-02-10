@@ -153,6 +153,19 @@ sealed interface DynamicAmount {
         override val description: String = "min(${left.description}, ${right.description})"
     }
 
+    /**
+     * Conditional amount: evaluates to one of two amounts based on a condition.
+     * Example: "2 if enchanted creature is a Wizard, otherwise 1"
+     */
+    @Serializable
+    data class Conditional(
+        val condition: Condition,
+        val ifTrue: DynamicAmount,
+        val ifFalse: DynamicAmount
+    ) : DynamicAmount {
+        override val description: String = "${ifTrue.description} ${condition.description}, otherwise ${ifFalse.description}"
+    }
+
     // =========================================================================
     // Context-based Values - Values from cost payment or trigger context
     // =========================================================================

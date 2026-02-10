@@ -19,14 +19,19 @@ import kotlinx.serialization.Serializable
 data class DealDamageEffect(
     val amount: DynamicAmount,
     val target: EffectTarget,
-    val cantBePrevented: Boolean = false
+    val cantBePrevented: Boolean = false,
+    val damageSource: EffectTarget? = null
 ) : Effect {
     /** Convenience constructor for fixed amounts */
-    constructor(amount: Int, target: EffectTarget, cantBePrevented: Boolean = false)
-        : this(DynamicAmount.Fixed(amount), target, cantBePrevented)
+    constructor(amount: Int, target: EffectTarget, cantBePrevented: Boolean = false, damageSource: EffectTarget? = null)
+        : this(DynamicAmount.Fixed(amount), target, cantBePrevented, damageSource)
 
     override val description: String = buildString {
-        append("Deal ${amount.description} damage to ${target.description}")
+        if (damageSource != null) {
+            append("${damageSource.description} deals ${amount.description} damage to ${target.description}")
+        } else {
+            append("Deal ${amount.description} damage to ${target.description}")
+        }
         if (cantBePrevented) append(". This damage can't be prevented")
     }
 }

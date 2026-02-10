@@ -150,6 +150,12 @@ sealed interface AbilityCost {
         override val description: String = costs.joinToString(", ") { it.description }
     }
 
+    /** Tap the creature this aura is attached to ({T} enchanted creature) */
+    @Serializable
+    data object TapAttachedCreature : AbilityCost {
+        override val description: String = "{T} enchanted creature"
+    }
+
     /** Loyalty cost for planeswalker abilities */
     @Serializable
     data class Loyalty(val change: Int) : AbilityCost {

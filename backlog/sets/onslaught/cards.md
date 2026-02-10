@@ -185,7 +185,7 @@
 - [x] Krosan Colossus
 - [x] Krosan Groundshaker
 - [x] Krosan Tusker
-- [ ] Lavamancer's Skill
+- [x] Lavamancer's Skill
 - [x] Lay Waste
 - [x] Leery Fogbeast
 - [x] Lightning Rift

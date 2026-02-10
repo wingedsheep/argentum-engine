@@ -100,3 +100,13 @@ data class APlayerControlsMostOfSubtype(val subtype: Subtype) : Condition {
 data class TargetPowerAtMost(val amount: DynamicAmount, val targetIndex: Int = 0) : Condition {
     override val description: String = "if its power is less than or equal to ${amount.description}"
 }
+
+/**
+ * Condition: "If enchanted creature is a [subtype]"
+ * Used by auras like Lavamancer's Skill that have different effects based on
+ * the creature type of the enchanted creature.
+ */
+@Serializable
+data class EnchantedCreatureHasSubtype(val subtype: Subtype) : Condition {
+    override val description: String = "if enchanted creature is a ${subtype.value}"
+}

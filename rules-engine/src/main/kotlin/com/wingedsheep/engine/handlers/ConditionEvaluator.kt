@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers
 
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
@@ -16,7 +17,7 @@ import com.wingedsheep.sdk.scripting.*
  */
 class ConditionEvaluator {
 
-    private val dynamicAmountEvaluator = DynamicAmountEvaluator()
+    private val dynamicAmountEvaluator = DynamicAmountEvaluator(this)
 
     /**
      * Evaluate a condition and return true if met.
@@ -45,6 +46,7 @@ class ConditionEvaluator {
             is OpponentControlsMoreLands -> evaluateOpponentControlsMoreLands(state, context)
             is APlayerControlsMostOfSubtype -> evaluateAPlayerControlsMostOfSubtype(state, condition)
             is TargetPowerAtMost -> evaluateTargetPowerAtMost(state, condition, context)
+            is EnchantedCreatureHasSubtype -> evaluateEnchantedCreatureHasSubtype(state, condition, context)
 
             // Hand conditions
             is EmptyHand -> evaluateEmptyHand(state, context)
@@ -326,6 +328,16 @@ class ConditionEvaluator {
         }
         val threshold = dynamicAmountEvaluator.evaluate(state, condition.amount, context)
         return power <= threshold
+    }
+
+    private fun evaluateEnchantedCreatureHasSubtype(
+        state: GameState,
+        condition: EnchantedCreatureHasSubtype,
+        context: EffectContext
+    ): Boolean {
+        val sourceId = context.sourceId ?: return false
+        val attachedId = state.getEntity(sourceId)?.get<AttachedToComponent>()?.targetId ?: return false
+        return state.getEntity(attachedId)?.get<CardComponent>()?.typeLine?.hasSubtype(condition.subtype) == true
     }
 
     // Helper functions

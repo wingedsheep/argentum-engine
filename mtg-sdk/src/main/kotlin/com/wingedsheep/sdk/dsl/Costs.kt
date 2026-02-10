@@ -98,6 +98,12 @@ object Costs {
      */
     val SacrificeChosenCreatureType: AbilityCost = AbilityCost.SacrificeChosenCreatureType
 
+    /**
+     * Tap the creature this aura is attached to.
+     * Used by auras that grant activated abilities to enchanted creature (e.g., Lavamancer's Skill).
+     */
+    val TapAttachedCreature: AbilityCost = AbilityCost.TapAttachedCreature
+
     // =========================================================================
     // Exile Costs
     // =========================================================================

@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.dealDamageToTarget
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolveTarget
 import com.wingedsheep.engine.state.GameState
@@ -33,6 +34,14 @@ class DealDamageExecutor(
             return ExecutionResult.success(state)
         }
 
-        return dealDamageToTarget(state, targetId, amount, context.sourceId, effect.cantBePrevented)
+        // Use damageSource override if specified (e.g., EnchantedCreature for Lavamancer's Skill)
+        val damageSourceTarget = effect.damageSource
+        val sourceId = if (damageSourceTarget != null) {
+            EffectExecutorUtils.resolveTarget(damageSourceTarget, context, state)
+        } else {
+            context.sourceId
+        }
+
+        return dealDamageToTarget(state, targetId, amount, sourceId, effect.cantBePrevented)
     }
 }

@@ -123,10 +123,29 @@ class ActivateAbilityHandler(
             }
         }
 
+        // Check summoning sickness for TapAttachedCreature cost (before general cost check
+        // to give a specific error message)
+        if (effectiveCost is AbilityCost.TapAttachedCreature ||
+            (effectiveCost is AbilityCost.Composite && effectiveCost.costs.any { it is AbilityCost.TapAttachedCreature })) {
+            val attachedId = container.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()?.targetId
+            if (attachedId != null) {
+                val attachedContainer = state.getEntity(attachedId)
+                val attachedCard = attachedContainer?.get<CardComponent>()
+                if (attachedCard != null && attachedCard.typeLine.isCreature) {
+                    val hasSummoningSickness = attachedContainer.has<SummoningSicknessComponent>()
+                    val hasHaste = attachedCard.baseKeywords.contains(Keyword.HASTE)
+                    if (hasSummoningSickness && !hasHaste) {
+                        return "Enchanted creature has summoning sickness"
+                    }
+                }
+            }
+        }
+
         // Check cost requirements (using ManaSolver for mana costs to consider untapped sources)
         if (!canPayAbilityCostWithSources(state, effectiveCost, action.sourceId, action.playerId)) {
             return when (effectiveCost) {
                 is AbilityCost.Tap -> "This permanent is already tapped"
+                is AbilityCost.TapAttachedCreature -> "Enchanted creature is tapped"
                 is AbilityCost.Loyalty -> {
                     if (effectiveCost.change < 0) {
                         "Not enough loyalty to activate this ability"
@@ -271,6 +290,13 @@ class ActivateAbilityHandler(
         when (ability.cost) {
             is AbilityCost.Tap -> {
                 events.add(TappedEvent(action.sourceId, cardComponent.name))
+            }
+            is AbilityCost.TapAttachedCreature -> {
+                val attachedId = container.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()?.targetId
+                if (attachedId != null) {
+                    val attachedName = currentState.getEntity(attachedId)?.get<CardComponent>()?.name ?: "Unknown"
+                    events.add(TappedEvent(attachedId, attachedName))
+                }
             }
             is AbilityCost.Loyalty -> {
                 val loyaltyCost = ability.cost as AbilityCost.Loyalty

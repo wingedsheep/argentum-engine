@@ -99,6 +99,18 @@ object EffectExecutorUtils {
     }
 
     /**
+     * Resolve a target with access to game state (for targets like EnchantedCreature
+     * that need to look up attachment relationships).
+     */
+    fun resolveTarget(effectTarget: EffectTarget, context: EffectContext, state: GameState): EntityId? {
+        if (effectTarget is EffectTarget.EnchantedCreature) {
+            val sourceId = context.sourceId ?: return null
+            return state.getEntity(sourceId)?.get<AttachedToComponent>()?.targetId
+        }
+        return resolveTarget(effectTarget, context)
+    }
+
+    /**
      * Resolve a player target from the effect target definition and context.
      */
     fun resolvePlayerTarget(effectTarget: EffectTarget, context: EffectContext): EntityId? {

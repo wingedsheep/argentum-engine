@@ -1090,6 +1090,18 @@ class GameSession(
                             if (hasSummoningSickness && !hasHaste) continue
                         }
                     }
+                    is AbilityCost.TapAttachedCreature -> {
+                        val attachedId = container.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()?.targetId
+                        if (attachedId == null) continue
+                        val attachedEntity = state.getEntity(attachedId) ?: continue
+                        if (attachedEntity.has<TappedComponent>()) continue
+                        val attachedCard = attachedEntity.get<CardComponent>()
+                        if (attachedCard != null && attachedCard.typeLine.isCreature) {
+                            val hasSummoningSickness = attachedEntity.has<SummoningSicknessComponent>()
+                            val hasHaste = attachedCard.baseKeywords.contains(Keyword.HASTE)
+                            if (hasSummoningSickness && !hasHaste) continue
+                        }
+                    }
                     is AbilityCost.TapPermanents -> {
                         tapCost = effectiveCost
                         tapTargets = findAbilityTapTargets(state, playerId, tapCost.filter)
@@ -1200,6 +1212,18 @@ class GameSession(
                             if (hasSummoningSickness && !hasHaste) continue
                         }
                     }
+                    is AbilityCost.TapAttachedCreature -> {
+                        val attachedId = container.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()?.targetId
+                        if (attachedId == null) continue
+                        val attachedEntity = state.getEntity(attachedId) ?: continue
+                        if (attachedEntity.has<TappedComponent>()) continue
+                        val attachedCard = attachedEntity.get<CardComponent>()
+                        if (attachedCard != null && attachedCard.typeLine.isCreature) {
+                            val hasSummoningSickness = attachedEntity.has<SummoningSicknessComponent>()
+                            val hasHaste = attachedCard.baseKeywords.contains(Keyword.HASTE)
+                            if (hasSummoningSickness && !hasHaste) continue
+                        }
+                    }
                     is AbilityCost.Mana -> {
                         if (!manaSolver.canPay(state, playerId, effectiveCost.cost)) continue
                     }
@@ -1275,6 +1299,27 @@ class GameSession(
                                 is AbilityCost.SacrificeSelf -> {
                                     // Source must be on battlefield (always true when iterating battlefield)
                                     sacrificeTargets = listOf(entityId)
+                                }
+                                is AbilityCost.TapAttachedCreature -> {
+                                    val attachedId = container.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()?.targetId
+                                    if (attachedId == null) {
+                                        costCanBePaid = false
+                                        break
+                                    }
+                                    val attachedEntity = state.getEntity(attachedId)
+                                    if (attachedEntity == null || attachedEntity.has<TappedComponent>()) {
+                                        costCanBePaid = false
+                                        break
+                                    }
+                                    val attachedCard = attachedEntity.get<CardComponent>()
+                                    if (attachedCard != null && attachedCard.typeLine.isCreature) {
+                                        val hasSummoningSickness = attachedEntity.has<SummoningSicknessComponent>()
+                                        val hasHaste = attachedCard.baseKeywords.contains(Keyword.HASTE)
+                                        if (hasSummoningSickness && !hasHaste) {
+                                            costCanBePaid = false
+                                            break
+                                        }
+                                    }
                                 }
                                 is AbilityCost.TapPermanents -> {
                                     tapCost = subCost
