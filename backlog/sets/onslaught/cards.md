@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 218 / 335
+**Implemented:** 219 / 335
 
 ---
 
@@ -68,7 +68,7 @@
 - [x] Complicate
 - [ ] Contested Cliffs
 - [ ] Convalescent Care
-- [ ] Cover of Darkness
+- [x] Cover of Darkness
 - [x] Crafty Pathmage
 - [ ] Crowd Favorites
 - [x] Crown of Ascension

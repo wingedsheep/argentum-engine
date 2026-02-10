@@ -65,6 +65,8 @@ object OnslaughtSet {
         Mobilization,
         SharedTriumph,
 
+        CoverOfDarkness,
+
         // Blue creatures and spells
         AirborneAid,
         Annex,

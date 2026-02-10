@@ -77,6 +77,20 @@ data class ModifyStatsForChosenCreatureType(
 }
 
 /**
+ * Grants a keyword to creatures of the chosen creature type.
+ * Used for "As this enters, choose a creature type. Creatures of the chosen type have [keyword]."
+ * The chosen type is stored on the permanent via ChosenCreatureTypeComponent and resolved dynamically.
+ * Example: Cover of Darkness (fear)
+ */
+@Serializable
+data class GrantKeywordForChosenCreatureType(
+    val keyword: Keyword
+) : StaticAbility {
+    override val description: String =
+        "Creatures of the chosen type have ${keyword.name.lowercase().replace('_', ' ')}"
+}
+
+/**
  * Modifies power/toughness (e.g., +2/+2 from an Equipment).
  */
 @Serializable

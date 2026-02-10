@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.scripting.GrantProtection
 import com.wingedsheep.sdk.scripting.GlobalEffect
 import com.wingedsheep.sdk.scripting.GlobalEffectType
 import com.wingedsheep.sdk.scripting.GrantKeyword
+import com.wingedsheep.sdk.scripting.GrantKeywordForChosenCreatureType
 import com.wingedsheep.sdk.scripting.GrantKeywordToCreatureGroup
 import com.wingedsheep.sdk.scripting.GroupFilter
 import com.wingedsheep.sdk.scripting.CardPredicate
@@ -119,6 +120,14 @@ class StaticAbilityHandler(
                     layer = Layer.POWER_TOUGHNESS,
                     sublayer = Sublayer.MODIFICATIONS,
                     modification = Modification.ModifyPowerToughness(ability.powerBonus, ability.toughnessBonus),
+                    affectsFilter = AffectsFilter.ChosenCreatureTypeCreatures
+                )
+            }
+            is GrantKeywordForChosenCreatureType -> {
+                ContinuousEffectData(
+                    layer = Layer.ABILITY,
+                    sublayer = null,
+                    modification = Modification.GrantKeyword(ability.keyword.name),
                     affectsFilter = AffectsFilter.ChosenCreatureTypeCreatures
                 )
             }
