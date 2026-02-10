@@ -150,10 +150,12 @@ abstract class ScenarioTestBase : FunSpec() {
             }
 
             // Add continuous effects from static abilities (e.g., "Other creatures you control have...")
+            // and replacement effects (e.g., PreventDamage from Daunting Defender)
             val cardDef = cardRegistry.getCard(cardName)
             if (cardDef != null) {
                 val staticHandler = StaticAbilityHandler(cardRegistry)
                 container = staticHandler.addContinuousEffectComponent(container, cardDef)
+                container = staticHandler.addReplacementEffectComponent(container, cardDef)
             }
 
             state = state.withEntity(cardId, container)
@@ -664,6 +666,9 @@ abstract class ScenarioTestBase : FunSpec() {
                     distribution[decision.targets.first()] = decision.totalAmount
                     submitDecision(DistributionResponse(decision.id, distribution))
                 }
+                is AssignDamageDecision -> {
+                    submitDecision(DamageAssignmentResponse(decision.id, decision.defaultAssignments))
+                }
                 else -> error("Cannot auto-resolve decision of type ${decision::class.simpleName}")
             }
         }
@@ -811,6 +816,26 @@ abstract class ScenarioTestBase : FunSpec() {
             val decisionId = state.pendingDecision?.id
                 ?: error("No pending decision to respond to")
             return submitDecision(DistributionResponse(decisionId, distribution))
+        }
+
+        /**
+         * Submit a damage assignment response (for combat damage assignment).
+         * @param assignments Map of target ID (creature or player) to damage amount
+         */
+        fun submitDamageAssignment(assignments: Map<EntityId, Int>): ExecutionResult {
+            val decisionId = state.pendingDecision?.id
+                ?: error("No pending decision to respond to")
+            return submitDecision(DamageAssignmentResponse(decisionId, assignments))
+        }
+
+        /**
+         * Submit a damage assignment using the default (auto-calculated) assignments.
+         * Convenience method when the player accepts the engine's suggested distribution.
+         */
+        fun submitDefaultDamageAssignment(): ExecutionResult {
+            val decision = state.pendingDecision as? AssignDamageDecision
+                ?: error("No pending AssignDamageDecision")
+            return submitDamageAssignment(decision.defaultAssignments)
         }
 
         /**

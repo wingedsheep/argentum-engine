@@ -8,6 +8,7 @@ import { useResponsive, calculateFittingCardWidth, type ResponsiveSizes } from '
 import { LibrarySearchUI } from './LibrarySearchUI'
 import { ReorderCardsUI } from './ReorderCardsUI'
 import { OrderBlockersUI } from './OrderBlockersUI'
+import { CombatDamageAssignmentModal } from './CombatDamageAssignmentModal'
 import { ZoneSelectionUI, type ZoneCardInfo } from './ZoneSelectionUI'
 import { getCardImageUrl } from '../../utils/cardImages'
 import { AbilityText } from '../ui/ManaSymbols'
@@ -105,6 +106,11 @@ export function DecisionUI() {
   // DistributeDecision is handled inline on the board (GameCard + LifeDisplay + GameBoard confirm bar)
   if (pendingDecision.type === 'DistributeDecision') {
     return null
+  }
+
+  // Handle AssignDamageDecision (combat damage assignment to blockers/player)
+  if (pendingDecision.type === 'AssignDamageDecision') {
+    return <CombatDamageAssignmentModal decision={pendingDecision} />
   }
 
   // Handle ChooseColorDecision (e.g., "Choose a color for protection")

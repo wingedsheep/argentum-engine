@@ -698,6 +698,75 @@ object TestCards {
     )
 
     // =========================================================================
+    // Trample & Deathtouch Test Creatures
+    // =========================================================================
+
+    /**
+     * 5/5 Trample for {3}{G}{G}
+     * Test card for trample damage assignment.
+     */
+    val TrampleBeast = CardDefinition.creature(
+        name = "Trample Beast",
+        manaCost = ManaCost.parse("{3}{G}{G}"),
+        subtypes = setOf(Subtype("Beast")),
+        power = 5,
+        toughness = 5,
+        oracleText = "Trample",
+        keywords = setOf(Keyword.TRAMPLE)
+    )
+
+    /**
+     * 3/3 Trample Deathtouch for {1}{B}{G}
+     * Test card for deathtouch+trample interaction.
+     */
+    val DeathtouchTrampler = CardDefinition.creature(
+        name = "Deathtouch Trampler",
+        manaCost = ManaCost.parse("{1}{B}{G}"),
+        subtypes = setOf(Subtype("Beast")),
+        power = 3,
+        toughness = 3,
+        oracleText = "Deathtouch, trample",
+        keywords = setOf(Keyword.DEATHTOUCH, Keyword.TRAMPLE)
+    )
+
+    /**
+     * 3/3 Cleric for {4}{W}
+     * "If a source would deal damage to a Cleric creature you control, prevent 1 of that damage."
+     * Simplified Daunting Defender for testing damage prevention + trample interaction.
+     */
+    val DauntingDefender = CardDefinition(
+        name = "Daunting Defender",
+        manaCost = ManaCost.parse("{4}{W}"),
+        typeLine = TypeLine.creature(setOf(Subtype("Human"), Subtype("Cleric"))),
+        oracleText = "If a source would deal damage to a Cleric creature you control, prevent 1 of that damage.",
+        creatureStats = CreatureStats(3, 3),
+        script = CardScript(
+            replacementEffects = listOf(
+                PreventDamage(
+                    amount = 1,
+                    appliesTo = GameEvent.DamageEvent(
+                        recipient = RecipientFilter.Matching(
+                            GameObjectFilter.Creature.withSubtype(Subtype("Cleric")).youControl()
+                        )
+                    )
+                )
+            )
+        )
+    )
+
+    /**
+     * 2/2 Cleric for {1}{W}
+     * Vanilla Cleric creature for testing Daunting Defender interaction.
+     */
+    val TestCleric = CardDefinition.creature(
+        name = "Test Cleric",
+        manaCost = ManaCost.parse("{1}{W}"),
+        subtypes = setOf(Subtype("Human"), Subtype("Cleric")),
+        power = 2,
+        toughness = 2
+    )
+
+    // =========================================================================
     // Enchantments
     // =========================================================================
 
@@ -743,6 +812,10 @@ object TestCards {
         ArtifactCreature,
         BlackCreature,
         ButcherOrgg,
+        TrampleBeast,
+        DeathtouchTrampler,
+        DauntingDefender,
+        TestCleric,
         // Mana Dorks
         LlanowarElves,
         PalladiumMyr,

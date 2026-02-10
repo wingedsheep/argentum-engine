@@ -1158,6 +1158,92 @@ class CombatManager(
             return ExecutionResult.paused(pausedState, decision)
         }
 
+        // Pre-check: if any regular attacker needs manual damage assignment, pause before
+        // processing ANY damage. This handles trample and multiple-blocker situations.
+        for ((attackerId, attackingComponent) in attackers) {
+            if (attackerId !in state.getBattlefield()) continue
+
+            val attackerContainer = state.getEntity(attackerId) ?: continue
+            val attackerCard = attackerContainer.get<CardComponent>() ?: continue
+
+            // Skip DivideCombatDamageFreely attackers (handled above)
+            val cardDef = cardRegistry?.getCard(attackerCard.cardDefinitionId)
+            val hasDivideDamageFreely = cardDef?.staticAbilities?.any { it is DivideCombatDamageFreely } == true
+            if (hasDivideDamageFreely) continue
+
+            // Skip if already has a player-assigned distribution
+            if (attackerContainer.get<DamageAssignmentComponent>() != null) continue
+
+            // Only check attackers that deal damage this step
+            val hasFirstStrike = projected.hasKeyword(attackerId, Keyword.FIRST_STRIKE)
+            val hasDoubleStrike = projected.hasKeyword(attackerId, Keyword.DOUBLE_STRIKE)
+            val attackerDealsDamageThisStep = if (firstStrike) {
+                hasFirstStrike || hasDoubleStrike
+            } else {
+                !hasFirstStrike || hasDoubleStrike
+            }
+            if (!attackerDealsDamageThisStep) continue
+
+            // Only check blocked attackers
+            val blockedBy = attackerContainer.get<BlockedComponent>()
+            if (blockedBy == null || blockedBy.blockerIds.isEmpty()) continue
+
+            // Check if manual assignment is required
+            if (!damageCalculator.requiresManualAssignment(state, attackerId)) continue
+
+            val attackerPower = projected.getPower(attackerId) ?: 0
+            if (attackerPower <= 0) continue
+
+            val orderedBlockers = attackerContainer.get<DamageAssignmentOrderComponent>()?.orderedBlockers
+                ?: blockedBy.blockerIds
+
+            // Only include blockers still on the battlefield
+            val liveBlockers = orderedBlockers.filter { it in state.getBattlefield() }
+            if (liveBlockers.isEmpty()) continue
+
+            val hasTrample = projected.hasKeyword(attackerId, Keyword.TRAMPLE)
+            val hasDeathtouch = projected.hasKeyword(attackerId, Keyword.DEATHTOUCH)
+            val defenderId = attackingComponent.defenderId
+            val attackingPlayer = projected.getController(attackerId) ?: continue
+
+            val minimumAssignments = damageCalculator.getMinimumAssignments(state, attackerId)
+            val autoDistribution = damageCalculator.calculateAutoDamageDistribution(state, attackerId)
+
+            val decisionId = UUID.randomUUID().toString()
+            val decision = AssignDamageDecision(
+                id = decisionId,
+                playerId = attackingPlayer,
+                prompt = "Assign ${attackerCard.name}'s $attackerPower combat damage to blockers" +
+                    if (hasTrample) " (trample)" else "",
+                context = DecisionContext(
+                    sourceId = attackerId,
+                    sourceName = attackerCard.name,
+                    phase = DecisionPhase.COMBAT
+                ),
+                attackerId = attackerId,
+                availablePower = attackerPower,
+                orderedTargets = liveBlockers,
+                defenderId = if (hasTrample) defenderId else null,
+                minimumAssignments = minimumAssignments,
+                defaultAssignments = autoDistribution.assignments,
+                hasTrample = hasTrample,
+                hasDeathtouch = hasDeathtouch
+            )
+
+            val continuation = DamageAssignmentContinuation(
+                decisionId = decisionId,
+                attackerId = attackerId,
+                defendingPlayerId = defenderId,
+                firstStrike = firstStrike
+            )
+
+            val pausedState = state
+                .withPendingDecision(decision)
+                .pushContinuation(continuation)
+
+            return ExecutionResult.paused(pausedState, decision)
+        }
+
         for ((attackerId, attackingComponent) in attackers) {
             // Skip attackers no longer on the battlefield (killed by first strike damage)
             if (attackerId !in state.getBattlefield()) continue

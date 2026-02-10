@@ -1,13 +1,20 @@
 package com.wingedsheep.engine.mechanics.combat
 
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
+import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
 import com.wingedsheep.engine.state.components.combat.BlockedComponent
 import com.wingedsheep.engine.state.components.combat.DamageAssignmentOrderComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.PreventDamage
+import com.wingedsheep.sdk.scripting.RecipientFilter
 
 /**
  * Calculates combat damage assignments according to MTG rules (CR 510).
@@ -22,6 +29,7 @@ import com.wingedsheep.sdk.model.EntityId
 class DamageCalculator {
 
     private val stateProjector = StateProjector()
+    private val predicateEvaluator = PredicateEvaluator()
 
     /**
      * Result of calculating lethal damage for a creature.
@@ -131,7 +139,10 @@ class DamageCalculator {
         val assignments = mutableMapOf<EntityId, Int>()
         var remainingPower = attackerPower
 
-        // Assign lethal damage to each blocker in order.
+        // Assign lethal damage to each blocker in order, accounting for damage prevention.
+        // The default assignment includes extra damage to overcome prevention effects
+        // (e.g., Daunting Defender preventing 1 damage to Clerics) so that the default
+        // actually kills the blocker, matching what a player would do in a physical game.
         // Per CR 510.1d, without trample ALL damage must be assigned to blockers.
         // The last blocker receives all remaining damage (not just lethal).
         for ((index, blockerId) in orderedBlockers.withIndex()) {
@@ -139,11 +150,13 @@ class DamageCalculator {
 
             val isLastBlocker = index == orderedBlockers.size - 1
             val lethalInfo = calculateLethalDamage(state, blockerId, attackerId)
+            val preventionAmount = estimateDamagePrevention(state, projected, blockerId)
+            val effectiveLethal = lethalInfo.lethalAmount + preventionAmount
             val damageToAssign = if (isLastBlocker && !hasTrample) {
                 // Last blocker without trample gets all remaining damage
                 remainingPower
             } else {
-                minOf(remainingPower, lethalInfo.lethalAmount)
+                minOf(remainingPower, effectiveLethal)
             }
 
             assignments[blockerId] = damageToAssign
@@ -322,6 +335,55 @@ class DamageCalculator {
         }
 
         return minimums
+    }
+
+    /**
+     * Estimate how much damage prevention would apply to a creature.
+     *
+     * Scans the battlefield for ReplacementEffectSourceComponent containing
+     * PreventDamage effects that match the target creature.
+     * This is used to adjust the default damage assignment so that "lethal"
+     * accounts for prevention (e.g., Daunting Defender prevents 1 to Clerics).
+     */
+    private fun estimateDamagePrevention(
+        state: GameState,
+        projected: ProjectedState,
+        targetId: EntityId
+    ): Int {
+        var totalPrevention = 0
+
+        for (entityId in state.getBattlefield()) {
+            val container = state.getEntity(entityId) ?: continue
+            val replacementComponent = container.get<ReplacementEffectSourceComponent>() ?: continue
+            val sourceControllerId = container.get<ControllerComponent>()?.playerId ?: continue
+
+            for (effect in replacementComponent.replacementEffects) {
+                if (effect !is PreventDamage) continue
+
+                val damageEvent = effect.appliesTo
+                if (damageEvent !is com.wingedsheep.sdk.scripting.GameEvent.DamageEvent) continue
+
+                val recipientMatches = when (val recipient = damageEvent.recipient) {
+                    is RecipientFilter.Matching -> {
+                        val context = PredicateContext(controllerId = sourceControllerId)
+                        predicateEvaluator.matchesWithProjection(state, projected, targetId, recipient.filter, context)
+                    }
+                    is RecipientFilter.CreatureYouControl -> {
+                        val isCreature = state.getEntity(targetId)?.get<CardComponent>()?.typeLine?.isCreature == true
+                        val isControlled = state.getEntity(targetId)?.get<ControllerComponent>()?.playerId == sourceControllerId
+                        isCreature && isControlled
+                    }
+                    is RecipientFilter.Any -> true
+                    else -> false
+                }
+
+                if (recipientMatches) {
+                    totalPrevention += effect.amount ?: 0
+                }
+            }
+        }
+
+        return totalPrevention
     }
 
     private fun getCreatureName(state: GameState, creatureId: EntityId): String {
