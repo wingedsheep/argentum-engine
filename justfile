@@ -125,6 +125,11 @@ e2e-portal:
 e2e-onslaught:
     cd e2e-scenarios && npm run test:onslaught
 
+# Run E2E tests and open HTML report with screenshots
+[group: 'e2e']
+e2e-report:
+    cd e2e-scenarios && npx playwright test --reporter=html && npx playwright show-report
+
 # Install E2E test dependencies
 [group: 'e2e']
 e2e-install:
