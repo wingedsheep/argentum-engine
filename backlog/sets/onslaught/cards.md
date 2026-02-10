@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 216 / 335
+**Implemented:** 217 / 335
 
 ---
 
@@ -330,7 +330,7 @@
 - [ ] Windswept Heath
 - [x] Wirewood Elf
 - [x] Wirewood Herald
-- [ ] Wirewood Lodge
+- [x] Wirewood Lodge
 - [x] Wirewood Pride
 - [x] Wirewood Savage
 - [ ] Withering Hex
