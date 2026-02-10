@@ -363,8 +363,10 @@ class LobbyHandler(
         identity: PlayerIdentity,
         lobby: TournamentLobby
     ) {
-        // Leave any other lobby first
-        leaveCurrentLobbyIfPresent(identity)
+        // Leave any other lobby first (but not the one we're rejoining)
+        if (identity.currentLobbyId != lobby.lobbyId) {
+            leaveCurrentLobbyIfPresent(identity)
+        }
 
         // Rejoin the tournament
         if (!lobby.rejoinPlayer(identity)) {

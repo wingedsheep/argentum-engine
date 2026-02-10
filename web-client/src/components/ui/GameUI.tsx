@@ -327,7 +327,7 @@ function LobbyOverlay({
             <div style={{ color: 'var(--text-disabled)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 3 }}>
               Invite Code
             </div>
-            <div className={styles.inviteCode}>
+            <div className={styles.inviteCode} data-testid="invite-code">
               {lobbyState.lobbyId}
             </div>
           </div>

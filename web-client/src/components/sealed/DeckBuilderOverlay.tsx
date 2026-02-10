@@ -905,6 +905,7 @@ function PoolCard({
         e.currentTarget.style.border = '2px solid #444'
         e.currentTarget.style.transform = 'scale(1)'
       }}
+      data-testid="pool-card"
     >
       <img
         src={imageUrl}

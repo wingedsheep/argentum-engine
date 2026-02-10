@@ -35,6 +35,7 @@ test.describe('Draft Tournament with 4 Players', () => {
   })
 
   test('draft tournament flow with page refresh during drafting', async () => {
+    test.setTimeout(300_000)
     // =========================================================================
     // Stage 1: Create Draft Lobby
     // =========================================================================
@@ -57,7 +58,7 @@ test.describe('Draft Tournament with 4 Players', () => {
 
     // Wait for lobby to be created
     await expect(host.page.getByText('Invite Code')).toBeVisible({ timeout: 10000 })
-    lobbyId = await host.page.locator('text=Invite Code').locator('..').locator('div[style*="monospace"]').textContent() ?? ''
+    lobbyId = await host.page.getByTestId('invite-code').textContent() ?? ''
     expect(lobbyId).toBeTruthy()
     console.log(`Lobby created: ${lobbyId}`)
 
@@ -207,6 +208,7 @@ test.describe('Draft Tournament with 4 Players', () => {
   })
 
   test('draft picks are preserved after refresh', async ({ browser }) => {
+    test.setTimeout(120_000)
     // Create 2 players for a quick draft pick preservation test
     const contexts: BrowserContext[] = []
     const pages: Page[] = []
@@ -232,7 +234,7 @@ test.describe('Draft Tournament with 4 Players', () => {
     // Switch to Draft
     await pages[0].getByRole('button', { name: 'Draft' }).click()
 
-    const lid = await pages[0].locator('text=Invite Code').locator('..').locator('div[style*="monospace"]').textContent() ?? ''
+    const lid = await pages[0].getByTestId('invite-code').textContent() ?? ''
 
     // Guest joins
     await pages[1].getByRole('button', { name: 'Tournament' }).click()

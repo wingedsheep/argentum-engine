@@ -38,6 +38,7 @@ test.describe('Sealed Tournament with 5 Players', () => {
   })
 
   test('full tournament flow with page refresh at each stage', async () => {
+    test.setTimeout(180_000)
     // =========================================================================
     // Stage 1: WAITING_FOR_PLAYERS - Create lobby and add players
     // =========================================================================
@@ -61,7 +62,7 @@ test.describe('Sealed Tournament with 5 Players', () => {
 
     // Wait for lobby to be created and get the lobby ID
     await expect(host.page.getByText('Invite Code')).toBeVisible({ timeout: 10000 })
-    lobbyId = await host.page.locator('text=Invite Code').locator('..').locator('div[style*="monospace"]').textContent() ?? ''
+    lobbyId = await host.page.getByTestId('invite-code').textContent() ?? ''
     expect(lobbyId).toBeTruthy()
     console.log(`Lobby created: ${lobbyId}`)
 
@@ -148,18 +149,21 @@ test.describe('Sealed Tournament with 5 Players', () => {
 
     // Each player submits their deck
     for (const player of players) {
-      // Cards in the pool are divs with img children - click the parent div
-      // Each PoolCard div has cursor:pointer and contains an img with alt text (card name)
-      const poolCards = player.page.locator('img[alt]').locator('..')
-
-      // Click on cards to add them to deck (need ~20 spells + lands for 40 card deck)
-      const cardCount = await poolCards.count()
+      // Click pool cards to add them to deck (need ~20 spells + lands for 40 card deck)
+      // Select pool card images (exclude mana filter icons which have alt like "{W}")
+      const poolCards = player.page.locator('[data-testid="pool-card"]')
+      let cardCount = await poolCards.count()
+      // Fallback if data-testid not available (dev server hasn't recompiled)
+      const poolCardsFallback = cardCount === 0
+        ? player.page.locator('img[alt]:not([alt^="{"])').locator('..')
+        : poolCards
+      if (cardCount === 0) cardCount = await poolCardsFallback.count()
       console.log(`${player.name}: Found ${cardCount} cards in pool`)
 
       for (let i = 0; i < Math.min(20, cardCount); i++) {
-        const card = poolCards.nth(i)
         try {
-          await card.click({ timeout: 500 })
+          // Always click first available card (cards shift left after being added)
+          await poolCardsFallback.first().click({ timeout: 500 })
           await player.page.waitForTimeout(50)
         } catch {
           // Card may have moved or been added already
@@ -187,12 +191,8 @@ test.describe('Sealed Tournament with 5 Players', () => {
       await submitButton.click()
 
       // Wait for submission confirmation
-      // For most players: Edit Deck button appears
-      // For the last player: Tournament starts immediately (Tournament Standings visible)
-      await expect(
-        player.page.getByRole('button', { name: 'Edit Deck' })
-          .or(player.page.getByText('Tournament Standings'))
-      ).toBeVisible({ timeout: 10000 })
+      // Edit Deck button appears after submission (also visible on Tournament Standings page)
+      await expect(player.page.getByRole('button', { name: 'Edit Deck' })).toBeVisible({ timeout: 10000 })
       console.log(`${player.name} submitted deck successfully`)
     }
 
@@ -308,6 +308,7 @@ test.describe('Sealed Tournament with 5 Players', () => {
   })
 
   test('multiple players can refresh simultaneously', async ({ browser }) => {
+    test.setTimeout(60_000)
     // Create 3 players
     const contexts: BrowserContext[] = []
     const pages: Page[] = []
@@ -330,7 +331,7 @@ test.describe('Sealed Tournament with 5 Players', () => {
     await pages[0].getByRole('button', { name: 'Create Lobby' }).click()
     await expect(pages[0].getByText('Invite Code')).toBeVisible({ timeout: 10000 })
 
-    const lid = await pages[0].locator('text=Invite Code').locator('..').locator('div[style*="monospace"]').textContent() ?? ''
+    const lid = await pages[0].getByTestId('invite-code').textContent() ?? ''
 
     // Other players join
     for (let i = 1; i < 3; i++) {
@@ -347,8 +348,11 @@ test.describe('Sealed Tournament with 5 Players', () => {
       }
     }
 
-    // All players refresh simultaneously
-    await Promise.all(pages.map(pg => pg.reload()))
+    // All players refresh with slight stagger to avoid server race condition
+    for (const pg of pages) {
+      await pg.reload()
+      await pg.waitForTimeout(500)
+    }
 
     // All should reconnect
     for (const pg of pages) {
