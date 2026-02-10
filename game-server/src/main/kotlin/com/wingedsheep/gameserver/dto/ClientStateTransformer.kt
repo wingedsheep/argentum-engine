@@ -707,6 +707,9 @@ class ClientStateTransformer(
         }
 
         // Check all floating effects that affect this entity
+        var preventDamageTotal = 0
+        var regenerationShieldCount = 0
+
         for (floatingEffect in state.floatingEffects) {
             if (entityId !in floatingEffect.effect.affectedEntities) continue
 
@@ -732,9 +735,41 @@ class ClientStateTransformer(
                         )
                     )
                 }
+                is SerializableModification.PreventNextDamage -> {
+                    preventDamageTotal += modification.remainingAmount
+                }
+                is SerializableModification.RegenerationShield -> {
+                    regenerationShieldCount++
+                }
                 // Other modifications don't need badges (stats/keywords are shown elsewhere)
                 else -> { /* No badge needed */ }
             }
+        }
+
+        if (preventDamageTotal > 0) {
+            effects.add(
+                ClientCardEffect(
+                    effectId = "prevent_damage",
+                    name = "Prevent $preventDamageTotal",
+                    description = "Prevents the next $preventDamageTotal damage that would be dealt to this creature",
+                    icon = "prevent-damage"
+                )
+            )
+        }
+
+        if (regenerationShieldCount > 0) {
+            val name = if (regenerationShieldCount > 1) "Regen x$regenerationShieldCount" else "Regen"
+            effects.add(
+                ClientCardEffect(
+                    effectId = "regeneration",
+                    name = name,
+                    description = if (regenerationShieldCount > 1)
+                        "Has $regenerationShieldCount regeneration shields (prevents destruction, taps, removes damage and from combat)"
+                    else
+                        "Has a regeneration shield (prevents destruction, taps, removes damage and from combat)",
+                    icon = "regeneration"
+                )
+            )
         }
 
         return effects

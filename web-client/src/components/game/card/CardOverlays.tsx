@@ -69,6 +69,36 @@ export function KeywordIcons({
   )
 }
 
+/** Get badge style overrides based on effect icon type */
+function getBadgeStyle(icon?: string): React.CSSProperties {
+  switch (icon) {
+    case 'prevent-damage':
+      return {
+        backgroundColor: 'rgba(60, 130, 180, 0.9)',
+        border: '1px solid rgba(140, 200, 255, 0.5)',
+      }
+    case 'regeneration':
+      return {
+        backgroundColor: 'rgba(40, 120, 60, 0.9)',
+        border: '1px solid rgba(120, 220, 140, 0.5)',
+      }
+    default:
+      return {}
+  }
+}
+
+/** Get tooltip border color based on effect icon type */
+function getTooltipBorderColor(icon?: string): string {
+  switch (icon) {
+    case 'prevent-damage':
+      return 'rgba(60, 130, 180, 0.5)'
+    case 'regeneration':
+      return 'rgba(40, 120, 60, 0.5)'
+    default:
+      return 'rgba(150, 50, 200, 0.5)'
+  }
+}
+
 /**
  * Container component for active effect badges on a card.
  * Used for temporary effects like "can't be blocked except by black creatures".
@@ -98,7 +128,7 @@ export function ActiveEffectBadges({ effects }: { effects: readonly ClientCardEf
         {effects.map((effect) => (
           <div
             key={effect.effectId}
-            style={styles.activeEffectBadge}
+            style={{ ...styles.activeEffectBadge, ...getBadgeStyle(effect.icon) }}
             onMouseEnter={(e) => handleMouseEnter(effect.effectId, e)}
             onMouseLeave={handleMouseLeave}
           >
@@ -111,6 +141,7 @@ export function ActiveEffectBadges({ effects }: { effects: readonly ClientCardEf
           ...styles.cardEffectTooltip,
           left: tooltipPos.x,
           top: tooltipPos.y,
+          borderColor: getTooltipBorderColor(hoveredEffectData.icon),
         }}>
           {hoveredEffectData.description}
         </div>

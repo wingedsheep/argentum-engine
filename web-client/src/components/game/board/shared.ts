@@ -131,6 +131,10 @@ export function getEffectIcon(icon: string): string {
       return '💀'
     case 'taunt':
       return '⚔️'
+    case 'prevent-damage':
+      return '🛡️'
+    case 'regeneration':
+      return '♻️'
     default:
       return '⚡'
   }
