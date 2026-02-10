@@ -45,7 +45,11 @@ class BecomeCreatureTypeExecutor : EffectExecutor<BecomeCreatureTypeEffect> {
             return ExecutionResult.success(state.tick())
         }
 
-        val allCreatureTypes = Subtype.ALL_CREATURE_TYPES
+        val allCreatureTypes = if (effect.excludedTypes.isNotEmpty()) {
+            Subtype.ALL_CREATURE_TYPES.filter { it !in effect.excludedTypes }
+        } else {
+            Subtype.ALL_CREATURE_TYPES
+        }
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
 
         // Prefill search with the target's first creature subtype

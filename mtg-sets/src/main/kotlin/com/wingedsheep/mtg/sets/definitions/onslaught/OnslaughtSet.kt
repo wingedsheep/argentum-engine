@@ -93,6 +93,7 @@ object OnslaughtSet {
         SlipstreamEel,
         TrickeryCharm,
         EssenceFracture,
+        Imagecrafter,
         IxidorRealitySculptor,
 
         // Black creatures and spells

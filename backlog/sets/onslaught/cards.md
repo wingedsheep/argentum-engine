@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 206 / 335
+**Implemented:** 207 / 335
 
 ---
 
@@ -167,7 +167,7 @@
 - [x] Headhunter
 - [x] Heedless One
 - [x] Hystrodon
-- [ ] Imagecrafter
+- [x] Imagecrafter
 - [x] Improvised Armor
 - [x] Infest
 - [x] Information Dealer
