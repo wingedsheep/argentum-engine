@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 207 / 335
+**Implemented:** 208 / 335
 
 ---
 
@@ -54,7 +54,7 @@
 - [ ] Callous Oppressor
 - [x] Catapult Master
 - [x] Catapult Squad
-- [ ] Centaur Glade
+- [x] Centaur Glade
 - [ ] Chain of Acid
 - [ ] Chain of Plasma
 - [ ] Chain of Silence

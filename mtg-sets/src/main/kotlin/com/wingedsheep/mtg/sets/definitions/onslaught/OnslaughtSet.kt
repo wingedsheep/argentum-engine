@@ -228,6 +228,7 @@ object OnslaughtSet {
         VitalityCharm,
         OverwhelmingInstinct,
         PrimalBoost,
+        CentaurGlade,
 
         // Lands
         BloodstainedMire,
