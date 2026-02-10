@@ -7,6 +7,7 @@ import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.ChosenCreatureTypeComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.ProtectionComponent
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
@@ -440,6 +441,23 @@ class StateProjector(
                     (card.typeLine.isCreature || container.has<FaceDownComponent>()) && (counters?.getCount(counterType) ?: 0) > 0
                 }.toSet()
             }
+            is AffectsFilter.ChosenCreatureTypeCreatures -> {
+                val chosenType = state.getEntity(sourceId)
+                    ?.get<ChosenCreatureTypeComponent>()?.creatureType
+                    ?: return emptySet()
+                state.getBattlefield().filter { entityId ->
+                    val container = state.getEntity(entityId) ?: return@filter false
+                    val card = container.get<CardComponent>() ?: return@filter false
+                    val projected = projectedValues[entityId]
+                    val hasSubtype = if (projected != null) {
+                        projected.subtypes.any { it.equals(chosenType, ignoreCase = true) }
+                    } else {
+                        card.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(chosenType))
+                    }
+                    // Face-down permanents are always creatures (Rule 707.2)
+                    (card.typeLine.isCreature || container.has<FaceDownComponent>()) && hasSubtype
+                }.toSet()
+            }
         }
     }
 
@@ -739,6 +757,13 @@ sealed interface AffectsFilter {
      */
     @Serializable
     data object FaceDownCreatures : AffectsFilter
+
+    /**
+     * All creatures of the chosen creature type (resolved dynamically from source's ChosenCreatureTypeComponent).
+     * Used for Shared Triumph: "Creatures of the chosen type get +1/+1."
+     */
+    @Serializable
+    data object ChosenCreatureTypeCreatures : AffectsFilter
 }
 
 /**

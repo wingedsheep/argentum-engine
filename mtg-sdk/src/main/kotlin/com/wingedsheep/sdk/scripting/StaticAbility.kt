@@ -59,6 +59,24 @@ data class ModifyStatsForCreatureGroup(
 }
 
 /**
+ * Modifies power/toughness for creatures of the chosen creature type.
+ * Used for "As this enters, choose a creature type. Creatures of the chosen type get +X/+X."
+ * The chosen type is stored on the permanent via ChosenCreatureTypeComponent and resolved dynamically.
+ * Example: Shared Triumph, Door of Destinies
+ */
+@Serializable
+data class ModifyStatsForChosenCreatureType(
+    val powerBonus: Int,
+    val toughnessBonus: Int
+) : StaticAbility {
+    override val description: String = buildString {
+        val powerStr = if (powerBonus >= 0) "+$powerBonus" else "$powerBonus"
+        val toughStr = if (toughnessBonus >= 0) "+$toughnessBonus" else "$toughnessBonus"
+        append("Creatures of the chosen type get $powerStr/$toughStr")
+    }
+}
+
+/**
  * Modifies power/toughness (e.g., +2/+2 from an Equipment).
  */
 @Serializable

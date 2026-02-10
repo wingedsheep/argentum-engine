@@ -20,6 +20,7 @@ import com.wingedsheep.sdk.scripting.GroupFilter
 import com.wingedsheep.sdk.scripting.CardPredicate
 import com.wingedsheep.sdk.scripting.ControllerPredicate
 import com.wingedsheep.sdk.scripting.ModifyStats
+import com.wingedsheep.sdk.scripting.ModifyStatsForChosenCreatureType
 import com.wingedsheep.sdk.scripting.ModifyStatsForCreatureGroup
 import com.wingedsheep.sdk.scripting.StatePredicate
 import com.wingedsheep.sdk.scripting.StaticAbility
@@ -111,6 +112,14 @@ class StaticAbilityHandler(
                     sublayer = Sublayer.MODIFICATIONS,
                     modification = Modification.ModifyPowerToughness(ability.powerBonus, ability.toughnessBonus),
                     affectsFilter = convertGroupFilter(ability.filter)
+                )
+            }
+            is ModifyStatsForChosenCreatureType -> {
+                ContinuousEffectData(
+                    layer = Layer.POWER_TOUGHNESS,
+                    sublayer = Sublayer.MODIFICATIONS,
+                    modification = Modification.ModifyPowerToughness(ability.powerBonus, ability.toughnessBonus),
+                    affectsFilter = AffectsFilter.ChosenCreatureTypeCreatures
                 )
             }
             is ModifyStats -> {

@@ -63,6 +63,7 @@ object OnslaughtSet {
         UnifiedStrike,
         Whipcorder,
         Mobilization,
+        SharedTriumph,
 
         // Blue creatures and spells
         AirborneAid,

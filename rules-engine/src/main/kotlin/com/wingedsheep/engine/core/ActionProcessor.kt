@@ -56,7 +56,7 @@ class ActionProcessor(
     sbaChecker: StateBasedActionChecker = StateBasedActionChecker(),
     triggerDetector: TriggerDetector = TriggerDetector(cardRegistry),
     triggerProcessor: TriggerProcessor = TriggerProcessor(),
-    continuationHandler: ContinuationHandler = ContinuationHandler(effectExecutorRegistry, triggerProcessor = triggerProcessor, combatManager = combatManager),
+    continuationHandler: ContinuationHandler = ContinuationHandler(effectExecutorRegistry, stackResolver = stackResolver, triggerProcessor = triggerProcessor, combatManager = combatManager),
     conditionEvaluator: ConditionEvaluator = ConditionEvaluator(),
     targetValidator: TargetValidator = TargetValidator()
 ) {
