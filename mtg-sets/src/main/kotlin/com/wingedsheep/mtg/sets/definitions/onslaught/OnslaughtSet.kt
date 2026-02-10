@@ -222,6 +222,7 @@ object OnslaughtSet {
         TreespringLorian,
         Wellwisher,
         ElvishPathcutter,
+        SerpentineBasilisk,
         StagBeetle,
         WirewoodElf,
         WirewoodHerald,

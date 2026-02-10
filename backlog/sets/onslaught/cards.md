@@ -251,7 +251,7 @@
 - [ ] Seaside Haven
 - [x] Searing Flesh
 - [x] Secluded Steppe
-- [ ] Serpentine Basilisk
+- [x] Serpentine Basilisk
 - [x] Severed Legion
 - [ ] Shade's Breath
 - [x] Shaleskin Bruiser

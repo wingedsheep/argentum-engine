@@ -81,13 +81,15 @@ data class OnBecomesBlocked(
 data class OnDealsDamage(
     val selfOnly: Boolean = true,
     val combatOnly: Boolean = false,
-    val toPlayerOnly: Boolean = false
+    val toPlayerOnly: Boolean = false,
+    val toCreatureOnly: Boolean = false
 ) : Trigger {
     override val description: String = buildString {
         append(if (selfOnly) "Whenever this creature deals " else "Whenever a creature deals ")
         if (combatOnly) append("combat ")
         append("damage")
         if (toPlayerOnly) append(" to a player")
+        if (toCreatureOnly) append(" to a creature")
     }
 }
 

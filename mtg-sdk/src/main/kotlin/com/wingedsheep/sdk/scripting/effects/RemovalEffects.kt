@@ -200,6 +200,21 @@ data class ExileUntilEndStepEffect(
 }
 
 /**
+ * Destroy target creature at end of combat.
+ * Creates a delayed destruction that happens when the end of combat step begins.
+ * Used by Serpentine Basilisk and similar "basilisk" abilities.
+ *
+ * The target is typically the creature that was dealt combat damage,
+ * resolved from the trigger context (triggeringEntityId).
+ */
+@Serializable
+data class DestroyAtEndOfCombatEffect(
+    val target: EffectTarget
+) : Effect {
+    override val description: String = "Destroy ${target.description} at end of combat"
+}
+
+/**
  * Unified zone-moving effect.
  * Consolidates destroy, exile, bounce, shuffle-into-library, put-on-top, etc.
  *
