@@ -10,6 +10,7 @@ import hexproofIcon from './hexproof.svg'
 import indestructibleIcon from './indestructible.svg'
 import defenderIcon from './defender.svg'
 import menaceIcon from './menace.svg'
+import fearIcon from './fear.svg'
 import genericIcon from './generic.svg'
 
 export const keywordIcons: Record<string, string> = {
@@ -27,6 +28,7 @@ export const keywordIcons: Record<string, string> = {
   INDESTRUCTIBLE: indestructibleIcon,
   DEFENDER: defenderIcon,
   MENACE: menaceIcon,
+  FEAR: fearIcon,
 }
 
 export const genericKeywordIcon = genericIcon
@@ -35,5 +37,5 @@ export const displayableKeywords = new Set([
   'FLYING', 'REACH', 'TRAMPLE',
   'FIRST_STRIKE', 'DOUBLE_STRIKE', 'DEATHTOUCH',
   'LIFELINK', 'VIGILANCE', 'HASTE', 'HEXPROOF',
-  'SHROUD', 'INDESTRUCTIBLE', 'DEFENDER', 'MENACE',
+  'SHROUD', 'INDESTRUCTIBLE', 'DEFENDER', 'MENACE', 'FEAR',
 ])
