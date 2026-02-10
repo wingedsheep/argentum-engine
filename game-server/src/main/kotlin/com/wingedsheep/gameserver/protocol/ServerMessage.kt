@@ -804,7 +804,11 @@ data class AdditionalCostInfo(
     /** Valid targets for tap costs */
     val validTapTargets: List<EntityId> = emptyList(),
     /** Number of permanents to tap */
-    val tapCount: Int = 0
+    val tapCount: Int = 0,
+    /** Valid cards to discard from hand */
+    val validDiscardTargets: List<EntityId> = emptyList(),
+    /** Number of cards to discard */
+    val discardCount: Int = 0
 )
 
 /**

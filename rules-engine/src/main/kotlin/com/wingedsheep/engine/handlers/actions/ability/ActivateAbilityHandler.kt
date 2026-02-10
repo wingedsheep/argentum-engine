@@ -41,6 +41,8 @@ import com.wingedsheep.sdk.scripting.AddAnyColorManaEffect
 import com.wingedsheep.sdk.scripting.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.AddManaEffect
 import com.wingedsheep.engine.handlers.CostPaymentChoices
+import com.wingedsheep.engine.state.components.identity.OwnerComponent
+import com.wingedsheep.sdk.core.Zone
 import kotlin.reflect.KClass
 
 /**
@@ -74,27 +76,35 @@ class ActivateAbilityHandler(
         val container = state.getEntity(action.sourceId)
             ?: return "Source not found: ${action.sourceId}"
 
-        // Use projected controller to account for control-changing effects (e.g., Annex)
-        val projected = stateProjector.project(state)
-        val controller = projected.getController(action.sourceId)
-            ?: container.get<ControllerComponent>()?.playerId
-        if (controller != action.playerId) {
-            return "You don't control this permanent"
-        }
-
         val cardComponent = container.get<CardComponent>()
             ?: return "Source is not a card"
-
-        // Face-down creatures have no abilities (Rule 707.2)
-        if (container.has<FaceDownComponent>()) {
-            return "Face-down creatures have no abilities"
-        }
 
         val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId)
             ?: return "Card definition not found"
 
         val ability = cardDef.script.activatedAbilities.find { it.id == action.abilityId }
             ?: return "Ability not found on this card"
+
+        // Check that the card is in the correct zone for this ability
+        if (ability.activateFromZone != Zone.BATTLEFIELD) {
+            val ownerId = container.get<OwnerComponent>()?.playerId ?: return "Card has no owner"
+            val inZone = state.getZone(ownerId, ability.activateFromZone).contains(action.sourceId)
+            if (!inZone) return "This ability can only be activated from the ${ability.activateFromZone.name.lowercase()}"
+            if (ownerId != action.playerId) return "You don't own this card"
+        } else {
+            // Use projected controller to account for control-changing effects (e.g., Annex)
+            val projected = stateProjector.project(state)
+            val controller = projected.getController(action.sourceId)
+                ?: container.get<ControllerComponent>()?.playerId
+            if (controller != action.playerId) {
+                return "You don't control this permanent"
+            }
+
+            // Face-down creatures have no abilities (Rule 707.2)
+            if (container.has<FaceDownComponent>()) {
+                return "Face-down creatures have no abilities"
+            }
+        }
 
         // Apply text-changing effects to cost and target filters
         val textReplacement = container.get<TextReplacementComponent>()

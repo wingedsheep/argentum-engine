@@ -1455,6 +1455,133 @@ class GameSession(
             }
         }
 
+        // Check for activated abilities on cards in the graveyard (e.g., Undead Gladiator)
+        val graveyardCards = state.getGraveyard(playerId)
+        for (entityId in graveyardCards) {
+            val container = state.getEntity(entityId) ?: continue
+            val cardComponent = container.get<CardComponent>() ?: continue
+
+            val cardDef = cardRegistry.getCard(cardComponent.name) ?: continue
+            val graveyardAbilities = cardDef.script.activatedAbilities.filter {
+                it.activateFromZone == Zone.GRAVEYARD
+            }
+
+            for (ability in graveyardAbilities) {
+                // Check activation restrictions
+                var restrictionsMet = true
+                for (restriction in ability.restrictions) {
+                    if (!checkActivationRestriction(state, playerId, restriction)) {
+                        restrictionsMet = false
+                        break
+                    }
+                }
+                if (!restrictionsMet) continue
+
+                // Check cost requirements and build cost info
+                val effectiveCost = ability.cost
+                var costCanBePaid = true
+                val handCards = state.getZone(playerId, Zone.HAND)
+                var hasDiscardCost = false
+                when (effectiveCost) {
+                    is AbilityCost.Mana -> {
+                        if (!manaSolver.canPay(state, playerId, effectiveCost.cost)) costCanBePaid = false
+                    }
+                    is AbilityCost.Discard -> {
+                        hasDiscardCost = true
+                        if (handCards.isEmpty()) costCanBePaid = false
+                    }
+                    is AbilityCost.Composite -> {
+                        for (subCost in effectiveCost.costs) {
+                            when (subCost) {
+                                is AbilityCost.Mana -> {
+                                    if (!manaSolver.canPay(state, playerId, subCost.cost)) {
+                                        costCanBePaid = false
+                                        break
+                                    }
+                                }
+                                is AbilityCost.Discard -> {
+                                    hasDiscardCost = true
+                                    if (handCards.isEmpty()) {
+                                        costCanBePaid = false
+                                        break
+                                    }
+                                }
+                                else -> {}
+                            }
+                        }
+                    }
+                    else -> {}
+                }
+                if (!costCanBePaid) continue
+
+                // Build discard cost info if needed
+                val costInfo = if (hasDiscardCost) {
+                    AdditionalCostInfo(
+                        description = "Discard a card",
+                        costType = "DiscardCard",
+                        validDiscardTargets = handCards,
+                        discardCount = 1
+                    )
+                } else null
+
+                // Calculate X cost info
+                val abilityManaCost = when (ability.cost) {
+                    is AbilityCost.Mana -> (ability.cost as AbilityCost.Mana).cost
+                    is AbilityCost.Composite -> (ability.cost as AbilityCost.Composite).costs
+                        .filterIsInstance<AbilityCost.Mana>().firstOrNull()?.cost
+                    else -> null
+                }
+                val abilityHasXCost = abilityManaCost?.hasX == true
+                val abilityMaxAffordableX: Int? = if (abilityHasXCost && abilityManaCost != null) {
+                    val availableSources = manaSolver.getAvailableManaCount(state, playerId)
+                    val fixedCost = abilityManaCost.cmc
+                    (availableSources - fixedCost).coerceAtLeast(0)
+                } else null
+
+                // Check for target requirements
+                val targetReq = ability.targetRequirement
+                if (targetReq != null) {
+                    val validTargets = findValidTargets(state, playerId, targetReq)
+                    if (validTargets.isEmpty()) continue
+
+                    if (shouldAutoSelectPlayerTarget(targetReq, validTargets)) {
+                        val autoSelectedTarget = ChosenTarget.Player(validTargets.first())
+                        result.add(LegalActionInfo(
+                            actionType = "ActivateAbility",
+                            description = ability.description,
+                            action = ActivateAbility(playerId, entityId, ability.id, targets = listOf(autoSelectedTarget)),
+                            additionalCostInfo = costInfo,
+                            hasXCost = abilityHasXCost,
+                            maxAffordableX = abilityMaxAffordableX
+                        ))
+                    } else {
+                        result.add(LegalActionInfo(
+                            actionType = "ActivateAbility",
+                            description = ability.description,
+                            action = ActivateAbility(playerId, entityId, ability.id),
+                            validTargets = validTargets,
+                            requiresTargets = true,
+                            targetCount = targetReq.count,
+                            minTargets = targetReq.effectiveMinCount,
+                            targetDescription = targetReq.description,
+                            additionalCostInfo = costInfo,
+                            hasXCost = abilityHasXCost,
+                            maxAffordableX = abilityMaxAffordableX
+                        ))
+                    }
+                } else {
+                    result.add(LegalActionInfo(
+                        actionType = "ActivateAbility",
+                        description = ability.description,
+                        action = ActivateAbility(playerId, entityId, ability.id),
+                        additionalCostInfo = costInfo,
+                        hasXCost = abilityHasXCost,
+                        maxAffordableX = abilityMaxAffordableX
+                    ))
+                }
+            }
+        }
+
         // Check for combat actions
         if (state.step == Step.DECLARE_ATTACKERS && state.activePlayerId == playerId) {
             // Check if attackers have already been declared this combat

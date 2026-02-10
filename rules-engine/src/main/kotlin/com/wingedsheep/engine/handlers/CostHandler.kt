@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers
 
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEvent
+import com.wingedsheep.engine.core.CardsDiscardedEvent
 import com.wingedsheep.engine.core.PermanentsSacrificedEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.mechanics.mana.ManaPool
@@ -215,8 +216,30 @@ class CostHandler {
             is AbilityCost.Discard -> {
                 val toDiscard = choices.discardChoices.firstOrNull()
                     ?: return CostPaymentResult.failure("No discard target chosen")
-                // TODO: Move to graveyard
-                CostPaymentResult.success(state, manaPool)
+
+                val discardContainer = state.getEntity(toDiscard)
+                    ?: return CostPaymentResult.failure("Card to discard not found")
+                val discardOwner = discardContainer.get<ControllerComponent>()?.playerId
+                    ?: return CostPaymentResult.failure("Card to discard has no owner")
+
+                val handZone = ZoneKey(discardOwner, Zone.HAND)
+                val graveyardZone = ZoneKey(discardOwner, Zone.GRAVEYARD)
+
+                var newState = state.removeFromZone(handZone, toDiscard)
+                newState = newState.addToZone(graveyardZone, toDiscard)
+
+                val events = listOf(
+                    CardsDiscardedEvent(discardOwner, listOf(toDiscard)),
+                    ZoneChangeEvent(
+                        entityId = toDiscard,
+                        entityName = discardContainer.get<CardComponent>()?.name ?: "Unknown",
+                        fromZone = Zone.HAND,
+                        toZone = Zone.GRAVEYARD,
+                        ownerId = discardOwner
+                    )
+                )
+
+                CostPaymentResult.success(newState, manaPool, events)
             }
             is AbilityCost.ExileFromGraveyard -> {
                 // TODO: Exile cards
@@ -275,13 +298,15 @@ class CostHandler {
             is AbilityCost.Composite -> {
                 var currentState = state
                 var currentPool = manaPool
+                val allEvents = mutableListOf<GameEvent>()
                 for (subCost in cost.costs) {
                     val result = payAbilityCost(currentState, subCost, sourceId, controllerId, currentPool, choices)
                     if (!result.success) return result
                     currentState = result.newState!!
                     currentPool = result.newManaPool!!
+                    allEvents.addAll(result.events)
                 }
-                CostPaymentResult.success(currentState, currentPool)
+                CostPaymentResult.success(currentState, currentPool, allEvents)
             }
             is AbilityCost.Loyalty -> {
                 // Adjust loyalty counters based on the cost change

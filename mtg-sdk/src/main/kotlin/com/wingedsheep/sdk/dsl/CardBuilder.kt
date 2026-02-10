@@ -614,6 +614,7 @@ class ActivatedAbilityBuilder {
     var manaAbility: Boolean = false
     var timing: TimingRule = TimingRule.InstantSpeed
     var restrictions: List<ActivationRestriction> = emptyList()
+    var activateFromZone: Zone = Zone.BATTLEFIELD
 
     fun build(): ActivatedAbility {
         requireNotNull(effect) { "Activated ability must have an effect" }
@@ -624,7 +625,8 @@ class ActivatedAbilityBuilder {
             targetRequirement = target,
             isManaAbility = manaAbility,
             timing = timing,
-            restrictions = restrictions
+            restrictions = restrictions,
+            activateFromZone = activateFromZone
         )
     }
 }

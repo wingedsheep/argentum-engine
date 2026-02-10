@@ -140,6 +140,7 @@ object OnslaughtSet {
         Swat,
         SyphonMind,
         SyphonSoul,
+        UndeadGladiator,
         VisaraTheDreadful,
         WretchedAnurid,
         ThrashingMudspawn,
