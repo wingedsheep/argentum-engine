@@ -42,8 +42,8 @@ val UndeadGladiator = card("Undead Gladiator") {
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "178"
-        artist = "Mark Zug"
+        artist = "Jeff Easley"
         flavorText = "The Cabal loves encores."
-        imageUri = "https://cards.scryfall.io/large/front/3/d/3d4571b3-7244-4b39-9b56-03e68a910690.jpg?1562906873"
+        imageUri = "https://cards.scryfall.io/large/front/b/b/bbc779d9-3200-4369-9289-1a8e90e243b9.jpg?1562939313"
     }
 }
