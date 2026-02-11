@@ -136,7 +136,7 @@
 - [ ] Future Sight
 - [ ] Gangrenous Goliath
 - [x] Ghosthelm Courier
-- [ ] Gigapede
+- [x] Gigapede
 - [ ] Glarecaster
 - [x] Glory Seeker
 - [x] Gluttonous Zombie

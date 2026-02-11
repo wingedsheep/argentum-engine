@@ -589,6 +589,7 @@ class TriggeredAbilityBuilder {
     var target: TargetRequirement? = null
     var optional: Boolean = false
     var elseEffect: Effect? = null
+    var triggerZone: Zone = Zone.BATTLEFIELD
 
     fun build(): TriggeredAbility {
         requireNotNull(effect) { "Triggered ability must have an effect" }
@@ -597,7 +598,8 @@ class TriggeredAbilityBuilder {
             effect = effect!!,
             optional = optional,
             targetRequirement = target,
-            elseEffect = elseEffect
+            elseEffect = elseEffect,
+            activeZone = triggerZone
         )
     }
 }

@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting
 
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.targeting.TargetRequirement
 import kotlinx.serialization.Serializable
 
@@ -19,7 +20,8 @@ data class TriggeredAbility(
     val effect: Effect,
     val optional: Boolean = false,
     val targetRequirement: TargetRequirement? = null,
-    val elseEffect: Effect? = null
+    val elseEffect: Effect? = null,
+    val activeZone: Zone = Zone.BATTLEFIELD
 ) {
     val description: String
         get() = buildString {
@@ -48,7 +50,8 @@ data class TriggeredAbility(
             effect: Effect,
             optional: Boolean = false,
             targetRequirement: TargetRequirement? = null,
-            elseEffect: Effect? = null
+            elseEffect: Effect? = null,
+            activeZone: Zone = Zone.BATTLEFIELD
         ): TriggeredAbility =
             TriggeredAbility(
                 id = AbilityId.generate(),
@@ -56,7 +59,8 @@ data class TriggeredAbility(
                 effect = effect,
                 optional = optional,
                 targetRequirement = targetRequirement,
-                elseEffect = elseEffect
+                elseEffect = elseEffect,
+                activeZone = activeZone
             )
     }
 }

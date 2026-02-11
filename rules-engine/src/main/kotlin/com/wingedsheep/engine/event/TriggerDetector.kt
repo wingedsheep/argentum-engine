@@ -20,6 +20,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
@@ -144,6 +145,7 @@ class TriggerDetector(
             val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
 
             for (ability in abilities) {
+                if (ability.activeZone != com.wingedsheep.sdk.core.Zone.BATTLEFIELD) continue
                 if (matchesStepTrigger(ability.trigger, step, controllerId, activePlayerId)) {
                     triggers.add(
                         PendingTrigger(
@@ -154,6 +156,35 @@ class TriggerDetector(
                             triggerContext = TriggerContext(step = step)
                         )
                     )
+                }
+            }
+        }
+
+        // Check graveyard cards for step-based triggers with activeZone == GRAVEYARD
+        for (playerId in state.turnOrder) {
+            for (entityId in state.getGraveyard(playerId)) {
+                val container = state.getEntity(entityId) ?: continue
+                val cardComponent = container.get<CardComponent>() ?: continue
+
+                val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
+
+                for (ability in abilities) {
+                    if (ability.activeZone != com.wingedsheep.sdk.core.Zone.GRAVEYARD) continue
+                    // Use the card's owner as controller (graveyard cards are owned, not controlled)
+                    val ownerId = cardComponent.ownerId
+                        ?: container.get<OwnerComponent>()?.playerId
+                        ?: continue
+                    if (matchesStepTrigger(ability.trigger, step, ownerId, activePlayerId)) {
+                        triggers.add(
+                            PendingTrigger(
+                                ability = ability,
+                                sourceId = entityId,
+                                sourceName = cardComponent.name,
+                                controllerId = ownerId,
+                                triggerContext = TriggerContext(step = step)
+                            )
+                        )
+                    }
                 }
             }
         }
