@@ -233,14 +233,18 @@ data class MayAbilityContinuation(
     val controllerId: EntityId,
     val opponentId: EntityId?,
     val xValue: Int?,
-    val targets: List<ChosenTarget> = emptyList()
+    val targets: List<ChosenTarget> = emptyList(),
+    val triggeringEntityId: EntityId? = null,
+    val triggerDamageAmount: Int? = null
 ) : ContinuationFrame {
     fun toEffectContext(): EffectContext = EffectContext(
         sourceId = sourceId,
         controllerId = controllerId,
         opponentId = opponentId,
         xValue = xValue,
-        targets = targets
+        targets = targets,
+        triggeringEntityId = triggeringEntityId,
+        triggerDamageAmount = triggerDamageAmount
     )
 }
 
