@@ -125,11 +125,11 @@ class DamageCalculator {
 
         val hasTrample = projected.hasKeyword(attackerId, Keyword.TRAMPLE)
 
-        // Get blockers in damage assignment order
+        // Get blockers in damage assignment order, filtering out dead blockers
         val blockedComponent = attackerContainer.get<BlockedComponent>()
-        val orderedBlockers = attackerContainer.get<DamageAssignmentOrderComponent>()?.orderedBlockers
+        val orderedBlockers = (attackerContainer.get<DamageAssignmentOrderComponent>()?.orderedBlockers
             ?: blockedComponent?.blockerIds
-            ?: emptyList()
+            ?: emptyList()).filter { it in state.getBattlefield() }
 
         if (orderedBlockers.isEmpty()) {
             // Unblocked - this shouldn't be called for unblocked attackers
@@ -212,10 +212,10 @@ class DamageCalculator {
         val attackerPower = projected.getPower(attackerId) ?: 0
         val hasTrample = projected.hasKeyword(attackerId, Keyword.TRAMPLE)
 
-        // Get blockers in damage assignment order
-        val orderedBlockers = attackerContainer.get<DamageAssignmentOrderComponent>()?.orderedBlockers
+        // Get blockers in damage assignment order, filtering out dead blockers
+        val orderedBlockers = (attackerContainer.get<DamageAssignmentOrderComponent>()?.orderedBlockers
             ?: attackerContainer.get<BlockedComponent>()?.blockerIds
-            ?: emptyList()
+            ?: emptyList()).filter { it in state.getBattlefield() }
 
         // Get defending player for trample check
         val attackingComponent = attackerContainer.get<com.wingedsheep.engine.state.components.combat.AttackingComponent>()
@@ -285,7 +285,8 @@ class DamageCalculator {
         attackerContainer.get<CardComponent>() ?: return false
 
         val blockedComponent = attackerContainer.get<BlockedComponent>()
-        val blockerIds = blockedComponent?.blockerIds ?: return false
+        val blockerIds = blockedComponent?.blockerIds?.filter { it in state.getBattlefield() } ?: return false
+        if (blockerIds.isEmpty()) return false
 
         // Use projected values for keywords and power (includes floating effects like +4/+4)
         val projected = stateProjector.project(state)
@@ -323,9 +324,9 @@ class DamageCalculator {
     ): Map<EntityId, Int> {
         val attackerContainer = state.getEntity(attackerId) ?: return emptyMap()
 
-        val orderedBlockers = attackerContainer.get<DamageAssignmentOrderComponent>()?.orderedBlockers
+        val orderedBlockers = (attackerContainer.get<DamageAssignmentOrderComponent>()?.orderedBlockers
             ?: attackerContainer.get<BlockedComponent>()?.blockerIds
-            ?: return emptyMap()
+            ?: return emptyMap()).filter { it in state.getBattlefield() }
 
         val minimums = mutableMapOf<EntityId, Int>()
 

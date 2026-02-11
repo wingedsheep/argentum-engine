@@ -53,6 +53,33 @@ object EffectExecutorUtils {
     private val predicateEvaluator = PredicateEvaluator()
 
     /**
+     * Clean up combat references to a leaving entity on other creatures.
+     * When a blocker leaves the battlefield, remove it from each attacker's
+     * BlockedComponent.blockerIds and DamageAssignmentOrderComponent.orderedBlockers.
+     */
+    fun cleanupCombatReferences(state: GameState, leavingEntityId: EntityId): GameState {
+        val container = state.getEntity(leavingEntityId) ?: return state
+        val blockingComponent = container.get<BlockingComponent>() ?: return state
+
+        var newState = state
+        for (attackerId in blockingComponent.blockedAttackerIds) {
+            newState = newState.updateEntity(attackerId) { attackerContainer ->
+                var updated = attackerContainer
+                val blocked = updated.get<BlockedComponent>()
+                if (blocked != null) {
+                    updated = updated.with(BlockedComponent(blocked.blockerIds.filter { it != leavingEntityId }))
+                }
+                val order = updated.get<DamageAssignmentOrderComponent>()
+                if (order != null) {
+                    updated = updated.with(DamageAssignmentOrderComponent(order.orderedBlockers.filter { it != leavingEntityId }))
+                }
+                updated
+            }
+        }
+        return newState
+    }
+
+    /**
      * Strip all battlefield-specific components from an entity leaving the battlefield.
      * Per MTG Rule 400.7, when an object changes zones it becomes a new object with no
      * memory of its previous existence. This removes all transient battlefield state:
@@ -309,6 +336,9 @@ object EffectExecutorUtils {
         var newState = state.removeFromZone(battlefieldZone, entityId)
         newState = newState.addToZone(graveyardZone, entityId)
 
+        // Clean up combat references before stripping components
+        newState = cleanupCombatReferences(newState, entityId)
+
         // Remove permanent-only components
         newState = newState.updateEntity(entityId) { c -> stripBattlefieldComponents(c) }
 
@@ -355,8 +385,9 @@ object EffectExecutorUtils {
         var newState = state.removeFromZone(currentZone, entityId)
         newState = newState.addToZone(targetZoneKey, entityId)
 
-        // Remove permanent-only components if moving from battlefield
+        // Clean up combat references and remove permanent-only components if moving from battlefield
         if (currentZone.zoneType == Zone.BATTLEFIELD) {
+            newState = cleanupCombatReferences(newState, entityId)
             newState = newState.updateEntity(entityId) { c -> stripBattlefieldComponents(c) }
         }
 

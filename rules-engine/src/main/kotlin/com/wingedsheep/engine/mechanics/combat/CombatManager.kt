@@ -1289,7 +1289,7 @@ class CombatManager(
                 )
                 newState = dmgState
                 events.addAll(dmgEvents)
-            } else if (blockedBy == null || blockedBy.blockerIds.isEmpty()) {
+            } else if (blockedBy == null) {
                 // Unblocked - only deal damage if attacker deals damage this step
                 if (!attackerDealsDamageThisStep) continue
 
@@ -1308,9 +1308,10 @@ class CombatManager(
                 }
                 // If protected, damage is prevented - no events emitted
             } else {
-                // Blocked - always process so blockers can deal damage independently
+                // Blocked - filter to live blockers only
+                val liveBlockerIds = blockedBy.blockerIds.filter { it in newState.getBattlefield() }
                 val (attackerDamageState, attackerEvents) = dealCombatDamageBetweenCreatures(
-                    newState, attackerId, blockedBy.blockerIds, firstStrike, attackerDealsDamageThisStep
+                    newState, attackerId, liveBlockerIds, firstStrike, attackerDealsDamageThisStep
                 )
                 newState = attackerDamageState
                 events.addAll(attackerEvents)

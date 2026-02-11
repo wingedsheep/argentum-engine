@@ -545,6 +545,9 @@ class StateBasedActionChecker {
         var newState = state.removeFromZone(battlefieldZone, entityId)
         newState = newState.addToZone(graveyardZone, entityId)
 
+        // Clean up combat references before stripping components
+        newState = EffectExecutorUtils.cleanupCombatReferences(newState, entityId)
+
         // Remove permanent components
         newState = newState.updateEntity(entityId) { c -> stripBattlefieldComponents(c) }
 

@@ -6,6 +6,7 @@ import com.wingedsheep.engine.core.LibraryShuffledEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.cleanupCombatReferences
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.destroyPermanent
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.moveCardToZone
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolveTarget
@@ -198,7 +199,8 @@ class MoveToZoneEffectExecutor : EffectExecutor<MoveToZoneEffect> {
         fromZone: ZoneKey
     ): GameState {
         if (fromZone.zoneType != Zone.BATTLEFIELD) return state
-        return state.updateEntity(entityId) { c -> stripBattlefieldComponents(c) }
+        val cleaned = cleanupCombatReferences(state, entityId)
+        return cleaned.updateEntity(entityId) { c -> stripBattlefieldComponents(c) }
     }
 
     private fun findEntityZone(state: GameState, entityId: EntityId): ZoneKey? {
