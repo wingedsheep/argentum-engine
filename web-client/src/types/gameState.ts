@@ -153,6 +153,9 @@ export interface ClientCard {
 
   /** Chosen creature type for "as enters, choose a creature type" permanents (e.g., Doom Cannon) */
   readonly chosenCreatureType?: string | null
+
+  /** Source zone for triggered abilities on the stack (e.g., "GRAVEYARD" for graveyard triggers) */
+  readonly sourceZone?: string | null
 }
 
 /**

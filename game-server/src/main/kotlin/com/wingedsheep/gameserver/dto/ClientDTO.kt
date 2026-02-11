@@ -172,7 +172,10 @@ data class ClientCard(
     val chosenX: Int? = null,
 
     /** Chosen creature type for "as enters, choose a creature type" permanents (e.g., Doom Cannon) */
-    val chosenCreatureType: String? = null
+    val chosenCreatureType: String? = null,
+
+    /** Source zone for triggered abilities on the stack (e.g., "GRAVEYARD" for Gigapede) */
+    val sourceZone: String? = null
 )
 
 /**

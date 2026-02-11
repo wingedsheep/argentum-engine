@@ -78,6 +78,10 @@ export function StackDisplay() {
                 style={{
                   ...styles.stackItemImage,
                   cursor: isValidTarget ? 'pointer' : 'default',
+                  ...(card.sourceZone === 'GRAVEYARD' ? {
+                    opacity: 0.7,
+                    filter: 'saturate(0.6)',
+                  } : {}),
                 }}
                 title={`${card.name}\n${card.oracleText || ''}`}
                 onError={(e) => handleImageError(e, card.name, 'small')}

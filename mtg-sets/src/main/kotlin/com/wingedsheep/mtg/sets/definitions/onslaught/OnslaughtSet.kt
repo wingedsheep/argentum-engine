@@ -255,6 +255,7 @@ object OnslaughtSet {
         OverwhelmingInstinct,
         PrimalBoost,
         CentaurGlade,
+        Gigapede,
         WallOfMulch,
 
         // Artifacts

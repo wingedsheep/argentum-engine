@@ -266,6 +266,9 @@ class ClientStateTransformer(
             val targetsComponent = container.get<TargetsComponent>()
             val targets = transformTargets(targetsComponent)
 
+            // Find the source entity's current zone (for graveyard trigger styling)
+            val sourceZone = findEntityZone(state, triggeredAbility.sourceId)
+
             return ClientCard(
                 id = entityId,
                 name = "${triggeredAbility.sourceName} trigger",
@@ -298,7 +301,8 @@ class ClientStateTransformer(
                 attachments = emptyList(),
                 isFaceDown = false,
                 targets = targets,
-                imageUri = cardDef?.metadata?.imageUri
+                imageUri = cardDef?.metadata?.imageUri,
+                sourceZone = sourceZone
             )
         }
 
@@ -869,5 +873,18 @@ class ClientStateTransformer(
             .filter { it.effect.modification is SerializableModification.MustBeBlockedByAll }
             .flatMap { it.effect.affectedEntities }
             .toSet()
+    }
+
+    /**
+     * Find which zone an entity is currently in.
+     * Returns the zone type name (e.g., "GRAVEYARD") or null if not found.
+     */
+    private fun findEntityZone(state: GameState, entityId: EntityId): String? {
+        for ((zoneKey, entities) in state.zones) {
+            if (entityId in entities) {
+                return zoneKey.zoneType.name
+            }
+        }
+        return null
     }
 }
