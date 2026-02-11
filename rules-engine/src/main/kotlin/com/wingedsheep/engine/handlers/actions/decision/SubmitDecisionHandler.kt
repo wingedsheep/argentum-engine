@@ -109,13 +109,13 @@ class SubmitDecisionHandler(
 
                     combinedEvents = combinedEvents + triggerResult.events
                     return ExecutionResult.success(
-                        triggerResult.newState.withPriority(state.activePlayerId),
+                        triggerResult.newState.withPriority(action.playerId),
                         combinedEvents
                     )
                 }
 
                 return ExecutionResult.success(
-                    sbaResult.newState.withPriority(state.activePlayerId),
+                    sbaResult.newState.withPriority(action.playerId),
                     combinedEvents
                 )
             }

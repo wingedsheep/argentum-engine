@@ -432,7 +432,7 @@ class CastSpellHandler(
 
             if (triggerResult.isPaused) {
                 return ExecutionResult.paused(
-                    triggerResult.state.withPriority(state.activePlayerId),
+                    triggerResult.state.withPriority(action.playerId),
                     triggerResult.pendingDecision!!,
                     allEvents + triggerResult.events
                 )
@@ -440,13 +440,13 @@ class CastSpellHandler(
 
             allEvents = allEvents + triggerResult.events
             return ExecutionResult.success(
-                triggerResult.newState.withPriority(state.activePlayerId),
+                triggerResult.newState.withPriority(action.playerId),
                 allEvents
             )
         }
 
         return ExecutionResult.success(
-            castResult.newState.withPriority(state.activePlayerId),
+            castResult.newState.withPriority(action.playerId),
             allEvents
         )
     }

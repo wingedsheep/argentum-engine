@@ -75,6 +75,9 @@ class DiscombobulateTest : FunSpec({
         val spellOnStack = driver.getTopOfStack()!!
         driver.stackSize shouldBe 1
 
+        // Opponent passes priority back so active player can respond
+        driver.passPriority(opponent)
+
         // Active player casts Discombobulate targeting the bolt
         val discombobulate = driver.putCardInHand(activePlayer, "Discombobulate")
         driver.giveMana(activePlayer, Color.BLUE, 4)
@@ -137,6 +140,9 @@ class DiscombobulateTest : FunSpec({
 
         val spellOnStack = driver.getTopOfStack()!!
 
+        // Opponent passes priority back so active player can respond
+        driver.passPriority(opponent)
+
         // Active player counters with Discombobulate
         val discombobulate = driver.putCardInHand(activePlayer, "Discombobulate")
         driver.giveMana(activePlayer, Color.BLUE, 4)
@@ -181,6 +187,9 @@ class DiscombobulateTest : FunSpec({
         driver.castSpell(opponent, bolt, listOf(activePlayer))
 
         val spellOnStack = driver.getTopOfStack()!!
+
+        // Opponent passes priority back so active player can respond
+        driver.passPriority(opponent)
 
         // Active player counters
         val discombobulate = driver.putCardInHand(activePlayer, "Discombobulate")

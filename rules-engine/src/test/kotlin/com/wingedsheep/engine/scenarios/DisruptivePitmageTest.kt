@@ -251,6 +251,9 @@ class DisruptivePitmageTest : FunSpec({
 
         val spellOnStack = driver.getTopOfStack()!!
 
+        // Player 2 passes priority back so player 1 can respond
+        driver.passPriority(player2)
+
         // Player 1 responds by activating Pitmage
         val result = driver.submit(
             ActivateAbility(

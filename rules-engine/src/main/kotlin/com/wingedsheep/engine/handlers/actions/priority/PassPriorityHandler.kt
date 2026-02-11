@@ -12,6 +12,9 @@ import com.wingedsheep.engine.handlers.actions.ActionHandler
 import com.wingedsheep.engine.mechanics.StateBasedActionChecker
 import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
+import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
+import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import kotlin.reflect.KClass
 
 /**
@@ -104,6 +107,16 @@ class PassPriorityHandler(
     }
 
     private fun resolveTopOfStack(state: GameState): ExecutionResult {
+        // Determine who controlled the top stack item (caster/activator) so priority
+        // returns to them after resolution, per MTG rule 117.3c
+        val topId = state.getTopOfStack()
+        val topContainer = topId?.let { state.getEntity(it) }
+        val stackItemController = topContainer?.let { container ->
+            container.get<SpellOnStackComponent>()?.casterId
+                ?: container.get<TriggeredAbilityOnStackComponent>()?.controllerId
+                ?: container.get<ActivatedAbilityOnStackComponent>()?.controllerId
+        } ?: state.activePlayerId
+
         val result = stackResolver.resolveTop(state)
 
         if (!result.isSuccess) {
@@ -138,13 +151,13 @@ class PassPriorityHandler(
 
             combinedEvents = combinedEvents + triggerResult.events
             return ExecutionResult.success(
-                triggerResult.newState.withPriority(state.activePlayerId),
+                triggerResult.newState.withPriority(stackItemController),
                 combinedEvents
             )
         }
 
         return ExecutionResult.success(
-            sbaResult.newState.withPriority(state.activePlayerId),
+            sbaResult.newState.withPriority(stackItemController),
             combinedEvents
         )
     }
