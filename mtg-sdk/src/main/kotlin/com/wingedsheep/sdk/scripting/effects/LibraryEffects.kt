@@ -279,6 +279,20 @@ data class RevealUntilNonlandDealDamageEffect(
 }
 
 /**
+ * Shuffle target player's graveyard into their library.
+ * "Target player shuffles their graveyard into their library."
+ */
+@Serializable
+data class ShuffleGraveyardIntoLibraryEffect(
+    val target: EffectTarget = EffectTarget.ContextTarget(0)
+) : Effect {
+    override val description: String = when (target) {
+        EffectTarget.Controller -> "Shuffle your graveyard into your library"
+        else -> "${target.description.replaceFirstChar { it.uppercase() }} shuffles their graveyard into their library"
+    }
+}
+
+/**
  * Put a land card from your hand onto the battlefield.
  * "You may put a basic land card from your hand onto the battlefield tapped."
  *
