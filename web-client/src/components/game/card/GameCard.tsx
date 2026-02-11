@@ -31,6 +31,8 @@ interface GameCardProps {
   inHand?: boolean
   /** Force tapped visual (e.g. for attachments of tapped permanents) */
   forceTapped?: boolean
+  /** Ghost card from graveyard (translucent, purple glow) */
+  isGhost?: boolean
 }
 
 /**
@@ -47,6 +49,7 @@ export function GameCard({
   isOpponentCard = false,
   inHand = false,
   forceTapped = false,
+  isGhost = false,
 }: GameCardProps) {
   const selectCard = useGameStore((state) => state.selectCard)
   const selectedCardId = useGameStore((state) => state.selectedCardId)
@@ -168,7 +171,7 @@ export function GameCard({
   // Show modal if multiple legal actions OR if card has multiple potential options (e.g., morph + normal cast)
   const hasMultiplePotentialOptions = hasMultipleCastingOptions(playableActions)
   const shouldShowCastModal = playableActions.length > 1 || (hasMultiplePotentialOptions && playableActions.length > 0)
-  const canDragToPlay = inHand && playableAction && !isInCombatMode
+  const canDragToPlay = inHand && playableAction && !isInCombatMode && !isGhost
 
   // Handle mouse down - start dragging for blockers or hand cards
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -471,6 +474,18 @@ export function GameCard({
     // Light-blue highlight for valid attackers/blockers
     borderStyle = `2px solid ${TARGET_COLOR}`
     boxShadow = `0 0 12px ${TARGET_GLOW}, 0 0 24px ${TARGET_SHADOW}`
+  } else if (isPlayable && isGhost && isHovered) {
+    // Bright purple highlight when hovering over a playable ghost card
+    borderStyle = '3px solid #aa77ee'
+    boxShadow = '0 0 20px rgba(170, 119, 238, 0.9), 0 0 40px rgba(136, 85, 204, 0.5)'
+  } else if (isPlayable && isGhost) {
+    // Purple highlight for playable ghost cards
+    borderStyle = '2px solid #8855cc'
+    boxShadow = '0 0 12px rgba(136, 85, 204, 0.5), 0 0 24px rgba(136, 85, 204, 0.3)'
+  } else if (isGhost) {
+    // Dim purple border for ghost cards that aren't playable
+    borderStyle = '2px solid #6644aa'
+    boxShadow = '0 0 8px rgba(102, 68, 170, 0.4), 0 0 16px rgba(102, 68, 170, 0.2)'
   } else if (isPlayable && isHovered) {
     // Bright highlight when hovering over a playable card
     borderStyle = '3px solid #44ff44'
@@ -501,6 +516,7 @@ export function GameCard({
   const cardElement = (
     <div
       data-card-id={card.id}
+      {...(isGhost ? { 'data-ghost': 'true' } : {})}
       onClick={handleClick}
       onDoubleClick={handleDoubleClickEvent}
       onMouseDown={handleMouseDown}
@@ -518,7 +534,7 @@ export function GameCard({
         transform: `${isTapped ? 'rotate(90deg)' : ''} ${isSelected && (!isInCombatMode || !isCombatRoleCard) ? 'translateY(-8px)' : ''}`,
         transformOrigin: 'center',
         boxShadow,
-        opacity: isBeingDragged ? 0.6 : 1,
+        opacity: isBeingDragged ? 0.6 : isGhost ? 0.55 : 1,
         userSelect: 'none',
       }}
     >

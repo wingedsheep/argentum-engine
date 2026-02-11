@@ -11,7 +11,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
- * E2E scenario test for Gigapede's graveyard-based triggered ability.
+ * Scenario test for Gigapede's graveyard-based triggered ability.
  *
  * Card reference:
  * - Gigapede (3GG): 6/1 Creature - Insect

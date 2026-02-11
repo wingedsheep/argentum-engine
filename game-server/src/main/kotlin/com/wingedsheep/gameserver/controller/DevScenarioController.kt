@@ -448,6 +448,14 @@ class DevScenarioController(
             // Inject the pre-built state (without player sessions - they'll connect later)
             gameSession.injectStateForDevScenario(state)
 
+            // Apply per-step stop overrides (prevents auto-pass at specified steps)
+            if (request.player1StopAtSteps.isNotEmpty()) {
+                gameSession.setStopOverrides(player1Id, request.player1StopAtSteps.toSet(), emptySet())
+            }
+            if (request.player2StopAtSteps.isNotEmpty()) {
+                gameSession.setStopOverrides(player2Id, request.player2StopAtSteps.toSet(), emptySet())
+            }
+
             // Save the session
             gameRepository.save(gameSession)
 
@@ -693,7 +701,11 @@ data class ScenarioRequest(
     val phase: Phase? = null,
     val step: Step? = null,
     val activePlayer: Int? = null,
-    val priorityPlayer: Int? = null
+    val priorityPlayer: Int? = null,
+    /** Steps where player 1 should stop on their own turn (prevents auto-pass) */
+    val player1StopAtSteps: List<Step> = emptyList(),
+    /** Steps where player 2 should stop on their own turn (prevents auto-pass) */
+    val player2StopAtSteps: List<Step> = emptyList()
 )
 
 data class PlayerConfig(

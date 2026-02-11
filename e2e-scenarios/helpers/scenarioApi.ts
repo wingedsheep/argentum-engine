@@ -23,6 +23,10 @@ export interface ScenarioRequest {
   step?: string
   activePlayer?: number
   priorityPlayer?: number
+  /** Steps where player 1 should stop on their own turn (prevents auto-pass) */
+  player1StopAtSteps?: string[]
+  /** Steps where player 2 should stop on their own turn (prevents auto-pass) */
+  player2StopAtSteps?: string[]
 }
 
 export interface PlayerInfo {

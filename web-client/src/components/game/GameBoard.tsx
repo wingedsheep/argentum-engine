@@ -1,5 +1,5 @@
 import { useGameStore } from '../../store/gameStore'
-import { useViewingPlayer, useOpponent, useStackCards, selectPriorityMode } from '../../store/selectors'
+import { useViewingPlayer, useOpponent, useStackCards, selectPriorityMode, useGhostCards } from '../../store/selectors'
 import { hand, getNextStep, StepShortNames } from '../../types'
 import { StepStrip } from '../ui/StepStrip'
 import { ManaPool } from '../ui/ManaPool'
@@ -59,6 +59,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
   const viewingPlayer = useViewingPlayer()
   const opponent = useOpponent()
   const stackCards = useStackCards()
+  const ghostCards = useGhostCards(playerId ?? null)
 
   // For spectator mode, we need to find players differently since playerId won't match
   const spectatorPlayer1 = spectatorMode && gameState
@@ -297,6 +298,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
             zoneId={hand(playerId)}
             faceDown={false}
             interactive
+            ghostCards={ghostCards}
           />
         ) : null}
       </div>
