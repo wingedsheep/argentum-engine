@@ -47,6 +47,6 @@ val LavamancersSkill = card("Lavamancer's Skill") {
         collectorNumber = "215"
         artist = "Scott M. Fischer"
         flavorText = "The best wizards know the shortest route between two points is a bolt of fire."
-        imageUri = "https://cards.scryfall.io/large/front/8/a/8a76857c-a581-44ce-84c4-c24b10228a43.jpg?1562927688"
+        imageUri = "https://cards.scryfall.io/large/front/0/d/0d4dd156-a2c1-4fab-b9f4-3302a4e8835a.jpg?1562898074"
     }
 }

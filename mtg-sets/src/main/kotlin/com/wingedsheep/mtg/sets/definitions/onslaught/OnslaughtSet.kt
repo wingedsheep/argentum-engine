@@ -192,6 +192,7 @@ object OnslaughtSet {
         SnappingThragg,
         SpurredWolverine,
         Threaten,
+        ThunderOfHooves,
         WaveOfIndifference,
 
         // Green creatures and spells
