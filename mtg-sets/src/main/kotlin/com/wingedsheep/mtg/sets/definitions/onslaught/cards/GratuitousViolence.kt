@@ -30,6 +30,6 @@ val GratuitousViolence = card("Gratuitous Violence") {
         rarity = Rarity.RARE
         collectorNumber = "212"
         artist = "Christopher Moeller"
-        imageUri = "https://cards.scryfall.io/normal/front/0/9/093e3fc5-b2e0-4376-b8ad-4470e02571c7.jpg?1562896787"
+        imageUri = "https://cards.scryfall.io/large/front/4/b/4b0c5d14-4fab-4034-a2d3-0d851ef67cbd.jpg?1562912596"
     }
 }
