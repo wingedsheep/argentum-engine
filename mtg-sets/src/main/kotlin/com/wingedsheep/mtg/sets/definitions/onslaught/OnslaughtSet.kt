@@ -259,6 +259,7 @@ object OnslaughtSet {
         ForgottenCave,
         GoblinBurrows,
         LonelySandbar,
+        SeasideHaven,
         WirewoodLodge,
         SecludedSteppe,
         TranquilThicket,

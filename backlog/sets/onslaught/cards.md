@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 231 / 335
+**Implemented:** 232 / 335
 
 ---
 
@@ -248,7 +248,7 @@
 - [x] Screaming Seahawk
 - [x] Screeching Buzzard
 - [ ] Sea's Claim
-- [ ] Seaside Haven
+- [x] Seaside Haven
 - [x] Searing Flesh
 - [x] Secluded Steppe
 - [x] Serpentine Basilisk
