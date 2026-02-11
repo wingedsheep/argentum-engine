@@ -196,6 +196,26 @@ class TriggerDetector(
                                 )
                             )
                         }
+                    }
+                    // For "whenever a creature you control becomes blocked" (OnBecomesBlocked with selfOnly = false),
+                    // create one trigger per blocked creature controlled by the ability's controller
+                    else if (ability.trigger is OnBecomesBlocked && !(ability.trigger as OnBecomesBlocked).selfOnly &&
+                        event is BlockersDeclaredEvent) {
+                        val blockedAttackers = event.blockers.values.flatten().distinct()
+                        for (attackerId in blockedAttackers) {
+                            val attackerController = projected.getController(attackerId)
+                            if (attackerController == controllerId) {
+                                triggers.add(
+                                    PendingTrigger(
+                                        ability = ability,
+                                        sourceId = entityId,
+                                        sourceName = cardComponent.name,
+                                        controllerId = controllerId,
+                                        triggerContext = TriggerContext(triggeringEntityId = attackerId)
+                                    )
+                                )
+                            }
+                        }
                     } else {
                         triggers.add(
                             PendingTrigger(

@@ -46,6 +46,7 @@ object OnslaughtSet {
         GustcloakRunner,
         GustcloakSentinel,
         GustcloakSkirmisher,
+        GustcloakSavior,
         ImprovisedArmor,
         Inspirit,
         Pacifism,
@@ -107,6 +108,7 @@ object OnslaughtSet {
         MistformDreamer,
         MistformWall,
         Reminisce,
+        RiptideBiologist,
 
         // Black creatures and spells
         AccursedCentaur,
