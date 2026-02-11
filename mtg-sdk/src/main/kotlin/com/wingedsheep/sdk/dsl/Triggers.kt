@@ -195,6 +195,16 @@ object Triggers {
      */
     val TakesDamage: Trigger = OnDamageReceived(selfOnly = true)
 
+    /**
+     * Whenever a creature deals damage to this creature.
+     */
+    val DamagedByCreature: Trigger = OnDamagedByCreature(selfOnly = true)
+
+    /**
+     * Whenever a spell deals damage to this creature.
+     */
+    val DamagedBySpell: Trigger = OnDamagedBySpell(selfOnly = true)
+
     // =========================================================================
     // Tap/Untap Triggers
     // =========================================================================

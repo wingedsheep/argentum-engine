@@ -113,4 +113,15 @@ sealed interface EffectTarget {
     data object TriggeringEntity : EffectTarget {
         override val description: String = "that creature"
     }
+
+    /**
+     * CONTROLLER OF TRIGGERING ENTITY: Refers to the controller/owner of the
+     * entity that caused the trigger to fire.
+     * Used for effects like Tephraderm: "deals that much damage to that spell's controller"
+     * where the triggering entity is the spell and we need its controller.
+     */
+    @Serializable
+    data object ControllerOfTriggeringEntity : EffectTarget {
+        override val description: String = "that spell's controller"
+    }
 }

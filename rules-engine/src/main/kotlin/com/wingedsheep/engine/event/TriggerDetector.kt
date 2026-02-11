@@ -258,6 +258,11 @@ class TriggerDetector(
             detectDamageSourceTriggers(state, event, triggers, projected)
         }
 
+        // Handle "whenever a creature/spell deals damage to this" triggers (e.g., Tephraderm)
+        if (event is DamageDealtEvent && event.sourceId != null) {
+            detectDamagedBySourceTriggers(state, event, triggers)
+        }
+
         // Handle "whenever a creature deals damage to you" triggers (e.g., Aurification)
         if (event is DamageDealtEvent && event.sourceId != null && event.targetId in state.turnOrder) {
             detectDamageToControllerTriggers(state, event, triggers, projected)
@@ -612,6 +617,65 @@ class TriggerDetector(
         }
     }
 
+    /**
+     * Detect "whenever a creature/spell deals damage to this" triggers.
+     * For OnDamagedByCreature: source must be a creature on the battlefield.
+     * For OnDamagedBySpell: source must be an instant or sorcery.
+     * TriggeringEntityId is set to the damage SOURCE for retaliation effects.
+     *
+     * Handles both on-battlefield and off-battlefield cases (e.g., creature
+     * dies from lethal damage but trigger still fires per Rule 603.10).
+     */
+    private fun detectDamagedBySourceTriggers(
+        state: GameState,
+        event: DamageDealtEvent,
+        triggers: MutableList<PendingTrigger>
+    ) {
+        val sourceId = event.sourceId ?: return
+        val damagedEntityId = event.targetId
+
+        // Get the damaged entity (might be on battlefield or in graveyard)
+        val container = state.getEntity(damagedEntityId) ?: return
+        val cardComponent = container.get<CardComponent>() ?: return
+        val controllerId = container.get<ControllerComponent>()?.playerId
+            ?: cardComponent.ownerId ?: return
+
+        // Face-down creatures have no abilities (Rule 707.2)
+        if (container.has<FaceDownComponent>()) return
+
+        val abilities = getTriggeredAbilities(damagedEntityId, cardComponent.cardDefinitionId, state)
+
+        // Determine source type
+        val sourceContainer = state.getEntity(sourceId) ?: return
+        val sourceCard = sourceContainer.get<CardComponent>()
+        val isCreatureSource = sourceId in state.getBattlefield() && sourceCard?.typeLine?.isCreature == true
+        val isSpellSource = sourceCard != null && (sourceCard.typeLine.isInstant || sourceCard.typeLine.isSorcery)
+
+        for (ability in abilities) {
+            val trigger = ability.trigger
+            val matches = when {
+                trigger is OnDamagedByCreature && trigger.selfOnly && isCreatureSource -> true
+                trigger is OnDamagedBySpell && trigger.selfOnly && isSpellSource -> true
+                else -> false
+            }
+
+            if (matches) {
+                triggers.add(
+                    PendingTrigger(
+                        ability = ability,
+                        sourceId = damagedEntityId,
+                        sourceName = cardComponent.name,
+                        controllerId = controllerId,
+                        triggerContext = TriggerContext(
+                            triggeringEntityId = sourceId,
+                            damageAmount = event.amount
+                        )
+                    )
+                )
+            }
+        }
+    }
+
     private fun matchesTrigger(
         trigger: Trigger,
         event: EngineGameEvent,
@@ -763,6 +827,10 @@ class TriggerDetector(
 
             // Handled separately in detectSubtypeDamageToPlayerTriggers
             is OnCreatureWithSubtypeDealsCombatDamageToPlayer -> false
+
+            // Handled separately in detectDamagedBySourceTriggers
+            is OnDamagedByCreature -> false
+            is OnDamagedBySpell -> false
 
             // Phase/step triggers are handled separately
             is OnUpkeep, is OnEndStep, is OnBeginCombat, is OnFirstMainPhase -> false

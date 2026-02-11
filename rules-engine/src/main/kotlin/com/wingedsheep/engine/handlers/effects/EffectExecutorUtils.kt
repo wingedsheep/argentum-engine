@@ -107,6 +107,12 @@ object EffectExecutorUtils {
             val sourceId = context.sourceId ?: return null
             return state.getEntity(sourceId)?.get<AttachedToComponent>()?.targetId
         }
+        if (effectTarget is EffectTarget.ControllerOfTriggeringEntity) {
+            val triggerId = context.triggeringEntityId ?: return null
+            val entity = state.getEntity(triggerId) ?: return null
+            return entity.get<ControllerComponent>()?.playerId
+                ?: entity.get<CardComponent>()?.ownerId
+        }
         return resolveTarget(effectTarget, context)
     }
 

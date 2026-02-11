@@ -205,6 +205,7 @@ object OnslaughtSet {
         SnappingThragg,
         SpurredWolverine,
         Threaten,
+        Tephraderm,
         ThunderOfHooves,
         WaveOfIndifference,
 

@@ -120,3 +120,39 @@ data class OnCreatureWithSubtypeDealsCombatDamageToPlayer(
 ) : Trigger {
     override val description: String = "Whenever a ${subtype.value} deals combat damage to a player"
 }
+
+/**
+ * Triggers when a creature deals damage to this permanent.
+ * "Whenever a creature deals damage to [this creature]..."
+ *
+ * The triggering entity ID is set to the damage SOURCE creature,
+ * enabling retaliation effects (e.g., Tephraderm deals damage back).
+ */
+@Serializable
+data class OnDamagedByCreature(
+    val selfOnly: Boolean = true
+) : Trigger {
+    override val description: String = if (selfOnly) {
+        "Whenever a creature deals damage to this creature"
+    } else {
+        "Whenever a creature deals damage to a creature"
+    }
+}
+
+/**
+ * Triggers when a spell (instant or sorcery) deals damage to this permanent.
+ * "Whenever a spell deals damage to [this creature]..."
+ *
+ * The triggering entity ID is set to the damage SOURCE spell entity,
+ * enabling effects that reference the spell's controller (e.g., Tephraderm).
+ */
+@Serializable
+data class OnDamagedBySpell(
+    val selfOnly: Boolean = true
+) : Trigger {
+    override val description: String = if (selfOnly) {
+        "Whenever a spell deals damage to this creature"
+    } else {
+        "Whenever a spell deals damage to a creature"
+    }
+}
