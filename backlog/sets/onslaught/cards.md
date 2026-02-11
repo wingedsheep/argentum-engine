@@ -229,7 +229,7 @@
 - [x] Ravenous Baloth
 - [ ] Read the Runes
 - [x] Reckless One
-- [ ] Reminisce
+- [x] Reminisce
 - [x] Renewed Faith
 - [x] Righteous Cause
 - [ ] Riptide Biologist
