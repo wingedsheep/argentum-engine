@@ -278,15 +278,15 @@ class AutoPassManagerTest : FunSpec({
             autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
         }
 
-        test("Auto-pass during opponent's declare attackers even with instant-speed responses (Arena-style)") {
-            // Arena-style: auto-pass at declare attackers, use per-step stop override to hold here
+        test("STOP during opponent's declare attackers when player has instant-speed responses") {
+            // After attackers are declared, defending player can cast instants (e.g., kill/tap attackers)
             val state = createMockState(player2, player1, Step.DECLARE_ATTACKERS)
             val actions = listOf(
                 passPriorityAction(player2),
                 instantSpellAction(player2)
             )
 
-            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
+            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe false
         }
 
         test("Auto-pass during opponent's declare attackers with no instant-speed responses") {
