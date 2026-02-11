@@ -52,6 +52,7 @@ object OnslaughtSet {
         PietyCharm,
         RenewedFaith,
         RighteousCause,
+        SunfireBalm,
         DawningPurist,
         DauntingDefender,
         DefensiveManeuvers,
