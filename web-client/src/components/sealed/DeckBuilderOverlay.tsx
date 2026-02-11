@@ -109,6 +109,7 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
   const responsive = useResponsive()
   const addCardToDeck = useGameStore((s) => s.addCardToDeck)
   const removeCardFromDeck = useGameStore((s) => s.removeCardFromDeck)
+  const clearDeck = useGameStore((s) => s.clearDeck)
   const setLandCount = useGameStore((s) => s.setLandCount)
   const submitSealedDeck = useGameStore((s) => s.submitSealedDeck)
   const unsubmitDeck = useGameStore((s) => s.unsubmitDeck)
@@ -758,6 +759,23 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
             <span style={{ color: '#888', fontSize: 11 }}>
               ({spellCount} spells + {landCount} lands)
             </span>
+            {!isSubmitted && totalCount > 0 && (
+              <button
+                onClick={clearDeck}
+                style={{
+                  marginLeft: 'auto',
+                  padding: '2px 8px',
+                  fontSize: 10,
+                  backgroundColor: '#444',
+                  color: '#ef5350',
+                  border: '1px solid #555',
+                  borderRadius: 4,
+                  cursor: 'pointer',
+                }}
+              >
+                Clear
+              </button>
+            )}
           </div>
 
           {/* Deck card list (vertical) */}

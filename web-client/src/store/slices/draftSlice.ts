@@ -21,6 +21,7 @@ export interface DraftSliceActions {
   joinSealedGame: (sessionId: string) => void
   addCardToDeck: (cardName: string) => void
   removeCardFromDeck: (cardName: string) => void
+  clearDeck: () => void
   setLandCount: (landType: string, count: number) => void
   submitSealedDeck: () => void
   unsubmitDeck: () => void
@@ -78,6 +79,25 @@ export const createDraftSlice: SliceCreator<DraftSlice> = (set, get) => ({
         deckBuildingState: {
           ...state.deckBuildingState,
           deck: newDeck,
+        },
+      }
+    })
+  },
+
+  clearDeck: () => {
+    set((state) => {
+      if (!state.deckBuildingState) return state
+
+      const emptyLandCounts = Object.fromEntries(
+        Object.keys(state.deckBuildingState.landCounts).map((k) => [k, 0])
+      )
+      saveDeckState([], emptyLandCounts)
+
+      return {
+        deckBuildingState: {
+          ...state.deckBuildingState,
+          deck: [],
+          landCounts: emptyLandCounts,
         },
       }
     })

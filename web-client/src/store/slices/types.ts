@@ -420,6 +420,7 @@ export type GameStore = {
   joinSealedGame: (sessionId: string) => void
   addCardToDeck: (cardName: string) => void
   removeCardFromDeck: (cardName: string) => void
+  clearDeck: () => void
   setLandCount: (landType: string, count: number) => void
   submitSealedDeck: () => void
   unsubmitDeck: () => void
