@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 245 / 335
+**Implemented:** 246 / 335
 
 ---
 
@@ -151,7 +151,7 @@
 - [ ] Grand Coliseum
 - [ ] Grand Melee
 - [x] Grassland Crusader
-- [ ] Gratuitous Violence
+- [x] Gratuitous Violence
 - [x] Gravel Slinger
 - [ ] Gravespawn Sovereign
 - [x] Graxiplon
