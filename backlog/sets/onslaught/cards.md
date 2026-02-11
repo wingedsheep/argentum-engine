@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 232 / 335
+**Implemented:** 233 / 335
 
 ---
 
@@ -232,7 +232,7 @@
 - [x] Reminisce
 - [x] Renewed Faith
 - [x] Righteous Cause
-- [ ] Riptide Biologist
+- [x] Riptide Biologist
 - [ ] Riptide Chronologist
 - [ ] Riptide Entrancer
 - [ ] Riptide Laboratory

@@ -106,6 +106,7 @@ object OnslaughtSet {
         IxidorRealitySculptor,
         MistformDreamer,
         Reminisce,
+        RiptideBiologist,
 
         // Black creatures and spells
         AccursedCentaur,
