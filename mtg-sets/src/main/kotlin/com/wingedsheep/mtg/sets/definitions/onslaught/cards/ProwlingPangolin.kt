@@ -35,6 +35,6 @@ val ProwlingPangolin = card("Prowling Pangolin") {
         collectorNumber = "163"
         artist = "Heather Hudson"
         flavorText = "\"It's always hungry, yet easily sated.\""
-        imageUri = "https://cards.scryfall.io/large/front/b/6/b6bf8191-3154-48d7-a49b-4d07b5e35a15.jpg?1580014350"
+        imageUri = "https://cards.scryfall.io/large/front/0/f/0f037e99-75fb-4a2a-b4c6-448ef21b16a3.jpg?1562898495"
     }
 }

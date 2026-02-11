@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 236 / 335
+**Implemented:** 237 / 335
 
 ---
 
@@ -70,7 +70,7 @@
 - [ ] Convalescent Care
 - [x] Cover of Darkness
 - [x] Crafty Pathmage
-- [ ] Crowd Favorites
+- [x] Crowd Favorites
 - [x] Crown of Ascension
 - [x] Crown of Awe
 - [x] Crown of Fury
