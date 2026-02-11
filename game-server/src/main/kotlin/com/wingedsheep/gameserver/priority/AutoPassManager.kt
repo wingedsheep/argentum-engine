@@ -205,9 +205,16 @@ class AutoPassManager {
                 return@filter true
             }
 
-            // CastSpell is meaningful if it passes the above checks
+            // CastSpell is meaningful only if the player can afford it
+            // (Regular spells are only added when affordable, but companion actions
+            // for cycling/morph cards can be added with isAffordable=false)
             if (action.actionType == "CastSpell") {
-                return@filter true
+                return@filter action.isAffordable
+            }
+
+            // CastFaceDown (morph) is meaningful only if the player can afford it
+            if (action.actionType == "CastFaceDown") {
+                return@filter action.isAffordable
             }
 
             // Cycling is meaningful only if the player can afford it
