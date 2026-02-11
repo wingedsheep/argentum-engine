@@ -69,12 +69,9 @@ test.describe('Battlefield Medic — responding to activated ability with shroud
     await p2.selectTarget('Glory Seeker')
     await p2.confirmTargets()
 
-    // P1 resolves the stack — Mage's Guile resolves first (LIFO):
+    // Stack auto-resolves (neither player has responses):
     // 1. Mage's Guile resolves → Glory Seeker gains shroud
-    await p1.pass()
-    // 2. Medic's ability still on stack — P2 must resolve
-    await p2.pass()
-    // Medic's ability resolves → target has shroud → ability fizzles
+    // 2. Medic's ability resolves → target has shroud → ability fizzles
     // 3. Combat damage: Grizzly Bears (2/2) deals 2 to Glory Seeker (2/2) — lethal
     //    Glory Seeker (2/2) deals 2 to Grizzly Bears (2/2) — also lethal
 

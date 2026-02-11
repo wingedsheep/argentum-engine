@@ -500,28 +500,28 @@ class AutoPassManagerTest : FunSpec({
             autoPassManager.shouldAutoPass(state, player1, actions) shouldBe true
         }
 
-        test("STOP when opponent's ability is on stack with no responses") {
-            // player2's ability on stack, player1 has priority but no responses → stop to see the effect
+        test("AUTO-PASS when opponent's ability is on stack with no responses") {
+            // player2's ability on stack, player1 has priority but no responses → auto-pass
             val state = createMockState(player1, player1, Step.PRECOMBAT_MAIN, stackEmpty = false, stackControllerId = player2, stackItemType = StackItemType.ABILITY)
             val actions = listOf(
                 passPriorityAction(player1),
                 manaAbilityAction(player1) // Only mana ability, not a response
             )
 
-            // Stop so player can see the opponent's ability effect
-            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe false
+            // Auto-pass since player has no responses
+            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe true
         }
 
-        test("STOP when opponent's instant/sorcery is on stack with no responses") {
-            // player2's instant on stack, player1 has priority but no responses → stop to see the effect
+        test("AUTO-PASS when opponent's instant/sorcery is on stack with no responses") {
+            // player2's instant on stack, player1 has priority but no responses → auto-pass
             val state = createMockState(player1, player1, Step.PRECOMBAT_MAIN, stackEmpty = false, stackControllerId = player2, stackItemType = StackItemType.INSTANT_SORCERY)
             val actions = listOf(
                 passPriorityAction(player1),
                 manaAbilityAction(player1) // Only mana ability, not a response
             )
 
-            // Stop so player can see the opponent's spell effect
-            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe false
+            // Auto-pass since player has no responses
+            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe true
         }
 
         test("AUTO-PASS when opponent's permanent spell is on stack with no responses") {

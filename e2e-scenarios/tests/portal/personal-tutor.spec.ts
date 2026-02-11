@@ -33,9 +33,7 @@ test.describe('Personal Tutor', () => {
     await p1.clickCard('Personal Tutor')
     await p1.selectAction('Cast Personal Tutor')
 
-    // Opponent resolves
-    await p2.resolveStack('Personal Tutor')
-
+    // Spell auto-resolves (opponent has no responses)
     // Library search overlay appears — select Mind Rot (a sorcery)
     await p1.selectCardInZoneOverlay('Mind Rot')
     await p1.confirmSelection()

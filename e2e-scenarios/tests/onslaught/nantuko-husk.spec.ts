@@ -37,8 +37,7 @@ test.describe('Nantuko Husk', () => {
     await p1.selectTarget('Glory Seeker')
     await p1.confirmTargets()
 
-    // P1 auto-passes, P2 must resolve the ability
-    await p2.pass()
+    // Ability auto-resolves (opponent has no responses)
 
     // Glory Seeker should be sacrificed (gone from battlefield)
     await p1.expectNotOnBattlefield('Glory Seeker')

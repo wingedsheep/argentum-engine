@@ -57,8 +57,7 @@ test.describe('Combat — kill blocker after ordering', () => {
     await p1.selectTarget('Glory Seeker')
     await p1.confirmTargets()
 
-    // P2 must pass priority to let Shock resolve
-    await p2.pass()
+    // Shock auto-resolves (opponent has no responses)
 
     // Glory Seeker should be dead (2 damage from Shock >= 2 toughness)
     await p1.expectNotOnBattlefield('Glory Seeker')

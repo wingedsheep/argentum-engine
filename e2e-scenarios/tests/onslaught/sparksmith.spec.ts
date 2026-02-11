@@ -40,8 +40,7 @@ test.describe('Sparksmith', () => {
     await p1.selectTarget('Glory Seeker')
     await p1.confirmTargets()
 
-    // P1 auto-passes, P2 must resolve the ability
-    await p2.pass()
+    // Ability auto-resolves (opponent has no responses)
 
     // Glory Seeker takes 2 damage (2 Goblins) and dies
     await p1.expectNotOnBattlefield('Glory Seeker')

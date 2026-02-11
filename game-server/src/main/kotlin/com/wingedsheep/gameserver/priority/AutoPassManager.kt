@@ -4,7 +4,6 @@ import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
-import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
@@ -42,8 +41,7 @@ import org.slf4j.LoggerFactory
  * - If YOUR spell/ability is on top of the stack: AUTO-PASS (let opponent respond)
  * - If OPPONENT's spell/ability is on top:
  *   - If you have responses: STOP (you might want to respond)
- *   - If no responses AND permanent spell: AUTO-PASS (just enters battlefield)
- *   - If no responses AND instant/sorcery/ability: STOP (so you can see the effect)
+ *   - If no responses: AUTO-PASS (nothing you can do)
  */
 class AutoPassManager {
 
@@ -90,8 +88,7 @@ class AutoPassManager {
         // - If YOUR spell/ability is on top → AUTO-PASS (let opponent respond)
         // - If OPPONENT's spell/ability is on top:
         //   - If you have responses → STOP
-        //   - If no responses AND it's a permanent spell → AUTO-PASS (just enters battlefield)
-        //   - If no responses AND it's instant/sorcery/ability → STOP (so you can see the effect)
+        //   - If no responses → AUTO-PASS (nothing you can do)
         if (state.stack.isNotEmpty()) {
             val topOfStack = state.stack.last() // Stack is LIFO, last = top
             val topController = getStackItemController(state, topOfStack)
@@ -108,15 +105,9 @@ class AutoPassManager {
                     return false
                 }
 
-                // No responses - check if it's a permanent spell (just enters battlefield)
-                if (isPermanentSpell(state, topOfStack)) {
-                    logger.debug("AUTO-PASS: Opponent's permanent spell on stack, no responses")
-                    return true
-                } else {
-                    // Instant, sorcery, or ability - stop so player can see the effect
-                    logger.debug("STOP: Opponent's instant/sorcery/ability on stack")
-                    return false
-                }
+                // No responses - auto-pass regardless of stack item type
+                logger.debug("AUTO-PASS: Opponent's spell/ability on stack, no responses")
+                return true
             }
         }
 
@@ -455,26 +446,6 @@ class AutoPassManager {
         return null
     }
 
-    /**
-     * Check if a stack item is a permanent spell (creature, artifact, enchantment, etc.).
-     * Abilities and instant/sorcery spells return false.
-     */
-    private fun isPermanentSpell(state: GameState, entityId: EntityId): Boolean {
-        val container = state.getEntity(entityId) ?: return false
-
-        // Abilities are never permanent spells
-        if (container.get<ActivatedAbilityOnStackComponent>() != null ||
-            container.get<TriggeredAbilityOnStackComponent>() != null) {
-            return false
-        }
-
-        // Must be a spell
-        container.get<SpellOnStackComponent>() ?: return false
-
-        // Check if it's a permanent type
-        val cardComponent = container.get<CardComponent>() ?: return false
-        return cardComponent.isPermanent
-    }
 
     /**
      * Calculates the next step/phase where the game will stop for this player.

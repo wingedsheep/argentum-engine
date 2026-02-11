@@ -34,8 +34,7 @@ test.describe('Taunting Elf — must be blocked by all', () => {
     // Attack with Taunting Elf
     await p1.attackAll()
 
-    // Taunting Elf's triggered ability goes on the stack — P2 must resolve it
-    await p2.pass()
+    // Taunting Elf's triggered ability auto-resolves (opponent has no responses)
 
     // Defender should see "Confirm Blocks" immediately — able blockers auto-assigned.
     // Jungle Lion (can't block) should NOT be auto-assigned.
@@ -86,8 +85,7 @@ test.describe('Taunting Elf — must be blocked by all', () => {
     // Attack with both creatures
     await p1.attackAll()
 
-    // Taunting Elf's triggered ability goes on the stack — P2 must resolve it
-    await p2.pass()
+    // Taunting Elf's triggered ability auto-resolves (opponent has no responses)
 
     // Both blockers are auto-assigned to Taunting Elf (must block). Just confirm.
     await p2.confirmBlockers()
