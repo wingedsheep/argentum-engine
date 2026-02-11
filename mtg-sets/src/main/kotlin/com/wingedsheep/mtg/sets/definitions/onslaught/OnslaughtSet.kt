@@ -178,6 +178,7 @@ object OnslaughtSet {
         GoblinSkyRaider,
         GoblinSledder,
         GoblinTaskmaster,
+        NosyGoblin,
         LavamancersSkill,
         LayWaste,
         LightningRift,

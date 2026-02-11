@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 230 / 335
+**Implemented:** 231 / 335
 
 ---
 
@@ -208,7 +208,7 @@
 - [x] Nameless One
 - [x] Nantuko Husk
 - [x] Naturalize
-- [ ] Nosy Goblin
+- [x] Nosy Goblin
 - [x] Nova Cleric
 - [x] Oblation
 - [x] Oversold Cemetery
