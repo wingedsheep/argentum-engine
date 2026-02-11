@@ -42,7 +42,8 @@ test.describe('Astral Slide', () => {
     await p1.selectTarget('Glory Seeker')
     await p1.confirmTargets()
 
-    // Trigger auto-resolves (opponent has no responses)
+    // Trigger is on the stack — opponent resolves
+    await p2.resolveStack('Astral Slide trigger')
 
     // Verify: Glory Seeker is no longer on the battlefield (exiled)
     await p1.expectNotOnBattlefield('Glory Seeker')
@@ -54,7 +55,8 @@ test.describe('Astral Slide', () => {
     await p1.pass()
 
     // At the beginning of the end step, the delayed trigger fires
-    // — auto-resolves (opponent has no responses)
+    // — opponent resolves the delayed return trigger
+    await p2.resolveStack('Astral Slide trigger')
 
     // Glory Seeker returns to the battlefield under its owner's control
     await p2.expectOnBattlefield('Glory Seeker')

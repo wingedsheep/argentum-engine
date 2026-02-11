@@ -43,7 +43,8 @@ test.describe('Gravedigger ETB trigger', () => {
     await p1.selectCardInZoneOverlay('Grizzly Bears')
     await p1.confirmTargets()
 
-    // Trigger auto-resolves (opponent has no responses)
+    // Trigger is on the stack — opponent resolves
+    await p2.resolveStack('Gravedigger trigger')
 
     // Verify: Gravedigger on battlefield, Grizzly Bears returned to hand
     await p1.expectOnBattlefield('Gravedigger')

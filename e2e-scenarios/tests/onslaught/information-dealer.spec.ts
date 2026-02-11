@@ -37,7 +37,8 @@ test.describe('Information Dealer', () => {
     await p1.clickCard('Information Dealer')
     await p1.selectAction('Look at the top')
 
-    // Ability auto-resolves (opponent has no responses)
+    // P2 must resolve the ability on the stack
+    await p2.pass()
 
     // P1 sees the "View Card" overlay with 1 card — click OK to dismiss
     const okButton = p1.page.getByRole('button', { name: 'OK' })
@@ -80,7 +81,8 @@ test.describe('Information Dealer', () => {
     await p1.clickCard('Information Dealer')
     await p1.selectAction('Look at the top')
 
-    // Ability auto-resolves (opponent has no responses)
+    // P2 must resolve the ability on the stack
+    await p2.pass()
 
     // P1 sees the "Reorder Cards" overlay with 2 cards
     const confirmButton = p1.page.getByRole('button', { name: 'Confirm Order' })

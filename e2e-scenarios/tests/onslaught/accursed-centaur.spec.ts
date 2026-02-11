@@ -34,7 +34,9 @@ test.describe('Accursed Centaur', () => {
     await p1.clickCard('Accursed Centaur')
     await p1.selectAction('Cast Accursed Centaur')
 
-    // Spell auto-resolves, ETB trigger fires and auto-resolves (opponent has no responses).
+    // Spell auto-resolves, ETB trigger fires.
+    // P1 auto-passes on trigger, P2 must resolve it.
+    await p2.pass()
 
     // Sacrifice selection appears (SelectCardsDecision with targeting UI).
     // Choose Glory Seeker and confirm.

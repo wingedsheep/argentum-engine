@@ -49,7 +49,8 @@ test.describe('Forked Lightning', () => {
     await p1.increaseDamageAllocation('Grizzly Bears', 1)
     await p1.castSpellFromDistribution()
 
-    // Spell auto-resolves (opponent has no responses)
+    // Opponent resolves the spell
+    await p2.resolveStack('Forked Lightning')
 
     // Both 2/2 creatures should be destroyed
     await p1.expectNotOnBattlefield('Glory Seeker')

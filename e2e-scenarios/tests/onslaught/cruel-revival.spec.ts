@@ -47,7 +47,8 @@ test.describe('Cruel Revival', () => {
     await p2.selectTargetInStep('Gluttonous Zombie')
     await p2.confirmTargets()
 
-    // Spell auto-resolves (opponent has no responses)
+    // Opponent resolves the spell
+    await p1.resolveStack('Cruel Revival')
 
     // Verify: Hill Giant is destroyed (not on battlefield)
     await p2.expectNotOnBattlefield('Hill Giant')
@@ -93,7 +94,8 @@ test.describe('Cruel Revival', () => {
     // Step 2/2: no zombies in graveyard — confirm with 0 targets selected
     await p2.confirmTargets()
 
-    // Spell auto-resolves (opponent has no responses)
+    // Opponent resolves the spell
+    await p1.resolveStack('Cruel Revival')
 
     // Verify: Hill Giant is destroyed
     await p2.expectNotOnBattlefield('Hill Giant')
