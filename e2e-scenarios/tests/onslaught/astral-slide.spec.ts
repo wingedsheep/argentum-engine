@@ -38,8 +38,9 @@ test.describe('Astral Slide', () => {
     // Astral Slide triggers — may decision: choose yes to exile
     await p1.answerYes()
 
-    // Select opponent's Glory Seeker as target (battlefield targeting auto-confirms)
+    // Select opponent's Glory Seeker as target and confirm
     await p1.selectTarget('Glory Seeker')
+    await p1.confirmTargets()
 
     // Trigger is on the stack — opponent resolves
     await p2.resolveStack('Astral Slide trigger')
