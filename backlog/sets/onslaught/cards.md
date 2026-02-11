@@ -287,7 +287,7 @@
 - [x] Starstorm
 - [ ] Steely Resolve
 - [ ] Strongarm Tactics
-- [ ] Sunfire Balm
+- [x] Sunfire Balm
 - [ ] Supreme Inquisitor
 - [x] Swamp
 - [x] Swat
