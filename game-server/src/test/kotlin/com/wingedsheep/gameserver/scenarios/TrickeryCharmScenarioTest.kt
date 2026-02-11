@@ -68,11 +68,12 @@ class TrickeryCharmScenarioTest : ScenarioTestBase() {
                 // Choose mode 0: "Target creature gains flying until end of turn"
                 game.chooseMode(0)
 
-                // Auto-selects Grizzly Bears as only valid creature target
+                // Select the single valid creature target
+                val bearsId = game.findPermanent("Grizzly Bears")!!
+                game.selectTargets(listOf(bearsId))
 
                 // Verify Grizzly Bears has flying
                 val projected = stateProjector.project(game.state)
-                val bearsId = game.findPermanent("Grizzly Bears")!!
                 withClue("Grizzly Bears should have flying") {
                     projected.hasKeyword(bearsId, Keyword.FLYING) shouldBe true
                 }
@@ -96,7 +97,9 @@ class TrickeryCharmScenarioTest : ScenarioTestBase() {
                 // Choose mode 1: "Target creature becomes the creature type of your choice"
                 game.chooseMode(1)
 
-                // Auto-selects Grizzly Bears as only valid creature target
+                // Select the single valid creature target
+                game.selectTargets(listOf(bearsId))
+
                 // Now choose creature type: Goblin
                 game.chooseCreatureType("Goblin")
 
@@ -131,7 +134,9 @@ class TrickeryCharmScenarioTest : ScenarioTestBase() {
                 // Choose mode 1: creature type change
                 game.chooseMode(1)
 
-                // Auto-selects Sage Aven as only creature target
+                // Select the single valid creature target
+                game.selectTargets(listOf(avenId))
+
                 // Choose Elf as the new type
                 game.chooseCreatureType("Elf")
 
@@ -212,6 +217,10 @@ class TrickeryCharmScenarioTest : ScenarioTestBase() {
                 game.castSpell(1, "Trickery Charm")
                 game.resolveStack()
                 game.chooseMode(0) // flying mode
+
+                // Select the single valid creature target
+                val bearsId = game.findPermanent("Grizzly Bears")!!
+                game.selectTargets(listOf(bearsId))
 
                 withClue("Trickery Charm should be in graveyard after resolving") {
                     game.isInGraveyard(1, "Trickery Charm") shouldBe true

@@ -56,12 +56,12 @@ class FeverCharmScenarioTest : ScenarioTestBase() {
                 // Choose mode 0: "Target creature gains haste until end of turn"
                 game.chooseMode(0)
 
-                // Should now ask for target selection - auto-selects if only one creature
-                // With only Grizzly Bears as a valid creature, it auto-selects
+                // Select the single valid creature target
+                val bearsId = game.findPermanent("Grizzly Bears")!!
+                game.selectTargets(listOf(bearsId))
 
                 // Verify Grizzly Bears has haste
                 val projected = stateProjector.project(game.state)
-                val bearsId = game.findPermanent("Grizzly Bears")!!
                 withClue("Grizzly Bears should have haste") {
                     projected.hasKeyword(bearsId, Keyword.HASTE) shouldBe true
                 }
@@ -85,7 +85,8 @@ class FeverCharmScenarioTest : ScenarioTestBase() {
                 // Choose mode 1: "Target creature gets +2/+0 until end of turn"
                 game.chooseMode(1)
 
-                // Auto-selects Grizzly Bears as only valid target
+                // Select the single valid creature target
+                game.selectTargets(listOf(bearsId))
 
                 // Verify stats: 2/2 + 2/0 = 4/2
                 val projected = stateProjector.project(game.state)
@@ -111,7 +112,9 @@ class FeverCharmScenarioTest : ScenarioTestBase() {
                 // Choose mode 2: "Fever Charm deals 3 damage to target Wizard creature"
                 game.chooseMode(2)
 
-                // Auto-selects Sage Aven as only valid Wizard target
+                // Select the single valid Wizard target
+                val avenId = game.findPermanent("Sage Aven")!!
+                game.selectTargets(listOf(avenId))
                 // 3 damage to a 1/3 creature = lethal
 
                 withClue("Sage Aven should be destroyed by 3 damage") {
@@ -169,7 +172,9 @@ class FeverCharmScenarioTest : ScenarioTestBase() {
                 // Choose mode 2: deal 3 to Wizard creature
                 game.chooseMode(2)
 
-                // Only Sage Aven is a Wizard, so it should auto-select
+                // Only Sage Aven is a valid Wizard target
+                val avenId = game.findPermanent("Sage Aven")!!
+                game.selectTargets(listOf(avenId))
                 // Sage Aven should die (3 damage to 1/3)
                 withClue("Sage Aven should be destroyed") {
                     game.isOnBattlefield("Sage Aven") shouldBe false
@@ -192,6 +197,10 @@ class FeverCharmScenarioTest : ScenarioTestBase() {
                 game.castSpell(1, "Fever Charm")
                 game.resolveStack()
                 game.chooseMode(0) // haste mode
+
+                // Select the single valid creature target
+                val bearsId = game.findPermanent("Grizzly Bears")!!
+                game.selectTargets(listOf(bearsId))
 
                 withClue("Fever Charm should be in graveyard after resolving") {
                     game.isInGraveyard(1, "Fever Charm") shouldBe true

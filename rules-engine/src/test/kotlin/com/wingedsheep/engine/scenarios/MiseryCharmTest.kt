@@ -108,7 +108,11 @@ class MiseryCharmTest : FunSpec({
         // Choose mode 0 (destroy target Cleric)
         val modeDecision = driver.pendingDecision as ChooseOptionDecision
         driver.submitDecision(activePlayer, OptionChosenResponse(modeDecision.id, 0))
-        // Only one Cleric on battlefield → auto-selected as target
+
+        // Select the single valid Cleric target
+        val targetDecision = driver.pendingDecision as ChooseTargetsDecision
+        val clericId = targetDecision.legalTargets.values.first().first()
+        driver.submitTargetSelection(activePlayer, listOf(clericId))
 
         // Cleric should be in graveyard
         driver.assertInGraveyard(opponent, "Test Cleric")
@@ -169,7 +173,11 @@ class MiseryCharmTest : FunSpec({
         // Choose mode 1 (return Cleric from graveyard)
         val modeDecision = driver.pendingDecision as ChooseOptionDecision
         driver.submitDecision(activePlayer, OptionChosenResponse(modeDecision.id, 1))
-        // Only one Cleric in our graveyard → auto-selected as target
+
+        // Select the single valid Cleric target in graveyard
+        val targetDecision = driver.pendingDecision as ChooseTargetsDecision
+        val clericId = targetDecision.legalTargets.values.first().first()
+        driver.submitTargetSelection(activePlayer, listOf(clericId))
 
         // Cleric should be in hand now
         val hand = driver.state.getHand(activePlayer)
