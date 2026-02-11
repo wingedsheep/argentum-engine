@@ -221,6 +221,7 @@ object OnslaughtSet {
         HeedlessOne,
         Hystrodon,
         SilklashSpider,
+        SilvosRogueElemental,
         SpittingGourna,
         SymbioticBeast,
         TauntingElf,
