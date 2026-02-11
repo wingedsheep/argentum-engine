@@ -168,6 +168,20 @@ class AutoPassManagerTest : FunSpec({
         isAffordable = affordable
     )
 
+    fun castFaceDownAction(playerId: EntityId, affordable: Boolean = true) = LegalActionInfo(
+        actionType = "CastFaceDown",
+        description = "Cast Krosan Cloudscraper face-down",
+        action = CastSpell(playerId, EntityId.generate(), castFaceDown = true),
+        isAffordable = affordable
+    )
+
+    fun unaffordableCastAction(playerId: EntityId) = LegalActionInfo(
+        actionType = "CastSpell",
+        description = "Cast Krosan Cloudscraper",
+        action = CastSpell(playerId, EntityId.generate()),
+        isAffordable = false
+    )
+
     fun playLandAction(playerId: EntityId) = LegalActionInfo(
         actionType = "PlayLand",
         description = "Play Forest",
@@ -865,6 +879,54 @@ class AutoPassManagerTest : FunSpec({
             )
 
             autoPassManager.shouldAutoPass(state, player1, actions) shouldBe true
+        }
+
+        test("Unaffordable cycling with unaffordable companion cast does NOT stop auto-pass") {
+            // When a cycling card also has an unaffordable cast action, neither should block auto-pass
+            val state = createMockState(player2, player1, Step.END)
+            val actions = listOf(
+                passPriorityAction(player2),
+                cycleAction(player2, affordable = false),
+                unaffordableCastAction(player2)
+            )
+
+            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
+        }
+    }
+
+    context("Morph/CastFaceDown Affordability") {
+        test("Unaffordable CastFaceDown does NOT stop auto-pass") {
+            // A morph card you can't afford to cast face-down shouldn't block auto-pass
+            val state = createMockState(player2, player1, Step.END)
+            val actions = listOf(
+                passPriorityAction(player2),
+                castFaceDownAction(player2, affordable = false)
+            )
+
+            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
+        }
+
+        test("Unaffordable CastFaceDown with unaffordable companion cast does NOT stop auto-pass") {
+            // A morph card where both face-down and normal cast are unaffordable
+            val state = createMockState(player2, player1, Step.END)
+            val actions = listOf(
+                passPriorityAction(player2),
+                castFaceDownAction(player2, affordable = false),
+                unaffordableCastAction(player2)
+            )
+
+            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
+        }
+
+        test("Unaffordable CastSpell does NOT stop auto-pass at opponent's end step") {
+            // An unaffordable spell (companion action for morph/cycling) shouldn't block auto-pass
+            val state = createMockState(player2, player1, Step.END)
+            val actions = listOf(
+                passPriorityAction(player2),
+                unaffordableCastAction(player2)
+            )
+
+            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
         }
     }
 

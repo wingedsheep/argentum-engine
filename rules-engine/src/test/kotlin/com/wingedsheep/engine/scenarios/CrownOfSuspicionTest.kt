@@ -232,4 +232,49 @@ class CrownOfSuspicionTest : FunSpec({
         projector.getProjectedPower(driver.state, zombieKnight) shouldBe 2
         projector.getProjectedToughness(driver.state, zombieKnight) shouldBe 2
     }
+
+    test("Player can sacrifice Crown of Suspicion enchanting opponent's creature") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Swamp" to 20, "Forest" to 20),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+        val opponent = driver.getOpponent(activePlayer)
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        // Put a creature on opponent's battlefield
+        val opponentZombie = driver.putCreatureOnBattlefield(opponent, "Zombie Warrior")
+
+        // Cast Crown of Suspicion on the opponent's creature
+        val crown = driver.putCardInHand(activePlayer, "Crown of Suspicion")
+        driver.giveMana(activePlayer, Color.BLACK, 2)
+        driver.castSpell(activePlayer, crown, listOf(opponentZombie))
+        driver.bothPass()
+
+        // Crown should still be controlled by the active player
+        driver.getController(crown) shouldBe activePlayer
+
+        // Opponent's zombie should have +2/-1 from static ability (3/3 -> 5/2)
+        projector.getProjectedPower(driver.state, opponentZombie) shouldBe 5
+        projector.getProjectedToughness(driver.state, opponentZombie) shouldBe 2
+
+        // Active player should be able to sacrifice the Crown
+        val activateResult = driver.submit(
+            ActivateAbility(
+                playerId = activePlayer,
+                sourceId = crown,
+                abilityId = crownAbilityId
+            )
+        )
+        activateResult.isSuccess shouldBe true
+
+        // Let the ability resolve
+        driver.bothPass()
+
+        // Opponent's zombie should have +2/-1 from sacrifice effect (3/3 -> 5/2)
+        projector.getProjectedPower(driver.state, opponentZombie) shouldBe 5
+        projector.getProjectedToughness(driver.state, opponentZombie) shouldBe 2
+    }
 })
