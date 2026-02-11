@@ -81,7 +81,8 @@ class VitalityCharmScenarioTest : ScenarioTestBase() {
                 // Choose mode 1: "+1/+1 and trample"
                 game.chooseMode(1)
 
-                // Auto-selects Grizzly Bears as only valid target
+                // Select the single valid creature target
+                game.selectTargets(listOf(bearsId))
 
                 val projected = stateProjector.project(game.state)
                 withClue("Grizzly Bears should be 3/3 after +1/+1") {
@@ -113,7 +114,9 @@ class VitalityCharmScenarioTest : ScenarioTestBase() {
                 // Choose mode 2: "Regenerate target Beast"
                 game.chooseMode(2)
 
-                // Auto-selects Ravenous Baloth as only valid Beast target
+                // Select the single valid Beast target
+                val balothId = game.findPermanent("Ravenous Baloth")!!
+                game.selectTargets(listOf(balothId))
 
                 withClue("Ravenous Baloth should still be on the battlefield with regen shield") {
                     game.isOnBattlefield("Ravenous Baloth") shouldBe true
@@ -137,8 +140,9 @@ class VitalityCharmScenarioTest : ScenarioTestBase() {
                 // Choose mode 2: "Regenerate target Beast"
                 game.chooseMode(2)
 
-                // Only Ravenous Baloth is a Beast, should auto-select
-                // Grizzly Bears is a Bear, not a Beast
+                // Only Ravenous Baloth is a Beast - select it
+                val balothId = game.findPermanent("Ravenous Baloth")!!
+                game.selectTargets(listOf(balothId))
 
                 withClue("Ravenous Baloth should be on the battlefield") {
                     game.isOnBattlefield("Ravenous Baloth") shouldBe true

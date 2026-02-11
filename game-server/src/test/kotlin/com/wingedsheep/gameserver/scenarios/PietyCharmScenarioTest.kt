@@ -64,7 +64,9 @@ class PietyCharmScenarioTest : ScenarioTestBase() {
                 // Choose mode 0: "Destroy target Aura attached to a creature"
                 game.chooseMode(0)
 
-                // Pacifism should be auto-selected as the only Aura
+                // Select the single valid Aura target
+                val pacifismId = game.findPermanent("Pacifism")!!
+                game.selectTargets(listOf(pacifismId))
 
                 withClue("Pacifism should be destroyed") {
                     game.isOnBattlefield("Pacifism") shouldBe false
@@ -92,7 +94,8 @@ class PietyCharmScenarioTest : ScenarioTestBase() {
                 // Choose mode 1: "Target Soldier creature gets +2/+2 until end of turn"
                 game.chooseMode(1)
 
-                // Auto-selects Glory Seeker as only valid Soldier target
+                // Select the single valid Soldier target
+                game.selectTargets(listOf(seekerId))
 
                 val projected = stateProjector.project(game.state)
                 withClue("Glory Seeker should be 4/4 after +2/+2") {
@@ -120,7 +123,8 @@ class PietyCharmScenarioTest : ScenarioTestBase() {
                 // Choose mode 1: +2/+2 to Soldier
                 game.chooseMode(1)
 
-                // Only Glory Seeker is a Soldier, should auto-select
+                // Only Glory Seeker is a Soldier - select it
+                game.selectTargets(listOf(seekerId))
 
                 val projected = stateProjector.project(game.state)
                 withClue("Glory Seeker should be 4/4 after +2/+2") {

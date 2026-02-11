@@ -27,6 +27,8 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.PayCost
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.SearchDestination
+import com.wingedsheep.sdk.targeting.TargetOpponent
+import com.wingedsheep.sdk.targeting.TargetPlayer
 
 /**
  * Handles resumption of execution after a player decision.
@@ -2990,11 +2992,12 @@ class ContinuationHandler(
                 return checkForMoreContinuations(state, emptyList())
             }
 
-            // If single target requirement with exactly one valid target, auto-select
+            // If single player-target requirement with exactly one valid target, auto-select
             if (chosenMode.targetRequirements.size == 1) {
                 val req = chosenMode.targetRequirements[0]
                 val targets = legalTargetsMap[0] ?: emptyList()
-                if (targets.size == 1 && req.count == 1) {
+                val isPlayerTarget = req is TargetPlayer || req is TargetOpponent
+                if (isPlayerTarget && targets.size == 1 && req.count == 1) {
                     // Auto-select the single target
                     val chosenTarget = entityIdToChosenTarget(state, targets[0])
                     val context = EffectContext(

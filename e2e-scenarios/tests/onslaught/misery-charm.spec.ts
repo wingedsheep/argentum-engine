@@ -76,7 +76,10 @@ test.describe('Misery Charm', () => {
     // Mode selection overlay appears — choose "Destroy target Cleric"
     await p1.selectOption('Destroy target Cleric')
 
-    // Only one Cleric on battlefield → auto-selected as target → destroyed
+    // Select the single valid Cleric target
+    await p1.selectTarget('Nova Cleric')
+    await p1.confirmTargets()
+
     await p1.expectNotOnBattlefield('Nova Cleric')
 
     await p1.screenshot('End state')
