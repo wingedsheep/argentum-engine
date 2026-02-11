@@ -318,7 +318,8 @@ class AutoPassManager {
      * Having instants in hand doesn't mean you stop at every phase.
      *
      * - Upkeep/Draw/Main: AUTO-PASS
-     * - Begin Combat/Declare Attackers: AUTO-PASS (Arena doesn't stop here by default)
+     * - Begin Combat: AUTO-PASS
+     * - Declare Attackers (after declaration): STOP if you have instant-speed responses
      * - Declare Blockers: STOP if you have blockers or instant-speed actions
      * - Combat Damage: AUTO-PASS
      * - End Step: AUTO-PASS (use per-step stop override to hold here)
@@ -355,12 +356,17 @@ class AutoPassManager {
                 true
             }
 
-            // Declare Attackers - AUTO-PASS (use per-step stop override to hold here)
-            // Players get priority at Declare Blockers anyway where they can both
-            // block and cast instants, so stopping here is redundant by default.
+            // Declare Attackers (after declaration) - STOP if we have instant-speed responses.
+            // This is the priority window after attackers are declared (CR 507.4) where
+            // the defending player can cast instants/activate abilities before blockers.
             Step.DECLARE_ATTACKERS -> {
-                logger.debug("AUTO-PASS: Opponent's declare attackers")
-                true
+                if (hasInstantSpeedResponses) {
+                    logger.debug("STOP: Opponent's declare attackers (have instant-speed responses)")
+                    false
+                } else {
+                    logger.debug("AUTO-PASS: Opponent's declare attackers (no responses)")
+                    true
+                }
             }
 
             // Declare Blockers - STOP if we have creatures that can block OR
@@ -593,7 +599,7 @@ class AutoPassManager {
             Step.UPKEEP, Step.DRAW -> true
             Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN -> true
             Step.BEGIN_COMBAT -> true
-            Step.DECLARE_ATTACKERS -> true // Auto-pass; use per-step stop override to hold here
+            Step.DECLARE_ATTACKERS -> !hasMeaningfulActions // Stop if we have responses
             Step.DECLARE_BLOCKERS -> !hasMeaningfulActions // Stop only if we have blockers/responses
             Step.FIRST_STRIKE_COMBAT_DAMAGE, Step.COMBAT_DAMAGE, Step.END_COMBAT -> true
             Step.END -> !hasMeaningfulActions // Stop if we have responses

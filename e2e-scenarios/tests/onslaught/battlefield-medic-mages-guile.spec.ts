@@ -47,6 +47,9 @@ test.describe('Battlefield Medic — responding to activated ability with shroud
     // P2 attacks with Grizzly Bears (2/2)
     await p2.attackAll()
 
+    // P1 has priority after attackers declared (has instant-speed ability) — pass to blockers
+    await p1.pass()
+
     // P1 blocks Grizzly Bears with Glory Seeker (2/2)
     await p1.declareBlocker('Glory Seeker', 'Grizzly Bears')
     await p1.confirmBlockers()

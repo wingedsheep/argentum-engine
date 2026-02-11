@@ -34,7 +34,9 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
+import com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisCombatComponent
 import com.wingedsheep.engine.state.components.combat.BlockedComponent
+import com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombatComponent
 import com.wingedsheep.engine.state.components.stack.TargetsComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.core.Phase
@@ -708,6 +710,35 @@ class GameSession(
         // Only the player with priority can take actions
         if (state.priorityPlayerId != playerId) {
             return emptyList()
+        }
+
+        // Declaring attackers/blockers is a turn-based action that happens before priority (CR 507/508).
+        // Only offer the declaration action — no spells, abilities, or PassPriority.
+        if (state.step == Step.DECLARE_ATTACKERS && state.activePlayerId == playerId) {
+            val attackersAlreadyDeclared = state.getEntity(playerId)
+                ?.get<AttackersDeclaredThisCombatComponent>() != null
+            if (!attackersAlreadyDeclared) {
+                val validAttackers = turnManager.getValidAttackers(state, playerId)
+                return listOf(LegalActionInfo(
+                    actionType = "DeclareAttackers",
+                    description = "Declare attackers",
+                    action = DeclareAttackers(playerId, emptyMap()),
+                    validAttackers = validAttackers
+                ))
+            }
+        }
+        if (state.step == Step.DECLARE_BLOCKERS && state.activePlayerId != playerId) {
+            val blockersAlreadyDeclared = state.getEntity(playerId)
+                ?.get<BlockersDeclaredThisCombatComponent>() != null
+            if (!blockersAlreadyDeclared) {
+                val validBlockers = turnManager.getValidBlockers(state, playerId)
+                return listOf(LegalActionInfo(
+                    actionType = "DeclareBlockers",
+                    description = "Declare blockers",
+                    action = DeclareBlockers(playerId, emptyMap()),
+                    validBlockers = validBlockers
+                ))
+            }
         }
 
         val result = mutableListOf<LegalActionInfo>()
@@ -1580,45 +1611,6 @@ class GameSession(
                         maxAffordableX = abilityMaxAffordableX
                     ))
                 }
-            }
-        }
-
-        // Check for combat actions
-        if (state.step == Step.DECLARE_ATTACKERS && state.activePlayerId == playerId) {
-            // Check if attackers have already been declared this combat
-            val attackersAlreadyDeclared = state.getEntity(playerId)
-                ?.get<com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisCombatComponent>() != null
-
-            if (!attackersAlreadyDeclared) {
-                // Get valid attackers using the engine's TurnManager (handles haste, defender, etc.)
-                val validAttackers = turnManager.getValidAttackers(state, playerId)
-
-                // Active player can declare attackers during declare attackers step
-                result.add(LegalActionInfo(
-                    actionType = "DeclareAttackers",
-                    description = "Declare attackers",
-                    action = DeclareAttackers(playerId, emptyMap()),
-                    validAttackers = validAttackers
-                ))
-            }
-        }
-
-        if (state.step == Step.DECLARE_BLOCKERS && state.activePlayerId != playerId) {
-            // Check if blockers have already been declared this combat
-            val blockersAlreadyDeclared = state.getEntity(playerId)
-                ?.get<com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombatComponent>() != null
-
-            if (!blockersAlreadyDeclared) {
-                // Get valid blockers using the engine's TurnManager
-                val validBlockers = turnManager.getValidBlockers(state, playerId)
-
-                // Defending player (non-active player) can declare blockers during declare blockers step
-                result.add(LegalActionInfo(
-                    actionType = "DeclareBlockers",
-                    description = "Declare blockers",
-                    action = DeclareBlockers(playerId, emptyMap()),
-                    validBlockers = validBlockers
-                ))
             }
         }
 

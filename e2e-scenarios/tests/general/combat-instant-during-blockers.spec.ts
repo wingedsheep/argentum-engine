@@ -1,14 +1,18 @@
 import { test, expect } from '../../fixtures/scenarioFixture'
 
 /**
- * E2E browser test: activating abilities during declare blockers.
+ * E2E browser test: activating abilities after declare attackers to prepare for blocking.
  *
  * Spitfire Handler (1/1) can't block creatures with power greater than its own.
- * By activating its {R}: +1/+0 ability twice during declare blockers it reaches
- * power 3 and becomes able to block the attacking Hill Giant (3/3).
+ * By activating its {R}: +1/+0 ability twice after attackers are declared (before
+ * blockers step) it reaches power 3 and becomes able to block Hill Giant (3/3).
+ *
+ * Per MTG rules (CR 507/508), declaring attackers and blockers are turn-based
+ * actions that happen before priority. Instant-speed actions happen after
+ * attackers are declared, before the declare blockers step begins.
  */
-test.describe('Combat — instant-speed actions during declare blockers', () => {
-  test('pump creature during declare blockers to enable blocking', async ({ createGame }) => {
+test.describe('Combat — instant-speed actions after declare attackers', () => {
+  test('pump creature after attackers declared to enable blocking', async ({ createGame }) => {
     const { player1, player2 } = await createGame({
       player1Name: 'Attacker',
       player2Name: 'Defender',
@@ -33,29 +37,23 @@ test.describe('Combat — instant-speed actions during declare blockers', () => 
     // Advance to declare attackers
     await p1.pass()
 
-    // P1 attacks with Hill Giant (3/3)
+    // P1 attacks with Hill Giant (3/3) — P1 auto-passes after declaring
     await p1.attackAll()
 
-    // P2 is now in declare blockers — Spitfire Handler is 1/1 and can't block 3/3
-
+    // P2 has priority during declare attackers step (after declaration)
     // P2 activates Spitfire Handler's {R}: +1/+0 ability (first activation)
+    // P1 has no responses so the ability auto-resolves
     await p2.clickCard('Spitfire Handler')
     await p2.selectAction('+1/+0')
-
-    // P1 resolves the ability on the stack
-    await p1.pass()
-
-    // Spitfire Handler is now 2/1
     await p2.expectStats('Spitfire Handler', '2/1')
 
-    // P2 activates the ability again (second activation)
+    // P2 activates the ability again (second activation) — also auto-resolves
+    // Spitfire Handler is now 3/1 — can block Hill Giant (power 3 >= 3)
     await p2.clickCard('Spitfire Handler')
     await p2.selectAction('+1/+0')
-
-    // P1 auto-passes (enabled after first manual pass) — ability resolves automatically
-    // Spitfire Handler is now 3/1 — can block Hill Giant (power 3 >= 3)
     await p2.expectStats('Spitfire Handler', '3/1')
 
+    // Both players auto-pass (P2 has no more mana for responses) → advance to declare blockers
     // P2 declares Spitfire Handler as blocker of Hill Giant
     await p2.declareBlocker('Spitfire Handler', 'Hill Giant')
     await p2.confirmBlockers()
