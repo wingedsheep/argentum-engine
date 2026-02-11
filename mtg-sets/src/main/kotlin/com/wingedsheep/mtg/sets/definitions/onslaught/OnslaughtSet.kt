@@ -106,6 +106,7 @@ object OnslaughtSet {
         Imagecrafter,
         IxidorRealitySculptor,
         MistformDreamer,
+        MistformShrieker,
         MistformWall,
         Reminisce,
         RiptideBiologist,

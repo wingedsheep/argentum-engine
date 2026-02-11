@@ -198,7 +198,7 @@
 - [x] Mistform Dreamer
 - [ ] Mistform Mask
 - [ ] Mistform Mutant
-- [ ] Mistform Shrieker
+- [x] Mistform Shrieker
 - [ ] Mistform Skyreaver
 - [ ] Mistform Stalker
 - [x] Mistform Wall
