@@ -121,6 +121,7 @@ object EffectExecutorUtils {
                 Player.You -> context.controllerId
                 Player.Opponent, Player.TargetOpponent -> context.opponentId
                 Player.TargetPlayer, Player.Any -> context.targets.firstOrNull()?.toEntityId()
+                Player.TriggeringPlayer -> context.triggeringEntityId
                 else -> null
             }
             else -> null
@@ -165,6 +166,9 @@ object EffectExecutorUtils {
                 Player.Opponent, Player.TargetOpponent -> state.turnOrder.filter { it != context.controllerId }
                 Player.TargetPlayer, Player.Any -> {
                     context.targets.firstOrNull()?.toEntityId()?.let { listOf(it) } ?: emptyList()
+                }
+                Player.TriggeringPlayer -> {
+                    context.triggeringEntityId?.let { listOf(it) } ?: emptyList()
                 }
                 is Player.OwnerOf, is Player.ControllerOf -> {
                     resolvePlayerTarget(effectTarget, context, state)?.let { listOf(it) } ?: emptyList()

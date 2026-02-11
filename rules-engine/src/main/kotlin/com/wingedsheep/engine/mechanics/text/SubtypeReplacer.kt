@@ -52,6 +52,11 @@ object SubtypeReplacer {
                 if (newSubtype == trigger.subtype) trigger
                 else trigger.copy(subtype = newSubtype)
             }
+            is OnCreatureWithSubtypeDealsCombatDamageToPlayer -> {
+                val newSubtype = component.applyToSubtype(trigger.subtype)
+                if (newSubtype == trigger.subtype) trigger
+                else trigger.copy(subtype = newSubtype)
+            }
             // All other triggers don't reference creature types
             else -> trigger
         }

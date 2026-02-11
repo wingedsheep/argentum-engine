@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting
 
+import com.wingedsheep.sdk.core.Subtype
 import kotlinx.serialization.Serializable
 
 // =============================================================================
@@ -104,4 +105,18 @@ data class OnDealsDamage(
 @Serializable
 data object OnCreatureDealsDamageToYou : Trigger {
     override val description: String = "Whenever a creature deals damage to you"
+}
+
+/**
+ * Triggers when any creature with the specified subtype deals combat damage to a player.
+ * "Whenever a [subtype] deals combat damage to a player..."
+ *
+ * This is checked on an OBSERVER permanent (e.g., Cabal Slaver), not on the
+ * creature dealing damage. The triggering player ID is set to the damaged player.
+ */
+@Serializable
+data class OnCreatureWithSubtypeDealsCombatDamageToPlayer(
+    val subtype: Subtype
+) : Trigger {
+    override val description: String = "Whenever a ${subtype.value} deals combat damage to a player"
 }
