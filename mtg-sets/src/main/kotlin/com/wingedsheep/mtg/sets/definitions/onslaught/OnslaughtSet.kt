@@ -125,6 +125,7 @@ object OnslaughtSet {
         AnuridMurkdiver,
         CabalArchon,
         CabalExecutioner,
+        CabalSlaver,
         CruelRevival,
         DeathPulse,
         DoomedNecromancer,

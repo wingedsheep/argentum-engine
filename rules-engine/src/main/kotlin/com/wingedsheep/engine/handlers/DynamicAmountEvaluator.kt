@@ -204,6 +204,9 @@ class DynamicAmountEvaluator(
                 // Would need to resolve the target and find its owner
                 emptyList()
             }
+            is Player.TriggeringPlayer -> {
+                listOfNotNull(context.triggeringEntityId)
+            }
         }
     }
 

@@ -263,6 +263,11 @@ class TriggerDetector(
             detectDamageToControllerTriggers(state, event, triggers, projected)
         }
 
+        // Handle "whenever a [subtype] deals combat damage to a player" triggers (e.g., Cabal Slaver)
+        if (event is DamageDealtEvent && event.sourceId != null && event.isCombatDamage && event.targetId in state.turnOrder) {
+            detectSubtypeDamageToPlayerTriggers(state, event, triggers, projected)
+        }
+
         return triggers
     }
 
@@ -512,6 +517,63 @@ class TriggerDetector(
         }
     }
 
+    /**
+     * Detect "whenever a [subtype] deals combat damage to a player" triggers
+     * on all permanents on the battlefield (e.g., Cabal Slaver).
+     *
+     * Uses projected state to check the damage source's subtypes, so type-changing
+     * effects like Artificial Evolution are respected.
+     * Sets triggeringEntityId to the damaged player for "that player" resolution.
+     */
+    private fun detectSubtypeDamageToPlayerTriggers(
+        state: GameState,
+        event: DamageDealtEvent,
+        triggers: MutableList<PendingTrigger>,
+        projected: ProjectedState
+    ) {
+        val damageSourceId = event.sourceId ?: return
+        val damagedPlayerId = event.targetId
+
+        // Verify the damage source is a creature (face-down creatures have no subtypes)
+        val sourceContainer = state.getEntity(damageSourceId) ?: return
+        val sourceCard = sourceContainer.get<CardComponent>() ?: return
+        if (!sourceCard.typeLine.isCreature) return
+        if (sourceContainer.has<FaceDownComponent>()) return
+
+        // Check all permanents on the battlefield for matching triggers
+        for (entityId in state.getBattlefield()) {
+            val container = state.getEntity(entityId) ?: continue
+            val cardComponent = container.get<CardComponent>() ?: continue
+            val controllerId = projected.getController(entityId) ?: continue
+
+            // Face-down creatures have no abilities (Rule 707.2)
+            if (container.has<FaceDownComponent>()) continue
+
+            val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
+
+            for (ability in abilities) {
+                val trigger = ability.trigger
+                if (trigger is OnCreatureWithSubtypeDealsCombatDamageToPlayer) {
+                    // Check if the damage source has the required subtype using projected state
+                    if (projected.hasSubtype(damageSourceId, trigger.subtype.value)) {
+                        triggers.add(
+                            PendingTrigger(
+                                ability = ability,
+                                sourceId = entityId,
+                                sourceName = cardComponent.name,
+                                controllerId = controllerId,
+                                triggerContext = TriggerContext(
+                                    triggeringEntityId = damagedPlayerId,
+                                    damageAmount = event.amount
+                                )
+                            )
+                        )
+                    }
+                }
+            }
+        }
+    }
+
     private fun detectDamageSourceTriggers(
         state: GameState,
         event: DamageDealtEvent,
@@ -698,6 +760,9 @@ class TriggerDetector(
 
             // Handled separately in detectDamageToControllerTriggers
             is OnCreatureDealsDamageToYou -> false
+
+            // Handled separately in detectSubtypeDamageToPlayerTriggers
+            is OnCreatureWithSubtypeDealsCombatDamageToPlayer -> false
 
             // Phase/step triggers are handled separately
             is OnUpkeep, is OnEndStep, is OnBeginCombat, is OnFirstMainPhase -> false

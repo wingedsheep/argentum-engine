@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 235 / 335
+**Implemented:** 236 / 335
 
 ---
 
@@ -50,7 +50,7 @@
 - [x] Butcher Orgg
 - [x] Cabal Archon
 - [x] Cabal Executioner
-- [ ] Cabal Slaver
+- [x] Cabal Slaver
 - [ ] Callous Oppressor
 - [x] Catapult Master
 - [x] Catapult Squad

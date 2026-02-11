@@ -70,6 +70,12 @@ sealed interface Player {
         override val description: String = "that player"
     }
 
+    /** The player from the trigger context (e.g., player dealt combat damage) */
+    @Serializable
+    data object TriggeringPlayer : Player {
+        override val description: String = "that player"
+    }
+
     // =============================================================================
     // Relational Player References
     // =============================================================================
@@ -101,6 +107,7 @@ sealed interface Player {
             EachOpponent -> "each opponent's"
             Any -> "a player's"
             is ContextPlayer -> "that player's"
+            TriggeringPlayer -> "that player's"
             is ControllerOf -> "its controller's"
             is OwnerOf -> "its owner's"
         }
