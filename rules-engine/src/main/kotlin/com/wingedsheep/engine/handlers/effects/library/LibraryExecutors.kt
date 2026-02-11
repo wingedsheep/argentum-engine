@@ -20,6 +20,7 @@ class LibraryExecutors : ExecutorModule {
         WheelEffectExecutor(),
         PutLandFromHandExecutor(),
         ChooseCreatureTypeRevealTopExecutor(),
-        RevealUntilNonlandDealDamageExecutor()
+        RevealUntilNonlandDealDamageExecutor(),
+        RevealUntilNonlandModifyStatsExecutor()
     )
 }

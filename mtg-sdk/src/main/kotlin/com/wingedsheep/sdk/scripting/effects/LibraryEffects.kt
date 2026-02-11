@@ -279,6 +279,23 @@ data class RevealUntilNonlandDealDamageEffect(
 }
 
 /**
+ * Reveal cards from the top of your library until you reveal a nonland card.
+ * This creature gets +X/+0 until end of turn, where X is that card's mana value.
+ * Put the revealed cards on the bottom of your library in any order.
+ *
+ * Used for Goblin Machinist: "{2}{R}: Reveal cards from the top of your library until you
+ * reveal a nonland card. Goblin Machinist gets +X/+0 until end of turn, where X is that
+ * card's mana value. Put the revealed cards on the bottom of your library in any order."
+ */
+@Serializable
+data object RevealUntilNonlandModifyStatsEffect : Effect {
+    override val description: String =
+        "Reveal cards from the top of your library until you reveal a nonland card. " +
+        "This creature gets +X/+0 until end of turn, where X is that card's mana value. " +
+        "Put the revealed cards on the bottom of your library in any order"
+}
+
+/**
  * Shuffle target player's graveyard into their library.
  * "Target player shuffles their graveyard into their library."
  */

@@ -141,7 +141,7 @@
 - [x] Glory Seeker
 - [x] Gluttonous Zombie
 - [x] Goblin Burrows
-- [ ] Goblin Machinist
+- [x] Goblin Machinist
 - [x] Goblin Piledriver
 - [x] Goblin Pyromancer
 - [x] Goblin Sharpshooter
