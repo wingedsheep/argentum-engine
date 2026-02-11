@@ -310,7 +310,7 @@ class GameSession(
     ): ClientGameState {
         // Use player1's perspective as the "viewing player" for the transform,
         // then mask player1's hand as well
-        val baseState = stateTransformer.transform(state, player1Id)
+        val baseState = stateTransformer.transform(state, player1Id, isSpectator = true)
 
         // Filter out hand cards from the cards map (spectators can't see either player's hand)
         val player1Hand = state.getHand(player1Id).toSet()

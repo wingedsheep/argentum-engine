@@ -46,7 +46,8 @@ class ClientStateTransformer(
      */
     fun transform(
         state: GameState,
-        viewingPlayerId: EntityId
+        viewingPlayerId: EntityId,
+        isSpectator: Boolean = false
     ): ClientGameState {
         // Project the game state to apply continuous effects (Rule 613)
         val projectedState = stateProjector.project(state)
@@ -80,7 +81,7 @@ class ClientStateTransformer(
 
             // Include card details for visible cards (either whole zone visible, or individually revealed)
             for (entityId in visibleCardIds) {
-                val clientCard = transformCard(state, entityId, zoneKey, projectedState, viewingPlayerId)
+                val clientCard = transformCard(state, entityId, zoneKey, projectedState, viewingPlayerId, isSpectator)
                 if (clientCard != null) {
                     cards[entityId] = clientCard
                 }
@@ -104,7 +105,7 @@ class ClientStateTransformer(
             // Add cards if they happen to exist (rare if zone was missing from map, but good for safety)
             for (entityId in bfEntities) {
                 if (entityId !in cards) {
-                    val clientCard = transformCard(state, entityId, bfZoneKey, projectedState, viewingPlayerId)
+                    val clientCard = transformCard(state, entityId, bfZoneKey, projectedState, viewingPlayerId, isSpectator)
                     if (clientCard != null) {
                         cards[entityId] = clientCard
                     }
@@ -128,7 +129,7 @@ class ClientStateTransformer(
             // Include card details for stack items
             for (entityId in state.stack) {
                 if (entityId !in cards) {
-                    val clientCard = transformCard(state, entityId, stackZoneKey, projectedState, viewingPlayerId)
+                    val clientCard = transformCard(state, entityId, stackZoneKey, projectedState, viewingPlayerId, isSpectator)
                         ?: transformAbilityOnStack(state, entityId)
                     if (clientCard != null) {
                         cards[entityId] = clientCard
@@ -317,7 +318,8 @@ class ClientStateTransformer(
         entityId: EntityId,
         zoneKey: ZoneKey,
         projectedState: ProjectedState,
-        viewingPlayerId: EntityId
+        viewingPlayerId: EntityId,
+        isSpectator: Boolean = false
     ): ClientCard? {
         val container = state.getEntity(entityId) ?: return null
         val cardComponent = container.get<CardComponent>() ?: return null
@@ -382,9 +384,9 @@ class ClientStateTransformer(
         val morphData = container.get<MorphDataComponent>()
 
         // Handle face-down creature masking
-        // Opponents see modified stats but no card information
-        // Controller sees real card info + morph cost
-        if (isFaceDown && controllerId != viewingPlayerId) {
+        // Opponents and spectators see modified stats but no card information
+        // Controller sees real card info + morph cost (but not spectators)
+        if (isFaceDown && (isSpectator || controllerId != viewingPlayerId)) {
             return ClientCard(
                 id = entityId,
                 name = "Face-down creature",
