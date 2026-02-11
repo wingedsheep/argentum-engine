@@ -90,6 +90,11 @@ object Triggers {
     val BecomesBlocked: Trigger = OnBecomesBlocked(selfOnly = true)
 
     /**
+     * When a creature you control becomes blocked.
+     */
+    val CreatureYouControlBecomesBlocked: Trigger = OnBecomesBlocked(selfOnly = false)
+
+    /**
      * When this creature deals damage.
      */
     val DealsDamage: Trigger = OnDealsDamage(selfOnly = true)

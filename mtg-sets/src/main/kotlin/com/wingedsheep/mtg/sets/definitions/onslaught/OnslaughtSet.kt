@@ -46,6 +46,7 @@ object OnslaughtSet {
         GustcloakRunner,
         GustcloakSentinel,
         GustcloakSkirmisher,
+        GustcloakSavior,
         ImprovisedArmor,
         Inspirit,
         Pacifism,

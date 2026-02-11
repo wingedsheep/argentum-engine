@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 233 / 335
+**Implemented:** 234 / 335
 
 ---
 
@@ -158,7 +158,7 @@
 - [x] Grinning Demon
 - [x] Gustcloak Harrier
 - [x] Gustcloak Runner
-- [ ] Gustcloak Savior
+- [x] Gustcloak Savior
 - [x] Gustcloak Sentinel
 - [x] Gustcloak Skirmisher
 - [ ] Harsh Mercy
