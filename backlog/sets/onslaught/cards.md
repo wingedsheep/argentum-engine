@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 229 / 335
+**Implemented:** 230 / 335
 
 ---
 
@@ -157,7 +157,7 @@
 - [x] Graxiplon
 - [x] Grinning Demon
 - [x] Gustcloak Harrier
-- [ ] Gustcloak Runner
+- [x] Gustcloak Runner
 - [ ] Gustcloak Savior
 - [x] Gustcloak Sentinel
 - [x] Gustcloak Skirmisher

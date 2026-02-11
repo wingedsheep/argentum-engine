@@ -43,6 +43,7 @@ object OnslaughtSet {
         GrasslandCrusader,
         GravelSlinger,
         GustcloakHarrier,
+        GustcloakRunner,
         GustcloakSentinel,
         GustcloakSkirmisher,
         ImprovisedArmor,
