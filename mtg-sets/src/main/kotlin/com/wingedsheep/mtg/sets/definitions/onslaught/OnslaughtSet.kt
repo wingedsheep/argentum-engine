@@ -105,6 +105,7 @@ object OnslaughtSet {
         Imagecrafter,
         IxidorRealitySculptor,
         MistformDreamer,
+        MistformWall,
         Reminisce,
 
         // Black creatures and spells

@@ -66,6 +66,7 @@ class ConditionEvaluator {
             is SourceEnteredThisTurn -> evaluateSourceEnteredThisTurn(state, context)
             is SourceHasDealtDamage -> evaluateSourceHasDealtDamage(state, context)
             is SourceHasDealtCombatDamageToPlayer -> evaluateSourceHasDealtCombatDamageToPlayer(state, context)
+            is SourceHasSubtype -> evaluateSourceHasSubtype(state, condition, context)
 
             // Turn conditions
             is IsYourTurn -> evaluateIsYourTurn(state, context)
@@ -257,6 +258,11 @@ class ConditionEvaluator {
         // TODO: Track damage dealt by source this turn
         // For now, return false as we don't have this tracking yet
         return false
+    }
+
+    private fun evaluateSourceHasSubtype(state: GameState, condition: SourceHasSubtype, context: EffectContext): Boolean {
+        val sourceId = context.sourceId ?: return false
+        return state.getEntity(sourceId)?.get<CardComponent>()?.typeLine?.hasSubtype(condition.subtype) == true
     }
 
     private fun evaluateSourceHasDealtCombatDamageToPlayer(state: GameState, context: EffectContext): Boolean {

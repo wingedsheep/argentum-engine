@@ -188,6 +188,13 @@ object Conditions {
     val SourceIsUntapped: ConditionInterface =
         com.wingedsheep.sdk.scripting.SourceIsUntapped
 
+    /**
+     * As long as this creature is a specific subtype.
+     * Used for conditional static abilities like "has defender as long as it's a Wall."
+     */
+    fun SourceHasSubtype(subtype: Subtype): ConditionInterface =
+        com.wingedsheep.sdk.scripting.SourceHasSubtype(subtype)
+
     // =========================================================================
     // Turn Conditions
     // =========================================================================

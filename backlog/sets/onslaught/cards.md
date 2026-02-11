@@ -201,7 +201,7 @@
 - [ ] Mistform Shrieker
 - [ ] Mistform Skyreaver
 - [ ] Mistform Stalker
-- [ ] Mistform Wall
+- [x] Mistform Wall
 - [x] Mobilization
 - [x] Mountain
 - [x] Mythic Proportions

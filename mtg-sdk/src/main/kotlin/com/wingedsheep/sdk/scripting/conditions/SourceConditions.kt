@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting
 
+import com.wingedsheep.sdk.core.Subtype
 import kotlinx.serialization.Serializable
 
 // =============================================================================
@@ -65,4 +66,16 @@ data object SourceHasDealtCombatDamageToPlayer : Condition {
 @Serializable
 data object SourceEnteredThisTurn : Condition {
     override val description: String = "this creature entered the battlefield this turn"
+}
+
+/**
+ * Condition: "As long as this creature is a [subtype]"
+ * Used for cards like Mistform Wall: "This creature has defender as long as it's a Wall."
+ *
+ * Evaluated during state projection against projected subtypes, so type-changing
+ * effects in Layer 4 are properly accounted for when checking conditions in Layer 6.
+ */
+@Serializable
+data class SourceHasSubtype(val subtype: Subtype) : Condition {
+    override val description: String = "as long as this creature is a ${subtype.value}"
 }

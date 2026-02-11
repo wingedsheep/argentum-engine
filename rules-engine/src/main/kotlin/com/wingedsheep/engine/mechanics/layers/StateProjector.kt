@@ -270,7 +270,8 @@ class StateProjector(
                         timestamp = container.get<com.wingedsheep.engine.state.components.battlefield.TimestampComponent>()?.timestamp
                             ?: state.timestamp,
                         modification = effect.modification,
-                        affectedEntities = resolveAffectedEntities(state, entityId, effectiveFilter, projectedValues)
+                        affectedEntities = resolveAffectedEntities(state, entityId, effectiveFilter, projectedValues),
+                        sourceCondition = effect.sourceCondition
                     )
                 })
             }
@@ -570,6 +571,17 @@ class StateProjector(
         state: GameState,
         projectedValues: MutableMap<EntityId, MutableProjectedValues>
     ) {
+        // Check source projection condition against current projected values
+        val sourceCondition = effect.sourceCondition
+        if (sourceCondition != null) {
+            val sourceValues = projectedValues[effect.sourceId]
+            val conditionMet = when (sourceCondition) {
+                is SourceProjectionCondition.HasSubtype ->
+                    sourceValues?.subtypes?.any { it.equals(sourceCondition.subtype, ignoreCase = true) } == true
+            }
+            if (!conditionMet) return
+        }
+
         for (entityId in effect.affectedEntities) {
             val values = projectedValues.getOrPut(entityId) { MutableProjectedValues() }
 
@@ -689,7 +701,8 @@ data class ContinuousEffectData(
     val layer: Layer,
     val sublayer: Sublayer? = null,
     val modification: Modification,
-    val affectsFilter: AffectsFilter? = null
+    val affectsFilter: AffectsFilter? = null,
+    val sourceCondition: SourceProjectionCondition? = null
 )
 
 /**
@@ -776,8 +789,27 @@ data class ContinuousEffect(
     val sublayer: Sublayer? = null,
     val timestamp: Long,
     val modification: Modification,
-    val affectedEntities: Set<EntityId> = emptySet()
+    val affectedEntities: Set<EntityId> = emptySet(),
+    val sourceCondition: SourceProjectionCondition? = null
 )
+
+/**
+ * Conditions evaluated during state projection against projected values.
+ *
+ * Unlike SDK Conditions (evaluated by ConditionEvaluator against base GameState),
+ * these conditions are checked during layer application so they see the effects
+ * of earlier layers. For example, a Layer 6 ability condition can see Layer 4
+ * type changes.
+ */
+@Serializable
+sealed interface SourceProjectionCondition {
+    /**
+     * The source permanent must have a specific creature subtype.
+     * Used for "has [keyword] as long as it's a [subtype]."
+     */
+    @Serializable
+    data class HasSubtype(val subtype: String) : SourceProjectionCondition
+}
 
 /**
  * The layers in which continuous effects are applied (Rule 613).

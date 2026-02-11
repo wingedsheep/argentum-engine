@@ -9,9 +9,12 @@ import com.wingedsheep.sdk.scripting.PreventDamage
 import com.wingedsheep.sdk.scripting.AddCreatureTypeByCounter
 import com.wingedsheep.sdk.scripting.CantAttack
 import com.wingedsheep.sdk.scripting.CantBlock
+import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
+import com.wingedsheep.sdk.scripting.Condition
 import com.wingedsheep.sdk.scripting.ControlEnchantedPermanent
 import com.wingedsheep.sdk.scripting.GrantKeywordByCounter
 import com.wingedsheep.sdk.scripting.GrantProtection
+import com.wingedsheep.sdk.scripting.SourceHasSubtype
 import com.wingedsheep.sdk.scripting.GlobalEffect
 import com.wingedsheep.sdk.scripting.GlobalEffectType
 import com.wingedsheep.sdk.scripting.GrantKeyword
@@ -199,6 +202,28 @@ class StaticAbilityHandler(
                 )
             }
             is GlobalEffect -> convertGlobalEffect(ability)
+            is ConditionalStaticAbility -> convertConditionalStaticAbility(ability)
+            else -> null
+        }
+    }
+
+    /**
+     * Convert a ConditionalStaticAbility to ContinuousEffectData.
+     * Maps the SDK Condition to a SourceProjectionCondition so it can be
+     * evaluated during layer application against projected values.
+     */
+    private fun convertConditionalStaticAbility(conditional: ConditionalStaticAbility): ContinuousEffectData? {
+        val baseEffect = convertStaticAbility(conditional.ability) ?: return null
+        val sourceCondition = mapToSourceProjectionCondition(conditional.condition) ?: return null
+        return baseEffect.copy(sourceCondition = sourceCondition)
+    }
+
+    /**
+     * Map an SDK Condition to a SourceProjectionCondition for use during state projection.
+     */
+    private fun mapToSourceProjectionCondition(condition: Condition): SourceProjectionCondition? {
+        return when (condition) {
+            is SourceHasSubtype -> SourceProjectionCondition.HasSubtype(condition.subtype.value)
             else -> null
         }
     }
