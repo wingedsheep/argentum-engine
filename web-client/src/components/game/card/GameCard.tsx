@@ -352,7 +352,7 @@ export function GameCard({
     }
 
     // Handle pending ChooseTargetsDecision clicks
-    if (isChooseTargetsDecision && isValidDecisionTarget) {
+    if (isChooseTargetsDecision && isValidDecisionTarget && !decisionSelectionState) {
       submitTargetsDecision({ 0: [card.id] })
       return
     }

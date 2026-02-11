@@ -156,22 +156,26 @@ export function DecisionUI() {
       )
     }
 
-    // Otherwise show the default banner for board targeting
-    // Positioned on the right side (like CombatOverlay) so it doesn't cover targets
+    // Player-only targeting: simple banner (auto-submit via LifeDisplay click)
+    if (isPlayerOnly) {
+      return (
+        <div className={styles.sideBannerTarget}>
+          <div className={styles.bannerTitle}>
+            Choose Target
+          </div>
+          <div className={styles.prompt}>
+            {pendingDecision.prompt}
+          </div>
+          <div className={styles.hint}>
+            Click a player's life total
+          </div>
+        </div>
+      )
+    }
+
+    // Battlefield targeting: use selection state with Confirm/Decline buttons
     return (
-      <div className={styles.sideBannerTarget}>
-        <div className={styles.bannerTitle}>
-          Choose Target
-        </div>
-        <div className={styles.prompt}>
-          {pendingDecision.prompt}
-        </div>
-        <div className={styles.hint}>
-          {isPlayerOnly
-            ? "Click a player's life total"
-            : 'Click a valid target'}
-        </div>
-      </div>
+      <BattlefieldTargetingUI decision={pendingDecision} />
     )
   }
 
@@ -247,6 +251,92 @@ function BattlefieldSelectionUI({
         {canSkip && selectedCount === 0 && (
           <button onClick={handleSkip} className={`${styles.confirmButton} ${styles.confirmButtonSmall}`}>
             Select None
+          </button>
+        )}
+        {selectedCount > 0 && (
+          <button
+            onClick={handleConfirm}
+            disabled={!canConfirm}
+            className={`${styles.confirmButton} ${styles.confirmButtonSmall}`}
+          >
+            Confirm ({selectedCount})
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Battlefield targeting UI for ChooseTargetsDecision (non-player, non-graveyard targets).
+ * Shows a side banner with Confirm/Decline buttons, uses decisionSelectionState for toggle-to-select.
+ */
+function BattlefieldTargetingUI({
+  decision,
+}: {
+  decision: ChooseTargetsDecision
+}) {
+  const startDecisionSelection = useGameStore((s) => s.startDecisionSelection)
+  const decisionSelectionState = useGameStore((s) => s.decisionSelectionState)
+  const cancelDecisionSelection = useGameStore((s) => s.cancelDecisionSelection)
+  const submitTargetsDecision = useGameStore((s) => s.submitTargetsDecision)
+
+  const targetReq = decision.targetRequirements[0]
+  const minTargets = targetReq?.minTargets ?? 1
+  const maxTargets = targetReq?.maxTargets ?? 1
+  const legalTargets = decision.legalTargets[0] ?? []
+
+  // Start decision selection state when this component mounts
+  useEffect(() => {
+    const selectionState: DecisionSelectionState = {
+      decisionId: decision.id,
+      validOptions: [...legalTargets],
+      selectedOptions: [],
+      minSelections: minTargets,
+      maxSelections: maxTargets,
+      prompt: decision.prompt,
+    }
+    startDecisionSelection(selectionState)
+
+    return () => {
+      cancelDecisionSelection()
+    }
+  }, [decision.id])
+
+  const selectedCount = decisionSelectionState?.selectedOptions.length ?? 0
+  const canConfirm = selectedCount >= minTargets && selectedCount <= maxTargets
+  const canDecline = minTargets === 0
+
+  const handleConfirm = () => {
+    if (canConfirm && decisionSelectionState) {
+      submitTargetsDecision({ 0: decisionSelectionState.selectedOptions })
+      cancelDecisionSelection()
+    }
+  }
+
+  const handleDecline = () => {
+    submitTargetsDecision({ 0: [] })
+    cancelDecisionSelection()
+  }
+
+  return (
+    <div className={styles.sideBannerSelection}>
+      <div className={styles.bannerTitleSelection}>
+        Choose Target
+      </div>
+      <div className={styles.hint}>
+        {decision.prompt}
+      </div>
+      <div className={styles.hint}>
+        {selectedCount > 0
+          ? `${selectedCount} / ${maxTargets} selected`
+          : 'Click a valid target'}
+      </div>
+
+      <div className={styles.buttonContainerSmall}>
+        {canDecline && selectedCount === 0 && (
+          <button onClick={handleDecline} className={`${styles.confirmButton} ${styles.confirmButtonSmall}`}>
+            Decline
           </button>
         )}
         {selectedCount > 0 && (
