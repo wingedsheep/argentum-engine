@@ -19,6 +19,7 @@ class CombatExecutors(
         ReflectCombatDamageExecutor(),
         TauntExecutor(),
         PreventNextDamageExecutor(amountEvaluator),
-        CantBlockTargetCreaturesExecutor()
+        CantBlockTargetCreaturesExecutor(),
+        RemoveFromCombatExecutor()
     )
 }

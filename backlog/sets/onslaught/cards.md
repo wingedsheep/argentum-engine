@@ -156,7 +156,7 @@
 - [ ] Gravespawn Sovereign
 - [x] Graxiplon
 - [x] Grinning Demon
-- [ ] Gustcloak Harrier
+- [x] Gustcloak Harrier
 - [ ] Gustcloak Runner
 - [ ] Gustcloak Savior
 - [ ] Gustcloak Sentinel
