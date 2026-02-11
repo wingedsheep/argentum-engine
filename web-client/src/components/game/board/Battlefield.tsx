@@ -1,4 +1,4 @@
-import { useBattlefieldCards, groupCards, selectGameState } from '../../../store/selectors'
+import { useBattlefieldCards, groupCards, selectGameState, selectViewingPlayerId } from '../../../store/selectors'
 import { useGameStore } from '../../../store/gameStore'
 import { useResponsiveContext } from './shared'
 import { styles } from './styles'
@@ -63,6 +63,7 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
   const hasBackRow = hasLands || hasOther
   const showDivider = hasFrontRow && hasBackRow
 
+  const viewingPlayerId = useGameStore(selectViewingPlayerId)
   const interactive = !spectatorMode && !isOpponent
 
   // How much of each attachment card peeks out from behind its parent
@@ -104,25 +105,30 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
         }}
       >
         {/* Attachments peek vertically from above the parent */}
-        {attachments.map((attachment, index) => (
-          <div
-            key={attachment.id}
-            style={{
-              position: 'absolute',
-              left: 0,
-              top: index * attachmentPeek,
-              zIndex: index,
-            }}
-          >
-            <GameCard
-              card={attachment}
-              interactive={interactive}
-              battlefield
-              isOpponentCard={isOpponent}
-              forceTapped={parentTapped}
-            />
-          </div>
-        ))}
+        {attachments.map((attachment, index) => {
+          // Attachments controlled by the player are interactive even on the opponent's battlefield
+          // (e.g., aura cast on opponent's creature — caster can still activate abilities)
+          const attachmentInteractive = !spectatorMode && attachment.controllerId === viewingPlayerId
+          return (
+            <div
+              key={attachment.id}
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: index * attachmentPeek,
+                zIndex: index,
+              }}
+            >
+              <GameCard
+                card={attachment}
+                interactive={attachmentInteractive}
+                battlefield
+                isOpponentCard={isOpponent}
+                forceTapped={parentTapped}
+              />
+            </div>
+          )
+        })}
         {/* Main card at the bottom, on top */}
         <div style={{ position: 'absolute', left: 0, top: totalPeek, zIndex: attachments.length + 1, pointerEvents: 'none' }}>
           <CardStack
