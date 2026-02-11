@@ -350,6 +350,16 @@ object Effects {
         SeparatePermanentsIntoPilesEffect(target)
 
     // =========================================================================
+    // Combat Effects
+    // =========================================================================
+
+    /**
+     * Remove a creature from combat.
+     */
+    fun RemoveFromCombat(target: EffectTarget): Effect =
+        RemoveFromCombatEffect(target)
+
+    // =========================================================================
     // Composite Effect Helpers
     // =========================================================================
 

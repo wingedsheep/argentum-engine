@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 219 / 335
+**Implemented:** 220 / 335
 
 ---
 
@@ -156,7 +156,7 @@
 - [ ] Gravespawn Sovereign
 - [x] Graxiplon
 - [x] Grinning Demon
-- [ ] Gustcloak Harrier
+- [x] Gustcloak Harrier
 - [ ] Gustcloak Runner
 - [ ] Gustcloak Savior
 - [ ] Gustcloak Sentinel

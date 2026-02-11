@@ -42,6 +42,7 @@ object OnslaughtSet {
         FoothillGuide,
         GrasslandCrusader,
         GravelSlinger,
+        GustcloakHarrier,
         ImprovisedArmor,
         Inspirit,
         Pacifism,

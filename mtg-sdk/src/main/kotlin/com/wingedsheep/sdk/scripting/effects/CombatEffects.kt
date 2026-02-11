@@ -131,3 +131,16 @@ data class PreventNextDamageEffect(
     override val description: String =
         "Prevent the next ${amount.description} damage that would be dealt to ${target.description} this turn"
 }
+
+/**
+ * Remove a creature from combat.
+ * Removes all combat-related components (attacking, blocking, blocked, damage assignment).
+ * Also cleans up any blockers that were blocking the removed creature.
+ * Used for Gustcloak creatures: "you may untap it and remove it from combat."
+ */
+@Serializable
+data class RemoveFromCombatEffect(
+    val target: EffectTarget
+) : Effect {
+    override val description: String = "Remove ${target.description} from combat"
+}
