@@ -259,6 +259,7 @@ object OnslaughtSet {
         BloodstainedMire,
         BarrenMoor,
         ForgottenCave,
+        DaruEncampment,
         GoblinBurrows,
         LonelySandbar,
         SeasideHaven,
