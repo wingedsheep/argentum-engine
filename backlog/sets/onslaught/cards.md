@@ -159,7 +159,7 @@
 - [x] Gustcloak Harrier
 - [ ] Gustcloak Runner
 - [ ] Gustcloak Savior
-- [ ] Gustcloak Sentinel
+- [x] Gustcloak Sentinel
 - [x] Gustcloak Skirmisher
 - [ ] Harsh Mercy
 - [x] Haunted Cadaver
