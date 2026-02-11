@@ -147,6 +147,7 @@ object OnslaughtSet {
         SoullessOne,
         ScreechingBuzzard,
         SeveredLegion,
+        SilentSpecter,
         Smother,
         Swat,
         SyphonMind,
