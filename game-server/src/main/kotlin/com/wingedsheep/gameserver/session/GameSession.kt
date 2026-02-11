@@ -712,6 +712,11 @@ class GameSession(
             return emptyList()
         }
 
+        // If a decision is pending, the player must resolve it before taking any other actions
+        if (state.pendingDecision != null) {
+            return emptyList()
+        }
+
         // Declaring attackers/blockers is a turn-based action that happens before priority (CR 507/508).
         // Only offer the declaration action — no spells, abilities, or PassPriority.
         if (state.step == Step.DECLARE_ATTACKERS && state.activePlayerId == playerId) {
