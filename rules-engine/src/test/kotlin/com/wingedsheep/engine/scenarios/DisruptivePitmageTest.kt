@@ -275,6 +275,19 @@ class DisruptivePitmageTest : FunSpec({
 
         val decision = driver.pendingDecision as YesNoDecision
         decision.playerId shouldBe player2
+
+        // Player 2 chooses to pay — should auto-tap a land
+        driver.submitYesNo(player2, true)
+
+        // Lightning Bolt should still be on the stack (not countered)
+        driver.stackSize shouldBe 1
+        driver.getStackSpellNames() shouldContain "Lightning Bolt"
+
+        // Resolve the bolt
+        driver.bothPass()
+
+        // Player 1 should have taken 3 damage
+        driver.getLifeTotal(player1) shouldBe 17
     }
 
     test("Pitmage taps when ability is activated") {

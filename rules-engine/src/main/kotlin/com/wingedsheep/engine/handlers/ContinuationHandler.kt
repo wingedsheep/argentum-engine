@@ -1041,8 +1041,9 @@ class ContinuationHandler(
         }
 
         if (response.choice) {
-            // Player chose to pay — deduct mana from their pool
-            val playerEntity = state.getEntity(continuation.payingPlayerId)
+            // Player chose to pay — auto-tap sources and deduct mana
+            val playerId = continuation.payingPlayerId
+            val playerEntity = state.getEntity(playerId)
                 ?: return ExecutionResult.error(state, "Paying player not found")
 
             val manaPoolComponent = playerEntity.get<ManaPoolComponent>()
@@ -1057,10 +1058,41 @@ class ContinuationHandler(
                 manaPoolComponent.colorless
             )
 
-            val newPool = manaPool.pay(continuation.manaCost)
-                ?: return ExecutionResult.error(state, "Cannot pay mana cost")
+            // Try to pay from floating mana first, then tap sources for the rest
+            val partialResult = manaPool.payPartial(continuation.manaCost)
+            val remainingCost = partialResult.remainingCost
+            var currentPool = manaPool
+            var currentState = state
+            val events = mutableListOf<GameEvent>()
 
-            val newState = state.updateEntity(continuation.payingPlayerId) { container ->
+            if (!remainingCost.isEmpty()) {
+                // Need to tap sources for the remaining cost
+                val manaSolver = ManaSolver()
+                val solution = manaSolver.solve(currentState, playerId, remainingCost)
+                    ?: return ExecutionResult.error(state, "Cannot pay mana cost")
+
+                // Tap sources and add their mana to the pool
+                for (source in solution.sources) {
+                    currentState = currentState.updateEntity(source.entityId) { c ->
+                        c.with(TappedComponent)
+                    }
+                    events.add(TappedEvent(source.entityId, source.name))
+                }
+
+                for ((_, production) in solution.manaProduced) {
+                    currentPool = if (production.color != null) {
+                        currentPool.add(production.color)
+                    } else {
+                        currentPool.addColorless(production.colorless)
+                    }
+                }
+            }
+
+            // Deduct the cost from the pool
+            val newPool = currentPool.pay(continuation.manaCost)
+                ?: return ExecutionResult.error(state, "Cannot pay mana cost after auto-tap")
+
+            currentState = currentState.updateEntity(playerId) { container ->
                 container.with(
                     ManaPoolComponent(
                         white = newPool.white,
@@ -1074,7 +1106,7 @@ class ContinuationHandler(
             }
 
             // Spell resolves normally — don't counter it
-            return checkForMoreContinuations(newState, emptyList())
+            return checkForMoreContinuations(currentState, events)
         } else {
             // Player chose not to pay — counter the spell
             val counterResult = stackResolver.counterSpell(state, continuation.spellEntityId)
