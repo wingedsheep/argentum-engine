@@ -41,7 +41,10 @@ data class DecisionContext(
     val sourceName: String? = null,
 
     /** What phase of execution we're in */
-    val phase: DecisionPhase = DecisionPhase.RESOLUTION
+    val phase: DecisionPhase = DecisionPhase.RESOLUTION,
+
+    /** The entity that triggered this decision (e.g., the blocked creature for combat triggers) */
+    val triggeringEntityId: EntityId? = null
 )
 
 /**

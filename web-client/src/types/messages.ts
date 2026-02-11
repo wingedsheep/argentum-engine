@@ -164,6 +164,8 @@ export interface DecisionContext {
   readonly phase: DecisionPhase
   readonly sourceId?: EntityId
   readonly sourceName?: string
+  /** The entity that triggered this decision (e.g., the blocked creature for combat triggers) */
+  readonly triggeringEntityId?: EntityId
 }
 
 /**

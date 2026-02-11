@@ -237,9 +237,11 @@ export function CombatArrows() {
     pendingDecision?.context?.phase === 'COMBAT'
 
   // Hide all arrows during full-screen overlay decisions (e.g., ChooseColorDecision)
+  // But keep arrows visible for combat trigger YesNo decisions (e.g., Gustcloak Savior)
   const hasOverlayDecision = pendingDecision != null &&
     pendingDecision.type !== 'ChooseTargetsDecision' &&
-    !(pendingDecision.type === 'SelectCardsDecision' && pendingDecision.useTargetingUI)
+    !(pendingDecision.type === 'SelectCardsDecision' && pendingDecision.useTargetingUI) &&
+    !(pendingDecision.type === 'YesNoDecision' && pendingDecision.context.triggeringEntityId)
 
   // Track mouse position during drag
   useEffect(() => {
