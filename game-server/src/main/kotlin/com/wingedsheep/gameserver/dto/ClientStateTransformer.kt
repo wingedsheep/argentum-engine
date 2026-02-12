@@ -789,7 +789,71 @@ class ClientStateTransformer(
             )
         }
 
+        // Check for triggered ability condition indicators (intervening-if progress)
+        effects.addAll(buildTriggerConditionBadges(state, entityId))
+
         return effects
+    }
+
+    /**
+     * Build badges showing progress toward intervening-if trigger conditions.
+     * For example, Oversold Cemetery shows "Creatures in GY: 2/4".
+     */
+    private fun buildTriggerConditionBadges(
+        state: GameState,
+        entityId: EntityId
+    ): List<ClientCardEffect> {
+        val container = state.getEntity(entityId) ?: return emptyList()
+        val cardComponent = container.get<CardComponent>() ?: return emptyList()
+        val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId) ?: return emptyList()
+        val controllerId = container.get<ControllerComponent>()?.playerId ?: return emptyList()
+
+        val badges = mutableListOf<ClientCardEffect>()
+
+        for (ability in cardDef.triggeredAbilities) {
+            val condition = ability.triggerCondition ?: continue
+            val badge = evaluateConditionBadge(state, condition, controllerId)
+            if (badge != null) badges.add(badge)
+        }
+
+        return badges
+    }
+
+    /**
+     * Evaluate a trigger condition and return a badge showing progress.
+     */
+    private fun evaluateConditionBadge(
+        state: GameState,
+        condition: com.wingedsheep.sdk.scripting.Condition,
+        controllerId: EntityId
+    ): ClientCardEffect? {
+        return when (condition) {
+            is com.wingedsheep.sdk.scripting.CreatureCardsInGraveyardAtLeast -> {
+                val graveyardZone = ZoneKey(controllerId, Zone.GRAVEYARD)
+                val count = state.getZone(graveyardZone).count { entityId ->
+                    state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.isCreature == true
+                }
+                val met = count >= condition.count
+                ClientCardEffect(
+                    effectId = "condition_creatures_in_gy",
+                    name = "$count/${condition.count}",
+                    description = "Creature cards in your graveyard ($count/${condition.count})",
+                    icon = if (met) "condition-met" else "condition-unmet"
+                )
+            }
+            is com.wingedsheep.sdk.scripting.CardsInGraveyardAtLeast -> {
+                val graveyardZone = ZoneKey(controllerId, Zone.GRAVEYARD)
+                val count = state.getZone(graveyardZone).size
+                val met = count >= condition.count
+                ClientCardEffect(
+                    effectId = "condition_cards_in_gy",
+                    name = "$count/${condition.count}",
+                    description = "Cards in your graveyard ($count/${condition.count})",
+                    icon = if (met) "condition-met" else "condition-unmet"
+                )
+            }
+            else -> null
+        }
     }
 
     /**

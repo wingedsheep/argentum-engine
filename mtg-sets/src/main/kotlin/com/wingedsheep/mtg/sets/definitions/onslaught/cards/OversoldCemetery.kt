@@ -25,6 +25,7 @@ val OversoldCemetery = card("Oversold Cemetery") {
     triggeredAbility {
         trigger = Triggers.YourUpkeep
         optional = true
+        triggerCondition = Conditions.CreatureCardsInGraveyardAtLeast(4)
         target = TargetObject(
             filter = TargetFilter.CreatureInYourGraveyard
         )
