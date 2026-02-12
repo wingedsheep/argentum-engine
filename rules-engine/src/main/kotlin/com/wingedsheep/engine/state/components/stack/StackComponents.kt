@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.Effect
+import com.wingedsheep.sdk.targeting.TargetRequirement
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -19,7 +20,8 @@ data class SpellOnStackComponent(
     val chosenModes: List<Int> = emptyList(),  // For modal spells
     val sacrificedPermanents: List<EntityId> = emptyList(),  // For additional costs
     val castFaceDown: Boolean = false,  // For morph - creature enters face-down
-    val damageDistribution: Map<EntityId, Int>? = null  // For DividedDamageEffect - pre-chosen damage allocation
+    val damageDistribution: Map<EntityId, Int>? = null,  // For DividedDamageEffect - pre-chosen damage allocation
+    val chosenCreatureType: String? = null  // For spells that choose a creature type during casting (e.g., Aphetto Dredging)
 ) : Component
 
 /**
@@ -66,10 +68,15 @@ data class AbilityOnStackComponent(
 
 /**
  * Targets chosen for a spell or ability.
+ *
+ * @property targets The chosen targets
+ * @property targetRequirements The original target requirements, used for re-validation
+ *           on resolution (Rule 608.2b — targets must still be legal when the spell/ability resolves)
  */
 @Serializable
 data class TargetsComponent(
-    val targets: List<ChosenTarget>
+    val targets: List<ChosenTarget>,
+    val targetRequirements: List<TargetRequirement> = emptyList()
 ) : Component
 
 /**

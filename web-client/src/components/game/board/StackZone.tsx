@@ -111,6 +111,25 @@ export function StackDisplay() {
                       X={card.chosenX}
                     </div>
                   )}
+                  {/* Show chosen creature type for spells like Aphetto Dredging */}
+                  {card.chosenCreatureType && (
+                    <div style={{
+                      position: 'absolute',
+                      bottom: 4,
+                      left: 4,
+                      backgroundColor: 'rgba(80, 60, 30, 0.9)',
+                      color: '#f0d890',
+                      fontSize: 9,
+                      padding: '1px 4px',
+                      borderRadius: 3,
+                      border: '1px solid rgba(200, 170, 80, 0.6)',
+                      whiteSpace: 'nowrap',
+                      pointerEvents: 'none',
+                      zIndex: 5,
+                    }}>
+                      {card.chosenCreatureType}
+                    </div>
+                  )}
                   {/* Show text modification badges (e.g., Artificial Evolution) */}
                   {card.activeEffects && card.activeEffects.length > 0 && (
                     <div style={styles.stackActiveEffects}>

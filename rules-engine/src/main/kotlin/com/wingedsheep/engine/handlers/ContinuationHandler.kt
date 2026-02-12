@@ -41,6 +41,7 @@ class ContinuationHandler(
     private val effectExecutorRegistry: EffectExecutorRegistry,
     private val stackResolver: StackResolver = StackResolver(),
     private val triggerProcessor: com.wingedsheep.engine.event.TriggerProcessor? = null,
+    private val triggerDetector: com.wingedsheep.engine.event.TriggerDetector? = null,
     private val combatManager: CombatManager? = null,
     private val targetFinder: TargetFinder = TargetFinder()
 ) {
@@ -118,6 +119,7 @@ class ContinuationHandler(
             is MayTriggerContinuation -> resumeMayTrigger(stateAfterPop, continuation, response)
             is CloneEntersContinuation -> resumeCloneEnters(stateAfterPop, continuation, response)
             is ChooseCreatureTypeEntersContinuation -> resumeChooseCreatureTypeEnters(stateAfterPop, continuation, response)
+            is CastWithCreatureTypeContinuation -> resumeCastWithCreatureType(stateAfterPop, continuation, response)
         }
     }
 
@@ -361,7 +363,9 @@ class ContinuationHandler(
         )
 
         // Put the ability on the stack with the selected targets
-        val stackResult = stackResolver.putTriggeredAbility(state, abilityComponent, selectedTargets)
+        val stackResult = stackResolver.putTriggeredAbility(
+            state, abilityComponent, selectedTargets, continuation.targetRequirements
+        )
 
         if (!stackResult.isSuccess) {
             return stackResult
@@ -3269,6 +3273,70 @@ class ContinuationHandler(
         )
 
         return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume casting a spell after the player chose a creature type during casting.
+     *
+     * Completes the casting by putting the spell on the stack with the chosen type,
+     * then detects and processes triggers (same as CastSpellHandler does).
+     */
+    private fun resumeCastWithCreatureType(
+        state: GameState,
+        continuation: CastWithCreatureTypeContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is OptionChosenResponse) {
+            return ExecutionResult.error(state, "Expected option choice response for creature type selection")
+        }
+
+        val chosenType = continuation.creatureTypes.getOrNull(response.optionIndex)
+            ?: return ExecutionResult.error(state, "Invalid creature type index: ${response.optionIndex}")
+
+        // Complete casting: put spell on stack with the chosen creature type
+        val castResult = stackResolver.castSpell(
+            state,
+            continuation.cardId,
+            continuation.casterId,
+            continuation.targets,
+            continuation.xValue,
+            continuation.sacrificedPermanents,
+            targetRequirements = continuation.targetRequirements,
+            chosenCreatureType = chosenType
+        )
+
+        if (!castResult.isSuccess) {
+            return castResult
+        }
+
+        var allEvents = castResult.events
+
+        // Detect and process triggers from casting (same as CastSpellHandler does)
+        if (triggerDetector != null && triggerProcessor != null) {
+            val triggers = triggerDetector.detectTriggers(castResult.newState, allEvents)
+            if (triggers.isNotEmpty()) {
+                val triggerResult = triggerProcessor.processTriggers(castResult.newState, triggers)
+
+                if (triggerResult.isPaused) {
+                    return ExecutionResult.paused(
+                        triggerResult.state.withPriority(continuation.casterId),
+                        triggerResult.pendingDecision!!,
+                        allEvents + triggerResult.events
+                    )
+                }
+
+                allEvents = allEvents + triggerResult.events
+                return ExecutionResult.success(
+                    triggerResult.newState.withPriority(continuation.casterId),
+                    allEvents
+                )
+            }
+        }
+
+        return ExecutionResult.success(
+            castResult.newState.withPriority(continuation.casterId),
+            allEvents
+        )
     }
 
     /**

@@ -21,5 +21,7 @@ data class EffectContext(
     /** The entity that caused the trigger to fire (e.g., creature that dealt damage for Aurification) */
     val triggeringEntityId: EntityId? = null,
     /** Color chosen for "add one mana of any color" abilities */
-    val manaColorChoice: Color? = null
+    val manaColorChoice: Color? = null,
+    /** Creature type chosen during casting (e.g., Aphetto Dredging) */
+    val chosenCreatureType: String? = null
 )

@@ -467,8 +467,9 @@ class ClientStateTransformer(
         // Get chosen X value for spells on the stack
         val chosenX = spellOnStack?.xValue
 
-        // Get chosen creature type for "as enters" permanents (e.g., Doom Cannon)
+        // Get chosen creature type for "as enters" permanents (e.g., Doom Cannon) or spells on stack (e.g., Aphetto Dredging)
         val chosenCreatureType = container.get<ChosenCreatureTypeComponent>()?.creatureType
+            ?: spellOnStack?.chosenCreatureType
 
         // Build type line string from TypeLine, using projected subtypes if available
         val typeLine = cardComponent.typeLine

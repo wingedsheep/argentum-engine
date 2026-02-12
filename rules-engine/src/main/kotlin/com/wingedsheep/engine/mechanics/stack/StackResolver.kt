@@ -30,6 +30,11 @@ import com.wingedsheep.sdk.scripting.EntersWithCounters
 import com.wingedsheep.sdk.scripting.EntersWithCreatureTypeChoice
 import com.wingedsheep.sdk.scripting.EntersWithDynamicCounters
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.mechanics.layers.ProjectedState
+import com.wingedsheep.sdk.scripting.TargetFilter
+import com.wingedsheep.sdk.targeting.*
 
 /**
  * Manages the stack: casting spells, activating abilities, and resolution.
@@ -46,7 +51,8 @@ class StackResolver(
     private val effectHandler: EffectHandler = EffectHandler(),
     internal val cardRegistry: CardRegistry? = null,
     private val staticAbilityHandler: StaticAbilityHandler = StaticAbilityHandler(cardRegistry),
-    private val stateProjector: StateProjector = StateProjector()
+    private val stateProjector: StateProjector = StateProjector(),
+    private val predicateEvaluator: PredicateEvaluator = PredicateEvaluator()
 ) {
 
     // =========================================================================
@@ -69,7 +75,9 @@ class StackResolver(
         xValue: Int? = null,
         sacrificedPermanents: List<EntityId> = emptyList(),
         castFaceDown: Boolean = false,
-        damageDistribution: Map<EntityId, Int>? = null
+        damageDistribution: Map<EntityId, Int>? = null,
+        targetRequirements: List<TargetRequirement> = emptyList(),
+        chosenCreatureType: String? = null
     ): ExecutionResult {
         val container = state.getEntity(cardId)
             ?: return ExecutionResult.error(state, "Card not found: $cardId")
@@ -87,10 +95,11 @@ class StackResolver(
                 xValue = xValue,
                 sacrificedPermanents = sacrificedPermanents,
                 castFaceDown = castFaceDown,
-                damageDistribution = damageDistribution
+                damageDistribution = damageDistribution,
+                chosenCreatureType = chosenCreatureType
             ))
             if (targets.isNotEmpty()) {
-                updated = updated.with(TargetsComponent(targets))
+                updated = updated.with(TargetsComponent(targets, targetRequirements))
             }
             // Add morph data for creatures with morph (needed for face-down casting and
             // for effects like Backslide that target "creature with a morph ability")
@@ -105,8 +114,9 @@ class StackResolver(
             updated
         }
 
-        // Push to stack
+        // Push to stack and reset priority passes (new stack item requires fresh round of passes)
         newState = newState.pushToStack(cardId)
+            .copy(priorityPassedBy = emptySet())
 
         // For face-down creatures, use a generic name in the event
         val eventName = if (castFaceDown) "Face-down creature" else cardComponent.name
@@ -123,18 +133,20 @@ class StackResolver(
     fun putTriggeredAbility(
         state: GameState,
         ability: TriggeredAbilityOnStackComponent,
-        targets: List<ChosenTarget> = emptyList()
+        targets: List<ChosenTarget> = emptyList(),
+        targetRequirements: List<TargetRequirement> = emptyList()
     ): ExecutionResult {
         // Create a new entity for the ability on the stack
         val abilityId = EntityId.generate()
 
         var container = ComponentContainer.of(ability)
         if (targets.isNotEmpty()) {
-            container = container.with(TargetsComponent(targets))
+            container = container.with(TargetsComponent(targets, targetRequirements))
         }
 
         var newState = state.withEntity(abilityId, container)
         newState = newState.pushToStack(abilityId)
+            .copy(priorityPassedBy = emptySet())
 
         return ExecutionResult.success(
             newState.tick(),
@@ -155,17 +167,19 @@ class StackResolver(
     fun putActivatedAbility(
         state: GameState,
         ability: ActivatedAbilityOnStackComponent,
-        targets: List<ChosenTarget> = emptyList()
+        targets: List<ChosenTarget> = emptyList(),
+        targetRequirements: List<TargetRequirement> = emptyList()
     ): ExecutionResult {
         val abilityId = EntityId.generate()
 
         var container = ComponentContainer.of(ability)
         if (targets.isNotEmpty()) {
-            container = container.with(TargetsComponent(targets))
+            container = container.with(TargetsComponent(targets, targetRequirements))
         }
 
         var newState = state.withEntity(abilityId, container)
         newState = newState.pushToStack(abilityId)
+            .copy(priorityPassedBy = emptySet())
 
         return ExecutionResult.success(
             newState.tick(),
@@ -228,7 +242,10 @@ class StackResolver(
         val sourceColors = cardComponent?.colors ?: emptySet()
         val sourceSubtypes = cardComponent?.typeLine?.subtypes?.map { it.value }?.toSet() ?: emptySet()
         val resolvedTargets = if (targetsComponent != null && targetsComponent.targets.isNotEmpty()) {
-            val validTargets = validateTargets(state, targetsComponent.targets, sourceColors, sourceSubtypes, spellComponent.casterId)
+            val validTargets = validateTargets(
+                state, targetsComponent.targets, sourceColors, sourceSubtypes,
+                spellComponent.casterId, targetsComponent.targetRequirements
+            )
             if (validTargets.isEmpty()) {
                 // All targets invalid - spell fizzles
                 return fizzleSpell(state, spellId, cardComponent, spellComponent)
@@ -477,7 +494,8 @@ class StackResolver(
                 targets = targets,
                 xValue = spellComponent.xValue,
                 sacrificedPermanents = spellComponent.sacrificedPermanents,
-                damageDistribution = spellComponent.damageDistribution
+                damageDistribution = spellComponent.damageDistribution,
+                chosenCreatureType = spellComponent.chosenCreatureType
             )
 
             val effectResult = effectHandler.execute(newState, spellEffect, context)
@@ -589,7 +607,10 @@ class StackResolver(
         val sourceColors = sourceCard?.colors ?: emptySet()
         val sourceSubtypes = sourceCard?.typeLine?.subtypes?.map { it.value }?.toSet() ?: emptySet()
         if (targetsComponent != null && targetsComponent.targets.isNotEmpty()) {
-            val validTargets = validateTargets(state, targetsComponent.targets, sourceColors, sourceSubtypes, abilityComponent.controllerId)
+            val validTargets = validateTargets(
+                state, targetsComponent.targets, sourceColors, sourceSubtypes,
+                abilityComponent.controllerId, targetsComponent.targetRequirements
+            )
             if (validTargets.isEmpty()) {
                 // Fizzle - remove ability entity
                 val newState = state.removeEntity(abilityId)
@@ -659,7 +680,10 @@ class StackResolver(
         val sourceColors = sourceCard?.colors ?: emptySet()
         val sourceSubtypes = sourceCard?.typeLine?.subtypes?.map { it.value }?.toSet() ?: emptySet()
         if (targetsComponent != null && targetsComponent.targets.isNotEmpty()) {
-            val validTargets = validateTargets(state, targetsComponent.targets, sourceColors, sourceSubtypes, abilityComponent.controllerId)
+            val validTargets = validateTargets(
+                state, targetsComponent.targets, sourceColors, sourceSubtypes,
+                abilityComponent.controllerId, targetsComponent.targetRequirements
+            )
             if (validTargets.isEmpty()) {
                 val newState = state.removeEntity(abilityId)
                 return ExecutionResult.success(
@@ -830,21 +854,22 @@ class StackResolver(
     /**
      * Validate targets and return only valid ones.
      *
-     * Checks both zone existence and protection (Rule 702.16).
-     * A permanent with protection from a source's color or creature subtype
-     * cannot be targeted by that source.
+     * Checks zone existence, protection (Rule 702.16), and target filter matching
+     * (Rule 608.2b — targets must still be legal when the spell/ability resolves).
      */
     private fun validateTargets(
         state: GameState,
         targets: List<ChosenTarget>,
         sourceColors: Set<Color> = emptySet(),
         sourceSubtypes: Set<String> = emptySet(),
-        controllerId: EntityId
+        controllerId: EntityId,
+        targetRequirements: List<TargetRequirement> = emptyList()
     ): List<ChosenTarget> {
         // Always project state for shroud/hexproof checks (Rule 702.18, 702.11)
         val projected = stateProjector.project(state)
+        val predicateContext = PredicateContext(controllerId = controllerId)
 
-        return targets.filter { target ->
+        return targets.filterIndexed { index, target ->
             when (target) {
                 is ChosenTarget.Player -> {
                     // Player is valid if they exist and haven't lost
@@ -853,26 +878,39 @@ class StackResolver(
 
                 is ChosenTarget.Permanent -> {
                     // Permanent is valid if still on battlefield
-                    if (target.entityId !in state.getBattlefield()) return@filter false
+                    if (target.entityId !in state.getBattlefield()) return@filterIndexed false
 
                     // Check shroud — can't be targeted by anyone (Rule 702.18)
-                    if (projected.hasKeyword(target.entityId, "SHROUD")) return@filter false
+                    if (projected.hasKeyword(target.entityId, "SHROUD")) return@filterIndexed false
 
                     // Check hexproof — can't be targeted by opponents (Rule 702.11)
                     val entityController = state.getEntity(target.entityId)?.get<ControllerComponent>()?.playerId
-                    if (projected.hasKeyword(target.entityId, "HEXPROOF") && entityController != controllerId) return@filter false
+                    if (projected.hasKeyword(target.entityId, "HEXPROOF") && entityController != controllerId) return@filterIndexed false
 
                     // Check protection from source colors/subtypes (Rule 702.16)
                     for (color in sourceColors) {
                         if (projected.hasKeyword(target.entityId, "PROTECTION_FROM_${color.name}")) {
-                            return@filter false
+                            return@filterIndexed false
                         }
                     }
                     for (subtype in sourceSubtypes) {
                         if (projected.hasKeyword(target.entityId, "PROTECTION_FROM_SUBTYPE_${subtype.uppercase()}")) {
-                            return@filter false
+                            return@filterIndexed false
                         }
                     }
+
+                    // Re-validate target filter (Rule 608.2b)
+                    val requirement = getRequirementForTargetIndex(index, targetRequirements)
+                    val filter = extractTargetFilter(requirement)
+                    if (filter != null) {
+                        if (!predicateEvaluator.matchesWithProjection(
+                                state, projected, target.entityId, filter.baseFilter, predicateContext
+                            )
+                        ) {
+                            return@filterIndexed false
+                        }
+                    }
+
                     true
                 }
 
@@ -887,6 +925,37 @@ class StackResolver(
                     target.spellEntityId in state.stack
                 }
             }
+        }
+    }
+
+    /**
+     * Find the TargetRequirement that corresponds to a given target index.
+     * Requirements are matched to targets in order, with each requirement
+     * consuming `count` targets.
+     */
+    private fun getRequirementForTargetIndex(
+        targetIndex: Int,
+        requirements: List<TargetRequirement>
+    ): TargetRequirement? {
+        var idx = 0
+        for (req in requirements) {
+            val end = idx + req.count
+            if (targetIndex in idx until end) return req
+            idx = end
+        }
+        return null
+    }
+
+    /**
+     * Extract the TargetFilter from a TargetRequirement, if it has one.
+     */
+    private fun extractTargetFilter(requirement: TargetRequirement?): TargetFilter? {
+        return when (requirement) {
+            is TargetCreature -> requirement.filter
+            is TargetPermanent -> requirement.filter
+            is TargetObject -> requirement.filter
+            is TargetSpell -> requirement.filter
+            else -> null
         }
     }
 
