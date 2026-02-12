@@ -230,7 +230,7 @@ export function useCardLegalActions(cardId: EntityId | null): readonly LegalActi
 export function useHasLegalActions(cardId: EntityId | null): boolean {
   const actions = useCardLegalActions(cardId)
   // Filter out simple mana abilities and unaffordable actions - they shouldn't cause highlighting
-  // Mana abilities with additional costs (TapPermanents, SacrificePermanent) still need highlighting
+  // Mana abilities with additional costs (TapPermanents, SacrificePermanent, SacrificeSelf) still need highlighting
   const affordableHighlightableActions = actions.filter(
     (a) => (!a.isManaAbility || a.additionalCostInfo != null) && a.isAffordable !== false
   )

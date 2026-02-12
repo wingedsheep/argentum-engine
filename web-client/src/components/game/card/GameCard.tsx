@@ -269,7 +269,7 @@ export function GameCard({
             maxX: playableAction.maxAffordableX ?? 0,
             selectedX: playableAction.maxAffordableX ?? 0,
           })
-        } else if (playableAction.action.type === 'CastSpell' && playableAction.additionalCostInfo?.costType === 'SacrificePermanent') {
+        } else if (playableAction.action.type === 'CastSpell' && (playableAction.additionalCostInfo?.costType === 'SacrificePermanent' || playableAction.additionalCostInfo?.costType === 'SacrificeSelf')) {
           // Check if spell requires sacrifice as additional cost
           const costInfo = playableAction.additionalCostInfo
           startTargeting({
@@ -659,8 +659,8 @@ export function GameCard({
         <KeywordIcons keywords={card.keywords} protections={card.protections ?? []} size={responsive.isMobile ? 14 : 18} />
       )}
 
-      {/* Chosen creature type badge (e.g., Doom Cannon) */}
-      {battlefield && !faceDown && card.chosenCreatureType && (
+      {/* Chosen creature type badge (e.g., Doom Cannon on battlefield, Aphetto Dredging on stack) */}
+      {!faceDown && card.chosenCreatureType && (
         <div style={{
           position: 'absolute',
           bottom: card.power != null ? 22 : 4,

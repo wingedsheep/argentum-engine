@@ -1423,7 +1423,7 @@ class GameSession(
                     // SacrificeSelf cost — sacrifice target is the source itself
                     AdditionalCostInfo(
                         description = "Sacrifice this permanent",
-                        costType = "SacrificePermanent",
+                        costType = "SacrificeSelf",
                         validSacrificeTargets = sacrificeTargets,
                         sacrificeCount = 1
                     )
