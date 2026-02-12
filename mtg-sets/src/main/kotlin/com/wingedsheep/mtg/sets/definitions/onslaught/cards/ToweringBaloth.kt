@@ -15,6 +15,7 @@ val ToweringBaloth = card("Towering Baloth") {
     typeLine = "Creature — Beast"
     power = 7
     toughness = 6
+    oracleText = "Morph {6}{G}"
 
     morph = "{6}{G}"
 

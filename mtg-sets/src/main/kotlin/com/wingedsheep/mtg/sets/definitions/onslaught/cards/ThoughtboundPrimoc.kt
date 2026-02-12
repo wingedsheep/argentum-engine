@@ -23,6 +23,7 @@ val ThoughtboundPrimoc = card("Thoughtbound Primoc") {
     typeLine = "Creature — Bird Beast"
     power = 2
     toughness = 3
+    oracleText = "Flying\nAt the beginning of your upkeep, if a player controls more Wizards than each other player, that player gains control of Thoughtbound Primoc."
 
     keywords(Keyword.FLYING)
 

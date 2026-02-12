@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.targeting.TargetCreature
 val MagesGuile = card("Mage's Guile") {
     manaCost = "{1}{U}"
     typeLine = "Instant"
+    oracleText = "Target creature gains shroud until end of turn.\nCycling {U}"
 
     spell {
         target = TargetCreature()

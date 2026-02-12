@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.scripting.Player
 val SyphonSoul = card("Syphon Soul") {
     manaCost = "{2}{B}"
     typeLine = "Sorcery"
+    oracleText = "Syphon Soul deals 2 damage to each other player. You gain life equal to the damage dealt this way."
 
     spell {
         effect = DealDamageToPlayersEffect(2, EffectTarget.PlayerRef(Player.EachOpponent)) then

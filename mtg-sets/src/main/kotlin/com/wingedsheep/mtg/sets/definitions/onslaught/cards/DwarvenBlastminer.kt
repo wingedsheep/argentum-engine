@@ -24,6 +24,7 @@ val DwarvenBlastminer = card("Dwarven Blastminer") {
     typeLine = "Creature — Dwarf"
     power = 1
     toughness = 1
+    oracleText = "{2}{R}, {T}: Destroy target nonbasic land.\nMorph {R}"
 
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{2}{R}"), Costs.Tap)

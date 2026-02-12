@@ -17,6 +17,7 @@ val FallenCleric = card("Fallen Cleric") {
     typeLine = "Creature — Zombie Cleric"
     power = 4
     toughness = 2
+    oracleText = "Protection from Clerics\nMorph {4}{B}"
 
     keywordAbility(KeywordAbility.ProtectionFromCreatureSubtype("Cleric"))
     morph = "{4}{B}"

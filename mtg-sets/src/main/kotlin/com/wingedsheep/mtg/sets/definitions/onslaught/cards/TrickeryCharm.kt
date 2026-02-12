@@ -21,6 +21,7 @@ import com.wingedsheep.sdk.targeting.TargetCreature
 val TrickeryCharm = card("Trickery Charm") {
     manaCost = "{U}"
     typeLine = "Instant"
+    oracleText = "Choose one —\n• Target creature gains flying until end of turn.\n• Target creature becomes the creature type of your choice until end of turn.\n• Look at the top four cards of your library, then put them back in any order."
 
     spell {
         modal(chooseCount = 1) {

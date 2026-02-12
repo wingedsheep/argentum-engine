@@ -19,6 +19,7 @@ import com.wingedsheep.sdk.targeting.TargetPermanent
 val Backslide = card("Backslide") {
     manaCost = "{1}{U}"
     typeLine = "Instant"
+    oracleText = "Turn target creature with a morph ability face down.\nCycling {U}"
 
     spell {
         target = TargetPermanent(

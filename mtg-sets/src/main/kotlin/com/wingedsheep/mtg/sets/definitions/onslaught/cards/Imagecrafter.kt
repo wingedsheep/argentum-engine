@@ -19,6 +19,7 @@ val Imagecrafter = card("Imagecrafter") {
     typeLine = "Creature — Human Wizard"
     power = 1
     toughness = 1
+    oracleText = "{T}: Choose a creature type other than Wall. Target creature becomes that type until end of turn."
 
     activatedAbility {
         cost = Costs.Tap

@@ -18,6 +18,7 @@ val SymbioticBeast = card("Symbiotic Beast") {
     typeLine = "Creature — Insect Beast"
     power = 4
     toughness = 4
+    oracleText = "When Symbiotic Beast dies, create four 1/1 green Insect creature tokens."
 
     triggeredAbility {
         trigger = Triggers.Dies

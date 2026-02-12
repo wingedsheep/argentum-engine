@@ -19,6 +19,7 @@ val GoblinMachinist = card("Goblin Machinist") {
     typeLine = "Creature — Goblin"
     power = 0
     toughness = 5
+    oracleText = "{2}{R}: Reveal cards from the top of your library until you reveal a nonland card. Goblin Machinist gets +X/+0 until end of turn, where X is that card's mana value. Put the revealed cards on the bottom of your library in any order."
 
     activatedAbility {
         cost = Costs.Mana("{2}{R}")

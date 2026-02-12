@@ -18,6 +18,7 @@ val TauntingElf = card("Taunting Elf") {
     typeLine = "Creature — Elf"
     power = 0
     toughness = 1
+    oracleText = "All creatures able to block Taunting Elf do so."
 
     triggeredAbility {
         trigger = Triggers.Attacks

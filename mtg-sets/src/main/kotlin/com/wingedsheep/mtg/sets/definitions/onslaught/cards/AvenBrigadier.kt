@@ -21,6 +21,7 @@ val AvenBrigadier = card("Aven Brigadier") {
     typeLine = "Creature — Bird Soldier"
     power = 3
     toughness = 5
+    oracleText = "Flying\nOther Bird creatures get +1/+1.\nOther Soldier creatures get +1/+1."
 
     keywords(Keyword.FLYING)
 

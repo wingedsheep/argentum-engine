@@ -21,6 +21,7 @@ import com.wingedsheep.sdk.scripting.PreventNextDamageEffect
 val SunfireBalm = card("Sunfire Balm") {
     manaCost = "{2}{W}"
     typeLine = "Instant"
+    oracleText = "Prevent the next 4 damage that would be dealt to any target this turn.\nCycling {1}{W}\nWhen you cycle Sunfire Balm, you may prevent the next 1 damage that would be dealt to any target this turn."
 
     spell {
         target = Targets.Any

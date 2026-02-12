@@ -22,6 +22,7 @@ val DoomedNecromancer = card("Doomed Necromancer") {
     typeLine = "Creature — Human Cleric Mercenary"
     power = 2
     toughness = 2
+    oracleText = "{B}, {T}, Sacrifice Doomed Necromancer: Return target creature card from your graveyard to the battlefield."
 
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{B}"), Costs.Tap, Costs.SacrificeSelf)

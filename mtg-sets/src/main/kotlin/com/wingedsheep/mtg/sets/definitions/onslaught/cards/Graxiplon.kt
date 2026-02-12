@@ -17,6 +17,7 @@ val Graxiplon = card("Graxiplon") {
     typeLine = "Creature — Beast"
     power = 3
     toughness = 4
+    oracleText = "Graxiplon can't be blocked unless defending player controls three or more creatures that share a creature type."
 
     staticAbility {
         ability = CantBeBlockedUnlessDefenderSharesCreatureType(minSharedCount = 3)

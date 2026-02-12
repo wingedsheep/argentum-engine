@@ -21,6 +21,7 @@ val GustcloakSkirmisher = card("Gustcloak Skirmisher") {
     typeLine = "Creature — Bird Soldier"
     power = 2
     toughness = 3
+    oracleText = "Flying\nWhenever Gustcloak Skirmisher becomes blocked, you may untap it and remove it from combat."
     keywords(Keyword.FLYING)
 
     triggeredAbility {

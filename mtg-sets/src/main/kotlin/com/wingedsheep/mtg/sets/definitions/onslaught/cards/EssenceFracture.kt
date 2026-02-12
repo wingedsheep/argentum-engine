@@ -19,6 +19,7 @@ import com.wingedsheep.sdk.targeting.TargetCreature
 val EssenceFracture = card("Essence Fracture") {
     manaCost = "{3}{U}{U}"
     typeLine = "Sorcery"
+    oracleText = "Return two target creatures to their owners' hands.\nCycling {2}{U}"
 
     spell {
         target = TargetCreature(count = 2)

@@ -23,6 +23,7 @@ val KrosanTusker = card("Krosan Tusker") {
     typeLine = "Creature — Boar Beast"
     power = 6
     toughness = 5
+    oracleText = "Cycling {2}{G}\nWhen you cycle Krosan Tusker, you may search your library for a basic land card, reveal that card, put it into your hand, then shuffle."
 
     keywordAbility(KeywordAbility.cycling("{2}{G}"))
 

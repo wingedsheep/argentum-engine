@@ -23,6 +23,7 @@ import com.wingedsheep.sdk.targeting.TargetCreature
 val VitalityCharm = card("Vitality Charm") {
     manaCost = "{G}"
     typeLine = "Instant"
+    oracleText = "Choose one —\n• Create a 1/1 green Insect creature token.\n• Target creature gets +1/+1 and gains trample until end of turn.\n• Regenerate target Beast."
 
     spell {
         modal(chooseCount = 1) {

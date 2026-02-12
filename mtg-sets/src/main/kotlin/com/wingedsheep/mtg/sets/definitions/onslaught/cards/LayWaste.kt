@@ -19,6 +19,7 @@ import com.wingedsheep.sdk.targeting.TargetPermanent
 val LayWaste = card("Lay Waste") {
     manaCost = "{3}{R}"
     typeLine = "Sorcery"
+    oracleText = "Destroy target land.\nCycling {2}"
 
     spell {
         target = TargetPermanent(filter = TargetFilter.Land)

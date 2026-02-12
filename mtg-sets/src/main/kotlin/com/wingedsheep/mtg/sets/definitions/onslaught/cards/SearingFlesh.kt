@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.targeting.TargetOpponent
 val SearingFlesh = card("Searing Flesh") {
     manaCost = "{6}{R}"
     typeLine = "Sorcery"
+    oracleText = "Searing Flesh deals 7 damage to target opponent."
 
     spell {
         target = TargetOpponent()

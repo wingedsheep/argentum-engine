@@ -22,6 +22,7 @@ val SkirkCommando = card("Skirk Commando") {
     typeLine = "Creature — Goblin"
     power = 2
     toughness = 1
+    oracleText = "Whenever Skirk Commando deals combat damage to a player, you may have it deal 2 damage to target creature that player controls.\nMorph {2}{R}"
 
     triggeredAbility {
         trigger = Triggers.DealsCombatDamageToPlayer

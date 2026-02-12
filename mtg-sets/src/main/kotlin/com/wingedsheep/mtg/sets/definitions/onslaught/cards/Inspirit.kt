@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.scripting.TapUntapEffect
 val Inspirit = card("Inspirit") {
     manaCost = "{2}{W}"
     typeLine = "Instant"
+    oracleText = "Untap target creature. It gets +2/+4 until end of turn."
 
     spell {
         target = com.wingedsheep.sdk.targeting.TargetCreature()

@@ -17,6 +17,7 @@ import com.wingedsheep.sdk.targeting.TargetPermanent
 val BreakOpen = card("Break Open") {
     manaCost = "{1}{R}"
     typeLine = "Instant"
+    oracleText = "Turn target face-down creature an opponent controls face up."
 
     spell {
         target = TargetPermanent(

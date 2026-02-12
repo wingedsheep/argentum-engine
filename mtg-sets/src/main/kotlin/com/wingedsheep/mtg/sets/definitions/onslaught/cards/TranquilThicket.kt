@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.scripting.TimingRule
  */
 val TranquilThicket = card("Tranquil Thicket") {
     typeLine = "Land"
+    oracleText = "Tranquil Thicket enters the battlefield tapped.\n{T}: Add {G}.\nCycling {G}"
 
     replacementEffect(EntersTapped())
 

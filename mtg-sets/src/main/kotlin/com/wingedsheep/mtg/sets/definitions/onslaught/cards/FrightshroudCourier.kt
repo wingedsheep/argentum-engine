@@ -25,6 +25,7 @@ val FrightshroudCourier = card("Frightshroud Courier") {
     typeLine = "Creature — Zombie"
     power = 2
     toughness = 1
+    oracleText = "You may choose not to untap Frightshroud Courier during your untap step.\n{2}{B}, {T}: Target Zombie creature gets +2/+2 and gains fear for as long as Frightshroud Courier remains tapped."
 
     keywords(Keyword.MAY_NOT_UNTAP)
 

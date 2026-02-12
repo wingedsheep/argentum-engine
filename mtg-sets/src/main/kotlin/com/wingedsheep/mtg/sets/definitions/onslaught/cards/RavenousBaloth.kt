@@ -18,6 +18,7 @@ val RavenousBaloth = card("Ravenous Baloth") {
     typeLine = "Creature — Beast"
     power = 4
     toughness = 4
+    oracleText = "Sacrifice a Beast: You gain 4 life."
 
     activatedAbility {
         cost = AbilityCost.Sacrifice(GameObjectFilter.Creature.withSubtype("Beast"))

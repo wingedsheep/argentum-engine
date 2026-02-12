@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.scripting.DrawCardsEffect
 val AirborneAid = card("Airborne Aid") {
     manaCost = "{3}{U}"
     typeLine = "Sorcery"
+    oracleText = "Draw a card for each Bird on the battlefield."
 
     spell {
         effect = DrawCardsEffect(DynamicAmounts.creaturesWithSubtype(Subtype.BIRD))

@@ -21,6 +21,7 @@ val WirewoodHerald = card("Wirewood Herald") {
     typeLine = "Creature — Elf"
     power = 1
     toughness = 1
+    oracleText = "When Wirewood Herald dies, you may search your library for an Elf card, reveal that card, put it into your hand, then shuffle."
 
     triggeredAbility {
         trigger = Triggers.Dies

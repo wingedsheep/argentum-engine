@@ -18,6 +18,7 @@ val SpittingGourna = card("Spitting Gourna") {
     typeLine = "Creature — Beast"
     power = 3
     toughness = 4
+    oracleText = "Reach\nMorph {4}{G}"
 
     keywords(Keyword.REACH)
     morph = "{4}{G}"

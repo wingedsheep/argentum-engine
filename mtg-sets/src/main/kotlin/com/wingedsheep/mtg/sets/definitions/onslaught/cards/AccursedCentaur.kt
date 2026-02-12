@@ -18,6 +18,7 @@ val AccursedCentaur = card("Accursed Centaur") {
     typeLine = "Creature — Zombie Centaur"
     power = 2
     toughness = 2
+    oracleText = "When Accursed Centaur enters the battlefield, sacrifice a creature."
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield

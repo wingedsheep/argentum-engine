@@ -16,6 +16,7 @@ import com.wingedsheep.sdk.scripting.CreateTokenEffect
 val DragonRoost = card("Dragon Roost") {
     manaCost = "{4}{R}{R}"
     typeLine = "Enchantment"
+    oracleText = "{5}{R}{R}: Create a 5/5 red Dragon creature token with flying."
 
     activatedAbility {
         cost = Costs.Mana("{5}{R}{R}")

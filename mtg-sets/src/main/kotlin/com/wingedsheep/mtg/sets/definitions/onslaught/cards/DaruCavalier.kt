@@ -23,6 +23,7 @@ val DaruCavalier = card("Daru Cavalier") {
     typeLine = "Creature — Human Soldier"
     power = 2
     toughness = 2
+    oracleText = "First strike\nWhen Daru Cavalier enters the battlefield, you may search your library for a card named Daru Cavalier, reveal it, put it into your hand, then shuffle."
 
     keywords(Keyword.FIRST_STRIKE)
 

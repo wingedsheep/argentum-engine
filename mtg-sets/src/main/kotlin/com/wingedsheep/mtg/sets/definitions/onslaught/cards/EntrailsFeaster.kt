@@ -27,6 +27,7 @@ val EntrailsFeaster = card("Entrails Feaster") {
     typeLine = "Creature — Zombie Cat"
     power = 1
     toughness = 1
+    oracleText = "At the beginning of your upkeep, you may exile a creature card from a graveyard. If you do, put a +1/+1 counter on Entrails Feaster. If you don't, tap Entrails Feaster."
 
     triggeredAbility {
         trigger = Triggers.YourUpkeep

@@ -19,6 +19,7 @@ val AscendingAven = card("Ascending Aven") {
     typeLine = "Creature — Bird Soldier"
     power = 3
     toughness = 2
+    oracleText = "Flying\nAscending Aven can block only creatures with flying.\nMorph {2}{U}"
 
     keywords(Keyword.FLYING)
     morph = "{2}{U}"

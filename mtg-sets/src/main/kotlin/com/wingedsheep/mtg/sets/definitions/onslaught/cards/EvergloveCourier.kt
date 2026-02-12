@@ -25,6 +25,7 @@ val EvergloveCourier = card("Everglove Courier") {
     typeLine = "Creature — Elf"
     power = 2
     toughness = 1
+    oracleText = "You may choose not to untap Everglove Courier during your untap step.\n{2}{G}, {T}: Target Elf creature gets +2/+2 and gains trample for as long as Everglove Courier remains tapped."
 
     keywords(Keyword.MAY_NOT_UNTAP)
 

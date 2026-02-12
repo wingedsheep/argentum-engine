@@ -19,6 +19,7 @@ val BloodlineShaman = card("Bloodline Shaman") {
     typeLine = "Creature — Elf Wizard Shaman"
     power = 1
     toughness = 1
+    oracleText = "{T}: Choose a creature type. Reveal the top card of your library. If that card is a creature card of the chosen type, put it into your hand. Otherwise, put it into your graveyard."
 
     activatedAbility {
         cost = AbilityCost.Tap

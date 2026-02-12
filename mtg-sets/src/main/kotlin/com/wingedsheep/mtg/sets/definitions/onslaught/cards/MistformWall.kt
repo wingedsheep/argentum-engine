@@ -24,6 +24,7 @@ val MistformWall = card("Mistform Wall") {
     typeLine = "Creature — Illusion Wall"
     power = 1
     toughness = 4
+    oracleText = "This creature has defender as long as it's a Wall.\n{1}: Mistform Wall becomes the creature type of your choice until end of turn."
 
     staticAbility {
         ability = GrantKeyword(Keyword.DEFENDER, StaticTarget.SourceCreature)

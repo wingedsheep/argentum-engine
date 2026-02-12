@@ -17,6 +17,7 @@ val FoothillGuide = card("Foothill Guide") {
     typeLine = "Creature — Human Cleric"
     power = 1
     toughness = 1
+    oracleText = "Protection from Goblins\nMorph {W}"
 
     keywordAbility(KeywordAbility.ProtectionFromCreatureSubtype("Goblin"))
     morph = "{W}"

@@ -19,6 +19,7 @@ import com.wingedsheep.sdk.scripting.OnCycle
 val AstralSlide = card("Astral Slide") {
     manaCost = "{2}{W}"
     typeLine = "Enchantment"
+    oracleText = "Whenever a player cycles a card, you may exile target creature. If you do, return that card to the battlefield under its owner's control at the beginning of the next end step."
 
     triggeredAbility {
         trigger = OnCycle(controllerOnly = false)

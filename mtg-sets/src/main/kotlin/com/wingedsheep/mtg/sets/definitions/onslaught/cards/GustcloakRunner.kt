@@ -19,6 +19,7 @@ val GustcloakRunner = card("Gustcloak Runner") {
     typeLine = "Creature — Human Soldier"
     power = 1
     toughness = 1
+    oracleText = "Whenever Gustcloak Runner becomes blocked, you may untap it and remove it from combat."
 
     triggeredAbility {
         trigger = Triggers.BecomesBlocked

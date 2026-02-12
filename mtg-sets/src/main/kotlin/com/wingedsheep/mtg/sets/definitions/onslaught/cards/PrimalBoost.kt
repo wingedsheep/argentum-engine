@@ -20,6 +20,7 @@ import com.wingedsheep.sdk.scripting.OnCycle
 val PrimalBoost = card("Primal Boost") {
     manaCost = "{2}{G}"
     typeLine = "Instant"
+    oracleText = "Target creature gets +4/+4 until end of turn.\nCycling {2}{G}\nWhen you cycle Primal Boost, you may have target creature get +1/+1 until end of turn."
 
     spell {
         target = Targets.Creature

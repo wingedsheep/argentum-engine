@@ -23,6 +23,7 @@ val AvenSoulgazer = card("Aven Soulgazer") {
     typeLine = "Creature — Bird Cleric"
     power = 3
     toughness = 3
+    oracleText = "Flying\n{2}{W}: Look at target face-down creature."
 
     keywords(Keyword.FLYING)
 

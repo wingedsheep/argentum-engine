@@ -17,6 +17,7 @@ import com.wingedsheep.sdk.scripting.TimingRule
  */
 val SeasideHaven = card("Seaside Haven") {
     typeLine = "Land"
+    oracleText = "{T}: Add {C}.\n{W}{U}, {T}, Sacrifice a Bird: Draw a card."
 
     activatedAbility {
         cost = AbilityCost.Tap

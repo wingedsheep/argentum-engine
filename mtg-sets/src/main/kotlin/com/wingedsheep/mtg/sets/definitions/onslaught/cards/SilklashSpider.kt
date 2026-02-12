@@ -21,6 +21,7 @@ val SilklashSpider = card("Silklash Spider") {
     typeLine = "Creature — Spider"
     power = 2
     toughness = 7
+    oracleText = "Reach\n{X}{G}{G}: Silklash Spider deals X damage to each creature with flying."
 
     keywords(Keyword.REACH)
 

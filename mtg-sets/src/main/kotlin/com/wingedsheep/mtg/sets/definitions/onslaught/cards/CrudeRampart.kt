@@ -18,6 +18,7 @@ val CrudeRampart = card("Crude Rampart") {
     typeLine = "Creature — Wall"
     power = 4
     toughness = 5
+    oracleText = "Defender\nMorph {4}{W}"
 
     keywords(Keyword.DEFENDER)
     morph = "{4}{W}"

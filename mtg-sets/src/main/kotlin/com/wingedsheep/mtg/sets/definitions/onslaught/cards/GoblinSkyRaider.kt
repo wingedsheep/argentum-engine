@@ -16,6 +16,7 @@ val GoblinSkyRaider = card("Goblin Sky Raider") {
     typeLine = "Creature — Goblin Warrior"
     power = 1
     toughness = 2
+    oracleText = "Flying"
 
     keywords(Keyword.FLYING)
 

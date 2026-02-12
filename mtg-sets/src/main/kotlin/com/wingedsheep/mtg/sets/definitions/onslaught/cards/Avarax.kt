@@ -27,6 +27,7 @@ val Avarax = card("Avarax") {
     typeLine = "Creature — Beast"
     power = 3
     toughness = 3
+    oracleText = "Haste\nWhen Avarax enters the battlefield, you may search your library for a card named Avarax, reveal it, put it into your hand, then shuffle.\n{1}{R}: Avarax gets +1/+0 until end of turn."
 
     keywords(Keyword.HASTE)
 

@@ -21,6 +21,7 @@ val GrasslandCrusader = card("Grassland Crusader") {
     typeLine = "Creature — Human Cleric Soldier"
     power = 2
     toughness = 4
+    oracleText = "{T}: Target Elf or Soldier creature gets +2/+2 until end of turn."
 
     activatedAbility {
         cost = AbilityCost.Tap

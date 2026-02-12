@@ -21,6 +21,7 @@ import com.wingedsheep.sdk.targeting.TargetObject
 val OversoldCemetery = card("Oversold Cemetery") {
     manaCost = "{1}{B}"
     typeLine = "Enchantment"
+    oracleText = "At the beginning of your upkeep, if you have four or more creature cards in your graveyard, you may return target creature card from your graveyard to your hand."
 
     triggeredAbility {
         trigger = Triggers.YourUpkeep

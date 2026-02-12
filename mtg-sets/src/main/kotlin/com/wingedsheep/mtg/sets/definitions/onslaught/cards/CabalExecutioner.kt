@@ -21,6 +21,7 @@ val CabalExecutioner = card("Cabal Executioner") {
     typeLine = "Creature — Human Cleric"
     power = 2
     toughness = 2
+    oracleText = "Whenever Cabal Executioner deals combat damage to a player, that player sacrifices a creature.\nMorph {3}{B}{B}"
 
     triggeredAbility {
         trigger = Triggers.DealsCombatDamageToPlayer

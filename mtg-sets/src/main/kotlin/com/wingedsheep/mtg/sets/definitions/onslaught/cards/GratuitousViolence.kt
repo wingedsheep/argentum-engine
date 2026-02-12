@@ -17,6 +17,7 @@ import com.wingedsheep.sdk.scripting.SourceFilter
 val GratuitousViolence = card("Gratuitous Violence") {
     manaCost = "{2}{R}{R}{R}"
     typeLine = "Enchantment"
+    oracleText = "If a creature you control would deal damage to a permanent or player, it deals double that damage instead."
 
     replacementEffect(
         DoubleDamage(

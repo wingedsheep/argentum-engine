@@ -25,6 +25,7 @@ import com.wingedsheep.sdk.targeting.TargetPermanent
 val PietyCharm = card("Piety Charm") {
     manaCost = "{W}"
     typeLine = "Instant"
+    oracleText = "Choose one \u2014\n\u2022 Destroy target Aura attached to a creature.\n\u2022 Target Soldier creature gets +2/+2 until end of turn.\n\u2022 Creatures you control gain vigilance until end of turn."
 
     spell {
         modal(chooseCount = 1) {

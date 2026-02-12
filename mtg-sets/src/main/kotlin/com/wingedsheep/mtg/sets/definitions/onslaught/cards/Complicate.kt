@@ -19,6 +19,7 @@ import com.wingedsheep.sdk.scripting.OnCycle
 val Complicate = card("Complicate") {
     manaCost = "{2}{U}"
     typeLine = "Instant"
+    oracleText = "Counter target spell unless its controller pays {3}.\nCycling {2}{U}\nWhen you cycle Complicate, you may counter target spell unless its controller pays {1}."
 
     spell {
         target = Targets.Spell

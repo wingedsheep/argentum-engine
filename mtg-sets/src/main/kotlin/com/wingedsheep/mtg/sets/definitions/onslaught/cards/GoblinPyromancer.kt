@@ -20,6 +20,7 @@ val GoblinPyromancer = card("Goblin Pyromancer") {
     typeLine = "Creature — Goblin Wizard"
     power = 2
     toughness = 2
+    oracleText = "When Goblin Pyromancer enters the battlefield, Goblin creatures get +3/+0 until end of turn.\nAt the beginning of the end step, destroy all Goblins."
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield

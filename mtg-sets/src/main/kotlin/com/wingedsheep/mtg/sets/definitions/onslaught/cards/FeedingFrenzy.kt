@@ -19,6 +19,7 @@ import com.wingedsheep.sdk.targeting.TargetCreature
 val FeedingFrenzy = card("Feeding Frenzy") {
     manaCost = "{2}{B}"
     typeLine = "Instant"
+    oracleText = "Target creature gets -X/-X until end of turn, where X is the number of Zombies on the battlefield."
 
     spell {
         target = TargetCreature(filter = TargetFilter.Creature)

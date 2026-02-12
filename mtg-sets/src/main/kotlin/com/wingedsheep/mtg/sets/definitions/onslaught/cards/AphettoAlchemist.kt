@@ -22,6 +22,7 @@ val AphettoAlchemist = card("Aphetto Alchemist") {
     typeLine = "Creature — Human Wizard"
     power = 1
     toughness = 2
+    oracleText = "{T}: Untap target artifact or creature.\nMorph {U}"
 
     activatedAbility {
         cost = AbilityCost.Tap

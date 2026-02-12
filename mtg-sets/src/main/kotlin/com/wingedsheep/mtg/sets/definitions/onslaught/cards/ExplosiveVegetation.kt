@@ -16,6 +16,7 @@ import com.wingedsheep.sdk.scripting.SearchLibraryEffect
 val ExplosiveVegetation = card("Explosive Vegetation") {
     manaCost = "{3}{G}"
     typeLine = "Sorcery"
+    oracleText = "Search your library for up to two basic land cards, put them onto the battlefield tapped, then shuffle."
 
     spell {
         effect = SearchLibraryEffect(

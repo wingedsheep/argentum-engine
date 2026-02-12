@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.scripting.ControlEnchantedPermanent
 val Annex = card("Annex") {
     manaCost = "{2}{U}{U}"
     typeLine = "Enchantment — Aura"
+    oracleText = "Enchant land\nYou control enchanted land."
 
     auraTarget = Targets.Land
 

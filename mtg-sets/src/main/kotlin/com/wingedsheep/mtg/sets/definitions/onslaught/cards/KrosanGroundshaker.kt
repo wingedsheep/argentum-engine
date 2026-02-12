@@ -22,6 +22,7 @@ val KrosanGroundshaker = card("Krosan Groundshaker") {
     typeLine = "Creature — Beast"
     power = 6
     toughness = 6
+    oracleText = "{G}: Target Beast creature gains trample until end of turn."
 
     activatedAbility {
         cost = Costs.Mana("{G}")

@@ -16,6 +16,7 @@ val AnuridMurkdiver = card("Anurid Murkdiver") {
     typeLine = "Creature — Zombie Frog Beast"
     power = 4
     toughness = 3
+    oracleText = "Swampwalk"
 
     keywords(Keyword.SWAMPWALK)
 

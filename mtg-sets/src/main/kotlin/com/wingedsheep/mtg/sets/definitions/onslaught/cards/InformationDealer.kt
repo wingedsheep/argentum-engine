@@ -21,6 +21,7 @@ val InformationDealer = card("Information Dealer") {
     typeLine = "Creature — Human Wizard"
     power = 1
     toughness = 1
+    oracleText = "{T}: Look at the top X cards of your library, where X is the number of Wizards you control, then put them back in any order."
 
     activatedAbility {
         cost = AbilityCost.Tap

@@ -17,6 +17,7 @@ import com.wingedsheep.sdk.targeting.AnyTarget
 val ErraticExplosion = card("Erratic Explosion") {
     manaCost = "{2}{R}"
     typeLine = "Sorcery"
+    oracleText = "Choose any target. Reveal cards from the top of your library until you reveal a nonland card. Erratic Explosion deals damage equal to that card's mana value to that permanent or player. Put the revealed cards on the bottom of your library in any order."
 
     spell {
         target = AnyTarget()

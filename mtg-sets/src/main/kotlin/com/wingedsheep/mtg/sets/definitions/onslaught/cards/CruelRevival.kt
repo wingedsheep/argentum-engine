@@ -22,6 +22,7 @@ import com.wingedsheep.sdk.targeting.TargetObject
 val CruelRevival = card("Cruel Revival") {
     manaCost = "{4}{B}"
     typeLine = "Instant"
+    oracleText = "Destroy target non-Zombie creature. It can't be regenerated.\nReturn up to one target Zombie card from your graveyard to your hand."
 
     spell {
         val creature = target(

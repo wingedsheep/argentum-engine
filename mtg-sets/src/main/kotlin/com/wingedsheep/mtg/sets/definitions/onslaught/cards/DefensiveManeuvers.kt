@@ -13,6 +13,7 @@ import com.wingedsheep.sdk.scripting.ChooseCreatureTypeModifyStatsEffect
 val DefensiveManeuvers = card("Defensive Maneuvers") {
     manaCost = "{3}{W}"
     typeLine = "Instant"
+    oracleText = "Creatures of the creature type of your choice get +0/+4 until end of turn."
 
     spell {
         effect = ChooseCreatureTypeModifyStatsEffect(

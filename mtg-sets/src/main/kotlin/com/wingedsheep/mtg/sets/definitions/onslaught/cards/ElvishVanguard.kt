@@ -19,6 +19,7 @@ val ElvishVanguard = card("Elvish Vanguard") {
     typeLine = "Creature — Elf Warrior"
     power = 1
     toughness = 1
+    oracleText = "Whenever another Elf enters the battlefield, put a +1/+1 counter on Elvish Vanguard."
 
     triggeredAbility {
         trigger = OnOtherCreatureWithSubtypeEnters(Subtype("Elf"))

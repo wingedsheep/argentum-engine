@@ -22,6 +22,7 @@ val AvenFateshaper = card("Aven Fateshaper") {
     typeLine = "Creature — Bird Wizard"
     power = 4
     toughness = 5
+    oracleText = "Flying\nWhen Aven Fateshaper enters the battlefield, look at the top four cards of your library, then put them back in any order.\n{4}{U}: Look at the top four cards of your library, then put them back in any order."
 
     keywords(Keyword.FLYING)
 

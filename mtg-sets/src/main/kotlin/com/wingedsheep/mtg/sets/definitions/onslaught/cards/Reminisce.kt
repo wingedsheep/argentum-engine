@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.scripting.EffectTarget
 val Reminisce = card("Reminisce") {
     manaCost = "{2}{U}"
     typeLine = "Sorcery"
+    oracleText = "Target player shuffles their graveyard into their library."
 
     spell {
         target = Targets.Player

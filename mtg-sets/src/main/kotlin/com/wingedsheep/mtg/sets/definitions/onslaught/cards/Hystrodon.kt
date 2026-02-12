@@ -21,6 +21,7 @@ val Hystrodon = card("Hystrodon") {
     typeLine = "Creature — Beast"
     power = 3
     toughness = 4
+    oracleText = "Trample\nWhenever Hystrodon deals combat damage to a player, you may draw a card.\nMorph {1}{G}{G}"
 
     keywords(Keyword.TRAMPLE)
 

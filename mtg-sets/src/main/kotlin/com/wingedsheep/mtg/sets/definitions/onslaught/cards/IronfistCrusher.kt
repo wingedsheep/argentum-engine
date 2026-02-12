@@ -18,6 +18,7 @@ val IronfistCrusher = card("Ironfist Crusher") {
     typeLine = "Creature — Human Soldier"
     power = 2
     toughness = 4
+    oracleText = "Ironfist Crusher can block any number of creatures.\nMorph {3}{W}"
 
     staticAbility {
         ability = CanBlockAnyNumber()

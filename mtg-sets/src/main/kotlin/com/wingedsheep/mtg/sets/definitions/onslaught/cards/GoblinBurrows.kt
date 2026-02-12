@@ -20,6 +20,7 @@ import com.wingedsheep.sdk.targeting.TargetPermanent
  */
 val GoblinBurrows = card("Goblin Burrows") {
     typeLine = "Land"
+    oracleText = "{T}: Add {C}.\n{1}{R}, {T}: Target Goblin creature gets +2/+0 until end of turn."
 
     activatedAbility {
         cost = AbilityCost.Tap

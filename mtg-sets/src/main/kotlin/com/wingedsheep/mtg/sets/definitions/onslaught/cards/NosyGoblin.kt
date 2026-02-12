@@ -22,6 +22,7 @@ val NosyGoblin = card("Nosy Goblin") {
     typeLine = "Creature — Goblin"
     power = 2
     toughness = 1
+    oracleText = "{T}, Sacrifice Nosy Goblin: Destroy target face-down creature."
 
     activatedAbility {
         cost = Costs.Composite(Costs.Tap, Costs.SacrificeSelf)

@@ -16,6 +16,7 @@ import com.wingedsheep.sdk.scripting.KeywordAbility
 val Starstorm = card("Starstorm") {
     manaCost = "{X}{R}{R}"
     typeLine = "Instant"
+    oracleText = "Starstorm deals X damage to each creature.\nCycling {3}"
 
     spell {
         effect = DealDamageToGroupEffect(DynamicAmount.XValue)

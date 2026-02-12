@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.scripting.KeywordAbility
 val AkromasBlessing = card("Akroma's Blessing") {
     manaCost = "{2}{W}"
     typeLine = "Instant"
+    oracleText = "Choose a color. Creatures you control gain protection from the chosen color until end of turn.\nCycling {W}"
 
     spell {
         effect = Effects.ChooseColorAndGrantProtection()

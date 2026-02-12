@@ -21,6 +21,7 @@ val CatapultSquad = card("Catapult Squad") {
     typeLine = "Creature — Human Soldier"
     power = 2
     toughness = 1
+    oracleText = "Tap two untapped Soldiers you control: Catapult Squad deals 2 damage to target attacking or blocking creature."
 
     activatedAbility {
         cost = AbilityCost.TapPermanents(

@@ -19,6 +19,7 @@ val DisruptivePitmage = card("Disruptive Pitmage") {
     typeLine = "Creature — Human Wizard"
     power = 1
     toughness = 1
+    oracleText = "{T}: Counter target spell unless its controller pays {1}.\nMorph {U}"
 
     activatedAbility {
         cost = AbilityCost.Tap

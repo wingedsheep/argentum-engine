@@ -16,6 +16,7 @@ val Clone = card("Clone") {
     typeLine = "Creature — Shapeshifter"
     power = 0
     toughness = 0
+    oracleText = "You may have Clone enter the battlefield as a copy of any creature on the battlefield."
 
     replacementEffect(EntersAsCopy(optional = true))
 

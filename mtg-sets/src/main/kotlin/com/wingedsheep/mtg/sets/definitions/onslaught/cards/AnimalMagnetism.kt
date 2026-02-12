@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.scripting.RevealAndOpponentChoosesEffect
 val AnimalMagnetism = card("Animal Magnetism") {
     manaCost = "{4}{G}"
     typeLine = "Sorcery"
+    oracleText = "Reveal the top five cards of your library. An opponent chooses a creature card from among them. Put that card onto the battlefield and the rest into your graveyard."
 
     spell {
         effect = RevealAndOpponentChoosesEffect(

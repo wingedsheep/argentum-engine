@@ -22,6 +22,7 @@ val SnappingThragg = card("Snapping Thragg") {
     typeLine = "Creature — Beast"
     power = 3
     toughness = 3
+    oracleText = "Whenever Snapping Thragg deals combat damage to a player, you may have it deal 3 damage to target creature that player controls.\nMorph {4}{R}{R}"
 
     triggeredAbility {
         trigger = Triggers.DealsCombatDamageToPlayer

@@ -24,6 +24,7 @@ val DawningPurist = card("Dawning Purist") {
     typeLine = "Creature — Human Cleric"
     power = 2
     toughness = 2
+    oracleText = "Whenever Dawning Purist deals combat damage to a player, you may destroy target enchantment that player controls.\nMorph {1}{W}"
 
     triggeredAbility {
         trigger = Triggers.DealsCombatDamageToPlayer

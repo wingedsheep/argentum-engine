@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.scripting.CreateTokenEffect
 val CentaurGlade = card("Centaur Glade") {
     manaCost = "{3}{G}{G}"
     typeLine = "Enchantment"
+    oracleText = "{2}{G}{G}: Create a 3/3 green Centaur creature token."
 
     activatedAbility {
         cost = Costs.Mana("{2}{G}{G}")

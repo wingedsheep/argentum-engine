@@ -21,6 +21,7 @@ val GravelSlinger = card("Gravel Slinger") {
     typeLine = "Creature — Human Soldier"
     power = 1
     toughness = 3
+    oracleText = "{T}: Gravel Slinger deals 1 damage to target attacking or blocking creature.\nMorph {1}{W}"
 
     activatedAbility {
         cost = AbilityCost.Tap

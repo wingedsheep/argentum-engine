@@ -21,6 +21,7 @@ val FleetingAven = card("Fleeting Aven") {
     typeLine = "Creature — Bird Wizard"
     power = 2
     toughness = 2
+    oracleText = "Flying\nWhenever a player cycles a card, return Fleeting Aven to its owner's hand."
 
     keywords(Keyword.FLYING)
 

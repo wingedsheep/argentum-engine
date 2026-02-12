@@ -17,6 +17,7 @@ val ElvenRiders = card("Elven Riders") {
     typeLine = "Creature — Elf"
     power = 3
     toughness = 3
+    oracleText = "Elven Riders can't be blocked except by creatures with flying."
 
     staticAbility {
         ability = CantBeBlockedExceptByKeyword(Keyword.FLYING)

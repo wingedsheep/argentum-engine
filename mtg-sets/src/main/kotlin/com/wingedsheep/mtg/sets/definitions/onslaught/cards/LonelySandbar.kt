@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.scripting.TimingRule
  */
 val LonelySandbar = card("Lonely Sandbar") {
     typeLine = "Land"
+    oracleText = "Lonely Sandbar enters the battlefield tapped.\n{T}: Add {U}.\nCycling {U}"
 
     replacementEffect(EntersTapped())
 

@@ -27,6 +27,7 @@ val EmbermageGoblin = card("Embermage Goblin") {
     typeLine = "Creature — Goblin Wizard"
     power = 1
     toughness = 1
+    oracleText = "When Embermage Goblin enters the battlefield, you may search your library for a card named Embermage Goblin, reveal it, and put it into your hand. If you do, shuffle your library.\n{T}: Embermage Goblin deals 1 damage to any target."
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield

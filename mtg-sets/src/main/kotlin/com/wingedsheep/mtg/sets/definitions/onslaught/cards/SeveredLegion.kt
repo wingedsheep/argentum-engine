@@ -16,6 +16,7 @@ val SeveredLegion = card("Severed Legion") {
     typeLine = "Creature — Zombie"
     power = 2
     toughness = 2
+    oracleText = "Fear"
 
     keywords(Keyword.FEAR)
 

@@ -16,6 +16,7 @@ val RorixBladewing = card("Rorix Bladewing") {
     typeLine = "Legendary Creature — Dragon"
     power = 6
     toughness = 5
+    oracleText = "Flying, haste"
 
     keywords(Keyword.FLYING, Keyword.HASTE)
 

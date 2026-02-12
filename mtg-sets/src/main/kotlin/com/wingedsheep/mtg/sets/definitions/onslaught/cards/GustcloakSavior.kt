@@ -21,6 +21,7 @@ val GustcloakSavior = card("Gustcloak Savior") {
     typeLine = "Creature — Bird Soldier"
     power = 3
     toughness = 4
+    oracleText = "Flying\nWhenever a creature you control becomes blocked, you may untap that creature and remove it from combat."
     keywords(Keyword.FLYING)
 
     triggeredAbility {

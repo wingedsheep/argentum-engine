@@ -21,6 +21,7 @@ val CrowdFavorites = card("Crowd Favorites") {
     typeLine = "Creature — Human Soldier"
     power = 4
     toughness = 4
+    oracleText = "{3}{W}: Tap target creature.\n{3}{W}: Crowd Favorites gets +0/+5 until end of turn."
 
     activatedAbility {
         cost = Costs.Mana("{3}{W}")

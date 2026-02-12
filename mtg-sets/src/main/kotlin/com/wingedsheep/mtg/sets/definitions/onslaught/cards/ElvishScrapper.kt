@@ -20,6 +20,7 @@ val ElvishScrapper = card("Elvish Scrapper") {
     typeLine = "Creature — Elf"
     power = 1
     toughness = 1
+    oracleText = "{G}, {T}, Sacrifice Elvish Scrapper: Destroy target artifact."
 
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{G}"), Costs.Tap, Costs.SacrificeSelf)

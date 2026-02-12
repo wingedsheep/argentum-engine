@@ -21,6 +21,7 @@ val ShepherdOfRot = card("Shepherd of Rot") {
     typeLine = "Creature — Zombie Cleric"
     power = 1
     toughness = 1
+    oracleText = "{T}: Each player loses 1 life for each Zombie on the battlefield."
 
     activatedAbility {
         cost = AbilityCost.Tap

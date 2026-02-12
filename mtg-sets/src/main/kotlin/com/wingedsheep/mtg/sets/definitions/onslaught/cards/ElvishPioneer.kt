@@ -20,6 +20,7 @@ val ElvishPioneer = card("Elvish Pioneer") {
     typeLine = "Creature — Elf Druid"
     power = 1
     toughness = 1
+    oracleText = "When Elvish Pioneer enters the battlefield, you may put a basic land card from your hand onto the battlefield tapped."
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield

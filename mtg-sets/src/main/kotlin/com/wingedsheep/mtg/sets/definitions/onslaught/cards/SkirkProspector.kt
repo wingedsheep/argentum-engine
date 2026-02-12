@@ -20,6 +20,7 @@ val SkirkProspector = card("Skirk Prospector") {
     typeLine = "Creature — Goblin"
     power = 1
     toughness = 1
+    oracleText = "Sacrifice a Goblin: Add {R}."
 
     activatedAbility {
         cost = AbilityCost.Sacrifice(GameObjectFilter.Creature.withSubtype("Goblin"))

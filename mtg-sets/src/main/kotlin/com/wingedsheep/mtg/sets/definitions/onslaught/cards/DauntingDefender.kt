@@ -20,6 +20,7 @@ val DauntingDefender = card("Daunting Defender") {
     typeLine = "Creature — Human Cleric"
     power = 3
     toughness = 3
+    oracleText = "If a source would deal damage to a Cleric creature you control, prevent 1 of that damage."
 
     replacementEffect(
         PreventDamage(

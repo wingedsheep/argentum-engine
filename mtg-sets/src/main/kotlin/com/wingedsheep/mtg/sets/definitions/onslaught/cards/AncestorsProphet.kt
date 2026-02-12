@@ -18,6 +18,7 @@ val AncestorsProphet = card("Ancestor's Prophet") {
     typeLine = "Creature — Human Cleric"
     power = 1
     toughness = 5
+    oracleText = "Tap five untapped Clerics you control: You gain 10 life."
 
     activatedAbility {
         cost = Costs.TapPermanents(5, GameObjectFilter.Creature.withSubtype("Cleric"))

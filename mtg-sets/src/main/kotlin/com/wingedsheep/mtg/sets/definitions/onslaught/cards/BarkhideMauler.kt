@@ -17,6 +17,7 @@ val BarkhideMauler = card("Barkhide Mauler") {
     typeLine = "Creature — Beast"
     power = 4
     toughness = 4
+    oracleText = "Cycling {2}"
 
     keywordAbility(KeywordAbility.Cycling(ManaCost.parse("{2}")))
 

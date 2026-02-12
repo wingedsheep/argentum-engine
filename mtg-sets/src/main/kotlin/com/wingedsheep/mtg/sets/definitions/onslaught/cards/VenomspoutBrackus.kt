@@ -24,6 +24,7 @@ val VenomspoutBrackus = card("Venomspout Brackus") {
     typeLine = "Creature — Beast"
     power = 5
     toughness = 5
+    oracleText = "{1}{G}, {T}: Venomspout Brackus deals 5 damage to target attacking or blocking creature with flying.\nMorph {3}{G}{G}"
 
     activatedAbility {
         cost = Costs.Composite(

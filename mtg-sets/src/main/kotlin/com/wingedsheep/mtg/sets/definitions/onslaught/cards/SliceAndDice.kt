@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.scripting.OnCycle
 val SliceAndDice = card("Slice and Dice") {
     manaCost = "{4}{R}{R}"
     typeLine = "Sorcery"
+    oracleText = "Slice and Dice deals 4 damage to each creature.\nCycling {2}{R}\nWhen you cycle Slice and Dice, you may have it deal 1 damage to each creature."
 
     spell {
         effect = DealDamageToGroupEffect(4)

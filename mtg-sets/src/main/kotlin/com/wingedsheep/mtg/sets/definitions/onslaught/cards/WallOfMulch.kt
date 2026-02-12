@@ -20,6 +20,7 @@ val WallOfMulch = card("Wall of Mulch") {
     typeLine = "Creature — Wall"
     power = 0
     toughness = 4
+    oracleText = "Defender\n{G}, Sacrifice a Wall: Draw a card."
 
     keywords(Keyword.DEFENDER)
 

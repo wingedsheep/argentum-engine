@@ -20,6 +20,7 @@ val CraftyPathmage = card("Crafty Pathmage") {
     typeLine = "Creature — Human Wizard"
     power = 1
     toughness = 1
+    oracleText = "{T}: Target creature with power 2 or less can't be blocked this turn."
 
     activatedAbility {
         cost = Costs.Tap

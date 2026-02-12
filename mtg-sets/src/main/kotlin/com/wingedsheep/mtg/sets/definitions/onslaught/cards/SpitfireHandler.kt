@@ -21,6 +21,7 @@ val SpitfireHandler = card("Spitfire Handler") {
     typeLine = "Creature — Goblin"
     power = 1
     toughness = 1
+    oracleText = "Spitfire Handler can't block creatures with power greater than Spitfire Handler's power.\n{R}: Spitfire Handler gets +1/+0 until end of turn."
 
     staticAbility {
         ability = CantBlockCreaturesWithGreaterPower()

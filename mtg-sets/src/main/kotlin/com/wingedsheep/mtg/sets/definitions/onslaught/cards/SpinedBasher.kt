@@ -15,6 +15,7 @@ val SpinedBasher = card("Spined Basher") {
     typeLine = "Creature — Zombie Beast"
     power = 3
     toughness = 1
+    oracleText = "Morph {2}{B}"
 
     morph = "{2}{B}"
 

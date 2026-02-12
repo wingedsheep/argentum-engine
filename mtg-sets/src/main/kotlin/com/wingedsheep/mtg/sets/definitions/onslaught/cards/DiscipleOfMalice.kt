@@ -18,6 +18,7 @@ val DiscipleOfMalice = card("Disciple of Malice") {
     typeLine = "Creature — Human Cleric"
     power = 1
     toughness = 2
+    oracleText = "Protection from white\nCycling {2}"
 
     keywordAbility(KeywordAbility.ProtectionFromColor(Color.WHITE))
     keywordAbility(KeywordAbility.cycling("{2}"))

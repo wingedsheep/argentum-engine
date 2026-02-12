@@ -20,6 +20,7 @@ val StagBeetle = card("Stag Beetle") {
     typeLine = "Creature — Insect"
     power = 0
     toughness = 0
+    oracleText = "Stag Beetle enters the battlefield with X +1/+1 counters on it, where X is the number of other creatures on the battlefield."
 
     replacementEffect(
         EntersWithDynamicCounters(

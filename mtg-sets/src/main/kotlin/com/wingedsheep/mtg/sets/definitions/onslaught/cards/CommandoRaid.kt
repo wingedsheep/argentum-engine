@@ -22,6 +22,7 @@ import com.wingedsheep.sdk.scripting.TriggeredAbility
 val CommandoRaid = card("Commando Raid") {
     manaCost = "{2}{R}"
     typeLine = "Instant"
+    oracleText = "Until end of turn, target creature you control gains \"Whenever this creature deals combat damage to a player, you may have it deal damage equal to its power to target creature that player controls.\""
 
     spell {
         target = Targets.CreatureYouControl

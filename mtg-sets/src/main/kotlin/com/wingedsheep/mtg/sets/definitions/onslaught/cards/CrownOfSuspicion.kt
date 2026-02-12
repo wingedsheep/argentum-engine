@@ -19,6 +19,7 @@ import com.wingedsheep.sdk.scripting.ModifyStats
 val CrownOfSuspicion = card("Crown of Suspicion") {
     manaCost = "{1}{B}"
     typeLine = "Enchantment — Aura"
+    oracleText = "Enchant creature\nEnchanted creature gets +2/-1.\nSacrifice Crown of Suspicion: Enchanted creature and other creatures that share a creature type with it get +2/-1 until end of turn."
 
     auraTarget = Targets.Creature
 

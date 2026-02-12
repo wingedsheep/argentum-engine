@@ -17,6 +17,7 @@ val RiptideBiologist = card("Riptide Biologist") {
     typeLine = "Creature — Human Wizard"
     power = 1
     toughness = 2
+    oracleText = "Protection from Beasts\nMorph {2}{U}"
 
     keywordAbility(KeywordAbility.ProtectionFromCreatureSubtype("Beast"))
     morph = "{2}{U}"

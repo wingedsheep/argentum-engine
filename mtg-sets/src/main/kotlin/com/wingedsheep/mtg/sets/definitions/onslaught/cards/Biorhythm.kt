@@ -14,6 +14,7 @@ import com.wingedsheep.sdk.scripting.SetLifeTotalForEachPlayerEffect
 val Biorhythm = card("Biorhythm") {
     manaCost = "{6}{G}{G}"
     typeLine = "Sorcery"
+    oracleText = "Each player's life total becomes the number of creatures they control."
 
     spell {
         effect = SetLifeTotalForEachPlayerEffect(DynamicAmounts.creaturesYouControl())

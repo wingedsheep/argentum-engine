@@ -14,6 +14,7 @@ import com.wingedsheep.sdk.scripting.ModifyStatsForGroupEffect
 val Infest = card("Infest") {
     manaCost = "{1}{B}{B}"
     typeLine = "Sorcery"
+    oracleText = "All creatures get -2/-2 until end of turn."
 
     spell {
         effect = ModifyStatsForGroupEffect(
