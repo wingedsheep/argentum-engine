@@ -241,6 +241,24 @@ export function useInteraction() {
         return
       }
 
+      // Check if spell or ability requires discarding a card as a cost
+      if ((action.type === 'CastSpell' || action.type === 'ActivateAbility') &&
+          actionInfo.additionalCostInfo?.costType === 'DiscardCard') {
+        const costInfo = actionInfo.additionalCostInfo
+        startTargeting({
+          action,
+          validTargets: [...(costInfo.validDiscardTargets ?? [])],
+          selectedTargets: [],
+          minTargets: costInfo.discardCount ?? 1,
+          maxTargets: costInfo.discardCount ?? 1,
+          isSacrificeSelection: true,
+          isDiscardSelection: true,
+          pendingActionInfo: actionInfo,
+        })
+        selectCard(null)
+        return
+      }
+
       // Check if ability requires mana color selection (e.g., "add one mana of any color")
       if (action.type === 'ActivateAbility' && actionInfo.requiresManaColorChoice) {
         startManaColorSelection({ action })
@@ -322,6 +340,11 @@ export function useInteraction() {
 
       // TapPermanents costs need selection (e.g., Birchlore Rangers)
       if (action.type === 'ActivateAbility' && actionInfo.additionalCostInfo?.costType === 'TapPermanents') {
+        return false
+      }
+
+      // DiscardCard costs need selection (e.g., Undead Gladiator)
+      if ((action.type === 'CastSpell' || action.type === 'ActivateAbility') && actionInfo.additionalCostInfo?.costType === 'DiscardCard') {
         return false
       }
 

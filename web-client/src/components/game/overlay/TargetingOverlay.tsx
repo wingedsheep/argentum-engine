@@ -404,6 +404,7 @@ export function TargetingOverlay() {
   const hasMaxTargets = selectedCount >= maxTargets
   const isSacrifice = targetingState.isSacrificeSelection
   const isTapPermanent = targetingState.isTapPermanentSelection
+  const isDiscard = targetingState.isDiscardSelection
 
   // Check if targets are graveyard cards — use explicit targetZone when available,
   // fall back to inspecting gameState.cards for backward compatibility
@@ -461,19 +462,21 @@ export function TargetingOverlay() {
     : null
 
   // Build the prompt text based on selection type
-  const promptText = isTapPermanent
-    ? `Select permanents to tap (${targetDisplay})`
-    : isSacrifice
-      ? `Select creature to sacrifice (${targetDisplay})`
-      : targetingState.targetDescription
-        ? `Select ${targetingState.targetDescription} (${targetDisplay})`
-        : `Select targets (${targetDisplay})`
+  const promptText = isDiscard
+    ? `Select card to discard (${targetDisplay})`
+    : isTapPermanent
+      ? `Select permanents to tap (${targetDisplay})`
+      : isSacrifice
+        ? `Select creature to sacrifice (${targetDisplay})`
+        : targetingState.targetDescription
+          ? `Select ${targetingState.targetDescription} (${targetDisplay})`
+          : `Select targets (${targetDisplay})`
 
   const hintText = hasMaxTargets
-    ? isTapPermanent ? 'Permanents selected' : isSacrifice ? 'Creature selected' : 'Maximum targets selected'
+    ? isDiscard ? 'Card selected' : isTapPermanent ? 'Permanents selected' : isSacrifice ? 'Creature selected' : 'Maximum targets selected'
     : hasEnoughTargets
       ? 'Click Confirm or select more'
-      : isTapPermanent ? 'Click a highlighted permanent' : isSacrifice ? 'Click a creature you control' : 'Click a highlighted target'
+      : isDiscard ? 'Click a card in your hand' : isTapPermanent ? 'Click a highlighted permanent' : isSacrifice ? 'Click a creature you control' : 'Click a highlighted target'
 
   return (
     <div style={{

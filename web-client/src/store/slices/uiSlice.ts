@@ -192,11 +192,13 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
       const actionInfo = targetingState.pendingActionInfo
       const action = targetingState.action
       if (action.type === 'CastSpell') {
+        const costType = actionInfo.additionalCostInfo?.costType
+        const additionalCostPayment = costType === 'DiscardCard'
+          ? { discardedCards: [...targetingState.selectedTargets] }
+          : { sacrificedPermanents: [...targetingState.selectedTargets] }
         const actionWithCost = {
           ...action,
-          additionalCostPayment: {
-            sacrificedPermanents: [...targetingState.selectedTargets],
-          },
+          additionalCostPayment,
         }
 
         if (actionInfo.requiresTargets && actionInfo.validTargets && actionInfo.validTargets.length > 0) {
@@ -216,12 +218,15 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
           return
         }
       } else if (action.type === 'ActivateAbility') {
-        const isTapCost = actionInfo.additionalCostInfo?.costType === 'TapPermanents'
+        const costType = actionInfo.additionalCostInfo?.costType
+        const costPayment = costType === 'TapPermanents'
+          ? { tappedPermanents: [...targetingState.selectedTargets] }
+          : costType === 'DiscardCard'
+            ? { discardedCards: [...targetingState.selectedTargets] }
+            : { sacrificedPermanents: [...targetingState.selectedTargets] }
         const actionWithCost = {
           ...action,
-          costPayment: isTapCost
-            ? { tappedPermanents: [...targetingState.selectedTargets] }
-            : { sacrificedPermanents: [...targetingState.selectedTargets] },
+          costPayment,
         }
 
         if (actionInfo.requiresTargets && actionInfo.validTargets && actionInfo.validTargets.length > 0) {

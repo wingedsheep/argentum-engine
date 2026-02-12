@@ -1766,7 +1766,30 @@ class GameSession(
 
         // Check if they should auto-pass
         val overrides = getStopOverrides(priorityPlayer)
-        return if (autoPassManager.shouldAutoPass(state, priorityPlayer, legalActions, overrides.myTurnStops, overrides.opponentTurnStops)) {
+
+        // Check for legal activated abilities from non-battlefield zones (e.g., graveyard).
+        // These are often step-locked (like Undead Gladiator's upkeep-only ability) and the
+        // player should always get a chance to use them rather than auto-passing through.
+        val hasNonBattlefieldAbility = legalActions.any { actionInfo ->
+            actionInfo.actionType == "ActivateAbility" &&
+                !actionInfo.isManaAbility &&
+                (actionInfo.action as? ActivateAbility)?.let { action ->
+                    !state.getBattlefield().contains(action.sourceId)
+                } ?: false
+        }
+
+        val effectiveOverrides = if (hasNonBattlefieldAbility) {
+            val isMyTurn = state.activePlayerId == priorityPlayer
+            if (isMyTurn) {
+                overrides.copy(myTurnStops = overrides.myTurnStops + state.step)
+            } else {
+                overrides.copy(opponentTurnStops = overrides.opponentTurnStops + state.step)
+            }
+        } else {
+            overrides
+        }
+
+        return if (autoPassManager.shouldAutoPass(state, priorityPlayer, legalActions, effectiveOverrides.myTurnStops, effectiveOverrides.opponentTurnStops)) {
             priorityPlayer
         } else {
             null

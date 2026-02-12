@@ -453,6 +453,8 @@ export interface AdditionalCostInfo {
   readonly sacrificeCount?: number
   readonly validTapTargets?: readonly EntityId[]
   readonly tapCount?: number
+  readonly validDiscardTargets?: readonly EntityId[]
+  readonly discardCount?: number
 }
 
 /**
