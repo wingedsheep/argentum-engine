@@ -80,9 +80,9 @@ export function DecisionUI() {
 
   // Handle YesNoDecision (e.g., "You may shuffle your library")
   if (pendingDecision.type === 'YesNoDecision') {
-    // Combat trigger with a triggering entity: use side banner to keep board visible
+    // Combat trigger with a triggering entity: rendered inline on the card (GameCard + GameBoard prompt bar)
     if (pendingDecision.context.triggeringEntityId && gameState?.combat) {
-      return <CombatTriggerDecisionUI decision={pendingDecision} />
+      return null
     }
     return (
       <div className={styles.overlay}>
@@ -1390,110 +1390,3 @@ function ManaSourceSelectionUI({
   )
 }
 
-/**
- * Combat trigger decision UI - side banner that keeps the board and combat arrows visible.
- * Shows which creature was blocked and by what, with card thumbnails.
- */
-function CombatTriggerDecisionUI({
-  decision,
-}: {
-  decision: YesNoDecision
-}) {
-  const submitYesNoDecision = useGameStore((s) => s.submitYesNoDecision)
-  const gameState = useGameStore((s) => s.gameState)
-
-  const triggeringEntityId = decision.context.triggeringEntityId!
-  const blockedCreature = gameState?.cards[triggeringEntityId]
-
-  // Find blockers for this creature from combat state
-  const blockerCreatures = useMemo(() => {
-    if (!gameState?.combat) return []
-    return gameState.combat.blockers
-      .filter((b) => b.blockingAttacker === triggeringEntityId)
-      .map((b) => {
-        const card = gameState.cards[b.creatureId]
-        return {
-          id: b.creatureId,
-          name: card?.name ?? b.creatureName,
-          imageUri: card?.imageUri,
-        }
-      })
-  }, [gameState?.combat, gameState?.cards, triggeringEntityId])
-
-  const handleYes = () => submitYesNoDecision(true)
-  const handleNo = () => submitYesNoDecision(false)
-
-  const blockedImageUrl = blockedCreature
-    ? getCardImageUrl(blockedCreature.name, blockedCreature.imageUri)
-    : null
-
-  return (
-    <div className={styles.combatTriggerBanner}>
-      {/* Source name */}
-      {decision.context.sourceName && (
-        <div className={styles.combatTriggerSource}>
-          {decision.context.sourceName}
-        </div>
-      )}
-
-      {/* Blocked creature */}
-      {blockedCreature && (
-        <div className={styles.combatTriggerCreatureGroup}>
-          <div className={styles.combatTriggerThumbnail}>
-            {blockedImageUrl && (
-              <img
-                src={blockedImageUrl}
-                alt={blockedCreature.name}
-                className={styles.combatTriggerImage}
-                onError={(e) => { e.currentTarget.style.display = 'none' }}
-              />
-            )}
-          </div>
-          <div className={styles.combatTriggerCreatureName}>
-            {blockedCreature.name}
-          </div>
-        </div>
-      )}
-
-      {/* "blocked by" label */}
-      {blockerCreatures.length > 0 && (
-        <>
-          <div className={styles.combatTriggerLabel}>blocked by</div>
-          {blockerCreatures.map((blocker) => {
-            const blockerImageUrl = getCardImageUrl(blocker.name, blocker.imageUri)
-            return (
-              <div key={blocker.id} className={styles.combatTriggerCreatureGroup}>
-                <div className={styles.combatTriggerThumbnail}>
-                  <img
-                    src={blockerImageUrl}
-                    alt={blocker.name}
-                    className={styles.combatTriggerImage}
-                    onError={(e) => { e.currentTarget.style.display = 'none' }}
-                  />
-                </div>
-                <div className={styles.combatTriggerCreatureName}>
-                  {blocker.name}
-                </div>
-              </div>
-            )
-          })}
-        </>
-      )}
-
-      {/* Prompt text */}
-      <div className={styles.combatTriggerPrompt}>
-        <AbilityText text={decision.prompt} size={13} />
-      </div>
-
-      {/* Yes / No buttons */}
-      <div className={styles.combatTriggerButtons}>
-        <button onClick={handleYes} className={styles.combatTriggerYesButton}>
-          <AbilityText text={decision.yesText} size={14} />
-        </button>
-        <button onClick={handleNo} className={styles.combatTriggerNoButton}>
-          <AbilityText text={decision.noText} size={14} />
-        </button>
-      </div>
-    </div>
-  )
-}

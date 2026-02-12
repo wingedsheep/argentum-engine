@@ -78,6 +78,8 @@ export function GameCard({
   const distributeState = useGameStore((state) => state.distributeState)
   const incrementDistribute = useGameStore((state) => state.incrementDistribute)
   const decrementDistribute = useGameStore((state) => state.decrementDistribute)
+  const submitYesNoDecision = useGameStore((state) => state.submitYesNoDecision)
+  const gameState = useGameStore((state) => state.gameState)
   const responsive = useResponsiveContext()
   const { handleCardClick, handleDoubleClick } = useInteraction()
   const dragStartPos = useRef<{ x: number; y: number } | null>(null)
@@ -122,6 +124,11 @@ export function GameCard({
     ? Object.values(distributeState.distribution).reduce((sum, v) => sum + v, 0)
     : 0
   const distributeRemaining = distributeState ? distributeState.totalAmount - distributeTotalAllocated : 0
+
+  // Combat trigger YesNo check (inline buttons on triggering entity card)
+  const isCombatTriggerYesNo = pendingDecision?.type === 'YesNoDecision'
+    && pendingDecision.context.triggeringEntityId === card.id
+    && !!gameState?.combat
 
   // Combat mode checks
   const isInAttackerMode = combatState?.mode === 'declareAttackers'
@@ -447,6 +454,10 @@ export function GameCard({
     // Green highlight for selected decision options
     borderStyle = `3px solid ${SELECTED_COLOR}`
     boxShadow = `0 0 20px ${SELECTED_GLOW}, 0 0 40px ${SELECTED_SHADOW}`
+  } else if (isCombatTriggerYesNo) {
+    // Orange/gold glow for the combat trigger creature (matches distribute target style)
+    borderStyle = '3px solid #ff6b35'
+    boxShadow = '0 0 16px rgba(255, 107, 53, 0.7), 0 0 32px rgba(255, 107, 53, 0.4)'
   } else if (isDistributeTarget && distributeAllocated > 0) {
     // Orange for distribute targets with damage allocated
     borderStyle = '3px solid #ff6b35'
@@ -722,6 +733,62 @@ export function GameCard({
           zIndex: 15,
         }}>
           {distributeAllocated}
+        </div>
+      )}
+
+      {/* Inline Yes/No buttons for combat trigger (bottom) */}
+      {isCombatTriggerYesNo && pendingDecision?.type === 'YesNoDecision' && (
+        <div
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 4,
+            padding: responsive.isMobile ? '3px 2px' : '4px 3px',
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            borderTop: '1px solid rgba(255, 107, 53, 0.5)',
+            zIndex: 15,
+          }}
+        >
+          <button
+            onClick={(e) => { e.stopPropagation(); submitYesNoDecision(true) }}
+            style={{
+              flex: 1,
+              height: responsive.isMobile ? 22 : 26,
+              borderRadius: 4,
+              border: 'none',
+              backgroundColor: '#16a34a',
+              color: 'white',
+              fontSize: responsive.isMobile ? 10 : 12,
+              fontWeight: 700,
+              cursor: 'pointer',
+              padding: 0,
+            }}
+          >
+            Yes
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); submitYesNoDecision(false) }}
+            style={{
+              flex: 1,
+              height: responsive.isMobile ? 22 : 26,
+              borderRadius: 4,
+              border: 'none',
+              backgroundColor: '#555',
+              color: 'white',
+              fontSize: responsive.isMobile ? 10 : 12,
+              fontWeight: 700,
+              cursor: 'pointer',
+              padding: 0,
+            }}
+          >
+            No
+          </button>
         </div>
       )}
 

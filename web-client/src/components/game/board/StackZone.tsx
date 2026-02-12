@@ -9,6 +9,7 @@ import { styles } from './styles'
 /**
  * Stack display - shows spells/abilities waiting to resolve.
  * Cards stack on top of each other like a physical pile.
+ * Also shows a combat trigger indicator when a YesNo decision is pending.
  */
 export function StackDisplay() {
   const stackCards = useStackCards()
@@ -17,8 +18,16 @@ export function StackDisplay() {
   const targetingState = useGameStore((state) => state.targetingState)
   const addTarget = useGameStore((state) => state.addTarget)
   const removeTarget = useGameStore((state) => state.removeTarget)
+  const pendingDecision = useGameStore((state) => state.pendingDecision)
+  const gameState = useGameStore((state) => state.gameState)
 
-  if (stackCards.length === 0) return null
+  // Combat trigger YesNo: show source card in stack area
+  const isCombatTriggerYesNo = pendingDecision?.type === 'YesNoDecision'
+    && !!pendingDecision.context.triggeringEntityId
+    && !!gameState?.combat
+
+  const showStack = stackCards.length > 0 || isCombatTriggerYesNo
+  if (!showStack) return null
 
   const handleStackItemClick = (cardId: EntityId) => {
     if (!targetingState) return
@@ -38,80 +47,154 @@ export function StackDisplay() {
   // Top of stack (most recently cast, resolves first) is last in the array
   const topCard = stackCards[stackCards.length - 1]
 
+  // Get source card info for combat trigger
+  const sourceCard = isCombatTriggerYesNo && pendingDecision?.type === 'YesNoDecision'
+    ? (() => {
+        const sourceId = pendingDecision.context.sourceId
+        return sourceId ? gameState?.cards[sourceId] : null
+      })()
+    : null
   return (
     <div style={styles.stackContainer}>
-      <div style={{
-        ...styles.stackHeader,
-        fontSize: responsive.fontSize.small,
-      }}>
-        Stack ({stackCards.length})
-      </div>
-      <div style={styles.stackItems}>
-        {stackCards.map((card, index) => {
-          const isValidTarget = targetingState?.validTargets.includes(card.id) ?? false
-          const isSelectedTarget = targetingState?.selectedTargets.includes(card.id) ?? false
+      {/* Regular stack items */}
+      {stackCards.length > 0 && (
+        <>
+          <div style={{
+            ...styles.stackHeader,
+            fontSize: responsive.fontSize.small,
+          }}>
+            Stack ({stackCards.length})
+          </div>
+          <div style={styles.stackItems}>
+            {stackCards.map((card, index) => {
+              const isValidTarget = targetingState?.validTargets.includes(card.id) ?? false
+              const isSelectedTarget = targetingState?.selectedTargets.includes(card.id) ?? false
 
-          return (
+              return (
+                <div
+                  key={card.id}
+                  data-card-id={card.id}
+                  style={{
+                    ...styles.stackItem,
+                    marginTop: index === 0 ? 0 : -84 + cardOffset, // Overlap cards, showing cardOffset pixels of each
+                    zIndex: index + 1, // Later cards (higher index = cast later) on top
+                    ...(isValidTarget && !isSelectedTarget ? {
+                      boxShadow: '0 0 12px 4px rgba(255, 200, 0, 0.8)',
+                      borderRadius: 6,
+                    } : {}),
+                    ...(isSelectedTarget ? {
+                      boxShadow: '0 0 12px 4px rgba(0, 255, 100, 0.8)',
+                      borderRadius: 6,
+                    } : {}),
+                  }}
+                  onClick={() => handleStackItemClick(card.id)}
+                  onMouseEnter={() => hoverCard(card.id)}
+                  onMouseLeave={() => hoverCard(null)}
+                >
+                  <img
+                    src={getCardImageUrl(card.name, card.imageUri, 'small')}
+                    alt={card.name}
+                    style={{
+                      ...styles.stackItemImage,
+                      cursor: isValidTarget ? 'pointer' : 'default',
+                      ...(card.sourceZone === 'GRAVEYARD' ? {
+                        opacity: 0.7,
+                        filter: 'saturate(0.6)',
+                      } : {}),
+                    }}
+                    title={`${card.name}\n${card.oracleText || ''}`}
+                    onError={(e) => handleImageError(e, card.name, 'small')}
+                  />
+                  {/* Show chosen X value for X spells */}
+                  {card.chosenX != null && (
+                    <div style={styles.stackXBadge}>
+                      X={card.chosenX}
+                    </div>
+                  )}
+                  {/* Show text modification badges (e.g., Artificial Evolution) */}
+                  {card.activeEffects && card.activeEffects.length > 0 && (
+                    <div style={styles.stackActiveEffects}>
+                      <ActiveEffectBadges effects={card.activeEffects} />
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+            {/* Show name of top card (most recently cast) */}
+            {topCard && (
+              <div style={{
+                ...styles.stackItemName,
+                fontSize: responsive.fontSize.small,
+                marginTop: 4,
+              }}>
+                {topCard.name}
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* Combat trigger indicator - shows source card and prompt when YesNo is pending */}
+      {isCombatTriggerYesNo && pendingDecision?.type === 'YesNoDecision' && (
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 6,
+          marginTop: stackCards.length > 0 ? 12 : 0,
+        }}>
+          {/* "Resolving" header */}
+          <div style={{
+            ...styles.stackHeader,
+            fontSize: responsive.fontSize.small,
+            color: '#ff8c42',
+            marginBottom: 0,
+          }}>
+            Resolving
+          </div>
+
+          {/* Source card image */}
+          {sourceCard && (
             <div
-              key={card.id}
-              data-card-id={card.id}
-              style={{
-                ...styles.stackItem,
-                marginTop: index === 0 ? 0 : -84 + cardOffset, // Overlap cards, showing cardOffset pixels of each
-                zIndex: index + 1, // Later cards (higher index = cast later) on top
-                ...(isValidTarget && !isSelectedTarget ? {
-                  boxShadow: '0 0 12px 4px rgba(255, 200, 0, 0.8)',
-                  borderRadius: 6,
-                } : {}),
-                ...(isSelectedTarget ? {
-                  boxShadow: '0 0 12px 4px rgba(0, 255, 100, 0.8)',
-                  borderRadius: 6,
-                } : {}),
-              }}
-              onClick={() => handleStackItemClick(card.id)}
-              onMouseEnter={() => hoverCard(card.id)}
+              onMouseEnter={() => sourceCard && hoverCard(pendingDecision.context.sourceId!)}
               onMouseLeave={() => hoverCard(null)}
             >
               <img
-                src={getCardImageUrl(card.name, card.imageUri, 'small')}
-                alt={card.name}
+                src={getCardImageUrl(sourceCard.name, sourceCard.imageUri, 'small')}
+                alt={sourceCard.name}
                 style={{
                   ...styles.stackItemImage,
-                  cursor: isValidTarget ? 'pointer' : 'default',
-                  ...(card.sourceZone === 'GRAVEYARD' ? {
-                    opacity: 0.7,
-                    filter: 'saturate(0.6)',
-                  } : {}),
+                  boxShadow: '0 0 12px 4px rgba(255, 107, 53, 0.6)',
+                  borderRadius: 6,
+                  cursor: 'default',
                 }}
-                title={`${card.name}\n${card.oracleText || ''}`}
-                onError={(e) => handleImageError(e, card.name, 'small')}
+                onError={(e) => handleImageError(e, sourceCard.name, 'small')}
               />
-              {/* Show chosen X value for X spells */}
-              {card.chosenX != null && (
-                <div style={styles.stackXBadge}>
-                  X={card.chosenX}
-                </div>
-              )}
-              {/* Show text modification badges (e.g., Artificial Evolution) */}
-              {card.activeEffects && card.activeEffects.length > 0 && (
-                <div style={styles.stackActiveEffects}>
-                  <ActiveEffectBadges effects={card.activeEffects} />
-                </div>
-              )}
             </div>
-          )
-        })}
-        {/* Show name of top card (most recently cast) */}
-        {topCard && (
+          )}
+
+          {/* Source name */}
           <div style={{
             ...styles.stackItemName,
             fontSize: responsive.fontSize.small,
-            marginTop: 4,
+            color: '#ff8c42',
+            fontWeight: 600,
           }}>
-            {topCard.name}
+            {pendingDecision.context.sourceName ?? 'Trigger'}
           </div>
-        )}
-      </div>
+
+          {/* Prompt text describing what the trigger does */}
+          <div style={{
+            color: '#ccc',
+            fontSize: responsive.isMobile ? 9 : 10,
+            textAlign: 'center',
+            maxWidth: 100,
+            lineHeight: 1.3,
+          }}>
+            {pendingDecision.prompt}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
