@@ -52,7 +52,8 @@ class AutoPassManagerTest : FunSpec({
         stackControllerId: EntityId? = null,
         stackItemType: StackItemType = StackItemType.ABILITY,
         blockersHaveBeenDeclared: Boolean = false,
-        defendingPlayerId: EntityId? = null
+        defendingPlayerId: EntityId? = null,
+        hasAttackers: Boolean = false
     ): GameState {
         val state = mockk<GameState>(relaxed = true)
         every { state.priorityPlayerId } returns priorityPlayerId
@@ -69,6 +70,15 @@ class AutoPassManagerTest : FunSpec({
             val defenderEntity = mockk<com.wingedsheep.engine.state.ComponentContainer>(relaxed = true)
             every { defenderEntity.get<BlockersDeclaredThisCombatComponent>() } returns BlockersDeclaredThisCombatComponent
             every { state.getEntity(defender) } returns defenderEntity
+        }
+
+        // Mock attacking creatures on the battlefield
+        if (hasAttackers) {
+            val attackerId = EntityId.generate()
+            val attackerEntity = mockk<com.wingedsheep.engine.state.ComponentContainer>(relaxed = true)
+            every { attackerEntity.get<AttackingComponent>() } returns AttackingComponent(defender)
+            every { state.getEntity(attackerId) } returns attackerEntity
+            every { state.getBattlefield() } returns listOf(attackerId)
         }
 
         if (stackEmpty) {
@@ -292,9 +302,9 @@ class AutoPassManagerTest : FunSpec({
             autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
         }
 
-        test("STOP during opponent's declare attackers when player has instant-speed responses") {
+        test("STOP during opponent's declare attackers when player has instant-speed responses and attackers exist") {
             // After attackers are declared, defending player can cast instants (e.g., kill/tap attackers)
-            val state = createMockState(player2, player1, Step.DECLARE_ATTACKERS)
+            val state = createMockState(player2, player1, Step.DECLARE_ATTACKERS, hasAttackers = true)
             val actions = listOf(
                 passPriorityAction(player2),
                 instantSpellAction(player2)
@@ -304,9 +314,20 @@ class AutoPassManagerTest : FunSpec({
         }
 
         test("Auto-pass during opponent's declare attackers with no instant-speed responses") {
-            val state = createMockState(player2, player1, Step.DECLARE_ATTACKERS)
+            val state = createMockState(player2, player1, Step.DECLARE_ATTACKERS, hasAttackers = true)
             val actions = listOf(
                 passPriorityAction(player2)
+            )
+
+            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
+        }
+
+        test("Auto-pass during opponent's declare attackers when no attackers even with instant-speed responses") {
+            // Opponent passed without attacking — nothing to respond to
+            val state = createMockState(player2, player1, Step.DECLARE_ATTACKERS, hasAttackers = false)
+            val actions = listOf(
+                passPriorityAction(player2),
+                instantSpellAction(player2)
             )
 
             autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
@@ -522,7 +543,7 @@ class AutoPassManagerTest : FunSpec({
                 manaAbilityAction(player1) // Only mana ability, not a response
             )
 
-            // Always stop when opponent's item is on the stack
+            // Always stop for opponent's non-permanent stack items
             autoPassManager.shouldAutoPass(state, player1, actions) shouldBe false
         }
 
@@ -534,19 +555,31 @@ class AutoPassManagerTest : FunSpec({
                 manaAbilityAction(player1) // Only mana ability, not a response
             )
 
-            // Always stop when opponent's item is on the stack
+            // Always stop for opponent's non-permanent stack items
             autoPassManager.shouldAutoPass(state, player1, actions) shouldBe false
         }
 
-        test("STOP when opponent's permanent spell is on stack even with no responses") {
-            // player2's creature on stack, player1 has priority but no responses → stop to see it
+        test("AUTO-PASS when opponent's permanent spell is on stack with no responses") {
+            // player2's creature on stack, player1 has priority but no responses → auto-pass
             val state = createMockState(player1, player1, Step.PRECOMBAT_MAIN, stackEmpty = false, stackControllerId = player2, stackItemType = StackItemType.PERMANENT_SPELL)
             val actions = listOf(
                 passPriorityAction(player1),
                 manaAbilityAction(player1) // Only mana ability, not a response
             )
 
-            // Always stop when opponent's item is on the stack
+            // Permanent spells auto-resolve when opponent has no responses
+            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe true
+        }
+
+        test("STOP when opponent's permanent spell is on stack and player has responses") {
+            // player2's creature on stack, player1 has priority and has a counterspell → stop
+            val state = createMockState(player1, player1, Step.PRECOMBAT_MAIN, stackEmpty = false, stackControllerId = player2, stackItemType = StackItemType.PERMANENT_SPELL)
+            val actions = listOf(
+                passPriorityAction(player1),
+                instantSpellAction(player1) // Has a counterspell or instant
+            )
+
+            // Stop when player can actually respond to the permanent spell
             autoPassManager.shouldAutoPass(state, player1, actions) shouldBe false
         }
     }

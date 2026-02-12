@@ -18,6 +18,7 @@ test.describe('Combat — instant-speed actions after declare attackers', () => 
       player2Name: 'Defender',
       player1: {
         battlefield: [{ name: 'Hill Giant', tapped: false, summoningSickness: false }],
+        library: ['Mountain'],
       },
       player2: {
         battlefield: [
@@ -42,15 +43,17 @@ test.describe('Combat — instant-speed actions after declare attackers', () => 
 
     // P2 has priority during declare attackers step (after declaration)
     // P2 activates Spitfire Handler's {R}: +1/+0 ability (first activation)
-    // P1 has no responses so the ability auto-resolves
+    // P2 auto-passes (own ability on stack), P1 must pass (opponent's ability always stops)
     await p2.clickCard('Spitfire Handler')
     await p2.selectAction('+1/+0')
+    await p1.pass()
     await p2.expectStats('Spitfire Handler', '2/1')
 
-    // P2 activates the ability again (second activation) — also auto-resolves
+    // P2 activates the ability again (second activation)
     // Spitfire Handler is now 3/1 — can block Hill Giant (power 3 >= 3)
     await p2.clickCard('Spitfire Handler')
     await p2.selectAction('+1/+0')
+    await p1.pass()
     await p2.expectStats('Spitfire Handler', '3/1')
 
     // Both players auto-pass (P2 has no more mana for responses) → advance to declare blockers
