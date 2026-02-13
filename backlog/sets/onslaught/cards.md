@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 263 / 335
+**Implemented:** 264 / 335
 
 ---
 
@@ -235,7 +235,7 @@
 - [x] Riptide Biologist
 - [ ] Riptide Chronologist
 - [ ] Riptide Entrancer
-- [ ] Riptide Laboratory
+- [x] Riptide Laboratory
 - [ ] Riptide Replicator
 - [ ] Riptide Shapeshifter
 - [ ] Risky Move

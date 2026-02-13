@@ -292,6 +292,7 @@ object OnslaughtSet {
         SeasideHaven,
         StarlitSanctum,
         WirewoodLodge,
+        RiptideLaboratory,
         SecludedSteppe,
         TranquilThicket,
 
