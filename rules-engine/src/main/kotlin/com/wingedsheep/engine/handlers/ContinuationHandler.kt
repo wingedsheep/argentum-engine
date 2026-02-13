@@ -6,6 +6,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
 import com.wingedsheep.engine.handlers.effects.drawing.BlackmailExecutor
 import com.wingedsheep.engine.handlers.effects.drawing.EachOpponentDiscardsExecutor
 import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerDiscardsDrawsExecutor
+import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerDiscardsOrLoseLifeExecutor
 import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerMayDrawExecutor
 import com.wingedsheep.engine.mechanics.combat.CombatManager
 import com.wingedsheep.engine.mechanics.layers.StateProjector
@@ -80,6 +81,7 @@ class ContinuationHandler(
             is MayAbilityContinuation -> resumeMayAbility(stateAfterPop, continuation, response)
             is HandSizeDiscardContinuation -> resumeHandSizeDiscard(stateAfterPop, continuation, response)
             is EachPlayerSelectsThenDrawsContinuation -> resumeEachPlayerSelectsThenDraws(stateAfterPop, continuation, response)
+            is EachPlayerDiscardsOrLoseLifeContinuation -> resumeEachPlayerDiscardsOrLoseLife(stateAfterPop, continuation, response)
             is ReturnFromGraveyardContinuation -> resumeReturnFromGraveyard(stateAfterPop, continuation, response)
             is SearchLibraryContinuation -> resumeSearchLibrary(stateAfterPop, continuation, response)
             is ReorderLibraryContinuation -> resumeReorderLibrary(stateAfterPop, continuation, response)
@@ -1597,6 +1599,223 @@ class ContinuationHandler(
             options = nextHand,
             minSelections = minSelection,
             maxSelections = maxSelection,
+            ordered = false,
+            phase = DecisionPhase.RESOLUTION
+        )
+
+        val newContinuation = continuation.copy(
+            decisionId = decisionResult.pendingDecision!!.id,
+            currentPlayerId = nextPlayer,
+            remainingPlayers = nextRemainingPlayers
+        )
+
+        val stateWithContinuation = decisionResult.state.pushContinuation(newContinuation)
+
+        return ExecutionResult.paused(
+            stateWithContinuation,
+            decisionResult.pendingDecision,
+            priorEvents + decisionResult.events
+        )
+    }
+
+    /**
+     * Resume after a player selected a card to discard for "each player discards or lose life" effects.
+     *
+     * Used for Strongarm Tactics: each player discards a card, then each player who
+     * didn't discard a creature card loses N life.
+     */
+    private fun resumeEachPlayerDiscardsOrLoseLife(
+        state: GameState,
+        continuation: EachPlayerDiscardsOrLoseLifeContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response")
+        }
+
+        val selectedCards = response.selectedCards
+        val currentPlayerId = continuation.currentPlayerId
+
+        // Discard the selected card
+        var newState = state
+        val handZone = ZoneKey(currentPlayerId, Zone.HAND)
+        val graveyardZone = ZoneKey(currentPlayerId, Zone.GRAVEYARD)
+
+        for (cardId in selectedCards) {
+            newState = newState.removeFromZone(handZone, cardId)
+            newState = newState.addToZone(graveyardZone, cardId)
+        }
+
+        val discardEvents: List<GameEvent> = if (selectedCards.isNotEmpty()) {
+            listOf(CardsDiscardedEvent(currentPlayerId, selectedCards))
+        } else {
+            emptyList()
+        }
+
+        // Check if the discarded card was a creature
+        val discardedCreatureCard = selectedCards.any { cardId ->
+            state.getEntity(cardId)?.get<CardComponent>()?.isCreature == true
+        }
+
+        val newDiscardedCreature = continuation.discardedCreature + (currentPlayerId to discardedCreatureCard)
+
+        // Check if there are more players
+        if (continuation.remainingPlayers.isNotEmpty()) {
+            val nextPlayer = continuation.remainingPlayers.first()
+            val nextRemainingPlayers = continuation.remainingPlayers.drop(1)
+
+            val nextHandZone = ZoneKey(nextPlayer, Zone.HAND)
+            val nextHand = newState.getZone(nextHandZone)
+
+            // If next player has empty hand, skip them (didn't discard a creature)
+            if (nextHand.isEmpty()) {
+                val skippedDiscardedCreature = newDiscardedCreature + (nextPlayer to false)
+                return continueEachPlayerDiscardsOrLoseLife(
+                    newState,
+                    continuation.copy(
+                        remainingPlayers = nextRemainingPlayers,
+                        discardedCreature = skippedDiscardedCreature
+                    ),
+                    discardEvents
+                )
+            }
+
+            // If next player has exactly 1 card, auto-discard
+            if (nextHand.size == 1) {
+                val cardId = nextHand.first()
+                val isCreature = newState.getEntity(cardId)?.get<CardComponent>()?.isCreature == true
+                val nextGraveyardZone = ZoneKey(nextPlayer, Zone.GRAVEYARD)
+                newState = newState.removeFromZone(nextHandZone, cardId)
+                newState = newState.addToZone(nextGraveyardZone, cardId)
+
+                val autoDiscardEvents = discardEvents + listOf(CardsDiscardedEvent(nextPlayer, listOf(cardId)))
+                val autoDiscardedCreature = newDiscardedCreature + (nextPlayer to isCreature)
+
+                return continueEachPlayerDiscardsOrLoseLife(
+                    newState,
+                    continuation.copy(
+                        remainingPlayers = nextRemainingPlayers,
+                        discardedCreature = autoDiscardedCreature
+                    ),
+                    autoDiscardEvents
+                )
+            }
+
+            // Create decision for next player
+            val decisionHandler = DecisionHandler()
+            val decisionResult = decisionHandler.createCardSelectionDecision(
+                state = newState,
+                playerId = nextPlayer,
+                sourceId = continuation.sourceId,
+                sourceName = continuation.sourceName,
+                prompt = "Choose a card to discard",
+                options = nextHand,
+                minSelections = 1,
+                maxSelections = 1,
+                ordered = false,
+                phase = DecisionPhase.RESOLUTION
+            )
+
+            val newContinuation = continuation.copy(
+                decisionId = decisionResult.pendingDecision!!.id,
+                currentPlayerId = nextPlayer,
+                remainingPlayers = nextRemainingPlayers,
+                discardedCreature = newDiscardedCreature
+            )
+
+            val stateWithContinuation = decisionResult.state.pushContinuation(newContinuation)
+
+            return ExecutionResult.paused(
+                stateWithContinuation,
+                decisionResult.pendingDecision,
+                discardEvents + decisionResult.events
+            )
+        }
+
+        // All players have discarded - apply life loss
+        val lifeLossResult = EachPlayerDiscardsOrLoseLifeExecutor.applyLifeLoss(
+            newState, newDiscardedCreature, continuation.lifeLoss
+        )
+
+        return ExecutionResult(
+            lifeLossResult.state,
+            discardEvents + lifeLossResult.events,
+            lifeLossResult.error
+        )
+    }
+
+    /**
+     * Continue processing remaining players for each-player discard-or-lose-life effects.
+     * Handles skipping players with empty hands.
+     */
+    private fun continueEachPlayerDiscardsOrLoseLife(
+        state: GameState,
+        continuation: EachPlayerDiscardsOrLoseLifeContinuation,
+        priorEvents: List<GameEvent>
+    ): ExecutionResult {
+        if (continuation.remainingPlayers.isEmpty()) {
+            // All done - apply life loss
+            val lifeLossResult = EachPlayerDiscardsOrLoseLifeExecutor.applyLifeLoss(
+                state, continuation.discardedCreature, continuation.lifeLoss
+            )
+            return ExecutionResult(
+                lifeLossResult.state,
+                priorEvents + lifeLossResult.events,
+                lifeLossResult.error
+            )
+        }
+
+        val nextPlayer = continuation.remainingPlayers.first()
+        val nextRemainingPlayers = continuation.remainingPlayers.drop(1)
+
+        val nextHandZone = ZoneKey(nextPlayer, Zone.HAND)
+        val nextHand = state.getZone(nextHandZone)
+
+        // If next player has empty hand, skip them
+        if (nextHand.isEmpty()) {
+            val skippedDiscardedCreature = continuation.discardedCreature + (nextPlayer to false)
+            return continueEachPlayerDiscardsOrLoseLife(
+                state,
+                continuation.copy(
+                    remainingPlayers = nextRemainingPlayers,
+                    discardedCreature = skippedDiscardedCreature
+                ),
+                priorEvents
+            )
+        }
+
+        // If next player has exactly 1 card, auto-discard
+        if (nextHand.size == 1) {
+            val cardId = nextHand.first()
+            val isCreature = state.getEntity(cardId)?.get<CardComponent>()?.isCreature == true
+            val graveyardZone = ZoneKey(nextPlayer, Zone.GRAVEYARD)
+            var newState = state.removeFromZone(nextHandZone, cardId)
+            newState = newState.addToZone(graveyardZone, cardId)
+
+            val autoDiscardEvents = priorEvents + listOf(CardsDiscardedEvent(nextPlayer, listOf(cardId)))
+            val autoDiscardedCreature = continuation.discardedCreature + (nextPlayer to isCreature)
+
+            return continueEachPlayerDiscardsOrLoseLife(
+                newState,
+                continuation.copy(
+                    remainingPlayers = nextRemainingPlayers,
+                    discardedCreature = autoDiscardedCreature
+                ),
+                autoDiscardEvents
+            )
+        }
+
+        // Create decision for next player
+        val decisionHandler = DecisionHandler()
+        val decisionResult = decisionHandler.createCardSelectionDecision(
+            state = state,
+            playerId = nextPlayer,
+            sourceId = continuation.sourceId,
+            sourceName = continuation.sourceName,
+            prompt = "Choose a card to discard",
+            options = nextHand,
+            minSelections = 1,
+            maxSelections = 1,
             ordered = false,
             phase = DecisionPhase.RESOLUTION
         )

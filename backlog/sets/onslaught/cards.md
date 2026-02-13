@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 254 / 335
+**Implemented:** 255 / 335
 
 ---
 
@@ -286,7 +286,7 @@
 - [x] Starlit Sanctum
 - [x] Starstorm
 - [ ] Steely Resolve
-- [ ] Strongarm Tactics
+- [x] Strongarm Tactics
 - [x] Sunfire Balm
 - [ ] Supreme Inquisitor
 - [x] Swamp

@@ -222,6 +222,21 @@ data class BlackmailEffect(
 }
 
 /**
+ * Each player discards a card, then each player who didn't discard a creature card loses life.
+ * Used for Strongarm Tactics.
+ *
+ * @property lifeLoss Life lost by each player who didn't discard a creature card
+ */
+@SerialName("EachPlayerDiscardsOrLoseLife")
+@Serializable
+data class EachPlayerDiscardsOrLoseLifeEffect(
+    val lifeLoss: Int = 4
+) : Effect {
+    override val description: String =
+        "Each player discards a card. Then each player who didn't discard a creature card this way loses $lifeLoss life."
+}
+
+/**
  * Reveal a player's hand (publicly visible to all players).
  * This is an atomic effect that just reveals - use with CompositeEffect for
  * "reveal and do something based on what's revealed" patterns.
