@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GroupFilter
 import com.wingedsheep.sdk.scripting.PayCost
 import com.wingedsheep.sdk.scripting.SearchDestination
+import com.wingedsheep.sdk.scripting.TargetFilter
 import com.wingedsheep.sdk.targeting.TargetRequirement
 import kotlinx.serialization.Serializable
 
@@ -1227,6 +1228,49 @@ data class ChooseCreatureTypeMustAttackContinuation(
     val sourceId: EntityId?,
     val sourceName: String?,
     val creatureTypes: List<String>
+) : ContinuationFrame
+
+/**
+ * Resume after the destroyed permanent's controller decides whether to copy Chain of Acid.
+ *
+ * When the yes/no decision is answered:
+ * - Yes → find legal noncreature permanents, present target selection, push ChainCopyTargetContinuation
+ * - No → checkForMoreContinuations (chain ends)
+ *
+ * @property targetControllerId The controller of the destroyed permanent (who gets to copy)
+ * @property targetFilter The filter for valid chain targets (NoncreaturePermanent)
+ * @property spellName The name of the spell being copied (for display)
+ * @property sourceId The source entity of the original spell/ability
+ */
+@Serializable
+data class ChainCopyDecisionContinuation(
+    override val decisionId: String,
+    val targetControllerId: EntityId,
+    val targetFilter: TargetFilter,
+    val spellName: String,
+    val sourceId: EntityId?
+) : ContinuationFrame
+
+/**
+ * Resume after the copying player selects a target for the chain copy.
+ *
+ * Creates a TriggeredAbilityOnStackComponent with DestroyAndChainCopyEffect targeting
+ * the selected permanent, enabling recursive chaining.
+ *
+ * @property copyControllerId The player who is creating the copy
+ * @property targetFilter The filter for valid targets
+ * @property spellName The name of the spell being copied
+ * @property sourceId The source entity of the original spell/ability
+ * @property candidateTargets The list of valid target entity IDs (for validation)
+ */
+@Serializable
+data class ChainCopyTargetContinuation(
+    override val decisionId: String,
+    val copyControllerId: EntityId,
+    val targetFilter: TargetFilter,
+    val spellName: String,
+    val sourceId: EntityId?,
+    val candidateTargets: List<EntityId>
 ) : ContinuationFrame
 
 /**

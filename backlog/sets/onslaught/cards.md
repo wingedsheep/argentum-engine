@@ -55,7 +55,7 @@
 - [x] Catapult Master
 - [x] Catapult Squad
 - [x] Centaur Glade
-- [ ] Chain of Acid
+- [x] Chain of Acid
 - [ ] Chain of Plasma
 - [ ] Chain of Silence
 - [ ] Chain of Smog

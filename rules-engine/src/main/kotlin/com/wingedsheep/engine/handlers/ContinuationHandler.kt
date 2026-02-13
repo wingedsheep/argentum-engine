@@ -127,6 +127,8 @@ class ContinuationHandler(
             is CastWithCreatureTypeContinuation -> resumeCastWithCreatureType(stateAfterPop, continuation, response)
             is EachOpponentMayPutFromHandContinuation -> resumeEachOpponentMayPutFromHand(stateAfterPop, continuation, response)
             is ChooseCreatureTypeMustAttackContinuation -> resumeChooseCreatureTypeMustAttack(stateAfterPop, continuation, response)
+            is ChainCopyDecisionContinuation -> resumeChainCopyDecision(stateAfterPop, continuation, response)
+            is ChainCopyTargetContinuation -> resumeChainCopyTarget(stateAfterPop, continuation, response)
         }
     }
 
@@ -4126,5 +4128,123 @@ class ContinuationHandler(
         }
 
         return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume after the destroyed permanent's controller decides whether to copy Chain of Acid.
+     */
+    private fun resumeChainCopyDecision(
+        state: GameState,
+        continuation: ChainCopyDecisionContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is YesNoResponse) {
+            return ExecutionResult.error(state, "Expected yes/no response for chain copy decision")
+        }
+
+        if (!response.choice) {
+            // Player declined — chain ends
+            return checkForMoreContinuations(state, emptyList())
+        }
+
+        // Player wants to copy — find legal noncreature permanent targets
+        val requirement = com.wingedsheep.sdk.targeting.TargetPermanent(filter = continuation.targetFilter)
+        val legalTargets = targetFinder.findLegalTargets(
+            state, requirement, continuation.targetControllerId, continuation.sourceId
+        )
+
+        if (legalTargets.isEmpty()) {
+            // No valid targets — chain ends
+            return checkForMoreContinuations(state, emptyList())
+        }
+
+        // Present target selection
+        val decisionId = java.util.UUID.randomUUID().toString()
+        val decision = SelectCardsDecision(
+            id = decisionId,
+            playerId = continuation.targetControllerId,
+            prompt = "Choose a target for the copy of ${continuation.spellName}",
+            context = DecisionContext(
+                sourceId = continuation.sourceId,
+                sourceName = continuation.spellName,
+                phase = DecisionPhase.RESOLUTION
+            ),
+            options = legalTargets,
+            minSelections = 1,
+            maxSelections = 1,
+            useTargetingUI = true
+        )
+
+        val targetContinuation = ChainCopyTargetContinuation(
+            decisionId = decisionId,
+            copyControllerId = continuation.targetControllerId,
+            targetFilter = continuation.targetFilter,
+            spellName = continuation.spellName,
+            sourceId = continuation.sourceId,
+            candidateTargets = legalTargets
+        )
+
+        val newState = state.withPendingDecision(decision).pushContinuation(targetContinuation)
+
+        return ExecutionResult.paused(
+            newState,
+            decision,
+            listOf(
+                DecisionRequestedEvent(
+                    decisionId = decisionId,
+                    playerId = continuation.targetControllerId,
+                    decisionType = "SELECT_CARDS",
+                    prompt = decision.prompt
+                )
+            )
+        )
+    }
+
+    /**
+     * Resume after the copying player selects a target for the chain copy.
+     * Creates a triggered ability on the stack with DestroyAndChainCopyEffect.
+     */
+    private fun resumeChainCopyTarget(
+        state: GameState,
+        continuation: ChainCopyTargetContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for chain copy target")
+        }
+
+        val selectedTarget = response.selectedCards.firstOrNull()
+            ?: return checkForMoreContinuations(state, emptyList())
+
+        // Validate the selected target is among the legal targets
+        if (selectedTarget !in continuation.candidateTargets) {
+            return ExecutionResult.error(state, "Invalid chain copy target: $selectedTarget")
+        }
+
+        // Create a copy of the spell on the stack as a triggered ability
+        val ability = TriggeredAbilityOnStackComponent(
+            sourceId = continuation.sourceId ?: EntityId.generate(),
+            sourceName = continuation.spellName,
+            controllerId = continuation.copyControllerId,
+            effect = com.wingedsheep.sdk.scripting.DestroyAndChainCopyEffect(
+                target = com.wingedsheep.sdk.scripting.EffectTarget.ContextTarget(0),
+                targetFilter = continuation.targetFilter,
+                spellName = continuation.spellName
+            ),
+            description = "Copy of ${continuation.spellName}"
+        )
+
+        val targets = listOf(ChosenTarget.Permanent(selectedTarget))
+        val targetRequirements = listOf(
+            com.wingedsheep.sdk.targeting.TargetPermanent(filter = continuation.targetFilter)
+        )
+
+        val putResult = stackResolver.putTriggeredAbility(state, ability, targets, targetRequirements)
+
+        if (!putResult.isSuccess) {
+            return putResult
+        }
+
+        return checkForMoreContinuations(putResult.state, putResult.events.toList())
     }
 }

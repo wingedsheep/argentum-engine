@@ -277,6 +277,7 @@ object OnslaughtSet {
         OverwhelmingInstinct,
         PrimalBoost,
         CentaurGlade,
+        ChainOfAcid,
         Gigapede,
         RunWild,
         WallOfMulch,

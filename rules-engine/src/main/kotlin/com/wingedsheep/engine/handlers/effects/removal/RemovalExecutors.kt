@@ -31,6 +31,7 @@ class RemovalExecutors : ExecutorModule {
         ChooseCreatureTypeReturnExecutor(),
         DestroyAllExecutor(),
         DestroyAllSharingTypeWithSacrificedExecutor(),
+        DestroyAndChainCopyExecutor(),
         CantBeRegeneratedExecutor(),
         ExileUntilEndStepExecutor(),
         ForceSacrificeExecutor(),
