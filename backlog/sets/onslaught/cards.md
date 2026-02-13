@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 270 / 335
+**Implemented:** 271 / 335
 
 ---
 
@@ -259,7 +259,7 @@
 - [x] Shepherd of Rot
 - [ ] Shieldmage Elder
 - [x] Shock
-- [ ] Sigil of the New Dawn
+- [x] Sigil of the New Dawn
 - [x] Silent Specter
 - [x] Silklash Spider
 - [x] Silvos, Rogue Elemental

@@ -774,7 +774,8 @@ class TriggerDetector(
                 event is ZoneChangeEvent &&
                     event.toZone == com.wingedsheep.sdk.core.Zone.GRAVEYARD &&
                     event.fromZone == com.wingedsheep.sdk.core.Zone.BATTLEFIELD &&
-                    (!trigger.selfOnly || event.entityId == sourceId)
+                    (!trigger.selfOnly || event.entityId == sourceId) &&
+                    (!trigger.youControlOnly || event.ownerId == controllerId)
             }
 
             is OnOtherCreatureWithSubtypeDies -> {

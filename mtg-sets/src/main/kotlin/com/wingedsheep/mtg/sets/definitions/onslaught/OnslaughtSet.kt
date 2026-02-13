@@ -75,6 +75,7 @@ object OnslaughtSet {
         SharedTriumph,
         TrueBeliever,
         ConvalescentCare,
+        SigilOfTheNewDawn,
 
         CoverOfDarkness,
 

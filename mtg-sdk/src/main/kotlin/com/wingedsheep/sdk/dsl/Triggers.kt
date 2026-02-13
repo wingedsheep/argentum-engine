@@ -50,6 +50,11 @@ object Triggers {
     val AnyCreatureDies: Trigger = OnDeath(selfOnly = false)
 
     /**
+     * When a creature is put into your graveyard from the battlefield.
+     */
+    val YourCreatureDies: Trigger = OnDeath(selfOnly = false, youControlOnly = true)
+
+    /**
      * When this is put into the graveyard from the battlefield.
      */
     val PutIntoGraveyardFromBattlefield: Trigger = OnDeath(selfOnly = true)

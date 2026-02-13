@@ -63,12 +63,13 @@ data class OnLeavesBattlefield(
 @SerialName("Death")
 @Serializable
 data class OnDeath(
-    val selfOnly: Boolean = true
+    val selfOnly: Boolean = true,
+    val youControlOnly: Boolean = false
 ) : Trigger {
-    override val description: String = if (selfOnly) {
-        "When this creature dies"
-    } else {
-        "Whenever a creature dies"
+    override val description: String = when {
+        selfOnly -> "When this creature dies"
+        youControlOnly -> "Whenever a creature is put into your graveyard from the battlefield"
+        else -> "Whenever a creature dies"
     }
 }
 
