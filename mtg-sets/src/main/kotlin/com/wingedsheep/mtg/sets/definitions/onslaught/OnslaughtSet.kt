@@ -272,6 +272,7 @@ object OnslaughtSet {
         RunWild,
         WallOfMulch,
         TribalUnity,
+        VoiceOfTheWoods,
 
         // Artifacts
         DoomCannon,

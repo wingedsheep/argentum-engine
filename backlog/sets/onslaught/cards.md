@@ -317,7 +317,7 @@
 - [x] Venomspout Brackus
 - [x] Visara the Dreadful
 - [x] Vitality Charm
-- [ ] Voice of the Woods
+- [x] Voice of the Woods
 - [x] Voidmage Prodigy
 - [ ] Walking Desecration
 - [x] Wall of Mulch
