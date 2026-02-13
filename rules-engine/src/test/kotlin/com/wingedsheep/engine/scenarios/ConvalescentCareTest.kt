@@ -8,7 +8,7 @@ import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.*
-import com.wingedsheep.sdk.scripting.conditions.LifeTotalAtMost
+import com.wingedsheep.sdk.scripting.LifeTotalAtMost
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
