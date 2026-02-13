@@ -277,11 +277,11 @@ class LobbyHandler(
 
         // Set appropriate default booster count based on format
         // Draft: default 3 packs, max 6
-        // Sealed: default 6 boosters, max 12
+        // Sealed: default 6 boosters, max 16
         val boosterCount = if (format == TournamentFormat.DRAFT) {
             if (message.boosterCount == 6) 3 else message.boosterCount.coerceIn(1, 6)  // 6 is the client default, use 3 for draft
         } else {
-            message.boosterCount.coerceIn(1, 12)
+            message.boosterCount.coerceIn(1, 16)
         }
 
         val lobby = TournamentLobby(
@@ -1129,7 +1129,7 @@ class LobbyHandler(
 
         // Manual boosterCount override (apply after format change)
         message.boosterCount?.let {
-            val maxCount = if (lobby.format == TournamentFormat.DRAFT) 6 else 12
+            val maxCount = if (lobby.format == TournamentFormat.DRAFT) 6 else 16
             lobby.boosterCount = it.coerceIn(1, maxCount)
         }
         message.maxPlayers?.let { lobby.maxPlayers = it.coerceIn(2, 8) }
