@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 256 / 335
+**Implemented:** 257 / 335
 
 ---
 
@@ -317,7 +317,7 @@
 - [x] Venomspout Brackus
 - [x] Visara the Dreadful
 - [x] Vitality Charm
-- [ ] Voice of the Woods
+- [x] Voice of the Woods
 - [x] Voidmage Prodigy
 - [ ] Walking Desecration
 - [x] Wall of Mulch
