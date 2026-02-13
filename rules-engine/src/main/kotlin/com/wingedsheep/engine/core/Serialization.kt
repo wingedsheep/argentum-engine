@@ -154,6 +154,11 @@ val engineSerializersModule = SerializersModule {
         subclass(ChooseCreatureTypeEntersContinuation::class)
         subclass(CastWithCreatureTypeContinuation::class)
         subclass(EachOpponentMayPutFromHandContinuation::class)
+        subclass(ChainCopyDecisionContinuation::class)
+        subclass(ChainCopyTargetContinuation::class)
+        subclass(BounceChainCopyDecisionContinuation::class)
+        subclass(BounceChainCopyLandContinuation::class)
+        subclass(BounceChainCopyTargetContinuation::class)
     }
 
     // Component hierarchy (for GameState persistence)

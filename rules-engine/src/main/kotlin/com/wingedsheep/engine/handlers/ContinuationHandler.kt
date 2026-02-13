@@ -127,6 +127,11 @@ class ContinuationHandler(
             is CastWithCreatureTypeContinuation -> resumeCastWithCreatureType(stateAfterPop, continuation, response)
             is EachOpponentMayPutFromHandContinuation -> resumeEachOpponentMayPutFromHand(stateAfterPop, continuation, response)
             is ChooseCreatureTypeMustAttackContinuation -> resumeChooseCreatureTypeMustAttack(stateAfterPop, continuation, response)
+            is ChainCopyDecisionContinuation -> resumeChainCopyDecision(stateAfterPop, continuation, response)
+            is ChainCopyTargetContinuation -> resumeChainCopyTarget(stateAfterPop, continuation, response)
+            is BounceChainCopyDecisionContinuation -> resumeBounceChainCopyDecision(stateAfterPop, continuation, response)
+            is BounceChainCopyLandContinuation -> resumeBounceChainCopyLand(stateAfterPop, continuation, response)
+            is BounceChainCopyTargetContinuation -> resumeBounceChainCopyTarget(stateAfterPop, continuation, response)
         }
     }
 
@@ -4126,5 +4131,371 @@ class ContinuationHandler(
         }
 
         return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume after the destroyed permanent's controller decides whether to copy Chain of Acid.
+     */
+    private fun resumeChainCopyDecision(
+        state: GameState,
+        continuation: ChainCopyDecisionContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is YesNoResponse) {
+            return ExecutionResult.error(state, "Expected yes/no response for chain copy decision")
+        }
+
+        if (!response.choice) {
+            // Player declined — chain ends
+            return checkForMoreContinuations(state, emptyList())
+        }
+
+        // Player wants to copy — find legal noncreature permanent targets
+        val requirement = com.wingedsheep.sdk.targeting.TargetPermanent(filter = continuation.targetFilter)
+        val legalTargets = targetFinder.findLegalTargets(
+            state, requirement, continuation.targetControllerId, continuation.sourceId
+        )
+
+        if (legalTargets.isEmpty()) {
+            // No valid targets — chain ends
+            return checkForMoreContinuations(state, emptyList())
+        }
+
+        // Present target selection
+        val decisionId = java.util.UUID.randomUUID().toString()
+        val decision = SelectCardsDecision(
+            id = decisionId,
+            playerId = continuation.targetControllerId,
+            prompt = "Choose a target for the copy of ${continuation.spellName}",
+            context = DecisionContext(
+                sourceId = continuation.sourceId,
+                sourceName = continuation.spellName,
+                phase = DecisionPhase.RESOLUTION
+            ),
+            options = legalTargets,
+            minSelections = 1,
+            maxSelections = 1,
+            useTargetingUI = true
+        )
+
+        val targetContinuation = ChainCopyTargetContinuation(
+            decisionId = decisionId,
+            copyControllerId = continuation.targetControllerId,
+            targetFilter = continuation.targetFilter,
+            spellName = continuation.spellName,
+            sourceId = continuation.sourceId,
+            candidateTargets = legalTargets
+        )
+
+        val newState = state.withPendingDecision(decision).pushContinuation(targetContinuation)
+
+        return ExecutionResult.paused(
+            newState,
+            decision,
+            listOf(
+                DecisionRequestedEvent(
+                    decisionId = decisionId,
+                    playerId = continuation.targetControllerId,
+                    decisionType = "SELECT_CARDS",
+                    prompt = decision.prompt
+                )
+            )
+        )
+    }
+
+    /**
+     * Resume after the copying player selects a target for the chain copy.
+     * Creates a triggered ability on the stack with DestroyAndChainCopyEffect.
+     */
+    private fun resumeChainCopyTarget(
+        state: GameState,
+        continuation: ChainCopyTargetContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for chain copy target")
+        }
+
+        val selectedTarget = response.selectedCards.firstOrNull()
+            ?: return checkForMoreContinuations(state, emptyList())
+
+        // Validate the selected target is among the legal targets
+        if (selectedTarget !in continuation.candidateTargets) {
+            return ExecutionResult.error(state, "Invalid chain copy target: $selectedTarget")
+        }
+
+        // Create a copy of the spell on the stack as a triggered ability
+        val ability = TriggeredAbilityOnStackComponent(
+            sourceId = continuation.sourceId ?: EntityId.generate(),
+            sourceName = continuation.spellName,
+            controllerId = continuation.copyControllerId,
+            effect = com.wingedsheep.sdk.scripting.DestroyAndChainCopyEffect(
+                target = com.wingedsheep.sdk.scripting.EffectTarget.ContextTarget(0),
+                targetFilter = continuation.targetFilter,
+                spellName = continuation.spellName
+            ),
+            description = "Copy of ${continuation.spellName}"
+        )
+
+        val targets = listOf(ChosenTarget.Permanent(selectedTarget))
+        val targetRequirements = listOf(
+            com.wingedsheep.sdk.targeting.TargetPermanent(filter = continuation.targetFilter)
+        )
+
+        val putResult = stackResolver.putTriggeredAbility(state, ability, targets, targetRequirements)
+
+        if (!putResult.isSuccess) {
+            return putResult
+        }
+
+        return checkForMoreContinuations(putResult.state, putResult.events.toList())
+    }
+
+    /**
+     * Resume after the bounced permanent's controller decides whether to sacrifice a land
+     * to copy Chain of Vapor.
+     */
+    private fun resumeBounceChainCopyDecision(
+        state: GameState,
+        continuation: BounceChainCopyDecisionContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is YesNoResponse) {
+            return ExecutionResult.error(state, "Expected yes/no response for bounce chain copy decision")
+        }
+
+        if (!response.choice) {
+            // Player declined — chain ends
+            return checkForMoreContinuations(state, emptyList())
+        }
+
+        // Player wants to copy — find their lands to sacrifice
+        val controllerLands = findControllerLands(state, continuation.targetControllerId)
+
+        if (controllerLands.isEmpty()) {
+            // No lands to sacrifice — chain ends
+            return checkForMoreContinuations(state, emptyList())
+        }
+
+        if (controllerLands.size == 1) {
+            // Only one land — auto-sacrifice it and proceed to target selection
+            return sacrificeLandAndPresentTargets(
+                state, continuation.targetControllerId, controllerLands.first(),
+                continuation.targetFilter, continuation.spellName, continuation.sourceId
+            )
+        }
+
+        // Multiple lands — player must choose which to sacrifice
+        val decisionId = java.util.UUID.randomUUID().toString()
+        val decision = SelectCardsDecision(
+            id = decisionId,
+            playerId = continuation.targetControllerId,
+            prompt = "Choose a land to sacrifice for the copy of ${continuation.spellName}",
+            context = DecisionContext(
+                sourceId = continuation.sourceId,
+                sourceName = continuation.spellName,
+                phase = DecisionPhase.RESOLUTION
+            ),
+            options = controllerLands,
+            minSelections = 1,
+            maxSelections = 1,
+            useTargetingUI = true
+        )
+
+        val landContinuation = BounceChainCopyLandContinuation(
+            decisionId = decisionId,
+            copyControllerId = continuation.targetControllerId,
+            targetFilter = continuation.targetFilter,
+            spellName = continuation.spellName,
+            sourceId = continuation.sourceId,
+            candidateLands = controllerLands
+        )
+
+        val newState = state.withPendingDecision(decision).pushContinuation(landContinuation)
+
+        return ExecutionResult.paused(
+            newState,
+            decision,
+            listOf(
+                DecisionRequestedEvent(
+                    decisionId = decisionId,
+                    playerId = continuation.targetControllerId,
+                    decisionType = "SELECT_CARDS",
+                    prompt = decision.prompt
+                )
+            )
+        )
+    }
+
+    /**
+     * Resume after the copying player selects which land to sacrifice for the bounce chain copy.
+     */
+    private fun resumeBounceChainCopyLand(
+        state: GameState,
+        continuation: BounceChainCopyLandContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for bounce chain land sacrifice")
+        }
+
+        val selectedLand = response.selectedCards.firstOrNull()
+            ?: return checkForMoreContinuations(state, emptyList())
+
+        if (selectedLand !in continuation.candidateLands) {
+            return ExecutionResult.error(state, "Invalid land for bounce chain sacrifice: $selectedLand")
+        }
+
+        return sacrificeLandAndPresentTargets(
+            state, continuation.copyControllerId, selectedLand,
+            continuation.targetFilter, continuation.spellName, continuation.sourceId
+        )
+    }
+
+    /**
+     * Resume after the copying player selects a target for the bounce chain copy.
+     * Creates a triggered ability on the stack with BounceAndChainCopyEffect.
+     */
+    private fun resumeBounceChainCopyTarget(
+        state: GameState,
+        continuation: BounceChainCopyTargetContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for bounce chain copy target")
+        }
+
+        val selectedTarget = response.selectedCards.firstOrNull()
+            ?: return checkForMoreContinuations(state, emptyList())
+
+        if (selectedTarget !in continuation.candidateTargets) {
+            return ExecutionResult.error(state, "Invalid bounce chain copy target: $selectedTarget")
+        }
+
+        // Create a copy of the spell on the stack as a triggered ability
+        val ability = TriggeredAbilityOnStackComponent(
+            sourceId = continuation.sourceId ?: EntityId.generate(),
+            sourceName = continuation.spellName,
+            controllerId = continuation.copyControllerId,
+            effect = com.wingedsheep.sdk.scripting.BounceAndChainCopyEffect(
+                target = com.wingedsheep.sdk.scripting.EffectTarget.ContextTarget(0),
+                targetFilter = continuation.targetFilter,
+                spellName = continuation.spellName
+            ),
+            description = "Copy of ${continuation.spellName}"
+        )
+
+        val targets = listOf(ChosenTarget.Permanent(selectedTarget))
+        val targetRequirements = listOf(
+            com.wingedsheep.sdk.targeting.TargetPermanent(filter = continuation.targetFilter)
+        )
+
+        val putResult = stackResolver.putTriggeredAbility(state, ability, targets, targetRequirements)
+
+        if (!putResult.isSuccess) {
+            return putResult
+        }
+
+        return checkForMoreContinuations(putResult.state, putResult.events.toList())
+    }
+
+    /**
+     * Sacrifice a land and present target selection for the bounce chain copy.
+     * Shared logic used by both auto-sacrifice (single land) and manual selection paths.
+     */
+    private fun sacrificeLandAndPresentTargets(
+        state: GameState,
+        controllerId: EntityId,
+        landId: EntityId,
+        targetFilter: com.wingedsheep.sdk.scripting.TargetFilter,
+        spellName: String,
+        sourceId: EntityId?
+    ): ExecutionResult {
+        // Sacrifice the land
+        val container = state.getEntity(landId) ?: return checkForMoreContinuations(state, emptyList())
+        val cardComponent = container.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
+            ?: return checkForMoreContinuations(state, emptyList())
+
+        val currentZone = state.zones.entries.find { (_, cards) -> landId in cards }?.key
+            ?: return checkForMoreContinuations(state, emptyList())
+
+        val ownerId = container.get<com.wingedsheep.engine.state.components.identity.OwnerComponent>()?.playerId
+            ?: cardComponent.ownerId
+            ?: controllerId
+        val graveyardZone = com.wingedsheep.engine.state.ZoneKey(ownerId, com.wingedsheep.sdk.core.Zone.GRAVEYARD)
+
+        var newState = state.removeFromZone(currentZone, landId)
+        newState = newState.addToZone(graveyardZone, landId)
+
+        val sacrificeEvents = mutableListOf<GameEvent>(
+            PermanentsSacrificedEvent(controllerId, listOf(landId)),
+            ZoneChangeEvent(
+                entityId = landId,
+                entityName = cardComponent.name,
+                fromZone = com.wingedsheep.sdk.core.Zone.BATTLEFIELD,
+                toZone = com.wingedsheep.sdk.core.Zone.GRAVEYARD,
+                ownerId = ownerId
+            )
+        )
+
+        // Now find legal nonland permanent targets for the copy
+        val requirement = com.wingedsheep.sdk.targeting.TargetPermanent(filter = targetFilter)
+        val legalTargets = targetFinder.findLegalTargets(newState, requirement, controllerId, sourceId)
+
+        if (legalTargets.isEmpty()) {
+            // No valid targets after sacrifice — chain ends
+            return checkForMoreContinuations(newState, sacrificeEvents)
+        }
+
+        // Present target selection
+        val decisionId = java.util.UUID.randomUUID().toString()
+        val decision = SelectCardsDecision(
+            id = decisionId,
+            playerId = controllerId,
+            prompt = "Choose a target for the copy of $spellName",
+            context = DecisionContext(
+                sourceId = sourceId,
+                sourceName = spellName,
+                phase = DecisionPhase.RESOLUTION
+            ),
+            options = legalTargets,
+            minSelections = 1,
+            maxSelections = 1,
+            useTargetingUI = true
+        )
+
+        val targetContinuation = BounceChainCopyTargetContinuation(
+            decisionId = decisionId,
+            copyControllerId = controllerId,
+            targetFilter = targetFilter,
+            spellName = spellName,
+            sourceId = sourceId,
+            candidateTargets = legalTargets
+        )
+
+        newState = newState.withPendingDecision(decision).pushContinuation(targetContinuation)
+
+        return ExecutionResult.paused(
+            newState,
+            decision,
+            sacrificeEvents + listOf(
+                DecisionRequestedEvent(
+                    decisionId = decisionId,
+                    playerId = controllerId,
+                    decisionType = "SELECT_CARDS",
+                    prompt = decision.prompt
+                )
+            )
+        )
+    }
+
+    private fun findControllerLands(state: GameState, controllerId: EntityId): List<EntityId> {
+        val projected = com.wingedsheep.engine.mechanics.layers.StateProjector().project(state)
+        val controlledPermanents = projected.getBattlefieldControlledBy(controllerId)
+        val predicateEvaluator = com.wingedsheep.engine.handlers.PredicateEvaluator()
+        val context = com.wingedsheep.engine.handlers.PredicateContext(controllerId = controllerId)
+        return controlledPermanents.filter { permanentId ->
+            predicateEvaluator.matches(state, permanentId, com.wingedsheep.sdk.scripting.GameObjectFilter.Land, context)
+        }
     }
 }

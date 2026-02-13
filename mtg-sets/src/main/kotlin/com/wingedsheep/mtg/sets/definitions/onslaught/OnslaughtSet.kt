@@ -121,6 +121,7 @@ object OnslaughtSet {
         Standardize,
         RummagingWizard,
         VoidmageProdigy,
+        ChainOfVapor,
 
         // Black creatures and spells
         AccursedCentaur,
@@ -278,6 +279,7 @@ object OnslaughtSet {
         OverwhelmingInstinct,
         PrimalBoost,
         CentaurGlade,
+        ChainOfAcid,
         Gigapede,
         RunWild,
         WallOfMulch,
