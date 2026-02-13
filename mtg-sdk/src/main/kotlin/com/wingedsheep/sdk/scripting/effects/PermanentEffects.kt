@@ -392,27 +392,31 @@ data class TurnFaceUpEffect(
  *
  * Used for Defensive Maneuvers: "Creatures of the creature type of your choice get +0/+4
  * until end of turn."
+ * Used for Tribal Unity: "Creatures of the creature type of your choice get +X/+X
+ * until end of turn."
  *
  * At resolution time, the executor:
- * 1. Presents a ChooseOptionDecision with all creature types
- * 2. Pushes a ChooseCreatureTypeModifyStatsContinuation
- * 3. On response, creates a floating effect for all creatures of the chosen type
+ * 1. Evaluates dynamic amounts (e.g., X value)
+ * 2. Presents a ChooseOptionDecision with all creature types
+ * 3. Pushes a ChooseCreatureTypeModifyStatsContinuation with resolved values
+ * 4. On response, creates a floating effect for all creatures of the chosen type
  *
- * @property powerModifier Power bonus (can be negative)
- * @property toughnessModifier Toughness bonus (can be negative)
+ * @property powerModifier Power bonus (can be dynamic, e.g., DynamicAmount.XValue)
+ * @property toughnessModifier Toughness bonus (can be dynamic)
  * @property duration How long the effect lasts
  */
 @Serializable
 data class ChooseCreatureTypeModifyStatsEffect(
-    val powerModifier: Int,
-    val toughnessModifier: Int,
+    val powerModifier: DynamicAmount,
+    val toughnessModifier: DynamicAmount,
     val duration: Duration = Duration.EndOfTurn
 ) : Effect {
+    constructor(powerModifier: Int, toughnessModifier: Int, duration: Duration = Duration.EndOfTurn) :
+        this(DynamicAmount.Fixed(powerModifier), DynamicAmount.Fixed(toughnessModifier), duration)
+
     override val description: String = buildString {
         append("Creatures of the creature type of your choice get ")
-        append(if (powerModifier >= 0) "+$powerModifier" else "$powerModifier")
-        append("/")
-        append(if (toughnessModifier >= 0) "+$toughnessModifier" else "$toughnessModifier")
+        append("+${powerModifier.description}/+${toughnessModifier.description}")
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
 }

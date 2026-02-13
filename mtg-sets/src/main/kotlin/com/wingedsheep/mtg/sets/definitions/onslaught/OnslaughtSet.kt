@@ -266,6 +266,7 @@ object OnslaughtSet {
         Gigapede,
         RunWild,
         WallOfMulch,
+        TribalUnity,
 
         // Artifacts
         DoomCannon,

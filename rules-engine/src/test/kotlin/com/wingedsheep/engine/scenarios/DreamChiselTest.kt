@@ -7,7 +7,8 @@ import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.*
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.ReduceFaceDownCastingCost
+import com.wingedsheep.sdk.scripting.CostReductionSource
+import com.wingedsheep.sdk.scripting.FaceDownSpellCostReduction
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -26,7 +27,7 @@ class DreamChiselTest : FunSpec({
         typeLine = TypeLine.artifact(),
         oracleText = "Face-down creature spells you cast cost {1} less to cast.",
         script = com.wingedsheep.sdk.model.CardScript(
-            staticAbilities = listOf(ReduceFaceDownCastingCost(amount = 1))
+            staticAbilities = listOf(FaceDownSpellCostReduction(CostReductionSource.Fixed(1)))
         )
     )
 

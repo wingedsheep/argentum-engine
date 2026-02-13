@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.permanent
 
 import com.wingedsheep.engine.core.*
+import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
@@ -16,10 +17,13 @@ import kotlin.reflect.KClass
  * "Creatures of the creature type of your choice get +X/+Y until end of turn."
  *
  * This executor:
- * 1. Presents a ChooseOptionDecision with all creature types
- * 2. Pushes a ChooseCreatureTypeModifyStatsContinuation for the next step
+ * 1. Evaluates dynamic amounts (e.g., X value) at resolution time
+ * 2. Presents a ChooseOptionDecision with all creature types
+ * 3. Pushes a ChooseCreatureTypeModifyStatsContinuation with resolved integer values
  */
-class ChooseCreatureTypeModifyStatsExecutor : EffectExecutor<ChooseCreatureTypeModifyStatsEffect> {
+class ChooseCreatureTypeModifyStatsExecutor(
+    private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator()
+) : EffectExecutor<ChooseCreatureTypeModifyStatsEffect> {
 
     override val effectType: KClass<ChooseCreatureTypeModifyStatsEffect> =
         ChooseCreatureTypeModifyStatsEffect::class
@@ -32,6 +36,10 @@ class ChooseCreatureTypeModifyStatsExecutor : EffectExecutor<ChooseCreatureTypeM
         val controllerId = context.controllerId
         val allCreatureTypes = Subtype.ALL_CREATURE_TYPES
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
+
+        // Evaluate dynamic amounts at resolution time
+        val resolvedPower = amountEvaluator.evaluate(state, effect.powerModifier, context)
+        val resolvedToughness = amountEvaluator.evaluate(state, effect.toughnessModifier, context)
 
         val decisionId = UUID.randomUUID().toString()
         val decision = ChooseOptionDecision(
@@ -52,8 +60,8 @@ class ChooseCreatureTypeModifyStatsExecutor : EffectExecutor<ChooseCreatureTypeM
             sourceId = context.sourceId,
             sourceName = sourceName,
             creatureTypes = allCreatureTypes,
-            powerModifier = effect.powerModifier,
-            toughnessModifier = effect.toughnessModifier,
+            powerModifier = resolvedPower,
+            toughnessModifier = resolvedToughness,
             duration = effect.duration
         )
 

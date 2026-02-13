@@ -15,7 +15,6 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CostReductionSource
 import com.wingedsheep.sdk.scripting.FaceDownSpellCostReduction
 import com.wingedsheep.sdk.scripting.KeywordAbility
-import com.wingedsheep.sdk.scripting.ReduceFaceDownCastingCost
 import com.wingedsheep.sdk.scripting.SpellCostReduction
 
 /**
@@ -63,35 +62,6 @@ class CostCalculator(
         }
 
         return reduceGenericCost(cardDef.manaCost, totalReduction)
-    }
-
-    /**
-     * Calculate the effective cost of casting a face-down creature spell.
-     * Checks battlefield permanents controlled by the caster for ReduceFaceDownCastingCost abilities.
-     *
-     * @param state The current game state
-     * @param casterId The player casting the spell
-     * @return The effective mana cost after reductions (base {3} minus reductions)
-     */
-    fun calculateFaceDownCost(
-        state: GameState,
-        casterId: EntityId
-    ): ManaCost {
-        val baseCost = ManaCost.parse("{3}")
-        var totalReduction = 0
-
-        for (entityId in state.getBattlefield(casterId)) {
-            val cardComponent = state.getEntity(entityId)?.get<CardComponent>() ?: continue
-            val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId) ?: continue
-
-            for (ability in cardDef.script.staticAbilities) {
-                if (ability is ReduceFaceDownCastingCost) {
-                    totalReduction += ability.amount
-                }
-            }
-        }
-
-        return reduceGenericCost(baseCost, totalReduction)
     }
 
     /**
