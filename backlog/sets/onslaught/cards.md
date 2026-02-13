@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 255 / 335
+**Implemented:** 256 / 335
 
 ---
 
@@ -318,7 +318,7 @@
 - [x] Visara the Dreadful
 - [x] Vitality Charm
 - [ ] Voice of the Woods
-- [ ] Voidmage Prodigy
+- [x] Voidmage Prodigy
 - [ ] Walking Desecration
 - [x] Wall of Mulch
 - [x] Wave of Indifference
