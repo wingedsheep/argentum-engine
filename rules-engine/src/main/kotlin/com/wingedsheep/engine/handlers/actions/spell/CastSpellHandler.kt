@@ -359,10 +359,13 @@ class CastSpellHandler(
 
         // Process additional costs (sacrifice, etc.)
         val sacrificedPermanentIds = mutableListOf<EntityId>()
+        val sacrificedPermanentSubtypes = mutableMapOf<EntityId, Set<String>>()
         if (cardDef != null && action.additionalCostPayment != null) {
             for (additionalCost in cardDef.script.additionalCosts) {
                 when (additionalCost) {
                     is AdditionalCost.SacrificePermanent -> {
+                        // Project state to capture text-changed subtypes before sacrifice
+                        val projectedBeforeSacrifice = stateProjector.project(currentState)
                         for (permId in action.additionalCostPayment.sacrificedPermanents) {
                             val permContainer = currentState.getEntity(permId) ?: continue
                             val permCard = permContainer.get<CardComponent>() ?: continue
@@ -370,6 +373,12 @@ class CastSpellHandler(
                             val ownerId = permCard.ownerId ?: action.playerId
                             val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
                             val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
+
+                            // Snapshot projected subtypes before zone change
+                            val projectedSubtypes = projectedBeforeSacrifice.getSubtypes(permId)
+                            if (projectedSubtypes.isNotEmpty()) {
+                                sacrificedPermanentSubtypes[permId] = projectedSubtypes
+                            }
 
                             currentState = currentState.removeFromZone(battlefieldZone, permId)
                             currentState = currentState.addToZone(graveyardZone, permId)
@@ -440,6 +449,7 @@ class CastSpellHandler(
             action.targets,
             action.xValue,
             sacrificedPermanentIds,
+            sacrificedPermanentSubtypes,
             action.castFaceDown,
             action.damageDistribution,
             spellTargetRequirements

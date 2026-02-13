@@ -130,6 +130,25 @@ export function StackDisplay() {
                       {card.chosenCreatureType}
                     </div>
                   )}
+                  {/* Show sacrificed creature types for spells like Endemic Plague */}
+                  {card.sacrificedCreatureTypes && card.sacrificedCreatureTypes.length > 0 && (
+                    <div style={{
+                      position: 'absolute',
+                      bottom: card.chosenCreatureType ? 20 : 4,
+                      left: 4,
+                      backgroundColor: 'rgba(80, 30, 30, 0.9)',
+                      color: '#f0a0a0',
+                      fontSize: 9,
+                      padding: '1px 4px',
+                      borderRadius: 3,
+                      border: '1px solid rgba(200, 80, 80, 0.6)',
+                      whiteSpace: 'nowrap',
+                      pointerEvents: 'none',
+                      zIndex: 5,
+                    }}>
+                      {card.sacrificedCreatureTypes.join(', ')}
+                    </div>
+                  )}
                   {/* Show text modification badges (e.g., Artificial Evolution) */}
                   {card.activeEffects && card.activeEffects.length > 0 && (
                     <div style={styles.stackActiveEffects}>

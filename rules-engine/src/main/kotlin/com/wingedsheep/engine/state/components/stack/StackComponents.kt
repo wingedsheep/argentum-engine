@@ -19,6 +19,7 @@ data class SpellOnStackComponent(
     val wasKicked: Boolean = false,  // For kicker costs
     val chosenModes: List<Int> = emptyList(),  // For modal spells
     val sacrificedPermanents: List<EntityId> = emptyList(),  // For additional costs
+    val sacrificedPermanentSubtypes: Map<EntityId, Set<String>> = emptyMap(),  // Projected subtypes at time of sacrifice
     val castFaceDown: Boolean = false,  // For morph - creature enters face-down
     val damageDistribution: Map<EntityId, Int>? = null,  // For DividedDamageEffect - pre-chosen damage allocation
     val chosenCreatureType: String? = null  // For spells that choose a creature type during casting (e.g., Aphetto Dredging)

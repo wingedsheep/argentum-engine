@@ -175,7 +175,10 @@ data class ClientCard(
     val chosenCreatureType: String? = null,
 
     /** Source zone for triggered abilities on the stack (e.g., "GRAVEYARD" for Gigapede) */
-    val sourceZone: String? = null
+    val sourceZone: String? = null,
+
+    /** Creature types of the sacrificed permanent (for spells like Endemic Plague on the stack) */
+    val sacrificedCreatureTypes: Set<String>? = null
 )
 
 /**

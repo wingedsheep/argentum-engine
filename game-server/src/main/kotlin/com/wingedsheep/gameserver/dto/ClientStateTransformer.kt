@@ -471,6 +471,11 @@ class ClientStateTransformer(
         val chosenCreatureType = container.get<ChosenCreatureTypeComponent>()?.creatureType
             ?: spellOnStack?.chosenCreatureType
 
+        // Get sacrificed creature types for spells with sacrifice-as-cost (e.g., Endemic Plague)
+        val sacrificedCreatureTypes = spellOnStack?.sacrificedPermanentSubtypes
+            ?.values?.flatten()?.toSet()
+            ?.takeIf { it.isNotEmpty() }
+
         // Build type line string from TypeLine, using projected subtypes if available
         val typeLine = cardComponent.typeLine
         val projectedSubtypes = projectedValues?.subtypes?.toList()
@@ -529,7 +534,8 @@ class ClientStateTransformer(
                 ClientRuling(date = it.date, text = it.text)
             } ?: emptyList(),
             chosenX = chosenX,
-            chosenCreatureType = chosenCreatureType
+            chosenCreatureType = chosenCreatureType,
+            sacrificedCreatureTypes = sacrificedCreatureTypes
         )
     }
 

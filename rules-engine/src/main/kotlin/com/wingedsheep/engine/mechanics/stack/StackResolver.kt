@@ -74,6 +74,7 @@ class StackResolver(
         targets: List<ChosenTarget> = emptyList(),
         xValue: Int? = null,
         sacrificedPermanents: List<EntityId> = emptyList(),
+        sacrificedPermanentSubtypes: Map<EntityId, Set<String>> = emptyMap(),
         castFaceDown: Boolean = false,
         damageDistribution: Map<EntityId, Int>? = null,
         targetRequirements: List<TargetRequirement> = emptyList(),
@@ -94,6 +95,7 @@ class StackResolver(
                 casterId = casterId,
                 xValue = xValue,
                 sacrificedPermanents = sacrificedPermanents,
+                sacrificedPermanentSubtypes = sacrificedPermanentSubtypes,
                 castFaceDown = castFaceDown,
                 damageDistribution = damageDistribution,
                 chosenCreatureType = chosenCreatureType
@@ -494,6 +496,7 @@ class StackResolver(
                 targets = targets,
                 xValue = spellComponent.xValue,
                 sacrificedPermanents = spellComponent.sacrificedPermanents,
+                sacrificedPermanentSubtypes = spellComponent.sacrificedPermanentSubtypes,
                 damageDistribution = spellComponent.damageDistribution,
                 chosenCreatureType = spellComponent.chosenCreatureType
             )

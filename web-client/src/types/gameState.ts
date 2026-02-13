@@ -156,6 +156,9 @@ export interface ClientCard {
 
   /** Source zone for triggered abilities on the stack (e.g., "GRAVEYARD" for graveyard triggers) */
   readonly sourceZone?: string | null
+
+  /** Creature types of the sacrificed permanent (for spells like Endemic Plague on the stack) */
+  readonly sacrificedCreatureTypes?: readonly string[] | null
 }
 
 /**
