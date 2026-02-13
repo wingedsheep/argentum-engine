@@ -12,7 +12,7 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class ActivatedAbility(
-    val id: AbilityId,
+    val id: AbilityId = AbilityId.generate(),
     val cost: AbilityCost,
     val effect: Effect,
     val targetRequirement: TargetRequirement? = null,
@@ -107,6 +107,7 @@ sealed interface AbilityCost {
     }
 
     /** Discard your entire hand */
+    @SerialName("CostDiscardHand")
     @Serializable
     data object DiscardHand : AbilityCost {
         override val description: String = "Discard your hand"

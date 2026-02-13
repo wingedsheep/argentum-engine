@@ -15,7 +15,7 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class TriggeredAbility(
-    val id: AbilityId,
+    val id: AbilityId = AbilityId.generate(),
     val trigger: Trigger,
     val effect: Effect,
     val optional: Boolean = false,

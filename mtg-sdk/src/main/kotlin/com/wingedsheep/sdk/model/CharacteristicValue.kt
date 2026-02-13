@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.model
 
 import com.wingedsheep.sdk.scripting.DynamicAmount
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
@@ -29,6 +30,7 @@ sealed interface CharacteristicValue {
      * A fixed integer value.
      * Example: A 2/2 creature has Fixed(2) for both power and toughness.
      */
+    @SerialName("FixedValue")
     @Serializable
     data class Fixed(val value: Int) : CharacteristicValue {
         override val description: String = value.toString()
@@ -38,6 +40,7 @@ sealed interface CharacteristicValue {
      * A dynamic value determined by game state.
      * Example: Tarmogoyf's power is Dynamic(CardTypesInAllGraveyards).
      */
+    @SerialName("DynamicValue")
     @Serializable
     data class Dynamic(val source: DynamicAmount) : CharacteristicValue {
         override val description: String = "*"
@@ -47,6 +50,7 @@ sealed interface CharacteristicValue {
      * A dynamic value with a fixed offset.
      * Example: Tarmogoyf's toughness is DynamicWithOffset(CardTypesInAllGraveyards, 1) = *+1.
      */
+    @SerialName("DynamicWithOffsetValue")
     @Serializable
     data class DynamicWithOffset(
         val source: DynamicAmount,

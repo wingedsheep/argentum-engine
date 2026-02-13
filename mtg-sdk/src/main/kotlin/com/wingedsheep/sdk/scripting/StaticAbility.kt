@@ -292,6 +292,7 @@ data class SpellCostReduction(
  *
  * @property reductionSource How the reduction amount is determined
  */
+@SerialName("FaceDownSpellCostReduction")
 @Serializable
 data class FaceDownSpellCostReduction(
     val reductionSource: CostReductionSource
@@ -597,6 +598,7 @@ data class CantBeBlockedUnlessDefenderSharesCreatureType(
  *
  * @property amount The amount of generic mana to reduce
  */
+@SerialName("ReduceFaceDownCastingCost")
 @Serializable
 data class ReduceFaceDownCastingCost(
     val amount: Int

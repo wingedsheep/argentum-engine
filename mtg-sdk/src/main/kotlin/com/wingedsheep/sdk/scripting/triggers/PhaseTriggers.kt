@@ -79,6 +79,7 @@ data class OnFirstMainPhase(
  * Used for auras that grant abilities to the enchanted creature.
  * "At the beginning of your upkeep" (where "your" refers to the enchanted creature's controller).
  */
+@SerialName("OnEnchantedCreatureControllerUpkeep")
 @Serializable
 data object OnEnchantedCreatureControllerUpkeep : Trigger {
     override val description: String = "At the beginning of enchanted creature's controller's upkeep"
