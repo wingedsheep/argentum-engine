@@ -112,6 +112,7 @@ object OnslaughtSet {
         MistformWall,
         Reminisce,
         RiptideBiologist,
+        SeasClaim,
         Standardize,
         VoidmageProdigy,
 

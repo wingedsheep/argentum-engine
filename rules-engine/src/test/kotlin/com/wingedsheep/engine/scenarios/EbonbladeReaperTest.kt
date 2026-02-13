@@ -52,6 +52,20 @@ class EbonbladeReaperTest : FunSpec({
         return driver
     }
 
+    /**
+     * Helper to advance to player 1's declare attackers step.
+     * Handles the case where player 2 may go first due to random turn order.
+     */
+    fun GameTestDriver.advanceToPlayer1DeclareAttackers() {
+        passPriorityUntil(Step.DECLARE_ATTACKERS)
+        var safety = 0
+        while (activePlayer != player1 && safety < 50) {
+            bothPass()
+            passPriorityUntil(Step.DECLARE_ATTACKERS)
+            safety++
+        }
+    }
+
     test("attacking with Ebonblade Reaper causes you to lose half your life rounded up") {
         val driver = createDriver()
         driver.initMirrorMatch(
@@ -65,7 +79,7 @@ class EbonbladeReaperTest : FunSpec({
         val reaper = driver.putCreatureOnBattlefield(attacker, "Ebonblade Reaper")
         driver.removeSummoningSickness(reaper)
 
-        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.advanceToPlayer1DeclareAttackers()
         driver.declareAttackers(attacker, listOf(reaper), opponent)
 
         // Resolve the attack trigger - you lose half your life (20 -> 10)
@@ -87,7 +101,7 @@ class EbonbladeReaperTest : FunSpec({
         val reaper = driver.putCreatureOnBattlefield(attacker, "Ebonblade Reaper")
         driver.removeSummoningSickness(reaper)
 
-        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.advanceToPlayer1DeclareAttackers()
         driver.declareAttackers(attacker, listOf(reaper), opponent)
 
         // Resolve the attack trigger (attacker loses half life: 20 -> 10)
@@ -129,7 +143,7 @@ class EbonbladeReaperTest : FunSpec({
         val reaper = driver.putCreatureOnBattlefield(attacker, "Ebonblade Reaper")
         driver.removeSummoningSickness(reaper)
 
-        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.advanceToPlayer1DeclareAttackers()
         driver.declareAttackers(attacker, listOf(reaper), opponent)
 
         // Resolve the attack trigger - lose half of 15 rounded up = 8, so 15 -> 7
@@ -154,7 +168,7 @@ class EbonbladeReaperTest : FunSpec({
         val blocker = driver.putCreatureOnBattlefield(opponent, "Wind Drake")
         driver.removeSummoningSickness(blocker)
 
-        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.advanceToPlayer1DeclareAttackers()
         driver.declareAttackers(attacker, listOf(reaper), opponent)
 
         // Resolve the attack trigger (attacker still loses half life: 20 -> 10)
@@ -188,7 +202,7 @@ class EbonbladeReaperTest : FunSpec({
         val reaper = driver.putCreatureOnBattlefield(attacker, "Ebonblade Reaper")
         driver.removeSummoningSickness(reaper)
 
-        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.advanceToPlayer1DeclareAttackers()
         driver.declareAttackers(attacker, listOf(reaper), opponent)
 
         // Attack trigger: attacker loses half of 20 = 10

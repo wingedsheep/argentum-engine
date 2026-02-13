@@ -632,6 +632,15 @@ class StateProjector(
                     values.subtypes.addAll(mod.subtypes)
                     values.types.addAll(mod.subtypes)
                 }
+                is Modification.SetBasicLandTypes -> {
+                    // Remove all basic land subtypes (Rule 305.7)
+                    val basicLandTypes = com.wingedsheep.sdk.core.Subtype.ALL_BASIC_LAND_TYPES
+                    values.subtypes.removeAll { it in basicLandTypes }
+                    values.types.removeAll { it in basicLandTypes }
+                    // Add the new land subtypes
+                    values.subtypes.addAll(mod.subtypes)
+                    values.types.addAll(mod.subtypes)
+                }
                 is Modification.ChangeController -> {
                     values.controllerId = mod.newControllerId
                 }
@@ -874,6 +883,15 @@ sealed interface Modification {
      */
     @Serializable
     data class SetCreatureSubtypes(val subtypes: Set<String>) : Modification
+
+    /**
+     * Replace all basic land subtypes with the given set (Rule 305.7).
+     * Used by "is an Island" effects that change a land's basic land types.
+     * Removes existing basic land subtypes (Plains, Island, Swamp, Mountain, Forest)
+     * and replaces them with the specified types.
+     */
+    @Serializable
+    data class SetBasicLandTypes(val subtypes: Set<String>) : Modification
     @Serializable
     data class ChangeController(val newControllerId: EntityId) : Modification
 

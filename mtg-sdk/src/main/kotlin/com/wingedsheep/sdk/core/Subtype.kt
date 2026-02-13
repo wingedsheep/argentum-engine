@@ -110,6 +110,14 @@ value class Subtype(val value: String) {
         fun of(value: String): Subtype = Subtype(value)
 
         /**
+         * All basic land types. Used for type-changing effects like "is an Island"
+         * which replace all existing land subtypes (Rule 305.7).
+         */
+        val ALL_BASIC_LAND_TYPES: Set<String> = setOf(
+            "Plains", "Island", "Swamp", "Mountain", "Forest"
+        )
+
+        /**
          * All recognized creature types for text-changing effects.
          * Sorted alphabetically for presentation in choose-option decisions.
          */

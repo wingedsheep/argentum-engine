@@ -12,7 +12,6 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.ManaSymbol
-import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityCost
@@ -358,6 +357,34 @@ class ManaSolver(
             // Basic land detection
             val isBasicLand = card.typeLine.isBasicLand
 
+            // For lands: check projected basic land subtypes first (Rule 305.7)
+            // Basic land types grant intrinsic mana abilities, and type-changing effects
+            // like Sea's Claim change what mana a land produces
+            if (card.typeLine.isLand) {
+                val projectedSubtypes = projected.getSubtypes(entityId)
+                val subtypeColors = mutableSetOf<Color>()
+                if (projectedSubtypes.contains("Plains")) subtypeColors.add(Color.WHITE)
+                if (projectedSubtypes.contains("Island")) subtypeColors.add(Color.BLUE)
+                if (projectedSubtypes.contains("Swamp")) subtypeColors.add(Color.BLACK)
+                if (projectedSubtypes.contains("Mountain")) subtypeColors.add(Color.RED)
+                if (projectedSubtypes.contains("Forest")) subtypeColors.add(Color.GREEN)
+
+                if (subtypeColors.isNotEmpty()) {
+                    return@mapNotNull ManaSource(
+                        entityId = entityId,
+                        name = card.name,
+                        producesColors = subtypeColors,
+                        producesColorless = false,
+                        isBasicLand = isBasicLand,
+                        isCreature = isCreature,
+                        hasNonManaAbilities = hasNonManaAbilities,
+                        hasPainCost = false,
+                        painAmount = 0,
+                        canAttack = canAttack
+                    )
+                }
+            }
+
             // Try to find a tap-based mana ability
             for (ability in manaAbilities) {
                 // Detect pain cost in mana abilities
@@ -439,34 +466,17 @@ class ManaSolver(
             }
 
             // Fall back to land subtype logic for lands without explicit abilities
+            // (lands without basic land subtypes that also have no explicit mana abilities
+            // produce colorless mana, e.g., Wastes)
             if (!card.typeLine.isLand) return@mapNotNull null
-
-            // Determine what colors this land produces based on subtypes
-            val producesColors = mutableSetOf<Color>()
-            val subtypes = card.typeLine.subtypes
-
-            // Basic land types produce their associated color
-            if (subtypes.contains(Subtype.PLAINS)) producesColors.add(Color.WHITE)
-            if (subtypes.contains(Subtype.ISLAND)) producesColors.add(Color.BLUE)
-            if (subtypes.contains(Subtype.SWAMP)) producesColors.add(Color.BLACK)
-            if (subtypes.contains(Subtype.MOUNTAIN)) producesColors.add(Color.RED)
-            if (subtypes.contains(Subtype.FOREST)) producesColors.add(Color.GREEN)
-
-            // Treat lands without basic land types as colorless producers
-            // This handles generic lands, Wastes, and similar cases
-            val producesColorless = producesColors.isEmpty()
-
-            if (producesColors.isEmpty() && !producesColorless) {
-                return@mapNotNull null
-            }
 
             ManaSource(
                 entityId = entityId,
                 name = card.name,
-                producesColors = producesColors,
-                producesColorless = producesColorless,
+                producesColors = emptySet(),
+                producesColorless = true,
                 isBasicLand = isBasicLand,
-                isCreature = false, // Falls back to land subtype logic, so not a creature
+                isCreature = false,
                 hasNonManaAbilities = hasNonManaAbilities,
                 hasPainCost = false,
                 painAmount = 0,

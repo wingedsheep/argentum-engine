@@ -13,6 +13,7 @@ import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.Condition
 import com.wingedsheep.sdk.scripting.ControlEnchantedPermanent
+import com.wingedsheep.sdk.scripting.SetEnchantedLandType
 import com.wingedsheep.sdk.scripting.GrantKeywordByCounter
 import com.wingedsheep.sdk.scripting.GrantProtection
 import com.wingedsheep.sdk.scripting.SourceHasSubtype
@@ -175,6 +176,16 @@ class StaticAbilityHandler(
                     layer = Layer.CONTROL,
                     sublayer = null,
                     modification = Modification.ChangeControllerToSourceController,
+                    affectsFilter = AffectsFilter.AttachedPermanent
+                )
+            }
+            is SetEnchantedLandType -> {
+                // "Enchanted land is an [type]" - Layer 4 type-changing effect
+                // Replaces all basic land subtypes with the specified type (Rule 305.7)
+                ContinuousEffectData(
+                    layer = Layer.TYPE,
+                    sublayer = null,
+                    modification = Modification.SetBasicLandTypes(setOf(ability.landType)),
                     affectsFilter = AffectsFilter.AttachedPermanent
                 )
             }

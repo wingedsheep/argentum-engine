@@ -605,6 +605,23 @@ data class ReduceFaceDownCastingCost(
 }
 
 /**
+ * Enchanted land becomes a specific basic land type.
+ * Used for auras like Sea's Claim: "Enchanted land is an Island."
+ * This replaces all existing land subtypes with the specified type (Rule 305.7).
+ *
+ * @property landType The basic land type to set (e.g., "Island", "Plains")
+ */
+@SerialName("SetEnchantedLandType")
+@Serializable
+data class SetEnchantedLandType(
+    val landType: String
+) : StaticAbility {
+    override val description: String = "Enchanted land is ${
+        if (landType.first().lowercaseChar() in "aeiou") "an" else "a"
+    } $landType"
+}
+
+/**
  * This creature can't attack unless defending player controls a land of a specific type.
  * Used for Deep-Sea Serpent: "can't attack unless defending player controls an Island."
  *
