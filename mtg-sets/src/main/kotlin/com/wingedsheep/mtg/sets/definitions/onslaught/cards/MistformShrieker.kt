@@ -21,6 +21,7 @@ val MistformShrieker = card("Mistform Shrieker") {
     typeLine = "Creature — Illusion"
     power = 3
     toughness = 3
+    oracleText = "Flying\n{1}: Mistform Shrieker becomes the creature type of your choice until end of turn.\nMorph {3}{U}{U}"
 
     keywords(Keyword.FLYING)
 

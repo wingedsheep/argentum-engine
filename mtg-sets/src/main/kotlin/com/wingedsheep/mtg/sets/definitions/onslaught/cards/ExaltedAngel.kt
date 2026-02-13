@@ -21,6 +21,7 @@ val ExaltedAngel = card("Exalted Angel") {
     typeLine = "Creature — Angel"
     power = 4
     toughness = 5
+    oracleText = "Flying\nWhenever Exalted Angel deals damage, you gain that much life.\nMorph {2}{W}{W}"
 
     keywords(Keyword.FLYING)
 

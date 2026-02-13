@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.scripting.TimingRule
  */
 val SecludedSteppe = card("Secluded Steppe") {
     typeLine = "Land"
+    oracleText = "Secluded Steppe enters the battlefield tapped.\n{T}: Add {W}.\nCycling {W}"
 
     replacementEffect(EntersTapped())
 

@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.scripting.OnCycle
 val RenewedFaith = card("Renewed Faith") {
     manaCost = "{2}{W}"
     typeLine = "Instant"
+    oracleText = "You gain 6 life.\nCycling {1}{W}\nWhen you cycle Renewed Faith, you may gain 2 life."
 
     spell {
         effect = GainLifeEffect(6)

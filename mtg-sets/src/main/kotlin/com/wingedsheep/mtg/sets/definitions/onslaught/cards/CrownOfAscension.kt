@@ -20,6 +20,7 @@ import com.wingedsheep.sdk.scripting.GrantToEnchantedCreatureTypeGroupEffect
 val CrownOfAscension = card("Crown of Ascension") {
     manaCost = "{1}{U}"
     typeLine = "Enchantment — Aura"
+    oracleText = "Enchant creature\nEnchanted creature has flying.\nSacrifice Crown of Ascension: Enchanted creature and other creatures that share a creature type with it gain flying until end of turn."
 
     auraTarget = Targets.Creature
 

@@ -41,8 +41,10 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.Player
+import com.wingedsheep.sdk.scripting.DoubleDamage
 import com.wingedsheep.sdk.scripting.PreventDamage
 import com.wingedsheep.sdk.scripting.RecipientFilter
+import com.wingedsheep.sdk.scripting.SourceFilter
 
 /**
  * Utility functions shared across effect executors.
@@ -259,8 +261,8 @@ object EffectExecutorUtils {
             }
         }
 
-        // Apply damage prevention shields (Prevent the next X damage)
-        var effectiveAmount = amount
+        // Apply damage amplification (e.g., Gratuitous Violence - DoubleDamage)
+        var effectiveAmount = applyStaticDamageAmplification(state, targetId, amount, sourceId)
         var newState = state
         if (!cantBePrevented) {
             val (shieldState, reducedAmount) = applyDamagePreventionShields(newState, targetId, effectiveAmount)
@@ -517,6 +519,78 @@ object EffectExecutorUtils {
         }
 
         return remainingDamage.coerceAtLeast(0)
+    }
+
+    /**
+     * Apply static damage amplification from permanents on the battlefield.
+     *
+     * Scans all battlefield entities for ReplacementEffectSourceComponent containing
+     * DoubleDamage effects, and doubles damage if the source and recipient match.
+     * Per MTG rules, damage amplification applies before prevention.
+     *
+     * @param state The current game state
+     * @param targetId The entity receiving damage
+     * @param amount The incoming damage amount
+     * @param sourceId The entity dealing damage
+     * @return The amplified damage amount
+     */
+    fun applyStaticDamageAmplification(
+        state: GameState,
+        targetId: EntityId,
+        amount: Int,
+        sourceId: EntityId?
+    ): Int {
+        if (amount <= 0) return 0
+
+        var amplifiedAmount = amount
+        val projected = stateProjector.project(state)
+
+        for (entityId in state.getBattlefield()) {
+            val container = state.getEntity(entityId) ?: continue
+            val replacementComponent = container.get<ReplacementEffectSourceComponent>() ?: continue
+            val sourceControllerId = container.get<ControllerComponent>()?.playerId ?: continue
+
+            for (effect in replacementComponent.replacementEffects) {
+                if (effect !is DoubleDamage) continue
+
+                val damageEvent = effect.appliesTo
+                if (damageEvent !is com.wingedsheep.sdk.scripting.GameEvent.DamageEvent) continue
+
+                // Check if the damage source matches the source filter
+                val sourceMatches = when (val sourceFilter = damageEvent.source) {
+                    is SourceFilter.Any -> true
+                    is SourceFilter.Matching -> {
+                        if (sourceId == null) false
+                        else {
+                            val context = PredicateContext(controllerId = sourceControllerId)
+                            predicateEvaluator.matchesWithProjection(state, projected, sourceId, sourceFilter.filter, context)
+                        }
+                    }
+                    else -> false
+                }
+                if (!sourceMatches) continue
+
+                // Check if the target matches the recipient filter
+                val recipientMatches = when (val recipient = damageEvent.recipient) {
+                    is RecipientFilter.Any -> true
+                    is RecipientFilter.Matching -> {
+                        val context = PredicateContext(controllerId = sourceControllerId)
+                        predicateEvaluator.matchesWithProjection(state, projected, targetId, recipient.filter, context)
+                    }
+                    is RecipientFilter.CreatureYouControl -> {
+                        val isCreature = state.getEntity(targetId)?.get<CardComponent>()?.typeLine?.isCreature == true
+                        val isControlled = state.getEntity(targetId)?.get<ControllerComponent>()?.playerId == sourceControllerId
+                        isCreature && isControlled
+                    }
+                    else -> false
+                }
+                if (!recipientMatches) continue
+
+                amplifiedAmount *= 2
+            }
+        }
+
+        return amplifiedAmount
     }
 
     /**

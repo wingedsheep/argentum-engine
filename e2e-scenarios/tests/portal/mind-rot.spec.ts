@@ -36,7 +36,9 @@ test.describe('Mind Rot', () => {
     await p1.clickCard('Mind Rot')
     await p1.selectAction('Cast Mind Rot')
 
-    // Spell auto-resolves (opponent has no responses)
+    // Opponent resolves the spell
+    await p2.resolveStack('Mind Rot')
+
     // Opponent sees card selection overlay — must choose 2 cards to discard
     await p2.selectCardInDecision('Grizzly Bears')
     await p2.selectCardInDecision('Hill Giant')

@@ -17,6 +17,7 @@ val DaruLancer = card("Daru Lancer") {
     typeLine = "Creature — Human Soldier"
     power = 3
     toughness = 4
+    oracleText = "First strike\nMorph {2}{W}{W}"
 
     keywords(Keyword.FIRST_STRIKE)
     morph = "{2}{W}{W}"

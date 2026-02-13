@@ -19,6 +19,7 @@ val ScreechingBuzzard = card("Screeching Buzzard") {
     typeLine = "Creature — Bird"
     power = 2
     toughness = 2
+    oracleText = "Flying\nWhen Screeching Buzzard dies, each opponent discards a card."
 
     keywords(Keyword.FLYING)
 

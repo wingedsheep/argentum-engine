@@ -20,6 +20,7 @@ val Whipcorder = card("Whipcorder") {
     typeLine = "Creature — Human Soldier Rebel"
     power = 2
     toughness = 2
+    oracleText = "{W}, {T}: Tap target creature.\nMorph {W}"
 
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{W}"), Costs.Tap)

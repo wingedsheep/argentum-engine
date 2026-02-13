@@ -35,6 +35,7 @@ test.describe('Crown of Suspicion', () => {
     })
 
     const p1 = player1.gamePage
+    const p2 = player2.gamePage
 
     // Cast Crown of Suspicion targeting opponent's Grizzly Bears
     await p1.clickCard('Crown of Suspicion')
@@ -57,7 +58,8 @@ test.describe('Crown of Suspicion', () => {
     await p1.page.locator(cardByName('Crown of Suspicion')).first().dispatchEvent('click')
     await p1.selectAction('Sacrifice this permanent')
 
-    // SacrificeSelf — single target auto-selected, ability resolves
+    // P1 auto-passes (own ability on stack), P2 must resolve the ability
+    await p2.pass()
 
     // Crown should be gone from the battlefield
     await p1.expectNotOnBattlefield('Crown of Suspicion')

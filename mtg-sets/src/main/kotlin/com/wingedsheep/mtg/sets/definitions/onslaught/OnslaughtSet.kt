@@ -180,6 +180,7 @@ object OnslaughtSet {
         ErraticExplosion,
         FeverCharm,
         FlamestickCourier,
+        GratuitousViolence,
         GoblinMachinist,
         GoblinPiledriver,
         GoblinPyromancer,

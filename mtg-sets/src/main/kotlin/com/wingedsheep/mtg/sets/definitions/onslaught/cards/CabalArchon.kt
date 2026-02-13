@@ -21,6 +21,7 @@ val CabalArchon = card("Cabal Archon") {
     typeLine = "Creature — Human Cleric"
     power = 2
     toughness = 2
+    oracleText = "{B}, Sacrifice a Cleric: Target player loses 2 life and you gain 2 life."
 
     activatedAbility {
         cost = Costs.Composite(

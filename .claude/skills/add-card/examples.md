@@ -566,6 +566,131 @@ test("optional ETB trigger") {
 
 ---
 
+## E2E Test Template (Playwright)
+
+E2E tests run against the full stack (server + client) in a real browser. Create these when a card introduces
+a new frontend/UI mechanic (new decision type, overlay, targeting flow, zone interaction, etc.).
+
+**File**: `e2e-scenarios/tests/{set}/{card-name}.spec.ts`
+
+### Basic Card E2E Test
+
+```typescript
+import { test, expect } from '../../fixtures/scenarioFixture'
+
+test.describe('Sparksmith', () => {
+  test('tap to deal damage based on goblin count', async ({ createGame }) => {
+    const { player1, player2 } = await createGame({
+      player1Name: 'Goblin Player',
+      player2Name: 'Opponent',
+      player1: {
+        battlefield: [
+          { name: 'Sparksmith', tapped: false, summoningSickness: false },
+          { name: 'Goblin Sky Raider', tapped: false, summoningSickness: false },
+        ],
+      },
+      player2: {
+        battlefield: [{ name: 'Glory Seeker' }],
+        library: ['Mountain'],
+      },
+      phase: 'PRECOMBAT_MAIN',
+      activePlayer: 1,
+    })
+
+    const p1 = player1.gamePage
+
+    // Activated ability: click card → action menu → target → confirm
+    await p1.clickCard('Sparksmith')
+    await p1.selectAction('damage to target')
+    await p1.selectTarget('Glory Seeker')
+    await p1.confirmTargets()
+
+    // Opponent has responses → must pass manually
+    await player2.gamePage.pass()
+
+    // Verify result
+    await p1.expectNotOnBattlefield('Glory Seeker')
+    await p1.expectLifeTotal(player1.playerId, 18)
+  })
+})
+```
+
+### E2E Test with Combat
+
+```typescript
+test('creature attacks and deals damage', async ({ createGame }) => {
+  const { player1, player2 } = await createGame({
+    player1Name: 'Attacker',
+    player2Name: 'Defender',
+    player1: {
+      battlefield: [{ name: 'Hill Giant', summoningSickness: false }],
+      library: ['Mountain'],
+    },
+    player2: {
+      library: ['Mountain'],
+    },
+    phase: 'PRECOMBAT_MAIN',
+    activePlayer: 1,
+  })
+
+  const p1 = player1.gamePage
+  await p1.pass()              // Move to combat
+  await p1.attackWith('Hill Giant')
+  await player2.gamePage.noBlocks()
+
+  await p1.expectLifeTotal(player2.playerId, 17)
+})
+```
+
+### E2E Test with Step Stops (Upkeep)
+
+Use `player1StopAtSteps` / `player2StopAtSteps` to prevent auto-pass at specific steps:
+
+```typescript
+test('triggers during upkeep', async ({ createGame }) => {
+  const { player1 } = await createGame({
+    player1: {
+      graveyard: ['Undead Gladiator'],
+      hand: ['Swamp'],
+      battlefield: [{ name: 'Swamp' }, { name: 'Swamp' }],
+      library: ['Mountain'],
+    },
+    player2: { library: ['Mountain'] },
+    phase: 'BEGINNING',
+    step: 'UPKEEP',
+    activePlayer: 1,
+    player1StopAtSteps: ['UPKEEP'],  // Prevents auto-pass through upkeep
+  })
+
+  // Player now has priority during upkeep
+  await player1.gamePage.expectGhostCardInHand('Undead Gladiator')
+})
+```
+
+### Key GamePage Methods
+
+| Category | Methods |
+|----------|---------|
+| **Card interaction** | `clickCard(name)`, `selectCardInHand(name)`, `selectAction(label)` |
+| **Targeting** | `selectTarget(name)`, `confirmTargets()`, `skipTargets()` |
+| **Priority** | `pass()`, `resolveStack(stackItemText)` |
+| **Decisions** | `answerYes()`, `answerNo()`, `selectNumber(n)`, `selectOption(text)`, `selectXValue(x)` |
+| **Combat** | `attackAll()`, `attackWith(name)`, `declareAttacker(name)`, `declareBlocker(b, a)`, `confirmBlockers()`, `noBlocks()` |
+| **Overlays** | `selectCardInZoneOverlay(name)`, `selectCardInDecision(name)`, `confirmSelection()`, `failToFind()` |
+| **Assertions** | `expectOnBattlefield(name)`, `expectNotOnBattlefield(name)`, `expectInHand(name)`, `expectHandSize(n)`, `expectLifeTotal(id, n)`, `expectGraveyardSize(id, n)`, `expectStats(name, "3/3")` |
+| **Morph** | `castFaceDown(name)`, `turnFaceUp(name)` |
+| **Damage** | `increaseDamageAllocation(name, times)`, `castSpellFromDistribution()`, `allocateDamage(name, amount)`, `confirmDamage()` |
+
+### Important E2E Patterns
+
+- **Auto-pass**: Opponent auto-passes when they have no legal responses. Only call `p2.pass()` when P2 has instant-speed cards.
+- **Library padding**: Always give both players at least one card in their library to prevent draw-from-empty losses.
+- **Face-down creatures**: Alt text is `"Card back"`, not the card name. Use `clickCard('Card back')`.
+- **Activated abilities**: Action buttons show full ability text, not "Activate". Use partial match: `selectAction('damage to target')`.
+- **Aura/sacrifice targeting**: Uses ChooseTargets modal — need `confirmTargets()` after `selectTarget()`.
+
+---
+
 ## Set Registration
 
 ```kotlin

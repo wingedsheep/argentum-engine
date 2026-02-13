@@ -310,7 +310,7 @@ class GameSession(
     ): ClientGameState {
         // Use player1's perspective as the "viewing player" for the transform,
         // then mask player1's hand as well
-        val baseState = stateTransformer.transform(state, player1Id)
+        val baseState = stateTransformer.transform(state, player1Id, isSpectator = true)
 
         // Filter out hand cards from the cards map (spectators can't see either player's hand)
         val player1Hand = state.getHand(player1Id).toSet()
@@ -709,6 +709,11 @@ class GameSession(
 
         // Only the player with priority can take actions
         if (state.priorityPlayerId != playerId) {
+            return emptyList()
+        }
+
+        // If a decision is pending, the player must resolve it before taking any other actions
+        if (state.pendingDecision != null) {
             return emptyList()
         }
 
@@ -1427,7 +1432,7 @@ class GameSession(
                     // SacrificeSelf cost — sacrifice target is the source itself
                     AdditionalCostInfo(
                         description = "Sacrifice this permanent",
-                        costType = "SacrificePermanent",
+                        costType = "SacrificeSelf",
                         validSacrificeTargets = sacrificeTargets,
                         sacrificeCount = 1
                     )
@@ -1770,7 +1775,30 @@ class GameSession(
 
         // Check if they should auto-pass
         val overrides = getStopOverrides(priorityPlayer)
-        return if (autoPassManager.shouldAutoPass(state, priorityPlayer, legalActions, overrides.myTurnStops, overrides.opponentTurnStops)) {
+
+        // Check for legal activated abilities from non-battlefield zones (e.g., graveyard).
+        // These are often step-locked (like Undead Gladiator's upkeep-only ability) and the
+        // player should always get a chance to use them rather than auto-passing through.
+        val hasNonBattlefieldAbility = legalActions.any { actionInfo ->
+            actionInfo.actionType == "ActivateAbility" &&
+                !actionInfo.isManaAbility &&
+                (actionInfo.action as? ActivateAbility)?.let { action ->
+                    !state.getBattlefield().contains(action.sourceId)
+                } ?: false
+        }
+
+        val effectiveOverrides = if (hasNonBattlefieldAbility) {
+            val isMyTurn = state.activePlayerId == priorityPlayer
+            if (isMyTurn) {
+                overrides.copy(myTurnStops = overrides.myTurnStops + state.step)
+            } else {
+                overrides.copy(opponentTurnStops = overrides.opponentTurnStops + state.step)
+            }
+        } else {
+            overrides
+        }
+
+        return if (autoPassManager.shouldAutoPass(state, priorityPlayer, legalActions, effectiveOverrides.myTurnStops, effectiveOverrides.opponentTurnStops)) {
             priorityPlayer
         } else {
             null

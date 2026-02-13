@@ -19,6 +19,7 @@ import com.wingedsheep.sdk.scripting.OnCreatureWithSubtypeEnters
 val AetherCharge = card("Aether Charge") {
     manaCost = "{4}{R}"
     typeLine = "Enchantment"
+    oracleText = "Whenever a Beast enters the battlefield under your control, you may have it deal 4 damage to target opponent."
 
     triggeredAbility {
         trigger = OnCreatureWithSubtypeEnters(Subtype("Beast"), youControlOnly = true)

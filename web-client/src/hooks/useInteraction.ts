@@ -159,13 +159,14 @@ export function useInteraction() {
       }
 
       // Check if spell or ability requires sacrifice as a cost
-      if ((action.type === 'CastSpell' || action.type === 'ActivateAbility') && actionInfo.additionalCostInfo?.costType === 'SacrificePermanent') {
+      if ((action.type === 'CastSpell' || action.type === 'ActivateAbility') &&
+          (actionInfo.additionalCostInfo?.costType === 'SacrificePermanent' || actionInfo.additionalCostInfo?.costType === 'SacrificeSelf')) {
         const costInfo = actionInfo.additionalCostInfo
         const sacrificeCount = costInfo.sacrificeCount ?? 1
         const validSacTargets = costInfo.validSacrificeTargets ?? []
 
-        // Auto-select when there are exactly as many valid targets as required
-        if (validSacTargets.length === sacrificeCount) {
+        // Auto-select for SacrificeSelf (obvious — always the source itself)
+        if (costInfo.costType === 'SacrificeSelf' && validSacTargets.length === sacrificeCount) {
           if (action.type === 'CastSpell') {
             const actionWithCost = {
               ...action,
@@ -209,6 +210,7 @@ export function useInteraction() {
           return
         }
 
+        // SacrificePermanent always shows the sacrifice selection modal
         startTargeting({
           action,
           validTargets: [...validSacTargets],
@@ -233,6 +235,24 @@ export function useInteraction() {
           maxTargets: costInfo.tapCount ?? 1,
           isSacrificeSelection: true,
           isTapPermanentSelection: true,
+          pendingActionInfo: actionInfo,
+        })
+        selectCard(null)
+        return
+      }
+
+      // Check if spell or ability requires discarding a card as a cost
+      if ((action.type === 'CastSpell' || action.type === 'ActivateAbility') &&
+          actionInfo.additionalCostInfo?.costType === 'DiscardCard') {
+        const costInfo = actionInfo.additionalCostInfo
+        startTargeting({
+          action,
+          validTargets: [...(costInfo.validDiscardTargets ?? [])],
+          selectedTargets: [],
+          minTargets: costInfo.discardCount ?? 1,
+          maxTargets: costInfo.discardCount ?? 1,
+          isSacrificeSelection: true,
+          isDiscardSelection: true,
           pendingActionInfo: actionInfo,
         })
         selectCard(null)
@@ -312,18 +332,19 @@ export function useInteraction() {
         return false
       }
 
-      // Sacrifice costs need selection (unless there are exactly as many valid targets as required)
+      // SacrificeSelf is auto-executable (obvious target — the source itself)
+      // SacrificePermanent always needs selection (non-obvious targets like "Sacrifice a Goblin")
       if ((action.type === 'CastSpell' || action.type === 'ActivateAbility') && actionInfo.additionalCostInfo?.costType === 'SacrificePermanent') {
-        const costInfo = actionInfo.additionalCostInfo
-        const sacrificeCount = costInfo.sacrificeCount ?? 1
-        const validSacTargets = costInfo.validSacrificeTargets ?? []
-        if (validSacTargets.length !== sacrificeCount) {
-          return false
-        }
+        return false
       }
 
       // TapPermanents costs need selection (e.g., Birchlore Rangers)
       if (action.type === 'ActivateAbility' && actionInfo.additionalCostInfo?.costType === 'TapPermanents') {
+        return false
+      }
+
+      // DiscardCard costs need selection (e.g., Undead Gladiator)
+      if ((action.type === 'CastSpell' || action.type === 'ActivateAbility') && actionInfo.additionalCostInfo?.costType === 'DiscardCard') {
         return false
       }
 

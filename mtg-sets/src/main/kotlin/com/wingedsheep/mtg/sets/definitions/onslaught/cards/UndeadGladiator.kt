@@ -24,6 +24,7 @@ val UndeadGladiator = card("Undead Gladiator") {
     typeLine = "Creature — Zombie Barbarian"
     power = 3
     toughness = 1
+    oracleText = "{1}{B}, Discard a card: Return Undead Gladiator from your graveyard to your hand. Activate only during your upkeep.\nCycling {1}{B}"
 
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{1}{B}"), Costs.DiscardCard)

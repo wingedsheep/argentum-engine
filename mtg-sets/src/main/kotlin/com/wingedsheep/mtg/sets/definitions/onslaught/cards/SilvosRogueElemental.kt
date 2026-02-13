@@ -20,6 +20,7 @@ val SilvosRogueElemental = card("Silvos, Rogue Elemental") {
     typeLine = "Legendary Creature — Elemental"
     power = 8
     toughness = 5
+    oracleText = "Trample\n{G}: Regenerate Silvos."
 
     keywords(Keyword.TRAMPLE)
 

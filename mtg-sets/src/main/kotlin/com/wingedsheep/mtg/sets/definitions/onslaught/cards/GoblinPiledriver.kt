@@ -24,6 +24,7 @@ val GoblinPiledriver = card("Goblin Piledriver") {
     typeLine = "Creature — Goblin Warrior"
     power = 1
     toughness = 2
+    oracleText = "Protection from blue\nWhenever Goblin Piledriver attacks, it gets +2/+0 until end of turn for each other attacking Goblin."
 
     keywordAbility(KeywordAbility.ProtectionFromColor(Color.BLUE))
 

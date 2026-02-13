@@ -43,7 +43,8 @@ class MayEffectExecutor(
             context = DecisionContext(
                 sourceId = context.sourceId,
                 sourceName = sourceName,
-                phase = DecisionPhase.RESOLUTION
+                phase = DecisionPhase.RESOLUTION,
+                triggeringEntityId = context.triggeringEntityId
             ),
             yesText = "Yes",
             noText = "No"

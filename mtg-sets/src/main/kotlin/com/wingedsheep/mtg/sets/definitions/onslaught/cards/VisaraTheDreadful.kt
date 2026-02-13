@@ -22,6 +22,7 @@ val VisaraTheDreadful = card("Visara the Dreadful") {
     typeLine = "Legendary Creature — Gorgon"
     power = 5
     toughness = 5
+    oracleText = "Flying\n{T}: Destroy target creature. It can't be regenerated."
 
     keywords(Keyword.FLYING)
 

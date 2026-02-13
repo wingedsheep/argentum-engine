@@ -20,6 +20,7 @@ val MistformDreamer = card("Mistform Dreamer") {
     typeLine = "Creature — Illusion"
     power = 2
     toughness = 1
+    oracleText = "Flying\n{1}: Mistform Dreamer becomes the creature type of your choice until end of turn."
 
     keywords(Keyword.FLYING)
 

@@ -20,6 +20,7 @@ import com.wingedsheep.sdk.scripting.GrantToEnchantedCreatureTypeGroupEffect
 val CrownOfAwe = card("Crown of Awe") {
     manaCost = "{1}{W}"
     typeLine = "Enchantment — Aura"
+    oracleText = "Enchant creature\nEnchanted creature has protection from black and from red.\nSacrifice Crown of Awe: Enchanted creature and other creatures that share a creature type with it gain protection from black and from red until end of turn."
 
     auraTarget = Targets.Creature
 

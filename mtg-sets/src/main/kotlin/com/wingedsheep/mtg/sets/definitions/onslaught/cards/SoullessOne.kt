@@ -20,6 +20,7 @@ import com.wingedsheep.sdk.scripting.Player
 val SoullessOne = card("Soulless One") {
     manaCost = "{3}{B}"
     typeLine = "Creature — Zombie Avatar"
+    oracleText = "Trample\nSoulless One's power and toughness are each equal to the number of Zombies on the battlefield plus the number of Zombie cards in all graveyards."
 
     dynamicStats(
         DynamicAmount.Add(

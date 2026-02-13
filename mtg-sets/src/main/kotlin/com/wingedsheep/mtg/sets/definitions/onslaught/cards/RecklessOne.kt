@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.scripting.Player
 val RecklessOne = card("Reckless One") {
     manaCost = "{3}{R}"
     typeLine = "Creature — Goblin Avatar"
+    oracleText = "Haste\nReckless One's power and toughness are each equal to the number of Goblins on the battlefield."
 
     dynamicStats(DynamicAmount.CountBattlefield(Player.Each, GameObjectFilter.Creature.withSubtype("Goblin")))
 

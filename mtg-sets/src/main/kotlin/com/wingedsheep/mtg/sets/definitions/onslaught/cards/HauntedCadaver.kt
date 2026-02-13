@@ -23,6 +23,7 @@ val HauntedCadaver = card("Haunted Cadaver") {
     typeLine = "Creature — Zombie"
     power = 2
     toughness = 2
+    oracleText = "Whenever Haunted Cadaver deals combat damage to a player, you may sacrifice it. If you do, that player discards three cards.\nMorph {1}{B}"
 
     triggeredAbility {
         trigger = Triggers.DealsCombatDamageToPlayer

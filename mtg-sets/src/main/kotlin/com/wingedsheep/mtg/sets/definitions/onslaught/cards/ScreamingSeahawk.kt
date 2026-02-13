@@ -23,6 +23,7 @@ val ScreamingSeahawk = card("Screaming Seahawk") {
     typeLine = "Creature — Bird"
     power = 2
     toughness = 2
+    oracleText = "Flying\nWhen Screaming Seahawk enters the battlefield, you may search your library for a card named Screaming Seahawk, reveal it, put it into your hand, then shuffle."
 
     keywords(Keyword.FLYING)
 

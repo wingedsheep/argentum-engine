@@ -19,6 +19,7 @@ val BirchloreRangers = card("Birchlore Rangers") {
     typeLine = "Creature — Elf Druid Ranger"
     power = 1
     toughness = 1
+    oracleText = "Tap two untapped Elves you control: Add one mana of any color.\nMorph {G}"
 
     activatedAbility {
         cost = Costs.TapPermanents(2, GameObjectFilter.Creature.withSubtype("Elf"))

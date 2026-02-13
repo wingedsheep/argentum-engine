@@ -149,6 +149,7 @@ val engineSerializersModule = SerializersModule {
         subclass(ModalTargetContinuation::class)
         subclass(CloneEntersContinuation::class)
         subclass(ChooseCreatureTypeEntersContinuation::class)
+        subclass(CastWithCreatureTypeContinuation::class)
     }
 
     // Component hierarchy (for GameState persistence)

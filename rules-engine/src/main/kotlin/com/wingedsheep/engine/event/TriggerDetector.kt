@@ -12,6 +12,8 @@ import com.wingedsheep.engine.core.TurnFaceUpEvent
 import com.wingedsheep.engine.core.UntappedEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
+import com.wingedsheep.engine.handlers.ConditionEvaluator
+import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.mechanics.text.SubtypeReplacer
@@ -35,7 +37,8 @@ import com.wingedsheep.sdk.scripting.*
 class TriggerDetector(
     private val cardRegistry: CardRegistry? = null,
     private val abilityRegistry: AbilityRegistry = AbilityRegistry(),
-    private val stateProjector: StateProjector = StateProjector()
+    private val stateProjector: StateProjector = StateProjector(),
+    private val conditionEvaluator: ConditionEvaluator = ConditionEvaluator()
 ) {
 
     /**
@@ -94,8 +97,8 @@ class TriggerDetector(
         // so dead creatures miss each other's death events. Fix that here.
         detectSimultaneousDeathTriggers(state, events, triggers)
 
-        // Sort by APNAP order
-        return sortByApnapOrder(state, triggers)
+        // Rule 603.4: Filter out triggers with unmet intervening-if conditions
+        return sortByApnapOrder(state, filterByTriggerCondition(state, triggers))
     }
 
     /**
@@ -189,7 +192,8 @@ class TriggerDetector(
             }
         }
 
-        return sortByApnapOrder(state, triggers)
+        // Rule 603.4: Filter out triggers with unmet intervening-if conditions
+        return sortByApnapOrder(state, filterByTriggerCondition(state, triggers))
     }
 
     private fun detectTriggersForEvent(
@@ -930,6 +934,26 @@ class TriggerDetector(
             SpellTypeFilter.NONCREATURE -> !cardComponent.typeLine.isCreature
             SpellTypeFilter.INSTANT_OR_SORCERY ->
                 cardComponent.typeLine.isInstant || cardComponent.typeLine.isSorcery
+        }
+    }
+
+    /**
+     * Filter out triggers whose intervening-if condition (Rule 603.4) is not met.
+     * If a triggered ability has a triggerCondition, it is only allowed to fire
+     * when that condition is true at the time of trigger detection.
+     */
+    private fun filterByTriggerCondition(
+        state: GameState,
+        triggers: List<PendingTrigger>
+    ): List<PendingTrigger> {
+        return triggers.filter { trigger ->
+            val condition = trigger.ability.triggerCondition ?: return@filter true
+            val context = EffectContext(
+                sourceId = trigger.sourceId,
+                controllerId = trigger.controllerId,
+                opponentId = state.turnOrder.firstOrNull { it != trigger.controllerId }
+            )
+            conditionEvaluator.evaluate(state, condition, context)
         }
     }
 

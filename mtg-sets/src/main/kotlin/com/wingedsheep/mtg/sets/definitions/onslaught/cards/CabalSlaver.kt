@@ -20,6 +20,7 @@ val CabalSlaver = card("Cabal Slaver") {
     typeLine = "Creature — Human Cleric"
     power = 2
     toughness = 1
+    oracleText = "Whenever a Goblin deals combat damage to a player, that player discards a card."
 
     triggeredAbility {
         trigger = OnCreatureWithSubtypeDealsCombatDamageToPlayer(Subtype("Goblin"))

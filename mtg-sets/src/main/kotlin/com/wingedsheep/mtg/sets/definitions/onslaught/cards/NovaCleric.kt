@@ -18,6 +18,7 @@ val NovaCleric = card("Nova Cleric") {
     typeLine = "Creature — Human Cleric"
     power = 1
     toughness = 2
+    oracleText = "{2}{W}, {T}, Sacrifice Nova Cleric: Destroy all enchantments."
 
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{2}{W}"), Costs.Tap, Costs.SacrificeSelf)

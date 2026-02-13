@@ -403,7 +403,18 @@ class ActivateAbilityHandler(
             sacrificedPermanents = action.costPayment?.sacrificedPermanents ?: emptyList(),
             xValue = action.xValue
         )
-        val stackResult = stackResolver.putActivatedAbility(currentState, abilityOnStack, action.targets)
+
+        // Apply text-changing effects to the target requirement for resolution-time re-validation
+        val effectiveTargetReq = if (textReplacement != null && ability.targetRequirement != null) {
+            SubtypeReplacer.replaceTargetRequirement(ability.targetRequirement!!, textReplacement)
+        } else {
+            ability.targetRequirement
+        }
+
+        val stackResult = stackResolver.putActivatedAbility(
+            currentState, abilityOnStack, action.targets,
+            targetRequirements = listOfNotNull(effectiveTargetReq)
+        )
         val allEvents = events + stackResult.events
 
         // Detect and process triggers from cost payment (e.g., sacrifice death triggers)

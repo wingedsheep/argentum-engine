@@ -21,6 +21,7 @@ val SpurredWolverine = card("Spurred Wolverine") {
     typeLine = "Creature — Wolverine Beast"
     power = 3
     toughness = 2
+    oracleText = "Tap two untapped Beasts you control: Target creature gains first strike until end of turn."
 
     activatedAbility {
         cost = AbilityCost.TapPermanents(

@@ -19,6 +19,7 @@ val Wellwisher = card("Wellwisher") {
     typeLine = "Creature — Elf"
     power = 1
     toughness = 1
+    oracleText = "{T}: You gain 1 life for each Elf on the battlefield."
 
     activatedAbility {
         cost = AbilityCost.Tap

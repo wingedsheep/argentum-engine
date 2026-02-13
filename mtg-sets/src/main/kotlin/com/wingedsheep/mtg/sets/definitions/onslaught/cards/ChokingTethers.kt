@@ -21,6 +21,7 @@ import com.wingedsheep.sdk.targeting.TargetCreature
 val ChokingTethers = card("Choking Tethers") {
     manaCost = "{3}{U}"
     typeLine = "Instant"
+    oracleText = "Tap up to four target creatures.\nCycling {1}{U}\nWhen you cycle Choking Tethers, you may tap target creature."
 
     spell {
         target = TargetCreature(count = 4, optional = true, filter = TargetFilter.Creature)

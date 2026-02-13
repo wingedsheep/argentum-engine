@@ -20,6 +20,7 @@ import com.wingedsheep.sdk.scripting.GroupFilter
 val Mobilization = card("Mobilization") {
     manaCost = "{2}{W}"
     typeLine = "Enchantment"
+    oracleText = "Soldier creatures have vigilance.\n{2}{W}: Create a 1/1 white Soldier creature token."
 
     staticAbility {
         ability = GrantKeywordToCreatureGroup(

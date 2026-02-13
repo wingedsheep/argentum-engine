@@ -41,7 +41,8 @@ test.describe('Starstorm', () => {
     // Set X = 2 on the slider and click Cast
     await p1.selectXValue(2)
 
-    // Spell auto-resolves (opponent has no responses)
+    // Opponent resolves the spell
+    await p2.resolveStack('Starstorm')
 
     // Both 2/2 creatures should be destroyed (2 damage to each)
     await p1.expectNotOnBattlefield('Glory Seeker')

@@ -25,6 +25,7 @@ val PearlspearCourier = card("Pearlspear Courier") {
     typeLine = "Creature — Human Soldier"
     power = 2
     toughness = 1
+    oracleText = "You may choose not to untap Pearlspear Courier during your untap step.\n{2}{W}, {T}: Target Soldier creature gets +2/+2 and has vigilance for as long as Pearlspear Courier remains tapped."
 
     keywords(Keyword.MAY_NOT_UNTAP)
 

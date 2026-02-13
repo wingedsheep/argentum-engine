@@ -25,6 +25,7 @@ import com.wingedsheep.sdk.targeting.TargetCreature
 val LavamancersSkill = card("Lavamancer's Skill") {
     manaCost = "{1}{R}"
     typeLine = "Enchantment — Aura"
+    oracleText = "Enchant creature\nEnchanted creature has \"{T}: This creature deals 1 damage to target creature.\"\nAs long as enchanted creature is a Wizard, it has \"{T}: This creature deals 2 damage to target creature.\" instead."
 
     auraTarget = Targets.Creature
 

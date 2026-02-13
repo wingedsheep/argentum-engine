@@ -21,6 +21,7 @@ import com.wingedsheep.sdk.scripting.ModifyStats
 val CrownOfFury = card("Crown of Fury") {
     manaCost = "{1}{R}"
     typeLine = "Enchantment — Aura"
+    oracleText = "Enchant creature\nEnchanted creature gets +1/+0 and has first strike.\nSacrifice Crown of Fury: Enchanted creature and other creatures that share a creature type with it get +1/+0 and gain first strike until end of turn."
 
     auraTarget = Targets.Creature
 

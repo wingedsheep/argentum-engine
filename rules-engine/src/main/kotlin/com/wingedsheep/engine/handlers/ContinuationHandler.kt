@@ -41,6 +41,7 @@ class ContinuationHandler(
     private val effectExecutorRegistry: EffectExecutorRegistry,
     private val stackResolver: StackResolver = StackResolver(),
     private val triggerProcessor: com.wingedsheep.engine.event.TriggerProcessor? = null,
+    private val triggerDetector: com.wingedsheep.engine.event.TriggerDetector? = null,
     private val combatManager: CombatManager? = null,
     private val targetFinder: TargetFinder = TargetFinder()
 ) {
@@ -118,6 +119,7 @@ class ContinuationHandler(
             is MayTriggerContinuation -> resumeMayTrigger(stateAfterPop, continuation, response)
             is CloneEntersContinuation -> resumeCloneEnters(stateAfterPop, continuation, response)
             is ChooseCreatureTypeEntersContinuation -> resumeChooseCreatureTypeEnters(stateAfterPop, continuation, response)
+            is CastWithCreatureTypeContinuation -> resumeCastWithCreatureType(stateAfterPop, continuation, response)
         }
     }
 
@@ -361,7 +363,9 @@ class ContinuationHandler(
         )
 
         // Put the ability on the stack with the selected targets
-        val stackResult = stackResolver.putTriggeredAbility(state, abilityComponent, selectedTargets)
+        val stackResult = stackResolver.putTriggeredAbility(
+            state, abilityComponent, selectedTargets, continuation.targetRequirements
+        )
 
         if (!stackResult.isSuccess) {
             return stackResult
@@ -1041,8 +1045,9 @@ class ContinuationHandler(
         }
 
         if (response.choice) {
-            // Player chose to pay — deduct mana from their pool
-            val playerEntity = state.getEntity(continuation.payingPlayerId)
+            // Player chose to pay — auto-tap sources and deduct mana
+            val playerId = continuation.payingPlayerId
+            val playerEntity = state.getEntity(playerId)
                 ?: return ExecutionResult.error(state, "Paying player not found")
 
             val manaPoolComponent = playerEntity.get<ManaPoolComponent>()
@@ -1057,10 +1062,41 @@ class ContinuationHandler(
                 manaPoolComponent.colorless
             )
 
-            val newPool = manaPool.pay(continuation.manaCost)
-                ?: return ExecutionResult.error(state, "Cannot pay mana cost")
+            // Try to pay from floating mana first, then tap sources for the rest
+            val partialResult = manaPool.payPartial(continuation.manaCost)
+            val remainingCost = partialResult.remainingCost
+            var currentPool = manaPool
+            var currentState = state
+            val events = mutableListOf<GameEvent>()
 
-            val newState = state.updateEntity(continuation.payingPlayerId) { container ->
+            if (!remainingCost.isEmpty()) {
+                // Need to tap sources for the remaining cost
+                val manaSolver = ManaSolver()
+                val solution = manaSolver.solve(currentState, playerId, remainingCost)
+                    ?: return ExecutionResult.error(state, "Cannot pay mana cost")
+
+                // Tap sources and add their mana to the pool
+                for (source in solution.sources) {
+                    currentState = currentState.updateEntity(source.entityId) { c ->
+                        c.with(TappedComponent)
+                    }
+                    events.add(TappedEvent(source.entityId, source.name))
+                }
+
+                for ((_, production) in solution.manaProduced) {
+                    currentPool = if (production.color != null) {
+                        currentPool.add(production.color)
+                    } else {
+                        currentPool.addColorless(production.colorless)
+                    }
+                }
+            }
+
+            // Deduct the cost from the pool
+            val newPool = currentPool.pay(continuation.manaCost)
+                ?: return ExecutionResult.error(state, "Cannot pay mana cost after auto-tap")
+
+            currentState = currentState.updateEntity(playerId) { container ->
                 container.with(
                     ManaPoolComponent(
                         white = newPool.white,
@@ -1074,7 +1110,7 @@ class ContinuationHandler(
             }
 
             // Spell resolves normally — don't counter it
-            return checkForMoreContinuations(newState, emptyList())
+            return checkForMoreContinuations(currentState, events)
         } else {
             // Player chose not to pay — counter the spell
             val counterResult = stackResolver.counterSpell(state, continuation.spellEntityId)
@@ -3237,6 +3273,70 @@ class ContinuationHandler(
         )
 
         return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume casting a spell after the player chose a creature type during casting.
+     *
+     * Completes the casting by putting the spell on the stack with the chosen type,
+     * then detects and processes triggers (same as CastSpellHandler does).
+     */
+    private fun resumeCastWithCreatureType(
+        state: GameState,
+        continuation: CastWithCreatureTypeContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is OptionChosenResponse) {
+            return ExecutionResult.error(state, "Expected option choice response for creature type selection")
+        }
+
+        val chosenType = continuation.creatureTypes.getOrNull(response.optionIndex)
+            ?: return ExecutionResult.error(state, "Invalid creature type index: ${response.optionIndex}")
+
+        // Complete casting: put spell on stack with the chosen creature type
+        val castResult = stackResolver.castSpell(
+            state,
+            continuation.cardId,
+            continuation.casterId,
+            continuation.targets,
+            continuation.xValue,
+            continuation.sacrificedPermanents,
+            targetRequirements = continuation.targetRequirements,
+            chosenCreatureType = chosenType
+        )
+
+        if (!castResult.isSuccess) {
+            return castResult
+        }
+
+        var allEvents = castResult.events
+
+        // Detect and process triggers from casting (same as CastSpellHandler does)
+        if (triggerDetector != null && triggerProcessor != null) {
+            val triggers = triggerDetector.detectTriggers(castResult.newState, allEvents)
+            if (triggers.isNotEmpty()) {
+                val triggerResult = triggerProcessor.processTriggers(castResult.newState, triggers)
+
+                if (triggerResult.isPaused) {
+                    return ExecutionResult.paused(
+                        triggerResult.state.withPriority(continuation.casterId),
+                        triggerResult.pendingDecision!!,
+                        allEvents + triggerResult.events
+                    )
+                }
+
+                allEvents = allEvents + triggerResult.events
+                return ExecutionResult.success(
+                    triggerResult.newState.withPriority(continuation.casterId),
+                    allEvents
+                )
+            }
+        }
+
+        return ExecutionResult.success(
+            castResult.newState.withPriority(continuation.casterId),
+            allEvents
+        )
     }
 
     /**

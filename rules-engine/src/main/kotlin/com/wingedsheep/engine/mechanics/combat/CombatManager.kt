@@ -1335,8 +1335,10 @@ class CombatManager(
         amount: Int,
         sourceId: EntityId
     ): ExecutionResult {
+        // Apply damage amplification (e.g., Gratuitous Violence)
+        val amplifiedAmount = EffectExecutorUtils.applyStaticDamageAmplification(state, playerId, amount, sourceId)
         // Apply damage prevention shields
-        val (shieldState, effectiveAmount) = EffectExecutorUtils.applyDamagePreventionShields(state, playerId, amount)
+        val (shieldState, effectiveAmount) = EffectExecutorUtils.applyDamagePreventionShields(state, playerId, amplifiedAmount)
         if (effectiveAmount <= 0) return ExecutionResult.success(shieldState)
 
         val playerContainer = shieldState.getEntity(playerId)
@@ -1446,8 +1448,9 @@ class CombatManager(
                                targetContainer.get<CardComponent>() == null
 
                 if (isPlayer) {
-                    // Deal damage to defending player (trample) - apply shields
-                    val (shieldState, effectiveTrampleDamage) = EffectExecutorUtils.applyDamagePreventionShields(newState, targetId, damage)
+                    // Deal damage to defending player (trample) - apply amplification then shields
+                    val amplifiedTrampleDamage = EffectExecutorUtils.applyStaticDamageAmplification(newState, targetId, damage, attackerId)
+                    val (shieldState, effectiveTrampleDamage) = EffectExecutorUtils.applyDamagePreventionShields(newState, targetId, amplifiedTrampleDamage)
                     newState = shieldState
                     if (effectiveTrampleDamage > 0) {
                         val currentLife = newState.getEntity(targetId)?.get<LifeTotalComponent>()?.life ?: 0
@@ -1468,8 +1471,9 @@ class CombatManager(
                         projected.hasKeyword(targetId, "PROTECTION_FROM_SUBTYPE_${subtype.uppercase()}")
                     }
                     if (!blockerProtected) {
-                        // Apply damage prevention shields
-                        val (shieldState, effectiveDamage) = EffectExecutorUtils.applyDamagePreventionShields(newState, targetId, damage)
+                        // Apply damage amplification then prevention shields
+                        val amplifiedDamage = EffectExecutorUtils.applyStaticDamageAmplification(newState, targetId, damage, attackerId)
+                        val (shieldState, effectiveDamage) = EffectExecutorUtils.applyDamagePreventionShields(newState, targetId, amplifiedDamage)
                         newState = shieldState
                         if (effectiveDamage > 0) {
                             val currentDamage = newState.getEntity(targetId)?.get<DamageComponent>()?.amount ?: 0
@@ -1520,8 +1524,9 @@ class CombatManager(
                     projected.hasKeyword(attackerId, "PROTECTION_FROM_SUBTYPE_${subtype.uppercase()}")
                 }
                 if (!attackerProtected) {
-                    // Apply damage prevention shields
-                    val (shieldState, effectiveBlockerDamage) = EffectExecutorUtils.applyDamagePreventionShields(newState, attackerId, blockerPower)
+                    // Apply damage amplification then prevention shields
+                    val amplifiedBlockerDamage = EffectExecutorUtils.applyStaticDamageAmplification(newState, attackerId, blockerPower, blockerId)
+                    val (shieldState, effectiveBlockerDamage) = EffectExecutorUtils.applyDamagePreventionShields(newState, attackerId, amplifiedBlockerDamage)
                     newState = shieldState
                     if (effectiveBlockerDamage > 0) {
                         val currentDamage = newState.getEntity(attackerId)?.get<DamageComponent>()?.amount ?: 0
@@ -1600,7 +1605,8 @@ class CombatManager(
                         if (isPlayer) {
                             val isProtected = isProtectedFromAttackingCreatureDamage(newState, targetId)
                             if (!isProtected) {
-                                val (shieldState, effectivePlayerDamage) = EffectExecutorUtils.applyDamagePreventionShields(newState, targetId, damage)
+                                val amplifiedPlayerDmg = EffectExecutorUtils.applyStaticDamageAmplification(newState, targetId, damage, attackerId)
+                                val (shieldState, effectivePlayerDamage) = EffectExecutorUtils.applyDamagePreventionShields(newState, targetId, amplifiedPlayerDmg)
                                 newState = shieldState
                                 if (effectivePlayerDamage > 0) {
                                     val currentLife = newState.getEntity(targetId)?.get<LifeTotalComponent>()?.life ?: 0
@@ -1623,7 +1629,8 @@ class CombatManager(
                             }
 
                             if (!creatureProtected) {
-                                val (shieldState, effectiveDamage) = EffectExecutorUtils.applyDamagePreventionShields(newState, targetId, damage)
+                                val amplifiedCreatureDmg = EffectExecutorUtils.applyStaticDamageAmplification(newState, targetId, damage, attackerId)
+                                val (shieldState, effectiveDamage) = EffectExecutorUtils.applyDamagePreventionShields(newState, targetId, amplifiedCreatureDmg)
                                 newState = shieldState
                                 if (effectiveDamage > 0) {
                                     val currentDamage = newState.getEntity(targetId)?.get<DamageComponent>()?.amount ?: 0
@@ -1655,7 +1662,8 @@ class CombatManager(
                         }
 
                         if (!blockerProtected) {
-                            val (shieldState, effectiveDamage) = EffectExecutorUtils.applyDamagePreventionShields(newState, blockerId, damageToAssign)
+                            val amplifiedBlockerDmg = EffectExecutorUtils.applyStaticDamageAmplification(newState, blockerId, damageToAssign, attackerId)
+                            val (shieldState, effectiveDamage) = EffectExecutorUtils.applyDamagePreventionShields(newState, blockerId, amplifiedBlockerDmg)
                             newState = shieldState
                             if (effectiveDamage > 0) {
                                 val currentDamage = newState.getEntity(blockerId)?.get<DamageComponent>()?.amount ?: 0
@@ -1673,7 +1681,8 @@ class CombatManager(
                     if (remainingDamage > 0) {
                         val isProtected = isProtectedFromAttackingCreatureDamage(newState, defenderId)
                         if (!isProtected) {
-                            val (shieldState, effectivePlayerDamage) = EffectExecutorUtils.applyDamagePreventionShields(newState, defenderId, remainingDamage)
+                            val amplifiedRemainDmg = EffectExecutorUtils.applyStaticDamageAmplification(newState, defenderId, remainingDamage, attackerId)
+                            val (shieldState, effectivePlayerDamage) = EffectExecutorUtils.applyDamagePreventionShields(newState, defenderId, amplifiedRemainDmg)
                             newState = shieldState
                             if (effectivePlayerDamage > 0) {
                                 val currentLife = newState.getEntity(defenderId)?.get<LifeTotalComponent>()?.life ?: 0
@@ -1742,7 +1751,8 @@ class CombatManager(
                     projected.hasKeyword(attackerId, "PROTECTION_FROM_SUBTYPE_${subtype.uppercase()}")
                 }
                 if (!attackerProtected) {
-                    val (shieldState, effectiveBlockerDamage) = EffectExecutorUtils.applyDamagePreventionShields(newState, attackerId, blockerPower)
+                    val amplifiedCounterDmg = EffectExecutorUtils.applyStaticDamageAmplification(newState, attackerId, blockerPower, blockerId)
+                    val (shieldState, effectiveBlockerDamage) = EffectExecutorUtils.applyDamagePreventionShields(newState, attackerId, amplifiedCounterDmg)
                     newState = shieldState
                     if (effectiveBlockerDamage > 0) {
                         val currentDamage = newState.getEntity(attackerId)?.get<DamageComponent>()?.amount ?: 0

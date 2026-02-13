@@ -23,6 +23,7 @@ val BattlefieldMedic = card("Battlefield Medic") {
     typeLine = "Creature — Human Cleric"
     power = 1
     toughness = 1
+    oracleText = "{T}: Prevent the next X damage that would be dealt to target creature this turn, where X is the number of Clerics on the battlefield."
 
     activatedAbility {
         cost = Costs.Tap

@@ -38,6 +38,13 @@ class ChooseCreatureTypeReturnExecutor(
         context: EffectContext
     ): ExecutionResult {
         val controllerId = context.controllerId
+
+        // If the creature type was already chosen during casting, skip to card selection
+        if (context.chosenCreatureType != null) {
+            return proceedToCardSelection(state, context.chosenCreatureType, controllerId, context, effect)
+        }
+
+        // Otherwise, ask the player to choose a creature type (fallback for non-spell usage)
         val graveyardZone = ZoneKey(controllerId, Zone.GRAVEYARD)
         val graveyard = state.getZone(graveyardZone)
 
@@ -102,6 +109,88 @@ class ChooseCreatureTypeReturnExecutor(
                     decisionId = decisionId,
                     playerId = controllerId,
                     decisionType = "CHOOSE_OPTION",
+                    prompt = decision.prompt
+                )
+            )
+        )
+    }
+
+    /**
+     * Go directly to card selection using the pre-chosen creature type.
+     * This is used when the type was chosen during casting (e.g., Aphetto Dredging).
+     */
+    private fun proceedToCardSelection(
+        state: GameState,
+        chosenType: String,
+        controllerId: EntityId,
+        context: EffectContext,
+        effect: ChooseCreatureTypeReturnFromGraveyardEffect
+    ): ExecutionResult {
+        val graveyardZone = ZoneKey(controllerId, Zone.GRAVEYARD)
+        val graveyard = state.getZone(graveyardZone)
+
+        // Find creature cards of the chosen type in the graveyard
+        val matchingCards = graveyard.filter { cardId ->
+            val cardComponent = state.getEntity(cardId)?.get<CardComponent>()
+            val typeLine = cardComponent?.typeLine
+            typeLine != null && typeLine.isCreature && typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(chosenType))
+        }
+
+        // If no matching cards, nothing to return
+        if (matchingCards.isEmpty()) {
+            return ExecutionResult.success(state.tick())
+        }
+
+        // Build card info for the UI
+        val cardInfoMap = matchingCards.associateWith { cardId ->
+            val container = state.getEntity(cardId)
+            val cardComponent = container?.get<CardComponent>()
+            SearchCardInfo(
+                name = cardComponent?.name ?: "Unknown",
+                manaCost = cardComponent?.manaCost?.toString() ?: "",
+                typeLine = cardComponent?.typeLine?.toString() ?: "",
+                imageUri = cardComponent?.imageUri
+            )
+        }
+
+        val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
+        val actualMax = minOf(effect.count, matchingCards.size)
+        val decisionId = UUID.randomUUID().toString()
+
+        val decision = SelectCardsDecision(
+            id = decisionId,
+            playerId = controllerId,
+            prompt = "Choose up to $actualMax ${chosenType} card${if (actualMax != 1) "s" else ""} to return to your hand",
+            context = DecisionContext(
+                sourceId = context.sourceId,
+                sourceName = sourceName,
+                phase = DecisionPhase.RESOLUTION
+            ),
+            options = matchingCards,
+            minSelections = 0,
+            maxSelections = actualMax,
+            ordered = false,
+            cardInfo = cardInfoMap
+        )
+
+        val continuation = GraveyardToHandContinuation(
+            decisionId = decisionId,
+            controllerId = controllerId,
+            sourceId = context.sourceId,
+            sourceName = sourceName
+        )
+
+        val stateWithDecision = state.withPendingDecision(decision)
+        val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
+
+        return ExecutionResult.paused(
+            stateWithContinuation,
+            decision,
+            listOf(
+                DecisionRequestedEvent(
+                    decisionId = decisionId,
+                    playerId = controllerId,
+                    decisionType = "SELECT_CARDS",
                     prompt = decision.prompt
                 )
             )

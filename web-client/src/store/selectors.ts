@@ -8,7 +8,7 @@ import type {
   LegalActionInfo,
   ZoneId,
 } from '../types'
-import { ZoneType, zoneIdEquals } from '../types'
+import { ZoneType, zoneIdEquals, graveyard } from '../types'
 
 /**
  * Select the game state (works for both normal play and spectating).
@@ -230,7 +230,7 @@ export function useCardLegalActions(cardId: EntityId | null): readonly LegalActi
 export function useHasLegalActions(cardId: EntityId | null): boolean {
   const actions = useCardLegalActions(cardId)
   // Filter out simple mana abilities and unaffordable actions - they shouldn't cause highlighting
-  // Mana abilities with additional costs (TapPermanents, SacrificePermanent) still need highlighting
+  // Mana abilities with additional costs (TapPermanents, SacrificePermanent, SacrificeSelf) still need highlighting
   const affordableHighlightableActions = actions.filter(
     (a) => (!a.isManaAbility || a.additionalCostInfo != null) && a.isAffordable !== false
   )
@@ -461,4 +461,42 @@ export function groupCards(cards: readonly ClientCard[]): readonly GroupedCard[]
 export function useGroupedZoneCards(zoneId: ZoneId): readonly GroupedCard[] {
   const cards = useZoneCards(zoneId)
   return useMemo(() => groupCards(cards), [cards])
+}
+
+/**
+ * Hook to get "ghost" cards — graveyard cards that have legal activated abilities.
+ * These are shown as translucent cards appended to the player's hand for discoverability.
+ * Excludes simple mana abilities and unaffordable actions (same filtering as useHasLegalActions).
+ */
+export function useGhostCards(playerId: EntityId | null): readonly ClientCard[] {
+  const gameState = useGameStore(selectGameState)
+  const legalActions = useGameStore(selectLegalActions)
+
+  return useMemo(() => {
+    if (!gameState || !playerId) return []
+
+    // Get graveyard card IDs for this player
+    const gyZoneId = graveyard(playerId)
+    const gyZone = gameState.zones.find((z) => zoneIdEquals(z.zoneId, gyZoneId))
+    if (!gyZone || !gyZone.cardIds || gyZone.cardIds.length === 0) return []
+    const gyCardIds = new Set(gyZone.cardIds)
+
+    // Find ActivateAbility actions where sourceId is in the graveyard,
+    // excluding simple mana abilities and unaffordable actions
+    const ghostCardIds = new Set<EntityId>()
+    for (const actionInfo of legalActions) {
+      const action = actionInfo.action
+      if (action.type !== 'ActivateAbility') continue
+      if (!gyCardIds.has(action.sourceId)) continue
+      // Same filtering as useHasLegalActions
+      if (actionInfo.isManaAbility && !actionInfo.additionalCostInfo) continue
+      if (actionInfo.isAffordable === false) continue
+      ghostCardIds.add(action.sourceId)
+    }
+
+    // Return deduplicated ClientCard objects
+    return Array.from(ghostCardIds)
+      .map((id) => gameState.cards[id])
+      .filter((card): card is ClientCard => card != null)
+  }, [gameState, legalActions, playerId])
 }

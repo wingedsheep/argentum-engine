@@ -23,6 +23,7 @@ val ShaleskinBruiser = card("Shaleskin Bruiser") {
     typeLine = "Creature — Beast"
     power = 4
     toughness = 4
+    oracleText = "Trample\nWhenever Shaleskin Bruiser attacks, it gets +3/+0 until end of turn for each other attacking Beast."
 
     keywords(Keyword.TRAMPLE)
 

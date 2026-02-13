@@ -68,7 +68,9 @@ test.describe('Skirk Prospector', () => {
     await p1.clickCard('Skirk Prospector')
     await p1.selectAction('Sacrifice a creature Goblin')
 
-    // Only one valid Goblin → client auto-selects and submits immediately (no modal)
+    // Sacrifice selection modal appears — select Skirk Prospector itself and confirm
+    await p1.selectTarget('Skirk Prospector')
+    await p1.confirmTargets()
 
     // Skirk Prospector should be gone from the battlefield
     await p1.expectNotOnBattlefield('Skirk Prospector')

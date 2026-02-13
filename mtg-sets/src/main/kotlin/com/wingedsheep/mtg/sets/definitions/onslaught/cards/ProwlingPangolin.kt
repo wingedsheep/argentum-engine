@@ -21,6 +21,7 @@ val ProwlingPangolin = card("Prowling Pangolin") {
     typeLine = "Creature — Pangolin Beast"
     power = 6
     toughness = 5
+    oracleText = "When Prowling Pangolin enters the battlefield, any player may sacrifice two creatures. If a player does, sacrifice Prowling Pangolin."
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield

@@ -22,6 +22,7 @@ val GoblinTaskmaster = card("Goblin Taskmaster") {
     typeLine = "Creature — Goblin"
     power = 1
     toughness = 1
+    oracleText = "{1}{R}: Target Goblin creature gets +1/+0 until end of turn.\nMorph {R}"
 
     activatedAbility {
         cost = Costs.Mana("{1}{R}")

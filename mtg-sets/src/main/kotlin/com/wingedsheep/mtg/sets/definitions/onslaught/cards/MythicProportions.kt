@@ -17,6 +17,7 @@ import com.wingedsheep.sdk.scripting.ModifyStats
 val MythicProportions = card("Mythic Proportions") {
     manaCost = "{4}{G}{G}{G}"
     typeLine = "Enchantment — Aura"
+    oracleText = "Enchant creature\nEnchanted creature gets +8/+8 and has trample."
 
     auraTarget = Targets.Creature
 

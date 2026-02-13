@@ -19,6 +19,7 @@ import com.wingedsheep.sdk.scripting.OnCycle
 val LightningRift = card("Lightning Rift") {
     manaCost = "{1}{R}"
     typeLine = "Enchantment"
+    oracleText = "Whenever a player cycles a card, you may pay {1}. If you do, Lightning Rift deals 2 damage to any target."
 
     triggeredAbility {
         trigger = OnCycle(controllerOnly = false)

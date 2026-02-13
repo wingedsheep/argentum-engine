@@ -20,6 +20,7 @@ val NantukoHusk = card("Nantuko Husk") {
     typeLine = "Creature — Zombie Insect"
     power = 2
     toughness = 2
+    oracleText = "Sacrifice a creature: Nantuko Husk gets +2/+2 until end of turn."
 
     activatedAbility {
         cost = AbilityCost.Sacrifice(GameObjectFilter.Creature)

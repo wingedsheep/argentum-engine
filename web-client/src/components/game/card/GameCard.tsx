@@ -31,6 +31,8 @@ interface GameCardProps {
   inHand?: boolean
   /** Force tapped visual (e.g. for attachments of tapped permanents) */
   forceTapped?: boolean
+  /** Ghost card from graveyard (translucent, purple glow) */
+  isGhost?: boolean
 }
 
 /**
@@ -47,6 +49,7 @@ export function GameCard({
   isOpponentCard = false,
   inHand = false,
   forceTapped = false,
+  isGhost = false,
 }: GameCardProps) {
   const selectCard = useGameStore((state) => state.selectCard)
   const selectedCardId = useGameStore((state) => state.selectedCardId)
@@ -75,6 +78,8 @@ export function GameCard({
   const distributeState = useGameStore((state) => state.distributeState)
   const incrementDistribute = useGameStore((state) => state.incrementDistribute)
   const decrementDistribute = useGameStore((state) => state.decrementDistribute)
+  const submitYesNoDecision = useGameStore((state) => state.submitYesNoDecision)
+  const gameState = useGameStore((state) => state.gameState)
   const responsive = useResponsiveContext()
   const { handleCardClick, handleDoubleClick } = useInteraction()
   const dragStartPos = useRef<{ x: number; y: number } | null>(null)
@@ -119,6 +124,11 @@ export function GameCard({
     ? Object.values(distributeState.distribution).reduce((sum, v) => sum + v, 0)
     : 0
   const distributeRemaining = distributeState ? distributeState.totalAmount - distributeTotalAllocated : 0
+
+  // Combat trigger YesNo check (inline buttons on triggering entity card)
+  const isCombatTriggerYesNo = pendingDecision?.type === 'YesNoDecision'
+    && pendingDecision.context.triggeringEntityId === card.id
+    && !!gameState?.combat
 
   // Combat mode checks
   const isInAttackerMode = combatState?.mode === 'declareAttackers'
@@ -168,7 +178,7 @@ export function GameCard({
   // Show modal if multiple legal actions OR if card has multiple potential options (e.g., morph + normal cast)
   const hasMultiplePotentialOptions = hasMultipleCastingOptions(playableActions)
   const shouldShowCastModal = playableActions.length > 1 || (hasMultiplePotentialOptions && playableActions.length > 0)
-  const canDragToPlay = inHand && playableAction && !isInCombatMode
+  const canDragToPlay = inHand && playableAction && !isInCombatMode && !isGhost
 
   // Handle mouse down - start dragging for blockers or hand cards
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -259,7 +269,7 @@ export function GameCard({
             maxX: playableAction.maxAffordableX ?? 0,
             selectedX: playableAction.maxAffordableX ?? 0,
           })
-        } else if (playableAction.action.type === 'CastSpell' && playableAction.additionalCostInfo?.costType === 'SacrificePermanent') {
+        } else if (playableAction.action.type === 'CastSpell' && (playableAction.additionalCostInfo?.costType === 'SacrificePermanent' || playableAction.additionalCostInfo?.costType === 'SacrificeSelf')) {
           // Check if spell requires sacrifice as additional cost
           const costInfo = playableAction.additionalCostInfo
           startTargeting({
@@ -444,6 +454,10 @@ export function GameCard({
     // Green highlight for selected decision options
     borderStyle = `3px solid ${SELECTED_COLOR}`
     boxShadow = `0 0 20px ${SELECTED_GLOW}, 0 0 40px ${SELECTED_SHADOW}`
+  } else if (isCombatTriggerYesNo) {
+    // Orange/gold glow for the combat trigger creature (matches distribute target style)
+    borderStyle = '3px solid #ff6b35'
+    boxShadow = '0 0 16px rgba(255, 107, 53, 0.7), 0 0 32px rgba(255, 107, 53, 0.4)'
   } else if (isDistributeTarget && distributeAllocated > 0) {
     // Orange for distribute targets with damage allocated
     borderStyle = '3px solid #ff6b35'
@@ -471,6 +485,18 @@ export function GameCard({
     // Light-blue highlight for valid attackers/blockers
     borderStyle = `2px solid ${TARGET_COLOR}`
     boxShadow = `0 0 12px ${TARGET_GLOW}, 0 0 24px ${TARGET_SHADOW}`
+  } else if (isPlayable && isGhost && isHovered) {
+    // Bright purple highlight when hovering over a playable ghost card
+    borderStyle = '3px solid #aa77ee'
+    boxShadow = '0 0 20px rgba(170, 119, 238, 0.9), 0 0 40px rgba(136, 85, 204, 0.5)'
+  } else if (isPlayable && isGhost) {
+    // Purple highlight for playable ghost cards
+    borderStyle = '2px solid #8855cc'
+    boxShadow = '0 0 12px rgba(136, 85, 204, 0.5), 0 0 24px rgba(136, 85, 204, 0.3)'
+  } else if (isGhost) {
+    // Dim purple border for ghost cards that aren't playable
+    borderStyle = '2px solid #6644aa'
+    boxShadow = '0 0 8px rgba(102, 68, 170, 0.4), 0 0 16px rgba(102, 68, 170, 0.2)'
   } else if (isPlayable && isHovered) {
     // Bright highlight when hovering over a playable card
     borderStyle = '3px solid #44ff44'
@@ -501,6 +527,7 @@ export function GameCard({
   const cardElement = (
     <div
       data-card-id={card.id}
+      {...(isGhost ? { 'data-ghost': 'true' } : {})}
       onClick={handleClick}
       onDoubleClick={handleDoubleClickEvent}
       onMouseDown={handleMouseDown}
@@ -518,7 +545,7 @@ export function GameCard({
         transform: `${isTapped ? 'rotate(90deg)' : ''} ${isSelected && (!isInCombatMode || !isCombatRoleCard) ? 'translateY(-8px)' : ''}`,
         transformOrigin: 'center',
         boxShadow,
-        opacity: isBeingDragged ? 0.6 : 1,
+        opacity: isBeingDragged ? 0.6 : isGhost ? 0.55 : 1,
         userSelect: 'none',
       }}
     >
@@ -632,8 +659,8 @@ export function GameCard({
         <KeywordIcons keywords={card.keywords} protections={card.protections ?? []} size={responsive.isMobile ? 14 : 18} />
       )}
 
-      {/* Chosen creature type badge (e.g., Doom Cannon) */}
-      {battlefield && !faceDown && card.chosenCreatureType && (
+      {/* Chosen creature type badge (e.g., Doom Cannon on battlefield, Aphetto Dredging on stack) */}
+      {!faceDown && card.chosenCreatureType && (
         <div style={{
           position: 'absolute',
           bottom: card.power != null ? 22 : 4,
@@ -706,6 +733,62 @@ export function GameCard({
           zIndex: 15,
         }}>
           {distributeAllocated}
+        </div>
+      )}
+
+      {/* Inline Yes/No buttons for combat trigger (bottom) */}
+      {isCombatTriggerYesNo && pendingDecision?.type === 'YesNoDecision' && (
+        <div
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 4,
+            padding: responsive.isMobile ? '3px 2px' : '4px 3px',
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            borderTop: '1px solid rgba(255, 107, 53, 0.5)',
+            zIndex: 15,
+          }}
+        >
+          <button
+            onClick={(e) => { e.stopPropagation(); submitYesNoDecision(true) }}
+            style={{
+              flex: 1,
+              height: responsive.isMobile ? 22 : 26,
+              borderRadius: 4,
+              border: 'none',
+              backgroundColor: '#16a34a',
+              color: 'white',
+              fontSize: responsive.isMobile ? 10 : 12,
+              fontWeight: 700,
+              cursor: 'pointer',
+              padding: 0,
+            }}
+          >
+            Yes
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); submitYesNoDecision(false) }}
+            style={{
+              flex: 1,
+              height: responsive.isMobile ? 22 : 26,
+              borderRadius: 4,
+              border: 'none',
+              backgroundColor: '#555',
+              color: 'white',
+              fontSize: responsive.isMobile ? 10 : 12,
+              fontWeight: 700,
+              cursor: 'pointer',
+              padding: 0,
+            }}
+          >
+            No
+          </button>
         </div>
       )}
 

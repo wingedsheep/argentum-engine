@@ -151,7 +151,7 @@
 - [ ] Grand Coliseum
 - [ ] Grand Melee
 - [x] Grassland Crusader
-- [ ] Gratuitous Violence
+- [x] Gratuitous Violence
 - [x] Gravel Slinger
 - [ ] Gravespawn Sovereign
 - [x] Graxiplon

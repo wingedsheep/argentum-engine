@@ -21,6 +21,7 @@ val CatapultMaster = card("Catapult Master") {
     typeLine = "Creature — Human Soldier"
     power = 3
     toughness = 3
+    oracleText = "Tap five untapped Soldiers you control: Exile target creature."
 
     activatedAbility {
         cost = Costs.TapPermanents(5, GameObjectFilter.Creature.withSubtype("Soldier"))

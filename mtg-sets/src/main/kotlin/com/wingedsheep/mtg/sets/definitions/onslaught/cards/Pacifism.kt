@@ -17,6 +17,7 @@ import com.wingedsheep.sdk.scripting.StaticTarget
 val Pacifism = card("Pacifism") {
     manaCost = "{1}{W}"
     typeLine = "Enchantment — Aura"
+    oracleText = "Enchant creature\nEnchanted creature can't attack or block."
 
     auraTarget = Targets.Creature
 

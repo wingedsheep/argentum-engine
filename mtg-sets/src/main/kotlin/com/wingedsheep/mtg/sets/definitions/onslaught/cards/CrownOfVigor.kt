@@ -19,6 +19,7 @@ import com.wingedsheep.sdk.scripting.ModifyStats
 val CrownOfVigor = card("Crown of Vigor") {
     manaCost = "{1}{G}"
     typeLine = "Enchantment — Aura"
+    oracleText = "Enchant creature\nEnchanted creature gets +1/+1.\nSacrifice Crown of Vigor: Enchanted creature and other creatures that share a creature type with it get +1/+1 until end of turn."
 
     auraTarget = Targets.Creature
 

@@ -22,6 +22,7 @@ val ArcanisTheOmnipotent = card("Arcanis the Omnipotent") {
     typeLine = "Legendary Creature — Wizard"
     power = 3
     toughness = 4
+    oracleText = "{T}: Draw three cards.\n{2}{U}{U}: Return Arcanis the Omnipotent to its owner's hand."
 
     activatedAbility {
         cost = AbilityCost.Tap

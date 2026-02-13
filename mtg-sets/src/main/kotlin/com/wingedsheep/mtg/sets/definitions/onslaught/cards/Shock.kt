@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.targeting.AnyTarget
 val Shock = card("Shock") {
     manaCost = "{R}"
     typeLine = "Instant"
+    oracleText = "Shock deals 2 damage to any target."
 
     spell {
         target = AnyTarget()

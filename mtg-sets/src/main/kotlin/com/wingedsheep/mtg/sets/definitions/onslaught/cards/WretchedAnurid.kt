@@ -18,6 +18,7 @@ val WretchedAnurid = card("Wretched Anurid") {
     typeLine = "Creature — Zombie Frog Beast"
     power = 3
     toughness = 3
+    oracleText = "Whenever a creature enters the battlefield, you lose 1 life."
 
     triggeredAbility {
         trigger = OnOtherCreatureEnters(youControlOnly = false)

@@ -16,6 +16,7 @@ val GluttonousZombie = card("Gluttonous Zombie") {
     typeLine = "Creature — Zombie"
     power = 3
     toughness = 3
+    oracleText = "Fear"
 
     keywords(Keyword.FEAR)
 

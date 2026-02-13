@@ -13,6 +13,7 @@ import com.wingedsheep.sdk.scripting.EachOpponentDiscardsEffect
 val SyphonMind = card("Syphon Mind") {
     manaCost = "{3}{B}"
     typeLine = "Sorcery"
+    oracleText = "Each other player discards a card. You draw a card for each card discarded this way."
 
     spell {
         effect = EachOpponentDiscardsEffect(count = 1, controllerDrawsPerDiscard = 1)

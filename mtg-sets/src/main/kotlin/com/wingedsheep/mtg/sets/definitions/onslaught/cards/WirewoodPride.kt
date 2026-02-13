@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.targeting.TargetCreature
 val WirewoodPride = card("Wirewood Pride") {
     manaCost = "{G}"
     typeLine = "Instant"
+    oracleText = "Target creature gets +X/+X until end of turn, where X is the number of Elves on the battlefield."
 
     spell {
         target = TargetCreature(filter = TargetFilter.Creature)

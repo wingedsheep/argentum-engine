@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.scripting.KeywordAbility
 val AkromasVengeance = card("Akroma's Vengeance") {
     manaCost = "{4}{W}{W}"
     typeLine = "Sorcery"
+    oracleText = "Destroy all artifacts, creatures, and enchantments.\nCycling {3}"
 
     spell {
         effect = DestroyAllEffect(

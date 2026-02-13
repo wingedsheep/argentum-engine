@@ -18,6 +18,7 @@ val SlipstreamEel = card("Slipstream Eel") {
     typeLine = "Creature — Fish Beast"
     power = 6
     toughness = 6
+    oracleText = "Slipstream Eel can't attack unless defending player controls an Island.\nCycling {1}{U}"
 
     staticAbility {
         ability = CantAttackUnlessDefenderControlsLandType("Island")

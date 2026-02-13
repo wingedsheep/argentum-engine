@@ -25,6 +25,7 @@ val FlamestickCourier = card("Flamestick Courier") {
     typeLine = "Creature — Goblin"
     power = 2
     toughness = 1
+    oracleText = "You may choose not to untap Flamestick Courier during your untap step.\n{2}{R}, {T}: Target Goblin creature gets +2/+2 and gains haste for as long as Flamestick Courier remains tapped."
 
     keywords(Keyword.MAY_NOT_UNTAP)
 

@@ -21,6 +21,7 @@ val GoblinSledder = card("Goblin Sledder") {
     typeLine = "Creature — Goblin"
     power = 1
     toughness = 1
+    oracleText = "Sacrifice a Goblin: Target creature gets +1/+1 until end of turn."
 
     activatedAbility {
         cost = AbilityCost.Sacrifice(GameObjectFilter.Creature.withSubtype("Goblin"))

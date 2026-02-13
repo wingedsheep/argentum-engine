@@ -17,6 +17,7 @@ import com.wingedsheep.sdk.targeting.TargetPermanent
 val Demystify = card("Demystify") {
     manaCost = "{W}"
     typeLine = "Instant"
+    oracleText = "Destroy target enchantment."
 
     spell {
         target = TargetPermanent(filter = TargetFilter.Enchantment)

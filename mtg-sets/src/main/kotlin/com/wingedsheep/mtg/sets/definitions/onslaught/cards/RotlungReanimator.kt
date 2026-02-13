@@ -20,6 +20,7 @@ val RotlungReanimator = card("Rotlung Reanimator") {
     typeLine = "Creature — Zombie Cleric"
     power = 2
     toughness = 2
+    oracleText = "Whenever Rotlung Reanimator or another Cleric dies, create a 2/2 black Zombie creature token."
 
     val zombieToken = CreateTokenEffect(
         count = 1,

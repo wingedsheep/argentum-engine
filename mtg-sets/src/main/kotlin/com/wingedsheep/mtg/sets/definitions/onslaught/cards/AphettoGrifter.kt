@@ -20,6 +20,7 @@ val AphettoGrifter = card("Aphetto Grifter") {
     typeLine = "Creature — Human Wizard"
     power = 1
     toughness = 1
+    oracleText = "Tap two untapped Wizards you control: Tap target permanent."
 
     activatedAbility {
         cost = Costs.TapPermanents(2, GameObjectFilter.Creature.withSubtype("Wizard"))

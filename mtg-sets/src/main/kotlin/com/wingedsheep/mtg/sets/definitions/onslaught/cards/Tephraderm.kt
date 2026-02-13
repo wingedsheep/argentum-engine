@@ -20,6 +20,7 @@ val Tephraderm = card("Tephraderm") {
     typeLine = "Creature — Beast"
     power = 4
     toughness = 5
+    oracleText = "Whenever a creature deals damage to Tephraderm, Tephraderm deals that much damage to that creature.\nWhenever a spell deals damage to Tephraderm, Tephraderm deals that much damage to that spell's controller."
 
     triggeredAbility {
         trigger = Triggers.DamagedByCreature

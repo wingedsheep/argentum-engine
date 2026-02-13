@@ -17,6 +17,7 @@ import com.wingedsheep.sdk.scripting.Player
 val Oblation = card("Oblation") {
     manaCost = "{2}{W}"
     typeLine = "Instant"
+    oracleText = "The owner of target nonland permanent shuffles it into their library, then draws two cards."
 
     spell {
         target = Targets.NonlandPermanent

@@ -21,11 +21,17 @@ data class TriggeredAbility(
     val optional: Boolean = false,
     val targetRequirement: TargetRequirement? = null,
     val elseEffect: Effect? = null,
-    val activeZone: Zone = Zone.BATTLEFIELD
+    val activeZone: Zone = Zone.BATTLEFIELD,
+    /** Intervening-if condition (Rule 603.4): checked when trigger would fire AND at resolution. */
+    val triggerCondition: Condition? = null
 ) {
     val description: String
         get() = buildString {
             append(trigger.description)
+            if (triggerCondition != null) {
+                append(", ")
+                append(triggerCondition.description)
+            }
             if (optional) append(", you may")
             append(", ")
             if (targetRequirement != null) {
@@ -51,7 +57,8 @@ data class TriggeredAbility(
             optional: Boolean = false,
             targetRequirement: TargetRequirement? = null,
             elseEffect: Effect? = null,
-            activeZone: Zone = Zone.BATTLEFIELD
+            activeZone: Zone = Zone.BATTLEFIELD,
+            triggerCondition: Condition? = null
         ): TriggeredAbility =
             TriggeredAbility(
                 id = AbilityId.generate(),
@@ -60,7 +67,8 @@ data class TriggeredAbility(
                 optional = optional,
                 targetRequirement = targetRequirement,
                 elseEffect = elseEffect,
-                activeZone = activeZone
+                activeZone = activeZone,
+                triggerCondition = triggerCondition
             )
     }
 }

@@ -46,7 +46,8 @@ class ClientStateTransformer(
      */
     fun transform(
         state: GameState,
-        viewingPlayerId: EntityId
+        viewingPlayerId: EntityId,
+        isSpectator: Boolean = false
     ): ClientGameState {
         // Project the game state to apply continuous effects (Rule 613)
         val projectedState = stateProjector.project(state)
@@ -80,7 +81,7 @@ class ClientStateTransformer(
 
             // Include card details for visible cards (either whole zone visible, or individually revealed)
             for (entityId in visibleCardIds) {
-                val clientCard = transformCard(state, entityId, zoneKey, projectedState, viewingPlayerId)
+                val clientCard = transformCard(state, entityId, zoneKey, projectedState, viewingPlayerId, isSpectator)
                 if (clientCard != null) {
                     cards[entityId] = clientCard
                 }
@@ -104,7 +105,7 @@ class ClientStateTransformer(
             // Add cards if they happen to exist (rare if zone was missing from map, but good for safety)
             for (entityId in bfEntities) {
                 if (entityId !in cards) {
-                    val clientCard = transformCard(state, entityId, bfZoneKey, projectedState, viewingPlayerId)
+                    val clientCard = transformCard(state, entityId, bfZoneKey, projectedState, viewingPlayerId, isSpectator)
                     if (clientCard != null) {
                         cards[entityId] = clientCard
                     }
@@ -128,7 +129,7 @@ class ClientStateTransformer(
             // Include card details for stack items
             for (entityId in state.stack) {
                 if (entityId !in cards) {
-                    val clientCard = transformCard(state, entityId, stackZoneKey, projectedState, viewingPlayerId)
+                    val clientCard = transformCard(state, entityId, stackZoneKey, projectedState, viewingPlayerId, isSpectator)
                         ?: transformAbilityOnStack(state, entityId)
                     if (clientCard != null) {
                         cards[entityId] = clientCard
@@ -317,7 +318,8 @@ class ClientStateTransformer(
         entityId: EntityId,
         zoneKey: ZoneKey,
         projectedState: ProjectedState,
-        viewingPlayerId: EntityId
+        viewingPlayerId: EntityId,
+        isSpectator: Boolean = false
     ): ClientCard? {
         val container = state.getEntity(entityId) ?: return null
         val cardComponent = container.get<CardComponent>() ?: return null
@@ -382,9 +384,9 @@ class ClientStateTransformer(
         val morphData = container.get<MorphDataComponent>()
 
         // Handle face-down creature masking
-        // Opponents see modified stats but no card information
-        // Controller sees real card info + morph cost
-        if (isFaceDown && controllerId != viewingPlayerId) {
+        // Opponents and spectators see modified stats but no card information
+        // Controller sees real card info + morph cost (but not spectators)
+        if (isFaceDown && (isSpectator || controllerId != viewingPlayerId)) {
             return ClientCard(
                 id = entityId,
                 name = "Face-down creature",
@@ -465,8 +467,9 @@ class ClientStateTransformer(
         // Get chosen X value for spells on the stack
         val chosenX = spellOnStack?.xValue
 
-        // Get chosen creature type for "as enters" permanents (e.g., Doom Cannon)
+        // Get chosen creature type for "as enters" permanents (e.g., Doom Cannon) or spells on stack (e.g., Aphetto Dredging)
         val chosenCreatureType = container.get<ChosenCreatureTypeComponent>()?.creatureType
+            ?: spellOnStack?.chosenCreatureType
 
         // Build type line string from TypeLine, using projected subtypes if available
         val typeLine = cardComponent.typeLine
@@ -786,7 +789,71 @@ class ClientStateTransformer(
             )
         }
 
+        // Check for triggered ability condition indicators (intervening-if progress)
+        effects.addAll(buildTriggerConditionBadges(state, entityId))
+
         return effects
+    }
+
+    /**
+     * Build badges showing progress toward intervening-if trigger conditions.
+     * For example, Oversold Cemetery shows "Creatures in GY: 2/4".
+     */
+    private fun buildTriggerConditionBadges(
+        state: GameState,
+        entityId: EntityId
+    ): List<ClientCardEffect> {
+        val container = state.getEntity(entityId) ?: return emptyList()
+        val cardComponent = container.get<CardComponent>() ?: return emptyList()
+        val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId) ?: return emptyList()
+        val controllerId = container.get<ControllerComponent>()?.playerId ?: return emptyList()
+
+        val badges = mutableListOf<ClientCardEffect>()
+
+        for (ability in cardDef.triggeredAbilities) {
+            val condition = ability.triggerCondition ?: continue
+            val badge = evaluateConditionBadge(state, condition, controllerId)
+            if (badge != null) badges.add(badge)
+        }
+
+        return badges
+    }
+
+    /**
+     * Evaluate a trigger condition and return a badge showing progress.
+     */
+    private fun evaluateConditionBadge(
+        state: GameState,
+        condition: com.wingedsheep.sdk.scripting.Condition,
+        controllerId: EntityId
+    ): ClientCardEffect? {
+        return when (condition) {
+            is com.wingedsheep.sdk.scripting.CreatureCardsInGraveyardAtLeast -> {
+                val graveyardZone = ZoneKey(controllerId, Zone.GRAVEYARD)
+                val count = state.getZone(graveyardZone).count { entityId ->
+                    state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.isCreature == true
+                }
+                val met = count >= condition.count
+                ClientCardEffect(
+                    effectId = "condition_creatures_in_gy",
+                    name = "$count/${condition.count}",
+                    description = "Creature cards in your graveyard ($count/${condition.count})",
+                    icon = if (met) "condition-met" else "condition-unmet"
+                )
+            }
+            is com.wingedsheep.sdk.scripting.CardsInGraveyardAtLeast -> {
+                val graveyardZone = ZoneKey(controllerId, Zone.GRAVEYARD)
+                val count = state.getZone(graveyardZone).size
+                val met = count >= condition.count
+                ClientCardEffect(
+                    effectId = "condition_cards_in_gy",
+                    name = "$count/${condition.count}",
+                    description = "Cards in your graveyard ($count/${condition.count})",
+                    icon = if (met) "condition-met" else "condition-unmet"
+                )
+            }
+            else -> null
+        }
     }
 
     /**

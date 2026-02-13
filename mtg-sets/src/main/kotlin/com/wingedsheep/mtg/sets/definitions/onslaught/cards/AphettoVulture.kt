@@ -26,6 +26,7 @@ val AphettoVulture = card("Aphetto Vulture") {
     typeLine = "Creature — Zombie Bird"
     power = 3
     toughness = 2
+    oracleText = "Flying\nWhen Aphetto Vulture dies, you may put target Zombie card from your graveyard on top of your library."
 
     keywords(Keyword.FLYING)
 

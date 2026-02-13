@@ -20,6 +20,7 @@ val BroodhatchNantuko = card("Broodhatch Nantuko") {
     typeLine = "Creature — Insect Druid"
     power = 1
     toughness = 1
+    oracleText = "Whenever Broodhatch Nantuko is dealt damage, create that many 1/1 green Insect creature tokens.\nMorph {2}{G}"
 
     triggeredAbility {
         trigger = Triggers.TakesDamage

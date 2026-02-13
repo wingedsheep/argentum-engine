@@ -15,6 +15,7 @@ val KrosanColossus = card("Krosan Colossus") {
     typeLine = "Creature — Beast"
     power = 9
     toughness = 9
+    oracleText = "Morph {6}{G}{G}"
 
     morph = "{6}{G}{G}"
 

@@ -23,6 +23,7 @@ val Boneknitter = card("Boneknitter") {
     typeLine = "Creature — Zombie Cleric"
     power = 1
     toughness = 1
+    oracleText = "{1}{B}: Regenerate target Zombie.\nMorph {2}{B}"
 
     activatedAbility {
         cost = Costs.Mana("{1}{B}")

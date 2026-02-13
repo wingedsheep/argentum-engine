@@ -19,6 +19,7 @@ import com.wingedsheep.sdk.targeting.AnyTarget
 val ProfanePrayers = card("Profane Prayers") {
     manaCost = "{2}{B}{B}"
     typeLine = "Sorcery"
+    oracleText = "Profane Prayers deals X damage to any target and you gain X life, where X is the number of Clerics on the battlefield."
 
     spell {
         target = AnyTarget()

@@ -25,6 +25,7 @@ val GhosthelmCourier = card("Ghosthelm Courier") {
     typeLine = "Creature — Human Wizard"
     power = 2
     toughness = 1
+    oracleText = "You may choose not to untap Ghosthelm Courier during your untap step.\n{2}{U}, {T}: Target Wizard creature gets +2/+2 and gains shroud for as long as Ghosthelm Courier remains tapped."
 
     keywords(Keyword.MAY_NOT_UNTAP)
 

@@ -22,6 +22,7 @@ val SnarlingUndorak = card("Snarling Undorak") {
     typeLine = "Creature — Beast"
     power = 3
     toughness = 3
+    oracleText = "{2}{G}: Target Beast creature gets +1/+1 until end of turn.\nMorph {1}{G}{G}"
 
     activatedAbility {
         cost = Costs.Mana("{2}{G}")

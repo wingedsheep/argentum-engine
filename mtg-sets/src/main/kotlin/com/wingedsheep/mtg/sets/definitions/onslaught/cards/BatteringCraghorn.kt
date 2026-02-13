@@ -17,6 +17,7 @@ val BatteringCraghorn = card("Battering Craghorn") {
     typeLine = "Creature — Goat Beast"
     power = 3
     toughness = 1
+    oracleText = "First strike\nMorph {1}{R}{R}"
 
     keywords(Keyword.FIRST_STRIKE)
     morph = "{1}{R}{R}"

@@ -20,6 +20,7 @@ val ThrashingMudspawn = card("Thrashing Mudspawn") {
     typeLine = "Creature — Beast"
     power = 4
     toughness = 4
+    oracleText = "Whenever Thrashing Mudspawn is dealt damage, you lose that much life.\nMorph {1}{B}{B}"
 
     triggeredAbility {
         trigger = Triggers.TakesDamage

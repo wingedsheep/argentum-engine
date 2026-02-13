@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.scripting.UntapAllCreaturesYouControlEffect
 val AggravatedAssault = card("Aggravated Assault") {
     manaCost = "{2}{R}"
     typeLine = "Enchantment"
+    oracleText = "{3}{R}{R}: Untap all creatures you control. After this main phase, there is an additional combat phase followed by an additional main phase. Activate only as a sorcery."
 
     activatedAbility {
         cost = Costs.Mana("{3}{R}{R}")

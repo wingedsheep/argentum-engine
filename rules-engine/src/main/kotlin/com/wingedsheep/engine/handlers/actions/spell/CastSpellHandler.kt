@@ -1,6 +1,11 @@
 package com.wingedsheep.engine.handlers.actions.spell
 
 import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.core.CastWithCreatureTypeContinuation
+import com.wingedsheep.engine.core.ChooseOptionDecision
+import com.wingedsheep.engine.core.DecisionContext
+import com.wingedsheep.engine.core.DecisionPhase
+import com.wingedsheep.engine.core.DecisionRequestedEvent
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.ManaSpentEvent
@@ -38,6 +43,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.CastRestriction
+import com.wingedsheep.sdk.scripting.ChooseCreatureTypeReturnFromGraveyardEffect
 import com.wingedsheep.sdk.scripting.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.toEntityId
@@ -407,6 +413,25 @@ class CastSpellHandler(
         currentState = paymentResult.state
         events.addAll(paymentResult.events)
 
+        // Compute target requirements for resolution-time re-validation (Rule 608.2b)
+        val spellTargetRequirements = if (cardDef != null) {
+            buildList {
+                addAll(cardDef.script.targetRequirements)
+                cardDef.script.auraTarget?.let { add(it) }
+            }
+        } else {
+            emptyList()
+        }
+
+        // Check if spell requires a creature type choice during casting (e.g., Aphetto Dredging)
+        val spellEffect = cardDef?.script?.spellEffect
+        if (spellEffect is ChooseCreatureTypeReturnFromGraveyardEffect) {
+            val pauseResult = pauseForCreatureTypeChoice(
+                currentState, action, spellEffect, sacrificedPermanentIds, spellTargetRequirements, events
+            )
+            if (pauseResult != null) return pauseResult
+        }
+
         // Cast the spell
         val castResult = stackResolver.castSpell(
             currentState,
@@ -416,7 +441,8 @@ class CastSpellHandler(
             action.xValue,
             sacrificedPermanentIds,
             action.castFaceDown,
-            action.damageDistribution
+            action.damageDistribution,
+            spellTargetRequirements
         )
 
         if (!castResult.isSuccess) {
@@ -689,6 +715,89 @@ class CastSpellHandler(
         }
 
         return PaymentResult(currentState, events, null)
+    }
+
+    /**
+     * Check if the spell needs a creature type choice during casting (e.g., Aphetto Dredging).
+     * If so, scan the caster's graveyard for creature types and pause for the choice.
+     * Returns null if no pause is needed (e.g., no creature types in graveyard).
+     */
+    private fun pauseForCreatureTypeChoice(
+        currentState: GameState,
+        action: CastSpell,
+        effect: ChooseCreatureTypeReturnFromGraveyardEffect,
+        sacrificedPermanentIds: List<EntityId>,
+        spellTargetRequirements: List<com.wingedsheep.sdk.targeting.TargetRequirement>,
+        priorEvents: List<GameEvent>
+    ): ExecutionResult? {
+        val graveyardZone = ZoneKey(action.playerId, Zone.GRAVEYARD)
+        val graveyard = currentState.getZone(graveyardZone)
+
+        // Collect creature subtypes and which cards have each type
+        val typeToCardIds = mutableMapOf<String, MutableList<EntityId>>()
+        for (cardId in graveyard) {
+            val cc = currentState.getEntity(cardId)?.get<CardComponent>() ?: continue
+            val typeLine = cc.typeLine ?: continue
+            if (typeLine.isCreature) {
+                for (subtype in typeLine.subtypes) {
+                    typeToCardIds.getOrPut(subtype.value) { mutableListOf() }.add(cardId)
+                }
+            }
+        }
+
+        // If no creature types in graveyard, skip the decision — casting proceeds normally
+        // and the effect will find nothing to return during resolution
+        if (typeToCardIds.isEmpty()) return null
+
+        val sortedTypes = typeToCardIds.keys.sorted()
+        val cardComponent = currentState.getEntity(action.cardId)?.get<CardComponent>()
+        val sourceName = cardComponent?.name
+
+        // Build option index → card IDs mapping for client preview
+        val optionCardIds = sortedTypes.mapIndexed { index, type ->
+            index to typeToCardIds[type]!!.toList()
+        }.toMap()
+
+        val decisionId = java.util.UUID.randomUUID().toString()
+        val decision = ChooseOptionDecision(
+            id = decisionId,
+            playerId = action.playerId,
+            prompt = "Choose a creature type",
+            context = DecisionContext(
+                sourceId = action.cardId,
+                sourceName = sourceName,
+                phase = DecisionPhase.CASTING
+            ),
+            options = sortedTypes,
+            optionCardIds = optionCardIds
+        )
+
+        val continuation = CastWithCreatureTypeContinuation(
+            decisionId = decisionId,
+            cardId = action.cardId,
+            casterId = action.playerId,
+            targets = action.targets,
+            xValue = action.xValue,
+            sacrificedPermanents = sacrificedPermanentIds,
+            targetRequirements = spellTargetRequirements,
+            count = effect.count,
+            creatureTypes = sortedTypes
+        )
+
+        val pausedState = currentState
+            .pushContinuation(continuation)
+            .withPendingDecision(decision)
+
+        return ExecutionResult.paused(
+            pausedState.withPriority(action.playerId),
+            decision,
+            priorEvents + DecisionRequestedEvent(
+                decisionId = decisionId,
+                playerId = action.playerId,
+                decisionType = "CHOOSE_OPTION",
+                prompt = decision.prompt
+            )
+        )
     }
 
     companion object {

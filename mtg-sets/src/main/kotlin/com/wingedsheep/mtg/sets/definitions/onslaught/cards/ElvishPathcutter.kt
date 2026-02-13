@@ -22,6 +22,7 @@ val ElvishPathcutter = card("Elvish Pathcutter") {
     typeLine = "Creature — Elf Scout"
     power = 1
     toughness = 2
+    oracleText = "{2}{G}: Target Elf creature gains forestwalk until end of turn."
 
     activatedAbility {
         cost = Costs.Mana("{2}{G}")

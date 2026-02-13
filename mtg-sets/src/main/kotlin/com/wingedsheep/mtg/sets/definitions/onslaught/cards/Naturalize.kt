@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.targeting.TargetPermanent
 val Naturalize = card("Naturalize") {
     manaCost = "{1}{G}"
     typeLine = "Instant"
+    oracleText = "Destroy target artifact or enchantment."
 
     spell {
         target = TargetPermanent(filter = TargetFilter(GameObjectFilter.Artifact or GameObjectFilter.Enchantment))

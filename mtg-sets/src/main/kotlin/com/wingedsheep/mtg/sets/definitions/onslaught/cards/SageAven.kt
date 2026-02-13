@@ -20,6 +20,7 @@ val SageAven = card("Sage Aven") {
     typeLine = "Creature — Bird Wizard"
     power = 1
     toughness = 3
+    oracleText = "Flying\nWhen Sage Aven enters the battlefield, look at the top four cards of your library, then put them back in any order."
 
     keywords(Keyword.FLYING)
 

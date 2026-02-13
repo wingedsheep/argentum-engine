@@ -14,6 +14,7 @@ import com.wingedsheep.sdk.targeting.TargetCreature
 val WaveOfIndifference = card("Wave of Indifference") {
     manaCost = "{X}{R}"
     typeLine = "Sorcery"
+    oracleText = "X target creatures can't block this turn."
 
     spell {
         target = TargetCreature(count = 20, optional = true)

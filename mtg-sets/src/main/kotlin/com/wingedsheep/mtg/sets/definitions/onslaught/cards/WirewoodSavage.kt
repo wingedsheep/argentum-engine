@@ -19,6 +19,7 @@ val WirewoodSavage = card("Wirewood Savage") {
     typeLine = "Creature — Elf"
     power = 2
     toughness = 2
+    oracleText = "Whenever a Beast enters the battlefield, you may draw a card."
 
     triggeredAbility {
         trigger = OnCreatureWithSubtypeEnters(Subtype("Beast"))

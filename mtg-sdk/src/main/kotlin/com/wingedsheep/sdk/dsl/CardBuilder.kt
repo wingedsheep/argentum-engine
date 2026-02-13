@@ -590,6 +590,8 @@ class TriggeredAbilityBuilder {
     var optional: Boolean = false
     var elseEffect: Effect? = null
     var triggerZone: Zone = Zone.BATTLEFIELD
+    /** Intervening-if condition (Rule 603.4): checked when trigger would fire AND at resolution. */
+    var triggerCondition: Condition? = null
 
     fun build(): TriggeredAbility {
         requireNotNull(effect) { "Triggered ability must have an effect" }
@@ -599,7 +601,8 @@ class TriggeredAbilityBuilder {
             optional = optional,
             targetRequirement = target,
             elseEffect = elseEffect,
-            activeZone = triggerZone
+            activeZone = triggerZone,
+            triggerCondition = triggerCondition
         )
     }
 }

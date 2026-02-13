@@ -62,6 +62,8 @@ export interface TargetingState {
   isSacrificeSelection?: boolean
   /** If set, this targeting phase is for tapping permanents as a cost */
   isTapPermanentSelection?: boolean
+  /** If set, this targeting phase is for discarding cards as a cost */
+  isDiscardSelection?: boolean
   /** The original action info, used to chain sacrifice -> spell targeting -> damage distribution */
   pendingActionInfo?: LegalActionInfo
   /** Current target requirement index for multi-target spells (0-indexed) */

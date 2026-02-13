@@ -326,10 +326,25 @@ export class GamePage {
     }
   }
 
-  /** Assert the number of cards visible in the player's hand. */
+  /** Assert the number of real (non-ghost) cards visible in the player's hand. */
   async expectHandSize(count: number) {
     const handZone = this.page.locator(HAND)
-    await expect(handZone.locator('img[alt]')).toHaveCount(count, { timeout: 10_000 })
+    const realCards = handZone.locator('[data-card-id]:not([data-ghost="true"])').locator('img[alt]')
+    await expect(realCards).toHaveCount(count, { timeout: 10_000 })
+  }
+
+  /** Assert a ghost card (graveyard card with legal actions) is visible in the hand zone. */
+  async expectGhostCardInHand(name: string) {
+    const handZone = this.page.locator(HAND)
+    const ghostCard = handZone.locator('[data-ghost="true"]').locator(cardByName(name))
+    await expect(ghostCard.first()).toBeVisible({ timeout: 10_000 })
+  }
+
+  /** Assert a ghost card is NOT visible in the hand zone. */
+  async expectNoGhostCardInHand(name: string) {
+    const handZone = this.page.locator(HAND)
+    const ghostCard = handZone.locator('[data-ghost="true"]').locator(cardByName(name))
+    await expect(ghostCard).toHaveCount(0, { timeout: 10_000 })
   }
 
   /** Assert the library size shown on the deck pile. */

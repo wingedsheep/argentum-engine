@@ -125,6 +125,7 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
   const [sortBy, setSortBy] = useState<'color' | 'cmc' | 'rarity'>('rarity')
   const [colorFilter, setColorFilter] = useState<Set<string>>(new Set())
   const [typeFilter, setTypeFilter] = useState<string | null>(null)
+  const [searchText, setSearchText] = useState('')
 
   const handleHover = useCallback((card: SealedCardInfo | null, e?: React.MouseEvent) => {
     setHoveredCard(card)
@@ -240,6 +241,9 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
         if (typeFilter) {
           if (!matchesTypeFilter(card, typeFilter)) continue
         }
+        if (searchText) {
+          if (!matchesSearch(card, searchText)) continue
+        }
         groups.push({ card, availableCount })
       }
     }
@@ -253,7 +257,7 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
         return getRarityOrder(a.card) - getRarityOrder(b.card) || getCmc(a.card) - getCmc(b.card)
       }
     })
-  }, [state.cardPool, state.deck, sortBy, colorFilter, typeFilter])
+  }, [state.cardPool, state.deck, sortBy, colorFilter, typeFilter, searchText])
 
   const totalPoolCards = poolCardGroups.reduce((sum, g) => sum + g.availableCount, 0)
 
@@ -569,6 +573,47 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
                 {label}
               </button>
             ))}
+
+            <div style={{ width: 1, height: 18, backgroundColor: '#444', margin: '0 4px' }} />
+
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <input
+                type="text"
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                placeholder="Search cards..."
+                style={{
+                  padding: '3px 24px 3px 8px',
+                  fontSize: 12,
+                  backgroundColor: '#333',
+                  color: '#ddd',
+                  border: searchText ? '1px solid #4fc3f7' : '1px solid #555',
+                  borderRadius: 4,
+                  outline: 'none',
+                  width: 150,
+                }}
+              />
+              {searchText && (
+                <button
+                  onClick={() => setSearchText('')}
+                  style={{
+                    position: 'absolute',
+                    right: 4,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    color: '#888',
+                    cursor: 'pointer',
+                    fontSize: 14,
+                    padding: '0 2px',
+                    lineHeight: 1,
+                  }}
+                >
+                  ×
+                </button>
+              )}
+            </div>
 
             <span style={{ color: '#666', fontSize: 12, marginLeft: 'auto' }}>
               Pool: {totalPoolCards}
@@ -1483,6 +1528,15 @@ function suggestLands(
   for (const land of state.basicLands) {
     setLandCount(land.name, landCounts[land.name] ?? 0)
   }
+}
+
+function matchesSearch(card: SealedCardInfo, query: string): boolean {
+  const q = query.toLowerCase()
+  return (
+    card.name.toLowerCase().includes(q) ||
+    card.typeLine.toLowerCase().includes(q) ||
+    (card.oracleText != null && card.oracleText.toLowerCase().includes(q))
+  )
 }
 
 function matchesTypeFilter(card: SealedCardInfo, filter: string): boolean {

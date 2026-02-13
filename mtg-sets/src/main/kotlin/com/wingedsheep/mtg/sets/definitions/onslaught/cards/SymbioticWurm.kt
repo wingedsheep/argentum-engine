@@ -18,6 +18,7 @@ val SymbioticWurm = card("Symbiotic Wurm") {
     typeLine = "Creature — Wurm"
     power = 7
     toughness = 7
+    oracleText = "When Symbiotic Wurm dies, create seven 1/1 green Insect creature tokens."
 
     triggeredAbility {
         trigger = Triggers.Dies

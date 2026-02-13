@@ -16,6 +16,7 @@ import com.wingedsheep.sdk.model.Rarity
 val BrightstoneRitual = card("Brightstone Ritual") {
     manaCost = "{R}"
     typeLine = "Instant"
+    oracleText = "Add {R} for each Goblin on the battlefield."
 
     spell {
         effect = Effects.AddMana(Color.RED, DynamicAmounts.creaturesWithSubtype(Subtype("Goblin")))

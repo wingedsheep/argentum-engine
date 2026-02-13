@@ -16,12 +16,14 @@ export function CardRow({
   interactive = false,
   small = false,
   inverted = false,
+  ghostCards = [],
 }: {
   zoneId: ZoneId
   faceDown?: boolean
   interactive?: boolean
   small?: boolean
   inverted?: boolean
+  ghostCards?: readonly ClientCard[]
 }) {
   const cards = useZoneCards(zoneId)
   const zone = useZone(zoneId)
@@ -42,8 +44,8 @@ export function CardRow({
   const sideZoneWidth = responsive.pileWidth + 20 // pile + margin
   const availableWidth = responsive.viewportWidth - (responsive.containerPadding * 2) - (sideZoneWidth * 2)
 
-  // Calculate card width that fits all cards (revealed + unrevealed)
-  const totalCardCount = faceDown ? zoneSize : cards.length
+  // Calculate card width that fits all cards (revealed + unrevealed + ghost)
+  const totalCardCount = (faceDown ? zoneSize : cards.length) + ghostCards.length
   const cardCount = showPlaceholders ? zoneSize : totalCardCount
   const baseWidth = small ? responsive.smallCardWidth : responsive.cardWidth
   const minWidth = small ? 30 : 45
@@ -81,6 +83,7 @@ export function CardRow({
         interactive={interactive}
         small={small}
         inverted={inverted}
+        ghostCards={ghostCards}
       />
     )
   }
@@ -146,6 +149,7 @@ export function HandFan({
   interactive,
   small,
   inverted = false,
+  ghostCards = [],
 }: {
   cards: readonly ClientCard[]
   placeholderCount?: number
@@ -157,13 +161,15 @@ export function HandFan({
   interactive: boolean
   small: boolean
   inverted?: boolean
+  ghostCards?: readonly ClientCard[]
 }) {
   const [, setHoveredIndex] = useState<number | null>(null)
 
   // When we have revealed cards in opponent's hand, show both revealed cards AND placeholders
-  const cardCount = revealedCards
+  const baseCardCount = revealedCards
     ? cards.length + placeholderCount
     : (placeholderCount > 0 ? placeholderCount : cards.length)
+  const cardCount = baseCardCount + ghostCards.length
 
   // Scale fan parameters based on card count
   // Fewer cards = more spread, more cards = tighter fan
@@ -187,14 +193,24 @@ export function HandFan({
   // - If revealedCards: show revealed cards face-up + placeholders for unrevealed
   // - If placeholderCount > 0 and no revealed cards: all placeholders
   // - Otherwise: show cards normally
-  const items = revealedCards
+  const baseItems = revealedCards
     ? [
-        ...cards.map((card, index) => ({ type: 'card' as const, card, index, showFaceUp: true })),
+        ...cards.map((card, index) => ({ type: 'card' as const, card, index, showFaceUp: true, isGhost: false })),
         ...Array.from({ length: placeholderCount }, (_, i) => ({ type: 'placeholder' as const, index: cards.length + i })),
       ]
     : placeholderCount > 0
       ? Array.from({ length: placeholderCount }, (_, i) => ({ type: 'placeholder' as const, index: i }))
-      : cards.map((card, index) => ({ type: 'card' as const, card, index, showFaceUp: false }))
+      : cards.map((card, index) => ({ type: 'card' as const, card, index, showFaceUp: false, isGhost: false }))
+
+  // Append ghost cards (graveyard cards with legal activated abilities)
+  const ghostItems = ghostCards.map((card, i) => ({
+    type: 'card' as const,
+    card,
+    index: baseItems.length + i,
+    showFaceUp: true,
+    isGhost: true,
+  }))
+  const items = [...baseItems, ...ghostItems]
 
   return (
     <div
@@ -253,6 +269,7 @@ export function HandFan({
                 small={small}
                 overrideWidth={fittingWidth}
                 inHand={interactive && !faceDown}
+                isGhost={item.isGhost}
               />
             ) : (
               <div

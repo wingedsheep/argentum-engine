@@ -20,6 +20,7 @@ import com.wingedsheep.sdk.targeting.TargetPermanent
  */
 val DaruEncampment = card("Daru Encampment") {
     typeLine = "Land"
+    oracleText = "{T}: Add {C}.\n{W}, {T}: Target Soldier creature gets +1/+1 until end of turn."
 
     activatedAbility {
         cost = AbilityCost.Tap

@@ -20,6 +20,7 @@ val BlisteringFirecat = card("Blistering Firecat") {
     typeLine = "Creature — Elemental Cat"
     power = 7
     toughness = 1
+    oracleText = "Trample, haste\nAt the beginning of the end step, sacrifice Blistering Firecat.\nMorph {R}{R}"
 
     keywords(Keyword.TRAMPLE, Keyword.HASTE)
 

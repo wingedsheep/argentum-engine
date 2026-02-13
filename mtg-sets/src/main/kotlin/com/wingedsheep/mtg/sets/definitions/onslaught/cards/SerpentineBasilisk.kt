@@ -20,6 +20,7 @@ val SerpentineBasilisk = card("Serpentine Basilisk") {
     typeLine = "Creature — Basilisk"
     power = 2
     toughness = 3
+    oracleText = "Whenever Serpentine Basilisk deals combat damage to a creature, destroy that creature at end of combat.\nMorph {1}{G}{G}"
 
     triggeredAbility {
         trigger = Triggers.DealsCombatDamageToCreature

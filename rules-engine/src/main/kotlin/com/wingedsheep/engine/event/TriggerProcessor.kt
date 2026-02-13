@@ -374,7 +374,8 @@ class TriggerProcessor(
             description = ability.description,
             triggerDamageAmount = trigger.triggerContext.damageAmount,
             triggeringEntityId = trigger.triggerContext.triggeringEntityId,
-            elseEffect = ability.elseEffect
+            elseEffect = ability.elseEffect,
+            targetRequirements = listOf(targetRequirement)
         )
 
         // Push the continuation onto the stack
@@ -412,7 +413,10 @@ class TriggerProcessor(
             triggeringEntityId = trigger.triggerContext.triggeringEntityId
         )
 
-        return stackResolver.putTriggeredAbility(state, abilityComponent, targets)
+        return stackResolver.putTriggeredAbility(
+            state, abilityComponent, targets,
+            targetRequirements = listOfNotNull(ability.targetRequirement)
+        )
     }
 
     /**

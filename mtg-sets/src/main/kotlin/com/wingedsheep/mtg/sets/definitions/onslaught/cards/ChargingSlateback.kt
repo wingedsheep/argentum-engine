@@ -19,6 +19,7 @@ val ChargingSlateback = card("Charging Slateback") {
     typeLine = "Creature — Beast"
     power = 4
     toughness = 3
+    oracleText = "Charging Slateback can't block.\nMorph {4}{R}"
 
     staticAbility {
         ability = CantBlock(StaticTarget.SourceCreature)

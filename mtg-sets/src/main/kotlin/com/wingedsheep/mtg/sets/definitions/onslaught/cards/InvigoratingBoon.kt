@@ -17,6 +17,7 @@ import com.wingedsheep.sdk.scripting.OnCycle
 val InvigoratingBoon = card("Invigorating Boon") {
     manaCost = "{1}{G}"
     typeLine = "Enchantment"
+    oracleText = "Whenever a player cycles a card, you may put a +1/+1 counter on target creature."
 
     triggeredAbility {
         trigger = OnCycle(controllerOnly = false)

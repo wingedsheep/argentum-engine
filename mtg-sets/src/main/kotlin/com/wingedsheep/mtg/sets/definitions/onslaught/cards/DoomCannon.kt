@@ -19,6 +19,7 @@ import com.wingedsheep.sdk.targeting.AnyTarget
 val DoomCannon = card("Doom Cannon") {
     manaCost = "{6}"
     typeLine = "Artifact"
+    oracleText = "As Doom Cannon enters the battlefield, choose a creature type.\n{3}, {T}, Sacrifice a creature of the chosen type: Doom Cannon deals 3 damage to any target."
 
     replacementEffect(EntersWithCreatureTypeChoice())
 

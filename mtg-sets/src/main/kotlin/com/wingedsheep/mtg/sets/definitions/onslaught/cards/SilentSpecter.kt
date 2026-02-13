@@ -22,6 +22,7 @@ val SilentSpecter = card("Silent Specter") {
     typeLine = "Creature — Specter"
     power = 4
     toughness = 4
+    oracleText = "Flying\nWhenever Silent Specter deals combat damage to a player, that player discards two cards.\nMorph {3}{B}{B}"
 
     keywords(Keyword.FLYING)
 

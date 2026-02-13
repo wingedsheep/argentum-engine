@@ -24,6 +24,7 @@ val Gigapede = card("Gigapede") {
     typeLine = "Creature — Insect"
     power = 6
     toughness = 1
+    oracleText = "Shroud\nAt the beginning of your upkeep, if Gigapede is in your graveyard, you may discard a card. If you do, return Gigapede to its owner's hand."
 
     keywords(Keyword.SHROUD)
 

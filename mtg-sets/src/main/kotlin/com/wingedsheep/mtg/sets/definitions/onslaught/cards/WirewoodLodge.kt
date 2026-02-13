@@ -20,6 +20,7 @@ import com.wingedsheep.sdk.targeting.TargetPermanent
  */
 val WirewoodLodge = card("Wirewood Lodge") {
     typeLine = "Land"
+    oracleText = "{T}: Add {C}.\n{G}, {T}: Untap target Elf."
 
     activatedAbility {
         cost = AbilityCost.Tap

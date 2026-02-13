@@ -36,7 +36,9 @@ test.describe("Akroma's Blessing", () => {
     await p1.clickCard("Akroma's Blessing")
     await p1.selectAction("Cast Akroma's Blessing")
 
-    // Spell auto-resolves (opponent has no responses)
+    // Opponent resolves the spell
+    await p2.resolveStack("Akroma's Blessing")
+
     // Color selection overlay appears — choose Red
     await p1.selectManaColor('Red')
 

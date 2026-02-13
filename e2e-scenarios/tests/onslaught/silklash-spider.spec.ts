@@ -47,7 +47,8 @@ test.describe('Silklash Spider', () => {
     // X cost selector overlay should appear — set X = 2 and activate
     await p1.selectXValue(2)
 
-    // Ability auto-resolves (opponent has no responses)
+    // Opponent resolves the ability
+    await p2.pass()
 
     // The flying creature should be destroyed (2 damage kills 1/2)
     await p1.expectNotOnBattlefield('Goblin Sky Raider')

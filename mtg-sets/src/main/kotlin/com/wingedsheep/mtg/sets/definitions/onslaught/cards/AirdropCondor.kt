@@ -24,6 +24,7 @@ val AirdropCondor = card("Airdrop Condor") {
     typeLine = "Creature — Bird"
     power = 2
     toughness = 2
+    oracleText = "Flying\n{1}{R}, Sacrifice a Goblin creature: Airdrop Condor deals damage equal to the sacrificed creature's power to any target."
 
     keywords(Keyword.FLYING)
 

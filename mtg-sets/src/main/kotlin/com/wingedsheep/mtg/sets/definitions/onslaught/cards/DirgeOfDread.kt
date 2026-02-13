@@ -23,6 +23,7 @@ import com.wingedsheep.sdk.scripting.OnCycle
 val DirgeOfDread = card("Dirge of Dread") {
     manaCost = "{2}{B}"
     typeLine = "Sorcery"
+    oracleText = "All creatures gain fear until end of turn.\nCycling {1}{B}\nWhen you cycle Dirge of Dread, you may have target creature gain fear until end of turn."
 
     spell {
         effect = GrantKeywordToGroupEffect(

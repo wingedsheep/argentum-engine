@@ -4,6 +4,7 @@ import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
@@ -37,11 +38,10 @@ import org.slf4j.LoggerFactory
  * - Upkeep/Draw: AUTO-PASS
  * - Combat: STOP (for combat tricks like Giant Growth)
  *
- * ## Rule 4: The Stack Response (Arena-style)
+ * ## Rule 4: The Stack Response
  * - If YOUR spell/ability is on top of the stack: AUTO-PASS (let opponent respond)
- * - If OPPONENT's spell/ability is on top:
- *   - If you have responses: STOP (you might want to respond)
- *   - If no responses: AUTO-PASS (nothing you can do)
+ * - If OPPONENT's permanent spell is on top and you have no responses: AUTO-PASS (auto-resolve)
+ * - If OPPONENT's non-permanent spell or ability is on top: STOP (so you can see what they're doing)
  */
 class AutoPassManager {
 
@@ -86,9 +86,7 @@ class AutoPassManager {
 
         // Rule 4: Stack Response - Check who controls the top of the stack
         // - If YOUR spell/ability is on top → AUTO-PASS (let opponent respond)
-        // - If OPPONENT's spell/ability is on top:
-        //   - If you have responses → STOP
-        //   - If no responses → AUTO-PASS (nothing you can do)
+        // - If OPPONENT's spell/ability is on top → STOP (so you can see what they're doing)
         if (state.stack.isNotEmpty()) {
             val topOfStack = state.stack.last() // Stack is LIFO, last = top
             val topController = getStackItemController(state, topOfStack)
@@ -98,16 +96,27 @@ class AutoPassManager {
                 logger.debug("AUTO-PASS: Own spell/ability on top of stack")
                 return true
             } else {
-                // Opponent's spell/ability is on top
-                if (meaningfulActions.isNotEmpty()) {
-                    // We have responses - stop to consider them
-                    logger.debug("STOP: Opponent's spell/ability on stack and have responses")
-                    return false
+                // Opponent's item on top — check what type it is
+                val container = state.getEntity(topOfStack)
+                val isPermanentSpell = container?.get<SpellOnStackComponent>()?.let {
+                    container.get<CardComponent>()?.isPermanent ?: false
+                } ?: false
+
+                if (isPermanentSpell) {
+                    // Permanent spells (creatures, enchantments, artifacts, planeswalkers):
+                    // Auto-pass if we have no meaningful instant-speed responses
+                    val hasResponses = meaningfulActions.any {
+                        it.actionType == "CastSpell" || it.actionType == "ActivateAbility" || it.actionType == "CycleCard"
+                    }
+                    if (!hasResponses) {
+                        logger.debug("AUTO-PASS: Opponent's permanent spell on stack, no responses")
+                        return true
+                    }
                 }
 
-                // No responses - auto-pass regardless of stack item type
-                logger.debug("AUTO-PASS: Opponent's spell/ability on stack, no responses")
-                return true
+                // Non-permanent spells (instants/sorceries) and abilities: always stop
+                logger.debug("STOP: Opponent's spell/ability on stack")
+                return false
             }
         }
 
@@ -146,6 +155,17 @@ class AutoPassManager {
             if (hasInstantSpeedResponses) {
                 logger.debug("STOP: Declare blockers step (have instant-speed responses)")
                 return false
+            }
+        }
+
+        // On opponent's declare attackers, auto-pass if they didn't attack — nothing to respond to
+        if (!isMyTurn && state.step == Step.DECLARE_ATTACKERS) {
+            val hasAttackers = state.getBattlefield().any { entityId ->
+                state.getEntity(entityId)?.get<AttackingComponent>() != null
+            }
+            if (!hasAttackers) {
+                logger.debug("AUTO-PASS: Opponent's declare attackers (no attackers declared)")
+                return true
             }
         }
 

@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.scripting.EffectTarget
 val Threaten = card("Threaten") {
     manaCost = "{2}{R}"
     typeLine = "Sorcery"
+    oracleText = "Untap target creature and gain control of it until end of turn. That creature gains haste until end of turn."
 
     spell {
         target = Targets.Creature

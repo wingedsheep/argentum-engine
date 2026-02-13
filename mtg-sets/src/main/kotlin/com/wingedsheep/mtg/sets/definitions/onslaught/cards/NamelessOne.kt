@@ -17,6 +17,7 @@ import com.wingedsheep.sdk.scripting.Player
 val NamelessOne = card("Nameless One") {
     manaCost = "{3}{U}"
     typeLine = "Creature — Wizard Avatar"
+    oracleText = "Nameless One's power and toughness are each equal to the number of Wizards on the battlefield.\nMorph {2}{U}"
 
     dynamicStats(DynamicAmount.CountBattlefield(Player.Each, GameObjectFilter.Creature.withSubtype("Wizard")))
 

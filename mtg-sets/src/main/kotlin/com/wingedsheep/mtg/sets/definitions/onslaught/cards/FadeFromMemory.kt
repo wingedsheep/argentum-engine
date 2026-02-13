@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.scripting.MoveToZoneEffect
 val FadeFromMemory = card("Fade from Memory") {
     manaCost = "{B}"
     typeLine = "Instant"
+    oracleText = "Exile target card from a graveyard.\nCycling {B}"
 
     spell {
         target = Targets.CardInGraveyard

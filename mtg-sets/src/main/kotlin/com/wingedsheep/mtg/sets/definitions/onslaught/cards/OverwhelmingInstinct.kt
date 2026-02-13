@@ -14,6 +14,7 @@ import com.wingedsheep.sdk.scripting.OnYouAttack
 val OverwhelmingInstinct = card("Overwhelming Instinct") {
     manaCost = "{2}{G}"
     typeLine = "Enchantment"
+    oracleText = "Whenever you attack with three or more creatures, draw a card."
 
     triggeredAbility {
         trigger = OnYouAttack(minAttackers = 3)

@@ -19,6 +19,7 @@ val GrinningDemon = card("Grinning Demon") {
     typeLine = "Creature — Demon"
     power = 6
     toughness = 6
+    oracleText = "At the beginning of your upkeep, you lose 2 life.\nMorph {2}{B}{B}"
 
     triggeredAbility {
         trigger = Triggers.YourUpkeep

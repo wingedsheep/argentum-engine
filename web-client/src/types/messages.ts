@@ -164,6 +164,8 @@ export interface DecisionContext {
   readonly phase: DecisionPhase
   readonly sourceId?: EntityId
   readonly sourceName?: string
+  /** The entity that triggered this decision (e.g., the blocked creature for combat triggers) */
+  readonly triggeringEntityId?: EntityId
 }
 
 /**
@@ -451,6 +453,8 @@ export interface AdditionalCostInfo {
   readonly sacrificeCount?: number
   readonly validTapTargets?: readonly EntityId[]
   readonly tapCount?: number
+  readonly validDiscardTargets?: readonly EntityId[]
+  readonly discardCount?: number
 }
 
 /**

@@ -21,6 +21,7 @@ val DaruHealer = card("Daru Healer") {
     typeLine = "Creature — Human Cleric"
     power = 1
     toughness = 2
+    oracleText = "{T}: Prevent the next 1 damage that would be dealt to any target this turn.\nMorph {W}"
 
     activatedAbility {
         cost = Costs.Tap

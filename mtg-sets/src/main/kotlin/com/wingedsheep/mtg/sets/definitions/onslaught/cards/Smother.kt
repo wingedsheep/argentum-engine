@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.targeting.TargetCreature
 val Smother = card("Smother") {
     manaCost = "{1}{B}"
     typeLine = "Instant"
+    oracleText = "Destroy target creature with mana value 3 or less. It can't be regenerated."
 
     spell {
         target = TargetCreature(filter = TargetFilter.Creature.manaValueAtMost(3))

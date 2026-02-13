@@ -22,6 +22,7 @@ val Sparksmith = card("Sparksmith") {
     typeLine = "Creature — Goblin"
     power = 1
     toughness = 1
+    oracleText = "{T}: Sparksmith deals X damage to target creature and X damage to you, where X is the number of Goblins on the battlefield."
 
     activatedAbility {
         cost = AbilityCost.Tap

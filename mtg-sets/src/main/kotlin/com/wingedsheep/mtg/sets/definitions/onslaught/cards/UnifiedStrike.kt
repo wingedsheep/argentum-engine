@@ -21,6 +21,7 @@ import com.wingedsheep.sdk.scripting.MoveToZoneEffect
 val UnifiedStrike = card("Unified Strike") {
     manaCost = "{W}"
     typeLine = "Instant"
+    oracleText = "Exile target attacking creature if its power is less than or equal to the number of Soldiers on the battlefield."
 
     spell {
         target = Targets.AttackingCreature

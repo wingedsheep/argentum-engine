@@ -22,6 +22,7 @@ val DiveBomber = card("Dive Bomber") {
     typeLine = "Creature — Bird Soldier"
     power = 2
     toughness = 2
+    oracleText = "Flying\n{T}, Sacrifice Dive Bomber: It deals 2 damage to target attacking or blocking creature."
 
     keywords(Keyword.FLYING)
 

@@ -24,6 +24,7 @@ val IxidorRealitySculptor = card("Ixidor, Reality Sculptor") {
     typeLine = "Legendary Creature — Human Wizard"
     power = 3
     toughness = 4
+    oracleText = "Face-down creatures get +1/+1.\n{2}{U}: Turn target face-down creature face up."
 
     staticAbility {
         ability = ModifyStatsForCreatureGroup(

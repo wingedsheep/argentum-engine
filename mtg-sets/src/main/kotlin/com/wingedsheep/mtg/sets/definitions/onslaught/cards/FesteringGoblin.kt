@@ -20,6 +20,7 @@ val FesteringGoblin = card("Festering Goblin") {
     typeLine = "Creature — Zombie Goblin"
     power = 1
     toughness = 1
+    oracleText = "When Festering Goblin dies, target creature gets -1/-1 until end of turn."
 
     triggeredAbility {
         trigger = Triggers.Dies

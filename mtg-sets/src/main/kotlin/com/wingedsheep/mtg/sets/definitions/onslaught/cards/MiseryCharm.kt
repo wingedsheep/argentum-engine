@@ -24,6 +24,7 @@ import com.wingedsheep.sdk.targeting.TargetPlayer
 val MiseryCharm = card("Misery Charm") {
     manaCost = "{B}"
     typeLine = "Instant"
+    oracleText = "Choose one —\n• Destroy target Cleric.\n• Return target Cleric card from your graveyard to your hand.\n• Target player loses 2 life."
 
     spell {
         modal(chooseCount = 1) {

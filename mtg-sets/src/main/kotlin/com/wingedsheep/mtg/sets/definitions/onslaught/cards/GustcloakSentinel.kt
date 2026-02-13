@@ -19,6 +19,7 @@ val GustcloakSentinel = card("Gustcloak Sentinel") {
     typeLine = "Creature — Human Soldier"
     power = 3
     toughness = 3
+    oracleText = "Whenever Gustcloak Sentinel becomes blocked, you may untap it and remove it from combat."
 
     triggeredAbility {
         trigger = Triggers.BecomesBlocked

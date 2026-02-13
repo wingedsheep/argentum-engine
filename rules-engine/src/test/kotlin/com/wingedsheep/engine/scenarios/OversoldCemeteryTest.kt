@@ -33,6 +33,7 @@ class OversoldCemeteryTest : FunSpec({
                 TriggeredAbility.create(
                     trigger = OnUpkeep(controllerOnly = true),
                     optional = true,
+                    triggerCondition = CreatureCardsInGraveyardAtLeast(4),
                     targetRequirement = TargetObject(
                         filter = TargetFilter(
                             GameObjectFilter.Creature.ownedByYou(),
@@ -113,7 +114,7 @@ class OversoldCemeteryTest : FunSpec({
         driver.getHand(activePlayer).any { driver.getCardName(it) == "Grizzly Bears" } shouldBe true
     }
 
-    test("with fewer than 4 creature cards in graveyard - effect does not execute") {
+    test("with fewer than 4 creature cards in graveyard - trigger does not fire") {
         val driver = createDriver()
         driver.initMirrorMatch(
             deck = Deck.of("Swamp" to 40),
@@ -127,20 +128,16 @@ class OversoldCemeteryTest : FunSpec({
         driver.putPermanentOnBattlefield(activePlayer, "Oversold Cemetery")
 
         // Put only 3 creature cards in the graveyard
-        val creature1 = driver.putCardInGraveyard(activePlayer, "Grizzly Bears")
+        driver.putCardInGraveyard(activePlayer, "Grizzly Bears")
         driver.putCardInGraveyard(activePlayer, "Grizzly Bears")
         driver.putCardInGraveyard(activePlayer, "Grizzly Bears")
 
         // Advance to upkeep
         advanceToPlayerUpkeep(driver, activePlayer)
 
-        // The trigger may still fire (target selection) but the ConditionalEffect
-        // should prevent the return since condition is not met.
-        // If a target decision appears, select a target and resolve.
-        if (driver.pendingDecision is ChooseTargetsDecision) {
-            driver.submitTargetSelection(activePlayer, listOf(creature1))
-            driver.bothPass()
-        }
+        // The trigger should NOT fire at all (intervening-if condition not met)
+        // No target selection decision should appear
+        driver.stackSize shouldBe 0
 
         // All 3 creatures should still be in the graveyard
         driver.getGraveyardCardNames(activePlayer).count { it == "Grizzly Bears" } shouldBe 3

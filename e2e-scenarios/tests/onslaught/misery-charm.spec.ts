@@ -32,7 +32,9 @@ test.describe('Misery Charm', () => {
     await p1.clickCard('Misery Charm')
     await p1.selectAction('Cast Misery Charm')
 
-    // Spell auto-resolves (opponent has no responses)
+    // Opponent resolves the spell
+    await p2.resolveStack('Misery Charm')
+
     // Mode selection overlay appears — choose "Target player loses 2 life"
     await p1.selectOption('Target player loses 2 life')
 
@@ -68,7 +70,9 @@ test.describe('Misery Charm', () => {
     await p1.clickCard('Misery Charm')
     await p1.selectAction('Cast Misery Charm')
 
-    // Spell auto-resolves (opponent has no responses)
+    // Opponent resolves (has a permanent on battlefield)
+    await p2.resolveStack('Misery Charm')
+
     // Mode selection overlay appears — choose "Destroy target Cleric"
     await p1.selectOption('Destroy target Cleric')
 

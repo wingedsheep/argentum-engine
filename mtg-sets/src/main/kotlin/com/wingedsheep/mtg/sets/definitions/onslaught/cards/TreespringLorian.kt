@@ -16,6 +16,7 @@ val TreespringLorian = card("Treespring Lorian") {
     typeLine = "Creature — Beast"
     power = 5
     toughness = 4
+    oracleText = "Morph {5}{G}"
 
     morph = "{5}{G}"
 

@@ -17,6 +17,7 @@ val ButcherOrgg = card("Butcher Orgg") {
     typeLine = "Creature — Orgg"
     power = 6
     toughness = 6
+    oracleText = "You may assign Butcher Orgg's combat damage divided as you choose among defending player and/or any number of creatures they control."
 
     staticAbility {
         ability = DivideCombatDamageFreely()

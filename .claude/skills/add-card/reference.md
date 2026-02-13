@@ -582,3 +582,94 @@ Used via `restrictions = listOf(...)` in activated abilities:
 - `game.answerYesNo(choice)` — submit yes/no response
 - `game.selectCards(cardIds)` — submit card selection
 - `game.submitDistribution(map)` — submit distribution (divided damage)
+
+---
+
+## E2E Test Helpers (Playwright)
+
+E2E tests use the `GamePage` page object from `e2e-scenarios/helpers/gamePage.ts`.
+
+### Setup
+
+- **Fixture**: `createGame(config: ScenarioRequest)` — creates game via dev API, returns `{ player1, player2 }`
+- **Import**: `import { test, expect } from '../../fixtures/scenarioFixture'`
+- **Access**: `player1.gamePage` — the `GamePage` instance, `player1.playerId` — for life total assertions
+
+### ScenarioRequest Config
+
+- `player1` / `player2`: `{ hand?: string[], battlefield?: BattlefieldCardConfig[], graveyard?: string[], library?: string[], lifeTotal?: number }`
+- `BattlefieldCardConfig`: `{ name: string, tapped?: boolean, summoningSickness?: boolean }`
+- `phase`: `'BEGINNING'` | `'PRECOMBAT_MAIN'` | `'COMBAT'` | `'POSTCOMBAT_MAIN'` | `'ENDING'`
+- `step`: Step name string (e.g., `'UPKEEP'`, `'DECLARE_ATTACKERS'`)
+- `activePlayer` / `priorityPlayer`: `1` or `2`
+- `player1StopAtSteps` / `player2StopAtSteps`: `string[]` — step names where auto-pass is disabled
+
+### GamePage — Card Interaction
+
+- `clickCard(name)` — click a card by img alt text (first match on page)
+- `selectCardInHand(name)` — click a card scoped to the hand zone
+- `selectAction(label)` — click an action menu button by partial text match
+- `castFaceDown(name)` — click card + select "Cast Face-Down"
+- `turnFaceUp(name)` — click face-down card + select "Turn Face-Up"
+
+### GamePage — Targeting
+
+- `selectTarget(name)` — click a target card on the battlefield
+- `selectTargetInStep(name)` — click target inside targeting step modal
+- `confirmTargets()` — click "Confirm Target" / "Confirm (N)" button
+- `skipTargets()` — click "Decline" / "Select None" button
+- `selectPlayer(playerId)` — click player's life display to target them
+
+### GamePage — Priority & Stack
+
+- `pass()` — click Pass / Resolve / End Turn button
+- `resolveStack(stackItemText)` — wait for stack item text, then pass
+
+### GamePage — Decisions
+
+- `answerYes()` / `answerNo()` — may-effect yes/no buttons
+- `selectNumber(n)` — select number + confirm
+- `selectOption(text)` — select option + confirm
+- `selectXValue(x)` — set X slider value + cast/activate
+- `selectManaColor(color)` — select mana color from overlay
+- `waitForDecision(timeout?)` — wait for any decision UI
+
+### GamePage — Combat
+
+- `attackAll()` — click "Attack All" + confirm
+- `attackWith(name)` — declare single attacker + confirm
+- `declareAttacker(name)` — click creature to toggle as attacker
+- `skipAttacking()` — click "Skip Attacking"
+- `declareBlocker(blockerName, attackerName)` — drag-and-drop blocker
+- `confirmBlockers()` — click "Confirm Blocks"
+- `noBlocks()` — click "No Blocks"
+- `confirmBlockerOrder()` — confirm multiple blocker damage order
+
+### GamePage — Overlays & Selections
+
+- `selectCardInZoneOverlay(name)` — click card in graveyard/library overlay
+- `selectCardInDecision(name)` — click card in discard/sacrifice overlay
+- `confirmSelection()` — click "Confirm Selection" / "Confirm"
+- `failToFind()` — click "Fail to Find" in library search
+- `dismissRevealedCards()` — click "OK" to dismiss revealed cards
+
+### GamePage — Damage Distribution
+
+- `increaseDamageAllocation(name, times)` — click "+" in DamageDistributionModal
+- `castSpellFromDistribution()` — click "Cast Spell" from distribution modal
+- `allocateDamage(name, amount)` — click card N times in combat damage mode
+- `allocateDamageToPlayer(playerId, amount)` — click player N times
+- `increaseCombatDamage(name, times)` / `decreaseCombatDamage(name, times)` — combat damage +/-
+- `confirmDamage()` — click "Confirm Damage"
+- `confirmDistribution()` — click "Confirm" in distribute bar
+
+### GamePage — Assertions
+
+- `expectOnBattlefield(name)` / `expectNotOnBattlefield(name)`
+- `expectInHand(name)` / `expectNotInHand(name)` / `expectHandSize(count)`
+- `expectLifeTotal(playerId, value)`
+- `expectGraveyardSize(playerId, size)`
+- `expectStats(name, "3/3")`
+- `expectTapped(name)` / `expectUntapped(name)`
+- `expectGhostCardInHand(name)` / `expectNoGhostCardInHand(name)`
+- `screenshot(stepName)` — capture screenshot for report

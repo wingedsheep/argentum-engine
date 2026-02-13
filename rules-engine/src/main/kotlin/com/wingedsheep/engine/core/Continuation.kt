@@ -118,7 +118,8 @@ data class TriggeredAbilityContinuation(
     val description: String,
     val triggerDamageAmount: Int? = null,
     val triggeringEntityId: EntityId? = null,
-    val elseEffect: Effect? = null
+    val elseEffect: Effect? = null,
+    val targetRequirements: List<TargetRequirement> = emptyList()
 ) : ContinuationFrame
 
 /**
@@ -1049,6 +1050,34 @@ data class ChooseCreatureTypeEntersContinuation(
     val spellId: EntityId,
     val controllerId: EntityId,
     val ownerId: EntityId,
+    val creatureTypes: List<String>
+) : ContinuationFrame
+
+/**
+ * Resume casting a spell after the player chooses a creature type during casting.
+ *
+ * Used for spells like Aphetto Dredging where the creature type choice is part of
+ * casting (not resolution), so the opponent can see the chosen type on the stack.
+ *
+ * @property cardId The card being cast
+ * @property casterId The player casting the spell
+ * @property targets The chosen targets
+ * @property xValue The X value if applicable
+ * @property sacrificedPermanents Permanents sacrificed as additional costs
+ * @property targetRequirements The target requirements for resolution-time re-validation
+ * @property count Maximum number of cards to return (for ChooseCreatureTypeReturnFromGraveyardEffect)
+ * @property creatureTypes The creature type options (indexed by OptionChosenResponse.optionIndex)
+ */
+@Serializable
+data class CastWithCreatureTypeContinuation(
+    override val decisionId: String,
+    val cardId: EntityId,
+    val casterId: EntityId,
+    val targets: List<ChosenTarget> = emptyList(),
+    val xValue: Int? = null,
+    val sacrificedPermanents: List<EntityId> = emptyList(),
+    val targetRequirements: List<TargetRequirement> = emptyList(),
+    val count: Int,
     val creatureTypes: List<String>
 ) : ContinuationFrame
 

@@ -20,6 +20,7 @@ val Headhunter = card("Headhunter") {
     typeLine = "Creature — Human Cleric"
     power = 1
     toughness = 1
+    oracleText = "Whenever Headhunter deals combat damage to a player, that player discards a card.\nMorph {B}"
 
     triggeredAbility {
         trigger = Triggers.DealsCombatDamageToPlayer

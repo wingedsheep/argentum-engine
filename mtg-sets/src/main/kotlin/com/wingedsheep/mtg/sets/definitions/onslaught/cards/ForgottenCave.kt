@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.scripting.TimingRule
  */
 val ForgottenCave = card("Forgotten Cave") {
     typeLine = "Land"
+    oracleText = "Forgotten Cave enters the battlefield tapped.\n{T}: Add {R}.\nCycling {R}"
 
     replacementEffect(EntersTapped())
 

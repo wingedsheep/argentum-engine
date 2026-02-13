@@ -24,6 +24,7 @@ val GoblinSharpshooter = card("Goblin Sharpshooter") {
     typeLine = "Creature — Goblin"
     power = 1
     toughness = 1
+    oracleText = "Goblin Sharpshooter doesn't untap during your untap step.\nWhenever a creature dies, untap Goblin Sharpshooter.\n{T}: Goblin Sharpshooter deals 1 damage to any target."
 
     keywords(Keyword.DOESNT_UNTAP)
 
