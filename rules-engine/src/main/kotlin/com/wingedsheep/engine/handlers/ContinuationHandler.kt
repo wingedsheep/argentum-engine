@@ -124,6 +124,7 @@ class ContinuationHandler(
             is CloneEntersContinuation -> resumeCloneEnters(stateAfterPop, continuation, response)
             is ChooseCreatureTypeEntersContinuation -> resumeChooseCreatureTypeEnters(stateAfterPop, continuation, response)
             is CastWithCreatureTypeContinuation -> resumeCastWithCreatureType(stateAfterPop, continuation, response)
+            is EachOpponentMayPutFromHandContinuation -> resumeEachOpponentMayPutFromHand(stateAfterPop, continuation, response)
         }
     }
 
@@ -3944,5 +3945,90 @@ class ContinuationHandler(
                 }
             }
         }
+    }
+
+    /**
+     * Resume after an opponent selected cards from their hand to put onto the battlefield.
+     *
+     * Moves selected cards from the opponent's hand to the battlefield, then asks the next
+     * opponent (if any).
+     */
+    private fun resumeEachOpponentMayPutFromHand(
+        state: GameState,
+        continuation: EachOpponentMayPutFromHandContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for each-opponent-may-put-from-hand")
+        }
+
+        var newState = state
+        val events = mutableListOf<GameEvent>()
+        val opponentId = continuation.currentOpponentId
+        val handZone = ZoneKey(opponentId, Zone.HAND)
+        val battlefieldZone = ZoneKey(opponentId, Zone.BATTLEFIELD)
+
+        // Move each selected card from hand to battlefield
+        for (cardId in response.selectedCards) {
+            // Verify card is still in hand
+            if (cardId !in newState.getZone(handZone)) continue
+
+            newState = newState.removeFromZone(handZone, cardId)
+            newState = newState.addToZone(battlefieldZone, cardId)
+
+            // Apply battlefield components
+            val container = newState.getEntity(cardId)
+            if (container != null) {
+                var newContainer = container
+                    .with(com.wingedsheep.engine.state.components.identity.ControllerComponent(opponentId))
+
+                // Creatures enter with summoning sickness
+                val cardComponent = container.get<CardComponent>()
+                if (cardComponent?.typeLine?.isCreature == true) {
+                    newContainer = newContainer.with(
+                        com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
+                    )
+                }
+
+                newState = newState.copy(
+                    entities = newState.entities + (cardId to newContainer)
+                )
+            }
+
+            val cardComponent = newState.getEntity(cardId)?.get<CardComponent>()
+            val cardName = cardComponent?.name ?: "Unknown"
+            events.add(
+                ZoneChangeEvent(
+                    entityId = cardId,
+                    entityName = cardName,
+                    fromZone = Zone.HAND,
+                    toZone = Zone.BATTLEFIELD,
+                    ownerId = opponentId
+                )
+            )
+        }
+
+        // Ask the next opponent
+        val remainingOpponents = continuation.remainingOpponents
+        if (remainingOpponents.isNotEmpty()) {
+            val nextResult = com.wingedsheep.engine.handlers.effects.library.EachOpponentMayPutFromHandExecutor.askNextOpponent(
+                state = newState,
+                filter = continuation.filter,
+                sourceId = continuation.sourceId,
+                sourceName = continuation.sourceName,
+                controllerId = continuation.controllerId,
+                opponents = remainingOpponents,
+                currentIndex = 0
+            )
+            // Merge events from the current step with the next step
+            return ExecutionResult(
+                state = nextResult.newState,
+                events = events + nextResult.events,
+                pendingDecision = nextResult.pendingDecision,
+                error = nextResult.error
+            )
+        }
+
+        return checkForMoreContinuations(newState, events)
     }
 }

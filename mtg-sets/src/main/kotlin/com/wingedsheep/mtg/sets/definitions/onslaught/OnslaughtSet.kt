@@ -273,6 +273,7 @@ object OnslaughtSet {
         WallOfMulch,
         TribalUnity,
         VoiceOfTheWoods,
+        TemptingWurm,
 
         // Artifacts
         DoomCannon,

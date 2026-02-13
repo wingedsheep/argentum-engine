@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 257 / 335
+**Implemented:** 258 / 335
 
 ---
 
@@ -297,7 +297,7 @@
 - [x] Syphon Mind
 - [x] Syphon Soul
 - [x] Taunting Elf
-- [ ] Tempting Wurm
+- [x] Tempting Wurm
 - [x] Tephraderm
 - [x] Thoughtbound Primoc
 - [x] Thrashing Mudspawn
