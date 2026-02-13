@@ -34,6 +34,6 @@ val GravespawnSovereign = card("Gravespawn Sovereign") {
         collectorNumber = "152"
         artist = "Adam Rex"
         flavorText = "The Cabal never expected its creations to create servants of their own."
-        imageUri = "https://cards.scryfall.io/normal/front/0/e/0e786cca-41e1-41c1-a1af-f2a32f776bba.jpg?1562898189"
+        imageUri = "https://cards.scryfall.io/large/front/e/1/e18dc249-a343-4198-bef9-e8092a2bac15.jpg?1562948670"
     }
 }

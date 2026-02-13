@@ -28,6 +28,6 @@ val TribalUnity = card("Tribal Unity") {
         collectorNumber = "294"
         artist = "Ron Spears"
         flavorText = "\"I may have left the ways of violence behind,\" Kamahl said, \"but I still believe in the power of muscle and bone.\""
-        imageUri = "https://cards.scryfall.io/normal/front/6/7/671d30e4-7c3a-4ffc-8170-6205082bae4e.jpg?1562915955"
+        imageUri = "https://cards.scryfall.io/large/front/6/f/6f7b5ddf-d5a6-42bf-a196-7e834dbdb3dc.jpg?1562921272"
     }
 }
