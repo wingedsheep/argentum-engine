@@ -43,6 +43,6 @@ val CustodyBattle = card("Custody Battle") {
         collectorNumber = "189"
         artist = "Christopher Rush"
         flavorText = "Everyone wanted it. No one wanted to keep it."
-        imageUri = "https://cards.scryfall.io/large/front/b/7/b72c7b90-ba84-4030-969a-ce2a3089d24b.jpg?1562938184"
+        imageUri = "https://cards.scryfall.io/large/front/b/7/b72257f5-0cf9-45ca-8dc7-a1a93bd7dd1e.jpg?1562938173"
     }
 }
