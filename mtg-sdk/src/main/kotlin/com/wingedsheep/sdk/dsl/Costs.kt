@@ -83,6 +83,11 @@ object Costs {
         AbilityCost.Discard(filter)
 
     /**
+     * Discard your entire hand.
+     */
+    val DiscardHand: AbilityCost = AbilityCost.DiscardHand
+
+    /**
      * Discard this card (for cycling and similar abilities).
      */
     val DiscardSelf: AbilityCost = AbilityCost.DiscardSelf

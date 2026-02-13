@@ -98,6 +98,12 @@ sealed interface AbilityCost {
         }
     }
 
+    /** Discard your entire hand */
+    @Serializable
+    data object DiscardHand : AbilityCost {
+        override val description: String = "Discard your hand"
+    }
+
     /** Discard self (the card with this ability) - used for cycling */
     @Serializable
     data object DiscardSelf : AbilityCost {

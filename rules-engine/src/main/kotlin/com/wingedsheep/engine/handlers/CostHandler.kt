@@ -83,6 +83,10 @@ class CostHandler {
                 val handZone = ZoneKey(controllerId, Zone.HAND)
                 findMatchingCardsUnified(state, state.getZone(handZone), cost.filter, controllerId).isNotEmpty()
             }
+            is AbilityCost.DiscardHand -> {
+                // You can always discard your hand, even if it's empty
+                true
+            }
             is AbilityCost.ExileFromGraveyard -> {
                 val graveyardZone = ZoneKey(controllerId, Zone.GRAVEYARD)
                 findMatchingCardsUnified(state, state.getZone(graveyardZone), cost.filter, controllerId).size >= cost.count
@@ -238,6 +242,45 @@ class CostHandler {
                         ownerId = discardOwner
                     )
                 )
+
+                CostPaymentResult.success(newState, manaPool, events)
+            }
+            is AbilityCost.DiscardHand -> {
+                // Discard all cards from the controller's hand
+                val handZone = ZoneKey(controllerId, Zone.HAND)
+                val graveyardZone = ZoneKey(controllerId, Zone.GRAVEYARD)
+                val cardsInHand = state.getZone(handZone)
+
+                if (cardsInHand.isEmpty()) {
+                    return CostPaymentResult.success(state, manaPool)
+                }
+
+                var newState = state
+                val events = mutableListOf<GameEvent>()
+                val discardedIds = mutableListOf<com.wingedsheep.sdk.model.EntityId>()
+
+                for (cardId in cardsInHand) {
+                    val cardContainer = newState.getEntity(cardId) ?: continue
+                    val cardName = cardContainer.get<CardComponent>()?.name ?: "Unknown"
+
+                    newState = newState.removeFromZone(handZone, cardId)
+                    newState = newState.addToZone(graveyardZone, cardId)
+                    discardedIds.add(cardId)
+
+                    events.add(
+                        ZoneChangeEvent(
+                            entityId = cardId,
+                            entityName = cardName,
+                            fromZone = Zone.HAND,
+                            toZone = Zone.GRAVEYARD,
+                            ownerId = controllerId
+                        )
+                    )
+                }
+
+                if (discardedIds.isNotEmpty()) {
+                    events.add(0, CardsDiscardedEvent(controllerId, discardedIds))
+                }
 
                 CostPaymentResult.success(newState, manaPool, events)
             }
