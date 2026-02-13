@@ -71,7 +71,7 @@ class WeatheredWayfarerTest : FunSpec({
     test("can activate when opponent controls more lands") {
         val driver = createDriver()
         driver.initMirrorMatch(
-            deck = Deck.of("Plains" to 20, "Forest" to 20),
+            deck = Deck.of("Grizzly Bears" to 40),
             startingLife = 20
         )
 
@@ -111,7 +111,7 @@ class WeatheredWayfarerTest : FunSpec({
         // Both pass to resolve the ability
         driver.bothPass()
 
-        // Should have a search library decision
+        // Should have a search library decision with exactly the 1 land in the library
         val decision = driver.pendingDecision
         decision.shouldBeInstanceOf<SearchLibraryDecision>()
         decision.options.size shouldBe 1
@@ -129,7 +129,7 @@ class WeatheredWayfarerTest : FunSpec({
     test("cannot activate when opponent does not control more lands") {
         val driver = createDriver()
         driver.initMirrorMatch(
-            deck = Deck.of("Plains" to 20, "Forest" to 20),
+            deck = Deck.of("Grizzly Bears" to 40),
             startingLife = 20
         )
 
@@ -166,7 +166,7 @@ class WeatheredWayfarerTest : FunSpec({
     test("cannot activate when you control more lands than opponent") {
         val driver = createDriver()
         driver.initMirrorMatch(
-            deck = Deck.of("Plains" to 20, "Forest" to 20),
+            deck = Deck.of("Grizzly Bears" to 40),
             startingLife = 20
         )
 
@@ -201,7 +201,7 @@ class WeatheredWayfarerTest : FunSpec({
     test("can find any land card, not just basic lands") {
         val driver = createDriver()
         driver.initMirrorMatch(
-            deck = Deck.of("Plains" to 20, "Forest" to 20),
+            deck = Deck.of("Grizzly Bears" to 40),
             startingLife = 20
         )
 
@@ -250,7 +250,7 @@ class WeatheredWayfarerTest : FunSpec({
     test("can fail to find even when matching cards exist") {
         val driver = createDriver()
         driver.initMirrorMatch(
-            deck = Deck.of("Plains" to 20, "Forest" to 20),
+            deck = Deck.of("Grizzly Bears" to 40),
             startingLife = 20
         )
 
