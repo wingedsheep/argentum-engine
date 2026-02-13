@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 245 / 335
+**Implemented:** 246 / 335
 
 ---
 
@@ -242,7 +242,7 @@
 - [x] Rorix Bladewing
 - [x] Rotlung Reanimator
 - [ ] Rummaging Wizard
-- [ ] Run Wild
+- [x] Run Wild
 - [x] Sage Aven
 - [ ] Sandskin
 - [x] Screaming Seahawk

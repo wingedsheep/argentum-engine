@@ -259,6 +259,7 @@ object OnslaughtSet {
         PrimalBoost,
         CentaurGlade,
         Gigapede,
+        RunWild,
         WallOfMulch,
 
         // Artifacts

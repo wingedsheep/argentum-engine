@@ -288,6 +288,28 @@ data class GrantTriggeredAbilityUntilEndOfTurnEffect(
 }
 
 /**
+ * Grant an activated ability to a target until end of turn.
+ * "Target creature gains '{cost}: {effect}' until end of turn"
+ *
+ * Used for cards like Run Wild that grant activated abilities temporarily.
+ *
+ * @property ability The activated ability to grant
+ * @property target The creature to grant the ability to
+ * @property duration How long the grant lasts
+ */
+@Serializable
+data class GrantActivatedAbilityUntilEndOfTurnEffect(
+    val ability: ActivatedAbility,
+    val target: EffectTarget,
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    override val description: String = buildString {
+        append("${target.description} gains \"${ability.description}\"")
+        if (duration.description.isNotEmpty()) append(" ${duration.description}")
+    }
+}
+
+/**
  * Modify power/toughness by a dynamic amount.
  * "Target creature gets -X/-X until end of turn, where X is the number of Zombies on the battlefield."
  */

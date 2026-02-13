@@ -2,6 +2,7 @@ package com.wingedsheep.engine.state
 
 import com.wingedsheep.engine.core.ContinuationFrame
 import com.wingedsheep.engine.event.DelayedTriggeredAbility
+import com.wingedsheep.engine.event.GrantedActivatedAbility
 import com.wingedsheep.engine.event.GrantedTriggeredAbility
 import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
 import com.wingedsheep.sdk.core.Phase
@@ -68,6 +69,9 @@ data class GameState(
 
     /** Triggered abilities granted to entities temporarily (e.g., Commando Raid) */
     val grantedTriggeredAbilities: List<GrantedTriggeredAbility> = emptyList(),
+
+    /** Activated abilities granted to entities temporarily (e.g., Run Wild) */
+    val grantedActivatedAbilities: List<GrantedActivatedAbility> = emptyList(),
 
     /** Continuation stack for resuming after player decisions */
     val continuationStack: List<ContinuationFrame> = emptyList()
