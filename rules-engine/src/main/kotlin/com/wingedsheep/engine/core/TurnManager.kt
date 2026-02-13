@@ -12,6 +12,7 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.MarkedForDestructionAtEndOfCombatComponent
 import com.wingedsheep.engine.state.components.combat.MustAttackPlayerComponent
+import com.wingedsheep.engine.state.components.combat.MustAttackThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.LossReason
@@ -617,6 +618,14 @@ class TurnManager(
 
         for (entityId in creaturesWithDamage) {
             newState = newState.updateEntity(entityId) { it.without<DamageComponent>() }
+        }
+
+        // Remove MustAttackThisTurnComponent from all creatures (Walking Desecration effect)
+        val creaturesWithMustAttack = newState.entities.filter { (_, container) ->
+            container.has<MustAttackThisTurnComponent>()
+        }.keys
+        for (entityId in creaturesWithMustAttack) {
+            newState = newState.updateEntity(entityId) { it.without<MustAttackThisTurnComponent>() }
         }
 
         // No priority during cleanup (normally)

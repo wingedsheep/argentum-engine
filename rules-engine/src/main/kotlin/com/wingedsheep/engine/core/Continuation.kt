@@ -1183,6 +1183,29 @@ data class EachOpponentMayPutFromHandContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after the controller chooses a creature type for "must attack this turn" effect.
+ *
+ * Used by Walking Desecration: "Creatures of the creature type of your choice attack
+ * this turn if able."
+ *
+ * After the player chooses a creature type, all creatures of that type on the battlefield
+ * are given MustAttackThisTurnComponent.
+ *
+ * @property controllerId The player who controls the effect
+ * @property sourceId The permanent that created this effect
+ * @property sourceName Name of the source for event messages
+ * @property creatureTypes The creature type options (indexed by OptionChosenResponse.optionIndex)
+ */
+@Serializable
+data class ChooseCreatureTypeMustAttackContinuation(
+    override val decisionId: String,
+    val controllerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val creatureTypes: List<String>
+) : ContinuationFrame
+
+/**
  * Information about a mana source available for manual selection.
  */
 @Serializable

@@ -166,6 +166,7 @@ object OnslaughtSet {
         VisaraTheDreadful,
         WretchedAnurid,
         ThrashingMudspawn,
+        WalkingDesecration,
 
         // Red creatures and spells
         AetherCharge,

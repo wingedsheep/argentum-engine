@@ -125,6 +125,7 @@ class ContinuationHandler(
             is ChooseCreatureTypeEntersContinuation -> resumeChooseCreatureTypeEnters(stateAfterPop, continuation, response)
             is CastWithCreatureTypeContinuation -> resumeCastWithCreatureType(stateAfterPop, continuation, response)
             is EachOpponentMayPutFromHandContinuation -> resumeEachOpponentMayPutFromHand(stateAfterPop, continuation, response)
+            is ChooseCreatureTypeMustAttackContinuation -> resumeChooseCreatureTypeMustAttack(stateAfterPop, continuation, response)
         }
     }
 
@@ -4027,6 +4028,45 @@ class ContinuationHandler(
                 pendingDecision = nextResult.pendingDecision,
                 error = nextResult.error
             )
+        }
+
+        return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume after player chose a creature type for "must attack this turn" effect.
+     *
+     * Marks all creatures of the chosen type on the battlefield with MustAttackThisTurnComponent.
+     */
+    private fun resumeChooseCreatureTypeMustAttack(
+        state: GameState,
+        continuation: ChooseCreatureTypeMustAttackContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is OptionChosenResponse) {
+            return ExecutionResult.error(state, "Expected option choice response for creature type selection")
+        }
+
+        val chosenType = continuation.creatureTypes.getOrNull(response.optionIndex)
+            ?: return ExecutionResult.error(state, "Invalid creature type index: ${response.optionIndex}")
+
+        var newState = state
+        val events = mutableListOf<GameEvent>()
+
+        for (entityId in newState.getBattlefield()) {
+            val container = newState.getEntity(entityId) ?: continue
+            val cardComponent = container.get<CardComponent>() ?: continue
+
+            // Must be a creature
+            if (!cardComponent.typeLine.isCreature) continue
+
+            // Must have the chosen subtype
+            if (!cardComponent.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(chosenType))) continue
+
+            // Add MustAttackThisTurnComponent
+            newState = newState.updateEntity(entityId) { it.with(
+                com.wingedsheep.engine.state.components.combat.MustAttackThisTurnComponent
+            ) }
         }
 
         return checkForMoreContinuations(newState, events)
