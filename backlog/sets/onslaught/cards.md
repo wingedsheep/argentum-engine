@@ -153,7 +153,7 @@
 - [x] Grassland Crusader
 - [x] Gratuitous Violence
 - [x] Gravel Slinger
-- [ ] Gravespawn Sovereign
+- [x] Gravespawn Sovereign
 - [x] Graxiplon
 - [x] Grinning Demon
 - [x] Gustcloak Harrier
