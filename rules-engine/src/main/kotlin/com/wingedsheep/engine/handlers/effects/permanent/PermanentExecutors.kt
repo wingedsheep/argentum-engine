@@ -36,6 +36,7 @@ class PermanentExecutors(
         GrantActivatedAbilityUntilEndOfTurnExecutor(),
         GrantToEnchantedCreatureTypeGroupExecutor(),
         BecomeCreatureTypeExecutor(),
-        ChooseCreatureTypeModifyStatsExecutor()
+        ChooseCreatureTypeModifyStatsExecutor(),
+        BecomeChosenTypeAllCreaturesExecutor()
     )
 }

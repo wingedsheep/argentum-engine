@@ -111,6 +111,7 @@ object OnslaughtSet {
         MistformWall,
         Reminisce,
         RiptideBiologist,
+        Standardize,
 
         // Black creatures and spells
         AccursedCentaur,
@@ -136,6 +137,7 @@ object OnslaughtSet {
         FadeFromMemory,
         FeedingFrenzy,
         FesteringGoblin,
+        GangrenousGoliath,
         GluttonousZombie,
         GrinningDemon,
         Infest,
@@ -275,6 +277,7 @@ object OnslaughtSet {
         GoblinBurrows,
         LonelySandbar,
         SeasideHaven,
+        StarlitSanctum,
         WirewoodLodge,
         SecludedSteppe,
         TranquilThicket,

@@ -990,6 +990,28 @@ data class ChooseCreatureTypeModifyStatsContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after the controller chooses a creature type to set ALL creatures' subtypes.
+ *
+ * Used by Standardize: "Choose a creature type other than Wall. Each creature becomes
+ * that type until end of turn."
+ *
+ * @property controllerId The player who controls the effect
+ * @property sourceId The spell/ability that caused this effect
+ * @property sourceName Name of the source for event messages
+ * @property creatureTypes The creature type options (indexed by OptionChosenResponse.optionIndex)
+ * @property duration How long the effect lasts
+ */
+@Serializable
+data class BecomeChosenTypeAllCreaturesContinuation(
+    override val decisionId: String,
+    val controllerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val creatureTypes: List<String>,
+    val duration: Duration
+) : ContinuationFrame
+
+/**
  * Resume after the controller selects mana sources to pay a cost for a triggered
  * ability that also requires targets.
  *

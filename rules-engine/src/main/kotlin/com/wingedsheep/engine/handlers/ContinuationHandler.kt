@@ -103,6 +103,7 @@ class ContinuationHandler(
             is ChooseCreatureTypeRevealTopContinuation -> resumeChooseCreatureTypeRevealTop(stateAfterPop, continuation, response)
             is BecomeCreatureTypeContinuation -> resumeBecomeCreatureType(stateAfterPop, continuation, response)
             is ChooseCreatureTypeModifyStatsContinuation -> resumeChooseCreatureTypeModifyStats(stateAfterPop, continuation, response)
+            is BecomeChosenTypeAllCreaturesContinuation -> resumeBecomeChosenTypeAllCreatures(stateAfterPop, continuation, response)
             is CounterUnlessPaysContinuation -> resumeCounterUnlessPays(stateAfterPop, continuation, response)
             is PutOnBottomOfLibraryContinuation -> resumePutOnBottomOfLibrary(stateAfterPop, continuation, response)
             is ModalContinuation -> resumeModal(stateAfterPop, continuation, response)
@@ -2956,6 +2957,73 @@ class ContinuationHandler(
                 modification = com.wingedsheep.engine.mechanics.layers.SerializableModification.ModifyPowerToughness(
                     powerMod = continuation.powerModifier,
                     toughnessMod = continuation.toughnessModifier
+                ),
+                affectedEntities = affectedEntities
+            ),
+            duration = continuation.duration,
+            sourceId = continuation.sourceId,
+            sourceName = continuation.sourceName,
+            controllerId = continuation.controllerId,
+            timestamp = System.currentTimeMillis()
+        )
+
+        val newState = state.copy(
+            floatingEffects = state.floatingEffects + floatingEffect
+        )
+
+        return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume after player chose a creature type for global type change.
+     *
+     * Sets all creatures on the battlefield to the chosen type via a floating effect.
+     */
+    private fun resumeBecomeChosenTypeAllCreatures(
+        state: GameState,
+        continuation: BecomeChosenTypeAllCreaturesContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is OptionChosenResponse) {
+            return ExecutionResult.error(state, "Expected option choice response for creature type selection")
+        }
+
+        val chosenType = continuation.creatureTypes.getOrNull(response.optionIndex)
+            ?: return ExecutionResult.error(state, "Invalid creature type index: ${response.optionIndex}")
+
+        // Find all creatures on the battlefield
+        val affectedEntities = mutableSetOf<EntityId>()
+        val events = mutableListOf<GameEvent>()
+
+        for (entityId in state.getBattlefield()) {
+            val container = state.getEntity(entityId) ?: continue
+            val cardComponent = container.get<CardComponent>() ?: continue
+
+            // Check if creature (face-down permanents are always creatures per Rule 707.2)
+            if (!cardComponent.typeLine.isCreature && !container.has<FaceDownComponent>()) continue
+
+            affectedEntities.add(entityId)
+            events.add(
+                CreatureTypeChangedEvent(
+                    targetId = entityId,
+                    targetName = cardComponent.name,
+                    newType = chosenType,
+                    sourceName = continuation.sourceName ?: "Unknown"
+                )
+            )
+        }
+
+        if (affectedEntities.isEmpty()) {
+            return checkForMoreContinuations(state, emptyList())
+        }
+
+        val floatingEffect = com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect(
+            id = EntityId.generate(),
+            effect = com.wingedsheep.engine.mechanics.layers.FloatingEffectData(
+                layer = com.wingedsheep.engine.mechanics.layers.Layer.TYPE,
+                sublayer = null,
+                modification = com.wingedsheep.engine.mechanics.layers.SerializableModification.SetCreatureSubtypes(
+                    subtypes = setOf(chosenType)
                 ),
                 affectedEntities = affectedEntities
             ),

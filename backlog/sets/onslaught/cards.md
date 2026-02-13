@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 246 / 335
+**Implemented:** 248 / 335
 
 ---
 
@@ -134,7 +134,7 @@
 - [x] Forgotten Cave
 - [x] Frightshroud Courier
 - [ ] Future Sight
-- [ ] Gangrenous Goliath
+- [x] Gangrenous Goliath
 - [x] Ghosthelm Courier
 - [x] Gigapede
 - [ ] Glarecaster
@@ -282,8 +282,8 @@
 - [x] Spurred Wolverine
 - [ ] Spy Network
 - [x] Stag Beetle
-- [ ] Standardize
-- [ ] Starlit Sanctum
+- [x] Standardize
+- [x] Starlit Sanctum
 - [x] Starstorm
 - [ ] Steely Resolve
 - [ ] Strongarm Tactics

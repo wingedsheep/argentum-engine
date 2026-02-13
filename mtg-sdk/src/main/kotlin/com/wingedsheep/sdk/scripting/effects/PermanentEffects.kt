@@ -418,6 +418,33 @@ data class ChooseCreatureTypeModifyStatsEffect(
 }
 
 /**
+ * Choose a creature type. Each creature becomes that type until end of turn.
+ *
+ * Used for Standardize: "Choose a creature type other than Wall. Each creature becomes
+ * that type until end of turn."
+ *
+ * At resolution time, the executor:
+ * 1. Presents a ChooseOptionDecision with creature types (excluding any in excludedTypes)
+ * 2. Pushes a BecomeChosenTypeAllCreaturesContinuation
+ * 3. On response, creates a floating effect that sets all creatures' subtypes
+ *
+ * @property excludedTypes Creature types that cannot be chosen (e.g., "Wall")
+ * @property duration How long the effect lasts
+ */
+@Serializable
+data class BecomeChosenTypeAllCreaturesEffect(
+    val excludedTypes: List<String> = emptyList(),
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    override val description: String = buildString {
+        append("Choose a creature type")
+        if (excludedTypes.isNotEmpty()) append(" other than ${excludedTypes.joinToString(", ")}")
+        append(". Each creature becomes that type")
+        if (duration.description.isNotEmpty()) append(" ${duration.description}")
+    }
+}
+
+/**
  * Target creature becomes the creature type of your choice until end of turn.
  * This replaces all creature subtypes with the chosen type.
  *
