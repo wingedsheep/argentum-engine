@@ -244,7 +244,7 @@
 - [x] Rummaging Wizard
 - [x] Run Wild
 - [x] Sage Aven
-- [ ] Sandskin
+- [x] Sandskin
 - [x] Screaming Seahawk
 - [x] Screeching Buzzard
 - [x] Sea's Claim

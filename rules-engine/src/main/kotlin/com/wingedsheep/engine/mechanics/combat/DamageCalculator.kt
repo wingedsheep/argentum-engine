@@ -5,6 +5,7 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
 import com.wingedsheep.engine.state.components.combat.BlockedComponent
@@ -13,6 +14,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.DamageType
 import com.wingedsheep.sdk.scripting.PreventDamage
 import com.wingedsheep.sdk.scripting.RecipientFilter
 
@@ -364,7 +366,19 @@ class DamageCalculator {
                 val damageEvent = effect.appliesTo
                 if (damageEvent !is com.wingedsheep.sdk.scripting.GameEvent.DamageEvent) continue
 
+                // This is called during combat, so combat damage type always matches
+                val damageTypeMatches = when (damageEvent.damageType) {
+                    is DamageType.Any -> true
+                    is DamageType.Combat -> true  // We're estimating for combat
+                    is DamageType.NonCombat -> false
+                }
+                if (!damageTypeMatches) continue
+
                 val recipientMatches = when (val recipient = damageEvent.recipient) {
+                    is RecipientFilter.EnchantedCreature -> {
+                        val attachedTo = container.get<AttachedToComponent>()?.targetId
+                        targetId == attachedTo
+                    }
                     is RecipientFilter.Matching -> {
                         val context = PredicateContext(controllerId = sourceControllerId)
                         predicateEvaluator.matchesWithProjection(state, projected, targetId, recipient.filter, context)
