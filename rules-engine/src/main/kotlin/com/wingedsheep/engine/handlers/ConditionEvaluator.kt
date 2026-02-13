@@ -349,14 +349,18 @@ class ConditionEvaluator {
     // Helper functions
 
     private fun countCreaturesControlledBy(state: GameState, playerId: com.wingedsheep.sdk.model.EntityId): Int {
-        return state.entities.count { (_, container) ->
+        val battlefieldEntities = state.getBattlefield().toSet()
+        return battlefieldEntities.count { entityId ->
+            val container = state.getEntity(entityId) ?: return@count false
             container.get<ControllerComponent>()?.playerId == playerId &&
             container.get<CardComponent>()?.typeLine?.isCreature == true
         }
     }
 
     private fun countLandsControlledBy(state: GameState, playerId: com.wingedsheep.sdk.model.EntityId): Int {
-        return state.entities.count { (_, container) ->
+        val battlefieldEntities = state.getBattlefield().toSet()
+        return battlefieldEntities.count { entityId ->
+            val container = state.getEntity(entityId) ?: return@count false
             container.get<ControllerComponent>()?.playerId == playerId &&
             container.get<CardComponent>()?.typeLine?.isLand == true
         }
