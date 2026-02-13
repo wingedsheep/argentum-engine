@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 261 / 335
+**Implemented:** 262 / 335
 
 ---
 
@@ -312,7 +312,7 @@
 - [x] Trickery Charm
 - [ ] True Believer
 - [x] Undead Gladiator
-- [ ] Unholy Grotto
+- [x] Unholy Grotto
 - [x] Unified Strike
 - [x] Venomspout Brackus
 - [x] Visara the Dreadful

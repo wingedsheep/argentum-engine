@@ -296,6 +296,7 @@ object OnslaughtSet {
         StarlitSanctum,
         WirewoodLodge,
         RiptideLaboratory,
+        UnholyGrotto,
         SecludedSteppe,
         TranquilThicket,
 
