@@ -389,7 +389,7 @@ function LobbyOverlay({
                   onChange={(e) => updateLobbySettings({ boosterCount: Number(e.target.value) })}
                   className={styles.settingsSelect}
                 >
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => (
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].map((n) => (
                     <option key={n} value={n}>{n}</option>
                   ))}
                 </select>

@@ -124,3 +124,15 @@ data class MustAttackPlayerComponent(
     /** Whether this is active for the current turn (set to true at start of affected player's turn) */
     val activeThisTurn: Boolean = false
 ) : Component
+
+/**
+ * Marks a creature that must attack this turn if able.
+ * Used by Walking Desecration and similar effects that force specific creatures to attack.
+ *
+ * Unlike MustAttackPlayerComponent (which is on a player and forces all their creatures),
+ * this is placed on individual creatures. The creature can attack any legal defender.
+ *
+ * Removed at end of turn during cleanup.
+ */
+@Serializable
+data object MustAttackThisTurnComponent : Component

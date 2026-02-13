@@ -235,7 +235,7 @@
 - [x] Riptide Biologist
 - [ ] Riptide Chronologist
 - [ ] Riptide Entrancer
-- [ ] Riptide Laboratory
+- [x] Riptide Laboratory
 - [ ] Riptide Replicator
 - [ ] Riptide Shapeshifter
 - [ ] Risky Move

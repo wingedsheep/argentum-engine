@@ -155,3 +155,17 @@ data class RemoveFromCombatEffect(
 ) : Effect {
     override val description: String = "Remove ${target.description} from combat"
 }
+
+/**
+ * Choose a creature type, then creatures of that type attack this turn if able.
+ * Used for Walking Desecration: "{B}, {T}: Creatures of the creature type of your choice attack this turn if able."
+ *
+ * The controller chooses a creature type at resolution, then all creatures of that type
+ * on the battlefield are marked as "must attack this turn if able."
+ */
+@SerialName("ChooseCreatureTypeMustAttack")
+@Serializable
+data object ChooseCreatureTypeMustAttackEffect : Effect {
+    override val description: String =
+        "Creatures of the creature type of your choice attack this turn if able"
+}

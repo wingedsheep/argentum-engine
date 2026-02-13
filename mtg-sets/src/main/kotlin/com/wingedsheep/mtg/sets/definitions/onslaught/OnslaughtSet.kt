@@ -168,6 +168,7 @@ object OnslaughtSet {
         VisaraTheDreadful,
         WretchedAnurid,
         ThrashingMudspawn,
+        WalkingDesecration,
 
         // Red creatures and spells
         AetherCharge,
@@ -293,6 +294,7 @@ object OnslaughtSet {
         SeasideHaven,
         StarlitSanctum,
         WirewoodLodge,
+        RiptideLaboratory,
         SecludedSteppe,
         TranquilThicket,
 

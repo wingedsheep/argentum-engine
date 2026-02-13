@@ -36,6 +36,6 @@ val SkirkFireMarshal = card("Skirk Fire Marshal") {
         collectorNumber = "229"
         artist = "Greg Hildebrandt & Tim Hildebrandt"
         flavorText = "He's boss because he's smart enough to get out of the way."
-        imageUri = "https://cards.scryfall.io/normal/front/a/1/a1158e18-9e5f-4b5c-87a5-dbbd5e10a140.jpg?1562927405"
+        imageUri = "https://cards.scryfall.io/large/front/b/7/b71117d0-5cf7-4041-b568-00bd8a975dd8.jpg?1562938138"
     }
 }

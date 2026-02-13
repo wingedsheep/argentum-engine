@@ -72,6 +72,12 @@ class CombatManager(
             return ExecutionResult.error(state, mustAttackValidation)
         }
 
+        // Check must-attack-this-turn requirements (Walking Desecration)
+        val mustAttackThisTurnValidation = validateMustAttackThisTurnRequirements(state, attackingPlayer, attackers)
+        if (mustAttackThisTurnValidation != null) {
+            return ExecutionResult.error(state, mustAttackThisTurnValidation)
+        }
+
         // Apply attacker components and tap attacking creatures
         var newState = state
         val projected = stateProjector.project(state)
@@ -196,6 +202,36 @@ class CombatManager(
                 val cardName = state.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
                 val defenderName = state.getEntity(requiredDefender)?.get<CardComponent>()?.name ?: "that player"
                 return "$cardName must attack $defenderName (Taunt)"
+            }
+        }
+
+        return null
+    }
+
+    /**
+     * Validate "must attack this turn" requirements for individual creatures.
+     *
+     * When creatures have MustAttackThisTurnComponent (e.g., from Walking Desecration):
+     * - Each such creature that CAN attack MUST be declared as an attacker
+     * - They can attack any legal defender (unlike Taunt which requires a specific one)
+     *
+     * @return Error message if requirements not met, null if valid
+     */
+    private fun validateMustAttackThisTurnRequirements(
+        state: GameState,
+        attackingPlayer: EntityId,
+        attackers: Map<EntityId, EntityId>
+    ): String? {
+        val validAttackers = getValidAttackers(state, attackingPlayer)
+
+        for (attackerId in validAttackers) {
+            val container = state.getEntity(attackerId) ?: continue
+            if (!container.has<MustAttackThisTurnComponent>()) continue
+
+            // This creature must attack this turn
+            if (attackerId !in attackers.keys) {
+                val cardName = container.get<CardComponent>()?.name ?: "Creature"
+                return "$cardName must attack this turn"
             }
         }
 

@@ -20,6 +20,7 @@ class CombatExecutors(
         TauntExecutor(),
         PreventNextDamageExecutor(amountEvaluator),
         CantBlockTargetCreaturesExecutor(),
-        RemoveFromCombatExecutor()
+        RemoveFromCombatExecutor(),
+        ChooseCreatureTypeMustAttackExecutor()
     )
 }
