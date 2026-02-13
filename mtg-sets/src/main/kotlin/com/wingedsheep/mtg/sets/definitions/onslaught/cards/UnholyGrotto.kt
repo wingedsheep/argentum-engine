@@ -50,6 +50,6 @@ val UnholyGrotto = card("Unholy Grotto") {
         rarity = Rarity.RARE
         collectorNumber = "327"
         artist = "John Avon"
-        imageUri = "https://cards.scryfall.io/large/front/c/2/c2f7bcc7-74b5-4ecc-b5c1-3c9e56a2a31b.jpg?1562935857"
+        imageUri = "https://cards.scryfall.io/large/front/5/2/52f464a9-586c-4cf3-894b-b407c9f4dcb8.jpg?1562914485"
     }
 }
