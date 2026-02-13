@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 265 / 335
+**Implemented:** 269 / 335
 
 ---
 
@@ -113,7 +113,7 @@
 - [x] Elvish Warrior
 - [x] Embermage Goblin
 - [ ] Enchantress's Presence
-- [ ] Endemic Plague
+- [x] Endemic Plague
 - [x] Entrails Feaster
 - [x] Erratic Explosion
 - [x] Essence Fracture
@@ -199,7 +199,7 @@
 - [ ] Mistform Mask
 - [ ] Mistform Mutant
 - [x] Mistform Shrieker
-- [ ] Mistform Skyreaver
+- [x] Mistform Skyreaver
 - [ ] Mistform Stalker
 - [x] Mistform Wall
 - [x] Mobilization
@@ -241,7 +241,7 @@
 - [ ] Risky Move
 - [x] Rorix Bladewing
 - [x] Rotlung Reanimator
-- [ ] Rummaging Wizard
+- [x] Rummaging Wizard
 - [x] Run Wild
 - [x] Sage Aven
 - [ ] Sandskin
@@ -312,7 +312,7 @@
 - [x] Trickery Charm
 - [ ] True Believer
 - [x] Undead Gladiator
-- [ ] Unholy Grotto
+- [x] Unholy Grotto
 - [x] Unified Strike
 - [x] Venomspout Brackus
 - [x] Visara the Dreadful

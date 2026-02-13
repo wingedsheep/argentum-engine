@@ -30,6 +30,7 @@ class RemovalExecutors : ExecutorModule {
         AnyPlayerMayPayExecutor(),
         ChooseCreatureTypeReturnExecutor(),
         DestroyAllExecutor(),
+        DestroyAllSharingTypeWithSacrificedExecutor(),
         CantBeRegeneratedExecutor(),
         ExileUntilEndStepExecutor(),
         ForceSacrificeExecutor(),

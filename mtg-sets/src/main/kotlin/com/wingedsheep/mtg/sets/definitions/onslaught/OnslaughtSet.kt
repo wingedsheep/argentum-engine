@@ -109,11 +109,13 @@ object OnslaughtSet {
         IxidorRealitySculptor,
         MistformDreamer,
         MistformShrieker,
+        MistformSkyreaver,
         MistformWall,
         Reminisce,
         RiptideBiologist,
         SeasClaim,
         Standardize,
+        RummagingWizard,
         VoidmageProdigy,
 
         // Black creatures and spells
@@ -134,6 +136,7 @@ object OnslaughtSet {
         CruelRevival,
         DeathPulse,
         DoomedNecromancer,
+        EndemicPlague,
         DiscipleOfMalice,
         EbonbladeReaper,
         EntrailsFeaster,
@@ -294,6 +297,7 @@ object OnslaughtSet {
         StarlitSanctum,
         WirewoodLodge,
         RiptideLaboratory,
+        UnholyGrotto,
         SecludedSteppe,
         TranquilThicket,
 
