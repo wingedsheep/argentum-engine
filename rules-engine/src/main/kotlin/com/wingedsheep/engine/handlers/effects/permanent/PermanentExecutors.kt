@@ -26,6 +26,7 @@ class PermanentExecutors(
         RemoveCountersExecutor(),
         RemoveAllCountersOfTypeExecutor(),
         ChooseColorProtectionExecutor(decisionHandler),
+        ChooseColorProtectionTargetExecutor(decisionHandler),
         ChangeCreatureTypeTextExecutor(decisionHandler),
         GainControlExecutor(),
         GainControlByMostOfSubtypeExecutor(),

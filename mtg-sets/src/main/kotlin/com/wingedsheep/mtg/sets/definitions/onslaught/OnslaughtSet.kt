@@ -64,6 +64,7 @@ object OnslaughtSet {
         DiscipleOfGrace,
         GlorySeeker,
         IronfistCrusher,
+        JarethLeonineTitan,
         NovaCleric,
         Oblation,
         PearlspearCourier,

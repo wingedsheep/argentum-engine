@@ -270,6 +270,15 @@ object Effects {
         duration: Duration = Duration.EndOfTurn
     ): Effect = ChooseColorAndGrantProtectionToGroupEffect(filter, duration)
 
+    /**
+     * Choose a color and grant protection from that color to a single target.
+     * "{W}: This creature gains protection from the color of your choice until end of turn."
+     */
+    fun ChooseColorAndGrantProtectionToTarget(
+        target: EffectTarget = EffectTarget.Self,
+        duration: Duration = Duration.EndOfTurn
+    ): Effect = ChooseColorAndGrantProtectionToTargetEffect(target, duration)
+
     // =========================================================================
     // Control Effects
     // =========================================================================

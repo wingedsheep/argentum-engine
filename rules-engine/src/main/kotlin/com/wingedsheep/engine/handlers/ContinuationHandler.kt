@@ -92,6 +92,7 @@ class ContinuationHandler(
             is LookAtTopCardsContinuation -> resumeLookAtTopCards(stateAfterPop, continuation, response)
             is RevealAndOpponentChoosesContinuation -> resumeRevealAndOpponentChooses(stateAfterPop, continuation, response)
             is ChooseColorProtectionContinuation -> resumeChooseColorProtection(stateAfterPop, continuation, response)
+            is ChooseColorProtectionTargetContinuation -> resumeChooseColorProtectionTarget(stateAfterPop, continuation, response)
             is ChooseCreatureTypeReturnContinuation -> resumeChooseCreatureTypeReturn(stateAfterPop, continuation, response)
             is GraveyardToHandContinuation -> resumeGraveyardToHand(stateAfterPop, continuation, response)
             is ChooseFromCreatureTypeContinuation -> resumeChooseFromCreatureType(stateAfterPop, continuation, response)
@@ -2423,6 +2424,66 @@ class ContinuationHandler(
             sourceId = continuation.sourceId,
             sourceName = continuation.sourceName,
             controllerId = controllerId,
+            timestamp = System.currentTimeMillis()
+        )
+
+        val newState = state.copy(
+            floatingEffects = state.floatingEffects + floatingEffect
+        )
+
+        return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume after player chooses a color for single-target protection granting effects.
+     *
+     * Creates a floating effect granting protection from the chosen color to the
+     * specific target entity.
+     */
+    private fun resumeChooseColorProtectionTarget(
+        state: GameState,
+        continuation: ChooseColorProtectionTargetContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is ColorChosenResponse) {
+            return ExecutionResult.error(state, "Expected color choice response for protection effect")
+        }
+
+        val chosenColor = response.color
+        val targetEntityId = continuation.targetEntityId
+        val events = mutableListOf<GameEvent>()
+
+        // Verify the target is still on the battlefield
+        val container = state.getEntity(targetEntityId)
+        val cardComponent = container?.get<CardComponent>()
+        if (container == null || cardComponent == null || !state.getBattlefield().contains(targetEntityId)) {
+            return checkForMoreContinuations(state, events)
+        }
+
+        val displayName = if (container.has<FaceDownComponent>()) "Face-down creature" else cardComponent.name
+        events.add(
+            KeywordGrantedEvent(
+                targetId = targetEntityId,
+                targetName = displayName,
+                keyword = "Protection from ${chosenColor.displayName.lowercase()}",
+                sourceName = continuation.sourceName ?: "Unknown"
+            )
+        )
+
+        val floatingEffect = com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect(
+            id = com.wingedsheep.sdk.model.EntityId.generate(),
+            effect = com.wingedsheep.engine.mechanics.layers.FloatingEffectData(
+                layer = com.wingedsheep.engine.mechanics.layers.Layer.ABILITY,
+                sublayer = null,
+                modification = com.wingedsheep.engine.mechanics.layers.SerializableModification.GrantProtectionFromColor(
+                    chosenColor.name
+                ),
+                affectedEntities = setOf(targetEntityId)
+            ),
+            duration = continuation.duration,
+            sourceId = continuation.sourceId,
+            sourceName = continuation.sourceName,
+            controllerId = continuation.controllerId,
             timestamp = System.currentTimeMillis()
         )
 

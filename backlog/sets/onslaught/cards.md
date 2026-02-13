@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 254 / 335
+**Implemented:** 255 / 335
 
 ---
 
@@ -178,7 +178,7 @@
 - [x] Island
 - [x] Ixidor, Reality Sculptor
 - [ ] Ixidor's Will
-- [ ] Jareth, Leonine Titan
+- [x] Jareth, Leonine Titan
 - [ ] Kaboom!
 - [ ] Kamahl, Fist of Krosa
 - [ ] Kamahl's Summons

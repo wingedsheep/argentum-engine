@@ -132,6 +132,7 @@ val engineSerializersModule = SerializersModule {
         subclass(EachPlayerChoosesDrawContinuation::class)
         subclass(PayOrSufferContinuation::class)
         subclass(ChooseColorProtectionContinuation::class)
+        subclass(ChooseColorProtectionTargetContinuation::class)
         subclass(ChooseCreatureTypeReturnContinuation::class)
         subclass(GraveyardToHandContinuation::class)
         subclass(ChooseFromCreatureTypeContinuation::class)

@@ -639,6 +639,28 @@ data class ChooseColorProtectionContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after player chooses a color for single-target protection granting effects.
+ *
+ * Used for effects like Jareth, Leonine Titan: "{W}: Jareth gains protection
+ * from the color of your choice until end of turn."
+ *
+ * @property controllerId The player who controls the effect
+ * @property sourceId The ability source that created this effect
+ * @property sourceName Name of the source for event messages
+ * @property targetEntityId The specific entity that gains protection
+ * @property duration How long the effect lasts
+ */
+@Serializable
+data class ChooseColorProtectionTargetContinuation(
+    override val decisionId: String,
+    val controllerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val targetEntityId: EntityId,
+    val duration: Duration
+) : ContinuationFrame
+
+/**
  * Resume after player chooses the FROM creature type for text replacement.
  *
  * Used for Artificial Evolution: "Change the text of target spell or permanent
