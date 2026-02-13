@@ -407,12 +407,17 @@ data class EntersAsCopy(
 @SerialName("EntersWithCreatureTypeChoice")
 @Serializable
 data class EntersWithCreatureTypeChoice(
+    val opponentChooses: Boolean = false,
     override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
         filter = GameObjectFilter.Any,
         to = Zone.BATTLEFIELD
     )
 ) : ReplacementEffect {
-    override val description: String = "As this permanent enters, choose a creature type"
+    override val description: String = if (opponentChooses) {
+        "As this permanent enters, an opponent chooses a creature type"
+    } else {
+        "As this permanent enters, choose a creature type"
+    }
 }
 
 // =============================================================================

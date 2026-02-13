@@ -6,10 +6,12 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.ChosenCreatureTypeComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CardPredicate
 import com.wingedsheep.sdk.scripting.ControllerPredicate
@@ -54,11 +56,11 @@ class PredicateEvaluator {
         // Check all card predicates
         val cardMatches = if (filter.matchAll) {
             filter.cardPredicates.all { predicate ->
-                matchesCardPredicate(state, entityId, predicate)
+                matchesCardPredicate(state, entityId, predicate, context)
             }
         } else {
             filter.cardPredicates.isEmpty() || filter.cardPredicates.any { predicate ->
-                matchesCardPredicate(state, entityId, predicate)
+                matchesCardPredicate(state, entityId, predicate, context)
             }
         }
 
@@ -96,11 +98,11 @@ class PredicateEvaluator {
         // Check all card predicates using projected state
         val cardMatches = if (filter.matchAll) {
             filter.cardPredicates.all { predicate ->
-                matchesCardPredicateWithProjection(state, projected, entityId, predicate)
+                matchesCardPredicateWithProjection(state, projected, entityId, predicate, context)
             }
         } else {
             filter.cardPredicates.isEmpty() || filter.cardPredicates.any { predicate ->
-                matchesCardPredicateWithProjection(state, projected, entityId, predicate)
+                matchesCardPredicateWithProjection(state, projected, entityId, predicate, context)
             }
         }
 
@@ -121,7 +123,8 @@ class PredicateEvaluator {
         state: GameState,
         projected: ProjectedState,
         entityId: EntityId,
-        predicate: CardPredicate
+        predicate: CardPredicate,
+        context: PredicateContext? = null
     ): Boolean {
         val container = state.getEntity(entityId) ?: return false
         val card = container.get<CardComponent>() ?: return false
@@ -230,15 +233,26 @@ class PredicateEvaluator {
                 toughness >= predicate.min
             }
 
+            // Source-relative predicates
+            CardPredicate.NotOfSourceChosenType -> {
+                val sourceId = context?.sourceId ?: return true
+                val chosenType = state.getEntity(sourceId)
+                    ?.get<ChosenCreatureTypeComponent>()?.creatureType
+                    ?: return true
+                val hasSubtype = projectedValues?.subtypes?.any { it.equals(chosenType, ignoreCase = true) }
+                    ?: card.typeLine.hasSubtype(Subtype(chosenType))
+                !hasSubtype
+            }
+
             // Composite predicates
             is CardPredicate.And -> {
-                predicate.predicates.all { matchesCardPredicateWithProjection(state, projected, entityId, it) }
+                predicate.predicates.all { matchesCardPredicateWithProjection(state, projected, entityId, it, context) }
             }
             is CardPredicate.Or -> {
-                predicate.predicates.any { matchesCardPredicateWithProjection(state, projected, entityId, it) }
+                predicate.predicates.any { matchesCardPredicateWithProjection(state, projected, entityId, it, context) }
             }
             is CardPredicate.Not -> {
-                !matchesCardPredicateWithProjection(state, projected, entityId, predicate.predicate)
+                !matchesCardPredicateWithProjection(state, projected, entityId, predicate.predicate, context)
             }
         }
     }
@@ -285,7 +299,8 @@ class PredicateEvaluator {
     fun matchesCardPredicate(
         state: GameState,
         entityId: EntityId,
-        predicate: CardPredicate
+        predicate: CardPredicate,
+        context: PredicateContext? = null
     ): Boolean {
         val container = state.getEntity(entityId) ?: return false
         val card = container.get<CardComponent>() ?: return false
@@ -371,15 +386,24 @@ class PredicateEvaluator {
                 toughness is com.wingedsheep.sdk.model.CharacteristicValue.Fixed && toughness.value >= predicate.min
             }
 
+            // Source-relative predicates
+            CardPredicate.NotOfSourceChosenType -> {
+                val sourceId = context?.sourceId ?: return true
+                val chosenType = state.getEntity(sourceId)
+                    ?.get<ChosenCreatureTypeComponent>()?.creatureType
+                    ?: return true
+                !card.typeLine.hasSubtype(Subtype(chosenType))
+            }
+
             // Composite predicates
             is CardPredicate.And -> {
-                predicate.predicates.all { matchesCardPredicate(state, entityId, it) }
+                predicate.predicates.all { matchesCardPredicate(state, entityId, it, context) }
             }
             is CardPredicate.Or -> {
-                predicate.predicates.any { matchesCardPredicate(state, entityId, it) }
+                predicate.predicates.any { matchesCardPredicate(state, entityId, it, context) }
             }
             is CardPredicate.Not -> {
-                !matchesCardPredicate(state, entityId, predicate.predicate)
+                !matchesCardPredicate(state, entityId, predicate.predicate, context)
             }
         }
     }

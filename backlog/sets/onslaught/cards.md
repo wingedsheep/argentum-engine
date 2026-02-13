@@ -51,7 +51,7 @@
 - [x] Cabal Archon
 - [x] Cabal Executioner
 - [x] Cabal Slaver
-- [ ] Callous Oppressor
+- [x] Callous Oppressor
 - [x] Catapult Master
 - [x] Catapult Squad
 - [x] Centaur Glade

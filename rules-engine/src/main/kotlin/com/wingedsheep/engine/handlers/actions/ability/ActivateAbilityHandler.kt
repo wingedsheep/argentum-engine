@@ -200,7 +200,8 @@ class ActivateAbilityHandler(
                 effectiveTargetReqs,
                 action.playerId,
                 sourceColors = cardComponent.colors,
-                sourceSubtypes = cardComponent.typeLine.subtypes.map { it.value }.toSet()
+                sourceSubtypes = cardComponent.typeLine.subtypes.map { it.value }.toSet(),
+                sourceId = action.sourceId
             )
             if (targetError != null) {
                 return targetError

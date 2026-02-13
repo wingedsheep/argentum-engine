@@ -167,7 +167,8 @@ class CastSpellHandler(
                     targetRequirements,
                     action.playerId,
                     sourceColors = cardDef.colors,
-                    sourceSubtypes = cardDef.typeLine.subtypes.map { it.value }.toSet()
+                    sourceSubtypes = cardDef.typeLine.subtypes.map { it.value }.toSet(),
+                    sourceId = action.cardId
                 )
                 if (targetError != null) {
                     return targetError

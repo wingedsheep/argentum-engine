@@ -1463,7 +1463,7 @@ class GameSession(
                 if (targetReqs.isNotEmpty()) {
                     // Build target info for each requirement (same pattern as spells)
                     val targetReqInfos = targetReqs.mapIndexed { index, req ->
-                        val validTargets = findValidTargets(state, playerId, req)
+                        val validTargets = findValidTargets(state, playerId, req, sourceId = entityId)
                         LegalActionTargetInfo(
                             index = index,
                             description = req.description,
@@ -1918,28 +1918,29 @@ class GameSession(
     private fun findValidTargets(
         state: GameState,
         playerId: EntityId,
-        requirement: TargetRequirement
+        requirement: TargetRequirement,
+        sourceId: EntityId? = null
     ): List<EntityId> {
         return when (requirement) {
-            is TargetCreature -> findValidCreatureTargets(state, playerId, requirement.filter)
+            is TargetCreature -> findValidCreatureTargets(state, playerId, requirement.filter, sourceId)
             is TargetPlayer -> state.turnOrder.toList()
             is TargetOpponent -> state.turnOrder.filter { it != playerId }
             is AnyTarget -> {
                 // Any target = creatures + players
-                val creatures = findValidCreatureTargets(state, playerId, TargetFilter.Creature)
+                val creatures = findValidCreatureTargets(state, playerId, TargetFilter.Creature, sourceId)
                 val players = state.turnOrder.toList()
                 creatures + players
             }
             is TargetCreatureOrPlayer -> {
-                val creatures = findValidCreatureTargets(state, playerId, TargetFilter.Creature)
+                val creatures = findValidCreatureTargets(state, playerId, TargetFilter.Creature, sourceId)
                 val players = state.turnOrder.toList()
                 creatures + players
             }
-            is TargetPermanent -> findValidPermanentTargets(state, playerId, requirement.filter)
-            is TargetObject -> findValidObjectTargets(state, playerId, requirement.filter)
+            is TargetPermanent -> findValidPermanentTargets(state, playerId, requirement.filter, sourceId)
+            is TargetObject -> findValidObjectTargets(state, playerId, requirement.filter, sourceId)
             is TargetSpell -> findValidSpellTargets(state, playerId, requirement.filter)
             is TargetSpellOrPermanent -> {
-                val permanents = findValidPermanentTargets(state, playerId, TargetFilter.Permanent)
+                val permanents = findValidPermanentTargets(state, playerId, TargetFilter.Permanent, sourceId)
                 val spells = findValidSpellTargets(state, playerId, TargetFilter.SpellOnStack)
                 permanents + spells
             }
@@ -1976,11 +1977,12 @@ class GameSession(
     private fun findValidCreatureTargets(
         state: GameState,
         playerId: EntityId,
-        filter: TargetFilter
+        filter: TargetFilter,
+        sourceId: EntityId? = null
     ): List<EntityId> {
         val projected = stateProjector.project(state)
         val battlefield = state.getBattlefield()
-        val context = PredicateContext(controllerId = playerId)
+        val context = PredicateContext(controllerId = playerId, sourceId = sourceId)
         return battlefield.filter { entityId ->
             // Use projected state for correct face-down creature handling
             predicateEvaluator.matchesWithProjection(state, projected, entityId, filter.baseFilter, context)
@@ -1994,11 +1996,12 @@ class GameSession(
     private fun findValidPermanentTargets(
         state: GameState,
         playerId: EntityId,
-        filter: TargetFilter
+        filter: TargetFilter,
+        sourceId: EntityId? = null
     ): List<EntityId> {
         val projected = stateProjector.project(state)
         val battlefield = state.getBattlefield()
-        val context = PredicateContext(controllerId = playerId)
+        val context = PredicateContext(controllerId = playerId, sourceId = sourceId)
         return battlefield.filter { entityId ->
             predicateEvaluator.matchesWithProjection(state, projected, entityId, filter.baseFilter, context)
         }
@@ -2033,10 +2036,11 @@ class GameSession(
     private fun findValidObjectTargets(
         state: GameState,
         playerId: EntityId,
-        filter: TargetFilter
+        filter: TargetFilter,
+        sourceId: EntityId? = null
     ): List<EntityId> {
         return when (filter.zone) {
-            Zone.BATTLEFIELD -> findValidPermanentTargets(state, playerId, filter)
+            Zone.BATTLEFIELD -> findValidPermanentTargets(state, playerId, filter, sourceId)
             Zone.GRAVEYARD -> findValidGraveyardTargets(state, playerId, filter)
             Zone.STACK -> findValidSpellTargets(state, playerId, filter)
             else -> emptyList()

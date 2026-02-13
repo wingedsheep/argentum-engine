@@ -87,7 +87,7 @@ class TargetFinder(
             }
 
             // Use unified filter with projected state
-            val predicateContext = PredicateContext(controllerId = controllerId)
+            val predicateContext = PredicateContext(controllerId = controllerId, sourceId = sourceId)
             predicateEvaluator.matchesWithProjection(state, projected, entityId, filter.baseFilter, predicateContext)
         }
     }
@@ -130,7 +130,7 @@ class TargetFinder(
             }
 
             // Use unified filter with projected state
-            val predicateContext = PredicateContext(controllerId = controllerId)
+            val predicateContext = PredicateContext(controllerId = controllerId, sourceId = sourceId)
             predicateEvaluator.matchesWithProjection(state, projected, entityId, filter.baseFilter, predicateContext)
         }
     }

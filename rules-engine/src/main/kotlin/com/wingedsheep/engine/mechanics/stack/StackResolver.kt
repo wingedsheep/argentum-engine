@@ -246,7 +246,8 @@ class StackResolver(
         val resolvedTargets = if (targetsComponent != null && targetsComponent.targets.isNotEmpty()) {
             val validTargets = validateTargets(
                 state, targetsComponent.targets, sourceColors, sourceSubtypes,
-                spellComponent.casterId, targetsComponent.targetRequirements
+                spellComponent.casterId, targetsComponent.targetRequirements,
+                sourceId = spellId
             )
             if (validTargets.isEmpty()) {
                 // All targets invalid - spell fizzles
@@ -365,10 +366,15 @@ class StackResolver(
             val entersWithChoice = cardDef.script.replacementEffects.filterIsInstance<EntersWithCreatureTypeChoice>().firstOrNull()
             if (entersWithChoice != null) {
                 val allCreatureTypes = com.wingedsheep.sdk.core.Subtype.ALL_CREATURE_TYPES
+                val chooserId = if (entersWithChoice.opponentChooses) {
+                    state.turnOrder.firstOrNull { it != controllerId } ?: controllerId
+                } else {
+                    controllerId
+                }
                 val decisionId = "choose-creature-type-enters-${spellId.value}"
                 val decision = ChooseOptionDecision(
                     id = decisionId,
-                    playerId = controllerId,
+                    playerId = chooserId,
                     prompt = "Choose a creature type",
                     context = DecisionContext(
                         sourceId = spellId,
@@ -612,7 +618,8 @@ class StackResolver(
         if (targetsComponent != null && targetsComponent.targets.isNotEmpty()) {
             val validTargets = validateTargets(
                 state, targetsComponent.targets, sourceColors, sourceSubtypes,
-                abilityComponent.controllerId, targetsComponent.targetRequirements
+                abilityComponent.controllerId, targetsComponent.targetRequirements,
+                sourceId = abilityComponent.sourceId
             )
             if (validTargets.isEmpty()) {
                 // Fizzle - remove ability entity
@@ -685,7 +692,8 @@ class StackResolver(
         if (targetsComponent != null && targetsComponent.targets.isNotEmpty()) {
             val validTargets = validateTargets(
                 state, targetsComponent.targets, sourceColors, sourceSubtypes,
-                abilityComponent.controllerId, targetsComponent.targetRequirements
+                abilityComponent.controllerId, targetsComponent.targetRequirements,
+                sourceId = abilityComponent.sourceId
             )
             if (validTargets.isEmpty()) {
                 val newState = state.removeEntity(abilityId)
@@ -866,11 +874,12 @@ class StackResolver(
         sourceColors: Set<Color> = emptySet(),
         sourceSubtypes: Set<String> = emptySet(),
         controllerId: EntityId,
-        targetRequirements: List<TargetRequirement> = emptyList()
+        targetRequirements: List<TargetRequirement> = emptyList(),
+        sourceId: EntityId? = null
     ): List<ChosenTarget> {
         // Always project state for shroud/hexproof checks (Rule 702.18, 702.11)
         val projected = stateProjector.project(state)
-        val predicateContext = PredicateContext(controllerId = controllerId)
+        val predicateContext = PredicateContext(controllerId = controllerId, sourceId = sourceId)
 
         return targets.filterIndexed { index, target ->
             when (target) {

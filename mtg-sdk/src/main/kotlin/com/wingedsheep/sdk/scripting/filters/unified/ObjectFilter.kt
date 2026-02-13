@@ -192,6 +192,11 @@ data class GameObjectFilter(
         cardPredicates = cardPredicates + CardPredicate.ToughnessAtLeast(min)
     )
 
+    /** Must not be of the creature type chosen on the source permanent */
+    fun notOfSourceChosenType() = copy(
+        cardPredicates = cardPredicates + CardPredicate.NotOfSourceChosenType
+    )
+
     // =============================================================================
     // Fluent Builder Methods - State Predicates
     // =============================================================================

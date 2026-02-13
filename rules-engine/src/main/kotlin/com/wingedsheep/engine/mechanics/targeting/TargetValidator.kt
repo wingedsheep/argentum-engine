@@ -46,7 +46,8 @@ class TargetValidator {
         requirements: List<TargetRequirement>,
         casterId: EntityId,
         sourceColors: Set<Color> = emptySet(),
-        sourceSubtypes: Set<String> = emptySet()
+        sourceSubtypes: Set<String> = emptySet(),
+        sourceId: EntityId? = null
     ): String? {
         // Use the game state for validation
         // StateProjector is used for P/T checks to account for continuous effects
@@ -69,7 +70,7 @@ class TargetValidator {
 
             // Validate each target against the requirement
             for (target in targetsForReq) {
-                val error = validateSingleTarget(state, target, requirement, casterId, sourceColors, sourceSubtypes)
+                val error = validateSingleTarget(state, target, requirement, casterId, sourceColors, sourceSubtypes, sourceId)
                 if (error != null) return error
             }
         }
@@ -86,11 +87,12 @@ class TargetValidator {
         requirement: TargetRequirement,
         casterId: EntityId,
         sourceColors: Set<Color> = emptySet(),
-        sourceSubtypes: Set<String> = emptySet()
+        sourceSubtypes: Set<String> = emptySet(),
+        sourceId: EntityId? = null
     ): String? {
         val error = when (requirement) {
-            is TargetCreature -> validateCreatureTarget(state, target, requirement.filter, casterId)
-            is TargetPermanent -> validatePermanentTarget(state, target, requirement.filter, casterId)
+            is TargetCreature -> validateCreatureTarget(state, target, requirement.filter, casterId, sourceId)
+            is TargetPermanent -> validatePermanentTarget(state, target, requirement.filter, casterId, sourceId)
             is TargetPlayer -> validatePlayerTarget(state, target)
             is TargetOpponent -> validateOpponentTarget(state, target, casterId)
             is AnyTarget -> validateAnyTarget(state, target)
@@ -98,8 +100,8 @@ class TargetValidator {
             is TargetCreatureOrPlaneswalker -> validateCreatureOrPlaneswalkerTarget(state, target)
             is TargetSpell -> validateSpellTarget(state, target, requirement.filter, casterId)
             is TargetSpellOrPermanent -> validateSpellOrPermanentTarget(state, target, casterId)
-            is TargetObject -> validateObjectTarget(state, target, requirement.filter, casterId)
-            is TargetOther -> validateSingleTarget(state, target, requirement.baseRequirement, casterId, sourceColors, sourceSubtypes)
+            is TargetObject -> validateObjectTarget(state, target, requirement.filter, casterId, sourceId)
+            is TargetOther -> validateSingleTarget(state, target, requirement.baseRequirement, casterId, sourceColors, sourceSubtypes, sourceId)
         }
         if (error != null) return error
 
@@ -148,7 +150,8 @@ class TargetValidator {
         state: GameState,
         target: ChosenTarget,
         filter: TargetFilter,
-        casterId: EntityId
+        casterId: EntityId,
+        sourceId: EntityId? = null
     ): String? {
         if (target !is ChosenTarget.Permanent) {
             return "Target must be a permanent"
@@ -172,7 +175,7 @@ class TargetValidator {
 
         // Use unified filter with projection (face-down creatures have CMC 0 per Rule 707.2)
         val projected = stateProjector.project(state)
-        val predicateContext = PredicateContext(controllerId = casterId)
+        val predicateContext = PredicateContext(controllerId = casterId, sourceId = sourceId)
         val matches = predicateEvaluator.matchesWithProjection(state, projected, target.entityId, filter.baseFilter, predicateContext)
         if (!matches) {
             return "Target does not match filter: ${filter.description}"
@@ -184,7 +187,8 @@ class TargetValidator {
         state: GameState,
         target: ChosenTarget,
         filter: TargetFilter,
-        casterId: EntityId
+        casterId: EntityId,
+        sourceId: EntityId? = null
     ): String? {
         if (target !is ChosenTarget.Permanent) {
             return "Target must be a permanent"
@@ -200,7 +204,7 @@ class TargetValidator {
 
         // Use unified filter with projection (face-down creatures have CMC 0 per Rule 707.2)
         val projected = stateProjector.project(state)
-        val predicateContext = PredicateContext(controllerId = casterId)
+        val predicateContext = PredicateContext(controllerId = casterId, sourceId = sourceId)
         val matches = predicateEvaluator.matchesWithProjection(state, projected, target.entityId, filter.baseFilter, predicateContext)
         if (!matches) {
             return "Target does not match filter: ${filter.description}"
@@ -352,11 +356,12 @@ class TargetValidator {
         state: GameState,
         target: ChosenTarget,
         filter: TargetFilter,
-        casterId: EntityId
+        casterId: EntityId,
+        sourceId: EntityId? = null
     ): String? {
         return when (filter.zone) {
             Zone.GRAVEYARD -> validateGraveyardTarget(state, target, filter, casterId)
-            Zone.BATTLEFIELD -> validatePermanentTarget(state, target, filter, casterId)
+            Zone.BATTLEFIELD -> validatePermanentTarget(state, target, filter, casterId, sourceId)
             Zone.STACK -> validateSpellTarget(state, target, filter, casterId)
             else -> validateCardInZoneTarget(state, target, filter, casterId)
         }

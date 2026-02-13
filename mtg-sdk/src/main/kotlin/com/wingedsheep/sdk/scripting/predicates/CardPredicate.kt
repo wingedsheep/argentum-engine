@@ -245,6 +245,17 @@ sealed interface CardPredicate {
     }
 
     // =============================================================================
+    // Source-relative Predicates
+    // =============================================================================
+
+    /** Matches creatures that are NOT of the type chosen on the source permanent */
+    @SerialName("NotOfSourceChosenType")
+    @Serializable
+    data object NotOfSourceChosenType : CardPredicate {
+        override val description: String = "that isn't of the chosen type"
+    }
+
+    // =============================================================================
     // Composite Predicates
     // =============================================================================
 

@@ -81,6 +81,7 @@ object OnslaughtSet {
         // Blue creatures and spells
         AirborneAid,
         Annex,
+        CallousOppressor,
         Clone,
         CrownOfAscension,
         AvenFateshaper,
