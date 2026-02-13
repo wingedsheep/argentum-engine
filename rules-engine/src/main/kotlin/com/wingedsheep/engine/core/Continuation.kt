@@ -1274,6 +1274,71 @@ data class ChainCopyTargetContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after the bounced permanent's controller decides whether to sacrifice a land
+ * to copy Chain of Vapor.
+ *
+ * When the yes/no decision is answered:
+ * - Yes → find controller's lands, present land selection, push BounceChainCopyLandContinuation
+ * - No → checkForMoreContinuations (chain ends)
+ *
+ * @property targetControllerId The controller of the bounced permanent (who gets to copy)
+ * @property targetFilter The filter for valid chain targets (NonlandPermanent)
+ * @property spellName The name of the spell being copied (for display)
+ * @property sourceId The source entity of the original spell/ability
+ */
+@Serializable
+data class BounceChainCopyDecisionContinuation(
+    override val decisionId: String,
+    val targetControllerId: EntityId,
+    val targetFilter: TargetFilter,
+    val spellName: String,
+    val sourceId: EntityId?
+) : ContinuationFrame
+
+/**
+ * Resume after the copying player selects which land to sacrifice for the chain copy.
+ *
+ * Sacrifices the selected land, then presents target selection for the copy.
+ *
+ * @property copyControllerId The player who is creating the copy
+ * @property targetFilter The filter for valid targets
+ * @property spellName The name of the spell being copied
+ * @property sourceId The source entity of the original spell/ability
+ * @property candidateLands The list of valid land entity IDs (for validation)
+ */
+@Serializable
+data class BounceChainCopyLandContinuation(
+    override val decisionId: String,
+    val copyControllerId: EntityId,
+    val targetFilter: TargetFilter,
+    val spellName: String,
+    val sourceId: EntityId?,
+    val candidateLands: List<EntityId>
+) : ContinuationFrame
+
+/**
+ * Resume after the copying player selects a target for the bounce chain copy.
+ *
+ * Creates a TriggeredAbilityOnStackComponent with BounceAndChainCopyEffect targeting
+ * the selected permanent, enabling recursive chaining.
+ *
+ * @property copyControllerId The player who is creating the copy
+ * @property targetFilter The filter for valid targets
+ * @property spellName The name of the spell being copied
+ * @property sourceId The source entity of the original spell/ability
+ * @property candidateTargets The list of valid target entity IDs (for validation)
+ */
+@Serializable
+data class BounceChainCopyTargetContinuation(
+    override val decisionId: String,
+    val copyControllerId: EntityId,
+    val targetFilter: TargetFilter,
+    val spellName: String,
+    val sourceId: EntityId?,
+    val candidateTargets: List<EntityId>
+) : ContinuationFrame
+
+/**
  * Information about a mana source available for manual selection.
  */
 @Serializable

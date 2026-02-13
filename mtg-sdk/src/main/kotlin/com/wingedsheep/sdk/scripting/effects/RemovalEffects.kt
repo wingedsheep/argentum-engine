@@ -281,6 +281,31 @@ data class DestroyAndChainCopyEffect(
     }
 }
 
+/**
+ * Return target nonland permanent to its owner's hand, then its controller may sacrifice
+ * a land to copy this spell and may choose a new target for that copy.
+ * Used for Chain of Vapor and similar "chain bounce" mechanics.
+ *
+ * This is a single unified effect because we need to capture the target's controller ID
+ * before bouncing strips ControllerComponent.
+ *
+ * @property target The permanent to bounce
+ * @property targetFilter The filter for valid targets (used when creating copies)
+ * @property spellName The name of the spell (for the copy's description on the stack)
+ */
+@SerialName("BounceAndChainCopy")
+@Serializable
+data class BounceAndChainCopyEffect(
+    val target: EffectTarget,
+    val targetFilter: TargetFilter,
+    val spellName: String
+) : Effect {
+    override val description: String = buildString {
+        append("Return ${target.description} to its owner's hand. Then that permanent's controller may sacrifice a land. ")
+        append("If the player does, they may copy this spell and may choose a new target for that copy")
+    }
+}
+
 @SerialName("MoveToZone")
 @Serializable
 data class MoveToZoneEffect(

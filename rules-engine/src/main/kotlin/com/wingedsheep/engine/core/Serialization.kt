@@ -156,6 +156,9 @@ val engineSerializersModule = SerializersModule {
         subclass(EachOpponentMayPutFromHandContinuation::class)
         subclass(ChainCopyDecisionContinuation::class)
         subclass(ChainCopyTargetContinuation::class)
+        subclass(BounceChainCopyDecisionContinuation::class)
+        subclass(BounceChainCopyLandContinuation::class)
+        subclass(BounceChainCopyTargetContinuation::class)
     }
 
     // Component hierarchy (for GameState persistence)

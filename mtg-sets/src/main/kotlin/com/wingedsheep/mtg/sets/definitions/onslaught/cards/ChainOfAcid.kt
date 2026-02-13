@@ -33,6 +33,6 @@ val ChainOfAcid = card("Chain of Acid") {
         collectorNumber = "252"
         artist = "Arnie Swekel"
         flavorText = "\"We have no quarrel with you,\" said the elf. \"But neither do we have sympathy.\""
-        imageUri = "https://cards.scryfall.io/large/front/1/d/1d0aec63-e44e-4ec3-82e2-e5da44119725.jpg?1562901973"
+        imageUri = "https://cards.scryfall.io/large/front/1/d/1d47ddca-a363-4ab7-b7f2-d0e0043c9916.jpg?1562901859"
     }
 }

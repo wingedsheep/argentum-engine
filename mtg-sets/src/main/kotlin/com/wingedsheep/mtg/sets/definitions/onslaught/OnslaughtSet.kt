@@ -120,6 +120,7 @@ object OnslaughtSet {
         Standardize,
         RummagingWizard,
         VoidmageProdigy,
+        ChainOfVapor,
 
         // Black creatures and spells
         AccursedCentaur,
