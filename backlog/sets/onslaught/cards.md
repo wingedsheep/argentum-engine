@@ -79,7 +79,7 @@
 - [x] Crude Rampart
 - [x] Cruel Revival
 - [ ] Cryptic Gateway
-- [ ] Custody Battle
+- [x] Custody Battle
 - [x] Daru Cavalier
 - [x] Daru Encampment
 - [x] Daru Healer

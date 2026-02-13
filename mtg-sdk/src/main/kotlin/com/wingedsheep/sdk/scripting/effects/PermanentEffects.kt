@@ -438,6 +438,25 @@ data class BecomeCreatureTypeEffect(
 }
 
 /**
+ * Give control of a permanent to a targeted player.
+ * Unlike GainControlEffect (which always gives control to the ability's controller),
+ * this effect gives control to a player resolved from a target.
+ *
+ * Used by Custody Battle: "target opponent gains control of this creature unless you sacrifice a land."
+ *
+ * @property permanent Which permanent changes control (default: enchanted creature)
+ * @property newController Which player gains control (default: first target, expected to be a player)
+ */
+@Serializable
+data class GiveControlToTargetPlayerEffect(
+    val permanent: EffectTarget = EffectTarget.EnchantedCreature,
+    val newController: EffectTarget = EffectTarget.ContextTarget(0),
+    val duration: Duration = Duration.Permanent
+) : Effect {
+    override val description: String = "target opponent gains control of ${permanent.description}"
+}
+
+/**
  * Grant stats and/or a keyword to the enchanted creature and all other creatures
  * that share a creature type with it.
  *

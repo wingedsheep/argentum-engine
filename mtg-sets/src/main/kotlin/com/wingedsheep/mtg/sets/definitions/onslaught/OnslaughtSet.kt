@@ -168,6 +168,7 @@ object OnslaughtSet {
         BreakOpen,
         BrightstoneRitual,
         CommandoRaid,
+        CustodyBattle,
         CrownOfFury,
         SkirkCommando,
         AggravatedAssault,

@@ -29,6 +29,7 @@ class PermanentExecutors(
         ChangeCreatureTypeTextExecutor(decisionHandler),
         GainControlExecutor(),
         GainControlByMostOfSubtypeExecutor(),
+        GiveControlToTargetPlayerExecutor(),
         TurnFaceDownExecutor(),
         TurnFaceUpExecutor(),
         GrantTriggeredAbilityUntilEndOfTurnExecutor(),

@@ -148,6 +148,12 @@ object Triggers {
      */
     val FirstMainPhase: Trigger = OnFirstMainPhase(controllerOnly = true)
 
+    /**
+     * At the beginning of enchanted creature's controller's upkeep.
+     * Used for auras that grant "At the beginning of your upkeep" to the enchanted creature.
+     */
+    val EnchantedCreatureControllerUpkeep: Trigger = OnEnchantedCreatureControllerUpkeep
+
     // =========================================================================
     // Card Drawing Triggers
     // =========================================================================
