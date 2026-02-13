@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 271 / 335
+**Implemented:** 275 / 335
 
 ---
 
@@ -220,7 +220,7 @@
 - [x] Piety Charm
 - [x] Pinpoint Avalanche
 - [x] Plains
-- [ ] Polluted Delta
+- [x] Polluted Delta
 - [x] Primal Boost
 - [x] Profane Prayers
 - [x] Prowling Pangolin
@@ -322,7 +322,7 @@
 - [ ] Walking Desecration
 - [x] Wall of Mulch
 - [x] Wave of Indifference
-- [ ] Weathered Wayfarer
+- [x] Weathered Wayfarer
 - [ ] Weird Harvest
 - [x] Wellwisher
 - [ ] Wheel and Deal

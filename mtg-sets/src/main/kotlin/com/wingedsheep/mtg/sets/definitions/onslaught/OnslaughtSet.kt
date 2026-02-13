@@ -76,8 +76,8 @@ object OnslaughtSet {
         TrueBeliever,
         ConvalescentCare,
         SigilOfTheNewDawn,
-
-        CoverOfDarkness,
+        WeatheredWayfarer
+        CoverOfDarkness
 
         // Blue creatures and spells
         AirborneAid,
@@ -291,6 +291,7 @@ object OnslaughtSet {
 
         // Lands
         BloodstainedMire,
+        PollutedDelta,
         BarrenMoor,
         ForgottenCave,
         ContestedCliffs,
