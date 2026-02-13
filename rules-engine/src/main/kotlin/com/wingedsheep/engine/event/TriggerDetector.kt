@@ -19,6 +19,7 @@ import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.mechanics.text.SubtypeReplacer
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
@@ -149,6 +150,31 @@ class TriggerDetector(
 
             for (ability in abilities) {
                 if (ability.activeZone != com.wingedsheep.sdk.core.Zone.BATTLEFIELD) continue
+
+                // Special handling for OnEnchantedCreatureControllerUpkeep:
+                // The trigger fires on the enchanted creature's controller's upkeep,
+                // and the trigger's controller is the enchanted creature's controller (not the aura's).
+                if (ability.trigger is OnEnchantedCreatureControllerUpkeep) {
+                    if (step == Step.UPKEEP) {
+                        val attachedTo = container.get<AttachedToComponent>()?.targetId
+                        if (attachedTo != null) {
+                            val enchantedCreatureController = projected.getController(attachedTo)
+                            if (enchantedCreatureController != null && enchantedCreatureController == activePlayerId) {
+                                triggers.add(
+                                    PendingTrigger(
+                                        ability = ability,
+                                        sourceId = entityId,
+                                        sourceName = cardComponent.name,
+                                        controllerId = enchantedCreatureController,
+                                        triggerContext = TriggerContext(step = step)
+                                    )
+                                )
+                            }
+                        }
+                    }
+                    continue
+                }
+
                 if (matchesStepTrigger(ability.trigger, step, controllerId, activePlayerId)) {
                     triggers.add(
                         PendingTrigger(
@@ -869,6 +895,7 @@ class TriggerDetector(
 
             // Phase/step triggers are handled separately
             is OnUpkeep, is OnEndStep, is OnBeginCombat, is OnFirstMainPhase -> false
+            is OnEnchantedCreatureControllerUpkeep -> false
 
             is OnTransform -> {
                 // Transform not yet implemented in new engine
@@ -915,6 +942,9 @@ class TriggerDetector(
                 step == Step.PRECOMBAT_MAIN &&
                     (!trigger.controllerOnly || controllerId == activePlayerId)
             }
+
+            // Handled specially in detectPhaseStepTriggers
+            is OnEnchantedCreatureControllerUpkeep -> false
 
             else -> false
         }

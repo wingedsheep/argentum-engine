@@ -82,7 +82,12 @@ class ActivateAbilityHandler(
         val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId)
             ?: return "Card definition not found"
 
+        // Look up ability from card definition or granted activated abilities
         val ability = cardDef.script.activatedAbilities.find { it.id == action.abilityId }
+            ?: state.grantedActivatedAbilities
+                .filter { it.entityId == action.sourceId }
+                .map { it.ability }
+                .find { it.id == action.abilityId }
             ?: return "Ability not found on this card"
 
         // Check that the card is in the correct zone for this ability
@@ -217,7 +222,12 @@ class ActivateAbilityHandler(
         val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId)
             ?: return ExecutionResult.error(state, "Card definition not found")
 
+        // Look up ability from card definition or granted activated abilities
         val ability = cardDef.script.activatedAbilities.find { it.id == action.abilityId }
+            ?: state.grantedActivatedAbilities
+                .filter { it.entityId == action.sourceId }
+                .map { it.ability }
+                .find { it.id == action.abilityId }
             ?: return ExecutionResult.error(state, "Ability not found")
 
         // Apply text-changing effects to cost

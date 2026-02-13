@@ -262,6 +262,23 @@ data class SpellCostReduction(
 }
 
 /**
+ * Reduces the cost to cast face-down creature spells (morph).
+ * Used for Dream Chisel: "Face-down creature spells you cast cost {1} less to cast."
+ *
+ * This is a static ability on a permanent that reduces the morph casting cost
+ * for its controller. The engine scans battlefield permanents for this ability
+ * when calculating face-down spell costs.
+ *
+ * @property reductionSource How the reduction amount is determined
+ */
+@Serializable
+data class FaceDownSpellCostReduction(
+    val reductionSource: CostReductionSource
+) : StaticAbility {
+    override val description: String = "Face-down creature spells you cast cost {${reductionSource.description}} less to cast"
+}
+
+/**
  * Sources for cost reduction amounts.
  */
 @Serializable

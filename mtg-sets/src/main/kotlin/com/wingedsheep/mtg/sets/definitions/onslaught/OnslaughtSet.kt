@@ -171,6 +171,7 @@ object OnslaughtSet {
         BreakOpen,
         BrightstoneRitual,
         CommandoRaid,
+        CustodyBattle,
         CrownOfFury,
         SkirkCommando,
         AggravatedAssault,
@@ -263,6 +264,7 @@ object OnslaughtSet {
         PrimalBoost,
         CentaurGlade,
         Gigapede,
+        RunWild,
         WallOfMulch,
 
         // Artifacts

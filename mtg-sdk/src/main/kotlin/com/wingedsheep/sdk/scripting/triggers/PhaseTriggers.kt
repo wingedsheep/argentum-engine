@@ -68,3 +68,13 @@ data class OnFirstMainPhase(
         "At the beginning of each player's first main phase"
     }
 }
+
+/**
+ * Triggers at the beginning of the enchanted creature's controller's upkeep.
+ * Used for auras that grant abilities to the enchanted creature.
+ * "At the beginning of your upkeep" (where "your" refers to the enchanted creature's controller).
+ */
+@Serializable
+data object OnEnchantedCreatureControllerUpkeep : Trigger {
+    override val description: String = "At the beginning of enchanted creature's controller's upkeep"
+}

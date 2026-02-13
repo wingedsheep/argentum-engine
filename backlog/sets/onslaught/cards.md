@@ -79,7 +79,7 @@
 - [x] Crude Rampart
 - [x] Cruel Revival
 - [ ] Cryptic Gateway
-- [ ] Custody Battle
+- [x] Custody Battle
 - [x] Daru Cavalier
 - [x] Daru Encampment
 - [x] Daru Healer
@@ -242,7 +242,7 @@
 - [x] Rorix Bladewing
 - [x] Rotlung Reanimator
 - [ ] Rummaging Wizard
-- [ ] Run Wild
+- [x] Run Wild
 - [x] Sage Aven
 - [ ] Sandskin
 - [x] Screaming Seahawk

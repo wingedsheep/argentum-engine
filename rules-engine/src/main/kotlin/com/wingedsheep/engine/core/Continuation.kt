@@ -492,7 +492,8 @@ data class PayOrSufferContinuation(
     val sufferEffect: Effect,
     val requiredCount: Int,
     val filter: GameObjectFilter,
-    val random: Boolean = false
+    val random: Boolean = false,
+    val targets: List<ChosenTarget> = emptyList()
 ) : ContinuationFrame
 
 /**

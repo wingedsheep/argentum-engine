@@ -2682,11 +2682,12 @@ class ContinuationHandler(
         val playerId = continuation.playerId
         val sufferEffect = continuation.sufferEffect
 
-        // Create context for executing the suffer effect
+        // Create context for executing the suffer effect, preserving targets from the original trigger
         val context = EffectContext(
             sourceId = sourceId,
             controllerId = playerId,
-            opponentId = null
+            opponentId = null,
+            targets = continuation.targets
         )
 
         // Execute the suffer effect using the registry

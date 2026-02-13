@@ -1118,7 +1118,12 @@ class GameSession(
 
             // Projected controller already verified - look up card definition for mana abilities
             val cardDef = cardRegistry.getCard(cardComponent.name) ?: continue
-            val manaAbilities = cardDef.script.activatedAbilities.filter { it.isManaAbility }
+            // Include granted activated abilities that are mana abilities
+            val grantedManaAbilities = state.grantedActivatedAbilities
+                .filter { it.entityId == entityId }
+                .map { it.ability }
+                .filter { it.isManaAbility }
+            val manaAbilities = cardDef.script.activatedAbilities.filter { it.isManaAbility } + grantedManaAbilities
 
             // Apply text-changing effects to mana ability costs
             val manaTextReplacement = container.get<TextReplacementComponent>()
@@ -1243,7 +1248,11 @@ class GameSession(
             if (container.has<FaceDownComponent>()) continue
 
             val cardDef = cardRegistry.getCard(cardComponent.name) ?: continue
-            val nonManaAbilities = cardDef.script.activatedAbilities.filter { !it.isManaAbility }
+            // Include granted activated abilities alongside the card's own abilities
+            val grantedAbilities = state.grantedActivatedAbilities
+                .filter { it.entityId == entityId }
+                .map { it.ability }
+            val nonManaAbilities = cardDef.script.activatedAbilities.filter { !it.isManaAbility } + grantedAbilities.filter { !it.isManaAbility }
 
             // Apply text-changing effects to ability costs and targets
             val textReplacement = container.get<TextReplacementComponent>()
