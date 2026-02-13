@@ -67,7 +67,7 @@
 - [x] Commando Raid
 - [x] Complicate
 - [x] Contested Cliffs
-- [ ] Convalescent Care
+- [x] Convalescent Care
 - [x] Cover of Darkness
 - [x] Crafty Pathmage
 - [x] Crowd Favorites

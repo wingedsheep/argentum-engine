@@ -73,6 +73,7 @@ object OnslaughtSet {
         Mobilization,
         SharedTriumph,
         TrueBeliever,
+        ConvalescentCare,
 
         CoverOfDarkness,
 
