@@ -286,7 +286,7 @@
 - [x] Starlit Sanctum
 - [x] Starstorm
 - [ ] Steely Resolve
-- [ ] Strongarm Tactics
+- [x] Strongarm Tactics
 - [x] Sunfire Balm
 - [ ] Supreme Inquisitor
 - [x] Swamp

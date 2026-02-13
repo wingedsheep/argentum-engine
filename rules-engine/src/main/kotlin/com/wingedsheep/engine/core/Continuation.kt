@@ -1127,6 +1127,35 @@ data class CastWithCreatureTypeContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after a player selects a card to discard for "each player discards or lose life" effects.
+ *
+ * Used for Strongarm Tactics: "Each player discards a card. Then each player who didn't
+ * discard a creature card this way loses 4 life."
+ *
+ * Tracks which players have already discarded and whether they discarded a creature,
+ * then applies life loss to those who didn't.
+ *
+ * @property sourceId The spell/ability causing the effect
+ * @property sourceName Name for display
+ * @property controllerId The controller of the effect
+ * @property currentPlayerId The player whose selection we are waiting for
+ * @property remainingPlayers Players who still need to make their selection after current (APNAP order)
+ * @property discardedCreature Map of player ID to whether they discarded a creature card
+ * @property lifeLoss Life lost by each player who didn't discard a creature card
+ */
+@Serializable
+data class EachPlayerDiscardsOrLoseLifeContinuation(
+    override val decisionId: String,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val controllerId: EntityId,
+    val currentPlayerId: EntityId,
+    val remainingPlayers: List<EntityId>,
+    val discardedCreature: Map<EntityId, Boolean>,
+    val lifeLoss: Int
+) : ContinuationFrame
+
+/**
  * Information about a mana source available for manual selection.
  */
 @Serializable

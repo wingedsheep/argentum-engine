@@ -18,6 +18,7 @@ class DrawingExecutors(
         DiscardRandomExecutor(),
         EachOpponentDiscardsExecutor(decisionHandler),
         EachPlayerDiscardsDrawsExecutor(decisionHandler),
+        EachPlayerDiscardsOrLoseLifeExecutor(decisionHandler),
         EachPlayerDrawsXExecutor(),
         EachPlayerMayDrawExecutor(decisionHandler),
         BlackmailExecutor(decisionHandler)

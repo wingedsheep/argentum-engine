@@ -157,6 +157,7 @@ object OnslaughtSet {
         SilentSpecter,
         Smother,
         Swat,
+        StrongarmTactics,
         SyphonMind,
         SyphonSoul,
         UndeadGladiator,
