@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.Zone
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // Note: Player, Zone, and GameObjectFilter are in the same package (com.wingedsheep.sdk.scripting)
@@ -40,6 +41,7 @@ sealed interface DynamicAmount {
     /**
      * Your current life total.
      */
+    @SerialName("YourLifeTotal")
     @Serializable
     data object YourLifeTotal : DynamicAmount {
         override val description: String = "your life total"
@@ -48,6 +50,7 @@ sealed interface DynamicAmount {
     /**
      * Fixed amount (for consistency in the type system).
      */
+    @SerialName("Fixed")
     @Serializable
     data class Fixed(val amount: Int) : DynamicAmount {
         override val description: String = "$amount"
@@ -56,6 +59,7 @@ sealed interface DynamicAmount {
     /**
      * Count of colors among permanents you control.
      */
+    @SerialName("ColorsAmongPermanentsYouControl")
     @Serializable
     data object ColorsAmongPermanentsYouControl : DynamicAmount {
         override val description: String = "the number of colors among permanents you control"
@@ -69,6 +73,7 @@ sealed interface DynamicAmount {
      * Count of card types among cards in all graveyards.
      * Used for Tarmogoyf's characteristic-defining ability.
      */
+    @SerialName("CardTypesInAllGraveyards")
     @Serializable
     data object CardTypesInAllGraveyards : DynamicAmount {
         override val description: String = "the number of card types among cards in all graveyards"
@@ -82,6 +87,7 @@ sealed interface DynamicAmount {
      * The X value of the spell (from mana cost).
      * Used for X spells like Fireball.
      */
+    @SerialName("XValue")
     @Serializable
     data object XValue : DynamicAmount {
         override val description: String = "X"
@@ -92,6 +98,7 @@ sealed interface DynamicAmount {
      * Used for effects that need to reference a previously computed/stored value.
      * Example: Scapeshift stores "sacrificedCount" and SearchLibrary reads it.
      */
+    @SerialName("VariableReference")
     @Serializable
     data class VariableReference(val variableName: String) : DynamicAmount {
         override val description: String = "the stored $variableName"
@@ -105,6 +112,7 @@ sealed interface DynamicAmount {
      * Add two dynamic amounts.
      * Example: Add(Fixed(2), CreaturesYouControl) = "2 + creatures you control"
      */
+    @SerialName("Add")
     @Serializable
     data class Add(val left: DynamicAmount, val right: DynamicAmount) : DynamicAmount {
         override val description: String = "(${left.description} + ${right.description})"
@@ -113,6 +121,7 @@ sealed interface DynamicAmount {
     /**
      * Subtract one dynamic amount from another.
      */
+    @SerialName("Subtract")
     @Serializable
     data class Subtract(val left: DynamicAmount, val right: DynamicAmount) : DynamicAmount {
         override val description: String = "(${left.description} - ${right.description})"
@@ -122,6 +131,7 @@ sealed interface DynamicAmount {
      * Multiply a dynamic amount by a fixed multiplier.
      * Example: Multiply(CountBattlefield(Player.Opponent, GameObjectFilter.Creature.attacking()), 3)
      */
+    @SerialName("Multiply")
     @Serializable
     data class Multiply(val amount: DynamicAmount, val multiplier: Int) : DynamicAmount {
         override val description: String = "$multiplier × ${amount.description}"
@@ -132,6 +142,7 @@ sealed interface DynamicAmount {
      * Useful for difference calculations that should not go negative.
      * Example: IfPositive(Subtract(Count(Player.TargetOpponent, Zone.HAND), Count(Player.You, Zone.HAND)))
      */
+    @SerialName("IfPositive")
     @Serializable
     data class IfPositive(val amount: DynamicAmount) : DynamicAmount {
         override val description: String = "${amount.description} (if positive)"
@@ -140,6 +151,7 @@ sealed interface DynamicAmount {
     /**
      * Maximum of two amounts.
      */
+    @SerialName("Max")
     @Serializable
     data class Max(val left: DynamicAmount, val right: DynamicAmount) : DynamicAmount {
         override val description: String = "max(${left.description}, ${right.description})"
@@ -148,6 +160,7 @@ sealed interface DynamicAmount {
     /**
      * Minimum of two amounts.
      */
+    @SerialName("Min")
     @Serializable
     data class Min(val left: DynamicAmount, val right: DynamicAmount) : DynamicAmount {
         override val description: String = "min(${left.description}, ${right.description})"
@@ -157,6 +170,7 @@ sealed interface DynamicAmount {
      * Conditional amount: evaluates to one of two amounts based on a condition.
      * Example: "2 if enchanted creature is a Wizard, otherwise 1"
      */
+    @SerialName("Conditional")
     @Serializable
     data class Conditional(
         val condition: Condition,
@@ -174,6 +188,7 @@ sealed interface DynamicAmount {
      * Power of a creature that was sacrificed as an additional cost.
      * Used for effects like Final Strike: "Deal damage equal to that creature's power"
      */
+    @SerialName("SacrificedPermanentPower")
     @Serializable
     data object SacrificedPermanentPower : DynamicAmount {
         override val description: String = "the sacrificed creature's power"
@@ -182,6 +197,7 @@ sealed interface DynamicAmount {
     /**
      * Toughness of a creature that was sacrificed as an additional cost.
      */
+    @SerialName("SacrificedPermanentToughness")
     @Serializable
     data object SacrificedPermanentToughness : DynamicAmount {
         override val description: String = "the sacrificed creature's toughness"
@@ -191,6 +207,7 @@ sealed interface DynamicAmount {
      * The amount of damage dealt, from a trigger context.
      * Used for abilities like "Whenever ~ is dealt damage, create that many tokens."
      */
+    @SerialName("TriggerDamageAmount")
     @Serializable
     data object TriggerDamageAmount : DynamicAmount {
         override val description: String = "the damage dealt"
@@ -200,6 +217,7 @@ sealed interface DynamicAmount {
      * Power of the source entity (the permanent that has the ability).
      * Used for effects like "deal damage equal to its power" on triggered abilities.
      */
+    @SerialName("SourcePower")
     @Serializable
     data object SourcePower : DynamicAmount {
         override val description: String = "its power"
@@ -229,6 +247,7 @@ sealed interface DynamicAmount {
      * @param zone Which zone to count
      * @param filter Filter for what to count (default: any)
      */
+    @SerialName("Count")
     @Serializable
     data class Count(
         val player: Player,
@@ -277,6 +296,7 @@ sealed interface DynamicAmount {
      * CountBattlefield(Player.TargetOpponent, GameObjectFilter.Creature.tapped())
      * ```
      */
+    @SerialName("CountBattlefield")
     @Serializable
     data class CountBattlefield(
         val player: Player,

@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // =============================================================================
@@ -15,6 +16,7 @@ import kotlinx.serialization.Serializable
  * - Blaze: DealDamageEffect(DynamicAmount.XValue, target)
  * - Final Strike: DealDamageEffect(DynamicAmount.SacrificedPermanentPower, target)
  */
+@SerialName("DealDamage")
 @Serializable
 data class DealDamageEffect(
     val amount: DynamicAmount,
@@ -49,6 +51,7 @@ data class DealDamageEffect(
  * @param amount The amount of damage to deal (can be fixed or dynamic like X)
  * @param filter Which creatures are damaged
  */
+@SerialName("DealDamageToGroup")
 @Serializable
 data class DealDamageToGroupEffect(
     val amount: DynamicAmount,
@@ -72,6 +75,7 @@ data class DealDamageToGroupEffect(
  * @param amount The amount of damage to deal (can be fixed or dynamic like X)
  * @param target Which players to damage (EachPlayer, Controller, Opponent, EachOpponent)
  */
+@SerialName("DealDamageToPlayers")
 @Serializable
 data class DealDamageToPlayersEffect(
     val amount: DynamicAmount,
@@ -89,6 +93,7 @@ data class DealDamageToPlayersEffect(
  * Deal damage to each attacking creature.
  * Used for Scorching Winds: "Deal 1 damage to each attacking creature."
  */
+@SerialName("DealDamageToAttackingCreatures")
 @Serializable
 data class DealDamageToAttackingCreaturesEffect(
     val amount: Int
@@ -100,6 +105,7 @@ data class DealDamageToAttackingCreaturesEffect(
  * Deal damage to multiple targets, dividing the total as you choose.
  * Used for cards like Forked Lightning ("4 damage divided among 1-3 targets").
  */
+@SerialName("DividedDamage")
 @Serializable
 data class DividedDamageEffect(
     val totalDamage: Int,
@@ -118,6 +124,7 @@ data class DividedDamageEffect(
  * @property amount The amount of damage to deal
  * @property target The creature to target
  */
+@SerialName("DealDamageExileOnDeath")
 @Serializable
 data class DealDamageExileOnDeathEffect(
     val amount: Int,

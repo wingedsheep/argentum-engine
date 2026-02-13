@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // =============================================================================
@@ -10,6 +11,7 @@ import kotlinx.serialization.Serializable
  * Triggers when a player draws a card.
  * "Whenever you draw a card..." or "Whenever a player draws a card..."
  */
+@SerialName("Draw")
 @Serializable
 data class OnDraw(
     val controllerOnly: Boolean = true
@@ -29,6 +31,7 @@ data class OnDraw(
  * Triggers when a spell is cast.
  * "Whenever you cast a spell..." or "Whenever a player casts a spell..."
  */
+@SerialName("SpellCast")
 @Serializable
 data class OnSpellCast(
     val controllerOnly: Boolean = true,
@@ -70,6 +73,7 @@ enum class SpellTypeFilter {
  * Triggers when a player cycles a card.
  * "Whenever you cycle a card..." or "Whenever a player cycles a card..."
  */
+@SerialName("Cycle")
 @Serializable
 data class OnCycle(
     val controllerOnly: Boolean = false

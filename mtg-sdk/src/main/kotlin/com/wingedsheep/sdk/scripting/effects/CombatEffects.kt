@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.Color
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // =============================================================================
@@ -11,6 +12,7 @@ import kotlinx.serialization.Serializable
  * All creatures that can block target creature must do so.
  * "All creatures able to block target creature this turn do so."
  */
+@SerialName("MustBeBlocked")
 @Serializable
 data class MustBeBlockedEffect(
     val target: EffectTarget
@@ -22,6 +24,7 @@ data class MustBeBlockedEffect(
  * Force creatures to attack during target player's next turn.
  * Used for Taunt: "During target player's next turn, creatures that player controls attack you if able."
  */
+@SerialName("Taunt")
 @Serializable
 data class TauntEffect(
     val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetPlayer)
@@ -39,6 +42,7 @@ data class TauntEffect(
  * The engine implements this by creating a temporary triggered ability that
  * listens for combat damage events and applies reflection.
  */
+@SerialName("ReflectCombatDamage")
 @Serializable
 data class ReflectCombatDamageEffect(
     val target: EffectTarget = EffectTarget.Controller
@@ -53,6 +57,7 @@ data class ReflectCombatDamageEffect(
  * "Prevent all combat damage that would be dealt by creatures you don't control."
  * Used for Fog-type effects with creature restrictions.
  */
+@SerialName("PreventCombatDamageFrom")
 @Serializable
 data class PreventCombatDamageFromEffect(
     val source: GroupFilter,
@@ -66,6 +71,7 @@ data class PreventCombatDamageFromEffect(
  * Prevent all damage that would be dealt to you this turn by attacking creatures.
  * Used for Deep Wood: "Prevent all damage that would be dealt to you this turn by attacking creatures."
  */
+@SerialName("PreventDamageFromAttackingCreatures")
 @Serializable
 data object PreventDamageFromAttackingCreaturesThisTurnEffect : Effect {
     override val description: String = "Prevent all damage that would be dealt to you this turn by attacking creatures"
@@ -75,6 +81,7 @@ data object PreventDamageFromAttackingCreaturesThisTurnEffect : Effect {
  * Prevent all combat damage that would be dealt this turn.
  * Used for Leery Fogbeast: "Whenever this creature becomes blocked, prevent all combat damage that would be dealt this turn."
  */
+@SerialName("PreventAllCombatDamage")
 @Serializable
 data object PreventAllCombatDamageThisTurnEffect : Effect {
     override val description: String = "Prevent all combat damage that would be dealt this turn"
@@ -89,6 +96,7 @@ data object PreventAllCombatDamageThisTurnEffect : Effect {
  * @property canOnlyBeBlockedByColor The color of creatures that can block them
  * @property duration How long the effect lasts
  */
+@SerialName("GrantCantBeBlockedExceptByColor")
 @Serializable
 data class GrantCantBeBlockedExceptByColorEffect(
     val filter: GroupFilter,
@@ -109,6 +117,7 @@ data class GrantCantBeBlockedExceptByColorEffect(
  * Works with multi-target spells - applies "can't block" to all creatures
  * in context.targets by creating a floating effect until end of turn.
  */
+@SerialName("CantBlockTargetCreatures")
 @Serializable
 data class CantBlockTargetCreaturesEffect(
     val duration: Duration = Duration.EndOfTurn
@@ -123,6 +132,7 @@ data class CantBlockTargetCreaturesEffect(
  * @property amount The amount of damage to prevent (can be dynamic, e.g., number of Clerics)
  * @property target The creature receiving the prevention shield
  */
+@SerialName("PreventNextDamage")
 @Serializable
 data class PreventNextDamageEffect(
     val amount: DynamicAmount,
@@ -138,6 +148,7 @@ data class PreventNextDamageEffect(
  * Also cleans up any blockers that were blocking the removed creature.
  * Used for Gustcloak creatures: "you may untap it and remove it from combat."
  */
+@SerialName("RemoveFromCombat")
 @Serializable
 data class RemoveFromCombatEffect(
     val target: EffectTarget

@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
@@ -18,6 +19,7 @@ sealed interface PayCost {
      * @property count How many cards must be discarded (default 1)
      * @property random If true, the discard is random (e.g., Pillaging Horde)
      */
+    @SerialName("Discard")
     @Serializable
     data class Discard(
         val filter: GameObjectFilter = GameObjectFilter.Any,
@@ -42,6 +44,7 @@ sealed interface PayCost {
      * @property filter Which permanents can be sacrificed
      * @property count How many permanents must be sacrificed (default 1)
      */
+    @SerialName("Sacrifice")
     @Serializable
     data class Sacrifice(
         val filter: GameObjectFilter = GameObjectFilter.Any,
@@ -75,6 +78,7 @@ sealed interface PayCost {
      *
      * @property amount How much life to pay
      */
+    @SerialName("PayLife")
     @Serializable
     data class PayLife(
         val amount: Int

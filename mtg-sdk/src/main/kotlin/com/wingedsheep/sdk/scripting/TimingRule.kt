@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
@@ -19,6 +20,7 @@ sealed interface TimingRule {
      * Instant speed: Can be used whenever you have priority.
      * This is the default for most instants and activated abilities.
      */
+    @SerialName("InstantSpeed")
     @Serializable
     data object InstantSpeed : TimingRule
 
@@ -31,6 +33,7 @@ sealed interface TimingRule {
      * - Creatures, artifacts, enchantments, planeswalkers
      * - Activated abilities with "Activate only as a sorcery" text
      */
+    @SerialName("SorcerySpeed")
     @Serializable
     data object SorcerySpeed : TimingRule
 
@@ -53,6 +56,7 @@ sealed interface TimingRule {
      * - Llanowar Elves' "{T}: Add {G}"
      * - Black Lotus' "{T}, Sacrifice: Add three mana of any one color"
      */
+    @SerialName("ManaAbility")
     @Serializable
     data object ManaAbility : TimingRule
 }

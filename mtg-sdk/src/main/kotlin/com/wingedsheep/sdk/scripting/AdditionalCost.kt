@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.model.EntityId
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
@@ -24,6 +25,7 @@ sealed interface AdditionalCost {
      * @property filter Which permanents can be sacrificed
      * @property count Number of permanents to sacrifice
      */
+    @SerialName("SacrificePermanent")
     @Serializable
     data class SacrificePermanent(
         val filter: GameObjectFilter = GameObjectFilter.Any,
@@ -48,6 +50,7 @@ sealed interface AdditionalCost {
      * @property count Number of cards to discard
      * @property filter Which cards can be discarded
      */
+    @SerialName("DiscardCards")
     @Serializable
     data class DiscardCards(
         val count: Int = 1,
@@ -69,6 +72,7 @@ sealed interface AdditionalCost {
      * Pay life as an additional cost.
      * Example: "Pay 1 life" for Phyrexian mana
      */
+    @SerialName("PayLife")
     @Serializable
     data class PayLife(
         val amount: Int
@@ -84,6 +88,7 @@ sealed interface AdditionalCost {
      * @property filter Which cards can be exiled
      * @property fromZone Zone to exile from
      */
+    @SerialName("ExileCards")
     @Serializable
     data class ExileCards(
         val count: Int = 1,
@@ -110,6 +115,7 @@ sealed interface AdditionalCost {
      * @property count Number of permanents to tap
      * @property filter Which permanents can be tapped
      */
+    @SerialName("TapPermanents")
     @Serializable
     data class TapPermanents(
         val count: Int = 1,

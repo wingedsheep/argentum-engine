@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // =============================================================================
@@ -10,6 +11,7 @@ import kotlinx.serialization.Serializable
  * Target player skips their combat phases during their next turn.
  * Used for cards like False Peace.
  */
+@SerialName("SkipCombatPhases")
 @Serializable
 data class SkipCombatPhasesEffect(
     val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetPlayer)
@@ -21,6 +23,7 @@ data class SkipCombatPhasesEffect(
  * Target player's creatures and lands don't untap during their next untap step.
  * Used for cards like Exhaustion.
  */
+@SerialName("SkipUntap")
 @Serializable
 data class SkipUntapEffect(
     val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent),
@@ -42,6 +45,7 @@ data class SkipUntapEffect(
  *
  * @param count The number of additional lands you may play
  */
+@SerialName("PlayAdditionalLands")
 @Serializable
 data class PlayAdditionalLandsEffect(
     val count: Int
@@ -54,6 +58,7 @@ data class PlayAdditionalLandsEffect(
  * Used for Aggravated Assault: "{3}{R}{R}: Untap all creatures you control. After this main phase,
  * there is an additional combat phase followed by an additional main phase."
  */
+@SerialName("AddCombatPhase")
 @Serializable
 data object AddCombatPhaseEffect : Effect {
     override val description: String =
@@ -66,6 +71,7 @@ data object AddCombatPhaseEffect : Effect {
  *
  * @param loseAtEndStep If true, you lose the game at the beginning of that turn's end step
  */
+@SerialName("TakeExtraTurn")
 @Serializable
 data class TakeExtraTurnEffect(
     val loseAtEndStep: Boolean = false

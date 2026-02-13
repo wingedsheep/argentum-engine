@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
@@ -29,6 +30,7 @@ sealed interface Duration {
      * Effect lasts until end of turn.
      * Example: Giant Growth
      */
+    @SerialName("EndOfTurn")
     @Serializable
     data object EndOfTurn : Duration {
         override val description = "until end of turn"
@@ -38,6 +40,7 @@ sealed interface Duration {
      * Effect lasts until the beginning of your next turn.
      * Example: Teferi's Protection
      */
+    @SerialName("UntilYourNextTurn")
     @Serializable
     data object UntilYourNextTurn : Duration {
         override val description = "until your next turn"
@@ -47,6 +50,7 @@ sealed interface Duration {
      * Effect lasts until the beginning of your next upkeep.
      * Example: Various older cards
      */
+    @SerialName("UntilYourNextUpkeep")
     @Serializable
     data object UntilYourNextUpkeep : Duration {
         override val description = "until the beginning of your next upkeep"
@@ -56,6 +60,7 @@ sealed interface Duration {
      * Effect lasts until end of combat.
      * Example: Fog effects, combat tricks
      */
+    @SerialName("EndOfCombat")
     @Serializable
     data object EndOfCombat : Duration {
         override val description = "until end of combat"
@@ -65,6 +70,7 @@ sealed interface Duration {
      * Effect is permanent (static abilities, auras while attached).
      * No duration text is displayed.
      */
+    @SerialName("Permanent")
     @Serializable
     data object Permanent : Duration {
         override val description = ""
@@ -74,6 +80,7 @@ sealed interface Duration {
      * Effect lasts while the source permanent is on the battlefield.
      * Example: Anthem effects, equipment bonuses
      */
+    @SerialName("WhileSourceOnBattlefield")
     @Serializable
     data class WhileSourceOnBattlefield(
         val sourceDescription: String = "this permanent"
@@ -85,6 +92,7 @@ sealed interface Duration {
      * Effect lasts until a specific phase.
      * Example: "Until your next end step"
      */
+    @SerialName("UntilPhase")
     @Serializable
     data class UntilPhase(val phase: String) : Duration {
         override val description = "until the $phase"
@@ -94,6 +102,7 @@ sealed interface Duration {
      * Effect lasts until a condition is met.
      * Example: "Until that creature leaves the battlefield"
      */
+    @SerialName("UntilCondition")
     @Serializable
     data class UntilCondition(val conditionDescription: String) : Duration {
         override val description = "until $conditionDescription"
@@ -103,6 +112,7 @@ sealed interface Duration {
      * Effect lasts while the source permanent remains tapped.
      * Example: Everglove Courier "for as long as Everglove Courier remains tapped"
      */
+    @SerialName("WhileSourceTapped")
     @Serializable
     data class WhileSourceTapped(
         val sourceDescription: String = "this creature"

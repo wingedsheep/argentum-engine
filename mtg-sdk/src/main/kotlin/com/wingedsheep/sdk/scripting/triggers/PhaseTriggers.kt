@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // =============================================================================
@@ -10,6 +11,7 @@ import kotlinx.serialization.Serializable
  * Triggers at the beginning of upkeep.
  * "At the beginning of your upkeep..." or "At the beginning of each upkeep..."
  */
+@SerialName("Upkeep")
 @Serializable
 data class OnUpkeep(
     val controllerOnly: Boolean = true
@@ -25,6 +27,7 @@ data class OnUpkeep(
  * Triggers at the beginning of the end step.
  * "At the beginning of your end step..."
  */
+@SerialName("EndStep")
 @Serializable
 data class OnEndStep(
     val controllerOnly: Boolean = true
@@ -40,6 +43,7 @@ data class OnEndStep(
  * Triggers at the beginning of combat.
  * "At the beginning of combat on your turn..."
  */
+@SerialName("BeginCombat")
 @Serializable
 data class OnBeginCombat(
     val controllerOnly: Boolean = true
@@ -58,6 +62,7 @@ data class OnBeginCombat(
  * This is distinct from generic main phase triggers - it only triggers
  * on the pre-combat main phase, not the post-combat main phase.
  */
+@SerialName("FirstMainPhase")
 @Serializable
 data class OnFirstMainPhase(
     val controllerOnly: Boolean = true

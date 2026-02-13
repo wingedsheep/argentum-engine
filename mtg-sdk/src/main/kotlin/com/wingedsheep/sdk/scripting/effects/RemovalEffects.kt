@@ -3,6 +3,7 @@ package com.wingedsheep.sdk.scripting
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // =============================================================================
@@ -15,6 +16,7 @@ import kotlinx.serialization.Serializable
  * The next time that permanent would be destroyed this turn, instead:
  * tap it, remove all damage from it, and remove it from combat.
  */
+@SerialName("Regenerate")
 @Serializable
 data class RegenerateEffect(
     val target: EffectTarget
@@ -29,6 +31,7 @@ data class RegenerateEffect(
  * Designed to be used BEFORE a destroy effect via .then() for cards like Smother.
  * Places a floating effect that prevents regeneration shields from being used.
  */
+@SerialName("CantBeRegenerated")
 @Serializable
 data class CantBeRegeneratedEffect(
     val target: EffectTarget
@@ -49,6 +52,7 @@ data class CantBeRegeneratedEffect(
  * @param filter Which permanents to destroy (defaults to AllPermanents)
  * @param noRegenerate If true, destroyed permanents can't be regenerated (for future regeneration support)
  */
+@SerialName("DestroyAll")
 @Serializable
 data class DestroyAllEffect(
     val filter: GroupFilter = GroupFilter.AllPermanents,
@@ -69,6 +73,7 @@ data class DestroyAllEffect(
  * @property count How many to sacrifice
  * @property any If true, "any number" (for Scapeshift)
  */
+@SerialName("Sacrifice")
 @Serializable
 data class SacrificeEffect(
     val filter: GameObjectFilter,
@@ -91,6 +96,7 @@ data class SacrificeEffect(
  *
  * Used primarily as the suffer effect in PayOrSufferEffect for punisher mechanics.
  */
+@SerialName("SacrificeSelf")
 @Serializable
 data object SacrificeSelfEffect : Effect {
     override val description: String = "sacrifice this permanent"
@@ -100,6 +106,7 @@ data object SacrificeSelfEffect : Effect {
  * Force sacrifice effect: Target player sacrifices permanents matching a filter.
  * "Target player sacrifices a creature" (Edict effects)
  */
+@SerialName("ForceSacrifice")
 @Serializable
 data class ForceSacrificeEffect(
     val filter: GameObjectFilter,
@@ -125,6 +132,7 @@ data class ForceSacrificeEffect(
  *  That player sacrifices all permanents in the pile of their choice."
  * Used for Liliana of the Veil's ultimate.
  */
+@SerialName("SeparatePermanentsIntoPiles")
 @Serializable
 data class SeparatePermanentsIntoPilesEffect(
     val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetPlayer)
@@ -138,6 +146,7 @@ data class SeparatePermanentsIntoPilesEffect(
  * Exile a permanent until this permanent leaves the battlefield.
  * Used for O-Ring style effects like Liminal Hold.
  */
+@SerialName("ExileUntilLeaves")
 @Serializable
 data class ExileUntilLeavesEffect(
     val target: EffectTarget
@@ -157,6 +166,7 @@ data class ExileUntilLeavesEffect(
  * @property tokenTypes Creature types of the token
  * @property tokenKeywords Keywords the token has
  */
+@SerialName("ExileAndReplaceWithToken")
 @Serializable
 data class ExileAndReplaceWithTokenEffect(
     val target: EffectTarget,
@@ -191,6 +201,7 @@ data class ExileAndReplaceWithTokenEffect(
  *
  * Used by Astral Slide and similar effects.
  */
+@SerialName("ExileUntilEndStep")
 @Serializable
 data class ExileUntilEndStepEffect(
     val target: EffectTarget
@@ -207,6 +218,7 @@ data class ExileUntilEndStepEffect(
  * The target is typically the creature that was dealt combat damage,
  * resolved from the trigger context (triggeringEntityId).
  */
+@SerialName("DestroyAtEndOfCombat")
 @Serializable
 data class DestroyAtEndOfCombatEffect(
     val target: EffectTarget
@@ -223,6 +235,7 @@ data class DestroyAtEndOfCombatEffect(
  * @property placement How to place the card in the destination zone
  * @property byDestruction If true, use destruction semantics (indestructible check)
  */
+@SerialName("MoveToZone")
 @Serializable
 data class MoveToZoneEffect(
     val target: EffectTarget,

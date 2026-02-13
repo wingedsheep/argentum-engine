@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.Color
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // =============================================================================
@@ -11,6 +12,7 @@ import kotlinx.serialization.Serializable
  * Add mana effect.
  * "Add {G}" or "Add {R}{R}"
  */
+@SerialName("AddMana")
 @Serializable
 data class AddManaEffect(
     val color: Color,
@@ -23,6 +25,7 @@ data class AddManaEffect(
  * Add colorless mana effect.
  * "Add {C}{C}"
  */
+@SerialName("AddColorlessMana")
 @Serializable
 data class AddColorlessManaEffect(
     val amount: Int
@@ -36,6 +39,7 @@ data class AddColorlessManaEffect(
  *
  * The player chooses the color when this ability resolves.
  */
+@SerialName("AddAnyColorMana")
 @Serializable
 data class AddAnyColorManaEffect(
     val amount: Int = 1
@@ -54,6 +58,7 @@ data class AddAnyColorManaEffect(
  * @property amountSource What determines the amount of mana to add
  * @property allowedColors The colors of mana that can be produced (player chooses distribution)
  */
+@SerialName("AddDynamicMana")
 @Serializable
 data class AddDynamicManaEffect(
     val amountSource: DynamicAmount,
@@ -73,6 +78,7 @@ data class AddDynamicManaEffect(
  * @property color The color of mana to add
  * @property amountSource What determines the amount of mana to add
  */
+@SerialName("AddDynamicColorMana")
 @Serializable
 data class AddDynamicColorManaEffect(
     val color: Color,

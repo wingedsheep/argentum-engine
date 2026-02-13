@@ -2,6 +2,7 @@ package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // =============================================================================
@@ -21,6 +22,7 @@ import kotlinx.serialization.Serializable
  * @property name Optional token name (defaults to creature types + "Token")
  * @property imageUri Optional image URI for the token artwork
  */
+@SerialName("CreateDynamicTokens")
 @Serializable
 data class CreateDynamicTokensEffect(
     val count: DynamicAmount,
@@ -65,6 +67,7 @@ data class CreateDynamicTokensEffect(
  * @property name Optional token name (defaults to creature types + "Token")
  * @property imageUri Optional image URI for the token artwork
  */
+@SerialName("CreateToken")
 @Serializable
 data class CreateTokenEffect(
     val count: Int = 1,
@@ -96,6 +99,7 @@ data class CreateTokenEffect(
  * Create Treasure artifact tokens.
  * Treasure tokens have "{T}, Sacrifice this artifact: Add one mana of any color."
  */
+@SerialName("CreateTreasureTokens")
 @Serializable
 data class CreateTreasureTokensEffect(
     val count: Int = 1
@@ -112,6 +116,7 @@ data class CreateTreasureTokensEffect(
  * Used for cards like Goldmeadow Nomad with graveyard abilities.
  * Note: This is typically handled as an activated ability, not a spell effect.
  */
+@SerialName("CreateTokenFromGraveyard")
 @Serializable
 data class CreateTokenFromGraveyardEffect(
     val power: Int,

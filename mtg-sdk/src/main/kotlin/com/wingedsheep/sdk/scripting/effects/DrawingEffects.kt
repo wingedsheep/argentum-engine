@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // =============================================================================
@@ -10,6 +11,7 @@ import kotlinx.serialization.Serializable
  * Draw cards effect.
  * "Draw X cards" or "Target player draws X cards"
  */
+@SerialName("DrawCards")
 @Serializable
 data class DrawCardsEffect(
     val count: DynamicAmount,
@@ -31,6 +33,7 @@ data class DrawCardsEffect(
  * Discard cards effect.
  * "Discard X cards" or "Target player discards X cards"
  */
+@SerialName("DiscardCards")
 @Serializable
 data class DiscardCardsEffect(
     val count: Int,
@@ -47,6 +50,7 @@ data class DiscardCardsEffect(
  * "Target opponent discards a card at random"
  * Used for cards like Mind Knives.
  */
+@SerialName("DiscardRandom")
 @Serializable
 data class DiscardRandomEffect(
     val count: Int = 1,
@@ -67,6 +71,7 @@ data class DiscardRandomEffect(
  * @param controllerDrawsPerDiscard If > 0, the controller draws this many cards
  *   for each card actually discarded by opponents. Used for Syphon Mind.
  */
+@SerialName("EachOpponentDiscards")
 @Serializable
 data class EachOpponentDiscardsEffect(
     val count: Int = 1,
@@ -84,6 +89,7 @@ data class EachOpponentDiscardsEffect(
  * Wheel effect - each affected player shuffles their hand into their library, then draws that many cards.
  * Used for Winds of Change, Wheel of Fortune-style effects.
  */
+@SerialName("Wheel")
 @Serializable
 data class WheelEffect(
     val target: EffectTarget = EffectTarget.PlayerRef(Player.Each)
@@ -98,6 +104,7 @@ data class WheelEffect(
  * Each player draws X cards where X is determined by the spell's X value.
  * Used for cards like Prosperity.
  */
+@SerialName("EachPlayerDrawsX")
 @Serializable
 data class EachPlayerDrawsXEffect(
     val includeController: Boolean = true,
@@ -120,6 +127,7 @@ data class EachPlayerDrawsXEffect(
  * @property maxCards Maximum number of cards each player may draw
  * @property lifePerCardNotDrawn Life gained for each card fewer than maxCards drawn (0 to disable)
  */
+@SerialName("EachPlayerMayDraw")
 @Serializable
 data class EachPlayerMayDrawEffect(
     val maxCards: Int,
@@ -142,6 +150,7 @@ data class EachPlayerMayDrawEffect(
  * @param discardEntireHand If true, each player must discard their entire hand
  * @param controllerBonusDraw Extra cards the controller draws after the effect
  */
+@SerialName("EachPlayerDiscardsDraws")
 @Serializable
 data class EachPlayerDiscardsDrawsEffect(
     val minDiscard: Int = 0,
@@ -173,6 +182,7 @@ data class EachPlayerDiscardsDrawsEffect(
  * Look at target player's hand.
  * Used for Ingenious Thief and similar "peek" effects.
  */
+@SerialName("LookAtTargetHand")
 @Serializable
 data class LookAtTargetHandEffect(
     val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetPlayer)
@@ -185,6 +195,7 @@ data class LookAtTargetHandEffect(
  * Used for Aven Soulgazer and similar morph-interaction effects.
  * Marks the face-down creature as revealed to the controller of the ability.
  */
+@SerialName("LookAtFaceDownCreature")
 @Serializable
 data class LookAtFaceDownCreatureEffect(
     val target: EffectTarget = EffectTarget.ContextTarget(0)
@@ -200,6 +211,7 @@ data class LookAtFaceDownCreatureEffect(
  * @property revealCount How many cards the target player reveals (default 3)
  * @property target The player whose hand is being targeted
  */
+@SerialName("Blackmail")
 @Serializable
 data class BlackmailEffect(
     val revealCount: Int = 3,
@@ -216,6 +228,7 @@ data class BlackmailEffect(
  *
  * Example: Baleful Stare = CompositeEffect(RevealHandEffect, DrawCardsEffect(count))
  */
+@SerialName("RevealHand")
 @Serializable
 data class RevealHandEffect(
     val target: EffectTarget = EffectTarget.ContextTarget(0)

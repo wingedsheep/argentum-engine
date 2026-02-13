@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.Subtype
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // =============================================================================
@@ -11,6 +12,7 @@ import kotlinx.serialization.Serializable
  * Triggers when a permanent enters the battlefield.
  * "When [this creature] enters the battlefield..."
  */
+@SerialName("EntersBattlefield")
 @Serializable
 data class OnEnterBattlefield(
     val selfOnly: Boolean = true
@@ -26,6 +28,7 @@ data class OnEnterBattlefield(
  * Triggers when another creature you control enters the battlefield.
  * "Whenever another creature you control enters the battlefield..."
  */
+@SerialName("OtherCreatureEnters")
 @Serializable
 data class OnOtherCreatureEnters(
     val youControlOnly: Boolean = true
@@ -41,6 +44,7 @@ data class OnOtherCreatureEnters(
  * Triggers when a permanent leaves the battlefield.
  * "When [this creature] leaves the battlefield..."
  */
+@SerialName("LeavesBattlefield")
 @Serializable
 data class OnLeavesBattlefield(
     val selfOnly: Boolean = true
@@ -56,6 +60,7 @@ data class OnLeavesBattlefield(
  * Triggers when a creature dies (goes to graveyard from battlefield).
  * "When [this creature] dies..."
  */
+@SerialName("Death")
 @Serializable
 data class OnDeath(
     val selfOnly: Boolean = true
@@ -71,6 +76,7 @@ data class OnDeath(
  * Triggers when another creature with a specific subtype you control dies.
  * "Whenever another Goblin you control dies..."
  */
+@SerialName("OtherCreatureWithSubtypeDies")
 @Serializable
 data class OnOtherCreatureWithSubtypeDies(
     val subtype: Subtype,
@@ -87,6 +93,7 @@ data class OnOtherCreatureWithSubtypeDies(
  * Triggers when another creature with a specific subtype enters the battlefield.
  * "Whenever another Elf enters the battlefield, put a +1/+1 counter on this creature."
  */
+@SerialName("OtherCreatureWithSubtypeEnters")
 @Serializable
 data class OnOtherCreatureWithSubtypeEnters(
     val subtype: Subtype,
@@ -103,6 +110,7 @@ data class OnOtherCreatureWithSubtypeEnters(
  * Triggers when any creature with a specific subtype enters the battlefield.
  * "Whenever a Beast enters the battlefield, you may draw a card."
  */
+@SerialName("CreatureWithSubtypeEnters")
 @Serializable
 data class OnCreatureWithSubtypeEnters(
     val subtype: Subtype,

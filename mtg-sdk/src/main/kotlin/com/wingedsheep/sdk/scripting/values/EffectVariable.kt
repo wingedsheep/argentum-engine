@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
@@ -33,6 +34,7 @@ sealed interface EffectVariable {
      * Stores a reference to an entity (card, permanent, player).
      * Used for: "exile target creature... return the exiled card"
      */
+    @SerialName("EntityRef")
     @Serializable
     data class EntityRef(override val name: String) : EffectVariable {
         override val description: String = "the $name"
@@ -42,6 +44,7 @@ sealed interface EffectVariable {
      * Stores a count/number.
      * Used for: "sacrifice any number of lands... search for that many lands"
      */
+    @SerialName("Count")
     @Serializable
     data class Count(override val name: String) : EffectVariable {
         override val description: String = "the number of $name"
@@ -51,6 +54,7 @@ sealed interface EffectVariable {
      * Stores an amount (damage dealt, life gained, etc.).
      * Used for: "deal damage equal to the damage dealt this way"
      */
+    @SerialName("Amount")
     @Serializable
     data class Amount(override val name: String) : EffectVariable {
         override val description: String = "the $name amount"

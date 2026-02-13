@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // =============================================================================
@@ -9,6 +10,7 @@ import kotlinx.serialization.Serializable
 /**
  * An effect that only happens if a condition is met.
  */
+@SerialName("Conditional")
 @Serializable
 data class ConditionalEffect(
     val condition: Condition,

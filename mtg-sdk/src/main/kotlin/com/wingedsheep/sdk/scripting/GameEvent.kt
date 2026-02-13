@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.Zone
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
@@ -40,6 +41,7 @@ sealed interface GameEvent {
      * - "combat damage would be dealt" → DamageEvent(damageType = DamageType.Combat)
      * - "damage from red sources" → DamageEvent(source = SourceFilter.HasColor(RED))
      */
+    @SerialName("DamageEvent")
     @Serializable
     data class DamageEvent(
         val recipient: RecipientFilter = RecipientFilter.Any,
@@ -72,6 +74,7 @@ sealed interface GameEvent {
      * - "a creature would enter the battlefield" → ZoneChangeEvent(filter = GameObjectFilter.Creature, to = Zone.BATTLEFIELD)
      * - "a creature would die" → ZoneChangeEvent(filter = GameObjectFilter.Creature, from = Zone.BATTLEFIELD, to = Zone.GRAVEYARD)
      */
+    @SerialName("ZoneChangeEvent")
     @Serializable
     data class ZoneChangeEvent(
         val filter: GameObjectFilter = GameObjectFilter.Any,
@@ -110,6 +113,7 @@ sealed interface GameEvent {
      * - "counters would be placed" → CounterPlacementEvent()
      * - "+1/+1 counters on creatures you control" → CounterPlacementEvent(counterType = CounterTypeFilter.PlusOnePlusOne, recipient = RecipientFilter.CreatureYouControl)
      */
+    @SerialName("CounterPlacementEvent")
     @Serializable
     data class CounterPlacementEvent(
         val counterType: CounterTypeFilter = CounterTypeFilter.Any,
@@ -136,6 +140,7 @@ sealed interface GameEvent {
      * - "tokens under your control" → TokenCreationEvent(controller = ControllerFilter.You)
      * - "any tokens" → TokenCreationEvent(controller = ControllerFilter.Any)
      */
+    @SerialName("TokenCreationEvent")
     @Serializable
     data class TokenCreationEvent(
         val controller: ControllerFilter = ControllerFilter.You,
@@ -166,6 +171,7 @@ sealed interface GameEvent {
      * - "you would draw a card" → DrawEvent(player = Player.You)
      * - "an opponent would draw" → DrawEvent(player = Player.Opponent)
      */
+    @SerialName("DrawEvent")
     @Serializable
     data class DrawEvent(
         val player: Player = Player.You
@@ -180,6 +186,7 @@ sealed interface GameEvent {
     /**
      * When a player would gain life.
      */
+    @SerialName("LifeGainEvent")
     @Serializable
     data class LifeGainEvent(
         val player: Player = Player.You
@@ -190,6 +197,7 @@ sealed interface GameEvent {
     /**
      * When a player would lose life.
      */
+    @SerialName("LifeLossEvent")
     @Serializable
     data class LifeLossEvent(
         val player: Player = Player.You
@@ -204,6 +212,7 @@ sealed interface GameEvent {
     /**
      * When a player would discard a card.
      */
+    @SerialName("DiscardEvent")
     @Serializable
     data class DiscardEvent(
         val player: Player = Player.You,
@@ -227,6 +236,7 @@ sealed interface GameEvent {
     /**
      * When a player would search their library.
      */
+    @SerialName("SearchLibraryEvent")
     @Serializable
     data class SearchLibraryEvent(
         val player: Player = Player.You
