@@ -19,6 +19,7 @@ Parse the arguments: the card name is the main argument, and `--set <set-code>` 
    - URL: `https://api.scryfall.com/cards/named?exact=<card-name-url-encoded>&set=<set-code>`
    - **ALWAYS use the `&set=<set-code>` parameter** - each printing has different rarity, collector_number, artist, flavor_text, and image_uris
    - Extract: name, mana_cost, type_line, oracle_text, power, toughness, colors, rarity, collector_number, artist, flavor_text, image_uris.normal
+   - Example: `WebFetch(https://api.scryfall.com/cards/named?exact=Mistform+Skyreaver&set=ons)`
 
    Common set codes: `ons` (Onslaught), `por` (Portal), `lea` (Alpha), `leb` (Beta), `2ed` (Unlimited)
 
