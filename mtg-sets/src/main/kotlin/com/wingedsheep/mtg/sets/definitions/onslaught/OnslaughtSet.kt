@@ -113,6 +113,7 @@ object OnslaughtSet {
         Reminisce,
         RiptideBiologist,
         Standardize,
+        RummagingWizard,
         VoidmageProdigy,
 
         // Black creatures and spells

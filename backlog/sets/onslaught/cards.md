@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 259 / 335
+**Implemented:** 260 / 335
 
 ---
 
@@ -241,7 +241,7 @@
 - [ ] Risky Move
 - [x] Rorix Bladewing
 - [x] Rotlung Reanimator
-- [ ] Rummaging Wizard
+- [x] Rummaging Wizard
 - [x] Run Wild
 - [x] Sage Aven
 - [ ] Sandskin
