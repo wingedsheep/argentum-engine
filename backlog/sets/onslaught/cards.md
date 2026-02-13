@@ -297,7 +297,7 @@
 - [x] Syphon Mind
 - [x] Syphon Soul
 - [x] Taunting Elf
-- [ ] Tempting Wurm
+- [x] Tempting Wurm
 - [x] Tephraderm
 - [x] Thoughtbound Primoc
 - [x] Thrashing Mudspawn

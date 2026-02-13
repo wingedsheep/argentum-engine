@@ -21,6 +21,7 @@ class LibraryExecutors : ExecutorModule {
         PutLandFromHandExecutor(),
         ChooseCreatureTypeRevealTopExecutor(),
         RevealUntilNonlandDealDamageExecutor(),
-        RevealUntilNonlandModifyStatsExecutor()
+        RevealUntilNonlandModifyStatsExecutor(),
+        EachOpponentMayPutFromHandExecutor()
     )
 }

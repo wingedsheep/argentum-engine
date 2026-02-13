@@ -1156,6 +1156,33 @@ data class EachPlayerDiscardsOrLoseLifeContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after an opponent selects cards from their hand to put onto the battlefield.
+ *
+ * Used for Tempting Wurm: "Each opponent may put any number of artifact, creature,
+ * enchantment, and/or land cards from their hand onto the battlefield."
+ *
+ * Each opponent in APNAP order is presented with a card selection. After one opponent
+ * finishes, the next is asked.
+ *
+ * @property currentOpponentId The opponent currently selecting cards
+ * @property remainingOpponents Opponents still to be asked after the current one
+ * @property sourceId The source permanent
+ * @property sourceName Name of the source for display
+ * @property controllerId The controller of the source
+ * @property filter The filter for valid cards from hand
+ */
+@Serializable
+data class EachOpponentMayPutFromHandContinuation(
+    override val decisionId: String,
+    val currentOpponentId: EntityId,
+    val remainingOpponents: List<EntityId>,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val controllerId: EntityId,
+    val filter: GameObjectFilter
+) : ContinuationFrame
+
+/**
  * Information about a mana source available for manual selection.
  */
 @Serializable
