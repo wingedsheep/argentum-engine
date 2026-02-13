@@ -132,6 +132,7 @@ object OnslaughtSet {
         DeathPulse,
         DoomedNecromancer,
         DiscipleOfMalice,
+        EbonbladeReaper,
         EntrailsFeaster,
         FallenCleric,
         FadeFromMemory,
