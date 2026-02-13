@@ -13,6 +13,7 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CharacteristicValue
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CostReductionSource
+import com.wingedsheep.sdk.scripting.FaceDownSpellCostReduction
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.SpellCostReduction
 
@@ -178,6 +179,34 @@ class CostCalculator(
         }
 
         return ManaCost(newSymbols)
+    }
+
+    /**
+     * Calculate the effective cost of casting a face-down creature spell (morph).
+     * The base cost is {3}, reduced by FaceDownSpellCostReduction abilities
+     * on permanents the caster controls.
+     *
+     * @param state The current game state
+     * @param casterId The player casting the spell
+     * @return The effective morph cost after reductions
+     */
+    fun calculateFaceDownCost(state: GameState, casterId: EntityId): ManaCost {
+        val baseMorphCost = ManaCost.parse("{3}")
+        var totalReduction = 0
+
+        // Scan battlefield permanents controlled by the caster for FaceDownSpellCostReduction
+        for (entityId in state.getBattlefield(casterId)) {
+            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry?.getCard(card.cardDefinitionId) ?: continue
+
+            for (ability in cardDef.script.staticAbilities) {
+                if (ability is FaceDownSpellCostReduction) {
+                    totalReduction += evaluateReduction(state, ability.reductionSource, casterId)
+                }
+            }
+        }
+
+        return reduceGenericCost(baseMorphCost, totalReduction)
     }
 
     companion object {

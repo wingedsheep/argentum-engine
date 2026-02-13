@@ -101,7 +101,7 @@
 - [x] Doomed Necromancer
 - [x] Doubtless One
 - [x] Dragon Roost
-- [ ] Dream Chisel
+- [x] Dream Chisel
 - [x] Dwarven Blastminer
 - [ ] Ebonblade Reaper
 - [x] Elven Riders

@@ -107,7 +107,7 @@ class CastSpellHandler(
                 return "You can only cast face-down creatures at sorcery speed"
             }
 
-            val morphCastCost = ManaCost.parse("{3}")
+            val morphCastCost = costCalculator.calculateFaceDownCost(state, action.playerId)
             return validatePayment(state, action, morphCastCost)
         }
 
@@ -350,7 +350,7 @@ class CastSpellHandler(
 
         // Calculate effective cost
         var effectiveCost = if (action.castFaceDown) {
-            ManaCost.parse("{3}")
+            costCalculator.calculateFaceDownCost(currentState, action.playerId)
         } else if (cardDef != null) {
             costCalculator.calculateEffectiveCost(currentState, cardDef, action.playerId)
         } else {

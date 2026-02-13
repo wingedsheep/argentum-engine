@@ -268,6 +268,7 @@ object OnslaughtSet {
 
         // Artifacts
         DoomCannon,
+        DreamChisel,
 
         // Lands
         BloodstainedMire,
