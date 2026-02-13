@@ -137,6 +137,7 @@ object OnslaughtSet {
         FadeFromMemory,
         FeedingFrenzy,
         FesteringGoblin,
+        GangrenousGoliath,
         GluttonousZombie,
         GrinningDemon,
         Infest,
