@@ -76,8 +76,7 @@ object OnslaughtSet {
         TrueBeliever,
         ConvalescentCare,
         SigilOfTheNewDawn,
-        WeatheredWayfarer
-        CoverOfDarkness
+        WeatheredWayfarer,
 
         // Blue creatures and spells
         AirborneAid,
@@ -137,6 +136,7 @@ object OnslaughtSet {
         CabalArchon,
         CabalExecutioner,
         CabalSlaver,
+        CoverOfDarkness,
         CruelRevival,
         DeathPulse,
         DoomedNecromancer,
