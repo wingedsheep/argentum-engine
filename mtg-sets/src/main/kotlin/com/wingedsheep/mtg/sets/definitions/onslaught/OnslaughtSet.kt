@@ -210,6 +210,7 @@ object OnslaughtSet {
         Starstorm,
         Sparksmith,
         SpitfireHandler,
+        SkirkFireMarshal,
         SkirkProspector,
         ShaleskinBruiser,
         SnappingThragg,

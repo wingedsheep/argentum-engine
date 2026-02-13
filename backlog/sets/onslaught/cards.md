@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 256 / 335
+**Implemented:** 257 / 335
 
 ---
 
@@ -264,7 +264,7 @@
 - [x] Silklash Spider
 - [x] Silvos, Rogue Elemental
 - [x] Skirk Commando
-- [ ] Skirk Fire Marshal
+- [x] Skirk Fire Marshal
 - [x] Skirk Prospector
 - [ ] Skittish Valesk
 - [x] Slate of Ancestry
