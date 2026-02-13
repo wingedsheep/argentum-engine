@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // =============================================================================
@@ -10,6 +11,7 @@ import kotlinx.serialization.Serializable
  * Triggers when this creature is dealt damage.
  * "Whenever [this creature] is dealt damage..."
  */
+@SerialName("DamageReceived")
 @Serializable
 data class OnDamageReceived(
     val selfOnly: Boolean = true
@@ -29,6 +31,7 @@ data class OnDamageReceived(
  * Triggers when a permanent becomes tapped.
  * "Whenever this creature becomes tapped..."
  */
+@SerialName("BecomesTapped")
 @Serializable
 data class OnBecomesTapped(
     val selfOnly: Boolean = true
@@ -44,6 +47,7 @@ data class OnBecomesTapped(
  * Triggers when a permanent becomes untapped.
  * "Whenever this creature becomes untapped..."
  */
+@SerialName("BecomesUntapped")
 @Serializable
 data class OnBecomesUntapped(
     val selfOnly: Boolean = true
@@ -65,6 +69,7 @@ data class OnBecomesUntapped(
  *
  * Can be filtered to only trigger when transforming into a specific face.
  */
+@SerialName("TransformTrigger")
 @Serializable
 data class OnTransform(
     val selfOnly: Boolean = true,
@@ -90,6 +95,7 @@ data class OnTransform(
  *
  * Used for morph abilities that trigger upon revealing the creature.
  */
+@SerialName("TurnFaceUpTrigger")
 @Serializable
 data class OnTurnFaceUp(
     val selfOnly: Boolean = true

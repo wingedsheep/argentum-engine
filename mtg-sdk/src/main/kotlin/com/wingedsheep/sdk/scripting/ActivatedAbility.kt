@@ -3,6 +3,7 @@ package com.wingedsheep.sdk.scripting
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.targeting.TargetRequirement
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
@@ -33,24 +34,28 @@ sealed interface AbilityCost {
     val description: String
 
     /** Tap the permanent ({T}) */
+    @SerialName("CostTap")
     @Serializable
     data object Tap : AbilityCost {
         override val description: String = "{T}"
     }
 
     /** Untap the permanent ({Q}) */
+    @SerialName("CostUntap")
     @Serializable
     data object Untap : AbilityCost {
         override val description: String = "{Q}"
     }
 
     /** Pay mana */
+    @SerialName("CostMana")
     @Serializable
     data class Mana(val cost: ManaCost) : AbilityCost {
         override val description: String = cost.toString()
     }
 
     /** Pay life */
+    @SerialName("CostPayLife")
     @Serializable
     data class PayLife(val amount: Int) : AbilityCost {
         override val description: String = "Pay $amount life"
@@ -61,6 +66,7 @@ sealed interface AbilityCost {
      *
      * @property filter Which permanents can be sacrificed
      */
+    @SerialName("CostSacrifice")
     @Serializable
     data class Sacrifice(
         val filter: GameObjectFilter = GameObjectFilter.Any
@@ -73,6 +79,7 @@ sealed interface AbilityCost {
      *
      * @property filter Which cards can be discarded
      */
+    @SerialName("CostDiscard")
     @Serializable
     data class Discard(
         val filter: GameObjectFilter = GameObjectFilter.Any
@@ -86,6 +93,7 @@ sealed interface AbilityCost {
      * @property count Number of cards to exile
      * @property filter Which cards can be exiled
      */
+    @SerialName("CostExileFromGraveyard")
     @Serializable
     data class ExileFromGraveyard(
         val count: Int,
@@ -99,12 +107,14 @@ sealed interface AbilityCost {
     }
 
     /** Discard self (the card with this ability) - used for cycling */
+    @SerialName("CostDiscardSelf")
     @Serializable
     data object DiscardSelf : AbilityCost {
         override val description: String = "Discard this card"
     }
 
     /** Sacrifice self (the permanent with this ability) */
+    @SerialName("CostSacrificeSelf")
     @Serializable
     data object SacrificeSelf : AbilityCost {
         override val description: String = "Sacrifice this permanent"
@@ -114,6 +124,7 @@ sealed interface AbilityCost {
      * Sacrifice a creature of the type chosen when this permanent entered the battlefield.
      * Used by cards like Doom Cannon that choose a creature type on entry and reference it in costs.
      */
+    @SerialName("CostSacrificeChosenCreatureType")
     @Serializable
     data object SacrificeChosenCreatureType : AbilityCost {
         override val description: String = "Sacrifice a creature of the chosen type"
@@ -126,6 +137,7 @@ sealed interface AbilityCost {
      * @property count Number of permanents to tap
      * @property filter Which permanents can be tapped
      */
+    @SerialName("CostTapPermanents")
     @Serializable
     data class TapPermanents(
         val count: Int,
@@ -145,18 +157,21 @@ sealed interface AbilityCost {
     }
 
     /** Multiple costs combined */
+    @SerialName("CostComposite")
     @Serializable
     data class Composite(val costs: List<AbilityCost>) : AbilityCost {
         override val description: String = costs.joinToString(", ") { it.description }
     }
 
     /** Tap the creature this aura is attached to ({T} enchanted creature) */
+    @SerialName("CostTapAttachedCreature")
     @Serializable
     data object TapAttachedCreature : AbilityCost {
         override val description: String = "{T} enchanted creature"
     }
 
     /** Loyalty cost for planeswalker abilities */
+    @SerialName("CostLoyalty")
     @Serializable
     data class Loyalty(val change: Int) : AbilityCost {
         override val description: String = if (change >= 0) "+$change" else "$change"

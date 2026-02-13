@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.Color
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // =============================================================================
@@ -14,51 +15,61 @@ import kotlinx.serialization.Serializable
 sealed interface RecipientFilter {
     val description: String
 
+    @SerialName("RecipientAny")
     @Serializable
     data object Any : RecipientFilter {
         override val description = "any target"
     }
 
+    @SerialName("You")
     @Serializable
     data object You : RecipientFilter {
         override val description = "you"
     }
 
+    @SerialName("RecipientOpponent")
     @Serializable
     data object Opponent : RecipientFilter {
         override val description = "an opponent"
     }
 
+    @SerialName("AnyPlayer")
     @Serializable
     data object AnyPlayer : RecipientFilter {
         override val description = "a player"
     }
 
+    @SerialName("CreatureYouControl")
     @Serializable
     data object CreatureYouControl : RecipientFilter {
         override val description = "a creature you control"
     }
 
+    @SerialName("CreatureOpponentControls")
     @Serializable
     data object CreatureOpponentControls : RecipientFilter {
         override val description = "a creature an opponent controls"
     }
 
+    @SerialName("AnyCreature")
     @Serializable
     data object AnyCreature : RecipientFilter {
         override val description = "a creature"
     }
 
+    @SerialName("PermanentYouControl")
     @Serializable
     data object PermanentYouControl : RecipientFilter {
         override val description = "a permanent you control"
     }
 
+    @SerialName("AnyPermanent")
     @Serializable
     data object AnyPermanent : RecipientFilter {
         override val description = "a permanent"
     }
 
+    @SerialName("RecipientMatching")
     @Serializable
     data class Matching(val filter: GameObjectFilter) : RecipientFilter {
         override val description = filter.description
@@ -76,41 +87,49 @@ sealed interface RecipientFilter {
 sealed interface SourceFilter {
     val description: String
 
+    @SerialName("SourceAny")
     @Serializable
     data object Any : SourceFilter {
         override val description = "any source"
     }
 
+    @SerialName("SourceCombat")
     @Serializable
     data object Combat : SourceFilter {
         override val description = "combat"
     }
 
+    @SerialName("SourceNonCombat")
     @Serializable
     data object NonCombat : SourceFilter {
         override val description = "a non-combat source"
     }
 
+    @SerialName("Spell")
     @Serializable
     data object Spell : SourceFilter {
         override val description = "a spell"
     }
 
+    @SerialName("Ability")
     @Serializable
     data object Ability : SourceFilter {
         override val description = "an ability"
     }
 
+    @SerialName("HasColor")
     @Serializable
     data class HasColor(val color: Color) : SourceFilter {
         override val description = "a ${color.name.lowercase()} source"
     }
 
+    @SerialName("HasType")
     @Serializable
     data class HasType(val type: String) : SourceFilter {
         override val description = "a $type"
     }
 
+    @SerialName("SourceMatching")
     @Serializable
     data class Matching(val filter: GameObjectFilter) : SourceFilter {
         override val description = filter.description
@@ -128,16 +147,19 @@ sealed interface SourceFilter {
 sealed interface DamageType {
     val description: String
 
+    @SerialName("DamageAny")
     @Serializable
     data object Any : DamageType {
         override val description = ""
     }
 
+    @SerialName("DamageCombat")
     @Serializable
     data object Combat : DamageType {
         override val description = "combat"
     }
 
+    @SerialName("DamageNonCombat")
     @Serializable
     data object NonCombat : DamageType {
         override val description = "noncombat"
@@ -155,26 +177,31 @@ sealed interface DamageType {
 sealed interface CounterTypeFilter {
     val description: String
 
+    @SerialName("CounterAny")
     @Serializable
     data object Any : CounterTypeFilter {
         override val description = ""
     }
 
+    @SerialName("PlusOnePlusOne")
     @Serializable
     data object PlusOnePlusOne : CounterTypeFilter {
         override val description = "+1/+1"
     }
 
+    @SerialName("MinusOneMinusOne")
     @Serializable
     data object MinusOneMinusOne : CounterTypeFilter {
         override val description = "-1/-1"
     }
 
+    @SerialName("Loyalty")
     @Serializable
     data object Loyalty : CounterTypeFilter {
         override val description = "loyalty"
     }
 
+    @SerialName("Named")
     @Serializable
     data class Named(val name: String) : CounterTypeFilter {
         override val description = name
@@ -192,19 +219,21 @@ sealed interface CounterTypeFilter {
 sealed interface ControllerFilter {
     val description: String
 
+    @SerialName("ControllerYou")
     @Serializable
     data object You : ControllerFilter {
         override val description = "under your control"
     }
 
+    @SerialName("ControllerOpponent")
     @Serializable
     data object Opponent : ControllerFilter {
         override val description = "under an opponent's control"
     }
 
+    @SerialName("ControllerAny")
     @Serializable
     data object Any : ControllerFilter {
         override val description = ""
     }
 }
-

@@ -2,6 +2,7 @@ package com.wingedsheep.sdk.targeting
 
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.TargetFilter
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
@@ -39,6 +40,7 @@ sealed interface TargetRequirement {
 /**
  * Target player (any player).
  */
+@SerialName("TargetPlayer")
 @Serializable
 data class TargetPlayer(
     override val count: Int = 1,
@@ -50,6 +52,7 @@ data class TargetPlayer(
 /**
  * Target opponent only.
  */
+@SerialName("TargetOpponent")
 @Serializable
 data class TargetOpponent(
     override val count: Int = 1,
@@ -70,6 +73,7 @@ data class TargetOpponent(
  * @param optional If true, allows 0 targets ("up to X" style targeting)
  * @param filter Restrictions on which creatures can be targeted
  */
+@SerialName("TargetCreature")
 @Serializable
 data class TargetCreature(
     override val count: Int = 1,
@@ -100,6 +104,7 @@ data class TargetCreature(
 /**
  * Target permanent (any permanent on the battlefield).
  */
+@SerialName("TargetPermanent")
 @Serializable
 data class TargetPermanent(
     override val count: Int = 1,
@@ -124,6 +129,7 @@ data class TargetPermanent(
 /**
  * "Any target" - can target any creature, player, or planeswalker.
  */
+@SerialName("AnyTarget")
 @Serializable
 data class AnyTarget(
     override val count: Int = 1,
@@ -135,6 +141,7 @@ data class AnyTarget(
 /**
  * "Target creature or player" - classic burn spell targeting.
  */
+@SerialName("TargetCreatureOrPlayer")
 @Serializable
 data class TargetCreatureOrPlayer(
     override val count: Int = 1,
@@ -146,6 +153,7 @@ data class TargetCreatureOrPlayer(
 /**
  * "Target creature or planeswalker" - modern burn spell targeting.
  */
+@SerialName("TargetCreatureOrPlaneswalker")
 @Serializable
 data class TargetCreatureOrPlaneswalker(
     override val count: Int = 1,
@@ -164,6 +172,7 @@ data class TargetCreatureOrPlaneswalker(
  *
  * Used by text-changing effects like Artificial Evolution.
  */
+@SerialName("TargetSpellOrPermanent")
 @Serializable
 data class TargetSpellOrPermanent(
     override val count: Int = 1,
@@ -183,6 +192,7 @@ data class TargetSpellOrPermanent(
 /**
  * Target spell on the stack.
  */
+@SerialName("TargetSpell")
 @Serializable
 data class TargetSpell(
     override val count: Int = 1,
@@ -212,6 +222,7 @@ data class TargetSpell(
  * @param optional If true, allows 0 targets ("up to X" style targeting)
  * @param filter Determines what can be targeted and in which zone
  */
+@SerialName("TargetObject")
 @Serializable
 data class TargetObject(
     override val count: Int = 1,
@@ -233,6 +244,7 @@ data class TargetObject(
  * Target another target (for modal spells, redirection, etc.).
  * E.g., "Change the target of target spell with a single target"
  */
+@SerialName("TargetOther")
 @Serializable
 data class TargetOther(
     val baseRequirement: TargetRequirement,

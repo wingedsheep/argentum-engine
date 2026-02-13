@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.Subtype
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // =============================================================================
@@ -11,6 +12,7 @@ import kotlinx.serialization.Serializable
  * Triggers when this creature attacks.
  * "Whenever [this creature] attacks..."
  */
+@SerialName("Attack")
 @Serializable
 data class OnAttack(
     val selfOnly: Boolean = true
@@ -30,6 +32,7 @@ data class OnAttack(
  * regardless of how many creatures attack. Different from OnAttack which
  * triggers for each creature that attacks.
  */
+@SerialName("YouAttack")
 @Serializable
 data class OnYouAttack(
     val minAttackers: Int = 1
@@ -45,6 +48,7 @@ data class OnYouAttack(
  * Triggers when this creature blocks.
  * "Whenever [this creature] blocks..."
  */
+@SerialName("Block")
 @Serializable
 data class OnBlock(
     val selfOnly: Boolean = true
@@ -63,6 +67,7 @@ data class OnBlock(
  * This fires for the ATTACKER when it is assigned one or more blockers.
  * Different from OnBlock which fires for the BLOCKER.
  */
+@SerialName("BecomesBlocked")
 @Serializable
 data class OnBecomesBlocked(
     val selfOnly: Boolean = true
@@ -78,6 +83,7 @@ data class OnBecomesBlocked(
  * Triggers when this creature deals damage.
  * "Whenever [this creature] deals damage..."
  */
+@SerialName("DealsDamage")
 @Serializable
 data class OnDealsDamage(
     val selfOnly: Boolean = true,
@@ -102,6 +108,7 @@ data class OnDealsDamage(
  * this trigger is checked on the permanent that observes the damage.
  * The triggering entity ID is set to the damage SOURCE creature.
  */
+@SerialName("CreatureDealsDamageToYou")
 @Serializable
 data object OnCreatureDealsDamageToYou : Trigger {
     override val description: String = "Whenever a creature deals damage to you"
@@ -114,6 +121,7 @@ data object OnCreatureDealsDamageToYou : Trigger {
  * This is checked on an OBSERVER permanent (e.g., Cabal Slaver), not on the
  * creature dealing damage. The triggering player ID is set to the damaged player.
  */
+@SerialName("CreatureWithSubtypeDealsCombatDamageToPlayer")
 @Serializable
 data class OnCreatureWithSubtypeDealsCombatDamageToPlayer(
     val subtype: Subtype
@@ -128,6 +136,7 @@ data class OnCreatureWithSubtypeDealsCombatDamageToPlayer(
  * The triggering entity ID is set to the damage SOURCE creature,
  * enabling retaliation effects (e.g., Tephraderm deals damage back).
  */
+@SerialName("DamagedByCreature")
 @Serializable
 data class OnDamagedByCreature(
     val selfOnly: Boolean = true
@@ -146,6 +155,7 @@ data class OnDamagedByCreature(
  * The triggering entity ID is set to the damage SOURCE spell entity,
  * enabling effects that reference the spell's controller (e.g., Tephraderm).
  */
+@SerialName("DamagedBySpell")
 @Serializable
 data class OnDamagedBySpell(
     val selfOnly: Boolean = true

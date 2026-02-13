@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.ManaCost
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // =============================================================================
@@ -14,6 +15,7 @@ import kotlinx.serialization.Serializable
  * The countered spell is removed from the stack and placed in its owner's
  * graveyard without resolving (no effects happen).
  */
+@SerialName("CounterSpell")
 @Serializable
 data object CounterSpellEffect : Effect {
     override val description: String = "Counter target spell"
@@ -23,6 +25,7 @@ data object CounterSpellEffect : Effect {
  * Counter target spell that matches a filter.
  * Used for Mystic Denial: "Counter target creature or sorcery spell."
  */
+@SerialName("CounterSpellWithFilter")
 @Serializable
 data class CounterSpellWithFilterEffect(
     val filter: TargetFilter = TargetFilter.SpellOnStack
@@ -38,6 +41,7 @@ data class CounterSpellWithFilterEffect(
  * If they choose to pay, the mana is deducted and the spell resolves normally.
  * If they cannot pay or choose not to, the spell is countered.
  */
+@SerialName("CounterUnlessPays")
 @Serializable
 data class CounterUnlessPaysEffect(
     val cost: ManaCost

@@ -3,6 +3,7 @@ package com.wingedsheep.sdk.scripting
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.targeting.TargetRequirement
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // =============================================================================
@@ -12,6 +13,7 @@ import kotlinx.serialization.Serializable
 /**
  * Multiple effects that happen together.
  */
+@SerialName("Composite")
 @Serializable
 data class CompositeEffect(
     val effects: List<Effect>
@@ -26,6 +28,7 @@ data class CompositeEffect(
  * Use this to compose optional parts of abilities rather than creating
  * specific optional variants of each effect.
  */
+@SerialName("May")
 @Serializable
 data class MayEffect(
     val effect: Effect,
@@ -89,6 +92,7 @@ data class Mode(
  * @property modes List of possible modes to choose from
  * @property chooseCount How many modes to choose (default 1)
  */
+@SerialName("Modal")
 @Serializable
 data class ModalEffect(
     val modes: List<Mode>,
@@ -144,6 +148,7 @@ data class ModalEffect(
  * @property ifPaid The effect that happens if the player pays the cost
  * @property ifNotPaid Optional effect if the player doesn't pay (usually null)
  */
+@SerialName("OptionalCost")
 @Serializable
 data class OptionalCostEffect(
     val cost: Effect,
@@ -170,6 +175,7 @@ data class OptionalCostEffect(
  * @property optional Whether the action is optional
  * @property reflexiveEffect The effect that happens "when you do"
  */
+@SerialName("ReflexiveTrigger")
 @Serializable
 data class ReflexiveTriggerEffect(
     val action: Effect,
@@ -197,6 +203,7 @@ data class ReflexiveTriggerEffect(
  * @property suffer The consequence if the cost is not paid
  * @property player Who must make the choice (defaults to controller)
  */
+@SerialName("PayOrSuffer")
 @Serializable
 data class PayOrSufferEffect(
     val cost: PayCost,
@@ -216,6 +223,7 @@ data class PayOrSufferEffect(
  * @param effect The effect to execute
  * @param storeAs The variable to store the result in
  */
+@SerialName("StoreResult")
 @Serializable
 data class StoreResultEffect(
     val effect: Effect,
@@ -233,6 +241,7 @@ data class StoreResultEffect(
  * @param effect The effect to execute (typically a sacrifice or similar)
  * @param storeAs The count variable to store the number in
  */
+@SerialName("StoreCount")
 @Serializable
 data class StoreCountEffect(
     val effect: Effect,
@@ -253,6 +262,7 @@ data class StoreCountEffect(
  * @property innerEffect The effect that happens if the player blights
  * @property targetId The creature chosen to receive the counters (filled in during resolution)
  */
+@SerialName("Blight")
 @Serializable
 data class BlightEffect(
     val blightAmount: Int,
@@ -272,6 +282,7 @@ data class BlightEffect(
  * @property innerEffect The effect that happens if the player pays the tap cost
  * @property targetId The creature chosen to tap (filled in during resolution)
  */
+@SerialName("TapCreatureForEffect")
 @Serializable
 data class TapCreatureForEffectEffect(
     val innerEffect: Effect,
@@ -295,6 +306,7 @@ data class TapCreatureForEffectEffect(
  * @property cost The mana cost the player may pay
  * @property effect The effect that happens if the player pays
  */
+@SerialName("MayPayMana")
 @Serializable
 data class MayPayManaEffect(
     val cost: ManaCost,
@@ -316,6 +328,7 @@ data class MayPayManaEffect(
  * @property cost The cost any player may choose to pay
  * @property consequence The effect that happens if a player pays
  */
+@SerialName("AnyPlayerMayPay")
 @Serializable
 data class AnyPlayerMayPayEffect(
     val cost: PayCost,

@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.TriggeredAbility
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // =============================================================================
@@ -14,6 +15,7 @@ import kotlinx.serialization.Serializable
  * Tap/Untap target effect.
  * "Tap target creature" or "Untap target creature"
  */
+@SerialName("TapUntap")
 @Serializable
 data class TapUntapEffect(
     val target: EffectTarget,
@@ -26,6 +28,7 @@ data class TapUntapEffect(
  * Modify power/toughness effect.
  * "Target creature gets +X/+Y until end of turn"
  */
+@SerialName("ModifyStats")
 @Serializable
 data class ModifyStatsEffect(
     val powerModifier: Int,
@@ -46,6 +49,7 @@ data class ModifyStatsEffect(
  * Remove all creature types from a target creature.
  * "Target creature loses all creature types until end of turn"
  */
+@SerialName("LoseAllCreatureTypes")
 @Serializable
 data class LoseAllCreatureTypesEffect(
     val target: EffectTarget,
@@ -61,6 +65,7 @@ data class LoseAllCreatureTypesEffect(
  * Add counters effect.
  * "Put X +1/+1 counters on target creature"
  */
+@SerialName("AddCounters")
 @Serializable
 data class AddCountersEffect(
     val counterType: String,
@@ -75,6 +80,7 @@ data class AddCountersEffect(
  * Remove counters effect.
  * "Remove X -1/-1 counters from target creature"
  */
+@SerialName("RemoveCounters")
 @Serializable
 data class RemoveCountersEffect(
     val counterType: String,
@@ -89,6 +95,7 @@ data class RemoveCountersEffect(
  * Remove all counters of a specific type from all creatures.
  * Used for Aurification: "remove all gold counters from all creatures."
  */
+@SerialName("RemoveAllCountersOfType")
 @Serializable
 data class RemoveAllCountersOfTypeEffect(
     val counterType: String
@@ -100,6 +107,7 @@ data class RemoveAllCountersOfTypeEffect(
  * Grant a keyword to a target until end of turn.
  * "Target creature gains flying until end of turn."
  */
+@SerialName("GrantKeywordUntilEndOfTurn")
 @Serializable
 data class GrantKeywordUntilEndOfTurnEffect(
     val keyword: Keyword,
@@ -120,6 +128,7 @@ data class GrantKeywordUntilEndOfTurnEffect(
  * @property filter Which creatures are affected
  * @property duration How long the effect lasts
  */
+@SerialName("GrantKeywordToGroup")
 @Serializable
 data class GrantKeywordToGroupEffect(
     val keyword: Keyword,
@@ -141,6 +150,7 @@ data class GrantKeywordToGroupEffect(
  * @property filter Which creatures are affected
  * @property duration How long the effect lasts
  */
+@SerialName("ModifyStatsForGroup")
 @Serializable
 data class ModifyStatsForGroupEffect(
     val powerModifier: Int,
@@ -164,6 +174,7 @@ data class ModifyStatsForGroupEffect(
  * @property count Number of -1/-1 counters to place
  * @property target The creature to receive the counters
  */
+@SerialName("AddMinusCounters")
 @Serializable
 data class AddMinusCountersEffect(
     val count: Int,
@@ -184,6 +195,7 @@ data class AddMinusCountersEffect(
  * @property setBasePower New base power (if set)
  * @property setBaseToughness New base toughness (if set)
  */
+@SerialName("TransformAllCreatures")
 @Serializable
 data class TransformAllCreaturesEffect(
     val target: EffectTarget,
@@ -212,6 +224,7 @@ data class TransformAllCreaturesEffect(
  *
  * @property filter Which creatures are affected
  */
+@SerialName("TapAllCreatures")
 @Serializable
 data class TapAllCreaturesEffect(
     val filter: GroupFilter = GroupFilter.AllCreatures
@@ -223,6 +236,7 @@ data class TapAllCreaturesEffect(
  * Untap all creatures you control.
  * Used for Mobilize: "Untap all creatures you control."
  */
+@SerialName("UntapAllCreaturesYouControl")
 @Serializable
 data object UntapAllCreaturesYouControlEffect : Effect {
     override val description: String = "Untap all creatures you control"
@@ -233,6 +247,7 @@ data object UntapAllCreaturesYouControlEffect : Effect {
  * Used for Tidal Surge: "Tap up to three target creatures without flying."
  * Note: The targeting filter is specified in the spell's TargetCreature, not here.
  */
+@SerialName("TapTargetCreatures")
 @Serializable
 data class TapTargetCreaturesEffect(
     val maxTargets: Int
@@ -254,6 +269,7 @@ data class TapTargetCreaturesEffect(
  *
  * The executor adds a TextReplacementComponent to the target entity.
  */
+@SerialName("ChangeCreatureTypeText")
 @Serializable
 data class ChangeCreatureTypeTextEffect(
     val target: EffectTarget = EffectTarget.ContextTarget(0),
@@ -275,6 +291,7 @@ data class ChangeCreatureTypeTextEffect(
  * @property target The creature to grant the ability to
  * @property duration How long the grant lasts
  */
+@SerialName("GrantTriggeredAbilityUntilEndOfTurn")
 @Serializable
 data class GrantTriggeredAbilityUntilEndOfTurnEffect(
     val ability: TriggeredAbility,
@@ -291,6 +308,7 @@ data class GrantTriggeredAbilityUntilEndOfTurnEffect(
  * Modify power/toughness by a dynamic amount.
  * "Target creature gets -X/-X until end of turn, where X is the number of Zombies on the battlefield."
  */
+@SerialName("DynamicModifyStats")
 @Serializable
 data class DynamicModifyStatsEffect(
     val powerModifier: DynamicAmount,
@@ -313,6 +331,7 @@ data class DynamicModifyStatsEffect(
  * Used by Thoughtbound Primoc: "At the beginning of your upkeep, if a player controls
  * more Wizards than each other player, that player gains control of Thoughtbound Primoc."
  */
+@SerialName("GainControlByMostOfSubtype")
 @Serializable
 data class GainControlByMostOfSubtypeEffect(
     val subtype: Subtype,
@@ -328,6 +347,7 @@ data class GainControlByMostOfSubtypeEffect(
  *
  * Used by Blatant Thievery and similar control-stealing effects.
  */
+@SerialName("GainControl")
 @Serializable
 data class GainControlEffect(
     val target: EffectTarget,
@@ -346,6 +366,7 @@ data class GainControlEffect(
  * "Turn target creature with a morph ability face down."
  * Used for Backslide and similar effects.
  */
+@SerialName("TurnFaceDown")
 @Serializable
 data class TurnFaceDownEffect(
     val target: EffectTarget = EffectTarget.ContextTarget(0)
@@ -358,6 +379,7 @@ data class TurnFaceDownEffect(
  * "Turn target face-down creature an opponent controls face up."
  * Used for Break Open and similar effects.
  */
+@SerialName("TurnFaceUp")
 @Serializable
 data class TurnFaceUpEffect(
     val target: EffectTarget = EffectTarget.ContextTarget(0)
@@ -380,6 +402,7 @@ data class TurnFaceUpEffect(
  * @property toughnessModifier Toughness bonus (can be negative)
  * @property duration How long the effect lasts
  */
+@SerialName("ChooseCreatureTypeModifyStats")
 @Serializable
 data class ChooseCreatureTypeModifyStatsEffect(
     val powerModifier: Int,
@@ -402,6 +425,7 @@ data class ChooseCreatureTypeModifyStatsEffect(
  * @property target The creature to change
  * @property duration How long the type change lasts
  */
+@SerialName("BecomeCreatureType")
 @Serializable
 data class BecomeCreatureTypeEffect(
     val target: EffectTarget,
@@ -433,6 +457,7 @@ data class BecomeCreatureTypeEffect(
  * @property protectionColors Optional set of colors to grant protection from
  * @property duration How long the effect lasts
  */
+@SerialName("GrantToEnchantedCreatureTypeGroup")
 @Serializable
 data class GrantToEnchantedCreatureTypeGroupEffect(
     val powerModifier: Int = 0,

@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // =============================================================================
@@ -10,6 +11,7 @@ import kotlinx.serialization.Serializable
  * Look at the top N cards and choose some to keep.
  * "Look at the top N cards of your library. Put X of them into your hand and the rest into your graveyard."
  */
+@SerialName("LookAtTopCards")
 @Serializable
 data class LookAtTopCardsEffect(
     val count: Int,
@@ -30,6 +32,7 @@ data class LookAtTopCardsEffect(
  * Use with CompositeEffect for patterns like Omen:
  * CompositeEffect(LookAtTopAndReorderEffect(3), MayEffect(ShuffleLibraryEffect()), DrawCardsEffect(1))
  */
+@SerialName("LookAtTopAndReorder")
 @Serializable
 data class LookAtTopAndReorderEffect(
     val count: DynamicAmount,
@@ -45,6 +48,7 @@ data class LookAtTopAndReorderEffect(
  * into your graveyard and the rest on top of your library in any order.
  * "Surveil 2"
  */
+@SerialName("Surveil")
 @Serializable
 data class SurveilEffect(
     val count: Int
@@ -56,6 +60,7 @@ data class SurveilEffect(
  * Mill N - Put the top N cards of a player's library into their graveyard.
  * "Mill 3" or "Target player mills 3 cards"
  */
+@SerialName("Mill")
 @Serializable
 data class MillEffect(
     val count: Int,
@@ -72,6 +77,7 @@ data class MillEffect(
  * on the bottom of your library and the rest on top in any order.
  * "Scry 2"
  */
+@SerialName("Scry")
 @Serializable
 data class ScryEffect(
     val count: Int
@@ -93,6 +99,7 @@ data class ScryEffect(
  * @property filter Cards matching this filter may be put onto the battlefield
  * @property shuffleAfter Whether to shuffle after (typically true)
  */
+@SerialName("LookAtTopXPutOntoBattlefield")
 @Serializable
 data class LookAtTopXPutOntoBattlefieldEffect(
     val countSource: DynamicAmount,
@@ -110,6 +117,7 @@ data class LookAtTopXPutOntoBattlefieldEffect(
  * Shuffle a player's library.
  * "Shuffle your library" or "Target player shuffles their library"
  */
+@SerialName("ShuffleLibrary")
 @Serializable
 data class ShuffleLibraryEffect(
     val target: EffectTarget = EffectTarget.Controller
@@ -124,6 +132,7 @@ data class ShuffleLibraryEffect(
  * Search library for cards matching a filter.
  * "Search your library for a Forest card and put it onto the battlefield"
  */
+@SerialName("SearchLibrary")
 @Serializable
 data class SearchLibraryEffect(
     val filter: GameObjectFilter = GameObjectFilter.Any,
@@ -168,6 +177,7 @@ enum class SearchDestination(val description: String) {
  * @property count Number of cards to look at
  * @property toGraveyard Number of cards to put in graveyard
  */
+@SerialName("LookAtOpponentLibrary")
 @Serializable
 data class LookAtOpponentLibraryEffect(
     val count: Int,
@@ -188,6 +198,7 @@ data class LookAtOpponentLibraryEffect(
  *
  * @property count Maximum number of cards to return
  */
+@SerialName("ChooseCreatureTypeReturnFromGraveyard")
 @Serializable
 data class ChooseCreatureTypeReturnFromGraveyardEffect(
     val count: Int = 3
@@ -209,6 +220,7 @@ data class ChooseCreatureTypeReturnFromGraveyardEffect(
  * @property count Number of cards to reveal
  * @property filter Filter for cards the opponent can choose (e.g., Creature)
  */
+@SerialName("RevealAndOpponentChooses")
 @Serializable
 data class RevealAndOpponentChoosesEffect(
     val count: Int,
@@ -225,6 +237,7 @@ data class RevealAndOpponentChoosesEffect(
  * Put a creature card from your hand onto the battlefield.
  * Used for effects like Kinscaer Sentry.
  */
+@SerialName("PutCreatureFromHandOntoBattlefield")
 @Serializable
 data class PutCreatureFromHandOntoBattlefieldEffect(
     val maxManaValueSource: DynamicAmount,
@@ -248,6 +261,7 @@ data class PutCreatureFromHandOntoBattlefieldEffect(
  * of your library. If that card is a creature card of the chosen type, put it
  * into your hand. Otherwise, put it into your graveyard."
  */
+@SerialName("ChooseCreatureTypeRevealTop")
 @Serializable
 data object ChooseCreatureTypeRevealTopEffect : Effect {
     override val description: String =
@@ -268,6 +282,7 @@ data object ChooseCreatureTypeRevealTopEffect : Effect {
  *
  * @property target The target to deal damage to
  */
+@SerialName("RevealUntilNonlandDealDamage")
 @Serializable
 data class RevealUntilNonlandDealDamageEffect(
     val target: EffectTarget
@@ -287,6 +302,7 @@ data class RevealUntilNonlandDealDamageEffect(
  * reveal a nonland card. Goblin Machinist gets +X/+0 until end of turn, where X is that
  * card's mana value. Put the revealed cards on the bottom of your library in any order."
  */
+@SerialName("RevealUntilNonlandModifyStats")
 @Serializable
 data object RevealUntilNonlandModifyStatsEffect : Effect {
     override val description: String =
@@ -299,6 +315,7 @@ data object RevealUntilNonlandModifyStatsEffect : Effect {
  * Shuffle target player's graveyard into their library.
  * "Target player shuffles their graveyard into their library."
  */
+@SerialName("ShuffleGraveyardIntoLibrary")
 @Serializable
 data class ShuffleGraveyardIntoLibraryEffect(
     val target: EffectTarget = EffectTarget.ContextTarget(0)
@@ -316,6 +333,7 @@ data class ShuffleGraveyardIntoLibraryEffect(
  * @property filter Filter for which land cards qualify (default: BasicLand)
  * @property entersTapped Whether the land enters tapped
  */
+@SerialName("PutLandFromHandOntoBattlefield")
 @Serializable
 data class PutLandFromHandOntoBattlefieldEffect(
     val filter: GameObjectFilter = GameObjectFilter.BasicLand,

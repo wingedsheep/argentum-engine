@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // =============================================================================
@@ -11,6 +12,7 @@ import kotlinx.serialization.Serializable
  * Toggles between front and back face.
  * "Transform this creature"
  */
+@SerialName("Transform")
 @Serializable
 data class TransformEffect(
     val target: EffectTarget = EffectTarget.Self

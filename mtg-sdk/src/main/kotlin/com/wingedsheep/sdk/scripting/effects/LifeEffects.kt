@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // =============================================================================
@@ -10,6 +11,7 @@ import kotlinx.serialization.Serializable
  * Gain life effect.
  * "You gain X life" or "Target player gains X life"
  */
+@SerialName("GainLife")
 @Serializable
 data class GainLifeEffect(
     val amount: DynamicAmount,
@@ -28,6 +30,7 @@ data class GainLifeEffect(
  * Lose life effect.
  * "You lose X life" or "Target player loses X life"
  */
+@SerialName("LoseLife")
 @Serializable
 data class LoseLifeEffect(
     val amount: DynamicAmount,
@@ -47,6 +50,7 @@ data class LoseLifeEffect(
  * Pay life cost effect.
  * Used as a cost in OptionalCostEffect.
  */
+@SerialName("PayLife")
 @Serializable
 data class PayLifeEffect(
     val amount: Int
@@ -58,6 +62,7 @@ data class PayLifeEffect(
  * Lose half your life, rounded up.
  * Used for cards like Cruel Bargain.
  */
+@SerialName("LoseHalfLife")
 @Serializable
 data class LoseHalfLifeEffect(
     val roundUp: Boolean = true,
@@ -74,6 +79,7 @@ data class LoseHalfLifeEffect(
  * Used for effects like "Its owner gains 4 life" (Path of Peace).
  * This targets the owner of the previously targeted permanent.
  */
+@SerialName("OwnerGainsLife")
 @Serializable
 data class OwnerGainsLifeEffect(
     val amount: Int
@@ -88,6 +94,7 @@ data class OwnerGainsLifeEffect(
  * @property landType The type of land to count (e.g., "Forest")
  * @property lifePerLand The amount of life gained per land
  */
+@SerialName("GainLifeForEachLand")
 @Serializable
 data class GainLifeForEachLandOnBattlefieldEffect(
     val landType: String,
@@ -106,6 +113,7 @@ data class GainLifeForEachLandOnBattlefieldEffect(
  * Per MTG Rule 118.5, if an effect sets a player's life total to a specific number,
  * the player gains or loses the necessary amount of life.
  */
+@SerialName("SetLifeTotalForEachPlayer")
 @Serializable
 data class SetLifeTotalForEachPlayerEffect(
     val perPlayerAmount: DynamicAmount

@@ -3,6 +3,7 @@ package com.wingedsheep.sdk.scripting
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
@@ -20,6 +21,7 @@ sealed interface StaticAbility {
 /**
  * Grants keywords to creatures (e.g., Equipment granting flying).
  */
+@SerialName("GrantKeyword")
 @Serializable
 data class GrantKeyword(
     val keyword: Keyword,
@@ -33,6 +35,7 @@ data class GrantKeyword(
  * Used for lord effects like "Other creatures you control have flying" or
  * conditional effects like "Other tapped creatures you control have indestructible."
  */
+@SerialName("GrantKeywordToCreatureGroup")
 @Serializable
 data class GrantKeywordToCreatureGroup(
     val keyword: Keyword,
@@ -45,6 +48,7 @@ data class GrantKeywordToCreatureGroup(
  * Modifies power/toughness for a group of creatures (continuous static ability).
  * Used for lord effects like "Other Bird creatures get +1/+1."
  */
+@SerialName("ModifyStatsForCreatureGroup")
 @Serializable
 data class ModifyStatsForCreatureGroup(
     val powerBonus: Int,
@@ -64,6 +68,7 @@ data class ModifyStatsForCreatureGroup(
  * The chosen type is stored on the permanent via ChosenCreatureTypeComponent and resolved dynamically.
  * Example: Shared Triumph, Door of Destinies
  */
+@SerialName("ModifyStatsForChosenCreatureType")
 @Serializable
 data class ModifyStatsForChosenCreatureType(
     val powerBonus: Int,
@@ -82,6 +87,7 @@ data class ModifyStatsForChosenCreatureType(
  * The chosen type is stored on the permanent via ChosenCreatureTypeComponent and resolved dynamically.
  * Example: Cover of Darkness (fear)
  */
+@SerialName("GrantKeywordForChosenCreatureType")
 @Serializable
 data class GrantKeywordForChosenCreatureType(
     val keyword: Keyword
@@ -93,6 +99,7 @@ data class GrantKeywordForChosenCreatureType(
 /**
  * Modifies power/toughness (e.g., +2/+2 from an Equipment).
  */
+@SerialName("StaticModifyStats")
 @Serializable
 data class ModifyStats(
     val powerBonus: Int,
@@ -110,6 +117,7 @@ data class ModifyStats(
  * You control enchanted permanent.
  * Used for Auras like Annex that steal control of the enchanted permanent.
  */
+@SerialName("ControlEnchantedPermanent")
 @Serializable
 data object ControlEnchantedPermanent : StaticAbility {
     override val description: String = "You control enchanted permanent"
@@ -118,6 +126,7 @@ data object ControlEnchantedPermanent : StaticAbility {
 /**
  * Global effect that affects multiple permanents.
  */
+@SerialName("GlobalEffect")
 @Serializable
 data class GlobalEffect(
     val effectType: GlobalEffectType,
@@ -130,6 +139,7 @@ data class GlobalEffect(
  * Prevents a creature from attacking.
  * Used for auras like Pacifism or effects that prevent attacking.
  */
+@SerialName("CantAttack")
 @Serializable
 data class CantAttack(
     val target: StaticTarget = StaticTarget.SourceCreature
@@ -141,6 +151,7 @@ data class CantAttack(
  * Prevents a creature from blocking.
  * Used for cards like Jungle Lion or effects like "Target creature can't block".
  */
+@SerialName("CantBlock")
 @Serializable
 data class CantBlock(
     val target: StaticTarget = StaticTarget.SourceCreature
@@ -153,6 +164,7 @@ data class CantBlock(
  * Conditional variant: only when toughness is greater than power.
  * Used for cards like Bark of Doran, Doran the Siege Tower, etc.
  */
+@SerialName("AssignDamageEqualToToughness")
 @Serializable
 data class AssignDamageEqualToToughness(
     val target: StaticTarget = StaticTarget.AttachedCreature,
@@ -175,6 +187,7 @@ data class AssignDamageEqualToToughness(
  *
  * Auto-assigns: lethal to each blocker in order, remainder to defending player.
  */
+@SerialName("DivideCombatDamageFreely")
 @Serializable
 data class DivideCombatDamageFreely(
     val target: StaticTarget = StaticTarget.SourceCreature
@@ -203,18 +216,23 @@ enum class GlobalEffectType(val description: String) {
  */
 @Serializable
 sealed interface StaticTarget {
+    @SerialName("AttachedCreature")
     @Serializable
     data object AttachedCreature : StaticTarget
 
+    @SerialName("SourceCreature")
     @Serializable
     data object SourceCreature : StaticTarget
 
+    @SerialName("Controller")
     @Serializable
     data object Controller : StaticTarget
 
+    @SerialName("AllControlledCreatures")
     @Serializable
     data object AllControlledCreatures : StaticTarget
 
+    @SerialName("SpecificCard")
     @Serializable
     data class SpecificCard(val entityId: EntityId) : StaticTarget
 }
@@ -223,6 +241,7 @@ sealed interface StaticTarget {
  * Grants dynamic power/toughness bonus based on a variable amount.
  * Used for effects like "Creatures you control get +X/+X where X is..."
  */
+@SerialName("GrantDynamicStats")
 @Serializable
 data class GrantDynamicStatsEffect(
     val target: StaticTarget,
@@ -238,6 +257,7 @@ data class GrantDynamicStatsEffect(
  * Prevents a permanent from having counters put on it.
  * Used for Auras like Blossombind.
  */
+@SerialName("CantReceiveCounters")
 @Serializable
 data class CantReceiveCounters(
     val target: StaticTarget = StaticTarget.AttachedCreature
@@ -254,6 +274,7 @@ data class CantReceiveCounters(
  *
  * @property reductionSource How the reduction amount is determined
  */
+@SerialName("SpellCostReduction")
 @Serializable
 data class SpellCostReduction(
     val reductionSource: CostReductionSource
@@ -271,6 +292,7 @@ sealed interface CostReductionSource {
     /**
      * Vivid - reduces cost by number of colors among permanents you control.
      */
+    @SerialName("ColorsAmongPermanentsYouControl")
     @Serializable
     data object ColorsAmongPermanentsYouControl : CostReductionSource {
         override val description: String = "the number of colors among permanents you control"
@@ -279,6 +301,7 @@ sealed interface CostReductionSource {
     /**
      * Reduces cost by a fixed amount.
      */
+    @SerialName("Fixed")
     @Serializable
     data class Fixed(val amount: Int) : CostReductionSource {
         override val description: String = "$amount"
@@ -287,6 +310,7 @@ sealed interface CostReductionSource {
     /**
      * Reduces cost by number of creatures you control.
      */
+    @SerialName("CreaturesYouControl")
     @Serializable
     data object CreaturesYouControl : CostReductionSource {
         override val description: String = "the number of creatures you control"
@@ -296,6 +320,7 @@ sealed interface CostReductionSource {
      * Reduces cost by total power of creatures you control.
      * Used for Ghalta, Primal Hunger.
      */
+    @SerialName("TotalPowerYouControl")
     @Serializable
     data object TotalPowerYouControl : CostReductionSource {
         override val description: String = "the total power of creatures you control"
@@ -305,6 +330,7 @@ sealed interface CostReductionSource {
      * Reduces cost by number of artifacts you control.
      * Used for Affinity for artifacts.
      */
+    @SerialName("ArtifactsYouControl")
     @Serializable
     data object ArtifactsYouControl : CostReductionSource {
         override val description: String = "the number of artifacts you control"
@@ -323,6 +349,7 @@ sealed interface CostReductionSource {
  * @property colors The set of colors that cannot block this creature
  * @property target What this ability applies to
  */
+@SerialName("CantBeBlockedByColor")
 @Serializable
 data class CantBeBlockedByColor(
     val colors: Set<Color>,
@@ -348,6 +375,7 @@ data class CantBeBlockedByColor(
  * This creature can only block creatures with a specific keyword.
  * Used for cards like Cloud Spirit: "can block only creatures with flying."
  */
+@SerialName("CanOnlyBlockCreaturesWithKeyword")
 @Serializable
 data class CanOnlyBlockCreaturesWithKeyword(
     val keyword: Keyword,
@@ -370,6 +398,7 @@ data class CanOnlyBlockCreaturesWithKeyword(
  * @property ability The underlying static ability to apply when condition is met
  * @property condition The condition that must be true for the ability to apply
  */
+@SerialName("ConditionalStaticAbility")
 @Serializable
 data class ConditionalStaticAbility(
     val ability: StaticAbility,
@@ -389,6 +418,7 @@ data class ConditionalStaticAbility(
  * @property minPower The minimum power a creature must have to be excluded from blocking
  * @property target What this ability applies to (typically SourceCreature)
  */
+@SerialName("CantBeBlockedByPower")
 @Serializable
 data class CantBeBlockedByPower(
     val minPower: Int,
@@ -405,6 +435,7 @@ data class CantBeBlockedByPower(
  *
  * @property target What this ability applies to (typically SourceCreature)
  */
+@SerialName("CantBlockCreaturesWithGreaterPower")
 @Serializable
 data class CantBlockCreaturesWithGreaterPower(
     val target: StaticTarget = StaticTarget.SourceCreature
@@ -419,6 +450,7 @@ data class CantBlockCreaturesWithGreaterPower(
  * @property requiredKeyword The keyword blockers must have
  * @property target What this ability applies to
  */
+@SerialName("CantBeBlockedExceptByKeyword")
 @Serializable
 data class CantBeBlockedExceptByKeyword(
     val requiredKeyword: Keyword,
@@ -434,6 +466,7 @@ data class CantBeBlockedExceptByKeyword(
  * @property maxBlockers The maximum number of creatures that can block this creature
  * @property target What this ability applies to
  */
+@SerialName("CantBeBlockedByMoreThan")
 @Serializable
 data class CantBeBlockedByMoreThan(
     val maxBlockers: Int,
@@ -450,6 +483,7 @@ data class CantBeBlockedByMoreThan(
  *
  * @property target What this ability applies to
  */
+@SerialName("CanBlockAnyNumber")
 @Serializable
 data class CanBlockAnyNumber(
     val target: StaticTarget = StaticTarget.SourceCreature
@@ -468,6 +502,7 @@ data class CanBlockAnyNumber(
  * @property color The color to grant protection from
  * @property target What this ability applies to (typically AttachedCreature for auras)
  */
+@SerialName("GrantProtection")
 @Serializable
 data class GrantProtection(
     val color: Color,
@@ -487,6 +522,7 @@ data class GrantProtection(
  * @property keyword The keyword to grant
  * @property counterType The counter type that creatures must have
  */
+@SerialName("GrantKeywordByCounter")
 @Serializable
 data class GrantKeywordByCounter(
     val keyword: Keyword,
@@ -503,6 +539,7 @@ data class GrantKeywordByCounter(
  * @property creatureType The creature type to add
  * @property counterType The counter type that creatures must have
  */
+@SerialName("AddCreatureTypeByCounter")
 @Serializable
 data class AddCreatureTypeByCounter(
     val creatureType: String,
@@ -521,6 +558,7 @@ data class AddCreatureTypeByCounter(
  * @property minSharedCount The minimum number of creatures sharing a type required to allow blocking
  * @property target What this ability applies to
  */
+@SerialName("CantBeBlockedUnlessDefenderSharesCreatureType")
 @Serializable
 data class CantBeBlockedUnlessDefenderSharesCreatureType(
     val minSharedCount: Int,
@@ -540,6 +578,7 @@ data class CantBeBlockedUnlessDefenderSharesCreatureType(
  * @property landType The basic land type the defending player must control
  * @property target What this ability applies to
  */
+@SerialName("CantAttackUnlessDefenderControlsLandType")
 @Serializable
 data class CantAttackUnlessDefenderControlsLandType(
     val landType: String,

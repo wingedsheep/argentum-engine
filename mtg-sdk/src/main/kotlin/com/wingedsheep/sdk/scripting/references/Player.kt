@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
@@ -19,30 +20,35 @@ sealed interface Player {
     // =============================================================================
 
     /** The controller of the ability/effect */
+    @SerialName("You")
     @Serializable
     data object You : Player {
         override val description: String = "you"
     }
 
     /** Any single opponent (not targeted) */
+    @SerialName("Opponent")
     @Serializable
     data object Opponent : Player {
         override val description: String = "an opponent"
     }
 
     /** All opponents */
+    @SerialName("EachOpponent")
     @Serializable
     data object EachOpponent : Player {
         override val description: String = "each opponent"
     }
 
     /** All players */
+    @SerialName("Each")
     @Serializable
     data object Each : Player {
         override val description: String = "each player"
     }
 
     /** Any player (for matching/filtering) */
+    @SerialName("Any")
     @Serializable
     data object Any : Player {
         override val description: String = "a player"
@@ -53,24 +59,28 @@ sealed interface Player {
     // =============================================================================
 
     /** A targeted player (resolved at effect execution) */
+    @SerialName("TargetPlayer")
     @Serializable
     data object TargetPlayer : Player {
         override val description: String = "target player"
     }
 
     /** A targeted opponent (resolved at effect execution) */
+    @SerialName("TargetOpponent")
     @Serializable
     data object TargetOpponent : Player {
         override val description: String = "target opponent"
     }
 
     /** A player from the context (for multi-target spells) */
+    @SerialName("ContextPlayer")
     @Serializable
     data class ContextPlayer(val index: Int) : Player {
         override val description: String = "that player"
     }
 
     /** The player from the trigger context (e.g., player dealt combat damage) */
+    @SerialName("TriggeringPlayer")
     @Serializable
     data object TriggeringPlayer : Player {
         override val description: String = "that player"
@@ -81,12 +91,14 @@ sealed interface Player {
     // =============================================================================
 
     /** Controller of a permanent (used with EffectTarget) */
+    @SerialName("ControllerOf")
     @Serializable
     data class ControllerOf(val targetDescription: String) : Player {
         override val description: String = "its controller"
     }
 
     /** Owner of a permanent (used with EffectTarget) */
+    @SerialName("OwnerOf")
     @Serializable
     data class OwnerOf(val targetDescription: String) : Player {
         override val description: String = "its owner"

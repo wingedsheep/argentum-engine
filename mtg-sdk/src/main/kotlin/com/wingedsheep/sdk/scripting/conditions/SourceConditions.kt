@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.Subtype
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // =============================================================================
@@ -10,6 +11,7 @@ import kotlinx.serialization.Serializable
 /**
  * Condition: "If this creature is attacking"
  */
+@SerialName("SourceIsAttacking")
 @Serializable
 data object SourceIsAttacking : Condition {
     override val description: String = "if this creature is attacking"
@@ -18,6 +20,7 @@ data object SourceIsAttacking : Condition {
 /**
  * Condition: "If this creature is blocking"
  */
+@SerialName("SourceIsBlocking")
 @Serializable
 data object SourceIsBlocking : Condition {
     override val description: String = "if this creature is blocking"
@@ -26,6 +29,7 @@ data object SourceIsBlocking : Condition {
 /**
  * Condition: "If this creature is tapped"
  */
+@SerialName("SourceIsTapped")
 @Serializable
 data object SourceIsTapped : Condition {
     override val description: String = "if this creature is tapped"
@@ -34,6 +38,7 @@ data object SourceIsTapped : Condition {
 /**
  * Condition: "If this creature is untapped"
  */
+@SerialName("SourceIsUntapped")
 @Serializable
 data object SourceIsUntapped : Condition {
     override val description: String = "if this creature is untapped"
@@ -45,6 +50,7 @@ data object SourceIsUntapped : Condition {
  *
  * The engine tracks damage dealt history per-object since entering the battlefield.
  */
+@SerialName("SourceHasDealtDamage")
 @Serializable
 data object SourceHasDealtDamage : Condition {
     override val description: String = "this creature has dealt damage"
@@ -54,6 +60,7 @@ data object SourceHasDealtDamage : Condition {
  * Condition: "If this creature has dealt combat damage to a player"
  * Used for Saboteur abilities and similar effects.
  */
+@SerialName("SourceHasDealtCombatDamageToPlayer")
 @Serializable
 data object SourceHasDealtCombatDamageToPlayer : Condition {
     override val description: String = "this creature has dealt combat damage to a player"
@@ -63,6 +70,7 @@ data object SourceHasDealtCombatDamageToPlayer : Condition {
  * Condition: "If this creature entered the battlefield this turn"
  * Used for summoning sickness checks and ETB-sensitive abilities.
  */
+@SerialName("SourceEnteredThisTurn")
 @Serializable
 data object SourceEnteredThisTurn : Condition {
     override val description: String = "this creature entered the battlefield this turn"
@@ -75,6 +83,7 @@ data object SourceEnteredThisTurn : Condition {
  * Evaluated during state projection against projected subtypes, so type-changing
  * effects in Layer 4 are properly accounted for when checking conditions in Layer 6.
  */
+@SerialName("SourceHasSubtype")
 @Serializable
 data class SourceHasSubtype(val subtype: Subtype) : Condition {
     override val description: String = "as long as this creature is a ${subtype.value}"

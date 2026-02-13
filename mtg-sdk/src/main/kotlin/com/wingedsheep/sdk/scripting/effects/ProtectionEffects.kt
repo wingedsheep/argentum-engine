@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // =============================================================================
@@ -15,6 +16,7 @@ import kotlinx.serialization.Serializable
  * @property filter Which creatures are affected
  * @property duration How long the effect lasts
  */
+@SerialName("ChooseColorAndGrantProtectionToGroup")
 @Serializable
 data class ChooseColorAndGrantProtectionToGroupEffect(
     val filter: GroupFilter = GroupFilter(GameObjectFilter.Creature.youControl()),

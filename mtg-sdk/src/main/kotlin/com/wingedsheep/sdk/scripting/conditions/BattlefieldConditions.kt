@@ -2,6 +2,7 @@ package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // =============================================================================
@@ -11,6 +12,7 @@ import kotlinx.serialization.Serializable
 /**
  * Condition: "If you control a creature"
  */
+@SerialName("ControlCreature")
 @Serializable
 data object ControlCreature : Condition {
     override val description: String = "if you control a creature"
@@ -19,6 +21,7 @@ data object ControlCreature : Condition {
 /**
  * Condition: "If you control X or more creatures"
  */
+@SerialName("ControlCreaturesAtLeast")
 @Serializable
 data class ControlCreaturesAtLeast(val count: Int) : Condition {
     override val description: String = "if you control $count or more creatures"
@@ -27,6 +30,7 @@ data class ControlCreaturesAtLeast(val count: Int) : Condition {
 /**
  * Condition: "If you control a creature with keyword X"
  */
+@SerialName("ControlCreatureWithKeyword")
 @Serializable
 data class ControlCreatureWithKeyword(val keyword: Keyword) : Condition {
     override val description: String = "if you control a creature with ${keyword.displayName.lowercase()}"
@@ -35,6 +39,7 @@ data class ControlCreatureWithKeyword(val keyword: Keyword) : Condition {
 /**
  * Condition: "If you control a [subtype] creature" (e.g., "If you control a Dragon")
  */
+@SerialName("ControlCreatureOfType")
 @Serializable
 data class ControlCreatureOfType(val subtype: Subtype) : Condition {
     override val description: String = "if you control a ${subtype.value}"
@@ -43,6 +48,7 @@ data class ControlCreatureOfType(val subtype: Subtype) : Condition {
 /**
  * Condition: "If you control an enchantment"
  */
+@SerialName("ControlEnchantment")
 @Serializable
 data object ControlEnchantment : Condition {
     override val description: String = "if you control an enchantment"
@@ -51,6 +57,7 @@ data object ControlEnchantment : Condition {
 /**
  * Condition: "If you control an artifact"
  */
+@SerialName("ControlArtifact")
 @Serializable
 data object ControlArtifact : Condition {
     override val description: String = "if you control an artifact"
@@ -59,6 +66,7 @@ data object ControlArtifact : Condition {
 /**
  * Condition: "If an opponent controls a creature"
  */
+@SerialName("OpponentControlsCreature")
 @Serializable
 data object OpponentControlsCreature : Condition {
     override val description: String = "if an opponent controls a creature"
@@ -67,6 +75,7 @@ data object OpponentControlsCreature : Condition {
 /**
  * Condition: "If an opponent controls more creatures than you"
  */
+@SerialName("OpponentControlsMoreCreatures")
 @Serializable
 data object OpponentControlsMoreCreatures : Condition {
     override val description: String = "if an opponent controls more creatures than you"
@@ -76,6 +85,7 @@ data object OpponentControlsMoreCreatures : Condition {
  * Condition: "If an opponent controls more lands than you"
  * Used by Gift of Estates and similar cards.
  */
+@SerialName("OpponentControlsMoreLands")
 @Serializable
 data object OpponentControlsMoreLands : Condition {
     override val description: String = "if an opponent controls more lands than you"
@@ -86,6 +96,7 @@ data object OpponentControlsMoreLands : Condition {
  * Used by Thoughtbound Primoc and similar Onslaught "tribal war" cards.
  * Returns true only if exactly one player has strictly more than all others.
  */
+@SerialName("APlayerControlsMostOfSubtype")
 @Serializable
 data class APlayerControlsMostOfSubtype(val subtype: Subtype) : Condition {
     override val description: String = "if a player controls more ${subtype.value}s than each other player"
@@ -96,6 +107,7 @@ data class APlayerControlsMostOfSubtype(val subtype: Subtype) : Condition {
  * Used by Unified Strike and similar cards that compare a target's power to a dynamic count.
  * Checks the first target (ContextTarget(0)) by default.
  */
+@SerialName("TargetPowerAtMost")
 @Serializable
 data class TargetPowerAtMost(val amount: DynamicAmount, val targetIndex: Int = 0) : Condition {
     override val description: String = "if its power is less than or equal to ${amount.description}"
@@ -106,6 +118,7 @@ data class TargetPowerAtMost(val amount: DynamicAmount, val targetIndex: Int = 0
  * Used by auras like Lavamancer's Skill that have different effects based on
  * the creature type of the enchanted creature.
  */
+@SerialName("EnchantedCreatureHasSubtype")
 @Serializable
 data class EnchantedCreatureHasSubtype(val subtype: Subtype) : Condition {
     override val description: String = "if enchanted creature is a ${subtype.value}"

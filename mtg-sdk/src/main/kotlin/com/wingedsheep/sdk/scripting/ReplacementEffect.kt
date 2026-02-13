@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.Zone
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
@@ -62,6 +63,7 @@ sealed interface ReplacementEffect {
  * Double the number of tokens created.
  * Example: Doubling Season, Parallel Lives, Anointed Procession
  */
+@SerialName("DoubleTokenCreation")
 @Serializable
 data class DoubleTokenCreation(
     override val appliesTo: GameEvent = GameEvent.TokenCreationEvent()
@@ -73,6 +75,7 @@ data class DoubleTokenCreation(
 /**
  * Modify the number of tokens created by a fixed amount.
  */
+@SerialName("ModifyTokenCount")
 @Serializable
 data class ModifyTokenCount(
     val modifier: Int,
@@ -94,6 +97,7 @@ data class ModifyTokenCount(
  * Double the number of counters placed.
  * Example: Doubling Season (counters), Corpsejack Menace
  */
+@SerialName("DoubleCounterPlacement")
 @Serializable
 data class DoubleCounterPlacement(
     override val appliesTo: GameEvent = GameEvent.CounterPlacementEvent(
@@ -109,6 +113,7 @@ data class DoubleCounterPlacement(
  * Add additional counters when counters are placed.
  * Example: Hardened Scales (+1), Winding Constrictor (+1), Branching Evolution (double)
  */
+@SerialName("ModifyCounterPlacement")
 @Serializable
 data class ModifyCounterPlacement(
     val modifier: Int = 1,
@@ -139,6 +144,7 @@ data class ModifyCounterPlacement(
  * Redirect a zone change to a different destination.
  * Example: Rest in Peace (graveyard → exile), Leyline of the Void
  */
+@SerialName("RedirectZoneChange")
 @Serializable
 data class RedirectZoneChange(
     val newDestination: Zone,
@@ -152,6 +158,7 @@ data class RedirectZoneChange(
  * Permanent enters the battlefield tapped.
  * Example: Glacial Fortress (conditional), tap lands, Thalia Heretic Cathar
  */
+@SerialName("EntersTapped")
 @Serializable
 data class EntersTapped(
     override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
@@ -166,6 +173,7 @@ data class EntersTapped(
  * Permanent/creature enters with counters.
  * Example: Master Biomancer, Metallic Mimic
  */
+@SerialName("EntersWithCounters")
 @Serializable
 data class EntersWithCounters(
     val counterType: CounterTypeFilter = CounterTypeFilter.PlusOnePlusOne,
@@ -183,6 +191,7 @@ data class EntersWithCounters(
  * Permanent/creature enters with a dynamic number of counters.
  * Example: Stag Beetle (enters with X +1/+1 counters where X = number of other creatures)
  */
+@SerialName("EntersWithDynamicCounters")
 @Serializable
 data class EntersWithDynamicCounters(
     val counterType: CounterTypeFilter = CounterTypeFilter.PlusOnePlusOne,
@@ -199,6 +208,7 @@ data class EntersWithDynamicCounters(
 /**
  * Undying - if creature dies without +1/+1 counters, return it with one.
  */
+@SerialName("Undying")
 @Serializable
 data class UndyingEffect(
     override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
@@ -214,6 +224,7 @@ data class UndyingEffect(
 /**
  * Persist - if creature dies without -1/-1 counters, return it with one.
  */
+@SerialName("Persist")
 @Serializable
 data class PersistEffect(
     override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
@@ -234,6 +245,7 @@ data class PersistEffect(
  * Prevent damage.
  * Example: Fog effects, protection, damage shields
  */
+@SerialName("PreventDamage")
 @Serializable
 data class PreventDamage(
     val amount: Int? = null,  // null = prevent all
@@ -253,6 +265,7 @@ data class PreventDamage(
  * Redirect damage to another target.
  * Example: Pariah, Stuffy Doll, Boros Reckoner
  */
+@SerialName("RedirectDamage")
 @Serializable
 data class RedirectDamage(
     val redirectTo: EffectTarget,
@@ -266,6 +279,7 @@ data class RedirectDamage(
  * Double damage dealt.
  * Example: Furnace of Rath, Insult // Injury
  */
+@SerialName("DoubleDamage")
 @Serializable
 data class DoubleDamage(
     override val appliesTo: GameEvent
@@ -282,6 +296,7 @@ data class DoubleDamage(
  * Replace drawing with another effect.
  * Example: Underrealm Lich (look at 3, put 1 in hand, rest in graveyard)
  */
+@SerialName("ReplaceDrawWith")
 @Serializable
 data class ReplaceDrawWithEffect(
     val replacementEffect: Effect,
@@ -295,6 +310,7 @@ data class ReplaceDrawWithEffect(
  * Prevent drawing (with optional replacement).
  * Example: Spirit of the Labyrinth (second draw), Narset Parter of Veils
  */
+@SerialName("PreventDraw")
 @Serializable
 data class PreventDraw(
     override val appliesTo: GameEvent = GameEvent.DrawEvent()
@@ -311,6 +327,7 @@ data class PreventDraw(
  * Prevent life gain.
  * Example: Erebos, Sulfuric Vortex
  */
+@SerialName("PreventLifeGain")
 @Serializable
 data class PreventLifeGain(
     override val appliesTo: GameEvent = GameEvent.LifeGainEvent()
@@ -323,6 +340,7 @@ data class PreventLifeGain(
  * Replace life gain with another effect.
  * Example: Tainted Remedy (life gain becomes life loss)
  */
+@SerialName("ReplaceLifeGain")
 @Serializable
 data class ReplaceLifeGain(
     val replacementEffect: Effect,
@@ -336,6 +354,7 @@ data class ReplaceLifeGain(
  * Modify life gain amount.
  * Example: Alhammarret's Archive (double life gain)
  */
+@SerialName("ModifyLifeGain")
 @Serializable
 data class ModifyLifeGain(
     val multiplier: Int = 2,
@@ -360,6 +379,7 @@ data class ModifyLifeGain(
  * on the battlefield. If they do, the permanent enters as a copy of that creature.
  * If they don't (or can't), the permanent enters as itself (typically 0/0 and dies).
  */
+@SerialName("EntersAsCopy")
 @Serializable
 data class EntersAsCopy(
     val optional: Boolean = true,
@@ -384,6 +404,7 @@ data class EntersAsCopy(
  * The chosen type is stored on the permanent for use by other abilities.
  * Example: Doom Cannon, Cover of Darkness, Steely Resolve
  */
+@SerialName("EntersWithCreatureTypeChoice")
 @Serializable
 data class EntersWithCreatureTypeChoice(
     override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
@@ -402,6 +423,7 @@ data class EntersWithCreatureTypeChoice(
  * Generic replacement effect for complex scenarios.
  * Use when no specific replacement effect type fits.
  */
+@SerialName("GenericReplacement")
 @Serializable
 data class GenericReplacementEffect(
     val replacement: Effect?,  // null = prevent entirely
