@@ -66,6 +66,27 @@ data class DestroyAllEffect(
 }
 
 /**
+ * Destroy all creatures that share a creature type with the sacrificed creature.
+ * Used for Endemic Plague and similar effects.
+ *
+ * Requires that a creature was sacrificed as an additional cost (via context.sacrificedPermanents).
+ * Looks up the sacrificed creature's subtypes, then destroys all creatures on the battlefield
+ * that share at least one creature type.
+ *
+ * @param noRegenerate If true, destroyed creatures can't be regenerated
+ */
+@SerialName("DestroyAllSharingTypeWithSacrificed")
+@Serializable
+data class DestroyAllSharingTypeWithSacrificedEffect(
+    val noRegenerate: Boolean = true
+) : Effect {
+    override val description: String = buildString {
+        append("Destroy all creatures that share a creature type with the sacrificed creature")
+        if (noRegenerate) append(". They can't be regenerated")
+    }
+}
+
+/**
  * Sacrifice permanents effect.
  * Can be used as a cost or standalone effect.
  *

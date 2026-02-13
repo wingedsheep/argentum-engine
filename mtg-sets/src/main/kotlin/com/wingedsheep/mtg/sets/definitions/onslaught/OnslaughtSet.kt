@@ -133,6 +133,7 @@ object OnslaughtSet {
         CruelRevival,
         DeathPulse,
         DoomedNecromancer,
+        EndemicPlague,
         DiscipleOfMalice,
         EbonbladeReaper,
         EntrailsFeaster,

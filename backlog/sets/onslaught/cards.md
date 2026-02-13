@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 258 / 335
+**Implemented:** 259 / 335
 
 ---
 
@@ -113,7 +113,7 @@
 - [x] Elvish Warrior
 - [x] Embermage Goblin
 - [ ] Enchantress's Presence
-- [ ] Endemic Plague
+- [x] Endemic Plague
 - [x] Entrails Feaster
 - [x] Erratic Explosion
 - [x] Essence Fracture
