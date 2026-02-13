@@ -111,6 +111,7 @@ object OnslaughtSet {
         MistformWall,
         Reminisce,
         RiptideBiologist,
+        Standardize,
 
         // Black creatures and spells
         AccursedCentaur,

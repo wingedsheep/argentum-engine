@@ -282,7 +282,7 @@
 - [x] Spurred Wolverine
 - [ ] Spy Network
 - [x] Stag Beetle
-- [ ] Standardize
+- [x] Standardize
 - [x] Starlit Sanctum
 - [x] Starstorm
 - [ ] Steely Resolve
