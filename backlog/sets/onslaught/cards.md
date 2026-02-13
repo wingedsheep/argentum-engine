@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 246 / 335
+**Implemented:** 247 / 335
 
 ---
 
@@ -283,7 +283,7 @@
 - [ ] Spy Network
 - [x] Stag Beetle
 - [ ] Standardize
-- [ ] Starlit Sanctum
+- [x] Starlit Sanctum
 - [x] Starstorm
 - [ ] Steely Resolve
 - [ ] Strongarm Tactics

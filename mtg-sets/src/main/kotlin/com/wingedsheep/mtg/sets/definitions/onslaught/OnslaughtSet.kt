@@ -273,6 +273,7 @@ object OnslaughtSet {
         GoblinBurrows,
         LonelySandbar,
         SeasideHaven,
+        StarlitSanctum,
         WirewoodLodge,
         SecludedSteppe,
         TranquilThicket,
