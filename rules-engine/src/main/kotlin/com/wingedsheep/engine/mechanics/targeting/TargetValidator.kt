@@ -5,6 +5,7 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.GrantsControllerShroudComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
@@ -214,6 +215,9 @@ class TargetValidator {
         if (!state.hasEntity(target.playerId)) {
             return "Target player not found"
         }
+        if (playerHasShroud(state, target.playerId)) {
+            return "Target player has shroud"
+        }
         return null
     }
 
@@ -227,13 +231,18 @@ class TargetValidator {
         if (target.playerId == casterId) {
             return "Target must be an opponent"
         }
+        if (playerHasShroud(state, target.playerId)) {
+            return "Target player has shroud"
+        }
         return null
     }
 
     private fun validateAnyTarget(state: GameState, target: ChosenTarget): String? {
         return when (target) {
             is ChosenTarget.Player -> {
-                if (!state.hasEntity(target.playerId)) "Target player not found" else null
+                if (!state.hasEntity(target.playerId)) "Target player not found"
+                else if (playerHasShroud(state, target.playerId)) "Target player has shroud"
+                else null
             }
             is ChosenTarget.Permanent -> {
                 if (target.entityId !in state.getBattlefield()) "Target not on battlefield" else null
@@ -245,7 +254,9 @@ class TargetValidator {
     private fun validateCreatureOrPlayerTarget(state: GameState, target: ChosenTarget): String? {
         return when (target) {
             is ChosenTarget.Player -> {
-                if (!state.hasEntity(target.playerId)) "Target player not found" else null
+                if (!state.hasEntity(target.playerId)) "Target player not found"
+                else if (playerHasShroud(state, target.playerId)) "Target player has shroud"
+                else null
             }
             is ChosenTarget.Permanent -> {
                 val container = state.getEntity(target.entityId)
@@ -409,5 +420,18 @@ class TargetValidator {
             return "Target does not match filter: ${filter.description}"
         }
         return null
+    }
+
+    /**
+     * Check if a player has shroud (e.g., from True Believer's "You have shroud").
+     * A player has shroud if any permanent on the battlefield controlled by that player
+     * has the GrantsControllerShroudComponent.
+     */
+    private fun playerHasShroud(state: GameState, playerId: EntityId): Boolean {
+        return state.getBattlefield().any { entityId ->
+            val container = state.getEntity(entityId) ?: return@any false
+            container.get<GrantsControllerShroudComponent>() != null &&
+                container.get<ControllerComponent>()?.playerId == playerId
+        }
     }
 }

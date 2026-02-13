@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 269 / 335
+**Implemented:** 270 / 335
 
 ---
 
@@ -310,7 +310,7 @@
 - [ ] Tribal Golem
 - [x] Tribal Unity
 - [x] Trickery Charm
-- [ ] True Believer
+- [x] True Believer
 - [x] Undead Gladiator
 - [x] Unholy Grotto
 - [x] Unified Strike

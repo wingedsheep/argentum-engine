@@ -2,6 +2,7 @@ package com.wingedsheep.engine.mechanics.layers
 
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.ComponentContainer
+import com.wingedsheep.engine.state.components.battlefield.GrantsControllerShroudComponent
 import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.CardDefinition
@@ -16,6 +17,7 @@ import com.wingedsheep.sdk.scripting.ControlEnchantedPermanent
 import com.wingedsheep.sdk.scripting.SetEnchantedLandType
 import com.wingedsheep.sdk.scripting.GrantKeywordByCounter
 import com.wingedsheep.sdk.scripting.GrantProtection
+import com.wingedsheep.sdk.scripting.GrantShroudToController
 import com.wingedsheep.sdk.scripting.SourceHasSubtype
 import com.wingedsheep.sdk.scripting.GlobalEffect
 import com.wingedsheep.sdk.scripting.GlobalEffectType
@@ -59,17 +61,7 @@ class StaticAbilityHandler(
         // Get the card definition to access static abilities
         val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId) ?: return container
 
-        // Convert static abilities to continuous effect data
-        val effectsData = cardDef.staticAbilities.mapNotNull { ability ->
-            convertStaticAbility(ability)
-        }
-
-        if (effectsData.isEmpty()) {
-            return container
-        }
-
-        // Add the ContinuousEffectSourceComponent
-        return container.with(ContinuousEffectSourceComponent(effectsData))
+        return addContinuousEffectComponent(container, cardDef)
     }
 
     /**
@@ -83,17 +75,23 @@ class StaticAbilityHandler(
         container: ComponentContainer,
         cardDefinition: CardDefinition
     ): ComponentContainer {
+        var result = container
+
         // Convert static abilities to continuous effect data
         val effectsData = cardDefinition.staticAbilities.mapNotNull { ability ->
             convertStaticAbility(ability)
         }
 
-        if (effectsData.isEmpty()) {
-            return container
+        if (effectsData.isNotEmpty()) {
+            result = result.with(ContinuousEffectSourceComponent(effectsData))
         }
 
-        // Add the ContinuousEffectSourceComponent
-        return container.with(ContinuousEffectSourceComponent(effectsData))
+        // Add tag component for abilities that grant controller-level effects
+        if (cardDefinition.staticAbilities.any { it is GrantShroudToController }) {
+            result = result.with(GrantsControllerShroudComponent)
+        }
+
+        return result
     }
 
     /**

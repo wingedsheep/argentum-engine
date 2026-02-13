@@ -103,3 +103,11 @@ data class ReplacementEffectSourceComponent(
 data class TimestampComponent(
     val timestamp: Long
 ) : Component
+
+/**
+ * Marks a permanent as granting shroud to its controller.
+ * Used for True Believer: "You have shroud."
+ * When the permanent leaves the battlefield, the component goes with it — no cleanup needed.
+ */
+@Serializable
+data object GrantsControllerShroudComponent : Component

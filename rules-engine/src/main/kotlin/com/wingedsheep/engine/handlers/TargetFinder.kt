@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.GrantsControllerShroudComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.core.Keyword
@@ -96,16 +97,13 @@ class TargetFinder(
         requirement: TargetPlayer,
         controllerId: EntityId
     ): List<EntityId> {
-        // All players in the game
         return state.turnOrder.filter { playerId ->
-            // Check if player has hexproof (e.g., Leyline of Sanctity)
-            // For now, all players are valid targets
-            state.hasEntity(playerId)
+            state.hasEntity(playerId) && !playerHasShroud(state, playerId)
         }
     }
 
     private fun findOpponentTargets(state: GameState, controllerId: EntityId): List<EntityId> {
-        return state.turnOrder.filter { it != controllerId && state.hasEntity(it) }
+        return state.turnOrder.filter { it != controllerId && state.hasEntity(it) && !playerHasShroud(state, it) }
     }
 
     private fun findPermanentTargets(
@@ -145,8 +143,8 @@ class TargetFinder(
         val projected = stateProjector.project(state)
         val targets = mutableListOf<EntityId>()
 
-        // Add all players
-        targets.addAll(state.turnOrder.filter { state.hasEntity(it) })
+        // Add all players (excluding those with shroud)
+        targets.addAll(state.turnOrder.filter { state.hasEntity(it) && !playerHasShroud(state, it) })
 
         // Add all creatures and planeswalkers
         val battlefield = state.getBattlefield()
@@ -181,8 +179,8 @@ class TargetFinder(
     ): List<EntityId> {
         val targets = mutableListOf<EntityId>()
 
-        // Add all players
-        targets.addAll(state.turnOrder.filter { state.hasEntity(it) })
+        // Add all players (excluding those with shroud)
+        targets.addAll(state.turnOrder.filter { state.hasEntity(it) && !playerHasShroud(state, it) })
 
         // Add all creatures
         targets.addAll(findCreatureTargets(state, TargetCreature(), controllerId, sourceId))
@@ -312,6 +310,19 @@ class TargetFinder(
         })
 
         return targets
+    }
+
+    /**
+     * Check if a player has shroud (e.g., from True Believer's "You have shroud").
+     * A player has shroud if any permanent on the battlefield controlled by that player
+     * has the GrantsControllerShroudComponent.
+     */
+    private fun playerHasShroud(state: GameState, playerId: EntityId): Boolean {
+        return state.getBattlefield().any { entityId ->
+            val container = state.getEntity(entityId) ?: return@any false
+            container.get<GrantsControllerShroudComponent>() != null &&
+                container.get<ControllerComponent>()?.playerId == playerId
+        }
     }
 
     /**

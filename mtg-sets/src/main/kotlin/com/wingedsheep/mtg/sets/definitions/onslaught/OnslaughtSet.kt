@@ -72,6 +72,7 @@ object OnslaughtSet {
         Whipcorder,
         Mobilization,
         SharedTriumph,
+        TrueBeliever,
 
         CoverOfDarkness,
 

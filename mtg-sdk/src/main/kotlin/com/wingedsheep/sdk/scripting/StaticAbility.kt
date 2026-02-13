@@ -622,6 +622,17 @@ data class SetEnchantedLandType(
 }
 
 /**
+ * You have shroud. (You can't be the target of spells or abilities.)
+ * Grants shroud to the permanent's controller (player-level shroud).
+ * Used for True Believer.
+ */
+@SerialName("GrantShroudToController")
+@Serializable
+data object GrantShroudToController : StaticAbility {
+    override val description: String = "You have shroud"
+}
+
+/**
  * This creature can't attack unless defending player controls a land of a specific type.
  * Used for Deep-Sea Serpent: "can't attack unless defending player controls an Island."
  *
