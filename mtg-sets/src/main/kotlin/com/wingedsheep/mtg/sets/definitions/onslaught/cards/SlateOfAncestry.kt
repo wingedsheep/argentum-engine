@@ -37,6 +37,6 @@ val SlateOfAncestry = card("Slate of Ancestry") {
         collectorNumber = "310"
         artist = "Corey D. Macourek"
         flavorText = "\"The pattern of life can be studied like a book, if you know how to read it.\""
-        imageUri = "https://cards.scryfall.io/normal/front/8/7/87809c72-055f-4b02-b098-5f3218c36e75.jpg?1562922385"
+        imageUri = "https://cards.scryfall.io/large/front/a/e/ae596e8c-04f5-48b0-b5e2-683c74912e85.jpg?1562936203"
     }
 }
