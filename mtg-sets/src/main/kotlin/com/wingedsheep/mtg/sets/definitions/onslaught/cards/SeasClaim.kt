@@ -28,6 +28,6 @@ val SeasClaim = card("Sea's Claim") {
         collectorNumber = "113"
         artist = "Alan Pollack"
         flavorText = "\"We shall wave our vengeance from shore to shore, drowning our enemies with the tide of our fury.\"\n—Ixidor, reality sculptor"
-        imageUri = "https://cards.scryfall.io/large/front/8/2/82e836c8-4d62-4b49-85ba-205e75d4af77.jpg?1562927548"
+        imageUri = "https://cards.scryfall.io/large/front/f/b/fb652a5c-464e-4ba4-a4ab-1181be70cf7a.jpg?1562954583a "
     }
 }
