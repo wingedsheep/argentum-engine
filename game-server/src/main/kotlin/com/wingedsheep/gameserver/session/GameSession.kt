@@ -11,6 +11,7 @@ import com.wingedsheep.gameserver.protocol.LegalActionInfo
 import com.wingedsheep.gameserver.protocol.LegalActionTargetInfo
 import com.wingedsheep.gameserver.protocol.ServerMessage
 import com.wingedsheep.engine.core.*
+import com.wingedsheep.engine.mechanics.mana.CostCalculator
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
@@ -92,6 +93,7 @@ class GameSession(
     private val actionProcessor = ActionProcessor(cardRegistry)
     private val gameInitializer = GameInitializer(cardRegistry)
     private val manaSolver = ManaSolver(cardRegistry)
+    private val costCalculator = CostCalculator(cardRegistry)
     private val conditionEvaluator = ConditionEvaluator()
     private val predicateEvaluator = PredicateEvaluator()
     private val stateProjector = StateProjector()
@@ -785,7 +787,7 @@ class GameSession(
 
         // Check for morph cards that can be cast face-down (sorcery speed only)
         if (canPlaySorcerySpeed) {
-            val morphCost = ManaCost.parse("{3}")
+            val morphCost = costCalculator.calculateFaceDownCost(state, playerId)
             val canAffordMorph = manaSolver.canPay(state, playerId, morphCost)
             for (cardId in hand) {
                 val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: continue
@@ -802,7 +804,7 @@ class GameSession(
                         description = "Cast ${cardComponent.name} face-down",
                         action = CastSpell(playerId, cardId, castFaceDown = true),
                         isAffordable = canAffordMorph,
-                        manaCostString = "{3}"
+                        manaCostString = morphCost.toString()
                     ))
 
                     // Check if we can afford to cast normally - if not, add unaffordable cast action

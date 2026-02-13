@@ -534,6 +534,22 @@ data class CantBeBlockedUnlessDefenderSharesCreatureType(
 // =============================================================================
 
 /**
+ * Reduces the cost of face-down creature spells you cast.
+ * Used for Dream Chisel: "Face-down creature spells you cast cost {1} less to cast."
+ *
+ * This is a battlefield-based static ability — the permanent with this ability
+ * must be on the battlefield to provide the reduction.
+ *
+ * @property amount The amount of generic mana to reduce
+ */
+@Serializable
+data class ReduceFaceDownCastingCost(
+    val amount: Int
+) : StaticAbility {
+    override val description: String = "Face-down creature spells you cast cost {$amount} less to cast"
+}
+
+/**
  * This creature can't attack unless defending player controls a land of a specific type.
  * Used for Deep-Sea Serpent: "can't attack unless defending player controls an Island."
  *

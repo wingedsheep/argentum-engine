@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 248 / 335
+**Implemented:** 249 / 335
 
 ---
 
@@ -101,7 +101,7 @@
 - [x] Doomed Necromancer
 - [x] Doubtless One
 - [x] Dragon Roost
-- [ ] Dream Chisel
+- [x] Dream Chisel
 - [x] Dwarven Blastminer
 - [ ] Ebonblade Reaper
 - [x] Elven Riders
