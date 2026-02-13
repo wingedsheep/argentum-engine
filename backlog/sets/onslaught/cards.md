@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 255 / 335
+**Implemented:** 256 / 335
 
 ---
 
@@ -153,7 +153,7 @@
 - [x] Grassland Crusader
 - [x] Gratuitous Violence
 - [x] Gravel Slinger
-- [ ] Gravespawn Sovereign
+- [x] Gravespawn Sovereign
 - [x] Graxiplon
 - [x] Grinning Demon
 - [x] Gustcloak Harrier

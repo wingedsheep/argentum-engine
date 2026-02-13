@@ -140,6 +140,7 @@ object OnslaughtSet {
         FesteringGoblin,
         GangrenousGoliath,
         GluttonousZombie,
+        GravespawnSovereign,
         GrinningDemon,
         Infest,
         MiseryCharm,
