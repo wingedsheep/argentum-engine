@@ -41,6 +41,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.Player
+import com.wingedsheep.sdk.scripting.DamageType
 import com.wingedsheep.sdk.scripting.DoubleDamage
 import com.wingedsheep.sdk.scripting.PreventDamage
 import com.wingedsheep.sdk.scripting.RecipientFilter
@@ -426,7 +427,13 @@ object EffectExecutorUtils {
      * @param amount The incoming damage amount
      * @return Pair of (updated state with consumed shields, remaining damage after prevention)
      */
-    fun applyDamagePreventionShields(state: GameState, targetId: EntityId, amount: Int): Pair<GameState, Int> {
+    fun applyDamagePreventionShields(
+        state: GameState,
+        targetId: EntityId,
+        amount: Int,
+        isCombatDamage: Boolean = false,
+        sourceId: EntityId? = null
+    ): Pair<GameState, Int> {
         var remainingDamage = amount
         val updatedEffects = state.floatingEffects.toMutableList()
         val toRemove = mutableListOf<Int>()
@@ -459,7 +466,7 @@ object EffectExecutorUtils {
         var newState = state.copy(floatingEffects = updatedEffects)
 
         // Apply static damage reduction from permanents with ReplacementEffectSourceComponent
-        remainingDamage = applyStaticDamageReduction(newState, targetId, remainingDamage)
+        remainingDamage = applyStaticDamageReduction(newState, targetId, remainingDamage, isCombatDamage, sourceId)
 
         return newState to remainingDamage
     }
@@ -473,9 +480,17 @@ object EffectExecutorUtils {
      * @param state The current game state
      * @param targetId The entity receiving damage
      * @param amount The incoming damage amount
+     * @param isCombatDamage Whether this is combat damage (for DamageType filtering)
+     * @param sourceId The entity dealing damage (for source-based prevention like Sandskin)
      * @return The reduced damage amount (minimum 0)
      */
-    private fun applyStaticDamageReduction(state: GameState, targetId: EntityId, amount: Int): Int {
+    private fun applyStaticDamageReduction(
+        state: GameState,
+        targetId: EntityId,
+        amount: Int,
+        isCombatDamage: Boolean = false,
+        sourceId: EntityId? = null
+    ): Int {
         if (amount <= 0) return 0
 
         var remainingDamage = amount
@@ -494,14 +509,43 @@ object EffectExecutorUtils {
                 val damageEvent = effect.appliesTo
                 if (damageEvent !is com.wingedsheep.sdk.scripting.GameEvent.DamageEvent) continue
 
+                // Check damage type filter (combat vs non-combat)
+                val damageTypeMatches = when (damageEvent.damageType) {
+                    is DamageType.Any -> true
+                    is DamageType.Combat -> isCombatDamage
+                    is DamageType.NonCombat -> !isCombatDamage
+                }
+                if (!damageTypeMatches) continue
+
+                // Check if the damage source matches the source filter
+                val sourceMatches = when (val source = damageEvent.source) {
+                    is SourceFilter.Any -> true
+                    is SourceFilter.EnchantedCreature -> {
+                        val attachedTo = container.get<AttachedToComponent>()?.targetId
+                        sourceId != null && sourceId == attachedTo
+                    }
+                    is SourceFilter.Matching -> {
+                        if (sourceId == null) false
+                        else {
+                            val context = PredicateContext(controllerId = sourceControllerId)
+                            predicateEvaluator.matchesWithProjection(state, projected, sourceId, source.filter, context)
+                        }
+                    }
+                    else -> false
+                }
+                if (!sourceMatches) continue
+
                 // Check if the target matches the recipient filter
                 val recipientMatches = when (val recipient = damageEvent.recipient) {
+                    is RecipientFilter.EnchantedCreature -> {
+                        val attachedTo = container.get<AttachedToComponent>()?.targetId
+                        targetId == attachedTo
+                    }
                     is RecipientFilter.Matching -> {
                         val context = PredicateContext(controllerId = sourceControllerId)
                         predicateEvaluator.matchesWithProjection(state, projected, targetId, recipient.filter, context)
                     }
                     is RecipientFilter.CreatureYouControl -> {
-                        val context = PredicateContext(controllerId = sourceControllerId)
                         val isCreature = state.getEntity(targetId)?.get<CardComponent>()?.typeLine?.isCreature == true
                         val isControlled = state.getEntity(targetId)?.get<ControllerComponent>()?.playerId == sourceControllerId
                         isCreature && isControlled

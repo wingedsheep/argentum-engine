@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 269 / 335
+**Implemented:** 270 / 335
 
 ---
 
@@ -244,7 +244,7 @@
 - [x] Rummaging Wizard
 - [x] Run Wild
 - [x] Sage Aven
-- [ ] Sandskin
+- [x] Sandskin
 - [x] Screaming Seahawk
 - [x] Screeching Buzzard
 - [x] Sea's Claim

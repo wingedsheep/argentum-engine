@@ -69,6 +69,12 @@ sealed interface RecipientFilter {
         override val description = "a permanent"
     }
 
+    @SerialName("RecipientEnchantedCreature")
+    @Serializable
+    data object EnchantedCreature : RecipientFilter {
+        override val description = "enchanted creature"
+    }
+
     @SerialName("RecipientMatching")
     @Serializable
     data class Matching(val filter: GameObjectFilter) : RecipientFilter {
@@ -127,6 +133,12 @@ sealed interface SourceFilter {
     @Serializable
     data class HasType(val type: String) : SourceFilter {
         override val description = "a $type"
+    }
+
+    @SerialName("SourceEnchantedCreature")
+    @Serializable
+    data object EnchantedCreature : SourceFilter {
+        override val description = "enchanted creature"
     }
 
     @SerialName("SourceMatching")
