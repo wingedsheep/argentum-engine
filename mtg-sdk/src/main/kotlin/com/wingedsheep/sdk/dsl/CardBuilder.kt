@@ -621,13 +621,37 @@ class ActivatedAbilityBuilder {
     var restrictions: List<ActivationRestriction> = emptyList()
     var activateFromZone: Zone = Zone.BATTLEFIELD
 
+    // Named target bindings (for multi-target abilities)
+    private val namedTargets: MutableList<Pair<String, TargetRequirement>> = mutableListOf()
+
+    /**
+     * Declare a named target and get an EffectTarget reference to use in effects.
+     * Same pattern as SpellBuilder.target().
+     *
+     * @param name A descriptive name for the target (for debugging/documentation)
+     * @param requirement The target requirement specification
+     * @return An EffectTarget.ContextTarget that references this target by index
+     */
+    fun target(name: String, requirement: TargetRequirement): EffectTarget.ContextTarget {
+        val index = namedTargets.size
+        namedTargets.add(name to requirement)
+        return EffectTarget.ContextTarget(index)
+    }
+
+    internal val targetRequirements: List<TargetRequirement>
+        get() = if (namedTargets.isNotEmpty()) {
+            namedTargets.map { it.second }
+        } else {
+            listOfNotNull(target)
+        }
+
     fun build(): ActivatedAbility {
         requireNotNull(effect) { "Activated ability must have an effect" }
         return ActivatedAbility(
             id = AbilityId.generate(),
             cost = cost,
             effect = effect!!,
-            targetRequirement = target,
+            targetRequirements = targetRequirements,
             isManaAbility = manaAbility,
             timing = timing,
             restrictions = restrictions,
@@ -721,7 +745,7 @@ class LoyaltyAbilityBuilder(private val loyaltyChange: Int) {
             id = AbilityId.generate(),
             cost = AbilityCost.Loyalty(loyaltyChange),
             effect = effect!!,
-            targetRequirement = target,
+            targetRequirements = listOfNotNull(target),
             isPlaneswalkerAbility = true,
             timing = TimingRule.SorcerySpeed
         )

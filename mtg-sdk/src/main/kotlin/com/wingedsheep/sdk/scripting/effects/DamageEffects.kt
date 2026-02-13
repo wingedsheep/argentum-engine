@@ -116,6 +116,22 @@ data class DividedDamageEffect(
 }
 
 /**
+ * Two creatures fight — each deals damage equal to its power to the other.
+ * Used for fight abilities like Contested Cliffs and the fight keyword action.
+ *
+ * @property target1 First creature (e.g., Beast you control)
+ * @property target2 Second creature (e.g., creature opponent controls)
+ */
+@SerialName("Fight")
+@Serializable
+data class FightEffect(
+    val target1: EffectTarget,
+    val target2: EffectTarget
+) : Effect {
+    override val description: String = "${target1.description} fights ${target2.description}"
+}
+
+/**
  * Deal damage with a replacement effect: if the creature would die this turn, exile it instead.
  * Used for cards like Feed the Flames.
  *

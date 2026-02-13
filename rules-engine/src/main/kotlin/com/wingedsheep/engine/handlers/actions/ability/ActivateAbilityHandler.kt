@@ -118,10 +118,10 @@ class ActivateAbilityHandler(
         } else {
             ability.cost
         }
-        val effectiveTargetReq = if (textReplacement != null && ability.targetRequirement != null) {
-            SubtypeReplacer.replaceTargetRequirement(ability.targetRequirement!!, textReplacement)
+        val effectiveTargetReqs = if (textReplacement != null) {
+            ability.targetRequirements.map { SubtypeReplacer.replaceTargetRequirement(it, textReplacement) }
         } else {
-            ability.targetRequirement
+            ability.targetRequirements
         }
 
         // Check timing for planeswalker abilities
@@ -193,11 +193,11 @@ class ActivateAbilityHandler(
         }
 
         // Validate targets
-        if (effectiveTargetReq != null && action.targets.isNotEmpty()) {
+        if (effectiveTargetReqs.isNotEmpty() && action.targets.isNotEmpty()) {
             val targetError = targetValidator.validateTargets(
                 state,
                 action.targets,
-                listOf(effectiveTargetReq),
+                effectiveTargetReqs,
                 action.playerId,
                 sourceColors = cardComponent.colors,
                 sourceSubtypes = cardComponent.typeLine.subtypes.map { it.value }.toSet()
@@ -205,7 +205,7 @@ class ActivateAbilityHandler(
             if (targetError != null) {
                 return targetError
             }
-        } else if (effectiveTargetReq != null && action.targets.isEmpty()) {
+        } else if (effectiveTargetReqs.isNotEmpty() && action.targets.isEmpty()) {
             return "This ability requires a target"
         }
 
@@ -404,16 +404,16 @@ class ActivateAbilityHandler(
             xValue = action.xValue
         )
 
-        // Apply text-changing effects to the target requirement for resolution-time re-validation
-        val effectiveTargetReq = if (textReplacement != null && ability.targetRequirement != null) {
-            SubtypeReplacer.replaceTargetRequirement(ability.targetRequirement!!, textReplacement)
+        // Apply text-changing effects to the target requirements for resolution-time re-validation
+        val effectiveTargetReqs = if (textReplacement != null) {
+            ability.targetRequirements.map { SubtypeReplacer.replaceTargetRequirement(it, textReplacement) }
         } else {
-            ability.targetRequirement
+            ability.targetRequirements
         }
 
         val stackResult = stackResolver.putActivatedAbility(
             currentState, abilityOnStack, action.targets,
-            targetRequirements = listOfNotNull(effectiveTargetReq)
+            targetRequirements = effectiveTargetReqs
         )
         val allEvents = events + stackResult.events
 

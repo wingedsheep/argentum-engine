@@ -15,13 +15,40 @@ data class ActivatedAbility(
     val id: AbilityId,
     val cost: AbilityCost,
     val effect: Effect,
-    val targetRequirement: TargetRequirement? = null,
+    val targetRequirements: List<TargetRequirement> = emptyList(),
     val timing: TimingRule = TimingRule.InstantSpeed,
     val restrictions: List<ActivationRestriction> = emptyList(),
     val isManaAbility: Boolean = false,
     val isPlaneswalkerAbility: Boolean = false,
     val activateFromZone: Zone = Zone.BATTLEFIELD
 ) {
+    /** Backward-compatible secondary constructor for single-target abilities. */
+    constructor(
+        id: AbilityId,
+        cost: AbilityCost,
+        effect: Effect,
+        targetRequirement: TargetRequirement?,
+        timing: TimingRule = TimingRule.InstantSpeed,
+        restrictions: List<ActivationRestriction> = emptyList(),
+        isManaAbility: Boolean = false,
+        isPlaneswalkerAbility: Boolean = false,
+        activateFromZone: Zone = Zone.BATTLEFIELD
+    ) : this(
+        id = id,
+        cost = cost,
+        effect = effect,
+        targetRequirements = listOfNotNull(targetRequirement),
+        timing = timing,
+        restrictions = restrictions,
+        isManaAbility = isManaAbility,
+        isPlaneswalkerAbility = isPlaneswalkerAbility,
+        activateFromZone = activateFromZone
+    )
+
+    /** Convenience accessor for single-target abilities. */
+    val targetRequirement: TargetRequirement?
+        get() = targetRequirements.firstOrNull()
+
     val description: String
         get() = "${cost.description}: ${effect.description}"
 }

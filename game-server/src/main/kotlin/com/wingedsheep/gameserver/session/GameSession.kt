@@ -1455,18 +1455,37 @@ class GameSession(
                 } else null
 
                 // Check for target requirements (apply text-changing effects to filter)
-                val targetReq = if (textReplacement != null && ability.targetRequirement != null) {
-                    SubtypeReplacer.replaceTargetRequirement(ability.targetRequirement!!, textReplacement)
+                val targetReqs = if (textReplacement != null) {
+                    ability.targetRequirements.map { SubtypeReplacer.replaceTargetRequirement(it, textReplacement) }
                 } else {
-                    ability.targetRequirement
+                    ability.targetRequirements
                 }
-                if (targetReq != null) {
-                    val validTargets = findValidTargets(state, playerId, targetReq)
-                    if (validTargets.isEmpty()) continue
+                if (targetReqs.isNotEmpty()) {
+                    // Build target info for each requirement (same pattern as spells)
+                    val targetReqInfos = targetReqs.mapIndexed { index, req ->
+                        val validTargets = findValidTargets(state, playerId, req)
+                        LegalActionTargetInfo(
+                            index = index,
+                            description = req.description,
+                            minTargets = req.effectiveMinCount,
+                            maxTargets = req.count,
+                            validTargets = validTargets,
+                            targetZone = getTargetZone(req)
+                        )
+                    }
 
-                    // Check if we can auto-select player targets (single target, single valid choice)
-                    if (shouldAutoSelectPlayerTarget(targetReq, validTargets)) {
-                        val autoSelectedTarget = ChosenTarget.Player(validTargets.first())
+                    // All requirements must be satisfiable
+                    val allRequirementsSatisfied = targetReqInfos.all { reqInfo ->
+                        reqInfo.validTargets.isNotEmpty() || reqInfo.minTargets == 0
+                    }
+                    if (!allRequirementsSatisfied) continue
+
+                    val firstReq = targetReqs.first()
+                    val firstReqInfo = targetReqInfos.first()
+
+                    // Check if we can auto-select player targets (single target requirement, single valid choice)
+                    if (targetReqs.size == 1 && shouldAutoSelectPlayerTarget(firstReq, firstReqInfo.validTargets)) {
+                        val autoSelectedTarget = ChosenTarget.Player(firstReqInfo.validTargets.first())
                         result.add(LegalActionInfo(
                             actionType = "ActivateAbility",
                             description = ability.description,
@@ -1480,11 +1499,12 @@ class GameSession(
                             actionType = "ActivateAbility",
                             description = ability.description,
                             action = ActivateAbility(playerId, entityId, ability.id),
-                            validTargets = validTargets,
+                            validTargets = firstReqInfo.validTargets,
                             requiresTargets = true,
-                            targetCount = targetReq.count,
-                            minTargets = targetReq.effectiveMinCount,
-                            targetDescription = targetReq.description,
+                            targetCount = firstReq.count,
+                            minTargets = firstReq.effectiveMinCount,
+                            targetDescription = firstReq.description,
+                            targetRequirements = if (targetReqInfos.size > 1) targetReqInfos else null,
                             additionalCostInfo = costInfo,
                             hasXCost = abilityHasXCost,
                             maxAffordableX = abilityMaxAffordableX
@@ -1587,13 +1607,30 @@ class GameSession(
                 } else null
 
                 // Check for target requirements
-                val targetReq = ability.targetRequirement
-                if (targetReq != null) {
-                    val validTargets = findValidTargets(state, playerId, targetReq)
-                    if (validTargets.isEmpty()) continue
+                val targetReqs = ability.targetRequirements
+                if (targetReqs.isNotEmpty()) {
+                    val targetReqInfos = targetReqs.mapIndexed { index, req ->
+                        val validTargets = findValidTargets(state, playerId, req)
+                        LegalActionTargetInfo(
+                            index = index,
+                            description = req.description,
+                            minTargets = req.effectiveMinCount,
+                            maxTargets = req.count,
+                            validTargets = validTargets,
+                            targetZone = getTargetZone(req)
+                        )
+                    }
 
-                    if (shouldAutoSelectPlayerTarget(targetReq, validTargets)) {
-                        val autoSelectedTarget = ChosenTarget.Player(validTargets.first())
+                    val allRequirementsSatisfied = targetReqInfos.all { reqInfo ->
+                        reqInfo.validTargets.isNotEmpty() || reqInfo.minTargets == 0
+                    }
+                    if (!allRequirementsSatisfied) continue
+
+                    val firstReq = targetReqs.first()
+                    val firstReqInfo = targetReqInfos.first()
+
+                    if (targetReqs.size == 1 && shouldAutoSelectPlayerTarget(firstReq, firstReqInfo.validTargets)) {
+                        val autoSelectedTarget = ChosenTarget.Player(firstReqInfo.validTargets.first())
                         result.add(LegalActionInfo(
                             actionType = "ActivateAbility",
                             description = ability.description,
@@ -1607,11 +1644,12 @@ class GameSession(
                             actionType = "ActivateAbility",
                             description = ability.description,
                             action = ActivateAbility(playerId, entityId, ability.id),
-                            validTargets = validTargets,
+                            validTargets = firstReqInfo.validTargets,
                             requiresTargets = true,
-                            targetCount = targetReq.count,
-                            minTargets = targetReq.effectiveMinCount,
-                            targetDescription = targetReq.description,
+                            targetCount = firstReq.count,
+                            minTargets = firstReq.effectiveMinCount,
+                            targetDescription = firstReq.description,
+                            targetRequirements = if (targetReqInfos.size > 1) targetReqInfos else null,
                             additionalCostInfo = costInfo,
                             hasXCost = abilityHasXCost,
                             maxAffordableX = abilityMaxAffordableX

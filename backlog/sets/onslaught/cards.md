@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 257 / 335
+**Implemented:** 258 / 335
 
 ---
 
@@ -66,7 +66,7 @@
 - [x] Clone
 - [x] Commando Raid
 - [x] Complicate
-- [ ] Contested Cliffs
+- [x] Contested Cliffs
 - [ ] Convalescent Care
 - [x] Cover of Darkness
 - [x] Crafty Pathmage

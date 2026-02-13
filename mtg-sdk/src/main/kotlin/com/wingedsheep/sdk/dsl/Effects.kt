@@ -45,6 +45,12 @@ object Effects {
     fun DealXDamage(target: EffectTarget): Effect =
         DealDamageEffect(DynamicAmount.XValue, target)
 
+    /**
+     * Two creatures fight — each deals damage equal to its power to the other.
+     */
+    fun Fight(target1: EffectTarget, target2: EffectTarget): Effect =
+        FightEffect(target1, target2)
+
     // =========================================================================
     // Life Effects
     // =========================================================================
