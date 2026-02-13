@@ -267,7 +267,7 @@
 - [ ] Skirk Fire Marshal
 - [x] Skirk Prospector
 - [ ] Skittish Valesk
-- [ ] Slate of Ancestry
+- [x] Slate of Ancestry
 - [x] Slice and Dice
 - [x] Slipstream Eel
 - [x] Smother
