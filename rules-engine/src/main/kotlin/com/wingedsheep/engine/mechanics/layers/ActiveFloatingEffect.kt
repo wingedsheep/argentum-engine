@@ -156,7 +156,11 @@ sealed interface SerializableModification {
      * The shield is consumed as damage is dealt and removed when fully used or at end of turn.
      */
     @Serializable
-    data class PreventNextDamage(val remainingAmount: Int) : SerializableModification
+    data class PreventNextDamage(
+        val remainingAmount: Int,
+        /** If set, only prevents damage from this specific source (used for CR 615.7 prevention distribution) */
+        val onlyFromSource: EntityId? = null
+    ) : SerializableModification
 
     /**
      * Regeneration shield: the next time the target permanent would be destroyed this turn,

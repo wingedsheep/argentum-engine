@@ -215,7 +215,8 @@ data class DistributeDecision(
     override val context: DecisionContext,
     val totalAmount: Int,
     val targets: List<EntityId>,
-    val minPerTarget: Int = 0
+    val minPerTarget: Int = 0,
+    val maxPerTarget: Map<EntityId, Int> = emptyMap()
 ) : PendingDecision
 
 /**

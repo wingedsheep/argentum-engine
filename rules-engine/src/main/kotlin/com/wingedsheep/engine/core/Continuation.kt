@@ -1402,6 +1402,28 @@ data class DiscardChainCopyTargetContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after defending player distributes damage prevention among multiple combat damage sources.
+ *
+ * Per CR 615.7, when a prevention effect can't prevent all simultaneous damage from multiple
+ * sources, the affected player chooses how to distribute the prevention.
+ *
+ * @property recipientId The player/creature receiving damage
+ * @property shieldEffectId The floating effect ID of the PreventNextDamage shield
+ * @property shieldAmount Total prevention available from the shield
+ * @property damageBySource Map of attacker entity ID → raw damage amount
+ * @property firstStrike Whether this is during the first strike combat damage step
+ */
+@Serializable
+data class DamagePreventionContinuation(
+    override val decisionId: String,
+    val recipientId: EntityId,
+    val shieldEffectId: EntityId,
+    val shieldAmount: Int,
+    val damageBySource: Map<EntityId, Int>,
+    val firstStrike: Boolean
+) : ContinuationFrame
+
+/**
  * Information about a mana source available for manual selection.
  */
 @Serializable

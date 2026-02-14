@@ -464,10 +464,13 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
               fontSize: responsive.fontSize.small,
               fontWeight: 600,
             }}>
-              {distributeRemaining === 0
-                ? 'All damage allocated'
-                : `${distributeRemaining} damage remaining`
-              }
+              {(() => {
+                const isPrevention = distributeState.prompt.toLowerCase().includes('prevention')
+                const noun = isPrevention ? 'prevention' : 'damage'
+                return distributeRemaining === 0
+                  ? `All ${noun} allocated`
+                  : `${distributeRemaining} ${noun} remaining`
+              })()}
             </div>
             <div style={{
               color: 'rgba(255, 255, 255, 0.7)',
@@ -489,7 +492,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
               borderColor: distributeRemaining === 0 ? '#4ade80' : '#555',
             }}
           >
-            Confirm Damage
+            {distributeState.prompt.toLowerCase().includes('prevention') ? 'Confirm Prevention' : 'Confirm Damage'}
           </button>
         </div>
       )}

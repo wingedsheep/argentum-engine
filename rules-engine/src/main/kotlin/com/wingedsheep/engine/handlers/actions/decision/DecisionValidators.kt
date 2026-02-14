@@ -175,6 +175,10 @@ object DecisionValidators {
             if (amount < decision.minPerTarget) {
                 return "Each target must receive at least ${decision.minPerTarget}"
             }
+            val maxForTarget = decision.maxPerTarget[targetId]
+            if (maxForTarget != null && amount > maxForTarget) {
+                return "Target $targetId cannot receive more than $maxForTarget"
+            }
         }
         return null
     }

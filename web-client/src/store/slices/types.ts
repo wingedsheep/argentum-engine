@@ -177,6 +177,7 @@ export interface DistributeState {
   totalAmount: number
   targets: readonly EntityId[]
   minPerTarget: number
+  maxPerTarget?: Record<EntityId, number>
   distribution: Record<EntityId, number>
 }
 

@@ -1291,6 +1291,12 @@ class CombatManager(
             return ExecutionResult.paused(pausedState, decision)
         }
 
+        // Pre-check: damage prevention choice (CR 615.7)
+        // If a recipient has a PreventNextDamage shield that can't cover all incoming
+        // simultaneous combat damage from multiple sources, the defender chooses distribution.
+        val preventionResult = checkDamagePreventionChoice(state, attackers, projected, firstStrike)
+        if (preventionResult != null) return preventionResult
+
         for ((attackerId, attackingComponent) in attackers) {
             // Skip attackers no longer on the battlefield (killed by first strike damage)
             if (attackerId !in state.getBattlefield()) continue
@@ -1360,6 +1366,138 @@ class CombatManager(
         events.addAll(deathEvents)
 
         return ExecutionResult.success(newState, events)
+    }
+
+    /**
+     * Check if any damage recipient needs to choose how to distribute prevention
+     * among multiple simultaneous combat damage sources (CR 615.7).
+     *
+     * Returns an ExecutionResult.paused if a choice is needed, null otherwise.
+     */
+    private fun checkDamagePreventionChoice(
+        state: GameState,
+        attackers: List<Pair<EntityId, AttackingComponent>>,
+        projected: ProjectedState,
+        firstStrike: Boolean
+    ): ExecutionResult? {
+        // Build map: recipient → (source → damage amount) for all incoming combat damage
+        val incomingDamage = mutableMapOf<EntityId, MutableMap<EntityId, Int>>()
+
+        for ((attackerId, attackingComponent) in attackers) {
+            if (attackerId !in state.getBattlefield()) continue
+            val attackerContainer = state.getEntity(attackerId) ?: continue
+            attackerContainer.get<CardComponent>() ?: continue
+
+            val hasFirstStrike = projected.hasKeyword(attackerId, Keyword.FIRST_STRIKE)
+            val hasDoubleStrike = projected.hasKeyword(attackerId, Keyword.DOUBLE_STRIKE)
+            val dealsDamageThisStep = if (firstStrike) {
+                hasFirstStrike || hasDoubleStrike
+            } else {
+                !hasFirstStrike || hasDoubleStrike
+            }
+            if (!dealsDamageThisStep) continue
+
+            val attackerPower = projected.getPower(attackerId) ?: 0
+            if (attackerPower <= 0) continue
+
+            val blockedBy = attackerContainer.get<BlockedComponent>()
+
+            if (blockedBy == null) {
+                // Unblocked: damage goes to defending player
+                val defenderId = attackingComponent.defenderId
+                if (!isProtectedFromAttackingCreatureDamage(state, defenderId)) {
+                    val amplified = EffectExecutorUtils.applyStaticDamageAmplification(state, defenderId, attackerPower, attackerId)
+                    incomingDamage.getOrPut(defenderId) { mutableMapOf() }
+                        .merge(attackerId, amplified) { a, b -> a + b }
+                }
+            } else {
+                // Blocked: check for manual assignment or auto-distribution
+                val manualAssignment = attackerContainer.get<DamageAssignmentComponent>()
+                val damageDistribution = if (manualAssignment != null) {
+                    manualAssignment.assignments
+                } else {
+                    damageCalculator.calculateAutoDamageDistribution(state, attackerId).assignments
+                }
+
+                for ((targetId, damage) in damageDistribution) {
+                    if (damage <= 0) continue
+                    val targetContainer = state.getEntity(targetId)
+                    val isPlayer = targetContainer?.get<LifeTotalComponent>() != null &&
+                        targetContainer.get<CardComponent>() == null
+                    val amplified = EffectExecutorUtils.applyStaticDamageAmplification(state, targetId, damage, attackerId)
+                    if (isPlayer) {
+                        incomingDamage.getOrPut(targetId) { mutableMapOf() }
+                            .merge(attackerId, amplified) { a, b -> a + b }
+                    } else {
+                        // Check protection from attacker's colors/subtypes
+                        val attackerColors = projected.getColors(attackerId)
+                        val attackerSubtypes = projected.getSubtypes(attackerId)
+                        val blockerProtected = attackerColors.any {
+                            projected.hasKeyword(targetId, "PROTECTION_FROM_$it")
+                        } || attackerSubtypes.any {
+                            projected.hasKeyword(targetId, "PROTECTION_FROM_SUBTYPE_${it.uppercase()}")
+                        }
+                        if (!blockerProtected) {
+                            incomingDamage.getOrPut(targetId) { mutableMapOf() }
+                                .merge(attackerId, amplified) { a, b -> a + b }
+                        }
+                    }
+                }
+            }
+        }
+
+        // For each recipient, check if they have a prevention shield requiring a choice
+        for ((recipientId, sourcesDamage) in incomingDamage) {
+            if (sourcesDamage.size < 2) continue // Single source: no choice needed
+
+            val totalDamage = sourcesDamage.values.sum()
+
+            // Find PreventNextDamage shields on this recipient (skip source-specific ones — already allocated)
+            for (floatingEffect in state.floatingEffects) {
+                val mod = floatingEffect.effect.modification
+                if (mod !is SerializableModification.PreventNextDamage) continue
+                if (mod.onlyFromSource != null) continue // Already allocated via prevention choice
+                if (recipientId !in floatingEffect.effect.affectedEntities) continue
+
+                val shieldAmount = mod.remainingAmount
+                if (shieldAmount >= totalDamage) continue // Shield covers all: no choice needed
+
+                // Shield can't cover all damage from multiple sources — player must choose
+                val decisionId = UUID.randomUUID().toString()
+
+                val decision = DistributeDecision(
+                    id = decisionId,
+                    playerId = recipientId,
+                    prompt = "Distribute $shieldAmount damage prevention among attacking creatures",
+                    context = DecisionContext(
+                        sourceId = floatingEffect.sourceId,
+                        sourceName = floatingEffect.sourceName,
+                        phase = DecisionPhase.COMBAT
+                    ),
+                    totalAmount = shieldAmount,
+                    targets = sourcesDamage.keys.toList(),
+                    minPerTarget = 0,
+                    maxPerTarget = sourcesDamage
+                )
+
+                val continuation = DamagePreventionContinuation(
+                    decisionId = decisionId,
+                    recipientId = recipientId,
+                    shieldEffectId = floatingEffect.id,
+                    shieldAmount = shieldAmount,
+                    damageBySource = sourcesDamage,
+                    firstStrike = firstStrike
+                )
+
+                val pausedState = state
+                    .withPendingDecision(decision)
+                    .pushContinuation(continuation)
+
+                return ExecutionResult.paused(pausedState, decision)
+            }
+        }
+
+        return null
     }
 
     /**

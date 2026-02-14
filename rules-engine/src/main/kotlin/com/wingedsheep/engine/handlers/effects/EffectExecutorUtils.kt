@@ -443,6 +443,8 @@ object EffectExecutorUtils {
             val effect = updatedEffects[i]
             val mod = effect.effect.modification
             if (mod is SerializableModification.PreventNextDamage && targetId in effect.effect.affectedEntities) {
+                // Source-specific shields (from CR 615.7 prevention distribution) only match their source
+                if (mod.onlyFromSource != null && mod.onlyFromSource != sourceId) continue
                 val prevented = minOf(mod.remainingAmount, remainingDamage)
                 remainingDamage -= prevented
                 val newRemaining = mod.remainingAmount - prevented
@@ -451,7 +453,7 @@ object EffectExecutorUtils {
                 } else {
                     updatedEffects[i] = effect.copy(
                         effect = effect.effect.copy(
-                            modification = SerializableModification.PreventNextDamage(newRemaining)
+                            modification = SerializableModification.PreventNextDamage(newRemaining, mod.onlyFromSource)
                         )
                     )
                 }

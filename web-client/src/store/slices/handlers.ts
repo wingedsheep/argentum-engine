@@ -260,6 +260,7 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
           totalAmount: decision.totalAmount,
           targets: decision.targets,
           minPerTarget: decision.minPerTarget,
+          ...(decision.maxPerTarget ? { maxPerTarget: decision.maxPerTarget } : {}),
           distribution: initial,
         })
       } else if (!decision && get().distributeState) {

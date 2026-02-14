@@ -9,6 +9,10 @@ import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerDiscardsDrawsEx
 import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerDiscardsOrLoseLifeExecutor
 import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerMayDrawExecutor
 import com.wingedsheep.engine.mechanics.combat.CombatManager
+import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
+import com.wingedsheep.engine.mechanics.layers.FloatingEffectData
+import com.wingedsheep.engine.mechanics.layers.Layer
+import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
@@ -135,6 +139,7 @@ class ContinuationHandler(
             is DiscardForChainContinuation -> resumeDiscardForChain(stateAfterPop, continuation, response)
             is DiscardChainCopyDecisionContinuation -> resumeDiscardChainCopyDecision(stateAfterPop, continuation, response)
             is DiscardChainCopyTargetContinuation -> resumeDiscardChainCopyTarget(stateAfterPop, continuation, response)
+            is DamagePreventionContinuation -> resumeDamagePrevention(stateAfterPop, continuation, response)
         }
     }
 
@@ -526,6 +531,54 @@ class ContinuationHandler(
 
         // Re-run combat damage — this attacker now has an assignment and will be skipped
         // in the pre-check. If another attacker needs a decision, it will pause again.
+        return combatManager?.applyCombatDamage(newState, firstStrike = continuation.firstStrike)
+            ?: ExecutionResult.success(newState)
+    }
+
+    /**
+     * Resume after defender distributes damage prevention among multiple combat damage sources.
+     *
+     * Removes the original prevention shield and creates per-source shields based on the
+     * player's allocation, then re-runs combat damage so the normal damage loop uses them.
+     */
+    private fun resumeDamagePrevention(
+        state: GameState,
+        continuation: DamagePreventionContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is DistributionResponse) {
+            return ExecutionResult.error(state, "Expected distribution response for damage prevention")
+        }
+
+        // Remove the original shield
+        val updatedEffects = state.floatingEffects.toMutableList()
+        val shieldIndex = updatedEffects.indexOfFirst { it.id == continuation.shieldEffectId }
+        val originalShield = if (shieldIndex >= 0) updatedEffects.removeAt(shieldIndex) else null
+
+        // Create per-source prevention shields based on the player's allocation
+        val timestamp = originalShield?.timestamp ?: System.currentTimeMillis()
+        for ((sourceId, preventionAmount) in response.distribution) {
+            if (preventionAmount <= 0) continue
+            updatedEffects.add(
+                ActiveFloatingEffect(
+                    id = EntityId(java.util.UUID.randomUUID().toString()),
+                    effect = FloatingEffectData(
+                        layer = Layer.ABILITY,
+                        modification = SerializableModification.PreventNextDamage(preventionAmount, onlyFromSource = sourceId),
+                        affectedEntities = setOf(continuation.recipientId)
+                    ),
+                    duration = originalShield?.duration ?: com.wingedsheep.sdk.scripting.Duration.EndOfTurn,
+                    sourceId = originalShield?.sourceId,
+                    sourceName = originalShield?.sourceName,
+                    controllerId = originalShield?.controllerId ?: continuation.recipientId,
+                    timestamp = timestamp
+                )
+            )
+        }
+
+        val newState = state.copy(floatingEffects = updatedEffects)
+
+        // Re-run combat damage — the per-source shields will be consumed by the normal damage loop
         return combatManager?.applyCombatDamage(newState, firstStrike = continuation.firstStrike)
             ?: ExecutionResult.success(newState)
     }

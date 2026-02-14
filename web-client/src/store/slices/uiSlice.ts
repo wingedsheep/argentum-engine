@@ -837,12 +837,15 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
       const dist = state.distributeState
       const totalAllocated = Object.values(dist.distribution).reduce((sum, v) => sum + v, 0)
       if (totalAllocated >= dist.totalAmount) return state
+      const current = dist.distribution[targetId] ?? 0
+      const maxForTarget = dist.maxPerTarget?.[targetId]
+      if (maxForTarget !== undefined && current >= maxForTarget) return state
       return {
         distributeState: {
           ...dist,
           distribution: {
             ...dist.distribution,
-            [targetId]: (dist.distribution[targetId] ?? 0) + 1,
+            [targetId]: current + 1,
           },
         },
       }
