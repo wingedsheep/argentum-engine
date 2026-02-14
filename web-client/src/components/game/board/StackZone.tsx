@@ -54,8 +54,15 @@ export function StackDisplay() {
         return sourceId ? gameState?.cards[sourceId] : null
       })()
     : null
+  const stackImageWidth = responsive.isMobile ? 44 : 60
+  const stackImageHeight = responsive.isMobile ? 62 : 84
+
   return (
-    <div style={styles.stackContainer}>
+    <div style={{
+      ...styles.stackContainer,
+      left: responsive.isMobile ? 4 : 16,
+      padding: responsive.isMobile ? '4px 6px' : '8px 12px',
+    }}>
       {/* Regular stack items */}
       {stackCards.length > 0 && (
         <>
@@ -76,7 +83,7 @@ export function StackDisplay() {
                   data-card-id={card.id}
                   style={{
                     ...styles.stackItem,
-                    marginTop: index === 0 ? 0 : -84 + cardOffset, // Overlap cards, showing cardOffset pixels of each
+                    marginTop: index === 0 ? 0 : -stackImageHeight + cardOffset, // Overlap cards, showing cardOffset pixels of each
                     zIndex: index + 1, // Later cards (higher index = cast later) on top
                     ...(isValidTarget && !isSelectedTarget ? {
                       boxShadow: '0 0 12px 4px rgba(255, 200, 0, 0.8)',
@@ -96,6 +103,8 @@ export function StackDisplay() {
                     alt={card.name}
                     style={{
                       ...styles.stackItemImage,
+                      width: stackImageWidth,
+                      height: stackImageHeight,
                       cursor: isValidTarget ? 'pointer' : 'default',
                       ...(card.sourceZone === 'GRAVEYARD' ? {
                         opacity: 0.7,
@@ -202,6 +211,8 @@ export function StackDisplay() {
                 alt={sourceCard.name}
                 style={{
                   ...styles.stackItemImage,
+                  width: stackImageWidth,
+                  height: stackImageHeight,
                   boxShadow: '0 0 12px 4px rgba(255, 107, 53, 0.6)',
                   borderRadius: 6,
                   cursor: 'default',

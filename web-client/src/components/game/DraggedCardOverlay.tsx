@@ -15,7 +15,7 @@ export function DraggedCardOverlay() {
   const gameState = useGameStore((state) => state.gameState)
   const [mousePos, setMousePos] = useState<Point | null>(null)
 
-  // Track mouse position while dragging
+  // Track mouse/touch position while dragging
   useEffect(() => {
     if (!draggingCardId) {
       setMousePos(null)
@@ -26,11 +26,22 @@ export function DraggedCardOverlay() {
       setMousePos({ x: e.clientX, y: e.clientY })
     }
 
+    const handleTouchMove = (e: TouchEvent) => {
+      const touch = e.touches[0]
+      if (touch) {
+        setMousePos({ x: touch.clientX, y: touch.clientY })
+      }
+    }
+
     // Set initial position
     handleMouseMove({ clientX: 0, clientY: 0 } as MouseEvent)
 
     window.addEventListener('mousemove', handleMouseMove)
-    return () => window.removeEventListener('mousemove', handleMouseMove)
+    window.addEventListener('touchmove', handleTouchMove)
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('touchmove', handleTouchMove)
+    }
   }, [draggingCardId])
 
   if (!draggingCardId || !mousePos || !gameState) return null

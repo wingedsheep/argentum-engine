@@ -36,7 +36,8 @@ export function CardPreview() {
     return () => clearTimeout(timer)
   }, [hoveredCardId, lastHoveredId])
 
-  if (!hoveredCardId || !gameState) return null
+  // Card preview relies on hover which doesn't work on touch devices
+  if (!hoveredCardId || !gameState || responsive.isMobile) return null
 
   const card = gameState.cards[hoveredCardId]
   if (!card) return null

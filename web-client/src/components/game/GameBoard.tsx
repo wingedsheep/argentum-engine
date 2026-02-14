@@ -197,15 +197,18 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
       </div>
 
       {/* Center - Life totals, phase indicator, and stack */}
-      <div style={styles.centerArea}>
+      <div style={{
+        ...styles.centerArea,
+        gap: responsive.isMobile ? 6 : 16,
+      }}>
         {/* Opponent life (left side) */}
         <div style={styles.centerLifeSection}>
           {effectiveOpponent && (
             <>
               <LifeDisplay life={effectiveOpponent.life} playerId={effectiveOpponent.playerId} playerName={effectiveOpponent.name} spectatorMode={spectatorMode} />
-              <span style={{ ...styles.playerName, fontSize: responsive.fontSize.small }}>{effectiveOpponent.name}</span>
-              <ActiveEffectsBadges effects={effectiveOpponent.activeEffects} />
-              {effectiveOpponent.manaPool && <ManaPool manaPool={effectiveOpponent.manaPool} />}
+              {!responsive.isMobile && <span style={{ ...styles.playerName, fontSize: responsive.fontSize.small }}>{effectiveOpponent.name}</span>}
+              {!responsive.isMobile && <ActiveEffectsBadges effects={effectiveOpponent.activeEffects} />}
+              {!responsive.isMobile && effectiveOpponent.manaPool && <ManaPool manaPool={effectiveOpponent.manaPool} />}
             </>
           )}
         </div>
@@ -232,9 +235,9 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
           {effectiveViewingPlayer && (
             <>
               <LifeDisplay life={effectiveViewingPlayer.life} isPlayer playerId={effectiveViewingPlayer.playerId} playerName={effectiveViewingPlayer.name} spectatorMode={spectatorMode} />
-              <span style={{ ...styles.playerName, fontSize: responsive.fontSize.small }}>{effectiveViewingPlayer.name}</span>
-              <ActiveEffectsBadges effects={effectiveViewingPlayer.activeEffects} />
-              {effectiveViewingPlayer.manaPool && <ManaPool manaPool={effectiveViewingPlayer.manaPool} />}
+              {!responsive.isMobile && <span style={{ ...styles.playerName, fontSize: responsive.fontSize.small }}>{effectiveViewingPlayer.name}</span>}
+              {!responsive.isMobile && <ActiveEffectsBadges effects={effectiveViewingPlayer.activeEffects} />}
+              {!responsive.isMobile && effectiveViewingPlayer.manaPool && <ManaPool manaPool={effectiveViewingPlayer.manaPool} />}
             </>
           )}
         </div>

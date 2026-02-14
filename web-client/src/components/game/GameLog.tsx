@@ -81,7 +81,7 @@ const styles: Record<string, React.CSSProperties> = {
     bottom: 12,
     left: 12,
     zIndex: 500,
-    width: 320,
+    width: 'min(320px, calc(100vw - 24px))',
     maxHeight: 300,
     display: 'flex',
     flexDirection: 'column',

@@ -243,7 +243,7 @@ export function CombatArrows() {
     !(pendingDecision.type === 'SelectCardsDecision' && pendingDecision.useTargetingUI) &&
     !(pendingDecision.type === 'YesNoDecision' && pendingDecision.context.triggeringEntityId)
 
-  // Track mouse position during drag
+  // Track mouse/touch position during drag
   useEffect(() => {
     if (!draggingBlockerId) {
       setMousePos(null)
@@ -254,8 +254,19 @@ export function CombatArrows() {
       setMousePos({ x: e.clientX, y: e.clientY })
     }
 
+    const handleTouchMove = (e: TouchEvent) => {
+      const touch = e.touches[0]
+      if (touch) {
+        setMousePos({ x: touch.clientX, y: touch.clientY })
+      }
+    }
+
     window.addEventListener('mousemove', handleMouseMove)
-    return () => window.removeEventListener('mousemove', handleMouseMove)
+    window.addEventListener('touchmove', handleTouchMove)
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('touchmove', handleTouchMove)
+    }
   }, [draggingBlockerId])
 
   // Check if we're in active declare blockers mode (local state)

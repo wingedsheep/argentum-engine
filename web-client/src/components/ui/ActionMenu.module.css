@@ -15,6 +15,12 @@
   pointer-events: auto;
 }
 
+@media (max-width: 639px) {
+  .container {
+    bottom: 100px;
+  }
+}
+
 /* =========================================================================
  * Panel
  * ========================================================================= */
@@ -31,6 +37,14 @@
   align-items: center;
 }
 
+@media (max-width: 639px) {
+  .panel {
+    padding: var(--space-3);
+    min-width: 180px;
+    max-width: 280px;
+  }
+}
+
 /* =========================================================================
  * Card Image Container
  * ========================================================================= */
@@ -42,6 +56,14 @@
   overflow: hidden;
   background-color: var(--bg-surface-3);
   position: relative;
+}
+
+@media (max-width: 639px) {
+  .cardImageContainer {
+    width: 120px;
+    height: 168px;
+    margin-bottom: var(--space-2);
+  }
 }
 
 .cardImage {

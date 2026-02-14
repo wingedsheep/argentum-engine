@@ -124,6 +124,8 @@ export function GameCard({
     ? Object.values(distributeState.distribution).reduce((sum, v) => sum + v, 0)
     : 0
   const distributeRemaining = distributeState ? distributeState.totalAmount - distributeTotalAllocated : 0
+  const distributeMaxForCard = distributeState?.maxPerTarget?.[card.id]
+  const distributeAtMax = distributeMaxForCard !== undefined && distributeAllocated >= distributeMaxForCard
 
   // Combat trigger YesNo check (inline buttons on triggering entity card)
   const isCombatTriggerYesNo = pendingDecision?.type === 'YesNoDecision'
@@ -150,7 +152,8 @@ export function GameCard({
   // Valid blockers with legal actions (e.g., activated abilities) are still playable since blocking uses drag.
   // Face-down cards can be playable too (for TurnFaceUp action)
   const isCombatRoleCard = isValidAttacker || (isValidBlocker && !hasLegalActions) || isAttackingInBlockerMode
-  const isPlayable = interactive && hasLegalActions && (!isInCombatMode || !isCombatRoleCard)
+  const hasActiveDecision = pendingDecision !== null
+  const isPlayable = interactive && hasLegalActions && (!isInCombatMode || !isCombatRoleCard) && !hasActiveDecision
 
   const cardImageUrl = faceDown
     ? MORPH_FACE_DOWN_IMAGE_URL
@@ -180,8 +183,11 @@ export function GameCard({
   const shouldShowCastModal = playableActions.length > 1 || (hasMultiplePotentialOptions && playableActions.length > 0)
   const canDragToPlay = inHand && playableAction && !isInCombatMode && !isGhost
 
-  // Handle mouse down - start dragging for blockers or hand cards
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+  // Handle mouse/touch down - start dragging for blockers or hand cards
+  const handlePointerDown = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    const clientX = 'touches' in e ? e.touches[0]!.clientX : e.clientX
+    const clientY = 'touches' in e ? e.touches[0]!.clientY : e.clientY
+
     if (isInBlockerMode && isValidBlocker && !isSelectedAsBlocker) {
       e.preventDefault()
       startDraggingBlocker(card.id)
@@ -190,13 +196,13 @@ export function GameCard({
     // Start dragging card from hand
     if (canDragToPlay) {
       e.preventDefault()
-      dragStartPos.current = { x: e.clientX, y: e.clientY }
+      dragStartPos.current = { x: clientX, y: clientY }
       startDraggingCard(card.id)
     }
   }, [isInBlockerMode, isValidBlocker, isSelectedAsBlocker, startDraggingBlocker, canDragToPlay, startDraggingCard, card.id])
 
-  // Handle mouse up - drop blocker on attacker or cancel drag
-  const handleMouseUp = useCallback(() => {
+  // Handle mouse/touch up - drop blocker on attacker or cancel drag
+  const handlePointerUp = useCallback(() => {
     if (isInBlockerMode && draggingBlockerId && isAttackingInBlockerMode) {
       // Dropping on an attacker - assign the blocker
       assignBlocker(draggingBlockerId, card.id)
@@ -204,16 +210,16 @@ export function GameCard({
     }
   }, [isInBlockerMode, draggingBlockerId, isAttackingInBlockerMode, assignBlocker, stopDraggingBlocker, card.id])
 
-  // Global mouse up handler for card dragging (to detect drop outside hand)
+  // Global mouse/touch up handler for card dragging (to detect drop outside hand)
   useEffect(() => {
     if (draggingCardId !== card.id) return
 
-    const handleGlobalMouseUp = (e: MouseEvent) => {
+    const handleGlobalPointerUp = (clientX: number, clientY: number) => {
       // Require minimum drag distance to prevent accidental casts
       const MIN_DRAG_DISTANCE = 30
       const start = dragStartPos.current
       const draggedFarEnough = start != null &&
-        Math.hypot(e.clientX - start.x, e.clientY - start.y) >= MIN_DRAG_DISTANCE
+        Math.hypot(clientX - start.x, clientY - start.y) >= MIN_DRAG_DISTANCE
       dragStartPos.current = null
 
       // Check if dropped outside the hand area - if so, play the card
@@ -222,8 +228,8 @@ export function GameCard({
 
       if (handEl) {
         const rect = handEl.getBoundingClientRect()
-        isOverHand = e.clientX >= rect.left && e.clientX <= rect.right &&
-                     e.clientY >= rect.top && e.clientY <= rect.bottom
+        isOverHand = clientX >= rect.left && clientX <= rect.right &&
+                     clientY >= rect.top && clientY <= rect.bottom
       }
 
       // Mark that drag handled this interaction to prevent duplicate click
@@ -320,11 +326,22 @@ export function GameCard({
       stopDraggingCard()
     }
 
-    window.addEventListener('mouseup', handleGlobalMouseUp)
-    return () => window.removeEventListener('mouseup', handleGlobalMouseUp)
+    const handleMouseUp = (e: MouseEvent) => handleGlobalPointerUp(e.clientX, e.clientY)
+    const handleTouchEnd = (e: TouchEvent) => {
+      const touch = e.changedTouches[0]
+      if (touch) handleGlobalPointerUp(touch.clientX, touch.clientY)
+    }
+
+    window.addEventListener('mouseup', handleMouseUp)
+    window.addEventListener('touchend', handleTouchEnd)
+    return () => {
+      window.removeEventListener('mouseup', handleMouseUp)
+      window.removeEventListener('touchend', handleTouchEnd)
+    }
   }, [draggingCardId, card.id, playableAction, shouldShowCastModal, submitAction, stopDraggingCard, startTargeting, startXSelection, handleCardClick, selectCard, isInAttackerMode, isValidAttacker, toggleAttacker, isInBlockerMode, isValidBlocker, isSelectedAsBlocker, removeBlockerAssignment])
 
-  // Global mouse up handler to cancel drag
+  // Global mouse/touch up handler to cancel blocker drag
+  // For touch, we also detect drop target since touchend fires on the originating element
   useEffect(() => {
     if (!draggingBlockerId) return
 
@@ -332,9 +349,32 @@ export function GameCard({
       stopDraggingBlocker()
     }
 
+    const handleGlobalTouchEnd = (e: TouchEvent) => {
+      const touch = e.changedTouches[0]
+      if (touch && isInBlockerMode) {
+        // Find the element under the touch point
+        const elementAtPoint = document.elementFromPoint(touch.clientX, touch.clientY)
+        if (elementAtPoint) {
+          // Walk up the DOM to find a card element
+          const cardEl = elementAtPoint.closest('[data-card-id]')
+          if (cardEl) {
+            const targetCardId = cardEl.getAttribute('data-card-id')
+            if (targetCardId && combatState?.attackingCreatures.includes(targetCardId as any)) {
+              assignBlocker(draggingBlockerId, targetCardId as any)
+            }
+          }
+        }
+      }
+      stopDraggingBlocker()
+    }
+
     window.addEventListener('mouseup', handleGlobalMouseUp)
-    return () => window.removeEventListener('mouseup', handleGlobalMouseUp)
-  }, [draggingBlockerId, stopDraggingBlocker])
+    window.addEventListener('touchend', handleGlobalTouchEnd)
+    return () => {
+      window.removeEventListener('mouseup', handleGlobalMouseUp)
+      window.removeEventListener('touchend', handleGlobalTouchEnd)
+    }
+  }, [draggingBlockerId, stopDraggingBlocker, isInBlockerMode, combatState, assignBlocker])
 
   const handleClick = () => {
     // If the drag handler already processed this interaction, skip
@@ -344,7 +384,7 @@ export function GameCard({
     }
 
     // Handle inline distribute mode - click to add damage
-    if (isDistributeTarget && distributeRemaining > 0) {
+    if (isDistributeTarget && distributeRemaining > 0 && !distributeAtMax) {
       incrementDistribute(card.id)
       return
     }
@@ -530,8 +570,10 @@ export function GameCard({
       {...(isGhost ? { 'data-ghost': 'true' } : {})}
       onClick={handleClick}
       onDoubleClick={handleDoubleClickEvent}
-      onMouseDown={handleMouseDown}
-      onMouseUp={handleMouseUp}
+      onMouseDown={handlePointerDown}
+      onMouseUp={handlePointerUp}
+      onTouchStart={handlePointerDown}
+      onTouchEnd={handlePointerUp}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       style={{
@@ -843,17 +885,17 @@ export function GameCard({
           </span>
           <button
             onClick={(e) => { e.stopPropagation(); incrementDistribute(card.id) }}
-            disabled={distributeRemaining <= 0}
+            disabled={distributeRemaining <= 0 || distributeAtMax}
             style={{
               width: responsive.isMobile ? 20 : 26,
               height: responsive.isMobile ? 20 : 26,
               borderRadius: 4,
               border: 'none',
-              backgroundColor: distributeRemaining <= 0 ? '#333' : '#16a34a',
-              color: distributeRemaining <= 0 ? '#666' : 'white',
+              backgroundColor: (distributeRemaining <= 0 || distributeAtMax) ? '#333' : '#16a34a',
+              color: (distributeRemaining <= 0 || distributeAtMax) ? '#666' : 'white',
               fontSize: responsive.isMobile ? 14 : 16,
               fontWeight: 'bold',
-              cursor: distributeRemaining <= 0 ? 'not-allowed' : 'pointer',
+              cursor: (distributeRemaining <= 0 || distributeAtMax) ? 'not-allowed' : 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',

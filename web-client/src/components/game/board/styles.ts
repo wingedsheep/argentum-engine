@@ -33,6 +33,7 @@ export const styles: Record<string, React.CSSProperties> = {
     flex: 1,
     gap: 16,
     width: '100%',
+    overflow: 'hidden',
   },
   centerLifeSection: {
     display: 'flex',
@@ -532,6 +533,7 @@ export const styles: Record<string, React.CSSProperties> = {
     zIndex: 50,
     maxHeight: '60vh',
     overflowY: 'auto',
+    maxWidth: 'calc(100vw - 32px)',
   },
   stackHeader: {
     color: '#b088d0',
