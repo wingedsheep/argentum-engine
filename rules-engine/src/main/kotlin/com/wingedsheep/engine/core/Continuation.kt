@@ -1231,6 +1231,32 @@ data class ChooseCreatureTypeMustAttackContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after a player chose a creature type for Harsh Mercy.
+ *
+ * Each player (in APNAP order) chooses a creature type. After all players have chosen,
+ * destroy all creatures that aren't of any chosen type (can't be regenerated).
+ *
+ * @property sourceId The spell that created this effect
+ * @property sourceName Name of the source for display
+ * @property controllerId The controller of the spell
+ * @property currentPlayerId The player whose choice we are waiting for
+ * @property remainingPlayers Players who still need to choose (APNAP order)
+ * @property chosenTypes Creature types chosen so far by each player
+ * @property creatureTypes The creature type options list
+ */
+@Serializable
+data class HarshMercyContinuation(
+    override val decisionId: String,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val controllerId: EntityId,
+    val currentPlayerId: EntityId,
+    val remainingPlayers: List<EntityId>,
+    val chosenTypes: List<String>,
+    val creatureTypes: List<String>
+) : ContinuationFrame
+
+/**
  * Resume after the destroyed permanent's controller decides whether to copy Chain of Acid.
  *
  * When the yes/no decision is answered:

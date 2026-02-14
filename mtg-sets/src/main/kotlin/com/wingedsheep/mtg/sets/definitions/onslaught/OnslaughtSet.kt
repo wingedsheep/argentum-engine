@@ -77,6 +77,7 @@ object OnslaughtSet {
         ConvalescentCare,
         SigilOfTheNewDawn,
         WeatheredWayfarer,
+        HarshMercy,
 
         // Blue creatures and spells
         AirborneAid,

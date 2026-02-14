@@ -306,6 +306,20 @@ data class BounceAndChainCopyEffect(
     }
 }
 
+/**
+ * Each player chooses a creature type. Destroy all creatures that aren't of a type chosen this way.
+ * They can't be regenerated.
+ *
+ * Used for Harsh Mercy. Each player (in APNAP order) chooses a creature type.
+ * After all choices, creatures not matching any chosen type are destroyed.
+ */
+@SerialName("HarshMercy")
+@Serializable
+data object HarshMercyEffect : Effect {
+    override val description: String =
+        "Each player chooses a creature type. Destroy all creatures that aren't of a type chosen this way. They can't be regenerated"
+}
+
 @SerialName("MoveToZone")
 @Serializable
 data class MoveToZoneEffect(
