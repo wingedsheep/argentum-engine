@@ -237,6 +237,28 @@ data class EachPlayerDiscardsOrLoseLifeEffect(
 }
 
 /**
+ * Target player discards cards, then that player may copy this spell
+ * and may choose a new target for that copy.
+ * Used for Chain of Smog and similar "chain discard" mechanics.
+ *
+ * @property count Number of cards to discard
+ * @property target The player who discards
+ * @property spellName The name of the spell (for the copy's description on the stack)
+ */
+@SerialName("DiscardAndChainCopy")
+@Serializable
+data class DiscardAndChainCopyEffect(
+    val count: Int,
+    val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetPlayer),
+    val spellName: String
+) : Effect {
+    override val description: String = buildString {
+        append("Target player discards ${if (count == 1) "a card" else "$count cards"}. ")
+        append("That player may copy this spell and may choose a new target for that copy")
+    }
+}
+
+/**
  * Reveal a player's hand (publicly visible to all players).
  * This is an atomic effect that just reveals - use with CompositeEffect for
  * "reveal and do something based on what's revealed" patterns.

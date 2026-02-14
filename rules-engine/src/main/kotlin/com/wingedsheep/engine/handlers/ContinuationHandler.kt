@@ -132,6 +132,9 @@ class ContinuationHandler(
             is BounceChainCopyDecisionContinuation -> resumeBounceChainCopyDecision(stateAfterPop, continuation, response)
             is BounceChainCopyLandContinuation -> resumeBounceChainCopyLand(stateAfterPop, continuation, response)
             is BounceChainCopyTargetContinuation -> resumeBounceChainCopyTarget(stateAfterPop, continuation, response)
+            is DiscardForChainContinuation -> resumeDiscardForChain(stateAfterPop, continuation, response)
+            is DiscardChainCopyDecisionContinuation -> resumeDiscardChainCopyDecision(stateAfterPop, continuation, response)
+            is DiscardChainCopyTargetContinuation -> resumeDiscardChainCopyTarget(stateAfterPop, continuation, response)
         }
     }
 
@@ -4487,6 +4490,200 @@ class ContinuationHandler(
                 )
             )
         )
+    }
+
+    /**
+     * Resume after player selected cards to discard for Chain of Smog.
+     * Discards the selected cards, then offers the chain copy decision.
+     */
+    private fun resumeDiscardForChain(
+        state: GameState,
+        continuation: DiscardForChainContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for discard chain")
+        }
+
+        val playerId = continuation.playerId
+        val selectedCards = response.selectedCards
+
+        // Move selected cards from hand to graveyard
+        var newState = state
+        val handZone = ZoneKey(playerId, Zone.HAND)
+        val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
+
+        for (cardId in selectedCards) {
+            newState = newState.removeFromZone(handZone, cardId)
+            newState = newState.addToZone(graveyardZone, cardId)
+        }
+
+        val events = mutableListOf<GameEvent>(
+            CardsDiscardedEvent(playerId, selectedCards)
+        )
+
+        // Now offer the chain copy
+        val requirement = com.wingedsheep.sdk.targeting.TargetPlayer()
+        val legalTargets = targetFinder.findLegalTargets(
+            newState, requirement, playerId, continuation.sourceId
+        )
+
+        if (legalTargets.isEmpty()) {
+            return checkForMoreContinuations(newState, events)
+        }
+
+        val decisionId = java.util.UUID.randomUUID().toString()
+        val decision = YesNoDecision(
+            id = decisionId,
+            playerId = playerId,
+            prompt = "Copy ${continuation.spellName} and choose a new target?",
+            context = DecisionContext(
+                sourceId = continuation.sourceId,
+                sourceName = continuation.spellName,
+                phase = DecisionPhase.RESOLUTION
+            ),
+            yesText = "Copy",
+            noText = "Decline"
+        )
+
+        val copyContinuation = DiscardChainCopyDecisionContinuation(
+            decisionId = decisionId,
+            targetPlayerId = playerId,
+            count = continuation.count,
+            spellName = continuation.spellName,
+            sourceId = continuation.sourceId
+        )
+
+        newState = newState.withPendingDecision(decision).pushContinuation(copyContinuation)
+
+        return ExecutionResult.paused(
+            newState,
+            decision,
+            events + listOf(
+                DecisionRequestedEvent(
+                    decisionId = decisionId,
+                    playerId = playerId,
+                    decisionType = "YES_NO",
+                    prompt = decision.prompt
+                )
+            )
+        )
+    }
+
+    /**
+     * Resume after the discarding player decides whether to copy Chain of Smog.
+     */
+    private fun resumeDiscardChainCopyDecision(
+        state: GameState,
+        continuation: DiscardChainCopyDecisionContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is YesNoResponse) {
+            return ExecutionResult.error(state, "Expected yes/no response for discard chain copy decision")
+        }
+
+        if (!response.choice) {
+            // Player declined — chain ends
+            return checkForMoreContinuations(state, emptyList())
+        }
+
+        // Player wants to copy — find legal player targets
+        val requirement = com.wingedsheep.sdk.targeting.TargetPlayer()
+        val legalTargets = targetFinder.findLegalTargets(
+            state, requirement, continuation.targetPlayerId, continuation.sourceId
+        )
+
+        if (legalTargets.isEmpty()) {
+            return checkForMoreContinuations(state, emptyList())
+        }
+
+        // Present target selection
+        val decisionId = java.util.UUID.randomUUID().toString()
+        val decision = SelectCardsDecision(
+            id = decisionId,
+            playerId = continuation.targetPlayerId,
+            prompt = "Choose a target player for the copy of ${continuation.spellName}",
+            context = DecisionContext(
+                sourceId = continuation.sourceId,
+                sourceName = continuation.spellName,
+                phase = DecisionPhase.RESOLUTION
+            ),
+            options = legalTargets,
+            minSelections = 1,
+            maxSelections = 1,
+            useTargetingUI = true
+        )
+
+        val targetContinuation = DiscardChainCopyTargetContinuation(
+            decisionId = decisionId,
+            copyControllerId = continuation.targetPlayerId,
+            count = continuation.count,
+            spellName = continuation.spellName,
+            sourceId = continuation.sourceId,
+            candidateTargets = legalTargets
+        )
+
+        val newState = state.withPendingDecision(decision).pushContinuation(targetContinuation)
+
+        return ExecutionResult.paused(
+            newState,
+            decision,
+            listOf(
+                DecisionRequestedEvent(
+                    decisionId = decisionId,
+                    playerId = continuation.targetPlayerId,
+                    decisionType = "SELECT_CARDS",
+                    prompt = decision.prompt
+                )
+            )
+        )
+    }
+
+    /**
+     * Resume after the copying player selects a target player for the discard chain copy.
+     * Creates a triggered ability on the stack with DiscardAndChainCopyEffect.
+     */
+    private fun resumeDiscardChainCopyTarget(
+        state: GameState,
+        continuation: DiscardChainCopyTargetContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for discard chain copy target")
+        }
+
+        val selectedTarget = response.selectedCards.firstOrNull()
+            ?: return checkForMoreContinuations(state, emptyList())
+
+        if (selectedTarget !in continuation.candidateTargets) {
+            return ExecutionResult.error(state, "Invalid discard chain copy target: $selectedTarget")
+        }
+
+        // Create a copy of the spell on the stack as a triggered ability
+        val ability = TriggeredAbilityOnStackComponent(
+            sourceId = continuation.sourceId ?: EntityId.generate(),
+            sourceName = continuation.spellName,
+            controllerId = continuation.copyControllerId,
+            effect = com.wingedsheep.sdk.scripting.DiscardAndChainCopyEffect(
+                count = continuation.count,
+                target = com.wingedsheep.sdk.scripting.EffectTarget.ContextTarget(0),
+                spellName = continuation.spellName
+            ),
+            description = "Copy of ${continuation.spellName}"
+        )
+
+        val targets = listOf(ChosenTarget.Player(selectedTarget))
+        val targetRequirements = listOf(
+            com.wingedsheep.sdk.targeting.TargetPlayer()
+        )
+
+        val putResult = stackResolver.putTriggeredAbility(state, ability, targets, targetRequirements)
+
+        if (!putResult.isSuccess) {
+            return putResult
+        }
+
+        return checkForMoreContinuations(putResult.state, putResult.events.toList())
     }
 
     private fun findControllerLands(state: GameState, controllerId: EntityId): List<EntityId> {

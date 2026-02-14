@@ -159,6 +159,9 @@ val engineSerializersModule = SerializersModule {
         subclass(BounceChainCopyDecisionContinuation::class)
         subclass(BounceChainCopyLandContinuation::class)
         subclass(BounceChainCopyTargetContinuation::class)
+        subclass(DiscardForChainContinuation::class)
+        subclass(DiscardChainCopyDecisionContinuation::class)
+        subclass(DiscardChainCopyTargetContinuation::class)
     }
 
     // Component hierarchy (for GameState persistence)

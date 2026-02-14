@@ -125,6 +125,7 @@ object OnslaughtSet {
 
         // Black creatures and spells
         AccursedCentaur,
+        ChainOfSmog,
         Blackmail,
         Boneknitter,
         AphettoDredging,
