@@ -4,13 +4,13 @@
  * Update both this file and variables.css when changing these colors.
  */
 
-/** Cyan - valid/selectable targets */
-export const TARGET_COLOR = '#00ddff'
-export const TARGET_COLOR_BRIGHT = '#33eeff'
-export const TARGET_GLOW = 'rgba(0, 221, 255, 0.7)'
-export const TARGET_GLOW_BRIGHT = 'rgba(51, 238, 255, 0.95)'
-export const TARGET_GLOW_OUTER = 'rgba(0, 221, 255, 0.7)'
-export const TARGET_SHADOW = 'rgba(0, 221, 255, 0.5)'
+/** Icy blue - valid/selectable targets (bright yet visible on white cards) */
+export const TARGET_COLOR = '#00BBFF'
+export const TARGET_COLOR_BRIGHT = '#33CCFF'
+export const TARGET_GLOW = 'rgba(0, 187, 255, 0.7)'
+export const TARGET_GLOW_BRIGHT = 'rgba(51, 204, 255, 0.95)'
+export const TARGET_GLOW_OUTER = 'rgba(0, 187, 255, 0.7)'
+export const TARGET_SHADOW = 'rgba(0, 187, 255, 0.5)'
 
 /** Green - selected/confirmed targets */
 export const SELECTED_COLOR = '#44dd44'
