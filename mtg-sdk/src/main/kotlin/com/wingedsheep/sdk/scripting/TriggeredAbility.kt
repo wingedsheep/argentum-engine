@@ -23,7 +23,10 @@ data class TriggeredAbility(
     val elseEffect: Effect? = null,
     val activeZone: Zone = Zone.BATTLEFIELD,
     /** Intervening-if condition (Rule 603.4): checked when trigger would fire AND at resolution. */
-    val triggerCondition: Condition? = null
+    val triggerCondition: Condition? = null,
+    /** When true, the triggered ability is controlled by the triggering entity's controller
+     * instead of the source permanent's controller. Used for cards like Death Match. */
+    val controlledByTriggeringEntityController: Boolean = false
 ) {
     val description: String
         get() = buildString {
@@ -58,7 +61,8 @@ data class TriggeredAbility(
             targetRequirement: TargetRequirement? = null,
             elseEffect: Effect? = null,
             activeZone: Zone = Zone.BATTLEFIELD,
-            triggerCondition: Condition? = null
+            triggerCondition: Condition? = null,
+            controlledByTriggeringEntityController: Boolean = false
         ): TriggeredAbility =
             TriggeredAbility(
                 id = AbilityId.generate(),
@@ -68,7 +72,8 @@ data class TriggeredAbility(
                 targetRequirement = targetRequirement,
                 elseEffect = elseEffect,
                 activeZone = activeZone,
-                triggerCondition = triggerCondition
+                triggerCondition = triggerCondition,
+                controlledByTriggeringEntityController = controlledByTriggeringEntityController
             )
     }
 }

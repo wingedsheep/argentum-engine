@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 276 / 335
+**Implemented:** 277 / 335
 
 ---
 
@@ -86,7 +86,7 @@
 - [x] Daru Lancer
 - [x] Daunting Defender
 - [x] Dawning Purist
-- [ ] Death Match
+- [x] Death Match
 - [x] Death Pulse
 - [x] Defensive Maneuvers
 - [x] Demystify

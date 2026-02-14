@@ -592,6 +592,8 @@ class TriggeredAbilityBuilder {
     var triggerZone: Zone = Zone.BATTLEFIELD
     /** Intervening-if condition (Rule 603.4): checked when trigger would fire AND at resolution. */
     var triggerCondition: Condition? = null
+    /** When true, the triggered ability is controlled by the triggering entity's controller. */
+    var controlledByTriggeringEntityController: Boolean = false
 
     fun build(): TriggeredAbility {
         requireNotNull(effect) { "Triggered ability must have an effect" }
@@ -602,7 +604,8 @@ class TriggeredAbilityBuilder {
             targetRequirement = target,
             elseEffect = elseEffect,
             activeZone = triggerZone,
-            triggerCondition = triggerCondition
+            triggerCondition = triggerCondition,
+            controlledByTriggeringEntityController = controlledByTriggeringEntityController
         )
     }
 }

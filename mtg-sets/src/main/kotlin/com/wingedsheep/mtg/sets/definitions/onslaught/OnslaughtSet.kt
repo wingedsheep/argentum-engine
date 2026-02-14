@@ -140,6 +140,7 @@ object OnslaughtSet {
         CabalSlaver,
         CoverOfDarkness,
         CruelRevival,
+        DeathMatch,
         DeathPulse,
         DoomedNecromancer,
         EndemicPlague,

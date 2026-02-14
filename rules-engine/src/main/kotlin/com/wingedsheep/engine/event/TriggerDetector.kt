@@ -278,12 +278,25 @@ class TriggerDetector(
                             }
                         }
                     } else {
+                        // For abilities like Death Match where the triggered ability should be
+                        // controlled by the triggering entity's controller, not the source's controller
+                        val effectiveControllerId = if (ability.controlledByTriggeringEntityController) {
+                            val triggeringEntityId = TriggerContext.fromEvent(event).triggeringEntityId
+                            if (triggeringEntityId != null) {
+                                projected.getController(triggeringEntityId) ?: controllerId
+                            } else {
+                                controllerId
+                            }
+                        } else {
+                            controllerId
+                        }
+
                         triggers.add(
                             PendingTrigger(
                                 ability = ability,
                                 sourceId = entityId,
                                 sourceName = cardComponent.name,
-                                controllerId = controllerId,
+                                controllerId = effectiveControllerId,
                                 triggerContext = TriggerContext.fromEvent(event)
                             )
                         )
