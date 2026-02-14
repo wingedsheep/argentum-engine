@@ -9,6 +9,7 @@ import com.wingedsheep.engine.handlers.effects.ExecutorModule
 class PlayerExecutors : ExecutorModule {
     override fun executors(): List<EffectExecutor<*>> = listOf(
         AddCombatPhaseExecutor(),
+        CreateGlobalTriggeredAbilityUntilEndOfTurnExecutor(),
         PlayAdditionalLandsExecutor(),
         SkipCombatPhasesExecutor(),
         SkipUntapExecutor(),

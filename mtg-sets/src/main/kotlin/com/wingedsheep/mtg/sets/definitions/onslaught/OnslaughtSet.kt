@@ -150,6 +150,7 @@ object OnslaughtSet {
         EntrailsFeaster,
         FallenCleric,
         FadeFromMemory,
+        FalseCure,
         FeedingFrenzy,
         FesteringGoblin,
         GangrenousGoliath,
