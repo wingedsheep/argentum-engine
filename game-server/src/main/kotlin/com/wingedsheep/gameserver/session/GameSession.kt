@@ -30,6 +30,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.targeting.*
+import com.wingedsheep.engine.state.components.battlefield.GrantsControllerShroudComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
@@ -1923,17 +1924,17 @@ class GameSession(
     ): List<EntityId> {
         return when (requirement) {
             is TargetCreature -> findValidCreatureTargets(state, playerId, requirement.filter, sourceId)
-            is TargetPlayer -> state.turnOrder.toList()
-            is TargetOpponent -> state.turnOrder.filter { it != playerId }
+            is TargetPlayer -> state.turnOrder.filter { state.hasEntity(it) && !playerHasShroud(state, it) }
+            is TargetOpponent -> state.turnOrder.filter { it != playerId && state.hasEntity(it) && !playerHasShroud(state, it) }
             is AnyTarget -> {
-                // Any target = creatures + players
+                // Any target = creatures + planeswalkers + players
                 val creatures = findValidCreatureTargets(state, playerId, TargetFilter.Creature, sourceId)
-                val players = state.turnOrder.toList()
+                val players = state.turnOrder.filter { state.hasEntity(it) && !playerHasShroud(state, it) }
                 creatures + players
             }
             is TargetCreatureOrPlayer -> {
                 val creatures = findValidCreatureTargets(state, playerId, TargetFilter.Creature, sourceId)
-                val players = state.turnOrder.toList()
+                val players = state.turnOrder.filter { state.hasEntity(it) && !playerHasShroud(state, it) }
                 creatures + players
             }
             is TargetPermanent -> findValidPermanentTargets(state, playerId, requirement.filter, sourceId)
@@ -1984,6 +1985,17 @@ class GameSession(
         val battlefield = state.getBattlefield()
         val context = PredicateContext(controllerId = playerId, sourceId = sourceId)
         return battlefield.filter { entityId ->
+            val entityController = state.getEntity(entityId)?.get<ControllerComponent>()?.playerId
+
+            // Check hexproof - can't be targeted by opponents
+            if (projected.hasKeyword(entityId, Keyword.HEXPROOF) && entityController != playerId) {
+                return@filter false
+            }
+            // Check shroud - can't be targeted by anyone
+            if (projected.hasKeyword(entityId, Keyword.SHROUD)) {
+                return@filter false
+            }
+
             // Use projected state for correct face-down creature handling
             predicateEvaluator.matchesWithProjection(state, projected, entityId, filter.baseFilter, context)
         }
@@ -2003,6 +2015,17 @@ class GameSession(
         val battlefield = state.getBattlefield()
         val context = PredicateContext(controllerId = playerId, sourceId = sourceId)
         return battlefield.filter { entityId ->
+            val entityController = state.getEntity(entityId)?.get<ControllerComponent>()?.playerId
+
+            // Check hexproof - can't be targeted by opponents
+            if (projected.hasKeyword(entityId, Keyword.HEXPROOF) && entityController != playerId) {
+                return@filter false
+            }
+            // Check shroud - can't be targeted by anyone
+            if (projected.hasKeyword(entityId, Keyword.SHROUD)) {
+                return@filter false
+            }
+
             predicateEvaluator.matchesWithProjection(state, projected, entityId, filter.baseFilter, context)
         }
     }
@@ -2058,6 +2081,17 @@ class GameSession(
         val context = PredicateContext(controllerId = playerId)
         return state.stack.filter { spellId ->
             predicateEvaluator.matches(state, spellId, filter.baseFilter, context)
+        }
+    }
+
+    /**
+     * Check if a player has shroud (e.g., from True Believer's "You have shroud").
+     */
+    private fun playerHasShroud(state: GameState, playerId: EntityId): Boolean {
+        return state.getBattlefield().any { entityId ->
+            val container = state.getEntity(entityId) ?: return@any false
+            container.get<GrantsControllerShroudComponent>() != null &&
+                container.get<ControllerComponent>()?.playerId == playerId
         }
     }
 
