@@ -4,10 +4,18 @@ import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
+import com.wingedsheep.engine.mechanics.layers.FloatingEffectData
+import com.wingedsheep.engine.mechanics.layers.Layer
+import com.wingedsheep.engine.mechanics.layers.SerializableModification
+import com.wingedsheep.engine.mechanics.layers.Sublayer
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ChooseCreatureTypeModifyStatsEffect
+import com.wingedsheep.sdk.scripting.Duration
 import java.util.UUID
 import kotlin.reflect.KClass
 
@@ -34,13 +42,22 @@ class ChooseCreatureTypeModifyStatsExecutor(
         context: EffectContext
     ): ExecutionResult {
         val controllerId = context.controllerId
-        val allCreatureTypes = Subtype.ALL_CREATURE_TYPES
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
 
         // Evaluate dynamic amounts at resolution time
         val resolvedPower = amountEvaluator.evaluate(state, effect.powerModifier, context)
         val resolvedToughness = amountEvaluator.evaluate(state, effect.toughnessModifier, context)
 
+        // If creature type was already chosen during casting, apply directly
+        if (context.chosenCreatureType != null) {
+            return applyCreatureTypeModifyStats(
+                state, context.chosenCreatureType, controllerId, context.sourceId, sourceName,
+                resolvedPower, resolvedToughness, effect.duration
+            )
+        }
+
+        // Otherwise, pause for decision at resolution time (fallback)
+        val allCreatureTypes = Subtype.ALL_CREATURE_TYPES
         val decisionId = UUID.randomUUID().toString()
         val decision = ChooseOptionDecision(
             id = decisionId,
@@ -80,5 +97,68 @@ class ChooseCreatureTypeModifyStatsExecutor(
                 )
             )
         )
+    }
+
+    companion object {
+        fun applyCreatureTypeModifyStats(
+            state: GameState,
+            chosenType: String,
+            controllerId: EntityId,
+            sourceId: EntityId?,
+            sourceName: String?,
+            powerModifier: Int,
+            toughnessModifier: Int,
+            duration: Duration
+        ): ExecutionResult {
+            val affectedEntities = mutableSetOf<EntityId>()
+            val events = mutableListOf<GameEvent>()
+
+            for (entityId in state.getBattlefield()) {
+                val container = state.getEntity(entityId) ?: continue
+                val cardComponent = container.get<CardComponent>() ?: continue
+
+                if (!cardComponent.typeLine.isCreature && !container.has<FaceDownComponent>()) continue
+                if (!cardComponent.typeLine.hasSubtype(Subtype(chosenType))) continue
+
+                affectedEntities.add(entityId)
+                events.add(
+                    StatsModifiedEvent(
+                        targetId = entityId,
+                        targetName = cardComponent.name,
+                        powerChange = powerModifier,
+                        toughnessChange = toughnessModifier,
+                        sourceName = sourceName ?: "Unknown"
+                    )
+                )
+            }
+
+            if (affectedEntities.isEmpty()) {
+                return ExecutionResult.success(state, emptyList())
+            }
+
+            val floatingEffect = ActiveFloatingEffect(
+                id = EntityId.generate(),
+                effect = FloatingEffectData(
+                    layer = Layer.POWER_TOUGHNESS,
+                    sublayer = Sublayer.MODIFICATIONS,
+                    modification = SerializableModification.ModifyPowerToughness(
+                        powerMod = powerModifier,
+                        toughnessMod = toughnessModifier
+                    ),
+                    affectedEntities = affectedEntities
+                ),
+                duration = duration,
+                sourceId = sourceId,
+                sourceName = sourceName,
+                controllerId = controllerId,
+                timestamp = System.currentTimeMillis()
+            )
+
+            val newState = state.copy(
+                floatingEffects = state.floatingEffects + floatingEffect
+            )
+
+            return ExecutionResult.success(newState, events)
+        }
     }
 }
