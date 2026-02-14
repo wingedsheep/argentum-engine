@@ -538,17 +538,17 @@ export function GameCard({
     borderStyle = '2px solid #6644aa'
     boxShadow = '0 0 8px rgba(102, 68, 170, 0.4), 0 0 16px rgba(102, 68, 170, 0.2)'
   } else if (isPlayable && isHovered) {
-    // Bright highlight when hovering over a playable card
-    borderStyle = '3px solid #44ff44'
-    boxShadow = '0 0 20px rgba(68, 255, 68, 0.9), 0 0 40px rgba(0, 255, 0, 0.5)'
+    // Bright cyan highlight when hovering over a playable card
+    borderStyle = `3px solid ${TARGET_COLOR_BRIGHT}`
+    boxShadow = `0 0 20px ${TARGET_GLOW_BRIGHT}, 0 0 40px ${TARGET_GLOW_OUTER}`
   } else if (isPlayable) {
-    // Green highlight for playable cards
-    borderStyle = '2px solid #00ff00'
-    boxShadow = '0 0 12px rgba(0, 255, 0, 0.5), 0 0 24px rgba(0, 255, 0, 0.3)'
+    // Cyan highlight for playable cards
+    borderStyle = `2px solid ${TARGET_COLOR}`
+    boxShadow = `0 0 12px ${TARGET_GLOW}, 0 0 24px ${TARGET_SHADOW}`
   } else if (isInAutoTapPreview) {
     // Cyan highlight for lands that would be auto-tapped
-    borderStyle = '2px solid #00ddff'
-    boxShadow = '0 0 12px rgba(0, 221, 255, 0.6), 0 0 24px rgba(0, 221, 255, 0.3)'
+    borderStyle = `2px solid ${TARGET_COLOR}`
+    boxShadow = `0 0 12px ${TARGET_GLOW}, 0 0 24px ${TARGET_SHADOW}`
   }
 
   // Determine cursor

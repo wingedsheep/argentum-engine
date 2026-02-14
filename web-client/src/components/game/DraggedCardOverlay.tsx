@@ -79,7 +79,7 @@ export function DraggedCardOverlay() {
           height: '100%',
           objectFit: 'cover',
           borderRadius: 6,
-          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5), 0 0 16px rgba(0, 255, 0, 0.4)',
+          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5), 0 0 16px rgba(0, 221, 255, 0.4)',
         }}
       />
     </div>

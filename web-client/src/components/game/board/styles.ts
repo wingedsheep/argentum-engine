@@ -476,7 +476,7 @@ export const styles: Record<string, React.CSSProperties> = {
     pointerEvents: 'none',
     animation: 'playablePulse 2s ease-in-out infinite',
     background: 'transparent',
-    boxShadow: '0 0 8px rgba(0, 255, 0, 0.4)',
+    boxShadow: '0 0 8px rgba(0, 221, 255, 0.4)',
   },
   targetingOverlay: {
     position: 'absolute',
