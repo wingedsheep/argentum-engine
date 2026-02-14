@@ -15,6 +15,7 @@ test.describe('Combat blocking', () => {
       player2Name: 'Defender',
       player1: {
         battlefield: [{ name: 'Grizzly Bears', tapped: false, summoningSickness: false }],
+        library: ['Forest'],
       },
       player2: {
         battlefield: [{ name: 'Glory Seeker' }],
@@ -54,6 +55,7 @@ test.describe('Combat blocking', () => {
       player2Name: 'Defender',
       player1: {
         battlefield: [{ name: 'Grizzly Bears', tapped: false, summoningSickness: false }],
+        library: ['Forest'],
       },
       player2: {
         battlefield: [{ name: 'Glory Seeker' }],
