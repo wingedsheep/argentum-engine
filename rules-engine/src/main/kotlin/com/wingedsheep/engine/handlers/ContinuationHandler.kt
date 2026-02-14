@@ -108,6 +108,7 @@ class ContinuationHandler(
             is UntapChoiceContinuation -> resumeUntapChoice(stateAfterPop, continuation, response)
             is BlackmailRevealContinuation -> resumeBlackmailReveal(stateAfterPop, continuation, response)
             is BlackmailChooseContinuation -> resumeBlackmailChoose(stateAfterPop, continuation, response)
+            is HeadGamesContinuation -> resumeHeadGames(stateAfterPop, continuation, response)
             is ChooseCreatureTypeRevealTopContinuation -> resumeChooseCreatureTypeRevealTop(stateAfterPop, continuation, response)
             is BecomeCreatureTypeContinuation -> resumeBecomeCreatureType(stateAfterPop, continuation, response)
             is ChooseCreatureTypeModifyStatsContinuation -> resumeChooseCreatureTypeModifyStats(stateAfterPop, continuation, response)
@@ -3155,6 +3156,52 @@ class ContinuationHandler(
         val events = listOf(
             CardsDiscardedEvent(targetPlayerId, listOf(cardToDiscard))
         )
+
+        return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume after controller selected cards from opponent's library for Head Games.
+     * Move selected cards to opponent's hand, then shuffle opponent's library.
+     */
+    private fun resumeHeadGames(
+        state: GameState,
+        continuation: HeadGamesContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for Head Games")
+        }
+
+        val targetPlayerId = continuation.targetPlayerId
+        val libraryZone = ZoneKey(targetPlayerId, Zone.LIBRARY)
+        val handZone = ZoneKey(targetPlayerId, Zone.HAND)
+        val selectedCards = response.selectedCards
+        val events = mutableListOf<GameEvent>()
+
+        var newState = state
+
+        // Move selected cards from library to opponent's hand
+        for (cardId in selectedCards) {
+            newState = newState.removeFromZone(libraryZone, cardId)
+            newState = newState.addToZone(handZone, cardId)
+
+            val cardComponent = newState.getEntity(cardId)?.get<CardComponent>()
+            events.add(
+                ZoneChangeEvent(
+                    entityId = cardId,
+                    entityName = cardComponent?.name ?: "Unknown",
+                    fromZone = Zone.LIBRARY,
+                    toZone = Zone.HAND,
+                    ownerId = targetPlayerId
+                )
+            )
+        }
+
+        // Shuffle opponent's library
+        val library = newState.getZone(libraryZone).shuffled()
+        newState = newState.copy(zones = newState.zones + (libraryZone to library))
+        events.add(LibraryShuffledEvent(targetPlayerId))
 
         return checkForMoreContinuations(newState, events)
     }

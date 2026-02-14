@@ -134,6 +134,7 @@ object OnslaughtSet {
         DirgeOfDread,
         FrightshroudCourier,
         HauntedCadaver,
+        HeadGames,
         Headhunter,
         AphettoVulture,
         AnuridMurkdiver,

@@ -143,6 +143,7 @@ val engineSerializersModule = SerializersModule {
         subclass(PendingTriggersContinuation::class)
         subclass(BlackmailRevealContinuation::class)
         subclass(BlackmailChooseContinuation::class)
+        subclass(HeadGamesContinuation::class)
         subclass(ChooseCreatureTypeRevealTopContinuation::class)
         subclass(BecomeCreatureTypeContinuation::class)
         subclass(ChooseCreatureTypeModifyStatsContinuation::class)
