@@ -38,6 +38,9 @@ class PermanentExecutors(
         GrantToEnchantedCreatureTypeGroupExecutor(),
         BecomeCreatureTypeExecutor(),
         ChooseCreatureTypeModifyStatsExecutor(amountEvaluator),
-        BecomeChosenTypeAllCreaturesExecutor()
+        BecomeChosenTypeAllCreaturesExecutor(),
+        SetGroupCreatureSubtypesExecutor(),
+        ChangeGroupColorExecutor(),
+        GrantActivatedAbilityToGroupExecutor()
     )
 }

@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 277 / 335
+**Implemented:** 278 / 335
 
 ---
 
@@ -253,7 +253,7 @@
 - [x] Secluded Steppe
 - [x] Serpentine Basilisk
 - [x] Severed Legion
-- [ ] Shade's Breath
+- [x] Shade's Breath
 - [x] Shaleskin Bruiser
 - [x] Shared Triumph
 - [x] Shepherd of Rot
