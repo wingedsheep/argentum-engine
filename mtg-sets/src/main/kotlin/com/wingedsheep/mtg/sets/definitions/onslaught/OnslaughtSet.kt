@@ -125,6 +125,7 @@ object OnslaughtSet {
 
         // Black creatures and spells
         AccursedCentaur,
+        ChainOfSmog,
         Blackmail,
         Boneknitter,
         AphettoDredging,
@@ -178,6 +179,7 @@ object OnslaughtSet {
         WretchedAnurid,
         ThrashingMudspawn,
         WalkingDesecration,
+        ShadesBreath,
 
         // Red creatures and spells
         AetherCharge,

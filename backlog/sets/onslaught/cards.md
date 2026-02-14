@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 277 / 335
+**Implemented:** 281 / 335
 
 ---
 
@@ -58,7 +58,7 @@
 - [x] Chain of Acid
 - [ ] Chain of Plasma
 - [ ] Chain of Silence
-- [ ] Chain of Smog
+- [x] Chain of Smog
 - [x] Chain of Vapor
 - [x] Charging Slateback
 - [x] Choking Tethers
@@ -253,7 +253,7 @@
 - [x] Secluded Steppe
 - [x] Serpentine Basilisk
 - [x] Severed Legion
-- [ ] Shade's Breath
+- [x] Shade's Breath
 - [x] Shaleskin Bruiser
 - [x] Shared Triumph
 - [x] Shepherd of Rot

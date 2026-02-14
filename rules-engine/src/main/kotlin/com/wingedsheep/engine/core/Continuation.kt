@@ -1339,6 +1339,69 @@ data class BounceChainCopyTargetContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after player selects cards to discard for a chain-copy spell (Chain of Smog).
+ *
+ * When the card selection is answered, discards the selected cards, then presents
+ * a yes/no decision to copy the spell (pushes DiscardChainCopyDecisionContinuation).
+ *
+ * @property playerId The player who is discarding
+ * @property count Number of cards to discard
+ * @property spellName The name of the spell being copied (for display)
+ * @property sourceId The source entity of the original spell/ability
+ */
+@Serializable
+data class DiscardForChainContinuation(
+    override val decisionId: String,
+    val playerId: EntityId,
+    val count: Int,
+    val spellName: String,
+    val sourceId: EntityId?
+) : ContinuationFrame
+
+/**
+ * Resume after the discarding player decides whether to copy Chain of Smog.
+ *
+ * When the yes/no decision is answered:
+ * - Yes → present target selection for copy, push DiscardChainCopyTargetContinuation
+ * - No → checkForMoreContinuations (chain ends)
+ *
+ * @property targetPlayerId The player who discarded (who gets to copy)
+ * @property count Number of cards the copy will make the target discard
+ * @property spellName The name of the spell being copied (for display)
+ * @property sourceId The source entity of the original spell/ability
+ */
+@Serializable
+data class DiscardChainCopyDecisionContinuation(
+    override val decisionId: String,
+    val targetPlayerId: EntityId,
+    val count: Int,
+    val spellName: String,
+    val sourceId: EntityId?
+) : ContinuationFrame
+
+/**
+ * Resume after the copying player selects a target player for the discard chain copy.
+ *
+ * Creates a TriggeredAbilityOnStackComponent with DiscardAndChainCopyEffect targeting
+ * the selected player, enabling recursive chaining.
+ *
+ * @property copyControllerId The player who is creating the copy
+ * @property count Number of cards the copy will make the target discard
+ * @property spellName The name of the spell being copied
+ * @property sourceId The source entity of the original spell/ability
+ * @property candidateTargets The list of valid target player entity IDs (for validation)
+ */
+@Serializable
+data class DiscardChainCopyTargetContinuation(
+    override val decisionId: String,
+    val copyControllerId: EntityId,
+    val count: Int,
+    val spellName: String,
+    val sourceId: EntityId?,
+    val candidateTargets: List<EntityId>
+) : ContinuationFrame
+
+/**
  * Information about a mana source available for manual selection.
  */
 @Serializable

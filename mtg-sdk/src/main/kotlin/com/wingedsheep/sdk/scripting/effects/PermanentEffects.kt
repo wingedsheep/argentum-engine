@@ -557,3 +557,72 @@ data class GrantToEnchantedCreatureTypeGroupEffect(
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
 }
+
+/**
+ * Set creature subtypes for a group of creatures.
+ * "Each creature you control becomes a Shade until end of turn."
+ *
+ * Creates a floating effect on Layer.TYPE that replaces creature subtypes.
+ *
+ * @property subtypes The set of subtypes to replace existing creature subtypes with
+ * @property filter Which creatures are affected
+ * @property duration How long the effect lasts
+ */
+@SerialName("SetGroupCreatureSubtypes")
+@Serializable
+data class SetGroupCreatureSubtypesEffect(
+    val subtypes: Set<String>,
+    val filter: GroupFilter = GroupFilter.AllCreaturesYouControl,
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    override val description: String = buildString {
+        append("${filter.description} become ${subtypes.joinToString(" ")}")
+        if (duration.description.isNotEmpty()) append(" ${duration.description}")
+    }
+}
+
+/**
+ * Change color for a group of creatures.
+ * "Each creature you control becomes black until end of turn."
+ *
+ * Creates a floating effect on Layer.COLOR that sets colors.
+ *
+ * @property colors The set of color names to set (replaces existing colors)
+ * @property filter Which creatures are affected
+ * @property duration How long the effect lasts
+ */
+@SerialName("ChangeGroupColor")
+@Serializable
+data class ChangeGroupColorEffect(
+    val colors: Set<String>,
+    val filter: GroupFilter = GroupFilter.AllCreaturesYouControl,
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    override val description: String = buildString {
+        append("${filter.description} become ${colors.joinToString(", ") { it.lowercase() }}")
+        if (duration.description.isNotEmpty()) append(" ${duration.description}")
+    }
+}
+
+/**
+ * Grant an activated ability to a group of creatures.
+ * "Each creature you control gains '{B}: This creature gets +1/+1 until end of turn.'"
+ *
+ * Adds GrantedActivatedAbility entries for each matching creature.
+ *
+ * @property ability The activated ability to grant
+ * @property filter Which creatures are affected
+ * @property duration How long the grant lasts
+ */
+@SerialName("GrantActivatedAbilityToGroup")
+@Serializable
+data class GrantActivatedAbilityToGroupEffect(
+    val ability: ActivatedAbility,
+    val filter: GroupFilter = GroupFilter.AllCreaturesYouControl,
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    override val description: String = buildString {
+        append("${filter.description} gain \"${ability.description}\"")
+        if (duration.description.isNotEmpty()) append(" ${duration.description}")
+    }
+}
