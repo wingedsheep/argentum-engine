@@ -142,12 +142,14 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
   hoverCard: (cardId) => {
     let autoTapPreview: readonly EntityId[] | null = null
     if (cardId) {
-      const { legalActions } = get()
-      const castAction = legalActions.find(
-        (a) => a.action.type === 'CastSpell' && a.action.cardId === cardId
-      )
-      if (castAction?.autoTapPreview) {
-        autoTapPreview = castAction.autoTapPreview
+      const { legalActions, pendingDecision } = get()
+      if (!pendingDecision) {
+        const castAction = legalActions.find(
+          (a) => a.action.type === 'CastSpell' && a.action.cardId === cardId
+        )
+        if (castAction?.autoTapPreview) {
+          autoTapPreview = castAction.autoTapPreview
+        }
       }
     }
     set({ hoveredCardId: cardId, autoTapPreview })
