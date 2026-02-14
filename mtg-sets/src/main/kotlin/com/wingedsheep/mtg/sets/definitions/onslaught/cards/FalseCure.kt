@@ -38,6 +38,6 @@ val FalseCure = card("False Cure") {
         collectorNumber = "146"
         artist = "Bradley Williams"
         flavorText = "\"The cure of a healer is like the blessing of a tyrant.\"\n—Phage the Untouchable"
-        imageUri = "https://cards.scryfall.io/large/front/e/f/ef397db1-2d99-4cb0-a3c9-571bf7509978.jpg?1562941779"
+        imageUri = "https://cards.scryfall.io/large/front/e/f/ef397db1-2d99-4cb0-a6e9-6f72d615ebad.jpg?1562951786"
     }
 }
