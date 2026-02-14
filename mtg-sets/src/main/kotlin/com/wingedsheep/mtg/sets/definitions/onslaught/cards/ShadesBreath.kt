@@ -48,6 +48,6 @@ val ShadesBreath = card("Shade's Breath") {
         collectorNumber = "167"
         artist = "Franz Vohwinkel"
         flavorText = "The grim business of the Coliseum casts long shadows."
-        imageUri = "https://cards.scryfall.io/large/front/3/1/3183afff-7a05-4158-8a04-413d592bf549.jpg?1562629019"
+        imageUri = "https://cards.scryfall.io/large/front/a/3/a37be9a8-ef69-4c62-8455-e129e62fe69a.jpg?1562933592"
     }
 }
