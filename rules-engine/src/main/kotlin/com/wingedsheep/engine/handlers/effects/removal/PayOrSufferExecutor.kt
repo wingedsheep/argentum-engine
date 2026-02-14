@@ -90,7 +90,7 @@ class PayOrSufferExecutor(
         }
 
         // Player has at least enough valid cards - present the decision
-        val prompt = buildDiscardPrompt(cost, sourceName)
+        val prompt = buildDiscardPrompt(cost, sourceName, effect.suffer)
 
         val decisionResult = decisionHandler.createCardSelectionDecision(
             state = state,
@@ -216,7 +216,7 @@ class PayOrSufferExecutor(
         }
 
         // Player has enough - present the decision
-        val prompt = buildSacrificePrompt(cost, sourceName)
+        val prompt = buildSacrificePrompt(cost, sourceName, effect.suffer)
 
         val decisionResult = decisionHandler.createCardSelectionDecision(
             state = state,
@@ -434,7 +434,7 @@ class PayOrSufferExecutor(
     /**
      * Build prompt for discard cost.
      */
-    private fun buildDiscardPrompt(cost: PayCost.Discard, sourceName: String): String {
+    private fun buildDiscardPrompt(cost: PayCost.Discard, sourceName: String, sufferEffect: com.wingedsheep.sdk.scripting.Effect): String {
         val desc = cost.filter.description
         val typeText = if (cost.count == 1) {
             val article = if (desc == "card") "a" else if (desc.first().lowercaseChar() in "aeiou") "an" else "a"
@@ -442,20 +442,33 @@ class PayOrSufferExecutor(
         } else {
             "${cost.count} ${desc}s"
         }
-        return "Discard $typeText to keep $sourceName, or skip to accept the consequence"
+        val consequence = describeConsequence(sufferEffect, sourceName)
+        return "Discard $typeText or $consequence"
     }
 
     /**
      * Build prompt for sacrifice cost.
      */
-    private fun buildSacrificePrompt(cost: PayCost.Sacrifice, sourceName: String): String {
+    private fun buildSacrificePrompt(cost: PayCost.Sacrifice, sourceName: String, sufferEffect: com.wingedsheep.sdk.scripting.Effect): String {
         val desc = cost.filter.description
         val typeText = if (cost.count == 1) {
             "${if (desc.first().lowercaseChar() in "aeiou") "an" else "a"} $desc"
         } else {
             "${cost.count} ${desc}s"
         }
-        return "Sacrifice $typeText to keep $sourceName, or skip to accept the consequence"
+        val consequence = describeConsequence(sufferEffect, sourceName)
+        return "Sacrifice $typeText or $consequence"
+    }
+
+    /**
+     * Describe the consequence of not paying the cost.
+     */
+    private fun describeConsequence(sufferEffect: com.wingedsheep.sdk.scripting.Effect, sourceName: String): String {
+        return when (sufferEffect) {
+            is com.wingedsheep.sdk.scripting.SacrificeSelfEffect,
+            is com.wingedsheep.sdk.scripting.SacrificeEffect -> "sacrifice $sourceName"
+            else -> sufferEffect.description
+        }
     }
 
     companion object {
