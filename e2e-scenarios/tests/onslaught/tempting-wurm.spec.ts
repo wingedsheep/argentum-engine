@@ -33,15 +33,12 @@ test.describe('Tempting Wurm', () => {
     const p1 = player1.gamePage
     const p2 = player2.gamePage
 
-    // Cast Tempting Wurm
+    // Cast Tempting Wurm — spell and trigger auto-resolve for P1 (no instant-speed responses)
     await p1.clickCard('Tempting Wurm')
     await p1.selectAction('Cast Tempting Wurm')
 
-    // Resolve the creature spell
-    await p2.resolveStack('Tempting Wurm')
-
-    // ETB trigger goes on the stack — resolve it
-    await p1.resolveStack('Tempting Wurm')
+    // P2 resolves the ETB trigger
+    await p2.resolveStack('Tempting Wurm trigger')
 
     // Opponent sees card selection overlay — put Hill Giant and Mountain onto the battlefield
     await p2.selectCardInDecision('Hill Giant')
@@ -81,13 +78,12 @@ test.describe('Tempting Wurm', () => {
     const p1 = player1.gamePage
     const p2 = player2.gamePage
 
-    // Cast and resolve Tempting Wurm
+    // Cast Tempting Wurm — spell and trigger auto-resolve for P1 (no instant-speed responses)
     await p1.clickCard('Tempting Wurm')
     await p1.selectAction('Cast Tempting Wurm')
-    await p2.resolveStack('Tempting Wurm')
 
-    // Resolve ETB trigger
-    await p1.resolveStack('Tempting Wurm')
+    // P2 resolves the ETB trigger
+    await p2.resolveStack('Tempting Wurm trigger')
 
     // Opponent declines — selects nothing
     await p2.skipTargets()
@@ -123,13 +119,12 @@ test.describe('Tempting Wurm', () => {
     const p1 = player1.gamePage
     const p2 = player2.gamePage
 
-    // Cast and resolve Tempting Wurm
+    // Cast Tempting Wurm — spell and trigger auto-resolve for P1 (no instant-speed responses)
     await p1.clickCard('Tempting Wurm')
     await p1.selectAction('Cast Tempting Wurm')
-    await p2.resolveStack('Tempting Wurm')
 
-    // Resolve ETB trigger
-    await p1.resolveStack('Tempting Wurm')
+    // P2 resolves the ETB trigger
+    await p2.resolveStack('Tempting Wurm trigger')
 
     // Opponent puts everything onto the battlefield
     await p2.selectCardInDecision('Glory Seeker')
