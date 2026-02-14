@@ -163,7 +163,7 @@
 - [x] Gustcloak Skirmisher
 - [x] Harsh Mercy
 - [x] Haunted Cadaver
-- [ ] Head Games
+- [x] Head Games
 - [x] Headhunter
 - [x] Heedless One
 - [x] Hystrodon
