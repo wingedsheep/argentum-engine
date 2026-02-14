@@ -291,6 +291,7 @@ object OnslaughtSet {
         TribalUnity,
         VoiceOfTheWoods,
         TemptingWurm,
+        SteelyResolve,
 
         // Artifacts
         DoomCannon,
