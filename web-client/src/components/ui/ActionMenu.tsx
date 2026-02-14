@@ -85,6 +85,17 @@ function buildActionOptions(
       action: playLandAction,
       actionType: 'playLand',
     })
+  } else if (cycleAction && cardInfo.cardTypes.includes('LAND')) {
+    // Land with cycling but no PlayLand action (already played a land this turn)
+    // Show grayed-out "Play land" so the action menu always has both options
+    options.push({
+      key: 'playLand',
+      label: `Play ${cardInfo.name}`,
+      manaCost: null,
+      isAvailable: false,
+      action: null,
+      actionType: 'playLand',
+    })
   }
 
   // 3. Cast face-down (morph)

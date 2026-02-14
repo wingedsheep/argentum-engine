@@ -378,6 +378,18 @@ export function useInteraction() {
 
       if (actions.length === 1) {
         const actionInfo = actions[0]!
+
+        // For cycling lands where play land is unavailable, always show action menu
+        // so the player sees the grayed-out "Play land" option alongside "Cycle"
+        if (actionInfo.action.type === 'CycleCard') {
+          const gameState = useGameStore.getState().gameState
+          const card = gameState?.cards[cardId]
+          if (card?.cardTypes.includes('LAND')) {
+            selectCard(cardId)
+            return
+          }
+        }
+
         if (canAutoExecute(actionInfo)) {
           // Auto-execute simple action
           submitAction(actionInfo.action)
