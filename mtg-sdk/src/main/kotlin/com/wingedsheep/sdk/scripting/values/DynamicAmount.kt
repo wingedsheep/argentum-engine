@@ -214,6 +214,17 @@ sealed interface DynamicAmount {
     }
 
     /**
+     * The amount of life gained, from a trigger context.
+     * Used for abilities like False Cure: "that player loses 2 life for each 1 life gained."
+     * Resolves from the same trigger amount pipeline as TriggerDamageAmount.
+     */
+    @SerialName("TriggerLifeGainAmount")
+    @Serializable
+    data object TriggerLifeGainAmount : DynamicAmount {
+        override val description: String = "the life gained"
+    }
+
+    /**
      * Power of the source entity (the permanent that has the ability).
      * Used for effects like "deal damage equal to its power" on triggered abilities.
      */

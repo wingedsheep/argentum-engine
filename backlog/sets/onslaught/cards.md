@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 281 / 335
+**Implemented:** 282 / 335
 
 ---
 
@@ -122,7 +122,7 @@
 - [x] Explosive Vegetation
 - [x] Fade from Memory
 - [x] Fallen Cleric
-- [ ] False Cure
+- [x] False Cure
 - [x] Feeding Frenzy
 - [x] Festering Goblin
 - [x] Fever Charm

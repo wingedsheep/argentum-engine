@@ -262,4 +262,18 @@ object Triggers {
      * When this creature transforms into its front face.
      */
     val TransformsToFront: Trigger = OnTransform(selfOnly = true, intoBackFace = false)
+
+    // =========================================================================
+    // Life Triggers
+    // =========================================================================
+
+    /**
+     * Whenever you gain life.
+     */
+    val YouGainLife: Trigger = OnLifeGain(controllerOnly = true)
+
+    /**
+     * Whenever a player gains life.
+     */
+    val AnyPlayerGainsLife: Trigger = OnLifeGain(controllerOnly = false)
 }

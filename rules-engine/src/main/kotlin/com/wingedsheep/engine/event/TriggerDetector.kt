@@ -305,6 +305,9 @@ class TriggerDetector(
             }
         }
 
+        // Check global granted triggered abilities (e.g., False Cure)
+        detectGlobalGrantedTriggers(state, event, triggers)
+
         // Handle death triggers (source might not be on battlefield anymore)
         if (event is ZoneChangeEvent && event.toZone == com.wingedsheep.sdk.core.Zone.GRAVEYARD &&
             event.fromZone == com.wingedsheep.sdk.core.Zone.BATTLEFIELD) {
@@ -348,6 +351,35 @@ class TriggerDetector(
         }
 
         return triggers
+    }
+
+    /**
+     * Detect triggers from global granted triggered abilities (e.g., False Cure).
+     * These are triggered abilities not attached to any permanent, created by
+     * spell effects and stored in GameState.globalGrantedTriggeredAbilities.
+     */
+    private fun detectGlobalGrantedTriggers(
+        state: GameState,
+        event: EngineGameEvent,
+        triggers: MutableList<PendingTrigger>
+    ) {
+        if (state.globalGrantedTriggeredAbilities.isEmpty()) return
+
+        for (global in state.globalGrantedTriggeredAbilities) {
+            val ability = global.ability
+            // Use a dummy sourceId for matchesTrigger (global abilities aren't attached to entities)
+            if (matchesTrigger(ability.trigger, event, global.sourceId, global.controllerId, state)) {
+                triggers.add(
+                    PendingTrigger(
+                        ability = ability,
+                        sourceId = global.sourceId,
+                        sourceName = global.sourceName,
+                        controllerId = global.controllerId,
+                        triggerContext = TriggerContext.fromEvent(event)
+                    )
+                )
+            }
+        }
     }
 
     /**
@@ -911,6 +943,12 @@ class TriggerDetector(
             is OnUpkeep, is OnEndStep, is OnBeginCombat, is OnFirstMainPhase -> false
             is OnEnchantedCreatureControllerUpkeep -> false
 
+            is OnLifeGain -> {
+                event is LifeChangedEvent &&
+                    event.reason == com.wingedsheep.engine.core.LifeChangeReason.LIFE_GAIN &&
+                    (!trigger.controllerOnly || event.playerId == controllerId)
+            }
+
             is OnTransform -> {
                 // Transform not yet implemented in new engine
                 false
@@ -1070,7 +1108,12 @@ data class TriggerContext(
                 is BlockersDeclaredEvent -> TriggerContext()
                 is TappedEvent -> TriggerContext(triggeringEntityId = event.entityId)
                 is UntappedEvent -> TriggerContext(triggeringEntityId = event.entityId)
-                is LifeChangedEvent -> TriggerContext(triggeringPlayerId = event.playerId)
+                is LifeChangedEvent -> TriggerContext(
+                    triggeringEntityId = event.playerId,
+                    triggeringPlayerId = event.playerId,
+                    damageAmount = if (event.reason == com.wingedsheep.engine.core.LifeChangeReason.LIFE_GAIN)
+                        (event.newLife - event.oldLife) else null
+                )
                 is TurnFaceUpEvent -> TriggerContext(
                     triggeringEntityId = event.entityId,
                     triggeringPlayerId = event.controllerId

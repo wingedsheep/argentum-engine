@@ -84,6 +84,8 @@ class DynamicAmountEvaluator(
 
             is DynamicAmount.TriggerDamageAmount -> context.triggerDamageAmount ?: 0
 
+            is DynamicAmount.TriggerLifeGainAmount -> context.triggerDamageAmount ?: 0
+
             is DynamicAmount.SacrificedPermanentToughness -> {
                 val sacrificedId = context.sacrificedPermanents.firstOrNull() ?: return 0
                 val card = state.getEntity(sacrificedId)?.get<CardComponent>() ?: return 0

@@ -2,6 +2,7 @@ package com.wingedsheep.engine.state
 
 import com.wingedsheep.engine.core.ContinuationFrame
 import com.wingedsheep.engine.event.DelayedTriggeredAbility
+import com.wingedsheep.engine.event.GlobalGrantedTriggeredAbility
 import com.wingedsheep.engine.event.GrantedActivatedAbility
 import com.wingedsheep.engine.event.GrantedTriggeredAbility
 import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
@@ -72,6 +73,9 @@ data class GameState(
 
     /** Activated abilities granted to entities temporarily (e.g., Run Wild) */
     val grantedActivatedAbilities: List<GrantedActivatedAbility> = emptyList(),
+
+    /** Global triggered abilities not attached to any permanent (e.g., False Cure) */
+    val globalGrantedTriggeredAbilities: List<GlobalGrantedTriggeredAbility> = emptyList(),
 
     /** Continuation stack for resuming after player decisions */
     val continuationStack: List<ContinuationFrame> = emptyList()

@@ -83,3 +83,21 @@ data class TakeExtraTurnEffect(
         }
     }
 }
+
+/**
+ * Create a global triggered ability that lasts until end of turn.
+ * Used for spells like False Cure that create delayed triggered abilities
+ * not attached to any specific permanent.
+ *
+ * "Until end of turn, whenever [trigger], [effect]."
+ *
+ * @property ability The triggered ability to create
+ */
+@SerialName("CreateGlobalTriggeredAbilityUntilEndOfTurn")
+@Serializable
+data class CreateGlobalTriggeredAbilityUntilEndOfTurnEffect(
+    val ability: TriggeredAbility
+) : Effect {
+    override val description: String =
+        "Until end of turn, ${ability.description.replaceFirstChar { it.lowercase() }}"
+}
