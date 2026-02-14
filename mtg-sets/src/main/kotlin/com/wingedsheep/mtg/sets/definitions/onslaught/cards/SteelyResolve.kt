@@ -28,6 +28,5 @@ val SteelyResolve = card("Steely Resolve") {
         rarity = Rarity.RARE
         collectorNumber = "286"
         artist = "Greg Staples"
-        imageUri = "https://cards.scryfall.io/large/front/0/9/09a431ac-50dc-4789-981a-ecade707a3d4.jpg?1562898120"
-    }
+        imageUri = "https://cards.scryfall.io/large/front/b/8/b88c530a-abc3-4cc4-8a48-5b76e1504a3c.jpg?1755010061"    }
 }
