@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 282 / 335
+**Implemented:** 283 / 335
 
 ---
 
@@ -94,7 +94,7 @@
 - [x] Disciple of Grace
 - [x] Disciple of Malice
 - [x] Discombobulate
-- [ ] Dispersing Orb
+- [x] Dispersing Orb
 - [x] Disruptive Pitmage
 - [x] Dive Bomber
 - [x] Doom Cannon

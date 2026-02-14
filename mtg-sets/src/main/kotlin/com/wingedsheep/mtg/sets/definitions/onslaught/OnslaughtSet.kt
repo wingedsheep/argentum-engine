@@ -89,6 +89,7 @@ object OnslaughtSet {
         BlatantThievery,
         CraftyPathmage,
         Discombobulate,
+        DispersingOrb,
         DisruptivePitmage,
         FleetingAven,
         GhosthelmCourier,
