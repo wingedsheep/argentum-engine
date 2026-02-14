@@ -10,6 +10,7 @@ import { DraggedCardOverlay } from './DraggedCardOverlay'
 import { GameLog } from './GameLog'
 import { DrawAnimations } from '../animations/DrawAnimations'
 import { DamageAnimations } from '../animations/DamageAnimations'
+import { RevealAnimations } from '../animations/RevealAnimations'
 import { useResponsive } from '../../hooks/useResponsive'
 
 // Import extracted components
@@ -522,6 +523,9 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
 
       {/* Damage animations */}
       <DamageAnimations />
+
+      {/* Morph reveal animations */}
+      <RevealAnimations />
     </div>
     </ResponsiveContext.Provider>
   )

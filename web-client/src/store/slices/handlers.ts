@@ -38,6 +38,7 @@ function getEventPlayerId(event: { type: string; playerId?: string; casterId?: s
     case 'handLookedAt': return event.viewingPlayerId as EntityId
     case 'handRevealed': return event.revealingPlayerId as EntityId
     case 'cardsRevealed': return event.revealingPlayerId as EntityId
+    case 'turnedFaceUp': return event.controllerId as EntityId
     default: return null
   }
 }
@@ -136,7 +137,7 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
     },
 
     onStateUpdate: (msg) => {
-      const { playerId, addDrawAnimation, addDamageAnimation } = get()
+      const { playerId, addDrawAnimation, addDamageAnimation, addRevealAnimation } = get()
 
       // Check for hand reveal events
       const handLookedAtEvent = msg.events.find(
@@ -216,6 +217,26 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
           })
           animIndex++
         }
+      })
+
+      // Process morph face-up events for reveal animations
+      const turnedFaceUpEvents = msg.events.filter((e) => e.type === 'turnedFaceUp') as {
+        type: 'turnedFaceUp'
+        cardId: EntityId
+        cardName: string
+        controllerId: EntityId
+      }[]
+
+      turnedFaceUpEvents.forEach((event, index) => {
+        const isOpponent = event.controllerId !== playerId
+        const card = msg.state.cards[event.cardId]
+        addRevealAnimation({
+          id: `reveal-${event.cardId}-${Date.now()}-${index}`,
+          cardName: event.cardName,
+          imageUri: card?.imageUri ?? null,
+          isOpponent,
+          startTime: Date.now() + index * 200,
+        })
       })
 
       // Sync stop overrides from server echo

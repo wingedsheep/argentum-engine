@@ -33,6 +33,7 @@ export type ClientEvent =
   | HandLookedAtEvent
   | HandRevealedEvent
   | CardsRevealedEvent
+  | TurnedFaceUpEvent
 
 // ============================================================================
 // Life/Damage Events
@@ -267,6 +268,18 @@ export interface CardsRevealedEvent {
   readonly cardNames: readonly string[]
   readonly imageUris: readonly (string | null)[]
   readonly source: string | null
+  readonly description: string
+}
+
+// ============================================================================
+// Morph Events
+// ============================================================================
+
+export interface TurnedFaceUpEvent {
+  readonly type: 'turnedFaceUp'
+  readonly cardId: EntityId
+  readonly cardName: string
+  readonly controllerId: EntityId
   readonly description: string
 }
 

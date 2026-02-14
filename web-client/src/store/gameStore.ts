@@ -39,6 +39,7 @@ export type {
   LogEntry,
   DrawAnimation,
   DamageAnimation,
+  RevealAnimation,
   GameStore,
 } from './slices/types'
 

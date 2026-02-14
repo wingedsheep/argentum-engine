@@ -325,6 +325,17 @@ export interface DrawAnimation {
 }
 
 /**
+ * A morph face-up reveal animation.
+ */
+export interface RevealAnimation {
+  id: string
+  cardName: string
+  imageUri: string | null
+  isOpponent: boolean
+  startTime: number
+}
+
+/**
  * A life change animation (damage or life gain).
  */
 export interface DamageAnimation {
@@ -454,6 +465,7 @@ export type GameStore = {
   opponentBlockerAssignments: Record<EntityId, EntityId> | null
   drawAnimations: readonly DrawAnimation[]
   damageAnimations: readonly DamageAnimation[]
+  revealAnimations: readonly RevealAnimation[]
   selectCard: (cardId: EntityId | null) => void
   hoverCard: (cardId: EntityId | null) => void
   startTargeting: (state: TargetingState) => void
@@ -507,4 +519,6 @@ export type GameStore = {
   removeDrawAnimation: (id: string) => void
   addDamageAnimation: (animation: DamageAnimation) => void
   removeDamageAnimation: (id: string) => void
+  addRevealAnimation: (animation: RevealAnimation) => void
+  removeRevealAnimation: (id: string) => void
 }

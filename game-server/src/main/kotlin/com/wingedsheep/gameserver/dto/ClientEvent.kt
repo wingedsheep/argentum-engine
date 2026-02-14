@@ -371,6 +371,24 @@ sealed interface ClientEvent {
         val source: String? = null,
         override val description: String = "Reordered top $cardCount cards${source?.let { " ($it)" } ?: ""}"
     ) : ClientEvent
+
+    // =========================================================================
+    // Morph Events
+    // =========================================================================
+
+    @Serializable
+    @SerialName("turnedFaceUp")
+    data class TurnedFaceUp(
+        val cardId: EntityId,
+        val cardName: String,
+        val controllerId: EntityId,
+        val isYours: Boolean? = null,
+        override val description: String = when (isYours) {
+            true -> "Your $cardName was turned face up"
+            false -> "Opponent's $cardName was turned face up"
+            null -> "$cardName was turned face up"
+        }
+    ) : ClientEvent
 }
 
 /**
@@ -621,6 +639,13 @@ object ClientEventTransformer {
                 count = event.change
             )
 
+            is TurnFaceUpEvent -> ClientEvent.TurnedFaceUp(
+                cardId = event.entityId,
+                cardName = event.cardName,
+                controllerId = event.controllerId,
+                isYours = event.controllerId == viewingPlayerId
+            )
+
             // Events that don't need client representation or are handled differently
             is DrawFailedEvent,
             is LibraryShuffledEvent,
@@ -643,7 +668,6 @@ object ClientEventTransformer {
             is LookedAtCardsEvent,
             is LibraryReorderedEvent,
             is KeywordGrantedEvent,
-            is TurnFaceUpEvent,
             is TurnedFaceDownEvent,
             is CardCycledEvent,
             is ControlChangedEvent,

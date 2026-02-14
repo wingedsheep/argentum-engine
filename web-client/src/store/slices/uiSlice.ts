@@ -14,6 +14,7 @@ import type {
   DistributeState,
   DrawAnimation,
   DamageAnimation,
+  RevealAnimation,
   ConvokeCreatureSelection,
 } from './types'
 import {
@@ -48,6 +49,7 @@ export interface UISliceState {
   opponentBlockerAssignments: Record<EntityId, EntityId> | null
   drawAnimations: readonly DrawAnimation[]
   damageAnimations: readonly DamageAnimation[]
+  revealAnimations: readonly RevealAnimation[]
 }
 
 export interface UISliceActions {
@@ -104,6 +106,8 @@ export interface UISliceActions {
   removeDrawAnimation: (id: string) => void
   addDamageAnimation: (animation: DamageAnimation) => void
   removeDamageAnimation: (id: string) => void
+  addRevealAnimation: (animation: RevealAnimation) => void
+  removeRevealAnimation: (id: string) => void
 }
 
 export type UISlice = UISliceState & UISliceActions
@@ -128,6 +132,7 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
   opponentBlockerAssignments: null,
   drawAnimations: [],
   damageAnimations: [],
+  revealAnimations: [],
 
   // Card selection actions
   selectCard: (cardId) => {
@@ -922,6 +927,18 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
   removeDamageAnimation: (id) => {
     set((state) => ({
       damageAnimations: state.damageAnimations.filter((a) => a.id !== id),
+    }))
+  },
+
+  addRevealAnimation: (animation) => {
+    set((state) => ({
+      revealAnimations: [...state.revealAnimations, animation],
+    }))
+  },
+
+  removeRevealAnimation: (id) => {
+    set((state) => ({
+      revealAnimations: state.revealAnimations.filter((a) => a.id !== id),
     }))
   },
 })
