@@ -3547,7 +3547,6 @@ class ContinuationHandler(
         // Use projected state to check subtypes, so type-changing continuous effects
         // (e.g., Mistform Dreamer becoming a Cleric) are taken into account
         val projected = StateProjector().project(state)
-        java.io.File("/tmp/tribal-unity-debug.txt").appendText("resumeChooseCreatureTypeModifyStats: chosenType=$chosenType\n")
         val affectedEntities = mutableSetOf<EntityId>()
         val events = mutableListOf<GameEvent>()
 
@@ -4076,7 +4075,6 @@ class ContinuationHandler(
         continuation: CastWithCreatureTypeContinuation,
         response: DecisionResponse
     ): ExecutionResult {
-        java.io.File("/tmp/tribal-unity-debug.txt").appendText("resumeCastWithCreatureType called\n")
         if (response !is OptionChosenResponse) {
             return ExecutionResult.error(state, "Expected option choice response for creature type selection")
         }

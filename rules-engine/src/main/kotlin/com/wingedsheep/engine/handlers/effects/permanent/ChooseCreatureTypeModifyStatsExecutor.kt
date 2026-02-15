@@ -42,7 +42,6 @@ class ChooseCreatureTypeModifyStatsExecutor(
         effect: ChooseCreatureTypeModifyStatsEffect,
         context: EffectContext
     ): ExecutionResult {
-        java.io.File("/tmp/tribal-unity-debug.txt").appendText("execute() called, chosenCreatureType=${context.chosenCreatureType}\n")
         val controllerId = context.controllerId
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
 
@@ -125,11 +124,8 @@ class ChooseCreatureTypeModifyStatsExecutor(
                 val container = state.getEntity(entityId) ?: continue
                 val cardComponent = container.get<CardComponent>() ?: continue
 
-                val isCreature = cardComponent.typeLine.isCreature || container.has<FaceDownComponent>()
-                val hasSubtype = projected.hasSubtype(entityId, chosenType)
-                java.io.File("/tmp/tribal-unity-debug.txt").appendText("applyCreatureTypeModifyStats: entity=${cardComponent.name}, isCreature=$isCreature, hasSubtype=$hasSubtype, projectedSubtypes=${projected.getSubtypes(entityId)}, baseSubtypes=${cardComponent.typeLine.subtypes}\n")
-                if (!isCreature) continue
-                if (!hasSubtype) continue
+                if (!cardComponent.typeLine.isCreature && !container.has<FaceDownComponent>()) continue
+                if (!projected.hasSubtype(entityId, chosenType)) continue
 
                 affectedEntities.add(entityId)
                 events.add(
