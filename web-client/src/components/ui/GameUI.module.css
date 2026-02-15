@@ -1461,3 +1461,126 @@
 .fullscreenButton:hover {
   background-color: rgba(255, 255, 255, 0.2);
 }
+
+/* =========================================================================
+ * Standings Player Name (truncation for long names)
+ * ========================================================================= */
+.standingsPlayerName {
+  display: inline-block;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* =========================================================================
+ * Tournament Standings - Small Screen Responsive
+ * ========================================================================= */
+@media (max-width: 639px) {
+  .standingsTable {
+    border-radius: var(--radius-lg);
+  }
+
+  .standingsTh {
+    padding: var(--space-2) var(--space-1);
+    font-size: 10px;
+    letter-spacing: 0;
+  }
+
+  .standingsThLeft {
+    padding-left: var(--space-2);
+  }
+
+  .standingsTd {
+    padding: var(--space-2) var(--space-1);
+    font-size: 13px;
+  }
+
+  .standingsTdLeft {
+    padding-left: var(--space-2);
+  }
+
+  .standingsPlayerName {
+    max-width: 90px;
+  }
+
+  .standingsRank {
+    min-width: 24px;
+  }
+
+  .standingsPoints {
+    font-size: 13px;
+  }
+
+  .standingsGwr {
+    font-size: 11px;
+  }
+
+  .meIndicator {
+    font-size: 10px;
+    margin-left: 2px;
+  }
+
+  .disconnectedIndicator {
+    font-size: 9px;
+    padding: 1px 4px;
+    margin-left: 2px;
+  }
+
+  .resultRow {
+    font-size: var(--font-xs);
+    padding: var(--space-2);
+    gap: var(--space-1);
+  }
+
+  .resultOutcome {
+    font-size: 11px;
+    padding: 2px 6px;
+    flex-shrink: 0;
+  }
+
+  .statusBoxBye,
+  .statusBoxMatch,
+  .statusBoxWaiting {
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--font-sm);
+  }
+
+  .readyButton {
+    padding: 10px var(--space-6);
+    font-size: var(--font-md);
+  }
+
+  .disconnectedPlayer {
+    gap: var(--space-2);
+    padding: var(--space-2);
+    flex-wrap: wrap;
+  }
+
+  .disconnectedName {
+    font-size: var(--font-xs);
+  }
+
+  .matchButton {
+    padding: var(--space-2) var(--space-3);
+    flex-wrap: wrap;
+    gap: var(--space-1);
+  }
+
+  .matchPlayers {
+    gap: var(--space-2);
+  }
+
+  .matchPlayerName {
+    font-size: 13px;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .matchScore {
+    font-size: 13px;
+  }
+}

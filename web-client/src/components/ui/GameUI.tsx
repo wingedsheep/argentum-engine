@@ -844,7 +844,9 @@ function TournamentOverlay({
                     )}
                   </td>
                   <td className={styles.standingsTdLeft} style={{ fontWeight: isMe ? 600 : 400 }}>
-                    {standing.playerName}
+                    <span className={styles.standingsPlayerName} title={standing.playerName}>
+                      {standing.playerName}
+                    </span>
                     {isMe && <span className={styles.meIndicator}>(you)</span>}
                     {!standing.isConnected && (
                       <span className={styles.disconnectedIndicator}>DC</span>
