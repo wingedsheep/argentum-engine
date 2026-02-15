@@ -147,6 +147,9 @@ class ContinuationHandler(
             is DamageChainDiscardContinuation -> resumeDamageChainDiscard(stateAfterPop, continuation, response)
             is DamageChainCopyTargetContinuation -> resumeDamageChainCopyTarget(stateAfterPop, continuation, response)
             is DamagePreventionContinuation -> resumeDamagePrevention(stateAfterPop, continuation, response)
+            is PreventDamageChainCopyDecisionContinuation -> resumePreventDamageChainCopyDecision(stateAfterPop, continuation, response)
+            is PreventDamageChainCopyLandContinuation -> resumePreventDamageChainCopyLand(stateAfterPop, continuation, response)
+            is PreventDamageChainCopyTargetContinuation -> resumePreventDamageChainCopyTarget(stateAfterPop, continuation, response)
         }
     }
 
@@ -5126,6 +5129,233 @@ class ContinuationHandler(
         }
 
         return checkForMoreContinuations(putResult.state, putResult.events.toList())
+    }
+
+    /**
+     * Resume after the target creature's controller decides whether to sacrifice a land
+     * to copy Chain of Silence.
+     */
+    private fun resumePreventDamageChainCopyDecision(
+        state: GameState,
+        continuation: PreventDamageChainCopyDecisionContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is YesNoResponse) {
+            return ExecutionResult.error(state, "Expected yes/no response for prevent damage chain copy decision")
+        }
+
+        if (!response.choice) {
+            return checkForMoreContinuations(state, emptyList())
+        }
+
+        val controllerLands = findControllerLands(state, continuation.targetControllerId)
+
+        if (controllerLands.isEmpty()) {
+            return checkForMoreContinuations(state, emptyList())
+        }
+
+        if (controllerLands.size == 1) {
+            return sacrificeLandAndPresentPreventDamageChainTargets(
+                state, continuation.targetControllerId, controllerLands.first(),
+                continuation.targetFilter, continuation.spellName, continuation.sourceId
+            )
+        }
+
+        val decisionId = java.util.UUID.randomUUID().toString()
+        val decision = SelectCardsDecision(
+            id = decisionId,
+            playerId = continuation.targetControllerId,
+            prompt = "Choose a land to sacrifice for the copy of ${continuation.spellName}",
+            context = DecisionContext(
+                sourceId = continuation.sourceId,
+                sourceName = continuation.spellName,
+                phase = DecisionPhase.RESOLUTION
+            ),
+            options = controllerLands,
+            minSelections = 1,
+            maxSelections = 1,
+            useTargetingUI = true
+        )
+
+        val landContinuation = PreventDamageChainCopyLandContinuation(
+            decisionId = decisionId,
+            copyControllerId = continuation.targetControllerId,
+            targetFilter = continuation.targetFilter,
+            spellName = continuation.spellName,
+            sourceId = continuation.sourceId,
+            candidateLands = controllerLands
+        )
+
+        val newState = state.withPendingDecision(decision).pushContinuation(landContinuation)
+
+        return ExecutionResult.paused(
+            newState,
+            decision,
+            listOf(
+                DecisionRequestedEvent(
+                    decisionId = decisionId,
+                    playerId = continuation.targetControllerId,
+                    decisionType = "SELECT_CARDS",
+                    prompt = decision.prompt
+                )
+            )
+        )
+    }
+
+    /**
+     * Resume after the copying player selects which land to sacrifice for the prevent damage chain copy.
+     */
+    private fun resumePreventDamageChainCopyLand(
+        state: GameState,
+        continuation: PreventDamageChainCopyLandContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for prevent damage chain land sacrifice")
+        }
+
+        val selectedLand = response.selectedCards.firstOrNull()
+            ?: return checkForMoreContinuations(state, emptyList())
+
+        if (selectedLand !in continuation.candidateLands) {
+            return ExecutionResult.error(state, "Invalid land for prevent damage chain sacrifice: $selectedLand")
+        }
+
+        return sacrificeLandAndPresentPreventDamageChainTargets(
+            state, continuation.copyControllerId, selectedLand,
+            continuation.targetFilter, continuation.spellName, continuation.sourceId
+        )
+    }
+
+    /**
+     * Resume after the copying player selects a target for the prevent damage chain copy.
+     * Creates a triggered ability on the stack with PreventDamageAndChainCopyEffect.
+     */
+    private fun resumePreventDamageChainCopyTarget(
+        state: GameState,
+        continuation: PreventDamageChainCopyTargetContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for prevent damage chain copy target")
+        }
+
+        val selectedTarget = response.selectedCards.firstOrNull()
+            ?: return checkForMoreContinuations(state, emptyList())
+
+        if (selectedTarget !in continuation.candidateTargets) {
+            return ExecutionResult.error(state, "Invalid prevent damage chain copy target: $selectedTarget")
+        }
+
+        val ability = TriggeredAbilityOnStackComponent(
+            sourceId = continuation.sourceId ?: EntityId.generate(),
+            sourceName = continuation.spellName,
+            controllerId = continuation.copyControllerId,
+            effect = com.wingedsheep.sdk.scripting.PreventDamageAndChainCopyEffect(
+                target = com.wingedsheep.sdk.scripting.EffectTarget.ContextTarget(0),
+                targetFilter = continuation.targetFilter,
+                spellName = continuation.spellName
+            ),
+            description = "Copy of ${continuation.spellName}"
+        )
+
+        val targets = listOf(ChosenTarget.Permanent(selectedTarget))
+        val targetRequirements = listOf(
+            com.wingedsheep.sdk.targeting.TargetPermanent(filter = continuation.targetFilter)
+        )
+
+        val putResult = stackResolver.putTriggeredAbility(state, ability, targets, targetRequirements)
+
+        if (!putResult.isSuccess) {
+            return putResult
+        }
+
+        return checkForMoreContinuations(putResult.state, putResult.events.toList())
+    }
+
+    /**
+     * Sacrifice a land and present target selection for the prevent damage chain copy.
+     */
+    private fun sacrificeLandAndPresentPreventDamageChainTargets(
+        state: GameState,
+        controllerId: EntityId,
+        landId: EntityId,
+        targetFilter: com.wingedsheep.sdk.scripting.TargetFilter,
+        spellName: String,
+        sourceId: EntityId?
+    ): ExecutionResult {
+        val container = state.getEntity(landId) ?: return checkForMoreContinuations(state, emptyList())
+        val cardComponent = container.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
+            ?: return checkForMoreContinuations(state, emptyList())
+
+        val currentZone = state.zones.entries.find { (_, cards) -> landId in cards }?.key
+            ?: return checkForMoreContinuations(state, emptyList())
+
+        val ownerId = container.get<com.wingedsheep.engine.state.components.identity.OwnerComponent>()?.playerId
+            ?: cardComponent.ownerId
+            ?: controllerId
+        val graveyardZone = com.wingedsheep.engine.state.ZoneKey(ownerId, com.wingedsheep.sdk.core.Zone.GRAVEYARD)
+
+        var newState = state.removeFromZone(currentZone, landId)
+        newState = newState.addToZone(graveyardZone, landId)
+
+        val sacrificeEvents = mutableListOf<GameEvent>(
+            PermanentsSacrificedEvent(controllerId, listOf(landId)),
+            ZoneChangeEvent(
+                entityId = landId,
+                entityName = cardComponent.name,
+                fromZone = com.wingedsheep.sdk.core.Zone.BATTLEFIELD,
+                toZone = com.wingedsheep.sdk.core.Zone.GRAVEYARD,
+                ownerId = ownerId
+            )
+        )
+
+        val requirement = com.wingedsheep.sdk.targeting.TargetPermanent(filter = targetFilter)
+        val legalTargets = targetFinder.findLegalTargets(newState, requirement, controllerId, sourceId)
+
+        if (legalTargets.isEmpty()) {
+            return checkForMoreContinuations(newState, sacrificeEvents)
+        }
+
+        val decisionId = java.util.UUID.randomUUID().toString()
+        val decision = SelectCardsDecision(
+            id = decisionId,
+            playerId = controllerId,
+            prompt = "Choose a target for the copy of $spellName",
+            context = DecisionContext(
+                sourceId = sourceId,
+                sourceName = spellName,
+                phase = DecisionPhase.RESOLUTION
+            ),
+            options = legalTargets,
+            minSelections = 1,
+            maxSelections = 1,
+            useTargetingUI = true
+        )
+
+        val targetContinuation = PreventDamageChainCopyTargetContinuation(
+            decisionId = decisionId,
+            copyControllerId = controllerId,
+            targetFilter = targetFilter,
+            spellName = spellName,
+            sourceId = sourceId,
+            candidateTargets = legalTargets
+        )
+
+        newState = newState.withPendingDecision(decision).pushContinuation(targetContinuation)
+
+        return ExecutionResult.paused(
+            newState,
+            decision,
+            sacrificeEvents + listOf(
+                DecisionRequestedEvent(
+                    decisionId = decisionId,
+                    playerId = controllerId,
+                    decisionType = "SELECT_CARDS",
+                    prompt = decision.prompt
+                )
+            )
+        )
     }
 
     private fun findControllerLands(state: GameState, controllerId: EntityId): List<EntityId> {

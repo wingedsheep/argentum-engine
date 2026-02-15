@@ -25,6 +25,7 @@ object OnslaughtSet {
         BattlefieldMedic,
         AvenBrigadier,
         AvenSoulgazer,
+        ChainOfSilence,
         AkromasBlessing,
         DoubtlessOne,
         AkromasVengeance,

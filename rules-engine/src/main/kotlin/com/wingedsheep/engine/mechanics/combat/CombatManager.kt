@@ -1341,9 +1341,12 @@ class CombatManager(
 
                 val defenderId = attackingComponent.defenderId
 
+                // Check if all damage from this creature is prevented (Chain of Silence)
+                val allDamagePrevented = EffectExecutorUtils.isAllDamageFromSourcePrevented(newState, attackerId)
+
                 // Check if the defending player is protected from combat damage by attacking creatures
                 val isProtected = isProtectedFromAttackingCreatureDamage(newState, defenderId)
-                if (!isProtected) {
+                if (!isProtected && !allDamagePrevented) {
                     val damageResult = dealDamageToPlayer(newState, defenderId, power, attackerId)
                     newState = damageResult.newState
                     events.addAll(damageResult.events)
@@ -1612,7 +1615,9 @@ class CombatManager(
         }
 
         // Apply attacker's damage to blockers (and potentially defending player with trample)
-        if (attackerDealsDamageThisStep) {
+        // Check if all damage from attacker is prevented (Chain of Silence)
+        val attackerDamagePrevented = EffectExecutorUtils.isAllDamageFromSourcePrevented(newState, attackerId)
+        if (attackerDealsDamageThisStep && !attackerDamagePrevented) {
             for ((targetId, damage) in damageDistribution) {
                 if (damage <= 0) continue
 
@@ -1689,6 +1694,9 @@ class CombatManager(
 
             val blockerPower = projected.getPower(blockerId) ?: 0
             if (blockerPower > 0) {
+                // Check if all damage from this blocker is prevented (Chain of Silence)
+                val blockerDamagePrevented = EffectExecutorUtils.isAllDamageFromSourcePrevented(newState, blockerId)
+
                 // Check protection: attacker protected from blocker's colors or subtypes?
                 val blockerColors = projected.getColors(blockerId)
                 val blockerSubtypes = projected.getSubtypes(blockerId)
@@ -1697,7 +1705,7 @@ class CombatManager(
                 } || blockerSubtypes.any { subtype ->
                     projected.hasKeyword(attackerId, "PROTECTION_FROM_SUBTYPE_${subtype.uppercase()}")
                 }
-                if (!attackerProtected) {
+                if (!attackerProtected && !blockerDamagePrevented) {
                     // Apply damage amplification then prevention shields
                     val amplifiedBlockerDamage = EffectExecutorUtils.applyStaticDamageAmplification(newState, attackerId, blockerPower, blockerId)
                     val (shieldState, effectiveBlockerDamage) = EffectExecutorUtils.applyDamagePreventionShields(newState, attackerId, amplifiedBlockerDamage, isCombatDamage = true, sourceId = blockerId)

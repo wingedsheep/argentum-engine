@@ -169,3 +169,26 @@ data object ChooseCreatureTypeMustAttackEffect : Effect {
     override val description: String =
         "Creatures of the creature type of your choice attack this turn if able"
 }
+
+/**
+ * Prevent all damage target creature would deal this turn, then its controller may
+ * sacrifice a land to copy this spell and may choose a new target for that copy.
+ * Used for Chain of Silence.
+ *
+ * @property target The creature whose damage is prevented
+ * @property targetFilter The filter for valid targets (used when creating copies)
+ * @property spellName The name of the spell (for the copy's description on the stack)
+ */
+@SerialName("PreventDamageAndChainCopy")
+@Serializable
+data class PreventDamageAndChainCopyEffect(
+    val target: EffectTarget,
+    val targetFilter: TargetFilter,
+    val spellName: String
+) : Effect {
+    override val description: String = buildString {
+        append("Prevent all damage ${target.description} would deal this turn. ")
+        append("That creature's controller may sacrifice a land. ")
+        append("If the player does, they may copy this spell and may choose a new target for that copy")
+    }
+}
