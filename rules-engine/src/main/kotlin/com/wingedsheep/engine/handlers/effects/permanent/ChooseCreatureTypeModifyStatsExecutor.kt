@@ -8,6 +8,7 @@ import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
 import com.wingedsheep.engine.mechanics.layers.FloatingEffectData
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
+import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.mechanics.layers.Sublayer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
@@ -41,6 +42,7 @@ class ChooseCreatureTypeModifyStatsExecutor(
         effect: ChooseCreatureTypeModifyStatsEffect,
         context: EffectContext
     ): ExecutionResult {
+        java.io.File("/tmp/tribal-unity-debug.txt").appendText("execute() called, chosenCreatureType=${context.chosenCreatureType}\n")
         val controllerId = context.controllerId
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
 
@@ -100,6 +102,8 @@ class ChooseCreatureTypeModifyStatsExecutor(
     }
 
     companion object {
+        private val stateProjector = StateProjector()
+
         fun applyCreatureTypeModifyStats(
             state: GameState,
             chosenType: String,
@@ -113,12 +117,19 @@ class ChooseCreatureTypeModifyStatsExecutor(
             val affectedEntities = mutableSetOf<EntityId>()
             val events = mutableListOf<GameEvent>()
 
+            // Use projected state to check subtypes, so type-changing continuous effects
+            // (e.g., Mistform Dreamer becoming a Cleric) are taken into account
+            val projected = stateProjector.project(state)
+
             for (entityId in state.getBattlefield()) {
                 val container = state.getEntity(entityId) ?: continue
                 val cardComponent = container.get<CardComponent>() ?: continue
 
-                if (!cardComponent.typeLine.isCreature && !container.has<FaceDownComponent>()) continue
-                if (!cardComponent.typeLine.hasSubtype(Subtype(chosenType))) continue
+                val isCreature = cardComponent.typeLine.isCreature || container.has<FaceDownComponent>()
+                val hasSubtype = projected.hasSubtype(entityId, chosenType)
+                java.io.File("/tmp/tribal-unity-debug.txt").appendText("applyCreatureTypeModifyStats: entity=${cardComponent.name}, isCreature=$isCreature, hasSubtype=$hasSubtype, projectedSubtypes=${projected.getSubtypes(entityId)}, baseSubtypes=${cardComponent.typeLine.subtypes}\n")
+                if (!isCreature) continue
+                if (!hasSubtype) continue
 
                 affectedEntities.add(entityId)
                 events.add(

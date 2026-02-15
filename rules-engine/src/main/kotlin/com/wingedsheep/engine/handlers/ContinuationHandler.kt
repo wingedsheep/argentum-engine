@@ -3544,6 +3544,10 @@ class ContinuationHandler(
             ?: return ExecutionResult.error(state, "Invalid creature type index: ${response.optionIndex}")
 
         // Find all creatures of the chosen type on the battlefield
+        // Use projected state to check subtypes, so type-changing continuous effects
+        // (e.g., Mistform Dreamer becoming a Cleric) are taken into account
+        val projected = StateProjector().project(state)
+        java.io.File("/tmp/tribal-unity-debug.txt").appendText("resumeChooseCreatureTypeModifyStats: chosenType=$chosenType\n")
         val affectedEntities = mutableSetOf<EntityId>()
         val events = mutableListOf<GameEvent>()
 
@@ -3554,8 +3558,8 @@ class ContinuationHandler(
             // Check if creature (face-down permanents are always creatures per Rule 707.2)
             if (!cardComponent.typeLine.isCreature && !container.has<FaceDownComponent>()) continue
 
-            // Check if creature has the chosen subtype
-            if (!cardComponent.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(chosenType))) continue
+            // Check if creature has the chosen subtype using projected state
+            if (!projected.hasSubtype(entityId, chosenType)) continue
 
             affectedEntities.add(entityId)
             events.add(
@@ -4072,6 +4076,7 @@ class ContinuationHandler(
         continuation: CastWithCreatureTypeContinuation,
         response: DecisionResponse
     ): ExecutionResult {
+        java.io.File("/tmp/tribal-unity-debug.txt").appendText("resumeCastWithCreatureType called\n")
         if (response !is OptionChosenResponse) {
             return ExecutionResult.error(state, "Expected option choice response for creature type selection")
         }
