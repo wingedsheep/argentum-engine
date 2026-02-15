@@ -20,6 +20,7 @@ import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
@@ -141,6 +142,9 @@ class ContinuationHandler(
             is DiscardForChainContinuation -> resumeDiscardForChain(stateAfterPop, continuation, response)
             is DiscardChainCopyDecisionContinuation -> resumeDiscardChainCopyDecision(stateAfterPop, continuation, response)
             is DiscardChainCopyTargetContinuation -> resumeDiscardChainCopyTarget(stateAfterPop, continuation, response)
+            is DamageChainCopyDecisionContinuation -> resumeDamageChainCopyDecision(stateAfterPop, continuation, response)
+            is DamageChainDiscardContinuation -> resumeDamageChainDiscard(stateAfterPop, continuation, response)
+            is DamageChainCopyTargetContinuation -> resumeDamageChainCopyTarget(stateAfterPop, continuation, response)
             is DamagePreventionContinuation -> resumeDamagePrevention(stateAfterPop, continuation, response)
         }
     }
@@ -4866,6 +4870,209 @@ class ContinuationHandler(
         val targets = listOf(ChosenTarget.Player(selectedTarget))
         val targetRequirements = listOf(
             com.wingedsheep.sdk.targeting.TargetPlayer()
+        )
+
+        val putResult = stackResolver.putTriggeredAbility(state, ability, targets, targetRequirements)
+
+        if (!putResult.isSuccess) {
+            return putResult
+        }
+
+        return checkForMoreContinuations(putResult.state, putResult.events.toList())
+    }
+
+    /**
+     * Resume after the damaged player/permanent's controller decides whether to
+     * discard a card to copy Chain of Plasma.
+     */
+    private fun resumeDamageChainCopyDecision(
+        state: GameState,
+        continuation: DamageChainCopyDecisionContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is YesNoResponse) {
+            return ExecutionResult.error(state, "Expected yes/no response for damage chain copy decision")
+        }
+
+        if (!response.choice) {
+            // Player declined — chain ends
+            return checkForMoreContinuations(state, emptyList())
+        }
+
+        // Player wants to discard and copy — present card selection for discard
+        val handZone = ZoneKey(continuation.affectedPlayerId, Zone.HAND)
+        val hand = state.getZone(handZone)
+
+        if (hand.isEmpty()) {
+            return checkForMoreContinuations(state, emptyList())
+        }
+
+        val sourceName = continuation.sourceId?.let { sourceId ->
+            state.getEntity(sourceId)?.get<CardComponent>()?.name
+        } ?: continuation.spellName
+
+        val decisionId = java.util.UUID.randomUUID().toString()
+        val decision = SelectCardsDecision(
+            id = decisionId,
+            playerId = continuation.affectedPlayerId,
+            prompt = "Choose a card to discard for ${continuation.spellName}",
+            context = DecisionContext(
+                sourceId = continuation.sourceId,
+                sourceName = sourceName,
+                phase = DecisionPhase.RESOLUTION
+            ),
+            options = hand,
+            minSelections = 1,
+            maxSelections = 1
+        )
+
+        val discardContinuation = DamageChainDiscardContinuation(
+            decisionId = decisionId,
+            affectedPlayerId = continuation.affectedPlayerId,
+            amount = continuation.amount,
+            spellName = continuation.spellName,
+            sourceId = continuation.sourceId
+        )
+
+        val newState = state.withPendingDecision(decision).pushContinuation(discardContinuation)
+
+        return ExecutionResult.paused(
+            newState,
+            decision,
+            listOf(
+                DecisionRequestedEvent(
+                    decisionId = decisionId,
+                    playerId = continuation.affectedPlayerId,
+                    decisionType = "SELECT_CARDS",
+                    prompt = decision.prompt
+                )
+            )
+        )
+    }
+
+    /**
+     * Resume after the affected player selects a card to discard for the damage chain copy.
+     * Discards the card, then presents target selection for the copy.
+     */
+    private fun resumeDamageChainDiscard(
+        state: GameState,
+        continuation: DamageChainDiscardContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for damage chain discard")
+        }
+
+        val selectedCard = response.selectedCards.firstOrNull()
+            ?: return checkForMoreContinuations(state, emptyList())
+
+        // Discard the selected card
+        val playerId = continuation.affectedPlayerId
+        val handZone = ZoneKey(playerId, Zone.HAND)
+        val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
+
+        var newState = state.removeFromZone(handZone, selectedCard)
+        newState = newState.addToZone(graveyardZone, selectedCard)
+
+        val events = mutableListOf<GameEvent>(
+            CardsDiscardedEvent(playerId, listOf(selectedCard))
+        )
+
+        // Now present target selection for the copy
+        val requirement = com.wingedsheep.sdk.targeting.AnyTarget()
+        val legalTargets = targetFinder.findLegalTargets(
+            newState, requirement, playerId, continuation.sourceId
+        )
+
+        if (legalTargets.isEmpty()) {
+            return checkForMoreContinuations(newState, events)
+        }
+
+        val decisionId = java.util.UUID.randomUUID().toString()
+        val decision = SelectCardsDecision(
+            id = decisionId,
+            playerId = playerId,
+            prompt = "Choose a target for the copy of ${continuation.spellName}",
+            context = DecisionContext(
+                sourceId = continuation.sourceId,
+                sourceName = continuation.spellName,
+                phase = DecisionPhase.RESOLUTION
+            ),
+            options = legalTargets,
+            minSelections = 1,
+            maxSelections = 1,
+            useTargetingUI = true
+        )
+
+        val targetContinuation = DamageChainCopyTargetContinuation(
+            decisionId = decisionId,
+            copyControllerId = playerId,
+            amount = continuation.amount,
+            spellName = continuation.spellName,
+            sourceId = continuation.sourceId,
+            candidateTargets = legalTargets
+        )
+
+        newState = newState.withPendingDecision(decision).pushContinuation(targetContinuation)
+
+        return ExecutionResult.paused(
+            newState,
+            decision,
+            events + listOf(
+                DecisionRequestedEvent(
+                    decisionId = decisionId,
+                    playerId = playerId,
+                    decisionType = "SELECT_CARDS",
+                    prompt = decision.prompt
+                )
+            )
+        )
+    }
+
+    /**
+     * Resume after the copying player selects a target for the damage chain copy.
+     * Creates a triggered ability on the stack with DamageAndChainCopyEffect.
+     */
+    private fun resumeDamageChainCopyTarget(
+        state: GameState,
+        continuation: DamageChainCopyTargetContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for damage chain copy target")
+        }
+
+        val selectedTarget = response.selectedCards.firstOrNull()
+            ?: return checkForMoreContinuations(state, emptyList())
+
+        if (selectedTarget !in continuation.candidateTargets) {
+            return ExecutionResult.error(state, "Invalid damage chain copy target: $selectedTarget")
+        }
+
+        // Determine the ChosenTarget type based on what was selected
+        val entity = state.getEntity(selectedTarget)
+        val chosenTarget = if (entity?.get<ControllerComponent>() != null) {
+            ChosenTarget.Permanent(selectedTarget)
+        } else {
+            ChosenTarget.Player(selectedTarget)
+        }
+
+        // Create a copy of the spell on the stack as a triggered ability
+        val ability = TriggeredAbilityOnStackComponent(
+            sourceId = continuation.sourceId ?: EntityId.generate(),
+            sourceName = continuation.spellName,
+            controllerId = continuation.copyControllerId,
+            effect = com.wingedsheep.sdk.scripting.DamageAndChainCopyEffect(
+                amount = continuation.amount,
+                target = com.wingedsheep.sdk.scripting.EffectTarget.ContextTarget(0),
+                spellName = continuation.spellName
+            ),
+            description = "Copy of ${continuation.spellName}"
+        )
+
+        val targets = listOf(chosenTarget)
+        val targetRequirements = listOf(
+            com.wingedsheep.sdk.targeting.AnyTarget()
         )
 
         val putResult = stackResolver.putTriggeredAbility(state, ability, targets, targetRequirements)

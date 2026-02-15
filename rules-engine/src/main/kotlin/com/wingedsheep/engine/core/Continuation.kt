@@ -1450,6 +1450,69 @@ data class DiscardChainCopyTargetContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after the damaged player/permanent's controller decides whether to discard
+ * a card to copy Chain of Plasma.
+ *
+ * When the yes/no decision is answered:
+ * - Yes → present card selection for discard, push DamageChainDiscardContinuation
+ * - No → checkForMoreContinuations (chain ends)
+ *
+ * @property affectedPlayerId The player who was damaged or whose permanent was damaged
+ * @property amount The damage amount for the copy
+ * @property spellName The name of the spell being copied
+ * @property sourceId The source entity of the original spell/ability
+ */
+@Serializable
+data class DamageChainCopyDecisionContinuation(
+    override val decisionId: String,
+    val affectedPlayerId: EntityId,
+    val amount: Int,
+    val spellName: String,
+    val sourceId: EntityId?
+) : ContinuationFrame
+
+/**
+ * Resume after the affected player selects a card to discard for the chain copy.
+ *
+ * After discarding, presents target selection for the copy.
+ *
+ * @property affectedPlayerId The player who is discarding
+ * @property amount The damage amount for the copy
+ * @property spellName The name of the spell being copied
+ * @property sourceId The source entity of the original spell/ability
+ */
+@Serializable
+data class DamageChainDiscardContinuation(
+    override val decisionId: String,
+    val affectedPlayerId: EntityId,
+    val amount: Int,
+    val spellName: String,
+    val sourceId: EntityId?
+) : ContinuationFrame
+
+/**
+ * Resume after the copying player selects a target for the damage chain copy.
+ *
+ * Creates a TriggeredAbilityOnStackComponent with DamageAndChainCopyEffect targeting
+ * the selected entity, enabling recursive chaining.
+ *
+ * @property copyControllerId The player who is creating the copy
+ * @property amount The damage amount for the copy
+ * @property spellName The name of the spell being copied
+ * @property sourceId The source entity of the original spell/ability
+ * @property candidateTargets The list of valid target entity IDs (for validation)
+ */
+@Serializable
+data class DamageChainCopyTargetContinuation(
+    override val decisionId: String,
+    val copyControllerId: EntityId,
+    val amount: Int,
+    val spellName: String,
+    val sourceId: EntityId?,
+    val candidateTargets: List<EntityId>
+) : ContinuationFrame
+
+/**
  * Resume after defending player distributes damage prevention among multiple combat damage sources.
  *
  * Per CR 615.7, when a prevention effect can't prevent all simultaneous damage from multiple

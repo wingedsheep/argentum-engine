@@ -199,6 +199,7 @@ object OnslaughtSet {
         AggravatedAssault,
         AirdropCondor,
         BatteringCraghorn,
+        ChainOfPlasma,
         ChargingSlateback,
         DragonRoost,
         DwarvenBlastminer,

@@ -163,6 +163,9 @@ val engineSerializersModule = SerializersModule {
         subclass(DiscardForChainContinuation::class)
         subclass(DiscardChainCopyDecisionContinuation::class)
         subclass(DiscardChainCopyTargetContinuation::class)
+        subclass(DamageChainCopyDecisionContinuation::class)
+        subclass(DamageChainDiscardContinuation::class)
+        subclass(DamageChainCopyTargetContinuation::class)
         subclass(DamagePreventionContinuation::class)
         subclass(HarshMercyContinuation::class)
     }

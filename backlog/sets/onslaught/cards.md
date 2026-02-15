@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 285 / 335
+**Implemented:** 286 / 335
 
 ---
 
@@ -56,7 +56,7 @@
 - [x] Catapult Squad
 - [x] Centaur Glade
 - [x] Chain of Acid
-- [ ] Chain of Plasma
+- [x] Chain of Plasma
 - [ ] Chain of Silence
 - [x] Chain of Smog
 - [x] Chain of Vapor
