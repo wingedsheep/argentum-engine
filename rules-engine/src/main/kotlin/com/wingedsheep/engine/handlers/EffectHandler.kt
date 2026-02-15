@@ -15,9 +15,10 @@ import com.wingedsheep.sdk.scripting.Effect
  * backward compatibility while delegating execution to individual executors.
  */
 class EffectHandler(
-    private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator()
+    private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator(),
+    private val cardRegistry: com.wingedsheep.engine.registry.CardRegistry? = null
 ) {
-    private val registry = EffectExecutorRegistry(amountEvaluator)
+    private val registry = EffectExecutorRegistry(amountEvaluator, cardRegistry = cardRegistry)
 
     /**
      * Execute an effect and return the result.

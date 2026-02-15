@@ -12,10 +12,11 @@ import com.wingedsheep.engine.handlers.effects.ExecutorModule
 class DrawingExecutors(
     private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator(),
     private val decisionHandler: DecisionHandler = DecisionHandler(),
-    private val targetFinder: TargetFinder = TargetFinder()
+    private val targetFinder: TargetFinder = TargetFinder(),
+    private val cardRegistry: com.wingedsheep.engine.registry.CardRegistry? = null
 ) : ExecutorModule {
     override fun executors(): List<EffectExecutor<*>> = listOf(
-        DrawCardsExecutor(amountEvaluator),
+        DrawCardsExecutor(amountEvaluator, cardRegistry),
         DiscardCardsExecutor(decisionHandler),
         DiscardHandExecutor(),
         DiscardRandomExecutor(),

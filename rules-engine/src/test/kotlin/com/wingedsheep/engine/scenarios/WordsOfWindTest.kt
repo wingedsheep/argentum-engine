@@ -13,6 +13,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.ReplaceNextDrawWithBounceEffect
 import io.kotest.core.spec.style.FunSpec
@@ -48,11 +49,34 @@ class WordsOfWindTest : FunSpec({
         script = CardScript.spell(effect = DrawCardsEffect(2))
     )
 
+    // A draw-3 spell for testing multi-draw prompt
+    val Concentrate = CardDefinition.sorcery(
+        name = "Concentrate",
+        manaCost = ManaCost.parse("{2}{U}{U}"),
+        oracleText = "Draw three cards.",
+        script = CardScript.spell(effect = DrawCardsEffect(3))
+    )
+
+    // A creature with a tap-to-draw-3 ability (like Arcanis the Omnipotent)
+    val DrawThreeCreature = card("Draw Three Creature") {
+        manaCost = "{3}{U}{U}{U}"
+        typeLine = "Creature — Wizard"
+        power = 3
+        toughness = 4
+
+        activatedAbility {
+            cost = AbilityCost.Tap
+            effect = DrawCardsEffect(3)
+        }
+    }
+
     val abilityId = WordsOfWind.activatedAbilities.first().id
+
+    val drawThreeAbilityId = DrawThreeCreature.activatedAbilities.first().id
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(WordsOfWind, Inspiration))
+        driver.registerCards(TestCards.all + listOf(WordsOfWind, Inspiration, Concentrate, DrawThreeCreature))
         return driver
     }
 
@@ -63,6 +87,20 @@ class WordsOfWindTest : FunSpec({
         while (pendingDecision is SelectCardsDecision) {
             val decision = pendingDecision as SelectCardsDecision
             submitCardSelection(decision.playerId, listOf(decision.options.first()))
+        }
+    }
+
+    /**
+     * Resolve all bounce decisions, preferring to bounce permanents with a given name.
+     * This avoids accidentally bouncing Words of Wind itself.
+     */
+    fun GameTestDriver.resolveAllBounceDecisionsPreferring(preferredName: String) {
+        while (pendingDecision is SelectCardsDecision) {
+            val decision = pendingDecision as SelectCardsDecision
+            val preferred = decision.options.firstOrNull { entityId ->
+                state.getEntity(entityId)?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()?.name == preferredName
+            }
+            submitCardSelection(decision.playerId, listOf(preferred ?: decision.options.first()))
         }
     }
 
@@ -402,6 +440,186 @@ class WordsOfWindTest : FunSpec({
 
         // Active player drew a card normally
         driver.getHandSize(activePlayer) shouldBe initialHandSize + 1
+    }
+
+    test("spell draw prompts to activate Words of Wind for each draw") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Grizzly Bears" to 40),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+        val opponent = driver.getOpponent(activePlayer)
+
+        driver.putPermanentOnBattlefield(activePlayer, "Words of Wind")
+        driver.putPermanentOnBattlefield(activePlayer, "Grizzly Bears")
+        driver.putPermanentOnBattlefield(activePlayer, "Grizzly Bears")
+        driver.putPermanentOnBattlefield(activePlayer, "Grizzly Bears")
+        driver.putPermanentOnBattlefield(opponent, "Grizzly Bears")
+        driver.putPermanentOnBattlefield(opponent, "Grizzly Bears")
+        driver.putPermanentOnBattlefield(opponent, "Grizzly Bears")
+
+        // Give untapped lands for mana to pay for activations
+        driver.putPermanentOnBattlefield(activePlayer, "Island")
+        driver.putPermanentOnBattlefield(activePlayer, "Island")
+        driver.putPermanentOnBattlefield(activePlayer, "Island")
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        // Give mana to cast Concentrate ({2}{U}{U})
+        driver.giveMana(activePlayer, Color.BLUE, 4)
+
+        // Cast Concentrate (draw 3)
+        val concentrate = driver.putCardInHand(activePlayer, "Concentrate")
+        driver.castSpell(activePlayer, concentrate)
+        driver.bothPass()
+
+        // Draw 1: Prompted to activate Words of Wind
+        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
+        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
+
+        // Bounce from draw 1 - resolve all bounce decisions, preferring to bounce Bears
+        driver.resolveAllBounceDecisionsPreferring("Grizzly Bears")
+
+        // Draw 2: Prompted again to activate Words of Wind
+        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
+        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
+
+        // Bounce from draw 2
+        driver.resolveAllBounceDecisionsPreferring("Grizzly Bears")
+
+        // Draw 3: Prompted again to activate Words of Wind
+        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
+        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
+
+        // Bounce from draw 3
+        driver.resolveAllBounceDecisionsPreferring("Grizzly Bears")
+
+        // All 3 draws replaced with bounces
+        // Active player's 3 Grizzly Bears should be bounced
+        driver.findPermanent(activePlayer, "Grizzly Bears") shouldBe null
+
+        // Opponent's 3 Grizzly Bears should be bounced
+        driver.findPermanent(opponent, "Grizzly Bears") shouldBe null
+
+        // Words of Wind should still be on the battlefield
+        driver.findPermanent(activePlayer, "Words of Wind") shouldNotBe null
+    }
+
+    test("spell draw prompt can be declined per-draw") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Grizzly Bears" to 40),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+        val opponent = driver.getOpponent(activePlayer)
+
+        driver.putPermanentOnBattlefield(activePlayer, "Words of Wind")
+        driver.putPermanentOnBattlefield(activePlayer, "Grizzly Bears")
+        driver.putPermanentOnBattlefield(opponent, "Grizzly Bears")
+
+        // Give untapped lands for mana
+        driver.putPermanentOnBattlefield(activePlayer, "Island")
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        // Give mana to cast Concentrate ({2}{U}{U})
+        driver.giveMana(activePlayer, Color.BLUE, 4)
+
+        val initialHandSize = driver.getHandSize(activePlayer)
+
+        // Cast Concentrate (draw 3)
+        val concentrate = driver.putCardInHand(activePlayer, "Concentrate")
+        driver.castSpell(activePlayer, concentrate)
+        driver.bothPass()
+
+        // Draw 1: Prompted to activate Words of Wind - DECLINE
+        val prompt1 = driver.pendingDecision
+        (prompt1 is SelectManaSourcesDecision) shouldBe true
+        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = false)
+
+        // Draw 1 happened normally.
+        // Draw 2: Prompted again - ACCEPT
+        val prompt2 = driver.pendingDecision
+        (prompt2 is SelectManaSourcesDecision) shouldBe true
+        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
+
+        // Bounce from draw 2 - prefer bouncing Bears
+        driver.resolveAllBounceDecisionsPreferring("Grizzly Bears")
+
+        // Draw 3: No more mana sources to tap (Island was tapped for draw 2 activation)
+        // So no prompt - draw happens normally
+
+        // Active player: Grizzly Bears bounced from draw 2 activation
+        driver.findPermanent(activePlayer, "Grizzly Bears") shouldBe null
+        // Opponent: Grizzly Bears bounced
+        driver.findPermanent(opponent, "Grizzly Bears") shouldBe null
+
+        // Active player hand: initialHandSize + 2 (normal draws) + 1 (bounced bear)
+        // (Concentrate was added by putCardInHand then removed by castSpell, net 0)
+        driver.getHandSize(activePlayer) shouldBe initialHandSize + 3
+    }
+
+    test("activated ability draw-3 prompts Words of Wind for each draw") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Grizzly Bears" to 40),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+        val opponent = driver.getOpponent(activePlayer)
+
+        driver.putPermanentOnBattlefield(activePlayer, "Words of Wind")
+        val creature = driver.putPermanentOnBattlefield(activePlayer, "Draw Three Creature")
+        driver.putPermanentOnBattlefield(activePlayer, "Grizzly Bears")
+        driver.putPermanentOnBattlefield(activePlayer, "Grizzly Bears")
+        driver.putPermanentOnBattlefield(opponent, "Grizzly Bears")
+        driver.putPermanentOnBattlefield(opponent, "Grizzly Bears")
+
+        // Give untapped lands for mana (3 Islands for 3 activations of Words)
+        driver.putPermanentOnBattlefield(activePlayer, "Island")
+        driver.putPermanentOnBattlefield(activePlayer, "Island")
+        driver.putPermanentOnBattlefield(activePlayer, "Island")
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        // Activate Draw Three Creature's tap ability
+        driver.submitSuccess(
+            ActivateAbility(
+                playerId = activePlayer,
+                sourceId = creature,
+                abilityId = drawThreeAbilityId,
+                targets = emptyList()
+            )
+        )
+        driver.bothPass()
+
+        // Draw 1: Prompted to activate Words of Wind
+        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
+        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
+        driver.resolveAllBounceDecisionsPreferring("Grizzly Bears")
+
+        // Draw 2: Prompted again
+        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
+        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
+        driver.resolveAllBounceDecisionsPreferring("Grizzly Bears")
+
+        // Draw 3: Prompted again (active player has no Bears left, will bounce something else)
+        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
+        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
+        driver.resolveAllBounceDecisions()
+
+        // All 3 draws replaced with bounces
+        // Active player's 2 Grizzly Bears should be bounced
+        driver.findPermanent(activePlayer, "Grizzly Bears") shouldBe null
+        // Opponent's 2 Grizzly Bears should be bounced
+        driver.findPermanent(opponent, "Grizzly Bears") shouldBe null
+        // Draw Three Creature is tapped but still on battlefield
+        driver.findPermanent(activePlayer, "Draw Three Creature") shouldNotBe null
     }
 
     test("draw step does not prompt when Words of Wind activation is not affordable") {

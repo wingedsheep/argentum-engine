@@ -33,7 +33,8 @@ import kotlin.reflect.KClass
  */
 class EffectExecutorRegistry(
     private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator(),
-    private val decisionHandler: DecisionHandler = DecisionHandler()
+    private val decisionHandler: DecisionHandler = DecisionHandler(),
+    private val cardRegistry: com.wingedsheep.engine.registry.CardRegistry? = null
 ) {
     private val executors = mutableMapOf<KClass<out Effect>, EffectExecutor<*>>()
     private val compositeExecutors = CompositeExecutors()
@@ -43,7 +44,7 @@ class EffectExecutorRegistry(
         // Register all effect executors by module
         registerModule(LifeExecutors(amountEvaluator))
         registerModule(DamageExecutors(amountEvaluator, decisionHandler))
-        registerModule(DrawingExecutors(amountEvaluator, decisionHandler))
+        registerModule(DrawingExecutors(amountEvaluator, decisionHandler, cardRegistry = cardRegistry))
         registerModule(PermanentExecutors(decisionHandler, amountEvaluator))
         registerModule(ManaExecutors(amountEvaluator))
         registerModule(TokenExecutors(amountEvaluator))

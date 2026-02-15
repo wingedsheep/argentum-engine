@@ -2,14 +2,19 @@ package com.wingedsheep.engine.handlers.effects.drawing
 
 import com.wingedsheep.engine.core.CardsDiscardedEvent
 import com.wingedsheep.engine.core.CardsDrawnEvent
+import com.wingedsheep.engine.core.DecisionContext
 import com.wingedsheep.engine.core.DecisionPhase
+import com.wingedsheep.engine.core.DecisionRequestedEvent
 import com.wingedsheep.engine.core.DrawFailedEvent
+import com.wingedsheep.engine.core.DrawReplacementActivationContinuation
 import com.wingedsheep.engine.core.DrawReplacementBounceContinuation
 import com.wingedsheep.engine.core.DrawReplacementDiscardContinuation
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.LifeChangedEvent
 import com.wingedsheep.engine.core.LifeChangeReason
+import com.wingedsheep.engine.core.ManaSourceOption
+import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
@@ -17,6 +22,8 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.StateProjector
+import com.wingedsheep.engine.mechanics.mana.ManaSolver
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.ZoneKey
@@ -41,7 +48,8 @@ import kotlin.reflect.KClass
  * "Draw X cards" or "Target player draws X cards"
  */
 class DrawCardsExecutor(
-    private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator()
+    private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator(),
+    private val cardRegistry: CardRegistry? = null
 ) : EffectExecutor<DrawCardsEffect> {
 
     override val effectType: KClass<DrawCardsEffect> = DrawCardsEffect::class
@@ -117,6 +125,27 @@ class DrawCardsExecutor(
                 newState = bearTokenResult.first
                 events.addAll(bearTokenResult.second)
                 continue
+            }
+
+            // No shield exists - check if player wants to activate a promptOnDraw ability
+            val promptResult = checkPromptOnDraw(
+                newState, playerId, count - i, drawnCards.toList()
+            )
+            if (promptResult != null) {
+                // Emit CardsDrawnEvent for cards drawn before this prompt
+                if (drawnCards.isNotEmpty()) {
+                    val allEvents = mutableListOf<GameEvent>(
+                        CardsDrawnEvent(playerId, drawnCards.size, drawnCards.toList())
+                    )
+                    allEvents.addAll(events)
+                    allEvents.addAll(promptResult.events)
+                    return ExecutionResult.paused(
+                        promptResult.state,
+                        promptResult.pendingDecision!!,
+                        allEvents
+                    )
+                }
+                return promptResult
             }
 
             val library = newState.getZone(libraryZone)
@@ -532,6 +561,106 @@ class DrawCardsExecutor(
             decisionResult.pendingDecision,
             events + decisionResult.events
         )
+    }
+
+    /**
+     * Check if a player has a "prompt on draw" activated ability that they can afford.
+     * If so, present a mana source selection decision and pause.
+     * Returns null if no prompt is needed (no cardRegistry, no ability, can't afford).
+     *
+     * This is the same logic as TurnManager.checkPromptOnDraw() but for spell/ability draws.
+     */
+    private fun checkPromptOnDraw(
+        state: GameState,
+        playerId: EntityId,
+        remainingDrawCount: Int,
+        drawnCardsSoFar: List<EntityId>
+    ): ExecutionResult? {
+        if (cardRegistry == null) return null
+
+        val projected = stateProjector.project(state)
+        val controlledPermanents = projected.getBattlefieldControlledBy(playerId)
+
+        for (permanentId in controlledPermanents) {
+            val container = state.getEntity(permanentId) ?: continue
+            val card = container.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+
+            for (ability in cardDef.script.activatedAbilities) {
+                if (!ability.promptOnDraw) continue
+
+                val manaCost = when (val cost = ability.cost) {
+                    is com.wingedsheep.sdk.scripting.AbilityCost.Mana -> cost.cost
+                    is com.wingedsheep.sdk.scripting.AbilityCost.Composite -> {
+                        cost.costs.filterIsInstance<com.wingedsheep.sdk.scripting.AbilityCost.Mana>()
+                            .firstOrNull()?.cost
+                    }
+                    else -> null
+                } ?: continue
+
+                val manaSolver = ManaSolver(cardRegistry, stateProjector)
+                if (!manaSolver.canPay(state, playerId, manaCost)) continue
+
+                val sources = manaSolver.findAvailableManaSources(state, playerId)
+                val sourceOptions = sources.map { source ->
+                    ManaSourceOption(
+                        entityId = source.entityId,
+                        name = source.name,
+                        producesColors = source.producesColors,
+                        producesColorless = source.producesColorless
+                    )
+                }
+
+                val solution = manaSolver.solve(state, playerId, manaCost)
+                val autoPaySuggestion = solution?.sources?.map { it.entityId } ?: emptyList()
+
+                val decisionId = java.util.UUID.randomUUID().toString()
+                val decision = SelectManaSourcesDecision(
+                    id = decisionId,
+                    playerId = playerId,
+                    prompt = "Pay ${manaCost} to activate ${card.name}?",
+                    context = DecisionContext(
+                        sourceId = permanentId,
+                        sourceName = card.name,
+                        phase = DecisionPhase.RESOLUTION
+                    ),
+                    availableSources = sourceOptions,
+                    requiredCost = manaCost.toString(),
+                    autoPaySuggestion = autoPaySuggestion,
+                    canDecline = true
+                )
+
+                val continuation = DrawReplacementActivationContinuation(
+                    decisionId = decisionId,
+                    drawingPlayerId = playerId,
+                    sourceId = permanentId,
+                    sourceName = card.name,
+                    abilityEffect = ability.effect,
+                    manaCost = manaCost.toString(),
+                    drawCount = remainingDrawCount,
+                    isDrawStep = false,
+                    drawnCardsSoFar = drawnCardsSoFar
+                )
+
+                val stateWithDecision = state.withPendingDecision(decision)
+                val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
+
+                return ExecutionResult.paused(
+                    stateWithContinuation,
+                    decision,
+                    listOf(
+                        DecisionRequestedEvent(
+                            decisionId = decisionId,
+                            playerId = playerId,
+                            decisionType = "SELECT_MANA_SOURCES",
+                            prompt = decision.prompt
+                        )
+                    )
+                )
+            }
+        }
+
+        return null
     }
 
     companion object {

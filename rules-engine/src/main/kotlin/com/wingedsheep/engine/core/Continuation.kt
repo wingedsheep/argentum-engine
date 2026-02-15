@@ -1852,7 +1852,8 @@ data class DrawReplacementActivationContinuation(
     val abilityEffect: Effect,
     val manaCost: String,
     val drawCount: Int,
-    val isDrawStep: Boolean
+    val isDrawStep: Boolean,
+    val drawnCardsSoFar: List<EntityId> = emptyList()
 ) : ContinuationFrame
 
 /**

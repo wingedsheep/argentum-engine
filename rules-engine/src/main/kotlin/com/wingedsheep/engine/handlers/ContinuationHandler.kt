@@ -6132,7 +6132,7 @@ class ContinuationHandler(
         events: List<GameEvent>
     ): ExecutionResult {
         if (continuation.remainingDraws > 0) {
-            val drawExecutor = DrawCardsExecutor()
+            val drawExecutor = DrawCardsExecutor(cardRegistry = stackResolver.cardRegistry)
             val drawResult = drawExecutor.executeDraws(
                 state, continuation.drawingPlayerId, continuation.remainingDraws
             )
@@ -6179,7 +6179,7 @@ class ContinuationHandler(
 
         // Continue with remaining draws
         if (continuation.remainingDraws > 0) {
-            val drawExecutor = DrawCardsExecutor()
+            val drawExecutor = DrawCardsExecutor(cardRegistry = stackResolver.cardRegistry)
             val drawResult = drawExecutor.executeDraws(
                 newState, continuation.drawingPlayerId, continuation.remainingDraws
             )
@@ -6331,8 +6331,10 @@ class ContinuationHandler(
             events.addAll(drawResult.events)
             // Set priority for draw step
             newState = newState.withPriority(playerId)
-        } else {
-            val drawExecutor = DrawCardsExecutor()
+        } else if (activated) {
+            // Player activated - use DrawCardsExecutor with cardRegistry so it can prompt
+            // again for subsequent draws (e.g., Arcanis draws 3, player can activate 3 times)
+            val drawExecutor = DrawCardsExecutor(cardRegistry = stackResolver.cardRegistry)
             val drawResult = drawExecutor.executeDraws(newState, playerId, continuation.drawCount)
             if (drawResult.isPaused) {
                 return ExecutionResult.paused(
@@ -6343,6 +6345,37 @@ class ContinuationHandler(
             }
             newState = drawResult.newState
             events.addAll(drawResult.events)
+        } else {
+            // Player declined - draw 1 card normally (the one that was prompted for),
+            // then continue remaining draws with prompting enabled
+            val drawExecutor = DrawCardsExecutor(cardRegistry = stackResolver.cardRegistry)
+            // Draw 1 card normally (without prompting) using a no-registry executor
+            val singleDrawExecutor = DrawCardsExecutor()
+            val singleDrawResult = singleDrawExecutor.executeDraws(newState, playerId, 1)
+            if (singleDrawResult.isPaused) {
+                return ExecutionResult.paused(
+                    singleDrawResult.state,
+                    singleDrawResult.pendingDecision!!,
+                    events + singleDrawResult.events
+                )
+            }
+            newState = singleDrawResult.newState
+            events.addAll(singleDrawResult.events)
+
+            // Continue remaining draws with prompting
+            val remainingDraws = continuation.drawCount - 1
+            if (remainingDraws > 0) {
+                val drawResult = drawExecutor.executeDraws(newState, playerId, remainingDraws)
+                if (drawResult.isPaused) {
+                    return ExecutionResult.paused(
+                        drawResult.state,
+                        drawResult.pendingDecision!!,
+                        events + drawResult.events
+                    )
+                }
+                newState = drawResult.newState
+                events.addAll(drawResult.events)
+            }
         }
 
         return checkForMoreContinuations(newState, events)

@@ -50,14 +50,14 @@ data class ActionContext(
          */
         fun create(cardRegistry: CardRegistry? = null): ActionContext {
             val combatManager = CombatManager(cardRegistry)
-            val effectExecutorRegistry = EffectExecutorRegistry()
+            val effectExecutorRegistry = EffectExecutorRegistry(cardRegistry = cardRegistry)
             val triggerProcessor = TriggerProcessor()
             val triggerDetector = TriggerDetector(cardRegistry)
             return ActionContext(
                 cardRegistry = cardRegistry,
                 combatManager = combatManager,
                 turnManager = TurnManager(combatManager, cardRegistry = cardRegistry),
-                stackResolver = StackResolver(cardRegistry = cardRegistry),
+                stackResolver = StackResolver(effectHandler = com.wingedsheep.engine.handlers.EffectHandler(cardRegistry = cardRegistry), cardRegistry = cardRegistry),
                 manaSolver = ManaSolver(cardRegistry),
                 costCalculator = CostCalculator(cardRegistry),
                 alternativePaymentHandler = AlternativePaymentHandler(),

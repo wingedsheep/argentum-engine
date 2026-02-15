@@ -292,6 +292,17 @@ class StackResolver(
                 newState, spellId, spellComponent, cardComponent,
                 resolvedTargets
             )
+            if (effectResult.isPaused) {
+                // Effect paused for a decision (e.g., draw replacement prompt).
+                // resolveNonPermanentSpell already moved spell to graveyard.
+                val allEvents = events + effectResult.events +
+                    ResolvedEvent(spellId, cardComponent?.name ?: "Unknown")
+                return ExecutionResult.paused(
+                    effectResult.state,
+                    effectResult.pendingDecision!!,
+                    allEvents
+                )
+            }
             newState = effectResult.newState
             events.addAll(effectResult.events)
             events.add(ResolvedEvent(spellId, cardComponent?.name ?: "Unknown"))
