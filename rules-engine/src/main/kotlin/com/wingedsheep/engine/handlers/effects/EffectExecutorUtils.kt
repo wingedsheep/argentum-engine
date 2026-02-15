@@ -244,6 +244,12 @@ object EffectExecutorUtils {
     ): ExecutionResult {
         if (amount <= 0) return ExecutionResult.success(state)
 
+        // Check for damage redirection (Glarecaster)
+        val (redirectState, redirectTargetId) = checkDamageRedirection(state, targetId)
+        if (redirectTargetId != null) {
+            return dealDamageToTarget(redirectState, redirectTargetId, amount, sourceId, cantBePrevented)
+        }
+
         // Protection from color/subtype: damage from sources of the stated quality is prevented (Rule 702.16)
         if (!cantBePrevented && sourceId != null) {
             // Check if all damage from this source is prevented (Chain of Silence)
@@ -487,6 +493,33 @@ object EffectExecutorUtils {
             floatingEffect.effect.modification is SerializableModification.PreventAllDamageDealtBy &&
                 sourceId in floatingEffect.effect.affectedEntities
         }
+    }
+
+    /**
+     * Check for damage redirection shields (Glarecaster).
+     *
+     * Scans floating effects for RedirectNextDamage targeting the entity.
+     * If found, consumes the shield and returns the redirect target ID.
+     *
+     * @param state The current game state
+     * @param targetId The entity about to receive damage
+     * @return Pair of (updated state with consumed shield, redirect target ID or null)
+     */
+    fun checkDamageRedirection(state: GameState, targetId: EntityId): Pair<GameState, EntityId?> {
+        val shieldIndex = state.floatingEffects.indexOfFirst { effect ->
+            effect.effect.modification is SerializableModification.RedirectNextDamage &&
+                targetId in effect.effect.affectedEntities
+        }
+        if (shieldIndex == -1) return state to null
+
+        val shield = state.floatingEffects[shieldIndex]
+        val mod = shield.effect.modification as SerializableModification.RedirectNextDamage
+
+        // Consume the shield (remove it)
+        val updatedEffects = state.floatingEffects.toMutableList()
+        updatedEffects.removeAt(shieldIndex)
+
+        return state.copy(floatingEffects = updatedEffects) to mod.redirectToId
     }
 
     /**

@@ -41,6 +41,7 @@ object OnslaughtSet {
         Demystify,
         DiveBomber,
         ExaltedAngel,
+        Glarecaster,
         FoothillGuide,
         GrasslandCrusader,
         GravelSlinger,

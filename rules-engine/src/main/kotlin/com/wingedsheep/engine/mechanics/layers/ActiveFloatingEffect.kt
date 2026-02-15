@@ -198,6 +198,17 @@ sealed interface SerializableModification {
      */
     @Serializable
     data object PreventAllDamageDealtBy : SerializableModification
+
+    /**
+     * Damage redirection shield: the next time damage would be dealt to any of the
+     * affected entities this turn, redirect that damage to the specified target instead.
+     * Used by Glarecaster and similar effects.
+     * The shield is consumed after the first redirection and removed.
+     */
+    @Serializable
+    data class RedirectNextDamage(
+        val redirectToId: EntityId
+    ) : SerializableModification
 }
 
 /**
@@ -236,4 +247,6 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.SetCantBlock -> Modification.SetCantBlock
     // PreventAllDamageDealtBy doesn't map to a layer modification - it's checked during damage resolution directly
     is SerializableModification.PreventAllDamageDealtBy -> Modification.NoOp
+    // RedirectNextDamage doesn't map to a layer modification - it's checked during damage resolution directly
+    is SerializableModification.RedirectNextDamage -> Modification.NoOp
 }

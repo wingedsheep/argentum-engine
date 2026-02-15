@@ -171,6 +171,26 @@ data object ChooseCreatureTypeMustAttackEffect : Effect {
 }
 
 /**
+ * Redirect the next time damage would be dealt to the protected targets this turn.
+ * "The next time damage would be dealt to [protected targets] this turn,
+ *  that damage is dealt to [redirectTo] instead."
+ * Used for Glarecaster and similar redirection effects.
+ *
+ * @property protectedTargets The entities protected by this redirection shield (e.g., Self + Controller)
+ * @property redirectTo The target that will receive the redirected damage (chosen at activation)
+ */
+@SerialName("RedirectNextDamage")
+@Serializable
+data class RedirectNextDamageEffect(
+    val protectedTargets: List<EffectTarget>,
+    val redirectTo: EffectTarget
+) : Effect {
+    override val description: String =
+        "The next time damage would be dealt to ${protectedTargets.joinToString(" and/or ") { it.description }} this turn, " +
+                "that damage is dealt to ${redirectTo.description} instead"
+}
+
+/**
  * Prevent all damage target creature would deal this turn, then its controller may
  * sacrifice a land to copy this spell and may choose a new target for that copy.
  * Used for Chain of Silence.
