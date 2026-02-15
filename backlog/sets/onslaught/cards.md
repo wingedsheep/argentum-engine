@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 285 / 335
+**Implemented:** 286 / 335
 
 ---
 
@@ -200,7 +200,7 @@
 - [ ] Mistform Mutant
 - [x] Mistform Shrieker
 - [x] Mistform Skyreaver
-- [ ] Mistform Stalker
+- [x] Mistform Stalker
 - [x] Mistform Wall
 - [x] Mobilization
 - [x] Mountain
