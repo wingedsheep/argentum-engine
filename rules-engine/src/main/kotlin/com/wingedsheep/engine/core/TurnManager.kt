@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.core
 
 import com.wingedsheep.engine.handlers.DecisionHandler
+import com.wingedsheep.engine.handlers.effects.drawing.DrawCardsExecutor
 import com.wingedsheep.engine.mechanics.combat.CombatManager
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.mechanics.StateBasedActionChecker
@@ -357,6 +358,19 @@ class TurnManager(
                         )
                     }
                 }
+                return@repeat
+            }
+
+            // Check for bear token replacement shields (Words of Wilding)
+            val bearTokenShieldIndex = newState.floatingEffects.indexOfFirst { effect ->
+                effect.effect.modification is SerializableModification.ReplaceDrawWithBearToken &&
+                    playerId in effect.effect.affectedEntities
+            }
+            if (bearTokenShieldIndex != -1) {
+                val bearTokenUpdatedEffects = newState.floatingEffects.toMutableList()
+                bearTokenUpdatedEffects.removeAt(bearTokenShieldIndex)
+                newState = newState.copy(floatingEffects = bearTokenUpdatedEffects)
+                newState = DrawCardsExecutor.createBearToken(newState, playerId)
                 return@repeat
             }
 

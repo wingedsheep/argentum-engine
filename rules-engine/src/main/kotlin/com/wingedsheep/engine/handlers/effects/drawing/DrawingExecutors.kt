@@ -30,6 +30,7 @@ class DrawingExecutors(
         ReplaceNextDrawWithLifeGainExecutor(),
         ReplaceNextDrawWithBounceExecutor(),
         ReplaceNextDrawWithDiscardExecutor(),
-        ReplaceNextDrawWithDamageExecutor()
+        ReplaceNextDrawWithDamageExecutor(),
+        ReplaceNextDrawWithBearTokenExecutor()
     )
 }

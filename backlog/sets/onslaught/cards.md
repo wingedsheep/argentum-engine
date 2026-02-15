@@ -337,7 +337,7 @@
 - [x] Wooded Foothills
 - [x] Words of War
 - [x] Words of Waste
-- [ ] Words of Wilding
+- [x] Words of Wilding
 - [x] Words of Wind
 - [x] Words of Worship
 - [x] Wretched Anurid

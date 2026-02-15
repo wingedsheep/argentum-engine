@@ -82,6 +82,7 @@ object OnslaughtSet {
         WordsOfWorship,
         WordsOfWaste,
         WordsOfWar,
+        WordsOfWilding,
         WordsOfWind,
         HarshMercy,
 

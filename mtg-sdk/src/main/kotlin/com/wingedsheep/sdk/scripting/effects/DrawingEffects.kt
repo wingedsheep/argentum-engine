@@ -345,6 +345,21 @@ data class ReplaceNextDrawWithDamageEffect(
 }
 
 /**
+ * Replace next draw with token creation effect.
+ * "{1}: The next time you would draw a card this turn, create a 2/2 green Bear creature token instead."
+ * Used for Words of Wilding and similar "Words of" cycle cards.
+ *
+ * This creates a floating replacement effect shield that intercepts the next card draw
+ * for the controller this turn, replacing it with token creation.
+ */
+@SerialName("ReplaceNextDrawWithBearToken")
+@Serializable
+data object ReplaceNextDrawWithBearTokenEffect : Effect {
+    override val description: String =
+        "The next time you would draw a card this turn, create a 2/2 green Bear creature token instead"
+}
+
+/**
  * Reveal a player's hand (publicly visible to all players).
  * This is an atomic effect that just reveals - use with CompositeEffect for
  * "reveal and do something based on what's revealed" patterns.
