@@ -28,6 +28,7 @@ class DrawingExecutors(
         BlackmailExecutor(decisionHandler),
         HeadGamesExecutor(),
         ReplaceNextDrawWithLifeGainExecutor(),
-        ReplaceNextDrawWithBounceExecutor()
+        ReplaceNextDrawWithBounceExecutor(),
+        ReplaceNextDrawWithDiscardExecutor()
     )
 }

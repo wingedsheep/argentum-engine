@@ -274,6 +274,71 @@ class TurnManager(
                 return@repeat
             }
 
+            // Check for discard replacement shields (e.g., Words of Waste)
+            val discardShieldIndex = newState.floatingEffects.indexOfFirst { effect ->
+                effect.effect.modification is SerializableModification.ReplaceDrawWithDiscard &&
+                    playerId in effect.effect.affectedEntities
+            }
+            if (discardShieldIndex != -1) {
+                val discardShield = newState.floatingEffects[discardShieldIndex]
+                val discardUpdatedEffects = newState.floatingEffects.toMutableList()
+                discardUpdatedEffects.removeAt(discardShieldIndex)
+                newState = newState.copy(floatingEffects = discardUpdatedEffects)
+
+                // Each opponent discards a card
+                val opponents = newState.turnOrder.filter { it != playerId }
+                for (opponentId in opponents) {
+                    val handZone = ZoneKey(opponentId, Zone.HAND)
+                    val hand = newState.getZone(handZone)
+                    if (hand.isEmpty()) continue
+
+                    if (hand.size == 1) {
+                        val cardId = hand.first()
+                        val graveyardZone = ZoneKey(opponentId, Zone.GRAVEYARD)
+                        newState = newState.removeFromZone(handZone, cardId)
+                        newState = newState.addToZone(graveyardZone, cardId)
+                        events.add(CardsDiscardedEvent(opponentId, listOf(cardId)))
+                    } else {
+                        // Opponent must choose - create decision and pause
+                        if (drawnCards.isNotEmpty()) {
+                            events.add(0, CardsDrawnEvent(playerId, drawnCards.size, drawnCards.toList()))
+                        }
+                        val sourceName = discardShield.sourceName ?: "Words of Waste"
+                        val decisionHandler = DecisionHandler()
+                        val decisionResult = decisionHandler.createCardSelectionDecision(
+                            state = newState,
+                            playerId = opponentId,
+                            sourceId = discardShield.sourceId,
+                            sourceName = sourceName,
+                            prompt = "Choose a card to discard",
+                            options = hand,
+                            minSelections = 1,
+                            maxSelections = 1,
+                            ordered = false,
+                            phase = DecisionPhase.RESOLUTION
+                        )
+
+                        val continuation = DrawReplacementDiscardContinuation(
+                            decisionId = decisionResult.pendingDecision!!.id,
+                            drawingPlayerId = playerId,
+                            discardingPlayerId = opponentId,
+                            remainingDraws = 0,
+                            drawnCardsSoFar = drawnCards.toList(),
+                            sourceId = discardShield.sourceId,
+                            sourceName = sourceName
+                        )
+
+                        val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
+                        return ExecutionResult.paused(
+                            stateWithContinuation,
+                            decisionResult.pendingDecision,
+                            events + decisionResult.events
+                        )
+                    }
+                }
+                return@repeat
+            }
+
             val library = newState.getZone(libraryKey)
             if (library.isEmpty()) {
                 // Player tries to draw from empty library - they lose (Rule 704.5c)

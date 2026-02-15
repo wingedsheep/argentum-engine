@@ -80,6 +80,7 @@ object OnslaughtSet {
         SigilOfTheNewDawn,
         WeatheredWayfarer,
         WordsOfWorship,
+        WordsOfWaste,
         WordsOfWind,
         HarshMercy,
 

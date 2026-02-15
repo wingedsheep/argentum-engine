@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 312 / 335
+**Implemented:** 313 / 335
 
 ---
 
@@ -336,7 +336,7 @@
 - [x] Withering Hex
 - [x] Wooded Foothills
 - [ ] Words of War
-- [ ] Words of Waste
+- [x] Words of Waste
 - [ ] Words of Wilding
 - [x] Words of Wind
 - [x] Words of Worship

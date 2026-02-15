@@ -177,6 +177,7 @@ val engineSerializersModule = SerializersModule {
         subclass(ChangeSpellTargetContinuation::class)
         subclass(SecretBidContinuation::class)
         subclass(DrawReplacementBounceContinuation::class)
+        subclass(DrawReplacementDiscardContinuation::class)
     }
 
     // Component hierarchy (for GameState persistence)
