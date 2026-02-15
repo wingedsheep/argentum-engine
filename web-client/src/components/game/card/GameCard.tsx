@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useGameStore } from '../../../store/gameStore'
 import { useHasLegalActions } from '../../../store/selectors'
 import type { ClientCard } from '../../../types'
@@ -93,6 +93,41 @@ export function GameCard({
   const handleMouseLeave = useCallback(() => {
     hoverCard(null)
   }, [hoverCard])
+
+  // Long-press handler for mobile card preview
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [longPressActive, setLongPressActive] = useState(false)
+
+  const handleTouchStartPreview = useCallback((_e: React.TouchEvent) => {
+    longPressTimer.current = setTimeout(() => {
+      setLongPressActive(true)
+      hoverCard(card.id)
+      // Cancel any in-progress drag
+      stopDraggingCard()
+      stopDraggingBlocker()
+    }, 400)
+  }, [card.id, hoverCard, stopDraggingCard, stopDraggingBlocker])
+
+  const handleTouchEndPreview = useCallback(() => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current)
+      longPressTimer.current = null
+    }
+    if (longPressActive) {
+      setLongPressActive(false)
+      hoverCard(null)
+      // Mark as handled by drag to suppress click
+      handledByDrag.current = true
+    }
+  }, [longPressActive, hoverCard])
+
+  const handleTouchMovePreview = useCallback(() => {
+    // Cancel long-press if finger moves (user is scrolling/dragging)
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current)
+      longPressTimer.current = null
+    }
+  }, [])
 
   // Check if card has legal actions (is playable)
   const hasLegalActions = useHasLegalActions(card.id)
@@ -575,8 +610,9 @@ export function GameCard({
       onDoubleClick={handleDoubleClickEvent}
       onMouseDown={handlePointerDown}
       onMouseUp={handlePointerUp}
-      onTouchStart={handlePointerDown}
-      onTouchEnd={handlePointerUp}
+      onTouchStart={(e) => { handleTouchStartPreview(e); handlePointerDown(e) }}
+      onTouchEnd={() => { handleTouchEndPreview(); handlePointerUp() }}
+      onTouchMove={handleTouchMovePreview}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       style={{

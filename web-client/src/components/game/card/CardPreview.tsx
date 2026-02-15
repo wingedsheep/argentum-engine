@@ -36,8 +36,7 @@ export function CardPreview() {
     return () => clearTimeout(timer)
   }, [hoveredCardId, lastHoveredId])
 
-  // Card preview relies on hover which doesn't work on touch devices
-  if (!hoveredCardId || !gameState || responsive.isMobile) return null
+  if (!hoveredCardId || !gameState) return null
 
   const card = gameState.cards[hoveredCardId]
   if (!card) return null
@@ -70,7 +69,19 @@ export function CardPreview() {
   const hasRulings = card.rulings && card.rulings.length > 0
 
   return (
-    <div style={styles.cardPreviewOverlay}>
+    <div style={{
+      ...styles.cardPreviewOverlay,
+      ...(responsive.isMobile ? {
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+      } : {}),
+    }}>
       <div style={{
         ...styles.cardPreviewContainer,
         width: previewWidth,
