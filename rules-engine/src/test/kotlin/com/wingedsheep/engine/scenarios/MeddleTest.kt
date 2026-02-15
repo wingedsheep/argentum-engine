@@ -32,7 +32,7 @@ class MeddleTest : FunSpec({
         typeLine = TypeLine.parse("Instant"),
         oracleText = "If target spell has only one target and that target is a creature, change that spell's target to another creature.",
         script = CardScript.spell(
-            effect = ChangeSpellTargetEffect,
+            effect = ChangeSpellTargetEffect(),
             TargetSpell()
         )
     )

@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.TargetsComponent
 import com.wingedsheep.sdk.scripting.ChangeSpellTargetEffect
@@ -67,6 +68,11 @@ class ChangeSpellTargetExecutor : EffectExecutor<ChangeSpellTargetEffect> {
             return ExecutionResult.success(state)
         }
 
+        // If targetMustBeSource, verify the spell's target is the source of this effect
+        if (effect.targetMustBeSource && singleTarget.entityId != context.sourceId) {
+            return ExecutionResult.success(state)
+        }
+
         // 5. Find all other creatures on the battlefield as legal new targets
         val currentTargetId = singleTarget.entityId
         val otherCreatures = state.getBattlefield()
@@ -79,12 +85,13 @@ class ChangeSpellTargetExecutor : EffectExecutor<ChangeSpellTargetEffect> {
             return ExecutionResult.success(state)
         }
 
-        // 6. Present selection decision to Meddle's controller
+        // 6. Present selection decision to the controller
+        val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
         val decisionResult = decisionHandler.createCardSelectionDecision(
             state = state,
             playerId = context.controllerId,
             sourceId = context.sourceId,
-            sourceName = "Meddle",
+            sourceName = sourceName,
             prompt = "Choose a new creature target",
             options = otherCreatures,
             minSelections = 1,

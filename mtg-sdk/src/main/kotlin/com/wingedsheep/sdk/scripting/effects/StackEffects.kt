@@ -53,9 +53,18 @@ data class CounterUnlessPaysEffect(
  * Change the target of a spell that has exactly one target, and that target is a creature,
  * to another creature.
  * "If target spell has only one target and that target is a creature, change that spell's target to another creature."
+ *
+ * When [targetMustBeSource] is true, the spell's target must be the source of this effect
+ * (e.g., Quicksilver Dragon: "If target spell has only one target and that target is this creature").
  */
 @SerialName("ChangeSpellTarget")
 @Serializable
-data object ChangeSpellTargetEffect : Effect {
-    override val description: String = "Change target spell's target to another creature"
+data class ChangeSpellTargetEffect(
+    val targetMustBeSource: Boolean = false
+) : Effect {
+    override val description: String = if (targetMustBeSource) {
+        "Change target spell's target if it targets this creature"
+    } else {
+        "Change target spell's target to another creature"
+    }
 }

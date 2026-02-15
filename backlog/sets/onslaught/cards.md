@@ -225,7 +225,7 @@
 - [x] Profane Prayers
 - [x] Prowling Pangolin
 - [ ] Psychic Trance
-- [ ] Quicksilver Dragon
+- [x] Quicksilver Dragon
 - [x] Ravenous Baloth
 - [ ] Read the Runes
 - [x] Reckless One

@@ -131,6 +131,7 @@ object OnslaughtSet {
         VoidmageProdigy,
         ChainOfVapor,
         Meddle,
+        QuicksilverDragon,
 
         // Black creatures and spells
         AccursedCentaur,
