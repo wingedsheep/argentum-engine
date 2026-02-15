@@ -11,6 +11,7 @@ import { GameLog } from './GameLog'
 import { DrawAnimations } from '../animations/DrawAnimations'
 import { DamageAnimations } from '../animations/DamageAnimations'
 import { RevealAnimations } from '../animations/RevealAnimations'
+import { CoinFlipAnimations } from '../animations/CoinFlipAnimations'
 import { useResponsive } from '../../hooks/useResponsive'
 
 // Import extracted components
@@ -526,6 +527,9 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
 
       {/* Morph reveal animations */}
       <RevealAnimations />
+
+      {/* Coin flip animations */}
+      <CoinFlipAnimations />
     </div>
     </ResponsiveContext.Provider>
   )

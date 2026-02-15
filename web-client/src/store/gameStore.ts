@@ -40,6 +40,7 @@ export type {
   DrawAnimation,
   DamageAnimation,
   RevealAnimation,
+  CoinFlipAnimation,
   GameStore,
 } from './slices/types'
 

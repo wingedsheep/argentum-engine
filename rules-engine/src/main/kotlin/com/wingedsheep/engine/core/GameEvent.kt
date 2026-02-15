@@ -653,3 +653,24 @@ data class CardCycledEvent(
     val cardId: EntityId,
     val cardName: String
 ) : GameEvent
+
+// =============================================================================
+// Coin Flip Events
+// =============================================================================
+
+/**
+ * A player flipped a coin.
+ *
+ * @property playerId The player who flipped the coin
+ * @property won Whether the player won the flip
+ * @property sourceId The entity that caused the coin flip
+ * @property sourceName The name of the card/ability that caused the coin flip
+ */
+@Serializable
+@SerialName("CoinFlipEvent")
+data class CoinFlipEvent(
+    val playerId: EntityId,
+    val won: Boolean,
+    val sourceId: EntityId,
+    val sourceName: String
+) : GameEvent

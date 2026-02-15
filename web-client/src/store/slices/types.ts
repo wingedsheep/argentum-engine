@@ -336,6 +336,17 @@ export interface RevealAnimation {
 }
 
 /**
+ * A coin flip animation.
+ */
+export interface CoinFlipAnimation {
+  id: string
+  sourceName: string
+  won: boolean
+  isOpponent: boolean
+  startTime: number
+}
+
+/**
  * A life change animation (damage or life gain).
  */
 export interface DamageAnimation {
@@ -466,6 +477,7 @@ export type GameStore = {
   drawAnimations: readonly DrawAnimation[]
   damageAnimations: readonly DamageAnimation[]
   revealAnimations: readonly RevealAnimation[]
+  coinFlipAnimations: readonly CoinFlipAnimation[]
   selectCard: (cardId: EntityId | null) => void
   hoverCard: (cardId: EntityId | null) => void
   startTargeting: (state: TargetingState) => void
@@ -521,4 +533,6 @@ export type GameStore = {
   removeDamageAnimation: (id: string) => void
   addRevealAnimation: (animation: RevealAnimation) => void
   removeRevealAnimation: (id: string) => void
+  addCoinFlipAnimation: (animation: CoinFlipAnimation) => void
+  removeCoinFlipAnimation: (id: string) => void
 }

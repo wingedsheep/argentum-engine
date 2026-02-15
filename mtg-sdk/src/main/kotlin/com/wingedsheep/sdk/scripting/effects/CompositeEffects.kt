@@ -337,3 +337,29 @@ data class AnyPlayerMayPayEffect(
     override val description: String =
         "Any player may ${cost.description}. If a player does, ${consequence.description}"
 }
+
+/**
+ * Flip a coin. Execute one effect if you win, another if you lose.
+ * "Flip a coin. If you win the flip, [wonEffect]. If you lose the flip, [lostEffect]."
+ *
+ * Used for cards like Skittish Valesk, Goblin Bomb, Mana Clash, etc.
+ *
+ * @property wonEffect The effect that happens if the player wins the flip (null = nothing)
+ * @property lostEffect The effect that happens if the player loses the flip (null = nothing)
+ */
+@SerialName("FlipCoin")
+@Serializable
+data class FlipCoinEffect(
+    val wonEffect: Effect? = null,
+    val lostEffect: Effect? = null
+) : Effect {
+    override val description: String = buildString {
+        append("Flip a coin.")
+        if (wonEffect != null) {
+            append(" If you win the flip, ${wonEffect.description.replaceFirstChar { it.lowercase() }}.")
+        }
+        if (lostEffect != null) {
+            append(" If you lose the flip, ${lostEffect.description.replaceFirstChar { it.lowercase() }}.")
+        }
+    }
+}

@@ -15,6 +15,7 @@ import type {
   DrawAnimation,
   DamageAnimation,
   RevealAnimation,
+  CoinFlipAnimation,
   ConvokeCreatureSelection,
 } from './types'
 import {
@@ -50,6 +51,7 @@ export interface UISliceState {
   drawAnimations: readonly DrawAnimation[]
   damageAnimations: readonly DamageAnimation[]
   revealAnimations: readonly RevealAnimation[]
+  coinFlipAnimations: readonly CoinFlipAnimation[]
 }
 
 export interface UISliceActions {
@@ -108,6 +110,8 @@ export interface UISliceActions {
   removeDamageAnimation: (id: string) => void
   addRevealAnimation: (animation: RevealAnimation) => void
   removeRevealAnimation: (id: string) => void
+  addCoinFlipAnimation: (animation: CoinFlipAnimation) => void
+  removeCoinFlipAnimation: (id: string) => void
 }
 
 export type UISlice = UISliceState & UISliceActions
@@ -133,6 +137,7 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
   drawAnimations: [],
   damageAnimations: [],
   revealAnimations: [],
+  coinFlipAnimations: [],
 
   // Card selection actions
   selectCard: (cardId) => {
@@ -941,6 +946,18 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
   removeRevealAnimation: (id) => {
     set((state) => ({
       revealAnimations: state.revealAnimations.filter((a) => a.id !== id),
+    }))
+  },
+
+  addCoinFlipAnimation: (animation) => {
+    set((state) => ({
+      coinFlipAnimations: [...state.coinFlipAnimations, animation],
+    }))
+  },
+
+  removeCoinFlipAnimation: (id) => {
+    set((state) => ({
+      coinFlipAnimations: state.coinFlipAnimations.filter((a) => a.id !== id),
     }))
   },
 })

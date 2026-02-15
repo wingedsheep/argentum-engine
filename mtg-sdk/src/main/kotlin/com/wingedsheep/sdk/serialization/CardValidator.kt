@@ -151,6 +151,10 @@ object CardValidator {
             is ModalEffect -> effect.modes.forEach { collectIndicesRecursive(it.effect, indices) }
             is PayOrSufferEffect -> collectIndicesRecursive(effect.suffer, indices)
             is AnyPlayerMayPayEffect -> collectIndicesRecursive(effect.consequence, indices)
+            is FlipCoinEffect -> {
+                effect.wonEffect?.let { collectIndicesRecursive(it, indices) }
+                effect.lostEffect?.let { collectIndicesRecursive(it, indices) }
+            }
             else -> {
                 // Check all EffectTarget fields for ContextTarget references
                 collectTargetIndicesFromEffect(effect, indices)
