@@ -46,7 +46,7 @@ class EffectExecutorRegistry(
         registerModule(DrawingExecutors(amountEvaluator, decisionHandler))
         registerModule(PermanentExecutors(decisionHandler, amountEvaluator))
         registerModule(ManaExecutors(amountEvaluator))
-        registerModule(TokenExecutors())
+        registerModule(TokenExecutors(amountEvaluator))
         registerModule(LibraryExecutors())
         registerModule(StackExecutors())
         registerModule(PlayerExecutors(decisionHandler))

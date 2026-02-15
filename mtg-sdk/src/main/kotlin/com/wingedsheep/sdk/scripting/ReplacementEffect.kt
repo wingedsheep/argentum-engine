@@ -396,6 +396,26 @@ data class EntersAsCopy(
 }
 
 // =============================================================================
+// Color Choice Replacement Effects
+// =============================================================================
+
+/**
+ * As this permanent enters, choose a color.
+ * The chosen color is stored on the permanent for use by other abilities.
+ * Example: Riptide Replicator
+ */
+@SerialName("EntersWithColorChoice")
+@Serializable
+data class EntersWithColorChoice(
+    override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
+        filter = GameObjectFilter.Any,
+        to = Zone.BATTLEFIELD
+    )
+) : ReplacementEffect {
+    override val description: String = "As this permanent enters, choose a color"
+}
+
+// =============================================================================
 // Creature Type Choice Replacement Effects
 // =============================================================================
 

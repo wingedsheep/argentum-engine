@@ -153,6 +153,7 @@ val engineSerializersModule = SerializersModule {
         subclass(ModalContinuation::class)
         subclass(ModalTargetContinuation::class)
         subclass(CloneEntersContinuation::class)
+        subclass(ChooseColorEntersContinuation::class)
         subclass(ChooseCreatureTypeEntersContinuation::class)
         subclass(CastWithCreatureTypeContinuation::class)
         subclass(EachOpponentMayPutFromHandContinuation::class)
@@ -192,6 +193,7 @@ val engineSerializersModule = SerializersModule {
         subclass(TextReplacementComponent::class)
         subclass(ProtectionComponent::class)
         subclass(CopyOfComponent::class)
+        subclass(ChosenColorComponent::class)
         subclass(ChosenCreatureTypeComponent::class)
 
         // Battlefield components

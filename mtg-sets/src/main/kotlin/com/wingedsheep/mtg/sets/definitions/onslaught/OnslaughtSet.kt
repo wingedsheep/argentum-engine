@@ -319,6 +319,7 @@ object OnslaughtSet {
         CrypticGateway,
         DoomCannon,
         DreamChisel,
+        RiptideReplicator,
         SlateOfAncestry,
         TribalGolem,
 

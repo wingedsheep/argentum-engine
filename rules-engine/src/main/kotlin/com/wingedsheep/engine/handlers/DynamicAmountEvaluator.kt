@@ -2,9 +2,11 @@ package com.wingedsheep.engine.handlers
 
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.DynamicAmount
@@ -128,6 +130,13 @@ class DynamicAmountEvaluator(
                 }
             }
 
+            is DynamicAmount.CountersOnSelf -> {
+                val sourceId = context.sourceId ?: return 0
+                val countersComponent = state.getEntity(sourceId)?.get<CountersComponent>() ?: return 0
+                val counterType = resolveCounterType(amount.counterType)
+                countersComponent.getCount(counterType)
+            }
+
             is DynamicAmount.Conditional -> {
                 val eval = conditionEvaluator ?: ConditionEvaluator()
                 val met = eval.evaluate(state, amount.condition, context)
@@ -213,4 +222,20 @@ class DynamicAmountEvaluator(
     }
 
     private fun resolveUnifiedZone(zone: Zone): Zone = zone
+
+    private fun resolveCounterType(filter: com.wingedsheep.sdk.scripting.CounterTypeFilter): CounterType {
+        return when (filter) {
+            is com.wingedsheep.sdk.scripting.CounterTypeFilter.Any -> CounterType.PLUS_ONE_PLUS_ONE
+            is com.wingedsheep.sdk.scripting.CounterTypeFilter.PlusOnePlusOne -> CounterType.PLUS_ONE_PLUS_ONE
+            is com.wingedsheep.sdk.scripting.CounterTypeFilter.MinusOneMinusOne -> CounterType.MINUS_ONE_MINUS_ONE
+            is com.wingedsheep.sdk.scripting.CounterTypeFilter.Loyalty -> CounterType.LOYALTY
+            is com.wingedsheep.sdk.scripting.CounterTypeFilter.Named -> {
+                try {
+                    CounterType.valueOf(filter.name.uppercase().replace(' ', '_'))
+                } catch (_: IllegalArgumentException) {
+                    CounterType.PLUS_ONE_PLUS_ONE
+                }
+            }
+        }
+    }
 }

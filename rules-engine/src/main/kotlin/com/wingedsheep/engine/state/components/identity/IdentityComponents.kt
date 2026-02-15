@@ -145,6 +145,15 @@ data class RevealedToComponent(
 }
 
 /**
+ * Stores the color chosen when this permanent entered the battlefield.
+ * Used by cards like Riptide Replicator ("As this artifact enters, choose a color").
+ */
+@Serializable
+data class ChosenColorComponent(
+    val color: Color
+) : Component
+
+/**
  * Stores the creature type chosen when this permanent entered the battlefield.
  * Used by cards like Doom Cannon ("As this artifact enters, choose a creature type").
  */

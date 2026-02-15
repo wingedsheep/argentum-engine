@@ -51,6 +51,32 @@ data class CreateDynamicTokensEffect(
 }
 
 // =============================================================================
+// Chosen Token Effects
+// =============================================================================
+
+/**
+ * Create a creature token using the chosen color and creature type from the source permanent.
+ * Power/toughness are determined by dynamic amounts evaluated at resolution time.
+ *
+ * Used for Riptide Replicator: "Create an X/X creature token of the chosen color and type,
+ * where X is the number of charge counters on Riptide Replicator."
+ *
+ * Reads ChosenColorComponent and ChosenCreatureTypeComponent from the source.
+ *
+ * @property dynamicPower Dynamic amount for the token's power
+ * @property dynamicToughness Dynamic amount for the token's toughness
+ */
+@SerialName("CreateChosenToken")
+@Serializable
+data class CreateChosenTokenEffect(
+    val dynamicPower: DynamicAmount,
+    val dynamicToughness: DynamicAmount
+) : Effect {
+    override val description: String =
+        "Create an ${dynamicPower.description}/${dynamicToughness.description} creature token of the chosen color and type"
+}
+
+// =============================================================================
 // Token Effects
 // =============================================================================
 

@@ -289,6 +289,16 @@ sealed interface DynamicAmount {
     }
 
     /**
+     * Count of a specific counter type on the source entity.
+     * Used for effects like Riptide Replicator: "where X is the number of charge counters on ~"
+     */
+    @SerialName("CountersOnSelf")
+    @Serializable
+    data class CountersOnSelf(val counterType: CounterTypeFilter) : DynamicAmount {
+        override val description: String = "the number of ${counterType.description} counters on it"
+    }
+
+    /**
      * Count permanents on battlefield matching a unified filter.
      * Convenience wrapper for Count with Zone.BATTLEFIELD.
      *

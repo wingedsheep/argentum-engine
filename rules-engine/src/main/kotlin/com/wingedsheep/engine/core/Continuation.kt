@@ -1159,6 +1159,25 @@ data class CloneEntersContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after player chooses a color for an "as enters, choose a color" effect.
+ *
+ * When a permanent with EntersWithColorChoice resolves, the player is asked to choose
+ * a color. This continuation handles the response and stores the chosen color.
+ * If the permanent also has EntersWithCreatureTypeChoice, it chains to that decision next.
+ *
+ * @property spellId The spell entity being resolved
+ * @property controllerId The player who cast the spell
+ * @property ownerId The owner of the card
+ */
+@Serializable
+data class ChooseColorEntersContinuation(
+    override val decisionId: String,
+    val spellId: EntityId,
+    val controllerId: EntityId,
+    val ownerId: EntityId
+) : ContinuationFrame
+
+/**
  * Resume after player chooses a creature type for an "as enters, choose a creature type" effect.
  *
  * When a permanent with EntersWithCreatureTypeChoice resolves, the player is asked to choose

@@ -362,6 +362,34 @@ class StackResolver(
                 // No creatures on battlefield - fall through to enter as itself (0/0)
             }
 
+            // Check for EntersWithColorChoice replacement effect (must be before creature type choice)
+            val entersWithColorChoice = cardDef.script.replacementEffects.filterIsInstance<com.wingedsheep.sdk.scripting.EntersWithColorChoice>().firstOrNull()
+            if (entersWithColorChoice != null) {
+                val decisionId = "choose-color-enters-${spellId.value}"
+                val decision = ChooseColorDecision(
+                    id = decisionId,
+                    playerId = controllerId,
+                    prompt = "Choose a color",
+                    context = DecisionContext(
+                        sourceId = spellId,
+                        sourceName = cardComponent?.name,
+                        phase = DecisionPhase.RESOLUTION
+                    )
+                )
+
+                val continuation = ChooseColorEntersContinuation(
+                    decisionId = decisionId,
+                    spellId = spellId,
+                    controllerId = controllerId,
+                    ownerId = ownerId
+                )
+
+                val pausedState = state
+                    .pushContinuation(continuation)
+                    .withPendingDecision(decision)
+                return ExecutionResult.paused(pausedState, decision)
+            }
+
             // Check for EntersWithCreatureTypeChoice replacement effect
             val entersWithChoice = cardDef.script.replacementEffects.filterIsInstance<EntersWithCreatureTypeChoice>().firstOrNull()
             if (entersWithChoice != null) {
@@ -462,7 +490,7 @@ class StackResolver(
 
         // Handle "enters with counters" replacement effects (before adding to battlefield)
         if (cardDef != null && !spellComponent.castFaceDown) {
-            newState = applyEntersWithCounters(newState, spellId, cardDef, controllerId)
+            newState = applyEntersWithCounters(newState, spellId, cardDef, controllerId, spellComponent.xValue)
         }
 
         // Add to battlefield
@@ -762,7 +790,8 @@ class StackResolver(
         state: GameState,
         entityId: EntityId,
         cardDef: com.wingedsheep.sdk.model.CardDefinition,
-        controllerId: EntityId
+        controllerId: EntityId,
+        xValue: Int? = null
     ): GameState {
         var newState = state
         for (effect in cardDef.script.replacementEffects) {
@@ -779,7 +808,8 @@ class StackResolver(
                     val context = EffectContext(
                         sourceId = entityId,
                         controllerId = controllerId,
-                        opponentId = newState.turnOrder.firstOrNull { it != controllerId }
+                        opponentId = newState.turnOrder.firstOrNull { it != controllerId },
+                        xValue = xValue
                     )
                     val count = dynamicAmountEvaluator.evaluate(newState, effect.count, context)
                     if (count > 0) {
