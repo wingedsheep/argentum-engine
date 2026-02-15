@@ -168,6 +168,7 @@ val engineSerializersModule = SerializersModule {
         subclass(DamageChainCopyTargetContinuation::class)
         subclass(DamagePreventionContinuation::class)
         subclass(HarshMercyContinuation::class)
+        subclass(ChooseCreatureTypeUntapContinuation::class)
     }
 
     // Component hierarchy (for GameState persistence)

@@ -1253,6 +1253,26 @@ data class ChooseCreatureTypeMustAttackContinuation(
 ) : ContinuationFrame
 
 /**
+ * Continuation for choosing a creature type and then untapping all creatures of that type.
+ *
+ * Used by Riptide Chronologist: "{U}, Sacrifice Riptide Chronologist:
+ * Untap all creatures of the creature type of your choice."
+ *
+ * @property controllerId The player who controls the effect
+ * @property sourceId The permanent that created this effect
+ * @property sourceName Name of the source for event messages
+ * @property creatureTypes The creature type options (indexed by OptionChosenResponse.optionIndex)
+ */
+@Serializable
+data class ChooseCreatureTypeUntapContinuation(
+    override val decisionId: String,
+    val controllerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val creatureTypes: List<String>
+) : ContinuationFrame
+
+/**
  * Resume after a player chose a creature type for Harsh Mercy.
  *
  * Each player (in APNAP order) chooses a creature type. After all players have chosen,
