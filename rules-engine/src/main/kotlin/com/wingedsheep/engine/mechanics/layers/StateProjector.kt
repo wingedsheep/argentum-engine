@@ -41,7 +41,7 @@ import kotlinx.serialization.Serializable
  *    e. Effects that switch P/T
  */
 class StateProjector(
-    private val dynamicAmountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator()
+    private val dynamicAmountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator(projectForBattlefieldCounting = false)
 ) {
 
     /**
@@ -93,43 +93,6 @@ class StateProjector(
             }
         }
 
-        // Resolve CDAs (Layer 7a) - evaluate dynamic power/toughness
-        for ((entityId, cardComponent) in dynamicStatEntities) {
-            val values = projectedValues[entityId] ?: continue
-            val controllerId = values.controllerId ?: continue
-            val context = EffectContext(
-                sourceId = entityId,
-                controllerId = controllerId,
-                opponentId = state.getOpponent(controllerId)
-            )
-            val baseStats = cardComponent.baseStats ?: continue
-            val textReplacement = state.getEntity(entityId)?.get<TextReplacementComponent>()
-
-            fun resolveDynamicAmount(source: com.wingedsheep.sdk.scripting.DynamicAmount): Int {
-                val effective = if (textReplacement != null) {
-                    SubtypeReplacer.replaceDynamicAmount(source, textReplacement)
-                } else {
-                    source
-                }
-                return dynamicAmountEvaluator.evaluate(state, effective, context)
-            }
-
-            when (val power = baseStats.power) {
-                is CharacteristicValue.Dynamic ->
-                    values.power = resolveDynamicAmount(power.source)
-                is CharacteristicValue.DynamicWithOffset ->
-                    values.power = resolveDynamicAmount(power.source) + power.offset
-                is CharacteristicValue.Fixed -> {} // Already set
-            }
-            when (val toughness = baseStats.toughness) {
-                is CharacteristicValue.Dynamic ->
-                    values.toughness = resolveDynamicAmount(toughness.source)
-                is CharacteristicValue.DynamicWithOffset ->
-                    values.toughness = resolveDynamicAmount(toughness.source) + toughness.offset
-                is CharacteristicValue.Fixed -> {} // Already set
-            }
-        }
-
         // Apply Layer 3 text-changing effects (TextReplacementComponent)
         // This modifies subtypes before other layers are applied
         for (entityId in state.getBattlefield()) {
@@ -156,9 +119,61 @@ class StateProjector(
         // Sort effects by layer and dependency
         val sortedEffects = sortByLayerAndDependency(effects, state)
 
-        // Apply effects in order
+        // Apply continuous effects for layers 1-6 first (before CDA resolution)
+        // This ensures type-changing effects (Layer 4) are applied before CDAs count subtypes
         for (effect in sortedEffects) {
-            applyEffect(effect, state, projectedValues)
+            if (effect.layer != Layer.POWER_TOUGHNESS) {
+                applyEffect(effect, state, projectedValues)
+            }
+        }
+
+        // Resolve CDAs (Layer 7a) - evaluate dynamic power/toughness
+        // Done after layers 1-6 so type changes are visible to CountBattlefield
+        if (dynamicStatEntities.isNotEmpty()) {
+            // Build intermediate projected state so counting uses updated types/subtypes
+            val intermediateProjected = buildIntermediateProjectedState(state, projectedValues)
+            for ((entityId, cardComponent) in dynamicStatEntities) {
+                val values = projectedValues[entityId] ?: continue
+                val controllerId = values.controllerId ?: continue
+                val context = EffectContext(
+                    sourceId = entityId,
+                    controllerId = controllerId,
+                    opponentId = state.getOpponent(controllerId)
+                )
+                val baseStats = cardComponent.baseStats ?: continue
+                val textReplacement = state.getEntity(entityId)?.get<TextReplacementComponent>()
+
+                fun resolveDynamicAmount(source: com.wingedsheep.sdk.scripting.DynamicAmount): Int {
+                    val effective = if (textReplacement != null) {
+                        SubtypeReplacer.replaceDynamicAmount(source, textReplacement)
+                    } else {
+                        source
+                    }
+                    return dynamicAmountEvaluator.evaluate(state, effective, context, intermediateProjected)
+                }
+
+                when (val power = baseStats.power) {
+                    is CharacteristicValue.Dynamic ->
+                        values.power = resolveDynamicAmount(power.source)
+                    is CharacteristicValue.DynamicWithOffset ->
+                        values.power = resolveDynamicAmount(power.source) + power.offset
+                    is CharacteristicValue.Fixed -> {} // Already set
+                }
+                when (val toughness = baseStats.toughness) {
+                    is CharacteristicValue.Dynamic ->
+                        values.toughness = resolveDynamicAmount(toughness.source)
+                    is CharacteristicValue.DynamicWithOffset ->
+                        values.toughness = resolveDynamicAmount(toughness.source) + toughness.offset
+                    is CharacteristicValue.Fixed -> {} // Already set
+                }
+            }
+        }
+
+        // Apply layer 7 continuous effects (P/T modifications from spells/abilities)
+        for (effect in sortedEffects) {
+            if (effect.layer == Layer.POWER_TOUGHNESS) {
+                applyEffect(effect, state, projectedValues)
+            }
         }
 
         // Apply counters (layer 7d) - this is always done from base state
@@ -219,6 +234,32 @@ class StateProjector(
     fun hasProjectedKeyword(state: GameState, entityId: EntityId, keyword: Keyword): Boolean {
         val projected = project(state)
         return projected.hasKeyword(entityId, keyword)
+    }
+
+    /**
+     * Build an intermediate ProjectedState from the in-progress projected values.
+     * Used during CDA resolution so that CountBattlefield can see type changes
+     * from layers 1-6 (especially Layer 4 type-changing effects).
+     */
+    private fun buildIntermediateProjectedState(
+        state: GameState,
+        projectedValues: Map<EntityId, MutableProjectedValues>
+    ): ProjectedState {
+        val frozen = projectedValues.mapValues { (_, v) ->
+            ProjectedValues(
+                power = v.power,
+                toughness = v.toughness,
+                keywords = v.keywords.toSet(),
+                colors = v.colors.toSet(),
+                types = v.types.toSet(),
+                subtypes = v.subtypes.toSet(),
+                controllerId = v.controllerId,
+                isFaceDown = v.isFaceDown,
+                cantAttack = v.cantAttack,
+                cantBlock = v.cantBlock
+            )
+        }
+        return ProjectedState(state, frozen)
     }
 
     /**

@@ -117,10 +117,14 @@ class HeedlessOneScenarioTest : ScenarioTestBase() {
                 game.chooseCreatureType("Elf")
                 game.chooseCreatureType("Crocodile")
 
-                // Now Heedless One counts Crocodiles instead of Elves → 0/0
-                // SBAs will put it in the graveyard since it has 0 toughness
-                withClue("Heedless One should die to SBAs (0/0 with no Crocodiles)") {
-                    game.isInGraveyard(1, "Heedless One") shouldBe true
+                // Heedless One now counts Crocodiles instead of Elves.
+                // Text replacement also changes its type line from "Elf Avatar" to "Crocodile Avatar",
+                // so it IS a Crocodile and counts itself → 1/1.
+                // Wirewood Elf is still an Elf (not a Crocodile) so it doesn't count.
+                val projectedAfter = stateProjector.project(game.state)
+                withClue("Heedless One should be 1/1 (counts itself as a Crocodile)") {
+                    projectedAfter.getPower(heedlessOne) shouldBe 1
+                    projectedAfter.getToughness(heedlessOne) shouldBe 1
                 }
             }
 

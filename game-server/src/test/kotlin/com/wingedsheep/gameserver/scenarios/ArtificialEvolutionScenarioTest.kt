@@ -111,10 +111,10 @@ class ArtificialEvolutionScenarioTest : ScenarioTestBase() {
                 )
                 game.resolveStack()
 
-                // Wellwisher's ability now counts Goblins: 2 Goblins on battlefield = 2 life
-                // (Wellwisher itself is an Elf, not a Goblin, so it doesn't count)
-                withClue("Should gain 2 life (2 Goblins on battlefield)") {
-                    game.getLifeTotal(1) shouldBe 12
+                // Wellwisher's ability now counts Goblins: 3 Goblins on battlefield = 3 life
+                // (Wellwisher itself is now a Goblin Druid — text replacement changes type line too)
+                withClue("Should gain 3 life (3 Goblins: Wellwisher + Raging Goblin + Goblin Bully)") {
+                    game.getLifeTotal(1) shouldBe 13
                 }
             }
 

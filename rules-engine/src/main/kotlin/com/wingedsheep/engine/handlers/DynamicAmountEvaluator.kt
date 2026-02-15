@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.handlers
 
+import com.wingedsheep.engine.mechanics.layers.ProjectedState
+import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
@@ -22,16 +24,27 @@ import kotlin.math.min
  * "the number of creatures you control" or "your life total".
  */
 class DynamicAmountEvaluator(
-    private val conditionEvaluator: ConditionEvaluator? = null
+    private val conditionEvaluator: ConditionEvaluator? = null,
+    /**
+     * When true, evaluateUnifiedCount will project state to correctly see
+     * temporary type/subtype changes (e.g., BecomeCreatureType effects).
+     * Set to false in StateProjector's internal evaluator to avoid infinite recursion.
+     */
+    private val projectForBattlefieldCounting: Boolean = true
 ) {
 
     /**
      * Evaluate a DynamicAmount to get an actual integer value.
+     *
+     * @param projectedState Optional pre-computed projected state for battlefield counting.
+     *   When provided, this takes priority over auto-projection. Used by StateProjector
+     *   to pass its intermediate projected state during CDA resolution.
      */
     fun evaluate(
         state: GameState,
         amount: DynamicAmount,
-        context: EffectContext
+        context: EffectContext,
+        projectedState: ProjectedState? = null
     ): Int {
         return when (amount) {
             is DynamicAmount.Fixed -> amount.amount
@@ -112,11 +125,11 @@ class DynamicAmountEvaluator(
 
             // Unified counting
             is DynamicAmount.Count -> {
-                evaluateUnifiedCount(state, amount.player, amount.zone, amount.filter, context)
+                evaluateUnifiedCount(state, amount.player, amount.zone, amount.filter, context, projectedState)
             }
 
             is DynamicAmount.CountBattlefield -> {
-                evaluateUnifiedCount(state, amount.player, Zone.BATTLEFIELD, amount.filter, context)
+                evaluateUnifiedCount(state, amount.player, Zone.BATTLEFIELD, amount.filter, context, projectedState)
             }
 
             is DynamicAmount.SourcePower -> {
@@ -156,25 +169,43 @@ class DynamicAmountEvaluator(
         player: Player,
         zone: Zone,
         filter: GameObjectFilter,
-        context: EffectContext
+        context: EffectContext,
+        explicitProjectedState: ProjectedState? = null
     ): Int {
         val playerIds = resolveUnifiedPlayerIds(state, player, context)
         val zoneType = resolveUnifiedZone(zone)
 
         val predicateContext = PredicateContext.fromEffectContext(context)
 
+        // Use projected state for battlefield counting to see temporary type changes
+        // (e.g., BecomeCreatureType effects). Use explicit projected state if provided,
+        // otherwise auto-project when projectForBattlefieldCounting is enabled.
+        val projected = if (zoneType == Zone.BATTLEFIELD) {
+            explicitProjectedState ?: if (projectForBattlefieldCounting) {
+                StateProjector(DynamicAmountEvaluator(projectForBattlefieldCounting = false))
+                    .project(state)
+            } else null
+        } else null
+
         return playerIds.sumOf { playerId ->
             val entities = if (zoneType == Zone.BATTLEFIELD) {
                 // Battlefield is shared, filter by controller
+                // Use projected controller to account for control-changing effects
                 state.getBattlefield().filter { entityId ->
-                    state.getEntity(entityId)?.get<ControllerComponent>()?.playerId == playerId
+                    val controllerId = projected?.getController(entityId)
+                        ?: state.getEntity(entityId)?.get<ControllerComponent>()?.playerId
+                    controllerId == playerId
                 }
             } else {
                 state.getZone(ZoneKey(playerId, zoneType))
             }
 
             entities.count { entityId ->
-                predicateEvaluator.matches(state, entityId, filter, predicateContext)
+                if (projected != null) {
+                    predicateEvaluator.matchesWithProjection(state, projected, entityId, filter, predicateContext)
+                } else {
+                    predicateEvaluator.matches(state, entityId, filter, predicateContext)
+                }
             }
         }
     }
