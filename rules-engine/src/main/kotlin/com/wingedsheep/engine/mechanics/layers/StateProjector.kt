@@ -671,6 +671,27 @@ class StateProjector(
                 is Modification.SetCantBlock -> {
                     values.cantBlock = true
                 }
+                is Modification.ModifyPowerToughnessPerSourceCounter -> {
+                    // Read counter count from the source permanent (e.g., the aura)
+                    val counterType = try {
+                        CounterType.valueOf(
+                            mod.counterType.uppercase()
+                                .replace(' ', '_')
+                                .replace('+', 'P')
+                                .replace('-', 'M')
+                                .replace("/", "_")
+                        )
+                    } catch (e: IllegalArgumentException) { null }
+                    val counterCount = if (counterType != null) {
+                        state.getEntity(effect.sourceId)
+                            ?.get<CountersComponent>()
+                            ?.getCount(counterType) ?: 0
+                    } else 0
+                    if (counterCount > 0) {
+                        values.power = (values.power ?: 0) + mod.powerModPerCounter * counterCount
+                        values.toughness = (values.toughness ?: 0) + mod.toughnessModPerCounter * counterCount
+                    }
+                }
                 is Modification.NoOp -> {
                     // No-op: effect doesn't modify projected state (e.g., combat restrictions)
                 }
@@ -928,6 +949,17 @@ sealed interface Modification {
     data object SetCantAttack : Modification
     @Serializable
     data object SetCantBlock : Modification
+
+    /**
+     * Dynamic power/toughness modification based on counters on the source permanent.
+     * The actual modification is computed at projection time by reading counter count from source.
+     */
+    @Serializable
+    data class ModifyPowerToughnessPerSourceCounter(
+        val counterType: String,
+        val powerModPerCounter: Int,
+        val toughnessModPerCounter: Int
+    ) : Modification
 
     /** No-op modification for effects that don't modify projected state (e.g., combat restrictions) */
     @Serializable

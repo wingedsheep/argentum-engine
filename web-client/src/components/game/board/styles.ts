@@ -755,6 +755,21 @@ export const styles: Record<string, React.CSSProperties> = {
     fontWeight: 700,
     zIndex: 5,
   } as React.CSSProperties,
+  // Plague counter badge (for Withering Hex etc.)
+  plagueCounterBadge: {
+    position: 'absolute',
+    bottom: 22,
+    right: 4,
+    backgroundColor: 'rgba(50, 20, 60, 0.95)',
+    borderRadius: 4,
+    border: '1px solid rgba(140, 60, 160, 0.6)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 2,
+    color: '#c070e0',
+    fontWeight: 700,
+    zIndex: 5,
+  } as React.CSSProperties,
   // Enhanced preview stats box styles
   cardPreviewStatsBox: {
     display: 'flex',

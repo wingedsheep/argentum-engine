@@ -359,6 +359,34 @@ sealed interface CostReductionSource {
 // =============================================================================
 
 /**
+ * Modifies the attached creature's power/toughness based on counters on the source permanent.
+ * Used for auras like Withering Hex: "Enchanted creature gets -1/-1 for each plague counter
+ * on this Aura."
+ *
+ * The modification is dynamic — recalculated during state projection based on the current
+ * number of counters on the source (the aura itself).
+ *
+ * @property counterType The counter type to count on the source
+ * @property powerModPerCounter Power modification per counter (e.g., -1)
+ * @property toughnessModPerCounter Toughness modification per counter (e.g., -1)
+ * @property target What this ability applies to (typically AttachedCreature for auras)
+ */
+@SerialName("ModifyStatsByCounterOnSource")
+@Serializable
+data class ModifyStatsByCounterOnSource(
+    val counterType: String,
+    val powerModPerCounter: Int,
+    val toughnessModPerCounter: Int,
+    val target: StaticTarget = StaticTarget.AttachedCreature
+) : StaticAbility {
+    override val description: String = buildString {
+        val powerStr = if (powerModPerCounter >= 0) "+$powerModPerCounter" else "$powerModPerCounter"
+        val toughStr = if (toughnessModPerCounter >= 0) "+$toughnessModPerCounter" else "$toughnessModPerCounter"
+        append("$powerStr/$toughStr for each $counterType counter on this permanent")
+    }
+}
+
+/**
  * This creature can't be blocked by creatures of the specified color(s).
  * Used for cards like Sacred Knight: "can't be blocked by black creatures"
  * or "can't be blocked by black and/or red creatures."

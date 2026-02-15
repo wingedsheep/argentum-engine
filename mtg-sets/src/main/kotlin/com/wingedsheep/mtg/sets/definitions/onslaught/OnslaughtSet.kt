@@ -187,6 +187,7 @@ object OnslaughtSet {
         ThrashingMudspawn,
         WalkingDesecration,
         ShadesBreath,
+        WitheringHex,
 
         // Red creatures and spells
         AetherCharge,

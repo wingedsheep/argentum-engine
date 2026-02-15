@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 292 / 335
+**Implemented:** 293 / 335
 
 ---
 
@@ -333,7 +333,7 @@
 - [x] Wirewood Lodge
 - [x] Wirewood Pride
 - [x] Wirewood Savage
-- [ ] Withering Hex
+- [x] Withering Hex
 - [ ] Wooded Foothills
 - [ ] Words of War
 - [ ] Words of Waste

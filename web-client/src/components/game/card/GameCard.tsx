@@ -11,6 +11,7 @@ import {
   getCounterStatModifier,
   hasStatCounters,
   getGoldCounters,
+  getPlagueCounters,
 } from '../board/shared'
 import { styles } from '../board/styles'
 import {
@@ -731,6 +732,20 @@ export function GameCard({
           <span style={{ fontSize: responsive.isMobile ? 8 : 10 }}>&#x2B22;</span>
           <span style={{ fontWeight: 700 }}>
             {getGoldCounters(card)}
+          </span>
+        </div>
+      )}
+
+      {/* Plague counter badge */}
+      {battlefield && !faceDown && getPlagueCounters(card) > 0 && (
+        <div style={{
+          ...styles.plagueCounterBadge,
+          fontSize: responsive.isMobile ? 9 : 11,
+          padding: responsive.isMobile ? '1px 4px' : '2px 6px',
+        }}>
+          <span style={{ fontSize: responsive.isMobile ? 8 : 10 }}>&#x2623;</span>
+          <span style={{ fontWeight: 700 }}>
+            {getPlagueCounters(card)}
           </span>
         </div>
       )}
