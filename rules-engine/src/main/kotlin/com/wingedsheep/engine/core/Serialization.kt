@@ -174,6 +174,7 @@ val engineSerializersModule = SerializersModule {
         subclass(HarshMercyContinuation::class)
         subclass(ChooseCreatureTypeUntapContinuation::class)
         subclass(ChangeSpellTargetContinuation::class)
+        subclass(SecretBidContinuation::class)
     }
 
     // Component hierarchy (for GameState persistence)

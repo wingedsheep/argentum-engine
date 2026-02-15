@@ -230,6 +230,7 @@ object OnslaughtSet {
         LavamancersSkill,
         LayWaste,
         LightningRift,
+        MenacingOgre,
         PinpointAvalanche,
         RecklessOne,
         RorixBladewing,
