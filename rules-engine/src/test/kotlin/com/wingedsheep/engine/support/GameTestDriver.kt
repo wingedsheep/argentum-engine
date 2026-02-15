@@ -8,6 +8,8 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisCombatComponent
+import com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombatComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.identity.PlayerComponent
@@ -202,8 +204,10 @@ class GameTestDriver {
      * Both players pass priority (for stack resolution or phase advancement).
      */
     fun bothPass(): ExecutionResult {
+        autoSubmitCombatDeclarationIfNeeded()
         var result = passPriority(state.priorityPlayerId ?: player1)
         if (result.isSuccess && state.priorityPlayerId != null) {
+            autoSubmitCombatDeclarationIfNeeded()
             result = passPriority(state.priorityPlayerId!!)
         }
         return result
@@ -230,6 +234,8 @@ class GameTestDriver {
                 autoResolveDecision()
                 stuckCount = 0
             } else if (state.priorityPlayerId != null) {
+                // During combat declaration steps, submit empty declarations before passing
+                autoSubmitCombatDeclarationIfNeeded()
                 passPriority(state.priorityPlayerId!!)
                 stuckCount = 0
             } else {
@@ -268,6 +274,7 @@ class GameTestDriver {
             if (state.pendingDecision != null) {
                 autoResolveDecision()
             } else if (state.priorityPlayerId != null) {
+                autoSubmitCombatDeclarationIfNeeded()
                 passPriority(state.priorityPlayerId!!)
             }
             passes++
@@ -1009,6 +1016,28 @@ class GameTestDriver {
      * Auto-resolve a pending decision by picking the first valid option.
      * Used by passPriorityUntil to handle cleanup discard and similar automatic decisions.
      */
+    /**
+     * During combat declaration steps, auto-submit empty declarations so that
+     * PassPriority can proceed. This mirrors what the game server's auto-pass does.
+     */
+    private fun autoSubmitCombatDeclarationIfNeeded() {
+        val priorityPlayer = state.priorityPlayerId ?: return
+        if (state.step == Step.DECLARE_ATTACKERS && priorityPlayer == state.activePlayerId) {
+            val attackersDeclared = state.getEntity(priorityPlayer)
+                ?.get<AttackersDeclaredThisCombatComponent>() != null
+            if (!attackersDeclared) {
+                submit(DeclareAttackers(priorityPlayer, emptyMap()))
+            }
+        }
+        if (state.step == Step.DECLARE_BLOCKERS && priorityPlayer != state.activePlayerId) {
+            val blockersDeclared = state.getEntity(priorityPlayer)
+                ?.get<BlockersDeclaredThisCombatComponent>() != null
+            if (!blockersDeclared) {
+                submit(DeclareBlockers(priorityPlayer, emptyMap()))
+            }
+        }
+    }
+
     fun autoResolveDecision() {
         val decision = state.pendingDecision
             ?: throw IllegalStateException("No pending decision to auto-resolve")

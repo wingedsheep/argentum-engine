@@ -12,9 +12,12 @@ import com.wingedsheep.engine.handlers.actions.ActionHandler
 import com.wingedsheep.engine.mechanics.StateBasedActionChecker
 import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisCombatComponent
+import com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombatComponent
 import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
+import com.wingedsheep.sdk.core.Step
 import kotlin.reflect.KClass
 
 /**
@@ -41,6 +44,23 @@ class PassPriorityHandler(
         val pendingDecision = state.pendingDecision
         if (pendingDecision != null) {
             return "Cannot pass priority while there's a pending decision - please respond to: ${pendingDecision.prompt}"
+        }
+        // Cannot pass priority during combat declaration steps until the declaration is submitted.
+        // During DECLARE_ATTACKERS, the active player must submit DeclareAttackers before passing.
+        // During DECLARE_BLOCKERS, the defending player must submit DeclareBlockers before passing.
+        if (state.step == Step.DECLARE_ATTACKERS && action.playerId == state.activePlayerId) {
+            val attackersDeclared = state.getEntity(action.playerId)
+                ?.get<AttackersDeclaredThisCombatComponent>() != null
+            if (!attackersDeclared) {
+                return "You must declare attackers before passing priority"
+            }
+        }
+        if (state.step == Step.DECLARE_BLOCKERS && action.playerId != state.activePlayerId) {
+            val blockersDeclared = state.getEntity(action.playerId)
+                ?.get<BlockersDeclaredThisCombatComponent>() != null
+            if (!blockersDeclared) {
+                return "You must declare blockers before passing priority"
+            }
         }
         return null
     }

@@ -1858,8 +1858,19 @@ class GameSession(
             return ActionResult.Failure("Player does not have priority")
         }
 
-        // Execute the PassPriority action
-        val action = PassPriority(playerId)
+        // During combat declaration steps, submit an empty declaration instead of PassPriority.
+        // The engine requires declarations before allowing priority to pass.
+        val action: GameAction = when {
+            state.step == Step.DECLARE_ATTACKERS && playerId == state.activePlayerId &&
+                state.getEntity(playerId)?.get<AttackersDeclaredThisCombatComponent>() == null ->
+                DeclareAttackers(playerId, emptyMap())
+
+            state.step == Step.DECLARE_BLOCKERS && playerId != state.activePlayerId &&
+                state.getEntity(playerId)?.get<BlockersDeclaredThisCombatComponent>() == null ->
+                DeclareBlockers(playerId, emptyMap())
+
+            else -> PassPriority(playerId)
+        }
         val result = actionProcessor.process(state, action)
 
         val error = result.error

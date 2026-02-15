@@ -17,6 +17,8 @@ import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.state.components.identity.PlayerComponent
 import com.wingedsheep.engine.state.components.identity.ProtectionComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
+import com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisCombatComponent
+import com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombatComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
@@ -626,6 +628,8 @@ abstract class ScenarioTestBase : FunSpec() {
                 } else {
                     val priorityPlayer = state.priorityPlayerId
                     if (priorityPlayer != null) {
+                        // During combat declaration steps, submit empty declarations before passing
+                        autoSubmitCombatDeclarationIfNeeded(priorityPlayer)
                         execute(PassPriority(priorityPlayer))
                     } else {
                         // No priority player - might be in a step transition, try advancing
@@ -640,6 +644,27 @@ abstract class ScenarioTestBase : FunSpec() {
             }
 
             return state
+        }
+
+        /**
+         * During combat declaration steps, auto-submit empty declarations so that
+         * PassPriority can proceed.
+         */
+        private fun autoSubmitCombatDeclarationIfNeeded(priorityPlayer: EntityId) {
+            if (state.step == Step.DECLARE_ATTACKERS && priorityPlayer == state.activePlayerId) {
+                val attackersDeclared = state.getEntity(priorityPlayer)
+                    ?.get<AttackersDeclaredThisCombatComponent>() != null
+                if (!attackersDeclared) {
+                    execute(DeclareAttackers(priorityPlayer, emptyMap()))
+                }
+            }
+            if (state.step == Step.DECLARE_BLOCKERS && priorityPlayer != state.activePlayerId) {
+                val blockersDeclared = state.getEntity(priorityPlayer)
+                    ?.get<BlockersDeclaredThisCombatComponent>() != null
+                if (!blockersDeclared) {
+                    execute(DeclareBlockers(priorityPlayer, emptyMap()))
+                }
+            }
         }
 
         /**
