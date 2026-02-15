@@ -877,6 +877,19 @@ data class CounterUnlessPaysContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after Meddle's controller chooses a new creature target for a spell.
+ *
+ * @property spellEntityId The spell whose target is being changed
+ * @property sourceId The source of the change-target effect (Meddle)
+ */
+@Serializable
+data class ChangeSpellTargetContinuation(
+    override val decisionId: String,
+    val spellEntityId: EntityId,
+    val sourceId: EntityId?
+) : ContinuationFrame
+
+/**
  * Resume after player reorders revealed cards to put on the bottom of their library.
  *
  * Used for effects like Erratic Explosion that reveal cards and then put them

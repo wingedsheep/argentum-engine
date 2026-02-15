@@ -129,6 +129,7 @@ object OnslaughtSet {
         RummagingWizard,
         VoidmageProdigy,
         ChainOfVapor,
+        Meddle,
 
         // Black creatures and spells
         AccursedCentaur,
