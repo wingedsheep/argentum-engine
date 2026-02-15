@@ -373,6 +373,25 @@ data class EachOpponentMayPutFromHandEffect(
  *
  * Requires tappedPermanents in EffectContext to determine valid choices.
  */
+/**
+ * Choose a creature type. Reveal cards from the top of your library until you reveal
+ * a creature card of that type. Put that card onto the battlefield and shuffle the rest
+ * into your library.
+ *
+ * Used for Riptide Shapeshifter: "{2}{U}{U}, Sacrifice Riptide Shapeshifter:
+ * Choose a creature type. Reveal cards from the top of your library until you reveal
+ * a creature card of that type. Put that card onto the battlefield and shuffle the
+ * rest into your library."
+ */
+@SerialName("RevealUntilCreatureType")
+@Serializable
+data object RevealUntilCreatureTypeEffect : Effect {
+    override val description: String =
+        "Choose a creature type. Reveal cards from the top of your library until you reveal " +
+        "a creature card of that type. Put that card onto the battlefield and shuffle the " +
+        "rest into your library"
+}
+
 @SerialName("PutCreatureFromHandSharingTypeWithTapped")
 @Serializable
 data object PutCreatureFromHandSharingTypeWithTappedEffect : Effect {

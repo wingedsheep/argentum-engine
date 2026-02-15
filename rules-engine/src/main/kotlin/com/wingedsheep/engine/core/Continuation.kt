@@ -833,6 +833,27 @@ data class ChooseCreatureTypeRevealTopContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after player chooses a creature type for "reveal until creature type" effects.
+ *
+ * "Choose a creature type. Reveal cards from the top of your library until you reveal
+ * a creature card of that type. Put that card onto the battlefield and shuffle the rest
+ * into your library."
+ *
+ * @property controllerId The player who activated the ability
+ * @property sourceId The source permanent
+ * @property sourceName Name of the source for event messages
+ * @property creatureTypes The creature type options (indexed by OptionChosenResponse.optionIndex)
+ */
+@Serializable
+data class RevealUntilCreatureTypeContinuation(
+    override val decisionId: String,
+    val controllerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val creatureTypes: List<String>
+) : ContinuationFrame
+
+/**
  * Resume after player chooses a creature type for a "becomes the creature type
  * of your choice" effect.
  *

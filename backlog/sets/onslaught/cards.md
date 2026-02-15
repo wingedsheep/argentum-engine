@@ -237,7 +237,7 @@
 - [x] Riptide Entrancer
 - [x] Riptide Laboratory
 - [ ] Riptide Replicator
-- [ ] Riptide Shapeshifter
+- [x] Riptide Shapeshifter
 - [ ] Risky Move
 - [x] Rorix Bladewing
 - [x] Rotlung Reanimator
