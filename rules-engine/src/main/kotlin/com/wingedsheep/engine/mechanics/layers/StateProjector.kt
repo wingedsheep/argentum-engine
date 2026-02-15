@@ -578,6 +578,17 @@ class StateProjector(
             val conditionMet = when (sourceCondition) {
                 is SourceProjectionCondition.HasSubtype ->
                     sourceValues?.subtypes?.any { it.equals(sourceCondition.subtype, ignoreCase = true) } == true
+                is SourceProjectionCondition.ControllerControlsCreatureOfType -> {
+                    val controllerId = sourceValues?.controllerId
+                    if (controllerId != null) {
+                        state.getBattlefield(controllerId).any { entityId ->
+                            entityId != effect.sourceId &&
+                            projectedValues[entityId]?.subtypes?.any {
+                                it.equals(sourceCondition.subtype, ignoreCase = true)
+                            } == true
+                        }
+                    } else false
+                }
             }
             if (!conditionMet) return
         }
@@ -818,6 +829,13 @@ sealed interface SourceProjectionCondition {
      */
     @Serializable
     data class HasSubtype(val subtype: String) : SourceProjectionCondition
+
+    /**
+     * The source permanent's controller must control a creature with a specific subtype.
+     * Used for "has [keyword] as long as you control a [subtype]."
+     */
+    @Serializable
+    data class ControllerControlsCreatureOfType(val subtype: String) : SourceProjectionCondition
 }
 
 /**

@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 291 / 335
+**Implemented:** 292 / 335
 
 ---
 
@@ -57,7 +57,7 @@
 - [x] Centaur Glade
 - [x] Chain of Acid
 - [x] Chain of Plasma
-- [ ] Chain of Silence
+- [x] Chain of Silence
 - [x] Chain of Smog
 - [x] Chain of Vapor
 - [x] Charging Slateback
@@ -307,7 +307,7 @@
 - [ ] Trade Secrets
 - [x] Tranquil Thicket
 - [x] Treespring Lorian
-- [ ] Tribal Golem
+- [x] Tribal Golem
 - [x] Tribal Unity
 - [x] Trickery Charm
 - [x] True Believer

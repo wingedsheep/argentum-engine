@@ -21,6 +21,7 @@ class CombatExecutors(
         PreventNextDamageExecutor(amountEvaluator),
         CantBlockTargetCreaturesExecutor(),
         RemoveFromCombatExecutor(),
-        ChooseCreatureTypeMustAttackExecutor()
+        ChooseCreatureTypeMustAttackExecutor(),
+        PreventDamageAndChainCopyExecutor()
     )
 }

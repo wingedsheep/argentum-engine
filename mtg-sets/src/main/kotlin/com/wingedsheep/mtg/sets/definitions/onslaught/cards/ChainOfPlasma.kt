@@ -32,6 +32,6 @@ val ChainOfPlasma = card("Chain of Plasma") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "193"
         artist = "Gary Ruddell"
-        imageUri = "https://cards.scryfall.io/large/front/a/5/a5655911-daac-4308-a4c4-824e28a29e42.jpg?1562934538"
+        imageUri = "https://cards.scryfall.io/large/front/f/9/f94aa774-9036-4016-8880-4bde2710cb90.jpg?1562954081"
     }
 }

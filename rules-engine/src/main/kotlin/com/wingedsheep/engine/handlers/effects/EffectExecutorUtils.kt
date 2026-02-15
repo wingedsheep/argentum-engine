@@ -246,6 +246,11 @@ object EffectExecutorUtils {
 
         // Protection from color/subtype: damage from sources of the stated quality is prevented (Rule 702.16)
         if (!cantBePrevented && sourceId != null) {
+            // Check if all damage from this source is prevented (Chain of Silence)
+            if (isAllDamageFromSourcePrevented(state, sourceId)) {
+                return ExecutionResult.success(state)
+            }
+
             val projected = stateProjector.project(state)
             val sourceColors = projected.getColors(sourceId)
             for (colorName in sourceColors) {
@@ -471,6 +476,17 @@ object EffectExecutorUtils {
         remainingDamage = applyStaticDamageReduction(newState, targetId, remainingDamage, isCombatDamage, sourceId)
 
         return newState to remainingDamage
+    }
+
+    /**
+     * Check if all damage from a specific source creature is prevented this turn.
+     * Used by Chain of Silence and similar "prevent all damage creature would deal" effects.
+     */
+    fun isAllDamageFromSourcePrevented(state: GameState, sourceId: EntityId): Boolean {
+        return state.floatingEffects.any { floatingEffect ->
+            floatingEffect.effect.modification is SerializableModification.PreventAllDamageDealtBy &&
+                sourceId in floatingEffect.effect.affectedEntities
+        }
     }
 
     /**

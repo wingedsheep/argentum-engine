@@ -1407,6 +1407,62 @@ data class BounceChainCopyTargetContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after the target creature's controller decides whether to sacrifice a land
+ * to copy Chain of Silence (prevent damage chain).
+ *
+ * @property targetControllerId The controller of the target creature (who gets to copy)
+ * @property targetFilter The filter for valid chain targets (Creature)
+ * @property spellName The name of the spell being copied (for display)
+ * @property sourceId The source entity of the original spell/ability
+ */
+@Serializable
+data class PreventDamageChainCopyDecisionContinuation(
+    override val decisionId: String,
+    val targetControllerId: EntityId,
+    val targetFilter: TargetFilter,
+    val spellName: String,
+    val sourceId: EntityId?
+) : ContinuationFrame
+
+/**
+ * Resume after the copying player selects which land to sacrifice for the prevent damage chain copy.
+ *
+ * @property copyControllerId The player who is creating the copy
+ * @property targetFilter The filter for valid targets
+ * @property spellName The name of the spell being copied
+ * @property sourceId The source entity of the original spell/ability
+ * @property candidateLands The list of valid land entity IDs (for validation)
+ */
+@Serializable
+data class PreventDamageChainCopyLandContinuation(
+    override val decisionId: String,
+    val copyControllerId: EntityId,
+    val targetFilter: TargetFilter,
+    val spellName: String,
+    val sourceId: EntityId?,
+    val candidateLands: List<EntityId>
+) : ContinuationFrame
+
+/**
+ * Resume after the copying player selects a target for the prevent damage chain copy.
+ *
+ * @property copyControllerId The player who is creating the copy
+ * @property targetFilter The filter for valid targets
+ * @property spellName The name of the spell being copied
+ * @property sourceId The source entity of the original spell/ability
+ * @property candidateTargets The list of valid target entity IDs (for validation)
+ */
+@Serializable
+data class PreventDamageChainCopyTargetContinuation(
+    override val decisionId: String,
+    val copyControllerId: EntityId,
+    val targetFilter: TargetFilter,
+    val spellName: String,
+    val sourceId: EntityId?,
+    val candidateTargets: List<EntityId>
+) : ContinuationFrame
+
+/**
  * Resume after player selects cards to discard for a chain-copy spell (Chain of Smog).
  *
  * When the card selection is answered, discards the selected cards, then presents

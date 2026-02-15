@@ -190,6 +190,14 @@ sealed interface SerializableModification {
      */
     @Serializable
     data object SetCantBlock : SerializableModification
+
+    /**
+     * Damage prevention: prevent all damage that affected creature(s) would deal this turn.
+     * Used by Chain of Silence and similar effects.
+     * The affected entities are the creatures whose damage is prevented.
+     */
+    @Serializable
+    data object PreventAllDamageDealtBy : SerializableModification
 }
 
 /**
@@ -226,4 +234,6 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.SetCreatureSubtypes -> Modification.SetCreatureSubtypes(subtypes)
     // SetCantBlock maps to the layer modification for "can't block" projection
     is SerializableModification.SetCantBlock -> Modification.SetCantBlock
+    // PreventAllDamageDealtBy doesn't map to a layer modification - it's checked during damage resolution directly
+    is SerializableModification.PreventAllDamageDealtBy -> Modification.NoOp
 }
