@@ -29,6 +29,6 @@ val RiptideChronologist = card("Riptide Chronologist") {
         collectorNumber = "107"
         artist = "Matt Cavotta"
         flavorText = "\"The correct course of history is the one in which we survive.\""
-        imageUri = "https://cards.scryfall.io/large/front/a/c/ac3e7bf3-4823-44b5-9555-f9a3024f9929.jpg?1562934549"
+        imageUri = "https://cards.scryfall.io/large/front/3/7/3767f568-36b1-4064-835e-4dd7576b7b8b.jpg?1562908003"
     }
 }
