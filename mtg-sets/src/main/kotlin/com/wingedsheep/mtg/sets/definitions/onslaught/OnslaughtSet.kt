@@ -255,6 +255,7 @@ object OnslaughtSet {
         BroodhatchNantuko,
         ElvenRiders,
         ElvishGuidance,
+        EnchantresssPresence,
         ElvishPioneer,
         ElvishScrapper,
         EvergloveCourier,

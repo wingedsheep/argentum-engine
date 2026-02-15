@@ -1016,6 +1016,7 @@ class TriggerDetector(
             SpellTypeFilter.NONCREATURE -> !cardComponent.typeLine.isCreature
             SpellTypeFilter.INSTANT_OR_SORCERY ->
                 cardComponent.typeLine.isInstant || cardComponent.typeLine.isSorcery
+            SpellTypeFilter.ENCHANTMENT -> cardComponent.typeLine.isEnchantment
         }
     }
 

@@ -197,6 +197,11 @@ object Triggers {
      */
     val YouCastInstantOrSorcery: Trigger = OnSpellCast(controllerOnly = true, spellType = SpellTypeFilter.INSTANT_OR_SORCERY)
 
+    /**
+     * Whenever you cast an enchantment spell.
+     */
+    val YouCastEnchantment: Trigger = OnSpellCast(controllerOnly = true, spellType = SpellTypeFilter.ENCHANTMENT)
+
     // =========================================================================
     // Damage Triggers
     // =========================================================================

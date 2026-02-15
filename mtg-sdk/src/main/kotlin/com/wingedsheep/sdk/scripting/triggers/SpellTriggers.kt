@@ -47,6 +47,7 @@ data class OnSpellCast(
             SpellTypeFilter.CREATURE -> "a creature spell"
             SpellTypeFilter.NONCREATURE -> "a noncreature spell"
             SpellTypeFilter.INSTANT_OR_SORCERY -> "an instant or sorcery spell"
+            SpellTypeFilter.ENCHANTMENT -> "an enchantment spell"
         })
         manaValueEquals?.let { append(" with mana value $it") }
         manaValueAtLeast?.let { append(" with mana value $it or greater") }
@@ -62,7 +63,8 @@ enum class SpellTypeFilter {
     ANY,
     CREATURE,
     NONCREATURE,
-    INSTANT_OR_SORCERY
+    INSTANT_OR_SORCERY,
+    ENCHANTMENT
 }
 
 // =============================================================================
