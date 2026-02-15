@@ -56,7 +56,7 @@ data class ActionContext(
             return ActionContext(
                 cardRegistry = cardRegistry,
                 combatManager = combatManager,
-                turnManager = TurnManager(combatManager),
+                turnManager = TurnManager(combatManager, cardRegistry = cardRegistry),
                 stackResolver = StackResolver(cardRegistry = cardRegistry),
                 manaSolver = ManaSolver(cardRegistry),
                 costCalculator = CostCalculator(cardRegistry),

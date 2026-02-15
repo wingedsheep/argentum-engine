@@ -332,6 +332,7 @@ export interface SelectManaSourcesDecision extends PendingDecisionBase {
   readonly availableSources: readonly ManaSourceOption[]
   readonly requiredCost: string
   readonly autoPaySuggestion: readonly EntityId[]
+  readonly canDecline?: boolean
 }
 
 /**

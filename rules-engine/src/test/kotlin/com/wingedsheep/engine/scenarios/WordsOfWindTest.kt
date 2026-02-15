@@ -2,6 +2,7 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.SelectCardsDecision
+import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
@@ -35,6 +36,7 @@ class WordsOfWindTest : FunSpec({
         activatedAbility {
             cost = Costs.Mana("{1}")
             effect = ReplaceNextDrawWithBounceEffect
+            promptOnDraw = true
         }
     }
 
@@ -303,5 +305,134 @@ class WordsOfWindTest : FunSpec({
         // Active player: initialHandSize + 1 (Words bounced) + 1 (normal 2nd draw)
         // (Inspiration was added by putCardInHand then removed by castSpell, net 0)
         driver.getHandSize(activePlayer) shouldBe initialHandSize + 2
+    }
+
+    test("draw step prompts to activate Words of Wind when affordable") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Grizzly Bears" to 40),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+        val opponent = driver.getOpponent(activePlayer)
+
+        driver.putPermanentOnBattlefield(activePlayer, "Words of Wind")
+        driver.putPermanentOnBattlefield(activePlayer, "Grizzly Bears")
+        driver.putPermanentOnBattlefield(opponent, "Grizzly Bears")
+
+        // Give an untapped land for mana
+        driver.putPermanentOnBattlefield(activePlayer, "Island")
+
+        // Advance past turn 1 (draw is skipped for first player) to this player's next draw step.
+        // Go to PRECOMBAT_MAIN (past turn 1 draw), then through the rest of turns until
+        // we arrive at the active player's upkeep on turn 3.
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN) // turn 1, past skipped draw
+        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN) // still turn 1
+        driver.passPriorityUntil(Step.UPKEEP) // turn 2 upkeep (opponent's turn)
+        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN) // turn 2 postcombat
+        driver.passPriorityUntil(Step.UPKEEP) // turn 3 upkeep (active player's turn again)
+
+        driver.state.activePlayerId shouldBe activePlayer
+
+        // Pass through upkeep to reach draw step
+        driver.bothPass()
+
+        // Should now be at DRAW with a mana source selection decision
+        driver.state.step shouldBe Step.DRAW
+        val decision = driver.pendingDecision
+        decision shouldNotBe null
+        (decision is SelectManaSourcesDecision) shouldBe true
+        val manaDecision = decision as SelectManaSourcesDecision
+        manaDecision.canDecline shouldBe true
+
+        val initialHandSize = driver.getHandSize(activePlayer)
+
+        // Accept: auto-pay to activate Words of Wind
+        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
+
+        // Draw is replaced with bounce - active player chooses permanent
+        val bounceDecision = driver.pendingDecision as SelectCardsDecision
+        bounceDecision.playerId shouldBe activePlayer
+        driver.submitCardSelection(activePlayer, listOf(driver.findPermanent(activePlayer, "Grizzly Bears")!!))
+
+        // Opponent's Grizzly Bears auto-bounced (only 1 permanent)
+        driver.findPermanent(activePlayer, "Grizzly Bears") shouldBe null
+        driver.findPermanent(opponent, "Grizzly Bears") shouldBe null
+        driver.findPermanent(activePlayer, "Words of Wind") shouldNotBe null
+
+        // Active player got Grizzly Bears back in hand (bounced), no card drawn
+        driver.getHandSize(activePlayer) shouldBe initialHandSize + 1
+    }
+
+    test("draw step allows declining Words of Wind activation") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Grizzly Bears" to 40),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+        val opponent = driver.getOpponent(activePlayer)
+
+        driver.putPermanentOnBattlefield(activePlayer, "Words of Wind")
+        driver.putPermanentOnBattlefield(activePlayer, "Grizzly Bears")
+        driver.putPermanentOnBattlefield(opponent, "Grizzly Bears")
+        driver.putPermanentOnBattlefield(activePlayer, "Island")
+
+        // Advance past turn 1 to reach active player's draw step on turn 3
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN) // turn 1, past skipped draw
+        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN) // still turn 1
+        driver.passPriorityUntil(Step.UPKEEP) // turn 2 upkeep (opponent's turn)
+        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN) // turn 2 postcombat
+        driver.passPriorityUntil(Step.UPKEEP) // turn 3 upkeep (active player's turn)
+
+        val initialHandSize = driver.getHandSize(activePlayer)
+
+        // Pass through upkeep to reach draw step (prompt fires)
+        driver.bothPass()
+        driver.state.step shouldBe Step.DRAW
+
+        // Decline the activation
+        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = false)
+
+        // Normal draw happens - permanents stay
+        driver.findPermanent(activePlayer, "Grizzly Bears") shouldNotBe null
+        driver.findPermanent(opponent, "Grizzly Bears") shouldNotBe null
+
+        // Active player drew a card normally
+        driver.getHandSize(activePlayer) shouldBe initialHandSize + 1
+    }
+
+    test("draw step does not prompt when Words of Wind activation is not affordable") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Grizzly Bears" to 40),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+
+        driver.putPermanentOnBattlefield(activePlayer, "Words of Wind")
+        // No lands or mana sources - can't afford {1}
+
+        // Advance past turn 1 to reach active player's draw step on turn 3
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN) // turn 1, past skipped draw
+        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN) // still turn 1
+        driver.passPriorityUntil(Step.UPKEEP) // turn 2 upkeep (opponent's turn)
+        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN) // turn 2 postcombat
+        driver.passPriorityUntil(Step.UPKEEP) // turn 3 upkeep (active player's turn)
+
+        val initialHandSize = driver.getHandSize(activePlayer)
+
+        // Pass through upkeep to reach draw step - should NOT prompt (can't afford)
+        driver.bothPass()
+
+        // No mana selection decision - draw happens normally
+        val decision = driver.pendingDecision
+        (decision is SelectManaSourcesDecision) shouldBe false
+
+        // Normal draw happened
+        driver.getHandSize(activePlayer) shouldBe initialHandSize + 1
     }
 })

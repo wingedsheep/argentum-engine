@@ -45,7 +45,7 @@ import com.wingedsheep.engine.state.GameState
 class ActionProcessor(
     cardRegistry: CardRegistry? = null,
     combatManager: CombatManager = CombatManager(cardRegistry),
-    turnManager: TurnManager = TurnManager(combatManager),
+    turnManager: TurnManager = TurnManager(combatManager, cardRegistry = cardRegistry),
     stackResolver: StackResolver = StackResolver(cardRegistry = cardRegistry),
     manaSolver: ManaSolver = ManaSolver(cardRegistry),
     costCalculator: CostCalculator = CostCalculator(cardRegistry),

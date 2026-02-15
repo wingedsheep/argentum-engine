@@ -20,6 +20,7 @@ val WordsOfWind = card("Words of Wind") {
     activatedAbility {
         cost = Costs.Mana("{1}")
         effect = ReplaceNextDrawWithBounceEffect
+        promptOnDraw = true
     }
 
     metadata {

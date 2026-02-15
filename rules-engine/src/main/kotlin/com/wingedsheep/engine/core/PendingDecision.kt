@@ -382,7 +382,8 @@ data class SelectManaSourcesDecision(
     override val context: DecisionContext,
     val availableSources: List<ManaSourceOption>,
     val requiredCost: String,
-    val autoPaySuggestion: List<EntityId>
+    val autoPaySuggestion: List<EntityId>,
+    val canDecline: Boolean = false
 ) : PendingDecision
 
 // =============================================================================

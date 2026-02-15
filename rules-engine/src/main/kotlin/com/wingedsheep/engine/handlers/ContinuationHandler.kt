@@ -161,6 +161,7 @@ class ContinuationHandler(
             is SecretBidContinuation -> resumeSecretBid(stateAfterPop, continuation, response)
             is DrawReplacementBounceContinuation -> resumeDrawReplacementBounce(stateAfterPop, continuation, response)
             is DrawReplacementDiscardContinuation -> resumeDrawReplacementDiscard(stateAfterPop, continuation, response)
+            is DrawReplacementActivationContinuation -> resumeDrawReplacementActivation(stateAfterPop, continuation, response)
         }
     }
 
@@ -6193,6 +6194,155 @@ class ContinuationHandler(
                 drawResult.error
             )
         }
+        return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume after the player selects mana sources (or declines) for a "prompt on draw"
+     * ability (e.g., Words of Wind). If they pay, creates a replacement shield,
+     * then draws cards.
+     */
+    private fun resumeDrawReplacementActivation(
+        state: GameState,
+        continuation: DrawReplacementActivationContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is ManaSourcesSelectedResponse) {
+            return ExecutionResult.error(state, "Expected mana sources response for draw replacement activation")
+        }
+
+        val playerId = continuation.drawingPlayerId
+        var newState = state
+        val events = mutableListOf<GameEvent>()
+
+        // Check if the player chose to activate (non-empty sources or autoPay)
+        val activated = response.autoPay || response.selectedSources.isNotEmpty()
+
+        if (activated) {
+            val manaCost = com.wingedsheep.sdk.core.ManaCost.parse(continuation.manaCost)
+            val costHandler = CostHandler()
+
+            // Get current mana pool
+            val poolComponent = newState.getEntity(playerId)?.get<ManaPoolComponent>()
+            var currentPool = if (poolComponent != null) {
+                ManaPool(
+                    white = poolComponent.white,
+                    blue = poolComponent.blue,
+                    black = poolComponent.black,
+                    red = poolComponent.red,
+                    green = poolComponent.green,
+                    colorless = poolComponent.colorless
+                )
+            } else {
+                ManaPool()
+            }
+
+            // Try to pay from floating pool first
+            val partialResult = currentPool.payPartial(manaCost)
+            val remainingCost = partialResult.remainingCost
+
+            if (!remainingCost.isEmpty()) {
+                if (response.autoPay) {
+                    // Auto-tap: use ManaSolver
+                    val manaSolver = ManaSolver()
+                    val solution = manaSolver.solve(newState, playerId, remainingCost)
+                        ?: return ExecutionResult.error(newState, "Cannot pay mana cost for draw replacement activation")
+
+                    for (source in solution.sources) {
+                        newState = newState.updateEntity(source.entityId) { c ->
+                            c.with(TappedComponent)
+                        }
+                        events.add(TappedEvent(source.entityId, source.name))
+                    }
+
+                    for ((_, production) in solution.manaProduced) {
+                        currentPool = if (production.color != null) {
+                            currentPool.add(production.color)
+                        } else {
+                            currentPool.addColorless(production.colorless)
+                        }
+                    }
+                } else {
+                    // Manual selection: tap the chosen sources
+                    for (sourceId in response.selectedSources) {
+                        val sourceEntity = newState.getEntity(sourceId) ?: continue
+                        val sourceName = sourceEntity.get<CardComponent>()?.name ?: "Unknown"
+
+                        newState = newState.updateEntity(sourceId) { c ->
+                            c.with(TappedComponent)
+                        }
+                        events.add(TappedEvent(sourceId, sourceName))
+
+                        // Add mana from the tapped source
+                        // For simplicity, add 1 colorless mana per source
+                        // (ManaSolver would be more accurate but manual selection implies the player knows what they're doing)
+                        currentPool = currentPool.addColorless(1)
+                    }
+                }
+            }
+
+            // Pay the mana cost
+            val newPool = costHandler.payManaCost(currentPool, manaCost)
+                ?: return ExecutionResult.error(newState, "Cannot pay mana cost for draw replacement activation")
+
+            // Update mana pool on state
+            newState = newState.updateEntity(playerId) { c ->
+                c.with(ManaPoolComponent(
+                    white = newPool.white,
+                    blue = newPool.blue,
+                    black = newPool.black,
+                    red = newPool.red,
+                    green = newPool.green,
+                    colorless = newPool.colorless
+                ))
+            }
+
+            // Execute the effect to create a replacement shield
+            val opponents = newState.turnOrder.filter { it != playerId }
+            val effectContext = EffectContext(
+                controllerId = playerId,
+                sourceId = continuation.sourceId,
+                opponentId = opponents.firstOrNull(),
+                targets = emptyList()
+            )
+            val effectResult = effectExecutorRegistry.execute(
+                newState, continuation.abilityEffect, effectContext
+            )
+            if (effectResult.isSuccess) {
+                newState = effectResult.newState
+                events.addAll(effectResult.events)
+            }
+        }
+
+        // Now perform the draws
+        if (continuation.isDrawStep) {
+            val turnManager = TurnManager()
+            val drawResult = turnManager.drawCards(newState, playerId, continuation.drawCount)
+            if (drawResult.isPaused) {
+                return ExecutionResult.paused(
+                    drawResult.state,
+                    drawResult.pendingDecision!!,
+                    events + drawResult.events
+                )
+            }
+            newState = drawResult.newState
+            events.addAll(drawResult.events)
+            // Set priority for draw step
+            newState = newState.withPriority(playerId)
+        } else {
+            val drawExecutor = DrawCardsExecutor()
+            val drawResult = drawExecutor.executeDraws(newState, playerId, continuation.drawCount)
+            if (drawResult.isPaused) {
+                return ExecutionResult.paused(
+                    drawResult.state,
+                    drawResult.pendingDecision!!,
+                    events + drawResult.events
+                )
+            }
+            newState = drawResult.newState
+            events.addAll(drawResult.events)
+        }
+
         return checkForMoreContinuations(newState, events)
     }
 

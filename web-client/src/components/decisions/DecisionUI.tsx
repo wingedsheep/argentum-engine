@@ -1580,14 +1580,19 @@ function ManaSourceSelectionUI({
     }
   }
 
+  const handleDecline = () => {
+    submitManaSourcesDecision([], false)
+    cancelDecisionSelection()
+  }
+
   return (
     <div className={styles.sideBannerSelection}>
       <div className={styles.bannerTitleSelection}>
-        Select Mana Sources
+        {decision.canDecline ? 'Activate Ability?' : 'Select Mana Sources'}
       </div>
       {decision.context.sourceName && (
         <div className={styles.hint}>
-          <AbilityText text={`${decision.prompt} for ${decision.context.sourceName}`} size={13} />
+          <AbilityText text={decision.prompt} size={13} />
         </div>
       )}
       <div className={styles.hint}>
@@ -1606,6 +1611,14 @@ function ManaSourceSelectionUI({
             className={`${styles.confirmButton} ${styles.confirmButtonSmall}`}
           >
             Confirm ({selectedCount})
+          </button>
+        )}
+        {decision.canDecline && (
+          <button
+            onClick={handleDecline}
+            className={`${styles.confirmButton} ${styles.confirmButtonSmall}`}
+          >
+            Decline
           </button>
         )}
       </div>

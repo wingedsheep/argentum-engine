@@ -1827,6 +1827,33 @@ data class DrawReplacementDiscardContinuation(
 ) : ContinuationFrame
 
 /**
+ * Continuation for prompting the player to activate a "prompt on draw" ability
+ * (e.g., Words of Wind) before a draw happens.
+ *
+ * After the player answers yes/no, the handler pays mana, creates a replacement
+ * shield, and then proceeds with the draw.
+ *
+ * @property drawingPlayerId The player who is about to draw
+ * @property sourceId The permanent with the promptOnDraw ability
+ * @property sourceName Name of the source for display
+ * @property abilityEffect The effect to execute on activation (creates a shield)
+ * @property manaCost The mana cost string for the activation (e.g., "{1}")
+ * @property drawCount Number of cards to draw after activation
+ * @property isDrawStep Whether this is from the draw step (vs spell/ability draws)
+ */
+@Serializable
+data class DrawReplacementActivationContinuation(
+    override val decisionId: String,
+    val drawingPlayerId: EntityId,
+    val sourceId: EntityId,
+    val sourceName: String,
+    val abilityEffect: Effect,
+    val manaCost: String,
+    val drawCount: Int,
+    val isDrawStep: Boolean
+) : ContinuationFrame
+
+/**
  * Information about a mana source available for manual selection.
  */
 @Serializable

@@ -48,7 +48,8 @@ class TurnManager(
     private val combatManager: CombatManager = CombatManager(),
     private val sbaChecker: StateBasedActionChecker = StateBasedActionChecker(),
     private val decisionHandler: DecisionHandler = DecisionHandler(),
-    private val stateProjector: StateProjector = StateProjector()
+    private val stateProjector: StateProjector = StateProjector(),
+    private val cardRegistry: com.wingedsheep.engine.registry.CardRegistry? = null
 ) {
 
     /**
@@ -233,6 +234,12 @@ class TurnManager(
             )
         }
 
+        // Check for "prompt on draw" abilities (e.g., Words of Wind)
+        val promptResult = checkPromptOnDraw(state, activePlayer, 1, isDrawStep = true)
+        if (promptResult != null) {
+            return promptResult
+        }
+
         // Draw a card
         val drawResult = drawCards(state, activePlayer, 1)
         if (!drawResult.isSuccess) {
@@ -361,6 +368,96 @@ class TurnManager(
                 return@repeat
             }
 
+            // Check for bounce replacement shields (Words of Wind)
+            val bounceShieldIndex = newState.floatingEffects.indexOfFirst { effect ->
+                effect.effect.modification is SerializableModification.ReplaceDrawWithBounce &&
+                    playerId in effect.effect.affectedEntities
+            }
+            if (bounceShieldIndex != -1) {
+                val bounceShield = newState.floatingEffects[bounceShieldIndex]
+                val bounceUpdatedEffects = newState.floatingEffects.toMutableList()
+                bounceUpdatedEffects.removeAt(bounceShieldIndex)
+                newState = newState.copy(floatingEffects = bounceUpdatedEffects)
+
+                // Emit CardsDrawnEvent for cards drawn before this shield was hit
+                if (drawnCards.isNotEmpty()) {
+                    events.add(0, CardsDrawnEvent(playerId, drawnCards.size, drawnCards.toList()))
+                }
+
+                // Get players in APNAP order for the bounce
+                val activePlayer = newState.activePlayerId ?: return ExecutionResult.error(newState, "No active player")
+                val apnapOrder = listOf(activePlayer) + newState.turnOrder.filter { it != activePlayer }
+
+                val projected = stateProjector.project(newState)
+                val playersWithPermanents = apnapOrder.filter { pid ->
+                    projected.getBattlefieldControlledBy(pid).isNotEmpty()
+                }
+
+                if (playersWithPermanents.isEmpty()) {
+                    // No player has permanents - draw is still replaced (no card drawn)
+                    return@repeat
+                }
+
+                // Process auto-bounces for players with exactly 1 permanent
+                var bounceState = newState
+                val playersNeedingDecision = mutableListOf<EntityId>()
+                for (pid in playersWithPermanents) {
+                    val controlledPermanents = stateProjector.project(bounceState).getBattlefieldControlledBy(pid)
+                    if (controlledPermanents.size == 1) {
+                        val permanentId = controlledPermanents.first()
+                        val bounceResult = EffectExecutorUtils.moveCardToZone(bounceState, permanentId, Zone.HAND)
+                        bounceState = bounceResult.state
+                        events.addAll(bounceResult.events)
+                    } else {
+                        playersNeedingDecision.add(pid)
+                    }
+                }
+
+                if (playersNeedingDecision.isEmpty()) {
+                    // All auto-bounced, continue
+                    newState = bounceState
+                    return@repeat
+                }
+
+                // First player with multiple permanents needs to choose
+                val firstPlayer = playersNeedingDecision.first()
+                val remainingBounce = playersNeedingDecision.drop(1)
+                val controlledPermanents = stateProjector.project(bounceState).getBattlefieldControlledBy(firstPlayer)
+
+                val sourceName = bounceShield.sourceName ?: "Words of Wind"
+                val decisionResult = decisionHandler.createCardSelectionDecision(
+                    state = bounceState,
+                    playerId = firstPlayer,
+                    sourceId = bounceShield.sourceId,
+                    sourceName = sourceName,
+                    prompt = "Choose a permanent to return to its owner's hand",
+                    options = controlledPermanents,
+                    minSelections = 1,
+                    maxSelections = 1,
+                    ordered = false,
+                    phase = DecisionPhase.RESOLUTION,
+                    useTargetingUI = true
+                )
+
+                val continuation = DrawReplacementBounceContinuation(
+                    decisionId = decisionResult.pendingDecision!!.id,
+                    drawingPlayerId = playerId,
+                    currentBouncingPlayerId = firstPlayer,
+                    remainingPlayers = remainingBounce,
+                    remainingDraws = 0,
+                    drawnCardsSoFar = drawnCards.toList(),
+                    sourceId = bounceShield.sourceId,
+                    sourceName = sourceName
+                )
+
+                val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
+                return ExecutionResult.paused(
+                    stateWithContinuation,
+                    decisionResult.pendingDecision,
+                    events + decisionResult.events
+                )
+            }
+
             // Check for bear token replacement shields (Words of Wilding)
             val bearTokenShieldIndex = newState.floatingEffects.indexOfFirst { effect ->
                 effect.effect.modification is SerializableModification.ReplaceDrawWithBearToken &&
@@ -395,6 +492,109 @@ class TurnManager(
             events.add(CardsDrawnEvent(playerId, drawnCards.size, drawnCards))
         }
         return ExecutionResult.success(newState, events)
+    }
+
+    /**
+     * Check if a player has a "prompt on draw" activated ability that they can afford.
+     * If so, present a mana source selection decision and pause.
+     * Returns null if no prompt is needed.
+     */
+    private fun checkPromptOnDraw(
+        state: GameState,
+        playerId: EntityId,
+        drawCount: Int,
+        isDrawStep: Boolean
+    ): ExecutionResult? {
+        if (cardRegistry == null) return null
+
+        // Scan the player's battlefield for permanents with promptOnDraw activated abilities
+        val projected = stateProjector.project(state)
+        val controlledPermanents = projected.getBattlefieldControlledBy(playerId)
+
+        for (permanentId in controlledPermanents) {
+            val container = state.getEntity(permanentId) ?: continue
+            val card = container.get<com.wingedsheep.engine.state.components.identity.CardComponent>() ?: continue
+            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+
+            for (ability in cardDef.script.activatedAbilities) {
+                if (!ability.promptOnDraw) continue
+
+                // Check if the ability has a mana cost
+                val manaCost = when (val cost = ability.cost) {
+                    is com.wingedsheep.sdk.scripting.AbilityCost.Mana -> cost.cost
+                    is com.wingedsheep.sdk.scripting.AbilityCost.Composite -> {
+                        cost.costs.filterIsInstance<com.wingedsheep.sdk.scripting.AbilityCost.Mana>()
+                            .firstOrNull()?.cost
+                    }
+                    else -> null
+                } ?: continue
+
+                // Check if the player can afford it
+                val manaSolver = com.wingedsheep.engine.mechanics.mana.ManaSolver(cardRegistry, stateProjector)
+                if (!manaSolver.canPay(state, playerId, manaCost)) continue
+
+                // Find available mana sources for the UI
+                val sources = manaSolver.findAvailableManaSources(state, playerId)
+                val sourceOptions = sources.map { source ->
+                    ManaSourceOption(
+                        entityId = source.entityId,
+                        name = source.name,
+                        producesColors = source.producesColors,
+                        producesColorless = source.producesColorless
+                    )
+                }
+
+                // Get auto-pay suggestion
+                val solution = manaSolver.solve(state, playerId, manaCost)
+                val autoPaySuggestion = solution?.sources?.map { it.entityId } ?: emptyList()
+
+                // Create mana source selection decision with decline option
+                val decisionId = java.util.UUID.randomUUID().toString()
+                val decision = SelectManaSourcesDecision(
+                    id = decisionId,
+                    playerId = playerId,
+                    prompt = "Pay ${manaCost} to activate ${card.name}?",
+                    context = DecisionContext(
+                        sourceId = permanentId,
+                        sourceName = card.name,
+                        phase = DecisionPhase.RESOLUTION
+                    ),
+                    availableSources = sourceOptions,
+                    requiredCost = manaCost.toString(),
+                    autoPaySuggestion = autoPaySuggestion,
+                    canDecline = true
+                )
+
+                val continuation = DrawReplacementActivationContinuation(
+                    decisionId = decisionId,
+                    drawingPlayerId = playerId,
+                    sourceId = permanentId,
+                    sourceName = card.name,
+                    abilityEffect = ability.effect,
+                    manaCost = manaCost.toString(),
+                    drawCount = drawCount,
+                    isDrawStep = isDrawStep
+                )
+
+                val stateWithDecision = state.withPendingDecision(decision)
+                val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
+
+                return ExecutionResult.paused(
+                    stateWithContinuation,
+                    decision,
+                    listOf(
+                        DecisionRequestedEvent(
+                            decisionId = decisionId,
+                            playerId = playerId,
+                            decisionType = "SELECT_MANA_SOURCES",
+                            prompt = decision.prompt
+                        )
+                    )
+                )
+            }
+        }
+
+        return null
     }
 
     /**
@@ -486,6 +686,14 @@ class TurnManager(
 
             Step.DRAW -> {
                 val drawResult = performDrawStep(newState)
+                // If paused for a draw replacement decision, return paused result with step events
+                if (drawResult.isPaused) {
+                    return ExecutionResult.paused(
+                        drawResult.state,
+                        drawResult.pendingDecision!!,
+                        events + drawResult.events
+                    )
+                }
                 if (!drawResult.isSuccess) return drawResult
                 newState = drawResult.newState
                 events.addAll(drawResult.events)

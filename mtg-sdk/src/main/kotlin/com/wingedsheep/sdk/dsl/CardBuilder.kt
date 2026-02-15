@@ -623,6 +623,7 @@ class ActivatedAbilityBuilder {
     var timing: TimingRule = TimingRule.InstantSpeed
     var restrictions: List<ActivationRestriction> = emptyList()
     var activateFromZone: Zone = Zone.BATTLEFIELD
+    var promptOnDraw: Boolean = false
 
     // Named target bindings (for multi-target abilities)
     private val namedTargets: MutableList<Pair<String, TargetRequirement>> = mutableListOf()
@@ -658,7 +659,8 @@ class ActivatedAbilityBuilder {
             isManaAbility = manaAbility,
             timing = timing,
             restrictions = restrictions,
-            activateFromZone = activateFromZone
+            activateFromZone = activateFromZone,
+            promptOnDraw = promptOnDraw
         )
     }
 }

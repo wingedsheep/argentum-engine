@@ -20,7 +20,8 @@ data class ActivatedAbility(
     val restrictions: List<ActivationRestriction> = emptyList(),
     val isManaAbility: Boolean = false,
     val isPlaneswalkerAbility: Boolean = false,
-    val activateFromZone: Zone = Zone.BATTLEFIELD
+    val activateFromZone: Zone = Zone.BATTLEFIELD,
+    val promptOnDraw: Boolean = false
 ) {
     /** Backward-compatible secondary constructor for single-target abilities. */
     constructor(
@@ -32,7 +33,8 @@ data class ActivatedAbility(
         restrictions: List<ActivationRestriction> = emptyList(),
         isManaAbility: Boolean = false,
         isPlaneswalkerAbility: Boolean = false,
-        activateFromZone: Zone = Zone.BATTLEFIELD
+        activateFromZone: Zone = Zone.BATTLEFIELD,
+        promptOnDraw: Boolean = false
     ) : this(
         id = id,
         cost = cost,
@@ -42,7 +44,8 @@ data class ActivatedAbility(
         restrictions = restrictions,
         isManaAbility = isManaAbility,
         isPlaneswalkerAbility = isPlaneswalkerAbility,
-        activateFromZone = activateFromZone
+        activateFromZone = activateFromZone,
+        promptOnDraw = promptOnDraw
     )
 
     /** Convenience accessor for single-target abilities. */

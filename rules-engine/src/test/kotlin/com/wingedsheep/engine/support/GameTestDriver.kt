@@ -1069,6 +1069,10 @@ class GameTestDriver {
                     DamageAssignmentResponse(decision.id, decision.defaultAssignments)
                 )
             }
+            is SelectManaSourcesDecision -> {
+                // Auto-resolve: decline the mana source selection (e.g., Words of Wind prompt)
+                submitManaAutoPayOrDecline(decision.playerId, autoPay = false)
+            }
             else -> throw IllegalStateException(
                 "Cannot auto-resolve decision of type ${decision::class.simpleName}"
             )
@@ -1141,6 +1145,18 @@ class GameTestDriver {
         return submitDecision(
             playerId,
             OrderedResponse(decision.id, orderedObjects)
+        )
+    }
+
+    /**
+     * Submit an auto-pay response for a mana source selection decision.
+     */
+    fun submitManaAutoPayOrDecline(playerId: EntityId, autoPay: Boolean): ExecutionResult {
+        val decision = pendingDecision as? SelectManaSourcesDecision
+            ?: throw IllegalStateException("No pending SelectManaSourcesDecision")
+        return submitDecision(
+            playerId,
+            ManaSourcesSelectedResponse(decision.id, emptyList(), autoPay)
         )
     }
 
