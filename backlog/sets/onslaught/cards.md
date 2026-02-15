@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 296 / 335
+**Implemented:** 297 / 335
 
 ---
 
@@ -105,7 +105,7 @@
 - [x] Dwarven Blastminer
 - [x] Ebonblade Reaper
 - [x] Elven Riders
-- [ ] Elvish Guidance
+- [x] Elvish Guidance
 - [x] Elvish Pathcutter
 - [x] Elvish Pioneer
 - [x] Elvish Scrapper

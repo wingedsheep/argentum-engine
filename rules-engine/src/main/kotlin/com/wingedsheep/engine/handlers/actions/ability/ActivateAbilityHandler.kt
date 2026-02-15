@@ -12,6 +12,7 @@ import com.wingedsheep.engine.event.TriggerDetector
 import com.wingedsheep.engine.event.TriggerProcessor
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.CostHandler
+import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.actions.ActionContext
 import com.wingedsheep.engine.handlers.actions.ActionHandler
@@ -40,6 +41,7 @@ import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.AddAnyColorManaEffect
 import com.wingedsheep.sdk.scripting.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.AddManaEffect
+import com.wingedsheep.sdk.scripting.AdditionalManaOnTap
 import com.wingedsheep.engine.handlers.CostPaymentChoices
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.sdk.core.Zone
@@ -392,7 +394,15 @@ class ActivateAbilityHandler(
                 events.add(manaEvent)
             }
 
-            return ExecutionResult.success(currentState, events + effectResult.events)
+            // Check for "additional mana on tap" auras (e.g., Elvish Guidance)
+            // These are triggered mana abilities that resolve immediately
+            val additionalManaResult = resolveAdditionalManaOnTap(
+                currentState, action.sourceId, action.playerId, events + effectResult.events
+            )
+            currentState = additionalManaResult.state
+            val allManaEvents = additionalManaResult.events
+
+            return ExecutionResult.success(currentState, allManaEvents)
         }
 
         // Non-mana abilities go on the stack
@@ -594,6 +604,79 @@ class ActivateAbilityHandler(
                 }
             }
         }
+    }
+
+    /**
+     * After a mana ability resolves on a permanent, check for auras attached to it
+     * that have AdditionalManaOnTap (e.g., Elvish Guidance). These are triggered mana
+     * abilities that resolve immediately without using the stack.
+     */
+    private data class AdditionalManaResult(
+        val state: GameState,
+        val events: List<GameEvent>
+    )
+
+    private val dynamicAmountEvaluator = DynamicAmountEvaluator()
+
+    private fun resolveAdditionalManaOnTap(
+        state: GameState,
+        sourceId: com.wingedsheep.sdk.model.EntityId,
+        controllerId: com.wingedsheep.sdk.model.EntityId,
+        existingEvents: List<GameEvent>
+    ): AdditionalManaResult {
+        var currentState = state
+        val events = existingEvents.toMutableList()
+
+        // Find all auras attached to the source permanent
+        for (entityId in currentState.getBattlefield()) {
+            val container = currentState.getEntity(entityId) ?: continue
+            val attachedTo = container.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
+            if (attachedTo?.targetId != sourceId) continue
+
+            val card = container.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry?.getCard(card.cardDefinitionId) ?: continue
+
+            // Check each static ability for AdditionalManaOnTap
+            for (staticAbility in cardDef.script.staticAbilities) {
+                val additionalMana = staticAbility as? AdditionalManaOnTap ?: continue
+
+                // The controller of the enchanted land gets the mana
+                val landController = currentState.getEntity(sourceId)
+                    ?.get<ControllerComponent>()?.playerId ?: controllerId
+                val opponentId = currentState.turnOrder.firstOrNull { it != landController }
+
+                val context = EffectContext(
+                    sourceId = entityId,
+                    controllerId = landController,
+                    opponentId = opponentId,
+                    targets = emptyList(),
+                    xValue = null
+                )
+
+                val amount = dynamicAmountEvaluator.evaluate(currentState, additionalMana.amount, context)
+                if (amount <= 0) continue
+
+                // Add the mana to the land controller's pool
+                currentState = currentState.updateEntity(landController) { c ->
+                    val pool = c.get<ManaPoolComponent>() ?: ManaPoolComponent()
+                    c.with(pool.add(additionalMana.color, amount))
+                }
+
+                events.add(ManaAddedEvent(
+                    playerId = landController,
+                    sourceId = entityId,
+                    sourceName = card.name,
+                    white = if (additionalMana.color == Color.WHITE) amount else 0,
+                    blue = if (additionalMana.color == Color.BLUE) amount else 0,
+                    black = if (additionalMana.color == Color.BLACK) amount else 0,
+                    red = if (additionalMana.color == Color.RED) amount else 0,
+                    green = if (additionalMana.color == Color.GREEN) amount else 0,
+                    colorless = 0
+                ))
+            }
+        }
+
+        return AdditionalManaResult(currentState, events)
     }
 
     companion object {

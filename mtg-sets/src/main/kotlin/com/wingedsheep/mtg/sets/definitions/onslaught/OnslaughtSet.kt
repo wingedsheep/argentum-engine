@@ -253,6 +253,7 @@ object OnslaughtSet {
         Biorhythm,
         BroodhatchNantuko,
         ElvenRiders,
+        ElvishGuidance,
         ElvishPioneer,
         ElvishScrapper,
         EvergloveCourier,

@@ -661,6 +661,26 @@ data object GrantShroudToController : StaticAbility {
 }
 
 /**
+ * Whenever enchanted land is tapped for mana, its controller adds additional mana.
+ * Used for auras like Elvish Guidance: "Whenever enchanted land is tapped for mana,
+ * its controller adds an additional {G} for each Elf on the battlefield."
+ *
+ * This is a triggered mana ability that resolves immediately (doesn't use the stack).
+ * The engine checks for this ability after a mana ability on the enchanted land resolves.
+ *
+ * @property color The color of additional mana to produce
+ * @property amount How much additional mana to produce (evaluated dynamically)
+ */
+@SerialName("AdditionalManaOnTap")
+@Serializable
+data class AdditionalManaOnTap(
+    val color: Color,
+    val amount: DynamicAmount
+) : StaticAbility {
+    override val description: String = "Whenever enchanted land is tapped for mana, its controller adds additional mana"
+}
+
+/**
  * This creature can't attack unless defending player controls a land of a specific type.
  * Used for Deep-Sea Serpent: "can't attack unless defending player controls an Island."
  *
