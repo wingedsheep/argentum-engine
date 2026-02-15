@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.mechanics.mana.ManaSolver
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -17,6 +19,7 @@ import com.wingedsheep.sdk.scripting.AdditionalManaOnTap
 import com.wingedsheep.sdk.scripting.TargetFilter
 import com.wingedsheep.sdk.targeting.TargetPermanent
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 
 /**
@@ -193,5 +196,101 @@ class ElvishGuidanceTest : FunSpec({
         // Forest produces 1G base + 2G from Elvish Guidance (2 Elves total) = 3G
         val pool = driver.state.getEntity(activePlayer)?.get<ManaPoolComponent>()!!
         pool.green shouldBe 3
+    }
+
+    // =========================================================================
+    // ManaSolver integration tests
+    // =========================================================================
+
+    fun createRegistry(): CardRegistry {
+        val registry = CardRegistry()
+        registry.register(TestCards.all + listOf(ElvishGuidance, TestElf, TestGoblin, TestForest))
+        return registry
+    }
+
+    test("ManaSolver canPay accounts for bonus mana from Elvish Guidance") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Forest" to 40),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        // 1 Forest + Elvish Guidance + 2 Elves = 1G base + 2G bonus = 3G total
+        val forest = driver.putPermanentOnBattlefield(activePlayer, "Forest")
+        driver.putCreatureOnBattlefield(activePlayer, "Test Elf")
+        driver.putCreatureOnBattlefield(activePlayer, "Test Elf")
+
+        val guidance = driver.putCardInHand(activePlayer, "Elvish Guidance")
+        driver.giveMana(activePlayer, Color.GREEN, 3)
+        driver.castSpell(activePlayer, guidance, listOf(forest))
+        driver.bothPass()
+
+        val solver = ManaSolver(createRegistry())
+
+        // {2}{G} costs 3 mana total (1G + 2 generic) - payable: tap Forest for 1G (base) + 2G (bonus)
+        solver.canPay(driver.state, activePlayer, ManaCost.parse("{2}{G}")) shouldBe true
+
+        // {G}{G}{G} costs 3G - should be payable with 3G from one Forest
+        solver.canPay(driver.state, activePlayer, ManaCost.parse("{G}{G}{G}")) shouldBe true
+
+        // {3}{G} costs 4 mana total - NOT payable with only 3G (1 base + 2 bonus)
+        solver.canPay(driver.state, activePlayer, ManaCost.parse("{3}{G}")) shouldBe false
+    }
+
+    test("ManaSolver solve taps fewer lands with bonus mana") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Forest" to 40),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        // 2 Forests, one with Elvish Guidance, 2 Elves
+        val forest1 = driver.putPermanentOnBattlefield(activePlayer, "Forest")
+        driver.putPermanentOnBattlefield(activePlayer, "Forest")
+        driver.putCreatureOnBattlefield(activePlayer, "Test Elf")
+        driver.putCreatureOnBattlefield(activePlayer, "Test Elf")
+
+        val guidance = driver.putCardInHand(activePlayer, "Elvish Guidance")
+        driver.giveMana(activePlayer, Color.GREEN, 3)
+        driver.castSpell(activePlayer, guidance, listOf(forest1))
+        driver.bothPass()
+
+        val solver = ManaSolver(createRegistry())
+
+        // {2}{G} costs 3 mana - enchanted Forest produces 3G, so only 1 source needed
+        val solution = solver.solve(driver.state, activePlayer, ManaCost.parse("{2}{G}"))
+        solution.shouldNotBeNull()
+        solution.sources.size shouldBe 1
+    }
+
+    test("ManaSolver getAvailableManaCount includes bonus mana") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Forest" to 40),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val forest = driver.putPermanentOnBattlefield(activePlayer, "Forest")
+        driver.putCreatureOnBattlefield(activePlayer, "Test Elf")
+        driver.putCreatureOnBattlefield(activePlayer, "Test Elf")
+
+        val guidance = driver.putCardInHand(activePlayer, "Elvish Guidance")
+        driver.giveMana(activePlayer, Color.GREEN, 3)
+        driver.castSpell(activePlayer, guidance, listOf(forest))
+        driver.bothPass()
+
+        val solver = ManaSolver(createRegistry())
+
+        // 1 Forest with 2 bonus = 3 total mana available
+        solver.getAvailableManaCount(driver.state, activePlayer) shouldBe 3
     }
 })

@@ -380,9 +380,9 @@ export function computeCardGroupKey(card: ClientCard): string {
     parts.push(`pt:${card.power}/${card.toughness}`)
   }
 
-  // Cards with attachments are different
+  // Cards with attachments should never be grouped — use unique ID
   if (card.attachments.length > 0) {
-    parts.push(`attached:${card.attachments.length}`)
+    parts.push(`id:${card.id}`)
   }
 
   // Cards with damage are different (for battlefield creatures)
