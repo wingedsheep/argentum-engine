@@ -320,6 +320,21 @@ data object HarshMercyEffect : Effect {
         "Each player chooses a creature type. Destroy all creatures that aren't of a type chosen this way. They can't be regenerated"
 }
 
+/**
+ * Each player chooses a creature type. Each player returns all creature cards of a type chosen
+ * this way from their graveyard to the battlefield.
+ *
+ * Used for Patriarch's Bidding. Each player (in APNAP order) chooses a creature type.
+ * After all choices, all creature cards matching any chosen type are returned from all graveyards
+ * to the battlefield under their owner's control.
+ */
+@SerialName("PatriarchsBidding")
+@Serializable
+data object PatriarchsBiddingEffect : Effect {
+    override val description: String =
+        "Each player chooses a creature type. Each player returns all creature cards of a type chosen this way from their graveyard to the battlefield"
+}
+
 @SerialName("MoveToZone")
 @Serializable
 data class MoveToZoneEffect(

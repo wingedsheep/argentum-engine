@@ -1413,6 +1413,28 @@ data class HarshMercyContinuation(
 ) : ContinuationFrame
 
 /**
+ * Continuation for Patriarch's Bidding.
+ * Each player chooses a creature type (APNAP order). After all choices, all creature cards
+ * matching any chosen type are returned from all graveyards to the battlefield.
+ *
+ * @property currentPlayerId The player currently choosing
+ * @property remainingPlayers Players who still need to choose (APNAP order)
+ * @property chosenTypes Creature types chosen so far by each player
+ * @property creatureTypes The creature type options list
+ */
+@Serializable
+data class PatriarchsBiddingContinuation(
+    override val decisionId: String,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val controllerId: EntityId,
+    val currentPlayerId: EntityId,
+    val remainingPlayers: List<EntityId>,
+    val chosenTypes: List<String>,
+    val creatureTypes: List<String>
+) : ContinuationFrame
+
+/**
  * Resume after the destroyed permanent's controller decides whether to copy Chain of Acid.
  *
  * When the yes/no decision is answered:

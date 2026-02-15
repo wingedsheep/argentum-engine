@@ -214,7 +214,7 @@
 - [x] Oversold Cemetery
 - [x] Overwhelming Instinct
 - [x] Pacifism
-- [ ] Patriarch's Bidding
+- [x] Patriarch's Bidding
 - [x] Pearlspear Courier
 - [ ] Peer Pressure
 - [x] Piety Charm

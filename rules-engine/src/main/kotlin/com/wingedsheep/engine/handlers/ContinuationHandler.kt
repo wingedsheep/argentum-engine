@@ -142,6 +142,7 @@ class ContinuationHandler(
             is ChooseCreatureTypeMustAttackContinuation -> resumeChooseCreatureTypeMustAttack(stateAfterPop, continuation, response)
             is ChooseCreatureTypeUntapContinuation -> resumeChooseCreatureTypeUntap(stateAfterPop, continuation, response)
             is HarshMercyContinuation -> resumeHarshMercy(stateAfterPop, continuation, response)
+            is PatriarchsBiddingContinuation -> resumePatriarchsBidding(stateAfterPop, continuation, response)
             is ChainCopyDecisionContinuation -> resumeChainCopyDecision(stateAfterPop, continuation, response)
             is ChainCopyTargetContinuation -> resumeChainCopyTarget(stateAfterPop, continuation, response)
             is BounceChainCopyDecisionContinuation -> resumeBounceChainCopyDecision(stateAfterPop, continuation, response)
@@ -4891,6 +4892,101 @@ class ContinuationHandler(
             )
             newState = result.newState
             events.addAll(result.events)
+        }
+
+        return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume after a player chooses a creature type for Patriarch's Bidding.
+     * If more players remain, ask the next one. Otherwise, return all creature cards
+     * matching any chosen type from all graveyards to the battlefield.
+     */
+    private fun resumePatriarchsBidding(
+        state: GameState,
+        continuation: PatriarchsBiddingContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is OptionChosenResponse) {
+            return ExecutionResult.error(state, "Expected option choice response for creature type selection")
+        }
+
+        val chosenType = continuation.creatureTypes.getOrNull(response.optionIndex)
+            ?: return ExecutionResult.error(state, "Invalid creature type index: ${response.optionIndex}")
+
+        val updatedChosenTypes = continuation.chosenTypes + chosenType
+
+        // If there are more players, ask the next one
+        if (continuation.remainingPlayers.isNotEmpty()) {
+            val nextPlayer = continuation.remainingPlayers.first()
+            val nextRemaining = continuation.remainingPlayers.drop(1)
+
+            val decisionId = java.util.UUID.randomUUID().toString()
+            val decision = ChooseOptionDecision(
+                id = decisionId,
+                playerId = nextPlayer,
+                prompt = "Choose a creature type",
+                context = DecisionContext(
+                    sourceId = continuation.sourceId,
+                    sourceName = continuation.sourceName,
+                    phase = DecisionPhase.RESOLUTION
+                ),
+                options = continuation.creatureTypes
+            )
+
+            val newContinuation = continuation.copy(
+                decisionId = decisionId,
+                currentPlayerId = nextPlayer,
+                remainingPlayers = nextRemaining,
+                chosenTypes = updatedChosenTypes
+            )
+
+            val stateWithDecision = state.withPendingDecision(decision)
+            val stateWithContinuation = stateWithDecision.pushContinuation(newContinuation)
+
+            return ExecutionResult.paused(
+                stateWithContinuation,
+                decision,
+                listOf(
+                    DecisionRequestedEvent(
+                        decisionId = decisionId,
+                        playerId = nextPlayer,
+                        decisionType = "CHOOSE_OPTION",
+                        prompt = decision.prompt
+                    )
+                )
+            )
+        }
+
+        // All players have chosen — return matching creatures from all graveyards to battlefield
+        val chosenSubtypes = updatedChosenTypes.map { com.wingedsheep.sdk.core.Subtype(it) }.toSet()
+
+        var newState = state
+        val events = mutableListOf<GameEvent>()
+
+        // Process each player's graveyard
+        for (playerId in state.turnOrder) {
+            val graveyardZone = com.wingedsheep.engine.state.ZoneKey(playerId, com.wingedsheep.sdk.core.Zone.GRAVEYARD)
+            val graveyard = newState.getZone(graveyardZone).toList() // snapshot to avoid concurrent modification
+
+            for (entityId in graveyard) {
+                val container = newState.getEntity(entityId) ?: continue
+                val cardComponent = container.get<com.wingedsheep.engine.state.components.identity.CardComponent>() ?: continue
+
+                // Only creature cards
+                if (!cardComponent.typeLine.isCreature) continue
+
+                // Check if creature has any of the chosen subtypes
+                val hasChosenType = cardComponent.typeLine.subtypes.any { it in chosenSubtypes }
+                if (!hasChosenType) continue
+
+                // Move from graveyard to battlefield
+                val result = com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.moveCardToZone(
+                    newState, entityId, com.wingedsheep.sdk.core.Zone.BATTLEFIELD
+                )
+                newState = result.newState
+                events.addAll(result.events)
+            }
         }
 
         return checkForMoreContinuations(newState, events)

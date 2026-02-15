@@ -173,6 +173,7 @@ val engineSerializersModule = SerializersModule {
         subclass(DamageChainCopyTargetContinuation::class)
         subclass(DamagePreventionContinuation::class)
         subclass(HarshMercyContinuation::class)
+        subclass(PatriarchsBiddingContinuation::class)
         subclass(ChooseCreatureTypeUntapContinuation::class)
         subclass(ChangeSpellTargetContinuation::class)
         subclass(SecretBidContinuation::class)

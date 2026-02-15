@@ -198,6 +198,7 @@ object OnslaughtSet {
         WalkingDesecration,
         ShadesBreath,
         WitheringHex,
+        PatriarchsBidding,
 
         // Red creatures and spells
         AetherCharge,

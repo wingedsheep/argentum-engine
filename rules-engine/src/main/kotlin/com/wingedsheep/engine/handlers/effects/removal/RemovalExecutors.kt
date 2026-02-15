@@ -37,6 +37,7 @@ class RemovalExecutors : ExecutorModule {
         ExileUntilEndStepExecutor(),
         ForceSacrificeExecutor(),
         HarshMercyExecutor(),
+        PatriarchsBiddingExecutor(),
         payOrSufferExecutor,
         RegenerateExecutor(),
         SacrificeExecutor(),
