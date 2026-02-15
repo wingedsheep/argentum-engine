@@ -26,6 +26,6 @@ val EnchantresssPresence = card("Enchantress's Presence") {
         collectorNumber = "261"
         artist = "Rebecca Guay"
         flavorText = "\"The wise learn from successes as well as mistakes.\""
-        imageUri = "https://cards.scryfall.io/large/front/d/2/d21571e3-6714-4b16-8027-3fc1569cec23.jpg?1562843897"
+        imageUri = "https://cards.scryfall.io/large/front/7/5/75def198-99d6-4b0a-8878-5151f44bc0a4.jpg?1562922860"
     }
 }
