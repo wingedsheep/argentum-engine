@@ -157,6 +157,7 @@ val engineSerializersModule = SerializersModule {
         subclass(ChooseCreatureTypeEntersContinuation::class)
         subclass(CastWithCreatureTypeContinuation::class)
         subclass(EachOpponentMayPutFromHandContinuation::class)
+        subclass(ChooseAuraTargetForEntryFromHandContinuation::class)
         subclass(ChainCopyDecisionContinuation::class)
         subclass(ChainCopyTargetContinuation::class)
         subclass(BounceChainCopyDecisionContinuation::class)

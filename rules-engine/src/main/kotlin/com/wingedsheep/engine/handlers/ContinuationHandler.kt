@@ -32,6 +32,7 @@ import com.wingedsheep.engine.state.components.stack.TargetsComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.PayCost
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.SearchDestination
@@ -137,6 +138,7 @@ class ContinuationHandler(
             is ChooseCreatureTypeEntersContinuation -> resumeChooseCreatureTypeEnters(stateAfterPop, continuation, response)
             is CastWithCreatureTypeContinuation -> resumeCastWithCreatureType(stateAfterPop, continuation, response)
             is EachOpponentMayPutFromHandContinuation -> resumeEachOpponentMayPutFromHand(stateAfterPop, continuation, response)
+            is ChooseAuraTargetForEntryFromHandContinuation -> resumeChooseAuraTargetForEntryFromHand(stateAfterPop, continuation, response)
             is EachPlayerMayRevealCreaturesContinuation -> resumeEachPlayerMayRevealCreatures(stateAfterPop, continuation, response)
             is EachPlayerSearchesLibraryContinuation -> resumeEachPlayerSearchesLibrary(stateAfterPop, continuation, response)
             is ChooseCreatureTypeMustAttackContinuation -> resumeChooseCreatureTypeMustAttack(stateAfterPop, continuation, response)
@@ -4514,9 +4516,22 @@ class ContinuationHandler(
         val handZone = ZoneKey(opponentId, Zone.HAND)
         val battlefieldZone = ZoneKey(opponentId, Zone.BATTLEFIELD)
 
-        // Move each selected card from hand to battlefield
+        // Separate auras from non-auras: auras need target selection before entering
+        val auraCards = mutableListOf<EntityId>()
+        val nonAuraCards = mutableListOf<EntityId>()
+
         for (cardId in response.selectedCards) {
-            // Verify card is still in hand
+            if (cardId !in newState.getZone(handZone)) continue
+            val cardComponent = newState.getEntity(cardId)?.get<CardComponent>()
+            if (cardComponent?.isAura == true) {
+                auraCards.add(cardId)
+            } else {
+                nonAuraCards.add(cardId)
+            }
+        }
+
+        // Move non-aura cards from hand to battlefield immediately
+        for (cardId in nonAuraCards) {
             if (cardId !in newState.getZone(handZone)) continue
 
             newState = newState.removeFromZone(handZone, cardId)
@@ -4554,19 +4569,198 @@ class ContinuationHandler(
             )
         }
 
-        // Ask the next opponent
-        val remainingOpponents = continuation.remainingOpponents
-        if (remainingOpponents.isNotEmpty()) {
-            val nextResult = com.wingedsheep.engine.handlers.effects.library.EachOpponentMayPutFromHandExecutor.askNextOpponent(
+        // If there are auras to place, ask for target selection for the first one
+        if (auraCards.isNotEmpty()) {
+            return askAuraTargetForEntryFromHand(
                 state = newState,
-                filter = continuation.filter,
+                events = events,
+                auraId = auraCards.first(),
+                opponentId = opponentId,
+                remainingAuras = auraCards.drop(1),
+                remainingOpponents = continuation.remainingOpponents,
                 sourceId = continuation.sourceId,
                 sourceName = continuation.sourceName,
                 controllerId = continuation.controllerId,
+                filter = continuation.filter
+            )
+        }
+
+        // Ask the next opponent
+        return proceedToNextOpponentOrFinish(
+            state = newState,
+            events = events,
+            remainingOpponents = continuation.remainingOpponents,
+            filter = continuation.filter,
+            sourceId = continuation.sourceId,
+            sourceName = continuation.sourceName,
+            controllerId = continuation.controllerId
+        )
+    }
+
+    /**
+     * Ask the opponent to choose a target for an Aura entering the battlefield from hand.
+     * Per Rule 303.4f, the controller chooses what it enchants.
+     * If no legal target exists, the Aura stays in hand (Rule 303.4g).
+     */
+    private fun askAuraTargetForEntryFromHand(
+        state: GameState,
+        events: List<GameEvent>,
+        auraId: EntityId,
+        opponentId: EntityId,
+        remainingAuras: List<EntityId>,
+        remainingOpponents: List<EntityId>,
+        sourceId: EntityId?,
+        sourceName: String?,
+        controllerId: EntityId,
+        filter: GameObjectFilter
+    ): ExecutionResult {
+        val cardComponent = state.getEntity(auraId)?.get<CardComponent>()
+        val cardDef = cardComponent?.let { stackResolver.cardRegistry?.getCard(it.cardDefinitionId) }
+        val auraTarget = cardDef?.script?.auraTarget
+
+        if (auraTarget == null) {
+            // No aura target defined — skip this aura (leave in hand)
+            return continueAuraProcessingOrProceed(
+                state = state,
+                events = events,
+                remainingAuras = remainingAuras,
+                opponentId = opponentId,
+                remainingOpponents = remainingOpponents,
+                sourceId = sourceId,
+                sourceName = sourceName,
+                controllerId = controllerId,
+                filter = filter
+            )
+        }
+
+        val legalTargets = targetFinder.findLegalTargets(
+            state = state,
+            requirement = auraTarget,
+            controllerId = opponentId,
+            sourceId = auraId
+        )
+
+        if (legalTargets.isEmpty()) {
+            // No legal targets — Aura stays in hand per Rule 303.4g
+            return continueAuraProcessingOrProceed(
+                state = state,
+                events = events,
+                remainingAuras = remainingAuras,
+                opponentId = opponentId,
+                remainingOpponents = remainingOpponents,
+                sourceId = sourceId,
+                sourceName = sourceName,
+                controllerId = controllerId,
+                filter = filter
+            )
+        }
+
+        // Create target selection decision for the aura
+        val decisionId = java.util.UUID.randomUUID().toString()
+        val auraName = cardComponent.name
+        val requirementInfo = TargetRequirementInfo(
+            index = 0,
+            description = auraTarget.description,
+            minTargets = 1,
+            maxTargets = 1
+        )
+        val decision = ChooseTargetsDecision(
+            id = decisionId,
+            playerId = opponentId,
+            prompt = "Choose what $auraName enchants",
+            context = DecisionContext(
+                sourceId = auraId,
+                sourceName = auraName,
+                phase = DecisionPhase.RESOLUTION
+            ),
+            targetRequirements = listOf(requirementInfo),
+            legalTargets = mapOf(0 to legalTargets)
+        )
+
+        val auraContinuation = ChooseAuraTargetForEntryFromHandContinuation(
+            decisionId = decisionId,
+            auraId = auraId,
+            opponentId = opponentId,
+            remainingAuras = remainingAuras,
+            remainingOpponents = remainingOpponents,
+            sourceId = sourceId,
+            sourceName = sourceName,
+            controllerId = controllerId,
+            filter = filter
+        )
+
+        val stateWithDecision = state.withPendingDecision(decision)
+        val stateWithContinuation = stateWithDecision.pushContinuation(auraContinuation)
+
+        return ExecutionResult(
+            state = stateWithContinuation,
+            events = events,
+            pendingDecision = decision
+        )
+    }
+
+    /**
+     * Continue processing remaining auras, or proceed to next opponent if no more auras.
+     */
+    private fun continueAuraProcessingOrProceed(
+        state: GameState,
+        events: List<GameEvent>,
+        remainingAuras: List<EntityId>,
+        opponentId: EntityId,
+        remainingOpponents: List<EntityId>,
+        sourceId: EntityId?,
+        sourceName: String?,
+        controllerId: EntityId,
+        filter: GameObjectFilter
+    ): ExecutionResult {
+        if (remainingAuras.isNotEmpty()) {
+            return askAuraTargetForEntryFromHand(
+                state = state,
+                events = events,
+                auraId = remainingAuras.first(),
+                opponentId = opponentId,
+                remainingAuras = remainingAuras.drop(1),
+                remainingOpponents = remainingOpponents,
+                sourceId = sourceId,
+                sourceName = sourceName,
+                controllerId = controllerId,
+                filter = filter
+            )
+        }
+
+        return proceedToNextOpponentOrFinish(
+            state = state,
+            events = events,
+            remainingOpponents = remainingOpponents,
+            filter = filter,
+            sourceId = sourceId,
+            sourceName = sourceName,
+            controllerId = controllerId
+        )
+    }
+
+    /**
+     * Ask the next opponent to put cards from hand, or finish if no more opponents.
+     */
+    private fun proceedToNextOpponentOrFinish(
+        state: GameState,
+        events: List<GameEvent>,
+        remainingOpponents: List<EntityId>,
+        filter: GameObjectFilter,
+        sourceId: EntityId?,
+        sourceName: String?,
+        controllerId: EntityId
+    ): ExecutionResult {
+        if (remainingOpponents.isNotEmpty()) {
+            val nextResult = com.wingedsheep.engine.handlers.effects.library.EachOpponentMayPutFromHandExecutor.askNextOpponent(
+                state = state,
+                filter = filter,
+                sourceId = sourceId,
+                sourceName = sourceName,
+                controllerId = controllerId,
                 opponents = remainingOpponents,
                 currentIndex = 0
             )
-            // Merge events from the current step with the next step
             return ExecutionResult(
                 state = nextResult.newState,
                 events = events + nextResult.events,
@@ -4575,7 +4769,93 @@ class ContinuationHandler(
             )
         }
 
-        return checkForMoreContinuations(newState, events)
+        return checkForMoreContinuations(state, events)
+    }
+
+    /**
+     * Resume after an opponent chose a target for an Aura entering the battlefield from hand.
+     * Moves the aura from hand to battlefield with AttachedToComponent, then continues
+     * processing remaining auras or the next opponent.
+     */
+    private fun resumeChooseAuraTargetForEntryFromHand(
+        state: GameState,
+        continuation: ChooseAuraTargetForEntryFromHandContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is TargetsResponse) {
+            return ExecutionResult.error(state, "Expected targets response for aura target selection")
+        }
+
+        val targetIds = response.selectedTargets[0] ?: emptyList()
+        if (targetIds.isEmpty()) {
+            return ExecutionResult.error(state, "No target selected for aura")
+        }
+
+        val targetId = targetIds.first()
+        val auraId = continuation.auraId
+        val opponentId = continuation.opponentId
+        val handZone = ZoneKey(opponentId, Zone.HAND)
+        val battlefieldZone = ZoneKey(opponentId, Zone.BATTLEFIELD)
+
+        var newState = state
+        val events = mutableListOf<GameEvent>()
+
+        // Verify aura is still in hand
+        if (auraId !in newState.getZone(handZone)) {
+            // Aura is no longer in hand — skip
+            return continueAuraProcessingOrProceed(
+                state = newState,
+                events = events,
+                remainingAuras = continuation.remainingAuras,
+                opponentId = opponentId,
+                remainingOpponents = continuation.remainingOpponents,
+                sourceId = continuation.sourceId,
+                sourceName = continuation.sourceName,
+                controllerId = continuation.controllerId,
+                filter = continuation.filter
+            )
+        }
+
+        // Move aura from hand to battlefield
+        newState = newState.removeFromZone(handZone, auraId)
+        newState = newState.addToZone(battlefieldZone, auraId)
+
+        // Apply battlefield components + AttachedToComponent
+        val container = newState.getEntity(auraId)
+        if (container != null) {
+            val newContainer = container
+                .with(ControllerComponent(opponentId))
+                .with(com.wingedsheep.engine.state.components.battlefield.AttachedToComponent(targetId))
+
+            newState = newState.copy(
+                entities = newState.entities + (auraId to newContainer)
+            )
+        }
+
+        val cardComponent = newState.getEntity(auraId)?.get<CardComponent>()
+        val cardName = cardComponent?.name ?: "Unknown"
+        events.add(
+            ZoneChangeEvent(
+                entityId = auraId,
+                entityName = cardName,
+                fromZone = Zone.HAND,
+                toZone = Zone.BATTLEFIELD,
+                ownerId = opponentId
+            )
+        )
+
+        // Continue with remaining auras or next opponent
+        return continueAuraProcessingOrProceed(
+            state = newState,
+            events = events,
+            remainingAuras = continuation.remainingAuras,
+            opponentId = opponentId,
+            remainingOpponents = continuation.remainingOpponents,
+            sourceId = continuation.sourceId,
+            sourceName = continuation.sourceName,
+            controllerId = continuation.controllerId,
+            filter = continuation.filter
+        )
     }
 
     /**

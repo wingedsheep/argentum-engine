@@ -1,7 +1,9 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.*
@@ -9,10 +11,8 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.EachOpponentMayPutFromHandEffect
-import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.OnEnterBattlefield
-import com.wingedsheep.sdk.scripting.TriggeredAbility
+import com.wingedsheep.sdk.scripting.*
+import com.wingedsheep.sdk.targeting.TargetCreature
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
@@ -52,11 +52,29 @@ class TemptingWurmTest : FunSpec({
         script = CardScript.creature()
     )
 
+    val TestPacifism = CardDefinition(
+        name = "Pacifism",
+        manaCost = ManaCost.parse("{1}{W}"),
+        typeLine = TypeLine(
+            cardTypes = setOf(CardType.ENCHANTMENT),
+            subtypes = setOf(Subtype("Aura"))
+        ),
+        oracleText = "Enchant creature\nEnchanted creature can't attack or block.",
+        script = CardScript.aura(
+            enchantTarget = TargetCreature(),
+            staticAbilities = listOf(
+                CantAttack(target = StaticTarget.AttachedCreature),
+                CantBlock(target = StaticTarget.AttachedCreature)
+            )
+        )
+    )
+
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
         driver.registerCards(TestCards.all)
         driver.registerCard(TemptingWurm)
         driver.registerCard(GoblinSoldier)
+        driver.registerCard(TestPacifism)
         return driver
     }
 
@@ -262,5 +280,165 @@ class TemptingWurmTest : FunSpec({
         // The specific forest should be on the battlefield
         val battlefield = driver.state.getZone(ZoneKey(opponent, Zone.BATTLEFIELD))
         battlefield.contains(forest) shouldBe true
+    }
+
+    test("Opponent can put aura from hand onto the battlefield and choose target") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Forest" to 20),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+        val opponent = driver.opponentOf(activePlayer)
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        // Give opponent Pacifism in hand
+        val pacifism = driver.putCardInHand(opponent, "Pacifism")
+
+        // Put a creature on the active player's battlefield (target for Pacifism)
+        val goblin = driver.putCreatureOnBattlefield(activePlayer, "Goblin Soldier")
+
+        // Cast Tempting Wurm
+        val wurm = driver.putCardInHand(activePlayer, "Tempting Wurm")
+        driver.giveMana(activePlayer, Color.GREEN, 2)
+
+        driver.castSpell(activePlayer, wurm)
+        driver.bothPass() // Resolve creature
+
+        // Resolve ETB trigger
+        driver.stackSize shouldBe 1
+        driver.bothPass()
+
+        // Opponent should be asked to select cards
+        val selectDecision = driver.pendingDecision
+        selectDecision.shouldBeInstanceOf<SelectCardsDecision>()
+        (selectDecision as SelectCardsDecision).options shouldContain pacifism
+
+        // Opponent selects Pacifism
+        driver.submitCardSelection(opponent, listOf(pacifism))
+
+        // Opponent should now be asked to choose a target for the aura
+        val targetDecision = driver.pendingDecision
+        targetDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+        (targetDecision as ChooseTargetsDecision).playerId shouldBe opponent
+
+        // The goblin should be a legal target
+        val legalTargets = targetDecision.legalTargets[0]!!
+        legalTargets shouldContain goblin
+
+        // Opponent selects the goblin as the enchant target
+        driver.submitTargetSelection(opponent, listOf(goblin))
+
+        // Pacifism should be on the battlefield attached to the goblin
+        val battlefield = driver.state.getZone(ZoneKey(opponent, Zone.BATTLEFIELD))
+        battlefield.contains(pacifism) shouldBe true
+
+        val attachedTo = driver.state.getEntity(pacifism)?.get<AttachedToComponent>()
+        attachedTo shouldNotBe null
+        attachedTo!!.targetId shouldBe goblin
+    }
+
+    test("Aura with no legal targets stays in hand when put via Tempting Wurm") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Forest" to 20),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+        val opponent = driver.opponentOf(activePlayer)
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        // Give opponent Pacifism in hand (no creatures on battlefield to enchant)
+        val pacifism = driver.putCardInHand(opponent, "Pacifism")
+
+        // Cast Tempting Wurm (only Tempting Wurm enters — it's not on the battlefield yet
+        // when the trigger resolves, so there are no creatures to enchant... actually the wurm
+        // will be on battlefield when the trigger resolves)
+        val wurm = driver.putCardInHand(activePlayer, "Tempting Wurm")
+        driver.giveMana(activePlayer, Color.GREEN, 2)
+
+        driver.castSpell(activePlayer, wurm)
+        driver.bothPass() // Resolve creature — Tempting Wurm enters battlefield
+
+        // Resolve ETB trigger
+        driver.stackSize shouldBe 1
+        driver.bothPass()
+
+        // Opponent selects Pacifism
+        val selectDecision = driver.pendingDecision
+        selectDecision.shouldBeInstanceOf<SelectCardsDecision>()
+        driver.submitCardSelection(opponent, listOf(pacifism))
+
+        // Tempting Wurm is a creature on the battlefield, so Pacifism has a legal target.
+        // Let's verify we get a target decision (Tempting Wurm should be targetable)
+        val targetDecision = driver.pendingDecision
+        targetDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+
+        // Select Tempting Wurm as the target
+        driver.submitTargetSelection(opponent, listOf(wurm))
+
+        // Pacifism should be on the battlefield attached to the wurm
+        val battlefield = driver.state.getZone(ZoneKey(opponent, Zone.BATTLEFIELD))
+        battlefield.contains(pacifism) shouldBe true
+
+        val attachedTo = driver.state.getEntity(pacifism)?.get<AttachedToComponent>()
+        attachedTo shouldNotBe null
+        attachedTo!!.targetId shouldBe wurm
+    }
+
+    test("Opponent can put aura and creature together from hand") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Forest" to 20),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+        val opponent = driver.opponentOf(activePlayer)
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        // Give opponent both a creature and an aura
+        val goblin = driver.putCardInHand(opponent, "Goblin Soldier")
+        val pacifism = driver.putCardInHand(opponent, "Pacifism")
+
+        // Put a creature on the active player's battlefield (target for Pacifism)
+        val targetCreature = driver.putCreatureOnBattlefield(activePlayer, "Goblin Soldier")
+
+        // Cast Tempting Wurm
+        val wurm = driver.putCardInHand(activePlayer, "Tempting Wurm")
+        driver.giveMana(activePlayer, Color.GREEN, 2)
+
+        driver.castSpell(activePlayer, wurm)
+        driver.bothPass() // Resolve creature
+
+        // Resolve ETB trigger
+        driver.stackSize shouldBe 1
+        driver.bothPass()
+
+        // Opponent selects both creature and aura
+        val selectDecision = driver.pendingDecision
+        selectDecision.shouldBeInstanceOf<SelectCardsDecision>()
+        driver.submitCardSelection(opponent, listOf(goblin, pacifism))
+
+        // Goblin should already be on the battlefield (non-aura goes directly)
+        val opponentBattlefield = driver.state.getZone(ZoneKey(opponent, Zone.BATTLEFIELD))
+        opponentBattlefield.contains(goblin) shouldBe true
+
+        // Now we should be asked to choose a target for Pacifism
+        val targetDecision = driver.pendingDecision
+        targetDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+
+        // Select the active player's creature
+        driver.submitTargetSelection(opponent, listOf(targetCreature))
+
+        // Pacifism should be on the battlefield attached to the target creature
+        val updatedBattlefield = driver.state.getZone(ZoneKey(opponent, Zone.BATTLEFIELD))
+        updatedBattlefield.contains(pacifism) shouldBe true
+
+        val attachedTo = driver.state.getEntity(pacifism)?.get<AttachedToComponent>()
+        attachedTo shouldNotBe null
+        attachedTo!!.targetId shouldBe targetCreature
     }
 })

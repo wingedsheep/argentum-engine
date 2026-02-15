@@ -140,4 +140,50 @@ test.describe('Tempting Wurm', () => {
 
     await p1.screenshot('End state — opponent put all cards onto battlefield')
   })
+
+  test('opponent puts aura from hand onto the battlefield and chooses target', async ({ createGame }) => {
+    const { player1, player2 } = await createGame({
+      player1Name: 'Caster',
+      player2Name: 'Opponent',
+      player1: {
+        hand: ['Tempting Wurm'],
+        battlefield: [
+          { name: 'Forest' },
+          { name: 'Forest' },
+          { name: 'Glory Seeker' },
+        ],
+        library: ['Forest'],
+      },
+      player2: {
+        hand: ['Pacifism'],
+        library: ['Mountain'],
+      },
+      phase: 'PRECOMBAT_MAIN',
+      activePlayer: 1,
+    })
+
+    const p1 = player1.gamePage
+    const p2 = player2.gamePage
+
+    // Cast Tempting Wurm
+    await p1.clickCard('Tempting Wurm')
+    await p1.selectAction('Cast Tempting Wurm')
+
+    // P2 resolves the ETB trigger
+    await p2.resolveStack('Tempting Wurm trigger')
+
+    // Opponent selects Pacifism to put onto the battlefield
+    await p2.selectCardInDecision('Pacifism')
+    await p2.confirmSelection()
+
+    // Opponent should now get a target selection for the aura
+    await p2.selectTarget('Glory Seeker')
+    await p2.confirmTargets()
+
+    // Verify: Pacifism is on the battlefield
+    await p2.expectOnBattlefield('Pacifism')
+    await p2.expectHandSize(0)
+
+    await p1.screenshot('End state — opponent put Pacifism on Glory Seeker')
+  })
 })

@@ -1283,6 +1283,36 @@ data class EachOpponentMayPutFromHandContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after an opponent chooses a target for an Aura being put onto the battlefield
+ * (not via casting). Per Rule 303.4f, when an Aura enters the battlefield without being
+ * cast, its controller chooses what it enchants.
+ *
+ * Used when Tempting Wurm (or similar effects) allow opponents to put Auras from hand
+ * onto the battlefield.
+ *
+ * @property auraId The entity ID of the aura being placed
+ * @property opponentId The opponent placing the aura
+ * @property remainingAuras More auras from the same opponent that need target selection
+ * @property remainingOpponents Opponents still to be asked after the current one
+ * @property sourceId The source permanent (e.g. Tempting Wurm)
+ * @property sourceName Name of the source for display
+ * @property controllerId The controller of the source
+ * @property filter The filter for valid cards from hand
+ */
+@Serializable
+data class ChooseAuraTargetForEntryFromHandContinuation(
+    override val decisionId: String,
+    val auraId: EntityId,
+    val opponentId: EntityId,
+    val remainingAuras: List<EntityId>,
+    val remainingOpponents: List<EntityId>,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val controllerId: EntityId,
+    val filter: GameObjectFilter
+) : ContinuationFrame
+
+/**
  * Resume after a player selects creature cards from their hand to reveal.
  *
  * Used for Kamahl's Summons: "Each player may reveal any number of creature cards
