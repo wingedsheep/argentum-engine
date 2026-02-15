@@ -422,7 +422,7 @@ class TournamentLobby(
             players[playerId]?.hasPicked = false
         }
 
-        currentPickNumber++
+        currentPickNumber += picksPerRound
         return true
     }
 
