@@ -116,6 +116,7 @@ object OnslaughtSet {
         MistformDreamer,
         MistformShrieker,
         MistformSkyreaver,
+        MistformMutant,
         MistformStalker,
         MistformWall,
         Reminisce,

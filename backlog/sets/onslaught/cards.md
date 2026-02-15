@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 290 / 335
+**Implemented:** 291 / 335
 
 ---
 
@@ -197,7 +197,7 @@
 - [x] Misery Charm
 - [x] Mistform Dreamer
 - [ ] Mistform Mask
-- [ ] Mistform Mutant
+- [x] Mistform Mutant
 - [x] Mistform Shrieker
 - [x] Mistform Skyreaver
 - [x] Mistform Stalker
