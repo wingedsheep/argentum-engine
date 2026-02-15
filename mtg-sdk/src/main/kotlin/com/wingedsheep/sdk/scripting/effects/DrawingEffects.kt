@@ -325,6 +325,26 @@ data object ReplaceNextDrawWithDiscardEffect : Effect {
 }
 
 /**
+ * Replace next draw with damage effect.
+ * "{1}: The next time you would draw a card this turn, this enchantment deals 2 damage to any target instead."
+ * Used for Words of War and similar "Words of" cycle cards.
+ *
+ * This creates a floating replacement effect shield that intercepts the next card draw
+ * for the controller this turn, replacing it with dealing damage to the chosen target.
+ * The target is selected at activation time and stored in the shield.
+ *
+ * @property damageAmount The amount of damage dealt instead of drawing
+ */
+@SerialName("ReplaceNextDrawWithDamage")
+@Serializable
+data class ReplaceNextDrawWithDamageEffect(
+    val damageAmount: Int
+) : Effect {
+    override val description: String =
+        "The next time you would draw a card this turn, deal $damageAmount damage to any target instead"
+}
+
+/**
  * Reveal a player's hand (publicly visible to all players).
  * This is an atomic effect that just reveals - use with CompositeEffect for
  * "reveal and do something based on what's revealed" patterns.

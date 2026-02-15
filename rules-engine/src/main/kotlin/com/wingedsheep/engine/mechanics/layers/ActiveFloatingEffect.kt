@@ -236,6 +236,18 @@ sealed interface SerializableModification {
      */
     @Serializable
     data object ReplaceDrawWithDiscard : SerializableModification
+
+    /**
+     * Draw replacement shield: the next time the affected player would draw a card this turn,
+     * the source deals damage to the chosen target instead. Used by Words of War and similar effects.
+     * The target is selected at activation time and stored in the shield.
+     * The shield is consumed after the first draw replacement and removed.
+     */
+    @Serializable
+    data class ReplaceDrawWithDamage(
+        val damageAmount: Int,
+        val targetId: EntityId
+    ) : SerializableModification
 }
 
 /**
@@ -282,4 +294,6 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.ReplaceDrawWithBounce -> Modification.NoOp
     // ReplaceDrawWithDiscard doesn't map to a layer modification - it's checked during draw execution directly
     is SerializableModification.ReplaceDrawWithDiscard -> Modification.NoOp
+    // ReplaceDrawWithDamage doesn't map to a layer modification - it's checked during draw execution directly
+    is SerializableModification.ReplaceDrawWithDamage -> Modification.NoOp
 }

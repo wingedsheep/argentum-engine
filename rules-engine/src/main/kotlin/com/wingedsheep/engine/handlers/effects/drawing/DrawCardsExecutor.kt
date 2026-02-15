@@ -79,6 +79,14 @@ class DrawCardsExecutor(
                 continue
             }
 
+            // Check for damage replacement shields (Words of War)
+            val damageResult = consumeDamageReplacementShield(newState, playerId)
+            if (damageResult != null) {
+                newState = damageResult.first
+                events.addAll(damageResult.second)
+                continue
+            }
+
             // Check for bounce replacement shields (Words of Wind)
             val bounceResult = consumeBounceReplacementShield(
                 newState, playerId, count - i - 1, drawnCards.toList(), events
@@ -155,6 +163,36 @@ class DrawCardsExecutor(
         return newState to listOf(
             LifeChangedEvent(playerId, currentLife, newLife, LifeChangeReason.LIFE_GAIN)
         )
+    }
+
+    /**
+     * Checks for and consumes a damage draw replacement shield (Words of War).
+     * Returns the updated state and events if a shield was consumed, or null if no shield exists.
+     */
+    private fun consumeDamageReplacementShield(
+        state: GameState,
+        playerId: EntityId
+    ): Pair<GameState, List<GameEvent>>? {
+        val shieldIndex = state.floatingEffects.indexOfFirst { effect ->
+            effect.effect.modification is SerializableModification.ReplaceDrawWithDamage &&
+                playerId in effect.effect.affectedEntities
+        }
+        if (shieldIndex == -1) return null
+
+        val shield = state.floatingEffects[shieldIndex]
+        val mod = shield.effect.modification as SerializableModification.ReplaceDrawWithDamage
+
+        // Remove the consumed shield
+        val updatedEffects = state.floatingEffects.toMutableList()
+        updatedEffects.removeAt(shieldIndex)
+        val newState = state.copy(floatingEffects = updatedEffects)
+
+        // Deal damage to the chosen target instead of drawing
+        val damageResult = EffectExecutorUtils.dealDamageToTarget(
+            newState, mod.targetId, mod.damageAmount, shield.sourceId
+        )
+
+        return damageResult.state to damageResult.events
     }
 
     /**

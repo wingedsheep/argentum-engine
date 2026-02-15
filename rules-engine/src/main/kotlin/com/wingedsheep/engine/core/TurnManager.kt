@@ -23,6 +23,7 @@ import com.wingedsheep.engine.state.components.player.SkipCombatPhasesComponent
 import com.wingedsheep.engine.state.components.player.SkipNextTurnComponent
 import com.wingedsheep.engine.state.components.player.SkipUntapComponent
 import com.wingedsheep.engine.state.components.player.LoseAtEndStepComponent
+import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.sdk.core.Keyword
@@ -271,6 +272,26 @@ class TurnManager(
                     container.with(LifeTotalComponent(newLife))
                 }
                 events.add(LifeChangedEvent(playerId, currentLife, newLife, LifeChangeReason.LIFE_GAIN))
+                return@repeat
+            }
+
+            // Check for damage replacement shields (e.g., Words of War)
+            val damageShieldIndex = newState.floatingEffects.indexOfFirst { effect ->
+                effect.effect.modification is SerializableModification.ReplaceDrawWithDamage &&
+                    playerId in effect.effect.affectedEntities
+            }
+            if (damageShieldIndex != -1) {
+                val damageShield = newState.floatingEffects[damageShieldIndex]
+                val damageMod = damageShield.effect.modification as SerializableModification.ReplaceDrawWithDamage
+                val damageUpdatedEffects = newState.floatingEffects.toMutableList()
+                damageUpdatedEffects.removeAt(damageShieldIndex)
+                newState = newState.copy(floatingEffects = damageUpdatedEffects)
+
+                val damageResult = EffectExecutorUtils.dealDamageToTarget(
+                    newState, damageMod.targetId, damageMod.damageAmount, damageShield.sourceId
+                )
+                newState = damageResult.state
+                events.addAll(damageResult.events)
                 return@repeat
             }
 

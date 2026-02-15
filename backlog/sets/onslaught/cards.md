@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 315 / 335
+**Implemented:** 316 / 335
 
 ---
 
@@ -335,7 +335,7 @@
 - [x] Wirewood Savage
 - [x] Withering Hex
 - [x] Wooded Foothills
-- [ ] Words of War
+- [x] Words of War
 - [x] Words of Waste
 - [ ] Words of Wilding
 - [x] Words of Wind
