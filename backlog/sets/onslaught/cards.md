@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 298 / 335
+**Implemented:** 299 / 335
 
 ---
 
@@ -327,7 +327,7 @@
 - [x] Wellwisher
 - [ ] Wheel and Deal
 - [x] Whipcorder
-- [ ] Windswept Heath
+- [x] Windswept Heath
 - [x] Wirewood Elf
 - [x] Wirewood Herald
 - [x] Wirewood Lodge
