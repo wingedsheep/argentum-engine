@@ -159,6 +159,7 @@ class ContinuationHandler(
             is PreventDamageChainCopyTargetContinuation -> resumePreventDamageChainCopyTarget(stateAfterPop, continuation, response)
             is SecretBidContinuation -> resumeSecretBid(stateAfterPop, continuation, response)
             is DrawReplacementBounceContinuation -> resumeDrawReplacementBounce(stateAfterPop, continuation, response)
+            is DrawReplacementDiscardContinuation -> resumeDrawReplacementDiscard(stateAfterPop, continuation, response)
         }
     }
 
@@ -6051,6 +6052,52 @@ class ContinuationHandler(
             )
         }
         return checkForMoreContinuations(state, events)
+    }
+
+    /**
+     * Resume after an opponent selects a card to discard for Words of Waste's draw replacement.
+     */
+    private fun resumeDrawReplacementDiscard(
+        state: GameState,
+        continuation: DrawReplacementDiscardContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for discard")
+        }
+
+        val cardToDiscard = response.selectedCards.firstOrNull()
+            ?: return ExecutionResult.error(state, "No card selected for discard")
+
+        // Discard the selected card
+        val handZone = ZoneKey(continuation.discardingPlayerId, Zone.HAND)
+        val graveyardZone = ZoneKey(continuation.discardingPlayerId, Zone.GRAVEYARD)
+        var newState = state.removeFromZone(handZone, cardToDiscard)
+        newState = newState.addToZone(graveyardZone, cardToDiscard)
+        val events = mutableListOf<GameEvent>(
+            CardsDiscardedEvent(continuation.discardingPlayerId, listOf(cardToDiscard))
+        )
+
+        // Continue with remaining draws
+        if (continuation.remainingDraws > 0) {
+            val drawExecutor = DrawCardsExecutor()
+            val drawResult = drawExecutor.executeDraws(
+                newState, continuation.drawingPlayerId, continuation.remainingDraws
+            )
+            if (drawResult.isPaused) {
+                return ExecutionResult.paused(
+                    drawResult.state,
+                    drawResult.pendingDecision!!,
+                    events + drawResult.events
+                )
+            }
+            return ExecutionResult(
+                drawResult.state,
+                events + drawResult.events,
+                drawResult.error
+            )
+        }
+        return checkForMoreContinuations(newState, events)
     }
 
     private fun findControllerLands(state: GameState, controllerId: EntityId): List<EntityId> {

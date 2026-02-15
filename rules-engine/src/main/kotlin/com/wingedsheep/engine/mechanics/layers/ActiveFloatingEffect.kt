@@ -228,6 +228,14 @@ sealed interface SerializableModification {
      */
     @Serializable
     data object ReplaceDrawWithBounce : SerializableModification
+
+    /**
+     * Draw replacement shield: the next time the affected player would draw a card this turn,
+     * each opponent discards a card instead. Used by Words of Waste and similar effects.
+     * The shield is consumed after the first draw replacement and removed.
+     */
+    @Serializable
+    data object ReplaceDrawWithDiscard : SerializableModification
 }
 
 /**
@@ -272,4 +280,6 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.ReplaceDrawWithLifeGain -> Modification.NoOp
     // ReplaceDrawWithBounce doesn't map to a layer modification - it's checked during draw execution directly
     is SerializableModification.ReplaceDrawWithBounce -> Modification.NoOp
+    // ReplaceDrawWithDiscard doesn't map to a layer modification - it's checked during draw execution directly
+    is SerializableModification.ReplaceDrawWithDiscard -> Modification.NoOp
 }

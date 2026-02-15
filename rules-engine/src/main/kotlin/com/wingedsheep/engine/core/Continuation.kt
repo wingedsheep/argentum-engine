@@ -1783,6 +1783,28 @@ data class DrawReplacementBounceContinuation(
 ) : ContinuationFrame
 
 /**
+ * Continuation for Words of Waste's draw replacement: each opponent discards a card.
+ * When an opponent must choose which card to discard, this pauses execution.
+ * After the discard, continues with any remaining card draws.
+ *
+ * @property drawingPlayerId The player who was drawing (whose draw was replaced)
+ * @property remainingDraws Number of draws left to process after this discard
+ * @property drawnCardsSoFar Cards already drawn before the discard shield was hit
+ * @property sourceId The source of the draw replacement (Words of Waste)
+ * @property sourceName Name of the source for display
+ */
+@Serializable
+data class DrawReplacementDiscardContinuation(
+    override val decisionId: String,
+    val drawingPlayerId: EntityId,
+    val discardingPlayerId: EntityId,
+    val remainingDraws: Int,
+    val drawnCardsSoFar: List<EntityId>,
+    val sourceId: EntityId?,
+    val sourceName: String?
+) : ContinuationFrame
+
+/**
  * Information about a mana source available for manual selection.
  */
 @Serializable

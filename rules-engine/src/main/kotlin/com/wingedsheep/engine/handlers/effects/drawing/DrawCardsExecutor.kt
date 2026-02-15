@@ -1,9 +1,11 @@
 package com.wingedsheep.engine.handlers.effects.drawing
 
+import com.wingedsheep.engine.core.CardsDiscardedEvent
 import com.wingedsheep.engine.core.CardsDrawnEvent
 import com.wingedsheep.engine.core.DecisionPhase
 import com.wingedsheep.engine.core.DrawFailedEvent
 import com.wingedsheep.engine.core.DrawReplacementBounceContinuation
+import com.wingedsheep.engine.core.DrawReplacementDiscardContinuation
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.LifeChangedEvent
@@ -83,6 +85,14 @@ class DrawCardsExecutor(
             )
             if (bounceResult != null) {
                 return bounceResult
+            }
+
+            // Check for discard replacement shields (Words of Waste)
+            val discardResult = consumeDiscardReplacementShield(
+                newState, playerId, count - i - 1, drawnCards.toList(), events
+            )
+            if (discardResult != null) {
+                return discardResult
             }
 
             val library = newState.getZone(libraryZone)
@@ -259,6 +269,105 @@ class DrawCardsExecutor(
             decisionResult.pendingDecision,
             allEvents + decisionResult.events
         )
+    }
+
+    /**
+     * Checks for and consumes a discard draw replacement shield (Words of Waste).
+     * If found, each opponent discards a card instead of the draw.
+     * Returns a paused ExecutionResult if an opponent must choose, or null if no shield exists.
+     */
+    private fun consumeDiscardReplacementShield(
+        state: GameState,
+        playerId: EntityId,
+        remainingDraws: Int,
+        drawnCardsSoFar: List<EntityId>,
+        eventsSoFar: List<GameEvent>
+    ): ExecutionResult? {
+        val shieldIndex = state.floatingEffects.indexOfFirst { effect ->
+            effect.effect.modification is SerializableModification.ReplaceDrawWithDiscard &&
+                playerId in effect.effect.affectedEntities
+        }
+        if (shieldIndex == -1) return null
+
+        val shield = state.floatingEffects[shieldIndex]
+
+        // Remove the consumed shield
+        val updatedEffects = state.floatingEffects.toMutableList()
+        updatedEffects.removeAt(shieldIndex)
+        var newState = state.copy(floatingEffects = updatedEffects)
+
+        // Emit CardsDrawnEvent for cards drawn before this shield was hit
+        val allEvents = eventsSoFar.toMutableList()
+        if (drawnCardsSoFar.isNotEmpty()) {
+            allEvents.add(0, CardsDrawnEvent(playerId, drawnCardsSoFar.size, drawnCardsSoFar))
+        }
+
+        // Get each opponent and make them discard
+        val opponents = newState.turnOrder.filter { it != playerId }
+
+        for (opponentId in opponents) {
+            val handZone = ZoneKey(opponentId, Zone.HAND)
+            val hand = newState.getZone(handZone)
+
+            if (hand.isEmpty()) {
+                // Opponent has no cards, skip
+                continue
+            }
+
+            if (hand.size == 1) {
+                // Auto-discard the single card
+                val cardId = hand.first()
+                val graveyardZone = ZoneKey(opponentId, Zone.GRAVEYARD)
+                newState = newState.removeFromZone(handZone, cardId)
+                newState = newState.addToZone(graveyardZone, cardId)
+                allEvents.add(CardsDiscardedEvent(opponentId, listOf(cardId)))
+                continue
+            }
+
+            // Opponent must choose which card to discard - pause for decision
+            val sourceName = shield.sourceName ?: "Words of Waste"
+            val decisionResult = decisionHandler.createCardSelectionDecision(
+                state = newState,
+                playerId = opponentId,
+                sourceId = shield.sourceId,
+                sourceName = sourceName,
+                prompt = "Choose a card to discard",
+                options = hand,
+                minSelections = 1,
+                maxSelections = 1,
+                ordered = false,
+                phase = DecisionPhase.RESOLUTION
+            )
+
+            val continuation = DrawReplacementDiscardContinuation(
+                decisionId = decisionResult.pendingDecision!!.id,
+                drawingPlayerId = playerId,
+                discardingPlayerId = opponentId,
+                remainingDraws = remainingDraws,
+                drawnCardsSoFar = drawnCardsSoFar,
+                sourceId = shield.sourceId,
+                sourceName = sourceName
+            )
+
+            val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
+
+            return ExecutionResult.paused(
+                stateWithContinuation,
+                decisionResult.pendingDecision,
+                allEvents + decisionResult.events
+            )
+        }
+
+        // All opponents had 0-1 cards, handled inline - continue with remaining draws
+        if (remainingDraws > 0) {
+            val drawResult = executeDraws(newState, playerId, remainingDraws)
+            return ExecutionResult(
+                drawResult.state,
+                allEvents + drawResult.events,
+                drawResult.error
+            )
+        }
+        return ExecutionResult.success(newState, allEvents)
     }
 
     /**
