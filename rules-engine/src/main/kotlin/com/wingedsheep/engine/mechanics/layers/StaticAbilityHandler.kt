@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.scripting.SetEnchantedLandType
 import com.wingedsheep.sdk.scripting.GrantKeywordByCounter
 import com.wingedsheep.sdk.scripting.GrantProtection
 import com.wingedsheep.sdk.scripting.GrantShroudToController
+import com.wingedsheep.sdk.scripting.ControlCreatureOfType
 import com.wingedsheep.sdk.scripting.SourceHasSubtype
 import com.wingedsheep.sdk.scripting.GlobalEffect
 import com.wingedsheep.sdk.scripting.GlobalEffectType
@@ -234,6 +235,7 @@ class StaticAbilityHandler(
     private fun mapToSourceProjectionCondition(condition: Condition): SourceProjectionCondition? {
         return when (condition) {
             is SourceHasSubtype -> SourceProjectionCondition.HasSubtype(condition.subtype.value)
+            is ControlCreatureOfType -> SourceProjectionCondition.ControllerControlsCreatureOfType(condition.subtype.value)
             else -> null
         }
     }

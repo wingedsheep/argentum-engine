@@ -302,6 +302,7 @@ object OnslaughtSet {
         DoomCannon,
         DreamChisel,
         SlateOfAncestry,
+        TribalGolem,
 
         // Lands
         BloodstainedMire,
