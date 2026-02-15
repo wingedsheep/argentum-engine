@@ -28,6 +28,6 @@ val WordsOfWar = card("Words of War") {
         collectorNumber = "244"
         artist = "Justin Sweet"
         flavorText = "Passions can't be shackled by laws or mastered with logic. The choice is freedom or death."
-        imageUri = "https://cards.scryfall.io/large /front/2/5/2593a6a6-dc21-4742-acb8-f7092931b1ce.jpg?1562903864"
+        imageUri = "https://cards.scryfall.io/large/front/2/5/2593a6a6-dc21-4742-acb8-f7092931b1ce.jpg?1562903864"
     }
 }
