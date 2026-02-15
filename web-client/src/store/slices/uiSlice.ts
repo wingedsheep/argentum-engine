@@ -154,6 +154,13 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
         )
         if (castAction?.autoTapPreview) {
           autoTapPreview = castAction.autoTapPreview
+        } else {
+          const turnFaceUpAction = legalActions.find(
+            (a) => a.action.type === 'TurnFaceUp' && a.action.sourceId === cardId
+          )
+          if (turnFaceUpAction?.autoTapPreview) {
+            autoTapPreview = turnFaceUpAction.autoTapPreview
+          }
         }
       }
     }

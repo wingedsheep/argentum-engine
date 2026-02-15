@@ -1231,11 +1231,14 @@ class GameSession(
 
             // Check if player can afford the morph cost
             if (manaSolver.canPay(state, playerId, morphData.morphCost)) {
+                val autoTapSolution = manaSolver.solve(state, playerId, morphData.morphCost)
+                val autoTapPreview = autoTapSolution?.sources?.map { it.entityId }
                 result.add(LegalActionInfo(
                     actionType = "ActivateAbility",
                     description = "Turn face-up (${morphData.morphCost})",
                     action = TurnFaceUp(playerId, entityId),
-                    manaCostString = morphData.morphCost.toString()
+                    manaCostString = morphData.morphCost.toString(),
+                    autoTapPreview = autoTapPreview
                 ))
             }
         }
