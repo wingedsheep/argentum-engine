@@ -25,5 +25,7 @@ data class EffectContext(
     /** Color chosen for "add one mana of any color" abilities */
     val manaColorChoice: Color? = null,
     /** Creature type chosen during casting (e.g., Aphetto Dredging) */
-    val chosenCreatureType: String? = null
+    val chosenCreatureType: String? = null,
+    /** Permanents tapped as part of an activated ability's cost (e.g., Cryptic Gateway) */
+    val tappedPermanents: List<EntityId> = emptyList()
 )

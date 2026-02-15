@@ -402,7 +402,8 @@ class ActivateAbilityHandler(
             controllerId = action.playerId,
             effect = finalEffect,
             sacrificedPermanents = action.costPayment?.sacrificedPermanents ?: emptyList(),
-            xValue = action.xValue
+            xValue = action.xValue,
+            tappedPermanents = action.costPayment?.tappedPermanents ?: emptyList()
         )
 
         // Apply text-changing effects to the target requirements for resolution-time re-validation

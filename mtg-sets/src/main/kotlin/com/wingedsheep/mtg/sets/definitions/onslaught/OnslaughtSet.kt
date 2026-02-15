@@ -303,6 +303,7 @@ object OnslaughtSet {
         SteelyResolve,
 
         // Artifacts
+        CrypticGateway,
         DoomCannon,
         DreamChisel,
         SlateOfAncestry,

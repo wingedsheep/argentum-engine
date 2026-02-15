@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 295 / 335
+**Implemented:** 296 / 335
 
 ---
 
@@ -78,7 +78,7 @@
 - [x] Crown of Vigor
 - [x] Crude Rampart
 - [x] Cruel Revival
-- [ ] Cryptic Gateway
+- [x] Cryptic Gateway
 - [x] Custody Battle
 - [x] Daru Cavalier
 - [x] Daru Encampment

@@ -51,7 +51,8 @@ data class ActivatedAbilityOnStackComponent(
     val controllerId: EntityId,
     val effect: Effect,
     val sacrificedPermanents: List<EntityId> = emptyList(),
-    val xValue: Int? = null
+    val xValue: Int? = null,
+    val tappedPermanents: List<EntityId> = emptyList()
 ) : Component {
     val hasTargets: Boolean = false  // Will be updated based on effect
 }

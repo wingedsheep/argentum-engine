@@ -362,3 +362,21 @@ data class EachOpponentMayPutFromHandEffect(
     override val description: String =
         "Each opponent may put any number of ${filter.description} cards from their hand onto the battlefield"
 }
+
+/**
+ * You may put a creature card from your hand that shares a creature type
+ * with each creature tapped as part of the cost onto the battlefield.
+ *
+ * Used for Cryptic Gateway: "Tap two untapped creatures you control:
+ * You may put a creature card from your hand that shares a creature type
+ * with each creature tapped this way onto the battlefield."
+ *
+ * Requires tappedPermanents in EffectContext to determine valid choices.
+ */
+@SerialName("PutCreatureFromHandSharingTypeWithTapped")
+@Serializable
+data object PutCreatureFromHandSharingTypeWithTappedEffect : Effect {
+    override val description: String =
+        "You may put a creature card from your hand that shares a creature type " +
+        "with each creature tapped this way onto the battlefield"
+}

@@ -23,6 +23,7 @@ class LibraryExecutors : ExecutorModule {
         RevealUntilNonlandDealDamageExecutor(),
         RevealUntilNonlandModifyStatsExecutor(),
         EachOpponentMayPutFromHandExecutor(),
-        SurveilExecutor()
+        SurveilExecutor(),
+        PutCreatureFromHandSharingTypeExecutor()
     )
 }
