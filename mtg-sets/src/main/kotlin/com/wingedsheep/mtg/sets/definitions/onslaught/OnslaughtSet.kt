@@ -81,6 +81,7 @@ object OnslaughtSet {
         WeatheredWayfarer,
         WordsOfWorship,
         WordsOfWaste,
+        WordsOfWilding,
         WordsOfWind,
         HarshMercy,
 

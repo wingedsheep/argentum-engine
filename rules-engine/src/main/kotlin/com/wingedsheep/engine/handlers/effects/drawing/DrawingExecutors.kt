@@ -29,6 +29,7 @@ class DrawingExecutors(
         HeadGamesExecutor(),
         ReplaceNextDrawWithLifeGainExecutor(),
         ReplaceNextDrawWithBounceExecutor(),
-        ReplaceNextDrawWithDiscardExecutor()
+        ReplaceNextDrawWithDiscardExecutor(),
+        ReplaceNextDrawWithBearTokenExecutor()
     )
 }

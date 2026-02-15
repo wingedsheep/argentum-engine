@@ -236,6 +236,14 @@ sealed interface SerializableModification {
      */
     @Serializable
     data object ReplaceDrawWithDiscard : SerializableModification
+
+    /**
+     * Draw replacement shield: the next time the affected player would draw a card this turn,
+     * they create a 2/2 green Bear creature token instead. Used by Words of Wilding and similar effects.
+     * The shield is consumed after the first draw replacement and removed.
+     */
+    @Serializable
+    data object ReplaceDrawWithBearToken : SerializableModification
 }
 
 /**
@@ -282,4 +290,6 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.ReplaceDrawWithBounce -> Modification.NoOp
     // ReplaceDrawWithDiscard doesn't map to a layer modification - it's checked during draw execution directly
     is SerializableModification.ReplaceDrawWithDiscard -> Modification.NoOp
+    // ReplaceDrawWithBearToken doesn't map to a layer modification - it's checked during draw execution directly
+    is SerializableModification.ReplaceDrawWithBearToken -> Modification.NoOp
 }

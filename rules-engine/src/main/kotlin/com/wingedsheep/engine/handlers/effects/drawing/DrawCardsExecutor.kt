@@ -18,12 +18,20 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
+import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.engine.state.components.player.LossReason
 import com.wingedsheep.engine.state.components.player.PlayerLostComponent
+import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.sdk.core.TypeLine
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.DrawCardsEffect
 import kotlin.reflect.KClass
@@ -95,6 +103,14 @@ class DrawCardsExecutor(
                 return discardResult
             }
 
+            // Check for bear token replacement shields (Words of Wilding)
+            val bearTokenResult = consumeBearTokenReplacementShield(newState, playerId)
+            if (bearTokenResult != null) {
+                newState = bearTokenResult.first
+                events.addAll(bearTokenResult.second)
+                continue
+            }
+
             val library = newState.getZone(libraryZone)
             if (library.isEmpty()) {
                 // Failed to draw - game loss condition (Rule 704.5c)
@@ -155,6 +171,31 @@ class DrawCardsExecutor(
         return newState to listOf(
             LifeChangedEvent(playerId, currentLife, newLife, LifeChangeReason.LIFE_GAIN)
         )
+    }
+
+    /**
+     * Checks for and consumes a bear token draw replacement shield (Words of Wilding).
+     * Returns the updated state and events if a shield was consumed, or null if no shield exists.
+     */
+    private fun consumeBearTokenReplacementShield(
+        state: GameState,
+        playerId: EntityId
+    ): Pair<GameState, List<GameEvent>>? {
+        val shieldIndex = state.floatingEffects.indexOfFirst { effect ->
+            effect.effect.modification is SerializableModification.ReplaceDrawWithBearToken &&
+                playerId in effect.effect.affectedEntities
+        }
+        if (shieldIndex == -1) return null
+
+        // Remove the consumed shield
+        val updatedEffects = state.floatingEffects.toMutableList()
+        updatedEffects.removeAt(shieldIndex)
+        var newState = state.copy(floatingEffects = updatedEffects)
+
+        // Create a 2/2 green Bear creature token instead of drawing
+        newState = createBearToken(newState, playerId)
+
+        return newState to emptyList()
     }
 
     /**
@@ -453,5 +494,38 @@ class DrawCardsExecutor(
             decisionResult.pendingDecision,
             events + decisionResult.events
         )
+    }
+
+    companion object {
+        /**
+         * Create a 2/2 green Bear creature token for the given player.
+         * Used by Words of Wilding draw replacement.
+         */
+        fun createBearToken(state: GameState, playerId: EntityId): GameState {
+            val tokenId = EntityId.generate()
+            val tokenComponent = CardComponent(
+                cardDefinitionId = "token:Bear",
+                name = "Bear",
+                manaCost = ManaCost.ZERO,
+                typeLine = TypeLine.parse("Creature - Bear"),
+                baseStats = CreatureStats(2, 2),
+                baseKeywords = emptySet(),
+                colors = setOf(Color.GREEN),
+                ownerId = playerId
+            )
+
+            val container = ComponentContainer.of(
+                tokenComponent,
+                TokenComponent,
+                ControllerComponent(playerId),
+                SummoningSicknessComponent
+            )
+
+            var newState = state.withEntity(tokenId, container)
+            val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
+            newState = newState.addToZone(battlefieldZone, tokenId)
+
+            return newState
+        }
     }
 }
