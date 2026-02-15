@@ -26,6 +26,7 @@ class DrawingExecutors(
         EachPlayerDrawsXExecutor(),
         EachPlayerMayDrawExecutor(decisionHandler),
         BlackmailExecutor(decisionHandler),
-        HeadGamesExecutor()
+        HeadGamesExecutor(),
+        ReplaceNextDrawWithLifeGainExecutor()
     )
 }
