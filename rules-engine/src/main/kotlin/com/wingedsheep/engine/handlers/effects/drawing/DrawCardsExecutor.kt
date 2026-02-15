@@ -1,18 +1,23 @@
 package com.wingedsheep.engine.handlers.effects.drawing
 
 import com.wingedsheep.engine.core.CardsDrawnEvent
+import com.wingedsheep.engine.core.DecisionPhase
 import com.wingedsheep.engine.core.DrawFailedEvent
+import com.wingedsheep.engine.core.DrawReplacementBounceContinuation
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.LifeChangedEvent
 import com.wingedsheep.engine.core.LifeChangeReason
+import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
+import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.player.LossReason
 import com.wingedsheep.engine.state.components.player.PlayerLostComponent
@@ -31,6 +36,9 @@ class DrawCardsExecutor(
 
     override val effectType: KClass<DrawCardsEffect> = DrawCardsEffect::class
 
+    private val decisionHandler = DecisionHandler()
+    private val stateProjector = StateProjector()
+
     override fun execute(
         state: GameState,
         effect: DrawCardsEffect,
@@ -39,27 +47,47 @@ class DrawCardsExecutor(
         val playerId = EffectExecutorUtils.resolvePlayerTarget(effect.target, context, state)
             ?: return ExecutionResult.error(state, "No valid player for draw")
 
+        val count = amountEvaluator.evaluate(state, effect.count, context)
+        return executeDraws(state, playerId, count)
+    }
+
+    /**
+     * Execute a sequence of draws, checking for replacement shields on each draw.
+     * This is also called from ContinuationHandler when resuming remaining draws
+     * after a bounce replacement.
+     */
+    fun executeDraws(
+        state: GameState,
+        playerId: EntityId,
+        count: Int
+    ): ExecutionResult {
         var newState = state
         val drawnCards = mutableListOf<EntityId>()
         val events = mutableListOf<GameEvent>()
 
         val libraryZone = ZoneKey(playerId, Zone.LIBRARY)
         val handZone = ZoneKey(playerId, Zone.HAND)
-        val count = amountEvaluator.evaluate(state, effect.count, context)
 
-        repeat(count) {
-            // Check for draw replacement shields (e.g., Words of Worship)
-            val replacementResult = consumeDrawReplacementShield(newState, playerId)
-            if (replacementResult != null) {
-                newState = replacementResult.first
-                events.addAll(replacementResult.second)
-                return@repeat
+        for (i in 0 until count) {
+            // Check for life gain replacement shields (Words of Worship)
+            val lifeGainResult = consumeLifeGainReplacementShield(newState, playerId)
+            if (lifeGainResult != null) {
+                newState = lifeGainResult.first
+                events.addAll(lifeGainResult.second)
+                continue
+            }
+
+            // Check for bounce replacement shields (Words of Wind)
+            val bounceResult = consumeBounceReplacementShield(
+                newState, playerId, count - i - 1, drawnCards.toList(), events
+            )
+            if (bounceResult != null) {
+                return bounceResult
             }
 
             val library = newState.getZone(libraryZone)
             if (library.isEmpty()) {
                 // Failed to draw - game loss condition (Rule 704.5c)
-                // Mark player as having lost due to empty library
                 newState = newState.updateEntity(playerId) { container ->
                     container.with(PlayerLostComponent(LossReason.EMPTY_LIBRARY))
                 }
@@ -86,10 +114,10 @@ class DrawCardsExecutor(
     }
 
     /**
-     * Checks for and consumes a draw replacement shield (e.g., Words of Worship).
+     * Checks for and consumes a life gain draw replacement shield (Words of Worship).
      * Returns the updated state and events if a shield was consumed, or null if no shield exists.
      */
-    private fun consumeDrawReplacementShield(
+    private fun consumeLifeGainReplacementShield(
         state: GameState,
         playerId: EntityId
     ): Pair<GameState, List<GameEvent>>? {
@@ -116,6 +144,205 @@ class DrawCardsExecutor(
 
         return newState to listOf(
             LifeChangedEvent(playerId, currentLife, newLife, LifeChangeReason.LIFE_GAIN)
+        )
+    }
+
+    /**
+     * Checks for and consumes a bounce draw replacement shield (Words of Wind).
+     * If found, pauses execution to ask each player to choose a permanent to bounce.
+     * Returns a paused ExecutionResult if a shield was consumed, or null if no shield exists.
+     */
+    private fun consumeBounceReplacementShield(
+        state: GameState,
+        playerId: EntityId,
+        remainingDraws: Int,
+        drawnCardsSoFar: List<EntityId>,
+        eventsSoFar: List<GameEvent>
+    ): ExecutionResult? {
+        val shieldIndex = state.floatingEffects.indexOfFirst { effect ->
+            effect.effect.modification is SerializableModification.ReplaceDrawWithBounce &&
+                playerId in effect.effect.affectedEntities
+        }
+        if (shieldIndex == -1) return null
+
+        val shield = state.floatingEffects[shieldIndex]
+
+        // Remove the consumed shield
+        val updatedEffects = state.floatingEffects.toMutableList()
+        updatedEffects.removeAt(shieldIndex)
+        var newState = state.copy(floatingEffects = updatedEffects)
+
+        // Emit CardsDrawnEvent for cards drawn before this shield was hit
+        val allEvents = eventsSoFar.toMutableList()
+        if (drawnCardsSoFar.isNotEmpty()) {
+            allEvents.add(0, CardsDrawnEvent(playerId, drawnCardsSoFar.size, drawnCardsSoFar))
+        }
+
+        // Get players in APNAP order for the bounce
+        val activePlayer = newState.activePlayerId ?: return null
+        val apnapOrder = listOf(activePlayer) + newState.turnOrder.filter { it != activePlayer }
+
+        // Find first player with permanents to bounce
+        val projected = stateProjector.project(newState)
+        val playersWithPermanents = apnapOrder.filter { pid ->
+            projected.getBattlefieldControlledBy(pid).isNotEmpty()
+        }
+
+        if (playersWithPermanents.isEmpty()) {
+            // No player has permanents - draw is still replaced (no card drawn), just continue
+            return ExecutionResult.success(newState, allEvents)
+                .let { result ->
+                    // If there are remaining draws, continue processing them
+                    if (remainingDraws > 0) {
+                        val drawResult = executeDraws(result.state, playerId, remainingDraws)
+                        ExecutionResult(
+                            drawResult.state,
+                            allEvents + drawResult.events,
+                            drawResult.error
+                        )
+                    } else {
+                        ExecutionResult.success(result.state, allEvents)
+                    }
+                }
+        }
+
+        val firstPlayer = playersWithPermanents.first()
+        val remainingBounce = playersWithPermanents.drop(1)
+
+        val controlledPermanents = projected.getBattlefieldControlledBy(firstPlayer)
+
+        // If the player has exactly 1 permanent, auto-select it
+        if (controlledPermanents.size == 1) {
+            val permanentId = controlledPermanents.first()
+            val bounceResult = EffectExecutorUtils.moveCardToZone(newState, permanentId, Zone.HAND)
+            newState = bounceResult.state
+            allEvents.addAll(bounceResult.events)
+
+            // Continue with remaining players
+            return continueBounceChain(
+                newState, remainingBounce, playerId, remainingDraws,
+                drawnCardsSoFar, allEvents, shield.sourceId, shield.sourceName
+            )
+        }
+
+        // Present decision to first player
+        val sourceName = shield.sourceName ?: "Words of Wind"
+        val decisionResult = decisionHandler.createCardSelectionDecision(
+            state = newState,
+            playerId = firstPlayer,
+            sourceId = shield.sourceId,
+            sourceName = sourceName,
+            prompt = "Choose a permanent to return to its owner's hand",
+            options = controlledPermanents,
+            minSelections = 1,
+            maxSelections = 1,
+            ordered = false,
+            phase = DecisionPhase.RESOLUTION,
+            useTargetingUI = true
+        )
+
+        val continuation = DrawReplacementBounceContinuation(
+            decisionId = decisionResult.pendingDecision!!.id,
+            drawingPlayerId = playerId,
+            currentBouncingPlayerId = firstPlayer,
+            remainingPlayers = remainingBounce,
+            remainingDraws = remainingDraws,
+            drawnCardsSoFar = drawnCardsSoFar,
+            sourceId = shield.sourceId,
+            sourceName = sourceName
+        )
+
+        val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
+
+        return ExecutionResult.paused(
+            stateWithContinuation,
+            decisionResult.pendingDecision,
+            allEvents + decisionResult.events
+        )
+    }
+
+    /**
+     * Continue the bounce chain for remaining players after a player auto-bounced.
+     */
+    private fun continueBounceChain(
+        state: GameState,
+        remainingPlayers: List<EntityId>,
+        drawingPlayerId: EntityId,
+        remainingDraws: Int,
+        drawnCardsSoFar: List<EntityId>,
+        events: MutableList<GameEvent>,
+        sourceId: EntityId?,
+        sourceName: String?
+    ): ExecutionResult {
+        if (remainingPlayers.isEmpty()) {
+            // All players done - continue with remaining draws
+            if (remainingDraws > 0) {
+                val drawResult = executeDraws(state, drawingPlayerId, remainingDraws)
+                return ExecutionResult(
+                    drawResult.state,
+                    events + drawResult.events,
+                    drawResult.error
+                )
+            }
+            return ExecutionResult.success(state, events)
+        }
+
+        val projected = stateProjector.project(state)
+        val nextPlayer = remainingPlayers.first()
+        val nextRemaining = remainingPlayers.drop(1)
+        val controlledPermanents = projected.getBattlefieldControlledBy(nextPlayer)
+
+        if (controlledPermanents.isEmpty()) {
+            // Skip player with no permanents
+            return continueBounceChain(
+                state, nextRemaining, drawingPlayerId, remainingDraws,
+                drawnCardsSoFar, events, sourceId, sourceName
+            )
+        }
+
+        if (controlledPermanents.size == 1) {
+            // Auto-bounce single permanent
+            val permanentId = controlledPermanents.first()
+            val bounceResult = EffectExecutorUtils.moveCardToZone(state, permanentId, Zone.HAND)
+            events.addAll(bounceResult.events)
+            return continueBounceChain(
+                bounceResult.state, nextRemaining, drawingPlayerId, remainingDraws,
+                drawnCardsSoFar, events, sourceId, sourceName
+            )
+        }
+
+        // Present decision
+        val decisionResult = decisionHandler.createCardSelectionDecision(
+            state = state,
+            playerId = nextPlayer,
+            sourceId = sourceId,
+            sourceName = sourceName ?: "Words of Wind",
+            prompt = "Choose a permanent to return to its owner's hand",
+            options = controlledPermanents,
+            minSelections = 1,
+            maxSelections = 1,
+            ordered = false,
+            phase = DecisionPhase.RESOLUTION,
+            useTargetingUI = true
+        )
+
+        val continuation = DrawReplacementBounceContinuation(
+            decisionId = decisionResult.pendingDecision!!.id,
+            drawingPlayerId = drawingPlayerId,
+            currentBouncingPlayerId = nextPlayer,
+            remainingPlayers = nextRemaining,
+            remainingDraws = remainingDraws,
+            drawnCardsSoFar = drawnCardsSoFar,
+            sourceId = sourceId,
+            sourceName = sourceName
+        )
+
+        val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
+
+        return ExecutionResult.paused(
+            stateWithContinuation,
+            decisionResult.pendingDecision,
+            events + decisionResult.events
         )
     }
 }

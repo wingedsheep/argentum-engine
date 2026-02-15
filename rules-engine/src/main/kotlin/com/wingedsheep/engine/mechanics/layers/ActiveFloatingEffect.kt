@@ -219,6 +219,15 @@ sealed interface SerializableModification {
     data class ReplaceDrawWithLifeGain(
         val lifeAmount: Int
     ) : SerializableModification
+
+    /**
+     * Draw replacement shield: the next time the affected player would draw a card this turn,
+     * each player returns a permanent they control to its owner's hand instead.
+     * Used by Words of Wind and similar effects.
+     * The shield is consumed after the first draw replacement and removed.
+     */
+    @Serializable
+    data object ReplaceDrawWithBounce : SerializableModification
 }
 
 /**
@@ -261,4 +270,6 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.RedirectNextDamage -> Modification.NoOp
     // ReplaceDrawWithLifeGain doesn't map to a layer modification - it's checked during draw execution directly
     is SerializableModification.ReplaceDrawWithLifeGain -> Modification.NoOp
+    // ReplaceDrawWithBounce doesn't map to a layer modification - it's checked during draw execution directly
+    is SerializableModification.ReplaceDrawWithBounce -> Modification.NoOp
 }

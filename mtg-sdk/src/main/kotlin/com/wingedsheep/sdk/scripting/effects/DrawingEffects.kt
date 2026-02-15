@@ -294,6 +294,22 @@ data class ReplaceNextDrawWithLifeGainEffect(
 }
 
 /**
+ * Replace next draw with each-player-bounces effect.
+ * "{1}: The next time you would draw a card this turn, each player returns a
+ * permanent they control to its owner's hand instead."
+ * Used for Words of Wind and similar "Words of" cycle cards.
+ *
+ * This creates a floating replacement effect shield that intercepts the next card draw
+ * for the controller this turn, replacing it with each player bouncing a permanent.
+ */
+@SerialName("ReplaceNextDrawWithBounce")
+@Serializable
+data object ReplaceNextDrawWithBounceEffect : Effect {
+    override val description: String =
+        "The next time you would draw a card this turn, each player returns a permanent they control to its owner's hand instead"
+}
+
+/**
  * Reveal a player's hand (publicly visible to all players).
  * This is an atomic effect that just reveals - use with CompositeEffect for
  * "reveal and do something based on what's revealed" patterns.
