@@ -468,8 +468,13 @@ class ClientStateTransformer(
         val chosenX = spellOnStack?.xValue
 
         // Get chosen creature type for "as enters" permanents (e.g., Doom Cannon) or spells on stack (e.g., Aphetto Dredging)
+        // Also check floating effects for temporary type changes (e.g., Mistform Wall)
         val chosenCreatureType = container.get<ChosenCreatureTypeComponent>()?.creatureType
             ?: spellOnStack?.chosenCreatureType
+            ?: state.floatingEffects
+                .filter { it.effect.affectedEntities.contains(entityId) }
+                .mapNotNull { (it.effect.modification as? SerializableModification.SetCreatureSubtypes)?.subtypes?.firstOrNull() }
+                .lastOrNull()
 
         // Get sacrificed creature types for spells with sacrifice-as-cost (e.g., Endemic Plague)
         val sacrificedCreatureTypes = spellOnStack?.sacrificedPermanentSubtypes
