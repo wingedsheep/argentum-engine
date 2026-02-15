@@ -25,6 +25,7 @@ class LibraryExecutors : ExecutorModule {
         EachOpponentMayPutFromHandExecutor(),
         SurveilExecutor(),
         PutCreatureFromHandSharingTypeExecutor(),
-        RevealUntilCreatureTypeExecutor()
+        RevealUntilCreatureTypeExecutor(),
+        EachPlayerMayRevealCreaturesExecutor()
     )
 }

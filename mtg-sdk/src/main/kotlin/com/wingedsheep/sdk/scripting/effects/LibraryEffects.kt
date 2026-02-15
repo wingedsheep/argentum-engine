@@ -364,6 +364,34 @@ data class EachOpponentMayPutFromHandEffect(
 }
 
 /**
+ * Each player may reveal any number of creature cards from their hand.
+ * Then each player creates tokens for each card they revealed this way.
+ *
+ * Used for Kamahl's Summons: "Each player may reveal any number of creature cards
+ * from their hand. Then each player creates a 2/2 green Bear creature token for
+ * each card they revealed this way."
+ *
+ * @property tokenPower Power of the created tokens
+ * @property tokenToughness Toughness of the created tokens
+ * @property tokenColors Colors of the created tokens
+ * @property tokenCreatureTypes Creature types of the created tokens
+ */
+@SerialName("EachPlayerMayRevealCreatures")
+@Serializable
+data class EachPlayerMayRevealCreaturesEffect(
+    val tokenPower: Int,
+    val tokenToughness: Int,
+    val tokenColors: Set<com.wingedsheep.sdk.core.Color>,
+    val tokenCreatureTypes: Set<String>
+) : Effect {
+    override val description: String =
+        "Each player may reveal any number of creature cards from their hand. " +
+        "Then each player creates a $tokenPower/$tokenToughness " +
+        "${tokenColors.joinToString(" and ") { it.displayName.lowercase() }} " +
+        "${tokenCreatureTypes.joinToString(" ")} creature token for each card they revealed this way"
+}
+
+/**
  * You may put a creature card from your hand that shares a creature type
  * with each creature tapped as part of the cost onto the battlefield.
  *

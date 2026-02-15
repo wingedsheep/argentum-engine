@@ -267,6 +267,7 @@ object OnslaughtSet {
         ExplosiveVegetation,
         InvigoratingBoon,
         KamahlFistOfKrosa,
+        KamahlsSummons,
         KrosanColossus,
         KrosanGroundshaker,
         LeeryFogbeast,

@@ -135,6 +135,7 @@ class ContinuationHandler(
             is ChooseCreatureTypeEntersContinuation -> resumeChooseCreatureTypeEnters(stateAfterPop, continuation, response)
             is CastWithCreatureTypeContinuation -> resumeCastWithCreatureType(stateAfterPop, continuation, response)
             is EachOpponentMayPutFromHandContinuation -> resumeEachOpponentMayPutFromHand(stateAfterPop, continuation, response)
+            is EachPlayerMayRevealCreaturesContinuation -> resumeEachPlayerMayRevealCreatures(stateAfterPop, continuation, response)
             is ChooseCreatureTypeMustAttackContinuation -> resumeChooseCreatureTypeMustAttack(stateAfterPop, continuation, response)
             is ChooseCreatureTypeUntapContinuation -> resumeChooseCreatureTypeUntap(stateAfterPop, continuation, response)
             is HarshMercyContinuation -> resumeHarshMercy(stateAfterPop, continuation, response)
@@ -4362,6 +4363,67 @@ class ContinuationHandler(
         }
 
         return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume after a player selected creature cards from their hand to reveal.
+     *
+     * Records the reveal count, then asks the next player (if any).
+     * After all players have selected, creates tokens for each player.
+     */
+    private fun resumeEachPlayerMayRevealCreatures(
+        state: GameState,
+        continuation: EachPlayerMayRevealCreaturesContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for each-player-may-reveal-creatures")
+        }
+
+        val playerId = continuation.currentPlayerId
+        val revealCount = response.selectedCards.size
+
+        // Update reveal counts
+        val updatedRevealCounts = if (revealCount > 0) {
+            continuation.revealCounts + (playerId to revealCount)
+        } else {
+            continuation.revealCounts
+        }
+
+        // Ask the next player
+        val remainingPlayers = continuation.remainingPlayers
+        if (remainingPlayers.isNotEmpty()) {
+            val nextResult = com.wingedsheep.engine.handlers.effects.library.EachPlayerMayRevealCreaturesExecutor.askNextPlayer(
+                state = state,
+                sourceId = continuation.sourceId,
+                sourceName = continuation.sourceName,
+                players = remainingPlayers,
+                currentIndex = 0,
+                revealCounts = updatedRevealCounts,
+                tokenPower = continuation.tokenPower,
+                tokenToughness = continuation.tokenToughness,
+                tokenColors = continuation.tokenColors,
+                tokenCreatureTypes = continuation.tokenCreatureTypes
+            )
+            return ExecutionResult(
+                state = nextResult.newState,
+                events = nextResult.events,
+                pendingDecision = nextResult.pendingDecision,
+                error = nextResult.error
+            )
+        }
+
+        // All players have made their selection - create tokens
+        val tokenResult = com.wingedsheep.engine.handlers.effects.library.EachPlayerMayRevealCreaturesExecutor.createTokensForAllPlayers(
+            state = state,
+            revealCounts = updatedRevealCounts,
+            tokenPower = continuation.tokenPower,
+            tokenToughness = continuation.tokenToughness,
+            tokenColors = continuation.tokenColors,
+            tokenCreatureTypes = continuation.tokenCreatureTypes
+        )
+
+        return checkForMoreContinuations(tokenResult.newState, tokenResult.events)
     }
 
     /**

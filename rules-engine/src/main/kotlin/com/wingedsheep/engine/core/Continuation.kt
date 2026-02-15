@@ -1264,6 +1264,40 @@ data class EachOpponentMayPutFromHandContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after a player selects creature cards from their hand to reveal.
+ *
+ * Used for Kamahl's Summons: "Each player may reveal any number of creature cards
+ * from their hand. Then each player creates a 2/2 green Bear creature token for
+ * each card they revealed this way."
+ *
+ * Each player in APNAP order is presented with a card selection. After all players
+ * have made their selection, tokens are created for each player based on their reveal count.
+ *
+ * @property currentPlayerId The player currently selecting cards to reveal
+ * @property remainingPlayers Players still to be asked after the current one
+ * @property sourceId The source spell/ability
+ * @property sourceName Name of the source for display
+ * @property revealCounts Map of player ID to number of cards they revealed
+ * @property tokenPower Power of the created tokens
+ * @property tokenToughness Toughness of the created tokens
+ * @property tokenColors Colors of the created tokens
+ * @property tokenCreatureTypes Creature types of the created tokens
+ */
+@Serializable
+data class EachPlayerMayRevealCreaturesContinuation(
+    override val decisionId: String,
+    val currentPlayerId: EntityId,
+    val remainingPlayers: List<EntityId>,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val revealCounts: Map<EntityId, Int>,
+    val tokenPower: Int,
+    val tokenToughness: Int,
+    val tokenColors: Set<com.wingedsheep.sdk.core.Color>,
+    val tokenCreatureTypes: Set<String>
+) : ContinuationFrame
+
+/**
  * Resume after the controller chooses a creature type for "must attack this turn" effect.
  *
  * Used by Walking Desecration: "Creatures of the creature type of your choice attack
