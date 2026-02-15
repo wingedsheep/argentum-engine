@@ -102,6 +102,7 @@ function ConnectionOverlay({
       <FullscreenButton />
       <div className={styles.contentBackdrop}>
         <h1 className={styles.title}>Argentum Engine</h1>
+        <span className={styles.commitHash}>{__COMMIT_HASH__}</span>
 
         {error && (
           <p className={styles.errorMessage}>Error: {error}</p>

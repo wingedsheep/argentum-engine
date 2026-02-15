@@ -130,6 +130,15 @@
   font-size: var(--font-3xl);
 }
 
+.commitHash {
+  font-size: 11px;
+  color: var(--text-disabled);
+  font-family: ui-monospace, monospace;
+  letter-spacing: 0.04em;
+  opacity: 0.5;
+  margin-top: calc(-1 * var(--space-4));
+}
+
 .lobbyTitle {
   margin: 0 0 var(--space-1) 0;
   font-weight: var(--font-weight-bold);
