@@ -262,13 +262,14 @@ export function GameCard({
       dragStartPos.current = null
 
       // Check if dropped outside the hand area - if so, play the card
+      // Use the top of the hand zone as a threshold: anything at or below it counts as "over the hand"
+      // This way dropping anywhere along the bottom of the screen cancels the cast
       const handEl = document.querySelector('[data-zone="hand"]')
       let isOverHand = false
 
       if (handEl) {
         const rect = handEl.getBoundingClientRect()
-        isOverHand = clientX >= rect.left && clientX <= rect.right &&
-                     clientY >= rect.top && clientY <= rect.bottom
+        isOverHand = clientY >= rect.top
       }
 
       // Mark that drag handled this interaction to prevent duplicate click
