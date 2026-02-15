@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 305 / 335
+**Implemented:** 306 / 335
 
 ---
 
@@ -325,7 +325,7 @@
 - [x] Weathered Wayfarer
 - [ ] Weird Harvest
 - [x] Wellwisher
-- [ ] Wheel and Deal
+- [x] Wheel and Deal
 - [x] Whipcorder
 - [x] Windswept Heath
 - [x] Wirewood Elf

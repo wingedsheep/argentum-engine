@@ -132,6 +132,7 @@ object OnslaughtSet {
         ChainOfVapor,
         Meddle,
         QuicksilverDragon,
+        WheelAndDeal,
 
         // Black creatures and spells
         AccursedCentaur,

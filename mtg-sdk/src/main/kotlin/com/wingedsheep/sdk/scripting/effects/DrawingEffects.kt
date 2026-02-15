@@ -259,6 +259,22 @@ data class DiscardAndChainCopyEffect(
 }
 
 /**
+ * Target player discards their entire hand.
+ * "Target opponent discards their hand"
+ * Used for Wheel and Deal and similar effects.
+ */
+@SerialName("DiscardHand")
+@Serializable
+data class DiscardHandEffect(
+    val target: EffectTarget = EffectTarget.ContextTarget(0)
+) : Effect {
+    override val description: String = when (target) {
+        EffectTarget.Controller -> "Discard your hand"
+        else -> "${target.description.replaceFirstChar { it.uppercase() }} discards their hand"
+    }
+}
+
+/**
  * Reveal a player's hand (publicly visible to all players).
  * This is an atomic effect that just reveals - use with CompositeEffect for
  * "reveal and do something based on what's revealed" patterns.
