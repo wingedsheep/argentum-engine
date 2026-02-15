@@ -8,6 +8,7 @@ import com.wingedsheep.engine.event.GrantedTriggeredAbility
 import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import kotlinx.serialization.Serializable
@@ -137,10 +138,19 @@ data class GameState(
 
     /**
      * Add an entity to a zone (returns new state).
+     * Automatically strips TappedComponent when moving to a non-battlefield zone,
+     * since cards in the graveyard, exile, hand, or library are never tapped.
      */
     fun addToZone(key: ZoneKey, entityId: EntityId): GameState {
         val current = zones[key] ?: emptyList()
-        return copy(zones = zones + (key to current + entityId))
+        var newState = copy(zones = zones + (key to current + entityId))
+        if (key.zoneType != Zone.BATTLEFIELD && key.zoneType != Zone.STACK) {
+            val container = newState.getEntity(entityId)
+            if (container != null && container.get<TappedComponent>() != null) {
+                newState = newState.updateEntity(entityId) { c -> c.without<TappedComponent>() }
+            }
+        }
+        return newState
     }
 
     /**
