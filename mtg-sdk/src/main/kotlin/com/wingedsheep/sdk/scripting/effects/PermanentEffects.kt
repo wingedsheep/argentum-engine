@@ -605,6 +605,24 @@ data class ChangeGroupColorEffect(
 }
 
 /**
+ * Choose a creature type. Untap all creatures of the chosen type.
+ *
+ * Used for Riptide Chronologist: "{U}, Sacrifice Riptide Chronologist:
+ * Untap all creatures of the creature type of your choice."
+ *
+ * At resolution time, the executor:
+ * 1. Presents a ChooseOptionDecision with all creature types
+ * 2. Pushes a ChooseCreatureTypeUntapContinuation
+ * 3. On response, untaps all creatures of the chosen type
+ */
+@SerialName("ChooseCreatureTypeUntap")
+@Serializable
+data object ChooseCreatureTypeUntapEffect : Effect {
+    override val description: String =
+        "Untap all creatures of the creature type of your choice"
+}
+
+/**
  * Grant an activated ability to a group of creatures.
  * "Each creature you control gains '{B}: This creature gets +1/+1 until end of turn.'"
  *

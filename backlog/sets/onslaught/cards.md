@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 286 / 335
+**Implemented:** 287 / 335
 
 ---
 
@@ -233,7 +233,7 @@
 - [x] Renewed Faith
 - [x] Righteous Cause
 - [x] Riptide Biologist
-- [ ] Riptide Chronologist
+- [x] Riptide Chronologist
 - [ ] Riptide Entrancer
 - [x] Riptide Laboratory
 - [ ] Riptide Replicator
@@ -319,7 +319,7 @@
 - [x] Vitality Charm
 - [x] Voice of the Woods
 - [x] Voidmage Prodigy
-- [ ] Walking Desecration
+- [x] Walking Desecration
 - [x] Wall of Mulch
 - [x] Wave of Indifference
 - [x] Weathered Wayfarer

@@ -120,6 +120,7 @@ object OnslaughtSet {
         MistformWall,
         Reminisce,
         RiptideBiologist,
+        RiptideChronologist,
         SeasClaim,
         Standardize,
         RummagingWizard,
