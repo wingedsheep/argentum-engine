@@ -327,7 +327,7 @@
 - [x] Wellwisher
 - [ ] Wheel and Deal
 - [x] Whipcorder
-- [ ] Windswept Heath
+- [x] Windswept Heath
 - [x] Wirewood Elf
 - [x] Wirewood Herald
 - [x] Wirewood Lodge

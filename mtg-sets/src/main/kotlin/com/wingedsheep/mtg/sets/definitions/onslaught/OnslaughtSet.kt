@@ -315,6 +315,7 @@ object OnslaughtSet {
         // Lands
         BloodstainedMire,
         PollutedDelta,
+        WindsweptHeath,
         BarrenMoor,
         ForgottenCave,
         ContestedCliffs,
