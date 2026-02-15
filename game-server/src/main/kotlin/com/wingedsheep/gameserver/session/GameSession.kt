@@ -1458,6 +1458,11 @@ class GameSession(
                     (availableSources - fixedCost).coerceAtLeast(0)
                 } else null
 
+                // Compute auto-tap preview for UI highlighting
+                val abilityAutoTapPreview = if (abilityManaCost != null && !abilityHasXCost) {
+                    manaSolver.solve(state, playerId, abilityManaCost)?.sources?.map { it.entityId }
+                } else null
+
                 // Check for target requirements (apply text-changing effects to filter)
                 val targetReqs = if (textReplacement != null) {
                     ability.targetRequirements.map { SubtypeReplacer.replaceTargetRequirement(it, textReplacement) }
@@ -1496,7 +1501,8 @@ class GameSession(
                             action = ActivateAbility(playerId, entityId, ability.id, targets = listOf(autoSelectedTarget)),
                             additionalCostInfo = costInfo,
                             hasXCost = abilityHasXCost,
-                            maxAffordableX = abilityMaxAffordableX
+                            maxAffordableX = abilityMaxAffordableX,
+                            autoTapPreview = abilityAutoTapPreview
                         ))
                     } else {
                         result.add(LegalActionInfo(
@@ -1511,7 +1517,8 @@ class GameSession(
                             targetRequirements = if (targetReqInfos.size > 1) targetReqInfos else null,
                             additionalCostInfo = costInfo,
                             hasXCost = abilityHasXCost,
-                            maxAffordableX = abilityMaxAffordableX
+                            maxAffordableX = abilityMaxAffordableX,
+                            autoTapPreview = abilityAutoTapPreview
                         ))
                     }
                 } else {
@@ -1521,7 +1528,8 @@ class GameSession(
                         action = ActivateAbility(playerId, entityId, ability.id),
                         additionalCostInfo = costInfo,
                         hasXCost = abilityHasXCost,
-                        maxAffordableX = abilityMaxAffordableX
+                        maxAffordableX = abilityMaxAffordableX,
+                        autoTapPreview = abilityAutoTapPreview
                     ))
                 }
             }
@@ -1610,6 +1618,11 @@ class GameSession(
                     (availableSources - fixedCost).coerceAtLeast(0)
                 } else null
 
+                // Compute auto-tap preview for UI highlighting
+                val abilityAutoTapPreview = if (abilityManaCost != null && !abilityHasXCost) {
+                    manaSolver.solve(state, playerId, abilityManaCost)?.sources?.map { it.entityId }
+                } else null
+
                 // Check for target requirements
                 val targetReqs = ability.targetRequirements
                 if (targetReqs.isNotEmpty()) {
@@ -1641,7 +1654,8 @@ class GameSession(
                             action = ActivateAbility(playerId, entityId, ability.id, targets = listOf(autoSelectedTarget)),
                             additionalCostInfo = costInfo,
                             hasXCost = abilityHasXCost,
-                            maxAffordableX = abilityMaxAffordableX
+                            maxAffordableX = abilityMaxAffordableX,
+                            autoTapPreview = abilityAutoTapPreview
                         ))
                     } else {
                         result.add(LegalActionInfo(
@@ -1656,7 +1670,8 @@ class GameSession(
                             targetRequirements = if (targetReqInfos.size > 1) targetReqInfos else null,
                             additionalCostInfo = costInfo,
                             hasXCost = abilityHasXCost,
-                            maxAffordableX = abilityMaxAffordableX
+                            maxAffordableX = abilityMaxAffordableX,
+                            autoTapPreview = abilityAutoTapPreview
                         ))
                     }
                 } else {
@@ -1666,7 +1681,8 @@ class GameSession(
                         action = ActivateAbility(playerId, entityId, ability.id),
                         additionalCostInfo = costInfo,
                         hasXCost = abilityHasXCost,
-                        maxAffordableX = abilityMaxAffordableX
+                        maxAffordableX = abilityMaxAffordableX,
+                        autoTapPreview = abilityAutoTapPreview
                     ))
                 }
             }

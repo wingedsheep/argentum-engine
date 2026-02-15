@@ -536,4 +536,5 @@ export type GameStore = {
   removeRevealAnimation: (id: string) => void
   addCoinFlipAnimation: (animation: CoinFlipAnimation) => void
   removeCoinFlipAnimation: (id: string) => void
+  setAutoTapPreview: (preview: readonly EntityId[] | null) => void
 }

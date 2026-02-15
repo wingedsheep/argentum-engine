@@ -307,6 +307,7 @@ function ActionOptionButton({
   option: ActionOption
   onClick: () => void
 }) {
+  const setAutoTapPreview = useGameStore((state) => state.setAutoTapPreview)
   const styleClass = getActionStyleClass(option.actionType, option.isAvailable)
   // Only show separate mana cost if label doesn't already contain mana symbols
   const showSeparateCost = option.manaCost && !option.label.includes('{')
@@ -316,6 +317,14 @@ function ActionOptionButton({
       onClick={onClick}
       disabled={!option.isAvailable}
       className={`${styles.actionButton} ${styleClass}`}
+      onMouseEnter={() => {
+        if (option.action?.autoTapPreview) {
+          setAutoTapPreview(option.action.autoTapPreview)
+        }
+      }}
+      onMouseLeave={() => {
+        setAutoTapPreview(null)
+      }}
     >
       <span className={styles.actionButtonLabel}>
         <AbilityText text={option.label} size={14} />

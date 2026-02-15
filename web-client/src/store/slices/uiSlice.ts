@@ -112,6 +112,7 @@ export interface UISliceActions {
   removeRevealAnimation: (id: string) => void
   addCoinFlipAnimation: (animation: CoinFlipAnimation) => void
   removeCoinFlipAnimation: (id: string) => void
+  setAutoTapPreview: (preview: readonly EntityId[] | null) => void
 }
 
 export type UISlice = UISliceState & UISliceActions
@@ -966,5 +967,9 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
     set((state) => ({
       coinFlipAnimations: state.coinFlipAnimations.filter((a) => a.id !== id),
     }))
+  },
+
+  setAutoTapPreview: (preview) => {
+    set({ autoTapPreview: preview })
   },
 })
