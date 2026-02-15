@@ -234,7 +234,7 @@
 - [x] Righteous Cause
 - [x] Riptide Biologist
 - [x] Riptide Chronologist
-- [ ] Riptide Entrancer
+- [x] Riptide Entrancer
 - [x] Riptide Laboratory
 - [ ] Riptide Replicator
 - [ ] Riptide Shapeshifter

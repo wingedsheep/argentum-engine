@@ -121,6 +121,7 @@ object OnslaughtSet {
         Reminisce,
         RiptideBiologist,
         RiptideChronologist,
+        RiptideEntrancer,
         SeasClaim,
         Standardize,
         RummagingWizard,
