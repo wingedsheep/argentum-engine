@@ -23,6 +23,8 @@ import com.wingedsheep.engine.state.components.player.SkipCombatPhasesComponent
 import com.wingedsheep.engine.state.components.player.SkipNextTurnComponent
 import com.wingedsheep.engine.state.components.player.SkipUntapComponent
 import com.wingedsheep.engine.state.components.player.LoseAtEndStepComponent
+import com.wingedsheep.engine.mechanics.layers.SerializableModification
+import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -252,6 +254,26 @@ class TurnManager(
         val handKey = ZoneKey(playerId, Zone.HAND)
 
         repeat(count) {
+            // Check for draw replacement shields (e.g., Words of Worship)
+            val shieldIndex = newState.floatingEffects.indexOfFirst { effect ->
+                effect.effect.modification is SerializableModification.ReplaceDrawWithLifeGain &&
+                    playerId in effect.effect.affectedEntities
+            }
+            if (shieldIndex != -1) {
+                val shield = newState.floatingEffects[shieldIndex]
+                val mod = shield.effect.modification as SerializableModification.ReplaceDrawWithLifeGain
+                val updatedEffects = newState.floatingEffects.toMutableList()
+                updatedEffects.removeAt(shieldIndex)
+                newState = newState.copy(floatingEffects = updatedEffects)
+                val currentLife = newState.getEntity(playerId)?.get<LifeTotalComponent>()?.life ?: 0
+                val newLife = currentLife + mod.lifeAmount
+                newState = newState.updateEntity(playerId) { container ->
+                    container.with(LifeTotalComponent(newLife))
+                }
+                events.add(LifeChangedEvent(playerId, currentLife, newLife, LifeChangeReason.LIFE_GAIN))
+                return@repeat
+            }
+
             val library = newState.getZone(libraryKey)
             if (library.isEmpty()) {
                 // Player tries to draw from empty library - they lose (Rule 704.5c)
@@ -269,7 +291,9 @@ class TurnManager(
             drawnCards.add(cardId)
         }
 
-        events.add(CardsDrawnEvent(playerId, count, drawnCards))
+        if (drawnCards.isNotEmpty()) {
+            events.add(CardsDrawnEvent(playerId, drawnCards.size, drawnCards))
+        }
         return ExecutionResult.success(newState, events)
     }
 

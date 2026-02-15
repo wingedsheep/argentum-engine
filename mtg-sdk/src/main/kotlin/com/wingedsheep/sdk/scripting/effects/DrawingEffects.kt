@@ -275,6 +275,25 @@ data class DiscardHandEffect(
 }
 
 /**
+ * Replace next draw with life gain effect.
+ * "{1}: The next time you would draw a card this turn, you gain X life instead."
+ * Used for Words of Worship and similar "Words of" cycle cards.
+ *
+ * This creates a floating replacement effect shield that intercepts the next card draw
+ * for the controller this turn, replacing it with life gain.
+ *
+ * @property lifeAmount The amount of life gained instead of drawing
+ */
+@SerialName("ReplaceNextDrawWithLifeGain")
+@Serializable
+data class ReplaceNextDrawWithLifeGainEffect(
+    val lifeAmount: Int
+) : Effect {
+    override val description: String =
+        "The next time you would draw a card this turn, you gain $lifeAmount life instead"
+}
+
+/**
  * Reveal a player's hand (publicly visible to all players).
  * This is an atomic effect that just reveals - use with CompositeEffect for
  * "reveal and do something based on what's revealed" patterns.

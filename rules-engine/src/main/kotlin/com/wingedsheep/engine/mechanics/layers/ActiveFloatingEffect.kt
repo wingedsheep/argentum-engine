@@ -209,6 +209,16 @@ sealed interface SerializableModification {
     data class RedirectNextDamage(
         val redirectToId: EntityId
     ) : SerializableModification
+
+    /**
+     * Draw replacement shield: the next time the affected player would draw a card this turn,
+     * they gain life instead. Used by Words of Worship and similar effects.
+     * The shield is consumed after the first draw replacement and removed.
+     */
+    @Serializable
+    data class ReplaceDrawWithLifeGain(
+        val lifeAmount: Int
+    ) : SerializableModification
 }
 
 /**
@@ -249,4 +259,6 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.PreventAllDamageDealtBy -> Modification.NoOp
     // RedirectNextDamage doesn't map to a layer modification - it's checked during damage resolution directly
     is SerializableModification.RedirectNextDamage -> Modification.NoOp
+    // ReplaceDrawWithLifeGain doesn't map to a layer modification - it's checked during draw execution directly
+    is SerializableModification.ReplaceDrawWithLifeGain -> Modification.NoOp
 }

@@ -1,0 +1,31 @@
+package com.wingedsheep.mtg.sets.definitions.onslaught.cards
+
+import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.ReplaceNextDrawWithLifeGainEffect
+
+/**
+ * Words of Worship
+ * {2}{W}
+ * Enchantment
+ * {1}: The next time you would draw a card this turn, you gain 5 life instead.
+ */
+val WordsOfWorship = card("Words of Worship") {
+    manaCost = "{2}{W}"
+    typeLine = "Enchantment"
+    oracleText = "{1}: The next time you would draw a card this turn, you gain 5 life instead."
+
+    activatedAbility {
+        cost = Costs.Mana("{1}")
+        effect = ReplaceNextDrawWithLifeGainEffect(lifeAmount = 5)
+    }
+
+    metadata {
+        rarity = Rarity.RARE
+        collectorNumber = "61"
+        artist = "Rebecca Guay"
+        flavorText = "The faithful don't succumb to terror, nor are they ruled by passion. They adhere to order, for order is life."
+        imageUri = "https://cards.scryfall.io/large/front/0/e/0ea22cf5-3081-4955-b04e-4a21920c218a.jpg?1562898374"
+    }
+}
