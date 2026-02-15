@@ -549,4 +549,15 @@ export class GamePage {
     await btn.click()
     await this.screenshot('Cast spell from distribution')
   }
+
+  /**
+   * Select a pile in a SplitPilesDecision (e.g., Surveil).
+   * Clicks the button with the given pile label (e.g., "Top of Library", "Graveyard").
+   */
+  async selectPile(label: string) {
+    const btn = this.page.locator(`[data-pile-label="${label}"]`).first()
+    await btn.waitFor({ state: 'visible', timeout: 10_000 })
+    await btn.click()
+    await this.screenshot(`Select pile: ${label}`)
+  }
 }

@@ -249,7 +249,9 @@ data class SplitPilesDecision(
     val cards: List<EntityId>,
     val numberOfPiles: Int = 2,
     /** Labels for the piles (e.g., ["Keep", "Discard"]) */
-    val pileLabels: List<String> = emptyList()
+    val pileLabels: List<String> = emptyList(),
+    /** Card info for displaying hidden cards (e.g., top of library during surveil) */
+    val cardInfo: Map<EntityId, SearchCardInfo>? = null
 ) : PendingDecision
 
 /**

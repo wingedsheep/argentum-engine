@@ -2402,6 +2402,16 @@ class GameSession(
                 }
                 decision.copy(cardInfo = enrichedCardInfo)
             }
+            is SplitPilesDecision -> {
+                val enrichedCardInfo = decision.cardInfo?.mapValues { (entityId, cardInfo) ->
+                    val cardComponent = state.getEntity(entityId)?.get<CardComponent>()
+                    val imageUri = cardComponent?.cardDefinitionId?.let { defId ->
+                        cardRegistry.getCard(defId)?.metadata?.imageUri
+                    }
+                    cardInfo.copy(imageUri = imageUri)
+                }
+                decision.copy(cardInfo = enrichedCardInfo)
+            }
             // Other decision types don't have card info to enrich
             else -> decision
         }
