@@ -263,6 +263,14 @@ object Effects {
     fun Mill(count: Int, target: EffectTarget = EffectTarget.Controller): Effect =
         MillEffect(count, target)
 
+    /**
+     * Each player may search their library for up to X cards matching a filter.
+     */
+    fun EachPlayerSearchesLibrary(
+        filter: GameObjectFilter,
+        count: DynamicAmount
+    ): Effect = EachPlayerSearchesLibraryEffect(filter, count)
+
     // =========================================================================
     // Protection Effects
     // =========================================================================

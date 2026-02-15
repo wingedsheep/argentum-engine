@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 309 / 335
+**Implemented:** 310 / 335
 
 ---
 
@@ -323,7 +323,7 @@
 - [x] Wall of Mulch
 - [x] Wave of Indifference
 - [x] Weathered Wayfarer
-- [ ] Weird Harvest
+- [x] Weird Harvest
 - [x] Wellwisher
 - [x] Wheel and Deal
 - [x] Whipcorder

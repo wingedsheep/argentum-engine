@@ -136,6 +136,7 @@ class ContinuationHandler(
             is CastWithCreatureTypeContinuation -> resumeCastWithCreatureType(stateAfterPop, continuation, response)
             is EachOpponentMayPutFromHandContinuation -> resumeEachOpponentMayPutFromHand(stateAfterPop, continuation, response)
             is EachPlayerMayRevealCreaturesContinuation -> resumeEachPlayerMayRevealCreatures(stateAfterPop, continuation, response)
+            is EachPlayerSearchesLibraryContinuation -> resumeEachPlayerSearchesLibrary(stateAfterPop, continuation, response)
             is ChooseCreatureTypeMustAttackContinuation -> resumeChooseCreatureTypeMustAttack(stateAfterPop, continuation, response)
             is ChooseCreatureTypeUntapContinuation -> resumeChooseCreatureTypeUntap(stateAfterPop, continuation, response)
             is HarshMercyContinuation -> resumeHarshMercy(stateAfterPop, continuation, response)
@@ -4537,6 +4538,93 @@ class ContinuationHandler(
         )
 
         return checkForMoreContinuations(tokenResult.newState, tokenResult.events)
+    }
+
+    /**
+     * Resume after a player selects cards from library in "each player searches library" effect.
+     *
+     * Moves selected cards to hand, reveals them, shuffles library, then asks the next player.
+     */
+    private fun resumeEachPlayerSearchesLibrary(
+        state: GameState,
+        continuation: EachPlayerSearchesLibraryContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for each-player-searches-library")
+        }
+
+        val playerId = continuation.currentPlayerId
+        val selectedCards = response.selectedCards
+        val libraryZone = ZoneKey(playerId, Zone.LIBRARY)
+        val handZone = ZoneKey(playerId, Zone.HAND)
+        val events = mutableListOf<GameEvent>()
+
+        var newState = state
+
+        // Move selected cards from library to hand
+        for (cardId in selectedCards) {
+            newState = newState.removeFromZone(libraryZone, cardId)
+            newState = newState.addToZone(handZone, cardId)
+        }
+
+        // Reveal cards if any were selected
+        if (selectedCards.isNotEmpty()) {
+            val cardNames = selectedCards.map { cardId ->
+                newState.getEntity(cardId)?.get<CardComponent>()?.name ?: "Unknown"
+            }
+            val imageUris = selectedCards.map { cardId ->
+                newState.getEntity(cardId)?.get<CardComponent>()?.imageUri
+            }
+            events.add(
+                CardsRevealedEvent(
+                    revealingPlayerId = playerId,
+                    cardIds = selectedCards,
+                    cardNames = cardNames,
+                    imageUris = imageUris,
+                    source = continuation.sourceName
+                )
+            )
+            for (i in selectedCards.indices) {
+                events.add(
+                    ZoneChangeEvent(
+                        entityId = selectedCards[i],
+                        entityName = cardNames[i],
+                        fromZone = Zone.LIBRARY,
+                        toZone = Zone.HAND,
+                        ownerId = playerId
+                    )
+                )
+            }
+        }
+
+        // Shuffle the library
+        val library = newState.getZone(libraryZone).shuffled()
+        newState = newState.copy(zones = newState.zones + (libraryZone to library))
+        events.add(LibraryShuffledEvent(playerId))
+
+        // Ask next player
+        val remainingPlayers = continuation.remainingPlayers
+        if (remainingPlayers.isNotEmpty()) {
+            val nextResult = com.wingedsheep.engine.handlers.effects.library.EachPlayerSearchesLibraryExecutor.askNextPlayer(
+                state = newState,
+                sourceId = continuation.sourceId,
+                sourceName = continuation.sourceName,
+                players = remainingPlayers,
+                currentIndex = 0,
+                filter = continuation.filter,
+                maxCount = continuation.maxCount
+            )
+            return ExecutionResult(
+                state = nextResult.newState,
+                events = events + nextResult.events,
+                pendingDecision = nextResult.pendingDecision,
+                error = nextResult.error
+            )
+        }
+
+        // All players done
+        return checkForMoreContinuations(newState, events)
     }
 
     /**

@@ -312,6 +312,7 @@ object OnslaughtSet {
         VoiceOfTheWoods,
         TemptingWurm,
         SteelyResolve,
+        WeirdHarvest,
 
         // Artifacts
         CrypticGateway,

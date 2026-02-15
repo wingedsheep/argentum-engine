@@ -420,6 +420,28 @@ data object RevealUntilCreatureTypeEffect : Effect {
         "rest into your library"
 }
 
+/**
+ * Each player may search their library for up to X cards matching a filter,
+ * reveal those cards, put them into their hand, then shuffle.
+ *
+ * Used for Weird Harvest: "Each player may search their library for up to X
+ * creature cards, reveal those cards, put them into their hand, then shuffle."
+ *
+ * @property filter Filter for which cards qualify (e.g., Creature)
+ * @property count How many cards each player may search for (typically DynamicAmount.XValue)
+ */
+@SerialName("EachPlayerSearchesLibrary")
+@Serializable
+data class EachPlayerSearchesLibraryEffect(
+    val filter: GameObjectFilter,
+    val count: DynamicAmount
+) : Effect {
+    override val description: String = buildString {
+        append("Each player may search their library for up to ${count.description} ")
+        append("${filter.description} cards, reveal those cards, put them into their hand, then shuffle")
+    }
+}
+
 @SerialName("PutCreatureFromHandSharingTypeWithTapped")
 @Serializable
 data object PutCreatureFromHandSharingTypeWithTappedEffect : Effect {

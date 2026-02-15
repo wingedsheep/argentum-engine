@@ -1298,6 +1298,33 @@ data class EachPlayerMayRevealCreaturesContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after a player selects cards from a library search in "each player searches" effect.
+ *
+ * Used by Weird Harvest: "Each player may search their library for up to X creature cards,
+ * reveal those cards, put them into their hand, then shuffle."
+ *
+ * After the current player selects cards, processes the selection (moves to hand, reveals,
+ * shuffles), then asks the next player.
+ *
+ * @property currentPlayerId The player who just made a selection
+ * @property remainingPlayers Players still to search (in APNAP order)
+ * @property sourceId The spell/ability that caused this
+ * @property sourceName Name of the source for event messages
+ * @property filter Filter for which cards qualify
+ * @property maxCount Maximum number of cards each player can search for
+ */
+@Serializable
+data class EachPlayerSearchesLibraryContinuation(
+    override val decisionId: String,
+    val currentPlayerId: EntityId,
+    val remainingPlayers: List<EntityId>,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val filter: GameObjectFilter,
+    val maxCount: Int
+) : ContinuationFrame
+
+/**
  * Resume after the controller chooses a creature type for "must attack this turn" effect.
  *
  * Used by Walking Desecration: "Creatures of the creature type of your choice attack
