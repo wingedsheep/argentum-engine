@@ -49,7 +49,7 @@ class EffectExecutorRegistry(
         registerModule(TokenExecutors())
         registerModule(LibraryExecutors())
         registerModule(StackExecutors())
-        registerModule(PlayerExecutors())
+        registerModule(PlayerExecutors(decisionHandler))
         registerModule(InformationExecutors())
         registerModule(CombatExecutors(amountEvaluator))
 

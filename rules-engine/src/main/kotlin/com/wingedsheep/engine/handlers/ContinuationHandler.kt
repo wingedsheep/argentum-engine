@@ -153,6 +153,7 @@ class ContinuationHandler(
             is PreventDamageChainCopyDecisionContinuation -> resumePreventDamageChainCopyDecision(stateAfterPop, continuation, response)
             is PreventDamageChainCopyLandContinuation -> resumePreventDamageChainCopyLand(stateAfterPop, continuation, response)
             is PreventDamageChainCopyTargetContinuation -> resumePreventDamageChainCopyTarget(stateAfterPop, continuation, response)
+            is SecretBidContinuation -> resumeSecretBid(stateAfterPop, continuation, response)
         }
     }
 
@@ -4019,6 +4020,118 @@ class ContinuationHandler(
             castResult.newState.withPriority(continuation.casterId),
             allEvents
         )
+    }
+
+    /**
+     * Resume after a player chose a number for secret bidding (Menacing Ogre).
+     */
+    private fun resumeSecretBid(
+        state: GameState,
+        continuation: SecretBidContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is NumberChosenResponse) {
+            return ExecutionResult.error(state, "Expected number chosen response")
+        }
+
+        val chosenNumber = response.number
+        val currentPlayerId = continuation.currentPlayerId
+
+        val newChosenNumbers = continuation.chosenNumbers + (currentPlayerId to chosenNumber)
+
+        // Check if there are more players
+        if (continuation.remainingPlayers.isNotEmpty()) {
+            val nextPlayer = continuation.remainingPlayers.first()
+            val nextRemainingPlayers = continuation.remainingPlayers.drop(1)
+
+            val prompt = "Secretly choose a number (you will lose that much life if you have the highest bid)"
+
+            val decisionHandler = DecisionHandler()
+            val decisionResult = decisionHandler.createNumberDecision(
+                state = state,
+                playerId = nextPlayer,
+                sourceId = continuation.sourceId,
+                sourceName = continuation.sourceName,
+                prompt = prompt,
+                minValue = 0,
+                maxValue = 99,
+                phase = DecisionPhase.RESOLUTION
+            )
+
+            val newContinuation = continuation.copy(
+                decisionId = decisionResult.pendingDecision!!.id,
+                currentPlayerId = nextPlayer,
+                remainingPlayers = nextRemainingPlayers,
+                chosenNumbers = newChosenNumbers
+            )
+
+            val stateWithContinuation = decisionResult.state.pushContinuation(newContinuation)
+
+            return ExecutionResult.paused(
+                stateWithContinuation,
+                decisionResult.pendingDecision,
+                decisionResult.events
+            )
+        }
+
+        // All players have chosen - resolve the bid
+        return resolveSecretBid(state, continuation, newChosenNumbers)
+    }
+
+    /**
+     * Resolve the secret bid: find highest number, apply life loss and counters.
+     */
+    private fun resolveSecretBid(
+        state: GameState,
+        continuation: SecretBidContinuation,
+        chosenNumbers: Map<EntityId, Int>
+    ): ExecutionResult {
+        var currentState = state
+        val allEvents = mutableListOf<GameEvent>()
+
+        val highestBid = chosenNumbers.values.maxOrNull() ?: 0
+
+        // Each player with the highest number loses that much life
+        val highestBidders = chosenNumbers.filter { it.value == highestBid && it.value > 0 }
+
+        for ((playerId, amount) in highestBidders) {
+            val currentLife = currentState.getEntity(playerId)
+                ?.get<com.wingedsheep.engine.state.components.identity.LifeTotalComponent>()?.life ?: 0
+            val newLife = currentLife - amount
+
+            currentState = currentState.updateEntity(playerId) { container ->
+                container.with(com.wingedsheep.engine.state.components.identity.LifeTotalComponent(newLife))
+            }
+
+            allEvents.add(LifeChangedEvent(playerId, currentLife, newLife, LifeChangeReason.LIFE_LOSS))
+        }
+
+        // If the controller is one of the highest bidders, put counters on the source
+        if (highestBidders.containsKey(continuation.controllerId) && continuation.sourceId != null) {
+            val counterType = try {
+                com.wingedsheep.sdk.core.CounterType.valueOf(
+                    continuation.counterType.uppercase()
+                        .replace(' ', '_')
+                        .replace('+', 'P')
+                        .replace('-', 'M')
+                        .replace("/", "_")
+                )
+            } catch (e: IllegalArgumentException) {
+                com.wingedsheep.sdk.core.CounterType.PLUS_ONE_PLUS_ONE
+            }
+
+            val current = currentState.getEntity(continuation.sourceId)
+                ?.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
+                ?: com.wingedsheep.engine.state.components.battlefield.CountersComponent()
+
+            currentState = currentState.updateEntity(continuation.sourceId) { container ->
+                container.with(current.withAdded(counterType, continuation.counterCount))
+            }
+
+            allEvents.add(CountersAddedEvent(continuation.sourceId, continuation.counterType, continuation.counterCount))
+        }
+
+        return checkForMoreContinuations(currentState, allEvents)
     }
 
     /**

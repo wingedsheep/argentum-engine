@@ -1645,6 +1645,35 @@ data class DamagePreventionContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after a player chooses a number for secret bidding effects (Menacing Ogre).
+ *
+ * Each player secretly chooses a number. After all players have chosen,
+ * each player with the highest number loses that much life. If the controller
+ * is one of those players, put counters on the source creature.
+ *
+ * @property sourceId The creature that entered the battlefield
+ * @property sourceName Name of the source for display
+ * @property controllerId The controller of the source creature
+ * @property currentPlayerId The player whose choice we are waiting for
+ * @property remainingPlayers Players who still need to choose (APNAP order)
+ * @property chosenNumbers Numbers chosen so far by each player
+ * @property counterType Type of counter to add if controller has highest bid
+ * @property counterCount Number of counters to add
+ */
+@Serializable
+data class SecretBidContinuation(
+    override val decisionId: String,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val controllerId: EntityId,
+    val currentPlayerId: EntityId,
+    val remainingPlayers: List<EntityId>,
+    val chosenNumbers: Map<EntityId, Int>,
+    val counterType: String,
+    val counterCount: Int
+) : ContinuationFrame
+
+/**
  * Information about a mana source available for manual selection.
  */
 @Serializable

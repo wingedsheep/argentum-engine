@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 306 / 335
+**Implemented:** 307 / 335
 
 ---
 
@@ -193,7 +193,7 @@
 - [x] Mage's Guile
 - [ ] Mana Echoes
 - [x] Meddle
-- [ ] Menacing Ogre
+- [x] Menacing Ogre
 - [x] Misery Charm
 - [x] Mistform Dreamer
 - [ ] Mistform Mask
