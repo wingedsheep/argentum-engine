@@ -3,6 +3,7 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.OptionChosenResponse
+import com.wingedsheep.engine.core.TurnManager
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -215,5 +216,63 @@ class MistformWallTest : FunSpec({
         // Subtypes should now be just "Goblin" (replaces Illusion and Wall)
         val projected = projector.project(driver.state)
         projected.getSubtypes(wall) shouldBe setOf("Goblin")
+    }
+
+    val turnManager = TurnManager()
+
+    test("not a valid attacker while still a Wall (has defender)") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Island" to 40),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val wall = driver.putCreatureOnBattlefield(activePlayer, "Mistform Wall")
+        driver.removeSummoningSickness(wall)
+
+        // Mistform Wall should NOT be a valid attacker (it has defender as a Wall)
+        val validAttackers = turnManager.getValidAttackers(driver.state, activePlayer)
+        validAttackers shouldBe emptyList()
+    }
+
+    test("becomes a valid attacker after changing to non-Wall type") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Island" to 40),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val wall = driver.putCreatureOnBattlefield(activePlayer, "Mistform Wall")
+        driver.removeSummoningSickness(wall)
+
+        // Give mana to pay the {1} cost
+        driver.giveMana(activePlayer, Color.BLUE, 1)
+
+        // Activate the ability
+        driver.submit(
+            ActivateAbility(
+                playerId = activePlayer,
+                sourceId = wall,
+                abilityId = mistformWallAbilityId
+            )
+        )
+
+        // Resolve the ability
+        driver.bothPass()
+
+        // Choose "Elf" (a non-Wall type)
+        val decision = driver.pendingDecision as ChooseOptionDecision
+        val elfIndex = decision.options.indexOf("Elf")
+        driver.submitDecision(activePlayer, OptionChosenResponse(decision.id, elfIndex))
+
+        // Mistform Wall should now be a valid attacker (no longer a Wall, no defender)
+        val validAttackers = turnManager.getValidAttackers(driver.state, activePlayer)
+        validAttackers shouldBe listOf(wall)
     }
 })

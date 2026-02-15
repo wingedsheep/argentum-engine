@@ -7,6 +7,7 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.*
+import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.gameserver.dto.ClientStateTransformer
@@ -609,6 +610,14 @@ class DevScenarioController(
 
             if (summoningSickness) {
                 container = container.with(SummoningSicknessComponent)
+            }
+
+            // Add continuous effects from static abilities and replacement effects
+            val cardDef = cardRegistry.getCard(cardName)
+            if (cardDef != null) {
+                val staticHandler = StaticAbilityHandler(cardRegistry)
+                container = staticHandler.addContinuousEffectComponent(container, cardDef)
+                container = staticHandler.addReplacementEffectComponent(container, cardDef)
             }
 
             state = state.withEntity(cardId, container)
