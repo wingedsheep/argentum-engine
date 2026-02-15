@@ -29,6 +29,8 @@ export function LifeDisplay({
   const distributeState = useGameStore((state) => state.distributeState)
   const incrementDistribute = useGameStore((state) => state.incrementDistribute)
   const decrementDistribute = useGameStore((state) => state.decrementDistribute)
+  const decisionSelectionState = useGameStore((state) => state.decisionSelectionState)
+  const toggleDecisionSelection = useGameStore((state) => state.toggleDecisionSelection)
 
   // Check if this player is a valid target in current targeting mode
   const isValidTargetingTarget = targetingState?.validTargets.includes(playerId) ?? false
@@ -41,6 +43,10 @@ export function LifeDisplay({
     : []
   const isValidDecisionTarget = decisionLegalTargets.includes(playerId)
 
+  // Check if this player is a valid option in decision selection mode (SelectCardsDecision with useTargetingUI)
+  const isValidDecisionSelection = decisionSelectionState?.validOptions.includes(playerId) ?? false
+  const isSelectedDecisionOption = decisionSelectionState?.selectedOptions.includes(playerId) ?? false
+
   // Inline damage distribution checks
   const isDistributeTarget = distributeState?.targets.includes(playerId) ?? false
   const distributeAllocated = isDistributeTarget ? (distributeState?.distribution[playerId] ?? 0) : 0
@@ -49,9 +55,9 @@ export function LifeDisplay({
     : 0
   const distributeRemaining = distributeState ? distributeState.totalAmount - distributeTotalAllocated : 0
 
-  // Combine both targeting modes
-  const isValidTarget = isValidTargetingTarget || isValidDecisionTarget
-  const isSelected = isTargetingSelected
+  // Combine all targeting modes
+  const isValidTarget = isValidTargetingTarget || isValidDecisionTarget || isValidDecisionSelection
+  const isSelected = isTargetingSelected || isSelectedDecisionOption
 
   const handleClick = () => {
     // Handle inline distribute mode - click to add damage
@@ -76,6 +82,13 @@ export function LifeDisplay({
     if (isChooseTargetsDecision && isValidDecisionTarget) {
       // Submit the decision with this player as the target
       submitTargetsDecision({ 0: [playerId] })
+      return
+    }
+
+    // Handle decision selection mode (SelectCardsDecision with useTargetingUI)
+    if (isValidDecisionSelection) {
+      toggleDecisionSelection(playerId)
+      return
     }
   }
 
