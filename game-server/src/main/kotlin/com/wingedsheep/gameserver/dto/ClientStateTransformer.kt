@@ -764,6 +764,16 @@ class ClientStateTransformer(
                 is SerializableModification.RegenerationShield -> {
                     regenerationShieldCount++
                 }
+                is SerializableModification.PreventAllDamageDealtBy -> {
+                    effects.add(
+                        ClientCardEffect(
+                            effectId = "prevent_all_damage_dealt_by",
+                            name = "Silenced",
+                            description = "All damage this creature would deal is prevented this turn",
+                            icon = "prevent-damage"
+                        )
+                    )
+                }
                 // Other modifications don't need badges (stats/keywords are shown elsewhere)
                 else -> { /* No badge needed */ }
             }

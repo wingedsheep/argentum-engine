@@ -221,6 +221,7 @@ object OnslaughtSet {
         FeverCharm,
         FlamestickCourier,
         GratuitousViolence,
+        Insurrection,
         GoblinMachinist,
         GoblinPiledriver,
         GoblinPyromancer,

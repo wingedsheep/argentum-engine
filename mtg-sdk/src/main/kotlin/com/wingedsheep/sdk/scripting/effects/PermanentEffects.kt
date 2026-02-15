@@ -646,6 +646,43 @@ data class GrantActivatedAbilityToGroupEffect(
 }
 
 /**
+ * Gain control of all creatures matching a filter until end of turn.
+ * "Gain control of all creatures until end of turn."
+ *
+ * Used by Insurrection and similar mass-control effects.
+ *
+ * @property filter Which creatures are affected
+ * @property duration How long the control change lasts
+ */
+@SerialName("GainControlOfGroup")
+@Serializable
+data class GainControlOfGroupEffect(
+    val filter: GroupFilter = GroupFilter.AllCreatures,
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    override val description: String = buildString {
+        append("Gain control of ${filter.description}")
+        if (duration != Duration.Permanent && duration.description.isNotEmpty()) {
+            append(" ${duration.description}")
+        }
+    }
+}
+
+/**
+ * Untap all creatures matching a filter.
+ * "Untap all creatures."
+ *
+ * @property filter Which creatures are affected
+ */
+@SerialName("UntapGroup")
+@Serializable
+data class UntapGroupEffect(
+    val filter: GroupFilter = GroupFilter.AllCreatures
+) : Effect {
+    override val description: String = "Untap ${filter.description.replaceFirstChar { it.lowercase() }}"
+}
+
+/**
  * Target land becomes an X/Y creature until end of turn. It's still a land.
  * Used for Kamahl, Fist of Krosa: "{G}: Target land becomes a 1/1 creature until end of turn. It's still a land."
  *

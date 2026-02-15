@@ -309,6 +309,12 @@ object Effects {
     fun GainControlByMostOfSubtype(subtype: Subtype, target: EffectTarget = EffectTarget.Self): Effect =
         GainControlByMostOfSubtypeEffect(subtype, target)
 
+    /**
+     * Gain control of all creatures matching a filter until end of turn.
+     */
+    fun GainControlOfGroup(filter: GroupFilter = GroupFilter.AllCreatures, duration: Duration = Duration.EndOfTurn): Effect =
+        GainControlOfGroupEffect(filter, duration)
+
     // =========================================================================
     // Composite Effects
     // =========================================================================
@@ -374,6 +380,12 @@ object Effects {
      */
     fun Untap(target: EffectTarget): Effect =
         TapUntapEffect(target, tap = false)
+
+    /**
+     * Untap all creatures matching a filter.
+     */
+    fun UntapGroup(filter: GroupFilter = GroupFilter.AllCreatures): Effect =
+        UntapGroupEffect(filter)
 
     // =========================================================================
     // Special Effects
