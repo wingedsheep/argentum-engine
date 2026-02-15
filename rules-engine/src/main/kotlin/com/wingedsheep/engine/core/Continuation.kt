@@ -1301,6 +1301,7 @@ data class EachOpponentMayPutFromHandContinuation(
  * @property tokenToughness Toughness of the created tokens
  * @property tokenColors Colors of the created tokens
  * @property tokenCreatureTypes Creature types of the created tokens
+ * @property tokenImageUri Optional image URI for the token artwork
  */
 @Serializable
 data class EachPlayerMayRevealCreaturesContinuation(
@@ -1313,7 +1314,8 @@ data class EachPlayerMayRevealCreaturesContinuation(
     val tokenPower: Int,
     val tokenToughness: Int,
     val tokenColors: Set<com.wingedsheep.sdk.core.Color>,
-    val tokenCreatureTypes: Set<String>
+    val tokenCreatureTypes: Set<String>,
+    val tokenImageUri: String? = null
 ) : ContinuationFrame
 
 /**

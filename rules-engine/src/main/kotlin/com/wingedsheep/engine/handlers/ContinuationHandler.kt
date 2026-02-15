@@ -4616,7 +4616,8 @@ class ContinuationHandler(
                 tokenPower = continuation.tokenPower,
                 tokenToughness = continuation.tokenToughness,
                 tokenColors = continuation.tokenColors,
-                tokenCreatureTypes = continuation.tokenCreatureTypes
+                tokenCreatureTypes = continuation.tokenCreatureTypes,
+                tokenImageUri = continuation.tokenImageUri
             )
             return ExecutionResult(
                 state = nextResult.newState,
@@ -4633,7 +4634,8 @@ class ContinuationHandler(
             tokenPower = continuation.tokenPower,
             tokenToughness = continuation.tokenToughness,
             tokenColors = continuation.tokenColors,
-            tokenCreatureTypes = continuation.tokenCreatureTypes
+            tokenCreatureTypes = continuation.tokenCreatureTypes,
+            tokenImageUri = continuation.tokenImageUri
         )
 
         return checkForMoreContinuations(tokenResult.newState, tokenResult.events)

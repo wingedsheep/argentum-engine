@@ -375,6 +375,7 @@ data class EachOpponentMayPutFromHandEffect(
  * @property tokenToughness Toughness of the created tokens
  * @property tokenColors Colors of the created tokens
  * @property tokenCreatureTypes Creature types of the created tokens
+ * @property tokenImageUri Optional image URI for the token artwork
  */
 @SerialName("EachPlayerMayRevealCreatures")
 @Serializable
@@ -382,7 +383,8 @@ data class EachPlayerMayRevealCreaturesEffect(
     val tokenPower: Int,
     val tokenToughness: Int,
     val tokenColors: Set<com.wingedsheep.sdk.core.Color>,
-    val tokenCreatureTypes: Set<String>
+    val tokenCreatureTypes: Set<String>,
+    val tokenImageUri: String? = null
 ) : Effect {
     override val description: String =
         "Each player may reveal any number of creature cards from their hand. " +

@@ -61,7 +61,8 @@ class EachPlayerMayRevealCreaturesExecutor(
             tokenPower = effect.tokenPower,
             tokenToughness = effect.tokenToughness,
             tokenColors = effect.tokenColors,
-            tokenCreatureTypes = effect.tokenCreatureTypes
+            tokenCreatureTypes = effect.tokenCreatureTypes,
+            tokenImageUri = effect.tokenImageUri
         )
     }
 
@@ -79,6 +80,7 @@ class EachPlayerMayRevealCreaturesExecutor(
             tokenToughness: Int,
             tokenColors: Set<Color>,
             tokenCreatureTypes: Set<String>,
+            tokenImageUri: String? = null,
             decisionHandler: DecisionHandler = DecisionHandler()
         ): ExecutionResult {
             var index = currentIndex
@@ -93,7 +95,7 @@ class EachPlayerMayRevealCreaturesExecutor(
 
             // No more players with creature cards - create tokens for everyone
             if (index >= players.size) {
-                return createTokensForAllPlayers(state, revealCounts, tokenPower, tokenToughness, tokenColors, tokenCreatureTypes)
+                return createTokensForAllPlayers(state, revealCounts, tokenPower, tokenToughness, tokenColors, tokenCreatureTypes, tokenImageUri)
             }
 
             val playerId = players[index]
@@ -124,7 +126,8 @@ class EachPlayerMayRevealCreaturesExecutor(
                 tokenPower = tokenPower,
                 tokenToughness = tokenToughness,
                 tokenColors = tokenColors,
-                tokenCreatureTypes = tokenCreatureTypes
+                tokenCreatureTypes = tokenCreatureTypes,
+                tokenImageUri = tokenImageUri
             )
 
             val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
@@ -155,7 +158,8 @@ class EachPlayerMayRevealCreaturesExecutor(
             tokenPower: Int,
             tokenToughness: Int,
             tokenColors: Set<Color>,
-            tokenCreatureTypes: Set<String>
+            tokenCreatureTypes: Set<String>,
+            tokenImageUri: String? = null
         ): ExecutionResult {
             var newState = state
 
@@ -171,7 +175,8 @@ class EachPlayerMayRevealCreaturesExecutor(
                         baseStats = CreatureStats(tokenPower, tokenToughness),
                         baseKeywords = emptySet(),
                         colors = tokenColors,
-                        ownerId = playerId
+                        ownerId = playerId,
+                        imageUri = tokenImageUri
                     )
 
                     val container = ComponentContainer.of(

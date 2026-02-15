@@ -22,7 +22,8 @@ val KamahlsSummons = card("Kamahl's Summons") {
             tokenPower = 2,
             tokenToughness = 2,
             tokenColors = setOf(Color.GREEN),
-            tokenCreatureTypes = setOf("Bear")
+            tokenCreatureTypes = setOf("Bear"),
+            tokenImageUri = "https://cards.scryfall.io/large/front/7/7/772dac39-269b-4a35-aad3-320279af833f.jpg?1675455454"
         )
     }
 
