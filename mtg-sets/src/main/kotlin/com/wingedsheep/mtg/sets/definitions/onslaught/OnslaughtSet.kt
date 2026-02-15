@@ -80,6 +80,7 @@ object OnslaughtSet {
         SigilOfTheNewDawn,
         WeatheredWayfarer,
         WordsOfWorship,
+        WordsOfWind,
         HarshMercy,
 
         // Blue creatures and spells

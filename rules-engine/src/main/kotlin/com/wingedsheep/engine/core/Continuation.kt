@@ -1754,6 +1754,35 @@ data class SecretBidContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after a player selects a permanent to return to hand for Words of Wind's
+ * draw replacement effect.
+ *
+ * "Each player returns a permanent they control to its owner's hand instead."
+ *
+ * Processes one player at a time in APNAP order. After all players have bounced,
+ * continues with any remaining card draws from the original draw effect.
+ *
+ * @property drawingPlayerId The player who was drawing (whose draw was replaced)
+ * @property currentBouncingPlayerId The player currently choosing a permanent to bounce
+ * @property remainingPlayers Players who still need to bounce after current (APNAP order)
+ * @property remainingDraws Number of draws left to process after this bounce sequence
+ * @property drawnCardsSoFar Cards already drawn before the bounce shield was hit
+ * @property sourceId The source of the draw replacement (Words of Wind)
+ * @property sourceName Name of the source for display
+ */
+@Serializable
+data class DrawReplacementBounceContinuation(
+    override val decisionId: String,
+    val drawingPlayerId: EntityId,
+    val currentBouncingPlayerId: EntityId,
+    val remainingPlayers: List<EntityId>,
+    val remainingDraws: Int,
+    val drawnCardsSoFar: List<EntityId>,
+    val sourceId: EntityId?,
+    val sourceName: String?
+) : ContinuationFrame
+
+/**
  * Information about a mana source available for manual selection.
  */
 @Serializable

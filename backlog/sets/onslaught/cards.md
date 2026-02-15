@@ -338,6 +338,6 @@
 - [ ] Words of War
 - [ ] Words of Waste
 - [ ] Words of Wilding
-- [ ] Words of Wind
+- [x] Words of Wind
 - [x] Words of Worship
 - [x] Wretched Anurid
