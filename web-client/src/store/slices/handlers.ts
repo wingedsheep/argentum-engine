@@ -39,6 +39,7 @@ function getEventPlayerId(event: { type: string; playerId?: string; casterId?: s
     case 'handRevealed': return event.revealingPlayerId as EntityId
     case 'cardsRevealed': return event.revealingPlayerId as EntityId
     case 'turnedFaceUp': return event.controllerId as EntityId
+    case 'coinFlipped': return event.playerId as EntityId
     default: return null
   }
 }
@@ -137,7 +138,7 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
     },
 
     onStateUpdate: (msg) => {
-      const { playerId, addDrawAnimation, addDamageAnimation, addRevealAnimation } = get()
+      const { playerId, addDrawAnimation, addDamageAnimation, addRevealAnimation, addCoinFlipAnimation } = get()
 
       // Check for hand reveal events
       const handLookedAtEvent = msg.events.find(
@@ -234,6 +235,26 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
           id: `reveal-${event.cardId}-${Date.now()}-${index}`,
           cardName: event.cardName,
           imageUri: card?.imageUri ?? null,
+          isOpponent,
+          startTime: Date.now() + index * 200,
+        })
+      })
+
+      // Process coin flip events for animations
+      const coinFlipEvents = msg.events.filter((e) => e.type === 'coinFlipped') as {
+        type: 'coinFlipped'
+        playerId: EntityId
+        won: boolean
+        sourceId: EntityId
+        sourceName: string
+      }[]
+
+      coinFlipEvents.forEach((event, index) => {
+        const isOpponent = event.playerId !== playerId
+        addCoinFlipAnimation({
+          id: `coin-${event.sourceId}-${Date.now()}-${index}`,
+          sourceName: event.sourceName,
+          won: event.won,
           isOpponent,
           startTime: Date.now() + index * 200,
         })

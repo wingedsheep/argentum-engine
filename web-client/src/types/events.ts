@@ -34,6 +34,7 @@ export type ClientEvent =
   | HandRevealedEvent
   | CardsRevealedEvent
   | TurnedFaceUpEvent
+  | CoinFlippedEvent
 
 // ============================================================================
 // Life/Damage Events
@@ -268,6 +269,19 @@ export interface CardsRevealedEvent {
   readonly cardNames: readonly string[]
   readonly imageUris: readonly (string | null)[]
   readonly source: string | null
+  readonly description: string
+}
+
+// ============================================================================
+// Coin Flip Events
+// ============================================================================
+
+export interface CoinFlippedEvent {
+  readonly type: 'coinFlipped'
+  readonly playerId: EntityId
+  readonly won: boolean
+  readonly sourceId: EntityId
+  readonly sourceName: string
   readonly description: string
 }
 

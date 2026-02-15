@@ -240,6 +240,7 @@ object OnslaughtSet {
         SpitfireHandler,
         SkirkFireMarshal,
         SkirkProspector,
+        SkittishValesk,
         ShaleskinBruiser,
         SnappingThragg,
         SpurredWolverine,

@@ -376,6 +376,25 @@ sealed interface ClientEvent {
     // Morph Events
     // =========================================================================
 
+    // =========================================================================
+    // Coin Flip Events
+    // =========================================================================
+
+    @Serializable
+    @SerialName("coinFlipped")
+    data class CoinFlipped(
+        val playerId: EntityId,
+        val won: Boolean,
+        val sourceId: EntityId,
+        val sourceName: String,
+        val isYours: Boolean? = null,
+        override val description: String = when (isYours) {
+            true -> "You flipped a coin ($sourceName) — ${if (won) "you won" else "you lost"}"
+            false -> "Opponent flipped a coin ($sourceName) — ${if (won) "they won" else "they lost"}"
+            null -> "Flipped a coin ($sourceName) — ${if (won) "won" else "lost"}"
+        }
+    ) : ClientEvent
+
     @Serializable
     @SerialName("turnedFaceUp")
     data class TurnedFaceUp(
@@ -637,6 +656,14 @@ object ClientEventTransformer {
                 permanentName = event.entityName,
                 counterType = "loyalty",
                 count = event.change
+            )
+
+            is CoinFlipEvent -> ClientEvent.CoinFlipped(
+                playerId = event.playerId,
+                won = event.won,
+                sourceId = event.sourceId,
+                sourceName = event.sourceName,
+                isYours = event.playerId == viewingPlayerId
             )
 
             is TurnFaceUpEvent -> ClientEvent.TurnedFaceUp(

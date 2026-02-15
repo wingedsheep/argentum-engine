@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 304 / 335
+**Implemented:** 305 / 335
 
 ---
 
@@ -266,7 +266,7 @@
 - [x] Skirk Commando
 - [x] Skirk Fire Marshal
 - [x] Skirk Prospector
-- [ ] Skittish Valesk
+- [x] Skittish Valesk
 - [x] Slate of Ancestry
 - [x] Slice and Dice
 - [x] Slipstream Eel
