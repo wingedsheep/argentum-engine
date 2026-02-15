@@ -644,3 +644,31 @@ data class GrantActivatedAbilityToGroupEffect(
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
 }
+
+/**
+ * Target land becomes an X/Y creature until end of turn. It's still a land.
+ * Used for Kamahl, Fist of Krosa: "{G}: Target land becomes a 1/1 creature until end of turn. It's still a land."
+ *
+ * Creates two floating effects:
+ * 1. Layer.TYPE + AddType("Creature") - adds the Creature type
+ * 2. Layer.POWER_TOUGHNESS + Sublayer.SET_VALUES + SetPowerToughness - sets base P/T
+ *
+ * @property target The land to animate
+ * @property power The base power to set
+ * @property toughness The base toughness to set
+ * @property duration How long the effect lasts
+ */
+@SerialName("AnimateLand")
+@Serializable
+data class AnimateLandEffect(
+    val target: EffectTarget,
+    val power: Int = 1,
+    val toughness: Int = 1,
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    override val description: String = buildString {
+        append("${target.description} becomes a $power/$toughness creature")
+        if (duration.description.isNotEmpty()) append(" ${duration.description}")
+        append(". It's still a land.")
+    }
+}

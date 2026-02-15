@@ -263,6 +263,7 @@ object OnslaughtSet {
         EvergloveCourier,
         ExplosiveVegetation,
         InvigoratingBoon,
+        KamahlFistOfKrosa,
         KrosanColossus,
         KrosanGroundshaker,
         LeeryFogbeast,

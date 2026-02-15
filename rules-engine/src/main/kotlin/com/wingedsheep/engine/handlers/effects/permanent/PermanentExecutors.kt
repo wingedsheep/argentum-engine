@@ -42,6 +42,7 @@ class PermanentExecutors(
         SetGroupCreatureSubtypesExecutor(),
         ChangeGroupColorExecutor(),
         GrantActivatedAbilityToGroupExecutor(),
-        ChooseCreatureTypeUntapExecutor()
+        ChooseCreatureTypeUntapExecutor(),
+        AnimateLandExecutor()
     )
 }

@@ -388,6 +388,20 @@ object Effects {
         RemoveFromCombatEffect(target)
 
     // =========================================================================
+    // Animate Effects
+    // =========================================================================
+
+    /**
+     * Target land becomes an X/Y creature until end of turn. It's still a land.
+     */
+    fun AnimateLand(
+        target: EffectTarget = EffectTarget.ContextTarget(0),
+        power: Int = 1,
+        toughness: Int = 1,
+        duration: Duration = Duration.EndOfTurn
+    ): Effect = AnimateLandEffect(target, power, toughness, duration)
+
+    // =========================================================================
     // Composite Effect Helpers
     // =========================================================================
 
