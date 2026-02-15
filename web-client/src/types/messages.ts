@@ -351,6 +351,18 @@ export interface AssignDamageDecision extends PendingDecisionBase {
 }
 
 /**
+ * Player must split cards into piles (e.g., Surveil, Fact or Fiction).
+ * Each card is assigned to one of the labeled piles.
+ */
+export interface SplitPilesDecision extends PendingDecisionBase {
+  readonly type: 'SplitPilesDecision'
+  readonly cards: readonly EntityId[]
+  readonly numberOfPiles: number
+  readonly pileLabels: readonly string[]
+  readonly cardInfo?: Record<EntityId, SearchCardInfo> | null
+}
+
+/**
  * Union of all pending decision types.
  */
 export type PendingDecision =
@@ -366,6 +378,7 @@ export type PendingDecision =
   | ChooseColorDecision
   | SelectManaSourcesDecision
   | AssignDamageDecision
+  | SplitPilesDecision
 
 /**
  * Information about a single target requirement for legal actions.

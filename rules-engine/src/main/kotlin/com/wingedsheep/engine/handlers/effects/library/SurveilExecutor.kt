@@ -45,6 +45,16 @@ class SurveilExecutor : EffectExecutor<SurveilEffect> {
 
         val decisionId = UUID.randomUUID().toString()
 
+        // Build card info for display (library cards are hidden from client)
+        val cardInfo = topCards.associateWith { entityId ->
+            val cardComponent = state.getEntity(entityId)?.get<CardComponent>()
+            SearchCardInfo(
+                name = cardComponent?.name ?: "Unknown Card",
+                manaCost = cardComponent?.manaCost?.toString() ?: "",
+                typeLine = cardComponent?.typeLine?.toString() ?: ""
+            )
+        }
+
         val decision = SplitPilesDecision(
             id = decisionId,
             playerId = playerId,
@@ -56,7 +66,8 @@ class SurveilExecutor : EffectExecutor<SurveilEffect> {
             ),
             cards = topCards,
             numberOfPiles = 2,
-            pileLabels = listOf("Top of Library", "Graveyard")
+            pileLabels = listOf("Top of Library", "Graveyard"),
+            cardInfo = cardInfo
         )
 
         val continuation = SurveilContinuation(
