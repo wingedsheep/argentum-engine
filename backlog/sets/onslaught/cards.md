@@ -197,7 +197,7 @@
 - [x] Misery Charm
 - [x] Mistform Dreamer
 - [ ] Mistform Mask
-- [ ] Mistform Mutant
+- [x] Mistform Mutant
 - [x] Mistform Shrieker
 - [x] Mistform Skyreaver
 - [x] Mistform Stalker
@@ -234,7 +234,7 @@
 - [x] Righteous Cause
 - [x] Riptide Biologist
 - [x] Riptide Chronologist
-- [ ] Riptide Entrancer
+- [x] Riptide Entrancer
 - [x] Riptide Laboratory
 - [ ] Riptide Replicator
 - [ ] Riptide Shapeshifter
