@@ -48,3 +48,14 @@ data class CounterUnlessPaysEffect(
 ) : Effect {
     override val description: String = "Counter target spell unless its controller pays $cost"
 }
+
+/**
+ * Change the target of a spell that has exactly one target, and that target is a creature,
+ * to another creature.
+ * "If target spell has only one target and that target is a creature, change that spell's target to another creature."
+ */
+@SerialName("ChangeSpellTarget")
+@Serializable
+data object ChangeSpellTargetEffect : Effect {
+    override val description: String = "Change target spell's target to another creature"
+}

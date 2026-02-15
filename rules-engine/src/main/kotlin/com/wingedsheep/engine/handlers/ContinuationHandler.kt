@@ -27,6 +27,7 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
+import com.wingedsheep.engine.state.components.stack.TargetsComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
@@ -115,6 +116,7 @@ class ContinuationHandler(
             is ChooseCreatureTypeModifyStatsContinuation -> resumeChooseCreatureTypeModifyStats(stateAfterPop, continuation, response)
             is BecomeChosenTypeAllCreaturesContinuation -> resumeBecomeChosenTypeAllCreatures(stateAfterPop, continuation, response)
             is CounterUnlessPaysContinuation -> resumeCounterUnlessPays(stateAfterPop, continuation, response)
+            is ChangeSpellTargetContinuation -> resumeChangeSpellTarget(stateAfterPop, continuation, response)
             is PutOnBottomOfLibraryContinuation -> resumePutOnBottomOfLibrary(stateAfterPop, continuation, response)
             is ModalContinuation -> resumeModal(stateAfterPop, continuation, response)
             is ModalTargetContinuation -> resumeModalTarget(stateAfterPop, continuation, response)
@@ -1249,6 +1251,37 @@ class ContinuationHandler(
             val counterResult = stackResolver.counterSpell(state, continuation.spellEntityId)
             return checkForMoreContinuations(counterResult.newState, counterResult.events)
         }
+    }
+
+    /**
+     * Resume after Meddle's controller chooses a new creature target for a spell.
+     */
+    private fun resumeChangeSpellTarget(
+        state: GameState,
+        continuation: ChangeSpellTargetContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for change spell target")
+        }
+
+        val selectedCreatureId = response.selectedCards.firstOrNull()
+            ?: return ExecutionResult.error(state, "No creature selected for change spell target")
+
+        // Get the spell entity and update its target
+        val spellEntity = state.getEntity(continuation.spellEntityId)
+            ?: return checkForMoreContinuations(state, emptyList()) // Spell no longer on stack
+
+        val targetsComponent = spellEntity.get<TargetsComponent>()
+            ?: return checkForMoreContinuations(state, emptyList())
+
+        // Replace the single target with the new creature
+        val newTargets = listOf(ChosenTarget.Permanent(selectedCreatureId))
+        val updatedState = state.updateEntity(continuation.spellEntityId) { container ->
+            container.with(TargetsComponent(newTargets, targetsComponent.targetRequirements))
+        }
+
+        return checkForMoreContinuations(updatedState, emptyList())
     }
 
     /**

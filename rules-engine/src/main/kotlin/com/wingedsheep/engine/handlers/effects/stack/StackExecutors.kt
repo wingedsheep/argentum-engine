@@ -10,6 +10,7 @@ class StackExecutors : ExecutorModule {
     override fun executors(): List<EffectExecutor<*>> = listOf(
         CounterSpellExecutor(),
         CounterSpellWithFilterExecutor(),
-        CounterUnlessPaysExecutor()
+        CounterUnlessPaysExecutor(),
+        ChangeSpellTargetExecutor()
     )
 }

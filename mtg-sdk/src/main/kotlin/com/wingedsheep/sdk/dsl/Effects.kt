@@ -334,6 +334,13 @@ object Effects {
     fun CounterUnlessPays(cost: String): Effect =
         CounterUnlessPaysEffect(ManaCost.parse(cost))
 
+    /**
+     * Change the target of a spell to another creature.
+     * "If target spell has only one target and that target is a creature, change that spell's target to another creature."
+     */
+    fun ChangeSpellTarget(): Effect =
+        ChangeSpellTargetEffect
+
     // =========================================================================
     // Sacrifice Effects
     // =========================================================================
