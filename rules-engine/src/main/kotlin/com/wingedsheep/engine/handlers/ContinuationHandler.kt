@@ -112,6 +112,7 @@ class ContinuationHandler(
             is BlackmailChooseContinuation -> resumeBlackmailChoose(stateAfterPop, continuation, response)
             is HeadGamesContinuation -> resumeHeadGames(stateAfterPop, continuation, response)
             is ChooseCreatureTypeRevealTopContinuation -> resumeChooseCreatureTypeRevealTop(stateAfterPop, continuation, response)
+            is RevealUntilCreatureTypeContinuation -> resumeRevealUntilCreatureType(stateAfterPop, continuation, response)
             is BecomeCreatureTypeContinuation -> resumeBecomeCreatureType(stateAfterPop, continuation, response)
             is ChooseCreatureTypeModifyStatsContinuation -> resumeChooseCreatureTypeModifyStats(stateAfterPop, continuation, response)
             is BecomeChosenTypeAllCreaturesContinuation -> resumeBecomeChosenTypeAllCreatures(stateAfterPop, continuation, response)
@@ -3324,6 +3325,130 @@ class ContinuationHandler(
                     ownerId = controllerId
                 )
             )
+        }
+
+        return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume after player chose a creature type for "reveal until creature type" effects.
+     *
+     * Reveals cards from the top of the library until a creature of the chosen type is found.
+     * Puts that creature onto the battlefield and shuffles the rest into the library.
+     */
+    private fun resumeRevealUntilCreatureType(
+        state: GameState,
+        continuation: RevealUntilCreatureTypeContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is OptionChosenResponse) {
+            return ExecutionResult.error(state, "Expected option choice response for creature type selection")
+        }
+
+        val chosenType = continuation.creatureTypes.getOrNull(response.optionIndex)
+            ?: return ExecutionResult.error(state, "Invalid creature type index: ${response.optionIndex}")
+
+        val controllerId = continuation.controllerId
+        val libraryZone = ZoneKey(controllerId, Zone.LIBRARY)
+        val library = state.getZone(libraryZone)
+
+        // If library became empty since the ability was activated, nothing happens
+        if (library.isEmpty()) {
+            return checkForMoreContinuations(state, emptyList())
+        }
+
+        // Reveal cards from the top until we find a creature of the chosen type
+        val revealedCards = mutableListOf<com.wingedsheep.sdk.model.EntityId>()
+        var matchedCard: com.wingedsheep.sdk.model.EntityId? = null
+
+        for (cardId in library) {
+            val container = state.getEntity(cardId)
+            val cardComponent = container?.get<CardComponent>()
+            revealedCards.add(cardId)
+
+            val typeLine = cardComponent?.typeLine
+            if (typeLine != null &&
+                typeLine.isCreature &&
+                typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(chosenType))
+            ) {
+                matchedCard = cardId
+                break
+            }
+        }
+
+        val events = mutableListOf<GameEvent>()
+
+        // Emit reveal event for all revealed cards
+        val cardNames = revealedCards.map { cardId ->
+            state.getEntity(cardId)?.get<CardComponent>()?.name ?: "Unknown"
+        }
+        val imageUris = revealedCards.map { cardId ->
+            state.getEntity(cardId)?.get<CardComponent>()?.imageUri
+        }
+
+        events.add(
+            CardsRevealedEvent(
+                revealingPlayerId = controllerId,
+                cardIds = revealedCards.toList(),
+                cardNames = cardNames,
+                imageUris = imageUris,
+                source = continuation.sourceName
+            )
+        )
+
+        var newState = state
+
+        if (matchedCard != null) {
+            // Remove matched card from library and put onto battlefield
+            newState = newState.removeFromZone(libraryZone, matchedCard)
+            val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
+            newState = newState.addToZone(battlefieldZone, matchedCard)
+
+            // Apply battlefield components
+            val container = newState.getEntity(matchedCard)
+            if (container != null) {
+                var newContainer = container
+                    .with(ControllerComponent(controllerId))
+
+                val cardComponent = container.get<CardComponent>()
+                if (cardComponent?.typeLine?.isCreature == true) {
+                    newContainer = newContainer.with(
+                        com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
+                    )
+                }
+
+                newState = newState.copy(
+                    entities = newState.entities + (matchedCard to newContainer)
+                )
+            }
+
+            val matchedCardName = state.getEntity(matchedCard)?.get<CardComponent>()?.name ?: "Unknown"
+            events.add(
+                ZoneChangeEvent(
+                    entityId = matchedCard,
+                    entityName = matchedCardName,
+                    fromZone = Zone.LIBRARY,
+                    toZone = Zone.BATTLEFIELD,
+                    ownerId = controllerId
+                )
+            )
+
+            // Shuffle the rest of the revealed cards back into the library
+            // (they are still in the library since we only removed the matched card)
+            // The other revealed cards are still in the library at their positions -
+            // we just need to shuffle the entire library
+            val currentLibrary = newState.getZone(libraryZone).shuffled()
+            newState = newState.copy(
+                zones = newState.zones + (libraryZone to currentLibrary)
+            )
+            events.add(LibraryShuffledEvent(controllerId))
+        } else {
+            // No creature of the chosen type found - shuffle library (all cards stay)
+            val currentLibrary = newState.getZone(libraryZone).shuffled()
+            newState = newState.copy(
+                zones = newState.zones + (libraryZone to currentLibrary)
+            )
+            events.add(LibraryShuffledEvent(controllerId))
         }
 
         return checkForMoreContinuations(newState, events)

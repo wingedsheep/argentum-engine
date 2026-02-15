@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 305 / 335
+**Implemented:** 306 / 335
 
 ---
 
@@ -237,7 +237,7 @@
 - [x] Riptide Entrancer
 - [x] Riptide Laboratory
 - [ ] Riptide Replicator
-- [ ] Riptide Shapeshifter
+- [x] Riptide Shapeshifter
 - [ ] Risky Move
 - [x] Rorix Bladewing
 - [x] Rotlung Reanimator
