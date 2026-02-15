@@ -62,6 +62,6 @@ val TribalGolem = card("Tribal Golem") {
         collectorNumber = "311"
         artist = "Edward P. Beard, Jr."
         flavorText = "It awakens to the call of its kindred."
-        imageUri = "https://cards.scryfall.io/large/front/8/5/85eba824-17a0-4e36-a2b6-8e80e0eaa3a8.jpg?1562923235"
+        imageUri = "https://cards.scryfall.io/large/front/6/e/6e208be1-8b24-4048-90b2-6389f08043d1.jpg?1562920935"
     }
 }
