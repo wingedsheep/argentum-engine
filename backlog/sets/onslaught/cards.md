@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 332 / 335
+**Implemented:** 333 / 335
 
 ---
 
@@ -224,7 +224,7 @@
 - [x] Primal Boost
 - [x] Profane Prayers
 - [x] Prowling Pangolin
-- [ ] Psychic Trance
+- [x] Psychic Trance
 - [x] Quicksilver Dragon
 - [x] Ravenous Baloth
 - [x] Read the Runes
