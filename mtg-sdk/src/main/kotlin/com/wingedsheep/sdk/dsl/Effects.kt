@@ -349,6 +349,13 @@ object Effects {
         CounterUnlessPaysEffect(ManaCost.parse(cost))
 
     /**
+     * Counter target spell unless its controller pays a dynamic generic mana cost.
+     * "Counter target spell unless its controller pays {2} for each Wizard on the battlefield."
+     */
+    fun CounterUnlessDynamicPays(amount: DynamicAmount): Effect =
+        CounterUnlessDynamicPaysEffect(amount)
+
+    /**
      * Change the target of a spell to another creature.
      * "If target spell has only one target and that target is a creature, change that spell's target to another creature."
      */

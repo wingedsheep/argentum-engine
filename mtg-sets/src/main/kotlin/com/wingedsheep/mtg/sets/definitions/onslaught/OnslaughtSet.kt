@@ -120,6 +120,7 @@ object OnslaughtSet {
         EssenceFracture,
         Imagecrafter,
         IxidorRealitySculptor,
+        IxidorsWill,
         MistformDreamer,
         MistformShrieker,
         MistformSkyreaver,
