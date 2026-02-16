@@ -774,7 +774,9 @@ data class LegalActionInfo(
     /** Preview of which lands/sources would be auto-tapped if this spell is cast (for UI highlighting) */
     val autoTapPreview: List<EntityId>? = null,
     /** Whether this ability produces mana of any color and needs a color choice from the player */
-    val requiresManaColorChoice: Boolean = false
+    val requiresManaColorChoice: Boolean = false,
+    /** Source zone if this action is from a non-hand zone (e.g., "LIBRARY" for Future Sight) */
+    val sourceZone: String? = null
 )
 
 /**

@@ -8,7 +8,7 @@ import type {
   LegalActionInfo,
   ZoneId,
 } from '../types'
-import { ZoneType, zoneIdEquals, graveyard } from '../types'
+import { ZoneType, zoneIdEquals, graveyard, library } from '../types'
 
 /**
  * Select the game state (works for both normal play and spectating).
@@ -464,7 +464,8 @@ export function useGroupedZoneCards(zoneId: ZoneId): readonly GroupedCard[] {
 }
 
 /**
- * Hook to get "ghost" cards — graveyard cards that have legal activated abilities.
+ * Hook to get "ghost" cards — graveyard cards that have legal activated abilities,
+ * and top-of-library cards playable via Future Sight-like effects.
  * These are shown as translucent cards appended to the player's hand for discoverability.
  * Excludes simple mana abilities and unaffordable actions (same filtering as useHasLegalActions).
  */
@@ -475,23 +476,33 @@ export function useGhostCards(playerId: EntityId | null): readonly ClientCard[] 
   return useMemo(() => {
     if (!gameState || !playerId) return []
 
-    // Get graveyard card IDs for this player
+    const ghostCardIds = new Set<EntityId>()
+
+    // 1. Graveyard cards with legal activated abilities
     const gyZoneId = graveyard(playerId)
     const gyZone = gameState.zones.find((z) => zoneIdEquals(z.zoneId, gyZoneId))
-    if (!gyZone || !gyZone.cardIds || gyZone.cardIds.length === 0) return []
-    const gyCardIds = new Set(gyZone.cardIds)
+    if (gyZone && gyZone.cardIds && gyZone.cardIds.length > 0) {
+      const gyCardIds = new Set(gyZone.cardIds)
+      for (const actionInfo of legalActions) {
+        const action = actionInfo.action
+        if (action.type !== 'ActivateAbility') continue
+        if (!gyCardIds.has(action.sourceId)) continue
+        if (actionInfo.isManaAbility && !actionInfo.additionalCostInfo) continue
+        if (actionInfo.isAffordable === false) continue
+        ghostCardIds.add(action.sourceId)
+      }
+    }
 
-    // Find ActivateAbility actions where sourceId is in the graveyard,
-    // excluding simple mana abilities and unaffordable actions
-    const ghostCardIds = new Set<EntityId>()
+    // 2. Top-of-library cards playable via Future Sight (sourceZone === "LIBRARY")
     for (const actionInfo of legalActions) {
-      const action = actionInfo.action
-      if (action.type !== 'ActivateAbility') continue
-      if (!gyCardIds.has(action.sourceId)) continue
-      // Same filtering as useHasLegalActions
-      if (actionInfo.isManaAbility && !actionInfo.additionalCostInfo) continue
-      if (actionInfo.isAffordable === false) continue
-      ghostCardIds.add(action.sourceId)
+      if (actionInfo.sourceZone === 'LIBRARY') {
+        const action = actionInfo.action
+        if (action.type === 'CastSpell') {
+          ghostCardIds.add(action.cardId)
+        } else if (action.type === 'PlayLand') {
+          ghostCardIds.add(action.cardId)
+        }
+      }
     }
 
     // Return deduplicated ClientCard objects
@@ -499,4 +510,25 @@ export function useGhostCards(playerId: EntityId | null): readonly ClientCard[] 
       .map((id) => gameState.cards[id])
       .filter((card): card is ClientCard => card != null)
   }, [gameState, legalActions, playerId])
+}
+
+/**
+ * Hook to get revealed top-of-library cards for any player (for opponent display).
+ * Returns the top card of a player's library if it's visible in the game state,
+ * which happens when they control a Future Sight-like permanent.
+ */
+export function useRevealedLibraryTopCard(playerId: EntityId | null): ClientCard | null {
+  const gameState = useGameStore(selectGameState)
+
+  return useMemo(() => {
+    if (!gameState || !playerId) return null
+
+    const libZoneId = library(playerId)
+    const libZone = gameState.zones.find((z) => zoneIdEquals(z.zoneId, libZoneId))
+    if (!libZone || !libZone.cardIds || libZone.cardIds.length === 0) return null
+
+    // The first visible card in the library zone is the revealed top card
+    const topCardId = libZone.cardIds[0]!
+    return gameState.cards[topCardId] ?? null
+  }, [gameState, playerId])
 }

@@ -94,6 +94,7 @@ object OnslaughtSet {
         CallousOppressor,
         Clone,
         CrownOfAscension,
+        FutureSight,
         AvenFateshaper,
         Backslide,
         BlatantThievery,

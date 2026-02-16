@@ -681,6 +681,18 @@ data class AdditionalManaOnTap(
 }
 
 /**
+ * Play with the top card of your library revealed.
+ * You may play lands and cast spells from the top of your library.
+ * Used for Future Sight.
+ */
+@SerialName("PlayFromTopOfLibrary")
+@Serializable
+data object PlayFromTopOfLibrary : StaticAbility {
+    override val description: String =
+        "Play with the top card of your library revealed. You may play lands and cast spells from the top of your library."
+}
+
+/**
  * This creature can't attack unless defending player controls a land of a specific type.
  * Used for Deep-Sea Serpent: "can't attack unless defending player controls an Island."
  *

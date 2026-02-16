@@ -21,6 +21,7 @@ import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
 
 /**
  * Transforms internal game state into client-facing DTOs.
@@ -139,6 +140,40 @@ class ClientStateTransformer(
         }
         // --- FIX END ---
 
+        // Reveal top library card for players with PlayFromTopOfLibrary (e.g., Future Sight)
+        // The top card is revealed to ALL players per the card's oracle text.
+        for (ownerId in state.turnOrder) {
+            if (hasPlayFromTopOfLibrary(state, ownerId)) {
+                val library = state.getLibrary(ownerId)
+                if (library.isNotEmpty()) {
+                    val topCardId = library.first()
+                    if (topCardId !in cards) {
+                        val libraryZoneKey = ZoneKey(ownerId, Zone.LIBRARY)
+                        val clientCard = transformCard(state, topCardId, libraryZoneKey, projectedState, viewingPlayerId)
+                        if (clientCard != null) {
+                            cards[topCardId] = clientCard
+                            // Update the library zone entry to include this card as visible
+                            val zoneIndex = zones.indexOfFirst {
+                                it.zoneId.ownerId == ownerId && it.zoneId.zoneType == Zone.LIBRARY
+                            }
+                            if (zoneIndex >= 0) {
+                                val existingZone = zones[zoneIndex]
+                                val newCardIds = if (existingZone.cardIds.contains(topCardId)) {
+                                    existingZone.cardIds
+                                } else {
+                                    listOf(topCardId) + existingZone.cardIds
+                                }
+                                zones[zoneIndex] = existingZone.copy(
+                                    cardIds = newCardIds,
+                                    isVisible = true
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         // Build player information
         val players = state.turnOrder.map { playerId ->
             transformPlayer(state, playerId, viewingPlayerId)
@@ -180,6 +215,20 @@ class ClientStateTransformer(
             Zone.EXILE,
             Zone.COMMAND -> true
         }
+    }
+
+    /**
+     * Check if a player controls a permanent with PlayFromTopOfLibrary.
+     */
+    private fun hasPlayFromTopOfLibrary(state: GameState, playerId: EntityId): Boolean {
+        for (entityId in state.getBattlefield(playerId)) {
+            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            if (cardDef.script.staticAbilities.any { it is PlayFromTopOfLibrary }) {
+                return true
+            }
+        }
+        return false
     }
 
     /**

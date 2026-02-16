@@ -1043,6 +1043,12 @@ class StackResolver(
             return state.removeFromZone(exileZone, cardId)
         }
 
+        // Check library (for Future Sight / play from top of library)
+        val libraryZone = ZoneKey(playerId, Zone.LIBRARY)
+        if (cardId in state.getZone(libraryZone)) {
+            return state.removeFromZone(libraryZone, cardId)
+        }
+
         return state
     }
 }

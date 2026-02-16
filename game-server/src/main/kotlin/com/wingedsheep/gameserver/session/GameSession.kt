@@ -59,6 +59,7 @@ import com.wingedsheep.sdk.scripting.ControllerPredicate
 import com.wingedsheep.sdk.scripting.ActivationRestriction
 import com.wingedsheep.sdk.scripting.CastRestriction
 import com.wingedsheep.sdk.scripting.DividedDamageEffect
+import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
 import com.wingedsheep.gameserver.priority.AutoPassManager
 import org.slf4j.LoggerFactory
 import java.util.UUID
@@ -1099,6 +1100,123 @@ class GameSession(
                                 isAffordable = false,
                                 manaCostString = cardComponent.manaCost.toString()
                             ))
+                        }
+                    }
+                }
+            }
+        }
+
+        // Check for top-of-library cards playable via PlayFromTopOfLibrary (e.g., Future Sight)
+        if (hasPlayFromTopOfLibrary(state, playerId)) {
+            val library = state.getLibrary(playerId)
+            if (library.isNotEmpty()) {
+                val topCardId = library.first()
+                val topCardComponent = state.getEntity(topCardId)?.get<CardComponent>()
+                if (topCardComponent != null) {
+                    val topCardDef = cardRegistry.getCard(topCardComponent.name)
+
+                    // Land on top of library
+                    if (topCardComponent.typeLine.isLand && canPlayLand) {
+                        result.add(LegalActionInfo(
+                            actionType = "PlayLand",
+                            description = "Play ${topCardComponent.name}",
+                            action = PlayLand(playerId, topCardId),
+                            sourceZone = "LIBRARY"
+                        ))
+                    }
+
+                    // Non-land spell on top of library
+                    if (!topCardComponent.typeLine.isLand) {
+                        // Check timing
+                        val isInstant = topCardComponent.typeLine.isInstant
+                        if (isInstant || canPlaySorcerySpeed) {
+                            // Check cast restrictions
+                            val castRestrictions = topCardDef?.script?.castRestrictions ?: emptyList()
+                            if (checkCastRestrictions(state, playerId, castRestrictions)) {
+                                val canAfford = manaSolver.canPay(state, playerId, topCardComponent.manaCost)
+                                if (canAfford) {
+                                    val targetReqs = buildList {
+                                        addAll(topCardDef?.script?.targetRequirements ?: emptyList())
+                                        topCardDef?.script?.auraTarget?.let { add(it) }
+                                    }
+
+                                    val manaCostString = topCardComponent.manaCost.toString()
+                                    val hasXCost = topCardComponent.manaCost.hasX
+                                    val maxAffordableX: Int? = if (hasXCost) {
+                                        val availableSources = manaSolver.getAvailableManaCount(state, playerId)
+                                        val fixedCost = topCardComponent.manaCost.cmc
+                                        (availableSources - fixedCost).coerceAtLeast(0)
+                                    } else null
+                                    val autoTapSolution = manaSolver.solve(state, playerId, topCardComponent.manaCost)
+                                    val autoTapPreview = autoTapSolution?.sources?.map { it.entityId }
+
+                                    if (targetReqs.isNotEmpty()) {
+                                        val targetReqInfos = targetReqs.mapIndexed { index, req ->
+                                            val validTargets = findValidTargets(state, playerId, req)
+                                            LegalActionTargetInfo(
+                                                index = index,
+                                                description = req.description,
+                                                minTargets = req.effectiveMinCount,
+                                                maxTargets = req.count,
+                                                validTargets = validTargets,
+                                                targetZone = getTargetZone(req)
+                                            )
+                                        }
+                                        val allRequirementsSatisfied = targetReqInfos.all { reqInfo ->
+                                            reqInfo.validTargets.isNotEmpty() || reqInfo.minTargets == 0
+                                        }
+                                        if (allRequirementsSatisfied) {
+                                            val firstReq = targetReqs.first()
+                                            val firstReqInfo = targetReqInfos.first()
+                                            result.add(LegalActionInfo(
+                                                actionType = "CastSpell",
+                                                description = "Cast ${topCardComponent.name}",
+                                                action = CastSpell(playerId, topCardId),
+                                                validTargets = firstReqInfo.validTargets,
+                                                requiresTargets = true,
+                                                targetCount = firstReq.count,
+                                                minTargets = firstReq.effectiveMinCount,
+                                                targetDescription = firstReq.description,
+                                                targetRequirements = if (targetReqInfos.size > 1) targetReqInfos else null,
+                                                hasXCost = hasXCost,
+                                                maxAffordableX = maxAffordableX,
+                                                manaCostString = manaCostString,
+                                                autoTapPreview = autoTapPreview,
+                                                sourceZone = "LIBRARY"
+                                            ))
+                                        }
+                                    } else {
+                                        result.add(LegalActionInfo(
+                                            actionType = "CastSpell",
+                                            description = "Cast ${topCardComponent.name}",
+                                            action = CastSpell(playerId, topCardId),
+                                            hasXCost = hasXCost,
+                                            maxAffordableX = maxAffordableX,
+                                            manaCostString = manaCostString,
+                                            autoTapPreview = autoTapPreview,
+                                            sourceZone = "LIBRARY"
+                                        ))
+                                    }
+                                }
+                            }
+                        }
+
+                        // Check for morph on top of library
+                        if (canPlaySorcerySpeed && topCardDef != null) {
+                            val hasMorph = topCardDef.keywordAbilities
+                                .any { it is com.wingedsheep.sdk.scripting.KeywordAbility.Morph }
+                            if (hasMorph) {
+                                val morphCost = costCalculator.calculateFaceDownCost(state, playerId)
+                                val canAffordMorph = manaSolver.canPay(state, playerId, morphCost)
+                                result.add(LegalActionInfo(
+                                    actionType = "CastFaceDown",
+                                    description = "Cast ${topCardComponent.name} face-down",
+                                    action = CastSpell(playerId, topCardId, castFaceDown = true),
+                                    isAffordable = canAffordMorph,
+                                    manaCostString = morphCost.toString(),
+                                    sourceZone = "LIBRARY"
+                                ))
+                            }
                         }
                     }
                 }
@@ -2175,6 +2293,20 @@ class GameSession(
                 checkActivationRestriction(state, playerId, it)
             }
         }
+    }
+
+    /**
+     * Check if a player controls a permanent with PlayFromTopOfLibrary.
+     */
+    private fun hasPlayFromTopOfLibrary(state: GameState, playerId: EntityId): Boolean {
+        for (entityId in state.getBattlefield(playerId)) {
+            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            if (cardDef.script.staticAbilities.any { it is PlayFromTopOfLibrary }) {
+                return true
+            }
+        }
+        return false
     }
 
     /**

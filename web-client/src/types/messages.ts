@@ -446,6 +446,8 @@ export interface LegalActionInfo {
   readonly autoTapPreview?: readonly EntityId[]
   /** Whether this ability produces mana of any color and needs a color choice from the player */
   readonly requiresManaColorChoice?: boolean
+  /** Source zone if this action is from a non-hand zone (e.g., "LIBRARY" for Future Sight) */
+  readonly sourceZone?: string
 }
 
 /**

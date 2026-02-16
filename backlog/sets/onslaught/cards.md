@@ -133,7 +133,7 @@
 - [x] Forest
 - [x] Forgotten Cave
 - [x] Frightshroud Courier
-- [ ] Future Sight
+- [x] Future Sight
 - [x] Gangrenous Goliath
 - [x] Ghosthelm Courier
 - [x] Gigapede

@@ -47,6 +47,7 @@ import com.wingedsheep.sdk.scripting.ChooseCreatureTypeModifyStatsEffect
 import com.wingedsheep.sdk.scripting.ChooseCreatureTypeReturnFromGraveyardEffect
 import com.wingedsheep.sdk.scripting.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.toEntityId
 import kotlin.reflect.KClass
 
@@ -93,7 +94,9 @@ class CastSpellHandler(
             ?: return "Not a card: ${action.cardId}"
 
         val handZone = ZoneKey(action.playerId, Zone.HAND)
-        if (action.cardId !in state.getZone(handZone)) {
+        val inHand = action.cardId in state.getZone(handZone)
+        val onTopOfLibrary = !inHand && isOnTopOfLibraryWithPermission(state, action.playerId, action.cardId)
+        if (!inHand && !onTopOfLibrary) {
             return "Card is not in your hand"
         }
 
@@ -871,6 +874,31 @@ class CastSpellHandler(
                 prompt = decision.prompt
             )
         )
+    }
+
+    /**
+     * Check if a card is on top of the player's library and the player controls
+     * a permanent with PlayFromTopOfLibrary (e.g., Future Sight).
+     */
+    private fun isOnTopOfLibraryWithPermission(
+        state: GameState,
+        playerId: EntityId,
+        cardId: EntityId
+    ): Boolean {
+        val library = state.getLibrary(playerId)
+        if (library.isEmpty() || library.first() != cardId) return false
+        return hasPlayFromTopOfLibrary(state, playerId)
+    }
+
+    private fun hasPlayFromTopOfLibrary(state: GameState, playerId: EntityId): Boolean {
+        for (entityId in state.getBattlefield(playerId)) {
+            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry?.getCard(card.cardDefinitionId) ?: continue
+            if (cardDef.script.staticAbilities.any { it is PlayFromTopOfLibrary }) {
+                return true
+            }
+        }
+        return false
     }
 
     companion object {

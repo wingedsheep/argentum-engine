@@ -15,7 +15,9 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EntersTapped
+import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
 import kotlin.reflect.KClass
 
 /**
@@ -60,9 +62,11 @@ class PlayLandHandler(
             return "You can only play land cards as lands"
         }
 
-        // Check card is in hand
+        // Check card is in hand or on top of library with PlayFromTopOfLibrary
         val handZone = ZoneKey(action.playerId, Zone.HAND)
-        if (action.cardId !in state.getZone(handZone)) {
+        val inHand = action.cardId in state.getZone(handZone)
+        val onTopOfLibrary = !inHand && isOnTopOfLibraryWithPermission(state, action.playerId, action.cardId)
+        if (!inHand && !onTopOfLibrary) {
             return "Land is not in your hand"
         }
 
@@ -78,9 +82,12 @@ class PlayLandHandler(
 
         var newState = state
 
-        // Remove from hand
+        // Remove from hand or library (whichever zone the card is in)
         val handZone = ZoneKey(action.playerId, Zone.HAND)
-        newState = newState.removeFromZone(handZone, action.cardId)
+        val libraryZone = ZoneKey(action.playerId, Zone.LIBRARY)
+        val fromZone = if (action.cardId in state.getZone(handZone)) Zone.HAND else Zone.LIBRARY
+        val sourceZoneKey = if (fromZone == Zone.HAND) handZone else libraryZone
+        newState = newState.removeFromZone(sourceZoneKey, action.cardId)
 
         // Add to battlefield
         val battlefieldZone = ZoneKey(action.playerId, Zone.BATTLEFIELD)
@@ -108,7 +115,7 @@ class PlayLandHandler(
         val zoneChangeEvent = ZoneChangeEvent(
             action.cardId,
             cardComponent.name,
-            Zone.HAND,
+            fromZone,
             Zone.BATTLEFIELD,
             action.playerId
         )
@@ -136,6 +143,27 @@ class PlayLandHandler(
         }
 
         return ExecutionResult.success(newState, events)
+    }
+
+    private fun isOnTopOfLibraryWithPermission(
+        state: GameState,
+        playerId: EntityId,
+        cardId: EntityId
+    ): Boolean {
+        val library = state.getLibrary(playerId)
+        if (library.isEmpty() || library.first() != cardId) return false
+        return hasPlayFromTopOfLibrary(state, playerId)
+    }
+
+    private fun hasPlayFromTopOfLibrary(state: GameState, playerId: EntityId): Boolean {
+        for (entityId in state.getBattlefield(playerId)) {
+            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry?.getCard(card.cardDefinitionId) ?: continue
+            if (cardDef.script.staticAbilities.any { it is PlayFromTopOfLibrary }) {
+                return true
+            }
+        }
+        return false
     }
 
     companion object {
