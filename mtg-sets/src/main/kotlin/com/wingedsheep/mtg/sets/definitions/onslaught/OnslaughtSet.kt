@@ -343,6 +343,7 @@ object OnslaughtSet {
 
         // Lands
         BloodstainedMire,
+        FloodedStrand,
         PollutedDelta,
         WindsweptHeath,
         WoodedFoothills,
