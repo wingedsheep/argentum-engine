@@ -30,6 +30,7 @@ class PermanentExecutors(
         ChooseColorProtectionTargetExecutor(decisionHandler),
         ChangeCreatureTypeTextExecutor(decisionHandler),
         GainControlExecutor(),
+        GainControlByActivePlayerExecutor(),
         GainControlOfGroupExecutor(),
         GainControlByMostOfSubtypeExecutor(),
         GiveControlToTargetPlayerExecutor(),

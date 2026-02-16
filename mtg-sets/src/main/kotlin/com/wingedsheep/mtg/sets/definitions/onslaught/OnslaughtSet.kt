@@ -252,6 +252,7 @@ object OnslaughtSet {
         MenacingOgre,
         PinpointAvalanche,
         RecklessOne,
+        RiskyMove,
         RorixBladewing,
         SearingFlesh,
         Shock,

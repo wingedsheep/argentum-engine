@@ -384,6 +384,22 @@ data class GainControlEffect(
 }
 
 /**
+ * Gain control of target permanent for the active player (whoever's turn it is).
+ * Unlike GainControlEffect which gives control to the ability's controller,
+ * this gives control to the current active player.
+ *
+ * Used by Risky Move: "At the beginning of each player's upkeep, that player
+ * gains control of Risky Move."
+ */
+@SerialName("GainControlByActivePlayer")
+@Serializable
+data class GainControlByActivePlayerEffect(
+    val target: EffectTarget = EffectTarget.Self
+) : Effect {
+    override val description: String = "that player gains control of ${target.description}"
+}
+
+/**
  * Turn target creature face down.
  * "Turn target creature with a morph ability face down."
  * Used for Backslide and similar effects.

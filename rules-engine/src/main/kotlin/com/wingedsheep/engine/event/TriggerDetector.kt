@@ -3,6 +3,7 @@ package com.wingedsheep.engine.event
 import com.wingedsheep.engine.core.AttackersDeclaredEvent
 import com.wingedsheep.engine.core.BlockersDeclaredEvent
 import com.wingedsheep.engine.core.CardCycledEvent
+import com.wingedsheep.engine.core.ControlChangedEvent
 import com.wingedsheep.engine.core.CardsDrawnEvent
 import com.wingedsheep.engine.core.DamageDealtEvent
 import com.wingedsheep.engine.core.LifeChangedEvent
@@ -350,6 +351,11 @@ class TriggerDetector(
             detectSubtypeDamageToPlayerTriggers(state, event, triggers, projected)
         }
 
+        // Handle "when you gain control of this from another player" triggers (e.g., Risky Move)
+        if (event is ControlChangedEvent) {
+            detectControlChangeTriggers(state, event, triggers)
+        }
+
         return triggers
     }
 
@@ -685,6 +691,47 @@ class TriggerDetector(
         }
     }
 
+    /**
+     * Detect "when you gain control of this from another player" triggers.
+     * Fires on the permanent whose control just changed, when the new controller
+     * is different from the old controller.
+     */
+    private fun detectControlChangeTriggers(
+        state: GameState,
+        event: ControlChangedEvent,
+        triggers: MutableList<PendingTrigger>
+    ) {
+        val entityId = event.permanentId
+        val container = state.getEntity(entityId) ?: return
+        val cardComponent = container.get<CardComponent>() ?: return
+
+        // Face-down creatures have no abilities (Rule 707.2)
+        if (container.has<FaceDownComponent>()) return
+
+        // Only fire if control actually changed
+        if (event.oldControllerId == event.newControllerId) return
+
+        val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
+
+        for (ability in abilities) {
+            if (ability.trigger is OnGainControlOfSelf) {
+                // The new controller controls this triggered ability
+                triggers.add(
+                    PendingTrigger(
+                        ability = ability,
+                        sourceId = entityId,
+                        sourceName = cardComponent.name,
+                        controllerId = event.newControllerId,
+                        triggerContext = TriggerContext(
+                            triggeringEntityId = entityId,
+                            triggeringPlayerId = event.newControllerId
+                        )
+                    )
+                )
+            }
+        }
+    }
+
     private fun detectDamageSourceTriggers(
         state: GameState,
         event: DamageDealtEvent,
@@ -939,6 +986,9 @@ class TriggerDetector(
             is OnDamagedByCreature -> false
             is OnDamagedBySpell -> false
 
+            // Handled separately in detectControlChangeTriggers
+            is OnGainControlOfSelf -> false
+
             // Phase/step triggers are handled separately
             is OnUpkeep, is OnEndStep, is OnBeginCombat, is OnFirstMainPhase -> false
             is OnEnchantedCreatureControllerUpkeep -> false
@@ -1118,6 +1168,10 @@ data class TriggerContext(
                 is TurnFaceUpEvent -> TriggerContext(
                     triggeringEntityId = event.entityId,
                     triggeringPlayerId = event.controllerId
+                )
+                is ControlChangedEvent -> TriggerContext(
+                    triggeringEntityId = event.permanentId,
+                    triggeringPlayerId = event.newControllerId
                 )
                 else -> TriggerContext()
             }

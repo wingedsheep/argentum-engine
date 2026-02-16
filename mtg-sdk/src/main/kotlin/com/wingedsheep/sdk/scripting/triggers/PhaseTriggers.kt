@@ -83,3 +83,15 @@ data class OnFirstMainPhase(
 data object OnEnchantedCreatureControllerUpkeep : Trigger {
     override val description: String = "At the beginning of enchanted creature's controller's upkeep"
 }
+
+/**
+ * Triggers when you gain control of this permanent from another player.
+ * Used by Risky Move: "When you gain control of Risky Move from another player, ..."
+ *
+ * Detected from ControlChangedEvent where the permanent is this source entity
+ * and the old and new controllers are different.
+ */
+@Serializable
+data object OnGainControlOfSelf : Trigger {
+    override val description: String = "When you gain control of this permanent from another player"
+}

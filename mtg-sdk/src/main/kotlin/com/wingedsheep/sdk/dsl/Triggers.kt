@@ -159,6 +159,12 @@ object Triggers {
      */
     val EnchantedCreatureControllerUpkeep: Trigger = OnEnchantedCreatureControllerUpkeep
 
+    /**
+     * When you gain control of this permanent from another player.
+     * Used by Risky Move.
+     */
+    val GainControlOfSelf: Trigger = OnGainControlOfSelf
+
     // =========================================================================
     // Card Drawing Triggers
     // =========================================================================
