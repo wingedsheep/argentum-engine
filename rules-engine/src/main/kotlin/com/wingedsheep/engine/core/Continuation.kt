@@ -1447,6 +1447,25 @@ data class HarshMercyContinuation(
 ) : ContinuationFrame
 
 /**
+ * Continuation for Peer Pressure.
+ * The controller chooses a creature type. If they control more creatures of that type
+ * than each other player, they gain control of all creatures of that type.
+ *
+ * @property controllerId The controller of the spell
+ * @property sourceId The spell that created this effect
+ * @property sourceName Name of the source for display
+ * @property creatureTypes The creature type options list
+ */
+@Serializable
+data class PeerPressureContinuation(
+    override val decisionId: String,
+    val controllerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val creatureTypes: List<String>
+) : ContinuationFrame
+
+/**
  * Continuation for Patriarch's Bidding.
  * Each player chooses a creature type (APNAP order). After all choices, all creature cards
  * matching any chosen type are returned from all graveyards to the battlefield.

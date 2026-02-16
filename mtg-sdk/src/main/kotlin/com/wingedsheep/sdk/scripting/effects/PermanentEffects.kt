@@ -669,6 +669,21 @@ data class GainControlOfGroupEffect(
 }
 
 /**
+ * Choose a creature type. If you control more creatures of that type than each other player,
+ * you gain control of all creatures of that type.
+ *
+ * Used for Peer Pressure. The controller chooses a creature type at resolution, then
+ * if they control strictly more creatures of that type than each other player,
+ * they gain control of all creatures of that type (permanently).
+ */
+@SerialName("PeerPressure")
+@Serializable
+data object PeerPressureEffect : Effect {
+    override val description: String =
+        "Choose a creature type. If you control more creatures of that type than each other player, you gain control of all creatures of that type"
+}
+
+/**
  * Untap all creatures matching a filter.
  * "Untap all creatures."
  *

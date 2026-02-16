@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 327 / 335
+**Implemented:** 328 / 335
 
 ---
 
@@ -216,7 +216,7 @@
 - [x] Pacifism
 - [x] Patriarch's Bidding
 - [x] Pearlspear Courier
-- [ ] Peer Pressure
+- [x] Peer Pressure
 - [x] Piety Charm
 - [x] Pinpoint Avalanche
 - [x] Plains

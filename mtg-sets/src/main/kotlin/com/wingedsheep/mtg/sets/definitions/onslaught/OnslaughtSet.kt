@@ -146,6 +146,7 @@ object OnslaughtSet {
         TradeSecrets,
         SpyNetwork,
         SupremeInquisitor,
+        PeerPressure,
 
         // Black creatures and spells
         AccursedCentaur,
