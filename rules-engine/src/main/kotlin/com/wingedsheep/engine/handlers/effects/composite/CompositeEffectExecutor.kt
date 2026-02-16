@@ -30,6 +30,7 @@ class CompositeEffectExecutor(
         context: EffectContext
     ): ExecutionResult {
         var currentState = state
+        var currentContext = context
         val allEvents = mutableListOf<com.wingedsheep.engine.core.GameEvent>()
 
         for ((index, subEffect) in effect.effects.withIndex()) {
@@ -45,18 +46,19 @@ class CompositeEffectExecutor(
                 val continuation = EffectContinuation(
                     decisionId = "pending", // Will be found by checkForMoreContinuations
                     remainingEffects = remainingEffects,
-                    sourceId = context.sourceId,
-                    controllerId = context.controllerId,
-                    opponentId = context.opponentId,
-                    xValue = context.xValue,
-                    targets = context.targets
+                    sourceId = currentContext.sourceId,
+                    controllerId = currentContext.controllerId,
+                    opponentId = currentContext.opponentId,
+                    xValue = currentContext.xValue,
+                    targets = currentContext.targets,
+                    storedCollections = currentContext.storedCollections
                 )
                 currentState.pushContinuation(continuation)
             } else {
                 currentState
             }
 
-            val result = effectExecutor(stateForExecution, subEffect, context)
+            val result = effectExecutor(stateForExecution, subEffect, currentContext)
 
             if (!result.isSuccess && !result.isPaused) {
                 // Sub-effect failed - skip it and continue with remaining effects.
@@ -93,6 +95,13 @@ class CompositeEffectExecutor(
                 result.state
             }
             allEvents.addAll(result.events)
+
+            // Merge any updated collections from the sub-effect into the context
+            if (result.updatedCollections.isNotEmpty()) {
+                currentContext = currentContext.copy(
+                    storedCollections = currentContext.storedCollections + result.updatedCollections
+                )
+            }
         }
 
         return ExecutionResult.success(currentState, allEvents)

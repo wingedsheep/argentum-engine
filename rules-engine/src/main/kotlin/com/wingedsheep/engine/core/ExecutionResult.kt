@@ -110,7 +110,9 @@ data class ExecutionResult(
     val state: GameState,
     val events: List<GameEvent> = emptyList(),
     val error: String? = null,
-    val pendingDecision: PendingDecision? = null
+    val pendingDecision: PendingDecision? = null,
+    /** Updated card collections from pipeline effects (GatherCards, SelectFromCollection) */
+    val updatedCollections: Map<String, List<EntityId>> = emptyMap()
 ) {
     val isSuccess: Boolean get() = error == null && pendingDecision == null
     val isPaused: Boolean get() = pendingDecision != null
@@ -130,7 +132,8 @@ data class ExecutionResult(
             state = next.state,
             events = events + next.events,
             error = next.error,
-            pendingDecision = next.pendingDecision
+            pendingDecision = next.pendingDecision,
+            updatedCollections = updatedCollections + next.updatedCollections
         )
     }
 

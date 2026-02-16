@@ -101,7 +101,8 @@ class ContinuationHandler(
             is ReorderOpponentLibraryContinuation -> resumeReorderOpponentLibrary(stateAfterPop, continuation, response)
             is PayOrSufferContinuation -> resumePayOrSuffer(stateAfterPop, continuation, response)
             is DistributeDamageContinuation -> resumeDistributeDamage(stateAfterPop, continuation, response)
-            is LookAtTopCardsContinuation -> resumeLookAtTopCards(stateAfterPop, continuation, response)
+            is SelectFromCollectionContinuation -> resumeSelectFromCollection(stateAfterPop, continuation, response)
+
             is RevealAndOpponentChoosesContinuation -> resumeRevealAndOpponentChooses(stateAfterPop, continuation, response)
             is ChooseColorProtectionContinuation -> resumeChooseColorProtection(stateAfterPop, continuation, response)
             is ChooseColorProtectionTargetContinuation -> resumeChooseColorProtectionTarget(stateAfterPop, continuation, response)
@@ -2666,73 +2667,47 @@ class ContinuationHandler(
      * cards from the looked-at set go to graveyard (if restToGraveyard is true)
      * or stay on top of the library (if false).
      */
-    private fun resumeLookAtTopCards(
+    /**
+     * Resume after player selects cards from a pipeline collection.
+     *
+     * Splits the collection into selected and remainder, then injects
+     * both into the next EffectContinuation on the stack (if present)
+     * so subsequent pipeline steps can read them.
+     */
+    private fun resumeSelectFromCollection(
         state: GameState,
-        continuation: LookAtTopCardsContinuation,
+        continuation: SelectFromCollectionContinuation,
         response: DecisionResponse
     ): ExecutionResult {
         if (response !is CardsSelectedResponse) {
-            return ExecutionResult.error(state, "Expected card selection response for look at top cards")
+            return ExecutionResult.error(state, "Expected card selection response for SelectFromCollection")
         }
 
-        val playerId = continuation.playerId
-        val selectedCards = response.selectedCards.toSet()
-        val libraryZone = ZoneKey(playerId, Zone.LIBRARY)
-        val handZone = ZoneKey(playerId, Zone.HAND)
-        val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
-        val events = mutableListOf<GameEvent>()
+        val selectedSet = response.selectedCards.toSet()
+        val selected = continuation.allCards.filter { it in selectedSet }
+        val remainder = continuation.allCards.filter { it !in selectedSet }
 
-        var newState = state
-
-        // Process all looked-at cards
-        for (cardId in continuation.allCards) {
-            val cardName = newState.getEntity(cardId)?.get<CardComponent>()?.name ?: "Unknown"
-
-            // Remove from library first
-            newState = newState.removeFromZone(libraryZone, cardId)
-
-            if (cardId in selectedCards) {
-                // Selected cards go to hand
-                newState = newState.addToZone(handZone, cardId)
-                events.add(
-                    ZoneChangeEvent(
-                        entityId = cardId,
-                        entityName = cardName,
-                        fromZone = Zone.LIBRARY,
-                        toZone = Zone.HAND,
-                        ownerId = playerId
-                    )
-                )
-            } else {
-                // Non-selected cards go to graveyard or stay on top of library
-                if (continuation.restToGraveyard) {
-                    newState = newState.addToZone(graveyardZone, cardId)
-                    events.add(
-                        ZoneChangeEvent(
-                            entityId = cardId,
-                            entityName = cardName,
-                            fromZone = Zone.LIBRARY,
-                            toZone = Zone.GRAVEYARD,
-                            ownerId = playerId
-                        )
-                    )
-                } else {
-                    // Put back on top of library
-                    val currentLibrary = newState.getZone(libraryZone)
-                    newState = newState.copy(
-                        zones = newState.zones + (libraryZone to listOf(cardId) + currentLibrary)
-                    )
-                }
-            }
+        // Build the updated collections
+        val updatedCollections = continuation.storedCollections.toMutableMap()
+        updatedCollections[continuation.storeSelected] = selected
+        if (continuation.storeRemainder != null) {
+            updatedCollections[continuation.storeRemainder] = remainder
         }
 
-        // Add a cards drawn event for the selected cards
-        if (selectedCards.isNotEmpty()) {
-            events.add(0, CardsDrawnEvent(playerId, selectedCards.size, selectedCards.toList()))
+        // Inject updated collections into the next EffectContinuation on the stack (if present)
+        val nextFrame = state.peekContinuation()
+        val newState = if (nextFrame is EffectContinuation) {
+            val (_, stateAfterPop) = state.popContinuation()
+            stateAfterPop.pushContinuation(
+                nextFrame.copy(storedCollections = updatedCollections)
+            )
+        } else {
+            state
         }
 
-        return checkForMoreContinuations(newState, events)
+        return checkForMoreContinuations(newState, emptyList())
     }
+
 
     /**
      * Resume after opponent chose a card from revealed top cards.
@@ -4421,7 +4396,7 @@ class ContinuationHandler(
         if (nextContinuation is EffectContinuation && nextContinuation.remainingEffects.isNotEmpty()) {
             // Pop and process the effect continuation
             val (_, stateAfterPop) = state.popContinuation()
-            val context = nextContinuation.toEffectContext()
+            var currentContext = nextContinuation.toEffectContext()
             var currentState = stateAfterPop
             val allEvents = events.toMutableList()
 
@@ -4438,14 +4413,15 @@ class ContinuationHandler(
                         sourceId = nextContinuation.sourceId,
                         controllerId = nextContinuation.controllerId,
                         opponentId = nextContinuation.opponentId,
-                        xValue = nextContinuation.xValue
+                        xValue = nextContinuation.xValue,
+                        storedCollections = currentContext.storedCollections
                     )
                     currentState.pushContinuation(remainingContinuation)
                 } else {
                     currentState
                 }
 
-                val result = effectExecutorRegistry.execute(stateForExecution, effect, context)
+                val result = effectExecutorRegistry.execute(stateForExecution, effect, currentContext)
 
                 if (!result.isSuccess && !result.isPaused) {
                     // Sub-effect failed - skip it and continue with remaining effects.
@@ -4479,6 +4455,13 @@ class ContinuationHandler(
                     result.state
                 }
                 allEvents.addAll(result.events)
+
+                // Merge any updated collections from the sub-effect into the context
+                if (result.updatedCollections.isNotEmpty()) {
+                    currentContext = currentContext.copy(
+                        storedCollections = currentContext.storedCollections + result.updatedCollections
+                    )
+                }
             }
 
             return ExecutionResult.success(currentState, allEvents)

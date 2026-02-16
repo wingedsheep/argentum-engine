@@ -186,6 +186,7 @@ val engineSerializersModule = SerializersModule {
         subclass(SearchTargetLibraryExileContinuation::class)
         subclass(KaboomReorderContinuation::class)
         subclass(TradeSecretsContinuation::class)
+        subclass(SelectFromCollectionContinuation::class)
     }
 
     // Component hierarchy (for GameState persistence)

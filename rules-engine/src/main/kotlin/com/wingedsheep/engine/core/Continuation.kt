@@ -106,7 +106,8 @@ data class EffectContinuation(
     val controllerId: EntityId,
     val opponentId: EntityId?,
     val xValue: Int?,
-    val targets: List<ChosenTarget> = emptyList()
+    val targets: List<ChosenTarget> = emptyList(),
+    val storedCollections: Map<String, List<EntityId>> = emptyMap()
 ) : ContinuationFrame {
     /**
      * Reconstruct the EffectContext from serialized fields.
@@ -116,7 +117,8 @@ data class EffectContinuation(
         controllerId = controllerId,
         opponentId = opponentId,
         xValue = xValue,
-        targets = targets
+        targets = targets,
+        storedCollections = storedCollections
     )
 }
 
@@ -551,28 +553,33 @@ data class DistributeDamageContinuation(
 ) : ContinuationFrame
 
 /**
- * Resume after player selects cards to keep from looking at top cards of library.
+ * Resume after player selects cards from a named pipeline collection.
  *
- * Used for effects like Ancestral Memories: "Look at the top N cards of your library.
- * Put X of them into your hand and the rest into your graveyard."
+ * Used by SelectFromCollectionEffect: the player has chosen cards from a gathered
+ * collection. The selected cards are stored under [storeSelected] and the remainder
+ * (if [storeRemainder] is non-null) is stored under that name. Both collections are
+ * injected into the next EffectContinuation's storedCollections.
  *
- * @property playerId The player who is looking at and selecting cards
+ * @property playerId The player who made the selection
  * @property sourceId The spell/ability that caused this effect
  * @property sourceName Name of the source for event messages
- * @property allCards All the cards that were looked at (for validation and moving non-selected)
- * @property keepCount Number of cards the player must keep (put in hand)
- * @property restToGraveyard If true, non-selected cards go to graveyard; if false, they stay on top of library
+ * @property allCards All the cards in the collection being selected from
+ * @property storeSelected Name to store the selected cards under
+ * @property storeRemainder Name to store non-selected cards under (null = discard)
+ * @property storedCollections Snapshot of pipeline collections at time of pause
  */
 @Serializable
-data class LookAtTopCardsContinuation(
+data class SelectFromCollectionContinuation(
     override val decisionId: String,
     val playerId: EntityId,
     val sourceId: EntityId?,
     val sourceName: String?,
     val allCards: List<EntityId>,
-    val keepCount: Int,
-    val restToGraveyard: Boolean
+    val storeSelected: String,
+    val storeRemainder: String?,
+    val storedCollections: Map<String, List<EntityId>> = emptyMap()
 ) : ContinuationFrame
+
 
 /**
  * Resume after an opponent chooses a card from revealed top cards.

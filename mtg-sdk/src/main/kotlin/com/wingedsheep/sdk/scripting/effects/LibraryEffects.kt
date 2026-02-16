@@ -8,24 +8,6 @@ import kotlinx.serialization.Serializable
 // =============================================================================
 
 /**
- * Look at the top N cards and choose some to keep.
- * "Look at the top N cards of your library. Put X of them into your hand and the rest into your graveyard."
- */
-@SerialName("LookAtTopCards")
-@Serializable
-data class LookAtTopCardsEffect(
-    val count: Int,
-    val keepCount: Int,
-    val restToGraveyard: Boolean = true
-) : Effect {
-    override val description: String = buildString {
-        append("Look at the top $count cards of your library. ")
-        append("Put $keepCount of them into your hand and the rest into your ")
-        append(if (restToGraveyard) "graveyard" else "library in any order")
-    }
-}
-
-/**
  * Look at the top N cards of a library and put them back in any order.
  * This is the atomic "scry-like" or "look and reorder" primitive.
  *
