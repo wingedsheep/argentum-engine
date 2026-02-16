@@ -74,6 +74,7 @@ object OnslaughtSet {
         UnifiedStrike,
         Whipcorder,
         Mobilization,
+        ShieldmageElder,
         SharedTriumph,
         TrueBeliever,
         ConvalescentCare,

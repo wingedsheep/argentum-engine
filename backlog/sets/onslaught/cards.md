@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 321 / 335
+**Implemented:** 322 / 335
 
 ---
 
@@ -257,7 +257,7 @@
 - [x] Shaleskin Bruiser
 - [x] Shared Triumph
 - [x] Shepherd of Rot
-- [ ] Shieldmage Elder
+- [x] Shieldmage Elder
 - [x] Shock
 - [x] Sigil of the New Dawn
 - [x] Silent Specter
