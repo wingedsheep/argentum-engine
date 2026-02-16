@@ -35,6 +35,23 @@ function getCardFallbackColor(colors: readonly Color[]): string {
   }
 }
 
+/** Color-to-frame-color mapping for token card frames. */
+const COLOR_FRAME: Record<Color, [string, string]> = {
+  [Color.WHITE]: ['#f0e8d0', '#d4c9a8'],
+  [Color.BLUE]:  ['#1a4a7a', '#0d2d50'],
+  [Color.BLACK]: ['#3a3040', '#1e1828'],
+  [Color.RED]:   ['#8a2a1a', '#5a1a10'],
+  [Color.GREEN]: ['#1a5a2a', '#0d3a18'],
+}
+
+/** Returns a CSS gradient for the token card frame based on colors. */
+function getTokenFrameGradient(colors: readonly Color[]): string {
+  if (colors.length === 0) return 'linear-gradient(180deg, #4a4a5e 0%, #2a2a3e 100%)'
+  if (colors.length > 1) return 'linear-gradient(180deg, #b8953a 0%, #7a6320 100%)'
+  const [light, dark] = COLOR_FRAME[colors[0]!] ?? ['#4a4a5e', '#2a2a3e']
+  return `linear-gradient(180deg, ${light} 0%, ${dark} 100%)`
+}
+
 interface GameCardProps {
   card: ClientCard
   count?: number
@@ -647,55 +664,85 @@ export function GameCard({
         userSelect: 'none',
       }}
     >
-      <img
-        src={cardImageUrl}
-        alt={faceDown ? 'Card back' : card.name}
-        style={styles.cardImage}
-        onError={(e) => {
-          const img = e.currentTarget
-          const fallbackUrl = getScryfallFallbackUrl(card.name, 'normal')
-          // Try Scryfall API fallback if not already using it
-          if (!faceDown && !img.src.includes('api.scryfall.com')) {
-            img.src = fallbackUrl
-          } else {
-            // Both imageUri and Scryfall failed, show text fallback
-            img.style.display = 'none'
-            const fallback = img.nextElementSibling as HTMLElement
-            if (fallback) fallback.style.display = 'flex'
-          }
-        }}
-      />
-      {/* Fallback when image fails */}
-      <div style={styles.cardFallback}>
+      {/* Token with art_crop image — render a custom card frame */}
+      {!faceDown && card.isToken && card.imageUri ? (
         <div style={{
-          ...styles.cardFallbackInner,
-          backgroundColor: getCardFallbackColor(card.colors),
+          ...styles.tokenFrame,
+          background: getTokenFrameGradient(card.colors),
         }}>
-          <span style={{
-            ...styles.cardFallbackName,
-            fontSize: responsive.fontSize.small,
+          <div style={{
+            ...styles.tokenNameBar,
+            fontSize: responsive.isMobile ? 8 : 10,
           }}>
-            {faceDown ? '' : card.name}
-          </span>
-          {!faceDown && card.typeLine && (
-            <span style={{
-              ...styles.cardFallbackType,
-              fontSize: Math.max(responsive.fontSize.small - 2, 8),
-            }}>
-              {card.typeLine}
-            </span>
-          )}
-          {!faceDown && card.power !== null && card.toughness !== null && (
-            <span style={{
-              ...styles.cardFallbackPT,
-              fontSize: responsive.fontSize.normal,
-              color: getPTColor(card.power, card.toughness, card.basePower, card.baseToughness),
-            }}>
-              {card.power}/{card.toughness}
-            </span>
-          )}
+            {card.name}
+          </div>
+          <div style={styles.tokenArtBox}>
+            <img
+              src={cardImageUrl}
+              alt={card.name}
+              style={styles.tokenArtImage}
+            />
+          </div>
+          <div style={{
+            ...styles.tokenTypeBar,
+            fontSize: responsive.isMobile ? 7 : 9,
+          }}>
+            {card.typeLine}
+          </div>
         </div>
-      </div>
+      ) : (
+        <>
+          <img
+            src={cardImageUrl}
+            alt={faceDown ? 'Card back' : card.name}
+            style={styles.cardImage}
+            onError={(e) => {
+              const img = e.currentTarget
+              const fallbackUrl = getScryfallFallbackUrl(card.name, 'normal')
+              // Try Scryfall API fallback if not already using it
+              if (!faceDown && !img.src.includes('api.scryfall.com')) {
+                img.src = fallbackUrl
+              } else {
+                // Both imageUri and Scryfall failed, show text fallback
+                img.style.display = 'none'
+                const fallback = img.nextElementSibling as HTMLElement
+                if (fallback) fallback.style.display = 'flex'
+              }
+            }}
+          />
+          {/* Fallback when image fails */}
+          <div style={styles.cardFallback}>
+            <div style={{
+              ...styles.cardFallbackInner,
+              backgroundColor: getCardFallbackColor(card.colors),
+            }}>
+              <span style={{
+                ...styles.cardFallbackName,
+                fontSize: responsive.fontSize.small,
+              }}>
+                {faceDown ? '' : card.name}
+              </span>
+              {!faceDown && card.typeLine && (
+                <span style={{
+                  ...styles.cardFallbackType,
+                  fontSize: Math.max(responsive.fontSize.small - 2, 8),
+                }}>
+                  {card.typeLine}
+                </span>
+              )}
+              {!faceDown && card.power !== null && card.toughness !== null && (
+                <span style={{
+                  ...styles.cardFallbackPT,
+                  fontSize: responsive.fontSize.normal,
+                  color: getPTColor(card.power, card.toughness, card.basePower, card.baseToughness),
+                }}>
+                  {card.power}/{card.toughness}
+                </span>
+              )}
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Tapped indicator */}
       {isTapped && (
