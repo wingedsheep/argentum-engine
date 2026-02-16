@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 322 / 335
+**Implemented:** 323 / 335
 
 ---
 
@@ -288,7 +288,7 @@
 - [x] Steely Resolve
 - [x] Strongarm Tactics
 - [x] Sunfire Balm
-- [ ] Supreme Inquisitor
+- [x] Supreme Inquisitor
 - [x] Swamp
 - [x] Swat
 - [x] Symbiotic Beast

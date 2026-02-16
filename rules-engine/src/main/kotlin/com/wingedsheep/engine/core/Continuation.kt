@@ -1889,6 +1889,26 @@ data class DrawReplacementActivationContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after controller selects cards from target player's library to exile.
+ *
+ * Used for Supreme Inquisitor: "Search target player's library for up to five cards
+ * and exile them. Then that player shuffles."
+ *
+ * @property controllerId The player making the selections (controller of the ability)
+ * @property targetPlayerId The player whose library is being searched
+ * @property sourceId The ability source
+ * @property sourceName Name of the source for event messages
+ */
+@Serializable
+data class SearchTargetLibraryExileContinuation(
+    override val decisionId: String,
+    val controllerId: EntityId,
+    val targetPlayerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?
+) : ContinuationFrame
+
+/**
  * Information about a mana source available for manual selection.
  */
 @Serializable

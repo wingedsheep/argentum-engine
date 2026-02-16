@@ -164,6 +164,7 @@ class ContinuationHandler(
             is DrawReplacementBounceContinuation -> resumeDrawReplacementBounce(stateAfterPop, continuation, response)
             is DrawReplacementDiscardContinuation -> resumeDrawReplacementDiscard(stateAfterPop, continuation, response)
             is DrawReplacementActivationContinuation -> resumeDrawReplacementActivation(stateAfterPop, continuation, response)
+            is SearchTargetLibraryExileContinuation -> resumeSearchTargetLibraryExile(stateAfterPop, continuation, response)
         }
     }
 
@@ -3253,6 +3254,53 @@ class ContinuationHandler(
         }
 
         // Shuffle opponent's library
+        val library = newState.getZone(libraryZone).shuffled()
+        newState = newState.copy(zones = newState.zones + (libraryZone to library))
+        events.add(LibraryShuffledEvent(targetPlayerId))
+
+        return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume after controller selected cards from target player's library to exile.
+     *
+     * Moves selected cards to exile, then shuffles the target player's library.
+     */
+    private fun resumeSearchTargetLibraryExile(
+        state: GameState,
+        continuation: SearchTargetLibraryExileContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for SearchTargetLibraryExile")
+        }
+
+        val targetPlayerId = continuation.targetPlayerId
+        val libraryZone = ZoneKey(targetPlayerId, Zone.LIBRARY)
+        val exileZone = ZoneKey(targetPlayerId, Zone.EXILE)
+        val selectedCards = response.selectedCards
+        val events = mutableListOf<GameEvent>()
+
+        var newState = state
+
+        // Move selected cards from library to exile
+        for (cardId in selectedCards) {
+            newState = newState.removeFromZone(libraryZone, cardId)
+            newState = newState.addToZone(exileZone, cardId)
+
+            val cardComponent = newState.getEntity(cardId)?.get<CardComponent>()
+            events.add(
+                ZoneChangeEvent(
+                    entityId = cardId,
+                    entityName = cardComponent?.name ?: "Unknown",
+                    fromZone = Zone.LIBRARY,
+                    toZone = Zone.EXILE,
+                    ownerId = targetPlayerId
+                )
+            )
+        }
+
+        // Shuffle target player's library
         val library = newState.getZone(libraryZone).shuffled()
         newState = newState.copy(zones = newState.zones + (libraryZone to library))
         events.add(LibraryShuffledEvent(targetPlayerId))
