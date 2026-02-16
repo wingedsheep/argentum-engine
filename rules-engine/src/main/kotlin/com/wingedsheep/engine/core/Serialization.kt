@@ -182,6 +182,7 @@ val engineSerializersModule = SerializersModule {
         subclass(DrawReplacementDiscardContinuation::class)
         subclass(DrawReplacementActivationContinuation::class)
         subclass(ReadTheRunesContinuation::class)
+        subclass(SearchTargetLibraryExileContinuation::class)
     }
 
     // Component hierarchy (for GameState persistence)

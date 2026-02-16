@@ -288,7 +288,7 @@
 - [x] Steely Resolve
 - [x] Strongarm Tactics
 - [x] Sunfire Balm
-- [ ] Supreme Inquisitor
+- [x] Supreme Inquisitor
 - [x] Swamp
 - [x] Swat
 - [x] Symbiotic Beast

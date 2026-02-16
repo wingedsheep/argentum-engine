@@ -27,6 +27,7 @@ class LibraryExecutors : ExecutorModule {
         PutCreatureFromHandSharingTypeExecutor(),
         RevealUntilCreatureTypeExecutor(),
         EachPlayerMayRevealCreaturesExecutor(),
-        EachPlayerSearchesLibraryExecutor()
+        EachPlayerSearchesLibraryExecutor(),
+        SearchTargetLibraryExileExecutor()
     )
 }
