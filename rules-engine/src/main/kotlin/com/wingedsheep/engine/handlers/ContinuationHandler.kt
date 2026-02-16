@@ -145,6 +145,7 @@ class ContinuationHandler(
             is EachPlayerSearchesLibraryContinuation -> resumeEachPlayerSearchesLibrary(stateAfterPop, continuation, response)
             is ChooseCreatureTypeMustAttackContinuation -> resumeChooseCreatureTypeMustAttack(stateAfterPop, continuation, response)
             is ChooseCreatureTypeUntapContinuation -> resumeChooseCreatureTypeUntap(stateAfterPop, continuation, response)
+            is PeerPressureContinuation -> resumePeerPressure(stateAfterPop, continuation, response)
             is HarshMercyContinuation -> resumeHarshMercy(stateAfterPop, continuation, response)
             is PatriarchsBiddingContinuation -> resumePatriarchsBidding(stateAfterPop, continuation, response)
             is ChainCopyDecisionContinuation -> resumeChainCopyDecision(stateAfterPop, continuation, response)
@@ -5235,6 +5236,31 @@ class ContinuationHandler(
         }
 
         return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume after the controller chose a creature type for Peer Pressure.
+     *
+     * If the controller controls more creatures of that type than each other player,
+     * gain control of all creatures of that type.
+     */
+    private fun resumePeerPressure(
+        state: GameState,
+        continuation: PeerPressureContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is OptionChosenResponse) {
+            return ExecutionResult.error(state, "Expected option choice response for creature type selection")
+        }
+
+        val chosenType = continuation.creatureTypes.getOrNull(response.optionIndex)
+            ?: return ExecutionResult.error(state, "Invalid creature type index: ${response.optionIndex}")
+
+        val result = com.wingedsheep.engine.handlers.effects.permanent.PeerPressureExecutor.applyPeerPressure(
+            state, chosenType, continuation.controllerId, continuation.sourceId, continuation.sourceName
+        )
+
+        return checkForMoreContinuations(result.newState, result.events)
     }
 
     /**
