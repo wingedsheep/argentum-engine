@@ -235,6 +235,7 @@ object OnslaughtSet {
         FlamestickCourier,
         GratuitousViolence,
         Insurrection,
+        ManaEchoes,
         GoblinMachinist,
         GoblinPiledriver,
         GoblinPyromancer,

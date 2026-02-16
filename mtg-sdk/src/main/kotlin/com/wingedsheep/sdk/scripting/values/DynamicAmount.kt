@@ -335,4 +335,14 @@ sealed interface DynamicAmount {
             }
         }
     }
+
+    /**
+     * Count creatures the controller controls that share a creature type with the triggering entity.
+     * Used for Mana Echoes: "add {C} equal to the number of creatures you control that share a creature type with it."
+     */
+    @SerialName("CreaturesSharingTypeWithTriggeringEntity")
+    @Serializable
+    data object CreaturesSharingTypeWithTriggeringEntity : DynamicAmount {
+        override val description: String = "the number of creatures you control that share a creature type with it"
+    }
 }

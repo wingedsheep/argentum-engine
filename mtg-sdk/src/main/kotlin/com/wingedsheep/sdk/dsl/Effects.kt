@@ -202,6 +202,12 @@ object Effects {
         AddColorlessManaEffect(amount)
 
     /**
+     * Add a dynamic amount of colorless mana.
+     */
+    fun AddColorlessMana(amount: DynamicAmount): Effect =
+        AddDynamicColorlessManaEffect(amount)
+
+    /**
      * Add one mana of any color.
      */
     fun AddAnyColorMana(amount: Int = 1): Effect =

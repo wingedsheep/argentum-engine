@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 331 / 335
+**Implemented:** 332 / 335
 
 ---
 
@@ -191,7 +191,7 @@
 - [x] Lightning Rift
 - [x] Lonely Sandbar
 - [x] Mage's Guile
-- [ ] Mana Echoes
+- [x] Mana Echoes
 - [x] Meddle
 - [x] Menacing Ogre
 - [x] Misery Charm

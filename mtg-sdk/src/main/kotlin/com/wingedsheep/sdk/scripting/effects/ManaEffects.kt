@@ -88,3 +88,17 @@ data class AddDynamicColorManaEffect(
         append("Add {${color.symbol}} for each ${amountSource.description}")
     }
 }
+
+/**
+ * Add a dynamic amount of colorless mana.
+ * "Add an amount of {C} equal to the number of creatures you control that share a creature type with it."
+ *
+ * @property amountSource What determines the amount of mana to add
+ */
+@SerialName("AddDynamicColorlessMana")
+@Serializable
+data class AddDynamicColorlessManaEffect(
+    val amountSource: DynamicAmount
+) : Effect {
+    override val description: String = "Add an amount of {C} equal to ${amountSource.description}"
+}

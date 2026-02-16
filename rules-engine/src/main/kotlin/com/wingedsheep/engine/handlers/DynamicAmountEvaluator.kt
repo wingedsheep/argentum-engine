@@ -155,6 +155,41 @@ class DynamicAmountEvaluator(
                 val met = eval.evaluate(state, amount.condition, context)
                 if (met) evaluate(state, amount.ifTrue, context) else evaluate(state, amount.ifFalse, context)
             }
+
+            is DynamicAmount.CreaturesSharingTypeWithTriggeringEntity -> {
+                val triggeringId = context.triggeringEntityId ?: return 0
+                // Get the triggering creature's subtypes from projected state
+                val projected = if (projectForBattlefieldCounting) {
+                    com.wingedsheep.engine.mechanics.layers.StateProjector(
+                        DynamicAmountEvaluator(projectForBattlefieldCounting = false)
+                    ).project(state)
+                } else null
+
+                val triggeringSubtypes = if (projected != null) {
+                    projected.getSubtypes(triggeringId)
+                } else {
+                    val card = state.getEntity(triggeringId)?.get<CardComponent>() ?: return 0
+                    card.typeLine.subtypes.map { it.value }.toSet()
+                }
+                if (triggeringSubtypes.isEmpty()) return 0
+
+                // Count creatures the controller controls that share at least one subtype
+                state.getBattlefield().count { entityId ->
+                    val controllerId = projected?.getController(entityId)
+                        ?: state.getEntity(entityId)?.get<ControllerComponent>()?.playerId
+                    if (controllerId != context.controllerId) return@count false
+                    val isCreature = if (projected != null) {
+                        "CREATURE" in projected.getTypes(entityId)
+                    } else {
+                        state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.isCreature ?: false
+                    }
+                    if (!isCreature) return@count false
+                    val subtypes = projected?.getSubtypes(entityId)
+                        ?: state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.subtypes?.map { it.value }?.toSet()
+                        ?: return@count false
+                    subtypes.intersect(triggeringSubtypes).isNotEmpty()
+                }
+            }
         }
     }
 
