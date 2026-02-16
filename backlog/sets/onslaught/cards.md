@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 320 / 335
+**Implemented:** 321 / 335
 
 ---
 
@@ -62,7 +62,7 @@
 - [x] Chain of Vapor
 - [x] Charging Slateback
 - [x] Choking Tethers
-- [ ] Circle of Solace
+- [x] Circle of Solace
 - [x] Clone
 - [x] Commando Raid
 - [x] Complicate

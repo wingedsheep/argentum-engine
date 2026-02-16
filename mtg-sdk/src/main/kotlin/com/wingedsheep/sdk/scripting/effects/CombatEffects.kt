@@ -191,6 +191,21 @@ data class RedirectNextDamageEffect(
 }
 
 /**
+ * Prevent the next time a creature of the chosen type would deal damage to you this turn.
+ * Used for Circle of Solace: "{1}{W}: The next time a creature of the chosen type would
+ * deal damage to you this turn, prevent that damage."
+ *
+ * Reads the chosen creature type from the source permanent's ChosenCreatureTypeComponent
+ * and creates a prevention shield on the controller.
+ */
+@SerialName("PreventNextDamageFromChosenCreatureType")
+@Serializable
+data object PreventNextDamageFromChosenCreatureTypeEffect : Effect {
+    override val description: String =
+        "The next time a creature of the chosen type would deal damage to you this turn, prevent that damage"
+}
+
+/**
  * Prevent all damage target creature would deal this turn, then its controller may
  * sacrifice a land to copy this spell and may choose a new target for that copy.
  * Used for Chain of Silence.

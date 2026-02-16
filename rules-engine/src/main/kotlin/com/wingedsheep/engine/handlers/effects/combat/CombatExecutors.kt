@@ -23,6 +23,7 @@ class CombatExecutors(
         RemoveFromCombatExecutor(),
         ChooseCreatureTypeMustAttackExecutor(),
         PreventDamageAndChainCopyExecutor(),
-        RedirectNextDamageExecutor()
+        RedirectNextDamageExecutor(),
+        PreventNextDamageFromChosenCreatureTypeExecutor()
     )
 }

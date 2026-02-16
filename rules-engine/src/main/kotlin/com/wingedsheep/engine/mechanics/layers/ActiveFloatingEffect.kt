@@ -256,6 +256,17 @@ sealed interface SerializableModification {
      */
     @Serializable
     data object ReplaceDrawWithBearToken : SerializableModification
+
+    /**
+     * Damage prevention shield: the next time a creature of the specified type would deal
+     * damage to the affected player this turn, prevent that damage.
+     * Used by Circle of Solace and similar effects.
+     * The shield is consumed after preventing one damage instance and removed.
+     */
+    @Serializable
+    data class PreventNextDamageFromCreatureType(
+        val creatureType: String
+    ) : SerializableModification
 }
 
 /**
@@ -306,4 +317,6 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.ReplaceDrawWithDamage -> Modification.NoOp
     // ReplaceDrawWithBearToken doesn't map to a layer modification - it's checked during draw execution directly
     is SerializableModification.ReplaceDrawWithBearToken -> Modification.NoOp
+    // PreventNextDamageFromCreatureType doesn't map to a layer modification - it's checked during damage resolution directly
+    is SerializableModification.PreventNextDamageFromCreatureType -> Modification.NoOp
 }

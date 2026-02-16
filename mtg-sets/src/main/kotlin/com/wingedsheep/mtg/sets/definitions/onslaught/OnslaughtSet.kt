@@ -85,6 +85,7 @@ object OnslaughtSet {
         WordsOfWilding,
         WordsOfWind,
         HarshMercy,
+        CircleOfSolace,
 
         // Blue creatures and spells
         AirborneAid,

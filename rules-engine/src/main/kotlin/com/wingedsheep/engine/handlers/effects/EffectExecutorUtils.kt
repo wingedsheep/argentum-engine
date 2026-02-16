@@ -471,8 +471,31 @@ object EffectExecutorUtils {
             }
         }
 
+        // Check for creature-type-specific prevention shields (Circle of Solace)
+        if (remainingDamage > 0 && sourceId != null) {
+            val projected = stateProjector.project(state)
+            val sourceSubtypes = projected.getSubtypes(sourceId).map { it.uppercase() }.toSet()
+            val sourceCard = state.getEntity(sourceId)?.get<CardComponent>()
+            if (sourceCard != null && sourceCard.isCreature) {
+                for (i in updatedEffects.indices) {
+                    if (remainingDamage <= 0) break
+                    if (i in toRemove) continue
+                    val effect = updatedEffects[i]
+                    val mod = effect.effect.modification
+                    if (mod is SerializableModification.PreventNextDamageFromCreatureType &&
+                        targetId in effect.effect.affectedEntities &&
+                        mod.creatureType.uppercase() in sourceSubtypes
+                    ) {
+                        // Prevent all damage from this instance and consume the shield
+                        remainingDamage = 0
+                        toRemove.add(i)
+                    }
+                }
+            }
+        }
+
         // Remove fully consumed shields in reverse order to maintain indices
-        for (idx in toRemove.asReversed()) {
+        for (idx in toRemove.sortedDescending()) {
             updatedEffects.removeAt(idx)
         }
 
