@@ -15,12 +15,12 @@ import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
-import com.wingedsheep.sdk.scripting.PeerPressureEffect
+import com.wingedsheep.sdk.scripting.ChooseCreatureTypeGainControlEffect
 import java.util.UUID
 import kotlin.reflect.KClass
 
 /**
- * Executor for PeerPressureEffect.
+ * Executor for ChooseCreatureTypeGainControlEffect.
  *
  * "Choose a creature type. If you control more creatures of that type than each other player,
  * you gain control of all creatures of that type."
@@ -30,13 +30,13 @@ import kotlin.reflect.KClass
  * 2. Pushes a PeerPressureContinuation
  * 3. On resume (in ContinuationHandler), checks creature counts and gains control if applicable
  */
-class PeerPressureExecutor : EffectExecutor<PeerPressureEffect> {
+class PeerPressureExecutor : EffectExecutor<ChooseCreatureTypeGainControlEffect> {
 
-    override val effectType: KClass<PeerPressureEffect> = PeerPressureEffect::class
+    override val effectType: KClass<ChooseCreatureTypeGainControlEffect> = ChooseCreatureTypeGainControlEffect::class
 
     override fun execute(
         state: GameState,
-        effect: PeerPressureEffect,
+        effect: ChooseCreatureTypeGainControlEffect,
         context: EffectContext
     ): ExecutionResult {
         val controllerId = context.controllerId
