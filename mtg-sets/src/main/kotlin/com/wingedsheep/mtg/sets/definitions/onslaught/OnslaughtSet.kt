@@ -280,6 +280,7 @@ object OnslaughtSet {
         EvergloveCourier,
         ExplosiveVegetation,
         InvigoratingBoon,
+        Kaboom,
         KamahlFistOfKrosa,
         KamahlsSummons,
         KrosanColossus,

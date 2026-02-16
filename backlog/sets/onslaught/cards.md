@@ -179,7 +179,7 @@
 - [x] Ixidor, Reality Sculptor
 - [x] Ixidor's Will
 - [x] Jareth, Leonine Titan
-- [ ] Kaboom!
+- [x] Kaboom!
 - [x] Kamahl, Fist of Krosa
 - [x] Kamahl's Summons
 - [x] Krosan Colossus

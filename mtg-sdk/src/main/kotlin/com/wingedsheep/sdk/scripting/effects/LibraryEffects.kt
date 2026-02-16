@@ -444,6 +444,25 @@ data class EachPlayerSearchesLibraryEffect(
     }
 }
 
+/**
+ * For each target, reveal cards from the top of your library until you reveal a nonland card.
+ * Deal damage equal to that card's mana value to that target.
+ * Put the revealed cards on the bottom of your library in any order.
+ *
+ * Used for Kaboom!: "Choose any number of target players or planeswalkers. For each of them,
+ * reveal cards from the top of your library until you reveal a nonland card, Kaboom! deals
+ * damage equal to that card's mana value to that player or planeswalker, then you put the
+ * revealed cards on the bottom of your library in any order."
+ */
+@SerialName("RevealUntilNonlandDealDamageEachTarget")
+@Serializable
+data object RevealUntilNonlandDealDamageEachTargetEffect : Effect {
+    override val description: String =
+        "For each target, reveal cards from the top of your library until you reveal a nonland card. " +
+        "Deal damage equal to that card's mana value to that target. " +
+        "Put the revealed cards on the bottom of your library in any order"
+}
+
 @SerialName("PutCreatureFromHandSharingTypeWithTapped")
 @Serializable
 data object PutCreatureFromHandSharingTypeWithTappedEffect : Effect {
