@@ -12,6 +12,8 @@ import {
   hasStatCounters,
   getGoldCounters,
   getPlagueCounters,
+  getTokenFrameGradient,
+  getCardFallbackColor,
 } from '../board/shared'
 import { styles } from '../board/styles'
 import {
@@ -19,38 +21,6 @@ import {
   SELECTED_COLOR, SELECTED_GLOW, SELECTED_SHADOW,
 } from '../../../styles/targetingColors'
 import { KeywordIcons, ActiveEffectBadges } from './CardOverlays'
-import { Color } from '../../../types/enums'
-
-/** Returns a background color for the card fallback based on card colors. */
-function getCardFallbackColor(colors: readonly Color[]): string {
-  if (colors.length === 0) return '#3a3a4e'          // colorless — neutral gray
-  if (colors.length > 1) return '#5a4a1a'            // multicolor — gold
-  switch (colors[0]) {
-    case Color.WHITE: return '#6b6350'                // warm cream
-    case Color.BLUE:  return '#1e3a5e'                // deep blue
-    case Color.BLACK: return '#2a2230'                // dark purple-gray
-    case Color.RED:   return '#5e1e1e'                // dark red
-    case Color.GREEN: return '#1e4a2a'                // dark green
-    default:          return '#3a3a4e'
-  }
-}
-
-/** Color-to-frame-color mapping for token card frames. */
-const COLOR_FRAME: Record<Color, [string, string]> = {
-  [Color.WHITE]: ['#f0e8d0', '#d4c9a8'],
-  [Color.BLUE]:  ['#1a4a7a', '#0d2d50'],
-  [Color.BLACK]: ['#3a3040', '#1e1828'],
-  [Color.RED]:   ['#8a2a1a', '#5a1a10'],
-  [Color.GREEN]: ['#1a5a2a', '#0d3a18'],
-}
-
-/** Returns a CSS gradient for the token card frame based on colors. */
-function getTokenFrameGradient(colors: readonly Color[]): string {
-  if (colors.length === 0) return 'linear-gradient(180deg, #4a4a5e 0%, #2a2a3e 100%)'
-  if (colors.length > 1) return 'linear-gradient(180deg, #b8953a 0%, #7a6320 100%)'
-  const [light, dark] = COLOR_FRAME[colors[0]!] ?? ['#4a4a5e', '#2a2a3e']
-  return `linear-gradient(180deg, ${light} 0%, ${dark} 100%)`
-}
 
 interface GameCardProps {
   card: ClientCard

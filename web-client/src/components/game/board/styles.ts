@@ -404,6 +404,18 @@ export const styles: Record<string, React.CSSProperties> = {
     whiteSpace: 'nowrap',
     flexShrink: 0,
   },
+  tokenPreviewPT: {
+    position: 'absolute',
+    bottom: 8,
+    right: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
+    borderRadius: 6,
+    padding: '2px 10px',
+    fontWeight: 700,
+    fontSize: 20,
+    color: 'white',
+  } as React.CSSProperties,
   cardFallback: {
     display: 'none',
     position: 'absolute',

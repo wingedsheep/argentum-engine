@@ -3,6 +3,7 @@ import type { ResponsiveSizes } from '../../../hooks/useResponsive'
 import { getScryfallFallbackUrl } from '../../../utils/cardImages'
 import type { ClientCard, LegalActionInfo } from '../../../types'
 import { CounterType } from '../../../types'
+import { Color } from '../../../types/enums'
 
 // Context to pass responsive sizes down the component tree
 export const ResponsiveContext = createContext<ResponsiveSizes | null>(null)
@@ -144,5 +145,37 @@ export function getEffectIcon(icon: string): string {
       return '♻️'
     default:
       return '⚡'
+  }
+}
+
+// --- Token frame color helpers ---
+
+const COLOR_FRAME: Record<Color, [string, string]> = {
+  [Color.WHITE]: ['#f0e8d0', '#d4c9a8'],
+  [Color.BLUE]:  ['#1a4a7a', '#0d2d50'],
+  [Color.BLACK]: ['#3a3040', '#1e1828'],
+  [Color.RED]:   ['#8a2a1a', '#5a1a10'],
+  [Color.GREEN]: ['#1a5a2a', '#0d3a18'],
+}
+
+/** Returns a CSS gradient for a token card frame based on colors. */
+export function getTokenFrameGradient(colors: readonly Color[]): string {
+  if (colors.length === 0) return 'linear-gradient(180deg, #4a4a5e 0%, #2a2a3e 100%)'
+  if (colors.length > 1) return 'linear-gradient(180deg, #b8953a 0%, #7a6320 100%)'
+  const [light, dark] = COLOR_FRAME[colors[0]!] ?? ['#4a4a5e', '#2a2a3e']
+  return `linear-gradient(180deg, ${light} 0%, ${dark} 100%)`
+}
+
+/** Returns a background color for the card fallback based on card colors. */
+export function getCardFallbackColor(colors: readonly Color[]): string {
+  if (colors.length === 0) return '#3a3a4e'
+  if (colors.length > 1) return '#5a4a1a'
+  switch (colors[0]) {
+    case Color.WHITE: return '#6b6350'
+    case Color.BLUE:  return '#1e3a5e'
+    case Color.BLACK: return '#2a2230'
+    case Color.RED:   return '#5e1e1e'
+    case Color.GREEN: return '#1e4a2a'
+    default:          return '#3a3a4e'
   }
 }

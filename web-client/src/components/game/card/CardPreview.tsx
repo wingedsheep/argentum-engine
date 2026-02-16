@@ -3,7 +3,7 @@ import { useGameStore } from '../../../store/gameStore'
 import { selectGameState } from '../../../store/selectors'
 import type { EntityId } from '../../../types'
 import { getCardImageUrl } from '../../../utils/cardImages'
-import { useResponsiveContext, handleImageError, getCounterStatModifier, hasStatCounters } from '../board/shared'
+import { useResponsiveContext, handleImageError, getCounterStatModifier, hasStatCounters, getTokenFrameGradient, getPTColor } from '../board/shared'
 import { styles } from '../board/styles'
 
 /**
@@ -86,18 +86,48 @@ export function CardPreview() {
         ...styles.cardPreviewContainer,
         width: previewWidth,
       }}>
-        {/* Card image */}
+        {/* Card image — token frame for tokens with art_crop, normal image otherwise */}
         <div style={{
           ...styles.cardPreviewCard,
           width: previewWidth,
           height: previewHeight,
         }}>
-          <img
-            src={cardImageUrl}
-            alt={card.name}
-            style={styles.cardPreviewImage}
-            onError={(e) => handleImageError(e, card.name, 'large')}
-          />
+          {card.isToken && card.imageUri ? (
+            <div style={{
+              ...styles.tokenFrame,
+              background: getTokenFrameGradient(card.colors),
+              borderRadius: 12,
+            }}>
+              <div style={{ ...styles.tokenNameBar, fontSize: 16, padding: '4px 8px' }}>
+                {card.name}
+              </div>
+              <div style={styles.tokenArtBox}>
+                <img
+                  src={cardImageUrl}
+                  alt={card.name}
+                  style={styles.tokenArtImage}
+                />
+              </div>
+              <div style={{ ...styles.tokenTypeBar, fontSize: 12, padding: '3px 8px' }}>
+                {card.typeLine}
+              </div>
+              {card.power !== null && card.toughness !== null && (
+                <div style={{
+                  ...styles.tokenPreviewPT,
+                  color: getPTColor(card.power, card.toughness, card.basePower, card.baseToughness),
+                }}>
+                  {card.power}/{card.toughness}
+                </div>
+              )}
+            </div>
+          ) : (
+            <img
+              src={cardImageUrl}
+              alt={card.name}
+              style={styles.cardPreviewImage}
+              onError={(e) => handleImageError(e, card.name, 'large')}
+            />
+          )}
         </div>
 
         {/* Stats box (for creatures with modifications) */}
