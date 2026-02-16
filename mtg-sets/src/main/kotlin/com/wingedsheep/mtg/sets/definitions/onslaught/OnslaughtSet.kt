@@ -142,6 +142,7 @@ object OnslaughtSet {
         Meddle,
         QuicksilverDragon,
         WheelAndDeal,
+        SpyNetwork,
 
         // Black creatures and spells
         AccursedCentaur,

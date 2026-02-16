@@ -105,7 +105,8 @@ data class EffectContinuation(
     val sourceId: EntityId?,
     val controllerId: EntityId,
     val opponentId: EntityId?,
-    val xValue: Int?
+    val xValue: Int?,
+    val targets: List<ChosenTarget> = emptyList()
 ) : ContinuationFrame {
     /**
      * Reconstruct the EffectContext from serialized fields.
@@ -114,7 +115,8 @@ data class EffectContinuation(
         sourceId = sourceId,
         controllerId = controllerId,
         opponentId = opponentId,
-        xValue = xValue
+        xValue = xValue,
+        targets = targets
     )
 }
 

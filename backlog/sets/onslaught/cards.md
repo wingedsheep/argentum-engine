@@ -280,7 +280,7 @@
 - [x] Spitfire Handler
 - [x] Spitting Gourna
 - [x] Spurred Wolverine
-- [ ] Spy Network
+- [x] Spy Network
 - [x] Stag Beetle
 - [x] Standardize
 - [x] Starlit Sanctum
