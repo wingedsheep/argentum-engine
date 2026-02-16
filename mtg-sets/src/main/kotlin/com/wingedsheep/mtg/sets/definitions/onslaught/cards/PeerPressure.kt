@@ -26,6 +26,6 @@ val PeerPressure = card("Peer Pressure") {
         collectorNumber = "101"
         artist = "Kev Walker"
         flavorText = "\"The first step to getting what you want is convincing everyone they want you to have it.\"\n—Phage the Untouchable"
-        imageUri = "https://cards.scryfall.io/large/front/b/e/be0110ba-49e4-44d1-b165-af8b5f5d5353.jpg?1562938562"
+        imageUri = "https://cards.scryfall.io/large/front/b/e/be0110ba-49e4-4729-8a84-4d408b20df53.jpg?1562939869"
     }
 }
