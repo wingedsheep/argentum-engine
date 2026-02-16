@@ -28,6 +28,7 @@ class LibraryExecutors : ExecutorModule {
         RevealUntilCreatureTypeExecutor(),
         EachPlayerMayRevealCreaturesExecutor(),
         EachPlayerSearchesLibraryExecutor(),
-        SearchTargetLibraryExileExecutor()
+        SearchTargetLibraryExileExecutor(),
+        RevealUntilNonlandDealDamageEachTargetExecutor()
     )
 }

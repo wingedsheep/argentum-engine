@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 325 / 335
+**Implemented:** 326 / 335
 
 ---
 
@@ -179,7 +179,7 @@
 - [x] Ixidor, Reality Sculptor
 - [x] Ixidor's Will
 - [x] Jareth, Leonine Titan
-- [ ] Kaboom!
+- [x] Kaboom!
 - [x] Kamahl, Fist of Krosa
 - [x] Kamahl's Summons
 - [x] Krosan Colossus

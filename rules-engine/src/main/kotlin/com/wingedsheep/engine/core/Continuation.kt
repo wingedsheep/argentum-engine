@@ -1940,6 +1940,26 @@ enum class ReadTheRunesPhase {
 }
 
 /**
+ * Resume after player reorders revealed cards for Kaboom!'s "for each target" reveal effect.
+ *
+ * After the player puts the revealed cards on the bottom in order, the executor
+ * continues with the next target's reveal-until-nonland sequence.
+ *
+ * @property playerId The player whose library is being manipulated
+ * @property sourceId The spell that caused this effect
+ * @property sourceName Name of the source for event messages
+ * @property remainingTargetIds The target entity IDs still to process after this reorder
+ */
+@Serializable
+data class KaboomReorderContinuation(
+    override val decisionId: String,
+    val playerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val remainingTargetIds: List<EntityId>
+) : ContinuationFrame
+
+/**
  * Information about a mana source available for manual selection.
  */
 @Serializable
