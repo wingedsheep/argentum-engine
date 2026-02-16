@@ -2,9 +2,11 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { execSync } from 'child_process'
 
-let commitHash = 'unknown'
+let commitHash = process.env.VITE_COMMIT_HASH?.slice(0, 7) || 'unknown'
 try {
-  commitHash = execSync('git rev-parse --short HEAD').toString().trim()
+  if (commitHash === 'unknown') {
+    commitHash = execSync('git rev-parse --short HEAD').toString().trim()
+  }
 } catch {
   // git may not be available (e.g. Docker build)
 }

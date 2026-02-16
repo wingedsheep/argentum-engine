@@ -43,6 +43,9 @@ jobs:
           context: ./web-client
           push: true
           tags: ${{ env.IMAGE_REPO }}/frontend:latest
+          build-args: |
+            COMMIT_HASH=${{ github.sha }}
+
 
   deploy:
     needs: build
