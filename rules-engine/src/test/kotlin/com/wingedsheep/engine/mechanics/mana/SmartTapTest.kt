@@ -351,7 +351,8 @@ class SmartTapTest : FunSpec({
         driver.putLandOnBattlefield(playerId, "Plains")
         driver.putLandOnBattlefield(playerId, "Forest")
 
-        // The hand should contain Wrath of God (needs {W}{W})
+        // Ensure Wrath of God is in hand (needs {W}{W})
+        driver.putCardInHand(playerId, "Wrath of God")
         // When casting a {1} spell, prefer tapping Forest to preserve white for Wrath
 
         val solver = ManaSolver(createRegistry())

@@ -206,6 +206,24 @@ data object PreventNextDamageFromChosenCreatureTypeEffect : Effect {
 }
 
 /**
+ * Prevent all damage target creature or spell would deal this turn.
+ * Used for Shieldmage Elder and similar "prevent all damage target would deal" effects.
+ *
+ * Creates a floating effect (PreventAllDamageDealtBy) on the target entity.
+ * Works for both creatures (prevents combat and non-combat damage) and spells on the stack.
+ *
+ * @property target The creature or spell whose damage is prevented
+ */
+@SerialName("PreventAllDamageDealtByTarget")
+@Serializable
+data class PreventAllDamageDealtByTargetEffect(
+    val target: EffectTarget
+) : Effect {
+    override val description: String =
+        "Prevent all damage ${target.description} would deal this turn"
+}
+
+/**
  * Prevent all damage target creature would deal this turn, then its controller may
  * sacrifice a land to copy this spell and may choose a new target for that copy.
  * Used for Chain of Silence.

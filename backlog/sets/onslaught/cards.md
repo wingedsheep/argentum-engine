@@ -257,7 +257,7 @@
 - [x] Shaleskin Bruiser
 - [x] Shared Triumph
 - [x] Shepherd of Rot
-- [ ] Shieldmage Elder
+- [x] Shieldmage Elder
 - [x] Shock
 - [x] Sigil of the New Dawn
 - [x] Silent Specter
