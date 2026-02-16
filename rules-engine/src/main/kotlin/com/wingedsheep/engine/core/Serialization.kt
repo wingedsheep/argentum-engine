@@ -148,6 +148,7 @@ val engineSerializersModule = SerializersModule {
         subclass(RevealUntilCreatureTypeContinuation::class)
         subclass(BecomeCreatureTypeContinuation::class)
         subclass(ChooseCreatureTypeModifyStatsContinuation::class)
+        subclass(ChooseCreatureTypeGainControlContinuation::class)
         subclass(BecomeChosenTypeAllCreaturesContinuation::class)
         subclass(CounterUnlessPaysContinuation::class)
         subclass(ModalContinuation::class)

@@ -145,6 +145,7 @@ object OnslaughtSet {
         WheelAndDeal,
         SpyNetwork,
         SupremeInquisitor,
+        PeerPressure,
 
         // Black creatures and spells
         AccursedCentaur,

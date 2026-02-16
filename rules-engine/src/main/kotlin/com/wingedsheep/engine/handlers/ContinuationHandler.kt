@@ -118,6 +118,7 @@ class ContinuationHandler(
             is RevealUntilCreatureTypeContinuation -> resumeRevealUntilCreatureType(stateAfterPop, continuation, response)
             is BecomeCreatureTypeContinuation -> resumeBecomeCreatureType(stateAfterPop, continuation, response)
             is ChooseCreatureTypeModifyStatsContinuation -> resumeChooseCreatureTypeModifyStats(stateAfterPop, continuation, response)
+            is ChooseCreatureTypeGainControlContinuation -> resumeChooseCreatureTypeGainControl(stateAfterPop, continuation, response)
             is BecomeChosenTypeAllCreaturesContinuation -> resumeBecomeChosenTypeAllCreatures(stateAfterPop, continuation, response)
             is CounterUnlessPaysContinuation -> resumeCounterUnlessPays(stateAfterPop, continuation, response)
             is ChangeSpellTargetContinuation -> resumeChangeSpellTarget(stateAfterPop, continuation, response)
@@ -3707,6 +3708,40 @@ class ContinuationHandler(
         )
 
         return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume after player chose a creature type for Peer Pressure-style gain control.
+     *
+     * If the controller has strictly more creatures of the chosen type than each other
+     * player, gains control of all creatures of that type.
+     */
+    private fun resumeChooseCreatureTypeGainControl(
+        state: GameState,
+        continuation: ChooseCreatureTypeGainControlContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is OptionChosenResponse) {
+            return ExecutionResult.error(state, "Expected option choice response for creature type selection")
+        }
+
+        val chosenType = continuation.creatureTypes.getOrNull(response.optionIndex)
+            ?: return ExecutionResult.error(state, "Invalid creature type index: ${response.optionIndex}")
+
+        val result = com.wingedsheep.engine.handlers.effects.permanent.ChooseCreatureTypeGainControlExecutor.applyChooseCreatureTypeGainControl(
+            state = state,
+            chosenType = chosenType,
+            controllerId = continuation.controllerId,
+            sourceId = continuation.sourceId,
+            sourceName = continuation.sourceName,
+            duration = continuation.duration
+        )
+
+        return if (result.isSuccess) {
+            checkForMoreContinuations(result.state, result.events)
+        } else {
+            result
+        }
     }
 
     /**

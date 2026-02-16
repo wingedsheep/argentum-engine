@@ -1401,6 +1401,28 @@ data class ChooseCreatureTypeMustAttackContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after player chooses a creature type for Peer Pressure-style effects.
+ *
+ * "Choose a creature type. If you control more creatures of that type than each
+ * other player, you gain control of all creatures of that type."
+ *
+ * @property controllerId The player who controls the effect
+ * @property sourceId The spell/ability that caused this effect
+ * @property sourceName Name of the source for event messages
+ * @property creatureTypes The creature type options (indexed by OptionChosenResponse.optionIndex)
+ * @property duration How long the control change lasts
+ */
+@Serializable
+data class ChooseCreatureTypeGainControlContinuation(
+    override val decisionId: String,
+    val controllerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val creatureTypes: List<String>,
+    val duration: Duration
+) : ContinuationFrame
+
+/**
  * Continuation for choosing a creature type and then untapping all creatures of that type.
  *
  * Used by Riptide Chronologist: "{U}, Sacrifice Riptide Chronologist:

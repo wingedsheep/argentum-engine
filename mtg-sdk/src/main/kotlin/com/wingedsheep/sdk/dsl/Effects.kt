@@ -321,6 +321,13 @@ object Effects {
     fun GainControlOfGroup(filter: GroupFilter = GroupFilter.AllCreatures, duration: Duration = Duration.EndOfTurn): Effect =
         GainControlOfGroupEffect(filter, duration)
 
+    /**
+     * Choose a creature type. If you control more creatures of that type than each
+     * other player, gain control of all creatures of that type.
+     */
+    fun ChooseCreatureTypeGainControl(duration: Duration = Duration.Permanent): Effect =
+        ChooseCreatureTypeGainControlEffect(duration)
+
     // =========================================================================
     // Composite Effects
     // =========================================================================
