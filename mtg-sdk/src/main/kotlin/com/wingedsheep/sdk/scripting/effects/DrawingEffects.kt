@@ -204,6 +204,21 @@ data class LookAtFaceDownCreatureEffect(
 }
 
 /**
+ * Look at all face-down creatures a player controls.
+ * Used for Spy Network and similar effects that reveal all face-down creatures.
+ * Marks each face-down creature as revealed to the controller of the ability.
+ *
+ * @property target The player whose face-down creatures to look at
+ */
+@SerialName("LookAtAllFaceDownCreatures")
+@Serializable
+data class LookAtAllFaceDownCreaturesEffect(
+    val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetPlayer)
+) : Effect {
+    override val description: String = "Look at any face-down creatures ${target.description} controls"
+}
+
+/**
  * Blackmail effect - target player reveals three cards from their hand
  * and the controller chooses one of them. That player discards that card.
  * If the target player has three or fewer cards, they reveal all of them.

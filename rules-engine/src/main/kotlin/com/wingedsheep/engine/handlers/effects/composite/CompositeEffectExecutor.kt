@@ -48,7 +48,8 @@ class CompositeEffectExecutor(
                     sourceId = context.sourceId,
                     controllerId = context.controllerId,
                     opponentId = context.opponentId,
-                    xValue = context.xValue
+                    xValue = context.xValue,
+                    targets = context.targets
                 )
                 currentState.pushContinuation(continuation)
             } else {

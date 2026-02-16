@@ -10,6 +10,7 @@ class InformationExecutors : ExecutorModule {
     override fun executors(): List<EffectExecutor<*>> = listOf(
         LookAtTargetHandExecutor(),
         LookAtFaceDownCreatureExecutor(),
+        LookAtAllFaceDownCreaturesExecutor(),
         RevealHandEffectExecutor()
     )
 }
