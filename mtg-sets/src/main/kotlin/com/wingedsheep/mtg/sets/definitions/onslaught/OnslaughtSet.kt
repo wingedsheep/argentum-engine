@@ -347,6 +347,7 @@ object OnslaughtSet {
         UnholyGrotto,
         SecludedSteppe,
         TranquilThicket,
+        GrandColiseum,
 
         // Basic lands
     ) + OnslaughtBasicLands

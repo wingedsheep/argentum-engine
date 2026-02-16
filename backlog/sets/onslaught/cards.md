@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 316 / 335
+**Implemented:** 317 / 335
 
 ---
 
@@ -148,7 +148,7 @@
 - [x] Goblin Sky Raider
 - [x] Goblin Sledder
 - [x] Goblin Taskmaster
-- [ ] Grand Coliseum
+- [x] Grand Coliseum
 - [ ] Grand Melee
 - [x] Grassland Crusader
 - [x] Gratuitous Violence
