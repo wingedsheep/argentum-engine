@@ -1,11 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
+import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.scripting.LookAtAllFaceDownCreaturesEffect
-import com.wingedsheep.sdk.scripting.LookAtTargetHandEffect
-import com.wingedsheep.sdk.scripting.LookAtTopAndReorderEffect
+import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.targeting.TargetPlayer
 
 /**
@@ -24,9 +23,19 @@ val SpyNetwork = card("Spy Network") {
     spell {
         target = TargetPlayer()
         effect = LookAtTargetHandEffect(EffectTarget.ContextTarget(0))
-            .then(LookAtTopAndReorderEffect(1, EffectTarget.ContextTarget(0)))
+            .then(CompositeEffect(listOf(
+                GatherCardsEffect(
+                    source = CardSource.TopOfLibrary(DynamicAmount.Fixed(1), Player.ContextPlayer(0)),
+                    storeAs = "target_top"
+                ),
+                MoveCollectionEffect(
+                    from = "target_top",
+                    destination = CardDestination.ToZone(Zone.LIBRARY, Player.ContextPlayer(0), ZonePlacement.Top),
+                    order = CardOrder.ControllerChooses
+                )
+            )))
             .then(LookAtAllFaceDownCreaturesEffect(EffectTarget.ContextTarget(0)))
-            .then(LookAtTopAndReorderEffect(4, EffectTarget.Controller))
+            .then(EffectPatterns.lookAtTopAndReorder(4))
     }
 
     metadata {

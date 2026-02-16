@@ -1,12 +1,12 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.BecomeCreatureTypeEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.scripting.LookAtTopAndReorderEffect
 import com.wingedsheep.sdk.targeting.TargetCreature
 
 /**
@@ -34,7 +34,7 @@ val TrickeryCharm = card("Trickery Charm") {
                 effect = BecomeCreatureTypeEffect(target = EffectTarget.ContextTarget(0))
             }
             mode("Look at the top four cards of your library, then put them back in any order") {
-                effect = LookAtTopAndReorderEffect(4)
+                effect = EffectPatterns.lookAtTopAndReorder(4)
             }
         }
     }

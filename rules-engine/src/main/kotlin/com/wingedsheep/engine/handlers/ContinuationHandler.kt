@@ -94,7 +94,6 @@ class ContinuationHandler(
             is EachPlayerDiscardsOrLoseLifeContinuation -> resumeEachPlayerDiscardsOrLoseLife(stateAfterPop, continuation, response)
             is ReturnFromGraveyardContinuation -> resumeReturnFromGraveyard(stateAfterPop, continuation, response)
             is SearchLibraryContinuation -> resumeSearchLibrary(stateAfterPop, continuation, response)
-            is ReorderLibraryContinuation -> resumeReorderLibrary(stateAfterPop, continuation, response)
             is BlockerOrderContinuation -> resumeBlockerOrder(stateAfterPop, continuation, response)
             is EachPlayerChoosesDrawContinuation -> resumeEachPlayerChoosesDraw(stateAfterPop, continuation, response)
             is LookAtOpponentLibraryContinuation -> resumeLookAtOpponentLibrary(stateAfterPop, continuation, response)
@@ -171,6 +170,7 @@ class ContinuationHandler(
             is ReadTheRunesContinuation -> resumeReadTheRunes(stateAfterPop, continuation, response)
             is KaboomReorderContinuation -> resumeKaboomReorder(stateAfterPop, continuation, response)
             is TradeSecretsContinuation -> resumeTradeSecrets(stateAfterPop, continuation, response)
+            is MoveCollectionOrderContinuation -> resumeMoveCollectionOrder(stateAfterPop, continuation, response)
         }
     }
 
@@ -865,42 +865,48 @@ class ContinuationHandler(
     }
 
     /**
-     * Resume after player reordered cards on top of their library.
+     * Resume after player ordered cards for a MoveCollection with ControllerChooses order.
      *
      * The response contains the card IDs in the new order (first = new top of library).
-     * We replace the top N cards in the library with this new order.
+     * We remove the cards from their current zones and place them on top in the chosen order.
      */
-    private fun resumeReorderLibrary(
+    private fun resumeMoveCollectionOrder(
         state: GameState,
-        continuation: ReorderLibraryContinuation,
+        continuation: MoveCollectionOrderContinuation,
         response: DecisionResponse
     ): ExecutionResult {
         if (response !is OrderedResponse) {
-            return ExecutionResult.error(state, "Expected ordered response for library reorder")
+            return ExecutionResult.error(state, "Expected ordered response for MoveCollection order")
         }
 
-        val playerId = continuation.playerId
         val orderedCards = response.orderedObjects
-        val libraryZone = ZoneKey(playerId, Zone.LIBRARY)
+        val destPlayerId = continuation.destinationPlayerId
+        val libraryZone = ZoneKey(destPlayerId, Zone.LIBRARY)
 
-        // Get current library
-        val currentLibrary = state.getZone(libraryZone).toMutableList()
+        var newState = state
+        val events = mutableListOf<GameEvent>()
 
-        // Remove the reordered cards from the library (they were at the top)
-        val cardsSet = orderedCards.toSet()
-        val remainingLibrary = currentLibrary.filter { it !in cardsSet }
+        // Remove all cards from their current zones
+        for (cardId in orderedCards) {
+            val ownerId = newState.getEntity(cardId)?.get<OwnerComponent>()?.playerId ?: destPlayerId
+            for (zone in Zone.entries) {
+                val zoneKey = ZoneKey(ownerId, zone)
+                if (cardId in newState.getZone(zoneKey)) {
+                    newState = newState.removeFromZone(zoneKey, cardId)
+                    break
+                }
+            }
+        }
 
-        // Place the cards back on top in the new order
-        val newLibrary = orderedCards + remainingLibrary
-
-        // Update the library zone
-        val newState = state.copy(
-            zones = state.zones + (libraryZone to newLibrary)
+        // Place cards on top of library in the chosen order
+        val currentLibrary = newState.getZone(libraryZone)
+        newState = newState.copy(
+            zones = newState.zones + (libraryZone to orderedCards + currentLibrary)
         )
 
-        val events = listOf(
+        events.add(
             LibraryReorderedEvent(
-                playerId = playerId,
+                playerId = continuation.playerId,
                 cardCount = orderedCards.size,
                 source = continuation.sourceName
             )

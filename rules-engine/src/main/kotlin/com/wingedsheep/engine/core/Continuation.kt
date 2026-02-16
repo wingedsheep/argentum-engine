@@ -374,25 +374,6 @@ data class SearchLibraryContinuation(
 ) : ContinuationFrame
 
 /**
- * Resume after player reorders cards on top of their library.
- *
- * Used for "look at the top N cards and put them back in any order" effects.
- * The response contains the cards in the new order (first = new top of library).
- *
- * @property playerId The player who looked at the cards
- * @property sourceId The spell/ability that caused this
- * @property sourceName Name of the source for event messages
- * @property originalCards The card IDs that were being reordered (for validation)
- */
-@Serializable
-data class ReorderLibraryContinuation(
-    override val decisionId: String,
-    val playerId: EntityId,
-    val sourceId: EntityId?,
-    val sourceName: String?
-) : ContinuationFrame
-
-/**
  * Resume after attacking player declares damage assignment order for blockers.
  *
  * Per MTG CR 509.2, after the defending player declares blockers, the attacking
@@ -550,6 +531,31 @@ data class DistributeDamageContinuation(
     val sourceId: EntityId?,
     val controllerId: EntityId,
     val targets: List<EntityId>
+) : ContinuationFrame
+
+/**
+ * Resume after player reorders cards for a MoveCollection with ControllerChooses order.
+ *
+ * When MoveCollectionEffect has order = CardOrder.ControllerChooses and there are
+ * multiple cards going to the top of a library, we pause for the player to choose
+ * the order. The response contains the card IDs in the new order (first = new top).
+ *
+ * @property playerId The player who is reordering
+ * @property sourceId The spell/ability that caused this effect
+ * @property sourceName Name of the source for event messages
+ * @property cards The cards being reordered
+ * @property destinationZone The zone the cards are going to
+ * @property destinationPlayerId The player whose zone the cards go to
+ */
+@Serializable
+data class MoveCollectionOrderContinuation(
+    override val decisionId: String,
+    val playerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val cards: List<EntityId>,
+    val destinationZone: com.wingedsheep.sdk.core.Zone,
+    val destinationPlayerId: EntityId
 ) : ContinuationFrame
 
 /**

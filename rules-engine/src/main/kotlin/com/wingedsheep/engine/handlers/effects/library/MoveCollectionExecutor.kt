@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers.effects.library
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -14,6 +15,7 @@ import com.wingedsheep.sdk.scripting.CardOrder
 import com.wingedsheep.sdk.scripting.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.Player
 import com.wingedsheep.sdk.scripting.ZonePlacement
+import java.util.UUID
 import kotlin.reflect.KClass
 
 /**
@@ -57,6 +59,101 @@ class MoveCollectionExecutor : EffectExecutor<MoveCollectionEffect> {
         val destPlayerId = resolvePlayer(destination.player, context, state)
             ?: return ExecutionResult.error(state, "Could not resolve destination player for MoveCollection")
 
+        val destZone = destination.zone
+
+        // ControllerChooses ordering: pause for player to see/reorder cards going to library top
+        if (order == CardOrder.ControllerChooses
+            && destZone == Zone.LIBRARY
+            && (destination.placement == ZonePlacement.Top || destination.placement == ZonePlacement.Default)
+        ) {
+            return pauseForOrderDecision(state, context, cards, destZone, destPlayerId)
+        }
+
+        return moveCardsToZone(state, context, cards, destination, destPlayerId)
+    }
+
+    /**
+     * Pause execution and present a ReorderLibraryDecision so the player
+     * can choose the order of multiple cards going to the top of a library.
+     */
+    private fun pauseForOrderDecision(
+        state: GameState,
+        context: EffectContext,
+        cards: List<EntityId>,
+        destZone: Zone,
+        destPlayerId: EntityId
+    ): ExecutionResult {
+        val playerId = context.controllerId
+
+        // Build card info map for the UI
+        val cardInfoMap = cards.associateWith { cardId ->
+            val container = state.getEntity(cardId)
+            val cardComponent = container?.get<CardComponent>()
+            SearchCardInfo(
+                name = cardComponent?.name ?: "Unknown",
+                manaCost = cardComponent?.manaCost?.toString() ?: "",
+                typeLine = cardComponent?.typeLine?.toString() ?: "",
+                imageUri = null
+            )
+        }
+
+        val decisionId = UUID.randomUUID().toString()
+        val sourceName = context.sourceId?.let { sourceId ->
+            state.getEntity(sourceId)?.get<CardComponent>()?.name
+        }
+
+        val decision = ReorderLibraryDecision(
+            id = decisionId,
+            playerId = playerId,
+            prompt = if (cards.size == 1) "Look at the top card of your library."
+                else "Look at the top ${cards.size} cards of your library. Put them back in any order.",
+            context = DecisionContext(
+                sourceId = context.sourceId,
+                sourceName = sourceName,
+                phase = DecisionPhase.RESOLUTION
+            ),
+            cards = cards,
+            cardInfo = cardInfoMap
+        )
+
+        val continuation = MoveCollectionOrderContinuation(
+            decisionId = decisionId,
+            playerId = playerId,
+            sourceId = context.sourceId,
+            sourceName = sourceName,
+            cards = cards,
+            destinationZone = destZone,
+            destinationPlayerId = destPlayerId
+        )
+
+        val stateWithDecision = state.withPendingDecision(decision)
+        val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
+
+        return ExecutionResult.paused(
+            stateWithContinuation,
+            decision,
+            listOf(
+                DecisionRequestedEvent(
+                    decisionId = decisionId,
+                    playerId = playerId,
+                    decisionType = "REORDER_LIBRARY",
+                    prompt = decision.prompt
+                )
+            )
+        )
+    }
+
+    /**
+     * Actually move the cards to the destination zone. Used both for direct moves
+     * and after the player has chosen an order via MoveCollectionOrderContinuation.
+     */
+    internal fun moveCardsToZone(
+        state: GameState,
+        context: EffectContext,
+        cards: List<EntityId>,
+        destination: CardDestination.ToZone,
+        destPlayerId: EntityId
+    ): ExecutionResult {
         val destZone = destination.zone
         val events = mutableListOf<GameEvent>()
         var newState = state
@@ -146,6 +243,7 @@ class MoveCollectionExecutor : EffectExecutor<MoveCollectionEffect> {
             is Player.Opponent -> context.opponentId
             is Player.TargetOpponent -> context.opponentId
             is Player.TargetPlayer -> context.opponentId
+            is Player.ContextPlayer -> context.targets.getOrNull(player.index)?.let { EffectExecutorUtils.run { it.toEntityId() } }
             else -> context.controllerId
         }
     }

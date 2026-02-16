@@ -8,24 +8,6 @@ import kotlinx.serialization.Serializable
 // =============================================================================
 
 /**
- * Look at the top N cards of a library and put them back in any order.
- * This is the atomic "scry-like" or "look and reorder" primitive.
- *
- * Use with CompositeEffect for patterns like Omen:
- * CompositeEffect(LookAtTopAndReorderEffect(3), MayEffect(ShuffleLibraryEffect()), DrawCardsEffect(1))
- */
-@SerialName("LookAtTopAndReorder")
-@Serializable
-data class LookAtTopAndReorderEffect(
-    val count: DynamicAmount,
-    val target: EffectTarget = EffectTarget.Controller
-) : Effect {
-    constructor(count: Int, target: EffectTarget = EffectTarget.Controller) : this(DynamicAmount.Fixed(count), target)
-
-    override val description: String = "Look at the top ${count.description} cards of your library and put them back in any order"
-}
-
-/**
  * Surveil N - Look at the top N cards of your library, then put any number of them
  * into your graveyard and the rest on top of your library in any order.
  * "Surveil 2"

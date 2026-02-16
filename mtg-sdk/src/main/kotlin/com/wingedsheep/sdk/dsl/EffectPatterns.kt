@@ -234,6 +234,52 @@ object EffectPatterns {
     )
 
     /**
+     * Look at the top N cards of your library, then put them back in any order.
+     *
+     * This creates a Gather → Move(ControllerChooses) pipeline.
+     *
+     * Example: Sage Aven — "Look at the top four cards of your library,
+     * then put them back in any order."
+     * ```kotlin
+     * lookAtTopAndReorder(4)
+     * ```
+     *
+     * @param count How many cards to look at
+     */
+    fun lookAtTopAndReorder(count: Int): CompositeEffect = CompositeEffect(
+        listOf(
+            GatherCardsEffect(
+                source = CardSource.TopOfLibrary(DynamicAmount.Fixed(count)),
+                storeAs = "looked"
+            ),
+            MoveCollectionEffect(
+                from = "looked",
+                destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Top),
+                order = CardOrder.ControllerChooses
+            )
+        )
+    )
+
+    /**
+     * Look at the top X cards of your library (dynamic count), then put them back in any order.
+     *
+     * @param count Dynamic amount for how many cards to look at
+     */
+    fun lookAtTopAndReorder(count: DynamicAmount): CompositeEffect = CompositeEffect(
+        listOf(
+            GatherCardsEffect(
+                source = CardSource.TopOfLibrary(count),
+                storeAs = "looked"
+            ),
+            MoveCollectionEffect(
+                from = "looked",
+                destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Top),
+                order = CardOrder.ControllerChooses
+            )
+        )
+    )
+
+    /**
      * Create an exile-and-return pattern used by O-Ring style cards.
      *
      * This creates the appropriate variable binding so the second trigger

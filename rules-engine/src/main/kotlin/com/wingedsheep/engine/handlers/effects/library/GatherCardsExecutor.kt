@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.sdk.core.Zone
@@ -70,6 +71,7 @@ class GatherCardsExecutor : EffectExecutor<GatherCardsEffect> {
             is Player.Opponent -> context.opponentId
             is Player.TargetOpponent -> context.opponentId
             is Player.TargetPlayer -> context.opponentId
+            is Player.ContextPlayer -> context.targets.getOrNull(player.index)?.let { EffectExecutorUtils.run { it.toEntityId() } }
             else -> context.controllerId
         }
     }

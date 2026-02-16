@@ -13,7 +13,7 @@ class LibraryExecutors : ExecutorModule {
         ShuffleLibraryExecutor(),
         ShuffleGraveyardIntoLibraryExecutor(),
         SearchLibraryExecutor(),
-        LookAtTopAndReorderExecutor(),
+
         LookAtOpponentLibraryExecutor(),
         RevealAndOpponentChoosesExecutor(),
         WheelEffectExecutor(),
