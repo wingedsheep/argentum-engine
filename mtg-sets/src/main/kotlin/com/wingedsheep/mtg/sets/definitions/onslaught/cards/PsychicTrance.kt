@@ -41,6 +41,6 @@ val PsychicTrance = card("Psychic Trance") {
         collectorNumber = "102"
         artist = "Rebecca Guay"
         flavorText = "The Riptide Project may be the only school devoted to preventing the spread of knowledge."
-        imageUri = "https://cards.scryfall.io/large/front/2/7/27ba4c41-4b53-474c-8ab5-3f3cef26f781.jpg?1562902648"
+        imageUri = "https://cards.scryfall.io/large/front/d/5/d5e55695-16cc-4373-8078-959f1ded4c6d.jpg?1562945989"
     }
 }
