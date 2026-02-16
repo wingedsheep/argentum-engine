@@ -386,6 +386,18 @@ data object ReadTheRunesEffect : Effect {
 }
 
 /**
+ * Trade Secrets effect.
+ * "Target opponent draws two cards, then you draw up to four cards.
+ * That opponent may repeat this process as many times as they choose."
+ */
+@SerialName("TradeSecrets")
+@Serializable
+data object TradeSecretsEffect : Effect {
+    override val description: String =
+        "Target opponent draws two cards, then you draw up to four cards. That opponent may repeat this process as many times as they choose."
+}
+
+/**
  * Reveal a player's hand (publicly visible to all players).
  * This is an atomic effect that just reveals - use with CompositeEffect for
  * "reveal and do something based on what's revealed" patterns.

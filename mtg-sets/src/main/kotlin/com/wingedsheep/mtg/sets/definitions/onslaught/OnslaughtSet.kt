@@ -143,6 +143,7 @@ object OnslaughtSet {
         Meddle,
         QuicksilverDragon,
         WheelAndDeal,
+        TradeSecrets,
         SpyNetwork,
         SupremeInquisitor,
         PeerPressure,

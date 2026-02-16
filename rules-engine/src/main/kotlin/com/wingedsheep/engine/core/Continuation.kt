@@ -1982,6 +1982,42 @@ data class KaboomReorderContinuation(
 ) : ContinuationFrame
 
 /**
+ * Continuation for Trade Secrets.
+ * "Target opponent draws two cards, then you draw up to four cards.
+ * That opponent may repeat this process as many times as they choose."
+ *
+ * Two phases:
+ * - CONTROLLER_DRAWS: Controller is choosing how many cards to draw (0-4)
+ * - OPPONENT_REPEATS: Opponent is deciding whether to repeat the process
+ *
+ * @property controllerId The caster of Trade Secrets (draws up to 4)
+ * @property opponentId The target opponent (draws 2, decides to repeat)
+ * @property sourceId The spell that caused this effect
+ * @property sourceName Name of the source for display
+ * @property phase Current phase of the Trade Secrets loop
+ */
+@Serializable
+data class TradeSecretsContinuation(
+    override val decisionId: String,
+    val controllerId: EntityId,
+    val opponentId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val phase: TradeSecretsPhase
+) : ContinuationFrame
+
+/**
+ * Phase discriminator for TradeSecretsContinuation.
+ */
+@Serializable
+enum class TradeSecretsPhase {
+    /** Controller is choosing how many cards to draw (0-4) */
+    CONTROLLER_DRAWS,
+    /** Opponent is deciding whether to repeat the process */
+    OPPONENT_REPEATS
+}
+
+/**
  * Information about a mana source available for manual selection.
  */
 @Serializable

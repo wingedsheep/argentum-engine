@@ -304,7 +304,7 @@
 - [x] Threaten
 - [x] Thunder of Hooves
 - [x] Towering Baloth
-- [ ] Trade Secrets
+- [x] Trade Secrets
 - [x] Tranquil Thicket
 - [x] Treespring Lorian
 - [x] Tribal Golem
