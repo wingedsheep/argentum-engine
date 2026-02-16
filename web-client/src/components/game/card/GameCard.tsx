@@ -19,6 +19,21 @@ import {
   SELECTED_COLOR, SELECTED_GLOW, SELECTED_SHADOW,
 } from '../../../styles/targetingColors'
 import { KeywordIcons, ActiveEffectBadges } from './CardOverlays'
+import { Color } from '../../../types/enums'
+
+/** Returns a background color for the card fallback based on card colors. */
+function getCardFallbackColor(colors: readonly Color[]): string {
+  if (colors.length === 0) return '#3a3a4e'          // colorless — neutral gray
+  if (colors.length > 1) return '#5a4a1a'            // multicolor — gold
+  switch (colors[0]) {
+    case Color.WHITE: return '#6b6350'                // warm cream
+    case Color.BLUE:  return '#1e3a5e'                // deep blue
+    case Color.BLACK: return '#2a2230'                // dark purple-gray
+    case Color.RED:   return '#5e1e1e'                // dark red
+    case Color.GREEN: return '#1e4a2a'                // dark green
+    default:          return '#3a3a4e'
+  }
+}
 
 interface GameCardProps {
   card: ClientCard
@@ -652,16 +667,34 @@ export function GameCard({
       />
       {/* Fallback when image fails */}
       <div style={styles.cardFallback}>
-        <span style={{ ...styles.cardName, fontSize: responsive.fontSize.small }}>{faceDown ? '' : card.name}</span>
-        {!faceDown && card.power !== null && card.toughness !== null && (
+        <div style={{
+          ...styles.cardFallbackInner,
+          backgroundColor: getCardFallbackColor(card.colors),
+        }}>
           <span style={{
-            ...styles.cardPT,
-            fontSize: responsive.fontSize.normal,
-            color: getPTColor(card.power, card.toughness, card.basePower, card.baseToughness)
+            ...styles.cardFallbackName,
+            fontSize: responsive.fontSize.small,
           }}>
-            {card.power}/{card.toughness}
+            {faceDown ? '' : card.name}
           </span>
-        )}
+          {!faceDown && card.typeLine && (
+            <span style={{
+              ...styles.cardFallbackType,
+              fontSize: Math.max(responsive.fontSize.small - 2, 8),
+            }}>
+              {card.typeLine}
+            </span>
+          )}
+          {!faceDown && card.power !== null && card.toughness !== null && (
+            <span style={{
+              ...styles.cardFallbackPT,
+              fontSize: responsive.fontSize.normal,
+              color: getPTColor(card.power, card.toughness, card.basePower, card.baseToughness),
+            }}>
+              {card.power}/{card.toughness}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Tapped indicator */}
