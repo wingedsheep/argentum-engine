@@ -51,6 +51,6 @@ val RiskyMove = card("Risky Move") {
         collectorNumber = "223"
         artist = "Pete Venters"
         flavorText = "\"Let's raise the stakes.\""
-        imageUri = "https://cards.scryfall.io/large/front/1/d/1d26f128-eb71-4ddc-b4f4-40ed2cc2315f.jpg?1562901534"
+        imageUri = "https://cards.scryfall.io/large/front/0/b/0b09315c-d6ff-4fdb-8774-c6402b45e959.jpg?1562897507"
     }
 }
