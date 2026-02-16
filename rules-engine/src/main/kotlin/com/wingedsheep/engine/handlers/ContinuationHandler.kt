@@ -168,6 +168,7 @@ class ContinuationHandler(
             is SearchTargetLibraryExileContinuation -> resumeSearchTargetLibraryExile(stateAfterPop, continuation, response)
             is ReadTheRunesContinuation -> resumeReadTheRunes(stateAfterPop, continuation, response)
             is KaboomReorderContinuation -> resumeKaboomReorder(stateAfterPop, continuation, response)
+            is TradeSecretsContinuation -> resumeTradeSecrets(stateAfterPop, continuation, response)
         }
     }
 
@@ -6899,6 +6900,83 @@ class ContinuationHandler(
         val context = com.wingedsheep.engine.handlers.PredicateContext(controllerId = controllerId)
         return controlledPermanents.filter { permanentId ->
             predicateEvaluator.matches(state, permanentId, com.wingedsheep.sdk.scripting.GameObjectFilter.Land, context)
+        }
+    }
+
+    /**
+     * Resume Trade Secrets after a decision.
+     *
+     * Two phases:
+     * - CONTROLLER_DRAWS: Controller chose how many cards to draw (0-4). Draw them, then ask opponent to repeat.
+     * - OPPONENT_REPEATS: Opponent chose whether to repeat. If yes, opponent draws 2, then ask controller again.
+     */
+    private fun resumeTradeSecrets(
+        state: GameState,
+        continuation: TradeSecretsContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        return when (continuation.phase) {
+            TradeSecretsPhase.CONTROLLER_DRAWS -> {
+                if (response !is NumberChosenResponse) {
+                    return ExecutionResult.error(state, "Expected number chosen response for Trade Secrets")
+                }
+
+                val chosenCount = response.number
+                val events = mutableListOf<GameEvent>()
+
+                // Draw the chosen number of cards for the controller
+                var currentState = state
+                if (chosenCount > 0) {
+                    val drawResult = com.wingedsheep.engine.handlers.effects.drawing.TradeSecretsExecutor.drawCards(
+                        currentState, continuation.controllerId, chosenCount
+                    )
+                    currentState = drawResult.state
+                    events.addAll(drawResult.events)
+
+                    if (!drawResult.isSuccess) {
+                        return ExecutionResult(currentState, events, drawResult.error)
+                    }
+                }
+
+                // Now ask opponent whether to repeat
+                com.wingedsheep.engine.handlers.effects.drawing.TradeSecretsExecutor.askOpponentToRepeat(
+                    state = currentState,
+                    controllerId = continuation.controllerId,
+                    opponentId = continuation.opponentId,
+                    sourceId = continuation.sourceId,
+                    sourceName = continuation.sourceName,
+                    priorEvents = events
+                )
+            }
+
+            TradeSecretsPhase.OPPONENT_REPEATS -> {
+                if (response !is YesNoResponse) {
+                    return ExecutionResult.error(state, "Expected yes/no response for Trade Secrets repeat")
+                }
+
+                if (!response.choice) {
+                    // Opponent chose not to repeat - done
+                    return checkForMoreContinuations(state, emptyList())
+                }
+
+                // Opponent chose to repeat: draw 2 cards for opponent
+                val drawResult = com.wingedsheep.engine.handlers.effects.drawing.TradeSecretsExecutor.drawCards(
+                    state, continuation.opponentId, 2
+                )
+                if (!drawResult.isSuccess) {
+                    return drawResult
+                }
+
+                // Ask controller how many cards to draw again
+                com.wingedsheep.engine.handlers.effects.drawing.TradeSecretsExecutor.askControllerToDraw(
+                    state = drawResult.state,
+                    controllerId = continuation.controllerId,
+                    opponentId = continuation.opponentId,
+                    sourceId = continuation.sourceId,
+                    sourceName = continuation.sourceName,
+                    priorEvents = drawResult.events.toList()
+                )
+            }
         }
     }
 }

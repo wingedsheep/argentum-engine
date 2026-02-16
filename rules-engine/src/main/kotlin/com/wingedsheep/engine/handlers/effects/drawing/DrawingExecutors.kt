@@ -33,6 +33,7 @@ class DrawingExecutors(
         ReplaceNextDrawWithDiscardExecutor(),
         ReplaceNextDrawWithDamageExecutor(),
         ReplaceNextDrawWithBearTokenExecutor(),
-        ReadTheRunesExecutor(amountEvaluator, decisionHandler)
+        ReadTheRunesExecutor(amountEvaluator, decisionHandler),
+        TradeSecretsExecutor(decisionHandler)
     )
 }

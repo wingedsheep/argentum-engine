@@ -2,7 +2,7 @@
 
 **Set Size:** 350 cards (335 unique card names + basic land variants)
 **Release Date:** October 7, 2002
-**Implemented:** 326 / 335
+**Implemented:** 327 / 335
 
 ---
 
@@ -304,7 +304,7 @@
 - [x] Threaten
 - [x] Thunder of Hooves
 - [x] Towering Baloth
-- [ ] Trade Secrets
+- [x] Trade Secrets
 - [x] Tranquil Thicket
 - [x] Treespring Lorian
 - [x] Tribal Golem
