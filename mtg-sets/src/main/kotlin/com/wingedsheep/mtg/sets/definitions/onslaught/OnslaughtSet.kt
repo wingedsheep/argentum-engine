@@ -234,6 +234,7 @@ object OnslaughtSet {
         ErraticExplosion,
         FeverCharm,
         FlamestickCourier,
+        GrandMelee,
         GratuitousViolence,
         Insurrection,
         ManaEchoes,

@@ -208,7 +208,9 @@ enum class GlobalEffectType(val description: String) {
     YOUR_CREATURES_HAVE_VIGILANCE("Creatures you control have vigilance"),
     YOUR_CREATURES_HAVE_LIFELINK("Creatures you control have lifelink"),
     CREATURES_CANT_ATTACK("Creatures can't attack"),
-    CREATURES_CANT_BLOCK("Creatures can't block")
+    CREATURES_CANT_BLOCK("Creatures can't block"),
+    ALL_CREATURES_MUST_ATTACK("All creatures attack each combat if able"),
+    ALL_CREATURES_MUST_BLOCK("All creatures block each combat if able")
 }
 
 /**

@@ -203,7 +203,9 @@ class StateProjector(
                 controllerId = v.controllerId,
                 isFaceDown = v.isFaceDown,
                 cantAttack = v.cantAttack,
-                cantBlock = v.cantBlock
+                cantBlock = v.cantBlock,
+                mustAttack = v.mustAttack,
+                mustBlock = v.mustBlock
             )
         }
 
@@ -268,7 +270,9 @@ class StateProjector(
                 controllerId = v.controllerId,
                 isFaceDown = v.isFaceDown,
                 cantAttack = v.cantAttack,
-                cantBlock = v.cantBlock
+                cantBlock = v.cantBlock,
+                mustAttack = v.mustAttack,
+                mustBlock = v.mustBlock
             )
         }
         return ProjectedState(state, frozen)
@@ -735,6 +739,12 @@ class StateProjector(
                 is Modification.SetCantBlock -> {
                     values.cantBlock = true
                 }
+                is Modification.SetMustAttack -> {
+                    values.mustAttack = true
+                }
+                is Modification.SetMustBlock -> {
+                    values.mustBlock = true
+                }
                 is Modification.ModifyPowerToughnessPerSourceCounter -> {
                     // Read counter count from the source permanent (e.g., the aura)
                     val counterType = try {
@@ -1015,6 +1025,11 @@ sealed interface Modification {
     @Serializable
     data object SetCantBlock : Modification
 
+    @Serializable
+    data object SetMustAttack : Modification
+    @Serializable
+    data object SetMustBlock : Modification
+
     /**
      * Dynamic power/toughness modification based on counters on the source permanent.
      * The actual modification is computed at projection time by reading counter count from source.
@@ -1044,7 +1059,9 @@ private data class MutableProjectedValues(
     var controllerId: EntityId? = null,
     var isFaceDown: Boolean = false,
     var cantAttack: Boolean = false,
-    var cantBlock: Boolean = false
+    var cantBlock: Boolean = false,
+    var mustAttack: Boolean = false,
+    var mustBlock: Boolean = false
 )
 
 /**
@@ -1060,7 +1077,9 @@ data class ProjectedValues(
     val controllerId: EntityId? = null,
     val isFaceDown: Boolean = false,
     val cantAttack: Boolean = false,
-    val cantBlock: Boolean = false
+    val cantBlock: Boolean = false,
+    val mustAttack: Boolean = false,
+    val mustBlock: Boolean = false
 )
 
 /**
@@ -1150,6 +1169,16 @@ class ProjectedState(
      * Check if an entity can't block (e.g., enchanted by Pacifism).
      */
     fun cantBlock(entityId: EntityId): Boolean = projectedValues[entityId]?.cantBlock == true
+
+    /**
+     * Check if an entity must attack each combat if able (e.g., Grand Melee).
+     */
+    fun mustAttack(entityId: EntityId): Boolean = projectedValues[entityId]?.mustAttack == true
+
+    /**
+     * Check if an entity must block each combat if able (e.g., Grand Melee).
+     */
+    fun mustBlock(entityId: EntityId): Boolean = projectedValues[entityId]?.mustBlock == true
 
     /**
      * Get the projected controller of an entity.

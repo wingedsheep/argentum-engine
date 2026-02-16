@@ -277,6 +277,12 @@ class StaticAbilityHandler(
             GlobalEffectType.CREATURES_CANT_ATTACK,
             GlobalEffectType.CREATURES_CANT_BLOCK ->
                 Triple(Layer.ABILITY, null, Modification.NoOp)
+
+            GlobalEffectType.ALL_CREATURES_MUST_ATTACK ->
+                Triple(Layer.ABILITY, null, Modification.SetMustAttack)
+
+            GlobalEffectType.ALL_CREATURES_MUST_BLOCK ->
+                Triple(Layer.ABILITY, null, Modification.SetMustBlock)
         }
 
         return ContinuousEffectData(

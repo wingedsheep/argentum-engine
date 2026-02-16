@@ -78,6 +78,12 @@ class CombatManager(
             return ExecutionResult.error(state, mustAttackThisTurnValidation)
         }
 
+        // Check projected must-attack requirements (Grand Melee)
+        val projectedMustAttackValidation = validateProjectedMustAttackRequirements(state, attackingPlayer, attackers)
+        if (projectedMustAttackValidation != null) {
+            return ExecutionResult.error(state, projectedMustAttackValidation)
+        }
+
         // Apply attacker components and tap attacking creatures
         var newState = state
         val projected = stateProjector.project(state)
@@ -239,6 +245,63 @@ class CombatManager(
     }
 
     /**
+     * Validate projected "must attack" requirements (e.g., from Grand Melee).
+     * Creatures with projected mustAttack that CAN attack MUST be declared as attackers.
+     */
+    private fun validateProjectedMustAttackRequirements(
+        state: GameState,
+        attackingPlayer: EntityId,
+        attackers: Map<EntityId, EntityId>
+    ): String? {
+        val validAttackers = getValidAttackers(state, attackingPlayer)
+        val projected = stateProjector.project(state)
+
+        for (attackerId in validAttackers) {
+            if (!projected.mustAttack(attackerId)) continue
+
+            if (attackerId !in attackers.keys) {
+                val cardName = state.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
+                return "$cardName must attack this combat if able"
+            }
+        }
+
+        return null
+    }
+
+    /**
+     * Validate projected "must block" requirements (e.g., from Grand Melee).
+     * Creatures with projected mustBlock that CAN block an attacker MUST be declared as blockers.
+     */
+    private fun validateProjectedMustBlockRequirements(
+        state: GameState,
+        blockingPlayer: EntityId,
+        blockers: Map<EntityId, List<EntityId>>
+    ): String? {
+        val projected = stateProjector.project(state)
+        val potentialBlockers = findPotentialBlockers(state, blockingPlayer)
+
+        for (blockerId in potentialBlockers) {
+            if (!projected.mustBlock(blockerId)) continue
+
+            // Check if this creature can legally block any attacker
+            val attackers = state.findEntitiesWith<AttackingComponent>().map { it.first }
+            val canBlockAny = attackers.any { attackerId ->
+                canCreatureBlockAttacker(state, blockerId, attackerId, blockingPlayer, projected)
+            }
+
+            if (!canBlockAny) continue
+
+            // This creature must block but isn't blocking anything
+            if (blockerId !in blockers.keys) {
+                val cardName = state.getEntity(blockerId)?.get<CardComponent>()?.name ?: "Creature"
+                return "$cardName must block this combat if able"
+            }
+        }
+
+        return null
+    }
+
+    /**
      * Get all creatures that can legally attack for a player.
      * Used for validating must-attack requirements.
      */
@@ -311,6 +374,12 @@ class CombatManager(
         val mustBeBlockedValidation = validateMustBeBlockedRequirements(state, blockingPlayer, blockers)
         if (mustBeBlockedValidation != null) {
             return ExecutionResult.error(state, mustBeBlockedValidation)
+        }
+
+        // Check projected must-block requirements (Grand Melee)
+        val projectedMustBlockValidation = validateProjectedMustBlockRequirements(state, blockingPlayer, blockers)
+        if (projectedMustBlockValidation != null) {
+            return ExecutionResult.error(state, projectedMustBlockValidation)
         }
 
         // Apply blocker components
