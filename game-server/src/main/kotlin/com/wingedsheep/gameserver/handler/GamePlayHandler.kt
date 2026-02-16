@@ -426,6 +426,7 @@ class GamePlayHandler(
                     0
                 }
                 tournament.reportMatchResult(gameSessionId, winnerId, winnerLifeRemaining)
+                lobbyRepository.saveTournament(lobbyId, tournament)
                 gameRepository.removeLobbyLink(gameSessionId)
 
                 // Clear currentGameSessionId for both players so they are

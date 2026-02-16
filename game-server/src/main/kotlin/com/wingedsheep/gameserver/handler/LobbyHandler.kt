@@ -346,6 +346,7 @@ class LobbyHandler(
         lobby.addPlayer(identity)
         logger.info("Player ${identity.playerName} joined lobby ${lobby.lobbyId}")
         broadcastLobbyUpdate(lobby)
+        lobbyRepository.saveLobby(lobby)
     }
 
     /**
@@ -720,6 +721,7 @@ class LobbyHandler(
         }
 
         broadcastLobbyUpdate(lobby)
+        lobbyRepository.saveLobby(lobby)
     }
 
     /**
@@ -764,6 +766,7 @@ class LobbyHandler(
 
                 // Broadcast to all players who is still waiting
                 broadcastDraftPickMade(lobby, identity, result.waitingForPlayers)
+                lobbyRepository.saveLobby(lobby)
 
                 // Check if all players have picked
                 if (lobby.allPlayersPicked()) {
@@ -790,6 +793,7 @@ class LobbyHandler(
         if (continuesDraft) {
             // Continue drafting - send new packs
             broadcastDraftPacks(lobby)
+            lobbyRepository.saveLobby(lobby)
             startDraftTimer(lobby)
         } else {
             // Draft complete - transition to deck building
@@ -809,6 +813,7 @@ class LobbyHandler(
             }
 
             broadcastLobbyUpdate(lobby)
+            lobbyRepository.saveLobby(lobby)
         }
     }
 
@@ -1138,6 +1143,7 @@ class LobbyHandler(
         message.picksPerRound?.let { lobby.picksPerRound = it.coerceIn(1, 2) }
 
         broadcastLobbyUpdate(lobby)
+        lobbyRepository.saveLobby(lobby)
     }
 
     private fun handleLobbyDeckSubmit(
@@ -1174,6 +1180,8 @@ class LobbyHandler(
                 if (result.allReady && lobby.state == LobbyState.DECK_BUILDING) {
                     lobby.activateTournament()
                 }
+
+                lobbyRepository.saveLobby(lobby)
             }
             is TournamentLobby.DeckSubmissionResult.Error -> {
                 sender.sendError(session, ErrorCode.INVALID_DECK, result.message)
@@ -1375,6 +1383,8 @@ class LobbyHandler(
                 return
             }
             lobby.clearReadyState()
+            lobbyRepository.saveLobby(lobby)
+            lobbyRepository.saveTournament(lobbyId, tournament)
         }
 
         val round = tournament.currentRound ?: return
@@ -1386,6 +1396,7 @@ class LobbyHandler(
                 startSingleMatch(lobby, tournament, round, match)
             }
         }
+        lobbyRepository.saveTournament(lobbyId, tournament)
 
         // Handle BYEs
         for (match in round.matches) {
@@ -1473,6 +1484,10 @@ class LobbyHandler(
                 sender.send(ws, roundComplete)
             }
 
+            // Persist round completion state
+            lobbyRepository.saveLobby(lobby)
+            lobbyRepository.saveTournament(lobbyId, tournament)
+
             // If tournament is complete, don't wait for ready - just finish
             if (tournament.isComplete) {
                 completeTournament(lobbyId)
@@ -1537,6 +1552,7 @@ class LobbyHandler(
                 }
                 // Clear ready state for the new round
                 lobby.clearReadyState()
+                lobbyRepository.saveTournament(lobbyId, tournament)
                 logger.info("Prepared round ${round.roundNumber} for tournament $lobbyId")
             }
 
@@ -1550,6 +1566,7 @@ class LobbyHandler(
 
             // Broadcast ready status to all players
             broadcastReadyStatus(lobby, identity)
+            lobbyRepository.saveLobby(lobby)
 
             // Try to start this player's match eagerly
             tryStartMatchForPlayer(lobby, tournament, identity)
@@ -1653,6 +1670,7 @@ class LobbyHandler(
         gameRepository.save(gameSession)
         gameRepository.linkToLobby(gameSession.sessionId, lobby.lobbyId)
         match.gameSessionId = gameSession.sessionId
+        lobbyRepository.saveTournament(lobby.lobbyId, tournament)
 
         player1State.identity.currentGameSessionId = gameSession.sessionId
         player2State.identity.currentGameSessionId = gameSession.sessionId
@@ -1704,6 +1722,8 @@ class LobbyHandler(
 
         logger.info("Tournament complete for lobby $lobbyId")
         lobby.completeTournament()
+        lobbyRepository.saveLobby(lobby)
+        lobbyRepository.saveTournament(lobbyId, tournament)
 
         val connectedIds = lobby.players.values
             .filter { it.identity.isConnected }
