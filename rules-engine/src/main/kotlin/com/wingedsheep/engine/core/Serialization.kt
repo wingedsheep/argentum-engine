@@ -128,7 +128,7 @@ val engineSerializersModule = SerializersModule {
         subclass(HandSizeDiscardContinuation::class)
         subclass(EachPlayerSelectsThenDrawsContinuation::class)
         subclass(SearchLibraryContinuation::class)
-        subclass(ReorderLibraryContinuation::class)
+
         subclass(BlockerOrderContinuation::class)
         subclass(EachPlayerChoosesDrawContinuation::class)
         subclass(PayOrSufferContinuation::class)
@@ -186,6 +186,8 @@ val engineSerializersModule = SerializersModule {
         subclass(SearchTargetLibraryExileContinuation::class)
         subclass(KaboomReorderContinuation::class)
         subclass(TradeSecretsContinuation::class)
+        subclass(SelectFromCollectionContinuation::class)
+        subclass(MoveCollectionOrderContinuation::class)
     }
 
     // Component hierarchy (for GameState persistence)

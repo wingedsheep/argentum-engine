@@ -88,9 +88,31 @@ Compare the card's needs against existing components:
 6. **New trigger needed** -> Phase 4
 7. **New condition needed** -> Phase 4
 
+### IMPORTANT: Prefer Atomic Effects Over Monolithic Effects
+
+**Always compose card abilities from small, reusable atomic effects** rather than creating large monolithic effects. This is critical for keeping the engine easily extendible with new cards.
+
+- **Atomic effects** are small, single-purpose building blocks (e.g., `GatherCardsEffect`, `SelectFromCollectionEffect`, `MoveCollectionEffect`, `DrawCardsEffect`, `DealDamageEffect`)
+- **Monolithic effects** bundle multiple steps into one effect class (e.g., a single effect that gathers cards, shows them, lets the player choose, and moves them)
+
+**Why this matters:**
+- Atomic effects can be recombined for new cards without writing new executors
+- Each atomic effect has one executor that is thoroughly tested
+- New cards often need slight variations — atomic pipelines handle this by changing parameters, not code
+
+**Pipeline pattern for library manipulation:**
+```
+GatherCards → SelectFromCollection → MoveCollection
+```
+Use `EffectPatterns.lookAtTopAndReorder(count)`, `EffectPatterns.lookAtTopAndKeep(count, keepCount)`, or compose your own pipeline from `GatherCardsEffect`, `SelectFromCollectionEffect`, and `MoveCollectionEffect`.
+
+**Before creating a new effect type**, check if the behavior can be expressed as a `CompositeEffect` of existing atomic effects. Only create a new effect type when no combination of existing effects can achieve the desired behavior.
+
 ## Phase 4: Implement Missing Backend Components
 
 If new components are needed:
+
+**4.0 Consider Atomic Composition First** — Before adding a new effect type, try to express the behavior as a `CompositeEffect` of existing atomic effects or an `EffectPatterns.*` helper. For library manipulation, use the `GatherCards → SelectFromCollection → MoveCollection` pipeline. Only create a new effect type when no composition of existing effects works.
 
 **4.1 Add Effect Type** in the appropriate file under `mtg-sdk/.../scripting/effect/`:
 - `DamageEffects.kt`, `LifeEffects.kt`, `DrawingEffects.kt`, `RemovalEffects.kt`
@@ -207,9 +229,10 @@ just build
 1. **Always fetch from Scryfall first** - Never guess card text or stats
 2. **ALWAYS use set-specific API URL** - Use `&set=<code>` to get correct metadata for the specific printing
 3. **NEVER hallucinate image URIs** - Always use the exact `image_uris.normal` from Scryfall API response
-4. **Check DSL facades first** - Use `Effects.*`, `Targets.*`, `Triggers.*`, etc. before checking raw types
-5. **Check existing effects** - Most common effects already exist
-6. **Use immutable patterns** - Never modify state in place
-7. **Test new mechanics** - All new effects/keywords/triggers/conditions need tests
-8. **Follow naming conventions** - CardName should match file name
-9. **Keep effects data-only** - Logic goes in executors, not effect data classes
+4. **Prefer atomic effects over monolithic effects** - Compose behavior from small reusable effects (GatherCards, SelectFromCollection, MoveCollection, etc.) instead of creating large single-purpose effects. Use `EffectPatterns.*` and `CompositeEffect` to combine them. This keeps the engine easily extendible.
+5. **Check DSL facades first** - Use `Effects.*`, `Targets.*`, `Triggers.*`, `EffectPatterns.*`, etc. before checking raw types
+6. **Check existing effects** - Most common effects already exist; compose them before creating new ones
+7. **Use immutable patterns** - Never modify state in place
+8. **Test new mechanics** - All new effects/keywords/triggers/conditions need tests
+9. **Follow naming conventions** - CardName should match file name
+10. **Keep effects data-only** - Logic goes in executors, not effect data classes

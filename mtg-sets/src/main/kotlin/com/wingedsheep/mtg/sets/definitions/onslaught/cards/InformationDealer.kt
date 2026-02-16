@@ -1,11 +1,11 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
+import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.DynamicAmount
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.LookAtTopAndReorderEffect
 import com.wingedsheep.sdk.scripting.Player
 
 /**
@@ -25,8 +25,8 @@ val InformationDealer = card("Information Dealer") {
 
     activatedAbility {
         cost = AbilityCost.Tap
-        effect = LookAtTopAndReorderEffect(
-            count = DynamicAmount.CountBattlefield(
+        effect = EffectPatterns.lookAtTopAndReorder(
+            DynamicAmount.CountBattlefield(
                 Player.You,
                 GameObjectFilter.Creature.withSubtype("Wizard")
             )

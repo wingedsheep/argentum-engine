@@ -182,6 +182,103 @@ object EffectPatterns {
     fun sequence(vararg effects: Effect): CompositeEffect =
         CompositeEffect(effects.toList())
 
+    // =========================================================================
+    // Pipeline Patterns
+    // =========================================================================
+
+    /**
+     * Look at the top N cards of your library, keep some, send the rest elsewhere.
+     *
+     * This creates a Gather → Select → Move pipeline using CompositeEffect.
+     *
+     * Example: Ancestral Memories — "Look at the top 7 cards of your library.
+     * Put 2 of them into your hand and the rest into your graveyard."
+     * ```kotlin
+     * lookAtTopAndKeep(count = 7, keepCount = 2)
+     * ```
+     *
+     * @param count How many cards to look at from the top of the library
+     * @param keepCount How many cards the player keeps
+     * @param keepDestination Where kept cards go (default: hand)
+     * @param restDestination Where remaining cards go (default: graveyard)
+     * @param revealed Whether the gathered cards are revealed to all players
+     */
+    fun lookAtTopAndKeep(
+        count: Int,
+        keepCount: Int,
+        keepDestination: CardDestination = CardDestination.ToZone(Zone.HAND),
+        restDestination: CardDestination = CardDestination.ToZone(Zone.GRAVEYARD),
+        revealed: Boolean = false
+    ): CompositeEffect = CompositeEffect(
+        listOf(
+            GatherCardsEffect(
+                source = CardSource.TopOfLibrary(DynamicAmount.Fixed(count)),
+                storeAs = "looked",
+                revealed = revealed
+            ),
+            SelectFromCollectionEffect(
+                from = "looked",
+                selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(keepCount)),
+                storeSelected = "kept",
+                storeRemainder = "rest"
+            ),
+            MoveCollectionEffect(
+                from = "kept",
+                destination = keepDestination
+            ),
+            MoveCollectionEffect(
+                from = "rest",
+                destination = restDestination
+            )
+        )
+    )
+
+    /**
+     * Look at the top N cards of your library, then put them back in any order.
+     *
+     * This creates a Gather → Move(ControllerChooses) pipeline.
+     *
+     * Example: Sage Aven — "Look at the top four cards of your library,
+     * then put them back in any order."
+     * ```kotlin
+     * lookAtTopAndReorder(4)
+     * ```
+     *
+     * @param count How many cards to look at
+     */
+    fun lookAtTopAndReorder(count: Int): CompositeEffect = CompositeEffect(
+        listOf(
+            GatherCardsEffect(
+                source = CardSource.TopOfLibrary(DynamicAmount.Fixed(count)),
+                storeAs = "looked"
+            ),
+            MoveCollectionEffect(
+                from = "looked",
+                destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Top),
+                order = CardOrder.ControllerChooses
+            )
+        )
+    )
+
+    /**
+     * Look at the top X cards of your library (dynamic count), then put them back in any order.
+     *
+     * @param count Dynamic amount for how many cards to look at
+     */
+    fun lookAtTopAndReorder(count: DynamicAmount): CompositeEffect = CompositeEffect(
+        listOf(
+            GatherCardsEffect(
+                source = CardSource.TopOfLibrary(count),
+                storeAs = "looked"
+            ),
+            MoveCollectionEffect(
+                from = "looked",
+                destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Top),
+                order = CardOrder.ControllerChooses
+            )
+        )
+    )
+
     /**
      * Create an exile-and-return pattern used by O-Ring style cards.
      *

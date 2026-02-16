@@ -2,10 +2,10 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.LookAtTopAndReorderEffect
 
 /**
  * Aven Fateshaper
@@ -28,12 +28,12 @@ val AvenFateshaper = card("Aven Fateshaper") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = LookAtTopAndReorderEffect(4)
+        effect = EffectPatterns.lookAtTopAndReorder(4)
     }
 
     activatedAbility {
         cost = Costs.Mana("{4}{U}")
-        effect = LookAtTopAndReorderEffect(4)
+        effect = EffectPatterns.lookAtTopAndReorder(4)
     }
 
     metadata {

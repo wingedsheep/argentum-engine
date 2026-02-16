@@ -150,8 +150,8 @@ Always use these facades for card definitions. They provide type-safe factory me
 | `SurveilEffect` | `count` | Surveil N |
 | `MillEffect` | `count, target` | Mill cards |
 | `ShuffleLibraryEffect` | `target` | Shuffle library |
-| `LookAtTopCardsEffect` | `count, keepCount, restToGraveyard` | Look at top N keep some |
-| `LookAtTopAndReorderEffect` | `count, target` | Look at top and reorder |
+| `EffectPatterns.lookAtTopAndKeep(count, keepCount)` | `count, keepCount, keepDest?, restDest?, revealed?` | Look at top N keep some (pipeline) |
+| `EffectPatterns.lookAtTopAndReorder(count)` | `count: Int` or `count: DynamicAmount` | Look at top and reorder (pipeline) |
 | `LookAtTopXPutOntoBattlefieldEffect` | `countSource: DynamicAmount, filter, shuffleAfter` | CoCo-style |
 | `LookAtOpponentLibraryEffect` | `count, toGraveyard` | Look at opponent library |
 | `PutCreatureFromHandOntoBattlefieldEffect` | `maxManaValueSource, entersTapped, entersAttacking` | Sneak Attack-style |
@@ -364,6 +364,48 @@ Always use these facades for card definitions. They provide type-safe factory me
 ---
 
 ## EffectPatterns Facade
+
+**IMPORTANT: Always prefer `EffectPatterns.*` and atomic pipelines over creating new monolithic effects.** This keeps the engine extendible — new cards can reuse existing atomic effects with different parameters instead of requiring new executor code.
+
+### Atomic Library Pipelines
+
+The engine uses a `GatherCards → SelectFromCollection → MoveCollection` pipeline for library manipulation. These atomic effects can be composed for any "look at top N" style ability:
+
+| Pattern | Usage |
+|---------|-------|
+| `EffectPatterns.lookAtTopAndReorder(count)` | "Look at top N, put back in any order" (e.g., Sage Aven) |
+| `EffectPatterns.lookAtTopAndReorder(dynamicAmount)` | Same but with dynamic count (e.g., Information Dealer) |
+| `EffectPatterns.lookAtTopAndKeep(count, keepCount)` | "Look at top N, put one into hand, rest on bottom" (e.g., Impulse) |
+
+For custom pipelines (e.g., looking at another player's library), compose directly:
+```kotlin
+CompositeEffect(listOf(
+    GatherCardsEffect(
+        source = CardSource.TopOfLibrary(DynamicAmount.Fixed(1), Player.ContextPlayer(0)),
+        storeAs = "target_top"
+    ),
+    MoveCollectionEffect(
+        from = "target_top",
+        destination = CardDestination.ToZone(Zone.LIBRARY, Player.ContextPlayer(0), ZonePlacement.Top),
+        order = CardOrder.ControllerChooses
+    )
+))
+```
+
+### Atomic Building Blocks
+
+| Effect | Purpose |
+|--------|---------|
+| `GatherCardsEffect(source, storeAs)` | Gather cards from a zone into a named collection |
+| `SelectFromCollectionEffect(from, filter, count, storeSelected, storeRest)` | Player selects from a collection |
+| `MoveCollectionEffect(from, destination, order)` | Move a collection to a zone |
+
+Sources: `CardSource.TopOfLibrary(count, player)`, `CardSource.FromZone(zone, player)`, `CardSource.FromVariable(name)`
+Destinations: `CardDestination.ToZone(zone, player, placement)`
+Placements: `ZonePlacement.Top`, `.Bottom`, `.Shuffled`, `.Default`
+Ordering: `CardOrder.Preserve` (keep order), `CardOrder.ControllerChooses` (player reorders)
+
+### General Patterns
 
 - `EffectPatterns.mayPay(cost, effect)` — "You may [cost]. If you do, [effect]"
 - `EffectPatterns.mayPayOrElse(cost, ifPaid, ifNotPaid)` — with fallback

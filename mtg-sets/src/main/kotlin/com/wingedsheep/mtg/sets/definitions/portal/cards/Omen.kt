@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.portal.cards
 
+import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.*
@@ -18,7 +19,7 @@ val Omen = card("Omen") {
     spell {
         effect = CompositeEffect(
             listOf(
-                LookAtTopAndReorderEffect(3),
+                EffectPatterns.lookAtTopAndReorder(3),
                 MayEffect(ShuffleLibraryEffect()),
                 DrawCardsEffect(1)
             )

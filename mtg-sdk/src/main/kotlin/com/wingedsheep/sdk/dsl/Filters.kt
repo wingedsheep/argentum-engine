@@ -116,26 +116,6 @@ object Filters {
      */
     fun ManaValueAtMost(max: Int): GameObjectFilter = GameObjectFilter.Any.manaValueAtMost(max)
 
-    // =========================================================================
-    // Creature Filters (for static abilities) — use Filters.Group.* instead
-    // =========================================================================
-
-    @Deprecated("Use Filters.Group.allCreatures", ReplaceWith("Group.allCreatures"))
-    val AllCreatures: GroupFilter = Group.allCreatures
-
-    @Deprecated("Use Filters.Group.creaturesYouControl", ReplaceWith("Group.creaturesYouControl"))
-    val CreaturesYouControl: GroupFilter = Group.creaturesYouControl
-
-    @Deprecated("Use Filters.Group.creaturesOpponentsControl", ReplaceWith("Group.creaturesOpponentsControl"))
-    val CreaturesOpponentsControl: GroupFilter = Group.creaturesOpponentsControl
-
-    @Deprecated("Use Filters.Group.allCreatures.withKeyword(keyword)", ReplaceWith("Group.allCreatures.withKeyword(keyword)"))
-    fun CreaturesWithKeyword(keyword: Keyword): GroupFilter =
-        Group.allCreatures.withKeyword(keyword)
-
-    @Deprecated("Use Filters.Group.allCreatures.withoutKeyword(keyword)", ReplaceWith("Group.allCreatures.withoutKeyword(keyword)"))
-    fun CreaturesWithoutKeyword(keyword: Keyword): GroupFilter =
-        Group.allCreatures.withoutKeyword(keyword)
 
     // =========================================================================
     // Static Targets (for equipment/auras)

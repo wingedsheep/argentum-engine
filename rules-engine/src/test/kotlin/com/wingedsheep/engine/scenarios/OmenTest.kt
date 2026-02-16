@@ -13,9 +13,9 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.scripting.CompositeEffect
 import com.wingedsheep.sdk.scripting.DrawCardsEffect
-import com.wingedsheep.sdk.scripting.LookAtTopAndReorderEffect
 import com.wingedsheep.sdk.scripting.MayEffect
 import com.wingedsheep.sdk.scripting.ShuffleLibraryEffect
 import io.kotest.core.spec.style.FunSpec
@@ -47,7 +47,7 @@ class OmenTest : FunSpec({
         script = CardScript.spell(
             CompositeEffect(
                 listOf(
-                    LookAtTopAndReorderEffect(3),
+                    EffectPatterns.lookAtTopAndReorder(3),
                     MayEffect(ShuffleLibraryEffect()),
                     DrawCardsEffect(1)
                 )

@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
+import kotlinx.serialization.Serializable
 
 /**
  * Context for effect execution.
@@ -27,5 +28,7 @@ data class EffectContext(
     /** Creature type chosen during casting (e.g., Aphetto Dredging) */
     val chosenCreatureType: String? = null,
     /** Permanents tapped as part of an activated ability's cost (e.g., Cryptic Gateway) */
-    val tappedPermanents: List<EntityId> = emptyList()
+    val tappedPermanents: List<EntityId> = emptyList(),
+    /** Named card collections for pipeline effects (GatherCards → SelectFromCollection → MoveCollection) */
+    val storedCollections: Map<String, List<EntityId>> = emptyMap()
 )

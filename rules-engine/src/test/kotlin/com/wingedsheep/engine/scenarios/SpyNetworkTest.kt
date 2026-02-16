@@ -14,12 +14,10 @@ import com.wingedsheep.sdk.core.TypeLine
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.CompositeEffect
-import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.scripting.LookAtAllFaceDownCreaturesEffect
-import com.wingedsheep.sdk.scripting.LookAtTargetHandEffect
-import com.wingedsheep.sdk.scripting.LookAtTopAndReorderEffect
+import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.targeting.TargetPlayer
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -46,9 +44,19 @@ class SpyNetworkTest : FunSpec({
             effect = CompositeEffect(
                 listOf(
                     LookAtTargetHandEffect(EffectTarget.ContextTarget(0)),
-                    LookAtTopAndReorderEffect(1, EffectTarget.ContextTarget(0)),
+                    CompositeEffect(listOf(
+                        GatherCardsEffect(
+                            source = CardSource.TopOfLibrary(DynamicAmount.Fixed(1), Player.ContextPlayer(0)),
+                            storeAs = "target_top"
+                        ),
+                        MoveCollectionEffect(
+                            from = "target_top",
+                            destination = CardDestination.ToZone(Zone.LIBRARY, Player.ContextPlayer(0), ZonePlacement.Top),
+                            order = CardOrder.ControllerChooses
+                        )
+                    )),
                     LookAtAllFaceDownCreaturesEffect(EffectTarget.ContextTarget(0)),
-                    LookAtTopAndReorderEffect(4, EffectTarget.Controller)
+                    EffectPatterns.lookAtTopAndReorder(4)
                 )
             ),
             TargetPlayer()

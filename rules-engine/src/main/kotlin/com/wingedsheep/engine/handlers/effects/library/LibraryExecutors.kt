@@ -13,9 +13,8 @@ class LibraryExecutors : ExecutorModule {
         ShuffleLibraryExecutor(),
         ShuffleGraveyardIntoLibraryExecutor(),
         SearchLibraryExecutor(),
-        LookAtTopAndReorderExecutor(),
+
         LookAtOpponentLibraryExecutor(),
-        LookAtTopCardsExecutor(),
         RevealAndOpponentChoosesExecutor(),
         WheelEffectExecutor(),
         PutLandFromHandExecutor(),
@@ -29,6 +28,9 @@ class LibraryExecutors : ExecutorModule {
         EachPlayerMayRevealCreaturesExecutor(),
         EachPlayerSearchesLibraryExecutor(),
         SearchTargetLibraryExileExecutor(),
-        RevealUntilNonlandDealDamageEachTargetExecutor()
+        RevealUntilNonlandDealDamageEachTargetExecutor(),
+        GatherCardsExecutor(),
+        SelectFromCollectionExecutor(),
+        MoveCollectionExecutor()
     )
 }
