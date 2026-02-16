@@ -25,6 +25,6 @@ val FutureSight = card("Future Sight") {
         collectorNumber = "84"
         artist = "Matt Cavotta"
         flavorText = "\"My past holds only pain and loss. I will conquer it by creating a glorious future.\"\n—Ixidor, reality sculptor"
-        imageUri = "https://cards.scryfall.io/large/front/a/2/a2a4c290-0a77-40da-840e-b4e8d7043850.jpg?1562929061"
+        imageUri = "https://cards.scryfall.io/large/front/6/8/688bd665-4948-4961-aec5-f17782257f9b.jpg?1562919624"
     }
 }
