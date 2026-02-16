@@ -1887,6 +1887,37 @@ data class DrawReplacementActivationContinuation(
 ) : ContinuationFrame
 
 /**
+ * Continuation for Read the Runes effect.
+ * Tracks the iterative "for each card drawn, discard a card unless you sacrifice a permanent" choices.
+ *
+ * @property playerId The player making choices
+ * @property sourceId The source spell
+ * @property sourceName Name of the source spell
+ * @property remainingChoices How many more discard-or-sacrifice choices remain
+ * @property phase Whether we're awaiting a sacrifice selection or a discard selection
+ */
+@Serializable
+data class ReadTheRunesContinuation(
+    override val decisionId: String,
+    val playerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val remainingChoices: Int,
+    val phase: ReadTheRunesPhase
+) : ContinuationFrame
+
+/**
+ * Phase discriminator for ReadTheRunesContinuation.
+ */
+@Serializable
+enum class ReadTheRunesPhase {
+    /** Player is choosing whether to sacrifice a permanent (select 0 to discard instead) */
+    SACRIFICE_CHOICE,
+    /** Player is choosing a card to discard */
+    DISCARD_CHOICE
+}
+
+/**
  * Information about a mana source available for manual selection.
  */
 @Serializable

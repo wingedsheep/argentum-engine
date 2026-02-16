@@ -9,6 +9,7 @@ import com.wingedsheep.engine.handlers.effects.drawing.DrawCardsExecutor
 import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerDiscardsDrawsExecutor
 import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerDiscardsOrLoseLifeExecutor
 import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerMayDrawExecutor
+import com.wingedsheep.engine.handlers.effects.drawing.ReadTheRunesExecutor
 import com.wingedsheep.engine.mechanics.combat.CombatManager
 import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
 import com.wingedsheep.engine.mechanics.layers.FloatingEffectData
@@ -164,6 +165,7 @@ class ContinuationHandler(
             is DrawReplacementBounceContinuation -> resumeDrawReplacementBounce(stateAfterPop, continuation, response)
             is DrawReplacementDiscardContinuation -> resumeDrawReplacementDiscard(stateAfterPop, continuation, response)
             is DrawReplacementActivationContinuation -> resumeDrawReplacementActivation(stateAfterPop, continuation, response)
+            is ReadTheRunesContinuation -> resumeReadTheRunes(stateAfterPop, continuation, response)
         }
     }
 
@@ -6662,6 +6664,126 @@ class ContinuationHandler(
         }
 
         return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume Read the Runes continuation after player makes a sacrifice or discard choice.
+     */
+    private fun resumeReadTheRunes(
+        state: GameState,
+        continuation: ReadTheRunesContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for Read the Runes")
+        }
+
+        val playerId = continuation.playerId
+        val selectedCards = response.selectedCards
+
+        return when (continuation.phase) {
+            ReadTheRunesPhase.SACRIFICE_CHOICE -> {
+                if (selectedCards.isNotEmpty()) {
+                    // Player chose to sacrifice a permanent
+                    val permanentId = selectedCards.first()
+                    val result = ReadTheRunesExecutor.sacrificePermanent(state, playerId, permanentId)
+                    val loopResult = ReadTheRunesExecutor.startChoiceLoop(
+                        result.state, playerId, continuation.sourceId, continuation.sourceName,
+                        continuation.remainingChoices - 1
+                    )
+                    if (loopResult.isPaused) {
+                        ExecutionResult.paused(
+                            loopResult.state,
+                            loopResult.pendingDecision!!,
+                            result.events + loopResult.events
+                        )
+                    } else {
+                        checkForMoreContinuations(loopResult.state, result.events + loopResult.events)
+                    }
+                } else {
+                    // Player chose not to sacrifice - must discard a card
+                    val hand = state.getZone(ZoneKey(playerId, com.wingedsheep.sdk.core.Zone.HAND))
+                    if (hand.isEmpty()) {
+                        // No cards to discard - skip
+                        val loopResult = ReadTheRunesExecutor.startChoiceLoop(
+                            state, playerId, continuation.sourceId, continuation.sourceName,
+                            continuation.remainingChoices - 1
+                        )
+                        if (loopResult.isPaused) {
+                            return loopResult
+                        }
+                        checkForMoreContinuations(loopResult.state, loopResult.events)
+                    } else if (hand.size == 1) {
+                        // Auto-discard only card
+                        val result = ReadTheRunesExecutor.discardCard(state, playerId, hand.first())
+                        val loopResult = ReadTheRunesExecutor.startChoiceLoop(
+                            result.state, playerId, continuation.sourceId, continuation.sourceName,
+                            continuation.remainingChoices - 1
+                        )
+                        if (loopResult.isPaused) {
+                            ExecutionResult.paused(
+                                loopResult.state,
+                                loopResult.pendingDecision!!,
+                                result.events + loopResult.events
+                            )
+                        } else {
+                            checkForMoreContinuations(loopResult.state, result.events + loopResult.events)
+                        }
+                    } else {
+                        // Present discard choice
+                        val decisionResult = DecisionHandler().createCardSelectionDecision(
+                            state = state,
+                            playerId = playerId,
+                            sourceId = continuation.sourceId,
+                            sourceName = continuation.sourceName,
+                            prompt = "Choose a card to discard (${continuation.remainingChoices} remaining)",
+                            options = hand,
+                            minSelections = 1,
+                            maxSelections = 1,
+                            ordered = false,
+                            phase = DecisionPhase.RESOLUTION
+                        )
+
+                        val newContinuation = ReadTheRunesContinuation(
+                            decisionId = decisionResult.pendingDecision!!.id,
+                            playerId = playerId,
+                            sourceId = continuation.sourceId,
+                            sourceName = continuation.sourceName,
+                            remainingChoices = continuation.remainingChoices,
+                            phase = ReadTheRunesPhase.DISCARD_CHOICE
+                        )
+
+                        val stateWithContinuation = decisionResult.state.pushContinuation(newContinuation)
+
+                        ExecutionResult.paused(
+                            stateWithContinuation,
+                            decisionResult.pendingDecision,
+                            decisionResult.events
+                        )
+                    }
+                }
+            }
+            ReadTheRunesPhase.DISCARD_CHOICE -> {
+                if (selectedCards.isEmpty()) {
+                    return ExecutionResult.error(state, "Must select a card to discard for Read the Runes")
+                }
+                val cardId = selectedCards.first()
+                val result = ReadTheRunesExecutor.discardCard(state, playerId, cardId)
+                val loopResult = ReadTheRunesExecutor.startChoiceLoop(
+                    result.state, playerId, continuation.sourceId, continuation.sourceName,
+                    continuation.remainingChoices - 1
+                )
+                if (loopResult.isPaused) {
+                    ExecutionResult.paused(
+                        loopResult.state,
+                        loopResult.pendingDecision!!,
+                        result.events + loopResult.events
+                    )
+                } else {
+                    checkForMoreContinuations(loopResult.state, result.events + loopResult.events)
+                }
+            }
+        }
     }
 
     private fun findControllerLands(state: GameState, controllerId: EntityId): List<EntityId> {

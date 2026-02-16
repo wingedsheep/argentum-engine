@@ -96,6 +96,12 @@ object Effects {
     fun Blackmail(revealCount: Int = 3, target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
         BlackmailEffect(revealCount, target)
 
+    /**
+     * Draw X cards, then for each card drawn, discard a card unless you sacrifice a permanent.
+     * Used for Read the Runes.
+     */
+    fun ReadTheRunes(): Effect = ReadTheRunesEffect
+
     // =========================================================================
     // Destruction Effects
     // =========================================================================

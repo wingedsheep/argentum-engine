@@ -32,6 +32,7 @@ class DrawingExecutors(
         ReplaceNextDrawWithBounceExecutor(),
         ReplaceNextDrawWithDiscardExecutor(),
         ReplaceNextDrawWithDamageExecutor(),
-        ReplaceNextDrawWithBearTokenExecutor()
+        ReplaceNextDrawWithBearTokenExecutor(),
+        ReadTheRunesExecutor(amountEvaluator, decisionHandler)
     )
 }

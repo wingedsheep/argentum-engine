@@ -360,6 +360,17 @@ data object ReplaceNextDrawWithBearTokenEffect : Effect {
 }
 
 /**
+ * Draw X cards, then for each card drawn this way, discard a card unless you sacrifice a permanent.
+ * Used for Read the Runes.
+ */
+@SerialName("ReadTheRunes")
+@Serializable
+data object ReadTheRunesEffect : Effect {
+    override val description: String =
+        "Draw X cards. For each card drawn this way, discard a card unless you sacrifice a permanent."
+}
+
+/**
  * Reveal a player's hand (publicly visible to all players).
  * This is an atomic effect that just reveals - use with CompositeEffect for
  * "reveal and do something based on what's revealed" patterns.

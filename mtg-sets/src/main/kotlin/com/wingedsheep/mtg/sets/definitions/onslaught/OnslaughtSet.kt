@@ -324,6 +324,8 @@ object OnslaughtSet {
         SteelyResolve,
         WeirdHarvest,
 
+        ReadTheRunes,
+
         // Artifacts
         CrypticGateway,
         DoomCannon,
