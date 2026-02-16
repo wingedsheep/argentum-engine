@@ -34,6 +34,6 @@ val IxidorsWill = card("Ixidor's Will") {
         collectorNumber = "90"
         artist = "Eric Peterson"
         flavorText = "\"Some dreams should not come to be.\""
-        imageUri = "https://cards.scryfall.io/normal/front/0/0/00c29698-0135-41e3-8046-97cbff2ccd24.jpg?1562895063"
+        imageUri = "https://cards.scryfall.io/large/front/1/b/1b713448-853a-41ee-a302-963e9c1c1c65.jpg?1562901464"
     }
 }
