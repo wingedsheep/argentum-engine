@@ -150,20 +150,29 @@ export function getEffectIcon(icon: string): string {
 
 // --- Token frame color helpers ---
 
-const COLOR_FRAME: Record<Color, [string, string]> = {
-  [Color.WHITE]: ['#f0e8d0', '#d4c9a8'],
-  [Color.BLUE]:  ['#1a4a7a', '#0d2d50'],
-  [Color.BLACK]: ['#3a3040', '#1e1828'],
-  [Color.RED]:   ['#8a2a1a', '#5a1a10'],
-  [Color.GREEN]: ['#1a5a2a', '#0d3a18'],
+// [top, bottom, textColor] — lighter frame colors closer to real MTG token frames
+const COLOR_FRAME: Record<Color, [string, string, string]> = {
+  [Color.WHITE]: ['#f5eed8', '#d8cfb0', '#3a3020'],
+  [Color.BLUE]:  ['#2a6aaa', '#143860', '#c0d8f0'],
+  [Color.BLACK]: ['#48384e', '#201828', '#c8b8d0'],
+  [Color.RED]:   ['#b83a20', '#6a1e10', '#ffd0c0'],
+  [Color.GREEN]: ['#2a7a3a', '#104a1a', '#c0e8c8'],
 }
 
 /** Returns a CSS gradient for a token card frame based on colors. */
 export function getTokenFrameGradient(colors: readonly Color[]): string {
-  if (colors.length === 0) return 'linear-gradient(180deg, #4a4a5e 0%, #2a2a3e 100%)'
-  if (colors.length > 1) return 'linear-gradient(180deg, #b8953a 0%, #7a6320 100%)'
-  const [light, dark] = COLOR_FRAME[colors[0]!] ?? ['#4a4a5e', '#2a2a3e']
+  if (colors.length === 0) return 'linear-gradient(180deg, #5a5a6e 0%, #32323e 100%)'
+  if (colors.length > 1) return 'linear-gradient(180deg, #d4aa40 0%, #8a6a18 100%)'
+  const [light, dark] = COLOR_FRAME[colors[0]!] ?? ['#5a5a6e', '#32323e']
   return `linear-gradient(180deg, ${light} 0%, ${dark} 100%)`
+}
+
+/** Returns the text color appropriate for a token frame of the given colors. */
+export function getTokenFrameTextColor(colors: readonly Color[]): string {
+  if (colors.length === 0) return '#d0d0e0'
+  if (colors.length > 1) return '#3a2800'
+  const [, , text] = COLOR_FRAME[colors[0]!] ?? [, , '#d0d0e0']
+  return text
 }
 
 /** Returns a background color for the card fallback based on card colors. */

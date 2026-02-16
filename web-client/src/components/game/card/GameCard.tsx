@@ -13,6 +13,7 @@ import {
   getGoldCounters,
   getPlagueCounters,
   getTokenFrameGradient,
+  getTokenFrameTextColor,
   getCardFallbackColor,
 } from '../board/shared'
 import { styles } from '../board/styles'
@@ -642,7 +643,8 @@ export function GameCard({
         }}>
           <div style={{
             ...styles.tokenNameBar,
-            fontSize: responsive.isMobile ? 8 : 10,
+            color: getTokenFrameTextColor(card.colors),
+            fontSize: responsive.isMobile ? 7 : 9,
           }}>
             {card.name}
           </div>
@@ -655,7 +657,8 @@ export function GameCard({
           </div>
           <div style={{
             ...styles.tokenTypeBar,
-            fontSize: responsive.isMobile ? 7 : 9,
+            color: getTokenFrameTextColor(card.colors),
+            fontSize: responsive.isMobile ? 6 : 8,
           }}>
             {card.typeLine}
           </div>

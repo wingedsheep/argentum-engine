@@ -3,7 +3,7 @@ import { useGameStore } from '../../../store/gameStore'
 import { selectGameState } from '../../../store/selectors'
 import type { EntityId } from '../../../types'
 import { getCardImageUrl } from '../../../utils/cardImages'
-import { useResponsiveContext, handleImageError, getCounterStatModifier, hasStatCounters, getTokenFrameGradient, getPTColor } from '../board/shared'
+import { useResponsiveContext, handleImageError, getCounterStatModifier, hasStatCounters, getTokenFrameGradient, getTokenFrameTextColor, getPTColor } from '../board/shared'
 import { styles } from '../board/styles'
 
 /**
@@ -98,7 +98,13 @@ export function CardPreview() {
               background: getTokenFrameGradient(card.colors),
               borderRadius: 12,
             }}>
-              <div style={{ ...styles.tokenNameBar, fontSize: 16, padding: '4px 8px' }}>
+              <div style={{
+                ...styles.tokenNameBar,
+                color: getTokenFrameTextColor(card.colors),
+                fontSize: 16,
+                padding: '6px 12px',
+                borderRadius: '8px 8px 0 0',
+              }}>
                 {card.name}
               </div>
               <div style={styles.tokenArtBox}>
@@ -108,7 +114,13 @@ export function CardPreview() {
                   style={styles.tokenArtImage}
                 />
               </div>
-              <div style={{ ...styles.tokenTypeBar, fontSize: 12, padding: '3px 8px' }}>
+              <div style={{
+                ...styles.tokenTypeBar,
+                color: getTokenFrameTextColor(card.colors),
+                fontSize: 13,
+                padding: '5px 12px',
+                borderRadius: '0 0 8px 8px',
+              }}>
                 {card.typeLine}
               </div>
               {card.power !== null && card.toughness !== null && (
