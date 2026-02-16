@@ -3,6 +3,7 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.OptionChosenResponse
+import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -16,6 +17,9 @@ import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.BecomeCreatureTypeEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.GroupFilter
+import com.wingedsheep.sdk.scripting.ModifyStatsForCreatureGroup
 import com.wingedsheep.sdk.targeting.TargetCreature
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldNotContain
@@ -135,5 +139,73 @@ class ImagecrafterTest : FunSpec({
 
         // The ability should have resolved successfully — game should not be paused
         driver.isPaused shouldBe false
+    }
+
+    test("Imagecrafter changing Soldier to Beast removes Aven Brigadier lord bonus") {
+        // Aven Brigadier: "Other Soldier creatures get +1/+1"
+        // When Imagecrafter changes a Soldier to a Beast, the lord bonus should stop applying.
+        val brigadierSoldierLordAbilityId = AbilityId(UUID.randomUUID().toString())
+        val AvenBrigadier = CardDefinition(
+            name = "Aven Brigadier",
+            manaCost = ManaCost.parse("{3}{W}{W}{W}"),
+            typeLine = TypeLine.creature(setOf(Subtype("Bird"), Subtype("Soldier"))),
+            oracleText = "Other Soldier creatures get +1/+1.",
+            creatureStats = CreatureStats(3, 5),
+            keywords = setOf(Keyword.FLYING),
+            script = CardScript.permanent(
+                staticAbilities = listOf(
+                    ModifyStatsForCreatureGroup(
+                        powerBonus = 1,
+                        toughnessBonus = 1,
+                        filter = GroupFilter(GameObjectFilter.Creature.withSubtype("Soldier"), excludeSelf = true)
+                    )
+                )
+            )
+        )
+
+        val driver = GameTestDriver()
+        driver.registerCards(TestCards.all + listOf(Imagecrafter, AvenBrigadier))
+        driver.initMirrorMatch(
+            deck = Deck.of("Island" to 20, "Plains" to 20),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val projector = StateProjector()
+
+        // Put Aven Brigadier and a Soldier creature on the battlefield
+        val brigadier = driver.putCreatureOnBattlefield(activePlayer, "Aven Brigadier")
+        val soldier = driver.putCreatureOnBattlefield(activePlayer, "Blade of the Ninth Watch") // 2/1 Human Soldier
+
+        // Soldier should get +1/+1 from Brigadier's lord effect
+        projector.getProjectedPower(driver.state, soldier) shouldBe 3  // 2 + 1
+        projector.getProjectedToughness(driver.state, soldier) shouldBe 2  // 1 + 1
+
+        // Activate Imagecrafter to change the Soldier to a Beast
+        val imagecrafter = driver.putCreatureOnBattlefield(activePlayer, "Imagecrafter")
+        driver.removeSummoningSickness(imagecrafter)
+
+        driver.submit(
+            ActivateAbility(
+                playerId = activePlayer,
+                sourceId = imagecrafter,
+                abilityId = imagecrafterAbilityId,
+                targets = listOf(ChosenTarget.Permanent(soldier))
+            )
+        )
+
+        // Resolve the ability
+        driver.bothPass()
+
+        // Choose "Beast" from the options
+        val decision = driver.pendingDecision as ChooseOptionDecision
+        val beastIndex = decision.options.indexOf("Beast")
+        driver.submitDecision(activePlayer, OptionChosenResponse(decision.id, beastIndex))
+
+        // Soldier is now a Beast — Aven Brigadier's lord bonus should NOT apply
+        projector.getProjectedPower(driver.state, soldier) shouldBe 2  // base 2, no lord bonus
+        projector.getProjectedToughness(driver.state, soldier) shouldBe 1  // base 1, no lord bonus
     }
 })

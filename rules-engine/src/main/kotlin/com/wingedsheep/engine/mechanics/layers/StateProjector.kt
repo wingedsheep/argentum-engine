@@ -169,8 +169,20 @@ class StateProjector(
             }
         }
 
+        // Re-resolve affected entities for Layer 7 effects that depend on subtypes,
+        // since Layer 4 type-changing effects may have changed creature subtypes.
+        // For example, Imagecrafter changing a Soldier to a Beast should cause
+        // Aven Brigadier's "Other Soldier creatures get +1/+1" to stop applying.
+        val resolvedLayer7Effects = sortedEffects.map { effect ->
+            if (effect.layer == Layer.POWER_TOUGHNESS && effect.affectsFilter != null && isSubtypeDependentFilter(effect.affectsFilter)) {
+                effect.copy(affectedEntities = resolveAffectedEntities(state, effect.sourceId, effect.affectsFilter, projectedValues))
+            } else {
+                effect
+            }
+        }
+
         // Apply layer 7 continuous effects (P/T modifications from spells/abilities)
-        for (effect in sortedEffects) {
+        for (effect in resolvedLayer7Effects) {
             if (effect.layer == Layer.POWER_TOUGHNESS) {
                 applyEffect(effect, state, projectedValues)
             }
@@ -312,7 +324,8 @@ class StateProjector(
                             ?: state.timestamp,
                         modification = effect.modification,
                         affectedEntities = resolveAffectedEntities(state, entityId, effectiveFilter, projectedValues),
-                        sourceCondition = effect.sourceCondition
+                        sourceCondition = effect.sourceCondition,
+                        affectsFilter = effectiveFilter
                     )
                 })
             }
@@ -582,6 +595,16 @@ class StateProjector(
         }
 
         return result
+    }
+
+    /**
+     * Check if an AffectsFilter depends on creature subtypes.
+     * These filters need re-resolution after Layer 4 type-changing effects.
+     */
+    private fun isSubtypeDependentFilter(filter: AffectsFilter): Boolean {
+        return filter is AffectsFilter.OtherCreaturesWithSubtype ||
+            filter is AffectsFilter.WithSubtype ||
+            filter is AffectsFilter.ChosenCreatureTypeCreatures
     }
 
     /**
@@ -872,7 +895,8 @@ data class ContinuousEffect(
     val timestamp: Long,
     val modification: Modification,
     val affectedEntities: Set<EntityId> = emptySet(),
-    val sourceCondition: SourceProjectionCondition? = null
+    val sourceCondition: SourceProjectionCondition? = null,
+    val affectsFilter: AffectsFilter? = null
 )
 
 /**
