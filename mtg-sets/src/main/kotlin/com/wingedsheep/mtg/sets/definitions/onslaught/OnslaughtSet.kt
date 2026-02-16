@@ -124,6 +124,7 @@ object OnslaughtSet {
         IxidorRealitySculptor,
         IxidorsWill,
         MistformDreamer,
+        MistformMask,
         MistformShrieker,
         MistformSkyreaver,
         MistformMutant,

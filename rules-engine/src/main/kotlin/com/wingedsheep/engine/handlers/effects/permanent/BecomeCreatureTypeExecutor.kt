@@ -30,7 +30,7 @@ class BecomeCreatureTypeExecutor : EffectExecutor<BecomeCreatureTypeEffect> {
         effect: BecomeCreatureTypeEffect,
         context: EffectContext
     ): ExecutionResult {
-        val targetId = resolveTarget(effect.target, context)
+        val targetId = resolveTarget(effect.target, context, state)
             ?: return ExecutionResult.success(state.tick())
 
         // Target must still be on the battlefield
