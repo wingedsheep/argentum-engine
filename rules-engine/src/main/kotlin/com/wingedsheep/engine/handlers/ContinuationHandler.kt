@@ -138,8 +138,6 @@ class ContinuationHandler(
             is DrawReplacementTargetContinuation -> drawReplacementResumer.resumeDrawReplacementTarget(stateAfterPop, continuation, response, cfm)
 
             // Card-specific
-            is BlackmailRevealContinuation -> cardSpecificResumer.resumeBlackmailReveal(stateAfterPop, continuation, response, cfm)
-            is BlackmailChooseContinuation -> cardSpecificResumer.resumeBlackmailChoose(stateAfterPop, continuation, response, cfm)
             is HeadGamesContinuation -> cardSpecificResumer.resumeHeadGames(stateAfterPop, continuation, response, cfm)
             is SearchTargetLibraryExileContinuation -> cardSpecificResumer.resumeSearchTargetLibraryExile(stateAfterPop, continuation, response, cfm)
             is SecretBidContinuation -> cardSpecificResumer.resumeSecretBid(stateAfterPop, continuation, response, cfm)
@@ -197,7 +195,7 @@ class ContinuationHandler(
         continuation: EffectContinuation,
         response: DecisionResponse
     ): ExecutionResult {
-        val context = continuation.toEffectContext()
+        var currentContext = continuation.toEffectContext()
         var currentState = state
         val allEvents = mutableListOf<GameEvent>()
 
@@ -211,14 +209,17 @@ class ContinuationHandler(
                     sourceId = continuation.sourceId,
                     controllerId = continuation.controllerId,
                     opponentId = continuation.opponentId,
-                    xValue = continuation.xValue
+                    xValue = continuation.xValue,
+                    targets = continuation.targets,
+                    storedCollections = currentContext.storedCollections,
+                    chosenCreatureType = continuation.chosenCreatureType
                 )
                 currentState.pushContinuation(remainingContinuation)
             } else {
                 currentState
             }
 
-            val result = effectExecutorRegistry.execute(stateForExecution, effect, context)
+            val result = effectExecutorRegistry.execute(stateForExecution, effect, currentContext)
 
             if (!result.isSuccess && !result.isPaused) {
                 currentState = if (stillRemaining.isNotEmpty()) {
@@ -246,6 +247,12 @@ class ContinuationHandler(
                 result.state
             }
             allEvents.addAll(result.events)
+
+            if (result.updatedCollections.isNotEmpty()) {
+                currentContext = currentContext.copy(
+                    storedCollections = currentContext.storedCollections + result.updatedCollections
+                )
+            }
         }
 
         return checkForMoreContinuations(currentState, allEvents)
@@ -424,7 +431,9 @@ class ContinuationHandler(
                         controllerId = nextContinuation.controllerId,
                         opponentId = nextContinuation.opponentId,
                         xValue = nextContinuation.xValue,
-                        storedCollections = currentContext.storedCollections
+                        targets = nextContinuation.targets,
+                        storedCollections = currentContext.storedCollections,
+                        chosenCreatureType = nextContinuation.chosenCreatureType
                     )
                     currentState.pushContinuation(remainingContinuation)
                 } else {

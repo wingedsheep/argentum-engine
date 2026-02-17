@@ -119,7 +119,9 @@ enum class Chooser {
     /** The controller of the spell/ability decides */
     Controller,
     /** An opponent decides */
-    Opponent
+    Opponent,
+    /** The target player decides (resolved from context.targets[0]) */
+    TargetPlayer
 }
 
 /**
@@ -202,13 +204,25 @@ data class SelectFromCollectionEffect(
  * @property destination Where to move the cards
  * @property order How to order the cards at the destination
  */
+/**
+ * How the move should be categorized for event emission.
+ */
+@Serializable
+enum class MoveType {
+    /** Standard zone change — emits only ZoneChangeEvent */
+    Default,
+    /** Discard — also emits CardsDiscardedEvent */
+    Discard
+}
+
 @SerialName("MoveCollection")
 @Serializable
 data class MoveCollectionEffect(
     val from: String,
     val destination: CardDestination,
     val order: CardOrder = CardOrder.Preserve,
-    val revealed: Boolean = false
+    val revealed: Boolean = false,
+    val moveType: MoveType = MoveType.Default
 ) : Effect {
     override val description: String = buildString {
         if (revealed) append("Reveal and put") else append("Put")

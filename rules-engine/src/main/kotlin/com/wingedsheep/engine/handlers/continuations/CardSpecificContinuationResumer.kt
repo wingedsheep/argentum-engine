@@ -2,7 +2,6 @@ package com.wingedsheep.engine.handlers.continuations
 
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.DecisionHandler
-import com.wingedsheep.engine.handlers.effects.drawing.BlackmailExecutor
 import com.wingedsheep.engine.handlers.effects.drawing.ReadTheRunesExecutor
 import com.wingedsheep.engine.handlers.effects.drawing.TradeSecretsExecutor
 import com.wingedsheep.engine.state.GameState
@@ -14,64 +13,6 @@ import com.wingedsheep.sdk.model.EntityId
 class CardSpecificContinuationResumer(
     private val ctx: ContinuationContext
 ) {
-
-    fun resumeBlackmailReveal(
-        state: GameState,
-        continuation: BlackmailRevealContinuation,
-        response: DecisionResponse,
-        checkForMore: CheckForMore
-    ): ExecutionResult {
-        if (response !is CardsSelectedResponse) {
-            return ExecutionResult.error(state, "Expected card selection response for Blackmail reveal")
-        }
-
-        val revealedCards = response.selectedCards
-
-        // Now ask the controller to choose one of the revealed cards
-        return BlackmailExecutor.askControllerToChoose(
-            state = state,
-            controllerId = continuation.controllerId,
-            targetPlayerId = continuation.targetPlayerId,
-            sourceId = continuation.sourceId,
-            sourceName = continuation.sourceName,
-            revealedCards = revealedCards
-        )
-    }
-
-    /**
-     * Resume after controller chose a card from Blackmail reveal.
-     * Discard the chosen card from the target player's hand.
-     */
-    fun resumeBlackmailChoose(
-        state: GameState,
-        continuation: BlackmailChooseContinuation,
-        response: DecisionResponse,
-        checkForMore: CheckForMore
-    ): ExecutionResult {
-        if (response !is CardsSelectedResponse) {
-            return ExecutionResult.error(state, "Expected card selection response for Blackmail choose")
-        }
-
-        val selectedCards = response.selectedCards
-        if (selectedCards.isEmpty()) {
-            return checkForMore(state, emptyList())
-        }
-
-        val cardToDiscard = selectedCards.first()
-        val targetPlayerId = continuation.targetPlayerId
-        val handZone = ZoneKey(targetPlayerId, Zone.HAND)
-        val graveyardZone = ZoneKey(targetPlayerId, Zone.GRAVEYARD)
-
-        var newState = state
-        newState = newState.removeFromZone(handZone, cardToDiscard)
-        newState = newState.addToZone(graveyardZone, cardToDiscard)
-
-        val events = listOf(
-            CardsDiscardedEvent(targetPlayerId, listOf(cardToDiscard))
-        )
-
-        return checkForMore(newState, events)
-    }
 
     /**
      * Resume after controller selected cards from opponent's library for Head Games.

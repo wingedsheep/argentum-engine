@@ -90,13 +90,6 @@ object Effects {
         DiscardCardsEffect(count, target)
 
     /**
-     * Target player reveals N cards from their hand and you choose one to discard.
-     * Used for Blackmail-style effects.
-     */
-    fun Blackmail(revealCount: Int = 3, target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
-        BlackmailEffect(revealCount, target)
-
-    /**
      * Draw X cards, then for each card drawn, discard a card unless you sacrifice a permanent.
      * Used for Read the Runes.
      */
