@@ -1,11 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
+import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.MayEffect
-import com.wingedsheep.sdk.scripting.PutLandFromHandOntoBattlefieldEffect
 
 /**
  * Elvish Pioneer
@@ -24,11 +23,9 @@ val ElvishPioneer = card("Elvish Pioneer") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = MayEffect(
-            PutLandFromHandOntoBattlefieldEffect(
-                filter = GameObjectFilter.BasicLand,
-                entersTapped = true
-            )
+        effect = EffectPatterns.putFromHand(
+            filter = GameObjectFilter.BasicLand,
+            entersTapped = true
         )
     }
 

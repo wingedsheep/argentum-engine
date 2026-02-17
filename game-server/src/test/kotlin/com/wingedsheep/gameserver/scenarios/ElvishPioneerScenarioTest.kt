@@ -39,11 +39,8 @@ class ElvishPioneerScenarioTest : ScenarioTestBase() {
                     castResult.error shouldBe null
                 }
 
-                // Resolve creature spell — ETB trigger fires
+                // Resolve creature spell — ETB trigger fires, shows land selection directly
                 game.resolveStack()
-
-                // MayEffect: answer yes
-                game.answerYesNo(true)
 
                 // Select the Forest from hand
                 val forestInHand = game.findCardsInHand(1, "Forest")
@@ -89,8 +86,8 @@ class ElvishPioneerScenarioTest : ScenarioTestBase() {
                 game.castSpell(1, "Elvish Pioneer")
                 game.resolveStack()
 
-                // MayEffect: answer no (decline)
-                game.answerYesNo(false)
+                // Card selection appears — skip (select nothing) to decline
+                game.skipSelection()
 
                 // Forest should stay in hand
                 withClue("Forest should still be in hand") {
@@ -115,12 +112,9 @@ class ElvishPioneerScenarioTest : ScenarioTestBase() {
 
                 // Cast Elvish Pioneer
                 game.castSpell(1, "Elvish Pioneer")
+                // Trigger fires but Gather finds no matching lands — resolves immediately with no effect
                 game.resolveStack()
 
-                // MayEffect: answer yes (but there's nothing to put)
-                game.answerYesNo(true)
-
-                // The ability should resolve with no effect since no basic lands in hand
                 // No additional lands on battlefield
                 withClue("Should have only 1 Forest on battlefield") {
                     game.findAllPermanents("Forest").size shouldBe 1

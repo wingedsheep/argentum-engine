@@ -140,6 +140,16 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
                 }
                 ExecutionResult.success(state).copy(updatedCollections = collections)
             }
+
+            is SelectionMode.ChooseAnyNumber -> {
+                // Player picks 0 to all eligible cards
+                if (eligibleCards.isEmpty()) {
+                    val collections = mutableMapOf(effect.storeSelected to emptyList<EntityId>())
+                    if (remainderName != null) collections[remainderName] = cards
+                    return ExecutionResult.success(state).copy(updatedCollections = collections)
+                }
+                createDecision(state, context, effect, eligibleCards, 0, eligibleCards.size, decidingPlayerId, allCards = cards)
+            }
         }
     }
 

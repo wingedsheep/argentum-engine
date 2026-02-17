@@ -119,6 +119,16 @@ sealed interface SelectionMode {
     data class Random(val count: DynamicAmount) : SelectionMode {
         override val description: String = "random ${count.description}"
     }
+
+    /**
+     * Player may select any number of cards (0 to the full collection size).
+     * Used for "put any number of cards" effects like Tempting Wurm.
+     */
+    @SerialName("ChooseAnyNumber")
+    @Serializable
+    data object ChooseAnyNumber : SelectionMode {
+        override val description: String = "any number"
+    }
 }
 
 /**

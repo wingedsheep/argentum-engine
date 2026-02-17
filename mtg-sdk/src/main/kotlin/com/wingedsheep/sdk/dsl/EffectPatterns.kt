@@ -179,6 +179,77 @@ object EffectPatterns {
     )
 
     /**
+     * Controller may put up to [count] cards matching [filter] from their hand onto the battlefield.
+     * Entering tapped if [entersTapped] is true.
+     *
+     * Composed as Gather(hand, filter) → Select(ChooseUpTo(count)) → Move(battlefield).
+     * Selecting 0 cards is equivalent to declining (no separate yes/no prompt needed).
+     *
+     * Example:
+     * ```kotlin
+     * putFromHand(GameObjectFilter.BasicLand, entersTapped = true)
+     * // -> "You may put a basic land card from your hand onto the battlefield tapped."
+     * ```
+     */
+    fun putFromHand(
+        filter: GameObjectFilter = GameObjectFilter.Any,
+        count: Int = 1,
+        entersTapped: Boolean = false
+    ): CompositeEffect = CompositeEffect(
+        listOf(
+            GatherCardsEffect(
+                source = CardSource.FromZone(Zone.HAND, Player.You, filter),
+                storeAs = "put_candidates"
+            ),
+            SelectFromCollectionEffect(
+                from = "put_candidates",
+                selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(count)),
+                storeSelected = "putting"
+            ),
+            MoveCollectionEffect(
+                from = "putting",
+                destination = CardDestination.ToZone(
+                    Zone.BATTLEFIELD,
+                    Player.You,
+                    if (entersTapped) ZonePlacement.Tapped else ZonePlacement.Default
+                )
+            )
+        )
+    )
+
+    /**
+     * Each opponent may put any number of cards matching [filter] from their hand onto the battlefield.
+     *
+     * Composed as ForEachPlayer(EachOpponent) → [Gather(hand, filter) → Select(ChooseAnyNumber) → Move(battlefield)].
+     * Each opponent independently chooses how many (if any) matching cards to put out.
+     *
+     * Example:
+     * ```kotlin
+     * eachOpponentMayPutFromHand(GameObjectFilter.Permanent)
+     * // -> "Each opponent may put any number of permanent cards from their hand onto the battlefield."
+     * ```
+     */
+    fun eachOpponentMayPutFromHand(filter: GameObjectFilter = GameObjectFilter.Any): ForEachPlayerEffect =
+        ForEachPlayerEffect(
+            players = Player.EachOpponent,
+            effects = listOf(
+                GatherCardsEffect(
+                    source = CardSource.FromZone(Zone.HAND, Player.You, filter),
+                    storeAs = "put_candidates"
+                ),
+                SelectFromCollectionEffect(
+                    from = "put_candidates",
+                    selection = SelectionMode.ChooseAnyNumber,
+                    storeSelected = "putting"
+                ),
+                MoveCollectionEffect(
+                    from = "putting",
+                    destination = CardDestination.ToZone(Zone.BATTLEFIELD)
+                )
+            )
+        )
+
+    /**
      * Create a sacrifice pattern with a fixed count.
      *
      * Example:
