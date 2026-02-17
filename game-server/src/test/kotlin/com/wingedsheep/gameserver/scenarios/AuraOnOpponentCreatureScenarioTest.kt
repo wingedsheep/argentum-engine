@@ -170,5 +170,73 @@ class AuraOnOpponentCreatureScenarioTest : ScenarioTestBase() {
                 }
             }
         }
+
+        test("sacrifice ability only buffs creatures sharing a type with the enchanted creature") {
+            val game = scenario()
+                .withPlayers("Player1", "Player2")
+                .withCardInHand(1, "Crown of Suspicion")
+                .withLandsOnBattlefield(1, "Swamp", 2)
+                // Enchanted creature: Glory Seeker = Human Soldier
+                .withCardOnBattlefield(1, "Glory Seeker")
+                // Same type (Human Soldier) — should get buff
+                .withCardOnBattlefield(1, "Gustcloak Sentinel")
+                // Different type (Goblin Warrior) — should NOT get buff
+                .withCardOnBattlefield(1, "Goblin Sky Raider")
+                .withCardInLibrary(1, "Swamp")
+                .withCardInLibrary(2, "Mountain")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            val glorySeeker = game.findPermanent("Glory Seeker")!!
+            val gustcloakSentinel = game.findPermanent("Gustcloak Sentinel")!!
+            val goblinSkyRaider = game.findPermanent("Goblin Sky Raider")!!
+
+            // Cast Crown on Glory Seeker (Human Soldier)
+            val castResult = game.castSpell(1, "Crown of Suspicion", glorySeeker)
+            withClue("Crown cast should succeed: ${castResult.error}") {
+                castResult.error shouldBe null
+            }
+            game.resolveStack()
+
+            val crown = game.findPermanent("Crown of Suspicion")!!
+            val crownDef = cardRegistry.getCard("Crown of Suspicion")!!
+            val abilityId = crownDef.script.activatedAbilities.first().id
+
+            // Sacrifice the Crown
+            val activateResult = game.execute(ActivateAbility(
+                playerId = game.player1Id,
+                sourceId = crown,
+                abilityId = abilityId
+            ))
+            withClue("Activate should succeed: ${activateResult.error}") {
+                activateResult.error shouldBe null
+            }
+            game.resolveStack()
+
+            // Glory Seeker (Human Soldier): base 2/2 → +2/-1 = 4/1
+            withClue("Glory Seeker should be buffed (shares own type): power") {
+                stateProjector.getProjectedPower(game.state, glorySeeker) shouldBe 4
+            }
+            withClue("Glory Seeker should be buffed (shares own type): toughness") {
+                stateProjector.getProjectedToughness(game.state, glorySeeker) shouldBe 1
+            }
+
+            // Gustcloak Sentinel (Human Soldier): base 3/3 → +2/-1 = 5/2
+            withClue("Gustcloak Sentinel should be buffed (shares Human+Soldier): power") {
+                stateProjector.getProjectedPower(game.state, gustcloakSentinel) shouldBe 5
+            }
+            withClue("Gustcloak Sentinel should be buffed (shares Human+Soldier): toughness") {
+                stateProjector.getProjectedToughness(game.state, gustcloakSentinel) shouldBe 2
+            }
+
+            // Goblin Sky Raider (Goblin Warrior): base 1/2 → should NOT be buffed
+            withClue("Goblin Sky Raider should NOT be buffed (Goblin/Warrior ≠ Human/Soldier): power") {
+                stateProjector.getProjectedPower(game.state, goblinSkyRaider) shouldBe 1
+            }
+            withClue("Goblin Sky Raider should NOT be buffed (Goblin/Warrior ≠ Human/Soldier): toughness") {
+                stateProjector.getProjectedToughness(game.state, goblinSkyRaider) shouldBe 2
+            }
+        }
     }
 }
