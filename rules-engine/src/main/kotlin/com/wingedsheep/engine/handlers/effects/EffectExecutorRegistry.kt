@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.handlers.effects.combat.CombatExecutors
 import com.wingedsheep.engine.handlers.effects.composite.CompositeExecutors
 import com.wingedsheep.engine.handlers.effects.damage.DamageExecutors
@@ -48,7 +49,7 @@ class EffectExecutorRegistry(
         registerModule(PermanentExecutors(decisionHandler, amountEvaluator))
         registerModule(ManaExecutors(amountEvaluator))
         registerModule(TokenExecutors(amountEvaluator))
-        registerModule(LibraryExecutors())
+        registerModule(LibraryExecutors(cardRegistry = cardRegistry, targetFinder = TargetFinder()))
         registerModule(StackExecutors(amountEvaluator))
         registerModule(PlayerExecutors(decisionHandler))
         registerModule(InformationExecutors())

@@ -7,6 +7,7 @@ import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.*
+import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.CreatureStats
@@ -37,8 +38,8 @@ class TemptingWurmTest : FunSpec({
         script = CardScript.creature(
             TriggeredAbility.create(
                 trigger = OnEnterBattlefield(),
-                effect = EachOpponentMayPutFromHandEffect(
-                    filter = GameObjectFilter.Permanent
+                effect = EffectPatterns.eachOpponentMayPutFromHand(
+                    filter = GameObjectFilter.Artifact or GameObjectFilter.Creature or GameObjectFilter.Enchantment or GameObjectFilter.Land
                 )
             )
         )

@@ -1000,60 +1000,28 @@ data class EachPlayerDiscardsOrLoseLifeContinuation(
 ) : ContinuationFrame
 
 /**
- * Resume after an opponent selects cards from their hand to put onto the battlefield.
+ * Resume after the controller chooses a target for an Aura being moved to the battlefield
+ * via MoveCollectionEffect (atomic pipeline path).
  *
- * Used for Tempting Wurm: "Each opponent may put any number of artifact, creature,
- * enchantment, and/or land cards from their hand onto the battlefield."
- *
- * Each opponent in APNAP order is presented with a card selection. After one opponent
- * finishes, the next is asked.
- *
- * @property currentOpponentId The opponent currently selecting cards
- * @property remainingOpponents Opponents still to be asked after the current one
- * @property sourceId The source permanent
- * @property sourceName Name of the source for display
- * @property controllerId The controller of the source
- * @property filter The filter for valid cards from hand
- */
-@Serializable
-data class EachOpponentMayPutFromHandContinuation(
-    override val decisionId: String,
-    val currentOpponentId: EntityId,
-    val remainingOpponents: List<EntityId>,
-    val sourceId: EntityId?,
-    val sourceName: String?,
-    val controllerId: EntityId,
-    val filter: GameObjectFilter
-) : ContinuationFrame
-
-/**
- * Resume after an opponent chooses a target for an Aura being put onto the battlefield
- * (not via casting). Per Rule 303.4f, when an Aura enters the battlefield without being
- * cast, its controller chooses what it enchants.
- *
- * Used when Tempting Wurm (or similar effects) allow opponents to put Auras from hand
- * onto the battlefield.
+ * Per Rule 303.4f, when an Aura enters the battlefield without being cast, its controller
+ * chooses what it enchants. Targeting restrictions (hexproof, shroud) do not apply.
  *
  * @property auraId The entity ID of the aura being placed
- * @property opponentId The opponent placing the aura
- * @property remainingAuras More auras from the same opponent that need target selection
- * @property remainingOpponents Opponents still to be asked after the current one
- * @property sourceId The source permanent (e.g. Tempting Wurm)
+ * @property controllerId The player placing the aura (chooses target)
+ * @property destPlayerId The player on whose battlefield the aura enters
+ * @property remainingAuras More auras that need target selection
+ * @property sourceId The source of the effect (for display)
  * @property sourceName Name of the source for display
- * @property controllerId The controller of the source
- * @property filter The filter for valid cards from hand
  */
 @Serializable
-data class ChooseAuraTargetForEntryFromHandContinuation(
+data class MoveCollectionAuraTargetContinuation(
     override val decisionId: String,
     val auraId: EntityId,
-    val opponentId: EntityId,
-    val remainingAuras: List<EntityId>,
-    val remainingOpponents: List<EntityId>,
-    val sourceId: EntityId?,
-    val sourceName: String?,
     val controllerId: EntityId,
-    val filter: GameObjectFilter
+    val destPlayerId: EntityId,
+    val remainingAuras: List<EntityId>,
+    val sourceId: EntityId?,
+    val sourceName: String?
 ) : ContinuationFrame
 
 /**

@@ -253,6 +253,130 @@ class LibraryAndZoneContinuationResumer(
         return checkForMore(newState, events)
     }
 
+    /**
+     * Resume after a player chose a target for an Aura entering via MoveCollectionEffect.
+     * Moves the aura from current zone to battlefield with AttachedToComponent.
+     */
+    fun resumeMoveCollectionAuraTarget(
+        state: GameState,
+        continuation: MoveCollectionAuraTargetContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is TargetsResponse) {
+            return ExecutionResult.error(state, "Expected targets response for aura target selection")
+        }
+
+        val targetIds = response.selectedTargets[0] ?: emptyList()
+        if (targetIds.isEmpty()) {
+            return ExecutionResult.error(state, "No target selected for aura")
+        }
+
+        val targetId = targetIds.first()
+        val auraId = continuation.auraId
+        val destPlayerId = continuation.destPlayerId
+
+        // Use MoveCollectionExecutor's helper to move aura to battlefield with attachment
+        val executor = com.wingedsheep.engine.handlers.effects.library.MoveCollectionExecutor(
+            cardRegistry = ctx.stackResolver.cardRegistry,
+            targetFinder = ctx.targetFinder
+        )
+        val (newState, moveEvents) = executor.moveAuraToBattlefield(state, auraId, targetId, destPlayerId)
+
+        // Continue with remaining auras
+        val remainingAuras = continuation.remainingAuras
+        if (remainingAuras.isNotEmpty()) {
+            val nextAuraId = remainingAuras.first()
+            val nextRemaining = remainingAuras.drop(1)
+
+            val nextCardComponent = newState.getEntity(nextAuraId)?.get<CardComponent>()
+            val nextCardDef = nextCardComponent?.let { ctx.stackResolver.cardRegistry?.getCard(it.cardDefinitionId) }
+            val nextAuraTarget = nextCardDef?.script?.auraTarget
+
+            if (nextAuraTarget == null) {
+                // Skip this aura, continue to next
+                return resumeMoveCollectionAuraTarget(
+                    newState,
+                    continuation.copy(
+                        auraId = nextAuraId,
+                        remainingAuras = nextRemaining,
+                        decisionId = "skip"
+                    ),
+                    response,
+                    checkForMore
+                )
+            }
+
+            val legalTargets = ctx.targetFinder.findLegalTargets(
+                state = newState,
+                requirement = nextAuraTarget,
+                controllerId = continuation.controllerId,
+                sourceId = nextAuraId,
+                ignoreTargetingRestrictions = true
+            )
+
+            if (legalTargets.isEmpty()) {
+                // No targets - skip and continue
+                if (nextRemaining.isNotEmpty()) {
+                    return resumeMoveCollectionAuraTarget(
+                        newState,
+                        continuation.copy(
+                            auraId = nextRemaining.first(),
+                            remainingAuras = nextRemaining.drop(1),
+                            decisionId = "skip"
+                        ),
+                        response,
+                        checkForMore
+                    )
+                }
+                return checkForMore(newState, moveEvents)
+            }
+
+            // Pause for next aura target
+            val decisionId = java.util.UUID.randomUUID().toString()
+            val auraName = nextCardComponent.name
+            val requirementInfo = TargetRequirementInfo(
+                index = 0,
+                description = nextAuraTarget.description,
+                minTargets = 1,
+                maxTargets = 1
+            )
+            val decision = ChooseTargetsDecision(
+                id = decisionId,
+                playerId = continuation.controllerId,
+                prompt = "Choose what $auraName enchants",
+                context = DecisionContext(
+                    sourceId = nextAuraId,
+                    sourceName = auraName,
+                    phase = DecisionPhase.RESOLUTION
+                ),
+                targetRequirements = listOf(requirementInfo),
+                legalTargets = mapOf(0 to legalTargets)
+            )
+
+            val nextContinuation = MoveCollectionAuraTargetContinuation(
+                decisionId = decisionId,
+                auraId = nextAuraId,
+                controllerId = continuation.controllerId,
+                destPlayerId = destPlayerId,
+                remainingAuras = nextRemaining,
+                sourceId = continuation.sourceId,
+                sourceName = continuation.sourceName
+            )
+
+            val stateWithDecision = newState.withPendingDecision(decision)
+            val stateWithContinuation = stateWithDecision.pushContinuation(nextContinuation)
+
+            return ExecutionResult(
+                state = stateWithContinuation,
+                events = moveEvents,
+                pendingDecision = decision
+            )
+        }
+
+        return checkForMore(newState, moveEvents)
+    }
+
     fun resumeSelectFromCollection(
         state: GameState,
         continuation: SelectFromCollectionContinuation,

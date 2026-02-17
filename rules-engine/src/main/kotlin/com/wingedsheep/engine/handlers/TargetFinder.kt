@@ -30,19 +30,24 @@ class TargetFinder(
      * @param requirement The target requirement to satisfy
      * @param controllerId The player who is choosing targets (for "you control" filters)
      * @param sourceId The source of the targeting ability (to exclude "other" targets)
+     * @param ignoreTargetingRestrictions If true, hexproof and shroud are bypassed.
+     *   Use for aura attachment (Rule 303.4f): when an aura enters the battlefield without
+     *   being cast, the controller chooses what it enchants — normal targeting restrictions
+     *   like hexproof and shroud do not apply.
      * @return List of valid target EntityIds
      */
     fun findLegalTargets(
         state: GameState,
         requirement: TargetRequirement,
         controllerId: EntityId,
-        sourceId: EntityId? = null
+        sourceId: EntityId? = null,
+        ignoreTargetingRestrictions: Boolean = false
     ): List<EntityId> {
         return when (requirement) {
-            is TargetCreature -> findCreatureTargets(state, requirement, controllerId, sourceId)
+            is TargetCreature -> findCreatureTargets(state, requirement, controllerId, sourceId, ignoreTargetingRestrictions)
             is TargetPlayer -> findPlayerTargets(state, requirement, controllerId)
             is TargetOpponent -> findOpponentTargets(state, controllerId)
-            is TargetPermanent -> findPermanentTargets(state, requirement, controllerId, sourceId)
+            is TargetPermanent -> findPermanentTargets(state, requirement, controllerId, sourceId, ignoreTargetingRestrictions)
             is AnyTarget -> findAnyTargets(state, controllerId, sourceId)
             is TargetCreatureOrPlayer -> findCreatureOrPlayerTargets(state, controllerId, sourceId)
             is TargetCreatureOrPlaneswalker -> findCreatureOrPlaneswalkerTargets(state, controllerId, sourceId)
@@ -51,7 +56,7 @@ class TargetFinder(
             is TargetSpellOrPermanent -> findSpellOrPermanentTargets(state, controllerId, sourceId)
             is TargetOther -> {
                 // For TargetOther, find targets for the base requirement but exclude the source
-                val baseTargets = findLegalTargets(state, requirement.baseRequirement, controllerId, sourceId)
+                val baseTargets = findLegalTargets(state, requirement.baseRequirement, controllerId, sourceId, ignoreTargetingRestrictions)
                 val excludeId = requirement.excludeSourceId ?: sourceId
                 if (excludeId != null) baseTargets.filter { it != excludeId } else baseTargets
             }
@@ -62,7 +67,8 @@ class TargetFinder(
         state: GameState,
         requirement: TargetCreature,
         controllerId: EntityId,
-        sourceId: EntityId?
+        sourceId: EntityId?,
+        ignoreTargetingRestrictions: Boolean = false
     ): List<EntityId> {
         val projected = stateProjector.project(state)
         val battlefield = state.getBattlefield()
@@ -76,14 +82,16 @@ class TargetFinder(
             // Must be a creature - use projected state for face-down creatures (Rule 707.2)
             if (!projected.hasType(entityId, "CREATURE")) return@filter false
 
-            // Check hexproof - can't be targeted by opponents
-            if (projected.hasKeyword(entityId, Keyword.HEXPROOF) && entityController != controllerId) {
-                return@filter false
-            }
+            if (!ignoreTargetingRestrictions) {
+                // Check hexproof - can't be targeted by opponents
+                if (projected.hasKeyword(entityId, Keyword.HEXPROOF) && entityController != controllerId) {
+                    return@filter false
+                }
 
-            // Check shroud - can't be targeted by anyone
-            if (projected.hasKeyword(entityId, Keyword.SHROUD)) {
-                return@filter false
+                // Check shroud - can't be targeted by anyone
+                if (projected.hasKeyword(entityId, Keyword.SHROUD)) {
+                    return@filter false
+                }
             }
 
             // Use unified filter with projected state
@@ -110,7 +118,8 @@ class TargetFinder(
         state: GameState,
         requirement: TargetPermanent,
         controllerId: EntityId,
-        sourceId: EntityId?
+        sourceId: EntityId?,
+        ignoreTargetingRestrictions: Boolean = false
     ): List<EntityId> {
         val projected = stateProjector.project(state)
         val battlefield = state.getBattlefield()
@@ -121,12 +130,14 @@ class TargetFinder(
             container.get<CardComponent>() ?: return@filter false
             val entityController = container.get<ControllerComponent>()?.playerId
 
-            // Check hexproof/shroud
-            if (projected.hasKeyword(entityId, Keyword.HEXPROOF) && entityController != controllerId) {
-                return@filter false
-            }
-            if (projected.hasKeyword(entityId, Keyword.SHROUD)) {
-                return@filter false
+            if (!ignoreTargetingRestrictions) {
+                // Check hexproof/shroud
+                if (projected.hasKeyword(entityId, Keyword.HEXPROOF) && entityController != controllerId) {
+                    return@filter false
+                }
+                if (projected.hasKeyword(entityId, Keyword.SHROUD)) {
+                    return@filter false
+                }
             }
 
             // Use unified filter with projected state

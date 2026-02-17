@@ -2,10 +2,13 @@ package com.wingedsheep.engine.handlers.effects.library
 
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -31,7 +34,10 @@ import kotlin.reflect.KClass
  * Cards are removed from their current zone (determined by looking at which zone
  * currently contains each card) and placed in the destination.
  */
-class MoveCollectionExecutor : EffectExecutor<MoveCollectionEffect> {
+class MoveCollectionExecutor(
+    private val cardRegistry: CardRegistry? = null,
+    private val targetFinder: TargetFinder? = null
+) : EffectExecutor<MoveCollectionEffect> {
 
     override val effectType: KClass<MoveCollectionEffect> = MoveCollectionEffect::class
 
@@ -176,6 +182,220 @@ class MoveCollectionExecutor : EffectExecutor<MoveCollectionEffect> {
      * and after the player has chosen an order via MoveCollectionOrderContinuation.
      */
     internal fun moveCardsToZone(
+        state: GameState,
+        context: EffectContext,
+        cards: List<EntityId>,
+        destination: CardDestination.ToZone,
+        destPlayerId: EntityId,
+        revealed: Boolean = false,
+        moveType: MoveType = MoveType.Default
+    ): ExecutionResult {
+        val destZone = destination.zone
+
+        // When moving to battlefield, detect auras that need target selection (Rule 303.4f)
+        if (destZone == Zone.BATTLEFIELD && cardRegistry != null && targetFinder != null) {
+            val auraCards = mutableListOf<EntityId>()
+            val nonAuraCards = mutableListOf<EntityId>()
+
+            for (cardId in cards) {
+                val container = state.getEntity(cardId)
+                val cardComponent = container?.get<CardComponent>()
+                if (cardComponent?.isAura == true) {
+                    auraCards.add(cardId)
+                } else {
+                    nonAuraCards.add(cardId)
+                }
+            }
+
+            if (auraCards.isNotEmpty()) {
+                // Move non-auras first, then pause for aura target selection
+                var newState = state
+                val events = mutableListOf<GameEvent>()
+
+                if (nonAuraCards.isNotEmpty()) {
+                    val nonAuraResult = moveCardsToZoneInternal(
+                        newState, context, nonAuraCards, destination, destPlayerId, revealed, moveType
+                    )
+                    newState = nonAuraResult.state
+                    events.addAll(nonAuraResult.events)
+                }
+
+                return askAuraTargetForMoveCollection(
+                    state = newState,
+                    events = events,
+                    auraId = auraCards.first(),
+                    controllerId = destPlayerId,
+                    destPlayerId = destPlayerId,
+                    remainingAuras = auraCards.drop(1),
+                    sourceId = context.sourceId,
+                    sourceName = context.sourceId?.let { newState.getEntity(it)?.get<CardComponent>()?.name }
+                )
+            }
+        }
+
+        return moveCardsToZoneInternal(state, context, cards, destination, destPlayerId, revealed, moveType)
+    }
+
+    /**
+     * Ask the player to choose a target for an Aura entering the battlefield via MoveCollectionEffect.
+     * Per Rule 303.4f, targeting restrictions (hexproof, shroud) do not apply.
+     * If no legal target exists, the Aura stays in its current zone (Rule 303.4g).
+     */
+    private fun askAuraTargetForMoveCollection(
+        state: GameState,
+        events: List<GameEvent>,
+        auraId: EntityId,
+        controllerId: EntityId,
+        destPlayerId: EntityId,
+        remainingAuras: List<EntityId>,
+        sourceId: EntityId?,
+        sourceName: String?
+    ): ExecutionResult {
+        val cardComponent = state.getEntity(auraId)?.get<CardComponent>()
+        val cardDef = cardComponent?.let { cardRegistry?.getCard(it.cardDefinitionId) }
+        val auraTarget = cardDef?.script?.auraTarget
+
+        if (auraTarget == null) {
+            // No aura target defined — skip this aura (leave in current zone)
+            return continueAuraProcessingOrFinish(
+                state, events, remainingAuras, controllerId, destPlayerId, sourceId, sourceName
+            )
+        }
+
+        val legalTargets = targetFinder!!.findLegalTargets(
+            state = state,
+            requirement = auraTarget,
+            controllerId = controllerId,
+            sourceId = auraId,
+            ignoreTargetingRestrictions = true
+        )
+
+        if (legalTargets.isEmpty()) {
+            // No legal targets — Aura stays in current zone per Rule 303.4g
+            return continueAuraProcessingOrFinish(
+                state, events, remainingAuras, controllerId, destPlayerId, sourceId, sourceName
+            )
+        }
+
+        val decisionId = UUID.randomUUID().toString()
+        val auraName = cardComponent.name
+        val requirementInfo = TargetRequirementInfo(
+            index = 0,
+            description = auraTarget.description,
+            minTargets = 1,
+            maxTargets = 1
+        )
+        val decision = ChooseTargetsDecision(
+            id = decisionId,
+            playerId = controllerId,
+            prompt = "Choose what $auraName enchants",
+            context = DecisionContext(
+                sourceId = auraId,
+                sourceName = auraName,
+                phase = DecisionPhase.RESOLUTION
+            ),
+            targetRequirements = listOf(requirementInfo),
+            legalTargets = mapOf(0 to legalTargets)
+        )
+
+        val continuation = MoveCollectionAuraTargetContinuation(
+            decisionId = decisionId,
+            auraId = auraId,
+            controllerId = controllerId,
+            destPlayerId = destPlayerId,
+            remainingAuras = remainingAuras,
+            sourceId = sourceId,
+            sourceName = sourceName
+        )
+
+        val stateWithDecision = state.withPendingDecision(decision)
+        val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
+
+        return ExecutionResult(
+            state = stateWithContinuation,
+            events = events,
+            pendingDecision = decision
+        )
+    }
+
+    /**
+     * Continue processing remaining auras, or finish if no more.
+     */
+    private fun continueAuraProcessingOrFinish(
+        state: GameState,
+        events: List<GameEvent>,
+        remainingAuras: List<EntityId>,
+        controllerId: EntityId,
+        destPlayerId: EntityId,
+        sourceId: EntityId?,
+        sourceName: String?
+    ): ExecutionResult {
+        if (remainingAuras.isNotEmpty()) {
+            return askAuraTargetForMoveCollection(
+                state = state,
+                events = events,
+                auraId = remainingAuras.first(),
+                controllerId = controllerId,
+                destPlayerId = destPlayerId,
+                remainingAuras = remainingAuras.drop(1),
+                sourceId = sourceId,
+                sourceName = sourceName
+            )
+        }
+        return ExecutionResult.success(state, events)
+    }
+
+    /**
+     * Move a single aura from its current zone to the battlefield with AttachedToComponent.
+     */
+    internal fun moveAuraToBattlefield(
+        state: GameState,
+        auraId: EntityId,
+        targetId: EntityId,
+        destPlayerId: EntityId
+    ): Pair<GameState, List<GameEvent>> {
+        val events = mutableListOf<GameEvent>()
+        var newState = state
+
+        val ownerId = newState.getEntity(auraId)?.get<OwnerComponent>()?.playerId ?: destPlayerId
+        val cardName = newState.getEntity(auraId)?.get<CardComponent>()?.name ?: "Unknown"
+
+        // Find and remove from current zone
+        val fromZone = findCurrentZone(newState, auraId, ownerId)
+        if (fromZone != null) {
+            newState = newState.removeFromZone(ZoneKey(ownerId, fromZone), auraId)
+        }
+
+        // Add to battlefield
+        val battlefieldZone = ZoneKey(destPlayerId, Zone.BATTLEFIELD)
+        newState = newState.addToZone(battlefieldZone, auraId)
+
+        // Apply battlefield components + AttachedToComponent
+        val container = newState.getEntity(auraId)
+        if (container != null) {
+            val newContainer = container
+                .with(ControllerComponent(destPlayerId))
+                .with(AttachedToComponent(targetId))
+
+            newState = newState.copy(entities = newState.entities + (auraId to newContainer))
+        }
+
+        if (fromZone != null) {
+            events.add(
+                ZoneChangeEvent(
+                    entityId = auraId,
+                    entityName = cardName,
+                    fromZone = fromZone,
+                    toZone = Zone.BATTLEFIELD,
+                    ownerId = ownerId
+                )
+            )
+        }
+
+        return Pair(newState, events)
+    }
+
+    private fun moveCardsToZoneInternal(
         state: GameState,
         context: EffectContext,
         cards: List<EntityId>,

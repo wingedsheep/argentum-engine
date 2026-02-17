@@ -171,10 +171,9 @@ class ContinuationHandler(
             }
             is PutFromHandContinuation -> libraryAndZoneResumer.resumePutFromHand(stateAfterPop, continuation, response, cfm)
             is SelectFromCollectionContinuation -> libraryAndZoneResumer.resumeSelectFromCollection(stateAfterPop, continuation, response, cfm)
+            is MoveCollectionAuraTargetContinuation -> libraryAndZoneResumer.resumeMoveCollectionAuraTarget(stateAfterPop, continuation, response, cfm)
 
             // Multi-player
-            is EachOpponentMayPutFromHandContinuation -> multiPlayerResumer.resumeEachOpponentMayPutFromHand(stateAfterPop, continuation, response, cfm)
-            is ChooseAuraTargetForEntryFromHandContinuation -> multiPlayerResumer.resumeChooseAuraTargetForEntryFromHand(stateAfterPop, continuation, response, cfm)
             is EachPlayerMayRevealCreaturesContinuation -> multiPlayerResumer.resumeEachPlayerMayRevealCreatures(stateAfterPop, continuation, response, cfm)
             // Modal and clone
             is ModalContinuation -> modalAndCloneResumer.resumeModal(stateAfterPop, continuation, response, cfm)

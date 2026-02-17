@@ -89,24 +89,6 @@ data class PutLandFromHandOntoBattlefieldEffect(
 }
 
 /**
- * Each opponent may put any number of cards matching a filter from their hand onto the battlefield.
- * "Each opponent may put any number of artifact, creature, enchantment, and/or land cards
- * from their hand onto the battlefield."
- *
- * Used for Tempting Wurm.
- *
- * @property filter Filter for which cards qualify (e.g., GameObjectFilter.Permanent)
- */
-@SerialName("EachOpponentMayPutFromHand")
-@Serializable
-data class EachOpponentMayPutFromHandEffect(
-    val filter: GameObjectFilter = GameObjectFilter.Permanent
-) : Effect {
-    override val description: String =
-        "Each opponent may put any number of ${filter.description} cards from their hand onto the battlefield"
-}
-
-/**
  * Each player may reveal any number of creature cards from their hand.
  * Then each player creates tokens for each card they revealed this way.
  *

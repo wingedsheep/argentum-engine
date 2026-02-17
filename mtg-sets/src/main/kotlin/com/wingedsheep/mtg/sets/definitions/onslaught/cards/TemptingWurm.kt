@@ -24,7 +24,7 @@ val TemptingWurm = card("Tempting Wurm") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         effect = EffectPatterns.eachOpponentMayPutFromHand(
-            filter = GameObjectFilter.Permanent
+            filter = GameObjectFilter.Artifact or GameObjectFilter.Creature or GameObjectFilter.Enchantment or GameObjectFilter.Land
         )
     }
 
