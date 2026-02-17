@@ -7,7 +7,7 @@ import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.MayEffect
 import com.wingedsheep.sdk.scripting.OnCycle
 import com.wingedsheep.sdk.scripting.SearchDestination
-import com.wingedsheep.sdk.scripting.SearchLibraryEffect
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Krosan Tusker
@@ -30,12 +30,12 @@ val KrosanTusker = card("Krosan Tusker") {
     triggeredAbility {
         trigger = OnCycle(controllerOnly = true)
         effect = MayEffect(
-            SearchLibraryEffect(
+            Effects.SearchLibrary(
                 filter = GameObjectFilter.BasicLand,
                 count = 1,
                 destination = SearchDestination.HAND,
                 reveal = true,
-                shuffleAfter = true
+                shuffle = true
             )
         )
     }

@@ -77,9 +77,9 @@ class CruelTutorScenarioTest : ScenarioTestBase() {
                 }
 
                 // Find Grizzly Bears in the decision options
-                val searchDecision = decision as com.wingedsheep.engine.core.SearchLibraryDecision
+                val searchDecision = decision as com.wingedsheep.engine.core.SelectCardsDecision
                 val grizzlyBearsId = searchDecision.options.find { cardId ->
-                    searchDecision.cards[cardId]?.name == "Grizzly Bears"
+                    searchDecision.cardInfo!![cardId]?.name == "Grizzly Bears"
                 }
 
                 withClue("Grizzly Bears should be in the search options") {
@@ -171,7 +171,7 @@ class CruelTutorScenarioTest : ScenarioTestBase() {
                 game.passPriority()
 
                 // Select a card
-                val decision = game.getPendingDecision() as com.wingedsheep.engine.core.SearchLibraryDecision
+                val decision = game.getPendingDecision() as com.wingedsheep.engine.core.SelectCardsDecision
                 val cardId = decision.options.first()
                 game.selectCards(listOf(cardId))
 

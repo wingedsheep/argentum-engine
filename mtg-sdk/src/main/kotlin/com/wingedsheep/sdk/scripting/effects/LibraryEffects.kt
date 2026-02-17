@@ -66,34 +66,6 @@ data class ShuffleLibraryEffect(
     }
 }
 
-/**
- * Search library for cards matching a filter.
- * "Search your library for a Forest card and put it onto the battlefield"
- */
-@SerialName("SearchLibrary")
-@Serializable
-data class SearchLibraryEffect(
-    val filter: GameObjectFilter = GameObjectFilter.Any,
-    val count: Int = 1,
-    val destination: SearchDestination = SearchDestination.HAND,
-    val entersTapped: Boolean = false,
-    val shuffleAfter: Boolean = true,
-    val reveal: Boolean = false
-) : Effect {
-    override val description: String = buildString {
-        append("Search your library for ")
-        append(if (count == 1) "a" else "up to $count")
-        append(" ${filter.description}")
-        if (count != 1) append("s")
-        if (reveal) append(", reveal ${if (count == 1) "it" else "them"},")
-        append(" and put ${if (count == 1) "it" else "them"} ")
-        append(destination.description)
-        if (entersTapped && destination == SearchDestination.BATTLEFIELD) {
-            append(" tapped")
-        }
-        if (shuffleAfter) append(". Then shuffle your library")
-    }
-}
 
 /**
  * Destination for searched cards.

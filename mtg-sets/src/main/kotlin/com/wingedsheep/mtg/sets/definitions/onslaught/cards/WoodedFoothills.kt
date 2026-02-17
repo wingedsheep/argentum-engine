@@ -7,7 +7,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CardPredicate
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.SearchDestination
-import com.wingedsheep.sdk.scripting.SearchLibraryEffect
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Wooded Foothills
@@ -21,7 +21,7 @@ val WoodedFoothills = card("Wooded Foothills") {
 
     activatedAbility {
         cost = Costs.Composite(Costs.Tap, Costs.PayLife(1), Costs.SacrificeSelf)
-        effect = SearchLibraryEffect(
+        effect = Effects.SearchLibrary(
             filter = GameObjectFilter(
                 cardPredicates = listOf(
                     CardPredicate.IsLand,
@@ -35,7 +35,7 @@ val WoodedFoothills = card("Wooded Foothills") {
             ),
             destination = SearchDestination.BATTLEFIELD,
             entersTapped = false,
-            shuffleAfter = true
+            shuffle = true
         )
     }
 

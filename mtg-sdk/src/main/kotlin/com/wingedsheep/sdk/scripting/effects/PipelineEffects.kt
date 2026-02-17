@@ -202,10 +202,12 @@ data class SelectFromCollectionEffect(
 data class MoveCollectionEffect(
     val from: String,
     val destination: CardDestination,
-    val order: CardOrder = CardOrder.Preserve
+    val order: CardOrder = CardOrder.Preserve,
+    val revealed: Boolean = false
 ) : Effect {
     override val description: String = buildString {
-        append("Put the $from cards ")
+        if (revealed) append("Reveal and put") else append("Put")
+        append(" the $from cards ")
         append(destination.description)
     }
 }

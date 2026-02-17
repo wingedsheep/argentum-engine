@@ -6,7 +6,10 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
@@ -45,7 +48,7 @@ class MoveCollectionExecutor : EffectExecutor<MoveCollectionEffect> {
 
         val destination = effect.destination
         return when (destination) {
-            is CardDestination.ToZone -> moveToZone(state, context, cards, destination, effect.order)
+            is CardDestination.ToZone -> moveToZone(state, context, cards, destination, effect.order, effect.revealed)
         }
     }
 
@@ -54,7 +57,8 @@ class MoveCollectionExecutor : EffectExecutor<MoveCollectionEffect> {
         context: EffectContext,
         cards: List<EntityId>,
         destination: CardDestination.ToZone,
-        order: CardOrder
+        order: CardOrder,
+        revealed: Boolean = false
     ): ExecutionResult {
         val destPlayerId = resolvePlayer(destination.player, context, state)
             ?: return ExecutionResult.error(state, "Could not resolve destination player for MoveCollection")
@@ -69,7 +73,7 @@ class MoveCollectionExecutor : EffectExecutor<MoveCollectionEffect> {
             return pauseForOrderDecision(state, context, cards, destZone, destPlayerId)
         }
 
-        return moveCardsToZone(state, context, cards, destination, destPlayerId)
+        return moveCardsToZone(state, context, cards, destination, destPlayerId, revealed)
     }
 
     /**
@@ -152,7 +156,8 @@ class MoveCollectionExecutor : EffectExecutor<MoveCollectionEffect> {
         context: EffectContext,
         cards: List<EntityId>,
         destination: CardDestination.ToZone,
-        destPlayerId: EntityId
+        destPlayerId: EntityId,
+        revealed: Boolean = false
     ): ExecutionResult {
         val destZone = destination.zone
         val events = mutableListOf<GameEvent>()
@@ -195,8 +200,28 @@ class MoveCollectionExecutor : EffectExecutor<MoveCollectionEffect> {
                     // Shuffle will happen after all cards are added
                 }
                 ZonePlacement.Tapped -> {
-                    // TODO: Add TappedComponent
                     newState.addToZone(destZoneKey, cardId)
+                }
+            }
+
+            // Apply battlefield-specific components
+            if (destZone == Zone.BATTLEFIELD) {
+                val container = newState.getEntity(cardId)
+                if (container != null) {
+                    var newContainer = container.with(ControllerComponent(destPlayerId))
+
+                    // Creatures enter with summoning sickness
+                    val cardComp = container.get<CardComponent>()
+                    if (cardComp?.typeLine?.isCreature == true) {
+                        newContainer = newContainer.with(SummoningSicknessComponent)
+                    }
+
+                    // Apply tapped status if entering tapped
+                    if (destination.placement == ZonePlacement.Tapped) {
+                        newContainer = newContainer.with(TappedComponent)
+                    }
+
+                    newState = newState.copy(entities = newState.entities + (cardId to newContainer))
                 }
             }
 
@@ -219,6 +244,28 @@ class MoveCollectionExecutor : EffectExecutor<MoveCollectionEffect> {
             val library = newState.getZone(destZoneKey)
             newState = newState.copy(zones = newState.zones + (destZoneKey to library.shuffled()))
             events.add(LibraryShuffledEvent(destPlayerId))
+        }
+
+        // Emit reveal event if configured
+        if (revealed && cards.isNotEmpty()) {
+            val cardNames = cards.map { cardId ->
+                newState.getEntity(cardId)?.get<CardComponent>()?.name ?: "Unknown"
+            }
+            val imageUris = cards.map { cardId ->
+                newState.getEntity(cardId)?.get<CardComponent>()?.imageUri
+            }
+            val sourceName = context.sourceId?.let { sourceId ->
+                newState.getEntity(sourceId)?.get<CardComponent>()?.name
+            }
+            events.add(
+                CardsRevealedEvent(
+                    revealingPlayerId = context.controllerId,
+                    cardIds = cards,
+                    cardNames = cardNames,
+                    imageUris = imageUris,
+                    source = sourceName
+                )
+            )
         }
 
         return ExecutionResult.success(newState, events)

@@ -46,9 +46,9 @@ class CyclingRampScenarioTest : ScenarioTestBase() {
                 }
 
                 // Select two lands from the library
-                val decision = game.getPendingDecision()!! as com.wingedsheep.engine.core.SearchLibraryDecision
-                val forestId = decision.cards.entries.first { it.value.name == "Forest" }.key
-                val mountainId = decision.cards.entries.first { it.value.name == "Mountain" }.key
+                val decision = game.getPendingDecision()!! as com.wingedsheep.engine.core.SelectCardsDecision
+                val forestId = decision.cardInfo!!.entries.first { it.value.name == "Forest" }.key
+                val mountainId = decision.cardInfo!!.entries.first { it.value.name == "Mountain" }.key
                 game.selectCards(listOf(forestId, mountainId))
 
                 // Both lands should be on the battlefield
@@ -81,8 +81,8 @@ class CyclingRampScenarioTest : ScenarioTestBase() {
                 game.castSpell(1, "Explosive Vegetation")
                 game.resolveStack()
 
-                val decision = game.getPendingDecision()!! as com.wingedsheep.engine.core.SearchLibraryDecision
-                val mountainId = decision.cards.entries.first { it.value.name == "Mountain" }.key
+                val decision = game.getPendingDecision()!! as com.wingedsheep.engine.core.SelectCardsDecision
+                val mountainId = decision.cardInfo!!.entries.first { it.value.name == "Mountain" }.key
                 game.selectCards(listOf(mountainId))
 
                 withClue("Mountain should be on the battlefield") {
@@ -196,8 +196,8 @@ class CyclingRampScenarioTest : ScenarioTestBase() {
                     game.hasPendingDecision() shouldBe true
                 }
 
-                val decision = game.getPendingDecision()!! as com.wingedsheep.engine.core.SearchLibraryDecision
-                val mountainId = decision.cards.entries.first { it.value.name == "Mountain" }.key
+                val decision = game.getPendingDecision()!! as com.wingedsheep.engine.core.SelectCardsDecision
+                val mountainId = decision.cardInfo!!.entries.first { it.value.name == "Mountain" }.key
                 game.selectCards(listOf(mountainId))
 
                 // Krosan Tusker should be in graveyard (cycled)

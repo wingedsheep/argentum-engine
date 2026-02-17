@@ -7,7 +7,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.MayEffect
 import com.wingedsheep.sdk.scripting.SearchDestination
-import com.wingedsheep.sdk.scripting.SearchLibraryEffect
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Daru Cavalier
@@ -30,12 +30,12 @@ val DaruCavalier = card("Daru Cavalier") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         effect = MayEffect(
-            SearchLibraryEffect(
+            Effects.SearchLibrary(
                 filter = GameObjectFilter.Any.named("Daru Cavalier"),
                 count = 1,
                 destination = SearchDestination.HAND,
                 reveal = true,
-                shuffleAfter = true
+                shuffle = true
             )
         )
     }

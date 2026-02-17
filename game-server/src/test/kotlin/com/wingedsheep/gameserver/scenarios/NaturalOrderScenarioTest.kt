@@ -246,7 +246,7 @@ class NaturalOrderScenarioTest : ScenarioTestBase() {
 
                 // Find Whiptail Wurm in the library (available for selection)
                 val decision = game.getPendingDecision()!!
-                val libraryCards = (decision as? com.wingedsheep.engine.core.SearchLibraryDecision)?.cards
+                val libraryCards = (decision as? com.wingedsheep.engine.core.SelectCardsDecision)?.cardInfo
                 withClue("Library search should include Whiptail Wurm") {
                     libraryCards.shouldNotBeNull()
                     libraryCards.values.any { it.name == "Whiptail Wurm" } shouldBe true
@@ -289,7 +289,7 @@ class NaturalOrderScenarioTest : ScenarioTestBase() {
 
                 // Select Whiptail Wurm from the library search
                 val decision = game.getPendingDecision()!!
-                val libraryCards = (decision as com.wingedsheep.engine.core.SearchLibraryDecision).cards
+                val libraryCards = (decision as com.wingedsheep.engine.core.SelectCardsDecision).cardInfo!!
                 val wurmId = libraryCards.entries.first { it.value.name == "Whiptail Wurm" }.key
                 game.selectCards(listOf(wurmId))
 

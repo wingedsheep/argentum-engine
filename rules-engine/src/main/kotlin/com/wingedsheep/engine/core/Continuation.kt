@@ -309,32 +309,6 @@ data class ReturnFromGraveyardContinuation(
     val destination: SearchDestination
 ) : ContinuationFrame
 
-/**
- * Resume after player selects cards from library search.
- *
- * @property playerId The player who is searching
- * @property sourceId The spell/ability that caused the search
- * @property sourceName Name of the source for event messages
- * @property filter The card filter that was used
- * @property count Maximum cards that could be selected
- * @property destination Where to put the selected cards
- * @property entersTapped Whether permanents enter tapped (for battlefield destination)
- * @property shuffleAfter Whether to shuffle the library after search
- * @property reveal Whether to reveal the selected cards
- */
-@Serializable
-data class SearchLibraryContinuation(
-    override val decisionId: String,
-    val playerId: EntityId,
-    val sourceId: EntityId?,
-    val sourceName: String?,
-    val filter: GameObjectFilter,
-    val count: Int,
-    val destination: SearchDestination,
-    val entersTapped: Boolean,
-    val shuffleAfter: Boolean,
-    val reveal: Boolean
-) : ContinuationFrame
 
 /**
  * Resume after attacking player declares damage assignment order for blockers.

@@ -1,7 +1,7 @@
 package com.wingedsheep.gameserver.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
-import com.wingedsheep.engine.core.SearchLibraryDecision
+import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.gameserver.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -69,16 +69,16 @@ class WoodedFoothillsScenarioTest : ScenarioTestBase() {
                     game.hasPendingDecision() shouldBe true
                 }
 
-                val decision = game.getPendingDecision()!! as SearchLibraryDecision
+                val decision = game.getPendingDecision()!! as SelectCardsDecision
 
                 // Only Mountain should be selectable (not Plains)
                 withClue("Only Mountain should be available (not Plains)") {
-                    decision.cards.values.any { it.name == "Mountain" } shouldBe true
-                    decision.cards.values.any { it.name == "Plains" } shouldBe false
+                    decision.cardInfo!!.values.any { it.name == "Mountain" } shouldBe true
+                    decision.cardInfo!!.values.any { it.name == "Plains" } shouldBe false
                 }
 
                 // Select the Mountain
-                val mountainId = decision.cards.entries.first { it.value.name == "Mountain" }.key
+                val mountainId = decision.cardInfo!!.entries.first { it.value.name == "Mountain" }.key
                 game.selectCards(listOf(mountainId))
 
                 // Mountain should be on the battlefield (untapped)
@@ -117,16 +117,16 @@ class WoodedFoothillsScenarioTest : ScenarioTestBase() {
                 // Resolve the ability
                 game.resolveStack()
 
-                val decision = game.getPendingDecision()!! as SearchLibraryDecision
+                val decision = game.getPendingDecision()!! as SelectCardsDecision
 
                 // Only Forest should be selectable (not Island)
                 withClue("Only Forest should be available (not Island)") {
-                    decision.cards.values.any { it.name == "Forest" } shouldBe true
-                    decision.cards.values.any { it.name == "Island" } shouldBe false
+                    decision.cardInfo!!.values.any { it.name == "Forest" } shouldBe true
+                    decision.cardInfo!!.values.any { it.name == "Island" } shouldBe false
                 }
 
                 // Select the Forest
-                val forestId = decision.cards.entries.first { it.value.name == "Forest" }.key
+                val forestId = decision.cardInfo!!.entries.first { it.value.name == "Forest" }.key
                 game.selectCards(listOf(forestId))
 
                 // Forest should be on the battlefield
@@ -163,16 +163,16 @@ class WoodedFoothillsScenarioTest : ScenarioTestBase() {
 
                 game.resolveStack()
 
-                val decision = game.getPendingDecision()!! as SearchLibraryDecision
+                val decision = game.getPendingDecision()!! as SelectCardsDecision
 
                 // Both Mountain and Forest should be available
                 withClue("Both Mountain and Forest should be available") {
-                    decision.cards.values.any { it.name == "Mountain" } shouldBe true
-                    decision.cards.values.any { it.name == "Forest" } shouldBe true
+                    decision.cardInfo!!.values.any { it.name == "Mountain" } shouldBe true
+                    decision.cardInfo!!.values.any { it.name == "Forest" } shouldBe true
                 }
 
                 // Select the Forest
-                val forestId = decision.cards.entries.first { it.value.name == "Forest" }.key
+                val forestId = decision.cardInfo!!.entries.first { it.value.name == "Forest" }.key
                 game.selectCards(listOf(forestId))
 
                 withClue("Forest should be on the battlefield") {

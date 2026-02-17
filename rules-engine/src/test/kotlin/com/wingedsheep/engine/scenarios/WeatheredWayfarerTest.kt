@@ -2,7 +2,7 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.CardsSelectedResponse
-import com.wingedsheep.engine.core.SearchLibraryDecision
+import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.*
@@ -113,7 +113,7 @@ class WeatheredWayfarerTest : FunSpec({
 
         // Should have a search library decision with exactly the 1 land in the library
         val decision = driver.pendingDecision
-        decision.shouldBeInstanceOf<SearchLibraryDecision>()
+        decision.shouldBeInstanceOf<SelectCardsDecision>()
         decision.options.size shouldBe 1
 
         // Select the Forest from the library
@@ -235,7 +235,7 @@ class WeatheredWayfarerTest : FunSpec({
         driver.bothPass()
 
         val decision = driver.pendingDecision
-        decision.shouldBeInstanceOf<SearchLibraryDecision>()
+        decision.shouldBeInstanceOf<SelectCardsDecision>()
         decision.options.size shouldBe 1
 
         driver.submitDecision(
@@ -281,7 +281,7 @@ class WeatheredWayfarerTest : FunSpec({
         driver.bothPass()
 
         val decision = driver.pendingDecision
-        decision.shouldBeInstanceOf<SearchLibraryDecision>()
+        decision.shouldBeInstanceOf<SelectCardsDecision>()
 
         // Select nothing (fail to find)
         driver.submitDecision(

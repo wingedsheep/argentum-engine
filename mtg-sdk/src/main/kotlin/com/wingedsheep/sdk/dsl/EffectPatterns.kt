@@ -158,7 +158,7 @@ object EffectPatterns {
      *     effect = SacrificeEffect(CardFilter.LandCard, any = true),
      *     as = "sacrificedLands"
      * )
-     * // Later: SearchLibraryEffect with count = VariableReference("sacrificedLands")
+     * // Later: Effects.SearchLibrary with count = VariableReference("sacrificedLands")
      * ```
      */
     fun storeCount(effect: Effect, `as`: String): StoreCountEffect =
@@ -342,6 +342,69 @@ object EffectPatterns {
             )
         )
     )
+
+    /**
+     * Search your library for cards matching a filter and put them in a destination zone.
+     *
+     * Creates a Gather → Select → Move pipeline with optional shuffle.
+     *
+     * @param filter Which cards can be found
+     * @param count How many cards can be selected
+     * @param destination Where to put the found cards
+     * @param entersTapped Whether cards enter the battlefield tapped
+     * @param shuffleAfter Whether to shuffle after searching
+     * @param reveal Whether to reveal the found cards
+     */
+    fun searchLibrary(
+        filter: GameObjectFilter = GameObjectFilter.Any,
+        count: Int = 1,
+        destination: SearchDestination = SearchDestination.HAND,
+        entersTapped: Boolean = false,
+        shuffleAfter: Boolean = true,
+        reveal: Boolean = false
+    ): CompositeEffect {
+        val effects = mutableListOf<Effect>()
+
+        // Gather matching cards from library
+        effects.add(GatherCardsEffect(
+            source = CardSource.FromZone(Zone.LIBRARY, Player.You, filter),
+            storeAs = "searchable"
+        ))
+
+        // Player selects up to `count`
+        effects.add(SelectFromCollectionEffect(
+            from = "searchable",
+            selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(count)),
+            storeSelected = "found"
+        ))
+
+        // For TOP_OF_LIBRARY: shuffle first, then put on top
+        if (destination == SearchDestination.TOP_OF_LIBRARY) {
+            if (shuffleAfter) effects.add(ShuffleLibraryEffect())
+            effects.add(MoveCollectionEffect(
+                from = "found",
+                destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Top),
+                revealed = reveal
+            ))
+        } else {
+            // Move to destination
+            val (zone, placement) = when (destination) {
+                SearchDestination.HAND -> Zone.HAND to ZonePlacement.Default
+                SearchDestination.BATTLEFIELD -> Zone.BATTLEFIELD to
+                    if (entersTapped) ZonePlacement.Tapped else ZonePlacement.Default
+                SearchDestination.GRAVEYARD -> Zone.GRAVEYARD to ZonePlacement.Default
+                else -> error("unreachable")
+            }
+            effects.add(MoveCollectionEffect(
+                from = "found",
+                destination = CardDestination.ToZone(zone, placement = placement),
+                revealed = reveal
+            ))
+            if (shuffleAfter) effects.add(ShuffleLibraryEffect())
+        }
+
+        return CompositeEffect(effects)
+    }
 
     /**
      * Create an exile-and-return pattern used by O-Ring style cards.

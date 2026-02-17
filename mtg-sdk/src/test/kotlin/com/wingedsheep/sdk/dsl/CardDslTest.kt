@@ -514,7 +514,7 @@ class CardDslTest : DescribeSpec({
             gift.spellEffect.shouldBeInstanceOf<ConditionalEffect>()
             val conditional = gift.spellEffect as ConditionalEffect
             conditional.condition shouldBe Conditions.OpponentControlsMoreLands
-            conditional.effect.shouldBeInstanceOf<SearchLibraryEffect>()
+            conditional.effect.shouldBeInstanceOf<CompositeEffect>()
         }
     }
 
@@ -720,7 +720,7 @@ class CardDslTest : DescribeSpec({
                     effect = EffectPatterns.sacrificeFor(
                         filter = GameObjectFilter.Land,
                         countName = "sacrificedLands",
-                        thenEffect = SearchLibraryEffect(
+                        thenEffect = Effects.SearchLibrary(
                             filter = GameObjectFilter.Land,
                             count = 0, // Engine will read from VariableReference
                             destination = SearchDestination.BATTLEFIELD,

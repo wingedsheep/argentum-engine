@@ -3,12 +3,15 @@ package com.wingedsheep.engine.handlers.effects.library
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.CardSource
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.Player
 import kotlin.reflect.KClass
@@ -26,6 +29,7 @@ class GatherCardsExecutor : EffectExecutor<GatherCardsEffect> {
     override val effectType: KClass<GatherCardsEffect> = GatherCardsEffect::class
 
     private val amountEvaluator = DynamicAmountEvaluator()
+    private val predicateEvaluator = PredicateEvaluator()
 
     override fun execute(
         state: GameState,
@@ -45,8 +49,15 @@ class GatherCardsExecutor : EffectExecutor<GatherCardsEffect> {
                 val playerId = resolvePlayer(source.player, context, state)
                     ?: return ExecutionResult.error(state, "Could not resolve player for GatherCards")
                 val zone = ZoneKey(playerId, source.zone)
-                state.getZone(zone)
-                // TODO: Apply filter if source.filter != GameObjectFilter.Any
+                val allCards = state.getZone(zone)
+                if (source.filter != GameObjectFilter.Any) {
+                    val predicateContext = PredicateContext.fromEffectContext(context)
+                    allCards.filter { cardId ->
+                        predicateEvaluator.matches(state, cardId, source.filter, predicateContext)
+                    }
+                } else {
+                    allCards
+                }
             }
 
             is CardSource.FromVariable -> {

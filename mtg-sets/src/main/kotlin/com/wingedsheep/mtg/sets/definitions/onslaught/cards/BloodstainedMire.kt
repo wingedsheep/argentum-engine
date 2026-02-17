@@ -7,7 +7,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CardPredicate
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.SearchDestination
-import com.wingedsheep.sdk.scripting.SearchLibraryEffect
+import com.wingedsheep.sdk.dsl.Effects
 /**
  * Bloodstained Mire
  * Land
@@ -20,7 +20,7 @@ val BloodstainedMire = card("Bloodstained Mire") {
 
     activatedAbility {
         cost = Costs.Composite(Costs.Tap, Costs.PayLife(1), Costs.SacrificeSelf)
-        effect = SearchLibraryEffect(
+        effect = Effects.SearchLibrary(
             filter = GameObjectFilter(
                 cardPredicates = listOf(
                     CardPredicate.IsLand,
@@ -34,7 +34,7 @@ val BloodstainedMire = card("Bloodstained Mire") {
             ),
             destination = SearchDestination.BATTLEFIELD,
             entersTapped = false,
-            shuffleAfter = true
+            shuffle = true
         )
     }
 

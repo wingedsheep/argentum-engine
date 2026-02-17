@@ -1,7 +1,7 @@
 package com.wingedsheep.gameserver.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
-import com.wingedsheep.engine.core.SearchLibraryDecision
+import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.gameserver.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -71,16 +71,16 @@ class BloodstainedMireScenarioTest : ScenarioTestBase() {
                     game.hasPendingDecision() shouldBe true
                 }
 
-                val decision = game.getPendingDecision()!! as SearchLibraryDecision
+                val decision = game.getPendingDecision()!! as SelectCardsDecision
 
                 // Only Swamp should be selectable (not Forest)
                 withClue("Only Swamp should be available (not Forest)") {
-                    decision.cards.values.any { it.name == "Swamp" } shouldBe true
-                    decision.cards.values.any { it.name == "Forest" } shouldBe false
+                    decision.cardInfo!!.values.any { it.name == "Swamp" } shouldBe true
+                    decision.cardInfo!!.values.any { it.name == "Forest" } shouldBe false
                 }
 
                 // Select the Swamp
-                val swampId = decision.cards.entries.first { it.value.name == "Swamp" }.key
+                val swampId = decision.cardInfo!!.entries.first { it.value.name == "Swamp" }.key
                 game.selectCards(listOf(swampId))
 
                 // Swamp should be on the battlefield (untapped)
@@ -119,16 +119,16 @@ class BloodstainedMireScenarioTest : ScenarioTestBase() {
                 // Resolve the ability
                 game.resolveStack()
 
-                val decision = game.getPendingDecision()!! as SearchLibraryDecision
+                val decision = game.getPendingDecision()!! as SelectCardsDecision
 
                 // Only Mountain should be selectable (not Island)
                 withClue("Only Mountain should be available (not Island)") {
-                    decision.cards.values.any { it.name == "Mountain" } shouldBe true
-                    decision.cards.values.any { it.name == "Island" } shouldBe false
+                    decision.cardInfo!!.values.any { it.name == "Mountain" } shouldBe true
+                    decision.cardInfo!!.values.any { it.name == "Island" } shouldBe false
                 }
 
                 // Select the Mountain
-                val mountainId = decision.cards.entries.first { it.value.name == "Mountain" }.key
+                val mountainId = decision.cardInfo!!.entries.first { it.value.name == "Mountain" }.key
                 game.selectCards(listOf(mountainId))
 
                 // Mountain should be on the battlefield
@@ -165,16 +165,16 @@ class BloodstainedMireScenarioTest : ScenarioTestBase() {
 
                 game.resolveStack()
 
-                val decision = game.getPendingDecision()!! as SearchLibraryDecision
+                val decision = game.getPendingDecision()!! as SelectCardsDecision
 
                 // Both Swamp and Mountain should be available
                 withClue("Both Swamp and Mountain should be available") {
-                    decision.cards.values.any { it.name == "Swamp" } shouldBe true
-                    decision.cards.values.any { it.name == "Mountain" } shouldBe true
+                    decision.cardInfo!!.values.any { it.name == "Swamp" } shouldBe true
+                    decision.cardInfo!!.values.any { it.name == "Mountain" } shouldBe true
                 }
 
                 // Select the Swamp
-                val swampId = decision.cards.entries.first { it.value.name == "Swamp" }.key
+                val swampId = decision.cardInfo!!.entries.first { it.value.name == "Swamp" }.key
                 game.selectCards(listOf(swampId))
 
                 withClue("Swamp should be on the battlefield") {

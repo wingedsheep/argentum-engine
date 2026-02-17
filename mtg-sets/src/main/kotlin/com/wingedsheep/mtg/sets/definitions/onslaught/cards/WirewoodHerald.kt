@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.MayEffect
 import com.wingedsheep.sdk.scripting.SearchDestination
-import com.wingedsheep.sdk.scripting.SearchLibraryEffect
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Wirewood Herald
@@ -26,12 +26,12 @@ val WirewoodHerald = card("Wirewood Herald") {
     triggeredAbility {
         trigger = Triggers.Dies
         effect = MayEffect(
-            SearchLibraryEffect(
+            Effects.SearchLibrary(
                 filter = GameObjectFilter.Any.withSubtype("Elf"),
                 count = 1,
                 destination = SearchDestination.HAND,
                 reveal = true,
-                shuffleAfter = true
+                shuffle = true
             )
         )
     }

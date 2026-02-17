@@ -1,7 +1,7 @@
 package com.wingedsheep.gameserver.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
-import com.wingedsheep.engine.core.SearchLibraryDecision
+import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.gameserver.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -69,16 +69,16 @@ class PollutedDeltaScenarioTest : ScenarioTestBase() {
                     game.hasPendingDecision() shouldBe true
                 }
 
-                val decision = game.getPendingDecision()!! as SearchLibraryDecision
+                val decision = game.getPendingDecision()!! as SelectCardsDecision
 
                 // Only Island should be selectable (not Forest)
                 withClue("Only Island should be available (not Forest)") {
-                    decision.cards.values.any { it.name == "Island" } shouldBe true
-                    decision.cards.values.any { it.name == "Forest" } shouldBe false
+                    decision.cardInfo!!.values.any { it.name == "Island" } shouldBe true
+                    decision.cardInfo!!.values.any { it.name == "Forest" } shouldBe false
                 }
 
                 // Select the Island
-                val islandId = decision.cards.entries.first { it.value.name == "Island" }.key
+                val islandId = decision.cardInfo!!.entries.first { it.value.name == "Island" }.key
                 game.selectCards(listOf(islandId))
 
                 // Island should be on the battlefield (untapped)
@@ -117,16 +117,16 @@ class PollutedDeltaScenarioTest : ScenarioTestBase() {
                 // Resolve the ability
                 game.resolveStack()
 
-                val decision = game.getPendingDecision()!! as SearchLibraryDecision
+                val decision = game.getPendingDecision()!! as SelectCardsDecision
 
                 // Only Swamp should be selectable (not Mountain)
                 withClue("Only Swamp should be available (not Mountain)") {
-                    decision.cards.values.any { it.name == "Swamp" } shouldBe true
-                    decision.cards.values.any { it.name == "Mountain" } shouldBe false
+                    decision.cardInfo!!.values.any { it.name == "Swamp" } shouldBe true
+                    decision.cardInfo!!.values.any { it.name == "Mountain" } shouldBe false
                 }
 
                 // Select the Swamp
-                val swampId = decision.cards.entries.first { it.value.name == "Swamp" }.key
+                val swampId = decision.cardInfo!!.entries.first { it.value.name == "Swamp" }.key
                 game.selectCards(listOf(swampId))
 
                 // Swamp should be on the battlefield
@@ -163,16 +163,16 @@ class PollutedDeltaScenarioTest : ScenarioTestBase() {
 
                 game.resolveStack()
 
-                val decision = game.getPendingDecision()!! as SearchLibraryDecision
+                val decision = game.getPendingDecision()!! as SelectCardsDecision
 
                 // Both Island and Swamp should be available
                 withClue("Both Island and Swamp should be available") {
-                    decision.cards.values.any { it.name == "Island" } shouldBe true
-                    decision.cards.values.any { it.name == "Swamp" } shouldBe true
+                    decision.cardInfo!!.values.any { it.name == "Island" } shouldBe true
+                    decision.cardInfo!!.values.any { it.name == "Swamp" } shouldBe true
                 }
 
                 // Select the Island
-                val islandId = decision.cards.entries.first { it.value.name == "Island" }.key
+                val islandId = decision.cardInfo!!.entries.first { it.value.name == "Island" }.key
                 game.selectCards(listOf(islandId))
 
                 withClue("Island should be on the battlefield") {

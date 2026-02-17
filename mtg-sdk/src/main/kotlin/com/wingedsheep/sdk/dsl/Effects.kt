@@ -255,7 +255,7 @@ object Effects {
         entersTapped: Boolean = false,
         shuffle: Boolean = true,
         reveal: Boolean = false
-    ): Effect = SearchLibraryEffect(filter, count, destination, entersTapped, shuffle, reveal)
+    ): Effect = EffectPatterns.searchLibrary(filter, count, destination, entersTapped, shuffle, reveal)
 
     /**
      * Scry N.
