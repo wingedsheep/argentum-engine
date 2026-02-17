@@ -176,7 +176,8 @@ test.describe('Tempting Wurm', () => {
     await p2.selectCardInDecision('Pacifism')
     await p2.confirmSelection()
 
-    // Opponent should now get a target selection for the aura
+    // Wait for the ChooseTargetsDecision to arrive from the server, then select target
+    await p2.waitForTargetingDecision()
     await p2.selectTarget('Glory Seeker')
     await p2.confirmTargets()
 

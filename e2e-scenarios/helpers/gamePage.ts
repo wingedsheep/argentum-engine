@@ -133,6 +133,17 @@ export class GamePage {
     await this.screenshot(`Select in overlay: ${name}`)
   }
 
+  /**
+   * Wait for the battlefield targeting UI to appear (ChooseTargetsDecision from server).
+   * Use this before selectTarget() when the targeting decision comes from a server-side
+   * state update (e.g., aura entering via Tempting Wurm) rather than a client-side
+   * startTargeting() call.
+   */
+  async waitForTargetingDecision() {
+    await this.page.getByText('Click a valid target').waitFor({ state: 'visible', timeout: 10_000 })
+    await this.screenshot('Targeting decision ready')
+  }
+
   /** Confirm target selection (clicks "Confirm Target" or "Confirm (N)" button). */
   async confirmTargets() {
     await this.page
