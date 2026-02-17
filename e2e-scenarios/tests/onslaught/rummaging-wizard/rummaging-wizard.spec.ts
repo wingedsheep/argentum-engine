@@ -8,8 +8,8 @@ import { test, expect } from '../../../fixtures/scenarioFixture'
  * that card into your graveyard.)"
  *
  * Covers:
- * - Surveil 1 UI (SplitPilesDecision) — put card into graveyard
- * - Surveil 1 UI — keep card on top of library
+ * - Surveil 1 UI (SelectCardsDecision) — put card into graveyard
+ * - Surveil 1 UI — keep card on top of library (SelectCards + ReorderLibrary)
  */
 test.describe('Rummaging Wizard', () => {
   test('surveil 1 — put card into graveyard', async ({ createGame }) => {
@@ -42,8 +42,9 @@ test.describe('Rummaging Wizard', () => {
     // P2 must resolve the ability on the stack
     await p2.pass()
 
-    // P1 sees the Surveil UI — choose to put the card into graveyard
-    await p1.selectPile('Graveyard')
+    // P1 sees the SelectCards decision — select the card for graveyard
+    await p1.selectCardInDecision('Grizzly Bears')
+    await p1.confirmSelection()
 
     // Graveyard should now have 1 card (Grizzly Bears)
     await p1.expectGraveyardSize(player1.playerId, 1)
@@ -79,8 +80,10 @@ test.describe('Rummaging Wizard', () => {
     // P2 must resolve the ability on the stack
     await p2.pass()
 
-    // P1 sees the Surveil UI — choose to keep card on top
-    await p1.selectPile('Top of Library')
+    // P1 sees the SelectCards decision — select nothing to keep card on top
+    await p1.skipTargets()
+    // P1 sees the ReorderLibrary decision for the single card — dismiss it
+    await p1.dismissRevealedCards()
 
     // Graveyard should remain empty
     await p1.expectGraveyardSize(player1.playerId, 0)
