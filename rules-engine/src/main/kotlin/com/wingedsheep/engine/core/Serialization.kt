@@ -180,6 +180,7 @@ val engineSerializersModule = SerializersModule {
         subclass(DrawReplacementBounceContinuation::class)
         subclass(DrawReplacementDiscardContinuation::class)
         subclass(DrawReplacementActivationContinuation::class)
+        subclass(DrawReplacementTargetContinuation::class)
         subclass(ReadTheRunesContinuation::class)
         subclass(SearchTargetLibraryExileContinuation::class)
         subclass(KaboomReorderContinuation::class)

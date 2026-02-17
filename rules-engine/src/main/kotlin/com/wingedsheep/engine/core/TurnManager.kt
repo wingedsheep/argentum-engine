@@ -499,11 +499,12 @@ class TurnManager(
      * If so, present a mana source selection decision and pause.
      * Returns null if no prompt is needed.
      */
-    private fun checkPromptOnDraw(
+    internal fun checkPromptOnDraw(
         state: GameState,
         playerId: EntityId,
         drawCount: Int,
-        isDrawStep: Boolean
+        isDrawStep: Boolean,
+        declinedSourceIds: List<EntityId> = emptyList()
     ): ExecutionResult? {
         if (cardRegistry == null) return null
 
@@ -512,6 +513,7 @@ class TurnManager(
         val controlledPermanents = projected.getBattlefieldControlledBy(playerId)
 
         for (permanentId in controlledPermanents) {
+            if (permanentId in declinedSourceIds) continue
             val container = state.getEntity(permanentId) ?: continue
             val card = container.get<com.wingedsheep.engine.state.components.identity.CardComponent>() ?: continue
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
@@ -573,7 +575,9 @@ class TurnManager(
                     abilityEffect = ability.effect,
                     manaCost = manaCost.toString(),
                     drawCount = drawCount,
-                    isDrawStep = isDrawStep
+                    isDrawStep = isDrawStep,
+                    targetRequirements = ability.targetRequirements,
+                    declinedSourceIds = declinedSourceIds
                 )
 
                 val stateWithDecision = state.withPendingDecision(decision)

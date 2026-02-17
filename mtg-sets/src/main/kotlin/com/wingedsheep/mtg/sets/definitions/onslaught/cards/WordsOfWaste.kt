@@ -19,6 +19,7 @@ val WordsOfWaste = card("Words of Waste") {
     activatedAbility {
         cost = Costs.Mana("{1}")
         effect = ReplaceNextDrawWithDiscardEffect
+        promptOnDraw = true
     }
 
     metadata {

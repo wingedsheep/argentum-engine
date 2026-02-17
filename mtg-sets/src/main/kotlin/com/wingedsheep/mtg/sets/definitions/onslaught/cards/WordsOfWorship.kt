@@ -19,6 +19,7 @@ val WordsOfWorship = card("Words of Worship") {
     activatedAbility {
         cost = Costs.Mana("{1}")
         effect = ReplaceNextDrawWithLifeGainEffect(lifeAmount = 5)
+        promptOnDraw = true
     }
 
     metadata {

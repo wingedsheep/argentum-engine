@@ -1883,6 +1883,25 @@ data class DrawReplacementActivationContinuation(
     val manaCost: String,
     val drawCount: Int,
     val isDrawStep: Boolean,
+    val drawnCardsSoFar: List<EntityId> = emptyList(),
+    val targetRequirements: List<com.wingedsheep.sdk.targeting.TargetRequirement> = emptyList(),
+    val declinedSourceIds: List<EntityId> = emptyList()
+) : ContinuationFrame
+
+/**
+ * Resume after target selection for a "prompt on draw" ability that requires targeting
+ * (e.g., Words of War). After the player paid mana and selected targets, we create
+ * the replacement shield with the chosen targets, then proceed with draws.
+ */
+@Serializable
+data class DrawReplacementTargetContinuation(
+    override val decisionId: String,
+    val drawingPlayerId: EntityId,
+    val sourceId: EntityId,
+    val sourceName: String,
+    val abilityEffect: Effect,
+    val drawCount: Int,
+    val isDrawStep: Boolean,
     val drawnCardsSoFar: List<EntityId> = emptyList()
 ) : ContinuationFrame
 

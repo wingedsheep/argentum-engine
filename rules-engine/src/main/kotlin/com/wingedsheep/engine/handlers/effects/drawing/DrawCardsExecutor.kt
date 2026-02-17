@@ -570,11 +570,12 @@ class DrawCardsExecutor(
      *
      * This is the same logic as TurnManager.checkPromptOnDraw() but for spell/ability draws.
      */
-    private fun checkPromptOnDraw(
+    internal fun checkPromptOnDraw(
         state: GameState,
         playerId: EntityId,
         remainingDrawCount: Int,
-        drawnCardsSoFar: List<EntityId>
+        drawnCardsSoFar: List<EntityId>,
+        declinedSourceIds: List<EntityId> = emptyList()
     ): ExecutionResult? {
         if (cardRegistry == null) return null
 
@@ -582,6 +583,7 @@ class DrawCardsExecutor(
         val controlledPermanents = projected.getBattlefieldControlledBy(playerId)
 
         for (permanentId in controlledPermanents) {
+            if (permanentId in declinedSourceIds) continue
             val container = state.getEntity(permanentId) ?: continue
             val card = container.get<CardComponent>() ?: continue
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
@@ -639,7 +641,9 @@ class DrawCardsExecutor(
                     manaCost = manaCost.toString(),
                     drawCount = remainingDrawCount,
                     isDrawStep = false,
-                    drawnCardsSoFar = drawnCardsSoFar
+                    drawnCardsSoFar = drawnCardsSoFar,
+                    targetRequirements = ability.targetRequirements,
+                    declinedSourceIds = declinedSourceIds
                 )
 
                 val stateWithDecision = state.withPendingDecision(decision)

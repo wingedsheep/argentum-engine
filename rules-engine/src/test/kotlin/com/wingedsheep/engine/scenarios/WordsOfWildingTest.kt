@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -34,6 +35,7 @@ class WordsOfWildingTest : FunSpec({
         activatedAbility {
             cost = Costs.Mana("{1}")
             effect = ReplaceNextDrawWithBearTokenEffect
+            promptOnDraw = true
         }
     }
 
@@ -45,11 +47,19 @@ class WordsOfWildingTest : FunSpec({
         script = CardScript.spell(effect = DrawCardsEffect(2))
     )
 
+    // A draw-3 spell for testing multi-draw prompt
+    val Concentrate = CardDefinition.sorcery(
+        name = "Concentrate",
+        manaCost = ManaCost.parse("{2}{U}{U}"),
+        oracleText = "Draw three cards.",
+        script = CardScript.spell(effect = DrawCardsEffect(3))
+    )
+
     val abilityId = WordsOfWilding.activatedAbilities.first().id
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(WordsOfWilding, Inspiration))
+        driver.registerCards(TestCards.all + listOf(WordsOfWilding, Inspiration, Concentrate))
         return driver
     }
 
@@ -238,5 +248,119 @@ class WordsOfWildingTest : FunSpec({
 
         // No Bear tokens should have been created (shield expired unused)
         driver.countBears(activePlayer) shouldBe 0
+    }
+
+    // --- promptOnDraw tests ---
+
+    test("draw step prompts to activate Words of Wilding, player accepts") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Grizzly Bears" to 40),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+
+        driver.putPermanentOnBattlefield(activePlayer, "Words of Wilding")
+        driver.putPermanentOnBattlefield(activePlayer, "Forest")
+
+        // Advance past turn 1 to reach active player's draw step on turn 3
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
+        driver.passPriorityUntil(Step.UPKEEP)
+        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
+        driver.passPriorityUntil(Step.UPKEEP)
+
+        driver.state.activePlayerId shouldBe activePlayer
+        val initialHandSize = driver.getHandSize(activePlayer)
+
+        // Pass through upkeep to reach draw step
+        driver.bothPass()
+
+        // Should now be at DRAW with a mana source selection decision
+        driver.state.step shouldBe Step.DRAW
+        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
+
+        // Accept: auto-pay to activate Words of Wilding
+        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
+
+        // Draw replaced with Bear token, no card drawn
+        driver.getHandSize(activePlayer) shouldBe initialHandSize
+        driver.countBears(activePlayer) shouldBe 1
+    }
+
+    test("draw step allows declining Words of Wilding activation") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Grizzly Bears" to 40),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+
+        driver.putPermanentOnBattlefield(activePlayer, "Words of Wilding")
+        driver.putPermanentOnBattlefield(activePlayer, "Forest")
+
+        // Advance past turn 1 to reach active player's draw step on turn 3
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
+        driver.passPriorityUntil(Step.UPKEEP)
+        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
+        driver.passPriorityUntil(Step.UPKEEP)
+
+        val initialHandSize = driver.getHandSize(activePlayer)
+
+        // Pass through upkeep to reach draw step
+        driver.bothPass()
+        driver.state.step shouldBe Step.DRAW
+
+        // Decline the activation
+        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = false)
+
+        // Normal draw happens - no Bear token
+        driver.getHandSize(activePlayer) shouldBe initialHandSize + 1
+        driver.countBears(activePlayer) shouldBe 0
+    }
+
+    test("spell draw prompts to activate Words of Wilding for each draw") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Grizzly Bears" to 40),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+
+        driver.putPermanentOnBattlefield(activePlayer, "Words of Wilding")
+
+        // Give untapped lands for mana to pay for activations
+        driver.putPermanentOnBattlefield(activePlayer, "Forest")
+        driver.putPermanentOnBattlefield(activePlayer, "Forest")
+        driver.putPermanentOnBattlefield(activePlayer, "Forest")
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        // Give mana to cast Concentrate ({2}{U}{U})
+        driver.giveMana(activePlayer, Color.BLUE, 4)
+
+        // Cast Concentrate (draw 3)
+        val concentrate = driver.putCardInHand(activePlayer, "Concentrate")
+        driver.castSpell(activePlayer, concentrate)
+        driver.bothPass()
+
+        // Draw 1: Prompted - ACCEPT
+        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
+        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
+
+        // Draw 2: Prompted - ACCEPT
+        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
+        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
+
+        // Draw 3: Prompted - ACCEPT
+        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
+        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
+
+        // All 3 draws replaced with Bear tokens
+        driver.countBears(activePlayer) shouldBe 3
     }
 })

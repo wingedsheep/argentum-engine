@@ -1,7 +1,6 @@
 package com.wingedsheep.engine.handlers.actions.ability
 
 import com.wingedsheep.engine.core.CardCycledEvent
-import com.wingedsheep.engine.core.CardsDrawnEvent
 import com.wingedsheep.engine.core.CycleCard
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEvent
@@ -12,6 +11,7 @@ import com.wingedsheep.engine.event.TriggerDetector
 import com.wingedsheep.engine.event.TriggerProcessor
 import com.wingedsheep.engine.handlers.actions.ActionContext
 import com.wingedsheep.engine.handlers.actions.ActionHandler
+import com.wingedsheep.engine.handlers.effects.drawing.DrawCardsExecutor
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.registry.CardRegistry
@@ -180,35 +180,13 @@ class CycleCardHandler(
         // Emit cycling event (for cycling triggers like Astral Slide)
         events.add(CardCycledEvent(action.playerId, action.cardId, cardComponent.name))
 
-        // Draw a card
-        val library = currentState.getLibrary(action.playerId)
-        if (library.isNotEmpty()) {
-            val drawnCardId = library.first()
-            val drawnCardName = currentState.getEntity(drawnCardId)?.get<CardComponent>()?.name ?: "Unknown"
-
-            val libraryZone = ZoneKey(action.playerId, Zone.LIBRARY)
-            currentState = currentState.removeFromZone(libraryZone, drawnCardId)
-            currentState = currentState.addToZone(handZone, drawnCardId)
-
-            events.add(
-                ZoneChangeEvent(
-                    entityId = drawnCardId,
-                    entityName = drawnCardName,
-                    fromZone = Zone.LIBRARY,
-                    toZone = Zone.HAND,
-                    ownerId = action.playerId
-                )
-            )
-
-            events.add(CardsDrawnEvent(action.playerId, 1, listOf(drawnCardId)))
-        }
-
         currentState = currentState.tick()
 
-        // Detect and process triggers (e.g., cycling triggers, discard triggers)
-        val triggers = triggerDetector.detectTriggers(currentState, events)
-        if (triggers.isNotEmpty()) {
-            val triggerResult = triggerProcessor.processTriggers(currentState, triggers)
+        // Detect and process triggers from discard + cycling events before drawing,
+        // since the draw may pause for promptOnDraw abilities (e.g., Words of War)
+        val preTriggers = triggerDetector.detectTriggers(currentState, events)
+        if (preTriggers.isNotEmpty()) {
+            val triggerResult = triggerProcessor.processTriggers(currentState, preTriggers)
 
             if (triggerResult.isPaused) {
                 return ExecutionResult.paused(
@@ -218,11 +196,22 @@ class CycleCardHandler(
                 )
             }
 
-            return ExecutionResult.success(
-                triggerResult.newState,
-                events + triggerResult.events
+            currentState = triggerResult.newState
+            events.addAll(triggerResult.events)
+        }
+
+        // Draw a card using DrawCardsExecutor (checks replacement shields and promptOnDraw)
+        val drawExecutor = DrawCardsExecutor(cardRegistry = cardRegistry)
+        val drawResult = drawExecutor.executeDraws(currentState, action.playerId, 1)
+        if (drawResult.isPaused) {
+            return ExecutionResult.paused(
+                drawResult.state,
+                drawResult.pendingDecision!!,
+                events + drawResult.events
             )
         }
+        currentState = drawResult.newState
+        events.addAll(drawResult.events)
 
         // Cycling doesn't change priority
         return ExecutionResult.success(currentState, events)

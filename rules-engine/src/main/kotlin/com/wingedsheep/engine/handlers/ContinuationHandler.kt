@@ -164,6 +164,7 @@ class ContinuationHandler(
             is DrawReplacementBounceContinuation -> resumeDrawReplacementBounce(stateAfterPop, continuation, response)
             is DrawReplacementDiscardContinuation -> resumeDrawReplacementDiscard(stateAfterPop, continuation, response)
             is DrawReplacementActivationContinuation -> resumeDrawReplacementActivation(stateAfterPop, continuation, response)
+            is DrawReplacementTargetContinuation -> resumeDrawReplacementTarget(stateAfterPop, continuation, response)
             is SearchTargetLibraryExileContinuation -> resumeSearchTargetLibraryExile(stateAfterPop, continuation, response)
             is ReadTheRunesContinuation -> resumeReadTheRunes(stateAfterPop, continuation, response)
             is KaboomReorderContinuation -> resumeKaboomReorder(stateAfterPop, continuation, response)
@@ -6613,7 +6614,68 @@ class ContinuationHandler(
                 ))
             }
 
-            // Execute the effect to create a replacement shield
+            // If the ability has target requirements, pause for target selection
+            if (continuation.targetRequirements.isNotEmpty()) {
+                val legalTargetsMap = mutableMapOf<Int, List<EntityId>>()
+                val requirementInfos = continuation.targetRequirements.mapIndexed { index, req ->
+                    val legalTargets = targetFinder.findLegalTargets(
+                        state = newState,
+                        requirement = req,
+                        controllerId = playerId,
+                        sourceId = continuation.sourceId
+                    )
+                    legalTargetsMap[index] = legalTargets
+                    TargetRequirementInfo(
+                        index = index,
+                        description = req.description,
+                        minTargets = req.effectiveMinCount,
+                        maxTargets = req.count
+                    )
+                }
+
+                val targetDecisionId = java.util.UUID.randomUUID().toString()
+                val targetDecision = ChooseTargetsDecision(
+                    id = targetDecisionId,
+                    playerId = playerId,
+                    prompt = "Choose targets for ${continuation.sourceName}",
+                    context = DecisionContext(
+                        sourceId = continuation.sourceId,
+                        sourceName = continuation.sourceName,
+                        phase = DecisionPhase.RESOLUTION
+                    ),
+                    targetRequirements = requirementInfos,
+                    legalTargets = legalTargetsMap
+                )
+
+                val targetContinuation = DrawReplacementTargetContinuation(
+                    decisionId = targetDecisionId,
+                    drawingPlayerId = playerId,
+                    sourceId = continuation.sourceId,
+                    sourceName = continuation.sourceName,
+                    abilityEffect = continuation.abilityEffect,
+                    drawCount = continuation.drawCount,
+                    isDrawStep = continuation.isDrawStep,
+                    drawnCardsSoFar = continuation.drawnCardsSoFar
+                )
+
+                val stateWithDecision = newState.withPendingDecision(targetDecision)
+                val stateWithContinuation = stateWithDecision.pushContinuation(targetContinuation)
+
+                return ExecutionResult.paused(
+                    stateWithContinuation,
+                    targetDecision,
+                    events + listOf(
+                        DecisionRequestedEvent(
+                            decisionId = targetDecisionId,
+                            playerId = playerId,
+                            decisionType = "CHOOSE_TARGETS",
+                            prompt = targetDecision.prompt
+                        )
+                    )
+                )
+            }
+
+            // Execute the effect to create a replacement shield (no targeting needed)
             val opponents = newState.turnOrder.filter { it != playerId }
             val effectContext = EffectContext(
                 controllerId = playerId,
@@ -6627,6 +6689,39 @@ class ContinuationHandler(
             if (effectResult.isSuccess) {
                 newState = effectResult.newState
                 events.addAll(effectResult.events)
+            }
+        }
+
+        // If player declined, check if there are other promptOnDraw abilities before drawing
+        if (!activated) {
+            val newDeclinedSourceIds = continuation.declinedSourceIds + continuation.sourceId
+
+            if (continuation.isDrawStep) {
+                val turnManager = TurnManager(cardRegistry = stackResolver.cardRegistry)
+                val otherPrompt = turnManager.checkPromptOnDraw(
+                    newState, playerId, continuation.drawCount, isDrawStep = true,
+                    declinedSourceIds = newDeclinedSourceIds
+                )
+                if (otherPrompt != null) {
+                    return ExecutionResult.paused(
+                        otherPrompt.state,
+                        otherPrompt.pendingDecision!!,
+                        events + otherPrompt.events
+                    )
+                }
+            } else {
+                val drawExecutor = DrawCardsExecutor(cardRegistry = stackResolver.cardRegistry)
+                val otherPrompt = drawExecutor.checkPromptOnDraw(
+                    newState, playerId, continuation.drawCount, continuation.drawnCardsSoFar,
+                    declinedSourceIds = newDeclinedSourceIds
+                )
+                if (otherPrompt != null) {
+                    return ExecutionResult.paused(
+                        otherPrompt.state,
+                        otherPrompt.pendingDecision!!,
+                        events + otherPrompt.events
+                    )
+                }
             }
         }
 
@@ -6660,10 +6755,8 @@ class ContinuationHandler(
             newState = drawResult.newState
             events.addAll(drawResult.events)
         } else {
-            // Player declined - draw 1 card normally (the one that was prompted for),
+            // Player declined all abilities - draw 1 card normally,
             // then continue remaining draws with prompting enabled
-            val drawExecutor = DrawCardsExecutor(cardRegistry = stackResolver.cardRegistry)
-            // Draw 1 card normally (without prompting) using a no-registry executor
             val singleDrawExecutor = DrawCardsExecutor()
             val singleDrawResult = singleDrawExecutor.executeDraws(newState, playerId, 1)
             if (singleDrawResult.isPaused) {
@@ -6676,9 +6769,10 @@ class ContinuationHandler(
             newState = singleDrawResult.newState
             events.addAll(singleDrawResult.events)
 
-            // Continue remaining draws with prompting
+            // Continue remaining draws with prompting (reset declined list for next draw)
             val remainingDraws = continuation.drawCount - 1
             if (remainingDraws > 0) {
+                val drawExecutor = DrawCardsExecutor(cardRegistry = stackResolver.cardRegistry)
                 val drawResult = drawExecutor.executeDraws(newState, playerId, remainingDraws)
                 if (drawResult.isPaused) {
                     return ExecutionResult.paused(
@@ -6690,6 +6784,79 @@ class ContinuationHandler(
                 newState = drawResult.newState
                 events.addAll(drawResult.events)
             }
+        }
+
+        return checkForMoreContinuations(newState, events)
+    }
+
+    /**
+     * Resume after target selection for a "prompt on draw" ability that requires targeting
+     * (e.g., Words of War). Creates the replacement shield with the chosen targets,
+     * then proceeds with draws.
+     */
+    private fun resumeDrawReplacementTarget(
+        state: GameState,
+        continuation: DrawReplacementTargetContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is TargetsResponse) {
+            return ExecutionResult.error(state, "Expected targets response for draw replacement target")
+        }
+
+        val playerId = continuation.drawingPlayerId
+        var newState = state
+        val events = mutableListOf<GameEvent>()
+
+        // Convert selected targets to ChosenTargets
+        val chosenTargets = response.selectedTargets.flatMap { (_, targetIds) ->
+            targetIds.map { targetId ->
+                entityIdToChosenTarget(newState, targetId)
+            }
+        }
+
+        // Execute the effect to create a replacement shield with targets
+        val opponents = newState.turnOrder.filter { it != playerId }
+        val effectContext = EffectContext(
+            controllerId = playerId,
+            sourceId = continuation.sourceId,
+            opponentId = opponents.firstOrNull(),
+            targets = chosenTargets
+        )
+        val effectResult = effectExecutorRegistry.execute(
+            newState, continuation.abilityEffect, effectContext
+        )
+        if (effectResult.isSuccess) {
+            newState = effectResult.newState
+            events.addAll(effectResult.events)
+        }
+
+        // Now perform the draws (same logic as resumeDrawReplacementActivation)
+        if (continuation.isDrawStep) {
+            val turnManager = TurnManager()
+            val drawResult = turnManager.drawCards(newState, playerId, continuation.drawCount)
+            if (drawResult.isPaused) {
+                return ExecutionResult.paused(
+                    drawResult.state,
+                    drawResult.pendingDecision!!,
+                    events + drawResult.events
+                )
+            }
+            newState = drawResult.newState
+            events.addAll(drawResult.events)
+            newState = newState.withPriority(playerId)
+        } else {
+            // Spell/ability draws - use DrawCardsExecutor with cardRegistry for subsequent prompts
+            val drawExecutor = DrawCardsExecutor(cardRegistry = stackResolver.cardRegistry)
+            val drawResult = drawExecutor.executeDraws(newState, playerId, continuation.drawCount)
+            if (drawResult.isPaused) {
+                return ExecutionResult.paused(
+                    drawResult.state,
+                    drawResult.pendingDecision!!,
+                    events + drawResult.events
+                )
+            }
+            newState = drawResult.newState
+            events.addAll(drawResult.events)
         }
 
         return checkForMoreContinuations(newState, events)

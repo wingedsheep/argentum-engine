@@ -20,6 +20,7 @@ val WordsOfWilding = card("Words of Wilding") {
     activatedAbility {
         cost = Costs.Mana("{1}")
         effect = ReplaceNextDrawWithBearTokenEffect
+        promptOnDraw = true
     }
 
     metadata {
