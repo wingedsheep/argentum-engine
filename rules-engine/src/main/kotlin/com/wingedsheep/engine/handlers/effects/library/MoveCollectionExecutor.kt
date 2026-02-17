@@ -43,11 +43,24 @@ class MoveCollectionExecutor : EffectExecutor<MoveCollectionEffect> {
         val cards = context.storedCollections[effect.from]
             ?: return ExecutionResult.error(state, "No collection named '${effect.from}' in storedCollections")
 
+        val destination = effect.destination
         if (cards.isEmpty()) {
+            // Nothing to move, but for library shuffles we still shuffle (e.g., ShuffleGraveyardIntoLibrary
+            // shuffles even when the graveyard is empty, per the card's rules text).
+            if (destination is CardDestination.ToZone &&
+                destination.zone == Zone.LIBRARY &&
+                destination.placement == ZonePlacement.Shuffled) {
+                val destPlayerId = resolvePlayer(destination.player, context, state)
+                if (destPlayerId != null) {
+                    val destZoneKey = ZoneKey(destPlayerId, Zone.LIBRARY)
+                    val library = state.getZone(destZoneKey)
+                    val newState = state.copy(zones = state.zones + (destZoneKey to library.shuffled()))
+                    return ExecutionResult.success(newState, listOf(LibraryShuffledEvent(destPlayerId)))
+                }
+            }
             return ExecutionResult.success(state)
         }
 
-        val destination = effect.destination
         return when (destination) {
             is CardDestination.ToZone -> moveToZone(state, context, cards, destination, effect.order, effect.revealed, effect.moveType)
         }

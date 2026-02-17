@@ -118,6 +118,67 @@ object EffectPatterns {
     )
 
     /**
+     * Controller discards N cards of their choice.
+     *
+     * Composed as Gather(hand) → Select(ChooseExactly(N)) → Move(graveyard, Discard).
+     * Handles the MTG "as much as possible" rule: if hand has fewer than N cards, discard all.
+     *
+     * Example:
+     * ```kotlin
+     * discardCards(1)
+     * // -> "Discard a card."
+     * ```
+     */
+    fun discardCards(count: Int): CompositeEffect = CompositeEffect(
+        listOf(
+            GatherCardsEffect(
+                source = CardSource.FromZone(Zone.HAND, Player.You),
+                storeAs = "hand"
+            ),
+            SelectFromCollectionEffect(
+                from = "hand",
+                selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(count)),
+                storeSelected = "discarded"
+            ),
+            MoveCollectionEffect(
+                from = "discarded",
+                destination = CardDestination.ToZone(Zone.GRAVEYARD),
+                moveType = MoveType.Discard
+            )
+        )
+    )
+
+    /**
+     * Controller discards N cards at random (engine picks, no player choice).
+     *
+     * Composed as Gather(hand) → Select(Random(N)) → Move(graveyard, Discard).
+     *
+     * Example:
+     * ```kotlin
+     * discardRandom(1)
+     * // -> "Discard a card at random."
+     * ```
+     */
+    fun discardRandom(count: Int): CompositeEffect = CompositeEffect(
+        listOf(
+            GatherCardsEffect(
+                source = CardSource.FromZone(Zone.HAND, Player.You),
+                storeAs = "hand"
+            ),
+            SelectFromCollectionEffect(
+                from = "hand",
+                selection = SelectionMode.Random(DynamicAmount.Fixed(count)),
+                storeSelected = "discarded"
+            ),
+            MoveCollectionEffect(
+                from = "discarded",
+                destination = CardDestination.ToZone(Zone.GRAVEYARD),
+                moveType = MoveType.Discard
+            )
+        )
+    )
+
+    /**
      * Create a sacrifice pattern with a fixed count.
      *
      * Example:

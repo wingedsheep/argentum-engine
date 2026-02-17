@@ -129,6 +129,17 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
                 }
                 createDecision(state, context, effect, eligibleCards, 0, minOf(count, eligibleCards.size), decidingPlayerId, allCards = cards)
             }
+
+            is SelectionMode.Random -> {
+                // No player decision — engine randomly picks N cards
+                val count = amountEvaluator.evaluate(state, selection.count, context)
+                val selected = eligibleCards.shuffled().take(count)
+                val collections = mutableMapOf(effect.storeSelected to selected)
+                if (remainderName != null) {
+                    collections[remainderName] = cards.filter { it !in selected }
+                }
+                ExecutionResult.success(state).copy(updatedCollections = collections)
+            }
         }
     }
 

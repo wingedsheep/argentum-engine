@@ -1,12 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
+import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
-import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DiscardCardsEffect
-import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.scripting.Player
 
 /**
  * Silent Specter
@@ -28,7 +26,7 @@ val SilentSpecter = card("Silent Specter") {
 
     triggeredAbility {
         trigger = Triggers.DealsCombatDamageToPlayer
-        effect = DiscardCardsEffect(2, EffectTarget.PlayerRef(Player.Opponent))
+        effect = EffectPatterns.eachOpponentDiscards(2)
     }
 
     morph = "{3}{B}{B}"

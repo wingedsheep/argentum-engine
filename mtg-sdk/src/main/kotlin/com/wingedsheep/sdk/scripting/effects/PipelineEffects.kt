@@ -109,6 +109,16 @@ sealed interface SelectionMode {
     data object All : SelectionMode {
         override val description: String = "all"
     }
+
+    /**
+     * Randomly select N cards (no player choice — engine picks randomly).
+     * Used for "discard X cards at random" effects.
+     */
+    @SerialName("Random")
+    @Serializable
+    data class Random(val count: DynamicAmount) : SelectionMode {
+        override val description: String = "random ${count.description}"
+    }
 }
 
 /**

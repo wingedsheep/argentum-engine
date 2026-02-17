@@ -2,10 +2,10 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DiscardCardsEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.ReflexiveTriggerEffect
@@ -32,7 +32,7 @@ val Gigapede = card("Gigapede") {
         trigger = Triggers.YourUpkeep
         triggerZone = Zone.GRAVEYARD
         effect = ReflexiveTriggerEffect(
-            action = DiscardCardsEffect(1, EffectTarget.Controller),
+            action = EffectPatterns.discardCards(1),
             optional = true,
             reflexiveEffect = MoveToZoneEffect(EffectTarget.Self, Zone.HAND)
         )
