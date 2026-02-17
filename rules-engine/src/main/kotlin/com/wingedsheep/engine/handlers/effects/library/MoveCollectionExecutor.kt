@@ -65,12 +65,14 @@ class MoveCollectionExecutor : EffectExecutor<MoveCollectionEffect> {
 
         val destZone = destination.zone
 
-        // ControllerChooses ordering: pause for player to see/reorder cards going to library top
-        if (order == CardOrder.ControllerChooses
-            && destZone == Zone.LIBRARY
-            && (destination.placement == ZonePlacement.Top || destination.placement == ZonePlacement.Default)
-        ) {
-            return pauseForOrderDecision(state, context, cards, destZone, destPlayerId)
+        // ControllerChooses ordering: pause for player to see/reorder cards going to library
+        if (order == CardOrder.ControllerChooses && destZone == Zone.LIBRARY) {
+            val isBottom = destination.placement == ZonePlacement.Bottom
+            // For top placement: always pause (even for 1 card, so player can see it)
+            // For bottom placement: only pause when there are multiple cards to order
+            if (!isBottom || cards.size > 1) {
+                return pauseForOrderDecision(state, context, cards, destZone, destPlayerId, destination.placement)
+            }
         }
 
         return moveCardsToZone(state, context, cards, destination, destPlayerId, revealed)
@@ -85,7 +87,8 @@ class MoveCollectionExecutor : EffectExecutor<MoveCollectionEffect> {
         context: EffectContext,
         cards: List<EntityId>,
         destZone: Zone,
-        destPlayerId: EntityId
+        destPlayerId: EntityId,
+        placement: ZonePlacement = ZonePlacement.Top
     ): ExecutionResult {
         val playerId = context.controllerId
 
@@ -106,11 +109,16 @@ class MoveCollectionExecutor : EffectExecutor<MoveCollectionEffect> {
             state.getEntity(sourceId)?.get<CardComponent>()?.name
         }
 
+        val promptText = when (placement) {
+            ZonePlacement.Bottom -> "Put the revealed cards on the bottom of your library in any order."
+            else -> if (cards.size == 1) "Look at the top card of your library."
+                else "Look at the top ${cards.size} cards of your library. Put them back in any order."
+        }
+
         val decision = ReorderLibraryDecision(
             id = decisionId,
             playerId = playerId,
-            prompt = if (cards.size == 1) "Look at the top card of your library."
-                else "Look at the top ${cards.size} cards of your library. Put them back in any order.",
+            prompt = promptText,
             context = DecisionContext(
                 sourceId = context.sourceId,
                 sourceName = sourceName,
@@ -127,7 +135,8 @@ class MoveCollectionExecutor : EffectExecutor<MoveCollectionEffect> {
             sourceName = sourceName,
             cards = cards,
             destinationZone = destZone,
-            destinationPlayerId = destPlayerId
+            destinationPlayerId = destPlayerId,
+            placement = placement
         )
 
         val stateWithDecision = state.withPendingDecision(decision)

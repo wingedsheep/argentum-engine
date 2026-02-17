@@ -78,6 +78,7 @@ data class GameObjectFilter(
         val Instant = GameObjectFilter(cardPredicates = listOf(CardPredicate.IsInstant))
         val Sorcery = GameObjectFilter(cardPredicates = listOf(CardPredicate.IsSorcery))
         val Permanent = GameObjectFilter(cardPredicates = listOf(CardPredicate.IsPermanent))
+        val Nonland = GameObjectFilter(cardPredicates = listOf(CardPredicate.IsNonland))
         val NonlandPermanent = GameObjectFilter(
             cardPredicates = listOf(CardPredicate.IsNonland, CardPredicate.IsPermanent)
         )

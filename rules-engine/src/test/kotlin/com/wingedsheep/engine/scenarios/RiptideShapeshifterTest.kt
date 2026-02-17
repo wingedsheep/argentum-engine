@@ -16,10 +16,11 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.ActivatedAbility
-import com.wingedsheep.sdk.scripting.RevealUntilCreatureTypeEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -51,7 +52,7 @@ class RiptideShapeshifterTest : FunSpec({
                     AbilityCost.Mana(ManaCost.parse("{2}{U}{U}")),
                     AbilityCost.SacrificeSelf
                 )),
-                effect = RevealUntilCreatureTypeEffect
+                effect = EffectPatterns.revealUntilCreatureTypeToBattlefield()
             )
         )
     )
@@ -207,7 +208,7 @@ class RiptideShapeshifterTest : FunSpec({
         battlefieldAfter shouldBe battlefieldAfterSacrifice
     }
 
-    test("empty library - nothing happens") {
+    test("empty library - choose creature type but nothing enters battlefield") {
         val driver = createDriver()
         val activePlayer = driver.activePlayer!!
 
@@ -223,6 +224,8 @@ class RiptideShapeshifterTest : FunSpec({
             zones = driver.state.zones + (libraryZone to emptyList())
         ))
 
+        val battlefieldBefore = driver.state.getZone(ZoneKey(activePlayer, Zone.BATTLEFIELD)).size
+
         driver.submit(
             ActivateAbility(
                 playerId = activePlayer,
@@ -233,8 +236,13 @@ class RiptideShapeshifterTest : FunSpec({
 
         driver.bothPass()
 
-        // With empty library, ability resolves without asking for creature type
-        // No pending decision should remain (it auto-completes)
-        driver.pendingDecision shouldBe null
+        // Player still chooses a creature type (per MTG rules), but nothing happens
+        val decision = driver.pendingDecision as ChooseOptionDecision
+        val knightIndex = decision.options.indexOf("Knight")
+        driver.submitDecision(activePlayer, OptionChosenResponse(decision.id, knightIndex))
+
+        // No new creatures on battlefield (shapeshifter was sacrificed, nothing found)
+        val battlefieldAfter = driver.state.getZone(ZoneKey(activePlayer, Zone.BATTLEFIELD)).size
+        battlefieldAfter shouldBe battlefieldBefore - 1 // only shapeshifter gone
     }
 })

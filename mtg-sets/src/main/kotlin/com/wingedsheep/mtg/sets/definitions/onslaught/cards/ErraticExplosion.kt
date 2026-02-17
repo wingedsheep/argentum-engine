@@ -1,9 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
+import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.scripting.RevealUntilNonlandDealDamageEffect
 import com.wingedsheep.sdk.targeting.AnyTarget
 
 /**
@@ -21,7 +21,7 @@ val ErraticExplosion = card("Erratic Explosion") {
 
     spell {
         target = AnyTarget()
-        effect = RevealUntilNonlandDealDamageEffect(EffectTarget.ContextTarget(0))
+        effect = EffectPatterns.revealUntilNonlandDealDamage(EffectTarget.ContextTarget(0))
     }
 
     metadata {

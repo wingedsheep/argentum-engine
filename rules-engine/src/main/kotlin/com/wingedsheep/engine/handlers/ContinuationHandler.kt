@@ -120,6 +120,7 @@ class ContinuationHandler(
             is ChooseFromCreatureTypeContinuation -> creatureTypeResumer.resumeChooseFromCreatureType(stateAfterPop, continuation, response, cfm)
             is ChooseToCreatureTypeContinuation -> creatureTypeResumer.resumeChooseToCreatureType(stateAfterPop, continuation, response, cfm)
             is ChooseCreatureTypeRevealTopContinuation -> creatureTypeResumer.resumeChooseCreatureTypeRevealTop(stateAfterPop, continuation, response, cfm)
+            is ChooseCreatureTypePipelineContinuation -> creatureTypeResumer.resumeChooseCreatureTypePipeline(stateAfterPop, continuation, response, cfm)
             is RevealUntilCreatureTypeContinuation -> creatureTypeResumer.resumeRevealUntilCreatureType(stateAfterPop, continuation, response, cfm)
             is BecomeCreatureTypeContinuation -> creatureTypeResumer.resumeBecomeCreatureType(stateAfterPop, continuation, response, cfm)
             is ChooseCreatureTypeModifyStatsContinuation -> creatureTypeResumer.resumeChooseCreatureTypeModifyStats(stateAfterPop, continuation, response, cfm)

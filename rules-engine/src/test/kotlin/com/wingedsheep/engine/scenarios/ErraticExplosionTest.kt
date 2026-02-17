@@ -10,11 +10,11 @@ import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.TypeLine
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.scripting.RevealUntilNonlandDealDamageEffect
 import com.wingedsheep.sdk.targeting.AnyTarget
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -42,7 +42,7 @@ class ErraticExplosionTest : FunSpec({
         typeLine = TypeLine.sorcery(),
         oracleText = "Choose any target. Reveal cards from the top of your library until you reveal a nonland card. Erratic Explosion deals damage equal to that card's mana value to that permanent or player. Put the revealed cards on the bottom of your library in any order.",
         script = CardScript.spell(
-            effect = RevealUntilNonlandDealDamageEffect(EffectTarget.ContextTarget(0)),
+            effect = EffectPatterns.revealUntilNonlandDealDamage(EffectTarget.ContextTarget(0)),
             AnyTarget()
         )
     )

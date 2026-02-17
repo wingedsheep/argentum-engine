@@ -216,3 +216,51 @@ data class MoveCollectionEffect(
         append(destination.description)
     }
 }
+
+/**
+ * Reveal cards from the top of a player's library until a card matching
+ * the filter is found. The matching card is stored in [storeMatch] and
+ * ALL revealed cards (including the match) are stored in [storeRevealed].
+ *
+ * If no matching card is found (entire library is revealed), [storeMatch] will
+ * be empty and [storeRevealed] will contain all revealed cards.
+ *
+ * @property source Whose library to reveal from
+ * @property matchFilter The filter that stops the reveal (e.g., GameObjectFilter.Nonland)
+ * @property storeMatch Name to store the matching card under
+ * @property storeRevealed Name to store ALL revealed cards under (including the match)
+ */
+@SerialName("RevealUntil")
+@Serializable
+data class RevealUntilEffect(
+    val source: Player = Player.You,
+    val matchFilter: GameObjectFilter,
+    val storeMatch: String,
+    val storeRevealed: String,
+    /**
+     * When true, the match condition additionally requires the card to be a creature
+     * with the subtype stored in the effect context's chosenCreatureType.
+     * Used for "reveal until you reveal a creature card of the chosen type" patterns.
+     */
+    val matchChosenCreatureType: Boolean = false
+) : Effect {
+    override val description: String = buildString {
+        append("Reveal cards from the top of ")
+        append(source.possessive)
+        append(" library until you reveal a ${matchFilter.description} card")
+        if (matchChosenCreatureType) append(" of the chosen type")
+    }
+}
+
+/**
+ * Choose a creature type. Stores the chosen type in the effect context
+ * for use by subsequent pipeline steps (e.g., RevealUntilEffect with
+ * matchChosenCreatureType = true).
+ *
+ * This is a pipeline step that pauses for player input.
+ */
+@SerialName("ChooseCreatureType")
+@Serializable
+data object ChooseCreatureTypeEffect : Effect {
+    override val description: String = "Choose a creature type"
+}

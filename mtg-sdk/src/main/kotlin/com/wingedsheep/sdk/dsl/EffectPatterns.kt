@@ -461,6 +461,72 @@ object EffectPatterns {
      * @param exileTarget What to exile initially
      * @param variableName Name to store the exiled card under
      */
+    // =========================================================================
+    // Reveal Until Patterns
+    // =========================================================================
+
+    /**
+     * Reveal cards from the top of your library until you reveal a nonland card.
+     * Deal damage equal to that card's mana value to a target.
+     * Put all revealed cards on the bottom of your library in any order.
+     *
+     * Used for Erratic Explosion.
+     *
+     * @param target The target to deal damage to
+     */
+    fun revealUntilNonlandDealDamage(target: EffectTarget): CompositeEffect = CompositeEffect(
+        listOf(
+            // Step 1: Reveal cards until a nonland is found
+            RevealUntilEffect(
+                matchFilter = GameObjectFilter.Nonland,
+                storeMatch = "nonland",
+                storeRevealed = "allRevealed"
+            ),
+            // Step 2: Deal damage equal to the nonland card's mana value
+            DealDamageEffect(
+                amount = DynamicAmount.StoredCardManaValue("nonland"),
+                target = target
+            ),
+            // Step 3: Put all revealed cards on the bottom in any order
+            MoveCollectionEffect(
+                from = "allRevealed",
+                destination = CardDestination.ToZone(
+                    com.wingedsheep.sdk.core.Zone.LIBRARY,
+                    placement = ZonePlacement.Bottom
+                ),
+                order = CardOrder.ControllerChooses
+            )
+        )
+    )
+
+    /**
+     * Choose a creature type. Reveal cards from the top of your library until you
+     * reveal a creature card of that type. Put that card onto the battlefield and
+     * shuffle the rest into your library.
+     *
+     * Used for Riptide Shapeshifter.
+     */
+    fun revealUntilCreatureTypeToBattlefield(): CompositeEffect = CompositeEffect(
+        listOf(
+            // Step 1: Choose a creature type
+            ChooseCreatureTypeEffect,
+            // Step 2: Reveal cards until a creature of the chosen type is found
+            RevealUntilEffect(
+                matchFilter = GameObjectFilter.Creature,
+                storeMatch = "found",
+                storeRevealed = "allRevealed",
+                matchChosenCreatureType = true
+            ),
+            // Step 3: Put the matched creature onto the battlefield
+            MoveCollectionEffect(
+                from = "found",
+                destination = CardDestination.ToZone(com.wingedsheep.sdk.core.Zone.BATTLEFIELD)
+            ),
+            // Step 4: Shuffle the rest back into the library
+            ShuffleLibraryEffect()
+        )
+    )
+
     fun exileUntilLeaves(
         exileTarget: EffectTarget,
         variableName: String = "exiledCard"
