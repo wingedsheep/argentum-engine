@@ -568,18 +568,21 @@ class CombatManager(
             return "${cardComponent.name} can't block"
         }
 
-        // Check if the blocker can only block creatures with a specific keyword (e.g., Cloud Pirates)
-        val canOnlyBlockValidation = validateCanOnlyBlockWithKeyword(state, cardComponent, attackerIds, projected)
-        if (canOnlyBlockValidation != null) {
-            return canOnlyBlockValidation
-        }
+        // Face-down creatures lose all abilities, so keyword/power block restrictions don't apply
+        if (!isFaceDown) {
+            // Check if the blocker can only block creatures with a specific keyword (e.g., Cloud Pirates)
+            val canOnlyBlockValidation = validateCanOnlyBlockWithKeyword(state, cardComponent, attackerIds, projected)
+            if (canOnlyBlockValidation != null) {
+                return canOnlyBlockValidation
+            }
 
-        // Check if blocker can't block creatures with greater power (e.g., Spitfire Handler)
-        val cantBlockGreaterPowerValidation = validateCantBlockCreaturesWithGreaterPower(
-            state, blockerId, cardComponent, attackerIds, projected
-        )
-        if (cantBlockGreaterPowerValidation != null) {
-            return cantBlockGreaterPowerValidation
+            // Check if blocker can't block creatures with greater power (e.g., Spitfire Handler)
+            val cantBlockGreaterPowerValidation = validateCantBlockCreaturesWithGreaterPower(
+                state, blockerId, cardComponent, attackerIds, projected
+            )
+            if (cantBlockGreaterPowerValidation != null) {
+                return cantBlockGreaterPowerValidation
+            }
         }
 
         // Check evasion abilities of each attacker
@@ -2282,13 +2285,16 @@ class CombatManager(
             return false
         }
 
-        // Check if blocker can only block creatures with a specific keyword (e.g., Cloud Pirates)
-        if (!canBlockDespiteKeywordRestriction(state, blockerId, attackerId, projected)) {
-            return false
+        // Face-down creatures lose all abilities, so keyword/power block restrictions don't apply
+        if (!isFaceDown) {
+            // Check if blocker can only block creatures with a specific keyword (e.g., Cloud Pirates)
+            if (!canBlockDespiteKeywordRestriction(state, blockerId, attackerId, projected)) {
+                return false
+            }
         }
 
         // CantBlockCreaturesWithGreaterPower: Can't block creatures with power > this creature's power
-        if (!canBlockDespiteGreaterPowerRestriction(state, blockerId, attackerId, projected)) {
+        if (!isFaceDown && !canBlockDespiteGreaterPowerRestriction(state, blockerId, attackerId, projected)) {
             return false
         }
 
