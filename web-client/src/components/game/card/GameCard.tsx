@@ -1027,6 +1027,7 @@ export function GameCard({
         alignItems: 'flex-end',
         justifyContent: 'center',
         transition: 'width 0.15s, height 0.15s',
+        pointerEvents: 'none',
       }}>
         {cardElement}
       </div>

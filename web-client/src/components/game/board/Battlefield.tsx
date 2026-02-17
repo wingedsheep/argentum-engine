@@ -95,16 +95,21 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
     // When tapped, cards rotate 90deg so their visual width becomes the height
     const cardVisualWidth = parentTapped ? cardHeight + 8 : responsive.battlefieldCardWidth
 
+    // Tapped: attachments peek horizontally (left offset) to avoid overlap with the rotation gap
+    // Untapped: attachments peek vertically (top offset) from above the parent card
+    const containerWidth = parentTapped ? cardVisualWidth + totalPeek : cardVisualWidth
+    const containerHeight = parentTapped ? cardHeight : cardHeight + totalPeek
+
     return (
       <div
         key={group.cardIds[0]}
         style={{
           position: 'relative',
-          width: cardVisualWidth,
-          height: cardHeight + totalPeek,
+          width: containerWidth,
+          height: containerHeight,
         }}
       >
-        {/* Attachments peek vertically from above the parent */}
+        {/* Attachments peek from the parent card */}
         {attachments.map((attachment, index) => {
           // Attachments controlled by the player are interactive even on the opponent's battlefield
           // (e.g., aura cast on opponent's creature — caster can still activate abilities)
@@ -114,9 +119,10 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
               key={attachment.id}
               style={{
                 position: 'absolute',
-                left: 0,
-                top: index * attachmentPeek,
+                left: parentTapped ? index * attachmentPeek : 0,
+                top: parentTapped ? 0 : index * attachmentPeek,
                 zIndex: index,
+                pointerEvents: 'none',
               }}
             >
               <GameCard
@@ -129,8 +135,14 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
             </div>
           )
         })}
-        {/* Main card at the bottom, on top */}
-        <div style={{ position: 'absolute', left: 0, top: totalPeek, zIndex: attachments.length + 1, pointerEvents: 'none' }}>
+        {/* Main card, on top */}
+        <div style={{
+          position: 'absolute',
+          left: parentTapped ? totalPeek : 0,
+          top: parentTapped ? 0 : totalPeek,
+          zIndex: attachments.length + 1,
+          pointerEvents: 'none',
+        }}>
           <CardStack
             group={group}
             interactive={interactive}
