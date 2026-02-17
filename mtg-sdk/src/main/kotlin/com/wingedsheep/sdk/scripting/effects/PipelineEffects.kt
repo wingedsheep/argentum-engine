@@ -102,15 +102,6 @@ sealed interface SelectionMode {
     }
 
     /**
-     * An opponent chooses N cards.
-     */
-    @SerialName("OpponentChooses")
-    @Serializable
-    data class OpponentChooses(val count: DynamicAmount) : SelectionMode {
-        override val description: String = "an opponent chooses ${count.description}"
-    }
-
-    /**
      * Select all cards (no choice needed).
      */
     @SerialName("SelectAll")
@@ -118,6 +109,17 @@ sealed interface SelectionMode {
     data object All : SelectionMode {
         override val description: String = "all"
     }
+}
+
+/**
+ * Who makes the selection decision.
+ */
+@Serializable
+enum class Chooser {
+    /** The controller of the spell/ability decides */
+    Controller,
+    /** An opponent decides */
+    Opponent
 }
 
 /**
@@ -167,7 +169,8 @@ data class GatherCardsEffect(
  * (or auto-selects) and splits the collection into two named groups.
  *
  * @property from Name of the collection to select from
- * @property selection How cards are selected
+ * @property selection How many cards are selected (exactly N, up to N, all)
+ * @property chooser Who makes the selection (controller or opponent)
  * @property filter Optional filter for which cards can be selected
  * @property storeSelected Name to store the selected cards under
  * @property storeRemainder Name to store the non-selected cards under (null = discard remainder info)
@@ -177,11 +180,13 @@ data class GatherCardsEffect(
 data class SelectFromCollectionEffect(
     val from: String,
     val selection: SelectionMode,
+    val chooser: Chooser = Chooser.Controller,
     val filter: GameObjectFilter = GameObjectFilter.Any,
     val storeSelected: String,
     val storeRemainder: String? = null
 ) : Effect {
     override val description: String = buildString {
+        if (chooser == Chooser.Opponent) append("An opponent ")
         append(selection.description.replaceFirstChar { it.uppercase() })
         append(" from the $from cards")
     }

@@ -98,30 +98,6 @@ data class ChooseCreatureTypeReturnFromGraveyardEffect(
 }
 
 /**
- * Reveal the top N cards of your library. An opponent chooses a card matching the filter
- * from among them. Put that card onto the battlefield and the rest into your graveyard.
- *
- * Used for Animal Magnetism: "Reveal the top five cards of your library. An opponent
- * chooses a creature card from among them. Put that card onto the battlefield and
- * the rest into your graveyard."
- *
- * @property count Number of cards to reveal
- * @property filter Filter for cards the opponent can choose (e.g., Creature)
- */
-@SerialName("RevealAndOpponentChooses")
-@Serializable
-data class RevealAndOpponentChoosesEffect(
-    val count: Int,
-    val filter: GameObjectFilter
-) : Effect {
-    override val description: String = buildString {
-        append("Reveal the top $count cards of your library. ")
-        append("An opponent chooses a ${filter.description} card from among them. ")
-        append("Put that card onto the battlefield and the rest into your graveyard")
-    }
-}
-
-/**
  * Put a creature card from your hand onto the battlefield.
  * Used for effects like Kinscaer Sentry.
  */

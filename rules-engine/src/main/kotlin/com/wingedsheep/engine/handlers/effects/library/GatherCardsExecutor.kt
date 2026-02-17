@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.library
 
+import com.wingedsheep.engine.core.CardsRevealedEvent
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
@@ -9,6 +10,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.CardSource
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -69,9 +71,30 @@ class GatherCardsExecutor : EffectExecutor<GatherCardsEffect> {
             return ExecutionResult.success(state)
         }
 
-        // TODO: If effect.revealed, emit CardsRevealedEvent
+        val events = if (effect.revealed) {
+            val cardNames = cards.map { cardId ->
+                state.getEntity(cardId)?.get<CardComponent>()?.name ?: "Unknown"
+            }
+            val imageUris = cards.map { cardId ->
+                state.getEntity(cardId)?.get<CardComponent>()?.imageUri
+            }
+            val sourceName = context.sourceId?.let { sourceId ->
+                state.getEntity(sourceId)?.get<CardComponent>()?.name
+            }
+            listOf(
+                CardsRevealedEvent(
+                    revealingPlayerId = context.controllerId,
+                    cardIds = cards,
+                    cardNames = cardNames,
+                    imageUris = imageUris,
+                    source = sourceName
+                )
+            )
+        } else {
+            emptyList()
+        }
 
-        return ExecutionResult.success(state).copy(
+        return ExecutionResult.success(state, events).copy(
             updatedCollections = mapOf(effect.storeAs to cards)
         )
     }

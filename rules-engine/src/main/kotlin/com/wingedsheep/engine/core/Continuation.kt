@@ -477,31 +477,6 @@ data class SelectFromCollectionContinuation(
 
 
 /**
- * Resume after an opponent chooses a card from revealed top cards.
- *
- * Used for effects like Animal Magnetism: "Reveal the top five cards of your library.
- * An opponent chooses a creature card from among them. Put that card onto the battlefield
- * and the rest into your graveyard."
- *
- * @property controllerId The player who cast the spell (owns the library and battlefield)
- * @property opponentId The opponent making the choice
- * @property sourceId The spell/ability that caused this effect
- * @property sourceName Name of the source for event messages
- * @property allCards All the revealed cards
- * @property creatureCards The subset of cards matching the filter (valid choices)
- */
-@Serializable
-data class RevealAndOpponentChoosesContinuation(
-    override val decisionId: String,
-    val controllerId: EntityId,
-    val opponentId: EntityId,
-    val sourceId: EntityId?,
-    val sourceName: String?,
-    val allCards: List<EntityId>,
-    val creatureCards: List<EntityId>
-) : ContinuationFrame
-
-/**
  * Resume after player chooses a creature type for graveyard retrieval.
  *
  * Used for Aphetto Dredging: "Return up to three target creature cards of the creature type

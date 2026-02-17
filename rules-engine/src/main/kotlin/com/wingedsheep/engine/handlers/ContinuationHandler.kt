@@ -179,8 +179,6 @@ class ContinuationHandler(
             is EachPlayerMayRevealCreaturesContinuation -> multiPlayerResumer.resumeEachPlayerMayRevealCreatures(stateAfterPop, continuation, response, cfm)
             is EachPlayerSearchesLibraryContinuation -> multiPlayerResumer.resumeEachPlayerSearchesLibrary(stateAfterPop, continuation, response, cfm)
 
-            is RevealAndOpponentChoosesContinuation -> multiPlayerResumer.resumeRevealAndOpponentChooses(stateAfterPop, continuation, response, cfm)
-
             // Modal and clone
             is ModalContinuation -> modalAndCloneResumer.resumeModal(stateAfterPop, continuation, response, cfm)
             is ModalTargetContinuation -> modalAndCloneResumer.resumeModalTarget(stateAfterPop, continuation, response, cfm)

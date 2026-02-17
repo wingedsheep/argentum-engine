@@ -468,4 +468,50 @@ object EffectPatterns {
         effect = MoveToZoneEffect(exileTarget, Zone.EXILE),
         storeAs = EffectVariable.EntityRef(variableName)
     )
+
+    /**
+     * Reveal the top N cards of your library. An opponent chooses a card matching
+     * the filter from among them. Put that card onto the battlefield and the rest
+     * into your graveyard.
+     *
+     * Creates a Gather (revealed) → Select (OpponentChooses with filter) → Move pipeline.
+     *
+     * Example: Animal Magnetism — "Reveal the top five cards of your library.
+     * An opponent chooses a creature card from among them. Put that card onto
+     * the battlefield and the rest into your graveyard."
+     * ```kotlin
+     * EffectPatterns.revealAndOpponentChooses(count = 5, filter = GameObjectFilter.Creature)
+     * ```
+     *
+     * @param count How many cards to reveal from the top of the library
+     * @param filter Which cards the opponent can choose from (e.g., Creature)
+     */
+    fun revealAndOpponentChooses(
+        count: Int,
+        filter: GameObjectFilter
+    ): CompositeEffect = CompositeEffect(
+        listOf(
+            GatherCardsEffect(
+                source = CardSource.TopOfLibrary(DynamicAmount.Fixed(count)),
+                storeAs = "revealed",
+                revealed = true
+            ),
+            SelectFromCollectionEffect(
+                from = "revealed",
+                selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
+                chooser = Chooser.Opponent,
+                filter = filter,
+                storeSelected = "chosen",
+                storeRemainder = "rest"
+            ),
+            MoveCollectionEffect(
+                from = "chosen",
+                destination = CardDestination.ToZone(Zone.BATTLEFIELD)
+            ),
+            MoveCollectionEffect(
+                from = "rest",
+                destination = CardDestination.ToZone(Zone.GRAVEYARD)
+            )
+        )
+    )
 }

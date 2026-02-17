@@ -3,10 +3,14 @@ package com.wingedsheep.engine.handlers.effects.library
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.Chooser
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.SelectionMode
 import java.util.UUID
@@ -28,6 +32,7 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
     override val effectType: KClass<SelectFromCollectionEffect> = SelectFromCollectionEffect::class
 
     private val amountEvaluator = DynamicAmountEvaluator()
+    private val predicateEvaluator = PredicateEvaluator()
 
     override fun execute(
         state: GameState,
@@ -48,44 +53,75 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
             return ExecutionResult.success(state).copy(updatedCollections = collections)
         }
 
+        // Apply filter to narrow selectable cards (e.g., "creature card" for Animal Magnetism)
+        val eligibleCards = if (effect.filter != GameObjectFilter.Any) {
+            val predicateContext = PredicateContext.fromEffectContext(context)
+            cards.filter { cardId ->
+                predicateEvaluator.matches(state, cardId, effect.filter, predicateContext)
+            }
+        } else {
+            cards
+        }
+
+        // Resolve who makes the decision
+        val decidingPlayerId = when (effect.chooser) {
+            Chooser.Controller -> null // null = default to controller in createDecision
+            Chooser.Opponent -> context.opponentId
+                ?: return ExecutionResult.error(state, "No opponent for Opponent chooser")
+        }
+
         return when (val selection = effect.selection) {
             is SelectionMode.All -> {
-                // Auto-select all, no decision needed
-                val collections = mutableMapOf(effect.storeSelected to cards)
+                // Auto-select all eligible, no decision needed
+                val collections = mutableMapOf(effect.storeSelected to eligibleCards)
                 if (remainderName != null) {
-                    collections[remainderName] = emptyList()
+                    collections[remainderName] = cards.filter { it !in eligibleCards }
                 }
                 ExecutionResult.success(state).copy(updatedCollections = collections)
             }
 
             is SelectionMode.ChooseExactly -> {
                 val count = amountEvaluator.evaluate(state, selection.count, context)
-                if (count >= cards.size) {
-                    // Must select all — no choice needed
-                    val collections = mutableMapOf(effect.storeSelected to cards)
+                if (eligibleCards.isEmpty() || count == 0) {
+                    // No eligible cards or zero requested — auto-select nothing
+                    val collections = mutableMapOf(effect.storeSelected to emptyList<EntityId>())
                     if (remainderName != null) {
-                        collections[remainderName] = emptyList()
+                        collections[remainderName] = cards
+                    }
+                    return ExecutionResult.success(state).copy(updatedCollections = collections)
+                }
+                if (count >= eligibleCards.size) {
+                    // Must select all eligible — no choice needed
+                    val collections = mutableMapOf(effect.storeSelected to eligibleCards)
+                    if (remainderName != null) {
+                        collections[remainderName] = cards.filter { it !in eligibleCards }
                     }
                     ExecutionResult.success(state).copy(updatedCollections = collections)
                 } else {
-                    createDecision(state, context, effect, cards, minOf(count, cards.size), minOf(count, cards.size))
+                    createDecision(state, context, effect, eligibleCards, minOf(count, eligibleCards.size), minOf(count, eligibleCards.size), decidingPlayerId, allCards = cards)
                 }
             }
 
             is SelectionMode.ChooseUpTo -> {
                 val count = amountEvaluator.evaluate(state, selection.count, context)
-                createDecision(state, context, effect, cards, 0, minOf(count, cards.size))
-            }
-
-            is SelectionMode.OpponentChooses -> {
-                val count = amountEvaluator.evaluate(state, selection.count, context)
-                val opponentId = context.opponentId
-                    ?: return ExecutionResult.error(state, "No opponent for OpponentChooses selection mode")
-                createDecision(state, context, effect, cards, minOf(count, cards.size), minOf(count, cards.size), opponentId)
+                if (eligibleCards.isEmpty()) {
+                    val collections = mutableMapOf(effect.storeSelected to emptyList<EntityId>())
+                    if (remainderName != null) {
+                        collections[remainderName] = cards
+                    }
+                    return ExecutionResult.success(state).copy(updatedCollections = collections)
+                }
+                createDecision(state, context, effect, eligibleCards, 0, minOf(count, eligibleCards.size), decidingPlayerId, allCards = cards)
             }
         }
     }
 
+    /**
+     * @param cards The cards presented as selectable options in the decision
+     * @param allCards The full collection for remainder computation (defaults to [cards]).
+     *   When a filter narrows the selectable options, allCards should contain all cards
+     *   so that non-eligible cards are included in the remainder.
+     */
     private fun createDecision(
         state: GameState,
         context: EffectContext,
@@ -93,7 +129,8 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
         cards: List<EntityId>,
         minSelections: Int,
         maxSelections: Int,
-        decidingPlayerId: EntityId? = null
+        decidingPlayerId: EntityId? = null,
+        allCards: List<EntityId> = cards
     ): ExecutionResult {
         val playerId = decidingPlayerId ?: context.controllerId
         val decisionId = UUID.randomUUID().toString()
@@ -140,7 +177,7 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
             playerId = playerId,
             sourceId = context.sourceId,
             sourceName = sourceName,
-            allCards = cards,
+            allCards = allCards,
             storeSelected = effect.storeSelected,
             storeRemainder = effect.storeRemainder,
             storedCollections = context.storedCollections

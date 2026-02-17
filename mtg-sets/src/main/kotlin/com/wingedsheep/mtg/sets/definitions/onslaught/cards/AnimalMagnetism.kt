@@ -1,9 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
+import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.RevealAndOpponentChoosesEffect
 
 /**
  * Animal Magnetism
@@ -18,7 +18,7 @@ val AnimalMagnetism = card("Animal Magnetism") {
     oracleText = "Reveal the top five cards of your library. An opponent chooses a creature card from among them. Put that card onto the battlefield and the rest into your graveyard."
 
     spell {
-        effect = RevealAndOpponentChoosesEffect(
+        effect = EffectPatterns.revealAndOpponentChooses(
             count = 5,
             filter = GameObjectFilter.Creature
         )
