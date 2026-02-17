@@ -20,6 +20,7 @@ class CompositeExecutors : ExecutorModule {
     private val compositeEffectExecutor by lazy { CompositeEffectExecutor(effectExecutor) }
     private val conditionalEffectExecutor by lazy { ConditionalEffectExecutor(effectExecutor) }
     private val forEachTargetExecutor by lazy { ForEachTargetExecutor(effectExecutor) }
+    private val forEachPlayerExecutor by lazy { ForEachPlayerExecutor(effectExecutor) }
     private val mayEffectExecutor by lazy { MayEffectExecutor(effectExecutor) }
     private val mayPayManaExecutor by lazy { MayPayManaExecutor(effectExecutor) }
     private val modalEffectExecutor by lazy { ModalEffectExecutor(effectExecutor) }
@@ -38,6 +39,7 @@ class CompositeExecutors : ExecutorModule {
         compositeEffectExecutor,
         conditionalEffectExecutor,
         forEachTargetExecutor,
+        forEachPlayerExecutor,
         mayEffectExecutor,
         mayPayManaExecutor,
         modalEffectExecutor,

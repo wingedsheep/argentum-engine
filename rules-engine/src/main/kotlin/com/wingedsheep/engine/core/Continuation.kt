@@ -1868,6 +1868,31 @@ data class ForEachTargetContinuation(
 ) : ContinuationFrame
 
 /**
+ * Continuation for ForEachPlayerEffect.
+ *
+ * When a sub-effect pipeline pauses for a decision during one iteration,
+ * this continuation stores the remaining players so execution continues
+ * with the next player after the current pipeline completes.
+ *
+ * @property remainingPlayers The players still to process
+ * @property effects The sub-effects to execute for each remaining player
+ * @property sourceId The spell that caused this effect
+ * @property controllerId The original controller of the effect
+ * @property opponentId The opponent (if applicable)
+ * @property xValue The X value (if applicable)
+ */
+@Serializable
+data class ForEachPlayerContinuation(
+    override val decisionId: String,
+    val remainingPlayers: List<EntityId>,
+    val effects: List<Effect>,
+    val sourceId: EntityId?,
+    val controllerId: EntityId,
+    val opponentId: EntityId?,
+    val xValue: Int?
+) : ContinuationFrame
+
+/**
  * Continuation for Trade Secrets.
  * "Target opponent draws two cards, then you draw up to four cards.
  * That opponent may repeat this process as many times as they choose."

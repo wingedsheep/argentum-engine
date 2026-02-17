@@ -56,8 +56,13 @@ class DynamicAmountEvaluator(
             }
 
             is DynamicAmount.VariableReference -> {
-                // TODO: Implement variable storage
-                0
+                val name = amount.variableName
+                if (name.endsWith("_count")) {
+                    val collectionName = name.removeSuffix("_count")
+                    context.storedCollections[collectionName]?.size ?: 0
+                } else {
+                    0
+                }
             }
 
             is DynamicAmount.StoredCardManaValue -> {

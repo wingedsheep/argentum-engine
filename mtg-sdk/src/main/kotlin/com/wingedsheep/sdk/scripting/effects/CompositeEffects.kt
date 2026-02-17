@@ -359,6 +359,29 @@ data class ForEachTargetEffect(
 }
 
 /**
+ * Execute a list of sub-effects once for each player matching the player selector.
+ *
+ * For each player, the sub-effects receive a context with `controllerId` set to
+ * that player (so `Player.You` resolves to the current iteration's player),
+ * plus fresh storedCollections. This enables cards like Winds of Change
+ * that repeat a pipeline per player.
+ *
+ * @property players Which players to iterate over (e.g., Player.Each)
+ * @property effects The sub-effects to execute for each player
+ */
+@SerialName("ForEachPlayer")
+@Serializable
+data class ForEachPlayerEffect(
+    val players: Player,
+    val effects: List<Effect>
+) : Effect {
+    override val description: String = buildString {
+        append("For each player, ")
+        append(effects.joinToString(". ") { it.description.replaceFirstChar { c -> c.lowercase() } })
+    }
+}
+
+/**
  * Flip a coin. Execute one effect if you win, another if you lose.
  * "Flip a coin. If you win the flip, [wonEffect]. If you lose the flip, [lostEffect]."
  *

@@ -85,20 +85,6 @@ data class EachOpponentDiscardsEffect(
     }
 }
 
-/**
- * Wheel effect - each affected player shuffles their hand into their library, then draws that many cards.
- * Used for Winds of Change, Wheel of Fortune-style effects.
- */
-@SerialName("Wheel")
-@Serializable
-data class WheelEffect(
-    val target: EffectTarget = EffectTarget.PlayerRef(Player.Each)
-) : Effect {
-    override val description: String = when (target) {
-        EffectTarget.Controller -> "Shuffle your hand into your library, then draw that many cards"
-        else -> "${target.description.replaceFirstChar { it.uppercase() }} shuffles their hand into their library, then draws that many cards"
-    }
-}
 
 /**
  * Each player draws X cards where X is determined by the spell's X value.

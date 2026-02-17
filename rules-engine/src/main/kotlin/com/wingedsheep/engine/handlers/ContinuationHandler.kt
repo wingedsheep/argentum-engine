@@ -171,6 +171,9 @@ class ContinuationHandler(
             is ForEachTargetContinuation -> {
                 ExecutionResult.error(state, "ForEachTargetContinuation should not be at top of stack during decision resume")
             }
+            is ForEachPlayerContinuation -> {
+                ExecutionResult.error(state, "ForEachPlayerContinuation should not be at top of stack during decision resume")
+            }
             is PutFromHandContinuation -> libraryAndZoneResumer.resumePutFromHand(stateAfterPop, continuation, response, cfm)
             is SelectFromCollectionContinuation -> libraryAndZoneResumer.resumeSelectFromCollection(stateAfterPop, continuation, response, cfm)
 
@@ -432,6 +435,36 @@ class ContinuationHandler(
                 stateAfterPop,
                 nextContinuation.effects,
                 nextContinuation.remainingTargets,
+                outerContext
+            )
+
+            if (result.isPaused) {
+                return ExecutionResult.paused(
+                    result.state,
+                    result.pendingDecision!!,
+                    events + result.events
+                )
+            }
+
+            // Recursively check for more continuations
+            return checkForMoreContinuations(result.state, events.toMutableList().apply { addAll(result.events) })
+        }
+
+        if (nextContinuation is ForEachPlayerContinuation && nextContinuation.remainingPlayers.isNotEmpty()) {
+            val (_, stateAfterPop) = state.popContinuation()
+            val forEachPlayerExecutor = com.wingedsheep.engine.handlers.effects.composite.ForEachPlayerExecutor { s, e, c ->
+                effectExecutorRegistry.execute(s, e, c)
+            }
+            val outerContext = EffectContext(
+                sourceId = nextContinuation.sourceId,
+                controllerId = nextContinuation.controllerId,
+                opponentId = nextContinuation.opponentId,
+                xValue = nextContinuation.xValue
+            )
+            val result = forEachPlayerExecutor.processPlayers(
+                stateAfterPop,
+                nextContinuation.effects,
+                nextContinuation.remainingPlayers,
                 outerContext
             )
 

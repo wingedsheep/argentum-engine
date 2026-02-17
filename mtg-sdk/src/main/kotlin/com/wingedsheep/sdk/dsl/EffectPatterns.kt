@@ -700,6 +700,25 @@ object EffectPatterns {
      * @param count How many cards to reveal from the top of the library
      * @param filter Which cards the opponent can choose from (e.g., Creature)
      */
+    /**
+     * Wheel effect — each affected player shuffles their hand into their library,
+     * then draws that many cards.
+     *
+     * Creates a ForEachPlayer → Gather → Move(Shuffled) → Draw pipeline.
+     *
+     * Used for Winds of Change, Wheel of Fortune-style effects.
+     *
+     * @param players Which players are affected (default: Player.Each)
+     */
+    fun wheelEffect(players: Player = Player.Each): ForEachPlayerEffect = ForEachPlayerEffect(
+        players = players,
+        effects = listOf(
+            GatherCardsEffect(CardSource.FromZone(Zone.HAND, Player.You), storeAs = "wheelHand"),
+            MoveCollectionEffect("wheelHand", CardDestination.ToZone(Zone.LIBRARY, Player.You, ZonePlacement.Shuffled)),
+            DrawCardsEffect(DynamicAmount.VariableReference("wheelHand_count"))
+        )
+    )
+
     fun revealAndOpponentChooses(
         count: Int,
         filter: GameObjectFilter
