@@ -8,6 +8,7 @@ import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComp
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.*
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
+import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.gameserver.dto.ClientStateTransformer
@@ -686,11 +687,28 @@ class DevScenarioController(
                 spellEffect = cardDef.spellEffect
             )
 
-            val container = ComponentContainer.of(
+            var container = ComponentContainer.of(
                 cardComponent,
                 OwnerComponent(ownerId),
                 ControllerComponent(ownerId)
             )
+
+            // Add ProtectionComponent for cards with protection from color/subtype
+            val protectionColors = cardDef.keywordAbilities
+                .filterIsInstance<KeywordAbility.ProtectionFromColor>()
+                .map { it.color }
+                .toSet() +
+                cardDef.keywordAbilities
+                    .filterIsInstance<KeywordAbility.ProtectionFromColors>()
+                    .flatMap { it.colors }
+                    .toSet()
+            val protectionSubtypes = cardDef.keywordAbilities
+                .filterIsInstance<KeywordAbility.ProtectionFromCreatureSubtype>()
+                .map { it.subtype }
+                .toSet()
+            if (protectionColors.isNotEmpty() || protectionSubtypes.isNotEmpty()) {
+                container = container.with(ProtectionComponent(protectionColors, protectionSubtypes))
+            }
 
             state = state.withEntity(cardId, container)
             return cardId

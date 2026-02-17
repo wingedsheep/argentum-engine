@@ -94,7 +94,7 @@ class StateProjector(
         }
 
         // Apply Layer 3 text-changing effects (TextReplacementComponent)
-        // This modifies subtypes before other layers are applied
+        // This modifies subtypes and protection keywords before other layers are applied
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
             val textReplacement = container.get<TextReplacementComponent>() ?: continue
@@ -111,6 +111,19 @@ class StateProjector(
             }.toSet()
             values.types.removeAll(oldSubtypesInTypes)
             values.types.addAll(transformedSubtypes)
+
+            // Also update protection-from-subtype keywords (Rule 702.16 + Layer 3)
+            // e.g., "Protection from Goblins" → "Protection from Elves" when text changes Goblin → Elf
+            val protectionSubtypePrefix = "PROTECTION_FROM_SUBTYPE_"
+            val protectionKeywords = values.keywords.filter { it.startsWith(protectionSubtypePrefix) }
+            for (keyword in protectionKeywords) {
+                val originalSubtype = keyword.removePrefix(protectionSubtypePrefix)
+                val transformed = textReplacement.applyToCreatureType(originalSubtype).uppercase()
+                if (transformed != originalSubtype) {
+                    values.keywords.remove(keyword)
+                    values.keywords.add("$protectionSubtypePrefix$transformed")
+                }
+            }
         }
 
         // Collect all active continuous effects (pass projected values so subtype filters use Layer 3 results)
