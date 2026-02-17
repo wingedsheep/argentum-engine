@@ -9,12 +9,12 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.DrawCardsEffect
-import com.wingedsheep.sdk.scripting.ReplaceNextDrawWithBearTokenEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -34,7 +34,9 @@ class WordsOfWildingTest : FunSpec({
 
         activatedAbility {
             cost = Costs.Mana("{1}")
-            effect = ReplaceNextDrawWithBearTokenEffect
+            effect = Effects.ReplaceNextDraw(
+                Effects.CreateToken(power = 2, toughness = 2, colors = setOf(Color.GREEN), creatureTypes = setOf("Bear"))
+            )
             promptOnDraw = true
         }
     }

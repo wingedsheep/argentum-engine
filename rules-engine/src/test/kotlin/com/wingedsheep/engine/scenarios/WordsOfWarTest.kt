@@ -10,13 +10,13 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.DrawCardsEffect
-import com.wingedsheep.sdk.scripting.ReplaceNextDrawWithBearTokenEffect
-import com.wingedsheep.sdk.scripting.ReplaceNextDrawWithDamageEffect
+import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.targeting.TargetCreatureOrPlayer
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import io.kotest.core.spec.style.FunSpec
@@ -39,7 +39,7 @@ class WordsOfWarTest : FunSpec({
         activatedAbility {
             cost = Costs.Mana("{1}")
             target = TargetCreatureOrPlayer()
-            effect = ReplaceNextDrawWithDamageEffect(damageAmount = 2)
+            effect = Effects.ReplaceNextDraw(Effects.DealDamage(2, EffectTarget.ContextTarget(0)))
             promptOnDraw = true
         }
     }
@@ -522,7 +522,9 @@ class WordsOfWarTest : FunSpec({
 
         activatedAbility {
             cost = Costs.Mana("{1}")
-            effect = ReplaceNextDrawWithBearTokenEffect
+            effect = Effects.ReplaceNextDraw(
+                Effects.CreateToken(power = 2, toughness = 2, colors = setOf(Color.GREEN), creatureTypes = setOf("Bear"))
+            )
             promptOnDraw = true
         }
     }

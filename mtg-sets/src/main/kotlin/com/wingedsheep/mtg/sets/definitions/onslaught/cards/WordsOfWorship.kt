@@ -1,9 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
 import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.ReplaceNextDrawWithLifeGainEffect
 
 /**
  * Words of Worship
@@ -18,7 +18,7 @@ val WordsOfWorship = card("Words of Worship") {
 
     activatedAbility {
         cost = Costs.Mana("{1}")
-        effect = ReplaceNextDrawWithLifeGainEffect(lifeAmount = 5)
+        effect = Effects.ReplaceNextDraw(Effects.GainLife(5))
         promptOnDraw = true
     }
 

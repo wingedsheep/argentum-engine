@@ -188,88 +188,50 @@ data class DiscardAndChainCopyEffect(
 }
 
 /**
- * Replace next draw with life gain effect.
- * "{1}: The next time you would draw a card this turn, you gain X life instead."
- * Used for Words of Worship and similar "Words of" cycle cards.
- *
- * This creates a floating replacement effect shield that intercepts the next card draw
- * for the controller this turn, replacing it with life gain.
- *
- * @property lifeAmount The amount of life gained instead of drawing
+ * Each player returns a permanent they control to its owner's hand.
+ * Used as a replacement effect for Words of Wind:
+ * "each player returns a permanent they control to its owner's hand instead"
  */
-@SerialName("ReplaceNextDrawWithLifeGain")
+@SerialName("EachPlayerReturnsPermanentToHand")
 @Serializable
-data class ReplaceNextDrawWithLifeGainEffect(
-    val lifeAmount: Int
+data object EachPlayerReturnsPermanentToHandEffect : Effect {
+    override val description: String =
+        "each player returns a permanent they control to its owner's hand"
+}
+
+/**
+ * Generic draw-replacement effect for the "Words of" cycle.
+ *
+ * Wraps any atomic effect as a draw replacement shield:
+ * "The next time you would draw a card this turn, [replacementEffect] instead."
+ *
+ * Examples:
+ * ```kotlin
+ * // Words of Worship: gain 5 life
+ * ReplaceNextDrawWithEffect(replacementEffect = Effects.GainLife(5))
+ *
+ * // Words of Wind: each player returns a permanent to hand
+ * ReplaceNextDrawWithEffect(replacementEffect = Effects.EachPlayerReturnPermanentToHand())
+ *
+ * // Words of Waste: each opponent discards a card
+ * ReplaceNextDrawWithEffect(replacementEffect = Effects.EachOpponentDiscards(1))
+ *
+ * // Words of War: deal 2 damage to any target
+ * ReplaceNextDrawWithEffect(replacementEffect = Effects.DealDamage(2, EffectTarget.ContextTarget(0)))
+ *
+ * // Words of Wilding: create a 2/2 green Bear token
+ * ReplaceNextDrawWithEffect(replacementEffect = Effects.CreateToken(2, 2, setOf(Color.GREEN), setOf("Bear")))
+ * ```
+ *
+ * @property replacementEffect The effect executed instead of the draw
+ */
+@SerialName("ReplaceNextDrawWith")
+@Serializable
+data class ReplaceNextDrawWithEffect(
+    val replacementEffect: Effect
 ) : Effect {
     override val description: String =
-        "The next time you would draw a card this turn, you gain $lifeAmount life instead"
-}
-
-/**
- * Replace next draw with each-player-bounces effect.
- * "{1}: The next time you would draw a card this turn, each player returns a
- * permanent they control to its owner's hand instead."
- * Used for Words of Wind and similar "Words of" cycle cards.
- *
- * This creates a floating replacement effect shield that intercepts the next card draw
- * for the controller this turn, replacing it with each player bouncing a permanent.
- */
-@SerialName("ReplaceNextDrawWithBounce")
-@Serializable
-data object ReplaceNextDrawWithBounceEffect : Effect {
-    override val description: String =
-        "The next time you would draw a card this turn, each player returns a permanent they control to its owner's hand instead"
-}
-
-/**
- * Replace next draw with each-opponent-discards effect.
- * "{1}: The next time you would draw a card this turn, each opponent discards a card instead."
- * Used for Words of Waste and similar "Words of" cycle cards.
- *
- * This creates a floating replacement effect shield that intercepts the next card draw
- * for the controller this turn, replacing it with each opponent discarding a card.
- */
-@SerialName("ReplaceNextDrawWithDiscard")
-@Serializable
-data object ReplaceNextDrawWithDiscardEffect : Effect {
-    override val description: String =
-        "The next time you would draw a card this turn, each opponent discards a card instead"
-}
-
-/**
- * Replace next draw with damage effect.
- * "{1}: The next time you would draw a card this turn, this enchantment deals 2 damage to any target instead."
- * Used for Words of War and similar "Words of" cycle cards.
- *
- * This creates a floating replacement effect shield that intercepts the next card draw
- * for the controller this turn, replacing it with dealing damage to the chosen target.
- * The target is selected at activation time and stored in the shield.
- *
- * @property damageAmount The amount of damage dealt instead of drawing
- */
-@SerialName("ReplaceNextDrawWithDamage")
-@Serializable
-data class ReplaceNextDrawWithDamageEffect(
-    val damageAmount: Int
-) : Effect {
-    override val description: String =
-        "The next time you would draw a card this turn, deal $damageAmount damage to any target instead"
-}
-
-/**
- * Replace next draw with token creation effect.
- * "{1}: The next time you would draw a card this turn, create a 2/2 green Bear creature token instead."
- * Used for Words of Wilding and similar "Words of" cycle cards.
- *
- * This creates a floating replacement effect shield that intercepts the next card draw
- * for the controller this turn, replacing it with token creation.
- */
-@SerialName("ReplaceNextDrawWithBearToken")
-@Serializable
-data object ReplaceNextDrawWithBearTokenEffect : Effect {
-    override val description: String =
-        "The next time you would draw a card this turn, create a 2/2 green Bear creature token instead"
+        "The next time you would draw a card this turn, ${replacementEffect.description} instead"
 }
 
 /**

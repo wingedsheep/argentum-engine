@@ -12,8 +12,8 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.scripting.DrawCardsEffect
-import com.wingedsheep.sdk.scripting.ReplaceNextDrawWithLifeGainEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -33,7 +33,7 @@ class WordsOfWorshipTest : FunSpec({
 
         activatedAbility {
             cost = Costs.Mana("{1}")
-            effect = ReplaceNextDrawWithLifeGainEffect(lifeAmount = 5)
+            effect = Effects.ReplaceNextDraw(Effects.GainLife(5))
             promptOnDraw = true
         }
     }

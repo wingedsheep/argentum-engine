@@ -1,9 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
 import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.ReplaceNextDrawWithDamageEffect
+import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.targeting.TargetCreatureOrPlayer
 
 /**
@@ -20,7 +21,7 @@ val WordsOfWar = card("Words of War") {
     activatedAbility {
         cost = Costs.Mana("{1}")
         target = TargetCreatureOrPlayer()
-        effect = ReplaceNextDrawWithDamageEffect(damageAmount = 2)
+        effect = Effects.ReplaceNextDraw(Effects.DealDamage(2, EffectTarget.ContextTarget(0)))
         promptOnDraw = true
     }
 

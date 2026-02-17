@@ -458,16 +458,18 @@ class TurnManager(
                 )
             }
 
-            // Check for bear token replacement shields (Words of Wilding)
-            val bearTokenShieldIndex = newState.floatingEffects.indexOfFirst { effect ->
-                effect.effect.modification is SerializableModification.ReplaceDrawWithBearToken &&
+            // Check for token replacement shields (Words of Wilding)
+            val tokenShieldIndex = newState.floatingEffects.indexOfFirst { effect ->
+                effect.effect.modification is SerializableModification.ReplaceDrawWithToken &&
                     playerId in effect.effect.affectedEntities
             }
-            if (bearTokenShieldIndex != -1) {
-                val bearTokenUpdatedEffects = newState.floatingEffects.toMutableList()
-                bearTokenUpdatedEffects.removeAt(bearTokenShieldIndex)
-                newState = newState.copy(floatingEffects = bearTokenUpdatedEffects)
-                newState = DrawCardsExecutor.createBearToken(newState, playerId)
+            if (tokenShieldIndex != -1) {
+                val tokenMod = newState.floatingEffects[tokenShieldIndex].effect.modification
+                    as SerializableModification.ReplaceDrawWithToken
+                val tokenUpdatedEffects = newState.floatingEffects.toMutableList()
+                tokenUpdatedEffects.removeAt(tokenShieldIndex)
+                newState = newState.copy(floatingEffects = tokenUpdatedEffects)
+                newState = DrawCardsExecutor.createToken(newState, playerId, tokenMod)
                 return@repeat
             }
 

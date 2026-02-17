@@ -14,8 +14,8 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.AbilityCost
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.scripting.DrawCardsEffect
-import com.wingedsheep.sdk.scripting.ReplaceNextDrawWithBounceEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -36,7 +36,7 @@ class WordsOfWindTest : FunSpec({
 
         activatedAbility {
             cost = Costs.Mana("{1}")
-            effect = ReplaceNextDrawWithBounceEffect
+            effect = Effects.ReplaceNextDraw(Effects.EachPlayerReturnPermanentToHand())
             promptOnDraw = true
         }
     }

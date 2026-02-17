@@ -109,6 +109,33 @@ object Effects {
      */
     fun ReadTheRunes(): Effect = ReadTheRunesEffect
 
+    /**
+     * Each opponent discards N cards.
+     */
+    fun EachOpponentDiscards(count: Int = 1): Effect = EachOpponentDiscardsEffect(count)
+
+    /**
+     * Each player returns a permanent they control to its owner's hand.
+     * Used as a replacement in Words of Wind:
+     * ReplaceNextDraw(Effects.EachPlayerReturnPermanentToHand())
+     */
+    fun EachPlayerReturnPermanentToHand(): Effect = EachPlayerReturnsPermanentToHandEffect
+
+    /**
+     * Replace the next draw this turn with the given effect instead.
+     * Used by the "Words of" enchantment cycle.
+     *
+     * Examples:
+     * ```kotlin
+     * ReplaceNextDraw(Effects.GainLife(5))                                   // Words of Worship
+     * ReplaceNextDraw(Effects.EachPlayerReturnPermanentToHand())             // Words of Wind
+     * ReplaceNextDraw(Effects.EachOpponentDiscards(1))                       // Words of Waste
+     * ReplaceNextDraw(Effects.DealDamage(2, EffectTarget.ContextTarget(0)))  // Words of War
+     * ReplaceNextDraw(Effects.CreateToken(2, 2, setOf(Color.GREEN), setOf("Bear")))  // Words of Wilding
+     * ```
+     */
+    fun ReplaceNextDraw(effect: Effect): Effect = ReplaceNextDrawWithEffect(effect)
+
     // =========================================================================
     // Destruction Effects
     // =========================================================================

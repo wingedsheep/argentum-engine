@@ -1,9 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
 import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.ReplaceNextDrawWithDiscardEffect
 
 /**
  * Words of Waste
@@ -18,7 +18,7 @@ val WordsOfWaste = card("Words of Waste") {
 
     activatedAbility {
         cost = Costs.Mana("{1}")
-        effect = ReplaceNextDrawWithDiscardEffect
+        effect = Effects.ReplaceNextDraw(Effects.EachOpponentDiscards(1))
         promptOnDraw = true
     }
 

@@ -251,11 +251,16 @@ sealed interface SerializableModification {
 
     /**
      * Draw replacement shield: the next time the affected player would draw a card this turn,
-     * they create a 2/2 green Bear creature token instead. Used by Words of Wilding and similar effects.
+     * they create a creature token instead. Used by Words of Wilding and similar effects.
      * The shield is consumed after the first draw replacement and removed.
      */
     @Serializable
-    data object ReplaceDrawWithBearToken : SerializableModification
+    data class ReplaceDrawWithToken(
+        val power: Int,
+        val toughness: Int,
+        val colors: Set<com.wingedsheep.sdk.core.Color>,
+        val creatureTypes: Set<String>
+    ) : SerializableModification
 
     /**
      * Damage prevention shield: the next time a creature of the specified type would deal
@@ -315,8 +320,8 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.ReplaceDrawWithDiscard -> Modification.NoOp
     // ReplaceDrawWithDamage doesn't map to a layer modification - it's checked during draw execution directly
     is SerializableModification.ReplaceDrawWithDamage -> Modification.NoOp
-    // ReplaceDrawWithBearToken doesn't map to a layer modification - it's checked during draw execution directly
-    is SerializableModification.ReplaceDrawWithBearToken -> Modification.NoOp
+    // ReplaceDrawWithToken doesn't map to a layer modification - it's checked during draw execution directly
+    is SerializableModification.ReplaceDrawWithToken -> Modification.NoOp
     // PreventNextDamageFromCreatureType doesn't map to a layer modification - it's checked during damage resolution directly
     is SerializableModification.PreventNextDamageFromCreatureType -> Modification.NoOp
 }

@@ -119,11 +119,11 @@ class DrawCardsExecutor(
                 return discardResult
             }
 
-            // Check for bear token replacement shields (Words of Wilding)
-            val bearTokenResult = consumeBearTokenReplacementShield(newState, playerId)
-            if (bearTokenResult != null) {
-                newState = bearTokenResult.first
-                events.addAll(bearTokenResult.second)
+            // Check for token replacement shields (Words of Wilding)
+            val tokenResult = consumeTokenReplacementShield(newState, playerId)
+            if (tokenResult != null) {
+                newState = tokenResult.first
+                events.addAll(tokenResult.second)
                 continue
             }
 
@@ -241,26 +241,28 @@ class DrawCardsExecutor(
     }
 
     /**
-     * Checks for and consumes a bear token draw replacement shield (Words of Wilding).
+     * Checks for and consumes a token draw replacement shield (Words of Wilding).
      * Returns the updated state and events if a shield was consumed, or null if no shield exists.
      */
-    private fun consumeBearTokenReplacementShield(
+    private fun consumeTokenReplacementShield(
         state: GameState,
         playerId: EntityId
     ): Pair<GameState, List<GameEvent>>? {
         val shieldIndex = state.floatingEffects.indexOfFirst { effect ->
-            effect.effect.modification is SerializableModification.ReplaceDrawWithBearToken &&
+            effect.effect.modification is SerializableModification.ReplaceDrawWithToken &&
                 playerId in effect.effect.affectedEntities
         }
         if (shieldIndex == -1) return null
+
+        val mod = state.floatingEffects[shieldIndex].effect.modification as SerializableModification.ReplaceDrawWithToken
 
         // Remove the consumed shield
         val updatedEffects = state.floatingEffects.toMutableList()
         updatedEffects.removeAt(shieldIndex)
         var newState = state.copy(floatingEffects = updatedEffects)
 
-        // Create a 2/2 green Bear creature token instead of drawing
-        newState = createBearToken(newState, playerId)
+        // Create the token instead of drawing
+        newState = createToken(newState, playerId, mod)
 
         return newState to emptyList()
     }
@@ -669,19 +671,24 @@ class DrawCardsExecutor(
 
     companion object {
         /**
-         * Create a 2/2 green Bear creature token for the given player.
+         * Create a creature token for the given player using a [SerializableModification.ReplaceDrawWithToken] spec.
          * Used by Words of Wilding draw replacement.
          */
-        fun createBearToken(state: GameState, playerId: EntityId): GameState {
+        fun createToken(
+            state: GameState,
+            playerId: EntityId,
+            spec: SerializableModification.ReplaceDrawWithToken
+        ): GameState {
             val tokenId = EntityId.generate()
+            val creatureTypesStr = spec.creatureTypes.joinToString(" ")
             val tokenComponent = CardComponent(
-                cardDefinitionId = "token:Bear",
-                name = "Bear",
+                cardDefinitionId = "token:${spec.creatureTypes.joinToString("-")}",
+                name = creatureTypesStr,
                 manaCost = ManaCost.ZERO,
-                typeLine = TypeLine.parse("Creature - Bear"),
-                baseStats = CreatureStats(2, 2),
+                typeLine = TypeLine.parse("Creature - $creatureTypesStr"),
+                baseStats = CreatureStats(spec.power, spec.toughness),
                 baseKeywords = emptySet(),
-                colors = setOf(Color.GREEN),
+                colors = spec.colors,
                 ownerId = playerId
             )
 

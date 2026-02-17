@@ -1,9 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
 import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.ReplaceNextDrawWithBounceEffect
 
 /**
  * Words of Wind
@@ -19,7 +19,7 @@ val WordsOfWind = card("Words of Wind") {
 
     activatedAbility {
         cost = Costs.Mana("{1}")
-        effect = ReplaceNextDrawWithBounceEffect
+        effect = Effects.ReplaceNextDraw(Effects.EachPlayerReturnPermanentToHand())
         promptOnDraw = true
     }
 

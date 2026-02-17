@@ -24,11 +24,7 @@ class DrawingExecutors(
         EachPlayerDiscardsOrLoseLifeExecutor(decisionHandler),
         EachPlayerMayDrawExecutor(decisionHandler),
         HeadGamesExecutor(),
-        ReplaceNextDrawWithLifeGainExecutor(),
-        ReplaceNextDrawWithBounceExecutor(),
-        ReplaceNextDrawWithDiscardExecutor(),
-        ReplaceNextDrawWithDamageExecutor(),
-        ReplaceNextDrawWithBearTokenExecutor(),
+        ReplaceNextDrawWithExecutor(),
         ReadTheRunesExecutor(amountEvaluator, decisionHandler),
         TradeSecretsExecutor(decisionHandler)
     )
