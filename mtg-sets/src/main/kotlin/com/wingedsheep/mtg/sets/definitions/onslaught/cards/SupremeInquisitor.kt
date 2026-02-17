@@ -1,11 +1,11 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
 import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.SearchTargetLibraryExileEffect
 
 /**
  * Supreme Inquisitor
@@ -25,7 +25,7 @@ val SupremeInquisitor = card("Supreme Inquisitor") {
     activatedAbility {
         cost = Costs.TapPermanents(5, GameObjectFilter.Creature.withSubtype("Wizard"))
         target = Targets.Player
-        effect = SearchTargetLibraryExileEffect(5)
+        effect = EffectPatterns.searchTargetLibraryExile(5)
     }
 
     metadata {

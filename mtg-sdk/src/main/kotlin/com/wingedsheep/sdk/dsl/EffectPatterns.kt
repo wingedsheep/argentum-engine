@@ -619,6 +619,46 @@ object EffectPatterns {
     )
 
     /**
+     * Search target player's library for up to [count] cards matching [filter] and exile them.
+     * Then that player shuffles.
+     *
+     * The controller of the ability chooses which cards to exile (Chooser.Controller).
+     * Target player is resolved from the spell/ability's first target (ContextPlayer(0)).
+     *
+     * Example:
+     * ```kotlin
+     * activatedAbility {
+     *     target = Targets.Player
+     *     effect = EffectPatterns.searchTargetLibraryExile(5)
+     * }
+     * // -> "Search target player's library for up to five cards and exile them.
+     * //     Then that player shuffles."
+     * ```
+     */
+    fun searchTargetLibraryExile(
+        count: Int = 1,
+        filter: GameObjectFilter = GameObjectFilter.Any
+    ): CompositeEffect = CompositeEffect(
+        listOf(
+            GatherCardsEffect(
+                source = CardSource.FromZone(Zone.LIBRARY, Player.ContextPlayer(0), filter),
+                storeAs = "searchable"
+            ),
+            SelectFromCollectionEffect(
+                from = "searchable",
+                selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(count)),
+                storeSelected = "exiled",
+                chooser = Chooser.Controller
+            ),
+            MoveCollectionEffect(
+                from = "exiled",
+                destination = CardDestination.ToZone(Zone.EXILE, Player.ContextPlayer(0))
+            ),
+            ShuffleLibraryEffect(EffectTarget.ContextTarget(0))
+        )
+    )
+
+    /**
      * Create an exile-and-return pattern used by O-Ring style cards.
      *
      * This creates the appropriate variable binding so the second trigger
