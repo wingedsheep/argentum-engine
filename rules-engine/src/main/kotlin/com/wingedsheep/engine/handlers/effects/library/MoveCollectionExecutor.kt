@@ -16,6 +16,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CardDestination
 import com.wingedsheep.sdk.scripting.CardOrder
 import com.wingedsheep.sdk.scripting.MoveCollectionEffect
+import com.wingedsheep.sdk.scripting.MoveType
 import com.wingedsheep.sdk.scripting.Player
 import com.wingedsheep.sdk.scripting.ZonePlacement
 import java.util.UUID
@@ -48,7 +49,7 @@ class MoveCollectionExecutor : EffectExecutor<MoveCollectionEffect> {
 
         val destination = effect.destination
         return when (destination) {
-            is CardDestination.ToZone -> moveToZone(state, context, cards, destination, effect.order, effect.revealed)
+            is CardDestination.ToZone -> moveToZone(state, context, cards, destination, effect.order, effect.revealed, effect.moveType)
         }
     }
 
@@ -58,7 +59,8 @@ class MoveCollectionExecutor : EffectExecutor<MoveCollectionEffect> {
         cards: List<EntityId>,
         destination: CardDestination.ToZone,
         order: CardOrder,
-        revealed: Boolean = false
+        revealed: Boolean = false,
+        moveType: MoveType = MoveType.Default
     ): ExecutionResult {
         val destPlayerId = resolvePlayer(destination.player, context, state)
             ?: return ExecutionResult.error(state, "Could not resolve destination player for MoveCollection")
@@ -75,7 +77,7 @@ class MoveCollectionExecutor : EffectExecutor<MoveCollectionEffect> {
             }
         }
 
-        return moveCardsToZone(state, context, cards, destination, destPlayerId, revealed)
+        return moveCardsToZone(state, context, cards, destination, destPlayerId, revealed, moveType)
     }
 
     /**
@@ -166,7 +168,8 @@ class MoveCollectionExecutor : EffectExecutor<MoveCollectionEffect> {
         cards: List<EntityId>,
         destination: CardDestination.ToZone,
         destPlayerId: EntityId,
-        revealed: Boolean = false
+        revealed: Boolean = false,
+        moveType: MoveType = MoveType.Default
     ): ExecutionResult {
         val destZone = destination.zone
         val events = mutableListOf<GameEvent>()
@@ -253,6 +256,11 @@ class MoveCollectionExecutor : EffectExecutor<MoveCollectionEffect> {
             val library = newState.getZone(destZoneKey)
             newState = newState.copy(zones = newState.zones + (destZoneKey to library.shuffled()))
             events.add(LibraryShuffledEvent(destPlayerId))
+        }
+
+        // Emit discard event if configured
+        if (moveType == MoveType.Discard && cards.isNotEmpty()) {
+            events.add(CardsDiscardedEvent(destPlayerId, cards))
         }
 
         // Emit reveal event if configured

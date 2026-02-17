@@ -138,8 +138,6 @@ val engineSerializersModule = SerializersModule {
         subclass(PutFromHandContinuation::class)
         subclass(UntapChoiceContinuation::class)
         subclass(PendingTriggersContinuation::class)
-        subclass(BlackmailRevealContinuation::class)
-        subclass(BlackmailChooseContinuation::class)
         subclass(HeadGamesContinuation::class)
         subclass(ChooseCreatureTypeRevealTopContinuation::class)
         subclass(RevealUntilCreatureTypeContinuation::class)

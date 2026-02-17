@@ -6,6 +6,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.EntityId
@@ -68,6 +69,9 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
             Chooser.Controller -> null // null = default to controller in createDecision
             Chooser.Opponent -> context.opponentId
                 ?: return ExecutionResult.error(state, "No opponent for Opponent chooser")
+            Chooser.TargetPlayer -> context.targets.firstOrNull()?.let {
+                EffectExecutorUtils.run { it.toEntityId() }
+            } ?: return ExecutionResult.error(state, "No target player for TargetPlayer chooser")
         }
 
         return when (val selection = effect.selection) {

@@ -198,7 +198,6 @@ object CardValidator {
             is TransformAllCreaturesEffect -> effect.target
             is AddMinusCountersEffect -> effect.target
             is LoseAllCreatureTypesEffect -> effect.target
-            is BlackmailEffect -> effect.target
             is ShuffleGraveyardIntoLibraryEffect -> effect.target
             is LookAtFaceDownCreatureEffect -> effect.target
             is TransformEffect -> effect.target
