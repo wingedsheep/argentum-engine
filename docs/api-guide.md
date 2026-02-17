@@ -110,19 +110,42 @@ Run the server. The `SetLoader` will automatically discover and load your new ca
 
 ---
 
-## 2. Adding a New Mechanic (e.g., "Scry")
+## 2. Adding a New Mechanic
 
-Many common mechanics are already implemented as **pipeline patterns** in `EffectPatterns`. Scry and Surveil, for
-example, are composed from atomic Gather → Select → Move effects:
+### Preferred: Compose from Atomic Effects
+
+Most library and zone-manipulation mechanics can be built entirely from existing atomic primitives — no new executor
+code needed. The engine provides composable building blocks that chain into pipelines:
+
+| Primitive | Purpose |
+|-----------|---------|
+| `GatherCardsEffect` | Collect cards into a named collection (no zone change) |
+| `SelectFromCollectionEffect` | Player chooses cards from a collection |
+| `MoveCollectionEffect` | Move a collection to a zone (hand, graveyard, library top/bottom, battlefield) |
+| `RevealUntilEffect` | Reveal from library until a filter matches |
+| `ForEachPlayerEffect` / `ForEachTargetEffect` | Iterate a sub-pipeline per player or target |
+
+Many mechanics are already available as pre-built pipelines via `EffectPatterns` / `Effects`:
 
 ```kotlin
-// Effects.Scry(2) expands to:
-EffectPatterns.scry(2)  // GatherCardsEffect → SelectFromCollectionEffect → MoveCollectionEffect (×2)
+Effects.Scry(2)          // Gather → Select → Move(bottom) → Move(top)
+Effects.Surveil(2)       // Gather → Select → Move(graveyard) → Move(top)
+Effects.Mill(3)          // Gather → Move(graveyard)
+Effects.SearchLibrary(filter = GameObjectFilter.BasicLand)
+
+EffectPatterns.lookAtTopAndKeep(count = 7, keepCount = 2)        // Ancestral Memories
+EffectPatterns.wheelEffect(Player.Each)                           // Winds of Change
+EffectPatterns.revealUntilNonlandDealDamage(target)               // Erratic Explosion
+EffectPatterns.revealUntilCreatureTypeToBattlefield()             // Riptide Shapeshifter
 ```
 
-If your mechanic fits the gather/select/move pattern, add it to `EffectPatterns.kt` and wire it through `Effects.kt`.
+If your mechanic fits the gather/select/move pattern, add a new factory method to `EffectPatterns.kt` and wire it
+through `Effects.kt`. See `card-definition-guide.md` §7 for the full pipeline reference.
 
-For mechanics that need truly new logic, you'll touch all three backend modules:
+### Fallback: New Effect Executor
+
+Only create a new `EffectExecutor` when the mechanic needs truly new logic (e.g., dealing damage, creating tokens,
+countering spells). For these, you'll touch all three backend modules:
 
 ### Step 1: Define the Vocabulary (`mtg-sdk`)
 

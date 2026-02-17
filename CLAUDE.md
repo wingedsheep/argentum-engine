@@ -174,7 +174,51 @@ val GiantGrowth = cardDef("Giant Growth") {
 }
 ```
 
-**Composite Effects** - Use `then` operator for multi-step abilities:
+### Atomic Effects (Preferred for Library/Zone Manipulation)
+
+**Always prefer atomic pipeline effects over monolithic effect executors.** Library manipulation, zone movement, and
+collection-based mechanics should be composed from small, reusable primitives chained into pipelines. This avoids
+one-off executors and makes adding new cards trivial.
+
+The atomic primitives are:
+
+- **Gather** — collect cards into a named collection (no zone change)
+- **Select** — present a choice to split a collection
+- **Move** — physically move a named collection to a zone
+- **RevealUntil** — reveal cards from library until a filter matches
+- **ForEachTarget / ForEachPlayer** — iterate a sub-pipeline per target or player
+
+Use `EffectPatterns` factory methods (exposed via `Effects`) instead of writing custom executors:
+
+```kotlin
+// Scry 2 → Gather(top 2) → Select(up to 2 for bottom) → Move(bottom) → Move(top)
+effect = Effects.Scry(2)
+
+// Surveil 2 → same as scry but selected cards go to graveyard
+effect = Effects.Surveil(2)
+
+// Mill 3 → Gather(top 3) → Move(graveyard)
+effect = Effects.Mill(3)
+
+// Search library → Gather(library, filter) → Select → Move(hand) → Shuffle
+effect = Effects.SearchLibrary(filter = GameObjectFilter.BasicLand)
+
+// Look at top 7, keep 2 → Gather(top 7) → Select(exactly 2) → Move(hand) → Move(rest to graveyard)
+effect = EffectPatterns.lookAtTopAndKeep(count = 7, keepCount = 2)
+
+// Reveal until nonland, deal damage equal to its mana value
+effect = EffectPatterns.revealUntilNonlandDealDamage(EffectTarget.ContextTarget(0))
+
+// Wheel (each player shuffles hand into library, draws that many)
+effect = EffectPatterns.wheelEffect(Player.Each)
+```
+
+See `EffectPatterns.kt` for the full list of pre-built pipelines. If your card's mechanic fits the
+gather/select/move pattern, compose it from these primitives rather than creating a new executor.
+
+### Composite Effects
+
+Use `then` operator for multi-step abilities:
 
 ```kotlin
 spell {
@@ -218,6 +262,7 @@ triggeredAbility {
 - **Tag Components:** Data objects for binary state (e.g., `data object TappedComponent : Component`)
 - **Effect Executors:** In `handlers/effects/`, execute specific effects (damage, draw, destroy, etc.)
 - **Continuous Effects:** Floating modifiers created by spells/abilities, applied during state projection
+- **Atomic Effects:** Prefer composing library/zone mechanics from Gather → Select → Move primitives via `EffectPatterns`
 - **CompositeEffect:** Chain effects with `then` operator for multi-step abilities
 - **Replacement Effects:** Interceptors that modify actions before execution (e.g., Doubling Season)
 - **Dependency System:** Effects in same layer sorted by trial application to determine dependencies (Rule 613.8)
@@ -302,40 +347,33 @@ object SetRegistry {
 
 ### Adding a New Mechanic
 
-1. **SDK:** Add effect type to `mtg-sdk/.../scripting/effect/Effect.kt`
-2. **Engine:** Create executor in `rules-engine/.../handlers/effects/` implementing `EffectExecutor`
-3. **Engine:** Register executor in `EffectExecutorRegistry.kt`
-4. **Sets:** Use it in card scripts
+**Prefer composing from atomic effects** when possible. Many mechanics can be built by combining existing pipeline
+primitives (Gather, Select, Move, RevealUntil, ForEachPlayer/Target) in `EffectPatterns.kt` without writing any new
+executor code. Only create a new effect type and executor when the mechanic truly needs new logic.
 
-Example (Scry):
+**Option A: Compose from atomic effects (preferred)**
+
+Add a new factory method to `EffectPatterns.kt` and wire it through `Effects.kt`:
 
 ```kotlin
-// 1. In mtg-sdk/scripting/effect/Effect.kt
-@Serializable
-sealed interface Effect {
-    @Serializable
-    data class Scry(val amount: Int) : Effect
-}
+// In EffectPatterns.kt — compose from existing primitives
+fun myMechanic(count: Int) = CompositeEffect(listOf(
+    GatherCardsEffect(source = CardSource.TopOfLibrary(count), storeAs = "looked"),
+    SelectFromCollectionEffect(from = "looked", selection = SelectionMode.ChooseUpTo(1), ...),
+    MoveCollectionEffect(from = "selected", destination = CardDestination.ToZone(Zone.HAND)),
+    MoveCollectionEffect(from = "remainder", destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom))
+))
 
-// 2. In rules-engine/handlers/effects/library/ScryExecutor.kt
-class ScryExecutor : EffectExecutor {
-    override fun execute(state: GameState, effect: Effect, context: EffectContext): ExecutionResult {
-        val scry = effect as Effects.Scry
-        // Implementation
-    }
-}
-
-// 3. In rules-engine/handlers/effects/EffectExecutorRegistry.kt
-val executors = mapOf(
-    Effects.Scry::class to ScryExecutor()
-)
-
-// 4. In mtg-sets card definition
-triggeredAbility {
-    trigger = Triggers.EntersBattlefield
-    effect = Effects.Scry(2)
-}
+// In Effects.kt — expose as a convenient function
+fun MyMechanic(count: Int) = EffectPatterns.myMechanic(count)
 ```
+
+**Option B: New effect executor (only when atomic effects don't suffice)**
+
+1. **SDK:** Add effect type to `mtg-sdk/.../scripting/effects/`
+2. **Engine:** Create executor in `rules-engine/.../handlers/effects/` implementing `EffectExecutor`
+3. **Engine:** Register executor in the appropriate `ExecutorModule`
+4. **Sets:** Use it in card scripts
 
 ## Documentation
 
@@ -479,3 +517,4 @@ test('card does X', async ({ createGame }) => {
 - **Never** compute legal actions in client - server sends them
 - **Always** handle layer dependencies correctly (trial application)
 - **Always** emit events for animations, never mutate silently
+- **Always** prefer atomic pipeline effects (Gather/Select/Move via `EffectPatterns`) over monolithic executors for library/zone mechanics

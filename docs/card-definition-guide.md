@@ -382,7 +382,90 @@ card("Liliana of the Veil") {
 
 ---
 
-## 7. Advanced Sequencing
+## 7. Atomic Effects (Pipeline Patterns)
+
+For library manipulation, zone movement, and collection-based mechanics, **always prefer composing from atomic pipeline
+effects** rather than creating monolithic effect executors. The engine provides small, reusable primitives that chain
+into pipelines via `CompositeEffect`. This keeps the engine generic and makes adding new cards trivial — most library
+mechanics need zero new executor code.
+
+### Primitives
+
+| Primitive | What it does |
+|-----------|-------------|
+| `GatherCardsEffect` | Collects cards into a named in-memory collection (no zone change) |
+| `SelectFromCollectionEffect` | Presents a choice to split a collection into "selected" and "remainder" |
+| `MoveCollectionEffect` | Physically moves a named collection to a destination zone |
+| `RevealUntilEffect` | Reveals cards from library one-by-one until a filter matches |
+| `ChooseCreatureTypeEffect` | Pauses for the player to name a creature type |
+| `ForEachTargetEffect` | Runs a sub-pipeline once per target |
+| `ForEachPlayerEffect` | Runs a sub-pipeline once per player (APNAP order) |
+
+Pipeline steps communicate via **named collections** stored in `EffectContext.storedCollections`. Each `Gather` stores
+cards under a name (e.g., `"scried"`), and subsequent `Select`/`Move` steps read from that name.
+
+### Using Pre-Built Pipelines
+
+`EffectPatterns` (exposed via `Effects`) provides factory methods for common mechanics:
+
+```kotlin
+// Scry 2 — look at top 2, put any on bottom, rest on top
+effect = Effects.Scry(2)
+
+// Surveil 2 — look at top 2, put any in graveyard, rest on top
+effect = Effects.Surveil(2)
+
+// Mill 3 — top 3 cards to graveyard
+effect = Effects.Mill(3)
+
+// Search library for a basic land, put into hand, shuffle
+effect = Effects.SearchLibrary(filter = GameObjectFilter.BasicLand)
+
+// Look at top 7, keep 2, rest to graveyard (Ancestral Memories)
+effect = EffectPatterns.lookAtTopAndKeep(count = 7, keepCount = 2)
+
+// Look at top 4, put back in any order (Sage Aven)
+effect = EffectPatterns.lookAtTopAndReorder(4)
+
+// Reveal until nonland, deal damage equal to its mana value (Erratic Explosion)
+effect = EffectPatterns.revealUntilNonlandDealDamage(EffectTarget.ContextTarget(0))
+
+// Wheel — each player shuffles hand into library, then draws that many (Winds of Change)
+effect = EffectPatterns.wheelEffect(Player.Each)
+
+// Reveal top 5, opponent chooses a creature, it goes to battlefield, rest to graveyard (Animal Magnetism)
+effect = EffectPatterns.revealAndOpponentChooses(count = 5, filter = GameObjectFilter.Creature)
+
+// Reveal until creature of chosen type, put onto battlefield, shuffle rest (Riptide Shapeshifter)
+effect = EffectPatterns.revealUntilCreatureTypeToBattlefield()
+```
+
+### Full Pipeline Reference
+
+| `EffectPatterns` Method | Pipeline |
+|------------------------|----------|
+| `scry(n)` | Gather(top n) → Select(up to n for bottom) → Move(bottom) → Move(top) |
+| `surveil(n)` | Gather(top n) → Select(up to n for graveyard) → Move(graveyard) → Move(top) |
+| `mill(n)` | Gather(top n) → Move(graveyard) |
+| `searchLibrary(filter, ...)` | Gather(library, filter) → Select → Move(destination) → Shuffle |
+| `lookAtTopAndKeep(n, keep)` | Gather(top n) → Select(exactly keep) → Move(hand) → Move(rest to graveyard) |
+| `lookAtTopAndReorder(n)` | Gather(top n) → Move(ControllerChooses order → top) |
+| `lookAtTopXAndPutOntoBattlefield(...)` | Gather → Select → Move(battlefield) → Move(rest) |
+| `revealUntilNonlandDealDamage(target)` | RevealUntil(nonland) → DealDamage(mana value) → Move(bottom) |
+| `revealUntilNonlandModifyStats()` | RevealUntil(nonland) → ModifyStats(+mana value/+0) → Move(bottom) |
+| `revealUntilCreatureTypeToBattlefield()` | ChooseType → RevealUntil(match) → Move(battlefield) → Shuffle |
+| `revealAndOpponentChooses(n, filter)` | Gather(revealed, top n) → Select(opponent) → Move(battlefield) → Move(rest to graveyard) |
+| `wheelEffect(players)` | ForEachPlayer[ Gather(hand) → Move(shuffled into library) → Draw(hand count) ] |
+
+### When to Create a New Executor
+
+Only create a new `EffectExecutor` when the mechanic truly needs new logic that cannot be composed from existing
+primitives. Examples of mechanics that **do** need custom executors: dealing damage, gaining life, creating tokens,
+modifying stats, countering spells. Examples that **don't** need them: scry, surveil, mill, search library, reveal-and-choose — these are all pipelines.
+
+---
+
+## 8. Advanced Sequencing
 
 Handling "Then", "If you do", and "When you do".
 
@@ -446,7 +529,7 @@ triggeredAbility {
 
 ---
 
-## 8. Metadata Management
+## 9. Metadata Management
 
 Separating visual data from game rules prevents bloat and allows the frontend to be updated independently of the engine.
 
