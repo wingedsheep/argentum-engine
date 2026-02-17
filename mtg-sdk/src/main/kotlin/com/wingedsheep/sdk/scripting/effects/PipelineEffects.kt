@@ -218,7 +218,13 @@ enum class MoveType {
     /** Standard zone change — emits only ZoneChangeEvent */
     Default,
     /** Discard — also emits CardsDiscardedEvent */
-    Discard
+    Discard,
+    /**
+     * Sacrifice — emits PermanentsSacrificedEvent in addition to ZoneChangeEvent.
+     * Cards are routed to their owner's graveyard (not necessarily the destination player),
+     * matching MTG rule 701.16a: sacrificed permanents go to their owner's graveyard.
+     */
+    Sacrifice
 }
 
 @SerialName("MoveCollection")

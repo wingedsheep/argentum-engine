@@ -186,8 +186,16 @@ class MoveCollectionExecutor : EffectExecutor<MoveCollectionEffect> {
                 newState = newState.removeFromZone(ZoneKey(ownerId, fromZone), cardId)
             }
 
+            // For sacrifice, cards always go to their owner's graveyard (MTG rule 701.16a),
+            // regardless of who controlled them. For all other moves, use the specified player.
+            val actualDestPlayerId = if (moveType == MoveType.Sacrifice && destZone == Zone.GRAVEYARD) {
+                ownerId
+            } else {
+                destPlayerId
+            }
+
             // Add to destination zone based on placement
-            val destZoneKey = ZoneKey(destPlayerId, destZone)
+            val destZoneKey = ZoneKey(actualDestPlayerId, destZone)
             newState = when (destination.placement) {
                 ZonePlacement.Top, ZonePlacement.Default -> {
                     if (destZone == Zone.LIBRARY) {
@@ -261,6 +269,11 @@ class MoveCollectionExecutor : EffectExecutor<MoveCollectionEffect> {
         // Emit discard event if configured
         if (moveType == MoveType.Discard && cards.isNotEmpty()) {
             events.add(CardsDiscardedEvent(destPlayerId, cards))
+        }
+
+        // Emit sacrifice event if configured
+        if (moveType == MoveType.Sacrifice && cards.isNotEmpty()) {
+            events.add(0, PermanentsSacrificedEvent(context.controllerId, cards))
         }
 
         // Emit reveal event if configured

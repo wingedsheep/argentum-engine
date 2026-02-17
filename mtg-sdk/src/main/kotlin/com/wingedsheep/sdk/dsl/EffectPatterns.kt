@@ -84,6 +84,40 @@ object EffectPatterns {
     )
 
     /**
+     * Each opponent discards N cards.
+     *
+     * Composed as ForEachPlayer(EachOpponent) → Gather(hand) → Select(ChooseExactly(N)) → Move(graveyard, Discard).
+     * Handles the MTG rule "as much as possible": if an opponent has fewer than N cards, they discard all of them.
+     *
+     * For Syphon Mind-style "you draw for each card discarded", use EachOpponentDiscardsEffect directly.
+     *
+     * Example:
+     * ```kotlin
+     * eachOpponentDiscards(1)
+     * // -> "Each opponent discards a card."
+     * ```
+     */
+    fun eachOpponentDiscards(count: Int): ForEachPlayerEffect = ForEachPlayerEffect(
+        players = Player.EachOpponent,
+        effects = listOf(
+            GatherCardsEffect(
+                source = CardSource.FromZone(Zone.HAND, Player.You),
+                storeAs = "hand"
+            ),
+            SelectFromCollectionEffect(
+                from = "hand",
+                selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(count)),
+                storeSelected = "discarded"
+            ),
+            MoveCollectionEffect(
+                from = "discarded",
+                destination = CardDestination.ToZone(Zone.GRAVEYARD),
+                moveType = MoveType.Discard
+            )
+        )
+    )
+
+    /**
      * Create a sacrifice pattern with a fixed count.
      *
      * Example:

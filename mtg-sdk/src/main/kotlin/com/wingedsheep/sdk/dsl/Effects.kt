@@ -111,6 +111,9 @@ object Effects {
 
     /**
      * Each opponent discards N cards.
+     * Note: when used as a replacement effect in ReplaceNextDraw (Words of Waste cycle),
+     * this must stay as EachOpponentDiscardsEffect — the draw replacement system checks
+     * the concrete type. Use EffectPatterns.eachOpponentDiscards() for triggered ability contexts.
      */
     fun EachOpponentDiscards(count: Int = 1): Effect = EachOpponentDiscardsEffect(count)
 

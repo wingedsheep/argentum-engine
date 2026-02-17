@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.EachOpponentDiscardsEffect
 
 /**
  * Screeching Buzzard
@@ -25,7 +25,7 @@ val ScreechingBuzzard = card("Screeching Buzzard") {
 
     triggeredAbility {
         trigger = Triggers.Dies
-        effect = EachOpponentDiscardsEffect(1)
+        effect = EffectPatterns.eachOpponentDiscards(1)
     }
 
     metadata {
