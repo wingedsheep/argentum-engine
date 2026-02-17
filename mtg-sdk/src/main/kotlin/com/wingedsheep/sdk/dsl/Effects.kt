@@ -160,7 +160,7 @@ object Effects {
      * Used by Astral Slide-style effects.
      */
     fun ExileUntilEndStep(target: EffectTarget): Effect =
-        ExileUntilEndStepEffect(target)
+        EffectPatterns.exileUntilEndStep(target)
 
     /**
      * Return to hand.

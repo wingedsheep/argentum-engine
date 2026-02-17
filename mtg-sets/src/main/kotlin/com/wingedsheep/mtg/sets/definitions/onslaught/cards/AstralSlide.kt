@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.scripting.ExileUntilEndStepEffect
 import com.wingedsheep.sdk.scripting.MayEffect
 import com.wingedsheep.sdk.scripting.OnCycle
 
@@ -24,7 +24,7 @@ val AstralSlide = card("Astral Slide") {
     triggeredAbility {
         trigger = OnCycle(controllerOnly = false)
         target = Targets.Creature
-        effect = MayEffect(ExileUntilEndStepEffect(EffectTarget.ContextTarget(0)))
+        effect = MayEffect(Effects.ExileUntilEndStep(EffectTarget.ContextTarget(0)))
     }
 
     metadata {

@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.targeting.TargetRequirement
 import kotlinx.serialization.SerialName
@@ -211,6 +212,36 @@ data class PayOrSufferEffect(
     val player: EffectTarget = EffectTarget.Controller
 ) : Effect {
     override val description: String = "${suffer.description} unless you ${cost.description}"
+}
+
+/**
+ * Create a delayed triggered ability that fires at a specific step.
+ *
+ * When executed, bakes any context-dependent target references (ContextTarget)
+ * into concrete SpecificEntity references so the delayed trigger fires correctly
+ * even after the original execution context is gone.
+ *
+ * Used for Astral Slide-style exile-until-end-step effects:
+ * ```kotlin
+ * CompositeEffect(listOf(
+ *     MoveToZoneEffect(ContextTarget(0), Zone.EXILE),
+ *     CreateDelayedTriggerEffect(
+ *         step = Step.END,
+ *         effect = MoveToZoneEffect(ContextTarget(0), Zone.BATTLEFIELD)
+ *     )
+ * ))
+ * ```
+ *
+ * @param step The step at which the delayed trigger fires
+ * @param effect The effect to execute when the trigger fires
+ */
+@SerialName("CreateDelayedTrigger")
+@Serializable
+data class CreateDelayedTriggerEffect(
+    val step: Step,
+    val effect: Effect
+) : Effect {
+    override val description: String = "create a delayed trigger at the beginning of the next ${step.displayName}"
 }
 
 /**

@@ -33,7 +33,6 @@ class RemovalExecutors : ExecutorModule {
         BounceAndChainCopyExecutor(),
         DestroyAndChainCopyExecutor(),
         CantBeRegeneratedExecutor(),
-        ExileUntilEndStepExecutor(),
         ForceSacrificeExecutor(),
         HarshMercyExecutor(),
         PatriarchsBiddingExecutor(),

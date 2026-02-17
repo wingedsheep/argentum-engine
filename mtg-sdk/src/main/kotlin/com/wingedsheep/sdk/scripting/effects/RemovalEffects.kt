@@ -216,22 +216,6 @@ data class ExileAndReplaceWithTokenEffect(
 }
 
 /**
- * Exile a creature until the beginning of the next end step.
- * "Exile target creature. Return that card to the battlefield under its owner's control
- * at the beginning of the next end step."
- *
- * Used by Astral Slide and similar effects.
- */
-@SerialName("ExileUntilEndStep")
-@Serializable
-data class ExileUntilEndStepEffect(
-    val target: EffectTarget
-) : Effect {
-    override val description: String =
-        "Exile ${target.description}. Return it to the battlefield under its owner's control at the beginning of the next end step"
-}
-
-/**
  * Destroy target creature at end of combat.
  * Creates a delayed destruction that happens when the end of combat step begins.
  * Used by Serpentine Basilisk and similar "basilisk" abilities.

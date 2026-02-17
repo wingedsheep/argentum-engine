@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.dsl
 
+import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.*
 
@@ -1152,6 +1153,26 @@ object EffectPatterns {
             MoveCollectionEffect(
                 from = "chosen",
                 destination = CardDestination.ToZone(Zone.HAND)
+            )
+        )
+    )
+
+    /**
+     * Exile a target until the beginning of the next end step.
+     * "Exile [target]. Return it to the battlefield under its owner's control
+     * at the beginning of the next end step."
+     *
+     * Composed as MoveToZoneEffect(EXILE) + CreateDelayedTriggerEffect(END, MoveToZoneEffect(BATTLEFIELD)).
+     * The CreateDelayedTriggerEffect executor bakes in the concrete entity ID at creation time.
+     *
+     * Used by Astral Slide and similar effects.
+     */
+    fun exileUntilEndStep(target: EffectTarget): Effect = CompositeEffect(
+        listOf(
+            MoveToZoneEffect(target, Zone.EXILE),
+            CreateDelayedTriggerEffect(
+                step = Step.END,
+                effect = MoveToZoneEffect(target, Zone.BATTLEFIELD)
             )
         )
     )

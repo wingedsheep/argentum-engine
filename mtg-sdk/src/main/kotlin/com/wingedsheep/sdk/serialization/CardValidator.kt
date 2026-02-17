@@ -180,7 +180,6 @@ object CardValidator {
             is RegenerateEffect -> effect.target
             is CantBeRegeneratedEffect -> effect.target
             is ExileUntilLeavesEffect -> effect.target
-            is ExileUntilEndStepEffect -> effect.target
             is ExileAndReplaceWithTokenEffect -> effect.target
             is DestroyAtEndOfCombatEffect -> effect.target
             is MustBeBlockedEffect -> effect.target

@@ -19,6 +19,7 @@ class CompositeExecutors : ExecutorModule {
 
     private val compositeEffectExecutor by lazy { CompositeEffectExecutor(effectExecutor) }
     private val conditionalEffectExecutor by lazy { ConditionalEffectExecutor(effectExecutor) }
+    private val createDelayedTriggerExecutor by lazy { CreateDelayedTriggerExecutor() }
     private val forEachTargetExecutor by lazy { ForEachTargetExecutor(effectExecutor) }
     private val forEachPlayerExecutor by lazy { ForEachPlayerExecutor(effectExecutor) }
     private val mayEffectExecutor by lazy { MayEffectExecutor(effectExecutor) }
@@ -38,6 +39,7 @@ class CompositeExecutors : ExecutorModule {
     override fun executors(): List<EffectExecutor<*>> = listOf(
         compositeEffectExecutor,
         conditionalEffectExecutor,
+        createDelayedTriggerExecutor,
         forEachTargetExecutor,
         forEachPlayerExecutor,
         mayEffectExecutor,
