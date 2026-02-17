@@ -44,9 +44,7 @@ class GiveControlToTargetPlayerExecutor : EffectExecutor<GiveControlToTargetPlay
         val newControllerId = resolvePlayerTarget(effect.newController, context)
             ?: return ExecutionResult.error(state, "No valid player target for control change")
 
-        // If that player already controls the target, no-op
         val currentControllerId = targetContainer.get<ControllerComponent>()?.playerId
-        if (currentControllerId == newControllerId) return ExecutionResult.success(state)
 
         // Remove any previous Layer.CONTROL floating effects from the same source on the same target
         val filteredEffects = state.floatingEffects.filter { floating ->
@@ -55,25 +53,26 @@ class GiveControlToTargetPlayerExecutor : EffectExecutor<GiveControlToTargetPlay
               targetId in floating.effect.affectedEntities)
         }
 
-        // Create new floating effect
-        val floatingEffect = ActiveFloatingEffect(
-            id = EntityId.generate(),
-            effect = FloatingEffectData(
-                layer = Layer.CONTROL,
-                sublayer = null,
-                modification = SerializableModification.ChangeController(newControllerId),
-                affectedEntities = setOf(targetId)
-            ),
-            duration = effect.duration,
-            sourceId = context.sourceId,
-            sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name },
-            controllerId = newControllerId,
-            timestamp = System.currentTimeMillis()
-        )
-
-        val newState = state.copy(
-            floatingEffects = filteredEffects + floatingEffect
-        )
+        // If the base controller already matches after removing old floating effects, no new effect needed
+        val newState = if (currentControllerId == newControllerId) {
+            state.copy(floatingEffects = filteredEffects)
+        } else {
+            val floatingEffect = ActiveFloatingEffect(
+                id = EntityId.generate(),
+                effect = FloatingEffectData(
+                    layer = Layer.CONTROL,
+                    sublayer = null,
+                    modification = SerializableModification.ChangeController(newControllerId),
+                    affectedEntities = setOf(targetId)
+                ),
+                duration = effect.duration,
+                sourceId = context.sourceId,
+                sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name },
+                controllerId = newControllerId,
+                timestamp = System.currentTimeMillis()
+            )
+            state.copy(floatingEffects = filteredEffects + floatingEffect)
+        }
 
         val events = listOf(
             ControlChangedEvent(
