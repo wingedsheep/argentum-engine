@@ -112,56 +112,27 @@ Run the server. The `SetLoader` will automatically discover and load your new ca
 
 ## 2. Adding a New Mechanic (e.g., "Scry")
 
-Adding a new mechanic requires touching all three backend modules.
+Many common mechanics are already implemented as **pipeline patterns** in `EffectPatterns`. Scry and Surveil, for
+example, are composed from atomic Gather → Select → Move effects:
+
+```kotlin
+// Effects.Scry(2) expands to:
+EffectPatterns.scry(2)  // GatherCardsEffect → SelectFromCollectionEffect → MoveCollectionEffect (×2)
+```
+
+If your mechanic fits the gather/select/move pattern, add it to `EffectPatterns.kt` and wire it through `Effects.kt`.
+
+For mechanics that need truly new logic, you'll touch all three backend modules:
 
 ### Step 1: Define the Vocabulary (`mtg-sdk`)
 
-Open `mtg-sdk/src/main/kotlin/.../scripting/effect/Effects.kt`.
-Add the data class representing the effect.
+Add a data class implementing `Effect` in the appropriate file under `mtg-sdk/.../scripting/effects/`.
 
-```kotlin
-@Serializable
-sealed interface Effect {
-    // ... existing effects
-    
-    @Serializable
-    data class Scry(val amount: Int) : Effect
-}
+### Step 2: Implement the Logic (`rules-engine`)
 
-```
+Create an `EffectExecutor` in `rules-engine/.../handlers/effects/` and register it in the appropriate `ExecutorModule`.
 
-### Step 2: Implement the Logic (`mtg-engine`)
-
-Open `mtg-engine/src/main/kotlin/.../handlers/`.
-Create a new handler: `ScryHandler.kt`.
-
-```kotlin
-class ScryHandler : EffectHandler<Effects.Scry> {
-    override fun execute(state: GameState, effect: Effects.Scry, context: ExecutionContext): ExecutionResult {
-        val player = context.controller
-        
-        // 1. Look at top N cards
-        val topCards = state.library(player).take(effect.amount)
-        
-        // 2. Create a decision for the player to reorder them
-        // (This pauses the engine and asks the player for input)
-        return ExecutionResult.PausedForDecision(
-            decision = PlayerDecision.ReorderTopCards(
-                playerId = player,
-                cards = topCards,
-                canPutOnBottom = true
-            )
-        )
-    }
-}
-
-```
-
-### Step 3: Register the Handler (`mtg-engine`)
-
-Open `EffectHandlerRegistry.kt` and register your new handler so the engine knows how to execute `Effects.Scry`.
-
-### Step 4: Use it in Content (`mtg-sets`)
+### Step 3: Use it in Content (`mtg-sets`)
 
 Now you can use the new effect in card scripts.
 

@@ -57,8 +57,8 @@ Always use these facades for card definitions. They provide type-safe factory me
 
 ### Library
 - `Effects.SearchLibrary(filter, count = 1, destination = HAND, entersTapped, shuffle, reveal)`
-- `Effects.Scry(count)`
-- `Effects.Surveil(count)`
+- `Effects.Scry(count)` — returns CompositeEffect (Gather → Select → Move pipeline)
+- `Effects.Surveil(count)` — returns CompositeEffect (Gather → Select → Move pipeline)
 - `Effects.Mill(count, target = Controller)`
 
 ### Stack
@@ -146,8 +146,8 @@ Always use these facades for card definitions. They provide type-safe factory me
 | Effect | Parameters | Purpose |
 |--------|------------|---------|
 | `SearchLibraryEffect` | `filter, count, destination, entersTapped, shuffle, reveal` | Tutor |
-| `ScryEffect` | `count` | Scry N |
-| `SurveilEffect` | `count` | Surveil N |
+| `Effects.Scry(count)` | `count` | Scry N (pipeline pattern) |
+| `Effects.Surveil(count)` | `count` | Surveil N (pipeline pattern) |
 | `MillEffect` | `count, target` | Mill cards |
 | `ShuffleLibraryEffect` | `target` | Shuffle library |
 | `EffectPatterns.lookAtTopAndKeep(count, keepCount)` | `count, keepCount, keepDest?, restDest?, revealed?` | Look at top N keep some (pipeline) |

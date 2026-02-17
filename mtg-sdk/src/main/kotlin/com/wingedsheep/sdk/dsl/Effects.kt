@@ -261,13 +261,13 @@ object Effects {
      * Scry N.
      */
     fun Scry(count: Int): Effect =
-        ScryEffect(count)
+        EffectPatterns.scry(count)
 
     /**
      * Surveil N.
      */
     fun Surveil(count: Int): Effect =
-        SurveilEffect(count)
+        EffectPatterns.surveil(count)
 
     /**
      * Mill N cards.

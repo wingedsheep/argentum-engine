@@ -81,8 +81,6 @@ class ContinuationHandler(
 
         return when (continuation) {
             is DiscardContinuation -> resumeDiscard(stateAfterPop, continuation, response)
-            is ScryContinuation -> resumeScry(stateAfterPop, continuation, response)
-            is SurveilContinuation -> resumeSurveil(stateAfterPop, continuation, response)
             is EffectContinuation -> resumeEffect(stateAfterPop, continuation, response)
             is TriggeredAbilityContinuation -> resumeTriggeredAbility(stateAfterPop, continuation, response)
             is DamageAssignmentContinuation -> resumeDamageAssignment(stateAfterPop, continuation, response)
@@ -214,106 +212,6 @@ class ContinuationHandler(
         }
 
         // Check if there are more continuations to process
-        return checkForMoreContinuations(newState, events)
-    }
-
-    /**
-     * Resume after player ordered cards for scry.
-     */
-    private fun resumeScry(
-        state: GameState,
-        continuation: ScryContinuation,
-        response: DecisionResponse
-    ): ExecutionResult {
-        if (response !is PilesSplitResponse) {
-            return ExecutionResult.error(state, "Expected pile split response for scry")
-        }
-
-        val playerId = continuation.playerId
-
-        // Pile 0 = top of library, Pile 1 = bottom of library
-        val topCards = response.piles.getOrElse(0) { emptyList() }
-        val bottomCards = response.piles.getOrElse(1) { emptyList() }
-
-        var newState = state
-        val libraryZone = ZoneKey(playerId, Zone.LIBRARY)
-
-        // Remove all scried cards from library first
-        val allScried = topCards + bottomCards
-        for (cardId in allScried) {
-            newState = newState.removeFromZone(libraryZone, cardId)
-        }
-
-        // Get current library
-        val currentLibrary = newState.getZone(libraryZone).toMutableList()
-
-        // Add top cards to top of library (in order)
-        val newLibrary = topCards + currentLibrary + bottomCards
-
-        // Update zone with new order
-        newState = newState.copy(
-            zones = newState.zones + (libraryZone to newLibrary)
-        )
-
-        val events = listOf(
-            ScryCompletedEvent(playerId, topCards.size, bottomCards.size)
-        )
-
-        return checkForMoreContinuations(newState, events)
-    }
-
-    /**
-     * Resume after player split cards for surveil.
-     * Pile 0 = top of library (in order), Pile 1 = graveyard.
-     */
-    private fun resumeSurveil(
-        state: GameState,
-        continuation: SurveilContinuation,
-        response: DecisionResponse
-    ): ExecutionResult {
-        if (response !is PilesSplitResponse) {
-            return ExecutionResult.error(state, "Expected pile split response for surveil")
-        }
-
-        val playerId = continuation.playerId
-
-        // Pile 0 = top of library, Pile 1 = graveyard
-        val topCards = response.piles.getOrElse(0) { emptyList() }
-        val graveyardCards = response.piles.getOrElse(1) { emptyList() }
-
-        var newState = state
-        val libraryZone = ZoneKey(playerId, Zone.LIBRARY)
-        val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
-
-        // Remove all surveilled cards from library first
-        val allSurveilled = topCards + graveyardCards
-        for (cardId in allSurveilled) {
-            newState = newState.removeFromZone(libraryZone, cardId)
-        }
-
-        // Put top cards back on top of library (in order)
-        val currentLibrary = newState.getZone(libraryZone).toMutableList()
-        val newLibrary = topCards + currentLibrary
-        newState = newState.copy(
-            zones = newState.zones + (libraryZone to newLibrary)
-        )
-
-        // Move graveyard cards to graveyard
-        val events = mutableListOf<GameEvent>()
-        for (cardId in graveyardCards) {
-            val cardName = newState.getEntity(cardId)?.get<CardComponent>()?.name ?: "Unknown"
-            newState = newState.addToZone(graveyardZone, cardId)
-            events.add(
-                ZoneChangeEvent(
-                    entityId = cardId,
-                    entityName = cardName,
-                    fromZone = Zone.LIBRARY,
-                    toZone = Zone.GRAVEYARD,
-                    ownerId = playerId
-                )
-            )
-        }
-
         return checkForMoreContinuations(newState, events)
     }
 

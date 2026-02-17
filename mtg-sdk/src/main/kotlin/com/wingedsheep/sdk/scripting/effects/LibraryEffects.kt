@@ -8,19 +8,6 @@ import kotlinx.serialization.Serializable
 // =============================================================================
 
 /**
- * Surveil N - Look at the top N cards of your library, then put any number of them
- * into your graveyard and the rest on top of your library in any order.
- * "Surveil 2"
- */
-@SerialName("Surveil")
-@Serializable
-data class SurveilEffect(
-    val count: Int
-) : Effect {
-    override val description: String = "Surveil $count"
-}
-
-/**
  * Mill N - Put the top N cards of a player's library into their graveyard.
  * "Mill 3" or "Target player mills 3 cards"
  */
@@ -34,19 +21,6 @@ data class MillEffect(
         EffectTarget.Controller -> "Mill $count"
         else -> "${target.description.replaceFirstChar { it.uppercase() }} mills $count"
     }
-}
-
-/**
- * Scry N - Look at the top N cards of your library, then put any number of them
- * on the bottom of your library and the rest on top in any order.
- * "Scry 2"
- */
-@SerialName("Scry")
-@Serializable
-data class ScryEffect(
-    val count: Int
-) : Effect {
-    override val description: String = "Scry $count"
 }
 
 /**

@@ -393,17 +393,6 @@ data class LibraryShuffledEvent(
 ) : GameEvent
 
 /**
- * Scry completed - cards were put on top/bottom of library.
- */
-@Serializable
-@SerialName("ScryCompletedEvent")
-data class ScryCompletedEvent(
-    val playerId: EntityId,
-    val cardsOnTop: Int,
-    val cardsOnBottom: Int
-) : GameEvent
-
-/**
  * Permanents were sacrificed.
  */
 @Serializable

@@ -52,43 +52,6 @@ data class DiscardContinuation(
 ) : ContinuationFrame
 
 /**
- * Resume after player orders cards for scry.
- *
- * @property playerId The player who is scrying
- * @property sourceId The spell/ability that caused the scry
- * @property sourceName Name of the source for event messages
- */
-@Serializable
-data class ScryContinuation(
-    override val decisionId: String,
-    val playerId: EntityId,
-    val sourceId: EntityId?,
-    val sourceName: String?
-) : ContinuationFrame
-
-/**
- * Resume after player splits cards for surveil.
- *
- * Surveil N - Look at the top N cards of your library, then put any number of them
- * into your graveyard and the rest on top of your library in any order.
- *
- * Uses a SplitPilesDecision with two piles:
- * - Pile 0 = top of library (in order)
- * - Pile 1 = graveyard
- *
- * @property playerId The player who is surveilling
- * @property sourceId The spell/ability that caused the surveil
- * @property sourceName Name of the source for event messages
- */
-@Serializable
-data class SurveilContinuation(
-    override val decisionId: String,
-    val playerId: EntityId,
-    val sourceId: EntityId?,
-    val sourceName: String?
-) : ContinuationFrame
-
-/**
  * Resume a composite effect with remaining effects to execute.
  *
  * When a sub-effect of a CompositeEffect pauses for a decision, we push

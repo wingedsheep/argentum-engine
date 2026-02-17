@@ -690,7 +690,6 @@ object ClientEventTransformer {
             is AbilityResolvedEvent,
             is AbilityFizzledEvent,
             is DiscardRequiredEvent,
-            is ScryCompletedEvent,
             is PermanentsSacrificedEvent,
             is LookedAtCardsEvent,
             is LibraryReorderedEvent,

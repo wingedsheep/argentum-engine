@@ -8,7 +8,6 @@ import com.wingedsheep.engine.handlers.effects.ExecutorModule
  */
 class LibraryExecutors : ExecutorModule {
     override fun executors(): List<EffectExecutor<*>> = listOf(
-        ScryExecutor(),
         MillExecutor(),
         ShuffleLibraryExecutor(),
         ShuffleGraveyardIntoLibraryExecutor(),
@@ -22,7 +21,6 @@ class LibraryExecutors : ExecutorModule {
         RevealUntilNonlandDealDamageExecutor(),
         RevealUntilNonlandModifyStatsExecutor(),
         EachOpponentMayPutFromHandExecutor(),
-        SurveilExecutor(),
         PutCreatureFromHandSharingTypeExecutor(),
         RevealUntilCreatureTypeExecutor(),
         EachPlayerMayRevealCreaturesExecutor(),

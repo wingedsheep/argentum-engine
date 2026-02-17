@@ -5,6 +5,7 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.*
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.CreatureStats
@@ -12,7 +13,6 @@ import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.ActivatedAbility
-import com.wingedsheep.sdk.scripting.SurveilEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -25,8 +25,8 @@ import java.util.UUID
  * into your graveyard.)"
  *
  * ## Covered Scenarios
- * - Surveil puts card into graveyard (player chooses graveyard pile)
- * - Surveil keeps card on top (player chooses top pile)
+ * - Surveil puts card into graveyard (player chooses graveyard)
+ * - Surveil keeps card on top (player selects nothing for graveyard)
  * - Surveil with empty library does nothing
  */
 class RummagingWizardTest : FunSpec({
@@ -43,7 +43,7 @@ class RummagingWizardTest : FunSpec({
             ActivatedAbility(
                 id = wizardAbilityId,
                 cost = AbilityCost.Mana(ManaCost.parse("{2}{U}")),
-                effect = SurveilEffect(1)
+                effect = Effects.Surveil(1)
             )
         )
     )
@@ -82,21 +82,20 @@ class RummagingWizardTest : FunSpec({
         result.isSuccess shouldBe true
         driver.bothPass()
 
-        // Should be paused for surveil decision
+        // Should be paused for card selection (select cards to put in graveyard)
         driver.isPaused shouldBe true
-        driver.pendingDecision.shouldBeInstanceOf<SplitPilesDecision>()
+        driver.pendingDecision.shouldBeInstanceOf<SelectCardsDecision>()
 
-        val decision = driver.pendingDecision as SplitPilesDecision
-        decision.cards.size shouldBe 1
-        decision.cards[0] shouldBe topCard
-        decision.pileLabels shouldBe listOf("Top of Library", "Graveyard")
+        val decision = driver.pendingDecision as SelectCardsDecision
+        decision.options.size shouldBe 1
+        decision.options[0] shouldBe topCard
 
-        // Put the card into graveyard (pile 1)
+        // Select the card (put into graveyard)
         driver.submitDecision(
             activePlayer,
-            PilesSplitResponse(
+            CardsSelectedResponse(
                 decisionId = decision.id,
-                piles = listOf(emptyList(), listOf(topCard))
+                selectedCards = listOf(topCard)
             )
         )
 
@@ -140,16 +139,23 @@ class RummagingWizardTest : FunSpec({
         driver.bothPass()
 
         driver.isPaused shouldBe true
-        val decision = driver.pendingDecision as SplitPilesDecision
+        val decision = driver.pendingDecision as SelectCardsDecision
 
-        // Keep the card on top (pile 0)
+        // Select nothing (keep the card on top)
         driver.submitDecision(
             activePlayer,
-            PilesSplitResponse(
+            CardsSelectedResponse(
                 decisionId = decision.id,
-                piles = listOf(listOf(topCard), emptyList())
+                selectedCards = emptyList()
             )
         )
+
+        // Should get a reorder decision for the card going back on top
+        driver.isPaused shouldBe true
+        driver.pendingDecision.shouldBeInstanceOf<ReorderLibraryDecision>()
+        val reorderDecision = driver.pendingDecision as ReorderLibraryDecision
+        reorderDecision.cards.size shouldBe 1
+        driver.submitOrderedResponse(activePlayer, reorderDecision.cards)
 
         driver.isPaused shouldBe false
 

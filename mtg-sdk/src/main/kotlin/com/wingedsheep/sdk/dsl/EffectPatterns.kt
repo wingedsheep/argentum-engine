@@ -280,6 +280,70 @@ object EffectPatterns {
     )
 
     /**
+     * Scry N — Look at the top N cards of your library, then put any number of them
+     * on the bottom of your library and the rest on top in any order.
+     *
+     * Creates a Gather → Select → Move pipeline.
+     *
+     * @param count How many cards to scry
+     */
+    fun scry(count: Int): CompositeEffect = CompositeEffect(
+        listOf(
+            GatherCardsEffect(
+                source = CardSource.TopOfLibrary(DynamicAmount.Fixed(count)),
+                storeAs = "scried"
+            ),
+            SelectFromCollectionEffect(
+                from = "scried",
+                selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(count)),
+                storeSelected = "toBottom",
+                storeRemainder = "toTop"
+            ),
+            MoveCollectionEffect(
+                from = "toBottom",
+                destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom)
+            ),
+            MoveCollectionEffect(
+                from = "toTop",
+                destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Top),
+                order = CardOrder.ControllerChooses
+            )
+        )
+    )
+
+    /**
+     * Surveil N — Look at the top N cards of your library, then put any number of them
+     * into your graveyard and the rest on top of your library in any order.
+     *
+     * Creates a Gather → Select → Move pipeline.
+     *
+     * @param count How many cards to surveil
+     */
+    fun surveil(count: Int): CompositeEffect = CompositeEffect(
+        listOf(
+            GatherCardsEffect(
+                source = CardSource.TopOfLibrary(DynamicAmount.Fixed(count)),
+                storeAs = "surveiled"
+            ),
+            SelectFromCollectionEffect(
+                from = "surveiled",
+                selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(count)),
+                storeSelected = "toGraveyard",
+                storeRemainder = "toTop"
+            ),
+            MoveCollectionEffect(
+                from = "toGraveyard",
+                destination = CardDestination.ToZone(Zone.GRAVEYARD)
+            ),
+            MoveCollectionEffect(
+                from = "toTop",
+                destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Top),
+                order = CardOrder.ControllerChooses
+            )
+        )
+    )
+
+    /**
      * Create an exile-and-return pattern used by O-Ring style cards.
      *
      * This creates the appropriate variable binding so the second trigger
