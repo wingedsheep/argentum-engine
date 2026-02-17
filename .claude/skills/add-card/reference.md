@@ -153,7 +153,7 @@ Always use these facades for card definitions. They provide type-safe factory me
 | `EffectPatterns.lookAtTopAndKeep(count, keepCount)` | `count, keepCount, keepDest?, restDest?, revealed?` | Look at top N keep some (pipeline) |
 | `EffectPatterns.lookAtTopAndReorder(count)` | `count: Int` or `count: DynamicAmount` | Look at top and reorder (pipeline) |
 | `LookAtTopXPutOntoBattlefieldEffect` | `countSource: DynamicAmount, filter, shuffleAfter` | CoCo-style |
-| `LookAtOpponentLibraryEffect` | `count, toGraveyard` | Look at opponent library |
+| `EffectPatterns.lookAtTargetLibraryAndDiscard(count, toGraveyard)` | `count, toGraveyard` | Look at target's library, discard some (pipeline) |
 | `PutCreatureFromHandOntoBattlefieldEffect` | `maxManaValueSource, entersTapped, entersAttacking` | Sneak Attack-style |
 
 ### Mana

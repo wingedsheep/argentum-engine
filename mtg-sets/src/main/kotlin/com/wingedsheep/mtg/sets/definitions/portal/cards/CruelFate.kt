@@ -1,8 +1,8 @@
 package com.wingedsheep.mtg.sets.definitions.portal.cards
 
+import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.LookAtOpponentLibraryEffect
 import com.wingedsheep.sdk.targeting.TargetOpponent
 
 /**
@@ -18,7 +18,7 @@ val CruelFate = card("Cruel Fate") {
 
     spell {
         target = TargetOpponent()
-        effect = LookAtOpponentLibraryEffect(
+        effect = EffectPatterns.lookAtTargetLibraryAndDiscard(
             count = 5,
             toGraveyard = 1
         )

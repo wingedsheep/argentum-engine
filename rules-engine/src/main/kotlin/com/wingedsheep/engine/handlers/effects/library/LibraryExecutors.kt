@@ -11,7 +11,7 @@ class LibraryExecutors : ExecutorModule {
         MillExecutor(),
         ShuffleLibraryExecutor(),
         ShuffleGraveyardIntoLibraryExecutor(),
-        LookAtOpponentLibraryExecutor(),
+
         RevealAndOpponentChoosesExecutor(),
         WheelEffectExecutor(),
         PutLandFromHandExecutor(),

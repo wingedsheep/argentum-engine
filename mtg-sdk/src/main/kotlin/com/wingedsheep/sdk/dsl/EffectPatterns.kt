@@ -407,6 +407,52 @@ object EffectPatterns {
     }
 
     /**
+     * Look at the top N cards of target player's library, put some in their graveyard,
+     * rest on top of their library in any order.
+     *
+     * The target player is resolved from the spell's target via ContextPlayer(0).
+     *
+     * Example: Cruel Fate — "Look at the top five cards of target opponent's library.
+     * Put one of them into that player's graveyard and the rest on top of their
+     * library in any order."
+     * ```kotlin
+     * spell {
+     *     target = TargetOpponent()
+     *     effect = EffectPatterns.lookAtTargetLibraryAndDiscard(count = 5, toGraveyard = 1)
+     * }
+     * ```
+     *
+     * @param count How many cards to look at from the top
+     * @param toGraveyard How many cards must be put into the graveyard
+     */
+    fun lookAtTargetLibraryAndDiscard(
+        count: Int,
+        toGraveyard: Int = 1
+    ): CompositeEffect = CompositeEffect(
+        listOf(
+            GatherCardsEffect(
+                source = CardSource.TopOfLibrary(DynamicAmount.Fixed(count), Player.ContextPlayer(0)),
+                storeAs = "looked"
+            ),
+            SelectFromCollectionEffect(
+                from = "looked",
+                selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(toGraveyard)),
+                storeSelected = "toGraveyard",
+                storeRemainder = "toTop"
+            ),
+            MoveCollectionEffect(
+                from = "toGraveyard",
+                destination = CardDestination.ToZone(Zone.GRAVEYARD, Player.ContextPlayer(0))
+            ),
+            MoveCollectionEffect(
+                from = "toTop",
+                destination = CardDestination.ToZone(Zone.LIBRARY, Player.ContextPlayer(0), ZonePlacement.Top),
+                order = CardOrder.ControllerChooses
+            )
+        )
+    )
+
+    /**
      * Create an exile-and-return pattern used by O-Ring style cards.
      *
      * This creates the appropriate variable binding so the second trigger

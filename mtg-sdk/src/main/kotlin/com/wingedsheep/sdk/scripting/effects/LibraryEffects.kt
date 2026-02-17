@@ -79,28 +79,6 @@ enum class SearchDestination(val description: String) {
 }
 
 /**
- * Look at top cards of target opponent's library, put some in graveyard, rest on top.
- * "Look at the top five cards of target opponent's library. Put one of them into that
- * player's graveyard and the rest back on top of their library in any order."
- * Used for Cruel Fate.
- *
- * @property count Number of cards to look at
- * @property toGraveyard Number of cards to put in graveyard
- */
-@SerialName("LookAtOpponentLibrary")
-@Serializable
-data class LookAtOpponentLibraryEffect(
-    val count: Int,
-    val toGraveyard: Int = 1
-) : Effect {
-    override val description: String = buildString {
-        append("Look at the top $count cards of target opponent's library. ")
-        append("Put ${if (toGraveyard == 1) "one of them" else "$toGraveyard of them"} ")
-        append("into that player's graveyard and the rest on top of their library in any order")
-    }
-}
-
-/**
  * Choose a creature type, then return up to N creature cards of that type from your graveyard to your hand.
  *
  * Used for Aphetto Dredging: "Return up to three target creature cards of the creature type

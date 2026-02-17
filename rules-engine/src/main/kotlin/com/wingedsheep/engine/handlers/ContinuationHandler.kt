@@ -178,8 +178,7 @@ class ContinuationHandler(
             is ChooseAuraTargetForEntryFromHandContinuation -> multiPlayerResumer.resumeChooseAuraTargetForEntryFromHand(stateAfterPop, continuation, response, cfm)
             is EachPlayerMayRevealCreaturesContinuation -> multiPlayerResumer.resumeEachPlayerMayRevealCreatures(stateAfterPop, continuation, response, cfm)
             is EachPlayerSearchesLibraryContinuation -> multiPlayerResumer.resumeEachPlayerSearchesLibrary(stateAfterPop, continuation, response, cfm)
-            is LookAtOpponentLibraryContinuation -> multiPlayerResumer.resumeLookAtOpponentLibrary(stateAfterPop, continuation, response, cfm)
-            is ReorderOpponentLibraryContinuation -> multiPlayerResumer.resumeReorderOpponentLibrary(stateAfterPop, continuation, response, cfm)
+
             is RevealAndOpponentChoosesContinuation -> multiPlayerResumer.resumeRevealAndOpponentChooses(stateAfterPop, continuation, response, cfm)
 
             // Modal and clone
