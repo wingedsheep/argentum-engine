@@ -254,7 +254,7 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
         addCoinFlipAnimation({
           id: `coin-${event.sourceId}-${Date.now()}-${index}`,
           sourceName: event.sourceName,
-          won: event.won,
+          won: isOpponent ? !event.won : event.won,
           isOpponent,
           startTime: Date.now() + index * 200,
         })
