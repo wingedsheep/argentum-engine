@@ -86,23 +86,6 @@ data class EachOpponentDiscardsEffect(
 }
 
 
-/**
- * Each player draws X cards where X is determined by the spell's X value.
- * Used for cards like Prosperity.
- */
-@SerialName("EachPlayerDrawsX")
-@Serializable
-data class EachPlayerDrawsXEffect(
-    val includeController: Boolean = true,
-    val includeOpponents: Boolean = true
-) : Effect {
-    override val description: String = when {
-        includeController && includeOpponents -> "Each player draws X cards"
-        includeController -> "You draw X cards"
-        includeOpponents -> "Each opponent draws X cards"
-        else -> "Draw X cards"
-    }
-}
 
 /**
  * Each player may draw up to a number of cards, gaining life for each card not drawn.
@@ -201,22 +184,6 @@ data class DiscardAndChainCopyEffect(
     override val description: String = buildString {
         append("Target player discards ${if (count == 1) "a card" else "$count cards"}. ")
         append("That player may copy this spell and may choose a new target for that copy")
-    }
-}
-
-/**
- * Target player discards their entire hand.
- * "Target opponent discards their hand"
- * Used for Wheel and Deal and similar effects.
- */
-@SerialName("DiscardHand")
-@Serializable
-data class DiscardHandEffect(
-    val target: EffectTarget = EffectTarget.ContextTarget(0)
-) : Effect {
-    override val description: String = when (target) {
-        EffectTarget.Controller -> "Discard your hand"
-        else -> "${target.description.replaceFirstChar { it.uppercase() }} discards their hand"
     }
 }
 

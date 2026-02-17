@@ -7,11 +7,11 @@ import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.CompositeEffect
-import com.wingedsheep.sdk.scripting.DiscardHandEffect
 import com.wingedsheep.sdk.scripting.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.targeting.TargetOpponent
@@ -35,7 +35,7 @@ class WheelAndDealTest : FunSpec({
             targets = arrayOf(TargetOpponent()),
             effect = CompositeEffect(
                 listOf(
-                    DiscardHandEffect(target = EffectTarget.ContextTarget(0)),
+                    Effects.DiscardHand(EffectTarget.ContextTarget(0)),
                     DrawCardsEffect(7, target = EffectTarget.ContextTarget(0)),
                     DrawCardsEffect(1, target = EffectTarget.Controller)
                 )

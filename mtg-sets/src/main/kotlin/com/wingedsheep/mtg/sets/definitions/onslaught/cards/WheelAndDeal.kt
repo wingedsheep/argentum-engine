@@ -1,9 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CompositeEffect
-import com.wingedsheep.sdk.scripting.DiscardHandEffect
 import com.wingedsheep.sdk.scripting.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.targeting.TargetOpponent
@@ -23,7 +23,7 @@ val WheelAndDeal = card("Wheel and Deal") {
         target = TargetOpponent()
         effect = CompositeEffect(
             listOf(
-                DiscardHandEffect(target = EffectTarget.ContextTarget(0)),
+                Effects.DiscardHand(EffectTarget.ContextTarget(0)),
                 DrawCardsEffect(7, target = EffectTarget.ContextTarget(0)),
                 DrawCardsEffect(1, target = EffectTarget.Controller)
             )

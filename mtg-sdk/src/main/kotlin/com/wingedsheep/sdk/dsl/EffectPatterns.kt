@@ -863,6 +863,62 @@ object EffectPatterns {
     }
 
     /**
+     * Discard hand — target player discards their entire hand.
+     *
+     * Creates a Gather(hand) → Move(graveyard, Discard) pipeline.
+     *
+     * Used for Wheel and Deal-style effects.
+     *
+     * @param target Which player's hand to discard (default: controller)
+     */
+    fun discardHand(target: EffectTarget = EffectTarget.Controller): CompositeEffect {
+        val player = when (target) {
+            EffectTarget.Controller -> Player.You
+            is EffectTarget.ContextTarget -> Player.ContextPlayer(target.index)
+            is EffectTarget.PlayerRef -> target.player
+            else -> Player.You
+        }
+        return CompositeEffect(
+            listOf(
+                GatherCardsEffect(
+                    source = CardSource.FromZone(Zone.HAND, player),
+                    storeAs = "discardedHand"
+                ),
+                MoveCollectionEffect(
+                    from = "discardedHand",
+                    destination = CardDestination.ToZone(Zone.GRAVEYARD, player),
+                    moveType = MoveType.Discard
+                )
+            )
+        )
+    }
+
+    /**
+     * Each player draws X cards, where X is the spell's X value.
+     *
+     * Creates a ForEachPlayer → DrawCards(XValue) pipeline.
+     *
+     * Used for Prosperity.
+     *
+     * @param includeController Whether the controller draws
+     * @param includeOpponents Whether opponents draw
+     */
+    fun eachPlayerDrawsX(
+        includeController: Boolean = true,
+        includeOpponents: Boolean = true
+    ): ForEachPlayerEffect {
+        val players = when {
+            includeController && includeOpponents -> Player.Each
+            includeOpponents -> Player.EachOpponent
+            else -> Player.You
+        }
+        return ForEachPlayerEffect(
+            players = players,
+            effects = listOf(DrawCardsEffect(DynamicAmount.XValue))
+        )
+    }
+
+    /**
      * Choose a creature type (at resolution), then select up to N creature cards
      * of that type from your graveyard and return them to your hand.
      *

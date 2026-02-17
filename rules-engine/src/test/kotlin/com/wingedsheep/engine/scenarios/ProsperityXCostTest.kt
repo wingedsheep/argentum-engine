@@ -6,10 +6,10 @@ import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.EachPlayerDrawsXEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -24,7 +24,7 @@ class ProsperityXCostTest : FunSpec({
         manaCost = ManaCost.parse("{X}{U}"),
         oracleText = "Each player draws X cards.",
         script = CardScript.spell(
-            effect = EachPlayerDrawsXEffect(
+            effect = Effects.EachPlayerDrawsX(
                 includeController = true,
                 includeOpponents = true
             )

@@ -90,6 +90,20 @@ object Effects {
         DiscardCardsEffect(count, target)
 
     /**
+     * Target player discards their entire hand.
+     */
+    fun DiscardHand(target: EffectTarget = EffectTarget.Controller): Effect =
+        EffectPatterns.discardHand(target)
+
+    /**
+     * Each player draws X cards, where X is the spell's X value.
+     */
+    fun EachPlayerDrawsX(
+        includeController: Boolean = true,
+        includeOpponents: Boolean = true
+    ): Effect = EffectPatterns.eachPlayerDrawsX(includeController, includeOpponents)
+
+    /**
      * Draw X cards, then for each card drawn, discard a card unless you sacrifice a permanent.
      * Used for Read the Runes.
      */
