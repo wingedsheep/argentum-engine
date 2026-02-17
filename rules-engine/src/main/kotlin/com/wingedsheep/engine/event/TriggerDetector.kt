@@ -863,11 +863,21 @@ class TriggerDetector(
             }
 
             is OnDeath -> {
-                event is ZoneChangeEvent &&
-                    event.toZone == com.wingedsheep.sdk.core.Zone.GRAVEYARD &&
-                    event.fromZone == com.wingedsheep.sdk.core.Zone.BATTLEFIELD &&
-                    (!trigger.selfOnly || event.entityId == sourceId) &&
-                    (!trigger.youControlOnly || event.ownerId == controllerId)
+                if (event !is ZoneChangeEvent ||
+                    event.toZone != com.wingedsheep.sdk.core.Zone.GRAVEYARD ||
+                    event.fromZone != com.wingedsheep.sdk.core.Zone.BATTLEFIELD) {
+                    false
+                } else if (!trigger.selfOnly) {
+                    // For "whenever a creature dies" — verify the dying entity was actually a creature.
+                    // Face-down permanents are 2/2 creatures (Rule 707.2) and count.
+                    val dyingEntity = state.getEntity(event.entityId)
+                    val isFaceDown = dyingEntity?.has<FaceDownComponent>() == true
+                    val isCreature = isFaceDown ||
+                        dyingEntity?.get<CardComponent>()?.typeLine?.isCreature == true
+                    isCreature && (!trigger.youControlOnly || event.ownerId == controllerId)
+                } else {
+                    event.entityId == sourceId && (!trigger.youControlOnly || event.ownerId == controllerId)
+                }
             }
 
             is OnOtherCreatureWithSubtypeDies -> {
