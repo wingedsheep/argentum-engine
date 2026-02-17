@@ -1,9 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
 import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.RevealUntilNonlandModifyStatsEffect
 
 /**
  * Goblin Machinist
@@ -23,7 +23,7 @@ val GoblinMachinist = card("Goblin Machinist") {
 
     activatedAbility {
         cost = Costs.Mana("{2}{R}")
-        effect = RevealUntilNonlandModifyStatsEffect
+        effect = EffectPatterns.revealUntilNonlandModifyStats()
     }
 
     metadata {

@@ -10,10 +10,10 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.ActivatedAbility
-import com.wingedsheep.sdk.scripting.RevealUntilNonlandModifyStatsEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -47,7 +47,7 @@ class GoblinMachinistTest : FunSpec({
             ActivatedAbility(
                 id = machinistAbilityId,
                 cost = AbilityCost.Mana(ManaCost.parse("{2}{R}")),
-                effect = RevealUntilNonlandModifyStatsEffect
+                effect = EffectPatterns.revealUntilNonlandModifyStats()
             )
         )
     )
