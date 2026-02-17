@@ -8,7 +8,6 @@ import com.wingedsheep.engine.handlers.effects.ExecutorModule
  */
 class LibraryExecutors : ExecutorModule {
     override fun executors(): List<EffectExecutor<*>> = listOf(
-        MillExecutor(),
         ShuffleLibraryExecutor(),
         ShuffleGraveyardIntoLibraryExecutor(),
 

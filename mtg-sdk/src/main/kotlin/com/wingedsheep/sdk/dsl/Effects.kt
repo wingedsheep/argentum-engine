@@ -273,7 +273,7 @@ object Effects {
      * Mill N cards.
      */
     fun Mill(count: Int, target: EffectTarget = EffectTarget.Controller): Effect =
-        MillEffect(count, target)
+        EffectPatterns.mill(count, target)
 
     /**
      * Each player may search their library for up to X cards matching a filter.

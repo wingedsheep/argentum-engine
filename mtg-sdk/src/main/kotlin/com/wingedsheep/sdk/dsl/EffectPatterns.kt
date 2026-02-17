@@ -470,6 +470,92 @@ object EffectPatterns {
     )
 
     /**
+     * Mill N — Put the top N cards of a player's library into their graveyard.
+     *
+     * Creates a Gather → Move pipeline.
+     *
+     * Example: "Mill 3" or "Target player mills 3 cards"
+     * ```kotlin
+     * Effects.Mill(3)
+     * Effects.Mill(3, EffectTarget.ContextTarget(0))
+     * ```
+     *
+     * @param count How many cards to mill
+     * @param target Who gets milled (default: controller)
+     */
+    fun mill(count: Int, target: EffectTarget = EffectTarget.Controller): CompositeEffect {
+        val player = when (target) {
+            EffectTarget.Controller -> Player.You
+            is EffectTarget.ContextTarget -> Player.ContextPlayer(target.index)
+            is EffectTarget.PlayerRef -> target.player
+            else -> Player.You
+        }
+        return CompositeEffect(
+            listOf(
+                GatherCardsEffect(
+                    source = CardSource.TopOfLibrary(DynamicAmount.Fixed(count), player),
+                    storeAs = "milled"
+                ),
+                MoveCollectionEffect(
+                    from = "milled",
+                    destination = CardDestination.ToZone(Zone.GRAVEYARD, player)
+                )
+            )
+        )
+    }
+
+    /**
+     * Look at the top X cards of your library, put any number matching a filter
+     * onto the battlefield, then shuffle the rest back.
+     *
+     * Creates a Gather → Select → Move → Shuffle pipeline.
+     *
+     * Example: Ajani's ultimate — "Look at the top X cards of your library,
+     * where X is your life total. You may put any number of nonland permanent cards
+     * with mana value 3 or less from among them onto the battlefield. Then shuffle."
+     * ```kotlin
+     * EffectPatterns.lookAtTopXAndPutOntoBattlefield(
+     *     countSource = DynamicAmount.YourLifeTotal,
+     *     filter = GameObjectFilter.NonlandPermanent.manaValueAtMost(3)
+     * )
+     * ```
+     *
+     * @param countSource Dynamic amount determining how many cards to look at
+     * @param filter Which cards may be put onto the battlefield
+     * @param shuffleAfter Whether to shuffle the library after (default: true)
+     */
+    fun lookAtTopXAndPutOntoBattlefield(
+        countSource: DynamicAmount,
+        filter: GameObjectFilter,
+        shuffleAfter: Boolean = true
+    ): CompositeEffect {
+        val restPlacement = if (shuffleAfter) ZonePlacement.Shuffled else ZonePlacement.Default
+        return CompositeEffect(
+            listOf(
+                GatherCardsEffect(
+                    source = CardSource.TopOfLibrary(countSource),
+                    storeAs = "looked"
+                ),
+                SelectFromCollectionEffect(
+                    from = "looked",
+                    selection = SelectionMode.ChooseUpTo(countSource),
+                    filter = filter,
+                    storeSelected = "toBattlefield",
+                    storeRemainder = "rest"
+                ),
+                MoveCollectionEffect(
+                    from = "toBattlefield",
+                    destination = CardDestination.ToZone(Zone.BATTLEFIELD)
+                ),
+                MoveCollectionEffect(
+                    from = "rest",
+                    destination = CardDestination.ToZone(Zone.LIBRARY, placement = restPlacement)
+                )
+            )
+        )
+    }
+
+    /**
      * Reveal the top N cards of your library. An opponent chooses a card matching
      * the filter from among them. Put that card onto the battlefield and the rest
      * into your graveyard.

@@ -8,50 +8,6 @@ import kotlinx.serialization.Serializable
 // =============================================================================
 
 /**
- * Mill N - Put the top N cards of a player's library into their graveyard.
- * "Mill 3" or "Target player mills 3 cards"
- */
-@SerialName("Mill")
-@Serializable
-data class MillEffect(
-    val count: Int,
-    val target: EffectTarget = EffectTarget.Controller
-) : Effect {
-    override val description: String = when (target) {
-        EffectTarget.Controller -> "Mill $count"
-        else -> "${target.description.replaceFirstChar { it.uppercase() }} mills $count"
-    }
-}
-
-/**
- * Look at the top X cards of your library where X is determined dynamically,
- * and put any number of cards matching a filter onto the battlefield.
- * Then shuffle.
- *
- * Used for effects like Ajani's ultimate:
- * "Look at the top X cards of your library, where X is your life total.
- *  You may put any number of nonland permanent cards with mana value 3 or less
- *  from among them onto the battlefield. Then shuffle."
- *
- * @property countSource What determines how many cards to look at
- * @property filter Cards matching this filter may be put onto the battlefield
- * @property shuffleAfter Whether to shuffle after (typically true)
- */
-@SerialName("LookAtTopXPutOntoBattlefield")
-@Serializable
-data class LookAtTopXPutOntoBattlefieldEffect(
-    val countSource: DynamicAmount,
-    val filter: GameObjectFilter,
-    val shuffleAfter: Boolean = true
-) : Effect {
-    override val description: String = buildString {
-        append("Look at the top X cards of your library, where X is ${countSource.description}. ")
-        append("You may put any number of ${filter.description}s from among them onto the battlefield")
-        if (shuffleAfter) append(". Then shuffle")
-    }
-}
-
-/**
  * Shuffle a player's library.
  * "Shuffle your library" or "Target player shuffles their library"
  */
