@@ -1,8 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
+import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.model.CastTimeCreatureTypeSource
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.ChooseCreatureTypeReturnFromGraveyardEffect
 
 /**
  * Aphetto Dredging
@@ -16,8 +17,10 @@ val AphettoDredging = card("Aphetto Dredging") {
     typeLine = "Sorcery"
     oracleText = "Return up to three target creature cards of the creature type of your choice from your graveyard to your hand."
 
+    castTimeCreatureTypeChoice = CastTimeCreatureTypeSource.GRAVEYARD
+
     spell {
-        effect = ChooseCreatureTypeReturnFromGraveyardEffect(count = 3)
+        effect = EffectPatterns.chooseCreatureTypeReturnFromGraveyard(count = 3)
     }
 
     metadata {

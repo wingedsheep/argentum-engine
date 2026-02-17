@@ -747,4 +747,150 @@ object EffectPatterns {
             )
         )
     )
+
+    /**
+     * Choose a creature type, then reveal the top card of your library.
+     * If it's a creature of the chosen type, put it into your hand.
+     * Otherwise, put it into your graveyard.
+     *
+     * Creates a ChooseCreatureType → Gather(top 1, revealed) → Select(All, creature + matchChosenType)
+     * → Move(hand) → Move(graveyard) pipeline.
+     *
+     * Used for Bloodline Shaman.
+     */
+    fun chooseCreatureTypeRevealTop(): CompositeEffect = CompositeEffect(
+        listOf(
+            ChooseCreatureTypeEffect,
+            GatherCardsEffect(
+                source = CardSource.TopOfLibrary(DynamicAmount.Fixed(1)),
+                storeAs = "topCard",
+                revealed = true
+            ),
+            SelectFromCollectionEffect(
+                from = "topCard",
+                selection = SelectionMode.All,
+                filter = GameObjectFilter.Creature,
+                matchChosenCreatureType = true,
+                storeSelected = "matched",
+                storeRemainder = "unmatched"
+            ),
+            MoveCollectionEffect(
+                from = "matched",
+                destination = CardDestination.ToZone(Zone.HAND)
+            ),
+            MoveCollectionEffect(
+                from = "unmatched",
+                destination = CardDestination.ToZone(Zone.GRAVEYARD)
+            )
+        )
+    )
+
+    /**
+     * Each player may search their library for up to N cards matching a filter,
+     * reveal those cards, put them into their hand, then shuffle.
+     *
+     * Creates a ForEachPlayer → searchLibrary pipeline.
+     *
+     * Used for Weird Harvest.
+     *
+     * @param filter Which cards qualify (e.g., Creature)
+     * @param count How many cards each player may search for
+     */
+    fun eachPlayerSearchesLibrary(
+        filter: GameObjectFilter,
+        count: DynamicAmount
+    ): ForEachPlayerEffect = ForEachPlayerEffect(
+        players = Player.Each,
+        effects = listOf(
+            GatherCardsEffect(
+                source = CardSource.FromZone(Zone.LIBRARY, Player.You, filter),
+                storeAs = "searchable"
+            ),
+            SelectFromCollectionEffect(
+                from = "searchable",
+                selection = SelectionMode.ChooseUpTo(count),
+                storeSelected = "found"
+            ),
+            MoveCollectionEffect(
+                from = "found",
+                destination = CardDestination.ToZone(Zone.HAND),
+                revealed = true
+            ),
+            ShuffleLibraryEffect()
+        )
+    )
+
+    /**
+     * Each player discards any number of cards, then draws that many cards.
+     * Optionally the controller draws additional cards.
+     *
+     * Creates a ForEachPlayer → Gather(hand) → Select(UpTo) → Move(graveyard, Discard)
+     * → Draw(count) pipeline, followed by optional controller bonus draw.
+     *
+     * Used for Flux.
+     *
+     * @param controllerBonusDraw Extra cards the controller draws after the effect
+     */
+    fun eachPlayerDiscardsDraws(
+        controllerBonusDraw: Int = 0
+    ): CompositeEffect {
+        val effects = mutableListOf<Effect>(
+            ForEachPlayerEffect(
+                players = Player.Each,
+                effects = listOf(
+                    GatherCardsEffect(
+                        source = CardSource.FromZone(Zone.HAND, Player.You),
+                        storeAs = "hand"
+                    ),
+                    SelectFromCollectionEffect(
+                        from = "hand",
+                        selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(100)),
+                        storeSelected = "toDiscard"
+                    ),
+                    MoveCollectionEffect(
+                        from = "toDiscard",
+                        destination = CardDestination.ToZone(Zone.GRAVEYARD),
+                        moveType = MoveType.Discard
+                    ),
+                    DrawCardsEffect(DynamicAmount.VariableReference("toDiscard_count"))
+                )
+            )
+        )
+        if (controllerBonusDraw > 0) {
+            effects.add(DrawCardsEffect(controllerBonusDraw))
+        }
+        return CompositeEffect(effects)
+    }
+
+    /**
+     * Choose a creature type (at resolution), then select up to N creature cards
+     * of that type from your graveyard and return them to your hand.
+     *
+     * Creates a ChooseCreatureType → Gather(graveyard, creature) →
+     * Select(UpTo, matchChosenType) → Move(hand) pipeline.
+     *
+     * Used for Aphetto Dredging.
+     *
+     * @param count Maximum number of cards to return
+     */
+    fun chooseCreatureTypeReturnFromGraveyard(
+        count: Int
+    ): CompositeEffect = CompositeEffect(
+        listOf(
+            GatherCardsEffect(
+                source = CardSource.FromZone(Zone.GRAVEYARD, Player.You, GameObjectFilter.Creature),
+                storeAs = "graveyardCreatures"
+            ),
+            SelectFromCollectionEffect(
+                from = "graveyardCreatures",
+                selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(count)),
+                matchChosenCreatureType = true,
+                storeSelected = "chosen"
+            ),
+            MoveCollectionEffect(
+                from = "chosen",
+                destination = CardDestination.ToZone(Zone.HAND)
+            )
+        )
+    )
 }

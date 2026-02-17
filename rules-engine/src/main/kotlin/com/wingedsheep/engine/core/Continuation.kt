@@ -256,42 +256,6 @@ data class HandSizeDiscardContinuation(
 ) : ContinuationFrame
 
 /**
- * Resume after a player selects cards for "each player selects, then draws" effects.
- *
- * Used for effects like Flux, Windfall, etc. where each player selects cards
- * (which get discarded when processed) and then draws based on how many they selected.
- *
- * The continuation tracks pending draws and remaining players. When a player's
- * selection is processed, their cards are discarded and their draw count is recorded.
- * After all players have selected, draws are executed.
- *
- * @property sourceId The spell/ability causing the effect
- * @property sourceName Name for display
- * @property controllerId The controller of the effect
- * @property currentPlayerId The player whose selection we are waiting for
- * @property remainingPlayers Players who still need to make their selection after current (APNAP order)
- * @property drawAmounts How many cards each completed player will draw
- * @property controllerBonusDraw Extra cards the controller draws after the effect
- * @property minSelection Minimum cards each player must select (0 for "any number")
- * @property maxSelection Maximum cards each player can select (null means up to hand size)
- * @property selectionPrompt Prompt to show players when selecting
- */
-@Serializable
-data class EachPlayerSelectsThenDrawsContinuation(
-    override val decisionId: String,
-    val sourceId: EntityId?,
-    val sourceName: String?,
-    val controllerId: EntityId,
-    val currentPlayerId: EntityId,
-    val remainingPlayers: List<EntityId>,
-    val drawAmounts: Map<EntityId, Int>,
-    val controllerBonusDraw: Int,
-    val minSelection: Int,
-    val maxSelection: Int?,
-    val selectionPrompt: String
-) : ContinuationFrame
-
-/**
  * Resume after player selects a card from their graveyard.
  *
  * Used for spells like Elven Cache and Déjà Vu that let the player
@@ -480,48 +444,6 @@ data class SelectFromCollectionContinuation(
 
 
 /**
- * Resume after player chooses a creature type for graveyard retrieval.
- *
- * Used for Aphetto Dredging: "Return up to three target creature cards of the creature type
- * of your choice from your graveyard to your hand."
- *
- * Step 1: Player chooses a creature type from types present in their graveyard.
- * The continuation handler then presents a card selection for cards of that type.
- *
- * @property controllerId The player who cast the spell
- * @property sourceId The spell/ability that caused this effect
- * @property sourceName Name of the source for event messages
- * @property count Maximum number of cards to return
- * @property creatureTypes The creature type options presented (indexed by OptionChosenResponse.optionIndex)
- */
-@Serializable
-data class ChooseCreatureTypeReturnContinuation(
-    override val decisionId: String,
-    val controllerId: EntityId,
-    val sourceId: EntityId?,
-    val sourceName: String?,
-    val count: Int,
-    val creatureTypes: List<String>
-) : ContinuationFrame
-
-/**
- * Resume after player selects cards from graveyard to return to hand.
- *
- * Step 2 of the choose-type-then-return flow. Moves selected cards from graveyard to hand.
- *
- * @property controllerId The player whose graveyard and hand are involved
- * @property sourceId The spell/ability that caused this effect
- * @property sourceName Name of the source for event messages
- */
-@Serializable
-data class GraveyardToHandContinuation(
-    override val decisionId: String,
-    val controllerId: EntityId,
-    val sourceId: EntityId?,
-    val sourceName: String?
-) : ContinuationFrame
-
-/**
  * Resume after player chooses a color for protection granting effects.
  *
  * Used for effects like Akroma's Blessing: "Choose a color. Creatures you control
@@ -655,27 +577,6 @@ data class ChooseToCreatureTypeContinuation(
 ) : ContinuationFrame
 
 /**
- * Resume after player chooses a creature type for Bloodline Shaman-style effects.
- *
- * "Choose a creature type. Reveal the top card of your library.
- * If that card is a creature card of the chosen type, put it into your hand.
- * Otherwise, put it into your graveyard."
- *
- * @property controllerId The player who activated the ability
- * @property sourceId The source permanent
- * @property sourceName Name of the source for event messages
- * @property creatureTypes The creature type options (indexed by OptionChosenResponse.optionIndex)
- */
-@Serializable
-data class ChooseCreatureTypeRevealTopContinuation(
-    override val decisionId: String,
-    val controllerId: EntityId,
-    val sourceId: EntityId?,
-    val sourceName: String?,
-    val creatureTypes: List<String>
-) : ContinuationFrame
-
-/**
  * Resume after player chooses a creature type in a pipeline context.
  *
  * Stores the chosen type into the EffectContinuation below on the stack
@@ -689,27 +590,6 @@ data class ChooseCreatureTypeRevealTopContinuation(
  */
 @Serializable
 data class ChooseCreatureTypePipelineContinuation(
-    override val decisionId: String,
-    val controllerId: EntityId,
-    val sourceId: EntityId?,
-    val sourceName: String?,
-    val creatureTypes: List<String>
-) : ContinuationFrame
-
-/**
- * Resume after player chooses a creature type for "reveal until creature type" effects.
- *
- * "Choose a creature type. Reveal cards from the top of your library until you reveal
- * a creature card of that type. Put that card onto the battlefield and shuffle the rest
- * into your library."
- *
- * @property controllerId The player who activated the ability
- * @property sourceId The source permanent
- * @property sourceName Name of the source for event messages
- * @property creatureTypes The creature type options (indexed by OptionChosenResponse.optionIndex)
- */
-@Serializable
-data class RevealUntilCreatureTypeContinuation(
     override val decisionId: String,
     val controllerId: EntityId,
     val sourceId: EntityId?,
@@ -1074,7 +954,7 @@ data class ChooseCreatureTypeEntersContinuation(
  * @property xValue The X value if applicable
  * @property sacrificedPermanents Permanents sacrificed as additional costs
  * @property targetRequirements The target requirements for resolution-time re-validation
- * @property count Maximum number of cards to return (for ChooseCreatureTypeReturnFromGraveyardEffect)
+ * @property count Legacy field, unused by pipeline effects
  * @property creatureTypes The creature type options (indexed by OptionChosenResponse.optionIndex)
  */
 @Serializable
@@ -1210,33 +1090,6 @@ data class EachPlayerMayRevealCreaturesContinuation(
     val tokenColors: Set<com.wingedsheep.sdk.core.Color>,
     val tokenCreatureTypes: Set<String>,
     val tokenImageUri: String? = null
-) : ContinuationFrame
-
-/**
- * Resume after a player selects cards from a library search in "each player searches" effect.
- *
- * Used by Weird Harvest: "Each player may search their library for up to X creature cards,
- * reveal those cards, put them into their hand, then shuffle."
- *
- * After the current player selects cards, processes the selection (moves to hand, reveals,
- * shuffles), then asks the next player.
- *
- * @property currentPlayerId The player who just made a selection
- * @property remainingPlayers Players still to search (in APNAP order)
- * @property sourceId The spell/ability that caused this
- * @property sourceName Name of the source for event messages
- * @property filter Filter for which cards qualify
- * @property maxCount Maximum number of cards each player can search for
- */
-@Serializable
-data class EachPlayerSearchesLibraryContinuation(
-    override val decisionId: String,
-    val currentPlayerId: EntityId,
-    val remainingPlayers: List<EntityId>,
-    val sourceId: EntityId?,
-    val sourceName: String?,
-    val filter: GameObjectFilter,
-    val maxCount: Int
 ) : ContinuationFrame
 
 /**

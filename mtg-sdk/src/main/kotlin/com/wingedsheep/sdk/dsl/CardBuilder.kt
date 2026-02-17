@@ -181,6 +181,12 @@ class CardBuilder(private val name: String) {
      */
     var morph: String? = null
 
+    /**
+     * If set, the caster must choose a creature type during casting.
+     * The source determines where to look for available creature types.
+     */
+    var castTimeCreatureTypeChoice: CastTimeCreatureTypeSource? = null
+
     // =========================================================================
     // Internal State
     // =========================================================================
@@ -373,7 +379,8 @@ class CardBuilder(private val name: String) {
             replacementEffects = replacementEffects.toList(),
             additionalCosts = additionalCosts.toList(),
             auraTarget = auraTarget,
-            castRestrictions = spellBuilder?.restrictions ?: emptyList()
+            castRestrictions = spellBuilder?.restrictions ?: emptyList(),
+            castTimeCreatureTypeChoice = castTimeCreatureTypeChoice
         )
 
         // Build metadata

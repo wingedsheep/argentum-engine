@@ -10,6 +10,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.Chooser
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.SelectFromCollectionEffect
@@ -55,13 +56,24 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
         }
 
         // Apply filter to narrow selectable cards (e.g., "creature card" for Animal Magnetism)
-        val eligibleCards = if (effect.filter != GameObjectFilter.Any) {
+        var eligibleCards = if (effect.filter != GameObjectFilter.Any) {
             val predicateContext = PredicateContext.fromEffectContext(context)
             cards.filter { cardId ->
                 predicateEvaluator.matches(state, cardId, effect.filter, predicateContext)
             }
         } else {
             cards
+        }
+
+        // Additionally filter by chosen creature type if requested
+        if (effect.matchChosenCreatureType) {
+            val chosenType = context.chosenCreatureType
+            if (chosenType != null) {
+                eligibleCards = eligibleCards.filter { cardId ->
+                    val typeLine = state.getEntity(cardId)?.get<CardComponent>()?.typeLine
+                    typeLine != null && typeLine.hasSubtype(Subtype(chosenType))
+                }
+            }
         }
 
         // Resolve who makes the decision

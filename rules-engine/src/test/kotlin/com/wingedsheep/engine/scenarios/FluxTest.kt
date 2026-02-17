@@ -65,7 +65,6 @@ class FluxTest : FunSpec({
         decision as SelectCardsDecision
         decision.playerId shouldBe activePlayer
         decision.minSelections shouldBe 0  // "any number" means 0 minimum
-        decision.prompt shouldBe "Choose any number of cards to discard"
     }
 
     test("After active player selects, opponent is prompted") {

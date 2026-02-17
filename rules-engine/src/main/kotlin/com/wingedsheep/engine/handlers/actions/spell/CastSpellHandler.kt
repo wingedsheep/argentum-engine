@@ -44,7 +44,6 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.CastRestriction
 import com.wingedsheep.sdk.scripting.ChooseCreatureTypeModifyStatsEffect
-import com.wingedsheep.sdk.scripting.ChooseCreatureTypeReturnFromGraveyardEffect
 import com.wingedsheep.sdk.scripting.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
@@ -438,14 +437,15 @@ class CastSpellHandler(
         }
 
         // Check if spell requires a creature type choice during casting (e.g., Aphetto Dredging)
-        val spellEffect = cardDef?.script?.spellEffect
-        if (spellEffect is ChooseCreatureTypeReturnFromGraveyardEffect) {
+        val castTimeChoice = cardDef?.script?.castTimeCreatureTypeChoice
+        if (castTimeChoice != null) {
             val pauseResult = pauseForCreatureTypeChoice(
-                currentState, action, spellEffect, sacrificedPermanentIds, spellTargetRequirements, events
+                currentState, action, castTimeChoice, sacrificedPermanentIds, spellTargetRequirements, events
             )
             if (pauseResult != null) return pauseResult
         }
 
+        val spellEffect = cardDef?.script?.spellEffect
         if (spellEffect is ChooseCreatureTypeModifyStatsEffect) {
             return pauseForCreatureTypeChoiceForStats(
                 currentState, action, sacrificedPermanentIds, spellTargetRequirements, events
@@ -795,23 +795,27 @@ class CastSpellHandler(
 
     /**
      * Check if the spell needs a creature type choice during casting (e.g., Aphetto Dredging).
-     * If so, scan the caster's graveyard for creature types and pause for the choice.
-     * Returns null if no pause is needed (e.g., no creature types in graveyard).
+     * If so, scan the appropriate zone for creature types and pause for the choice.
+     * Returns null if no pause is needed (e.g., no creature types found).
      */
     private fun pauseForCreatureTypeChoice(
         currentState: GameState,
         action: CastSpell,
-        effect: ChooseCreatureTypeReturnFromGraveyardEffect,
+        source: com.wingedsheep.sdk.model.CastTimeCreatureTypeSource,
         sacrificedPermanentIds: List<EntityId>,
         spellTargetRequirements: List<com.wingedsheep.sdk.targeting.TargetRequirement>,
         priorEvents: List<GameEvent>
     ): ExecutionResult? {
-        val graveyardZone = ZoneKey(action.playerId, Zone.GRAVEYARD)
-        val graveyard = currentState.getZone(graveyardZone)
+        // Determine which zone to scan based on source
+        val zone = when (source) {
+            com.wingedsheep.sdk.model.CastTimeCreatureTypeSource.GRAVEYARD ->
+                ZoneKey(action.playerId, Zone.GRAVEYARD)
+        }
+        val zoneCards = currentState.getZone(zone)
 
         // Collect creature subtypes and which cards have each type
         val typeToCardIds = mutableMapOf<String, MutableList<EntityId>>()
-        for (cardId in graveyard) {
+        for (cardId in zoneCards) {
             val cc = currentState.getEntity(cardId)?.get<CardComponent>() ?: continue
             val typeLine = cc.typeLine ?: continue
             if (typeLine.isCreature) {
@@ -821,8 +825,7 @@ class CastSpellHandler(
             }
         }
 
-        // If no creature types in graveyard, skip the decision — casting proceeds normally
-        // and the effect will find nothing to return during resolution
+        // If no creature types found, skip the decision — casting proceeds normally
         if (typeToCardIds.isEmpty()) return null
 
         val sortedTypes = typeToCardIds.keys.sorted()
@@ -856,7 +859,7 @@ class CastSpellHandler(
             xValue = action.xValue,
             sacrificedPermanents = sacrificedPermanentIds,
             targetRequirements = spellTargetRequirements,
-            count = effect.count,
+            count = 0,
             creatureTypes = sortedTypes
         )
 

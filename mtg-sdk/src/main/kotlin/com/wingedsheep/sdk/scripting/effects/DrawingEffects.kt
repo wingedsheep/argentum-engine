@@ -128,43 +128,6 @@ data class EachPlayerMayDrawEffect(
 }
 
 /**
- * Each player discards cards, then draws that many cards.
- * Used for Flux, Windfall, and similar effects.
- *
- * @param minDiscard Minimum cards to discard (0 for "any number")
- * @param maxDiscard Maximum cards to discard (null means up to hand size)
- * @param discardEntireHand If true, each player must discard their entire hand
- * @param controllerBonusDraw Extra cards the controller draws after the effect
- */
-@SerialName("EachPlayerDiscardsDraws")
-@Serializable
-data class EachPlayerDiscardsDrawsEffect(
-    val minDiscard: Int = 0,
-    val maxDiscard: Int? = null,
-    val discardEntireHand: Boolean = false,
-    val controllerBonusDraw: Int = 0
-) : Effect {
-    override val description: String = buildString {
-        if (discardEntireHand) {
-            append("Each player discards their hand, then draws that many cards")
-        } else if (minDiscard == 0 && maxDiscard == null) {
-            append("Each player discards any number of cards, then draws that many cards")
-        } else {
-            append("Each player discards ")
-            if (minDiscard == maxDiscard) {
-                append("$minDiscard card${if (minDiscard != 1) "s" else ""}")
-            } else {
-                append("$minDiscard to ${maxDiscard ?: "any number of"} cards")
-            }
-            append(", then draws that many cards")
-        }
-        if (controllerBonusDraw > 0) {
-            append(". Draw ${if (controllerBonusDraw == 1) "a card" else "$controllerBonusDraw cards"}")
-        }
-    }
-}
-
-/**
  * Look at target player's hand.
  * Used for Ingenious Thief and similar "peek" effects.
  */

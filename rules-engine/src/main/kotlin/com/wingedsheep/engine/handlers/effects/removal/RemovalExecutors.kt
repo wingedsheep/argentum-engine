@@ -28,7 +28,6 @@ class RemovalExecutors : ExecutorModule {
 
     override fun executors(): List<EffectExecutor<*>> = listOf(
         AnyPlayerMayPayExecutor(),
-        ChooseCreatureTypeReturnExecutor(),
         DestroyAllExecutor(),
         DestroyAllSharingTypeWithSacrificedExecutor(),
         BounceAndChainCopyExecutor(),

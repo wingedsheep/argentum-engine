@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.support
 
 import com.wingedsheep.sdk.core.*
+import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.CreatureStats
@@ -460,7 +461,7 @@ object TestCards {
         manaCost = ManaCost.parse("{2}{U}"),
         oracleText = "Each player discards any number of cards, then draws that many cards. Draw a card.",
         script = CardScript.spell(
-            effect = EachPlayerDiscardsDrawsEffect(controllerBonusDraw = 1)
+            effect = EffectPatterns.eachPlayerDiscardsDraws(controllerBonusDraw = 1)
         )
     )
 

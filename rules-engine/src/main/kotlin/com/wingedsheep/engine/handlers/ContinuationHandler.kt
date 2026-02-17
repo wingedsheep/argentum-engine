@@ -115,13 +115,9 @@ class ContinuationHandler(
             is PreventDamageChainCopyTargetContinuation -> chainSpellResumer.resumePreventDamageChainCopyTarget(stateAfterPop, continuation, response, cfm)
 
             // Creature type choices
-            is ChooseCreatureTypeReturnContinuation -> creatureTypeResumer.resumeChooseCreatureTypeReturn(stateAfterPop, continuation, response, cfm)
-            is GraveyardToHandContinuation -> creatureTypeResumer.resumeGraveyardToHand(stateAfterPop, continuation, response, cfm)
             is ChooseFromCreatureTypeContinuation -> creatureTypeResumer.resumeChooseFromCreatureType(stateAfterPop, continuation, response, cfm)
             is ChooseToCreatureTypeContinuation -> creatureTypeResumer.resumeChooseToCreatureType(stateAfterPop, continuation, response, cfm)
-            is ChooseCreatureTypeRevealTopContinuation -> creatureTypeResumer.resumeChooseCreatureTypeRevealTop(stateAfterPop, continuation, response, cfm)
             is ChooseCreatureTypePipelineContinuation -> creatureTypeResumer.resumeChooseCreatureTypePipeline(stateAfterPop, continuation, response, cfm)
-            is RevealUntilCreatureTypeContinuation -> creatureTypeResumer.resumeRevealUntilCreatureType(stateAfterPop, continuation, response, cfm)
             is BecomeCreatureTypeContinuation -> creatureTypeResumer.resumeBecomeCreatureType(stateAfterPop, continuation, response, cfm)
             is ChooseCreatureTypeModifyStatsContinuation -> creatureTypeResumer.resumeChooseCreatureTypeModifyStats(stateAfterPop, continuation, response, cfm)
             is ChooseCreatureTypeGainControlContinuation -> creatureTypeResumer.resumeChooseCreatureTypeGainControl(stateAfterPop, continuation, response, cfm)
@@ -147,7 +143,6 @@ class ContinuationHandler(
             // Discard and draw
             is DiscardContinuation -> discardAndDrawResumer.resumeDiscard(stateAfterPop, continuation, response, cfm)
             is HandSizeDiscardContinuation -> discardAndDrawResumer.resumeHandSizeDiscard(stateAfterPop, continuation, response, cfm)
-            is EachPlayerSelectsThenDrawsContinuation -> discardAndDrawResumer.resumeEachPlayerSelectsThenDraws(stateAfterPop, continuation, response, cfm)
             is EachPlayerDiscardsOrLoseLifeContinuation -> discardAndDrawResumer.resumeEachPlayerDiscardsOrLoseLife(stateAfterPop, continuation, response, cfm)
             is EachPlayerChoosesDrawContinuation -> discardAndDrawResumer.resumeEachPlayerChoosesDraw(stateAfterPop, continuation, response, cfm)
 
@@ -181,8 +176,6 @@ class ContinuationHandler(
             is EachOpponentMayPutFromHandContinuation -> multiPlayerResumer.resumeEachOpponentMayPutFromHand(stateAfterPop, continuation, response, cfm)
             is ChooseAuraTargetForEntryFromHandContinuation -> multiPlayerResumer.resumeChooseAuraTargetForEntryFromHand(stateAfterPop, continuation, response, cfm)
             is EachPlayerMayRevealCreaturesContinuation -> multiPlayerResumer.resumeEachPlayerMayRevealCreatures(stateAfterPop, continuation, response, cfm)
-            is EachPlayerSearchesLibraryContinuation -> multiPlayerResumer.resumeEachPlayerSearchesLibrary(stateAfterPop, continuation, response, cfm)
-
             // Modal and clone
             is ModalContinuation -> modalAndCloneResumer.resumeModal(stateAfterPop, continuation, response, cfm)
             is ModalTargetContinuation -> modalAndCloneResumer.resumeModalTarget(stateAfterPop, continuation, response, cfm)

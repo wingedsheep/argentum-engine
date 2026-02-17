@@ -35,25 +35,6 @@ enum class SearchDestination(val description: String) {
 }
 
 /**
- * Choose a creature type, then return up to N creature cards of that type from your graveyard to your hand.
- *
- * Used for Aphetto Dredging: "Return up to three target creature cards of the creature type
- * of your choice from your graveyard to your hand."
- *
- * @property count Maximum number of cards to return
- */
-@SerialName("ChooseCreatureTypeReturnFromGraveyard")
-@Serializable
-data class ChooseCreatureTypeReturnFromGraveyardEffect(
-    val count: Int = 3
-) : Effect {
-    override val description: String = buildString {
-        append("Return up to $count target creature cards of the creature type of your choice ")
-        append("from your graveyard to your hand")
-    }
-}
-
-/**
  * Put a creature card from your hand onto the battlefield.
  * Used for effects like Kinscaer Sentry.
  */
@@ -71,25 +52,6 @@ data class PutCreatureFromHandOntoBattlefieldEffect(
         if (entersAttacking) append(" and attacking")
     }
 }
-
-/**
- * Choose a creature type, then reveal the top card of your library.
- * If that card is a creature card of the chosen type, put it into your hand.
- * Otherwise, put it into your graveyard.
- *
- * Used for Bloodline Shaman: "{T}: Choose a creature type. Reveal the top card
- * of your library. If that card is a creature card of the chosen type, put it
- * into your hand. Otherwise, put it into your graveyard."
- */
-@SerialName("ChooseCreatureTypeRevealTop")
-@Serializable
-data object ChooseCreatureTypeRevealTopEffect : Effect {
-    override val description: String =
-        "Choose a creature type. Reveal the top card of your library. " +
-        "If that card is a creature card of the chosen type, put it into your hand. " +
-        "Otherwise, put it into your graveyard"
-}
-
 
 
 /**
@@ -184,47 +146,6 @@ data class EachPlayerMayRevealCreaturesEffect(
  *
  * Requires tappedPermanents in EffectContext to determine valid choices.
  */
-/**
- * Choose a creature type. Reveal cards from the top of your library until you reveal
- * a creature card of that type. Put that card onto the battlefield and shuffle the rest
- * into your library.
- *
- * Used for Riptide Shapeshifter: "{2}{U}{U}, Sacrifice Riptide Shapeshifter:
- * Choose a creature type. Reveal cards from the top of your library until you reveal
- * a creature card of that type. Put that card onto the battlefield and shuffle the
- * rest into your library."
- */
-@SerialName("RevealUntilCreatureType")
-@Serializable
-data object RevealUntilCreatureTypeEffect : Effect {
-    override val description: String =
-        "Choose a creature type. Reveal cards from the top of your library until you reveal " +
-        "a creature card of that type. Put that card onto the battlefield and shuffle the " +
-        "rest into your library"
-}
-
-/**
- * Each player may search their library for up to X cards matching a filter,
- * reveal those cards, put them into their hand, then shuffle.
- *
- * Used for Weird Harvest: "Each player may search their library for up to X
- * creature cards, reveal those cards, put them into their hand, then shuffle."
- *
- * @property filter Filter for which cards qualify (e.g., Creature)
- * @property count How many cards each player may search for (typically DynamicAmount.XValue)
- */
-@SerialName("EachPlayerSearchesLibrary")
-@Serializable
-data class EachPlayerSearchesLibraryEffect(
-    val filter: GameObjectFilter,
-    val count: DynamicAmount
-) : Effect {
-    override val description: String = buildString {
-        append("Each player may search their library for up to ${count.description} ")
-        append("${filter.description} cards, reveal those cards, put them into their hand, then shuffle")
-    }
-}
-
 
 @SerialName("PutCreatureFromHandSharingTypeWithTapped")
 @Serializable

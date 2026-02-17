@@ -274,7 +274,7 @@ object Effects {
     fun EachPlayerSearchesLibrary(
         filter: GameObjectFilter,
         count: DynamicAmount
-    ): Effect = EachPlayerSearchesLibraryEffect(filter, count)
+    ): Effect = EffectPatterns.eachPlayerSearchesLibrary(filter, count)
 
     // =========================================================================
     // Protection Effects

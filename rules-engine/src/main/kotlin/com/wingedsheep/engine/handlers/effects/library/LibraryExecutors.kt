@@ -13,13 +13,11 @@ class LibraryExecutors : ExecutorModule {
 
 
         PutLandFromHandExecutor(),
-        ChooseCreatureTypeRevealTopExecutor(),
         RevealUntilExecutor(),
         EachOpponentMayPutFromHandExecutor(),
         PutCreatureFromHandSharingTypeExecutor(),
         ChooseCreatureTypePipelineExecutor(),
         EachPlayerMayRevealCreaturesExecutor(),
-        EachPlayerSearchesLibraryExecutor(),
         SearchTargetLibraryExileExecutor(),
         GatherCardsExecutor(),
         SelectFromCollectionExecutor(),

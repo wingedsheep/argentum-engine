@@ -152,10 +152,10 @@ class BloodlineShamanScenarioTest : ScenarioTestBase() {
                 game.activateBloodlineShaman()
                 game.resolveStack()
 
-                // With empty library, the effect should just resolve without asking for creature type
-                withClue("No pending decision should exist") {
-                    game.hasPendingDecision() shouldBe false
-                }
+                // Still asks for creature type choice (pipeline always does this step),
+                // but with empty library nothing is revealed or moved
+                game.chooseCreatureType("Elf")
+
                 withClue("Hand size should not change") {
                     game.handSize(1) shouldBe initialHandSize
                 }

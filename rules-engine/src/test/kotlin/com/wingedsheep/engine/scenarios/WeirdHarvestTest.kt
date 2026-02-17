@@ -1,18 +1,18 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.CardsSelectedResponse
-import com.wingedsheep.engine.core.SearchLibraryDecision
+import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.DynamicAmount
-import com.wingedsheep.sdk.scripting.EachPlayerSearchesLibraryEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -33,7 +33,7 @@ class WeirdHarvestTest : FunSpec({
         manaCost = ManaCost.parse("{X}{G}{G}"),
         oracleText = "Each player may search their library for up to X creature cards, reveal those cards, put them into their hand, then shuffle.",
         script = CardScript.spell(
-            effect = EachPlayerSearchesLibraryEffect(
+            effect = EffectPatterns.eachPlayerSearchesLibrary(
                 filter = Filters.Creature,
                 count = DynamicAmount.XValue
             )
@@ -73,13 +73,13 @@ class WeirdHarvestTest : FunSpec({
 
         // Active player should get a search library decision first (APNAP order)
         val decision1 = driver.pendingDecision
-        decision1.shouldBeInstanceOf<SearchLibraryDecision>()
+        decision1.shouldBeInstanceOf<SelectCardsDecision>()
         decision1.playerId shouldBe activePlayer
         decision1.maxSelections shouldBe 1
 
         // Find a Grizzly Bears in the options
         val activeCreature = decision1.options.firstOrNull { cardId ->
-            decision1.cards[cardId]?.name == "Grizzly Bears"
+            decision1.cardInfo?.get(cardId)?.name == "Grizzly Bears"
         }
         activeCreature shouldNotBe null
 
@@ -88,13 +88,13 @@ class WeirdHarvestTest : FunSpec({
 
         // Now opponent should get their search library decision
         val decision2 = driver.pendingDecision
-        decision2.shouldBeInstanceOf<SearchLibraryDecision>()
+        decision2.shouldBeInstanceOf<SelectCardsDecision>()
         decision2.playerId shouldBe opponent
         decision2.maxSelections shouldBe 1
 
         // Opponent selects a creature
         val opponentCreature = decision2.options.firstOrNull { cardId ->
-            decision2.cards[cardId]?.name == "Grizzly Bears"
+            decision2.cardInfo?.get(cardId)?.name == "Grizzly Bears"
         }
         opponentCreature shouldNotBe null
 
@@ -137,12 +137,12 @@ class WeirdHarvestTest : FunSpec({
 
         // Active player search
         val decision1 = driver.pendingDecision
-        decision1.shouldBeInstanceOf<SearchLibraryDecision>()
+        decision1.shouldBeInstanceOf<SelectCardsDecision>()
         decision1.maxSelections shouldBe 2
 
         // Select 2 creatures
         val creatures1 = decision1.options.filter { cardId ->
-            decision1.cards[cardId]?.name == "Grizzly Bears"
+            decision1.cardInfo?.get(cardId)?.name == "Grizzly Bears"
         }.take(2)
         creatures1.size shouldBe 2
 
@@ -150,11 +150,11 @@ class WeirdHarvestTest : FunSpec({
 
         // Opponent search
         val decision2 = driver.pendingDecision
-        decision2.shouldBeInstanceOf<SearchLibraryDecision>()
+        decision2.shouldBeInstanceOf<SelectCardsDecision>()
         decision2.maxSelections shouldBe 2
 
         val creatures2 = decision2.options.filter { cardId ->
-            decision2.cards[cardId]?.name == "Grizzly Bears"
+            decision2.cardInfo?.get(cardId)?.name == "Grizzly Bears"
         }.take(2)
         creatures2.size shouldBe 2
 
@@ -189,12 +189,12 @@ class WeirdHarvestTest : FunSpec({
 
         // Active player fails to find
         val decision1 = driver.pendingDecision
-        decision1.shouldBeInstanceOf<SearchLibraryDecision>()
+        decision1.shouldBeInstanceOf<SelectCardsDecision>()
         driver.submitDecision(activePlayer, CardsSelectedResponse(decision1.id, emptyList()))
 
         // Opponent still gets to search
         val decision2 = driver.pendingDecision
-        decision2.shouldBeInstanceOf<SearchLibraryDecision>()
+        decision2.shouldBeInstanceOf<SelectCardsDecision>()
         decision2.playerId shouldBe opponent
 
         // Opponent also fails to find
@@ -248,10 +248,10 @@ class WeirdHarvestTest : FunSpec({
 
         // All options should be creature cards (Grizzly Bears), not Forests
         val decision = driver.pendingDecision
-        decision.shouldBeInstanceOf<SearchLibraryDecision>()
+        decision.shouldBeInstanceOf<SelectCardsDecision>()
 
         for (cardId in decision.options) {
-            decision.cards[cardId]?.name shouldBe "Grizzly Bears"
+            decision.cardInfo?.get(cardId)?.name shouldBe "Grizzly Bears"
         }
     }
 })

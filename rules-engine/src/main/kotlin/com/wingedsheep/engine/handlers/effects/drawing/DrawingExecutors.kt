@@ -22,7 +22,6 @@ class DrawingExecutors(
         DiscardRandomExecutor(),
         DiscardAndChainCopyExecutor(targetFinder, decisionHandler),
         EachOpponentDiscardsExecutor(decisionHandler),
-        EachPlayerDiscardsDrawsExecutor(decisionHandler),
         EachPlayerDiscardsOrLoseLifeExecutor(decisionHandler),
         EachPlayerDrawsXExecutor(),
         EachPlayerMayDrawExecutor(decisionHandler),

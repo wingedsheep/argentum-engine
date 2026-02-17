@@ -7,6 +7,16 @@ import kotlinx.serialization.Serializable
 // Type alias for clarity - replacement effects are in the scripting package
 
 /**
+ * Source zone for cast-time creature type choice.
+ * Determines where to scan for available creature types during casting.
+ */
+@Serializable
+enum class CastTimeCreatureTypeSource {
+    /** Scan the caster's graveyard for creature subtypes */
+    GRAVEYARD
+}
+
+/**
  * CardScript contains the behavioral logic of a card - what happens when it's cast,
  * what abilities it has, and what targets it requires.
  *
@@ -127,7 +137,17 @@ data class CardScript(
      * Used for cards like "Cast only during the declare attackers step."
      * The engine enforces these during legal action calculation.
      */
-    val castRestrictions: List<CastRestriction> = emptyList()
+    val castRestrictions: List<CastRestriction> = emptyList(),
+
+    /**
+     * If set, the caster must choose a creature type during casting (not resolution).
+     * The chosen type is stored on the stack and available via EffectContext.chosenCreatureType
+     * at resolution time.
+     *
+     * The source determines where to look for available creature types:
+     * - GRAVEYARD: Scan the caster's graveyard for creature subtypes
+     */
+    val castTimeCreatureTypeChoice: CastTimeCreatureTypeSource? = null
 ) {
     /**
      * Whether this card has any scripted behavior.

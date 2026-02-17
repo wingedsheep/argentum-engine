@@ -185,7 +185,13 @@ data class SelectFromCollectionEffect(
     val chooser: Chooser = Chooser.Controller,
     val filter: GameObjectFilter = GameObjectFilter.Any,
     val storeSelected: String,
-    val storeRemainder: String? = null
+    val storeRemainder: String? = null,
+    /**
+     * When true, additionally filter eligible cards to only those with the
+     * creature type stored in the effect context's chosenCreatureType.
+     * Used for "creature card of the chosen type" patterns.
+     */
+    val matchChosenCreatureType: Boolean = false
 ) : Effect {
     override val description: String = buildString {
         if (chooser == Chooser.Opponent) append("An opponent ")
