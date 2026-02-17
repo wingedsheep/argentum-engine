@@ -339,6 +339,26 @@ data class AnyPlayerMayPayEffect(
 }
 
 /**
+ * Execute a list of sub-effects once for each target in the context.
+ *
+ * For each target, the sub-effects receive a context with only that one target
+ * as ContextTarget(0), plus fresh storedCollections. This enables cards like Kaboom!
+ * that repeat a pipeline per target.
+ *
+ * @property effects The sub-effects to execute for each target
+ */
+@SerialName("ForEachTarget")
+@Serializable
+data class ForEachTargetEffect(
+    val effects: List<Effect>
+) : Effect {
+    override val description: String = buildString {
+        append("For each target, ")
+        append(effects.joinToString(". ") { it.description.replaceFirstChar { c -> c.lowercase() } })
+    }
+}
+
+/**
  * Flip a coin. Execute one effect if you win, another if you lose.
  * "Flip a coin. If you win the flip, [wonEffect]. If you lose the flip, [lostEffect]."
  *

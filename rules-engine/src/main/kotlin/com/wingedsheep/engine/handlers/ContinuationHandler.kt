@@ -170,7 +170,9 @@ class ContinuationHandler(
             is ReturnFromGraveyardContinuation -> libraryAndZoneResumer.resumeReturnFromGraveyard(stateAfterPop, continuation, response, cfm)
             is MoveCollectionOrderContinuation -> libraryAndZoneResumer.resumeMoveCollectionOrder(stateAfterPop, continuation, response, cfm)
             is PutOnBottomOfLibraryContinuation -> libraryAndZoneResumer.resumePutOnBottomOfLibrary(stateAfterPop, continuation, response, cfm)
-            is KaboomReorderContinuation -> libraryAndZoneResumer.resumeKaboomReorder(stateAfterPop, continuation, response, cfm)
+            is ForEachTargetContinuation -> {
+                ExecutionResult.error(state, "ForEachTargetContinuation should not be at top of stack during decision resume")
+            }
             is PutFromHandContinuation -> libraryAndZoneResumer.resumePutFromHand(stateAfterPop, continuation, response, cfm)
             is SelectFromCollectionContinuation -> libraryAndZoneResumer.resumeSelectFromCollection(stateAfterPop, continuation, response, cfm)
 
@@ -405,6 +407,37 @@ class ContinuationHandler(
             }
 
             return ExecutionResult.success(triggerResult.newState, events + triggerResult.events)
+        }
+
+        if (nextContinuation is ForEachTargetContinuation && nextContinuation.remainingTargets.isNotEmpty()) {
+            val (_, stateAfterPop) = state.popContinuation()
+            val forEachTargetExecutor = com.wingedsheep.engine.handlers.effects.composite.ForEachTargetExecutor { s, e, c ->
+                effectExecutorRegistry.execute(s, e, c)
+            }
+            val outerContext = EffectContext(
+                sourceId = nextContinuation.sourceId,
+                controllerId = nextContinuation.controllerId,
+                opponentId = nextContinuation.opponentId,
+                xValue = nextContinuation.xValue,
+                targets = nextContinuation.remainingTargets
+            )
+            val result = forEachTargetExecutor.processTargets(
+                stateAfterPop,
+                nextContinuation.effects,
+                nextContinuation.remainingTargets,
+                outerContext
+            )
+
+            if (result.isPaused) {
+                return ExecutionResult.paused(
+                    result.state,
+                    result.pendingDecision!!,
+                    events + result.events
+                )
+            }
+
+            // Recursively check for more continuations
+            return checkForMoreContinuations(result.state, events.toMutableList().apply { addAll(result.events) })
         }
 
         if (nextContinuation is EffectContinuation && nextContinuation.remainingEffects.isNotEmpty()) {

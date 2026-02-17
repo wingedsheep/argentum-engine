@@ -180,64 +180,6 @@ class LibraryAndZoneContinuationResumer(
         return checkForMore(newState, events)
     }
 
-    /**
-     * Resume after player reorders revealed cards for Kaboom!'s "for each target" effect.
-     *
-     * Puts cards on bottom in chosen order, then continues processing remaining targets.
-     */
-    fun resumeKaboomReorder(
-        state: GameState,
-        continuation: KaboomReorderContinuation,
-        response: DecisionResponse,
-        checkForMore: CheckForMore
-    ): ExecutionResult {
-        if (response !is OrderedResponse) {
-            return ExecutionResult.error(state, "Expected ordered response for Kaboom! library bottom reorder")
-        }
-
-        val playerId = continuation.playerId
-        val orderedCards = response.orderedObjects
-        val libraryZone = ZoneKey(playerId, Zone.LIBRARY)
-
-        // Get current library and remove the reordered cards (they should already be removed)
-        val currentLibrary = state.getZone(libraryZone).toMutableList()
-        val cardsSet = orderedCards.toSet()
-        val remainingLibrary = currentLibrary.filter { it !in cardsSet }
-
-        // Place cards on the BOTTOM in the player's chosen order
-        val newLibrary = remainingLibrary + orderedCards
-        var newState = state.copy(
-            zones = state.zones + (libraryZone to newLibrary)
-        )
-
-        val events = mutableListOf<GameEvent>(
-            LibraryReorderedEvent(
-                playerId = playerId,
-                cardCount = orderedCards.size,
-                source = continuation.sourceName
-            )
-        )
-
-        // Continue processing remaining targets
-        if (continuation.remainingTargetIds.isNotEmpty()) {
-            val result = com.wingedsheep.engine.handlers.effects.library.RevealUntilNonlandDealDamageEachTargetExecutor.processTargets(
-                newState, playerId, continuation.sourceId, continuation.remainingTargetIds
-            )
-
-            if (result.isPaused) {
-                return ExecutionResult.paused(
-                    result.state,
-                    result.pendingDecision!!,
-                    events + result.events
-                )
-            }
-
-            return ExecutionResult.success(result.state, events + result.events)
-        }
-
-        return checkForMore(newState, events)
-    }
-
     fun resumePutFromHand(
         state: GameState,
         continuation: PutFromHandContinuation,

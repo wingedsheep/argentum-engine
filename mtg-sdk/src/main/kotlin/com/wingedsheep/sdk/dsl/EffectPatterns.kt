@@ -500,6 +500,68 @@ object EffectPatterns {
     )
 
     /**
+     * For each target, reveal cards from the top of your library until you reveal
+     * a nonland card. Deal damage equal to that card's mana value to that target.
+     * Put all revealed cards on the bottom of your library in any order.
+     *
+     * Used for Kaboom!
+     */
+    fun revealUntilNonlandDealDamageEachTarget(): ForEachTargetEffect = ForEachTargetEffect(
+        listOf(
+            RevealUntilEffect(
+                matchFilter = GameObjectFilter.Nonland,
+                storeMatch = "nonland",
+                storeRevealed = "allRevealed"
+            ),
+            DealDamageEffect(
+                amount = DynamicAmount.StoredCardManaValue("nonland"),
+                target = EffectTarget.ContextTarget(0)
+            ),
+            MoveCollectionEffect(
+                from = "allRevealed",
+                destination = CardDestination.ToZone(
+                    com.wingedsheep.sdk.core.Zone.LIBRARY,
+                    placement = ZonePlacement.Bottom
+                ),
+                order = CardOrder.ControllerChooses
+            )
+        )
+    )
+
+    /**
+     * Reveal cards from the top of your library until you reveal a nonland card.
+     * This creature gets +X/+0 until end of turn, where X is that card's mana value.
+     * Put the revealed cards on the bottom of your library in any order.
+     *
+     * Used for Goblin Machinist.
+     */
+    fun revealUntilNonlandModifyStats(): CompositeEffect = CompositeEffect(
+        listOf(
+            // Step 1: Reveal cards until a nonland is found
+            RevealUntilEffect(
+                matchFilter = GameObjectFilter.Nonland,
+                storeMatch = "nonland",
+                storeRevealed = "allRevealed"
+            ),
+            // Step 2: Buff self +X/+0 where X is the nonland's mana value
+            DynamicModifyStatsEffect(
+                powerModifier = DynamicAmount.StoredCardManaValue("nonland"),
+                toughnessModifier = DynamicAmount.Fixed(0),
+                target = EffectTarget.Self
+            ),
+            // Step 3: Put all revealed cards on the bottom in any order
+            MoveCollectionEffect(
+                from = "allRevealed",
+                destination = CardDestination.ToZone(
+                    Zone.LIBRARY,
+                    placement = ZonePlacement.Bottom
+                ),
+                order = CardOrder.ControllerChooses
+            )
+        )
+    )
+
+    /**
      * Choose a creature type. Reveal cards from the top of your library until you
      * reveal a creature card of that type. Put that card onto the battlefield and
      * shuffle the rest into your library.

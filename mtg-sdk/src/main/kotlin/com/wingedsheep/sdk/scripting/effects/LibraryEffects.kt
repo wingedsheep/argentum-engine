@@ -90,46 +90,7 @@ data object ChooseCreatureTypeRevealTopEffect : Effect {
         "Otherwise, put it into your graveyard"
 }
 
-/**
- * Reveal cards from the top of your library until you reveal a nonland card.
- * Deal damage equal to that card's mana value to the target.
- * Put the revealed cards on the bottom of your library in any order.
- *
- * Used for Erratic Explosion: "Choose any target. Reveal cards from the top of your library
- * until you reveal a nonland card. Erratic Explosion deals damage equal to that card's
- * mana value to that permanent or player. Put the revealed cards on the bottom of your
- * library in any order."
- *
- * @property target The target to deal damage to
- */
-@SerialName("RevealUntilNonlandDealDamage")
-@Serializable
-data class RevealUntilNonlandDealDamageEffect(
-    val target: EffectTarget
-) : Effect {
-    override val description: String =
-        "Reveal cards from the top of your library until you reveal a nonland card. " +
-        "Deal damage equal to that card's mana value to ${target.description}. " +
-        "Put the revealed cards on the bottom of your library in any order"
-}
 
-/**
- * Reveal cards from the top of your library until you reveal a nonland card.
- * This creature gets +X/+0 until end of turn, where X is that card's mana value.
- * Put the revealed cards on the bottom of your library in any order.
- *
- * Used for Goblin Machinist: "{2}{R}: Reveal cards from the top of your library until you
- * reveal a nonland card. Goblin Machinist gets +X/+0 until end of turn, where X is that
- * card's mana value. Put the revealed cards on the bottom of your library in any order."
- */
-@SerialName("RevealUntilNonlandModifyStats")
-@Serializable
-data object RevealUntilNonlandModifyStatsEffect : Effect {
-    override val description: String =
-        "Reveal cards from the top of your library until you reveal a nonland card. " +
-        "This creature gets +X/+0 until end of turn, where X is that card's mana value. " +
-        "Put the revealed cards on the bottom of your library in any order"
-}
 
 /**
  * Shuffle target player's graveyard into their library.
@@ -264,24 +225,6 @@ data class EachPlayerSearchesLibraryEffect(
     }
 }
 
-/**
- * For each target, reveal cards from the top of your library until you reveal a nonland card.
- * Deal damage equal to that card's mana value to that target.
- * Put the revealed cards on the bottom of your library in any order.
- *
- * Used for Kaboom!: "Choose any number of target players or planeswalkers. For each of them,
- * reveal cards from the top of your library until you reveal a nonland card, Kaboom! deals
- * damage equal to that card's mana value to that player or planeswalker, then you put the
- * revealed cards on the bottom of your library in any order."
- */
-@SerialName("RevealUntilNonlandDealDamageEachTarget")
-@Serializable
-data object RevealUntilNonlandDealDamageEachTargetEffect : Effect {
-    override val description: String =
-        "For each target, reveal cards from the top of your library until you reveal a nonland card. " +
-        "Deal damage equal to that card's mana value to that target. " +
-        "Put the revealed cards on the bottom of your library in any order"
-}
 
 @SerialName("PutCreatureFromHandSharingTypeWithTapped")
 @Serializable

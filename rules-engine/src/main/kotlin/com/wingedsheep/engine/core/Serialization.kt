@@ -182,7 +182,7 @@ val engineSerializersModule = SerializersModule {
         subclass(DrawReplacementTargetContinuation::class)
         subclass(ReadTheRunesContinuation::class)
         subclass(SearchTargetLibraryExileContinuation::class)
-        subclass(KaboomReorderContinuation::class)
+        subclass(ForEachTargetContinuation::class)
         subclass(TradeSecretsContinuation::class)
         subclass(SelectFromCollectionContinuation::class)
         subclass(MoveCollectionOrderContinuation::class)

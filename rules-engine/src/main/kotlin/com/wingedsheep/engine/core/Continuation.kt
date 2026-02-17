@@ -1882,23 +1882,28 @@ enum class ReadTheRunesPhase {
 }
 
 /**
- * Resume after player reorders revealed cards for Kaboom!'s "for each target" reveal effect.
+ * Continuation for ForEachTargetEffect.
  *
- * After the player puts the revealed cards on the bottom in order, the executor
- * continues with the next target's reveal-until-nonland sequence.
+ * When a sub-effect pipeline pauses for a decision during one iteration,
+ * this continuation stores the remaining targets so execution continues
+ * with the next target after the current pipeline completes.
  *
- * @property playerId The player whose library is being manipulated
+ * @property remainingTargets The targets still to process
+ * @property effects The sub-effects to execute for each remaining target
  * @property sourceId The spell that caused this effect
- * @property sourceName Name of the source for event messages
- * @property remainingTargetIds The target entity IDs still to process after this reorder
+ * @property controllerId The controller of the effect
+ * @property opponentId The opponent (if applicable)
+ * @property xValue The X value (if applicable)
  */
 @Serializable
-data class KaboomReorderContinuation(
+data class ForEachTargetContinuation(
     override val decisionId: String,
-    val playerId: EntityId,
+    val remainingTargets: List<ChosenTarget>,
+    val effects: List<Effect>,
     val sourceId: EntityId?,
-    val sourceName: String?,
-    val remainingTargetIds: List<EntityId>
+    val controllerId: EntityId,
+    val opponentId: EntityId?,
+    val xValue: Int?
 ) : ContinuationFrame
 
 /**

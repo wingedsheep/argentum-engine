@@ -129,6 +129,7 @@ object CardValidator {
     private fun collectIndicesRecursive(effect: Effect, indices: MutableList<Int>) {
         when (effect) {
             is CompositeEffect -> effect.effects.forEach { collectIndicesRecursive(it, indices) }
+            is ForEachTargetEffect -> effect.effects.forEach { collectIndicesRecursive(it, indices) }
             is MayEffect -> collectIndicesRecursive(effect.effect, indices)
             is ConditionalEffect -> {
                 collectIndicesRecursive(effect.effect, indices)
@@ -186,7 +187,6 @@ object CardValidator {
             is PreventNextDamageEffect -> effect.target
             is RemoveFromCombatEffect -> effect.target
             is ForceSacrificeEffect -> effect.target
-            is RevealUntilNonlandDealDamageEffect -> effect.target
             is DealDamageExileOnDeathEffect -> effect.target
             is DynamicModifyStatsEffect -> effect.target
             is GainControlEffect -> effect.target
