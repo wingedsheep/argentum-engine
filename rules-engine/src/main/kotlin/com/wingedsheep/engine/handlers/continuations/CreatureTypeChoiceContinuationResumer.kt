@@ -351,6 +351,37 @@ class CreatureTypeChoiceContinuationResumer(
     /**
      * Resume after player chose a creature type for "reveal until creature type" effects.
      *
+     * Stores the chosen creature type into the EffectContinuation below on the stack
+     * so subsequent pipeline effects can access it via EffectContext.chosenCreatureType.
+     */
+    fun resumeChooseCreatureTypePipeline(
+        state: GameState,
+        continuation: ChooseCreatureTypePipelineContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is OptionChosenResponse) {
+            return ExecutionResult.error(state, "Expected option choice response for creature type selection")
+        }
+
+        val chosenType = continuation.creatureTypes.getOrNull(response.optionIndex)
+            ?: return ExecutionResult.error(state, "Invalid creature type index: ${response.optionIndex}")
+
+        // Inject the chosen creature type into the next EffectContinuation on the stack
+        val nextFrame = state.peekContinuation()
+        val newState = if (nextFrame is EffectContinuation) {
+            val (_, stateAfterPop) = state.popContinuation()
+            stateAfterPop.pushContinuation(
+                nextFrame.copy(chosenCreatureType = chosenType)
+            )
+        } else {
+            state
+        }
+
+        return checkForMore(newState, emptyList())
+    }
+
+    /**
      * Reveals cards from the top of the library until a creature of the chosen type is found.
      * Puts that creature onto the battlefield and shuffles the rest into the library.
      */

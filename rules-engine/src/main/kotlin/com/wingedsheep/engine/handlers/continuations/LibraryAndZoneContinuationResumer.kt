@@ -108,11 +108,19 @@ class LibraryAndZoneContinuationResumer(
             }
         }
 
-        // Place cards on top of library in the chosen order
+        // Place cards in library in the chosen order
         val currentLibrary = newState.getZone(libraryZone)
-        newState = newState.copy(
-            zones = newState.zones + (libraryZone to orderedCards + currentLibrary)
-        )
+        newState = if (continuation.placement == com.wingedsheep.sdk.scripting.ZonePlacement.Bottom) {
+            // Bottom: append ordered cards at the end
+            newState.copy(
+                zones = newState.zones + (libraryZone to currentLibrary + orderedCards)
+            )
+        } else {
+            // Top (default): prepend ordered cards at the beginning
+            newState.copy(
+                zones = newState.zones + (libraryZone to orderedCards + currentLibrary)
+            )
+        }
 
         events.add(
             LibraryReorderedEvent(

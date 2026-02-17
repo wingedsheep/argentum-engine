@@ -1,9 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
 import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.RevealUntilCreatureTypeEffect
 
 /**
  * Riptide Shapeshifter
@@ -23,7 +23,7 @@ val RiptideShapeshifter = card("Riptide Shapeshifter") {
 
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{2}{U}{U}"), Costs.SacrificeSelf)
-        effect = RevealUntilCreatureTypeEffect
+        effect = EffectPatterns.revealUntilCreatureTypeToBattlefield()
     }
 
     metadata {

@@ -70,7 +70,8 @@ data class EffectContinuation(
     val opponentId: EntityId?,
     val xValue: Int?,
     val targets: List<ChosenTarget> = emptyList(),
-    val storedCollections: Map<String, List<EntityId>> = emptyMap()
+    val storedCollections: Map<String, List<EntityId>> = emptyMap(),
+    val chosenCreatureType: String? = null
 ) : ContinuationFrame {
     /**
      * Reconstruct the EffectContext from serialized fields.
@@ -81,7 +82,8 @@ data class EffectContinuation(
         opponentId = opponentId,
         xValue = xValue,
         targets = targets,
-        storedCollections = storedCollections
+        storedCollections = storedCollections,
+        chosenCreatureType = chosenCreatureType
     )
 }
 
@@ -444,7 +446,8 @@ data class MoveCollectionOrderContinuation(
     val sourceName: String?,
     val cards: List<EntityId>,
     val destinationZone: com.wingedsheep.sdk.core.Zone,
-    val destinationPlayerId: EntityId
+    val destinationPlayerId: EntityId,
+    val placement: com.wingedsheep.sdk.scripting.ZonePlacement = com.wingedsheep.sdk.scripting.ZonePlacement.Top
 ) : ContinuationFrame
 
 /**
@@ -729,6 +732,27 @@ data class ChooseToCreatureTypeContinuation(
  */
 @Serializable
 data class ChooseCreatureTypeRevealTopContinuation(
+    override val decisionId: String,
+    val controllerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val creatureTypes: List<String>
+) : ContinuationFrame
+
+/**
+ * Resume after player chooses a creature type in a pipeline context.
+ *
+ * Stores the chosen type into the EffectContinuation below on the stack
+ * (via chosenCreatureType field) so subsequent pipeline effects can access it
+ * via EffectContext.chosenCreatureType.
+ *
+ * @property controllerId The player choosing
+ * @property sourceId The ability source
+ * @property sourceName Name of the source for display
+ * @property creatureTypes The creature type options (indexed by OptionChosenResponse.optionIndex)
+ */
+@Serializable
+data class ChooseCreatureTypePipelineContinuation(
     override val decisionId: String,
     val controllerId: EntityId,
     val sourceId: EntityId?,

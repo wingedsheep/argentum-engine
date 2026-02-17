@@ -60,6 +60,12 @@ class DynamicAmountEvaluator(
                 0
             }
 
+            is DynamicAmount.StoredCardManaValue -> {
+                val cards = context.storedCollections[amount.collectionName] ?: return 0
+                val cardId = cards.firstOrNull() ?: return 0
+                state.getEntity(cardId)?.get<CardComponent>()?.manaValue ?: 0
+            }
+
             // Math operations
             is DynamicAmount.Add -> {
                 evaluate(state, amount.left, context) + evaluate(state, amount.right, context)

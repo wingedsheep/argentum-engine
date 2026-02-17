@@ -186,6 +186,7 @@ val engineSerializersModule = SerializersModule {
         subclass(TradeSecretsContinuation::class)
         subclass(SelectFromCollectionContinuation::class)
         subclass(MoveCollectionOrderContinuation::class)
+        subclass(ChooseCreatureTypePipelineContinuation::class)
     }
 
     // Component hierarchy (for GameState persistence)

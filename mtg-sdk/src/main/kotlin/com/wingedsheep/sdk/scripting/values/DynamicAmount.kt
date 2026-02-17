@@ -104,6 +104,17 @@ sealed interface DynamicAmount {
         override val description: String = "the stored $variableName"
     }
 
+    /**
+     * Mana value of a card stored in a named collection.
+     * Reads the first card from the stored collection and returns its mana value.
+     * Used for effects like Erratic Explosion: "damage equal to that card's mana value".
+     */
+    @SerialName("StoredCardManaValue")
+    @Serializable
+    data class StoredCardManaValue(val collectionName: String) : DynamicAmount {
+        override val description: String = "the mana value of the $collectionName card"
+    }
+
     // =========================================================================
     // Math Operations - Composable arithmetic on DynamicAmounts
     // =========================================================================
