@@ -25,7 +25,7 @@ type GetState = () => GameStore
 /**
  * Extract the relevant player ID from an event for log coloring.
  */
-function getEventPlayerId(event: { type: string; playerId?: string; casterId?: string; controllerId?: string; attackingPlayerId?: string; viewingPlayerId?: string; revealingPlayerId?: string }): EntityId | null {
+function getEventPlayerId(event: { type: string; playerId?: string; casterId?: string; controllerId?: string; attackingPlayerId?: string; viewingPlayerId?: string; revealingPlayerId?: string; activePlayerId?: string; newControllerId?: string }): EntityId | null {
   switch (event.type) {
     case 'lifeChanged': return event.playerId as EntityId
     case 'cardDrawn': return event.playerId as EntityId
@@ -40,7 +40,24 @@ function getEventPlayerId(event: { type: string; playerId?: string; casterId?: s
     case 'cardsRevealed': return event.revealingPlayerId as EntityId
     case 'turnedFaceUp': return event.controllerId as EntityId
     case 'coinFlipped': return event.playerId as EntityId
+    case 'turnChanged': return event.activePlayerId as EntityId
+    case 'permanentsSacrificed': return event.playerId as EntityId
+    case 'cardCycled': return event.playerId as EntityId
+    case 'libraryShuffled': return event.playerId as EntityId
+    case 'controlChanged': return event.newControllerId as EntityId
     default: return null
+  }
+}
+
+function getEventLogType(eventType: string): 'action' | 'turn' | 'combat' | 'system' {
+  switch (eventType) {
+    case 'turnChanged': return 'turn'
+    case 'creatureAttacked':
+    case 'creatureBlocked': return 'combat'
+    case 'abilityFizzled':
+    case 'gameEnded':
+    case 'playerLost': return 'system'
+    default: return 'action'
   }
 }
 
@@ -278,8 +295,9 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
         pendingEvents: [...state.pendingEvents, ...msg.events],
         eventLog: (msg.state.gameLog ?? []).map((e) => ({
           description: e.description,
-          playerId: getEventPlayerId(e as { type: string; playerId?: string; casterId?: string; controllerId?: string; attackingPlayerId?: string; viewingPlayerId?: string; revealingPlayerId?: string }),
+          playerId: getEventPlayerId(e as { type: string; playerId?: string; casterId?: string; controllerId?: string; attackingPlayerId?: string; viewingPlayerId?: string; revealingPlayerId?: string; activePlayerId?: string; newControllerId?: string }),
           timestamp: Date.now(),
+          type: getEventLogType((e as { type: string }).type),
         })),
         waitingForOpponentMulligan: false,
         revealedHandCardIds: handLookedAtEvent?.cardIds ?? handRevealedEvent?.cardIds ?? state.revealedHandCardIds,

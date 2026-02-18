@@ -225,8 +225,9 @@ class DrawReplacementContinuationResumer(
         val graveyardZone = ZoneKey(continuation.discardingPlayerId, Zone.GRAVEYARD)
         var newState = state.removeFromZone(handZone, cardToDiscard)
         newState = newState.addToZone(graveyardZone, cardToDiscard)
+        val discardCardName = state.getEntity(cardToDiscard)?.get<CardComponent>()?.name ?: "Card"
         val events = mutableListOf<GameEvent>(
-            CardsDiscardedEvent(continuation.discardingPlayerId, listOf(cardToDiscard))
+            CardsDiscardedEvent(continuation.discardingPlayerId, listOf(cardToDiscard), listOf(discardCardName))
         )
 
         // Continue with remaining draws

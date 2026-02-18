@@ -408,6 +408,85 @@ sealed interface ClientEvent {
             null -> "$cardName was turned face up"
         }
     ) : ClientEvent
+
+    // =========================================================================
+    // Turn Events
+    // =========================================================================
+
+    @Serializable
+    @SerialName("turnChanged")
+    data class TurnChanged(
+        val turnNumber: Int,
+        val activePlayerId: EntityId,
+        val isYourTurn: Boolean? = null,
+        override val description: String = when (isYourTurn) {
+            true -> "--- Turn $turnNumber (Your turn) ---"
+            false -> "--- Turn $turnNumber (Opponent's turn) ---"
+            null -> "--- Turn $turnNumber ---"
+        }
+    ) : ClientEvent
+
+    // =========================================================================
+    // Control Events
+    // =========================================================================
+
+    @Serializable
+    @SerialName("controlChanged")
+    data class ControlChanged(
+        val permanentName: String,
+        val newControllerId: EntityId,
+        val isYours: Boolean? = null,
+        override val description: String = when (isYours) {
+            true -> "You gained control of $permanentName"
+            false -> "Opponent gained control of $permanentName"
+            null -> "Control of $permanentName changed"
+        }
+    ) : ClientEvent
+
+    // =========================================================================
+    // Cycling Events
+    // =========================================================================
+
+    @Serializable
+    @SerialName("cardCycled")
+    data class CardCycled(
+        val playerId: EntityId,
+        val cardName: String,
+        val isYours: Boolean? = null,
+        override val description: String = when (isYours) {
+            true -> "You cycled $cardName"
+            false -> "Opponent cycled $cardName"
+            null -> "Cycled $cardName"
+        }
+    ) : ClientEvent
+
+    // =========================================================================
+    // Library Events
+    // =========================================================================
+
+    @Serializable
+    @SerialName("libraryShuffled")
+    data class LibraryShuffled(
+        val playerId: EntityId,
+        val isYours: Boolean? = null,
+        override val description: String = when (isYours) {
+            true -> "You shuffled your library"
+            false -> "Opponent shuffled their library"
+            null -> "Library shuffled"
+        }
+    ) : ClientEvent
+
+    // =========================================================================
+    // Fizzle Events
+    // =========================================================================
+
+    @Serializable
+    @SerialName("abilityFizzled")
+    data class AbilityFizzled(
+        val abilityDescription: String,
+        val reason: String,
+        override val description: String = "Ability fizzled: $reason"
+    ) : ClientEvent
 }
 
 /**
@@ -426,7 +505,47 @@ object ClientEventTransformer {
         events: List<GameEvent>,
         viewingPlayerId: EntityId
     ): List<ClientEvent> {
-        return events.mapNotNull { event -> transformEvent(event, viewingPlayerId) }
+        return events.flatMap { event -> transformEventToList(event, viewingPlayerId) }
+    }
+
+    private fun transformEventToList(
+        event: GameEvent,
+        viewingPlayerId: EntityId
+    ): List<ClientEvent> {
+        // AttackersDeclaredEvent and BlockersDeclaredEvent produce multiple client events
+        when (event) {
+            is AttackersDeclaredEvent -> {
+                if (event.attackers.isEmpty()) return emptyList()
+                val names = event.attackerNames.ifEmpty { event.attackers.map { "Creature" } }
+                return event.attackers.zip(names).map { (id, name) ->
+                    ClientEvent.CreatureAttacked(
+                        creatureId = id,
+                        creatureName = name,
+                        attackingPlayerId = event.attackingPlayerId ?: id,
+                        defendingPlayerId = id // Not available in event; client uses attackingPlayerId for coloring
+                    )
+                }
+            }
+            is BlockersDeclaredEvent -> {
+                if (event.blockers.isEmpty()) return emptyList()
+                return event.blockers.flatMap { (blockerId, attackerIds) ->
+                    val blockerName = event.blockerNames[blockerId] ?: "Creature"
+                    attackerIds.map { attackerId ->
+                        val attackerName = event.attackerNames[attackerId] ?: "Creature"
+                        ClientEvent.CreatureBlocked(
+                            blockerId = blockerId,
+                            blockerName = blockerName,
+                            attackerId = attackerId,
+                            attackerName = attackerName
+                        )
+                    }
+                }
+            }
+            else -> {
+                val result = transformEvent(event, viewingPlayerId)
+                return if (result != null) listOf(result) else emptyList()
+            }
+        }
     }
 
     private fun transformEvent(
@@ -444,23 +563,22 @@ object ClientEventTransformer {
 
             is DamageDealtEvent -> ClientEvent.DamageDealt(
                 sourceId = event.sourceId,
-                sourceName = null, // Would need state lookup for source name
+                sourceName = event.sourceName,
                 targetId = event.targetId,
-                targetName = "Target", // Would need state lookup
+                targetName = event.targetName ?: "Target",
                 amount = event.amount,
-                targetIsPlayer = false, // Would need state lookup
+                targetIsPlayer = event.targetIsPlayer,
                 isCombatDamage = event.isCombatDamage
             )
 
             is CardsDrawnEvent -> {
-                // For now, just create one event for each card drawn
-                // In future could batch them
                 val isYours = event.playerId == viewingPlayerId
                 if (event.cardIds.isNotEmpty()) {
+                    val firstName = event.cardNames.firstOrNull()
                     ClientEvent.CardDrawn(
                         playerId = event.playerId,
                         cardId = event.cardIds.first(),
-                        cardName = if (isYours) "Card" else null, // Would need state lookup
+                        cardName = if (isYours) firstName else null,
                         isYours = isYours
                     )
                 } else null
@@ -468,10 +586,11 @@ object ClientEventTransformer {
 
             is CardsDiscardedEvent -> {
                 if (event.cardIds.isNotEmpty()) {
+                    val firstName = event.cardNames.firstOrNull() ?: "Card"
                     ClientEvent.CardDiscarded(
                         playerId = event.playerId,
                         cardId = event.cardIds.first(),
-                        cardName = "Card", // Would need state lookup
+                        cardName = firstName,
                         isYours = event.playerId == viewingPlayerId
                     )
                 } else null
@@ -576,14 +695,14 @@ object ClientEventTransformer {
 
             is CountersAddedEvent -> ClientEvent.CounterAdded(
                 permanentId = event.entityId,
-                permanentName = "", // Would need state lookup
+                permanentName = event.entityName,
                 counterType = event.counterType,
                 count = event.amount
             )
 
             is CountersRemovedEvent -> ClientEvent.CounterRemoved(
                 permanentId = event.entityId,
-                permanentName = "", // Would need state lookup
+                permanentName = event.entityName,
                 counterType = event.counterType,
                 count = event.amount
             )
@@ -673,30 +792,65 @@ object ClientEventTransformer {
                 isYours = event.controllerId == viewingPlayerId
             )
 
+            is TurnChangedEvent -> ClientEvent.TurnChanged(
+                turnNumber = event.turnNumber,
+                activePlayerId = event.activePlayerId,
+                isYourTurn = event.activePlayerId == viewingPlayerId
+            )
+
+            // AttackersDeclaredEvent and BlockersDeclaredEvent are handled in transformEventToList()
+            is AttackersDeclaredEvent,
+            is BlockersDeclaredEvent -> null
+
+is PermanentsSacrificedEvent -> {
+                val names = event.permanentNames.ifEmpty { event.permanentIds.map { "Permanent" } }
+                if (names.isNotEmpty()) {
+                    ClientEvent.PermanentsSacrificed(
+                        playerId = event.playerId,
+                        permanentNames = names,
+                        isYours = event.playerId == viewingPlayerId
+                    )
+                } else null
+            }
+
+            is ControlChangedEvent -> ClientEvent.ControlChanged(
+                permanentName = event.permanentName,
+                newControllerId = event.newControllerId,
+                isYours = event.newControllerId == viewingPlayerId
+            )
+
+            is CardCycledEvent -> ClientEvent.CardCycled(
+                playerId = event.playerId,
+                cardName = event.cardName,
+                isYours = event.playerId == viewingPlayerId
+            )
+
+            is LibraryShuffledEvent -> ClientEvent.LibraryShuffled(
+                playerId = event.playerId,
+                isYours = event.playerId == viewingPlayerId
+            )
+
+            is AbilityFizzledEvent -> ClientEvent.AbilityFizzled(
+                abilityDescription = event.description,
+                reason = event.reason
+            )
+
             // Events that don't need client representation or are handled differently
             is DrawFailedEvent,
-            is LibraryShuffledEvent,
-            is AttackersDeclaredEvent,
-            is BlockersDeclaredEvent,
             is BlockerOrderDeclaredEvent,
             is DamageAssignedEvent,
             is PhaseChangedEvent,
             is StepChangedEvent,
-            is TurnChangedEvent,
             is PriorityChangedEvent,
             is ManaSpentEvent,
             is DecisionRequestedEvent,
             is DecisionSubmittedEvent,
             is AbilityResolvedEvent,
-            is AbilityFizzledEvent,
             is DiscardRequiredEvent,
-            is PermanentsSacrificedEvent,
             is LookedAtCardsEvent,
             is LibraryReorderedEvent,
             is KeywordGrantedEvent,
             is TurnedFaceDownEvent,
-            is CardCycledEvent,
-            is ControlChangedEvent,
             is CreatureTypeChangedEvent -> null
         }
     }

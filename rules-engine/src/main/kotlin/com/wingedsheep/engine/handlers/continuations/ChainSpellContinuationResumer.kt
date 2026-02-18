@@ -284,8 +284,9 @@ class ChainSpellContinuationResumer(
             newState = newState.addToZone(graveyardZone, cardId)
         }
 
+        val discardNames = selectedCards.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
         val events = mutableListOf<GameEvent>(
-            CardsDiscardedEvent(playerId, selectedCards)
+            CardsDiscardedEvent(playerId, selectedCards, discardNames)
         )
 
         val requirement = com.wingedsheep.sdk.targeting.TargetPlayer()
@@ -526,8 +527,9 @@ class ChainSpellContinuationResumer(
         var newState = state.removeFromZone(handZone, selectedCard)
         newState = newState.addToZone(graveyardZone, selectedCard)
 
+        val selectedCardName = state.getEntity(selectedCard)?.get<CardComponent>()?.name ?: "Card"
         val events = mutableListOf<GameEvent>(
-            CardsDiscardedEvent(playerId, listOf(selectedCard))
+            CardsDiscardedEvent(playerId, listOf(selectedCard), listOf(selectedCardName))
         )
 
         val requirement = com.wingedsheep.sdk.targeting.AnyTarget()
@@ -791,7 +793,7 @@ class ChainSpellContinuationResumer(
         newState = newState.addToZone(graveyardZone, landId)
 
         val sacrificeEvents = mutableListOf<GameEvent>(
-            PermanentsSacrificedEvent(controllerId, listOf(landId)),
+            PermanentsSacrificedEvent(controllerId, listOf(landId), listOf(cardComponent.name)),
             ZoneChangeEvent(
                 entityId = landId,
                 entityName = cardComponent.name,
@@ -874,7 +876,7 @@ class ChainSpellContinuationResumer(
         newState = newState.addToZone(graveyardZone, landId)
 
         val sacrificeEvents = mutableListOf<GameEvent>(
-            PermanentsSacrificedEvent(controllerId, listOf(landId)),
+            PermanentsSacrificedEvent(controllerId, listOf(landId), listOf(cardComponent.name)),
             ZoneChangeEvent(
                 entityId = landId,
                 entityName = cardComponent.name,

@@ -42,7 +42,7 @@ class SacrificeSelfExecutor : EffectExecutor<SacrificeSelfEffect> {
         newState = newState.addToZone(graveyardZone, sourceId)
 
         val events = listOf(
-            PermanentsSacrificedEvent(controllerId, listOf(sourceId)),
+            PermanentsSacrificedEvent(controllerId, listOf(sourceId), listOf(sourceName)),
             ZoneChangeEvent(
                 entityId = sourceId,
                 entityName = sourceName,

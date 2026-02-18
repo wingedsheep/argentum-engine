@@ -205,7 +205,7 @@ class CostHandler {
                 newState = newState.addToZone(graveyardZone, toSacrifice)
 
                 val events = listOf(
-                    PermanentsSacrificedEvent(sacrificeController, listOf(toSacrifice)),
+                    PermanentsSacrificedEvent(sacrificeController, listOf(toSacrifice), listOf(sacrificeName)),
                     ZoneChangeEvent(
                         entityId = toSacrifice,
                         entityName = sacrificeName,
@@ -232,8 +232,9 @@ class CostHandler {
                 var newState = state.removeFromZone(handZone, toDiscard)
                 newState = newState.addToZone(graveyardZone, toDiscard)
 
+                val discardCardName = discardContainer.get<CardComponent>()?.name ?: "Card"
                 val events = listOf(
-                    CardsDiscardedEvent(discardOwner, listOf(toDiscard)),
+                    CardsDiscardedEvent(discardOwner, listOf(toDiscard), listOf(discardCardName)),
                     ZoneChangeEvent(
                         entityId = toDiscard,
                         entityName = discardContainer.get<CardComponent>()?.name ?: "Unknown",
@@ -279,7 +280,8 @@ class CostHandler {
                 }
 
                 if (discardedIds.isNotEmpty()) {
-                    events.add(0, CardsDiscardedEvent(controllerId, discardedIds))
+                    val discardedNames = discardedIds.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
+                    events.add(0, CardsDiscardedEvent(controllerId, discardedIds, discardedNames))
                 }
 
                 CostPaymentResult.success(newState, manaPool, events)

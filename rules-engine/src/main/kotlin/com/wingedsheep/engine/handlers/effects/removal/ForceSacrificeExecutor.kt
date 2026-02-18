@@ -162,7 +162,10 @@ class ForceSacrificeExecutor(
         }
 
         if (permanentIds.isNotEmpty()) {
-            events.add(0, PermanentsSacrificedEvent(playerId, permanentIds))
+            val permanentNames = permanentIds.map { id ->
+                state.getEntity(id)?.get<CardComponent>()?.name ?: "Unknown"
+            }
+            events.add(0, PermanentsSacrificedEvent(playerId, permanentIds, permanentNames))
         }
 
         return ExecutionResult.success(newState, events)

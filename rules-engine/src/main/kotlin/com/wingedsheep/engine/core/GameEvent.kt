@@ -68,7 +68,10 @@ data class DamageDealtEvent(
     val sourceId: EntityId?,
     val targetId: EntityId,
     val amount: Int,
-    val isCombatDamage: Boolean
+    val isCombatDamage: Boolean,
+    val sourceName: String? = null,
+    val targetName: String? = null,
+    val targetIsPlayer: Boolean = false
 ) : GameEvent
 
 /**
@@ -208,7 +211,9 @@ data class AbilityFizzledEvent(
 @Serializable
 @SerialName("AttackersDeclaredEvent")
 data class AttackersDeclaredEvent(
-    val attackers: List<EntityId>
+    val attackers: List<EntityId>,
+    val attackerNames: List<String> = emptyList(),
+    val attackingPlayerId: EntityId? = null
 ) : GameEvent
 
 /**
@@ -217,7 +222,9 @@ data class AttackersDeclaredEvent(
 @Serializable
 @SerialName("BlockersDeclaredEvent")
 data class BlockersDeclaredEvent(
-    val blockers: Map<EntityId, List<EntityId>>  // blocker -> blocked attackers
+    val blockers: Map<EntityId, List<EntityId>>,  // blocker -> blocked attackers
+    val blockerNames: Map<EntityId, String> = emptyMap(),
+    val attackerNames: Map<EntityId, String> = emptyMap()
 ) : GameEvent
 
 /**
@@ -313,7 +320,8 @@ data class UntappedEvent(
 data class CountersAddedEvent(
     val entityId: EntityId,
     val counterType: String,
-    val amount: Int
+    val amount: Int,
+    val entityName: String = ""
 ) : GameEvent
 
 /**
@@ -324,7 +332,8 @@ data class CountersAddedEvent(
 data class CountersRemovedEvent(
     val entityId: EntityId,
     val counterType: String,
-    val amount: Int
+    val amount: Int,
+    val entityName: String = ""
 ) : GameEvent
 
 /**
@@ -350,7 +359,8 @@ data class LoyaltyChangedEvent(
 data class CardsDrawnEvent(
     val playerId: EntityId,
     val count: Int,
-    val cardIds: List<EntityId>
+    val cardIds: List<EntityId>,
+    val cardNames: List<String> = emptyList()
 ) : GameEvent
 
 /**
@@ -370,7 +380,8 @@ data class DrawFailedEvent(
 @SerialName("CardsDiscardedEvent")
 data class CardsDiscardedEvent(
     val playerId: EntityId,
-    val cardIds: List<EntityId>
+    val cardIds: List<EntityId>,
+    val cardNames: List<String> = emptyList()
 ) : GameEvent
 
 /**
@@ -399,7 +410,8 @@ data class LibraryShuffledEvent(
 @SerialName("PermanentsSacrificedEvent")
 data class PermanentsSacrificedEvent(
     val playerId: EntityId,
-    val permanentIds: List<EntityId>
+    val permanentIds: List<EntityId>,
+    val permanentNames: List<String> = emptyList()
 ) : GameEvent
 
 // =============================================================================

@@ -38,7 +38,10 @@ class SacrificeAndPayContinuationResumer(
         val events = mutableListOf<GameEvent>()
 
         if (selectedPermanents.isNotEmpty()) {
-            events.add(PermanentsSacrificedEvent(playerId, selectedPermanents))
+            val permanentNames = selectedPermanents.map { id ->
+                newState.getEntity(id)?.get<CardComponent>()?.name ?: "Unknown"
+            }
+            events.add(PermanentsSacrificedEvent(playerId, selectedPermanents, permanentNames))
         }
 
         for (permanentId in selectedPermanents) {
@@ -138,7 +141,8 @@ class SacrificeAndPayContinuationResumer(
             )
         }
 
-        events.add(0, CardsDiscardedEvent(playerId, selectedCards))
+        val discardNames = selectedCards.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
+        events.add(0, CardsDiscardedEvent(playerId, selectedCards, discardNames))
         return checkForMore(newState, events)
     }
 
@@ -212,7 +216,10 @@ class SacrificeAndPayContinuationResumer(
             )
         }
 
-        events.add(0, PermanentsSacrificedEvent(playerId, selectedPermanents))
+        val permanentNames = selectedPermanents.map { id ->
+            state.getEntity(id)?.get<CardComponent>()?.name ?: "Unknown"
+        }
+        events.add(0, PermanentsSacrificedEvent(playerId, selectedPermanents, permanentNames))
         return checkForMore(newState, events)
     }
 

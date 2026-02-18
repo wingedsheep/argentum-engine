@@ -501,12 +501,16 @@ class MoveCollectionExecutor(
 
         // Emit discard event if configured
         if (moveType == MoveType.Discard && cards.isNotEmpty()) {
-            events.add(CardsDiscardedEvent(destPlayerId, cards))
+            val discardNames = cards.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
+            events.add(CardsDiscardedEvent(destPlayerId, cards, discardNames))
         }
 
         // Emit sacrifice event if configured
         if (moveType == MoveType.Sacrifice && cards.isNotEmpty()) {
-            events.add(0, PermanentsSacrificedEvent(context.controllerId, cards))
+            val sacrificeNames = cards.map { cardId ->
+                state.getEntity(cardId)?.get<CardComponent>()?.name ?: "Unknown"
+            }
+            events.add(0, PermanentsSacrificedEvent(context.controllerId, cards, sacrificeNames))
         }
 
         // Emit reveal event if configured

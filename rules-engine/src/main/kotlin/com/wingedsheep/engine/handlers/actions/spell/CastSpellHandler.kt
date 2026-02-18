@@ -389,7 +389,7 @@ class CastSpellHandler(
 
                             sacrificedPermanentIds.add(permId)
 
-                            events.add(PermanentsSacrificedEvent(action.playerId, listOf(permId)))
+                            events.add(PermanentsSacrificedEvent(action.playerId, listOf(permId), listOf(permCard.name)))
                             events.add(ZoneChangeEvent(
                                 entityId = permId,
                                 entityName = permCard.name,

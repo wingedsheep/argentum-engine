@@ -326,11 +326,13 @@ class TurnManager(
                         val graveyardZone = ZoneKey(opponentId, Zone.GRAVEYARD)
                         newState = newState.removeFromZone(handZone, cardId)
                         newState = newState.addToZone(graveyardZone, cardId)
-                        events.add(CardsDiscardedEvent(opponentId, listOf(cardId)))
+                        val discardName = newState.getEntity(cardId)?.get<CardComponent>()?.name ?: "Card"
+                        events.add(CardsDiscardedEvent(opponentId, listOf(cardId), listOf(discardName)))
                     } else {
                         // Opponent must choose - create decision and pause
                         if (drawnCards.isNotEmpty()) {
-                            events.add(0, CardsDrawnEvent(playerId, drawnCards.size, drawnCards.toList()))
+                            val cardNames = drawnCards.map { newState.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
+                            events.add(0, CardsDrawnEvent(playerId, drawnCards.size, drawnCards.toList(), cardNames))
                         }
                         val sourceName = discardShield.sourceName ?: "Words of Waste"
                         val decisionHandler = DecisionHandler()
@@ -381,7 +383,8 @@ class TurnManager(
 
                 // Emit CardsDrawnEvent for cards drawn before this shield was hit
                 if (drawnCards.isNotEmpty()) {
-                    events.add(0, CardsDrawnEvent(playerId, drawnCards.size, drawnCards.toList()))
+                    val cardNames = drawnCards.map { newState.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
+                    events.add(0, CardsDrawnEvent(playerId, drawnCards.size, drawnCards.toList(), cardNames))
                 }
 
                 // Get players in APNAP order for the bounce
@@ -491,7 +494,8 @@ class TurnManager(
         }
 
         if (drawnCards.isNotEmpty()) {
-            events.add(CardsDrawnEvent(playerId, drawnCards.size, drawnCards))
+            val cardNames = drawnCards.map { newState.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
+            events.add(CardsDrawnEvent(playerId, drawnCards.size, drawnCards, cardNames))
         }
         return ExecutionResult.success(newState, events)
     }

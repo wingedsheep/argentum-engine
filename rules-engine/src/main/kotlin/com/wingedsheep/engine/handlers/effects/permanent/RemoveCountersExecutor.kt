@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolveTarget
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.scripting.RemoveCountersEffect
 import kotlin.reflect.KClass
@@ -45,9 +46,11 @@ class RemoveCountersExecutor : EffectExecutor<RemoveCountersEffect> {
             container.with(current.withRemoved(counterType, effect.count))
         }
 
+        val entityName = state.getEntity(targetId)?.get<CardComponent>()?.name ?: ""
+
         return ExecutionResult.success(
             newState,
-            listOf(CountersRemovedEvent(targetId, effect.counterType, effect.count))
+            listOf(CountersRemovedEvent(targetId, effect.counterType, effect.count, entityName))
         )
     }
 }

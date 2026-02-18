@@ -49,11 +49,21 @@ export function GameLog() {
 }
 
 function LogEntryRow({ entry, isPlayer }: { entry: LogEntry; isPlayer: boolean }) {
-  const color = entry.playerId === null
-    ? '#888'
-    : isPlayer
-      ? '#5bc0de'
-      : '#e07050'
+  if (entry.type === 'turn') {
+    return (
+      <div style={styles.turnSeparator}>
+        {entry.description}
+      </div>
+    )
+  }
+
+  const color = entry.type === 'system'
+    ? '#999'
+    : entry.playerId === null
+      ? '#888'
+      : isPlayer
+        ? '#5bc0de'
+        : '#e07050'
 
   return (
     <div style={{ ...styles.entry, color }}>
@@ -130,5 +140,18 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '2px 0',
     lineHeight: 1.4,
     borderBottom: '1px solid rgba(255,255,255,0.04)',
+  },
+  turnSeparator: {
+    fontSize: 11,
+    padding: '6px 0 4px',
+    lineHeight: 1.4,
+    textAlign: 'center',
+    color: 'rgba(255,255,255,0.5)',
+    fontWeight: 600,
+    borderBottom: '1px solid rgba(255,255,255,0.1)',
+    borderTop: '1px solid rgba(255,255,255,0.1)',
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    marginTop: 2,
+    marginBottom: 2,
   },
 }

@@ -292,7 +292,7 @@ class ReadTheRunesExecutor(
             newState = newState.addToZone(graveyardZone, permanentId)
 
             val events = listOf(
-                PermanentsSacrificedEvent(playerId, listOf(permanentId)),
+                PermanentsSacrificedEvent(playerId, listOf(permanentId), listOf(permanentName)),
                 ZoneChangeEvent(
                     entityId = permanentId,
                     entityName = permanentName,
@@ -318,7 +318,7 @@ class ReadTheRunesExecutor(
             newState = newState.addToZone(graveyardZone, cardId)
 
             val events = listOf(
-                CardsDiscardedEvent(playerId, listOf(cardId)),
+                CardsDiscardedEvent(playerId, listOf(cardId), listOf(cardName)),
                 ZoneChangeEvent(
                     entityId = cardId,
                     entityName = cardName,

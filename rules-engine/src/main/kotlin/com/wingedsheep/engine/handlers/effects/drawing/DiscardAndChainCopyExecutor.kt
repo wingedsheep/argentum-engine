@@ -167,9 +167,10 @@ class DiscardAndChainCopyExecutor(
             newState = newState.addToZone(graveyardZone, cardId)
         }
 
+        val cardNames = cardIds.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
         return ExecutionResult.success(
             newState,
-            listOf(CardsDiscardedEvent(playerId, cardIds))
+            listOf(CardsDiscardedEvent(playerId, cardIds, cardNames))
         )
     }
 }

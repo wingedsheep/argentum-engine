@@ -104,9 +104,10 @@ class CombatManager(
             container.with(AttackersDeclaredThisCombatComponent)
         }
 
+        val attackerNames = attackers.keys.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Creature" }
         return ExecutionResult.success(
             newState,
-            listOf(AttackersDeclaredEvent(attackers.keys.toList()))
+            listOf(AttackersDeclaredEvent(attackers.keys.toList(), attackerNames, attackingPlayer))
         )
     }
 
@@ -403,7 +404,9 @@ class CombatManager(
             container.with(BlockersDeclaredThisCombatComponent)
         }
 
-        val blockersEvent = BlockersDeclaredEvent(blockers)
+        val blockerNameMap = blockers.keys.associateWith { state.getEntity(it)?.get<CardComponent>()?.name ?: "Creature" }
+        val attackerNameMap = blockers.values.flatten().distinct().associateWith { state.getEntity(it)?.get<CardComponent>()?.name ?: "Creature" }
+        val blockersEvent = BlockersDeclaredEvent(blockers, blockerNameMap, attackerNameMap)
 
         // Per MTG CR 509.2: After blockers are declared, the attacking player must
         // declare damage assignment order for each attacker blocked by 2+ creatures
@@ -1601,8 +1604,9 @@ class CombatManager(
             container.with(LifeTotalComponent(newLife))
         }
 
+        val sourceName = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Creature"
         val events = mutableListOf<GameEvent>(
-            DamageDealtEvent(sourceId, playerId, effectiveAmount, true),
+            DamageDealtEvent(sourceId, playerId, effectiveAmount, true, sourceName = sourceName, targetName = "Player", targetIsPlayer = true),
             LifeChangedEvent(playerId, currentLife, newLife, LifeChangeReason.DAMAGE)
         )
 
@@ -1623,7 +1627,8 @@ class CombatManager(
                     newState = newState.updateEntity(attackerController) { container ->
                         container.with(LifeTotalComponent(reflectedNewLife))
                     }
-                    events.add(DamageDealtEvent(sourceId, attackerController, amount, true))
+                    val reflectSourceName = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Creature"
+                    events.add(DamageDealtEvent(sourceId, attackerController, amount, true, sourceName = reflectSourceName, targetName = "Player", targetIsPlayer = true))
                     events.add(LifeChangedEvent(attackerController, attackerControllerLife, reflectedNewLife, LifeChangeReason.DAMAGE))
                 }
             }
@@ -1709,7 +1714,8 @@ class CombatManager(
                         newState = newState.updateEntity(targetId) { container ->
                             container.with(LifeTotalComponent(newLife))
                         }
-                        events.add(DamageDealtEvent(attackerId, targetId, effectiveTrampleDamage, true))
+                        val trampleSourceName = newState.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
+                        events.add(DamageDealtEvent(attackerId, targetId, effectiveTrampleDamage, true, sourceName = trampleSourceName, targetName = "Player", targetIsPlayer = true))
                         events.add(LifeChangedEvent(targetId, currentLife, newLife, LifeChangeReason.DAMAGE))
                     }
                 } else {
@@ -1731,7 +1737,9 @@ class CombatManager(
                             newState = newState.updateEntity(targetId) { container ->
                                 container.with(DamageComponent(currentDamage + effectiveDamage))
                             }
-                            events.add(DamageDealtEvent(attackerId, targetId, effectiveDamage, true))
+                            val atkSourceName = newState.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
+                            val blockerTargetName = newState.getEntity(targetId)?.get<CardComponent>()?.name ?: "Creature"
+                            events.add(DamageDealtEvent(attackerId, targetId, effectiveDamage, true, sourceName = atkSourceName, targetName = blockerTargetName, targetIsPlayer = false))
                         }
                     }
                 }
@@ -1787,7 +1795,9 @@ class CombatManager(
                         newState = newState.updateEntity(attackerId) { container ->
                             container.with(DamageComponent(currentDamage + effectiveBlockerDamage))
                         }
-                        events.add(DamageDealtEvent(blockerId, attackerId, effectiveBlockerDamage, true))
+                        val blockerSourceName = newState.getEntity(blockerId)?.get<CardComponent>()?.name ?: "Creature"
+                        val attackerTargetName = newState.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
+                        events.add(DamageDealtEvent(blockerId, attackerId, effectiveBlockerDamage, true, sourceName = blockerSourceName, targetName = attackerTargetName, targetIsPlayer = false))
                     }
                 }
             }
@@ -1868,7 +1878,8 @@ class CombatManager(
                                     newState = newState.updateEntity(targetId) { container ->
                                         container.with(LifeTotalComponent(newLife))
                                     }
-                                    events.add(DamageDealtEvent(attackerId, targetId, effectivePlayerDamage, true))
+                                    val freeSourceName = newState.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
+                                    events.add(DamageDealtEvent(attackerId, targetId, effectivePlayerDamage, true, sourceName = freeSourceName, targetName = "Player", targetIsPlayer = true))
                                     events.add(LifeChangedEvent(targetId, currentLife, newLife, LifeChangeReason.DAMAGE))
                                 }
                             }
@@ -1891,7 +1902,9 @@ class CombatManager(
                                     newState = newState.updateEntity(targetId) { container ->
                                         container.with(DamageComponent(currentDamage + effectiveDamage))
                                     }
-                                    events.add(DamageDealtEvent(attackerId, targetId, effectiveDamage, true))
+                                    val freeAtkName = newState.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
+                                    val freeCreatureName = newState.getEntity(targetId)?.get<CardComponent>()?.name ?: "Creature"
+                                    events.add(DamageDealtEvent(attackerId, targetId, effectiveDamage, true, sourceName = freeAtkName, targetName = freeCreatureName, targetIsPlayer = false))
                                 }
                             }
                         }
@@ -1924,7 +1937,9 @@ class CombatManager(
                                 newState = newState.updateEntity(blockerId) { container ->
                                     container.with(DamageComponent(currentDamage + effectiveDamage))
                                 }
-                                events.add(DamageDealtEvent(attackerId, blockerId, effectiveDamage, true))
+                                val autoAtkName = newState.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
+                                val autoBlockerName = newState.getEntity(blockerId)?.get<CardComponent>()?.name ?: "Creature"
+                                events.add(DamageDealtEvent(attackerId, blockerId, effectiveDamage, true, sourceName = autoAtkName, targetName = autoBlockerName, targetIsPlayer = false))
                             }
                         }
 
@@ -1944,7 +1959,8 @@ class CombatManager(
                                 newState = newState.updateEntity(defenderId) { container ->
                                     container.with(LifeTotalComponent(newLife))
                                 }
-                                events.add(DamageDealtEvent(attackerId, defenderId, effectivePlayerDamage, true))
+                                val remainAtkName = newState.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
+                                events.add(DamageDealtEvent(attackerId, defenderId, effectivePlayerDamage, true, sourceName = remainAtkName, targetName = "Player", targetIsPlayer = true))
                                 events.add(LifeChangedEvent(defenderId, currentLife, newLife, LifeChangeReason.DAMAGE))
                             }
                         }
@@ -2013,7 +2029,9 @@ class CombatManager(
                         newState = newState.updateEntity(attackerId) { container ->
                             container.with(DamageComponent(currentDamage + effectiveBlockerDamage))
                         }
-                        events.add(DamageDealtEvent(blockerId, attackerId, effectiveBlockerDamage, true))
+                        val counterBlockerName = newState.getEntity(blockerId)?.get<CardComponent>()?.name ?: "Creature"
+                        val counterAttackerName = newState.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
+                        events.add(DamageDealtEvent(blockerId, attackerId, effectiveBlockerDamage, true, sourceName = counterBlockerName, targetName = counterAttackerName, targetIsPlayer = false))
                     }
                 }
             }

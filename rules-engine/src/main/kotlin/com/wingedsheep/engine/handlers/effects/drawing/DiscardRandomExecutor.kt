@@ -6,6 +6,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolvePlayerTarget
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
@@ -61,9 +62,10 @@ class DiscardRandomExecutor : EffectExecutor<DiscardRandomEffect> {
             newState = newState.addToZone(graveyardZone, cardId)
         }
 
+        val cardNames = cardIds.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
         return ExecutionResult.success(
             newState,
-            listOf(CardsDiscardedEvent(playerId, cardIds))
+            listOf(CardsDiscardedEvent(playerId, cardIds, cardNames))
         )
     }
 }

@@ -418,7 +418,7 @@ class PayOrSufferExecutor(
         newState = newState.addToZone(graveyardZone, permanentId)
 
         val events = listOf(
-            PermanentsSacrificedEvent(playerId, listOf(permanentId)),
+            PermanentsSacrificedEvent(playerId, listOf(permanentId), listOf(permanentName)),
             ZoneChangeEvent(
                 entityId = permanentId,
                 entityName = permanentName,
@@ -517,7 +517,8 @@ class PayOrSufferExecutor(
                 )
             }
 
-            events.add(0, CardsDiscardedEvent(playerId, cardsToDiscard))
+            val discardNames = cardsToDiscard.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
+            events.add(0, CardsDiscardedEvent(playerId, cardsToDiscard, discardNames))
 
             return ExecutionResult.success(newState, events)
         }

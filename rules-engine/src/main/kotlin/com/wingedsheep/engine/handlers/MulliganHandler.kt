@@ -143,7 +143,8 @@ class MulliganHandler {
         }
 
         if (drawnCardIds.isNotEmpty()) {
-            events.add(CardsDrawnEvent(playerId, drawnCardIds.size, drawnCardIds))
+            val cardNames = drawnCardIds.map { newState.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
+            events.add(CardsDrawnEvent(playerId, drawnCardIds.size, drawnCardIds, cardNames))
         }
 
         return EngineResult.Success(newState, events)

@@ -310,6 +310,7 @@ export interface LogEntry {
   description: string
   playerId: EntityId | null
   timestamp: number
+  type: 'action' | 'turn' | 'combat' | 'system'
 }
 
 /**
@@ -436,6 +437,7 @@ export type GameStore = {
   readyForNextRound: () => void
   spectateGame: (gameSessionId: string) => void
   stopSpectating: () => void
+  setSpectatingState: (state: SpectatingState | null) => void
   addDisconnectTime: (playerId: string) => void
   kickPlayer: (playerId: string) => void
   leaveTournament: () => void

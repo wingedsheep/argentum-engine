@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolveTarget
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.scripting.AddCountersEffect
 import kotlin.reflect.KClass
@@ -46,9 +47,11 @@ class AddCountersExecutor : EffectExecutor<AddCountersEffect> {
             container.with(current.withAdded(counterType, effect.count))
         }
 
+        val entityName = state.getEntity(targetId)?.get<CardComponent>()?.name ?: ""
+
         return ExecutionResult.success(
             newState,
-            listOf(CountersAddedEvent(targetId, effect.counterType, effect.count))
+            listOf(CountersAddedEvent(targetId, effect.counterType, effect.count, entityName))
         )
     }
 }

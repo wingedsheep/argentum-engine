@@ -134,8 +134,9 @@ class DrawCardsExecutor(
             if (promptResult != null) {
                 // Emit CardsDrawnEvent for cards drawn before this prompt
                 if (drawnCards.isNotEmpty()) {
+                    val cardNames = drawnCards.map { newState.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
                     val allEvents = mutableListOf<GameEvent>(
-                        CardsDrawnEvent(playerId, drawnCards.size, drawnCards.toList())
+                        CardsDrawnEvent(playerId, drawnCards.size, drawnCards.toList(), cardNames)
                     )
                     allEvents.addAll(events)
                     allEvents.addAll(promptResult.events)
@@ -156,7 +157,8 @@ class DrawCardsExecutor(
                 }
                 events.add(DrawFailedEvent(playerId, "Empty library"))
                 if (drawnCards.isNotEmpty()) {
-                    events.add(0, CardsDrawnEvent(playerId, drawnCards.size, drawnCards.toList()))
+                    val cardNames = drawnCards.map { newState.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
+                    events.add(0, CardsDrawnEvent(playerId, drawnCards.size, drawnCards.toList(), cardNames))
                 }
                 return ExecutionResult.success(newState, events)
             }
@@ -170,7 +172,8 @@ class DrawCardsExecutor(
         }
 
         if (drawnCards.isNotEmpty()) {
-            events.add(0, CardsDrawnEvent(playerId, drawnCards.size, drawnCards))
+            val cardNames = drawnCards.map { newState.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
+            events.add(0, CardsDrawnEvent(playerId, drawnCards.size, drawnCards, cardNames))
         }
 
         return ExecutionResult.success(newState, events)
@@ -295,7 +298,8 @@ class DrawCardsExecutor(
         // Emit CardsDrawnEvent for cards drawn before this shield was hit
         val allEvents = eventsSoFar.toMutableList()
         if (drawnCardsSoFar.isNotEmpty()) {
-            allEvents.add(0, CardsDrawnEvent(playerId, drawnCardsSoFar.size, drawnCardsSoFar))
+            val cardNames = drawnCardsSoFar.map { newState.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
+            allEvents.add(0, CardsDrawnEvent(playerId, drawnCardsSoFar.size, drawnCardsSoFar, cardNames))
         }
 
         // Get players in APNAP order for the bounce
@@ -409,7 +413,8 @@ class DrawCardsExecutor(
         // Emit CardsDrawnEvent for cards drawn before this shield was hit
         val allEvents = eventsSoFar.toMutableList()
         if (drawnCardsSoFar.isNotEmpty()) {
-            allEvents.add(0, CardsDrawnEvent(playerId, drawnCardsSoFar.size, drawnCardsSoFar))
+            val cardNames = drawnCardsSoFar.map { newState.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
+            allEvents.add(0, CardsDrawnEvent(playerId, drawnCardsSoFar.size, drawnCardsSoFar, cardNames))
         }
 
         // Get each opponent and make them discard
@@ -430,7 +435,8 @@ class DrawCardsExecutor(
                 val graveyardZone = ZoneKey(opponentId, Zone.GRAVEYARD)
                 newState = newState.removeFromZone(handZone, cardId)
                 newState = newState.addToZone(graveyardZone, cardId)
-                allEvents.add(CardsDiscardedEvent(opponentId, listOf(cardId)))
+                val discardName = newState.getEntity(cardId)?.get<CardComponent>()?.name ?: "Card"
+                allEvents.add(CardsDiscardedEvent(opponentId, listOf(cardId), listOf(discardName)))
                 continue
             }
 

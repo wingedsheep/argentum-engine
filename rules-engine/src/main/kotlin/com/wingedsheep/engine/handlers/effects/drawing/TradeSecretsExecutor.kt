@@ -182,9 +182,10 @@ class TradeSecretsExecutor(
                 newState = newState.addToZone(handZone, cardId)
             }
 
+            val cardNames = drawnCards.map { newState.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
             return ExecutionResult.success(
                 newState,
-                listOf(CardsDrawnEvent(playerId, drawnCards.size, drawnCards))
+                listOf(CardsDrawnEvent(playerId, drawnCards.size, drawnCards, cardNames))
             )
         }
     }

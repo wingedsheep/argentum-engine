@@ -302,7 +302,10 @@ object EffectExecutorUtils {
             }
         }
 
-        events.add(DamageDealtEvent(sourceId, targetId, effectiveAmount, false))
+        val sourceName = sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
+        val targetName = newState.getEntity(targetId)?.get<CardComponent>()?.name
+        val targetIsPlayer = newState.getEntity(targetId)?.get<LifeTotalComponent>() != null
+        events.add(DamageDealtEvent(sourceId, targetId, effectiveAmount, false, sourceName = sourceName, targetName = targetName, targetIsPlayer = targetIsPlayer))
 
         return ExecutionResult.success(newState, events)
     }

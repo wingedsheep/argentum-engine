@@ -264,7 +264,8 @@ class GameInitializer(
             ))
         }
 
-        events.add(CardsDrawnEvent(playerId, drawnCardIds.size, drawnCardIds))
+        val cardNames = drawnCardIds.map { currentState.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
+        events.add(CardsDrawnEvent(playerId, drawnCardIds.size, drawnCardIds, cardNames))
 
         return currentState to events
     }
@@ -355,7 +356,8 @@ class GameInitializer(
             ))
         }
 
-        events.add(CardsDrawnEvent(playerId, drawnCardIds.size, drawnCardIds))
+        val cardNames = drawnCardIds.map { currentState.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
+        events.add(CardsDrawnEvent(playerId, drawnCardIds.size, drawnCardIds, cardNames))
 
         return currentState to events
     }

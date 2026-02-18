@@ -35,6 +35,12 @@ export type ClientEvent =
   | CardsRevealedEvent
   | TurnedFaceUpEvent
   | CoinFlippedEvent
+  | TurnChangedEvent
+  | ControlChangedEvent
+  | CardCycledEvent
+  | LibraryShuffledEvent
+  | AbilityFizzledEvent
+  | PermanentsSacrificedEvent
 
 // ============================================================================
 // Life/Damage Events
@@ -294,6 +300,76 @@ export interface TurnedFaceUpEvent {
   readonly cardId: EntityId
   readonly cardName: string
   readonly controllerId: EntityId
+  readonly description: string
+}
+
+// ============================================================================
+// Turn Events
+// ============================================================================
+
+export interface TurnChangedEvent {
+  readonly type: 'turnChanged'
+  readonly turnNumber: number
+  readonly activePlayerId: EntityId
+  readonly isYourTurn: boolean | null
+  readonly description: string
+}
+
+// ============================================================================
+// Control Events
+// ============================================================================
+
+export interface ControlChangedEvent {
+  readonly type: 'controlChanged'
+  readonly permanentName: string
+  readonly newControllerId: EntityId
+  readonly isYours: boolean | null
+  readonly description: string
+}
+
+// ============================================================================
+// Cycling Events
+// ============================================================================
+
+export interface CardCycledEvent {
+  readonly type: 'cardCycled'
+  readonly playerId: EntityId
+  readonly cardName: string
+  readonly isYours: boolean | null
+  readonly description: string
+}
+
+// ============================================================================
+// Library Events
+// ============================================================================
+
+export interface LibraryShuffledEvent {
+  readonly type: 'libraryShuffled'
+  readonly playerId: EntityId
+  readonly isYours: boolean | null
+  readonly description: string
+}
+
+// ============================================================================
+// Fizzle Events
+// ============================================================================
+
+export interface AbilityFizzledEvent {
+  readonly type: 'abilityFizzled'
+  readonly abilityDescription: string
+  readonly reason: string
+  readonly description: string
+}
+
+// ============================================================================
+// Sacrifice Events
+// ============================================================================
+
+export interface PermanentsSacrificedEvent {
+  readonly type: 'permanentsSacrificed'
+  readonly playerId: EntityId
+  readonly permanentNames: readonly string[]
+  readonly isYours: boolean | null
   readonly description: string
 }
 

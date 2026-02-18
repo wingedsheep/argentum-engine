@@ -121,9 +121,10 @@ class EachOpponentDiscardsExecutor(
             newState = newState.addToZone(graveyardZone, cardId)
         }
 
+        val cardNames = cardIds.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
         return ExecutionResult.success(
             newState,
-            listOf(CardsDiscardedEvent(playerId, cardIds))
+            listOf(CardsDiscardedEvent(playerId, cardIds, cardNames))
         )
     }
 
@@ -163,9 +164,10 @@ class EachOpponentDiscardsExecutor(
                 newState = newState.addToZone(handZone, cardId)
             }
 
+            val cardNames = drawnCards.map { newState.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
             return ExecutionResult.success(
                 newState,
-                existingEvents + listOf(CardsDrawnEvent(playerId, drawnCards.size, drawnCards))
+                existingEvents + listOf(CardsDrawnEvent(playerId, drawnCards.size, drawnCards, cardNames))
             )
         }
     }

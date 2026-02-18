@@ -167,7 +167,8 @@ class CardSpecificContinuationResumer(
                 container.with(current.withAdded(counterType, continuation.counterCount))
             }
 
-            allEvents.add(CountersAddedEvent(continuation.sourceId, continuation.counterType, continuation.counterCount))
+            val entityName = currentState.getEntity(continuation.sourceId)?.get<CardComponent>()?.name ?: ""
+            allEvents.add(CountersAddedEvent(continuation.sourceId, continuation.counterType, continuation.counterCount, entityName))
         }
 
         return checkForMore(currentState, allEvents)

@@ -37,8 +37,9 @@ class DiscardAndDrawContinuationResumer(
             newState = newState.addToZone(graveyardZone, cardId)
         }
 
+        val discardNames = selectedCards.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
         val events = mutableListOf<GameEvent>(
-            CardsDiscardedEvent(playerId, selectedCards)
+            CardsDiscardedEvent(playerId, selectedCards, discardNames)
         )
 
         // Controller draws for each card discarded (Syphon Mind)
@@ -78,8 +79,9 @@ class DiscardAndDrawContinuationResumer(
             newState = newState.addToZone(graveyardZone, cardId)
         }
 
+        val discardNames = selectedCards.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
         val events = listOf(
-            CardsDiscardedEvent(playerId, selectedCards)
+            CardsDiscardedEvent(playerId, selectedCards, discardNames)
         )
 
         // Check if there are more continuations to process
@@ -110,7 +112,8 @@ class DiscardAndDrawContinuationResumer(
         }
 
         val discardEvents: List<GameEvent> = if (selectedCards.isNotEmpty()) {
-            listOf(CardsDiscardedEvent(currentPlayerId, selectedCards))
+            val discardNames = selectedCards.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
+            listOf(CardsDiscardedEvent(currentPlayerId, selectedCards, discardNames))
         } else {
             emptyList()
         }
@@ -152,7 +155,8 @@ class DiscardAndDrawContinuationResumer(
                 newState = newState.removeFromZone(nextHandZone, cardId)
                 newState = newState.addToZone(nextGraveyardZone, cardId)
 
-                val autoDiscardEvents = discardEvents + listOf(CardsDiscardedEvent(nextPlayer, listOf(cardId)))
+                val autoDiscardCardName = newState.getEntity(cardId)?.get<CardComponent>()?.name ?: "Card"
+                val autoDiscardEvents = discardEvents + listOf(CardsDiscardedEvent(nextPlayer, listOf(cardId), listOf(autoDiscardCardName)))
                 val autoDiscardedCreature = newDiscardedCreature + (nextPlayer to isCreature)
 
                 return continueEachPlayerDiscardsOrLoseLife(
@@ -255,7 +259,8 @@ class DiscardAndDrawContinuationResumer(
             var newState = state.removeFromZone(nextHandZone, cardId)
             newState = newState.addToZone(graveyardZone, cardId)
 
-            val autoDiscardEvents = priorEvents + listOf(CardsDiscardedEvent(nextPlayer, listOf(cardId)))
+            val autoDiscardCardName = state.getEntity(cardId)?.get<CardComponent>()?.name ?: "Card"
+            val autoDiscardEvents = priorEvents + listOf(CardsDiscardedEvent(nextPlayer, listOf(cardId), listOf(autoDiscardCardName)))
             val autoDiscardedCreature = continuation.discardedCreature + (nextPlayer to isCreature)
 
             return continueEachPlayerDiscardsOrLoseLife(
