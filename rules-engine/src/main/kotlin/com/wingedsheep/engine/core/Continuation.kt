@@ -515,28 +515,6 @@ data class ChooseFromCreatureTypeContinuation(
 ) : ContinuationFrame
 
 /**
- * Resume after controller selects cards from opponent's library for Head Games.
- *
- * The controller has searched the opponent's library and selected cards.
- * Move selected cards to opponent's hand, then shuffle opponent's library.
- *
- * @property controllerId The player who cast Head Games (searching the library)
- * @property targetPlayerId The opponent whose library is being searched
- * @property sourceId The spell that caused this effect
- * @property sourceName Name of the source for display
- * @property searchCount The number of cards the controller can select (original hand size)
- */
-@Serializable
-data class HeadGamesContinuation(
-    override val decisionId: String,
-    val controllerId: EntityId,
-    val targetPlayerId: EntityId,
-    val sourceId: EntityId?,
-    val sourceName: String?,
-    val searchCount: Int
-) : ContinuationFrame
-
-/**
  * Resume after player selects which permanents to keep tapped during untap step.
  *
  * Used for permanents with "You may choose not to untap" keyword (MAY_NOT_UNTAP).

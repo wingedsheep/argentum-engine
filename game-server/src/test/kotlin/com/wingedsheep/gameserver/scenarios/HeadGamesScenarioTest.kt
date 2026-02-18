@@ -1,7 +1,7 @@
 package com.wingedsheep.gameserver.scenarios
 
 import com.wingedsheep.engine.core.CardsSelectedResponse
-import com.wingedsheep.engine.core.SearchLibraryDecision
+import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.gameserver.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -55,9 +55,9 @@ class HeadGamesScenarioTest : ScenarioTestBase() {
                 // Resolve the stack
                 game.resolveStack()
 
-                // Caster should get a SearchLibraryDecision to pick cards from opponent's library
+                // Caster should get a SelectCardsDecision to pick cards from opponent's library
                 val decision = game.getPendingDecision()
-                decision.shouldBeInstanceOf<SearchLibraryDecision>()
+                decision.shouldBeInstanceOf<SelectCardsDecision>()
 
                 withClue("Decision should be for the caster") {
                     decision.playerId shouldBe game.player1Id
@@ -69,14 +69,14 @@ class HeadGamesScenarioTest : ScenarioTestBase() {
 
                 // The opponent's original hand cards should be in the library now
                 withClue("Opponent's original hand cards should be in search options") {
-                    val cardNames = decision.cards.values.map { it.name }
+                    val cardNames = decision.cardInfo!!.values.map { it.name }
                     cardNames.contains("Grizzly Bears") shouldBe true
                     cardNames.contains("Hill Giant") shouldBe true
                 }
 
                 // Select Shock and Forest from the library
-                val shockId = decision.cards.entries.find { it.value.name == "Shock" }?.key
-                val forestId = decision.cards.entries.find { it.value.name == "Forest" }?.key
+                val shockId = decision.cardInfo!!.entries.find { it.value.name == "Shock" }?.key
+                val forestId = decision.cardInfo!!.entries.find { it.value.name == "Forest" }?.key
                 shockId shouldNotBe null
                 forestId shouldNotBe null
 
@@ -118,7 +118,7 @@ class HeadGamesScenarioTest : ScenarioTestBase() {
                 game.resolveStack()
 
                 val decision = game.getPendingDecision()
-                decision.shouldBeInstanceOf<SearchLibraryDecision>()
+                decision.shouldBeInstanceOf<SelectCardsDecision>()
 
                 // Fail to find - select nothing
                 game.submitDecision(
@@ -150,10 +150,17 @@ class HeadGamesScenarioTest : ScenarioTestBase() {
 
                 game.resolveStack()
 
-                // No search decision since hand was empty
-                withClue("No pending decision when targeting player with empty hand") {
-                    game.getPendingDecision() shouldBe null
+                // Pipeline produces a selection with maxSelections=0; submit empty selection
+                val decision = game.getPendingDecision()
+                decision.shouldBeInstanceOf<SelectCardsDecision>()
+
+                withClue("Max selections should be 0 since hand was empty") {
+                    decision.maxSelections shouldBe 0
                 }
+
+                game.submitDecision(
+                    CardsSelectedResponse(decision.id, emptyList())
+                )
 
                 game.handSize(2) shouldBe 0
             }

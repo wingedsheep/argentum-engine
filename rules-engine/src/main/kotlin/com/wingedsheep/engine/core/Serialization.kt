@@ -134,7 +134,6 @@ val engineSerializersModule = SerializersModule {
         subclass(PutFromHandContinuation::class)
         subclass(UntapChoiceContinuation::class)
         subclass(PendingTriggersContinuation::class)
-        subclass(HeadGamesContinuation::class)
         subclass(BecomeCreatureTypeContinuation::class)
         subclass(ChooseCreatureTypeModifyStatsContinuation::class)
         subclass(ChooseCreatureTypeGainControlContinuation::class)

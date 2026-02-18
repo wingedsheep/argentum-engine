@@ -313,6 +313,14 @@ object Effects {
         EffectPatterns.mill(count, target)
 
     /**
+     * Head Games — Target opponent puts cards from their hand on top of their library.
+     * Search that player's library for that many cards. The player puts those cards
+     * into their hand, then shuffles.
+     */
+    fun HeadGames(target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
+        EffectPatterns.headGames(target)
+
+    /**
      * Each player may search their library for up to X cards matching a filter.
      */
     fun EachPlayerSearchesLibrary(
@@ -362,7 +370,10 @@ object Effects {
      * Gain control of all creatures matching a filter until end of turn.
      */
     fun GainControlOfGroup(filter: GroupFilter = GroupFilter.AllCreatures, duration: Duration = Duration.EndOfTurn): Effect =
-        GainControlOfGroupEffect(filter, duration)
+        ForEachInGroupEffect(
+            filter = filter,
+            effect = GainControlEffect(EffectTarget.Self, duration)
+        )
 
     /**
      * Choose a creature type. If you control more creatures of that type than each
@@ -448,7 +459,74 @@ object Effects {
      * Untap all creatures matching a filter.
      */
     fun UntapGroup(filter: GroupFilter = GroupFilter.AllCreatures): Effect =
-        UntapGroupEffect(filter)
+        ForEachInGroupEffect(
+            filter = filter,
+            effect = TapUntapEffect(EffectTarget.Self, tap = false)
+        )
+
+    /**
+     * Tap all creatures matching a filter.
+     */
+    fun TapAll(filter: GroupFilter): Effect =
+        ForEachInGroupEffect(
+            filter = filter,
+            effect = TapUntapEffect(EffectTarget.Self, tap = true)
+        )
+
+    /**
+     * Destroy all permanents matching a filter.
+     */
+    fun DestroyAll(filter: GroupFilter, noRegenerate: Boolean = false): Effect =
+        ForEachInGroupEffect(
+            filter = filter,
+            effect = MoveToZoneEffect(EffectTarget.Self, Zone.GRAVEYARD, byDestruction = true),
+            noRegenerate = noRegenerate
+        )
+
+    /**
+     * Grant a keyword to all creatures matching a filter.
+     */
+    fun GrantKeywordToAll(
+        keyword: Keyword,
+        filter: GroupFilter,
+        duration: Duration = Duration.EndOfTurn
+    ): Effect =
+        ForEachInGroupEffect(
+            filter = filter,
+            effect = GrantKeywordUntilEndOfTurnEffect(keyword, EffectTarget.Self, duration)
+        )
+
+    /**
+     * Modify stats for all creatures matching a filter.
+     */
+    fun ModifyStatsForAll(
+        power: Int,
+        toughness: Int,
+        filter: GroupFilter,
+        duration: Duration = Duration.EndOfTurn
+    ): Effect =
+        ForEachInGroupEffect(
+            filter = filter,
+            effect = ModifyStatsEffect(power, toughness, EffectTarget.Self, duration)
+        )
+
+    /**
+     * Deal damage to all creatures matching a filter.
+     */
+    fun DealDamageToAll(amount: Int, filter: GroupFilter): Effect =
+        ForEachInGroupEffect(
+            filter = filter,
+            effect = DealDamageEffect(amount, EffectTarget.Self)
+        )
+
+    /**
+     * Deal dynamic damage to all creatures matching a filter.
+     */
+    fun DealDamageToAll(amount: DynamicAmount, filter: GroupFilter): Effect =
+        ForEachInGroupEffect(
+            filter = filter,
+            effect = DealDamageEffect(amount, EffectTarget.Self)
+        )
 
     // =========================================================================
     // Special Effects

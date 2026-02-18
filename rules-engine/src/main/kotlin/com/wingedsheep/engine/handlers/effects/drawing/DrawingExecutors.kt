@@ -23,7 +23,6 @@ class DrawingExecutors(
         EachOpponentDiscardsExecutor(decisionHandler),
         EachPlayerDiscardsOrLoseLifeExecutor(decisionHandler),
         EachPlayerMayDrawExecutor(decisionHandler),
-        HeadGamesExecutor(),
         ReplaceNextDrawWithExecutor(),
         ReadTheRunesExecutor(amountEvaluator, decisionHandler),
         TradeSecretsExecutor(decisionHandler)

@@ -797,6 +797,50 @@ object EffectPatterns {
         )
     )
 
+    /**
+     * Head Games — Target opponent puts cards from their hand on top of their library.
+     * Search that player's library for that many cards. The player puts those cards
+     * into their hand, then shuffles.
+     *
+     * Creates a Gather(hand) → Move(library top) → Gather(library) →
+     * Select(ChooseUpTo(hand count)) → Move(hand) → Shuffle pipeline.
+     *
+     * @param target The opponent whose hand is being replaced (resolved from spell target)
+     */
+    fun headGames(target: EffectTarget): CompositeEffect = CompositeEffect(
+        listOf(
+            // Step 1: Gather opponent's hand (stores count as "opponentHand_count")
+            GatherCardsEffect(
+                source = CardSource.FromZone(Zone.HAND, Player.ContextPlayer(0)),
+                storeAs = "opponentHand"
+            ),
+            // Step 2: Move opponent's hand to top of their library
+            MoveCollectionEffect(
+                from = "opponentHand",
+                destination = CardDestination.ToZone(Zone.LIBRARY, Player.ContextPlayer(0), ZonePlacement.Top)
+            ),
+            // Step 3: Gather all cards from opponent's library for searching
+            GatherCardsEffect(
+                source = CardSource.FromZone(Zone.LIBRARY, Player.ContextPlayer(0)),
+                storeAs = "searchable"
+            ),
+            // Step 4: Controller selects up to (original hand size) cards
+            SelectFromCollectionEffect(
+                from = "searchable",
+                selection = SelectionMode.ChooseUpTo(DynamicAmount.VariableReference("opponentHand_count")),
+                chooser = Chooser.Controller,
+                storeSelected = "found"
+            ),
+            // Step 5: Move selected cards to opponent's hand
+            MoveCollectionEffect(
+                from = "found",
+                destination = CardDestination.ToZone(Zone.HAND, Player.ContextPlayer(0))
+            ),
+            // Step 6: Shuffle opponent's library
+            ShuffleLibraryEffect(target)
+        )
+    )
+
     fun exileUntilLeaves(
         exileTarget: EffectTarget,
         variableName: String = "exiledCard"
