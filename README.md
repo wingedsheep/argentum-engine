@@ -6,6 +6,8 @@
 
 An unofficial Magic: The Gathering rules engine and online play platform. Not affiliated with, endorsed, sponsored, or specifically approved by Wizards of the Coast LLC.
 
+**[Play now at magic.wingedsheep.com](https://magic.wingedsheep.com)**
+
 ---
 
 ## Overview
@@ -100,8 +102,6 @@ Host booster drafts with up to 8 players. Create a draft lobby, invite friends, 
 <img src="assets/play.png" alt="Play" width="900px">
 
 Play Magic against friends with fully implemented MTG rules. The engine automatically handles the stack, priority, combat, triggers, and state-based actions—so you can focus on the game.
-
-**[Play now at magic.wingedsheep.com](https://magic.wingedsheep.com)**
 
 ## Architecture
 
