@@ -24,6 +24,9 @@ object ScourgeSet {
         // Artifacts
         ArkOfBlight,
 
+        // Black/Red creatures
+        BladewingTheRisen,
+
         // Black creatures
         CarrionFeeder,
 
