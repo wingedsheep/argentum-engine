@@ -26,7 +26,8 @@ class BoosterGenerator(
         val setCode: String,
         val setName: String,
         val cards: List<CardDefinition>,
-        val basicLands: List<CardDefinition>
+        val basicLands: List<CardDefinition>,
+        val incomplete: Boolean = false
     )
 
     companion object {
@@ -57,7 +58,8 @@ class BoosterGenerator(
             setCode = ScourgeSet.SET_CODE,
             setName = ScourgeSet.SET_NAME,
             cards = ScourgeSet.allCards,
-            basicLands = PortalSet.basicLands  // Use Portal lands for now
+            basicLands = PortalSet.basicLands,  // Use Portal lands for now
+            incomplete = true
         )
     }
 
@@ -95,10 +97,16 @@ class BoosterGenerator(
         }
 
         // Validate all set codes exist
-        setCodes.forEach { setCode ->
-            if (availableSets[setCode] == null) {
-                throw IllegalArgumentException("Unknown set code: $setCode")
-            }
+        val setConfigs = setCodes.map { setCode ->
+            availableSets[setCode]
+                ?: throw IllegalArgumentException("Unknown set code: $setCode")
+        }
+
+        // If any set is incomplete, merge all cards into a combined pool
+        val hasIncomplete = setConfigs.any { it.incomplete }
+        if (hasIncomplete) {
+            val combinedCards = setConfigs.flatMap { it.cards }
+            return generateBoosterFromCards(combinedCards)
         }
 
         // Pick a random set and generate a booster from it
@@ -149,10 +157,16 @@ class BoosterGenerator(
         }
 
         // Validate all set codes exist
-        setCodes.forEach { setCode ->
-            if (availableSets[setCode] == null) {
-                throw IllegalArgumentException("Unknown set code: $setCode")
-            }
+        val setConfigs = setCodes.map { setCode ->
+            availableSets[setCode]
+                ?: throw IllegalArgumentException("Unknown set code: $setCode")
+        }
+
+        // If any set is incomplete, merge all cards into a combined pool
+        val hasIncomplete = setConfigs.any { it.incomplete }
+        if (hasIncomplete) {
+            val combinedCards = setConfigs.flatMap { it.cards }
+            return (1..boosterCount).flatMap { generateBoosterFromCards(combinedCards) }
         }
 
         // Use seeded random for deterministic distribution, or default random
