@@ -27,6 +27,9 @@ object ScourgeSet {
         // Black creatures
         CarrionFeeder,
 
+        // Green creatures
+        FierceEmpath,
+
         // Green sorceries
         BreakAsunder,
 
