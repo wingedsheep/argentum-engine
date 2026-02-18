@@ -522,9 +522,15 @@ function ChooseOptionDecisionUI({
   }, [decision.defaultSearch, decision.options, decision.optionCardIds])
 
   const [selectedIndex, setSelectedIndex] = useState<number | null>(initialIndex)
+  const [isHoveringSource, setIsHoveringSource] = useState(false)
   const submitOptionDecision = useGameStore((s) => s.submitOptionDecision)
   const gameState = useGameStore((s) => s.gameState)
   const responsive = useResponsive()
+
+  // Source card image for context
+  const sourceCard = decision.context.sourceId ? gameState?.cards[decision.context.sourceId] : undefined
+  const sourceCardName = decision.context.sourceName ?? sourceCard?.name
+  const sourceCardImageUrl = sourceCard ? getCardImageUrl(sourceCard.name, sourceCard.imageUri) : undefined
 
   const hasCardIds = !!decision.optionCardIds
 
@@ -572,13 +578,24 @@ function ChooseOptionDecisionUI({
 
   return (
     <div className={styles.overlay}>
+      {/* Source card image */}
+      {sourceCardImageUrl && (
+        <img
+          src={sourceCardImageUrl}
+          alt={sourceCardName ?? ''}
+          className={styles.bannerCardImage}
+          onMouseEnter={() => setIsHoveringSource(true)}
+          onMouseLeave={() => setIsHoveringSource(false)}
+        />
+      )}
+
       <h2 className={styles.title}>
         {decision.prompt}
       </h2>
 
-      {decision.context.sourceName && (
-        <p className={styles.subtitle}>
-          {decision.context.sourceName}
+      {sourceCardName && (
+        <p className={styles.sourceLabel}>
+          {sourceCardName}
         </p>
       )}
 
@@ -639,8 +656,11 @@ function ChooseOptionDecisionUI({
         </div>
       )}
 
-      {/* Hover-to-zoom preview */}
-      {hoveredPreviewCard && !responsive.isMobile && (
+      {/* Hover-to-zoom preview (source card or option card) */}
+      {isHoveringSource && sourceCardName && !responsive.isMobile && (
+        <DecisionCardPreview cardName={sourceCardName} imageUri={sourceCard?.imageUri} />
+      )}
+      {!isHoveringSource && hoveredPreviewCard && !responsive.isMobile && (
         <DecisionCardPreview cardName={hoveredPreviewCard.name} imageUri={hoveredPreviewCard.imageUri} />
       )}
 
