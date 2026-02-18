@@ -2,7 +2,7 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 1 / 143
+**Implemented:** 2 / 143
 
 ---
 
@@ -115,7 +115,7 @@
 - [ ] Scattershot
 - [ ] Scornful Egotist
 - [ ] Shoreline Ranger
-- [ ] Siege-Gang Commander
+- [x] Siege-Gang Commander
 - [ ] Silver Knight
 - [ ] Skirk Volcanist
 - [ ] Skulltap

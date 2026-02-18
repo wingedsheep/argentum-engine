@@ -23,5 +23,8 @@ object ScourgeSet {
     val allCards = listOf(
         // Black creatures
         CarrionFeeder,
+
+        // Red creatures
+        SiegeGangCommander,
     )
 }
