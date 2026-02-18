@@ -12,6 +12,7 @@ import {
   hasStatCounters,
   getGoldCounters,
   getPlagueCounters,
+  getChargeCounters,
   getTokenFrameGradient,
   getTokenFrameTextColor,
   getCardFallbackColor,
@@ -804,13 +805,27 @@ export function GameCard({
         </div>
       )}
 
+      {/* Charge counter badge */}
+      {battlefield && !faceDown && getChargeCounters(card) > 0 && (
+        <div style={{
+          ...styles.chargeCounterBadge,
+          fontSize: responsive.isMobile ? 9 : 11,
+          padding: responsive.isMobile ? '1px 4px' : '2px 6px',
+        }}>
+          <span style={{ fontSize: responsive.isMobile ? 8 : 10 }}>&#x26A1;</span>
+          <span style={{ fontWeight: 700 }}>
+            {getChargeCounters(card)}
+          </span>
+        </div>
+      )}
+
       {/* Keyword ability icons */}
       {battlefield && !faceDown && (card.keywords.length > 0 || (card.protections && card.protections.length > 0)) && (
         <KeywordIcons keywords={card.keywords} protections={card.protections ?? []} size={responsive.isMobile ? 14 : 18} />
       )}
 
-      {/* Chosen creature type badge (e.g., Doom Cannon on battlefield, Aphetto Dredging on stack) */}
-      {!faceDown && card.chosenCreatureType && (
+      {/* Chosen creature type / color badge (e.g., Doom Cannon, Riptide Replicator) */}
+      {!faceDown && (card.chosenCreatureType ?? card.chosenColor) && (
         <div style={{
           position: 'absolute',
           bottom: card.power != null ? 22 : 4,
@@ -825,7 +840,7 @@ export function GameCard({
           pointerEvents: 'none',
           zIndex: 5,
         }}>
-          {card.chosenCreatureType}
+          {[card.chosenColor, card.chosenCreatureType].filter(Boolean).join(' ')}
         </div>
       )}
 

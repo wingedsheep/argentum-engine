@@ -174,6 +174,9 @@ data class ClientCard(
     /** Chosen creature type for "as enters, choose a creature type" permanents (e.g., Doom Cannon) */
     val chosenCreatureType: String? = null,
 
+    /** Chosen color for "as enters, choose a color" permanents (e.g., Riptide Replicator) */
+    val chosenColor: String? = null,
+
     /** Source zone for triggered abilities on the stack (e.g., "GRAVEYARD" for Gigapede) */
     val sourceZone: String? = null,
 

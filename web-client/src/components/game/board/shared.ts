@@ -123,6 +123,13 @@ export function getPlagueCounters(card: ClientCard): number {
 }
 
 /**
+ * Get the number of charge counters on a card.
+ */
+export function getChargeCounters(card: ClientCard): number {
+  return card.counters[CounterType.CHARGE] ?? 0
+}
+
+/**
  * Get an emoji or icon for an effect based on its icon identifier.
  */
 export function getEffectIcon(icon: string): string {

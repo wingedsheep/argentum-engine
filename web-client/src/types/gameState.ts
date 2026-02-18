@@ -154,6 +154,9 @@ export interface ClientCard {
   /** Chosen creature type for "as enters, choose a creature type" permanents (e.g., Doom Cannon) */
   readonly chosenCreatureType?: string | null
 
+  /** Chosen color for "as enters, choose a color" permanents (e.g., Riptide Replicator) */
+  readonly chosenColor?: string | null
+
   /** Source zone for triggered abilities on the stack (e.g., "GRAVEYARD" for graveyard triggers) */
   readonly sourceZone?: string | null
 

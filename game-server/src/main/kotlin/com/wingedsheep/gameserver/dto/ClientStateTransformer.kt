@@ -525,6 +525,9 @@ class ClientStateTransformer(
                 .mapNotNull { (it.effect.modification as? SerializableModification.SetCreatureSubtypes)?.subtypes?.firstOrNull() }
                 .lastOrNull()
 
+        // Get chosen color for "as enters, choose a color" permanents (e.g., Riptide Replicator)
+        val chosenColor = container.get<ChosenColorComponent>()?.color?.displayName
+
         // Get sacrificed creature types for spells with sacrifice-as-cost (e.g., Endemic Plague)
         val sacrificedCreatureTypes = spellOnStack?.sacrificedPermanentSubtypes
             ?.values?.flatten()?.toSet()
@@ -589,6 +592,7 @@ class ClientStateTransformer(
             } ?: emptyList(),
             chosenX = chosenX,
             chosenCreatureType = chosenCreatureType,
+            chosenColor = chosenColor,
             sacrificedCreatureTypes = sacrificedCreatureTypes
         )
     }
