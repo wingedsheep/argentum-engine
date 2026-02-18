@@ -349,7 +349,7 @@ function BattlefieldTargetingUI({
       {sourceImageUrl && (
         <img
           src={sourceImageUrl}
-          alt={decision.context.sourceName ?? 'Source'}
+          alt={`Source: ${decision.context.sourceName ?? 'card'}`}
           className={styles.bannerCardImage}
           onMouseEnter={() => setIsHoveringSource(true)}
           onMouseLeave={() => setIsHoveringSource(false)}
@@ -582,7 +582,7 @@ function ChooseOptionDecisionUI({
       {sourceCardImageUrl && (
         <img
           src={sourceCardImageUrl}
-          alt={sourceCardName ?? ''}
+          alt={`Source: ${sourceCardName ?? 'card'}`}
           className={styles.bannerCardImage}
           onMouseEnter={() => setIsHoveringSource(true)}
           onMouseLeave={() => setIsHoveringSource(false)}
@@ -841,7 +841,7 @@ function CardSelectionDecision({
       {sourceCardImageUrl && (
         <img
           src={sourceCardImageUrl}
-          alt={sourceCardName ?? ''}
+          alt={`Source: ${sourceCardName ?? 'card'}`}
           className={styles.bannerCardImage}
           onMouseEnter={() => setIsHoveringSource(true)}
           onMouseLeave={() => setIsHoveringSource(false)}
@@ -1310,7 +1310,7 @@ function DecisionCardPreview({ cardName, imageUri }: { cardName: string; imageUr
       >
         <img
           src={cardImageUrl}
-          alt={cardName}
+          alt={`${cardName} preview`}
           className={styles.previewImage}
         />
       </div>
