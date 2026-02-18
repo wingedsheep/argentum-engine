@@ -5,6 +5,7 @@ import com.wingedsheep.engine.core.DistributionResponse
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.mtg.sets.definitions.onslaught.OnslaughtSet
 import com.wingedsheep.mtg.sets.definitions.portal.PortalSet
+import com.wingedsheep.mtg.sets.definitions.scourge.ScourgeSet
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
@@ -43,6 +44,7 @@ abstract class ScenarioTestBase : FunSpec() {
     protected val cardRegistry = CardRegistry().apply {
         register(PortalSet.allCards)
         register(OnslaughtSet.allCards)
+        register(ScourgeSet.allCards)
     }
     protected val actionProcessor = ActionProcessor(cardRegistry)
     protected val stateTransformer = ClientStateTransformer(cardRegistry)
