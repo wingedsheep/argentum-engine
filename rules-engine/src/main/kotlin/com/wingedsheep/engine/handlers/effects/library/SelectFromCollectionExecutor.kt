@@ -187,7 +187,7 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
             )
         }
 
-        val prompt = when {
+        val prompt = effect.prompt ?: when {
             minSelections == maxSelections -> "Choose $minSelections card${if (minSelections != 1) "s" else ""}"
             minSelections == 0 -> "Choose up to $maxSelections card${if (maxSelections != 1) "s" else ""}"
             else -> "Choose $minSelections to $maxSelections cards"

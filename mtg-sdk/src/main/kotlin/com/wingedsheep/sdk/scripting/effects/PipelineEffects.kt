@@ -211,7 +211,9 @@ data class SelectFromCollectionEffect(
      * creature type stored in the effect context's chosenCreatureType.
      * Used for "creature card of the chosen type" patterns.
      */
-    val matchChosenCreatureType: Boolean = false
+    val matchChosenCreatureType: Boolean = false,
+    /** Custom prompt for the selection decision. If null, a generic prompt is generated. */
+    val prompt: String? = null
 ) : Effect {
     override val description: String = buildString {
         if (chooser == Chooser.Opponent) append("An opponent ")

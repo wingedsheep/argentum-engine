@@ -241,7 +241,8 @@ object EffectPatterns {
                 SelectFromCollectionEffect(
                     from = "put_candidates",
                     selection = SelectionMode.ChooseAnyNumber,
-                    storeSelected = "putting"
+                    storeSelected = "putting",
+                    prompt = "Choose cards to put onto the battlefield"
                 ),
                 MoveCollectionEffect(
                     from = "putting",

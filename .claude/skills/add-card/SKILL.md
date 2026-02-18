@@ -236,3 +236,4 @@ just build
 8. **Test new mechanics** - All new effects/keywords/triggers/conditions need tests
 9. **Follow naming conventions** - CardName should match file name
 10. **Keep effects data-only** - Logic goes in executors, not effect data classes
+11. **Auras must use `Enchantment — Aura` type line** - All cards with "Enchant creature/permanent/land/artifact" use `typeLine = "Enchantment — Aura"` (modern Oracle errata). They need `enchantTarget` in the card script for the engine to handle aura attachment correctly.

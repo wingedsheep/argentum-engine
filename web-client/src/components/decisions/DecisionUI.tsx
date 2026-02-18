@@ -297,11 +297,19 @@ function BattlefieldTargetingUI({
   const decisionSelectionState = useGameStore((s) => s.decisionSelectionState)
   const cancelDecisionSelection = useGameStore((s) => s.cancelDecisionSelection)
   const submitTargetsDecision = useGameStore((s) => s.submitTargetsDecision)
+  const gameState = useGameStore((s) => s.gameState)
+  const [isHoveringSource, setIsHoveringSource] = useState(false)
+  const responsive = useResponsive()
 
   const targetReq = decision.targetRequirements[0]
   const minTargets = targetReq?.minTargets ?? 1
   const maxTargets = targetReq?.maxTargets ?? 1
   const legalTargets = decision.legalTargets[0] ?? []
+
+  // Look up source card image from game state
+  const sourceId = decision.context.sourceId
+  const sourceCard = sourceId ? gameState?.cards[sourceId] : undefined
+  const sourceImageUrl = sourceCard ? getCardImageUrl(sourceCard.name, sourceCard.imageUri) : undefined
 
   // Start decision selection state when this component mounts
   useEffect(() => {
@@ -338,6 +346,18 @@ function BattlefieldTargetingUI({
 
   return (
     <div className={styles.sideBannerSelection}>
+      {sourceImageUrl && (
+        <img
+          src={sourceImageUrl}
+          alt={decision.context.sourceName ?? 'Source'}
+          className={styles.bannerCardImage}
+          onMouseEnter={() => setIsHoveringSource(true)}
+          onMouseLeave={() => setIsHoveringSource(false)}
+        />
+      )}
+      {isHoveringSource && sourceCard && !responsive.isMobile && (
+        <DecisionCardPreview cardName={sourceCard.name} imageUri={sourceCard.imageUri} />
+      )}
       <div className={styles.bannerTitleSelection}>
         Choose Target
       </div>
@@ -789,11 +809,34 @@ function CardSelectionDecision({
     )
   }
 
+  // Look up source card info for context display
+  const sourceCard = decision.context.sourceId ? gameState?.cards[decision.context.sourceId] : undefined
+  const sourceCardName = decision.context.sourceName ?? sourceCard?.name
+  const sourceCardImageUrl = sourceCard ? getCardImageUrl(sourceCard.name, sourceCard.imageUri) : undefined
+  const [isHoveringSource, setIsHoveringSource] = useState(false)
+
   return (
     <div className={styles.overlay}>
+      {/* Source card image */}
+      {sourceCardImageUrl && (
+        <img
+          src={sourceCardImageUrl}
+          alt={sourceCardName ?? ''}
+          className={styles.bannerCardImage}
+          onMouseEnter={() => setIsHoveringSource(true)}
+          onMouseLeave={() => setIsHoveringSource(false)}
+        />
+      )}
+
       <h2 className={styles.title}>
         {decision.prompt}
       </h2>
+
+      {sourceCardName && (
+        <p className={styles.sourceLabel}>
+          {sourceCardName}
+        </p>
+      )}
 
       <p className={styles.hint}>
         {decision.minSelections === 0
@@ -846,8 +889,11 @@ function CardSelectionDecision({
         </button>
       </div>
 
-      {/* Card preview on hover */}
-      {hoveredCardInfo?.name && !responsive.isMobile && (
+      {/* Card preview on hover (source card or option card) */}
+      {isHoveringSource && sourceCardName && !responsive.isMobile && (
+        <DecisionCardPreview cardName={sourceCardName} imageUri={sourceCard?.imageUri} />
+      )}
+      {!isHoveringSource && hoveredCardInfo?.name && !responsive.isMobile && (
         <DecisionCardPreview cardName={hoveredCardInfo.name} imageUri={hoveredCardInfo.imageUri} />
       )}
     </div>

@@ -79,6 +79,23 @@
 }
 
 /* =========================================================================
+ * Banner Card Image (source card shown in targeting banner)
+ * ========================================================================= */
+.bannerCardImage {
+  width: 120px;
+  height: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-card);
+  object-fit: contain;
+}
+
+@media (max-width: 639px) {
+  .bannerCardImage {
+    width: 80px;
+  }
+}
+
+/* =========================================================================
  * Typography
  * ========================================================================= */
 .title {
@@ -121,6 +138,13 @@
   color: var(--text-tertiary);
   margin: 0;
   font-size: var(--font-md);
+}
+
+.sourceLabel {
+  color: var(--text-secondary);
+  margin: 0;
+  font-size: var(--font-sm);
+  font-style: italic;
 }
 
 .prompt {
