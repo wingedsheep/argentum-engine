@@ -3,7 +3,9 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DealDamageToGroupEffect
+import com.wingedsheep.sdk.scripting.DealDamageEffect
+import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.GroupFilter
 import com.wingedsheep.sdk.scripting.YouWereAttackedThisStep
 
@@ -21,7 +23,7 @@ val ScorchingWinds = card("Scorching Winds") {
     spell {
         castOnlyDuring(Step.DECLARE_ATTACKERS)
         castOnlyIf(YouWereAttackedThisStep)
-        effect = DealDamageToGroupEffect(1, GroupFilter.AttackingCreatures)
+        effect = ForEachInGroupEffect(GroupFilter.AttackingCreatures, DealDamageEffect(1, EffectTarget.Self))
     }
 
     metadata {

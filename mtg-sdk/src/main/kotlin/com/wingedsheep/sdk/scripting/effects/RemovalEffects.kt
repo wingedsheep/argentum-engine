@@ -40,32 +40,6 @@ data class CantBeRegeneratedEffect(
 }
 
 /**
- * Destroy all permanents matching a filter.
- * Unified effect that handles all "destroy all X" patterns.
- *
- * Examples:
- * - DestroyAllEffect(GroupFilter.AllLands) -> "Destroy all lands"
- * - DestroyAllEffect(GroupFilter.AllCreatures, noRegenerate = true) -> Wrath of God
- * - DestroyAllEffect(GroupFilter(GOF.Creature.withColor(Color.WHITE))) -> Virtue's Ruin
- * - DestroyAllEffect(GroupFilter(GOF.Land.withSubtype(Subtype.ISLAND))) -> Boiling Seas
- *
- * @param filter Which permanents to destroy (defaults to AllPermanents)
- * @param noRegenerate If true, destroyed permanents can't be regenerated (for future regeneration support)
- */
-@SerialName("DestroyAll")
-@Serializable
-data class DestroyAllEffect(
-    val filter: GroupFilter = GroupFilter.AllPermanents,
-    val noRegenerate: Boolean = false
-) : Effect {
-    override val description: String = buildString {
-        append("Destroy ")
-        append(filter.description)
-        if (noRegenerate) append(". They can't be regenerated")
-    }
-}
-
-/**
  * Destroy all creatures that share a creature type with the sacrificed creature.
  * Used for Endemic Plague and similar effects.
  *

@@ -2,8 +2,10 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.GroupFilter
-import com.wingedsheep.sdk.scripting.ModifyStatsForGroupEffect
+import com.wingedsheep.sdk.scripting.ModifyStatsEffect
 
 /**
  * Infest
@@ -17,10 +19,9 @@ val Infest = card("Infest") {
     oracleText = "All creatures get -2/-2 until end of turn."
 
     spell {
-        effect = ModifyStatsForGroupEffect(
-            powerModifier = -2,
-            toughnessModifier = -2,
-            filter = GroupFilter.AllCreatures
+        effect = ForEachInGroupEffect(
+            filter = GroupFilter.AllCreatures,
+            effect = ModifyStatsEffect(-2, -2, EffectTarget.Self)
         )
     }
 

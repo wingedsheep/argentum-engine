@@ -3,9 +3,11 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DealDamageToGroupEffect
+import com.wingedsheep.sdk.scripting.DealDamageEffect
 import com.wingedsheep.sdk.scripting.DealDamageToPlayersEffect
 import com.wingedsheep.sdk.scripting.DynamicAmount
+import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GroupFilter
 import com.wingedsheep.sdk.scripting.Player
@@ -25,7 +27,7 @@ val ThunderOfHooves = card("Thunder of Hooves") {
     val beastCount = DynamicAmount.CountBattlefield(Player.Each, GameObjectFilter.Creature.withSubtype("Beast"))
 
     spell {
-        effect = DealDamageToGroupEffect(beastCount, GroupFilter.AllCreatures.withoutKeyword(Keyword.FLYING)) then
+        effect = ForEachInGroupEffect(GroupFilter.AllCreatures.withoutKeyword(Keyword.FLYING), DealDamageEffect(beastCount, EffectTarget.Self)) then
             DealDamageToPlayersEffect(beastCount)
     }
 

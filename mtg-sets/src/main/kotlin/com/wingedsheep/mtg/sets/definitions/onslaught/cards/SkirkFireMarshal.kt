@@ -4,9 +4,12 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DealDamageToGroupEffect
+import com.wingedsheep.sdk.scripting.DealDamageEffect
 import com.wingedsheep.sdk.scripting.DealDamageToPlayersEffect
+import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.GroupFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
 
 /**
@@ -28,7 +31,7 @@ val SkirkFireMarshal = card("Skirk Fire Marshal") {
 
     activatedAbility {
         cost = Costs.TapPermanents(5, GameObjectFilter.Creature.withSubtype("Goblin"))
-        effect = DealDamageToGroupEffect(10) then DealDamageToPlayersEffect(10)
+        effect = ForEachInGroupEffect(GroupFilter.AllCreatures, DealDamageEffect(10, EffectTarget.Self)) then DealDamageToPlayersEffect(10)
     }
 
     metadata {

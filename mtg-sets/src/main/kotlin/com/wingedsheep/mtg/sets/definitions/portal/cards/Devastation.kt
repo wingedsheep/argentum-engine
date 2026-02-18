@@ -1,10 +1,13 @@
 package com.wingedsheep.mtg.sets.definitions.portal.cards
 
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DestroyAllEffect
+import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GroupFilter
+import com.wingedsheep.sdk.scripting.MoveToZoneEffect
 
 /**
  * Devastation
@@ -17,7 +20,7 @@ val Devastation = card("Devastation") {
     typeLine = "Sorcery"
 
     spell {
-        effect = DestroyAllEffect(GroupFilter(GameObjectFilter.CreatureOrLand))
+        effect = ForEachInGroupEffect(GroupFilter(GameObjectFilter.CreatureOrLand), MoveToZoneEffect(EffectTarget.Self, Zone.GRAVEYARD, byDestruction = true))
     }
 
     metadata {

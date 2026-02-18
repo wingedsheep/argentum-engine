@@ -30,5 +30,7 @@ data class EffectContext(
     /** Permanents tapped as part of an activated ability's cost (e.g., Cryptic Gateway) */
     val tappedPermanents: List<EntityId> = emptyList(),
     /** Named card collections for pipeline effects (GatherCards → SelectFromCollection → MoveCollection) */
-    val storedCollections: Map<String, List<EntityId>> = emptyMap()
+    val storedCollections: Map<String, List<EntityId>> = emptyMap(),
+    /** When inside a ForEachInGroupEffect, the current iteration entity. EffectTarget.Self resolves to this. */
+    val iterationTarget: EntityId? = null
 )

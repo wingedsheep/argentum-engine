@@ -7,8 +7,10 @@ import com.wingedsheep.sdk.core.*
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.GroupFilter
-import com.wingedsheep.sdk.scripting.ModifyStatsForGroupEffect
+import com.wingedsheep.sdk.scripting.ModifyStatsEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -22,11 +24,7 @@ class ModifyStatsForGroupTest : FunSpec({
         manaCost = ManaCost.parse("{2}{W}"),
         oracleText = "Creatures you control get +1/+1 until end of turn.",
         script = CardScript.spell(
-            effect = ModifyStatsForGroupEffect(
-                powerModifier = 1,
-                toughnessModifier = 1,
-                filter = GroupFilter.AllCreaturesYouControl
-            )
+            effect = ForEachInGroupEffect(GroupFilter.AllCreaturesYouControl, ModifyStatsEffect(1, 1, EffectTarget.Self))
         )
     )
 

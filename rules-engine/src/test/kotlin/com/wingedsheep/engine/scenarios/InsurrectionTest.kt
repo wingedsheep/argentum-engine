@@ -11,10 +11,12 @@ import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.CompositeEffect
 import com.wingedsheep.sdk.scripting.Duration
-import com.wingedsheep.sdk.scripting.GainControlOfGroupEffect
-import com.wingedsheep.sdk.scripting.GrantKeywordToGroupEffect
+import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.ForEachInGroupEffect
+import com.wingedsheep.sdk.scripting.GainControlEffect
+import com.wingedsheep.sdk.scripting.GrantKeywordUntilEndOfTurnEffect
 import com.wingedsheep.sdk.scripting.GroupFilter
-import com.wingedsheep.sdk.scripting.UntapGroupEffect
+import com.wingedsheep.sdk.scripting.TapUntapEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -36,9 +38,9 @@ class InsurrectionTest : FunSpec({
         script = CardScript.spell(
             effect = CompositeEffect(
                 listOf(
-                    GainControlOfGroupEffect(GroupFilter.AllCreatures, Duration.EndOfTurn),
-                    UntapGroupEffect(GroupFilter.AllCreatures),
-                    GrantKeywordToGroupEffect(Keyword.HASTE, GroupFilter.AllCreatures, Duration.EndOfTurn)
+                    ForEachInGroupEffect(GroupFilter.AllCreatures, GainControlEffect(EffectTarget.Self, Duration.EndOfTurn)),
+                    ForEachInGroupEffect(GroupFilter.AllCreatures, TapUntapEffect(EffectTarget.Self, tap = false)),
+                    ForEachInGroupEffect(GroupFilter.AllCreatures, GrantKeywordUntilEndOfTurnEffect(Keyword.HASTE, EffectTarget.Self, Duration.EndOfTurn))
                 )
             )
         )

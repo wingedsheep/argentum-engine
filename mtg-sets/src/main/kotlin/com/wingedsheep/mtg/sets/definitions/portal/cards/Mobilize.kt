@@ -2,7 +2,10 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.UntapAllCreaturesYouControlEffect
+import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.ForEachInGroupEffect
+import com.wingedsheep.sdk.scripting.GroupFilter
+import com.wingedsheep.sdk.scripting.TapUntapEffect
 
 /**
  * Mobilize
@@ -15,7 +18,7 @@ val Mobilize = card("Mobilize") {
     typeLine = "Sorcery"
 
     spell {
-        effect = UntapAllCreaturesYouControlEffect
+        effect = ForEachInGroupEffect(GroupFilter.AllCreaturesYouControl, TapUntapEffect(EffectTarget.Self, tap = false))
     }
 
     metadata {

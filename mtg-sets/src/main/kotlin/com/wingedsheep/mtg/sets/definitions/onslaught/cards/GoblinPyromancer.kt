@@ -1,11 +1,14 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DestroyAllEffect
+import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.GroupFilter
-import com.wingedsheep.sdk.scripting.ModifyStatsForGroupEffect
+import com.wingedsheep.sdk.scripting.ModifyStatsEffect
+import com.wingedsheep.sdk.scripting.MoveToZoneEffect
 
 /**
  * Goblin Pyromancer
@@ -24,17 +27,17 @@ val GoblinPyromancer = card("Goblin Pyromancer") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = ModifyStatsForGroupEffect(
-            powerModifier = 3,
-            toughnessModifier = 0,
-            filter = GroupFilter.allCreaturesWithSubtype("Goblin")
+        effect = ForEachInGroupEffect(
+            filter = GroupFilter.allCreaturesWithSubtype("Goblin"),
+            effect = ModifyStatsEffect(3, 0, EffectTarget.Self)
         )
     }
 
     triggeredAbility {
         trigger = Triggers.EachEndStep
-        effect = DestroyAllEffect(
-            filter = GroupFilter.allCreaturesWithSubtype("Goblin")
+        effect = ForEachInGroupEffect(
+            filter = GroupFilter.allCreaturesWithSubtype("Goblin"),
+            effect = MoveToZoneEffect(EffectTarget.Self, Zone.GRAVEYARD, byDestruction = true)
         )
     }
 

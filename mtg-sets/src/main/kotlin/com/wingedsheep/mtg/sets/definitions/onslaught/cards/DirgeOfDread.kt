@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.scripting.GrantKeywordToGroupEffect
+import com.wingedsheep.sdk.scripting.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.GrantKeywordUntilEndOfTurnEffect
 import com.wingedsheep.sdk.scripting.GroupFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
@@ -26,9 +26,9 @@ val DirgeOfDread = card("Dirge of Dread") {
     oracleText = "All creatures gain fear until end of turn.\nCycling {1}{B}\nWhen you cycle Dirge of Dread, you may have target creature gain fear until end of turn."
 
     spell {
-        effect = GrantKeywordToGroupEffect(
-            keyword = Keyword.FEAR,
-            filter = GroupFilter.AllCreatures
+        effect = ForEachInGroupEffect(
+            filter = GroupFilter.AllCreatures,
+            effect = GrantKeywordUntilEndOfTurnEffect(Keyword.FEAR, EffectTarget.Self)
         )
     }
 

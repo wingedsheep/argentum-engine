@@ -2,8 +2,11 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DealDamageToGroupEffect
+import com.wingedsheep.sdk.scripting.DealDamageEffect
 import com.wingedsheep.sdk.scripting.DealDamageToPlayersEffect
+import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.ForEachInGroupEffect
+import com.wingedsheep.sdk.scripting.GroupFilter
 
 /**
  * Fire Tempest
@@ -16,7 +19,7 @@ val FireTempest = card("Fire Tempest") {
     typeLine = "Sorcery"
 
     spell {
-        effect = DealDamageToGroupEffect(6) then DealDamageToPlayersEffect(6)
+        effect = ForEachInGroupEffect(GroupFilter.AllCreatures, DealDamageEffect(6, EffectTarget.Self)) then DealDamageToPlayersEffect(6)
     }
 
     metadata {

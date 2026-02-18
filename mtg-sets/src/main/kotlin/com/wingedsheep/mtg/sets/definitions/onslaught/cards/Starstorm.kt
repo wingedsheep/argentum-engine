@@ -2,8 +2,11 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DealDamageToGroupEffect
+import com.wingedsheep.sdk.scripting.DealDamageEffect
 import com.wingedsheep.sdk.scripting.DynamicAmount
+import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.ForEachInGroupEffect
+import com.wingedsheep.sdk.scripting.GroupFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
 
 /**
@@ -19,7 +22,7 @@ val Starstorm = card("Starstorm") {
     oracleText = "Starstorm deals X damage to each creature.\nCycling {3}"
 
     spell {
-        effect = DealDamageToGroupEffect(DynamicAmount.XValue)
+        effect = ForEachInGroupEffect(GroupFilter.AllCreatures, DealDamageEffect(DynamicAmount.XValue, EffectTarget.Self))
     }
 
     keywordAbility(KeywordAbility.cycling("{3}"))

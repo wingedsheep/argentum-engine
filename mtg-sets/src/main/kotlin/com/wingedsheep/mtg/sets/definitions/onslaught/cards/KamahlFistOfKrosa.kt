@@ -10,8 +10,9 @@ import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.GroupFilter
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.ModifyStatsForGroupEffect
-import com.wingedsheep.sdk.scripting.GrantKeywordToGroupEffect
+import com.wingedsheep.sdk.scripting.ForEachInGroupEffect
+import com.wingedsheep.sdk.scripting.GrantKeywordUntilEndOfTurnEffect
+import com.wingedsheep.sdk.scripting.ModifyStatsEffect
 
 /**
  * Kamahl, Fist of Krosa
@@ -37,14 +38,13 @@ val KamahlFistOfKrosa = card("Kamahl, Fist of Krosa") {
     activatedAbility {
         cost = Costs.Mana("{2}{G}{G}{G}")
         effect = Effects.Composite(
-            ModifyStatsForGroupEffect(
-                powerModifier = 3,
-                toughnessModifier = 3,
-                filter = GroupFilter(GameObjectFilter.Creature.youControl())
+            ForEachInGroupEffect(
+                filter = GroupFilter(GameObjectFilter.Creature.youControl()),
+                effect = ModifyStatsEffect(3, 3, EffectTarget.Self)
             ),
-            GrantKeywordToGroupEffect(
-                keyword = Keyword.TRAMPLE,
-                filter = GroupFilter(GameObjectFilter.Creature.youControl())
+            ForEachInGroupEffect(
+                filter = GroupFilter(GameObjectFilter.Creature.youControl()),
+                effect = GrantKeywordUntilEndOfTurnEffect(Keyword.TRAMPLE, EffectTarget.Self)
             )
         )
     }

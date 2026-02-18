@@ -132,8 +132,9 @@ class CardSerializationRoundTripTest : DescribeSpec({
                 manaCost = "{B}"
                 typeLine = "Sorcery"
                 spell {
-                    effect = DestroyAllEffect(
-                        filter = GroupFilter(filter)
+                    effect = ForEachInGroupEffect(
+                        filter = GroupFilter(filter),
+                        effect = MoveToZoneEffect(EffectTarget.Self, Zone.GRAVEYARD, byDestruction = true)
                     )
                 }
             }
@@ -144,7 +145,7 @@ class CardSerializationRoundTripTest : DescribeSpec({
             serialized shouldContain "ControlledByYou"
 
             val deserialized = CardLoader.fromJson(serialized)
-            val effect = deserialized.script.spellEffect as DestroyAllEffect
+            val effect = deserialized.script.spellEffect as ForEachInGroupEffect
             effect.filter.baseFilter.cardPredicates.any { it is CardPredicate.HasColor } shouldBe true
             effect.filter.baseFilter.statePredicates.any { it is StatePredicate.IsTapped } shouldBe true
             effect.filter.baseFilter.controllerPredicate shouldBe ControllerPredicate.ControlledByYou

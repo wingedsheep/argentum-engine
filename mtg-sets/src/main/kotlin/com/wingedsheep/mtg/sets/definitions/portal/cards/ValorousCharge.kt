@@ -3,9 +3,11 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GroupFilter
-import com.wingedsheep.sdk.scripting.ModifyStatsForGroupEffect
+import com.wingedsheep.sdk.scripting.ModifyStatsEffect
 
 /**
  * Valorous Charge
@@ -18,10 +20,9 @@ val ValorousCharge = card("Valorous Charge") {
     typeLine = "Sorcery"
 
     spell {
-        effect = ModifyStatsForGroupEffect(
-            powerModifier = 2,
-            toughnessModifier = 0,
-            filter = GroupFilter(GameObjectFilter.Creature.withColor(Color.WHITE))
+        effect = ForEachInGroupEffect(
+            GroupFilter(GameObjectFilter.Creature.withColor(Color.WHITE)),
+            ModifyStatsEffect(2, 0, EffectTarget.Self)
         )
     }
 

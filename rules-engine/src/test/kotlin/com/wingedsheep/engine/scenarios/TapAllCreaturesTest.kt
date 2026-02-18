@@ -7,8 +7,10 @@ import com.wingedsheep.sdk.core.*
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.GroupFilter
-import com.wingedsheep.sdk.scripting.TapAllCreaturesEffect
+import com.wingedsheep.sdk.scripting.TapUntapEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -23,7 +25,7 @@ class TapAllCreaturesTest : FunSpec({
         manaCost = ManaCost.parse("{2}{W}"),
         oracleText = "Tap all nonwhite creatures.",
         script = CardScript.spell(
-            effect = TapAllCreaturesEffect(filter = GroupFilter.AllCreatures.notColor(Color.WHITE))
+            effect = ForEachInGroupEffect(GroupFilter.AllCreatures.notColor(Color.WHITE), TapUntapEffect(EffectTarget.Self, tap = true))
         )
     )
 
@@ -33,7 +35,7 @@ class TapAllCreaturesTest : FunSpec({
         manaCost = ManaCost.parse("{2}{U}"),
         oracleText = "Tap all creatures.",
         script = CardScript.spell(
-            effect = TapAllCreaturesEffect(filter = GroupFilter.AllCreatures)
+            effect = ForEachInGroupEffect(GroupFilter.AllCreatures, TapUntapEffect(EffectTarget.Self, tap = true))
         )
     )
 

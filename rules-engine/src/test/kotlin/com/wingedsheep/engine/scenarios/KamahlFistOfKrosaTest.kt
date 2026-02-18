@@ -20,9 +20,10 @@ import com.wingedsheep.sdk.scripting.AnimateLandEffect
 import com.wingedsheep.sdk.scripting.CompositeEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.GrantKeywordToGroupEffect
+import com.wingedsheep.sdk.scripting.ForEachInGroupEffect
+import com.wingedsheep.sdk.scripting.GrantKeywordUntilEndOfTurnEffect
 import com.wingedsheep.sdk.scripting.GroupFilter
-import com.wingedsheep.sdk.scripting.ModifyStatsForGroupEffect
+import com.wingedsheep.sdk.scripting.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.TargetFilter
 import com.wingedsheep.sdk.targeting.TargetPermanent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
@@ -64,14 +65,13 @@ class KamahlFistOfKrosaTest : FunSpec({
                 cost = AbilityCost.Mana(ManaCost.parse("{2}{G}{G}{G}")),
                 effect = CompositeEffect(
                     listOf(
-                        ModifyStatsForGroupEffect(
-                            powerModifier = 3,
-                            toughnessModifier = 3,
-                            filter = GroupFilter(GameObjectFilter.Creature.youControl())
+                        ForEachInGroupEffect(
+                            GroupFilter(GameObjectFilter.Creature.youControl()),
+                            ModifyStatsEffect(3, 3, EffectTarget.Self)
                         ),
-                        GrantKeywordToGroupEffect(
-                            keyword = Keyword.TRAMPLE,
-                            filter = GroupFilter(GameObjectFilter.Creature.youControl())
+                        ForEachInGroupEffect(
+                            GroupFilter(GameObjectFilter.Creature.youControl()),
+                            GrantKeywordUntilEndOfTurnEffect(Keyword.TRAMPLE, EffectTarget.Self)
                         )
                     )
                 )

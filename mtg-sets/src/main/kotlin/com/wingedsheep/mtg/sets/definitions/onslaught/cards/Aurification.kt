@@ -9,8 +9,10 @@ import com.wingedsheep.sdk.scripting.AddCreatureTypeByCounter
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.GrantKeywordByCounter
 import com.wingedsheep.sdk.scripting.OnCreatureDealsDamageToYou
+import com.wingedsheep.sdk.scripting.ForEachInGroupEffect
+import com.wingedsheep.sdk.scripting.GroupFilter
 import com.wingedsheep.sdk.scripting.OnLeavesBattlefield
-import com.wingedsheep.sdk.scripting.RemoveAllCountersOfTypeEffect
+import com.wingedsheep.sdk.scripting.RemoveCountersEffect
 
 /**
  * Aurification
@@ -37,7 +39,7 @@ val Aurification = card("Aurification") {
 
     triggeredAbility {
         trigger = OnLeavesBattlefield(selfOnly = true)
-        effect = RemoveAllCountersOfTypeEffect("gold")
+        effect = ForEachInGroupEffect(GroupFilter.AllCreatures, RemoveCountersEffect("gold", Int.MAX_VALUE, EffectTarget.Self))
     }
 
     metadata {

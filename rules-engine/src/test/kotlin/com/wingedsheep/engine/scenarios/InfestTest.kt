@@ -9,8 +9,10 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.GroupFilter
-import com.wingedsheep.sdk.scripting.ModifyStatsForGroupEffect
+import com.wingedsheep.sdk.scripting.ModifyStatsEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
@@ -30,11 +32,7 @@ class InfestTest : FunSpec({
         manaCost = ManaCost.parse("{1}{B}{B}"),
         oracleText = "All creatures get -2/-2 until end of turn.",
         script = CardScript.spell(
-            effect = ModifyStatsForGroupEffect(
-                powerModifier = -2,
-                toughnessModifier = -2,
-                filter = GroupFilter.AllCreatures
-            )
+            effect = ForEachInGroupEffect(GroupFilter.AllCreatures, ModifyStatsEffect(-2, -2, EffectTarget.Self))
         )
     )
 

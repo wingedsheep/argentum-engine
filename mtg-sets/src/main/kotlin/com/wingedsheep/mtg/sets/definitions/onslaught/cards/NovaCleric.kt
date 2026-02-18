@@ -1,10 +1,13 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DestroyAllEffect
+import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.GroupFilter
+import com.wingedsheep.sdk.scripting.MoveToZoneEffect
 
 /**
  * Nova Cleric
@@ -22,7 +25,10 @@ val NovaCleric = card("Nova Cleric") {
 
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{2}{W}"), Costs.Tap, Costs.SacrificeSelf)
-        effect = DestroyAllEffect(GroupFilter.AllEnchantments)
+        effect = ForEachInGroupEffect(
+            filter = GroupFilter.AllEnchantments,
+            effect = MoveToZoneEffect(EffectTarget.Self, Zone.GRAVEYARD, byDestruction = true)
+        )
     }
 
     metadata {

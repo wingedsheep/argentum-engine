@@ -4,8 +4,10 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.GrantKeywordToGroupEffect
+import com.wingedsheep.sdk.scripting.GrantKeywordUntilEndOfTurnEffect
 import com.wingedsheep.sdk.scripting.GroupFilter
 
 /**
@@ -19,9 +21,9 @@ val NaturesCloak = card("Nature's Cloak") {
     typeLine = "Sorcery"
 
     spell {
-        effect = GrantKeywordToGroupEffect(
-            keyword = Keyword.FORESTWALK,
-            filter = GroupFilter(GameObjectFilter.Creature.withColor(Color.GREEN).youControl())
+        effect = ForEachInGroupEffect(
+            GroupFilter(GameObjectFilter.Creature.withColor(Color.GREEN).youControl()),
+            GrantKeywordUntilEndOfTurnEffect(Keyword.FORESTWALK, EffectTarget.Self)
         )
     }
 

@@ -39,30 +39,6 @@ data class DealDamageEffect(
 }
 
 /**
- * Deal damage to a group of creatures matching a filter.
- * Use with .then(DealDamageToPlayersEffect) for effects that also damage players.
- *
- * Examples:
- * - Pyroclasm: DealDamageToGroupEffect(2, GroupFilter.AllCreatures)
- * - Needle Storm: DealDamageToGroupEffect(4, GroupFilter.AllCreatures.withKeyword(Keyword.FLYING))
- * - Earthquake: DealDamageToGroupEffect(DynamicAmount.XValue, GroupFilter.AllCreatures.withoutKeyword(Keyword.FLYING))
- *                  .then(DealDamageToPlayersEffect(DynamicAmount.XValue))
- *
- * @param amount The amount of damage to deal (can be fixed or dynamic like X)
- * @param filter Which creatures are damaged
- */
-@SerialName("DealDamageToGroup")
-@Serializable
-data class DealDamageToGroupEffect(
-    val amount: DynamicAmount,
-    val filter: GroupFilter = GroupFilter.AllCreatures
-) : Effect {
-    constructor(amount: Int, filter: GroupFilter = GroupFilter.AllCreatures) : this(DynamicAmount.Fixed(amount), filter)
-
-    override val description: String = "Deal ${amount.description} damage to ${filter.description}"
-}
-
-/**
  * Deal damage to players.
  * Can target each player, controller only, opponent only, or each opponent.
  * Often composed with DealDamageToGroupEffect for effects like Earthquake.
@@ -87,18 +63,6 @@ data class DealDamageToPlayersEffect(
         EffectTarget.Controller -> "Deal ${amount.description} damage to you"
         else -> "Deal ${amount.description} damage to ${target.description}"
     }
-}
-
-/**
- * Deal damage to each attacking creature.
- * Used for Scorching Winds: "Deal 1 damage to each attacking creature."
- */
-@SerialName("DealDamageToAttackingCreatures")
-@Serializable
-data class DealDamageToAttackingCreaturesEffect(
-    val amount: Int
-) : Effect {
-    override val description: String = "Deal $amount damage to each attacking creature"
 }
 
 /**

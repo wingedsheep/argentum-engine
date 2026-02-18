@@ -2,7 +2,10 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DealDamageToGroupEffect
+import com.wingedsheep.sdk.scripting.DealDamageEffect
+import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.ForEachInGroupEffect
+import com.wingedsheep.sdk.scripting.GroupFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.MayEffect
 import com.wingedsheep.sdk.scripting.OnCycle
@@ -21,14 +24,14 @@ val SliceAndDice = card("Slice and Dice") {
     oracleText = "Slice and Dice deals 4 damage to each creature.\nCycling {2}{R}\nWhen you cycle Slice and Dice, you may have it deal 1 damage to each creature."
 
     spell {
-        effect = DealDamageToGroupEffect(4)
+        effect = ForEachInGroupEffect(GroupFilter.AllCreatures, DealDamageEffect(4, EffectTarget.Self))
     }
 
     keywordAbility(KeywordAbility.cycling("{2}{R}"))
 
     triggeredAbility {
         trigger = OnCycle(controllerOnly = true)
-        effect = MayEffect(DealDamageToGroupEffect(1))
+        effect = MayEffect(ForEachInGroupEffect(GroupFilter.AllCreatures, DealDamageEffect(1, EffectTarget.Self)))
     }
 
     metadata {

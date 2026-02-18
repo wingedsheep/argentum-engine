@@ -2,8 +2,11 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DealDamageToGroupEffect
+import com.wingedsheep.sdk.scripting.DealDamageEffect
 import com.wingedsheep.sdk.scripting.DealDamageToPlayersEffect
+import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.ForEachInGroupEffect
+import com.wingedsheep.sdk.scripting.GroupFilter
 
 /**
  * Dry Spell
@@ -16,7 +19,7 @@ val DrySpell = card("Dry Spell") {
     typeLine = "Sorcery"
 
     spell {
-        effect = DealDamageToGroupEffect(1) then DealDamageToPlayersEffect(1)
+        effect = ForEachInGroupEffect(GroupFilter.AllCreatures, DealDamageEffect(1, EffectTarget.Self)) then DealDamageToPlayersEffect(1)
     }
 
     metadata {

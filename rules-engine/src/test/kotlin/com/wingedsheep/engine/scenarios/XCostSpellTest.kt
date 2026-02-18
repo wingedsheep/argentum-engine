@@ -11,8 +11,10 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.scripting.DealDamageEffect
+import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.GroupFilter
-import com.wingedsheep.sdk.scripting.DealDamageToGroupEffect
 import com.wingedsheep.sdk.scripting.DealDamageToPlayersEffect
 import com.wingedsheep.sdk.scripting.DynamicAmount
 import io.kotest.core.spec.style.FunSpec
@@ -29,9 +31,9 @@ class XCostSpellTest : FunSpec({
         manaCost = ManaCost.parse("{X}{G}"),
         oracleText = "Hurricane deals X damage to each creature with flying and each player.",
         script = CardScript.spell(
-            effect = DealDamageToGroupEffect(
-                DynamicAmount.XValue,
-                GroupFilter.AllCreatures.withKeyword(Keyword.FLYING)
+            effect = ForEachInGroupEffect(
+                GroupFilter.AllCreatures.withKeyword(Keyword.FLYING),
+                DealDamageEffect(DynamicAmount.XValue, EffectTarget.Self)
             ).then(DealDamageToPlayersEffect(DynamicAmount.XValue))
         )
     )

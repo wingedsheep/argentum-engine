@@ -92,18 +92,6 @@ data class RemoveCountersEffect(
 }
 
 /**
- * Remove all counters of a specific type from all creatures.
- * Used for Aurification: "remove all gold counters from all creatures."
- */
-@SerialName("RemoveAllCountersOfType")
-@Serializable
-data class RemoveAllCountersOfTypeEffect(
-    val counterType: String
-) : Effect {
-    override val description: String = "Remove all $counterType counters from all creatures"
-}
-
-/**
  * Grant a keyword to a target until end of turn.
  * "Target creature gains flying until end of turn."
  */
@@ -116,53 +104,6 @@ data class GrantKeywordUntilEndOfTurnEffect(
 ) : Effect {
     override val description: String = buildString {
         append("${target.description} gains ${keyword.displayName.lowercase()}")
-        if (duration.description.isNotEmpty()) append(" ${duration.description}")
-    }
-}
-
-/**
- * Grant a keyword to multiple creatures until end of turn.
- * Used for cards like Nature's Cloak: "Green creatures you control gain forestwalk until end of turn."
- *
- * @property keyword The keyword to grant
- * @property filter Which creatures are affected
- * @property duration How long the effect lasts
- */
-@SerialName("GrantKeywordToGroup")
-@Serializable
-data class GrantKeywordToGroupEffect(
-    val keyword: Keyword,
-    val filter: GroupFilter = GroupFilter.AllCreatures,
-    val duration: Duration = Duration.EndOfTurn
-) : Effect {
-    override val description: String = buildString {
-        append("${filter.description} gain ${keyword.displayName.lowercase()}")
-        if (duration.description.isNotEmpty()) append(" ${duration.description}")
-    }
-}
-
-/**
- * Modify power/toughness for a group of creatures until end of turn.
- * Used for cards like Warrior's Charge: "Creatures you control get +1/+1 until end of turn."
- *
- * @property powerModifier Power bonus (can be negative)
- * @property toughnessModifier Toughness bonus (can be negative)
- * @property filter Which creatures are affected
- * @property duration How long the effect lasts
- */
-@SerialName("ModifyStatsForGroup")
-@Serializable
-data class ModifyStatsForGroupEffect(
-    val powerModifier: Int,
-    val toughnessModifier: Int,
-    val filter: GroupFilter = GroupFilter.AllCreatures,
-    val duration: Duration = Duration.EndOfTurn
-) : Effect {
-    override val description: String = buildString {
-        append("${filter.description} get ")
-        val powerStr = if (powerModifier >= 0) "+$powerModifier" else "$powerModifier"
-        val toughStr = if (toughnessModifier >= 0) "+$toughnessModifier" else "$toughnessModifier"
-        append("$powerStr/$toughStr")
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
 }
@@ -215,31 +156,6 @@ data class TransformAllCreaturesEffect(
         append(" ")
         append(effects.joinToString(", "))
     }
-}
-
-/**
- * Tap all creatures matching a filter.
- * "Tap all nonwhite creatures."
- * Used for Blinding Light.
- *
- * @property filter Which creatures are affected
- */
-@SerialName("TapAllCreatures")
-@Serializable
-data class TapAllCreaturesEffect(
-    val filter: GroupFilter = GroupFilter.AllCreatures
-) : Effect {
-    override val description: String = "Tap ${filter.description.replaceFirstChar { it.lowercase() }}"
-}
-
-/**
- * Untap all creatures you control.
- * Used for Mobilize: "Untap all creatures you control."
- */
-@SerialName("UntapAllCreaturesYouControl")
-@Serializable
-data object UntapAllCreaturesYouControlEffect : Effect {
-    override val description: String = "Untap all creatures you control"
 }
 
 /**
@@ -662,29 +578,6 @@ data class GrantActivatedAbilityToGroupEffect(
 }
 
 /**
- * Gain control of all creatures matching a filter until end of turn.
- * "Gain control of all creatures until end of turn."
- *
- * Used by Insurrection and similar mass-control effects.
- *
- * @property filter Which creatures are affected
- * @property duration How long the control change lasts
- */
-@SerialName("GainControlOfGroup")
-@Serializable
-data class GainControlOfGroupEffect(
-    val filter: GroupFilter = GroupFilter.AllCreatures,
-    val duration: Duration = Duration.EndOfTurn
-) : Effect {
-    override val description: String = buildString {
-        append("Gain control of ${filter.description}")
-        if (duration != Duration.Permanent && duration.description.isNotEmpty()) {
-            append(" ${duration.description}")
-        }
-    }
-}
-
-/**
  * Choose a creature type. If you control more creatures of that type than each other
  * player, you gain control of all creatures of that type. (This effect lasts indefinitely.)
  *
@@ -703,20 +596,6 @@ data class ChooseCreatureTypeGainControlEffect(
 ) : Effect {
     override val description: String =
         "Choose a creature type. If you control more creatures of that type than each other player, you gain control of all creatures of that type"
-}
-
-/**
- * Untap all creatures matching a filter.
- * "Untap all creatures."
- *
- * @property filter Which creatures are affected
- */
-@SerialName("UntapGroup")
-@Serializable
-data class UntapGroupEffect(
-    val filter: GroupFilter = GroupFilter.AllCreatures
-) : Effect {
-    override val description: String = "Untap ${filter.description.replaceFirstChar { it.lowercase() }}"
 }
 
 /**

@@ -76,11 +76,11 @@ object SubtypeReplacer {
                 val newAmount = replaceDynamicAmount(effect.amount, component)
                 if (newAmount === effect.amount) effect else effect.copy(amount = newAmount)
             }
-            is DealDamageToGroupEffect -> {
-                val newAmount = replaceDynamicAmount(effect.amount, component)
+            is ForEachInGroupEffect -> {
                 val newFilter = replaceGroupFilter(effect.filter, component)
-                if (newAmount === effect.amount && newFilter === effect.filter) effect
-                else effect.copy(amount = newAmount, filter = newFilter)
+                val newInner = replaceEffect(effect.effect, component)
+                if (newFilter === effect.filter && newInner === effect.effect) effect
+                else effect.copy(filter = newFilter, effect = newInner)
             }
             is DrawCardsEffect -> {
                 val newCount = replaceDynamicAmount(effect.count, component)
@@ -102,14 +102,6 @@ object SubtypeReplacer {
                 val newEffect = replaceEffect(effect.effect, component)
                 if (newEffect === effect.effect) effect
                 else effect.copy(effect = newEffect)
-            }
-            is ModifyStatsForGroupEffect -> {
-                val newFilter = replaceGroupFilter(effect.filter, component)
-                if (newFilter === effect.filter) effect else effect.copy(filter = newFilter)
-            }
-            is GrantKeywordToGroupEffect -> {
-                val newFilter = replaceGroupFilter(effect.filter, component)
-                if (newFilter === effect.filter) effect else effect.copy(filter = newFilter)
             }
             is GainControlByMostOfSubtypeEffect -> {
                 val newSubtype = component.applyToSubtype(effect.subtype)

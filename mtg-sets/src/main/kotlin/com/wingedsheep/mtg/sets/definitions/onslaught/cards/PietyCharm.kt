@@ -6,7 +6,8 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.scripting.GrantKeywordToGroupEffect
+import com.wingedsheep.sdk.scripting.ForEachInGroupEffect
+import com.wingedsheep.sdk.scripting.GrantKeywordUntilEndOfTurnEffect
 import com.wingedsheep.sdk.scripting.GroupFilter
 import com.wingedsheep.sdk.scripting.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.TargetFilter
@@ -42,9 +43,9 @@ val PietyCharm = card("Piety Charm") {
                 effect = Effects.ModifyStats(2, 2, EffectTarget.ContextTarget(0))
             }
             mode("Creatures you control gain vigilance until end of turn") {
-                effect = GrantKeywordToGroupEffect(
-                    keyword = Keyword.VIGILANCE,
-                    filter = GroupFilter.AllCreaturesYouControl
+                effect = ForEachInGroupEffect(
+                    filter = GroupFilter.AllCreaturesYouControl,
+                    effect = GrantKeywordUntilEndOfTurnEffect(Keyword.VIGILANCE, EffectTarget.Self)
                 )
             }
         }

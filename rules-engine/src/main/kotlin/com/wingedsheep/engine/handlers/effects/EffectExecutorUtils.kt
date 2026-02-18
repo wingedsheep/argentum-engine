@@ -119,7 +119,7 @@ object EffectExecutorUtils {
      */
     fun resolveTarget(effectTarget: EffectTarget, context: EffectContext): EntityId? {
         return when (effectTarget) {
-            is EffectTarget.Self -> context.sourceId
+            is EffectTarget.Self -> context.iterationTarget ?: context.sourceId
             is EffectTarget.Controller -> context.controllerId
             is EffectTarget.ContextTarget -> context.targets.getOrNull(effectTarget.index)?.toEntityId()
             is EffectTarget.SpecificEntity -> effectTarget.entityId
