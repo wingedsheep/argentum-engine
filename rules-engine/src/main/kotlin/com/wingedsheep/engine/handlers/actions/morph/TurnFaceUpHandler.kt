@@ -268,20 +268,23 @@ class TurnFaceUpHandler(
 
             if (triggerResult.isPaused) {
                 return ExecutionResult.paused(
-                    triggerResult.state,
+                    triggerResult.state.withPriority(action.playerId),
                     triggerResult.pendingDecision!!,
                     events + triggerResult.events
                 )
             }
 
             return ExecutionResult.success(
-                triggerResult.newState,
+                triggerResult.newState.withPriority(action.playerId),
                 events + triggerResult.events
             )
         }
 
-        // Player retains priority after turning face up
-        return ExecutionResult.success(currentState, events)
+        // Player retains priority after turning face up.
+        // Must call withPriority to clear priorityPassedBy — otherwise the opponent's
+        // earlier pass is treated as still valid, causing both players to appear "passed"
+        // and the game to advance without giving the opponent priority after the flip.
+        return ExecutionResult.success(currentState.withPriority(action.playerId), events)
     }
 
     companion object {
