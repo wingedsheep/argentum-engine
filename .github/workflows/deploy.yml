@@ -87,6 +87,7 @@ jobs:
             echo "PROJECT_NAME=${{ secrets.PROJECT_NAME }}" >> .env
             echo "CACHE_REDIS_ENABLED=true" >> .env
             echo "CACHE_REDIS_TTL_MINUTES=1440" >> .env
+            echo "GAME_ADMIN_PASSWORD=${{ secrets.GAME_ADMIN_PASSWORD }}" >> .env
 
             docker compose pull
             docker compose up -d --force-recreate --remove-orphans
