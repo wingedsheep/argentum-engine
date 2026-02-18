@@ -21,6 +21,9 @@ object ScourgeSet {
      * All cards implemented from this set.
      */
     val allCards = listOf(
+        // Artifacts
+        ArkOfBlight,
+
         // Black creatures
         CarrionFeeder,
 
