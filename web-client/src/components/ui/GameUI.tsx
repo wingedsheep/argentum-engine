@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useGameStore, type LobbyState, type TournamentState } from '../../store/gameStore'
 import type { SealedCardInfo } from '../../types'
 import { getCardImageUrl } from '../../utils/cardImages'
 import { ManaCost } from './ManaSymbols'
 import { randomBackground } from '../../utils/background'
+import { ReplayViewer, type GameSummary, type SpectatorStateUpdate } from '../admin/ReplayViewer'
 import styles from './GameUI.module.css'
 
 type GameMode = 'normal' | 'tournament'
@@ -55,6 +56,7 @@ function ConnectionOverlay({
   const [playerName, setPlayerName] = useState(() => localStorage.getItem('argentum-player-name') || '')
 
   const [nameConfirmed, setNameConfirmed] = useState(() => !!localStorage.getItem('argentum-player-name'))
+  const [showReplays, setShowReplays] = useState(false)
 
   const confirmName = () => {
     if (playerName.trim()) {
@@ -86,6 +88,26 @@ function ConnectionOverlay({
     }
   }
 
+  const fetchPlayerGames = useCallback(async (): Promise<GameSummary[]> => {
+    const token = localStorage.getItem('argentum-token')
+    if (!token) throw new Error('No player token')
+    const res = await fetch('/api/replays', {
+      headers: { 'X-Player-Token': token },
+    })
+    if (!res.ok) throw new Error(`Server error: ${res.status}`)
+    return await res.json() as GameSummary[]
+  }, [])
+
+  const fetchPlayerReplay = useCallback(async (gameId: string): Promise<SpectatorStateUpdate[]> => {
+    const token = localStorage.getItem('argentum-token')
+    if (!token) throw new Error('No player token')
+    const res = await fetch(`/api/replays/${gameId}`, {
+      headers: { 'X-Player-Token': token },
+    })
+    if (!res.ok) throw new Error(`Failed to load replay: ${res.status}`)
+    return await res.json() as SpectatorStateUpdate[]
+  }, [])
+
   // Show tournament UI if we're in a tournament (even without lobbyState)
   const tournamentState = useGameStore((state) => state.tournamentState)
   if (tournamentState) {
@@ -95,6 +117,17 @@ function ConnectionOverlay({
   // Show lobby UI if we're in a lobby
   if (lobbyState) {
     return <LobbyOverlay lobbyState={lobbyState} />
+  }
+
+  // Show replay viewer overlay
+  if (showReplays) {
+    return (
+      <ReplayViewer
+        fetchGames={fetchPlayerGames}
+        fetchReplay={fetchPlayerReplay}
+        onBack={() => setShowReplays(false)}
+      />
+    )
   }
 
   return (
@@ -191,6 +224,13 @@ function ConnectionOverlay({
                 Join
               </button>
             </div>
+
+            <button
+              onClick={() => setShowReplays(true)}
+              className={styles.replayLinkButton}
+            >
+              Game Replays
+            </button>
           </div>
         )}
 

@@ -260,8 +260,8 @@ export default function App() {
       {/* Game over overlay (rendered independently so it persists after game state clears) */}
       <GameOverlay />
 
-      {/* Spectator view (when watching another game) */}
-      {spectatingState && <SpectatorGameBoard />}
+      {/* Spectator view (when watching another game — skip when ReplayViewer handles its own UI) */}
+      {spectatingState && !spectatingState.isReplay && <SpectatorGameBoard />}
     </div>
   )
 }

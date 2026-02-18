@@ -30,7 +30,9 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import org.slf4j.LoggerFactory
+import java.time.Instant
 import java.util.UUID
+import java.util.concurrent.CopyOnWriteArrayList
 
 private val logger = LoggerFactory.getLogger(GameSession::class.java)
 
@@ -85,6 +87,11 @@ class GameSession(
     /** Per-player full control setting (disables auto-pass when enabled) */
     private val fullControlEnabled = java.util.concurrent.ConcurrentHashMap<EntityId, Boolean>()
     private val stopOverrides = java.util.concurrent.ConcurrentHashMap<EntityId, StopOverrideSettings>()
+
+    // Replay recording
+    private val replaySnapshots = CopyOnWriteArrayList<ServerMessage.SpectatorStateUpdate>()
+    var replayStartedAt: Instant? = null
+        private set
 
     data class StopOverrideSettings(
         val myTurnStops: Set<Step> = emptySet(),
@@ -702,6 +709,25 @@ class GameSession(
             val events: List<GameEvent>
         ) : ActionResult
     }
+
+    // =========================================================================
+    // Replay Recording
+    // =========================================================================
+
+    /**
+     * Record a spectator state snapshot for replay.
+     */
+    fun recordSnapshot(snapshot: ServerMessage.SpectatorStateUpdate) {
+        if (replayStartedAt == null) {
+            replayStartedAt = Instant.now()
+        }
+        replaySnapshots.add(snapshot)
+    }
+
+    /**
+     * Get all recorded replay snapshots.
+     */
+    fun getReplaySnapshots(): List<ServerMessage.SpectatorStateUpdate> = replaySnapshots.toList()
 
     // =========================================================================
     // Test Support (for scenario-based testing)

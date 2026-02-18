@@ -37,6 +37,7 @@ export interface LobbySliceActions {
   stopSpectating: () => void
   addDisconnectTime: (playerId: string) => void
   kickPlayer: (playerId: string) => void
+  setSpectatingState: (state: SpectatingState | null) => void
   leaveTournament: () => void
 }
 
@@ -109,6 +110,10 @@ export const createLobbySlice: SliceCreator<LobbySlice> = (set, get) => ({
 
   kickPlayer: (playerId) => {
     getWebSocket()?.send(createKickPlayerMessage(playerId))
+  },
+
+  setSpectatingState: (state) => {
+    set({ spectatingState: state })
   },
 
   leaveTournament: () => {

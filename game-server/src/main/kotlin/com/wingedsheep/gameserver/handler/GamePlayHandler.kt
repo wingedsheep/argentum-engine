@@ -5,6 +5,8 @@ import com.wingedsheep.gameserver.protocol.ClientMessage
 import com.wingedsheep.gameserver.protocol.ErrorCode
 import com.wingedsheep.gameserver.protocol.GameOverReason
 import com.wingedsheep.gameserver.protocol.ServerMessage
+import com.wingedsheep.gameserver.replay.GameHistoryRepository
+import com.wingedsheep.gameserver.replay.GameReplayRecord
 import com.wingedsheep.gameserver.repository.GameRepository
 import com.wingedsheep.gameserver.repository.LobbyRepository
 import com.wingedsheep.gameserver.session.GameSession
@@ -19,6 +21,7 @@ import com.wingedsheep.sdk.model.EntityId
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.springframework.web.socket.WebSocketSession
+import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -30,7 +33,8 @@ class GamePlayHandler(
     private val sender: MessageSender,
     private val cardRegistry: CardRegistry,
     private val deckGenerator: RandomDeckGenerator,
-    private val gameProperties: GameProperties
+    private val gameProperties: GameProperties,
+    private val gameHistoryRepository: GameHistoryRepository
 ) {
     private val logger = LoggerFactory.getLogger(GamePlayHandler::class.java)
 
@@ -446,6 +450,28 @@ class GamePlayHandler(
             }
         }
 
+        // Save replay history if the game had meaningful activity (>= 5 snapshots)
+        val snapshots = gameSession.getReplaySnapshots()
+        if (snapshots.size >= 5) {
+            val winnerName = winnerId?.let { wId ->
+                listOfNotNull(gameSession.player1, gameSession.player2)
+                    .find { it.playerId == wId }?.playerName
+            }
+            val record = GameReplayRecord(
+                gameId = gameSessionId,
+                player1Id = gameSession.player1?.playerId?.value ?: "",
+                player2Id = gameSession.player2?.playerId?.value ?: "",
+                player1Name = gameSession.player1?.playerName ?: "Player 1",
+                player2Name = gameSession.player2?.playerName ?: "Player 2",
+                startedAt = gameSession.replayStartedAt ?: Instant.now(),
+                endedAt = Instant.now(),
+                winnerName = winnerName,
+                snapshots = snapshots
+            )
+            gameHistoryRepository.save(record)
+            logger.info("Saved replay for game $gameSessionId (${snapshots.size} snapshots)")
+        }
+
         gameRepository.remove(gameSessionId)
         mulliganBroadcastSent.remove(gameSessionId)
     }
@@ -471,6 +497,9 @@ class GamePlayHandler(
             // Update spectators
             val spectatorState = gameSession.buildSpectatorState()
             if (spectatorState != null) {
+                // Record snapshot for replay
+                gameSession.recordSnapshot(spectatorState)
+
                 for (spectator in gameSession.getSpectators()) {
                     if (spectator.webSocketSession.isOpen) {
                         sender.send(spectator.webSocketSession, spectatorState)

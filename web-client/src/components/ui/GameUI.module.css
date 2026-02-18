@@ -397,6 +397,26 @@
 }
 
 /* =========================================================================
+ * Replay Link Button
+ * ========================================================================= */
+.replayLinkButton {
+  background-color: transparent;
+  color: var(--text-disabled);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--font-sm);
+}
+
+.replayLinkButton:hover {
+  background-color: var(--bg-surface-6);
+  color: var(--text-tertiary);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* =========================================================================
  * Mode Description
  * ========================================================================= */
 .modeDescription {

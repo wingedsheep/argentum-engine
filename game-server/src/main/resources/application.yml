@@ -24,6 +24,9 @@ game:
   sets:
     # Feature toggle for unreleased sets
     onslaught-enabled: ${GAME_SETS_ONSLAUGHT_ENABLED:true}
+  admin:
+    # Password for admin replay feature. Feature is disabled if not set.
+    password: ${GAME_ADMIN_PASSWORD:}
 
 # Swagger UI - only enabled when dev endpoints are enabled
 springdoc:
