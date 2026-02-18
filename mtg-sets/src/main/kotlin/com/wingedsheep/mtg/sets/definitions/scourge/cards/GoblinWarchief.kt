@@ -42,6 +42,6 @@ val GoblinWarchief = card("Goblin Warchief") {
         collectorNumber = "97"
         artist = "Tim Hildebrandt"
         flavorText = "They don't need a reason to fight. They just need a leader."
-        imageUri = "https://cards.scryfall.io/normal/front/5/e/5e6d56cb-660a-4571-a493-98f4cd1e14ea.jpg?1562529590"
+        imageUri = "https://cards.scryfall.io/large/front/6/6/66864a4b-8924-40ef-a337-15b12413a158.jpg?1562529753"
     }
 }
