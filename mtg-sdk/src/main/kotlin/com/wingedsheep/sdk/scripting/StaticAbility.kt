@@ -268,6 +268,27 @@ data class CantReceiveCounters(
 }
 
 /**
+ * Reduces the cost of spells with a matching subtype cast by the controller of this permanent.
+ * Used for "Goblin spells you cast cost {1} less" (Goblin Warchief),
+ * "Zombie spells you cast cost {1} less" (Undead Warchief),
+ * "Dragon spells you cast cost {2} less" (Dragonspeaker Shaman), etc.
+ *
+ * This is a battlefield-based static ability — the permanent with this ability
+ * must be on the battlefield to provide the reduction.
+ *
+ * @property subtype The creature subtype that spells must have to benefit from the reduction
+ * @property amount The amount of generic mana to reduce
+ */
+@SerialName("ReduceSpellCostBySubtype")
+@Serializable
+data class ReduceSpellCostBySubtype(
+    val subtype: String,
+    val amount: Int
+) : StaticAbility {
+    override val description: String = "$subtype spells you cast cost {$amount} less to cast"
+}
+
+/**
  * Reduces the cost to cast this spell.
  * Used for Vivid and similar cost-reduction mechanics.
  *

@@ -73,7 +73,7 @@
 - [ ] Gilded Light
 - [ ] Goblin Brigand
 - [ ] Goblin Psychopath
-- [ ] Goblin Warchief
+- [x] Goblin Warchief
 - [ ] Goblin War Strike
 - [ ] Grip of Chaos
 - [ ] Guilty Conscience

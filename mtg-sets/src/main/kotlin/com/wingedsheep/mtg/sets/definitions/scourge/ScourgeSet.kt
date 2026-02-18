@@ -25,6 +25,7 @@ object ScourgeSet {
         CarrionFeeder,
 
         // Red creatures
+        GoblinWarchief,
         SiegeGangCommander,
     )
 }

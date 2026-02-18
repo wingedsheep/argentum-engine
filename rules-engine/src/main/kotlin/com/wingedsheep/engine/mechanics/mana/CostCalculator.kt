@@ -12,9 +12,11 @@ import com.wingedsheep.sdk.core.ManaSymbol
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CharacteristicValue
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.CostReductionSource
 import com.wingedsheep.sdk.scripting.FaceDownSpellCostReduction
 import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.sdk.scripting.ReduceSpellCostBySubtype
 import com.wingedsheep.sdk.scripting.SpellCostReduction
 
 /**
@@ -60,6 +62,9 @@ class CostCalculator(
                 totalReduction += countPermanentsOfType(state, casterId, keywordAbility.forType)
             }
         }
+
+        // Evaluate ReduceSpellCostBySubtype from battlefield permanents controlled by the caster
+        totalReduction += calculateSubtypeCostReduction(state, cardDef, casterId)
 
         return reduceGenericCost(cardDef.manaCost, totalReduction)
     }
@@ -155,6 +160,38 @@ class CostCalculator(
             val card = state.getEntity(entityId)?.get<CardComponent>()
             card?.typeLine?.cardTypes?.contains(cardType) == true
         }
+    }
+
+    /**
+     * Calculate cost reduction from battlefield permanents that reduce spell costs by subtype.
+     * Scans permanents controlled by the caster for ReduceSpellCostBySubtype abilities
+     * and sums reductions for matching subtypes.
+     *
+     * Used for cards like Goblin Warchief ("Goblin spells you cast cost {1} less"),
+     * Undead Warchief ("Zombie spells you cast cost {1} less"), etc.
+     */
+    private fun calculateSubtypeCostReduction(
+        state: GameState,
+        cardDef: CardDefinition,
+        casterId: EntityId
+    ): Int {
+        val spellSubtypes = cardDef.typeLine.subtypes
+        if (spellSubtypes.isEmpty()) return 0
+
+        var reduction = 0
+        for (entityId in state.getBattlefield(casterId)) {
+            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+            val permanentDef = cardRegistry?.getCard(card.cardDefinitionId) ?: continue
+
+            for (ability in permanentDef.script.staticAbilities) {
+                if (ability is ReduceSpellCostBySubtype &&
+                    Subtype.of(ability.subtype) in spellSubtypes
+                ) {
+                    reduction += ability.amount
+                }
+            }
+        }
+        return reduction
     }
 
     /**
