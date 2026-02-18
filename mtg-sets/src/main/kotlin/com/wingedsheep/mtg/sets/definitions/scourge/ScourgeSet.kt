@@ -24,6 +24,9 @@ object ScourgeSet {
         // Black creatures
         CarrionFeeder,
 
+        // Green sorceries
+        BreakAsunder,
+
         // Red creatures
         GoblinWarchief,
         SiegeGangCommander,
