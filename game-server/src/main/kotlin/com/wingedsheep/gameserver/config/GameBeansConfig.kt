@@ -5,6 +5,7 @@ import com.wingedsheep.gameserver.sealed.BoosterGenerator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.mtg.sets.definitions.onslaught.OnslaughtSet
 import com.wingedsheep.mtg.sets.definitions.portal.PortalSet
+import com.wingedsheep.mtg.sets.definitions.scourge.ScourgeSet
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
@@ -20,6 +21,9 @@ class GameBeansConfig(
         if (gameProperties.sets.onslaughtEnabled) {
             register(OnslaughtSet.allCards)
         }
+        if (gameProperties.sets.scourgeEnabled) {
+            register(ScourgeSet.allCards)
+        }
     }
 
     @Bean
@@ -28,6 +32,9 @@ class GameBeansConfig(
             put(PortalSet.SET_CODE, BoosterGenerator.portalSetConfig)
             if (gameProperties.sets.onslaughtEnabled) {
                 put(OnslaughtSet.SET_CODE, BoosterGenerator.onslaughtSetConfig)
+            }
+            if (gameProperties.sets.scourgeEnabled) {
+                put(ScourgeSet.SET_CODE, BoosterGenerator.scourgeSetConfig)
             }
         }
         return BoosterGenerator(sets)

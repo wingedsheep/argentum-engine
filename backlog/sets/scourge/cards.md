@@ -2,7 +2,7 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 0 / 143
+**Implemented:** 1 / 143
 
 ---
 
@@ -25,7 +25,7 @@
 - [ ] Cabal Interrogator
 - [ ] Call to the Grave
 - [ ] Carbonize
-- [ ] Carrion Feeder
+- [x] Carrion Feeder
 - [ ] Chartooth Cougar
 - [ ] Chill Haunting
 - [ ] Claws of Wirewood

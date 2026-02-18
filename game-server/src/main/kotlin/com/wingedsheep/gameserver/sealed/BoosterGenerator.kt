@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.mtg.sets.definitions.portal.PortalSet
 import com.wingedsheep.mtg.sets.definitions.onslaught.OnslaughtSet
+import com.wingedsheep.mtg.sets.definitions.scourge.ScourgeSet
 import kotlin.random.Random
 
 /**
@@ -46,6 +47,16 @@ class BoosterGenerator(
             setCode = OnslaughtSet.SET_CODE,
             setName = OnslaughtSet.SET_NAME,
             cards = OnslaughtSet.allCards,
+            basicLands = PortalSet.basicLands  // Use Portal lands for now
+        )
+
+        /**
+         * Scourge set configuration.
+         */
+        val scourgeSetConfig = SetConfig(
+            setCode = ScourgeSet.SET_CODE,
+            setName = ScourgeSet.SET_NAME,
+            cards = ScourgeSet.allCards,
             basicLands = PortalSet.basicLands  // Use Portal lands for now
         )
     }

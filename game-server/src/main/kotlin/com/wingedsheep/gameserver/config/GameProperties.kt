@@ -5,7 +5,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 @ConfigurationProperties(prefix = "game")
 data class GameProperties(
     val handSmoother: HandSmootherProperties = HandSmootherProperties(),
-    val sets: SetsProperties = SetsProperties()
+    val sets: SetsProperties = SetsProperties(),
+    val admin: AdminProperties = AdminProperties()
 )
 
 data class HandSmootherProperties(
@@ -14,5 +15,10 @@ data class HandSmootherProperties(
 )
 
 data class SetsProperties(
-    val onslaughtEnabled: Boolean = true
+    val onslaughtEnabled: Boolean = true,
+    val scourgeEnabled: Boolean = true
+)
+
+data class AdminProperties(
+    val password: String = ""
 )
