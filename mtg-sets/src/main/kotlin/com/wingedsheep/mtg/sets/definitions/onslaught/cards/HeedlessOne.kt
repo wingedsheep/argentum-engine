@@ -21,7 +21,7 @@ val HeedlessOne = card("Heedless One") {
     typeLine = "Creature — Elf Avatar"
     oracleText = "Trample\nHeedless One's power and toughness are each equal to the number of Elves on the battlefield."
 
-    dynamicStats(DynamicAmount.CountBattlefield(Player.Each, GameObjectFilter.Creature.withSubtype("Elf")))
+    dynamicStats(DynamicAmount.AggregateBattlefield(Player.Each, GameObjectFilter.Creature.withSubtype("Elf")))
 
     keywords(Keyword.TRAMPLE)
 

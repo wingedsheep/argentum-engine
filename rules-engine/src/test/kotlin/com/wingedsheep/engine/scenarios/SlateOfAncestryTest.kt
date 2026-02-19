@@ -38,7 +38,7 @@ class SlateOfAncestryTest : FunSpec({
                 Costs.DiscardHand
             )
             effect = DrawCardsEffect(
-                count = DynamicAmount.CountBattlefield(Player.You, GameObjectFilter.Creature),
+                count = DynamicAmount.AggregateBattlefield(Player.You, GameObjectFilter.Creature),
                 target = EffectTarget.Controller
             )
         }

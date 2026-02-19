@@ -24,7 +24,7 @@ val SoullessOne = card("Soulless One") {
 
     dynamicStats(
         DynamicAmount.Add(
-            DynamicAmount.CountBattlefield(Player.Each, GameObjectFilter.Creature.withSubtype("Zombie")),
+            DynamicAmount.AggregateBattlefield(Player.Each, GameObjectFilter.Creature.withSubtype("Zombie")),
             DynamicAmount.Count(Player.Each, Zone.GRAVEYARD, GameObjectFilter.Any.withSubtype("Zombie"))
         )
     )

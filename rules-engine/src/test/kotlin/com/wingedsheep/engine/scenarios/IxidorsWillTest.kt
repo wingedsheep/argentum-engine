@@ -37,7 +37,7 @@ class IxidorsWillTest : FunSpec({
         script = CardScript.spell(
             effect = Effects.CounterUnlessDynamicPays(
                 DynamicAmount.Multiply(
-                    DynamicAmount.CountBattlefield(Player.Each, GameObjectFilter.Creature.withSubtype("Wizard")),
+                    DynamicAmount.AggregateBattlefield(Player.Each, GameObjectFilter.Creature.withSubtype("Wizard")),
                     2
                 )
             ),

@@ -26,7 +26,7 @@ val InformationDealer = card("Information Dealer") {
     activatedAbility {
         cost = AbilityCost.Tap
         effect = EffectPatterns.lookAtTopAndReorder(
-            DynamicAmount.CountBattlefield(
+            DynamicAmount.AggregateBattlefield(
                 Player.You,
                 GameObjectFilter.Creature.withSubtype("Wizard")
             )

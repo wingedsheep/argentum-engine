@@ -11,6 +11,7 @@ import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.Aggregation
 import com.wingedsheep.sdk.scripting.CardNumericProperty
 import com.wingedsheep.sdk.scripting.DynamicAmount
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -140,8 +141,8 @@ class DynamicAmountEvaluator(
                 evaluateUnifiedCount(state, amount.player, amount.zone, amount.filter, context, projectedState)
             }
 
-            is DynamicAmount.CountBattlefield -> {
-                evaluateUnifiedCount(state, amount.player, Zone.BATTLEFIELD, amount.filter, context, projectedState)
+            is DynamicAmount.AggregateBattlefield -> {
+                evaluateBattlefieldAggregate(state, amount, context, projectedState)
             }
 
             is DynamicAmount.SourcePower -> {
@@ -166,31 +167,6 @@ class DynamicAmountEvaluator(
                 val eval = conditionEvaluator ?: ConditionEvaluator()
                 val met = eval.evaluate(state, amount.condition, context)
                 if (met) evaluate(state, amount.ifTrue, context) else evaluate(state, amount.ifFalse, context)
-            }
-
-            is DynamicAmount.MaxBattlefield -> {
-                val playerIds = resolveUnifiedPlayerIds(state, amount.player, context)
-                val projected = if (projectForBattlefieldCounting) {
-                    StateProjector(DynamicAmountEvaluator(projectForBattlefieldCounting = false))
-                        .project(state)
-                } else null
-                val predicateContext = PredicateContext.fromEffectContext(context)
-
-                playerIds.flatMap { playerId ->
-                    state.getBattlefield().filter { entityId ->
-                        val controllerId = projected?.getController(entityId)
-                            ?: state.getEntity(entityId)?.get<ControllerComponent>()?.playerId
-                        controllerId == playerId
-                    }
-                }.filter { entityId ->
-                    if (projected != null) {
-                        predicateEvaluator.matchesWithProjection(state, projected, entityId, amount.filter, predicateContext)
-                    } else {
-                        predicateEvaluator.matches(state, entityId, amount.filter, predicateContext)
-                    }
-                }.maxOfOrNull { entityId ->
-                    resolveCardNumericProperty(state, projected, entityId, amount.property)
-                } ?: 0
             }
 
             is DynamicAmount.CreaturesSharingTypeWithTriggeringEntity -> {
@@ -282,6 +258,58 @@ class DynamicAmountEvaluator(
         }
     }
 
+    /**
+     * Evaluate an AggregateBattlefield: collect → filter → map → aggregate.
+     */
+    private fun evaluateBattlefieldAggregate(
+        state: GameState,
+        amount: DynamicAmount.AggregateBattlefield,
+        context: EffectContext,
+        explicitProjectedState: ProjectedState? = null
+    ): Int {
+        val playerIds = resolveUnifiedPlayerIds(state, amount.player, context)
+        val predicateContext = PredicateContext.fromEffectContext(context)
+
+        val projected = explicitProjectedState ?: if (projectForBattlefieldCounting) {
+            StateProjector(DynamicAmountEvaluator(projectForBattlefieldCounting = false))
+                .project(state)
+        } else null
+
+        // Collect and filter matching entities
+        val matchingEntities = playerIds.flatMap { playerId ->
+            state.getBattlefield()
+                .filter { entityId ->
+                    val controllerId = projected?.getController(entityId)
+                        ?: state.getEntity(entityId)?.get<ControllerComponent>()?.playerId
+                    controllerId == playerId
+                }
+                .filter { entityId ->
+                    if (projected != null) {
+                        predicateEvaluator.matchesWithProjection(state, projected, entityId, amount.filter, predicateContext)
+                    } else {
+                        predicateEvaluator.matches(state, entityId, amount.filter, predicateContext)
+                    }
+                }
+        }
+
+        // Aggregate
+        return when (amount.aggregation) {
+            Aggregation.COUNT -> matchingEntities.size
+            Aggregation.MAX -> {
+                val prop = amount.property ?: return 0
+                matchingEntities.maxOfOrNull { resolveCardNumericProperty(state, projected, it, prop) } ?: 0
+            }
+            Aggregation.MIN -> {
+                val prop = amount.property ?: return 0
+                matchingEntities.minOfOrNull { resolveCardNumericProperty(state, projected, it, prop) } ?: 0
+            }
+            Aggregation.SUM -> {
+                val prop = amount.property ?: return 0
+                matchingEntities.sumOf { resolveCardNumericProperty(state, projected, it, prop) }
+            }
+        }
+    }
+
     private fun resolveUnifiedPlayerIds(
         state: GameState,
         player: Player,
@@ -333,15 +361,15 @@ class DynamicAmountEvaluator(
         property: CardNumericProperty
     ): Int {
         return when (property) {
-            is CardNumericProperty.ManaValue -> {
+            CardNumericProperty.MANA_VALUE -> {
                 state.getEntity(entityId)?.get<CardComponent>()?.manaValue ?: 0
             }
-            is CardNumericProperty.Power -> {
+            CardNumericProperty.POWER -> {
                 projected?.getPower(entityId)
                     ?: state.getEntity(entityId)?.get<CardComponent>()?.baseStats?.basePower
                     ?: 0
             }
-            is CardNumericProperty.Toughness -> {
+            CardNumericProperty.TOUGHNESS -> {
                 projected?.getToughness(entityId)
                     ?: state.getEntity(entityId)?.get<CardComponent>()?.baseStats?.baseToughness
                     ?: 0

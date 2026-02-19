@@ -117,7 +117,7 @@ object SubtypeReplacer {
      */
     fun replaceDynamicAmount(amount: DynamicAmount, component: TextReplacementComponent): DynamicAmount {
         return when (amount) {
-            is DynamicAmount.CountBattlefield -> {
+            is DynamicAmount.AggregateBattlefield -> {
                 val newFilter = replaceGameObjectFilter(amount.filter, component)
                 if (newFilter === amount.filter) amount else amount.copy(filter = newFilter)
             }

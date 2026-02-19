@@ -24,7 +24,7 @@ val ThunderOfHooves = card("Thunder of Hooves") {
     typeLine = "Sorcery"
     oracleText = "Thunder of Hooves deals X damage to each creature without flying and each player, where X is the number of Beasts on the battlefield."
 
-    val beastCount = DynamicAmount.CountBattlefield(Player.Each, GameObjectFilter.Creature.withSubtype("Beast"))
+    val beastCount = DynamicAmount.AggregateBattlefield(Player.Each, GameObjectFilter.Creature.withSubtype("Beast"))
 
     spell {
         effect = ForEachInGroupEffect(GroupFilter.AllCreatures.withoutKeyword(Keyword.FLYING), DealDamageEffect(beastCount, EffectTarget.Self)) then

@@ -24,7 +24,7 @@ val StagBeetle = card("Stag Beetle") {
 
     replacementEffect(
         EntersWithDynamicCounters(
-            count = DynamicAmount.CountBattlefield(Player.Each, GameObjectFilter.Creature)
+            count = DynamicAmount.AggregateBattlefield(Player.Each, GameObjectFilter.Creature)
         )
     )
 

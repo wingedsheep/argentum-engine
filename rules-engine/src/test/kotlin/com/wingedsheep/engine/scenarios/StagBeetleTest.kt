@@ -38,7 +38,7 @@ class StagBeetleTest : FunSpec({
         script = CardScript.permanent(
             replacementEffects = listOf(
                 EntersWithDynamicCounters(
-                    count = DynamicAmount.CountBattlefield(Player.Each, GameObjectFilter.Creature)
+                    count = DynamicAmount.AggregateBattlefield(Player.Each, GameObjectFilter.Creature)
                 )
             )
         )

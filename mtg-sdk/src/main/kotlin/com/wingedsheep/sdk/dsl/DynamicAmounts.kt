@@ -3,6 +3,7 @@ package com.wingedsheep.sdk.dsl
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.scripting.Aggregation
 import com.wingedsheep.sdk.scripting.CardNumericProperty
 import com.wingedsheep.sdk.scripting.DynamicAmount
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -11,16 +12,16 @@ import com.wingedsheep.sdk.scripting.Player
 /**
  * Convenience factory for common DynamicAmount expressions.
  *
- * These build on the generic Count/CountBattlefield/math primitives
+ * These build on the generic AggregateBattlefield/Count/math primitives
  * without adding to the sealed hierarchy.
  *
  * Usage:
  * ```kotlin
+ * DynamicAmounts.battlefield(Player.You).count()
+ * DynamicAmounts.battlefield(Player.You).maxManaValue()
+ * DynamicAmounts.battlefield(Player.You, GameObjectFilter.Creature).maxPower()
  * DynamicAmounts.creaturesYouControl()
  * DynamicAmounts.landsYouControl()
- * DynamicAmounts.cardsInYourGraveyard()
- * DynamicAmounts.otherCreaturesYouControl()
- * DynamicAmounts.battlefield(Player.You).maxManaValue()
  * ```
  */
 object DynamicAmounts {
@@ -36,39 +37,53 @@ object DynamicAmounts {
      * DynamicAmounts.battlefield(Player.You).count()
      * DynamicAmounts.battlefield(Player.You).maxManaValue()
      * DynamicAmounts.battlefield(Player.You, GameObjectFilter.Creature).maxPower()
+     * DynamicAmounts.battlefield(Player.You, GameObjectFilter.Creature).sumPower()
      * ```
      */
     fun battlefield(player: Player, filter: GameObjectFilter = GameObjectFilter.Any) =
         BattlefieldQuery(player, filter)
 
     class BattlefieldQuery(private val player: Player, private val filter: GameObjectFilter) {
-        fun count(): DynamicAmount = DynamicAmount.CountBattlefield(player, filter)
-        fun maxManaValue(): DynamicAmount = DynamicAmount.MaxBattlefield(player, CardNumericProperty.ManaValue, filter)
-        fun maxPower(): DynamicAmount = DynamicAmount.MaxBattlefield(player, CardNumericProperty.Power, filter)
-        fun maxToughness(): DynamicAmount = DynamicAmount.MaxBattlefield(player, CardNumericProperty.Toughness, filter)
+        fun count(): DynamicAmount =
+            DynamicAmount.AggregateBattlefield(player, filter)
+
+        fun maxManaValue(): DynamicAmount =
+            DynamicAmount.AggregateBattlefield(player, filter, Aggregation.MAX, CardNumericProperty.MANA_VALUE)
+
+        fun maxPower(): DynamicAmount =
+            DynamicAmount.AggregateBattlefield(player, filter, Aggregation.MAX, CardNumericProperty.POWER)
+
+        fun maxToughness(): DynamicAmount =
+            DynamicAmount.AggregateBattlefield(player, filter, Aggregation.MAX, CardNumericProperty.TOUGHNESS)
+
+        fun minToughness(): DynamicAmount =
+            DynamicAmount.AggregateBattlefield(player, filter, Aggregation.MIN, CardNumericProperty.TOUGHNESS)
+
+        fun sumPower(): DynamicAmount =
+            DynamicAmount.AggregateBattlefield(player, filter, Aggregation.SUM, CardNumericProperty.POWER)
     }
 
     // =========================================================================
-    // Battlefield counting
+    // Battlefield counting (convenience shortcuts)
     // =========================================================================
 
     fun creaturesYouControl(): DynamicAmount =
-        DynamicAmount.CountBattlefield(Player.You, GameObjectFilter.Creature)
+        battlefield(Player.You, GameObjectFilter.Creature).count()
 
     fun allCreatures(): DynamicAmount =
-        DynamicAmount.CountBattlefield(Player.Each, GameObjectFilter.Creature)
+        battlefield(Player.Each, GameObjectFilter.Creature).count()
 
     fun landsYouControl(): DynamicAmount =
-        DynamicAmount.CountBattlefield(Player.You, GameObjectFilter.Land)
+        battlefield(Player.You, GameObjectFilter.Land).count()
 
     fun attackingCreaturesYouControl(): DynamicAmount =
-        DynamicAmount.CountBattlefield(Player.You, GameObjectFilter.Creature.attacking())
+        battlefield(Player.You, GameObjectFilter.Creature.attacking()).count()
 
     fun creaturesWithSubtype(subtype: Subtype): DynamicAmount =
-        DynamicAmount.CountBattlefield(Player.Each, GameObjectFilter.Creature.withSubtype(subtype))
+        battlefield(Player.Each, GameObjectFilter.Creature.withSubtype(subtype)).count()
 
     fun landsWithSubtype(subtype: Subtype): DynamicAmount =
-        DynamicAmount.CountBattlefield(Player.You, GameObjectFilter.Land.withSubtype(subtype))
+        battlefield(Player.You, GameObjectFilter.Land.withSubtype(subtype)).count()
 
     // =========================================================================
     // "Other" counting (subtract 1 for self)
@@ -76,13 +91,13 @@ object DynamicAmounts {
 
     fun otherCreaturesYouControl(): DynamicAmount =
         DynamicAmount.Subtract(
-            DynamicAmount.CountBattlefield(Player.You, GameObjectFilter.Creature),
+            battlefield(Player.You, GameObjectFilter.Creature).count(),
             DynamicAmount.Fixed(1)
         )
 
     fun otherCreaturesWithSubtypeYouControl(subtype: Subtype): DynamicAmount =
         DynamicAmount.Subtract(
-            DynamicAmount.CountBattlefield(Player.You, GameObjectFilter.Creature.withSubtype(subtype)),
+            battlefield(Player.You, GameObjectFilter.Creature.withSubtype(subtype)).count(),
             DynamicAmount.Fixed(1)
         )
 
@@ -101,22 +116,22 @@ object DynamicAmounts {
     // =========================================================================
 
     fun creaturesAttackingYou(multiplier: Int = 1): DynamicAmount {
-        val base = DynamicAmount.CountBattlefield(Player.Opponent, GameObjectFilter.Creature.attacking())
+        val base = battlefield(Player.Opponent, GameObjectFilter.Creature.attacking()).count()
         return if (multiplier == 1) base else DynamicAmount.Multiply(base, multiplier)
     }
 
     fun landsOfTypeTargetOpponentControls(landType: String, multiplier: Int = 1): DynamicAmount {
-        val base = DynamicAmount.CountBattlefield(Player.TargetOpponent, GameObjectFilter.Land.withSubtype(landType))
+        val base = battlefield(Player.TargetOpponent, GameObjectFilter.Land.withSubtype(landType)).count()
         return if (multiplier == 1) base else DynamicAmount.Multiply(base, multiplier)
     }
 
     fun creaturesOfColorTargetOpponentControls(color: Color, multiplier: Int = 1): DynamicAmount {
-        val base = DynamicAmount.CountBattlefield(Player.TargetOpponent, GameObjectFilter.Creature.withColor(color))
+        val base = battlefield(Player.TargetOpponent, GameObjectFilter.Creature.withColor(color)).count()
         return if (multiplier == 1) base else DynamicAmount.Multiply(base, multiplier)
     }
 
     fun tappedCreaturesTargetOpponentControls(): DynamicAmount =
-        DynamicAmount.CountBattlefield(Player.TargetOpponent, GameObjectFilter.Creature.tapped())
+        battlefield(Player.TargetOpponent, GameObjectFilter.Creature.tapped()).count()
 
     fun handSizeDifferenceFromTargetOpponent(): DynamicAmount =
         DynamicAmount.IfPositive(

@@ -357,7 +357,8 @@ Always use these facades for card definitions. They provide type-safe factory me
 ### Raw DynamicAmount types
 - `DynamicAmount.XValue` / `DynamicAmount.Fixed(n)` / `DynamicAmount.YourLifeTotal`
 - `DynamicAmount.SacrificedPermanentPower` / `.SacrificedPermanentToughness`
-- `DynamicAmount.Count(player, zone, filter)` / `DynamicAmount.CountBattlefield(player, filter)`
+- `DynamicAmount.Count(player, zone, filter)` / `DynamicAmount.AggregateBattlefield(player, filter, aggregation?, property?)`
+- Fluent: `DynamicAmounts.battlefield(player, filter).count()` / `.maxManaValue()` / `.maxPower()` / `.sumPower()`
 - Math: `DynamicAmount.Add(l, r)` / `.Subtract(l, r)` / `.Multiply(amt, n)` / `.Max(l, r)` / `.Min(l, r)` / `.IfPositive(amt)`
 
 ---

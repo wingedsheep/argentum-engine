@@ -33,7 +33,7 @@ val GoblinPiledriver = card("Goblin Piledriver") {
         effect = Effects.ModifyStats(
             power = DynamicAmount.Multiply(
                 DynamicAmount.Subtract(
-                    DynamicAmount.CountBattlefield(Player.You, GameObjectFilter.Creature.withSubtype("Goblin").attacking()),
+                    DynamicAmount.AggregateBattlefield(Player.You, GameObjectFilter.Creature.withSubtype("Goblin").attacking()),
                     DynamicAmount.Fixed(1)
                 ),
                 2

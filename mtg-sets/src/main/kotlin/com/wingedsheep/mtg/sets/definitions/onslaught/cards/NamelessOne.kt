@@ -19,7 +19,7 @@ val NamelessOne = card("Nameless One") {
     typeLine = "Creature — Wizard Avatar"
     oracleText = "Nameless One's power and toughness are each equal to the number of Wizards on the battlefield.\nMorph {2}{U}"
 
-    dynamicStats(DynamicAmount.CountBattlefield(Player.Each, GameObjectFilter.Creature.withSubtype("Wizard")))
+    dynamicStats(DynamicAmount.AggregateBattlefield(Player.Each, GameObjectFilter.Creature.withSubtype("Wizard")))
 
     morph = "{2}{U}"
 

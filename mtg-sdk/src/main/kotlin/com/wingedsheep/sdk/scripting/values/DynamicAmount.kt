@@ -140,7 +140,7 @@ sealed interface DynamicAmount {
 
     /**
      * Multiply a dynamic amount by a fixed multiplier.
-     * Example: Multiply(CountBattlefield(Player.Opponent, GameObjectFilter.Creature.attacking()), 3)
+     * Example: Multiply(AggregateBattlefield(Player.Opponent, GameObjectFilter.Creature.attacking()), 3)
      */
     @SerialName("Multiply")
     @Serializable
@@ -310,66 +310,57 @@ sealed interface DynamicAmount {
     }
 
     /**
-     * Count permanents on battlefield matching a unified filter.
-     * Convenience wrapper for Count with Zone.BATTLEFIELD.
+     * Generic battlefield aggregation primitive.
+     * Queries permanents on the battlefield, filters them, optionally maps to a numeric
+     * property, and applies an aggregation function.
      *
-     * Examples:
+     * This unifies counting, max, min, and sum operations over battlefield entities:
+     *
      * ```kotlin
-     * // Creatures you control
-     * CountBattlefield(Player.You, GameObjectFilter.Creature)
+     * // Count creatures you control
+     * AggregateBattlefield(Player.You, GameObjectFilter.Creature)
      *
-     * // All creatures on the battlefield
-     * CountBattlefield(Player.Each, GameObjectFilter.Creature)
-     *
-     * // Attacking creatures you control
-     * CountBattlefield(Player.You, GameObjectFilter.Creature.attacking())
-     *
-     * // Tapped creatures target opponent controls
-     * CountBattlefield(Player.TargetOpponent, GameObjectFilter.Creature.tapped())
-     * ```
-     */
-    @SerialName("CountBattlefield")
-    @Serializable
-    data class CountBattlefield(
-        val player: Player,
-        val filter: GameObjectFilter = GameObjectFilter.Any
-    ) : DynamicAmount {
-        override val description: String = buildString {
-            append("the number of ")
-            append(pluralize(filter.description))
-            append(" ")
-            when (player) {
-                Player.You -> append("you control")
-                Player.Opponent, Player.TargetOpponent -> append("${player.description} controls")
-                Player.Each -> append("on the battlefield")
-                else -> append("${player.description} controls")
-            }
-        }
-    }
-
-    /**
-     * The greatest value of a numeric property among permanents a player controls.
-     * Generic aggregation primitive — use via DynamicAmounts convenience methods.
-     *
-     * Examples:
-     * ```kotlin
      * // Greatest mana value among permanents you control (Rush of Knowledge)
-     * MaxBattlefield(Player.You, CardNumericProperty.ManaValue)
+     * AggregateBattlefield(Player.You, aggregation = Aggregation.MAX, property = CardNumericProperty.MANA_VALUE)
      *
      * // Greatest power among creatures you control
-     * MaxBattlefield(Player.You, CardNumericProperty.Power, GameObjectFilter.Creature)
+     * AggregateBattlefield(Player.You, GameObjectFilter.Creature, Aggregation.MAX, CardNumericProperty.POWER)
      * ```
+     *
+     * Prefer using the fluent DSL via [DynamicAmounts.battlefield] rather than constructing directly.
+     *
+     * @param player Whose permanents to query
+     * @param filter Filter for which permanents to include
+     * @param aggregation How to aggregate (COUNT, MAX, MIN, SUM)
+     * @param property Which numeric property to aggregate (ignored for COUNT)
      */
-    @SerialName("MaxBattlefield")
+    @SerialName("AggregateBattlefield")
     @Serializable
-    data class MaxBattlefield(
+    data class AggregateBattlefield(
         val player: Player,
-        val property: CardNumericProperty,
-        val filter: GameObjectFilter = GameObjectFilter.Any
+        val filter: GameObjectFilter = GameObjectFilter.Any,
+        val aggregation: Aggregation = Aggregation.COUNT,
+        val property: CardNumericProperty? = null
     ) : DynamicAmount {
         override val description: String = buildString {
-            append("the greatest ${property.description} among ")
-            append(pluralize(filter.description))
+            when (aggregation) {
+                Aggregation.COUNT -> {
+                    append("the number of ")
+                    append(pluralize(filter.description))
+                }
+                Aggregation.MAX -> {
+                    append("the greatest ${property?.description ?: "value"} among ")
+                    append(pluralize(filter.description))
+                }
+                Aggregation.MIN -> {
+                    append("the least ${property?.description ?: "value"} among ")
+                    append(pluralize(filter.description))
+                }
+                Aggregation.SUM -> {
+                    append("the total ${property?.description ?: "value"} of ")
+                    append(pluralize(filter.description))
+                }
+            }
             append(" ")
             when (player) {
                 Player.You -> append("you control")

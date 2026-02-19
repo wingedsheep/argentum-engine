@@ -32,7 +32,7 @@ val ShaleskinBruiser = card("Shaleskin Bruiser") {
         effect = Effects.ModifyStats(
             power = DynamicAmount.Multiply(
                 DynamicAmount.Subtract(
-                    DynamicAmount.CountBattlefield(Player.You, GameObjectFilter.Creature.withSubtype("Beast").attacking()),
+                    DynamicAmount.AggregateBattlefield(Player.You, GameObjectFilter.Creature.withSubtype("Beast").attacking()),
                     DynamicAmount.Fixed(1)
                 ),
                 3

@@ -141,7 +141,7 @@ class StateProjector(
         }
 
         // Resolve CDAs (Layer 7a) - evaluate dynamic power/toughness
-        // Done after layers 1-6 so type changes are visible to CountBattlefield
+        // Done after layers 1-6 so type changes are visible to AggregateBattlefield
         if (dynamicStatEntities.isNotEmpty()) {
             // Build intermediate projected state so counting uses updated types/subtypes
             val intermediateProjected = buildIntermediateProjectedState(state, projectedValues)
@@ -265,7 +265,7 @@ class StateProjector(
 
     /**
      * Build an intermediate ProjectedState from the in-progress projected values.
-     * Used during CDA resolution so that CountBattlefield can see type changes
+     * Used during CDA resolution so that AggregateBattlefield can see type changes
      * from layers 1-6 (especially Layer 4 type-changing effects).
      */
     private fun buildIntermediateProjectedState(

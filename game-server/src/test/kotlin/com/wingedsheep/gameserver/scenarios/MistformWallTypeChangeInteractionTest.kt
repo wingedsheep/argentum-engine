@@ -10,7 +10,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
- * Tests that DynamicAmount.CountBattlefield respects temporary type changes
+ * Tests that DynamicAmount.AggregateBattlefield respects temporary type changes
  * from effects like Mistform Wall's "become the creature type of your choice".
  *
  * Currently, DynamicAmountEvaluator uses base state for counting, so temporary

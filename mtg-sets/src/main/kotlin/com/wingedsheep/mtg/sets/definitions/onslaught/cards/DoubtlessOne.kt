@@ -21,7 +21,7 @@ val DoubtlessOne = card("Doubtless One") {
     typeLine = "Creature — Cleric Avatar"
     oracleText = "Whenever Doubtless One deals damage, you gain that much life.\nDoubtless One's power and toughness are each equal to the number of Clerics on the battlefield."
 
-    dynamicStats(DynamicAmount.CountBattlefield(Player.Each, GameObjectFilter.Creature.withSubtype("Cleric")))
+    dynamicStats(DynamicAmount.AggregateBattlefield(Player.Each, GameObjectFilter.Creature.withSubtype("Cleric")))
 
     triggeredAbility {
         trigger = Triggers.DealsDamage
