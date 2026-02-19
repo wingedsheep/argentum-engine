@@ -141,6 +141,8 @@ export interface StateUpdateMessage {
   readonly opponentDecisionStatus?: OpponentDecisionStatus | null
   /** Per-step stop overrides echoed back for client sync */
   readonly stopOverrides?: StopOverrideInfo | null
+  /** Whether the player can undo their last action */
+  readonly undoAvailable?: boolean
 }
 
 // ============================================================================
@@ -998,6 +1000,8 @@ export type ClientMessage =
   // Game Settings Messages
   | SetFullControlMessage
   | SetStopOverridesMessage
+  // Undo
+  | RequestUndoMessage
 
 /**
  * Connect to the server with a player name.
@@ -1327,6 +1331,13 @@ export interface SetStopOverridesMessage {
   readonly opponentTurnStops: readonly string[]
 }
 
+/**
+ * Request to undo the last non-respondable action.
+ */
+export interface RequestUndoMessage {
+  readonly type: 'requestUndo'
+}
+
 // Lobby Message Factories
 export function createCreateTournamentLobbyMessage(
   setCodes: readonly string[],
@@ -1424,6 +1435,10 @@ export function createSetFullControlMessage(enabled: boolean): SetFullControlMes
 
 export function createSetStopOverridesMessage(myTurnStops: readonly string[], opponentTurnStops: readonly string[]): SetStopOverridesMessage {
   return { type: 'setStopOverrides', myTurnStops, opponentTurnStops }
+}
+
+export function createRequestUndoMessage(): RequestUndoMessage {
+  return { type: 'requestUndo' }
 }
 
 // Draft Type Guards

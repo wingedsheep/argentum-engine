@@ -84,7 +84,9 @@ sealed interface ServerMessage {
         /** Summary of opponent's pending decision (null if opponent has no decision) */
         val opponentDecisionStatus: OpponentDecisionStatus? = null,
         /** Per-step stop overrides for this player (echoed back for client sync) */
-        val stopOverrides: StopOverrideInfo? = null
+        val stopOverrides: StopOverrideInfo? = null,
+        /** Whether the player can undo their last action */
+        val undoAvailable: Boolean = false
     ) : ServerMessage
 
     /**

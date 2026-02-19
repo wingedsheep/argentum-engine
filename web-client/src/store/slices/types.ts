@@ -396,6 +396,7 @@ export type GameStore = {
   stopOverrides: { myTurnStops: Step[]; opponentTurnStops: Step[] }
   nextStopPoint: string | null
   opponentName: string | null
+  undoAvailable: boolean
   /** Seconds remaining on opponent's disconnect countdown (null = connected) */
   opponentDisconnectCountdown: number | null
   createGame: (deckList: Record<string, number>) => void
@@ -417,6 +418,7 @@ export type GameStore = {
   chooseBottomCards: (cardIds: readonly EntityId[]) => void
   toggleMulliganCard: (cardId: EntityId) => void
   concede: () => void
+  requestUndo: () => void
   cancelGame: () => void
   setFullControl: (enabled: boolean) => void
   toggleStopOverride: (step: Step, isMyTurn: boolean) => void

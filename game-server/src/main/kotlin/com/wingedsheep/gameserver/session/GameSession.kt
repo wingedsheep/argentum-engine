@@ -53,6 +53,10 @@ class GameSession(
 
     @Volatile
     private var gameState: GameState? = null
+
+    /** Checkpoint for undoing the last non-respondable action (e.g., play land, declare attackers) */
+    @Volatile
+    private var undoCheckpoint: GameState? = null
     private val players = mutableMapOf<EntityId, PlayerSession>()
     private val deckLists = mutableMapOf<EntityId, List<String>>()
     private val spectators = mutableSetOf<PlayerSession>()
@@ -406,6 +410,15 @@ class GameSession(
     }
 
     /**
+     * Check if an action is eligible for undo (non-respondable actions where
+     * the opponent can't respond before the active player passes priority).
+     */
+    private fun isUndoEligibleAction(action: GameAction): Boolean = when (action) {
+        is PlayLand, is DeclareAttackers, is DeclareBlockers, is TurnFaceUp, is PassPriority -> true
+        else -> false
+    }
+
+    /**
      * Execute a game action.
      *
      * Routes the action through the engine's ActionProcessor.
@@ -422,12 +435,23 @@ class GameSession(
             }
         }
 
+        // Manage undo checkpoint: save before undo-eligible actions, clear otherwise
+        if (isUndoEligibleAction(action)) {
+            undoCheckpoint = state
+        } else {
+            undoCheckpoint = null
+        }
+
         val result = actionProcessor.process(state, action)
 
         val error = result.error
         val pendingDecision = result.pendingDecision
         when {
-            error != null -> ActionResult.Failure(error)
+            error != null -> {
+                // Revert checkpoint on failure
+                if (isUndoEligibleAction(action)) undoCheckpoint = null
+                ActionResult.Failure(error)
+            }
             pendingDecision != null -> {
                 gameState = result.state
                 if (messageId != null) lastProcessedMessageId[playerId] = messageId
@@ -514,7 +538,7 @@ class GameSession(
         } else {
             null
         }
-        return ServerMessage.StateUpdate(stateWithLog, clientEvents, legalActions, pendingDecision, nextStopPoint, opponentDecisionStatus, stopOverrideInfo)
+        return ServerMessage.StateUpdate(stateWithLog, clientEvents, legalActions, pendingDecision, nextStopPoint, opponentDecisionStatus, stopOverrideInfo, isUndoAvailable(playerId))
     }
 
     // =========================================================================
@@ -614,6 +638,32 @@ class GameSession(
         } else {
             null
         }
+    }
+
+    /**
+     * Check if undo is available for a player.
+     * Returns true if a checkpoint exists and the player is the priority player of the checkpoint state.
+     */
+    fun isUndoAvailable(playerId: EntityId): Boolean {
+        val checkpoint = undoCheckpoint ?: return false
+        return checkpoint.priorityPlayerId == playerId
+    }
+
+    /**
+     * Execute an undo, restoring the game state to the checkpoint.
+     * Only the player who took the undoable action can undo.
+     */
+    fun executeUndo(playerId: EntityId): ActionResult = synchronized(stateLock) {
+        val checkpoint = undoCheckpoint ?: return ActionResult.Failure("No undo available")
+
+        if (checkpoint.priorityPlayerId != playerId) {
+            return ActionResult.Failure("Not your action to undo")
+        }
+
+        gameState = checkpoint
+        undoCheckpoint = null
+        logger.info("Player $playerId undid their last action")
+        ActionResult.Success(checkpoint, emptyList())
     }
 
     /**
@@ -782,6 +832,7 @@ class GameSession(
     fun resetStateForDevScenario(state: GameState) {
         synchronized(stateLock) {
             gameState = state
+            undoCheckpoint = null
             gameLogs.clear()
             lastProcessedMessageId.clear()
             // Players map is preserved so connected sessions remain valid

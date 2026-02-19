@@ -66,6 +66,7 @@ class GamePlayHandler(
             is ClientMessage.UpdateBlockerAssignments -> handleUpdateBlockerAssignments(session, message)
             is ClientMessage.SetFullControl -> handleSetFullControl(session, message)
             is ClientMessage.SetStopOverrides -> handleSetStopOverrides(session, message)
+            is ClientMessage.RequestUndo -> handleRequestUndo(session)
             else -> {}
         }
     }
@@ -624,6 +625,31 @@ class GamePlayHandler(
 
         // Broadcast state update so the UI reflects the change (and next stop point updates)
         broadcastStateUpdate(gameSession, emptyList())
+    }
+
+    private fun handleRequestUndo(session: WebSocketSession) {
+        val playerSession = sessionRegistry.getPlayerSession(session.id)
+        if (playerSession == null) {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        val gameSession = getGameSession(session, playerSession) ?: return
+
+        val result = gameSession.executeUndo(playerSession.playerId)
+        when (result) {
+            is GameSession.ActionResult.Success -> {
+                logger.info("Player ${playerSession.playerName} undid their last action")
+                broadcastStateUpdate(gameSession, emptyList())
+            }
+            is GameSession.ActionResult.Failure -> {
+                sender.sendError(session, ErrorCode.INVALID_ACTION, result.reason)
+            }
+            is GameSession.ActionResult.PausedForDecision -> {
+                // Should not happen for undo
+                broadcastStateUpdate(gameSession, result.events)
+            }
+        }
     }
 
     // Callbacks to avoid circular dependencies with LobbyHandler

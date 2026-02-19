@@ -14,6 +14,7 @@ import {
   createCancelGameMessage,
   createSetFullControlMessage,
   createSetStopOverridesMessage,
+  createRequestUndoMessage,
 } from '../../types'
 import type { Step } from '../../types'
 import { trackEvent } from '../../utils/analytics'
@@ -34,6 +35,7 @@ export interface GameplaySliceState {
   stopOverrides: { myTurnStops: Step[]; opponentTurnStops: Step[] }
   nextStopPoint: string | null
   opponentName: string | null
+  undoAvailable: boolean
   opponentDisconnectCountdown: number | null
 }
 
@@ -60,6 +62,7 @@ export interface GameplaySliceActions {
   cancelGame: () => void
   setFullControl: (enabled: boolean) => void
   toggleStopOverride: (step: Step, isMyTurn: boolean) => void
+  requestUndo: () => void
   returnToMenu: () => void
   clearError: () => void
   consumeEvent: () => ClientEvent | undefined
@@ -83,6 +86,7 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
   stopOverrides: { myTurnStops: [], opponentTurnStops: [] },
   nextStopPoint: null,
   opponentName: null,
+  undoAvailable: false,
   opponentDisconnectCountdown: null,
 
   // Actions
@@ -313,6 +317,10 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
     getWebSocket()?.send(createConcedeMessage())
   },
 
+  requestUndo: () => {
+    getWebSocket()?.send(createRequestUndoMessage())
+  },
+
   cancelGame: () => {
     trackEvent('game_cancelled')
     getWebSocket()?.send(createCancelGameMessage())
@@ -362,6 +370,7 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
       revealedHandCardIds: null,
       revealedCardsInfo: null,
       fullControl: false,
+      undoAvailable: false,
       stopOverrides: { myTurnStops: [], opponentTurnStops: [] },
       nextStopPoint: null,
       opponentDisconnectCountdown: null,

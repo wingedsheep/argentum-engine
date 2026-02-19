@@ -291,6 +291,7 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
         pendingDecision: msg.pendingDecision ?? null,
         opponentDecisionStatus: msg.opponentDecisionStatus ?? null,
         nextStopPoint: msg.nextStopPoint ?? null,
+        undoAvailable: msg.undoAvailable ?? false,
         ...(serverOverrides ? { stopOverrides: serverOverrides } : {}),
         pendingEvents: [...state.pendingEvents, ...msg.events],
         eventLog: (msg.state.gameLog ?? []).map((e) => ({

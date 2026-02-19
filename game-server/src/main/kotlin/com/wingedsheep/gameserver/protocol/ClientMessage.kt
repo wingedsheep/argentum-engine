@@ -261,4 +261,11 @@ sealed interface ClientMessage {
         val myTurnStops: Set<Step>,
         val opponentTurnStops: Set<Step>
     ) : ClientMessage
+
+    /**
+     * Request to undo the last non-respondable action (e.g., play land, declare attackers).
+     */
+    @Serializable
+    @SerialName("requestUndo")
+    data object RequestUndo : ClientMessage
 }

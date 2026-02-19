@@ -54,6 +54,8 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
   const toggleStopOverride = useGameStore((state) => state.toggleStopOverride)
   const distributeState = useGameStore((state) => state.distributeState)
   const confirmDistribute = useGameStore((state) => state.confirmDistribute)
+  const undoAvailable = useGameStore((state) => state.undoAvailable)
+  const requestUndo = useGameStore((state) => state.requestUndo)
   const responsive = useResponsive(topOffset)
 
   // In spectator mode, use spectatingState.gameState
@@ -315,26 +317,49 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
         ) : null}
       </div>
 
-      {/* Floating pass button (bottom-right) - hidden in spectator mode and distribute mode */}
+      {/* Floating pass/undo buttons (bottom-right) - hidden in spectator mode and distribute mode */}
       {!spectatorMode && canAct && !isInCombatMode && !isInDistributeMode && viewingPlayer && (
-        <button
-          onClick={() => {
-            submitAction({
-              type: 'PassPriority',
-              playerId: viewingPlayer.playerId,
-            })
-          }}
-          style={{
-            ...styles.floatingPassButton,
-            ...getPassButtonStyle(),
-            padding: responsive.isMobile ? '10px 20px' : '12px 28px',
-            fontSize: responsive.fontSize.normal,
-            border: `2px solid ${getPassButtonStyle().borderColor}`,
-            transition: 'background-color 0.2s, border-color 0.2s',
-          }}
-        >
-          {getPassButtonLabel()}
-        </button>
+        <div style={{
+          position: 'fixed',
+          bottom: 16,
+          right: 16,
+          display: 'flex',
+          gap: 8,
+          zIndex: 100,
+        }}>
+          {undoAvailable && (
+            <button
+              onClick={requestUndo}
+              style={{
+                ...styles.floatingUndoButton,
+                position: 'static',
+                padding: responsive.isMobile ? '10px 16px' : '12px 20px',
+                fontSize: responsive.fontSize.normal,
+              }}
+            >
+              Undo
+            </button>
+          )}
+          <button
+            onClick={() => {
+              submitAction({
+                type: 'PassPriority',
+                playerId: viewingPlayer.playerId,
+              })
+            }}
+            style={{
+              ...styles.floatingPassButton,
+              ...getPassButtonStyle(),
+              position: 'static',
+              padding: responsive.isMobile ? '10px 20px' : '12px 28px',
+              fontSize: responsive.fontSize.normal,
+              border: `2px solid ${getPassButtonStyle().borderColor}`,
+              transition: 'background-color 0.2s, border-color 0.2s',
+            }}
+          >
+            {getPassButtonLabel()}
+          </button>
+        </div>
       )}
 
       {/* Full Control toggle button (bottom-right, above pass button) - hidden in spectator mode */}

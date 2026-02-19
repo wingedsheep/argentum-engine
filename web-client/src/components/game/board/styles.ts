@@ -69,6 +69,18 @@ export const styles: Record<string, React.CSSProperties> = {
     boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
     zIndex: 100,
   },
+  floatingUndoButton: {
+    position: 'fixed',
+    bottom: 16,
+    fontWeight: 600,
+    backgroundColor: 'rgba(40, 40, 40, 0.9)',
+    color: '#d4a017',
+    border: '2px solid #8b7000',
+    borderRadius: 8,
+    cursor: 'pointer',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+    zIndex: 100,
+  },
   combatButtonContainer: {
     position: 'fixed',
     bottom: 16,
