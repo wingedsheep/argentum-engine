@@ -160,6 +160,11 @@ object Triggers {
     val EnchantedCreatureControllerUpkeep: Trigger = OnEnchantedCreatureControllerUpkeep
 
     /**
+     * When this creature is turned face up.
+     */
+    val TurnedFaceUp: Trigger = OnTurnFaceUp(selfOnly = true)
+
+    /**
      * When you gain control of this permanent from another player.
      * Used by Risky Move.
      */
