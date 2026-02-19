@@ -402,6 +402,47 @@ class WordsOfWorshipTest : FunSpec({
         driver.getHandSize(activePlayer) shouldBe initialHandSize + 1
     }
 
+    test("spell draw prompt can be accepted then declined per-draw") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Grizzly Bears" to 40),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+
+        driver.putPermanentOnBattlefield(activePlayer, "Words of Worship")
+        // Two Plains so there's mana to be prompted for both draws
+        driver.putPermanentOnBattlefield(activePlayer, "Plains")
+        driver.putPermanentOnBattlefield(activePlayer, "Plains")
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val initialLife = driver.getLifeTotal(activePlayer)
+        val initialHandSize = driver.getHandSize(activePlayer)
+
+        // Give mana to cast Inspiration ({3}{U})
+        driver.giveMana(activePlayer, Color.BLUE, 4)
+
+        // Cast Inspiration (draw 2)
+        val inspiration = driver.putCardInHand(activePlayer, "Inspiration")
+        driver.castSpell(activePlayer, inspiration)
+        driver.bothPass()
+
+        // Draw 1: Prompted - ACCEPT
+        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
+        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
+
+        // Draw 2: Prompted again - DECLINE
+        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
+        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = false)
+
+        // 1 replaced with +5 life + 1 normal draw
+        driver.getLifeTotal(activePlayer) shouldBe initialLife + 5
+        // initialHandSize + 1 (putCardInHand) - 1 (cast Inspiration) + 1 (normal draw 2) = initialHandSize + 1
+        driver.getHandSize(activePlayer) shouldBe initialHandSize + 1
+    }
+
     test("draw step does not prompt when Words of Worship activation is not affordable") {
         val driver = createDriver()
         driver.initMirrorMatch(
