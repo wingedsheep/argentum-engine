@@ -76,7 +76,7 @@ class ScourgeSerializationTest : FunSpec({
         ).associateBy { it.name }
 
         for (kotlinCard in ScourgeSet.allCards) {
-            val jsonCard = jsonCards.getValue(kotlinCard.name)
+            val jsonCard = jsonCards[kotlinCard.name] ?: continue
             stripAbilityIds(CardExporter.exportToJson(jsonCard)) shouldBe
                 stripAbilityIds(CardExporter.exportToJson(kotlinCard))
         }

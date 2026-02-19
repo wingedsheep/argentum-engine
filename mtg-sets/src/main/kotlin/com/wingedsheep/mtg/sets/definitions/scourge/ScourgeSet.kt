@@ -32,6 +32,7 @@ object ScourgeSet {
 
         // Green creatures
         FierceEmpath,
+        Kurgadon,
         TreetopScout,
 
         // Green instants
