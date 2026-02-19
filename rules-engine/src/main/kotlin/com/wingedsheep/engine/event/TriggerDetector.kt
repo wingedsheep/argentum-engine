@@ -167,7 +167,7 @@ class TriggerDetector(
                                         sourceId = entityId,
                                         sourceName = cardComponent.name,
                                         controllerId = enchantedCreatureController,
-                                        triggerContext = TriggerContext(step = step)
+                                        triggerContext = TriggerContext(step = step, triggeringEntityId = activePlayerId)
                                     )
                                 )
                             }
@@ -183,7 +183,7 @@ class TriggerDetector(
                             sourceId = entityId,
                             sourceName = cardComponent.name,
                             controllerId = controllerId,
-                            triggerContext = TriggerContext(step = step)
+                            triggerContext = TriggerContext(step = step, triggeringEntityId = activePlayerId)
                         )
                     )
                 }
@@ -211,7 +211,7 @@ class TriggerDetector(
                                 sourceId = entityId,
                                 sourceName = cardComponent.name,
                                 controllerId = ownerId,
-                                triggerContext = TriggerContext(step = step)
+                                triggerContext = TriggerContext(step = step, triggeringEntityId = activePlayerId)
                             )
                         )
                     }

@@ -705,9 +705,10 @@ class GameTestDriver {
             ControllerComponent(playerId)
         )
 
-        // Add continuous effects from static abilities
+        // Add continuous effects and replacement effects from static abilities
         val staticAbilityHandler = com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler(cardRegistry)
         container = staticAbilityHandler.addContinuousEffectComponent(container, cardDef)
+        container = staticAbilityHandler.addReplacementEffectComponent(container, cardDef)
 
         _state = _state.withEntity(cardId, container)
 
