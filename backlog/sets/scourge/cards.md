@@ -2,13 +2,13 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 23 / 143
+**Implemented:** 24 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 4 |
 | Blue | 4 |
-| Black | 4 |
+| Black | 5 |
 | Red | 5 |
 | Green | 4 |
 | Multicolor | 1 |
@@ -147,7 +147,7 @@
 - [ ] Twisted Abomination
 - [x] Unburden
 - [ ] Uncontrolled Infestation
-- [ ] Undead Warchief
+- [x] Undead Warchief
 - [ ] Unspeakable Symbol
 - [ ] Upwelling
 - [x] Vengeful Dead

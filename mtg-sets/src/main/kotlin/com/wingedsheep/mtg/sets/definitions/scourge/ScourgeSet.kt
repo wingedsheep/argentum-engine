@@ -72,6 +72,7 @@ object ScourgeSet {
 
         // Black creatures (additional)
         DeathsHeadBuzzard,
+        UndeadWarchief,
         VengefulDead,
 
         // Black sorceries
