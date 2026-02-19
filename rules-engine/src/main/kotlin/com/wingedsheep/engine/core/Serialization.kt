@@ -171,7 +171,6 @@ val engineSerializersModule = SerializersModule {
         subclass(DrawReplacementActivationContinuation::class)
         subclass(DrawReplacementTargetContinuation::class)
         subclass(ReadTheRunesContinuation::class)
-        subclass(SearchTargetLibraryExileContinuation::class)
         subclass(ForEachTargetContinuation::class)
         subclass(ForEachPlayerContinuation::class)
         subclass(TradeSecretsContinuation::class)

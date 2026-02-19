@@ -2,7 +2,7 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.CardsSelectedResponse
-import com.wingedsheep.engine.core.SearchLibraryDecision
+import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
@@ -16,7 +16,7 @@ import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AdditionalCostPayment
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.SearchTargetLibraryExileEffect
+import com.wingedsheep.sdk.dsl.EffectPatterns
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -42,7 +42,7 @@ class SupremeInquisitorTest : FunSpec({
         activatedAbility {
             cost = Costs.TapPermanents(5, GameObjectFilter.Creature.withSubtype("Wizard"))
             target = Targets.Player
-            effect = SearchTargetLibraryExileEffect(5)
+            effect = EffectPatterns.searchTargetLibraryExile(5)
         }
     }
 
@@ -99,7 +99,7 @@ class SupremeInquisitorTest : FunSpec({
 
         // Should have a search library decision
         val decision = driver.pendingDecision
-        decision.shouldBeInstanceOf<SearchLibraryDecision>()
+        decision.shouldBeInstanceOf<SelectCardsDecision>()
         decision.maxSelections shouldBe 5
 
         // Select 2 cards to exile
@@ -151,7 +151,7 @@ class SupremeInquisitorTest : FunSpec({
         driver.bothPass()
 
         val decision = driver.pendingDecision
-        decision.shouldBeInstanceOf<SearchLibraryDecision>()
+        decision.shouldBeInstanceOf<SelectCardsDecision>()
         decision.minSelections shouldBe 0
 
         // Select zero cards

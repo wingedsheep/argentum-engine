@@ -15,14 +15,10 @@ class LibraryExecutors(
     override fun executors(): List<EffectExecutor<*>> = listOf(
         ShuffleLibraryExecutor(),
         ShuffleGraveyardIntoLibraryExecutor(),
-
-
-        PutLandFromHandExecutor(),
         RevealUntilExecutor(),
         PutCreatureFromHandSharingTypeExecutor(),
         ChooseCreatureTypePipelineExecutor(),
         EachPlayerMayRevealCreaturesExecutor(),
-        SearchTargetLibraryExileExecutor(),
         GatherCardsExecutor(),
         SelectFromCollectionExecutor(),
         MoveCollectionExecutor(cardRegistry = cardRegistry, targetFinder = targetFinder)

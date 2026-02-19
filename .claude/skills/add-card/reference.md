@@ -154,7 +154,6 @@ Always use these facades for card definitions. They provide type-safe factory me
 | `EffectPatterns.lookAtTopAndReorder(count)` | `count: Int` or `count: DynamicAmount` | Look at top and reorder (pipeline) |
 | `LookAtTopXPutOntoBattlefieldEffect` | `countSource: DynamicAmount, filter, shuffleAfter` | CoCo-style |
 | `EffectPatterns.lookAtTargetLibraryAndDiscard(count, toGraveyard)` | `count, toGraveyard` | Look at target's library, discard some (pipeline) |
-| `PutCreatureFromHandOntoBattlefieldEffect` | `maxManaValueSource, entersTapped, entersAttacking` | Sneak Attack-style |
 
 ### Mana
 | Effect | Parameters | Purpose |

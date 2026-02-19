@@ -34,25 +34,6 @@ enum class SearchDestination(val description: String) {
     TOP_OF_LIBRARY("on top of your library")
 }
 
-/**
- * Put a creature card from your hand onto the battlefield.
- * Used for effects like Kinscaer Sentry.
- */
-@SerialName("PutCreatureFromHandOntoBattlefield")
-@Serializable
-data class PutCreatureFromHandOntoBattlefieldEffect(
-    val maxManaValueSource: DynamicAmount,
-    val entersTapped: Boolean = false,
-    val entersAttacking: Boolean = false
-) : Effect {
-    override val description: String = buildString {
-        append("Put a creature card with mana value ${maxManaValueSource.description} or less ")
-        append("from your hand onto the battlefield")
-        if (entersTapped) append(" tapped")
-        if (entersAttacking) append(" and attacking")
-    }
-}
-
 
 /**
  * Shuffle target player's graveyard into their library.
@@ -69,24 +50,6 @@ data class ShuffleGraveyardIntoLibraryEffect(
     }
 }
 
-/**
- * Put a land card from your hand onto the battlefield.
- * "You may put a basic land card from your hand onto the battlefield tapped."
- *
- * @property filter Filter for which land cards qualify (default: BasicLand)
- * @property entersTapped Whether the land enters tapped
- */
-@SerialName("PutLandFromHandOntoBattlefield")
-@Serializable
-data class PutLandFromHandOntoBattlefieldEffect(
-    val filter: GameObjectFilter = GameObjectFilter.BasicLand,
-    val entersTapped: Boolean = false
-) : Effect {
-    override val description: String = buildString {
-        append("Put a ${filter.description} card from your hand onto the battlefield")
-        if (entersTapped) append(" tapped")
-    }
-}
 
 /**
  * Each player may reveal any number of creature cards from their hand.

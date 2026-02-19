@@ -134,7 +134,6 @@ class ContinuationHandler(
             is DrawReplacementTargetContinuation -> drawReplacementResumer.resumeDrawReplacementTarget(stateAfterPop, continuation, response, cfm)
 
             // Card-specific
-            is SearchTargetLibraryExileContinuation -> cardSpecificResumer.resumeSearchTargetLibraryExile(stateAfterPop, continuation, response, cfm)
             is SecretBidContinuation -> cardSpecificResumer.resumeSecretBid(stateAfterPop, continuation, response, cfm)
             is ReadTheRunesContinuation -> cardSpecificResumer.resumeReadTheRunes(stateAfterPop, continuation, response, cfm)
             is TradeSecretsContinuation -> cardSpecificResumer.resumeTradeSecrets(stateAfterPop, continuation, response, cfm)
