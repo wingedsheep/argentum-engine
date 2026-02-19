@@ -6,10 +6,10 @@ import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.EachPlayerMayRevealCreaturesEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
@@ -31,7 +31,7 @@ class KamahlsSummonsTest : FunSpec({
         manaCost = ManaCost.parse("{3}{G}"),
         oracleText = "Each player may reveal any number of creature cards from their hand. Then each player creates a 2/2 green Bear creature token for each card they revealed this way.",
         script = CardScript.spell(
-            effect = EachPlayerMayRevealCreaturesEffect(
+            effect = Effects.EachPlayerRevealCreaturesCreateTokens(
                 tokenPower = 2,
                 tokenToughness = 2,
                 tokenColors = setOf(Color.GREEN),

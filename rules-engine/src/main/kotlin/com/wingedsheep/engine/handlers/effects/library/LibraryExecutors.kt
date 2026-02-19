@@ -18,7 +18,6 @@ class LibraryExecutors(
         RevealUntilExecutor(),
         PutCreatureFromHandSharingTypeExecutor(),
         ChooseCreatureTypePipelineExecutor(),
-        EachPlayerMayRevealCreaturesExecutor(),
         GatherCardsExecutor(),
         SelectFromCollectionExecutor(),
         SelectTargetPipelineExecutor(targetFinder = targetFinder ?: TargetFinder()),

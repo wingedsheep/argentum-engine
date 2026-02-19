@@ -1234,6 +1234,56 @@ object EffectPatterns {
     )
 
     /**
+     * Each player may reveal any number of creature cards from their hand.
+     * Then each player creates a token for each card they revealed this way.
+     *
+     * Creates a ForEachPlayer → Gather(hand, creature) → Select(ChooseAnyNumber)
+     * → CreateDynamicTokens(revealed_count) pipeline.
+     *
+     * Edge cases handled by existing pipeline:
+     * - Player has no creatures: GatherCards stores empty → Select auto-resolves → tokens with count=0 is no-op
+     * - APNAP order: ForEachPlayerEffect with Player.Each uses state.turnOrder
+     * - Decision pausing: Pre-push/pop continuation pattern handles Select pausing per player
+     *
+     * Used for Kamahl's Summons.
+     *
+     * @param tokenPower Power of the created tokens
+     * @param tokenToughness Toughness of the created tokens
+     * @param tokenColors Colors of the created tokens
+     * @param tokenCreatureTypes Creature types of the created tokens
+     * @param tokenImageUri Optional image URI for the token artwork
+     */
+    fun eachPlayerRevealCreaturesCreateTokens(
+        tokenPower: Int,
+        tokenToughness: Int,
+        tokenColors: Set<com.wingedsheep.sdk.core.Color>,
+        tokenCreatureTypes: Set<String>,
+        tokenImageUri: String? = null
+    ): ForEachPlayerEffect = ForEachPlayerEffect(
+        players = Player.Each,
+        effects = listOf(
+            GatherCardsEffect(
+                source = CardSource.FromZone(Zone.HAND, Player.You, GameObjectFilter.Creature),
+                storeAs = "creatures"
+            ),
+            SelectFromCollectionEffect(
+                from = "creatures",
+                selection = SelectionMode.ChooseAnyNumber,
+                storeSelected = "revealed",
+                prompt = "You may reveal any number of creature cards from your hand"
+            ),
+            CreateDynamicTokensEffect(
+                count = DynamicAmount.VariableReference("revealed_count"),
+                power = tokenPower,
+                toughness = tokenToughness,
+                colors = tokenColors,
+                creatureTypes = tokenCreatureTypes,
+                imageUri = tokenImageUri
+            )
+        )
+    )
+
+    /**
      * Translate an [EffectTarget] to a [Player] reference for use in pipeline effects.
      */
     private fun effectTargetToPlayer(target: EffectTarget): Player = when (target) {

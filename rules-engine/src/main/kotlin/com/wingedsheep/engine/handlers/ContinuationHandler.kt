@@ -51,7 +51,6 @@ class ContinuationHandler(
     private val sacrificeAndPayResumer = SacrificeAndPayContinuationResumer(ctx)
     private val manaPaymentResumer = ManaPaymentContinuationResumer(ctx)
     private val libraryAndZoneResumer = LibraryAndZoneContinuationResumer(ctx)
-    private val multiPlayerResumer = MultiPlayerContinuationResumer(ctx)
     private val modalAndCloneResumer = ModalAndCloneContinuationResumer(ctx)
 
     /**
@@ -172,8 +171,6 @@ class ContinuationHandler(
             is SelectTargetPipelineContinuation -> libraryAndZoneResumer.resumeSelectTargetPipeline(stateAfterPop, continuation, response, cfm)
             is MoveCollectionAuraTargetContinuation -> libraryAndZoneResumer.resumeMoveCollectionAuraTarget(stateAfterPop, continuation, response, cfm)
 
-            // Multi-player
-            is EachPlayerMayRevealCreaturesContinuation -> multiPlayerResumer.resumeEachPlayerMayRevealCreatures(stateAfterPop, continuation, response, cfm)
             // Modal and clone
             is ModalContinuation -> modalAndCloneResumer.resumeModal(stateAfterPop, continuation, response, cfm)
             is ModalTargetContinuation -> modalAndCloneResumer.resumeModalTarget(stateAfterPop, continuation, response, cfm)

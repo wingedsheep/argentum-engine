@@ -334,6 +334,20 @@ object Effects {
         EffectPatterns.headGames(target)
 
     /**
+     * Each player may reveal any number of creature cards from their hand.
+     * Then each player creates tokens for each card they revealed.
+     */
+    fun EachPlayerRevealCreaturesCreateTokens(
+        tokenPower: Int,
+        tokenToughness: Int,
+        tokenColors: Set<Color>,
+        tokenCreatureTypes: Set<String>,
+        tokenImageUri: String? = null
+    ): Effect = EffectPatterns.eachPlayerRevealCreaturesCreateTokens(
+        tokenPower, tokenToughness, tokenColors, tokenCreatureTypes, tokenImageUri
+    )
+
+    /**
      * Each player may search their library for up to X cards matching a filter.
      */
     fun EachPlayerSearchesLibrary(
