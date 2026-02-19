@@ -322,6 +322,13 @@ data object ChooseCreatureTypeEffect : Effect {
  * entity IDs are stored in [storedCollections][storeAs] for use by subsequent
  * pipeline effects via [EffectTarget.PipelineTarget].
  *
+ * **Important:** This is for non-targeting choices ("choose a creature") or for
+ * targets that depend on earlier pipeline results. Do NOT use this for cards whose
+ * oracle text says "target" — those must use cast-time targeting so the target is
+ * declared when the spell/ability goes on the stack, giving opponents a chance to
+ * respond with knowledge of what is being targeted. Mid-resolution selection happens
+ * after priority has passed and cannot be responded to.
+ *
  * @property requirement The target requirement (reuses all existing TargetRequirement types)
  * @property storeAs Name of the collection to store the selected target IDs in
  */
