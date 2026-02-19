@@ -39,5 +39,8 @@ object ScourgeSet {
         // Red creatures
         GoblinWarchief,
         SiegeGangCommander,
+
+        // Red instants
+        Carbonize,
     )
 }

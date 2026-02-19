@@ -188,6 +188,7 @@ object CardValidator {
             is RemoveFromCombatEffect -> effect.target
             is ForceSacrificeEffect -> effect.target
             is DealDamageExileOnDeathEffect -> effect.target
+            is MarkExileOnDeathEffect -> effect.target
             is DynamicModifyStatsEffect -> effect.target
             is GainControlEffect -> effect.target
             is TurnFaceDownEffect -> effect.target

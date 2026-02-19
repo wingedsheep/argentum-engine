@@ -525,6 +525,7 @@ class StateBasedActionChecker {
 
     /**
      * Helper to move a creature to graveyard.
+     * If the creature has an ExileOnDeath floating effect, it goes to exile instead.
      */
     private fun putCreatureInGraveyard(
         state: GameState,
@@ -539,11 +540,28 @@ class StateBasedActionChecker {
 
         val ownerId = cardComponent.ownerId ?: controllerId
 
-        val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
-        val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
+        // Check for ExileOnDeath replacement effect
+        val exileOnDeathIndex = state.floatingEffects.indexOfFirst { effect ->
+            effect.effect.modification is com.wingedsheep.engine.mechanics.layers.SerializableModification.ExileOnDeath &&
+                entityId in effect.effect.affectedEntities
+        }
+        val exileInstead = exileOnDeathIndex != -1
 
-        var newState = state.removeFromZone(battlefieldZone, entityId)
-        newState = newState.addToZone(graveyardZone, entityId)
+        val destinationZone = if (exileInstead) Zone.EXILE else Zone.GRAVEYARD
+
+        val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
+        val destinationZoneKey = ZoneKey(ownerId, destinationZone)
+
+        var newState = state
+        // Consume the ExileOnDeath floating effect if used
+        if (exileInstead) {
+            val updatedEffects = state.floatingEffects.toMutableList()
+            updatedEffects.removeAt(exileOnDeathIndex)
+            newState = newState.copy(floatingEffects = updatedEffects)
+        }
+
+        newState = newState.removeFromZone(battlefieldZone, entityId)
+        newState = newState.addToZone(destinationZoneKey, entityId)
 
         // Clean up combat references before stripping components
         newState = EffectExecutorUtils.cleanupCombatReferences(newState, entityId)
@@ -559,7 +577,7 @@ class StateBasedActionChecker {
                     entityId,
                     cardComponent.name,
                     Zone.BATTLEFIELD,
-                    Zone.GRAVEYARD,
+                    destinationZone,
                     ownerId
                 )
             )

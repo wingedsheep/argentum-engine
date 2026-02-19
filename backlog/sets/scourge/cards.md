@@ -24,7 +24,7 @@
 - [ ] Cabal Conditioning
 - [ ] Cabal Interrogator
 - [ ] Call to the Grave
-- [ ] Carbonize
+- [x] Carbonize
 - [x] Carrion Feeder
 - [ ] Chartooth Cougar
 - [ ] Chill Haunting

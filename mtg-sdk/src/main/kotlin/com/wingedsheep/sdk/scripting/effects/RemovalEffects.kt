@@ -40,6 +40,21 @@ data class CantBeRegeneratedEffect(
 }
 
 /**
+ * Mark target creature so that if it would die this turn, it goes to exile instead of graveyard.
+ * "If it would die this turn, exile it instead."
+ *
+ * Designed to be composed with damage/destroy effects via .then() for cards like Carbonize.
+ * Only applies to creatures — if the target is a player, this effect does nothing.
+ */
+@SerialName("MarkExileOnDeath")
+@Serializable
+data class MarkExileOnDeathEffect(
+    val target: EffectTarget
+) : Effect {
+    override val description: String = "If ${target.description} would die this turn, exile it instead"
+}
+
+/**
  * Destroy all creatures that share a creature type with the sacrificed creature.
  * Used for Endemic Plague and similar effects.
  *

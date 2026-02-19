@@ -272,6 +272,13 @@ sealed interface SerializableModification {
     data class PreventNextDamageFromCreatureType(
         val creatureType: String
     ) : SerializableModification
+
+    /**
+     * Death replacement: if the affected creature would die this turn, exile it instead.
+     * Used by Carbonize and similar effects.
+     */
+    @Serializable
+    data object ExileOnDeath : SerializableModification
 }
 
 /**
@@ -324,4 +331,6 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.ReplaceDrawWithToken -> Modification.NoOp
     // PreventNextDamageFromCreatureType doesn't map to a layer modification - it's checked during damage resolution directly
     is SerializableModification.PreventNextDamageFromCreatureType -> Modification.NoOp
+    // ExileOnDeath doesn't map to a layer modification - it's checked during SBA creature death
+    is SerializableModification.ExileOnDeath -> Modification.NoOp
 }
