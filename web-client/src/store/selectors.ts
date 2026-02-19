@@ -493,15 +493,14 @@ export function useGhostCards(playerId: EntityId | null): readonly ClientCard[] 
       }
     }
 
-    // 2. Top-of-library cards playable via Future Sight (sourceZone === "LIBRARY")
-    for (const actionInfo of legalActions) {
-      if (actionInfo.sourceZone === 'LIBRARY') {
-        const action = actionInfo.action
-        if (action.type === 'CastSpell') {
-          ghostCardIds.add(action.cardId)
-        } else if (action.type === 'PlayLand') {
-          ghostCardIds.add(action.cardId)
-        }
+    // 2. Top-of-library card revealed via Future Sight-like effects
+    // Always show the revealed top card as a ghost card, even when it's not playable
+    const libZoneId = library(playerId)
+    const libZone = gameState.zones.find((z) => zoneIdEquals(z.zoneId, libZoneId))
+    if (libZone && libZone.cardIds && libZone.cardIds.length > 0) {
+      const topCardId = libZone.cardIds[0]!
+      if (gameState.cards[topCardId]) {
+        ghostCardIds.add(topCardId)
       }
     }
 
