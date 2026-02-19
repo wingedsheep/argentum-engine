@@ -1,15 +1,15 @@
 package com.wingedsheep.engine.support
 
+import com.wingedsheep.mtg.sets.definitions.onslaught.OnslaughtSet
+import com.wingedsheep.mtg.sets.definitions.portal.PortalSet
+import com.wingedsheep.mtg.sets.definitions.scourge.ScourgeSet
 import com.wingedsheep.sdk.core.*
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.scripting.*
-import com.wingedsheep.sdk.scripting.CantBeBlockedByPower
 import com.wingedsheep.sdk.targeting.AnyTarget
 import com.wingedsheep.sdk.targeting.TargetCreature
-import com.wingedsheep.sdk.targeting.TargetObject
 import com.wingedsheep.sdk.targeting.TargetSpell
 import java.util.UUID
 
@@ -18,33 +18,15 @@ import java.util.UUID
  *
  * These are simplified cards designed for testing specific mechanics.
  * They intentionally use minimal abilities to make test assertions clearer.
+ *
+ * Cards that exist in real sets (Portal, Onslaught, Scourge) are included
+ * via [all] from those sets. Only test-only cards are defined here.
  */
 object TestCards {
 
     // =========================================================================
-    // Basic Lands
-    // =========================================================================
-
-    val Forest = CardDefinition.basicLand("Forest", Subtype("Forest"))
-    val Island = CardDefinition.basicLand("Island", Subtype("Island"))
-    val Mountain = CardDefinition.basicLand("Mountain", Subtype("Mountain"))
-    val Plains = CardDefinition.basicLand("Plains", Subtype("Plains"))
-    val Swamp = CardDefinition.basicLand("Swamp", Subtype("Swamp"))
-
-    // =========================================================================
     // Vanilla Creatures
     // =========================================================================
-
-    /**
-     * 2/2 for {1}{G}
-     */
-    val GrizzlyBears = CardDefinition.creature(
-        name = "Grizzly Bears",
-        manaCost = ManaCost.parse("{1}{G}"),
-        subtypes = setOf(Subtype("Bear")),
-        power = 2,
-        toughness = 2
-    )
 
     /**
      * 3/3 for {2}{G}
@@ -109,105 +91,9 @@ object TestCards {
         )
     )
 
-    /**
-     * 2/2 for {2}{W} with "When Venerable Monk enters the battlefield, you gain 2 life."
-     */
-    val VenerableMonk = CardDefinition.creature(
-        name = "Venerable Monk",
-        manaCost = ManaCost.parse("{2}{W}"),
-        subtypes = setOf(Subtype("Human"), Subtype("Monk"), Subtype("Cleric")),
-        power = 2,
-        toughness = 2,
-        oracleText = "When Venerable Monk enters the battlefield, you gain 2 life.",
-        script = CardScript.creature(
-            TriggeredAbility.create(
-                trigger = OnEnterBattlefield(),
-                effect = GainLifeEffect(2)
-            )
-        )
-    )
-
-    /**
-     * 6/6 for {6}{R}{R}{R} with flying.
-     * "When Fire Dragon enters the battlefield, it deals damage to target creature
-     * equal to the number of Mountains you control."
-     */
-    val FireDragon = CardDefinition.creature(
-        name = "Fire Dragon",
-        manaCost = ManaCost.parse("{6}{R}{R}{R}"),
-        subtypes = setOf(Subtype("Dragon")),
-        keywords = setOf(Keyword.FLYING),
-        power = 6,
-        toughness = 6,
-        oracleText = "Flying\nWhen Fire Dragon enters the battlefield, it deals damage to target creature equal to the number of Mountains you control.",
-        script = CardScript.creature(
-            TriggeredAbility.create(
-                trigger = OnEnterBattlefield(),
-                effect = DealDamageEffect(
-                    amount = com.wingedsheep.sdk.dsl.DynamicAmounts.landsWithSubtype(Subtype.MOUNTAIN),
-                    target = EffectTarget.ContextTarget(0)
-                ),
-                targetRequirement = TargetCreature()
-            )
-        )
-    )
-
-    /**
-     * 2/2 for {3}{B}{B} with "When Serpent Assassin enters the battlefield, you may destroy target nonblack creature."
-     */
-    val SerpentAssassin = CardDefinition.creature(
-        name = "Serpent Assassin",
-        manaCost = ManaCost.parse("{3}{B}{B}"),
-        subtypes = setOf(Subtype("Snake"), Subtype("Assassin")),
-        power = 2,
-        toughness = 2,
-        oracleText = "When Serpent Assassin enters the battlefield, you may destroy target nonblack creature.",
-        script = CardScript.creature(
-            TriggeredAbility.create(
-                trigger = OnEnterBattlefield(),
-                effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.GRAVEYARD, byDestruction = true),
-                optional = true,
-                targetRequirement = TargetCreature(filter = TargetFilter.Creature.notColor(Color.BLACK))
-            )
-        )
-    )
-
-    /**
-     * 2/2 for {3}{B} with "When Gravedigger enters the battlefield, you may return target creature card from your graveyard to your hand."
-     */
-    val Gravedigger = CardDefinition.creature(
-        name = "Gravedigger",
-        manaCost = ManaCost.parse("{3}{B}"),
-        subtypes = setOf(Subtype("Zombie")),
-        power = 2,
-        toughness = 2,
-        oracleText = "When Gravedigger enters the battlefield, you may return target creature card from your graveyard to your hand.",
-        script = CardScript.creature(
-            TriggeredAbility.create(
-                trigger = OnEnterBattlefield(),
-                effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.HAND),
-                optional = true,
-                targetRequirement = TargetObject(filter = TargetFilter.CreatureInYourGraveyard)
-            )
-        )
-    )
-
     // =========================================================================
     // Creatures with Keywords
     // =========================================================================
-
-    /**
-     * 2/2 Flying for {1}{U}{U}
-     */
-    val WindDrake = CardDefinition.creature(
-        name = "Wind Drake",
-        manaCost = ManaCost.parse("{1}{U}{U}"),
-        subtypes = setOf(Subtype("Drake")),
-        power = 2,
-        toughness = 2,
-        oracleText = "Flying",
-        keywords = setOf(Keyword.FLYING)
-    )
 
     /**
      * 2/2 Forestwalk for {1}{G}
@@ -235,23 +121,6 @@ object TestCards {
         toughness = 2,
         oracleText = "Islandwalk",
         keywords = setOf(Keyword.ISLANDWALK)
-    )
-
-    /**
-     * 1/1 for {1}{W} - Can't be blocked by creatures with power 2 or greater.
-     * Test card for power-based blocking restriction (like Fleet-Footed Monk).
-     */
-    val FleetFootedMonk = CardDefinition(
-        name = "Fleet-Footed Monk",
-        manaCost = ManaCost.parse("{1}{W}"),
-        typeLine = TypeLine.creature(setOf(Subtype("Human"), Subtype("Monk"))),
-        oracleText = "Fleet-Footed Monk can't be blocked by creatures with power 2 or greater.",
-        creatureStats = CreatureStats(1, 1),
-        script = CardScript(
-            staticAbilities = listOf(
-                CantBeBlockedByPower(minPower = 2)
-            )
-        )
     )
 
     /**
@@ -405,37 +274,6 @@ object TestCards {
     )
 
     /**
-     * {1}{B}{B} - Target player discards two cards.
-     */
-    val MindRot = CardDefinition.sorcery(
-        name = "Mind Rot",
-        manaCost = ManaCost.parse("{1}{B}{B}"),
-        oracleText = "Target player discards two cards.",
-        script = CardScript.spell(
-            effect = DiscardCardsEffect(2, EffectTarget.PlayerRef(Player.TargetOpponent))
-        )
-    )
-
-    /**
-     * {1}{B}{B} - Destroy two target nonblack creatures. You lose 5 life.
-     * Test card for multi-target spells.
-     */
-    val WickedPact = CardDefinition.sorcery(
-        name = "Wicked Pact",
-        manaCost = ManaCost.parse("{1}{B}{B}"),
-        oracleText = "Destroy two target nonblack creatures. You lose 5 life.",
-        script = CardScript.spell(
-            effect = CompositeEffect(listOf(
-                MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.GRAVEYARD, byDestruction = true),
-                MoveToZoneEffect(EffectTarget.ContextTarget(1), Zone.GRAVEYARD, byDestruction = true),
-                LoseLifeEffect(5, EffectTarget.Controller)
-            )),
-            TargetCreature(filter = TargetFilter.Creature.notColor(Color.BLACK)),
-            TargetCreature(filter = TargetFilter.Creature.notColor(Color.BLACK))
-        )
-    )
-
-    /**
      * {B} - Draw a card, then discard a card.
      */
     val CarefulStudy = CardDefinition.sorcery(
@@ -449,31 +287,6 @@ object TestCards {
                     DiscardCardsEffect(1, EffectTarget.Controller)
                 )
             )
-        )
-    )
-
-    /**
-     * {2}{U} - Each player discards any number of cards, then draws that many cards.
-     * Draw a card.
-     */
-    val Flux = CardDefinition.sorcery(
-        name = "Flux",
-        manaCost = ManaCost.parse("{2}{U}"),
-        oracleText = "Each player discards any number of cards, then draws that many cards. Draw a card.",
-        script = CardScript.spell(
-            effect = EffectPatterns.eachPlayerDiscardsDraws(controllerBonusDraw = 1)
-        )
-    )
-
-    /**
-     * {1}{G} - You may play up to three additional lands this turn.
-     */
-    val SummerBloom = CardDefinition.sorcery(
-        name = "Summer Bloom",
-        manaCost = ManaCost.parse("{1}{G}"),
-        oracleText = "You may play up to three additional lands this turn.",
-        script = CardScript.spell(
-            effect = PlayAdditionalLandsEffect(count = 3)
         )
     )
 
@@ -678,27 +491,6 @@ object TestCards {
     )
 
     // =========================================================================
-    // Special Combat Creatures
-    // =========================================================================
-
-    /**
-     * 6/6 for {4}{R}{R}{R} with "divide combat damage freely" ability.
-     * Test card for Butcher Orgg's combat damage assignment.
-     */
-    val ButcherOrgg = CardDefinition(
-        name = "Butcher Orgg",
-        manaCost = ManaCost.parse("{4}{R}{R}{R}"),
-        typeLine = TypeLine.creature(setOf(Subtype("Orgg"))),
-        oracleText = "You may assign Butcher Orgg's combat damage divided as you choose among defending player and/or any number of creatures they control.",
-        creatureStats = CreatureStats(6, 6),
-        script = CardScript(
-            staticAbilities = listOf(
-                DivideCombatDamageFreely()
-            )
-        )
-    )
-
-    // =========================================================================
     // Trample & Deathtouch Test Creatures
     // =========================================================================
 
@@ -731,31 +523,6 @@ object TestCards {
     )
 
     /**
-     * 3/3 Cleric for {4}{W}
-     * "If a source would deal damage to a Cleric creature you control, prevent 1 of that damage."
-     * Simplified Daunting Defender for testing damage prevention + trample interaction.
-     */
-    val DauntingDefender = CardDefinition(
-        name = "Daunting Defender",
-        manaCost = ManaCost.parse("{4}{W}"),
-        typeLine = TypeLine.creature(setOf(Subtype("Human"), Subtype("Cleric"))),
-        oracleText = "If a source would deal damage to a Cleric creature you control, prevent 1 of that damage.",
-        creatureStats = CreatureStats(3, 3),
-        script = CardScript(
-            replacementEffects = listOf(
-                PreventDamage(
-                    amount = 1,
-                    appliesTo = GameEvent.DamageEvent(
-                        recipient = RecipientFilter.Matching(
-                            GameObjectFilter.Creature.withSubtype(Subtype("Cleric")).youControl()
-                        )
-                    )
-                )
-            )
-        )
-    )
-
-    /**
      * 2/2 Cleric for {1}{W}
      * Vanilla Cleric creature for testing Daunting Defender interaction.
      */
@@ -784,38 +551,23 @@ object TestCards {
     // All Test Cards
     // =========================================================================
 
-    val all: List<CardDefinition> = listOf(
-        // Lands
-        Forest,
-        Island,
-        Mountain,
-        Plains,
-        Swamp,
+    private val testOnlyCards: List<CardDefinition> = listOf(
         // Creatures
-        GrizzlyBears,
         CentaurCourser,
         ForceOfNature,
         GoblinGuide,
         SavannahLions,
         DeathTriggerTestCreature,
-        VenerableMonk,
-        FireDragon,
-        SerpentAssassin,
-        Gravedigger,
-        WindDrake,
         ForestWalker,
         IslandWalker,
-        FleetFootedMonk,
         PhantomWarrior,
         BladeOfTheNinthWatch,
         FirstStrikeKnight,
         FearCreature,
         ArtifactCreature,
         BlackCreature,
-        ButcherOrgg,
         TrampleBeast,
         DeathtouchTrampler,
-        DauntingDefender,
         TestCleric,
         // Mana Dorks
         LlanowarElves,
@@ -840,10 +592,9 @@ object TestCards {
         SpellPierce,
         // Sorceries
         DoomBlade,
-        MindRot,
         CarefulStudy,
-        Flux,
-        SummerBloom,
-        WickedPact
     )
+
+    val all: List<CardDefinition> =
+        PortalSet.allCards + OnslaughtSet.allCards + ScourgeSet.allCards + testOnlyCards
 }

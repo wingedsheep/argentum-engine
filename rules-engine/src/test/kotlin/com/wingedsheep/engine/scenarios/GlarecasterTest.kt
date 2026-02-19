@@ -7,23 +7,15 @@ import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.Glarecaster
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.AbilityCost
-import com.wingedsheep.sdk.scripting.AbilityId
-import com.wingedsheep.sdk.scripting.ActivatedAbility
-import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.scripting.RedirectNextDamageEffect
-import com.wingedsheep.sdk.targeting.AnyTarget
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import java.util.UUID
 
 /**
  * Tests for Glarecaster and the RedirectNextDamage mechanic.
@@ -37,37 +29,7 @@ import java.util.UUID
  */
 class GlarecasterTest : FunSpec({
 
-    val abilityId = AbilityId(UUID.randomUUID().toString())
-
-    val Glarecaster = CardDefinition.creature(
-        name = "Glarecaster",
-        manaCost = ManaCost.parse("{4}{W}{W}"),
-        subtypes = setOf(Subtype("Bird"), Subtype("Cleric")),
-        power = 3,
-        toughness = 3,
-        keywords = setOf(Keyword.FLYING),
-        oracleText = "Flying\n{5}{W}: The next time damage would be dealt to Glarecaster and/or you this turn, that damage is dealt to any target instead.",
-        script = CardScript.permanent(
-            ActivatedAbility(
-                id = abilityId,
-                cost = AbilityCost.Mana(ManaCost.parse("{5}{W}")),
-                effect = RedirectNextDamageEffect(
-                    protectedTargets = listOf(EffectTarget.Self, EffectTarget.Controller),
-                    redirectTo = EffectTarget.ContextTarget(0)
-                ),
-                targetRequirement = AnyTarget()
-            )
-        )
-    )
-
-    val HillGiant = CardDefinition.creature(
-        name = "Hill Giant",
-        manaCost = ManaCost.parse("{3}{R}"),
-        subtypes = setOf(Subtype("Giant")),
-        power = 3,
-        toughness = 3,
-        oracleText = ""
-    )
+    val abilityId = Glarecaster.activatedAbilities.first().id
 
     val BigCreature = CardDefinition.creature(
         name = "Big Creature",
@@ -80,7 +42,7 @@ class GlarecasterTest : FunSpec({
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(Glarecaster, HillGiant, BigCreature))
+        driver.registerCards(TestCards.all + listOf(BigCreature))
         return driver
     }
 

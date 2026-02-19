@@ -3,13 +3,8 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.dsl.DynamicAmounts
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.SetLifeTotalForEachPlayerEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -22,18 +17,9 @@ import io.kotest.matchers.shouldBe
  */
 class BiorhythmTest : FunSpec({
 
-    val Biorhythm = CardDefinition.sorcery(
-        name = "Biorhythm",
-        manaCost = ManaCost.parse("{6}{G}{G}"),
-        oracleText = "Each player's life total becomes the number of creatures they control.",
-        script = CardScript.spell(
-            effect = SetLifeTotalForEachPlayerEffect(DynamicAmounts.creaturesYouControl())
-        )
-    )
-
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(Biorhythm))
+        driver.registerCards(TestCards.all)
         return driver
     }
 

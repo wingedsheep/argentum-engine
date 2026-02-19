@@ -3,16 +3,8 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.scripting.MoveToZoneEffect
-import com.wingedsheep.sdk.scripting.TargetFilter
-import com.wingedsheep.sdk.targeting.TargetPermanent
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
@@ -27,19 +19,9 @@ import io.kotest.matchers.shouldNotBe
  */
 class DemystifyTest : FunSpec({
 
-    val Demystify = CardDefinition.instant(
-        name = "Demystify",
-        manaCost = ManaCost.parse("{W}"),
-        oracleText = "Destroy target enchantment.",
-        script = CardScript.spell(
-            effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.GRAVEYARD, byDestruction = true),
-            TargetPermanent(filter = TargetFilter.Enchantment)
-        )
-    )
-
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(Demystify))
+        driver.registerCards(TestCards.all)
         return driver
     }
 

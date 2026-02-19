@@ -8,13 +8,9 @@ import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.EntersAsCopy
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
@@ -31,53 +27,11 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  */
 class CloneTest : FunSpec({
 
-    val Clone = CardDefinition.creature(
-        name = "Clone",
-        manaCost = ManaCost.parse("{3}{U}"),
-        subtypes = setOf(Subtype("Shapeshifter")),
-        power = 0,
-        toughness = 0,
-        oracleText = "You may have Clone enter the battlefield as a copy of any creature on the battlefield.",
-        script = CardScript.permanent(
-            replacementEffects = listOf(
-                EntersAsCopy(optional = true)
-            )
-        )
-    )
-
-    val ElvishWarrior = CardDefinition.creature(
-        name = "Elvish Warrior",
-        manaCost = ManaCost.parse("{G}{G}"),
-        subtypes = setOf(Subtype("Elf"), Subtype("Warrior")),
-        power = 2,
-        toughness = 3,
-        oracleText = ""
-    )
-
-    val HillGiant = CardDefinition.creature(
-        name = "Hill Giant",
-        manaCost = ManaCost.parse("{3}{R}"),
-        subtypes = setOf(Subtype("Giant")),
-        power = 3,
-        toughness = 3,
-        oracleText = ""
-    )
-
-    val FlyingCreature = CardDefinition.creature(
-        name = "Wind Drake",
-        manaCost = ManaCost.parse("{2}{U}"),
-        subtypes = setOf(Subtype("Drake")),
-        power = 2,
-        toughness = 2,
-        oracleText = "Flying",
-        keywords = setOf(Keyword.FLYING)
-    )
-
     val projector = StateProjector()
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(Clone, ElvishWarrior, HillGiant, FlyingCreature))
+        driver.registerCards(TestCards.all)
         return driver
     }
 

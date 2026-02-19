@@ -5,15 +5,9 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.scripting.ShuffleGraveyardIntoLibraryEffect
-import com.wingedsheep.sdk.targeting.TargetPlayer
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -26,19 +20,9 @@ import io.kotest.matchers.shouldBe
  */
 class ReminisceTest : FunSpec({
 
-    val Reminisce = CardDefinition.sorcery(
-        name = "Reminisce",
-        manaCost = ManaCost.parse("{2}{U}"),
-        oracleText = "Target player shuffles their graveyard into their library.",
-        script = CardScript.spell(
-            effect = ShuffleGraveyardIntoLibraryEffect(EffectTarget.ContextTarget(0)),
-            TargetPlayer()
-        )
-    )
-
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(Reminisce))
+        driver.registerCards(TestCards.all)
         return driver
     }
 

@@ -12,20 +12,16 @@ import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.Sandskin
+import com.wingedsheep.sdk.scripting.PreventDamage
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.DamageType
-import com.wingedsheep.sdk.scripting.GameEvent
-import com.wingedsheep.sdk.scripting.PreventDamage
-import com.wingedsheep.sdk.scripting.RecipientFilter
-import com.wingedsheep.sdk.scripting.SourceFilter
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -47,30 +43,6 @@ class SandskinTest : FunSpec({
         power = 3,
         toughness = 5,
         oracleText = ""
-    )
-
-    val SandskinDef = CardDefinition.enchantment(
-        name = "Sandskin",
-        manaCost = ManaCost.parse("{2}{W}"),
-        oracleText = "Enchant creature\nPrevent all combat damage that would be dealt to and dealt by enchanted creature.",
-        script = CardScript.permanent(
-            replacementEffects = listOf(
-                PreventDamage(
-                    amount = null,
-                    appliesTo = GameEvent.DamageEvent(
-                        recipient = RecipientFilter.EnchantedCreature,
-                        damageType = DamageType.Combat
-                    )
-                ),
-                PreventDamage(
-                    amount = null,
-                    appliesTo = GameEvent.DamageEvent(
-                        source = SourceFilter.EnchantedCreature,
-                        damageType = DamageType.Combat
-                    )
-                )
-            )
-        )
     )
 
     /**
@@ -131,7 +103,7 @@ class SandskinTest : FunSpec({
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(SandskinDef, SturdyCreature))
+        driver.registerCards(TestCards.all + listOf(SturdyCreature))
         return driver
     }
 
@@ -149,7 +121,7 @@ class SandskinTest : FunSpec({
         // Put a 3/5 creature on our battlefield with Sandskin
         val creature = driver.putCreatureOnBattlefield(activePlayer, "Sturdy Creature")
         driver.removeSummoningSickness(creature)
-        driver.putAuraOnBattlefield(activePlayer, SandskinDef, creature)
+        driver.putAuraOnBattlefield(activePlayer, Sandskin, creature)
 
         // Opponent has a 3/3 creature
         val opponentCreature = driver.putCreatureOnBattlefield(opponent, "Centaur Courser")
@@ -186,7 +158,7 @@ class SandskinTest : FunSpec({
         // Put a 3/5 creature on our battlefield with Sandskin
         val creature = driver.putCreatureOnBattlefield(activePlayer, "Sturdy Creature")
         driver.removeSummoningSickness(creature)
-        driver.putAuraOnBattlefield(activePlayer, SandskinDef, creature)
+        driver.putAuraOnBattlefield(activePlayer, Sandskin, creature)
 
         // Opponent has a 3/5 creature to block with (survives combat)
         val opponentCreature = driver.putCreatureOnBattlefield(opponent, "Sturdy Creature")
@@ -223,7 +195,7 @@ class SandskinTest : FunSpec({
 
         // Put a 3/5 creature on our battlefield with Sandskin (survives 3 damage)
         val creature = driver.putCreatureOnBattlefield(activePlayer, "Sturdy Creature")
-        driver.putAuraOnBattlefield(activePlayer, SandskinDef, creature)
+        driver.putAuraOnBattlefield(activePlayer, Sandskin, creature)
 
         // Deal 3 damage via Lightning Bolt (non-combat damage)
         driver.giveMana(activePlayer, Color.RED, 1)
@@ -250,7 +222,7 @@ class SandskinTest : FunSpec({
         // Put creature A (3/5) with Sandskin, and creature B (3/5) without
         val creatureA = driver.putCreatureOnBattlefield(activePlayer, "Sturdy Creature")
         driver.removeSummoningSickness(creatureA)
-        driver.putAuraOnBattlefield(activePlayer, SandskinDef, creatureA)
+        driver.putAuraOnBattlefield(activePlayer, Sandskin, creatureA)
 
         val creatureB = driver.putCreatureOnBattlefield(activePlayer, "Sturdy Creature")
         driver.removeSummoningSickness(creatureB)

@@ -9,6 +9,7 @@ dependencies {
 
     implementation(libs.bundles.kotlinxEcosystem)
 
+    testImplementation(project(":mtg-sets"))
     testImplementation(libs.kotestRunner)
     testImplementation(libs.kotestAssertions)
     testImplementation(libs.kotestProperty)

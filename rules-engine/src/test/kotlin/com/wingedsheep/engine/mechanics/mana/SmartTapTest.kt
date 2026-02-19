@@ -97,16 +97,7 @@ class SmartTapTest : FunSpec({
         oracleText = "Destroy all creatures."
     )
 
-    val allTestCards = listOf(
-        TestCards.Forest,
-        TestCards.Mountain,
-        TestCards.Plains,
-        TestCards.Island,
-        TestCards.LlanowarElves,
-        TestCards.RagavanNimblePilferer,
-        TestCards.BirdsOfParadise,
-        TestCards.GrizzlyBears,
-        TestCards.LightningBolt,
+    val allTestCards = TestCards.all + listOf(
         BreedingPool,
         KessigWolfRun,
         ManaConfluence,

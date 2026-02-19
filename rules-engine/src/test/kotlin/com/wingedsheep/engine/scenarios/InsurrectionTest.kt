@@ -4,19 +4,8 @@ import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.CompositeEffect
-import com.wingedsheep.sdk.scripting.Duration
-import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.scripting.ForEachInGroupEffect
-import com.wingedsheep.sdk.scripting.GainControlEffect
-import com.wingedsheep.sdk.scripting.GrantKeywordUntilEndOfTurnEffect
-import com.wingedsheep.sdk.scripting.GroupFilter
-import com.wingedsheep.sdk.scripting.TapUntapEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -31,24 +20,9 @@ class InsurrectionTest : FunSpec({
 
     val projector = StateProjector()
 
-    val Insurrection = CardDefinition.sorcery(
-        name = "Insurrection",
-        manaCost = ManaCost.parse("{5}{R}{R}{R}"),
-        oracleText = "Untap all creatures and gain control of them until end of turn. They gain haste until end of turn.",
-        script = CardScript.spell(
-            effect = CompositeEffect(
-                listOf(
-                    ForEachInGroupEffect(GroupFilter.AllCreatures, GainControlEffect(EffectTarget.Self, Duration.EndOfTurn)),
-                    ForEachInGroupEffect(GroupFilter.AllCreatures, TapUntapEffect(EffectTarget.Self, tap = false)),
-                    ForEachInGroupEffect(GroupFilter.AllCreatures, GrantKeywordUntilEndOfTurnEffect(Keyword.HASTE, EffectTarget.Self, Duration.EndOfTurn))
-                )
-            )
-        )
-    )
-
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(Insurrection))
+        driver.registerCards(TestCards.all)
         driver.initMirrorMatch(
             deck = Deck.of("Mountain" to 30, "Grizzly Bears" to 10),
             skipMulligans = true

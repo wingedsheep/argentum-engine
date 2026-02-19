@@ -7,11 +7,8 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.*
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.*
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -27,32 +24,9 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  */
 class GigapedeTest : FunSpec({
 
-    val Gigapede = CardDefinition.creature(
-        name = "Gigapede",
-        manaCost = ManaCost.parse("{3}{G}{G}"),
-        subtypes = setOf(Subtype("Insect")),
-        power = 6,
-        toughness = 1,
-        keywords = setOf(Keyword.SHROUD),
-        oracleText = "Shroud. At the beginning of your upkeep, if Gigapede is in your graveyard, you may discard a card. If you do, return Gigapede to its owner's hand.",
-        script = CardScript.permanent(
-            triggeredAbilities = listOf(
-                TriggeredAbility.create(
-                    trigger = OnUpkeep(controllerOnly = true),
-                    effect = ReflexiveTriggerEffect(
-                        action = DiscardCardsEffect(1, EffectTarget.Controller),
-                        optional = true,
-                        reflexiveEffect = MoveToZoneEffect(EffectTarget.Self, Zone.HAND)
-                    ),
-                    activeZone = Zone.GRAVEYARD
-                )
-            )
-        )
-    )
-
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(Gigapede))
+        driver.registerCards(TestCards.all)
         return driver
     }
 

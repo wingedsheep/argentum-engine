@@ -60,8 +60,8 @@ class ContinuationSystemTest : FunSpec({
         val opponentHandBefore = driver.getHandSize(opponent)
         opponentHandBefore shouldBe 12 // 7 starting + 5 added
 
-        // Cast Mind Rot - this should pause for opponent to choose cards
-        val castResult = driver.castSpell(activePlayer, mindRot)
+        // Cast Mind Rot targeting opponent
+        val castResult = driver.castSpell(activePlayer, mindRot, targets = listOf(opponent))
         castResult.isSuccess shouldBe true
 
         // Resolve the spell
@@ -104,8 +104,8 @@ class ContinuationSystemTest : FunSpec({
 
         val opponentHandBefore = driver.getHand(opponent).size
 
-        // Cast and resolve Mind Rot
-        driver.castSpell(activePlayer, mindRot)
+        // Cast and resolve Mind Rot targeting opponent
+        driver.castSpell(activePlayer, mindRot, targets = listOf(opponent))
         driver.bothPass()
 
         // Engine should be paused
@@ -158,7 +158,7 @@ class ContinuationSystemTest : FunSpec({
         // Opponent has 7 cards from initial draw + the ones we added
         // Mind Rot makes them discard 2, so they choose
 
-        driver.castSpell(activePlayer, mindRot)
+        driver.castSpell(activePlayer, mindRot, targets = listOf(opponent))
         driver.bothPass()
 
         // With 7+ cards, opponent must choose

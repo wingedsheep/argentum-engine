@@ -3,12 +3,10 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.portal.cards.Prosperity
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -17,19 +15,6 @@ import io.kotest.matchers.shouldBe
  * Tests for Prosperity-style X cost handling.
  */
 class ProsperityXCostTest : FunSpec({
-
-    // Define a test Prosperity card directly
-    val Prosperity = CardDefinition.sorcery(
-        name = "Prosperity",
-        manaCost = ManaCost.parse("{X}{U}"),
-        oracleText = "Each player draws X cards.",
-        script = CardScript.spell(
-            effect = Effects.EachPlayerDrawsX(
-                includeController = true,
-                includeOpponents = true
-            )
-        )
-    )
 
     test("ManaCost.parse correctly identifies {X}{U} as having X") {
         val cost = ManaCost.parse("{X}{U}")
@@ -44,7 +29,7 @@ class ProsperityXCostTest : FunSpec({
 
     test("Prosperity can be cast with X value and draws cards for all players") {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(Prosperity))
+        driver.registerCards(TestCards.all)
 
         driver.initMirrorMatch(
             deck = Deck.of(

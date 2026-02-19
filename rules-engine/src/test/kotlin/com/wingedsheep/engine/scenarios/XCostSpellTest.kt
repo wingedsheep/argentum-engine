@@ -5,18 +5,9 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.DealDamageEffect
-import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.scripting.ForEachInGroupEffect
-import com.wingedsheep.sdk.scripting.GroupFilter
-import com.wingedsheep.sdk.scripting.DealDamageToPlayersEffect
-import com.wingedsheep.sdk.scripting.DynamicAmount
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -25,22 +16,9 @@ import io.kotest.matchers.shouldBe
  */
 class XCostSpellTest : FunSpec({
 
-    // Test card: Hurricane - deals X damage to each creature with flying and each player
-    val Hurricane = CardDefinition.sorcery(
-        name = "Hurricane",
-        manaCost = ManaCost.parse("{X}{G}"),
-        oracleText = "Hurricane deals X damage to each creature with flying and each player.",
-        script = CardScript.spell(
-            effect = ForEachInGroupEffect(
-                GroupFilter.AllCreatures.withKeyword(Keyword.FLYING),
-                DealDamageEffect(DynamicAmount.XValue, EffectTarget.Self)
-            ).then(DealDamageToPlayersEffect(DynamicAmount.XValue))
-        )
-    )
-
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(Hurricane))
+        driver.registerCards(TestCards.all)
         return driver
     }
 

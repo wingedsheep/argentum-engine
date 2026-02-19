@@ -4,15 +4,8 @@ import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.scripting.ForEachInGroupEffect
-import com.wingedsheep.sdk.scripting.GroupFilter
-import com.wingedsheep.sdk.scripting.ModifyStatsEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
@@ -27,20 +20,11 @@ import io.kotest.matchers.shouldNotBe
  */
 class InfestTest : FunSpec({
 
-    val Infest = CardDefinition.sorcery(
-        name = "Infest",
-        manaCost = ManaCost.parse("{1}{B}{B}"),
-        oracleText = "All creatures get -2/-2 until end of turn.",
-        script = CardScript.spell(
-            effect = ForEachInGroupEffect(GroupFilter.AllCreatures, ModifyStatsEffect(-2, -2, EffectTarget.Self))
-        )
-    )
-
     val projector = StateProjector()
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(Infest))
+        driver.registerCards(TestCards.all)
         return driver
     }
 

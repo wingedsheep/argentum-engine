@@ -4,19 +4,9 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.DrawCardsEffect
-import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.scripting.MoveToZoneEffect
-import com.wingedsheep.sdk.scripting.Player
-import com.wingedsheep.sdk.scripting.TargetFilter
-import com.wingedsheep.sdk.scripting.ZonePlacement
-import com.wingedsheep.sdk.targeting.TargetPermanent
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -30,20 +20,9 @@ import io.kotest.matchers.shouldNotBe
  */
 class OblationTest : FunSpec({
 
-    val Oblation = CardDefinition.instant(
-        name = "Oblation",
-        manaCost = ManaCost.parse("{2}{W}"),
-        oracleText = "The owner of target nonland permanent shuffles it into their library, then draws two cards.",
-        script = CardScript.spell(
-            effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.LIBRARY, ZonePlacement.Shuffled) then
-                    DrawCardsEffect(2, EffectTarget.PlayerRef(Player.OwnerOf("target permanent"))),
-            TargetPermanent(filter = TargetFilter.NonlandPermanent)
-        )
-    )
-
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(Oblation))
+        driver.registerCards(TestCards.all)
         return driver
     }
 

@@ -4,15 +4,8 @@ import com.wingedsheep.engine.state.components.combat.MustAttackPlayerComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.scripting.Player
-import com.wingedsheep.sdk.scripting.TauntEffect
-import com.wingedsheep.sdk.targeting.TargetPlayer
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -31,21 +24,9 @@ import io.kotest.matchers.shouldBe
  */
 class TauntEffectTest : FunSpec({
 
-    // Test card that mimics Taunt
-    val Taunt = CardDefinition.sorcery(
-        name = "Taunt",
-        manaCost = ManaCost.parse("{U}"),
-        oracleText = "During target player's next turn, creatures that player controls attack you if able.",
-        script = CardScript.spell(
-            effect = TauntEffect(EffectTarget.PlayerRef(Player.TargetPlayer)),
-            TargetPlayer()
-        )
-    )
-
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
         driver.registerCards(TestCards.all)
-        driver.registerCard(Taunt)
         driver.initMirrorMatch(
             deck = Deck.of(
                 "Island" to 20,

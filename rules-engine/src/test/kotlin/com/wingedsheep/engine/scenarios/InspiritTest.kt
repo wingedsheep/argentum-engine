@@ -5,15 +5,8 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.scripting.ModifyStatsEffect
-import com.wingedsheep.sdk.scripting.TapUntapEffect
-import com.wingedsheep.sdk.targeting.TargetCreature
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -27,22 +20,11 @@ import io.kotest.matchers.shouldNotBe
  */
 class InspiritTest : FunSpec({
 
-    val Inspirit = CardDefinition.instant(
-        name = "Inspirit",
-        manaCost = ManaCost.parse("{2}{W}"),
-        oracleText = "Untap target creature. It gets +2/+4 until end of turn.",
-        script = CardScript.spell(
-            effect = TapUntapEffect(EffectTarget.ContextTarget(0), tap = false) then
-                    ModifyStatsEffect(2, 4, EffectTarget.ContextTarget(0)),
-            TargetCreature()
-        )
-    )
-
     val projector = StateProjector()
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(Inspirit))
+        driver.registerCards(TestCards.all)
         return driver
     }
 

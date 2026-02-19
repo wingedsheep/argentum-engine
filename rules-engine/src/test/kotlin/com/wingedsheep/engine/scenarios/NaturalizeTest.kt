@@ -3,17 +3,8 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.MoveToZoneEffect
-import com.wingedsheep.sdk.scripting.TargetFilter
-import com.wingedsheep.sdk.targeting.TargetPermanent
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
@@ -28,19 +19,9 @@ import io.kotest.matchers.shouldNotBe
  */
 class NaturalizeTest : FunSpec({
 
-    val Naturalize = CardDefinition.instant(
-        name = "Naturalize",
-        manaCost = ManaCost.parse("{1}{G}"),
-        oracleText = "Destroy target artifact or enchantment.",
-        script = CardScript.spell(
-            effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.GRAVEYARD, byDestruction = true),
-            TargetPermanent(filter = TargetFilter(GameObjectFilter.Artifact or GameObjectFilter.Enchantment))
-        )
-    )
-
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(Naturalize))
+        driver.registerCards(TestCards.all)
         return driver
     }
 
