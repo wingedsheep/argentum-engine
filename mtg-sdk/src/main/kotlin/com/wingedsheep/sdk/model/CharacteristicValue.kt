@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.model
 
 import com.wingedsheep.sdk.scripting.DynamicAmount
+import com.wingedsheep.sdk.serialization.CharacteristicValueSerializer
 import kotlinx.serialization.Serializable
 
 /**
@@ -21,7 +22,7 @@ import kotlinx.serialization.Serializable
  * CharacteristicValue.DynamicWithOffset(DynamicAmount.CardTypesInAllGraveyards, 1)
  * ```
  */
-@Serializable
+@Serializable(with = CharacteristicValueSerializer::class)
 sealed interface CharacteristicValue {
     val description: String
 

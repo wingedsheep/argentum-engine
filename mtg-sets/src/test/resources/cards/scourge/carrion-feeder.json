@@ -1,0 +1,36 @@
+{
+    "name": "Carrion Feeder",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "Carrion Feeder can't block.\nSacrifice a creature: Put a +1/+1 counter on Carrion Feeder.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_4",
+                "cost": {
+                    "type": "CostSacrifice",
+                    "filter": "creature"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            "CantBlock"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "artist": "Brian Snõddy",
+        "flavorText": "Stinking of rot, it leaps between gravestones in search of its next meal.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/88042031-64af-4f84-85d5-95992b43aa6c.jpg?1562531649"
+    }
+}

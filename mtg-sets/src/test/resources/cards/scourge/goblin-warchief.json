@@ -1,0 +1,33 @@
+{
+    "name": "Goblin Warchief",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Creature — Goblin Warrior",
+    "oracleText": "Goblin spells you cast cost {1} less to cast.\nGoblins you control have haste.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ReduceSpellCostBySubtype",
+                "subtype": "Goblin",
+                "amount": 1
+            },
+            {
+                "type": "GrantKeywordToCreatureGroup",
+                "keyword": "HASTE",
+                "filter": {
+                    "baseFilter": "creature Goblin"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "97",
+        "rarity": "UNCOMMON",
+        "artist": "Tim Hildebrandt",
+        "flavorText": "They don't need a reason to fight. They just need a leader.",
+        "imageUri": "https://cards.scryfall.io/large/front/6/6/66864a4b-8924-40ef-a337-15b12413a158.jpg?1562529753"
+    }
+}

@@ -1,0 +1,70 @@
+{
+    "name": "Siege-Gang Commander",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Creature — Goblin",
+    "oracleText": "When Siege-Gang Commander enters the battlefield, create three 1/1 red Goblin creature tokens.\n{1}{R}, Sacrifice a Goblin: Siege-Gang Commander deals 2 damage to any target.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_6",
+                "trigger": "EntersBattlefield",
+                "effect": {
+                    "type": "CreateToken",
+                    "count": 3,
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Goblin"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/e/9/e9577d3c-ee19-4b53-adac-b304287a066f.jpg?1561758362"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_7",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostMana",
+                            "cost": "{1}{R}"
+                        },
+                        {
+                            "type": "CostSacrifice",
+                            "filter": "creature Goblin"
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    }
+                },
+                "targetRequirements": [
+                    "AnyTarget"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "103",
+        "rarity": "RARE",
+        "artist": "Christopher Moeller",
+        "flavorText": "They poured from the Skirk Ridge like lava, burning and devouring everything in their path.",
+        "imageUri": "https://cards.scryfall.io/large/front/9/2/92e78cec-aaf9-4fe8-887b-b7e356d63315.jpg"
+    }
+}

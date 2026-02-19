@@ -2,6 +2,7 @@ package com.wingedsheep.sdk.serialization
 
 import com.wingedsheep.sdk.model.CardDefinition
 import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.JsonElement
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.extension
@@ -28,10 +29,17 @@ object CardLoader {
 
     /**
      * Deserialize a CardDefinition from a JSON string.
+     *
+     * Applies [CompactJsonTransformer.expand] to restore compacted singleton
+     * strings (e.g., `"EntersBattlefield"` → `{"type": "EntersBattlefield"}`)
+     * before deserialization.
+     *
      * Assigns fresh AbilityIds after deserialization.
      */
     fun fromJson(jsonString: String): CardDefinition {
-        val card = CardSerialization.json.decodeFromString<CardDefinition>(jsonString)
+        val element = CardSerialization.json.parseToJsonElement(jsonString)
+        val expanded = CompactJsonTransformer.expand(element)
+        val card = CardSerialization.json.decodeFromJsonElement(CardDefinition.serializer(), expanded)
         return card.withGeneratedIds()
     }
 
@@ -48,6 +56,46 @@ object CardLoader {
     fun loadFromFile(path: Path): CardDefinition {
         val jsonString = path.readText()
         return fromJson(jsonString)
+    }
+
+    /**
+     * Load all card JSON files from a classpath resource directory.
+     *
+     * Use this when cards are bundled inside a JAR (e.g., in src/main/resources/).
+     * The [resourcePath] should be the classpath path (e.g., "/cards/scourge/").
+     * The [index] lists the JSON file names in the directory since classpath
+     * directories inside JARs cannot be listed dynamically.
+     *
+     * @param clazz Class to use for resource loading
+     * @param resourcePath Classpath resource directory (e.g., "/cards/scourge/")
+     * @param index List of JSON file names (e.g., ["carrion-feeder.json", ...])
+     * @param validate If true, run CardValidator on each card and collect errors
+     */
+    fun loadSetFromClasspath(
+        clazz: Class<*>,
+        resourcePath: String,
+        index: List<String>,
+        validate: Boolean = true
+    ): List<CardDefinition> {
+        val cards = mutableListOf<CardDefinition>()
+        val prefix = if (resourcePath.endsWith("/")) resourcePath else "$resourcePath/"
+
+        for (fileName in index.sorted()) {
+            val jsonString = clazz.getResource("$prefix$fileName")?.readText()
+                ?: error("Card resource not found: $prefix$fileName")
+            val card = fromJson(jsonString)
+
+            if (validate) {
+                val validationErrors = CardValidator.validate(card)
+                if (validationErrors.any { it is CardValidationError.MissingCreatureStats }) {
+                    error("Validation failed for $fileName: ${validationErrors.joinToString("; ") { it.message }}")
+                }
+            }
+
+            cards.add(card)
+        }
+
+        return cards
     }
 
     /**

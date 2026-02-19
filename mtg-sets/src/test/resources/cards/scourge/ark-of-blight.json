@@ -1,0 +1,48 @@
+{
+    "name": "Ark of Blight",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{3}, {T}, Sacrifice Ark of Blight: Destroy target land.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostMana",
+                            "cost": "{3}"
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPermanent",
+                        "filter": {
+                            "baseFilter": "land"
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "140",
+        "rarity": "UNCOMMON",
+        "artist": "Doug Chaffee",
+        "flavorText": "When opened, it erases entire landscapes from minds and maps.",
+        "imageUri": "https://cards.scryfall.io/large/front/f/3/f3b09956-cc34-4472-8b9f-ae355522bd5a.jpg?1562536903"
+    }
+}

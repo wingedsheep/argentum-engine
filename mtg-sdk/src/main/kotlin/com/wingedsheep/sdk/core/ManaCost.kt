@@ -1,8 +1,9 @@
 package com.wingedsheep.sdk.core
 
+import com.wingedsheep.sdk.serialization.ManaCostStringSerializer
 import kotlinx.serialization.Serializable
 
-@Serializable
+@Serializable(with = ManaCostStringSerializer::class)
 data class ManaCost(val symbols: List<ManaSymbol>) {
 
     val cmc: Int

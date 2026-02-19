@@ -1,8 +1,9 @@
 package com.wingedsheep.sdk.core
 
+import com.wingedsheep.sdk.serialization.TypeLineStringSerializer
 import kotlinx.serialization.Serializable
 
-@Serializable
+@Serializable(with = TypeLineStringSerializer::class)
 data class TypeLine(
     val supertypes: Set<Supertype> = emptySet(),
     val cardTypes: Set<CardType>,

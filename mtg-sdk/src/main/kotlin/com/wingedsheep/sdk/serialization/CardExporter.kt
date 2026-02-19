@@ -2,6 +2,8 @@ package com.wingedsheep.sdk.serialization
 
 import com.wingedsheep.sdk.model.CardDefinition
 import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -21,11 +23,20 @@ import java.nio.file.Path
  */
 object CardExporter {
 
+    private val prettyJson = Json { prettyPrint = true }
+
     /**
-     * Serialize a CardDefinition to pretty-printed JSON.
+     * Serialize a CardDefinition to pretty-printed compact JSON.
+     *
+     * Applies [CompactJsonTransformer.compact] to simplify singleton
+     * polymorphic objects (e.g., `{"type": "EntersBattlefield"}` → `"EntersBattlefield"`).
      */
     fun exportToJson(card: CardDefinition): String {
-        return CardSerialization.json.encodeToString(card)
+        val element = CardSerialization.json.encodeToJsonElement(
+            CardDefinition.serializer(), card
+        )
+        val compacted = CompactJsonTransformer.compact(element)
+        return prettyJson.encodeToString(JsonElement.serializer(), compacted)
     }
 
     /**
