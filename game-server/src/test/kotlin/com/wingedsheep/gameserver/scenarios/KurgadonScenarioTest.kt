@@ -77,7 +77,7 @@ class KurgadonScenarioTest : ScenarioTestBase() {
                 val game = scenario()
                     .withPlayers("Player", "Opponent")
                     .withCardOnBattlefield(1, "Kurgadon")
-                    .withCardInHand(1, "Devastation") // MV 7, sorcery
+                    .withCardInHand(1, "Searing Flesh") // MV 7, sorcery (deals 7 to target opponent)
                     .withLandsOnBattlefield(1, "Mountain", 7)
                     .withCardInLibrary(1, "Forest")
                     .withCardInLibrary(2, "Forest")
@@ -85,8 +85,8 @@ class KurgadonScenarioTest : ScenarioTestBase() {
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
 
-                val castResult = game.castSpell(1, "Devastation")
-                withClue("Casting Devastation should succeed: ${castResult.error}") {
+                val castResult = game.castSpellTargetingPlayer(1, "Searing Flesh", 2)
+                withClue("Casting Searing Flesh should succeed: ${castResult.error}") {
                     castResult.error shouldBe null
                 }
 
@@ -94,7 +94,7 @@ class KurgadonScenarioTest : ScenarioTestBase() {
 
                 val kurgadonId = game.findPermanent("Kurgadon")!!
                 val counters = game.state.getEntity(kurgadonId)?.get<CountersComponent>()
-                withClue("Kurgadon should have no counters (Devastation is not a creature spell)") {
+                withClue("Kurgadon should have no counters (Searing Flesh is not a creature spell)") {
                     (counters?.getCount(CounterType.PLUS_ONE_PLUS_ONE) ?: 0) shouldBe 0
                 }
             }

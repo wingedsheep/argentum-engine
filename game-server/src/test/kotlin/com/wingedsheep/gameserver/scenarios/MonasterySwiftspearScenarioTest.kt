@@ -26,7 +26,7 @@ class MonasterySwiftspearScenarioTest : ScenarioTestBase() {
                 val game = scenario()
                     .withPlayers("Player", "Opponent")
                     .withCardOnBattlefield(1, "Monastery Swiftspear")
-                    .withCardInHand(1, "Lightning Bolt")
+                    .withCardInHand(1, "Shock")
                     .withLandsOnBattlefield(1, "Mountain", 1)
                     .withCardInLibrary(1, "Mountain")
                     .withCardInLibrary(2, "Mountain")
@@ -43,9 +43,9 @@ class MonasterySwiftspearScenarioTest : ScenarioTestBase() {
                     projectedBefore.getToughness(swiftspearId) shouldBe 2
                 }
 
-                // Cast Lightning Bolt targeting opponent (noncreature spell triggers prowess)
-                val castResult = game.castSpellTargetingPlayer(1, "Lightning Bolt", 2)
-                withClue("Casting Lightning Bolt should succeed: ${castResult.error}") {
+                // Cast Shock targeting opponent (noncreature spell triggers prowess)
+                val castResult = game.castSpellTargetingPlayer(1, "Shock", 2)
+                withClue("Casting Shock should succeed: ${castResult.error}") {
                     castResult.error shouldBe null
                 }
 
@@ -91,8 +91,8 @@ class MonasterySwiftspearScenarioTest : ScenarioTestBase() {
                 val game = scenario()
                     .withPlayers("Player", "Opponent")
                     .withCardOnBattlefield(1, "Monastery Swiftspear")
-                    .withCardInHand(1, "Lightning Bolt")
-                    .withCardInHand(1, "Lightning Bolt")
+                    .withCardInHand(1, "Shock")
+                    .withCardInHand(1, "Shock")
                     .withLandsOnBattlefield(1, "Mountain", 2)
                     .withCardInLibrary(1, "Mountain")
                     .withCardInLibrary(2, "Mountain")
@@ -102,9 +102,9 @@ class MonasterySwiftspearScenarioTest : ScenarioTestBase() {
 
                 val swiftspearId = game.findPermanent("Monastery Swiftspear")!!
 
-                // Cast first Lightning Bolt
-                val cast1 = game.castSpellTargetingPlayer(1, "Lightning Bolt", 2)
-                withClue("First Lightning Bolt should succeed: ${cast1.error}") {
+                // Cast first Shock
+                val cast1 = game.castSpellTargetingPlayer(1, "Shock", 2)
+                withClue("First Shock should succeed: ${cast1.error}") {
                     cast1.error shouldBe null
                 }
                 game.resolveStack()
@@ -115,9 +115,9 @@ class MonasterySwiftspearScenarioTest : ScenarioTestBase() {
                     projectedAfterFirst.getToughness(swiftspearId) shouldBe 3
                 }
 
-                // Cast second Lightning Bolt
-                val cast2 = game.castSpellTargetingPlayer(1, "Lightning Bolt", 2)
-                withClue("Second Lightning Bolt should succeed: ${cast2.error}") {
+                // Cast second Shock
+                val cast2 = game.castSpellTargetingPlayer(1, "Shock", 2)
+                withClue("Second Shock should succeed: ${cast2.error}") {
                     cast2.error shouldBe null
                 }
                 game.resolveStack()
@@ -133,7 +133,7 @@ class MonasterySwiftspearScenarioTest : ScenarioTestBase() {
                 val game = scenario()
                     .withPlayers("Player", "Opponent")
                     .withCardOnBattlefield(1, "Monastery Swiftspear")
-                    .withCardInHand(1, "Lightning Bolt")
+                    .withCardInHand(1, "Shock")
                     .withLandsOnBattlefield(1, "Mountain", 1)
                     .withCardInLibrary(1, "Mountain")
                     .withCardInLibrary(2, "Mountain")
@@ -143,9 +143,9 @@ class MonasterySwiftspearScenarioTest : ScenarioTestBase() {
 
                 val swiftspearId = game.findPermanent("Monastery Swiftspear")!!
 
-                // Cast Lightning Bolt to trigger prowess
-                val castResult = game.castSpellTargetingPlayer(1, "Lightning Bolt", 2)
-                withClue("Casting Lightning Bolt should succeed: ${castResult.error}") {
+                // Cast Shock to trigger prowess
+                val castResult = game.castSpellTargetingPlayer(1, "Shock", 2)
+                withClue("Casting Shock should succeed: ${castResult.error}") {
                     castResult.error shouldBe null
                 }
                 game.resolveStack()

@@ -1070,7 +1070,7 @@ class TriggerDetector(
         val cardComponent = state.getEntity(event.spellEntityId)?.get<CardComponent>()
             ?: return trigger.spellType == SpellTypeFilter.ANY
 
-        return when (trigger.spellType) {
+        val typeMatches = when (trigger.spellType) {
             SpellTypeFilter.ANY -> true
             SpellTypeFilter.CREATURE -> cardComponent.typeLine.isCreature
             SpellTypeFilter.NONCREATURE -> !cardComponent.typeLine.isCreature
@@ -1078,6 +1078,14 @@ class TriggerDetector(
                 cardComponent.typeLine.isInstant || cardComponent.typeLine.isSorcery
             SpellTypeFilter.ENCHANTMENT -> cardComponent.typeLine.isEnchantment
         }
+        if (!typeMatches) return false
+
+        val mv = cardComponent.manaValue
+        if (trigger.manaValueAtLeast != null && mv < trigger.manaValueAtLeast!!) return false
+        if (trigger.manaValueAtMost != null && mv > trigger.manaValueAtMost!!) return false
+        if (trigger.manaValueEquals != null && mv != trigger.manaValueEquals!!) return false
+
+        return true
     }
 
     /**
