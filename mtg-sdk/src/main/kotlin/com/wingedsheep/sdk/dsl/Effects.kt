@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.*
+import com.wingedsheep.sdk.targeting.TargetRequirement
 
 /**
  * Facade object providing convenient factory methods for creating Effects.
@@ -561,6 +562,18 @@ object Effects {
         toughness: Int = 1,
         duration: Duration = Duration.EndOfTurn
     ): Effect = AnimateLandEffect(target, power, toughness, duration)
+
+    // =========================================================================
+    // Pipeline Targeting
+    // =========================================================================
+
+    /**
+     * Select a target during effect resolution (mid-pipeline).
+     * The selected target IDs are stored in a named collection for use by
+     * subsequent pipeline effects via [EffectTarget.PipelineTarget].
+     */
+    fun SelectTarget(requirement: TargetRequirement, storeAs: String = "pipelineTarget"): Effect =
+        SelectTargetEffect(requirement, storeAs)
 
     // =========================================================================
     // Composite Effect Helpers

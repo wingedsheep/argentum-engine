@@ -177,6 +177,7 @@ val engineSerializersModule = SerializersModule {
         subclass(SelectFromCollectionContinuation::class)
         subclass(MoveCollectionOrderContinuation::class)
         subclass(ChooseCreatureTypePipelineContinuation::class)
+        subclass(SelectTargetPipelineContinuation::class)
     }
 
     // Component hierarchy (for GameState persistence)

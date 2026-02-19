@@ -124,6 +124,8 @@ object EffectExecutorUtils {
             is EffectTarget.ContextTarget -> context.targets.getOrNull(effectTarget.index)?.toEntityId()
             is EffectTarget.SpecificEntity -> effectTarget.entityId
             is EffectTarget.TriggeringEntity -> context.triggeringEntityId
+            is EffectTarget.PipelineTarget ->
+                context.storedCollections[effectTarget.collectionName]?.getOrNull(effectTarget.index)
             else -> null
         }
     }
@@ -143,6 +145,9 @@ object EffectExecutorUtils {
             return entity.get<ControllerComponent>()?.playerId
                 ?: entity.get<CardComponent>()?.ownerId
         }
+        if (effectTarget is EffectTarget.PipelineTarget) {
+            return context.storedCollections[effectTarget.collectionName]?.getOrNull(effectTarget.index)
+        }
         return resolveTarget(effectTarget, context)
     }
 
@@ -153,6 +158,8 @@ object EffectExecutorUtils {
         return when (effectTarget) {
             is EffectTarget.Controller -> context.controllerId
             is EffectTarget.ContextTarget -> context.targets.getOrNull(effectTarget.index)?.toEntityId()
+            is EffectTarget.PipelineTarget ->
+                context.storedCollections[effectTarget.collectionName]?.getOrNull(effectTarget.index)
             is EffectTarget.PlayerRef -> when (effectTarget.player) {
                 Player.You -> context.controllerId
                 Player.Opponent, Player.TargetOpponent -> context.opponentId
@@ -195,6 +202,10 @@ object EffectExecutorUtils {
     fun resolvePlayerTargets(effectTarget: EffectTarget, state: GameState, context: EffectContext): List<EntityId> {
         return when (effectTarget) {
             is EffectTarget.Controller -> listOf(context.controllerId)
+            is EffectTarget.PipelineTarget -> {
+                context.storedCollections[effectTarget.collectionName]?.getOrNull(effectTarget.index)
+                    ?.let { listOf(it) } ?: emptyList()
+            }
             is EffectTarget.PlayerRef -> when (effectTarget.player) {
                 Player.Each -> state.turnOrder
                 Player.EachOpponent -> state.turnOrder.filter { it != context.controllerId }

@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.targeting.TargetRequirement
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -311,4 +312,24 @@ data class RevealUntilEffect(
 @Serializable
 data object ChooseCreatureTypeEffect : Effect {
     override val description: String = "Choose a creature type"
+}
+
+/**
+ * Select a target during effect resolution (mid-pipeline targeting).
+ *
+ * Unlike cast-time targeting (TargetRequirement on spells/abilities), this step
+ * selects targets at resolution time as part of a pipeline. The selected target
+ * entity IDs are stored in [storedCollections][storeAs] for use by subsequent
+ * pipeline effects via [EffectTarget.PipelineTarget].
+ *
+ * @property requirement The target requirement (reuses all existing TargetRequirement types)
+ * @property storeAs Name of the collection to store the selected target IDs in
+ */
+@SerialName("SelectTarget")
+@Serializable
+data class SelectTargetEffect(
+    val requirement: TargetRequirement,
+    val storeAs: String = "pipelineTarget"
+) : Effect {
+    override val description: String = "Choose ${requirement.description}"
 }

@@ -116,6 +116,19 @@ sealed interface EffectTarget {
     }
 
     /**
+     * PIPELINE TARGET: Refers to a target selected during effect resolution via SelectTargetEffect.
+     *
+     * Resolves to `context.storedCollections[collectionName][index]`.
+     * @property collectionName The name of the stored collection containing the target IDs
+     * @property index Which target in the collection (defaults to 0 for single-target)
+     */
+    @SerialName("PipelineTarget")
+    @Serializable
+    data class PipelineTarget(val collectionName: String, val index: Int = 0) : EffectTarget {
+        override val description: String = "the chosen target"
+    }
+
+    /**
      * TRIGGERING ENTITY: Refers to the entity that caused the trigger to fire.
      * Used for effects like Aurification: "put a gold counter on it" where "it"
      * refers to the creature that dealt damage.

@@ -21,6 +21,7 @@ class LibraryExecutors(
         EachPlayerMayRevealCreaturesExecutor(),
         GatherCardsExecutor(),
         SelectFromCollectionExecutor(),
+        SelectTargetPipelineExecutor(targetFinder = targetFinder ?: TargetFinder()),
         MoveCollectionExecutor(cardRegistry = cardRegistry, targetFinder = targetFinder)
     )
 }

@@ -169,6 +169,7 @@ class ContinuationHandler(
             }
             is PutFromHandContinuation -> libraryAndZoneResumer.resumePutFromHand(stateAfterPop, continuation, response, cfm)
             is SelectFromCollectionContinuation -> libraryAndZoneResumer.resumeSelectFromCollection(stateAfterPop, continuation, response, cfm)
+            is SelectTargetPipelineContinuation -> libraryAndZoneResumer.resumeSelectTargetPipeline(stateAfterPop, continuation, response, cfm)
             is MoveCollectionAuraTargetContinuation -> libraryAndZoneResumer.resumeMoveCollectionAuraTarget(stateAfterPop, continuation, response, cfm)
 
             // Multi-player

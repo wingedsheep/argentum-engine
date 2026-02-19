@@ -411,4 +411,41 @@ class LibraryAndZoneContinuationResumer(
 
         return checkForMore(newState, emptyList())
     }
+
+    /**
+     * Resume after a player selected a target during a pipeline effect (SelectTargetEffect).
+     *
+     * Extracts the selected target IDs from the [TargetsResponse], stores them under
+     * [SelectTargetPipelineContinuation.storeAs], and injects the updated collections
+     * into the next [EffectContinuation] on the stack.
+     */
+    fun resumeSelectTargetPipeline(
+        state: GameState,
+        continuation: SelectTargetPipelineContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is TargetsResponse) {
+            return ExecutionResult.error(state, "Expected targets response for SelectTargetPipeline")
+        }
+
+        val selectedTargetIds = response.selectedTargets[0] ?: emptyList()
+
+        // Build the updated collections
+        val updatedCollections = continuation.storedCollections.toMutableMap()
+        updatedCollections[continuation.storeAs] = selectedTargetIds
+
+        // Inject updated collections into the next EffectContinuation on the stack (if present)
+        val nextFrame = state.peekContinuation()
+        val newState = if (nextFrame is EffectContinuation) {
+            val (_, stateAfterPop) = state.popContinuation()
+            stateAfterPop.pushContinuation(
+                nextFrame.copy(storedCollections = updatedCollections)
+            )
+        } else {
+            state
+        }
+
+        return checkForMore(newState, emptyList())
+    }
 }

@@ -415,6 +415,29 @@ data class MoveCollectionOrderContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after player selects a target during a pipeline effect (mid-resolution targeting).
+ *
+ * Used by SelectTargetPipelineExecutor: the player has chosen a target from the
+ * legal targets list. The selected target IDs are stored under [storeAs] and
+ * injected into the next EffectContinuation's storedCollections.
+ *
+ * @property playerId The player who made the selection
+ * @property sourceId The spell/ability that caused this effect
+ * @property sourceName Name of the source for event messages
+ * @property storeAs Name to store the selected target IDs under
+ * @property storedCollections Snapshot of pipeline collections at time of pause
+ */
+@Serializable
+data class SelectTargetPipelineContinuation(
+    override val decisionId: String,
+    val playerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val storeAs: String,
+    val storedCollections: Map<String, List<EntityId>> = emptyMap()
+) : ContinuationFrame
+
+/**
  * Resume after player selects cards from a named pipeline collection.
  *
  * Used by SelectFromCollectionEffect: the player has chosen cards from a gathered
