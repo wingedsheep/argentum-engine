@@ -348,6 +348,39 @@ sealed interface DynamicAmount {
     }
 
     /**
+     * The greatest value of a numeric property among permanents a player controls.
+     * Generic aggregation primitive — use via DynamicAmounts convenience methods.
+     *
+     * Examples:
+     * ```kotlin
+     * // Greatest mana value among permanents you control (Rush of Knowledge)
+     * MaxBattlefield(Player.You, CardNumericProperty.ManaValue)
+     *
+     * // Greatest power among creatures you control
+     * MaxBattlefield(Player.You, CardNumericProperty.Power, GameObjectFilter.Creature)
+     * ```
+     */
+    @SerialName("MaxBattlefield")
+    @Serializable
+    data class MaxBattlefield(
+        val player: Player,
+        val property: CardNumericProperty,
+        val filter: GameObjectFilter = GameObjectFilter.Any
+    ) : DynamicAmount {
+        override val description: String = buildString {
+            append("the greatest ${property.description} among ")
+            append(pluralize(filter.description))
+            append(" ")
+            when (player) {
+                Player.You -> append("you control")
+                Player.Opponent, Player.TargetOpponent -> append("${player.description} controls")
+                Player.Each -> append("on the battlefield")
+                else -> append("${player.description} controls")
+            }
+        }
+    }
+
+    /**
      * Count creatures the controller controls that share a creature type with the triggering entity.
      * Used for Mana Echoes: "add {C} equal to the number of creatures you control that share a creature type with it."
      */

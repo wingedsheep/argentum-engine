@@ -36,6 +36,9 @@ object ScourgeSet {
         // Green sorceries
         BreakAsunder,
 
+        // Blue sorceries
+        RushOfKnowledge,
+
         // Red creatures
         GoblinWarchief,
         SiegeGangCommander,

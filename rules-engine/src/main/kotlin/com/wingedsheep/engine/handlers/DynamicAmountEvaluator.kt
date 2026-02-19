@@ -11,6 +11,7 @@ import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.CardNumericProperty
 import com.wingedsheep.sdk.scripting.DynamicAmount
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.Player
@@ -167,6 +168,31 @@ class DynamicAmountEvaluator(
                 if (met) evaluate(state, amount.ifTrue, context) else evaluate(state, amount.ifFalse, context)
             }
 
+            is DynamicAmount.MaxBattlefield -> {
+                val playerIds = resolveUnifiedPlayerIds(state, amount.player, context)
+                val projected = if (projectForBattlefieldCounting) {
+                    StateProjector(DynamicAmountEvaluator(projectForBattlefieldCounting = false))
+                        .project(state)
+                } else null
+                val predicateContext = PredicateContext.fromEffectContext(context)
+
+                playerIds.flatMap { playerId ->
+                    state.getBattlefield().filter { entityId ->
+                        val controllerId = projected?.getController(entityId)
+                            ?: state.getEntity(entityId)?.get<ControllerComponent>()?.playerId
+                        controllerId == playerId
+                    }
+                }.filter { entityId ->
+                    if (projected != null) {
+                        predicateEvaluator.matchesWithProjection(state, projected, entityId, amount.filter, predicateContext)
+                    } else {
+                        predicateEvaluator.matches(state, entityId, amount.filter, predicateContext)
+                    }
+                }.maxOfOrNull { entityId ->
+                    resolveCardNumericProperty(state, projected, entityId, amount.property)
+                } ?: 0
+            }
+
             is DynamicAmount.CreaturesSharingTypeWithTriggeringEntity -> {
                 val triggeringId = context.triggeringEntityId ?: return 0
                 // Get the triggering creature's subtypes from projected state
@@ -299,6 +325,29 @@ class DynamicAmountEvaluator(
     }
 
     private fun resolveUnifiedZone(zone: Zone): Zone = zone
+
+    private fun resolveCardNumericProperty(
+        state: GameState,
+        projected: ProjectedState?,
+        entityId: EntityId,
+        property: CardNumericProperty
+    ): Int {
+        return when (property) {
+            is CardNumericProperty.ManaValue -> {
+                state.getEntity(entityId)?.get<CardComponent>()?.manaValue ?: 0
+            }
+            is CardNumericProperty.Power -> {
+                projected?.getPower(entityId)
+                    ?: state.getEntity(entityId)?.get<CardComponent>()?.baseStats?.basePower
+                    ?: 0
+            }
+            is CardNumericProperty.Toughness -> {
+                projected?.getToughness(entityId)
+                    ?: state.getEntity(entityId)?.get<CardComponent>()?.baseStats?.baseToughness
+                    ?: 0
+            }
+        }
+    }
 
     private fun resolveCounterType(filter: com.wingedsheep.sdk.scripting.CounterTypeFilter): CounterType {
         return when (filter) {

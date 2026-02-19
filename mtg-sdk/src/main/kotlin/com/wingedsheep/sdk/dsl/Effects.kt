@@ -85,6 +85,12 @@ object Effects {
         DrawCardsEffect(count, target)
 
     /**
+     * Draw a dynamic number of cards. Default target is the controller.
+     */
+    fun DrawCards(count: DynamicAmount, target: EffectTarget = EffectTarget.Controller): Effect =
+        DrawCardsEffect(count, target)
+
+    /**
      * Discard cards. Default target is target opponent.
      */
     fun Discard(count: Int, target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent)): Effect =

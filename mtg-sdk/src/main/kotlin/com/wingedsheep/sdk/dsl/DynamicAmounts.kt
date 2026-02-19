@@ -3,6 +3,7 @@ package com.wingedsheep.sdk.dsl
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.scripting.CardNumericProperty
 import com.wingedsheep.sdk.scripting.DynamicAmount
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.Player
@@ -19,9 +20,33 @@ import com.wingedsheep.sdk.scripting.Player
  * DynamicAmounts.landsYouControl()
  * DynamicAmounts.cardsInYourGraveyard()
  * DynamicAmounts.otherCreaturesYouControl()
+ * DynamicAmounts.battlefield(Player.You).maxManaValue()
  * ```
  */
 object DynamicAmounts {
+
+    // =========================================================================
+    // Fluent battlefield query builder
+    // =========================================================================
+
+    /**
+     * Start a fluent query over battlefield permanents.
+     *
+     * ```kotlin
+     * DynamicAmounts.battlefield(Player.You).count()
+     * DynamicAmounts.battlefield(Player.You).maxManaValue()
+     * DynamicAmounts.battlefield(Player.You, GameObjectFilter.Creature).maxPower()
+     * ```
+     */
+    fun battlefield(player: Player, filter: GameObjectFilter = GameObjectFilter.Any) =
+        BattlefieldQuery(player, filter)
+
+    class BattlefieldQuery(private val player: Player, private val filter: GameObjectFilter) {
+        fun count(): DynamicAmount = DynamicAmount.CountBattlefield(player, filter)
+        fun maxManaValue(): DynamicAmount = DynamicAmount.MaxBattlefield(player, CardNumericProperty.ManaValue, filter)
+        fun maxPower(): DynamicAmount = DynamicAmount.MaxBattlefield(player, CardNumericProperty.Power, filter)
+        fun maxToughness(): DynamicAmount = DynamicAmount.MaxBattlefield(player, CardNumericProperty.Toughness, filter)
+    }
 
     // =========================================================================
     // Battlefield counting
