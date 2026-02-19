@@ -40,7 +40,13 @@ object ScourgeSet {
         GoblinWarchief,
         SiegeGangCommander,
 
+        // Red enchantments
+        SulfuricVortex,
+
         // Red instants
         Carbonize,
+
+        // White creatures
+        DaruWarchief,
     )
 }

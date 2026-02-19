@@ -33,7 +33,7 @@
 - [ ] Coast Watcher
 - [ ] Consumptive Goo
 - [ ] Daru Spiritualist
-- [ ] Daru Warchief
+- [x] Daru Warchief
 - [ ] Dawn Elemental
 - [ ] Day of the Dragons
 - [ ] Death's-Head Buzzard
@@ -125,7 +125,7 @@
 - [ ] Sprouting Vines
 - [ ] Stabilizer
 - [ ] Stifle
-- [ ] Sulfuric Vortex
+- [x] Sulfuric Vortex
 - [ ] Temple of the False God
 - [ ] Temporal Fissure
 - [ ] Tendrils of Agony
