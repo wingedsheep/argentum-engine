@@ -22,7 +22,7 @@ services:
       - app_network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend-${PROJECT_NAME}.rule=Host(`${APP_DOMAIN}`) && PathPrefix(`/game`)"
+      - "traefik.http.routers.backend-${PROJECT_NAME}.rule=Host(`${APP_DOMAIN}`) && (PathPrefix(`/game`) || PathPrefix(`/api`))"
       - "traefik.http.routers.backend-${PROJECT_NAME}.entrypoints=websecure"
       - "traefik.http.routers.backend-${PROJECT_NAME}.tls=true"
       - "traefik.http.routers.backend-${PROJECT_NAME}.tls.certresolver=lets-encrypt"
