@@ -1,0 +1,29 @@
+{
+    "name": "Rain of Blades",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Rain of Blades deals 1 damage to each attacking creature.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEachInGroup",
+            "filter": {
+                "baseFilter": "creature attacking"
+            },
+            "effect": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 1
+                },
+                "target": "Self"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "20",
+        "rarity": "UNCOMMON",
+        "artist": "Rob Alexander",
+        "flavorText": "Some say they are the weapons of heroes fallen in battle, eager for one last chance at glory.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/418476cd-94da-47a5-ba77-6bb4771e9c89.jpg?1562528049"
+    }
+}

@@ -1,0 +1,46 @@
+{
+    "name": "Aven Liberator",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Creature — Bird Soldier",
+    "oracleText": "Flying\nMorph {3}{W}{W}\nWhen Aven Liberator is turned face up, choose a color. Target creature you control gains protection from the chosen color until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Morph",
+            "cost": "{3}{W}{W}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_9",
+                "trigger": "TurnFaceUpTrigger",
+                "effect": {
+                    "type": "ChooseColorAndGrantProtectionToTarget",
+                    "target": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetCreature",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "artist": "Matt Cavotta",
+        "flavorText": "Its wings offer phpysical and spiritual shelter for those dungeons under its care.",
+        "imageUri": "https://cards.scryfall.io/large/front/b/2/b2804006-2a60-400c-be0b-8aa042469372.jpg?1562533361"
+    }
+}

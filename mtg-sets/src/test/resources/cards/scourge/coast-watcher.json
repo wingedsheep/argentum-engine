@@ -1,0 +1,25 @@
+{
+    "name": "Coast Watcher",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Bird Soldier",
+    "oracleText": "Flying, protection from green",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "ProtectionFromColor",
+            "color": "GREEN"
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "30",
+        "artist": "Luca Zontini",
+        "flavorText": "The aven came to fear the forest's clawing branches, but the watchers quickly renewed their courage.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6bbbc67d-99d0-4277-a8f2-64509e59ec00.jpg?1562530192"
+    }
+}

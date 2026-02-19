@@ -1,0 +1,55 @@
+{
+    "name": "Vengeful Dead",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "Whenever Vengeful Dead or another Zombie dies, each opponent loses 1 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_11",
+                "trigger": "Death",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            },
+            {
+                "id": "ability_12",
+                "trigger": {
+                    "type": "OtherCreatureWithSubtypeDies",
+                    "subtype": "Zombie",
+                    "youControlOnly": false
+                },
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "rarity": "UNCOMMON",
+        "artist": "Alex Horley-Orlandelli",
+        "flavorText": "Those who don't learn from their deaths are destined to repeat them.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/cNice/7c11c11d-9809-4031-8cbc-21aef07d7f1f.jpg?1562531178"
+    }
+}

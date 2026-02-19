@@ -1,0 +1,22 @@
+{
+    "name": "Scornful Egotist",
+    "manaCost": "{7}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Morph {U}",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywordAbilities": [
+        {
+            "type": "Morph",
+            "cost": "{U}"
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "50",
+        "artist": "Jim Nelson",
+        "flavorText": "Once I was human. Now I am far more.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/fec6b189-97e7-4627-9785-a9ce2f1ad89f.jpg?1562537398"
+    }
+}

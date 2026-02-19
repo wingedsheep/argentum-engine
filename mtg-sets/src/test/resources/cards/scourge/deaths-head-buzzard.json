@@ -1,0 +1,39 @@
+{
+    "name": "Death's-Head Buzzard",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Creature — Bird",
+    "oracleText": "Flying\nWhen Death's-Head Buzzard dies, all creatures get -1/-1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_10",
+                "trigger": "Death",
+                "effect": {
+                    "type": "ForEachInGroup",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": -1,
+                        "toughnessModifier": -1,
+                        "target": "Self"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "artist": "Marcelo Vignali",
+        "flavorText": "Infested with vermin, ever hungering, dropping from night's sky.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/a/8a8d4fd9-1f9e-41f0-9114-d1a698506ad9.jpg?1562531685"
+    }
+}

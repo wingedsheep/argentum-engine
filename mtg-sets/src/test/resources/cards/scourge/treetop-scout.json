@@ -1,0 +1,24 @@
+{
+    "name": "Treetop Scout",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Elf Scout",
+    "oracleText": "Treetop Scout can't be blocked except by creatures with flying.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedExceptByKeyword",
+                "requiredKeyword": "FLYING"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "130",
+        "artist": "Alan Pollack",
+        "flavorText": "At home among the swaying, supple branches of the treetops, some scouts live their entire lives never touching ground.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/f/2fa39646-a609-4b37-b8de-97893ae43c49.jpg?1562527114"
+    }
+}

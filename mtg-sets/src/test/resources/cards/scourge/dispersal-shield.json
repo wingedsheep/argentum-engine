@@ -1,0 +1,30 @@
+{
+    "name": "Dispersal Shield",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell if its mana value is less than or equal to the greatest mana value among permanents you control.",
+    "script": {
+        "spellEffect": {
+            "type": "Conditional",
+            "condition": {
+                "type": "TargetSpellManaValueAtMost",
+                "amount": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "aggregation": "MAX",
+                    "property": "MANA_VALUE"
+                }
+            },
+            "effect": "CounterSpell"
+        },
+        "targetRequirements": [
+            "TargetSpell"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "artist": "Dave Dorman",
+        "flavorText": "Maybe next time.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/c/0c257df6-f275-40db-bfe3-a9291356cdf7.jpg?1562525399"
+    }
+}

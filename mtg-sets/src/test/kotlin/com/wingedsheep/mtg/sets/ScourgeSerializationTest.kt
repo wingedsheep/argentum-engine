@@ -21,17 +21,31 @@ class ScourgeSerializationTest : FunSpec({
 
     val jsonDir = "/cards/scourge/"
     val jsonIndex = listOf(
+        "accelerated-mutation.json",
         "ark-of-blight.json",
+        "aven-liberator.json",
         "bladewing-the-risen.json",
         "break-asunder.json",
-        "carrion-feeder.json",
-        "fierce-empath.json",
         "carbonize.json",
+        "carrion-feeder.json",
+        "coast-watcher.json",
         "daru-warchief.json",
+        "deaths-head-buzzard.json",
+        "dispersal-shield.json",
+        "fierce-empath.json",
         "goblin-warchief.json",
+        "rain-of-blades.json",
         "rush-of-knowledge.json",
+        "scornful-egotist.json",
         "siege-gang-commander.json",
+        "silver-knight.json",
+        "spark-spray.json",
         "sulfuric-vortex.json",
+        "treetop-scout.json",
+        "unburden.json",
+        "undead-warchief.json",
+        "vengeful-dead.json",
+        "wipe-clean.json",
     )
 
     test("Kotlin cards round-trip through JSON export and import") {
