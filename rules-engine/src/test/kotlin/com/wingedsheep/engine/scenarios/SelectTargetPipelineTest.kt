@@ -76,7 +76,7 @@ class SelectTargetPipelineTest : FunSpec({
     test("single legal target is auto-selected and dealt damage") {
         val driver = createDriver()
         driver.initMirrorMatch(
-            deck = Deck.of("Mountain" to 20, "Pipeline Bolt" to 10, "Grizzly Bears" to 10),
+            deck = Deck.of("Mountain" to 40),
             startingLife = 20
         )
 
@@ -85,8 +85,8 @@ class SelectTargetPipelineTest : FunSpec({
         // Put a single creature on the opponent's side
         driver.putCreatureOnBattlefield(opponent, "Grizzly Bears")
 
-        // Cast Pipeline Bolt (no cast-time targets)
-        val boltId = driver.findCardInHand(caster, "Pipeline Bolt")!!
+        // Add Pipeline Bolt directly to hand (avoid flaky random draw)
+        val boltId = driver.putCardInHand(caster, "Pipeline Bolt")
         val castResult = driver.castSpell(caster, boltId)
         castResult.isSuccess shouldBe true
 
@@ -101,7 +101,7 @@ class SelectTargetPipelineTest : FunSpec({
     test("multiple legal targets presents decision and deals damage to chosen") {
         val driver = createDriver()
         driver.initMirrorMatch(
-            deck = Deck.of("Mountain" to 20, "Pipeline Bolt" to 10, "Grizzly Bears" to 10),
+            deck = Deck.of("Mountain" to 40),
             startingLife = 20
         )
 
@@ -111,8 +111,8 @@ class SelectTargetPipelineTest : FunSpec({
         val bear = driver.putCreatureOnBattlefield(opponent, "Grizzly Bears")
         val centaur = driver.putCreatureOnBattlefield(opponent, "Centaur Courser")
 
-        // Cast Pipeline Bolt (no cast-time targets)
-        val boltId = driver.findCardInHand(caster, "Pipeline Bolt")!!
+        // Add Pipeline Bolt directly to hand (avoid flaky random draw)
+        val boltId = driver.putCardInHand(caster, "Pipeline Bolt")
         driver.castSpell(caster, boltId)
 
         // Spell is on the stack — resolve it
@@ -134,7 +134,7 @@ class SelectTargetPipelineTest : FunSpec({
     test("no legal targets skips gracefully — spell resolves but does nothing") {
         val driver = createDriver()
         driver.initMirrorMatch(
-            deck = Deck.of("Mountain" to 20, "Pipeline Bolt" to 10, "Grizzly Bears" to 10),
+            deck = Deck.of("Mountain" to 40),
             startingLife = 20
         )
 
@@ -142,8 +142,8 @@ class SelectTargetPipelineTest : FunSpec({
 
         // No creatures on the battlefield at all
 
-        // Cast Pipeline Bolt
-        val boltId = driver.findCardInHand(caster, "Pipeline Bolt")!!
+        // Add Pipeline Bolt directly to hand (avoid flaky random draw)
+        val boltId = driver.putCardInHand(caster, "Pipeline Bolt")
         driver.castSpell(caster, boltId)
 
         // Spell is on the stack — resolve it
@@ -160,7 +160,7 @@ class SelectTargetPipelineTest : FunSpec({
     test("caster's own creatures are also legal targets") {
         val driver = createDriver()
         driver.initMirrorMatch(
-            deck = Deck.of("Mountain" to 20, "Pipeline Bolt" to 10, "Grizzly Bears" to 10),
+            deck = Deck.of("Mountain" to 40),
             startingLife = 20
         )
 
@@ -169,8 +169,8 @@ class SelectTargetPipelineTest : FunSpec({
         // Put a creature on the caster's side only
         driver.putCreatureOnBattlefield(caster, "Grizzly Bears")
 
-        // Cast Pipeline Bolt — single legal target is caster's own creature
-        val boltId = driver.findCardInHand(caster, "Pipeline Bolt")!!
+        // Add Pipeline Bolt directly to hand (avoid flaky random draw)
+        val boltId = driver.putCardInHand(caster, "Pipeline Bolt")
         driver.castSpell(caster, boltId)
 
         // Resolve
