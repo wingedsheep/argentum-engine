@@ -36,6 +36,6 @@ val GoblinWarStrike = card("Goblin War Strike") {
         collectorNumber = "96"
         artist = "Thomas M. Baxa"
         flavorText = "\"It's not the strategy or the weapons that make goblin attacks so effective. It's the sheer enthusiasm.\"\n—Aven marshal"
-        imageUri = "https://cards.scryfall.io/large/front/e/1/e1a4c25c-7cc5-4101-b95d-8f10afb58d44.jpg?1562536355"
+        imageUri = "https://cards.scryfall.io/large/front/d/c/dce59945-37a2-4f09-8831-9d44b4a59ea7.jpg?1562535675"
     }
 }
