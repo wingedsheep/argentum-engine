@@ -46,6 +46,7 @@ class ConditionEvaluator {
             is OpponentControlsMoreLands -> evaluateOpponentControlsMoreLands(state, context)
             is APlayerControlsMostOfSubtype -> evaluateAPlayerControlsMostOfSubtype(state, condition)
             is TargetPowerAtMost -> evaluateTargetPowerAtMost(state, condition, context)
+            is TargetSpellManaValueAtMost -> evaluateTargetSpellManaValueAtMost(state, condition, context)
             is EnchantedCreatureHasSubtype -> evaluateEnchantedCreatureHasSubtype(state, condition, context)
 
             // Hand conditions
@@ -334,6 +335,21 @@ class ConditionEvaluator {
         }
         val threshold = dynamicAmountEvaluator.evaluate(state, condition.amount, context)
         return power <= threshold
+    }
+
+    private fun evaluateTargetSpellManaValueAtMost(
+        state: GameState,
+        condition: TargetSpellManaValueAtMost,
+        context: EffectContext
+    ): Boolean {
+        val target = context.targets.getOrNull(condition.targetIndex) ?: return false
+        val spellEntityId = when (target) {
+            is com.wingedsheep.engine.state.components.stack.ChosenTarget.Spell -> target.spellEntityId
+            else -> return false
+        }
+        val card = state.getEntity(spellEntityId)?.get<CardComponent>() ?: return false
+        val threshold = dynamicAmountEvaluator.evaluate(state, condition.amount, context)
+        return card.manaValue <= threshold
     }
 
     private fun evaluateEnchantedCreatureHasSubtype(

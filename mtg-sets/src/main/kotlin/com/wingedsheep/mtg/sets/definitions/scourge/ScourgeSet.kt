@@ -32,9 +32,20 @@ object ScourgeSet {
 
         // Green creatures
         FierceEmpath,
+        TreetopScout,
+
+        // Green instants
+        AcceleratedMutation,
 
         // Green sorceries
         BreakAsunder,
+
+        // Blue creatures
+        CoastWatcher,
+        ScornfulEgotist,
+
+        // Blue instants
+        DispersalShield,
 
         // Blue sorceries
         RushOfKnowledge,
@@ -48,8 +59,21 @@ object ScourgeSet {
 
         // Red instants
         Carbonize,
+        SparkSpray,
 
         // White creatures
         DaruWarchief,
+        SilverKnight,
+
+        // White instants
+        RainOfBlades,
+        WipeClean,
+
+        // Black creatures (additional)
+        DeathsHeadBuzzard,
+        VengefulDead,
+
+        // Black sorceries
+        Unburden,
     )
 }

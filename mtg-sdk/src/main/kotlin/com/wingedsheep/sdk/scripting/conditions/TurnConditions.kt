@@ -72,3 +72,17 @@ data object YouAttackedThisTurn : Condition {
 data object OpponentSpellOnStack : Condition {
     override val description: String = "if an opponent has cast a spell"
 }
+
+/**
+ * Condition: "If target spell's mana value is at most [amount]"
+ * Used for conditional counterspells like Dispersal Shield.
+ * Checks the first target (ContextTarget(0)) by default.
+ */
+@SerialName("TargetSpellManaValueAtMost")
+@Serializable
+data class TargetSpellManaValueAtMost(
+    val amount: DynamicAmount,
+    val targetIndex: Int = 0
+) : Condition {
+    override val description: String = "if its mana value is less than or equal to ${amount.description}"
+}

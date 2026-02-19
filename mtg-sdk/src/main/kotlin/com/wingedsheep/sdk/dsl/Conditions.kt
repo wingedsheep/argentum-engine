@@ -88,6 +88,13 @@ object Conditions {
     fun TargetPowerAtMost(amount: com.wingedsheep.sdk.scripting.DynamicAmount, targetIndex: Int = 0): ConditionInterface =
         com.wingedsheep.sdk.scripting.TargetPowerAtMost(amount, targetIndex)
 
+    /**
+     * If the target spell's mana value is at most the given dynamic amount.
+     * Used for conditional counterspells like Dispersal Shield.
+     */
+    fun TargetSpellManaValueAtMost(amount: com.wingedsheep.sdk.scripting.DynamicAmount, targetIndex: Int = 0): ConditionInterface =
+        com.wingedsheep.sdk.scripting.TargetSpellManaValueAtMost(amount, targetIndex)
+
     // =========================================================================
     // Life Total Conditions
     // =========================================================================
