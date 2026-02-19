@@ -208,7 +208,9 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
             minSelections = minSelections,
             maxSelections = maxSelections,
             ordered = false,
-            cardInfo = cardInfoMap
+            cardInfo = cardInfoMap,
+            selectedLabel = effect.selectedLabel,
+            remainderLabel = effect.remainderLabel
         )
 
         val continuation = SelectFromCollectionContinuation(

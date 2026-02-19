@@ -865,6 +865,17 @@ function CardSelectionDecision({
         }
       </p>
 
+      {(decision.selectedLabel || decision.remainderLabel) && (
+        <div className={styles.destinationLabels}>
+          {decision.selectedLabel && (
+            <span className={styles.selectedLabel}>Selected → {decision.selectedLabel}</span>
+          )}
+          {decision.remainderLabel && (
+            <span className={styles.remainderLabel}>Not selected → {decision.remainderLabel}</span>
+          )}
+        </div>
+      )}
+
       {/* Card options */}
       <div className={styles.cardContainer} style={{ gap }}>
         {decision.options.map((cardId) => {

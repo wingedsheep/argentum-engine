@@ -194,6 +194,10 @@ export interface SelectCardsDecision extends PendingDecisionBase {
   readonly cardInfo?: Record<EntityId, SearchCardInfo> | null
   /** If true, use targeting UI (click on board) instead of modal overlay */
   readonly useTargetingUI?: boolean
+  /** Label describing where selected cards go (e.g., "Put on bottom") */
+  readonly selectedLabel?: string | null
+  /** Label describing where non-selected cards go (e.g., "Put on top") */
+  readonly remainderLabel?: string | null
 }
 
 /**

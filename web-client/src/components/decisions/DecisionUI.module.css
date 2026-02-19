@@ -163,6 +163,22 @@
   font-size: calc(var(--font-sm) - 1px);
 }
 
+.destinationLabels {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  font-size: var(--font-sm);
+  margin-top: -4px;
+}
+
+.selectedLabel {
+  color: #f0a050;
+}
+
+.remainderLabel {
+  color: #80b8e0;
+}
+
 /* =========================================================================
  * Button Containers
  * ========================================================================= */

@@ -124,7 +124,11 @@ data class SelectCardsDecision(
     /** Card info for displaying hidden cards (null if cards are visible to the player) */
     val cardInfo: Map<EntityId, SearchCardInfo>? = null,
     /** If true, use the targeting UI (click on battlefield) instead of modal overlay */
-    val useTargetingUI: Boolean = false
+    val useTargetingUI: Boolean = false,
+    /** Label describing where selected cards go (e.g., "Put on bottom") */
+    val selectedLabel: String? = null,
+    /** Label describing where non-selected cards go (e.g., "Put on top") */
+    val remainderLabel: String? = null
 ) : PendingDecision
 
 /**

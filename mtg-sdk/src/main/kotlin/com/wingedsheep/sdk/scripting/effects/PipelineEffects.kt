@@ -216,7 +216,11 @@ data class SelectFromCollectionEffect(
      */
     val matchChosenCreatureType: Boolean = false,
     /** Custom prompt for the selection decision. If null, a generic prompt is generated. */
-    val prompt: String? = null
+    val prompt: String? = null,
+    /** Label describing where selected cards go (e.g., "Put on bottom"). Shown in the UI. */
+    val selectedLabel: String? = null,
+    /** Label describing where non-selected cards go (e.g., "Put on top"). Shown in the UI. */
+    val remainderLabel: String? = null
 ) : Effect {
     override val description: String = buildString {
         if (chooser == Chooser.Opponent) append("An opponent ")

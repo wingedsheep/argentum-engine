@@ -396,7 +396,9 @@ object EffectPatterns {
                 from = "looked",
                 selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(keepCount)),
                 storeSelected = "kept",
-                storeRemainder = "rest"
+                storeRemainder = "rest",
+                selectedLabel = "Put in hand",
+                remainderLabel = "Put in graveyard"
             ),
             MoveCollectionEffect(
                 from = "kept",
@@ -473,7 +475,9 @@ object EffectPatterns {
                 from = "scried",
                 selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(count)),
                 storeSelected = "toBottom",
-                storeRemainder = "toTop"
+                storeRemainder = "toTop",
+                selectedLabel = "Put on bottom",
+                remainderLabel = "Put on top"
             ),
             MoveCollectionEffect(
                 from = "toBottom",
@@ -505,7 +509,9 @@ object EffectPatterns {
                 from = "surveiled",
                 selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(count)),
                 storeSelected = "toGraveyard",
-                storeRemainder = "toTop"
+                storeRemainder = "toTop",
+                selectedLabel = "Put in graveyard",
+                remainderLabel = "Put on top"
             ),
             MoveCollectionEffect(
                 from = "toGraveyard",
@@ -614,7 +620,9 @@ object EffectPatterns {
                 from = "looked",
                 selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(toGraveyard)),
                 storeSelected = "toGraveyard",
-                storeRemainder = "toTop"
+                storeRemainder = "toTop",
+                selectedLabel = "Put in graveyard",
+                remainderLabel = "Put on top"
             ),
             MoveCollectionEffect(
                 from = "toGraveyard",
