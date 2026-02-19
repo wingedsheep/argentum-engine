@@ -85,7 +85,6 @@ Always use these facades for card definitions. They provide type-safe factory me
 | `DealDamageToPlayersEffect` | `amount: DynamicAmount, target` | Damage to players |
 | `DealDamageToAttackingCreaturesEffect` | `amount: Int` | Damage to attacking creatures |
 | `DividedDamageEffect` | `totalDamage, minTargets, maxTargets` | Divided damage allocation |
-| `DealDamageExileOnDeathEffect` | `amount, target` | Damage with exile on death |
 
 ### Life
 | Effect | Parameters | Purpose |

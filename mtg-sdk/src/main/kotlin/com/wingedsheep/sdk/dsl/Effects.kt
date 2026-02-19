@@ -293,7 +293,7 @@ object Effects {
      * Shuffle a player's graveyard into their library.
      */
     fun ShuffleGraveyardIntoLibrary(target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
-        ShuffleGraveyardIntoLibraryEffect(target)
+        EffectPatterns.shuffleGraveyardIntoLibrary(target)
 
     /**
      * Search library for cards.

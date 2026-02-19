@@ -95,26 +95,6 @@ data class FightEffect(
     override val description: String = "${target1.description} fights ${target2.description}"
 }
 
-/**
- * Deal damage with a replacement effect: if the creature would die this turn, exile it instead.
- * Used for cards like Feed the Flames.
- *
- * This combines damage dealing with a death-replacement effect that lasts until end of turn.
- *
- * @property amount The amount of damage to deal
- * @property target The creature to target
- */
-@SerialName("DealDamageExileOnDeath")
-@Serializable
-data class DealDamageExileOnDeathEffect(
-    val amount: Int,
-    val target: EffectTarget
-) : Effect {
-    override val description: String = buildString {
-        append("Deal $amount damage to ${target.description}. ")
-        append("If that creature would die this turn, exile it instead")
-    }
-}
 
 /**
  * Deal damage to any target, then that player or that permanent's controller

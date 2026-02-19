@@ -4,6 +4,17 @@
 **Release Date:** September 26, 2014
 **Implemented:** 0 / 249
 
+| Color      | Count |
+|------------|-------|
+| White      | 0     |
+| Blue       | 0     |
+| Black      | 0     |
+| Red        | 0     |
+| Green      | 0     |
+| Multicolor | 0     |
+| Colorless  | 0     |
+| Land       | 0     |
+
 ---
 
 - [ ] Abomination of Gudul

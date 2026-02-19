@@ -187,7 +187,6 @@ object CardValidator {
             is PreventNextDamageEffect -> effect.target
             is RemoveFromCombatEffect -> effect.target
             is ForceSacrificeEffect -> effect.target
-            is DealDamageExileOnDeathEffect -> effect.target
             is MarkExileOnDeathEffect -> effect.target
             is DynamicModifyStatsEffect -> effect.target
             is GainControlEffect -> effect.target
@@ -199,7 +198,6 @@ object CardValidator {
             is TransformAllCreaturesEffect -> effect.target
             is AddMinusCountersEffect -> effect.target
             is LoseAllCreatureTypesEffect -> effect.target
-            is ShuffleGraveyardIntoLibraryEffect -> effect.target
             is LookAtFaceDownCreatureEffect -> effect.target
             is TransformEffect -> effect.target
             is GainControlByMostOfSubtypeEffect -> effect.target
