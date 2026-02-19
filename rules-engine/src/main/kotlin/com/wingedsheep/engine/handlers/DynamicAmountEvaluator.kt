@@ -349,6 +349,10 @@ class DynamicAmountEvaluator(
             is Player.TriggeringPlayer -> {
                 listOfNotNull(context.triggeringEntityId)
             }
+            is Player.ActivePlayerFirst -> {
+                val activePlayer = state.activePlayerId ?: return state.turnOrder
+                listOf(activePlayer) + state.turnOrder.filter { it != activePlayer }
+            }
         }
     }
 

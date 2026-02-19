@@ -39,13 +39,13 @@ class EffectExecutorRegistry(
 ) {
     private val executors = mutableMapOf<KClass<out Effect>, EffectExecutor<*>>()
     private val compositeExecutors = CompositeExecutors()
+    private val drawingExecutors = DrawingExecutors(amountEvaluator, decisionHandler, cardRegistry = cardRegistry)
     private val removalExecutors = RemovalExecutors()
 
     init {
         // Register all effect executors by module
         registerModule(LifeExecutors(amountEvaluator))
         registerModule(DamageExecutors(amountEvaluator, decisionHandler))
-        registerModule(DrawingExecutors(amountEvaluator, decisionHandler, cardRegistry = cardRegistry))
         registerModule(PermanentExecutors(decisionHandler, amountEvaluator))
         registerModule(ManaExecutors(amountEvaluator))
         registerModule(TokenExecutors(amountEvaluator))
@@ -58,6 +58,8 @@ class EffectExecutorRegistry(
         // Deferred initialization for recursive executors
         compositeExecutors.initialize(::execute)
         registerModule(compositeExecutors)
+        drawingExecutors.initialize(::execute)
+        registerModule(drawingExecutors)
         removalExecutors.initialize(::execute)
         registerModule(removalExecutors)
     }

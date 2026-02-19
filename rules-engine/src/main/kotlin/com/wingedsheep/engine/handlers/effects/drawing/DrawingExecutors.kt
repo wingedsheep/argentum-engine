@@ -1,13 +1,21 @@
 package com.wingedsheep.engine.handlers.effects.drawing
 
+import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
+import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.ExecutorModule
+import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.sdk.scripting.Effect
 
 /**
  * Module providing all drawing-related effect executors.
+ *
+ * Uses deferred initialization for DrawCardsExecutor so it can access
+ * the parent registry's execute function (needed for pipeline execution
+ * of draw replacement effects like Words of Wind).
  */
 class DrawingExecutors(
     private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator(),
@@ -15,8 +23,22 @@ class DrawingExecutors(
     private val targetFinder: TargetFinder = TargetFinder(),
     private val cardRegistry: com.wingedsheep.engine.registry.CardRegistry? = null
 ) : ExecutorModule {
+    private var effectExecutor: ((GameState, Effect, EffectContext) -> ExecutionResult)? = null
+
+    private val drawCardsExecutor by lazy {
+        DrawCardsExecutor(amountEvaluator, cardRegistry, effectExecutor)
+    }
+
+    /**
+     * Initialize the module with the parent registry's execute function.
+     * Must be called before executors() is accessed for the first time.
+     */
+    fun initialize(executor: (GameState, Effect, EffectContext) -> ExecutionResult) {
+        this.effectExecutor = executor
+    }
+
     override fun executors(): List<EffectExecutor<*>> = listOf(
-        DrawCardsExecutor(amountEvaluator, cardRegistry),
+        drawCardsExecutor,
         DiscardAndChainCopyExecutor(targetFinder, decisionHandler),
         EachOpponentDiscardsExecutor(decisionHandler),
         EachPlayerDiscardsOrLoseLifeExecutor(decisionHandler),

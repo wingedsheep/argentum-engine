@@ -127,7 +127,9 @@ class ContinuationHandler(
             is PatriarchsBiddingContinuation -> creatureTypeResumer.resumePatriarchsBidding(stateAfterPop, continuation, response, cfm)
 
             // Draw replacements
-            is DrawReplacementBounceContinuation -> drawReplacementResumer.resumeDrawReplacementBounce(stateAfterPop, continuation, response, cfm)
+            is DrawReplacementRemainingDrawsContinuation -> {
+                ExecutionResult.error(state, "DrawReplacementRemainingDrawsContinuation should not be at top of stack during decision resume")
+            }
             is DrawReplacementDiscardContinuation -> drawReplacementResumer.resumeDrawReplacementDiscard(stateAfterPop, continuation, response, cfm)
             is DrawReplacementActivationContinuation -> drawReplacementResumer.resumeDrawReplacementActivation(stateAfterPop, continuation, response, cfm)
             is DrawReplacementTargetContinuation -> drawReplacementResumer.resumeDrawReplacementTarget(stateAfterPop, continuation, response, cfm)
@@ -466,6 +468,36 @@ class ContinuationHandler(
 
             // Recursively check for more continuations
             return checkForMoreContinuations(result.state, events.toMutableList().apply { addAll(result.events) })
+        }
+
+        if (nextContinuation is DrawReplacementRemainingDrawsContinuation) {
+            val (_, stateAfterPop) = state.popContinuation()
+            if (nextContinuation.remainingDraws > 0) {
+                if (nextContinuation.isDrawStep) {
+                    val turnManager = com.wingedsheep.engine.core.TurnManager(cardRegistry = stackResolver.cardRegistry, effectExecutor = effectExecutorRegistry::execute)
+                    val drawResult = turnManager.drawCards(stateAfterPop, nextContinuation.drawingPlayerId, nextContinuation.remainingDraws)
+                    if (drawResult.isPaused) {
+                        return ExecutionResult.paused(
+                            drawResult.state,
+                            drawResult.pendingDecision!!,
+                            events + drawResult.events
+                        )
+                    }
+                    return checkForMoreContinuations(drawResult.newState, events + drawResult.events)
+                } else {
+                    val drawExecutor = com.wingedsheep.engine.handlers.effects.drawing.DrawCardsExecutor(cardRegistry = stackResolver.cardRegistry, effectExecutor = effectExecutorRegistry::execute)
+                    val drawResult = drawExecutor.executeDraws(stateAfterPop, nextContinuation.drawingPlayerId, nextContinuation.remainingDraws)
+                    if (drawResult.isPaused) {
+                        return ExecutionResult.paused(
+                            drawResult.state,
+                            drawResult.pendingDecision!!,
+                            events + drawResult.events
+                        )
+                    }
+                    return checkForMoreContinuations(drawResult.state, events + drawResult.events)
+                }
+            }
+            return checkForMoreContinuations(stateAfterPop, events)
         }
 
         if (nextContinuation is EffectContinuation && nextContinuation.remainingEffects.isNotEmpty()) {

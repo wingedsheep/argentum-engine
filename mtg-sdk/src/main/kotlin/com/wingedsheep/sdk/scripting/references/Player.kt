@@ -47,6 +47,13 @@ sealed interface Player {
         override val description: String = "each player"
     }
 
+    /** All players in APNAP order (active player first, then turn order) */
+    @SerialName("ActivePlayerFirst")
+    @Serializable
+    data object ActivePlayerFirst : Player {
+        override val description: String = "each player"
+    }
+
     /** Any player (for matching/filtering) */
     @SerialName("Any")
     @Serializable
@@ -116,6 +123,7 @@ sealed interface Player {
             TargetOpponent -> "target opponent's"
             TargetPlayer -> "target player's"
             Each -> "each player's"
+            ActivePlayerFirst -> "each player's"
             EachOpponent -> "each opponent's"
             Any -> "a player's"
             is ContextPlayer -> "that player's"

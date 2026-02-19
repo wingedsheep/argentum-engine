@@ -178,6 +178,10 @@ class ForEachPlayerExecutor(
     private fun resolvePlayers(player: Player, state: GameState, context: EffectContext): List<EntityId> {
         return when (player) {
             Player.Each -> state.turnOrder
+            Player.ActivePlayerFirst -> {
+                val activePlayer = state.activePlayerId ?: return state.turnOrder
+                listOf(activePlayer) + state.turnOrder.filter { it != activePlayer }
+            }
             Player.You -> listOf(context.controllerId)
             Player.Opponent, Player.TargetOpponent, Player.EachOpponent -> {
                 state.turnOrder.filter { it != context.controllerId }

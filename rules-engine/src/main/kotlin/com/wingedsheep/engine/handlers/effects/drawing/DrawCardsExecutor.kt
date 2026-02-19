@@ -7,8 +7,8 @@ import com.wingedsheep.engine.core.DecisionPhase
 import com.wingedsheep.engine.core.DecisionRequestedEvent
 import com.wingedsheep.engine.core.DrawFailedEvent
 import com.wingedsheep.engine.core.DrawReplacementActivationContinuation
-import com.wingedsheep.engine.core.DrawReplacementBounceContinuation
 import com.wingedsheep.engine.core.DrawReplacementDiscardContinuation
+import com.wingedsheep.engine.core.DrawReplacementRemainingDrawsContinuation
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.LifeChangedEvent
@@ -38,9 +38,11 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.TypeLine
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.DrawCardsEffect
+import com.wingedsheep.sdk.scripting.Effect
 import kotlin.reflect.KClass
 
 /**
@@ -49,7 +51,8 @@ import kotlin.reflect.KClass
  */
 class DrawCardsExecutor(
     private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator(),
-    private val cardRegistry: CardRegistry? = null
+    private val cardRegistry: CardRegistry? = null,
+    private val effectExecutor: ((GameState, Effect, EffectContext) -> ExecutionResult)? = null
 ) : EffectExecutor<DrawCardsEffect> {
 
     override val effectType: KClass<DrawCardsEffect> = DrawCardsEffect::class
@@ -272,8 +275,8 @@ class DrawCardsExecutor(
 
     /**
      * Checks for and consumes a bounce draw replacement shield (Words of Wind).
-     * If found, pauses execution to ask each player to choose a permanent to bounce.
-     * Returns a paused ExecutionResult if a shield was consumed, or null if no shield exists.
+     * Executes the bounce via the atomic ForEachPlayer pipeline.
+     * Returns an ExecutionResult if a shield was consumed, or null if no shield exists.
      */
     private fun consumeBounceReplacementShield(
         state: GameState,
@@ -287,6 +290,8 @@ class DrawCardsExecutor(
                 playerId in effect.effect.affectedEntities
         }
         if (shieldIndex == -1) return null
+
+        val executor = effectExecutor ?: return null
 
         val shield = state.floatingEffects[shieldIndex]
 
@@ -302,87 +307,57 @@ class DrawCardsExecutor(
             allEvents.add(0, CardsDrawnEvent(playerId, drawnCardsSoFar.size, drawnCardsSoFar, cardNames))
         }
 
-        // Get players in APNAP order for the bounce
-        val activePlayer = newState.activePlayerId ?: return null
-        val apnapOrder = listOf(activePlayer) + newState.turnOrder.filter { it != activePlayer }
-
-        // Find first player with permanents to bounce
-        val projected = stateProjector.project(newState)
-        val playersWithPermanents = apnapOrder.filter { pid ->
-            projected.getBattlefieldControlledBy(pid).isNotEmpty()
+        // If there are remaining draws, push a continuation so they resume after the pipeline
+        if (remainingDraws > 0) {
+            val remainingDrawsContinuation = DrawReplacementRemainingDrawsContinuation(
+                drawingPlayerId = playerId,
+                remainingDraws = remainingDraws,
+                isDrawStep = false
+            )
+            newState = newState.pushContinuation(remainingDrawsContinuation)
         }
 
-        if (playersWithPermanents.isEmpty()) {
-            // No player has permanents - draw is still replaced (no card drawn), just continue
-            return ExecutionResult.success(newState, allEvents)
-                .let { result ->
-                    // If there are remaining draws, continue processing them
-                    if (remainingDraws > 0) {
-                        val drawResult = executeDraws(result.state, playerId, remainingDraws)
-                        ExecutionResult(
-                            drawResult.state,
-                            allEvents + drawResult.events,
-                            drawResult.error
-                        )
-                    } else {
-                        ExecutionResult.success(result.state, allEvents)
-                    }
-                }
-        }
+        // Build and execute the bounce pipeline
+        val pipeline = EffectPatterns.eachPlayerReturnsPermanentToHand()
+        val context = EffectContext(
+            controllerId = playerId,
+            sourceId = shield.sourceId,
+            opponentId = null
+        )
 
-        val firstPlayer = playersWithPermanents.first()
-        val remainingBounce = playersWithPermanents.drop(1)
+        val pipelineResult = executor(newState, pipeline, context)
 
-        val controlledPermanents = projected.getBattlefieldControlledBy(firstPlayer)
-
-        // If the player has exactly 1 permanent, auto-select it
-        if (controlledPermanents.size == 1) {
-            val permanentId = controlledPermanents.first()
-            val bounceResult = EffectExecutorUtils.moveCardToZone(newState, permanentId, Zone.HAND)
-            newState = bounceResult.state
-            allEvents.addAll(bounceResult.events)
-
-            // Continue with remaining players
-            return continueBounceChain(
-                newState, remainingBounce, playerId, remainingDraws,
-                drawnCardsSoFar, allEvents, shield.sourceId, shield.sourceName
+        if (pipelineResult.isPaused) {
+            // Pipeline needs a decision — remaining-draws continuation is underneath
+            return ExecutionResult.paused(
+                pipelineResult.state,
+                pipelineResult.pendingDecision!!,
+                allEvents + pipelineResult.events
             )
         }
 
-        // Present decision to first player
-        val sourceName = shield.sourceName ?: "Words of Wind"
-        val decisionResult = decisionHandler.createCardSelectionDecision(
-            state = newState,
-            playerId = firstPlayer,
-            sourceId = shield.sourceId,
-            sourceName = sourceName,
-            prompt = "Choose a permanent to return to its owner's hand",
-            options = controlledPermanents,
-            minSelections = 1,
-            maxSelections = 1,
-            ordered = false,
-            phase = DecisionPhase.RESOLUTION,
-            useTargetingUI = true
-        )
+        // Pipeline completed synchronously
+        var resultState = pipelineResult.state
+        val resultEvents = allEvents + pipelineResult.events
 
-        val continuation = DrawReplacementBounceContinuation(
-            decisionId = decisionResult.pendingDecision!!.id,
-            drawingPlayerId = playerId,
-            currentBouncingPlayerId = firstPlayer,
-            remainingPlayers = remainingBounce,
-            remainingDraws = remainingDraws,
-            drawnCardsSoFar = drawnCardsSoFar,
-            sourceId = shield.sourceId,
-            sourceName = sourceName
-        )
+        // Pop the remaining-draws continuation if we pushed one (pipeline didn't use it)
+        if (remainingDraws > 0) {
+            val (popped, stateAfterPop) = resultState.popContinuation()
+            if (popped is DrawReplacementRemainingDrawsContinuation) {
+                resultState = stateAfterPop
+                // Continue with remaining draws
+                val drawResult = executeDraws(resultState, playerId, remainingDraws)
+                return ExecutionResult(
+                    drawResult.state,
+                    resultEvents + drawResult.events,
+                    drawResult.error
+                )
+            }
+            // If the continuation was something else, put it back (shouldn't happen)
+            resultState = pipelineResult.state
+        }
 
-        val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
-
-        return ExecutionResult.paused(
-            stateWithContinuation,
-            decisionResult.pendingDecision,
-            allEvents + decisionResult.events
-        )
+        return ExecutionResult.success(resultState, resultEvents)
     }
 
     /**
@@ -484,91 +459,6 @@ class DrawCardsExecutor(
             )
         }
         return ExecutionResult.success(newState, allEvents)
-    }
-
-    /**
-     * Continue the bounce chain for remaining players after a player auto-bounced.
-     */
-    private fun continueBounceChain(
-        state: GameState,
-        remainingPlayers: List<EntityId>,
-        drawingPlayerId: EntityId,
-        remainingDraws: Int,
-        drawnCardsSoFar: List<EntityId>,
-        events: MutableList<GameEvent>,
-        sourceId: EntityId?,
-        sourceName: String?
-    ): ExecutionResult {
-        if (remainingPlayers.isEmpty()) {
-            // All players done - continue with remaining draws
-            if (remainingDraws > 0) {
-                val drawResult = executeDraws(state, drawingPlayerId, remainingDraws)
-                return ExecutionResult(
-                    drawResult.state,
-                    events + drawResult.events,
-                    drawResult.error
-                )
-            }
-            return ExecutionResult.success(state, events)
-        }
-
-        val projected = stateProjector.project(state)
-        val nextPlayer = remainingPlayers.first()
-        val nextRemaining = remainingPlayers.drop(1)
-        val controlledPermanents = projected.getBattlefieldControlledBy(nextPlayer)
-
-        if (controlledPermanents.isEmpty()) {
-            // Skip player with no permanents
-            return continueBounceChain(
-                state, nextRemaining, drawingPlayerId, remainingDraws,
-                drawnCardsSoFar, events, sourceId, sourceName
-            )
-        }
-
-        if (controlledPermanents.size == 1) {
-            // Auto-bounce single permanent
-            val permanentId = controlledPermanents.first()
-            val bounceResult = EffectExecutorUtils.moveCardToZone(state, permanentId, Zone.HAND)
-            events.addAll(bounceResult.events)
-            return continueBounceChain(
-                bounceResult.state, nextRemaining, drawingPlayerId, remainingDraws,
-                drawnCardsSoFar, events, sourceId, sourceName
-            )
-        }
-
-        // Present decision
-        val decisionResult = decisionHandler.createCardSelectionDecision(
-            state = state,
-            playerId = nextPlayer,
-            sourceId = sourceId,
-            sourceName = sourceName ?: "Words of Wind",
-            prompt = "Choose a permanent to return to its owner's hand",
-            options = controlledPermanents,
-            minSelections = 1,
-            maxSelections = 1,
-            ordered = false,
-            phase = DecisionPhase.RESOLUTION,
-            useTargetingUI = true
-        )
-
-        val continuation = DrawReplacementBounceContinuation(
-            decisionId = decisionResult.pendingDecision!!.id,
-            drawingPlayerId = drawingPlayerId,
-            currentBouncingPlayerId = nextPlayer,
-            remainingPlayers = nextRemaining,
-            remainingDraws = remainingDraws,
-            drawnCardsSoFar = drawnCardsSoFar,
-            sourceId = sourceId,
-            sourceName = sourceName
-        )
-
-        val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
-
-        return ExecutionResult.paused(
-            stateWithContinuation,
-            decisionResult.pendingDecision,
-            events + decisionResult.events
-        )
     }
 
     /**

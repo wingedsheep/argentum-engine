@@ -49,6 +49,18 @@ sealed interface CardSource {
     data class FromVariable(val variableName: String) : CardSource {
         override val description: String = "the $variableName cards"
     }
+
+    /**
+     * Permanents controlled by a player (uses projected state to respect control-changing effects).
+     */
+    @SerialName("ControlledPermanents")
+    @Serializable
+    data class ControlledPermanents(
+        val player: Player = Player.You,
+        val filter: GameObjectFilter = GameObjectFilter.Any
+    ) : CardSource {
+        override val description: String = "permanents ${player.possessive} control"
+    }
 }
 
 /**

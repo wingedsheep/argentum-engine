@@ -166,7 +166,7 @@ val engineSerializersModule = SerializersModule {
         subclass(ChooseCreatureTypeUntapContinuation::class)
         subclass(ChangeSpellTargetContinuation::class)
         subclass(SecretBidContinuation::class)
-        subclass(DrawReplacementBounceContinuation::class)
+        subclass(DrawReplacementRemainingDrawsContinuation::class)
         subclass(DrawReplacementDiscardContinuation::class)
         subclass(DrawReplacementActivationContinuation::class)
         subclass(DrawReplacementTargetContinuation::class)

@@ -901,6 +901,33 @@ object EffectPatterns {
     }
 
     /**
+     * Shuffle a player's graveyard into their library.
+     *
+     * Creates a Gather → Move(Shuffled) pipeline.
+     *
+     * ```kotlin
+     * Effects.ShuffleGraveyardIntoLibrary(EffectTarget.ContextTarget(0))
+     * ```
+     *
+     * @param target Whose graveyard to shuffle in (default: target player)
+     */
+    fun shuffleGraveyardIntoLibrary(target: EffectTarget = EffectTarget.ContextTarget(0)): CompositeEffect {
+        val player = effectTargetToPlayer(target)
+        return CompositeEffect(
+            listOf(
+                GatherCardsEffect(
+                    source = CardSource.FromZone(Zone.GRAVEYARD, player),
+                    storeAs = "graveyardCards"
+                ),
+                MoveCollectionEffect(
+                    from = "graveyardCards",
+                    destination = CardDestination.ToZone(Zone.LIBRARY, player, ZonePlacement.Shuffled)
+                )
+            )
+        )
+    }
+
+    /**
      * Look at the top X cards of your library, put any number matching a filter
      * onto the battlefield, then shuffle the rest back.
      *
@@ -1279,6 +1306,33 @@ object EffectPatterns {
                 colors = tokenColors,
                 creatureTypes = tokenCreatureTypes,
                 imageUri = tokenImageUri
+            )
+        )
+    )
+
+    /**
+     * Each player returns a permanent they control to its owner's hand.
+     * Players act in APNAP order (active player first).
+     *
+     * Auto-selects when a player has exactly 1 permanent, skips when 0.
+     * Used by Words of Wind's draw replacement effect.
+     */
+    fun eachPlayerReturnsPermanentToHand(): ForEachPlayerEffect = ForEachPlayerEffect(
+        players = Player.ActivePlayerFirst,
+        effects = listOf(
+            GatherCardsEffect(
+                source = CardSource.ControlledPermanents(Player.You),
+                storeAs = "permanents"
+            ),
+            SelectFromCollectionEffect(
+                from = "permanents",
+                selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
+                storeSelected = "chosen",
+                prompt = "Choose a permanent to return to its owner's hand"
+            ),
+            MoveCollectionEffect(
+                from = "chosen",
+                destination = CardDestination.ToZone(Zone.HAND, Player.You)
             )
         )
     )

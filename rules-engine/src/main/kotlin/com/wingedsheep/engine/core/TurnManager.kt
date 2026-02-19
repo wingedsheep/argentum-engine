@@ -24,6 +24,7 @@ import com.wingedsheep.engine.state.components.player.SkipCombatPhasesComponent
 import com.wingedsheep.engine.state.components.player.SkipNextTurnComponent
 import com.wingedsheep.engine.state.components.player.SkipUntapComponent
 import com.wingedsheep.engine.state.components.player.LoseAtEndStepComponent
+import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
@@ -31,8 +32,10 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.scripting.Effect
 
 /**
  * Manages turn-based game flow: phases, steps, and turn transitions.
@@ -49,7 +52,8 @@ class TurnManager(
     private val sbaChecker: StateBasedActionChecker = StateBasedActionChecker(),
     private val decisionHandler: DecisionHandler = DecisionHandler(),
     private val stateProjector: StateProjector = StateProjector(),
-    private val cardRegistry: com.wingedsheep.engine.registry.CardRegistry? = null
+    private val cardRegistry: com.wingedsheep.engine.registry.CardRegistry? = null,
+    private val effectExecutor: ((GameState, Effect, EffectContext) -> ExecutionResult)? = null
 ) {
 
     /**
@@ -262,7 +266,7 @@ class TurnManager(
         val libraryKey = ZoneKey(playerId, Zone.LIBRARY)
         val handKey = ZoneKey(playerId, Zone.HAND)
 
-        repeat(count) {
+        for (i in 0 until count) {
             // Check for draw replacement shields (e.g., Words of Worship)
             val shieldIndex = newState.floatingEffects.indexOfFirst { effect ->
                 effect.effect.modification is SerializableModification.ReplaceDrawWithLifeGain &&
@@ -280,7 +284,7 @@ class TurnManager(
                     container.with(LifeTotalComponent(newLife))
                 }
                 events.add(LifeChangedEvent(playerId, currentLife, newLife, LifeChangeReason.LIFE_GAIN))
-                return@repeat
+                continue
             }
 
             // Check for damage replacement shields (e.g., Words of War)
@@ -300,7 +304,7 @@ class TurnManager(
                 )
                 newState = damageResult.state
                 events.addAll(damageResult.events)
-                return@repeat
+                continue
             }
 
             // Check for discard replacement shields (e.g., Words of Waste)
@@ -353,7 +357,7 @@ class TurnManager(
                             decisionId = decisionResult.pendingDecision!!.id,
                             drawingPlayerId = playerId,
                             discardingPlayerId = opponentId,
-                            remainingDraws = 0,
+                            remainingDraws = count - i - 1,
                             drawnCardsSoFar = drawnCards.toList(),
                             sourceId = discardShield.sourceId,
                             sourceName = sourceName
@@ -367,7 +371,7 @@ class TurnManager(
                         )
                     }
                 }
-                return@repeat
+                continue
             }
 
             // Check for bounce replacement shields (Words of Wind)
@@ -376,89 +380,76 @@ class TurnManager(
                     playerId in effect.effect.affectedEntities
             }
             if (bounceShieldIndex != -1) {
-                val bounceShield = newState.floatingEffects[bounceShieldIndex]
-                val bounceUpdatedEffects = newState.floatingEffects.toMutableList()
-                bounceUpdatedEffects.removeAt(bounceShieldIndex)
-                newState = newState.copy(floatingEffects = bounceUpdatedEffects)
+                val executor = effectExecutor
+                if (executor != null) {
+                    val bounceShield = newState.floatingEffects[bounceShieldIndex]
 
-                // Emit CardsDrawnEvent for cards drawn before this shield was hit
-                if (drawnCards.isNotEmpty()) {
-                    val cardNames = drawnCards.map { newState.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
-                    events.add(0, CardsDrawnEvent(playerId, drawnCards.size, drawnCards.toList(), cardNames))
-                }
+                    // Remove the consumed shield
+                    val bounceUpdatedEffects = newState.floatingEffects.toMutableList()
+                    bounceUpdatedEffects.removeAt(bounceShieldIndex)
+                    newState = newState.copy(floatingEffects = bounceUpdatedEffects)
 
-                // Get players in APNAP order for the bounce
-                val activePlayer = newState.activePlayerId ?: return ExecutionResult.error(newState, "No active player")
-                val apnapOrder = listOf(activePlayer) + newState.turnOrder.filter { it != activePlayer }
-
-                val projected = stateProjector.project(newState)
-                val playersWithPermanents = apnapOrder.filter { pid ->
-                    projected.getBattlefieldControlledBy(pid).isNotEmpty()
-                }
-
-                if (playersWithPermanents.isEmpty()) {
-                    // No player has permanents - draw is still replaced (no card drawn)
-                    return@repeat
-                }
-
-                // Process auto-bounces for players with exactly 1 permanent
-                var bounceState = newState
-                val playersNeedingDecision = mutableListOf<EntityId>()
-                for (pid in playersWithPermanents) {
-                    val controlledPermanents = stateProjector.project(bounceState).getBattlefieldControlledBy(pid)
-                    if (controlledPermanents.size == 1) {
-                        val permanentId = controlledPermanents.first()
-                        val bounceResult = EffectExecutorUtils.moveCardToZone(bounceState, permanentId, Zone.HAND)
-                        bounceState = bounceResult.state
-                        events.addAll(bounceResult.events)
-                    } else {
-                        playersNeedingDecision.add(pid)
+                    // Emit CardsDrawnEvent for cards drawn before this shield was hit
+                    val allEvents = events.toMutableList()
+                    if (drawnCards.isNotEmpty()) {
+                        val cardNames = drawnCards.map { newState.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
+                        allEvents.add(0, CardsDrawnEvent(playerId, drawnCards.size, drawnCards.toList(), cardNames))
                     }
+
+                    // If there are remaining draws, push a continuation so they resume after the pipeline
+                    val remainingDraws = count - i - 1
+                    if (remainingDraws > 0) {
+                        val remainingDrawsContinuation = DrawReplacementRemainingDrawsContinuation(
+                            drawingPlayerId = playerId,
+                            remainingDraws = remainingDraws,
+                            isDrawStep = true
+                        )
+                        newState = newState.pushContinuation(remainingDrawsContinuation)
+                    }
+
+                    // Build and execute the bounce pipeline
+                    val pipeline = EffectPatterns.eachPlayerReturnsPermanentToHand()
+                    val context = EffectContext(
+                        controllerId = playerId,
+                        sourceId = bounceShield.sourceId,
+                        opponentId = null
+                    )
+
+                    val pipelineResult = executor(newState, pipeline, context)
+
+                    if (pipelineResult.isPaused) {
+                        // Pipeline needs a decision — remaining-draws continuation is underneath
+                        return ExecutionResult.paused(
+                            pipelineResult.state,
+                            pipelineResult.pendingDecision!!,
+                            allEvents + pipelineResult.events
+                        )
+                    }
+
+                    // Pipeline completed synchronously
+                    var resultState = pipelineResult.state
+                    val resultEvents = allEvents + pipelineResult.events
+
+                    // Pop the remaining-draws continuation if we pushed one (pipeline didn't use it)
+                    if (remainingDraws > 0) {
+                        val (popped, stateAfterPop) = resultState.popContinuation()
+                        if (popped is DrawReplacementRemainingDrawsContinuation) {
+                            resultState = stateAfterPop
+                            // Continue with remaining draws
+                            val drawResult = drawCards(resultState, playerId, remainingDraws)
+                            return ExecutionResult(
+                                drawResult.state,
+                                resultEvents + drawResult.events,
+                                drawResult.error
+                            )
+                        }
+                        // If the continuation was something else, put it back (shouldn't happen)
+                        resultState = pipelineResult.state
+                    }
+
+                    return ExecutionResult.success(resultState, resultEvents)
                 }
-
-                if (playersNeedingDecision.isEmpty()) {
-                    // All auto-bounced, continue
-                    newState = bounceState
-                    return@repeat
-                }
-
-                // First player with multiple permanents needs to choose
-                val firstPlayer = playersNeedingDecision.first()
-                val remainingBounce = playersNeedingDecision.drop(1)
-                val controlledPermanents = stateProjector.project(bounceState).getBattlefieldControlledBy(firstPlayer)
-
-                val sourceName = bounceShield.sourceName ?: "Words of Wind"
-                val decisionResult = decisionHandler.createCardSelectionDecision(
-                    state = bounceState,
-                    playerId = firstPlayer,
-                    sourceId = bounceShield.sourceId,
-                    sourceName = sourceName,
-                    prompt = "Choose a permanent to return to its owner's hand",
-                    options = controlledPermanents,
-                    minSelections = 1,
-                    maxSelections = 1,
-                    ordered = false,
-                    phase = DecisionPhase.RESOLUTION,
-                    useTargetingUI = true
-                )
-
-                val continuation = DrawReplacementBounceContinuation(
-                    decisionId = decisionResult.pendingDecision!!.id,
-                    drawingPlayerId = playerId,
-                    currentBouncingPlayerId = firstPlayer,
-                    remainingPlayers = remainingBounce,
-                    remainingDraws = 0,
-                    drawnCardsSoFar = drawnCards.toList(),
-                    sourceId = bounceShield.sourceId,
-                    sourceName = sourceName
-                )
-
-                val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
-                return ExecutionResult.paused(
-                    stateWithContinuation,
-                    decisionResult.pendingDecision,
-                    events + decisionResult.events
-                )
+                // No effectExecutor available - skip bounce (shouldn't happen in production)
             }
 
             // Check for token replacement shields (Words of Wilding)
@@ -473,7 +464,7 @@ class TurnManager(
                 tokenUpdatedEffects.removeAt(tokenShieldIndex)
                 newState = newState.copy(floatingEffects = tokenUpdatedEffects)
                 newState = DrawCardsExecutor.createToken(newState, playerId, tokenMod)
-                return@repeat
+                continue
             }
 
             val library = newState.getZone(libraryKey)
