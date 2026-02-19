@@ -845,7 +845,7 @@ export function GameCard({
       )}
 
       {/* Active effect badges (evasion, etc.) */}
-      {battlefield && !faceDown && card.activeEffects && card.activeEffects.length > 0 && (
+      {battlefield && card.activeEffects && card.activeEffects.length > 0 && (
         <ActiveEffectBadges effects={card.activeEffects} />
       )}
 
