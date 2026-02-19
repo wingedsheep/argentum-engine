@@ -1,0 +1,257 @@
+# Khans of Tarkir (KTK) - Card Checklist
+
+**Set Size:** 269 cards (249 unique card names + basic land variants)
+**Release Date:** September 26, 2014
+**Implemented:** 0 / 249
+
+---
+
+- [ ] Abomination of Gudul
+- [ ] Abzan Ascendancy
+- [ ] Abzan Banner
+- [ ] Abzan Battle Priest
+- [ ] Abzan Charm
+- [ ] Abzan Falconer
+- [ ] Abzan Guide
+- [ ] Act of Treason
+- [ ] Ainok Bond-Kin
+- [ ] Ainok Tracker
+- [ ] Alabaster Kirin
+- [ ] Alpine Grizzly
+- [ ] Altar of the Brood
+- [ ] Anafenza, the Foremost
+- [ ] Ankle Shanker
+- [ ] Archers' Parapet
+- [ ] Arc Lightning
+- [ ] Armament Corps
+- [ ] Arrow Storm
+- [ ] Ashcloud Phoenix
+- [ ] Avalanche Tusker
+- [ ] Awaken the Bear
+- [ ] Barrage of Boulders
+- [ ] Bear's Companion
+- [ ] Become Immense
+- [ ] Bellowing Saddlebrute
+- [ ] Bitter Revelation
+- [ ] Blinding Spray
+- [ ] Bloodfell Caves
+- [ ] Bloodfire Expert
+- [ ] Bloodfire Mentor
+- [ ] Bloodsoaked Champion
+- [ ] Bloodstained Mire
+- [ ] Blossoming Sands
+- [ ] Brave the Sands
+- [ ] Briber's Purse
+- [ ] Bring Low
+- [ ] Burn Away
+- [ ] Butcher of the Horde
+- [ ] Cancel
+- [ ] Canyon Lurkers
+- [ ] Chief of the Edge
+- [ ] Chief of the Scale
+- [ ] Clever Impersonator
+- [ ] Crackling Doom
+- [ ] Cranial Archive
+- [ ] Crater's Claws
+- [ ] Crippling Chill
+- [ ] Dazzling Ramparts
+- [ ] Dead Drop
+- [ ] Death Frenzy
+- [ ] Debilitating Injury
+- [ ] Defiant Strike
+- [ ] Deflecting Palm
+- [ ] Despise
+- [ ] Dig Through Time
+- [ ] Disdainful Stroke
+- [ ] Dismal Backwater
+- [ ] Disowned Ancestor
+- [ ] Dragon Grip
+- [ ] Dragonscale Boon
+- [ ] Dragon's Eye Savants
+- [ ] Dragon-Style Twins
+- [ ] Dragon Throne of Tarkir
+- [ ] Duneblast
+- [ ] Dutiful Return
+- [ ] Efreet Weaponmaster
+- [ ] Embodiment of Spring
+- [ ] Empty the Pits
+- [ ] End Hostilities
+- [ ] Erase
+- [ ] Feat of Resistance
+- [ ] Feed the Clan
+- [ ] Firehoof Cavalry
+- [ ] Flooded Strand
+- [ ] Flying Crane Technique
+- [ ] Force Away
+- [ ] Frontier Bivouac
+- [ ] Ghostfire Blade
+- [ ] Glacial Stalker
+- [ ] Goblinslide
+- [ ] Grim Haruspex
+- [ ] Gurmag Swiftwing
+- [ ] Hardened Scales
+- [ ] Heart-Piercer Bow
+- [ ] Heir of the Wilds
+- [ ] Herald of Anafenza
+- [ ] Highland Game
+- [ ] High Sentinels of Arashin
+- [ ] Highspire Mantis
+- [ ] Hooded Hydra
+- [ ] Hooting Mandrills
+- [ ] Horde Ambusher
+- [ ] Hordeling Outburst
+- [ ] Howl of the Horde
+- [ ] Icefeather Aven
+- [ ] Icy Blast
+- [ ] Incremental Growth
+- [ ] Ivorytusk Fortress
+- [ ] Jeering Instigator
+- [ ] Jeskai Ascendancy
+- [ ] Jeskai Banner
+- [ ] Jeskai Charm
+- [ ] Jeskai Elder
+- [ ] Jeskai Student
+- [ ] Jeskai Windscout
+- [ ] Jungle Hollow
+- [ ] Kheru Bloodsucker
+- [ ] Kheru Dreadmaw
+- [ ] Kheru Lich Lord
+- [ ] Kheru Spellsnatcher
+- [ ] Kill Shot
+- [ ] Kin-Tree Invocation
+- [ ] Kin-Tree Warden
+- [ ] Krumar Bond-Kin
+- [ ] Leaping Master
+- [ ] Lens of Clarity
+- [ ] Longshot Squad
+- [ ] Mantis Rider
+- [ ] Mardu Ascendancy
+- [ ] Mardu Banner
+- [ ] Mardu Blazebringer
+- [ ] Mardu Charm
+- [ ] Mardu Hateblade
+- [ ] Mardu Heart-Piercer
+- [ ] Mardu Hordechief
+- [ ] Mardu Roughrider
+- [ ] Mardu Skullhunter
+- [ ] Mardu Warshrieker
+- [ ] Master of Pearls
+- [ ] Master the Way
+- [ ] Meandering Towershell
+- [ ] Mer-Ek Nightblade
+- [ ] Mindswipe
+- [ ] Mistfire Weaver
+- [ ] Molting Snakeskin
+- [ ] Monastery Flock
+- [ ] Monastery Swiftspear
+- [ ] Murderous Cut
+- [ ] Mystic Monastery
+- [ ] Mystic of the Hidden Way
+- [ ] Narset, Enlightened Master
+- [ ] Naturalize
+- [ ] Necropolis Fiend
+- [ ] Nomad Outpost
+- [ ] Opulent Palace
+- [ ] Pearl Lake Ancient
+- [ ] Pine Walker
+- [ ] Polluted Delta
+- [ ] Ponyback Brigade
+- [ ] Quiet Contemplation
+- [ ] Raiders' Spoils
+- [ ] Rakshasa Deathdealer
+- [ ] Rakshasa's Secret
+- [ ] Rakshasa Vizier
+- [ ] Rattleclaw Mystic
+- [ ] Retribution of the Ancients
+- [ ] Ride Down
+- [ ] Rite of the Serpent
+- [ ] Riverwheel Aerialists
+- [ ] Roar of Challenge
+- [ ] Rotting Mastodon
+- [ ] Rugged Highlands
+- [ ] Rush of Battle
+- [ ] Ruthless Ripper
+- [ ] Sage-Eye Harrier
+- [ ] Sage of the Inward Eye
+- [ ] Sagu Archer
+- [ ] Sagu Mauler
+- [ ] Salt Road Patrol
+- [ ] Sandsteppe Citadel
+- [ ] Sarkhan, the Dragonspeaker
+- [ ] Savage Knuckleblade
+- [ ] Savage Punch
+- [ ] Scaldkin
+- [ ] Scion of Glaciers
+- [ ] Scoured Barrens
+- [ ] Scout the Borders
+- [ ] Secret Plans
+- [ ] Seeker of the Way
+- [ ] Seek the Horizon
+- [ ] See the Unwritten
+- [ ] Set Adrift
+- [ ] Shambling Attendants
+- [ ] Shatter
+- [ ] Sidisi, Brood Tyrant
+- [ ] Sidisi's Pet
+- [ ] Siegecraft
+- [ ] Siege Rhino
+- [ ] Singing Bell Strike
+- [ ] Smite the Monstrous
+- [ ] Smoke Teller
+- [ ] Snowhorn Rider
+- [ ] Sorin, Solemn Visitor
+- [ ] Stubborn Denial
+- [ ] Sultai Ascendancy
+- [ ] Sultai Banner
+- [ ] Sultai Charm
+- [ ] Sultai Flayer
+- [ ] Sultai Scavenger
+- [ ] Sultai Soothsayer
+- [ ] Summit Prowler
+- [ ] Surrak Dragonclaw
+- [ ] Suspension Field
+- [ ] Swarm of Bloodflies
+- [ ] Swift Kick
+- [ ] Swiftwater Cliffs
+- [ ] Taigam's Scheming
+- [ ] Take Up Arms
+- [ ] Temur Ascendancy
+- [ ] Temur Banner
+- [ ] Temur Charger
+- [ ] Temur Charm
+- [ ] Thornwood Falls
+- [ ] Thousand Winds
+- [ ] Throttle
+- [ ] Timely Hordemate
+- [ ] Tomb of the Spirit Dragon
+- [ ] Tormenting Voice
+- [ ] Trail of Mystery
+- [ ] Tranquil Cove
+- [ ] Trap Essence
+- [ ] Treasure Cruise
+- [ ] Trumpet Blast
+- [ ] Tusked Colossodon
+- [ ] Tuskguard Captain
+- [ ] Ugin's Nexus
+- [ ] Unyielding Krumar
+- [ ] Utter End
+- [ ] Valley Dasher
+- [ ] Venerable Lammasu
+- [ ] Villainous Wealth
+- [ ] War Behemoth
+- [ ] Warden of the Eye
+- [ ] War-Name Aspirant
+- [ ] Watcher of the Roost
+- [ ] Waterwhirl
+- [ ] Weave Fate
+- [ ] Wetland Sambar
+- [ ] Whirlwind Adept
+- [ ] Wind-Scarred Crag
+- [ ] Windstorm
+- [ ] Windswept Heath
+- [ ] Wingmate Roc
+- [ ] Winterflame
+- [ ] Witness of the Ages
+- [ ] Wooded Foothills
+- [ ] Woolly Loxodon
+- [ ] Zurgo Helmsmasher
