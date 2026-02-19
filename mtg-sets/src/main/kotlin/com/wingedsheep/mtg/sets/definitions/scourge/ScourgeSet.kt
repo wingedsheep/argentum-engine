@@ -58,6 +58,9 @@ object ScourgeSet {
         // Red enchantments
         SulfuricVortex,
 
+        // Red sorceries
+        GoblinWarStrike,
+
         // Red instants
         Carbonize,
         SparkSpray,

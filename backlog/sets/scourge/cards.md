@@ -84,7 +84,7 @@
 - [ ] Goblin Brigand
 - [ ] Goblin Psychopath
 - [x] Goblin Warchief
-- [ ] Goblin War Strike
+- [x] Goblin War Strike
 - [ ] Grip of Chaos
 - [ ] Guilty Conscience
 - [ ] Hindering Touch
@@ -93,7 +93,7 @@
 - [ ] Karona's Zealot
 - [ ] Krosan Drover
 - [ ] Krosan Warchief
-- [ ] Kurgadon
+- [x] Kurgadon
 - [ ] Lethal Vapors
 - [ ] Lingering Death
 - [ ] Long-Term Plans
