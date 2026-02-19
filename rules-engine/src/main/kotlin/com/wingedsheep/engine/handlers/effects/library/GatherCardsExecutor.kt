@@ -106,6 +106,7 @@ class GatherCardsExecutor : EffectExecutor<GatherCardsEffect> {
             is Player.TargetOpponent -> context.opponentId
             is Player.TargetPlayer -> context.opponentId
             is Player.ContextPlayer -> context.targets.getOrNull(player.index)?.let { EffectExecutorUtils.run { it.toEntityId() } }
+            is Player.TriggeringPlayer -> context.triggeringEntityId
             else -> context.controllerId
         }
     }

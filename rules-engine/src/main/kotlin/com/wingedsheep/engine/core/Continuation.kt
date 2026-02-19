@@ -71,7 +71,8 @@ data class EffectContinuation(
     val xValue: Int?,
     val targets: List<ChosenTarget> = emptyList(),
     val storedCollections: Map<String, List<EntityId>> = emptyMap(),
-    val chosenCreatureType: String? = null
+    val chosenCreatureType: String? = null,
+    val triggeringEntityId: EntityId? = null
 ) : ContinuationFrame {
     /**
      * Reconstruct the EffectContext from serialized fields.
@@ -83,7 +84,8 @@ data class EffectContinuation(
         xValue = xValue,
         targets = targets,
         storedCollections = storedCollections,
-        chosenCreatureType = chosenCreatureType
+        chosenCreatureType = chosenCreatureType,
+        triggeringEntityId = triggeringEntityId
     )
 }
 

@@ -142,7 +142,9 @@ enum class Chooser {
     /** An opponent decides */
     Opponent,
     /** The target player decides (resolved from context.targets[0]) */
-    TargetPlayer
+    TargetPlayer,
+    /** The triggering player decides (resolved from trigger context) */
+    TriggeringPlayer
 }
 
 /**

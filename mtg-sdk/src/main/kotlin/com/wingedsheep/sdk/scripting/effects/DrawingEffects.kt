@@ -30,39 +30,6 @@ data class DrawCardsEffect(
 }
 
 /**
- * Discard cards effect.
- * "Discard X cards" or "Target player discards X cards"
- */
-@SerialName("DiscardCards")
-@Serializable
-data class DiscardCardsEffect(
-    val count: Int,
-    val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent)
-) : Effect {
-    override val description: String = when (target) {
-        EffectTarget.Controller -> "Discard ${if (count == 1) "a card" else "$count cards"}"
-        else -> "${target.description.replaceFirstChar { it.uppercase() }} discards ${if (count == 1) "a card" else "$count cards"}"
-    }
-}
-
-/**
- * Discard cards at random effect.
- * "Target opponent discards a card at random"
- * Used for cards like Mind Knives.
- */
-@SerialName("DiscardRandom")
-@Serializable
-data class DiscardRandomEffect(
-    val count: Int = 1,
-    val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent)
-) : Effect {
-    override val description: String = when (target) {
-        EffectTarget.Controller -> "Discard ${if (count == 1) "a card" else "$count cards"} at random"
-        else -> "${target.description.replaceFirstChar { it.uppercase() }} discards ${if (count == 1) "a card" else "$count cards"} at random"
-    }
-}
-
-/**
  * Each opponent discards cards.
  * "Each opponent discards a card."
  * Used for cards like Noxious Toad.

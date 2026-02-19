@@ -84,6 +84,8 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
             Chooser.TargetPlayer -> context.targets.firstOrNull()?.let {
                 EffectExecutorUtils.run { it.toEntityId() }
             } ?: return ExecutionResult.error(state, "No target player for TargetPlayer chooser")
+            Chooser.TriggeringPlayer -> context.triggeringEntityId
+                ?: return ExecutionResult.error(state, "No triggering player for TriggeringPlayer chooser")
         }
 
         return when (val selection = effect.selection) {

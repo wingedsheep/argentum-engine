@@ -1,9 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
 import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DiscardCardsEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.OnCreatureWithSubtypeDealsCombatDamageToPlayer
 import com.wingedsheep.sdk.scripting.Player
@@ -24,7 +24,7 @@ val CabalSlaver = card("Cabal Slaver") {
 
     triggeredAbility {
         trigger = OnCreatureWithSubtypeDealsCombatDamageToPlayer(Subtype("Goblin"))
-        effect = DiscardCardsEffect(1, EffectTarget.PlayerRef(Player.TriggeringPlayer))
+        effect = Effects.Discard(1, EffectTarget.PlayerRef(Player.TriggeringPlayer))
     }
 
     metadata {

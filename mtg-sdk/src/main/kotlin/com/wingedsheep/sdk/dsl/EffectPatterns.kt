@@ -49,7 +49,7 @@ object EffectPatterns {
      * mayPayOrElse(
      *     PayLifeEffect(3),
      *     ifPaid = DrawCardsEffect(2),
-     *     ifNotPaid = DiscardCardsEffect(1)
+     *     ifNotPaid = Effects.Discard(1)
      * )
      * ```
      */
@@ -130,24 +130,29 @@ object EffectPatterns {
      * // -> "Discard a card."
      * ```
      */
-    fun discardCards(count: Int): CompositeEffect = CompositeEffect(
-        listOf(
-            GatherCardsEffect(
-                source = CardSource.FromZone(Zone.HAND, Player.You),
-                storeAs = "hand"
-            ),
-            SelectFromCollectionEffect(
-                from = "hand",
-                selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(count)),
-                storeSelected = "discarded"
-            ),
-            MoveCollectionEffect(
-                from = "discarded",
-                destination = CardDestination.ToZone(Zone.GRAVEYARD),
-                moveType = MoveType.Discard
+    fun discardCards(count: Int, target: EffectTarget = EffectTarget.Controller): CompositeEffect {
+        val player = effectTargetToPlayer(target)
+        val chooser = effectTargetToChooser(target)
+        return CompositeEffect(
+            listOf(
+                GatherCardsEffect(
+                    source = CardSource.FromZone(Zone.HAND, player),
+                    storeAs = "hand"
+                ),
+                SelectFromCollectionEffect(
+                    from = "hand",
+                    selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(count)),
+                    chooser = chooser,
+                    storeSelected = "discarded"
+                ),
+                MoveCollectionEffect(
+                    from = "discarded",
+                    destination = CardDestination.ToZone(Zone.GRAVEYARD, player),
+                    moveType = MoveType.Discard
+                )
             )
         )
-    )
+    }
 
     /**
      * Controller discards N cards at random (engine picks, no player choice).
@@ -160,24 +165,27 @@ object EffectPatterns {
      * // -> "Discard a card at random."
      * ```
      */
-    fun discardRandom(count: Int): CompositeEffect = CompositeEffect(
-        listOf(
-            GatherCardsEffect(
-                source = CardSource.FromZone(Zone.HAND, Player.You),
-                storeAs = "hand"
-            ),
-            SelectFromCollectionEffect(
-                from = "hand",
-                selection = SelectionMode.Random(DynamicAmount.Fixed(count)),
-                storeSelected = "discarded"
-            ),
-            MoveCollectionEffect(
-                from = "discarded",
-                destination = CardDestination.ToZone(Zone.GRAVEYARD),
-                moveType = MoveType.Discard
+    fun discardRandom(count: Int, target: EffectTarget = EffectTarget.Controller): CompositeEffect {
+        val player = effectTargetToPlayer(target)
+        return CompositeEffect(
+            listOf(
+                GatherCardsEffect(
+                    source = CardSource.FromZone(Zone.HAND, player),
+                    storeAs = "hand"
+                ),
+                SelectFromCollectionEffect(
+                    from = "hand",
+                    selection = SelectionMode.Random(DynamicAmount.Fixed(count)),
+                    storeSelected = "discarded"
+                ),
+                MoveCollectionEffect(
+                    from = "discarded",
+                    destination = CardDestination.ToZone(Zone.GRAVEYARD, player),
+                    moveType = MoveType.Discard
+                )
             )
         )
-    )
+    }
 
     /**
      * Controller may put up to [count] cards matching [filter] from their hand onto the battlefield.
@@ -343,7 +351,7 @@ object EffectPatterns {
      * ```kotlin
      * sequence(
      *     DrawCardsEffect(3),
-     *     DiscardCardsEffect(2)
+     *     Effects.Discard(2)
      * )
      * ```
      */
@@ -1124,12 +1132,7 @@ object EffectPatterns {
      * @param target Which player's hand to discard (default: controller)
      */
     fun discardHand(target: EffectTarget = EffectTarget.Controller): CompositeEffect {
-        val player = when (target) {
-            EffectTarget.Controller -> Player.You
-            is EffectTarget.ContextTarget -> Player.ContextPlayer(target.index)
-            is EffectTarget.PlayerRef -> target.player
-            else -> Player.You
-        }
+        val player = effectTargetToPlayer(target)
         return CompositeEffect(
             listOf(
                 GatherCardsEffect(
@@ -1221,4 +1224,30 @@ object EffectPatterns {
             )
         )
     )
+
+    /**
+     * Translate an [EffectTarget] to a [Player] reference for use in pipeline effects.
+     */
+    private fun effectTargetToPlayer(target: EffectTarget): Player = when (target) {
+        EffectTarget.Controller -> Player.You
+        is EffectTarget.ContextTarget -> Player.ContextPlayer(target.index)
+        is EffectTarget.PlayerRef -> target.player
+        else -> Player.You
+    }
+
+    /**
+     * Translate an [EffectTarget] to a [Chooser] for [SelectFromCollectionEffect].
+     * The chooser determines which player makes the selection decision.
+     */
+    private fun effectTargetToChooser(target: EffectTarget): Chooser = when (target) {
+        EffectTarget.Controller -> Chooser.Controller
+        is EffectTarget.ContextTarget -> Chooser.TargetPlayer
+        is EffectTarget.PlayerRef -> when (target.player) {
+            is Player.You -> Chooser.Controller
+            is Player.Opponent, is Player.TargetOpponent, is Player.EachOpponent -> Chooser.Opponent
+            is Player.TriggeringPlayer -> Chooser.TriggeringPlayer
+            else -> Chooser.Controller
+        }
+        else -> Chooser.Controller
+    }
 }

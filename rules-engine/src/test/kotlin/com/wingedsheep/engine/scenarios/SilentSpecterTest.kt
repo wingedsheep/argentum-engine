@@ -9,7 +9,7 @@ import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.DiscardCardsEffect
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.scripting.OnDealsDamage
 import com.wingedsheep.sdk.scripting.Player
@@ -40,7 +40,7 @@ class SilentSpecterTest : FunSpec({
         script = CardScript.creature(
             TriggeredAbility.create(
                 trigger = OnDealsDamage(selfOnly = true, combatOnly = true, toPlayerOnly = true),
-                effect = DiscardCardsEffect(2, EffectTarget.PlayerRef(Player.Opponent))
+                effect = Effects.Discard(2, EffectTarget.PlayerRef(Player.Opponent))
             )
         )
     )

@@ -88,7 +88,13 @@ object Effects {
      * Discard cards. Default target is target opponent.
      */
     fun Discard(count: Int, target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent)): Effect =
-        DiscardCardsEffect(count, target)
+        EffectPatterns.discardCards(count, target)
+
+    /**
+     * Discard cards at random. Default target is target opponent.
+     */
+    fun DiscardRandom(count: Int, target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent)): Effect =
+        EffectPatterns.discardRandom(count, target)
 
     /**
      * Target player discards their entire hand.
@@ -586,7 +592,7 @@ object Effects {
     fun Loot(draw: Int = 1, discard: Int = 1): Effect = CompositeEffect(
         listOf(
             DrawCardsEffect(draw, EffectTarget.Controller),
-            DiscardCardsEffect(discard, EffectTarget.Controller)
+            EffectPatterns.discardCards(discard)
         )
     )
 

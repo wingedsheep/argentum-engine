@@ -128,6 +128,7 @@ class RevealUntilExecutor : EffectExecutor<RevealUntilEffect> {
             is Player.ContextPlayer -> context.targets.getOrNull(player.index)?.let {
                 EffectExecutorUtils.run { it.toEntityId() }
             }
+            is Player.TriggeringPlayer -> context.triggeringEntityId
             else -> context.controllerId
         }
     }

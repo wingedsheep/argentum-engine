@@ -1,8 +1,8 @@
 package com.wingedsheep.mtg.sets.definitions.portal.cards
 
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DiscardCardsEffect
 import com.wingedsheep.sdk.scripting.EffectTarget
 import com.wingedsheep.sdk.targeting.TargetOpponent
 
@@ -18,7 +18,7 @@ val MindRot = card("Mind Rot") {
 
     spell {
         target = TargetOpponent()
-        effect = DiscardCardsEffect(2, EffectTarget.ContextTarget(0))
+        effect = Effects.Discard(2, EffectTarget.ContextTarget(0))
     }
 
     metadata {
