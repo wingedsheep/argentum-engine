@@ -1,0 +1,34 @@
+{
+    "name": "Daru Warchief",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Soldier spells you cast cost {1} less to cast.\nSoldier creatures you control get +1/+2.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ReduceSpellCostBySubtype",
+                "subtype": "Soldier",
+                "amount": 1
+            },
+            {
+                "type": "ModifyStatsForCreatureGroup",
+                "powerBonus": 1,
+                "toughnessBonus": 2,
+                "filter": {
+                    "baseFilter": "creature Soldier"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "rarity": "UNCOMMON",
+        "artist": "Tim Hildebrandt",
+        "flavorText": "Within the complex Daru hierarchy, the weights of duty and of rank are equal.",
+        "imageUri": "https://cards.scryfall.io/large/front/2/6/2630d3b5-8f3a-4aad-a45e-22a7979429f3.jpg?1562526606"
+    }
+}

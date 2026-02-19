@@ -35,6 +35,8 @@ object CompactJsonTransformer {
         "ability",
         // Pipeline effect internals
         "source", "selection",
+        // Player references (sealed interface, e.g., in AggregateBattlefield)
+        "player",
     )
 
     /**

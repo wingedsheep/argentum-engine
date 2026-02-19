@@ -1,0 +1,43 @@
+{
+    "name": "Sulfuric Vortex",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of each player's upkeep, Sulfuric Vortex deals 2 damage to that player.\nIf a player would gain life, that player gains no life instead.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "Upkeep",
+                    "controllerOnly": false
+                },
+                "effect": {
+                    "type": "DealDamageToPlayers",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "PreventLifeGain",
+                "appliesTo": {
+                    "type": "LifeGainEvent",
+                    "player": "Each"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "rarity": "RARE",
+        "artist": "Greg Staples",
+        "imageUri": "https://cards.scryfall.io/large/front/7/9/79955e27-eef7-43bd-9895-e9209ed1537f.jpg?1562531138"
+    }
+}

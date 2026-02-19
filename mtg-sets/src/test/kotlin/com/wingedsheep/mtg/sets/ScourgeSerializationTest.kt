@@ -26,8 +26,12 @@ class ScourgeSerializationTest : FunSpec({
         "break-asunder.json",
         "carrion-feeder.json",
         "fierce-empath.json",
+        "carbonize.json",
+        "daru-warchief.json",
         "goblin-warchief.json",
+        "rush-of-knowledge.json",
         "siege-gang-commander.json",
+        "sulfuric-vortex.json",
     )
 
     test("Kotlin cards round-trip through JSON export and import") {
