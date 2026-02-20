@@ -35,6 +35,7 @@ object ScourgeSet {
         FierceEmpath,
         Kurgadon,
         TreetopScout,
+        WirewoodGuardian,
 
         // Green instants
         AcceleratedMutation,

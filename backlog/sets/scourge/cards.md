@@ -2,7 +2,7 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 29 / 143
+**Implemented:** 30 / 143
 
 | Color | Count |
 |-------|-------|
@@ -153,7 +153,7 @@
 - [x] Vengeful Dead
 - [ ] Wing Shards
 - [x] Wipe Clean
-- [ ] Wirewood Guardian
+- [x] Wirewood Guardian
 - [ ] Wirewood Symbiote
 - [ ] Woodcloaker
 - [ ] Xantid Swarm
