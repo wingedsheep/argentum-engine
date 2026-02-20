@@ -3,7 +3,7 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 37 / 143
+**Implemented:** 38 / 143
 
 | Color | Count |
 |-------|-------|
@@ -68,7 +68,7 @@
 - [ ] Dragon Wings
 - [ ] Edgewalker
 - [x] Elvish Aberration
-- [ ] Enrage
+- [x] Enrage
 - [ ] Eternal Dragon
 - [ ] Exiled Doomsayer
 - [ ] Extra Arms
