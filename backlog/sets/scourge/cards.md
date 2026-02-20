@@ -3,7 +3,7 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 33 / 143
+**Implemented:** 34 / 143
 
 | Color | Count |
 |-------|-------|
@@ -117,7 +117,7 @@
 - [ ] Raven Guild Initiate
 - [ ] Raven Guild Master
 - [ ] Reaping the Graves
-- [ ] Recuperate
+- [x] Recuperate
 - [ ] Reward the Faithful
 - [x] Riptide Survivor
 - [ ] Rock Jockey

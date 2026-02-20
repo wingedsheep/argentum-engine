@@ -80,6 +80,7 @@ object ScourgeSet {
 
         // White instants
         RainOfBlades,
+        Recuperate,
         WipeClean,
 
         // Black creatures (additional)
