@@ -210,6 +210,8 @@ export function useCardLegalActions(cardId: EntityId | null): readonly LegalActi
           return a.cardId === cardId
         case 'CycleCard':
           return a.cardId === cardId
+        case 'TypecycleCard':
+          return a.cardId === cardId
         case 'ActivateAbility':
           return a.sourceId === cardId
         case 'TurnFaceUp':

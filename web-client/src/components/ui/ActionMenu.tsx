@@ -122,6 +122,19 @@ function buildActionOptions(
     })
   }
 
+  // 4b. Typecycling (e.g., Islandcycling, Swampcycling)
+  const typecycleAction = legalActions.find((a) => a.action.type === 'TypecycleCard')
+  if (typecycleAction) {
+    options.push({
+      key: 'typecycle',
+      label: typecycleAction.description,
+      manaCost: typecycleAction.manaCostString || null,
+      isAvailable: typecycleAction.isAffordable !== false,
+      action: typecycleAction,
+      actionType: 'cycle',
+    })
+  }
+
   // 5. Activated abilities (for permanents on battlefield)
   const activateActions = legalActions.filter((a) => a.action.type === 'ActivateAbility')
   activateActions.forEach((activateAction, index) => {

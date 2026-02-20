@@ -12,6 +12,7 @@ export type GameAction =
   | CastSpellAction
   | ActivateAbilityAction
   | CycleCardAction
+  | TypecycleCardAction
   | PlayLandAction
   | TurnFaceUpAction
   | DeclareAttackersAction
@@ -98,6 +99,12 @@ export interface ActivateAbilityAction {
 
 export interface CycleCardAction {
   readonly type: 'CycleCard'
+  readonly playerId: EntityId
+  readonly cardId: EntityId
+}
+
+export interface TypecycleCardAction {
+  readonly type: 'TypecycleCard'
   readonly playerId: EntityId
   readonly cardId: EntityId
 }
@@ -243,6 +250,8 @@ export function getActionSubject(action: GameAction): EntityId | null {
     case 'CastSpell':
       return action.cardId
     case 'CycleCard':
+      return action.cardId
+    case 'TypecycleCard':
       return action.cardId
     case 'ActivateAbility':
       return action.sourceId
