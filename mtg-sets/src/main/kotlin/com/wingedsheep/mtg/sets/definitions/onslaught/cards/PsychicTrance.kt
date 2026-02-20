@@ -6,11 +6,11 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.ActivatedAbility
-import com.wingedsheep.sdk.scripting.CounterSpellEffect
+import com.wingedsheep.sdk.scripting.effects.CounterSpellEffect
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.GrantActivatedAbilityToGroupEffect
-import com.wingedsheep.sdk.scripting.GroupFilter
+import com.wingedsheep.sdk.scripting.effects.GrantActivatedAbilityToGroupEffect
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 
 /**
  * Psychic Trance

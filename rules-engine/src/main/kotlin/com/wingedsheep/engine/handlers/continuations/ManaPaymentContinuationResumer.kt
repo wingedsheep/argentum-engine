@@ -8,6 +8,7 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.TargetsComponent
+import com.wingedsheep.sdk.scripting.effects.MayPayManaEffect
 
 class ManaPaymentContinuationResumer(
     private val ctx: ContinuationContext
@@ -410,7 +411,7 @@ class ManaPaymentContinuationResumer(
 
         // Unwrap MayPayManaEffect to get inner effect
         val trigger = continuation.trigger
-        val mayPayEffect = trigger.ability.effect as com.wingedsheep.sdk.scripting.MayPayManaEffect
+        val mayPayEffect = trigger.ability.effect as MayPayManaEffect
         val innerEffect = mayPayEffect.effect
 
         // Create a modified trigger with the inner effect (mana already paid)

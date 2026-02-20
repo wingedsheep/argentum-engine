@@ -3,16 +3,15 @@ package com.wingedsheep.engine.handlers
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.continuations.*
 import com.wingedsheep.engine.handlers.effects.EffectExecutorRegistry
-import com.wingedsheep.engine.handlers.effects.drawing.EachOpponentDiscardsExecutor
 import com.wingedsheep.engine.mechanics.combat.CombatManager
 import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
-import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.effects.MayEffect
 
 /**
  * Handles resumption of execution after a player decision.
@@ -318,7 +317,7 @@ class ContinuationHandler(
         }
 
         val trigger = continuation.trigger
-        val mayEffect = trigger.ability.effect as com.wingedsheep.sdk.scripting.MayEffect
+        val mayEffect = trigger.ability.effect as MayEffect
         val innerEffect = mayEffect.effect
 
         val unwrappedAbility = trigger.ability.copy(effect = innerEffect)

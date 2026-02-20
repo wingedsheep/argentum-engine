@@ -9,7 +9,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
-import com.wingedsheep.sdk.scripting.OwnerGainsLifeEffect
+import com.wingedsheep.sdk.scripting.effects.OwnerGainsLifeEffect
 import kotlin.reflect.KClass
 
 /**

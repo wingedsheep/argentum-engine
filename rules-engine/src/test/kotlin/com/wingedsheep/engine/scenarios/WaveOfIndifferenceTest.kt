@@ -8,8 +8,8 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.CantBlockTargetCreaturesEffect
-import com.wingedsheep.sdk.targeting.TargetCreature
+import com.wingedsheep.sdk.scripting.effects.CantBlockTargetCreaturesEffect
+import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContainIgnoringCase

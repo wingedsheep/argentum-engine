@@ -8,7 +8,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.scripting.ChangeCreatureTypeTextEffect
+import com.wingedsheep.sdk.scripting.effects.ChangeCreatureTypeTextEffect
 import java.util.UUID
 import kotlin.reflect.KClass
 

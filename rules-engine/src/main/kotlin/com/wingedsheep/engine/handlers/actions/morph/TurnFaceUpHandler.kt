@@ -26,7 +26,7 @@ import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.scripting.PayCost
+import com.wingedsheep.sdk.scripting.costs.PayCost
 import kotlin.reflect.KClass
 
 /**

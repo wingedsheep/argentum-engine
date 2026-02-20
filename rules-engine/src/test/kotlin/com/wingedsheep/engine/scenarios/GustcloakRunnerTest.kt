@@ -12,11 +12,11 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.scripting.MayEffect
-import com.wingedsheep.sdk.scripting.OnBecomesBlocked
-import com.wingedsheep.sdk.scripting.RemoveFromCombatEffect
-import com.wingedsheep.sdk.scripting.TapUntapEffect
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.effects.MayEffect
+import com.wingedsheep.sdk.scripting.triggers.OnBecomesBlocked
+import com.wingedsheep.sdk.scripting.effects.RemoveFromCombatEffect
+import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe

@@ -5,7 +5,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
-import com.wingedsheep.sdk.scripting.AddColorlessManaEffect
+import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import kotlin.reflect.KClass
 
 /**

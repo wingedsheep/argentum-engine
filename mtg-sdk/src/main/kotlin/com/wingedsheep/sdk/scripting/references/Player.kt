@@ -1,4 +1,4 @@
-package com.wingedsheep.sdk.scripting
+package com.wingedsheep.sdk.scripting.references
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

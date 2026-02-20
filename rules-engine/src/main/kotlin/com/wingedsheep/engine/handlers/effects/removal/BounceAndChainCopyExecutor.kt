@@ -14,9 +14,9 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.BounceAndChainCopyEffect
+import com.wingedsheep.sdk.scripting.effects.BounceAndChainCopyEffect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.targeting.TargetPermanent
+import com.wingedsheep.sdk.scripting.targets.TargetPermanent
 import java.util.UUID
 import kotlin.reflect.KClass
 

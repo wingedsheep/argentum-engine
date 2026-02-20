@@ -12,8 +12,8 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.DamageAndChainCopyEffect
-import com.wingedsheep.sdk.targeting.AnyTarget
+import com.wingedsheep.sdk.scripting.effects.DamageAndChainCopyEffect
+import com.wingedsheep.sdk.scripting.targets.AnyTarget
 import java.util.UUID
 import kotlin.reflect.KClass
 

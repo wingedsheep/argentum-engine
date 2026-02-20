@@ -15,7 +15,6 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.GrantsControllerShroudComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
-import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisCombatComponent
 import com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombatComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -38,12 +37,13 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.ActivationRestriction
 import com.wingedsheep.sdk.scripting.CastRestriction
-import com.wingedsheep.sdk.scripting.ControllerPredicate
-import com.wingedsheep.sdk.scripting.DividedDamageEffect
+import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
+import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
-import com.wingedsheep.sdk.scripting.TargetFilter
-import com.wingedsheep.sdk.targeting.*
+import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.targets.*
 import org.slf4j.LoggerFactory
 
 private val logger = LoggerFactory.getLogger(LegalActionsCalculator::class.java)
@@ -681,7 +681,7 @@ class LegalActionsCalculator(
                     action = ActivateAbility(playerId, entityId, ability.id),
                     isManaAbility = true,
                     additionalCostInfo = costInfo,
-                    requiresManaColorChoice = ability.effect is com.wingedsheep.sdk.scripting.AddAnyColorManaEffect
+                    requiresManaColorChoice = ability.effect is AddAnyColorManaEffect
                 ))
             }
         }

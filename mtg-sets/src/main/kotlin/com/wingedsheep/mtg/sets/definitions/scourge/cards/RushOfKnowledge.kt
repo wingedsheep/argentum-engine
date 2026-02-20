@@ -3,7 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.scourge.cards
 import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
-import com.wingedsheep.sdk.scripting.Player
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.model.Rarity
 
 /**

@@ -3,7 +3,7 @@ package com.wingedsheep.engine.handlers
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.effects.EffectExecutorRegistry
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.sdk.scripting.Effect
+import com.wingedsheep.sdk.scripting.effects.Effect
 
 /**
  * Executes effects from the SDK against the game state.

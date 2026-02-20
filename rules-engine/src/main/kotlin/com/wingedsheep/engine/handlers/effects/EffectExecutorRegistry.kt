@@ -19,7 +19,7 @@ import com.wingedsheep.engine.handlers.effects.removal.RemovalExecutors
 import com.wingedsheep.engine.handlers.effects.stack.StackExecutors
 import com.wingedsheep.engine.handlers.effects.token.TokenExecutors
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.sdk.scripting.Effect
+import com.wingedsheep.sdk.scripting.effects.Effect
 import kotlin.reflect.KClass
 
 /**

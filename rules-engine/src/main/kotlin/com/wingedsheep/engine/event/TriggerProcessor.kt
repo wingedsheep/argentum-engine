@@ -6,14 +6,12 @@ import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.Effect
-import com.wingedsheep.sdk.scripting.MayEffect
-import com.wingedsheep.sdk.scripting.MayPayManaEffect
-import com.wingedsheep.sdk.targeting.TargetRequirement
-import java.util.UUID
+import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.MayEffect
+import com.wingedsheep.sdk.scripting.effects.MayPayManaEffect
+import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 
 /**
  * Processes triggered abilities by putting them on the stack.
@@ -332,8 +330,8 @@ class TriggerProcessor(
         // there's always exactly one choice so we skip the prompt for better UX.
         // We don't auto-select for creature/permanent targets because players may want to decline optional
         // abilities or need to confirm their targeting choice.
-        val isPlayerTarget = targetRequirement is com.wingedsheep.sdk.targeting.TargetPlayer ||
-                             targetRequirement is com.wingedsheep.sdk.targeting.TargetOpponent
+        val isPlayerTarget = targetRequirement is com.wingedsheep.sdk.scripting.targets.TargetPlayer ||
+                             targetRequirement is com.wingedsheep.sdk.scripting.targets.TargetOpponent
         if (isPlayerTarget && legalTargets.size == 1 && targetRequirement.effectiveMinCount == 1 && targetRequirement.count == 1) {
             val autoSelectedTarget = legalTargets.first()
             val chosenTarget = createChosenTarget(state, autoSelectedTarget)

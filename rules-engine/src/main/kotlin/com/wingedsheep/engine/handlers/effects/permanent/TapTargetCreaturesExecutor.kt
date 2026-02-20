@@ -9,7 +9,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.toEntityId
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.sdk.scripting.TapTargetCreaturesEffect
+import com.wingedsheep.sdk.scripting.effects.TapTargetCreaturesEffect
 import kotlin.reflect.KClass
 
 /**

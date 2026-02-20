@@ -12,7 +12,7 @@ import com.wingedsheep.engine.mechanics.layers.Sublayer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.AnimateLandEffect
+import com.wingedsheep.sdk.scripting.effects.AnimateLandEffect
 import kotlin.reflect.KClass
 
 /**

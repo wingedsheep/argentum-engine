@@ -4,9 +4,9 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.scripting.RedirectNextDamageEffect
-import com.wingedsheep.sdk.targeting.AnyTarget
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.effects.RedirectNextDamageEffect
+import com.wingedsheep.sdk.scripting.targets.AnyTarget
 
 /**
  * Glarecaster

@@ -9,7 +9,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.CounterType
-import com.wingedsheep.sdk.scripting.RemoveCountersEffect
+import com.wingedsheep.sdk.scripting.effects.RemoveCountersEffect
 import kotlin.reflect.KClass
 
 /**

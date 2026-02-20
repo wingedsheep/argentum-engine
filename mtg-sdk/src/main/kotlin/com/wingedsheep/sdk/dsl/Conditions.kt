@@ -2,8 +2,13 @@ package com.wingedsheep.sdk.dsl
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.scripting.*
-import com.wingedsheep.sdk.scripting.Condition as ConditionInterface
+import com.wingedsheep.sdk.scripting.conditions.AllConditions
+import com.wingedsheep.sdk.scripting.conditions.AnyCondition
+import com.wingedsheep.sdk.scripting.conditions.LifeTotalAtLeast
+import com.wingedsheep.sdk.scripting.conditions.LifeTotalAtMost
+import com.wingedsheep.sdk.scripting.conditions.NotCondition
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.scripting.conditions.Condition as ConditionInterface
 
 /**
  * Facade object providing convenient access to Condition types.
@@ -25,75 +30,75 @@ object Conditions {
      * If an opponent controls more lands than you.
      */
     val OpponentControlsMoreLands: ConditionInterface =
-        com.wingedsheep.sdk.scripting.OpponentControlsMoreLands
+        OpponentControlsMoreLands
 
     /**
      * If an opponent controls more creatures than you.
      */
     val OpponentControlsMoreCreatures: ConditionInterface =
-        com.wingedsheep.sdk.scripting.OpponentControlsMoreCreatures
+        OpponentControlsMoreCreatures
 
     /**
      * If an opponent controls a creature.
      */
     val OpponentControlsCreature: ConditionInterface =
-        com.wingedsheep.sdk.scripting.OpponentControlsCreature
+        OpponentControlsCreature
 
     /**
      * If you control a creature.
      */
     val ControlCreature: ConditionInterface =
-        com.wingedsheep.sdk.scripting.ControlCreature
+        ControlCreature
 
     /**
      * If you control an enchantment.
      */
     val ControlEnchantment: ConditionInterface =
-        com.wingedsheep.sdk.scripting.ControlEnchantment
+        ControlEnchantment
 
     /**
      * If you control an artifact.
      */
     val ControlArtifact: ConditionInterface =
-        com.wingedsheep.sdk.scripting.ControlArtifact
+        ControlArtifact
 
     /**
      * If you control N or more creatures.
      */
     fun ControlCreaturesAtLeast(count: Int): ConditionInterface =
-        com.wingedsheep.sdk.scripting.ControlCreaturesAtLeast(count)
+        com.wingedsheep.sdk.scripting.conditions.ControlCreaturesAtLeast(count)
 
     /**
      * If you control a creature with a specific keyword.
      */
     fun ControlCreatureWithKeyword(keyword: Keyword): ConditionInterface =
-        com.wingedsheep.sdk.scripting.ControlCreatureWithKeyword(keyword)
+        com.wingedsheep.sdk.scripting.conditions.ControlCreatureWithKeyword(keyword)
 
     /**
      * If you control a creature of a specific type.
      */
     fun ControlCreatureOfType(subtype: Subtype): ConditionInterface =
-        com.wingedsheep.sdk.scripting.ControlCreatureOfType(subtype)
+        com.wingedsheep.sdk.scripting.conditions.ControlCreatureOfType(subtype)
 
     /**
      * If a player controls more creatures of the given subtype than each other player.
      */
     fun APlayerControlsMostOfSubtype(subtype: Subtype): ConditionInterface =
-        com.wingedsheep.sdk.scripting.APlayerControlsMostOfSubtype(subtype)
+        com.wingedsheep.sdk.scripting.conditions.APlayerControlsMostOfSubtype(subtype)
 
     /**
      * If the target creature's power is at most the given dynamic amount.
      * Used for cards like Unified Strike.
      */
-    fun TargetPowerAtMost(amount: com.wingedsheep.sdk.scripting.DynamicAmount, targetIndex: Int = 0): ConditionInterface =
-        com.wingedsheep.sdk.scripting.TargetPowerAtMost(amount, targetIndex)
+    fun TargetPowerAtMost(amount: DynamicAmount, targetIndex: Int = 0): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.TargetPowerAtMost(amount, targetIndex)
 
     /**
      * If the target spell's mana value is at most the given dynamic amount.
      * Used for conditional counterspells like Dispersal Shield.
      */
-    fun TargetSpellManaValueAtMost(amount: com.wingedsheep.sdk.scripting.DynamicAmount, targetIndex: Int = 0): ConditionInterface =
-        com.wingedsheep.sdk.scripting.TargetSpellManaValueAtMost(amount, targetIndex)
+    fun TargetSpellManaValueAtMost(amount: DynamicAmount, targetIndex: Int = 0): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.TargetSpellManaValueAtMost(amount, targetIndex)
 
     // =========================================================================
     // Life Total Conditions
@@ -115,13 +120,13 @@ object Conditions {
      * If you have more life than an opponent.
      */
     val MoreLifeThanOpponent: ConditionInterface =
-        com.wingedsheep.sdk.scripting.MoreLifeThanOpponent
+        MoreLifeThanOpponent
 
     /**
      * If you have less life than an opponent.
      */
     val LessLifeThanOpponent: ConditionInterface =
-        com.wingedsheep.sdk.scripting.LessLifeThanOpponent
+        LessLifeThanOpponent
 
     // =========================================================================
     // Hand Conditions
@@ -131,19 +136,19 @@ object Conditions {
      * If you have no cards in hand.
      */
     val EmptyHand: ConditionInterface =
-        com.wingedsheep.sdk.scripting.EmptyHand
+        EmptyHand
 
     /**
      * If you have N or more cards in hand.
      */
     fun CardsInHandAtLeast(count: Int): ConditionInterface =
-        com.wingedsheep.sdk.scripting.CardsInHandAtLeast(count)
+        com.wingedsheep.sdk.scripting.conditions.CardsInHandAtLeast(count)
 
     /**
      * If you have N or fewer cards in hand.
      */
     fun CardsInHandAtMost(count: Int): ConditionInterface =
-        com.wingedsheep.sdk.scripting.CardsInHandAtMost(count)
+        com.wingedsheep.sdk.scripting.conditions.CardsInHandAtMost(count)
 
     // =========================================================================
     // Graveyard Conditions
@@ -153,19 +158,19 @@ object Conditions {
      * If there are N or more creature cards in your graveyard.
      */
     fun CreatureCardsInGraveyardAtLeast(count: Int): ConditionInterface =
-        com.wingedsheep.sdk.scripting.CreatureCardsInGraveyardAtLeast(count)
+        com.wingedsheep.sdk.scripting.conditions.CreatureCardsInGraveyardAtLeast(count)
 
     /**
      * If there are N or more cards in your graveyard.
      */
     fun CardsInGraveyardAtLeast(count: Int): ConditionInterface =
-        com.wingedsheep.sdk.scripting.CardsInGraveyardAtLeast(count)
+        com.wingedsheep.sdk.scripting.conditions.CardsInGraveyardAtLeast(count)
 
     /**
      * If there is a card of a specific subtype in your graveyard.
      */
     fun GraveyardContainsSubtype(subtype: Subtype): ConditionInterface =
-        com.wingedsheep.sdk.scripting.GraveyardContainsSubtype(subtype)
+        com.wingedsheep.sdk.scripting.conditions.GraveyardContainsSubtype(subtype)
 
     // =========================================================================
     // Source Conditions
@@ -175,32 +180,32 @@ object Conditions {
      * If this creature is attacking.
      */
     val SourceIsAttacking: ConditionInterface =
-        com.wingedsheep.sdk.scripting.SourceIsAttacking
+        SourceIsAttacking
 
     /**
      * If this creature is blocking.
      */
     val SourceIsBlocking: ConditionInterface =
-        com.wingedsheep.sdk.scripting.SourceIsBlocking
+        SourceIsBlocking
 
     /**
      * If this permanent is tapped.
      */
     val SourceIsTapped: ConditionInterface =
-        com.wingedsheep.sdk.scripting.SourceIsTapped
+        SourceIsTapped
 
     /**
      * If this permanent is untapped.
      */
     val SourceIsUntapped: ConditionInterface =
-        com.wingedsheep.sdk.scripting.SourceIsUntapped
+        SourceIsUntapped
 
     /**
      * As long as this creature is a specific subtype.
      * Used for conditional static abilities like "has defender as long as it's a Wall."
      */
     fun SourceHasSubtype(subtype: Subtype): ConditionInterface =
-        com.wingedsheep.sdk.scripting.SourceHasSubtype(subtype)
+        com.wingedsheep.sdk.scripting.conditions.SourceHasSubtype(subtype)
 
     // =========================================================================
     // Turn Conditions
@@ -210,13 +215,13 @@ object Conditions {
      * If it's your turn.
      */
     val IsYourTurn: ConditionInterface =
-        com.wingedsheep.sdk.scripting.IsYourTurn
+        IsYourTurn
 
     /**
      * If it's not your turn.
      */
     val IsNotYourTurn: ConditionInterface =
-        com.wingedsheep.sdk.scripting.IsNotYourTurn
+        IsNotYourTurn
 
     // =========================================================================
     // Composite Conditions

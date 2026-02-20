@@ -7,7 +7,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolveTarget
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.RevealedToComponent
-import com.wingedsheep.sdk.scripting.LookAtFaceDownCreatureEffect
+import com.wingedsheep.sdk.scripting.effects.LookAtFaceDownCreatureEffect
 import kotlin.reflect.KClass
 
 /**

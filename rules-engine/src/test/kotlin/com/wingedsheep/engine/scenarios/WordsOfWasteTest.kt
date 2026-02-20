@@ -14,12 +14,11 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.scripting.DrawCardsEffect
+import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.sdk.core.Zone
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
 
 /**
  * Tests for Words of Waste.

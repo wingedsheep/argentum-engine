@@ -9,7 +9,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
-import com.wingedsheep.sdk.scripting.SetLifeTotalForEachPlayerEffect
+import com.wingedsheep.sdk.scripting.effects.SetLifeTotalForEachPlayerEffect
 import kotlin.reflect.KClass
 
 /**

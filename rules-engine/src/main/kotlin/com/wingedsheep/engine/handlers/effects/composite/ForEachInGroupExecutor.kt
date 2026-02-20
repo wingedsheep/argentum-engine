@@ -15,15 +15,15 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
-import com.wingedsheep.sdk.scripting.Effect
-import com.wingedsheep.sdk.scripting.ForEachInGroupEffect
+import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import kotlin.reflect.KClass
 
 /**
  * Executor for ForEachInGroupEffect.
  *
  * Iterates over all entities matching a group filter and executes the inner effect
- * for each one. Within the inner effect, [com.wingedsheep.sdk.scripting.EffectTarget.Self]
+ * for each one. Within the inner effect, [com.wingedsheep.sdk.scripting.targets.EffectTarget.Self]
  * resolves to the current iteration entity via [EffectContext.iterationTarget].
  *
  * The group is snapshotted before any effects apply (simultaneous semantics),

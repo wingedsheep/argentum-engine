@@ -10,7 +10,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.TargetsComponent
-import com.wingedsheep.sdk.scripting.ChangeSpellTargetEffect
+import com.wingedsheep.sdk.scripting.effects.ChangeSpellTargetEffect
 import kotlin.reflect.KClass
 
 /**

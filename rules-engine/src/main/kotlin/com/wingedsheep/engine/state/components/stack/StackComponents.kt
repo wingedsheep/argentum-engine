@@ -4,8 +4,8 @@ import com.wingedsheep.engine.state.Component
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityId
-import com.wingedsheep.sdk.scripting.Effect
-import com.wingedsheep.sdk.targeting.TargetRequirement
+import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

@@ -10,7 +10,7 @@ import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
-import com.wingedsheep.sdk.scripting.CounterUnlessPaysEffect
+import com.wingedsheep.sdk.scripting.effects.CounterUnlessPaysEffect
 import kotlin.reflect.KClass
 
 /**

@@ -13,7 +13,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.GainControlEffect
+import com.wingedsheep.sdk.scripting.effects.GainControlEffect
 import kotlin.reflect.KClass
 
 /**

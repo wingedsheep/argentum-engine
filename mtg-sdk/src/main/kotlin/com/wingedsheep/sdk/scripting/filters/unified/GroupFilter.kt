@@ -1,8 +1,9 @@
-package com.wingedsheep.sdk.scripting
+package com.wingedsheep.sdk.scripting.filters.unified
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import kotlinx.serialization.Serializable
 
 /**
@@ -54,75 +55,75 @@ data class GroupFilter(
 
     companion object {
         /** All creatures on the battlefield */
-        val AllCreatures = GroupFilter(GameObjectFilter.Creature)
+        val AllCreatures = GroupFilter(GameObjectFilter.Companion.Creature)
 
         /** All creatures you control */
-        val AllCreaturesYouControl = GroupFilter(GameObjectFilter.Creature.youControl())
+        val AllCreaturesYouControl = GroupFilter(GameObjectFilter.Companion.Creature.youControl())
 
         /** All creatures opponents control */
-        val AllCreaturesOpponentsControl = GroupFilter(GameObjectFilter.Creature.opponentControls())
+        val AllCreaturesOpponentsControl = GroupFilter(GameObjectFilter.Companion.Creature.opponentControls())
 
         /** All other creatures (excluding source) */
-        val AllOtherCreatures = GroupFilter(GameObjectFilter.Creature, excludeSelf = true)
+        val AllOtherCreatures = GroupFilter(GameObjectFilter.Companion.Creature, excludeSelf = true)
 
         /** All other creatures you control */
-        val OtherCreaturesYouControl = GroupFilter(GameObjectFilter.Creature.youControl(), excludeSelf = true)
+        val OtherCreaturesYouControl = GroupFilter(GameObjectFilter.Companion.Creature.youControl(), excludeSelf = true)
 
         /** All other creatures opponents control */
-        val OtherCreaturesOpponentsControl = GroupFilter(GameObjectFilter.Creature.opponentControls(), excludeSelf = true)
+        val OtherCreaturesOpponentsControl = GroupFilter(GameObjectFilter.Companion.Creature.opponentControls(), excludeSelf = true)
 
         /** All other tapped creatures you control (for effects like Adept Watershaper) */
-        val OtherTappedCreaturesYouControl = GroupFilter(GameObjectFilter.Creature.youControl().tapped(), excludeSelf = true)
+        val OtherTappedCreaturesYouControl = GroupFilter(GameObjectFilter.Companion.Creature.youControl().tapped(), excludeSelf = true)
 
         /** All attacking creatures */
-        val AttackingCreatures = GroupFilter(GameObjectFilter.Creature.attacking())
+        val AttackingCreatures = GroupFilter(GameObjectFilter.Companion.Creature.attacking())
 
         /** All blocking creatures */
-        val BlockingCreatures = GroupFilter(GameObjectFilter.Creature.blocking())
+        val BlockingCreatures = GroupFilter(GameObjectFilter.Companion.Creature.blocking())
 
         /** All tapped creatures */
-        val TappedCreatures = GroupFilter(GameObjectFilter.Creature.tapped())
+        val TappedCreatures = GroupFilter(GameObjectFilter.Companion.Creature.tapped())
 
         /** All untapped creatures */
-        val UntappedCreatures = GroupFilter(GameObjectFilter.Creature.untapped())
+        val UntappedCreatures = GroupFilter(GameObjectFilter.Companion.Creature.untapped())
 
         // =============================================================================
         // Pre-built Permanent Groups
         // =============================================================================
 
         /** All permanents */
-        val AllPermanents = GroupFilter(GameObjectFilter.Permanent)
+        val AllPermanents = GroupFilter(GameObjectFilter.Companion.Permanent)
 
         /** All permanents you control */
-        val AllPermanentsYouControl = GroupFilter(GameObjectFilter.Permanent.youControl())
+        val AllPermanentsYouControl = GroupFilter(GameObjectFilter.Companion.Permanent.youControl())
 
         /** All nonland permanents */
-        val AllNonlandPermanents = GroupFilter(GameObjectFilter.NonlandPermanent)
+        val AllNonlandPermanents = GroupFilter(GameObjectFilter.Companion.NonlandPermanent)
 
         /** All artifacts */
-        val AllArtifacts = GroupFilter(GameObjectFilter.Artifact)
+        val AllArtifacts = GroupFilter(GameObjectFilter.Companion.Artifact)
 
         /** All enchantments */
-        val AllEnchantments = GroupFilter(GameObjectFilter.Enchantment)
+        val AllEnchantments = GroupFilter(GameObjectFilter.Companion.Enchantment)
 
         /** All lands */
-        val AllLands = GroupFilter(GameObjectFilter.Land)
+        val AllLands = GroupFilter(GameObjectFilter.Companion.Land)
 
         // =============================================================================
         // Convenience Builders for Common Destroy-All Patterns
         // =============================================================================
 
         /** All creatures of a specific color (e.g., "Destroy all black creatures") */
-        fun allCreaturesOfColor(color: Color) = GroupFilter(GameObjectFilter.Creature.withColor(color))
+        fun allCreaturesOfColor(color: Color) = GroupFilter(GameObjectFilter.Companion.Creature.withColor(color))
 
         /** All lands with a specific subtype (e.g., "Destroy all Islands") */
-        fun allLandsWithSubtype(subtype: String) = GroupFilter(GameObjectFilter.Land.withSubtype(subtype))
+        fun allLandsWithSubtype(subtype: String) = GroupFilter(GameObjectFilter.Companion.Land.withSubtype(subtype))
 
         /** All lands with a specific subtype (e.g., "Destroy all Islands") */
-        fun allLandsWithSubtype(subtype: Subtype) = GroupFilter(GameObjectFilter.Land.withSubtype(subtype))
+        fun allLandsWithSubtype(subtype: Subtype) = GroupFilter(GameObjectFilter.Companion.Land.withSubtype(subtype))
 
         /** All creatures with a specific subtype (e.g., "Destroy all Goblins") */
-        fun allCreaturesWithSubtype(subtype: String) = GroupFilter(GameObjectFilter.Creature.withSubtype(subtype))
+        fun allCreaturesWithSubtype(subtype: String) = GroupFilter(GameObjectFilter.Companion.Creature.withSubtype(subtype))
     }
 
     // =============================================================================

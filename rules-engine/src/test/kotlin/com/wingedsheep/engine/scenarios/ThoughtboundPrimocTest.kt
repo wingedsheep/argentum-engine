@@ -11,10 +11,10 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.APlayerControlsMostOfSubtype
-import com.wingedsheep.sdk.scripting.ConditionalEffect
-import com.wingedsheep.sdk.scripting.GainControlByMostOfSubtypeEffect
-import com.wingedsheep.sdk.scripting.OnUpkeep
+import com.wingedsheep.sdk.scripting.conditions.APlayerControlsMostOfSubtype
+import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
+import com.wingedsheep.sdk.scripting.effects.GainControlByMostOfSubtypeEffect
+import com.wingedsheep.sdk.scripting.triggers.OnUpkeep
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe

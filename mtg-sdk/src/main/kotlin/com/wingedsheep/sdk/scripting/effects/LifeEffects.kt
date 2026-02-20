@@ -1,5 +1,8 @@
-package com.wingedsheep.sdk.scripting
+package com.wingedsheep.sdk.scripting.effects
 
+import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

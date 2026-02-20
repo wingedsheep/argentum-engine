@@ -14,7 +14,7 @@ import com.wingedsheep.engine.mechanics.layers.Sublayer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.DynamicModifyStatsEffect
+import com.wingedsheep.sdk.scripting.effects.DynamicModifyStatsEffect
 import kotlin.reflect.KClass
 
 /**

@@ -19,9 +19,9 @@ import com.wingedsheep.sdk.core.ManaSymbol
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityCost
-import com.wingedsheep.sdk.scripting.AddAnyColorManaEffect
-import com.wingedsheep.sdk.scripting.AddColorlessManaEffect
-import com.wingedsheep.sdk.scripting.AddManaEffect
+import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
+import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
+import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.AdditionalManaOnTap
 
 /**

@@ -4,7 +4,7 @@ import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DrawCardsEffect
+import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 
 /**
  * Airborne Aid

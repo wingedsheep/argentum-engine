@@ -18,7 +18,18 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.*
-import com.wingedsheep.sdk.targeting.TargetPlayer
+import com.wingedsheep.sdk.scripting.effects.CardDestination
+import com.wingedsheep.sdk.scripting.effects.CardOrder
+import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
+import com.wingedsheep.sdk.scripting.effects.LookAtAllFaceDownCreaturesEffect
+import com.wingedsheep.sdk.scripting.effects.LookAtTargetHandEffect
+import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
+import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.scripting.targets.TargetPlayer
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -44,17 +55,23 @@ class SpyNetworkTest : FunSpec({
             effect = CompositeEffect(
                 listOf(
                     LookAtTargetHandEffect(EffectTarget.ContextTarget(0)),
-                    CompositeEffect(listOf(
-                        GatherCardsEffect(
-                            source = CardSource.TopOfLibrary(DynamicAmount.Fixed(1), Player.ContextPlayer(0)),
-                            storeAs = "target_top"
-                        ),
-                        MoveCollectionEffect(
-                            from = "target_top",
-                            destination = CardDestination.ToZone(Zone.LIBRARY, Player.ContextPlayer(0), ZonePlacement.Top),
-                            order = CardOrder.ControllerChooses
+                    CompositeEffect(
+                        listOf(
+                            GatherCardsEffect(
+                                source = CardSource.TopOfLibrary(DynamicAmount.Fixed(1), Player.ContextPlayer(0)),
+                                storeAs = "target_top"
+                            ),
+                            MoveCollectionEffect(
+                                from = "target_top",
+                                destination = CardDestination.ToZone(
+                                    Zone.LIBRARY,
+                                    Player.ContextPlayer(0),
+                                    ZonePlacement.Top
+                                ),
+                                order = CardOrder.ControllerChooses
+                            )
                         )
-                    )),
+                    ),
                     LookAtAllFaceDownCreaturesEffect(EffectTarget.ContextTarget(0)),
                     EffectPatterns.lookAtTopAndReorder(4)
                 )

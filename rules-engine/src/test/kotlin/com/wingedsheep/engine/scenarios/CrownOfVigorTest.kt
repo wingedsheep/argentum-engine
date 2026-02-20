@@ -14,9 +14,9 @@ import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.ActivatedAbility
-import com.wingedsheep.sdk.scripting.GrantToEnchantedCreatureTypeGroupEffect
+import com.wingedsheep.sdk.scripting.effects.GrantToEnchantedCreatureTypeGroupEffect
 import com.wingedsheep.sdk.scripting.ModifyStats
-import com.wingedsheep.sdk.targeting.TargetCreature
+import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import java.util.UUID

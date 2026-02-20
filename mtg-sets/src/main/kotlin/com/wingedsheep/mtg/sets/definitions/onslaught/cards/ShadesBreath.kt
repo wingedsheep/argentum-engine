@@ -6,11 +6,11 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.ActivatedAbility
-import com.wingedsheep.sdk.scripting.ChangeGroupColorEffect
-import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.scripting.GrantActivatedAbilityToGroupEffect
-import com.wingedsheep.sdk.scripting.ModifyStatsEffect
-import com.wingedsheep.sdk.scripting.SetGroupCreatureSubtypesEffect
+import com.wingedsheep.sdk.scripting.effects.ChangeGroupColorEffect
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.effects.GrantActivatedAbilityToGroupEffect
+import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
+import com.wingedsheep.sdk.scripting.effects.SetGroupCreatureSubtypesEffect
 import com.wingedsheep.sdk.scripting.Duration
 
 /**

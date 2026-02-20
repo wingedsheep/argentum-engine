@@ -3,9 +3,9 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DynamicAmount
-import com.wingedsheep.sdk.scripting.MayEffect
-import com.wingedsheep.sdk.scripting.OnOtherCreatureEnters
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.scripting.effects.MayEffect
+import com.wingedsheep.sdk.scripting.triggers.OnOtherCreatureEnters
 
 /**
  * Mana Echoes

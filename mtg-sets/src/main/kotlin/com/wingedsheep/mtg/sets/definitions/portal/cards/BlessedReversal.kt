@@ -4,8 +4,8 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GainLifeEffect
-import com.wingedsheep.sdk.scripting.YouWereAttackedThisStep
+import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
+import com.wingedsheep.sdk.scripting.conditions.YouWereAttackedThisStep
 
 /**
  * Blessed Reversal

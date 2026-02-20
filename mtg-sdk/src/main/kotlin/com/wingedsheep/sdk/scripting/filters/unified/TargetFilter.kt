@@ -1,9 +1,10 @@
-package com.wingedsheep.sdk.scripting
+package com.wingedsheep.sdk.scripting.filters.unified
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import kotlinx.serialization.Serializable
 
 /**
@@ -55,120 +56,120 @@ data class TargetFilter(
 
     companion object {
         /** Target any creature */
-        val Creature = TargetFilter(GameObjectFilter.Creature)
+        val Creature = TargetFilter(GameObjectFilter.Companion.Creature)
 
         /** Target creature you control */
-        val CreatureYouControl = TargetFilter(GameObjectFilter.Creature.youControl())
+        val CreatureYouControl = TargetFilter(GameObjectFilter.Companion.Creature.youControl())
 
         /** Target creature an opponent controls */
-        val CreatureOpponentControls = TargetFilter(GameObjectFilter.Creature.opponentControls())
+        val CreatureOpponentControls = TargetFilter(GameObjectFilter.Companion.Creature.opponentControls())
 
         /** Target other creature (excluding source) */
-        val OtherCreature = TargetFilter(GameObjectFilter.Creature, excludeSelf = true)
+        val OtherCreature = TargetFilter(GameObjectFilter.Companion.Creature, excludeSelf = true)
 
         /** Target other creature you control */
-        val OtherCreatureYouControl = TargetFilter(GameObjectFilter.Creature.youControl(), excludeSelf = true)
+        val OtherCreatureYouControl = TargetFilter(GameObjectFilter.Companion.Creature.youControl(), excludeSelf = true)
 
         /** Target tapped creature */
-        val TappedCreature = TargetFilter(GameObjectFilter.Creature.tapped())
+        val TappedCreature = TargetFilter(GameObjectFilter.Companion.Creature.tapped())
 
         /** Target untapped creature */
-        val UntappedCreature = TargetFilter(GameObjectFilter.Creature.untapped())
+        val UntappedCreature = TargetFilter(GameObjectFilter.Companion.Creature.untapped())
 
         /** Target attacking creature */
-        val AttackingCreature = TargetFilter(GameObjectFilter.Creature.attacking())
+        val AttackingCreature = TargetFilter(GameObjectFilter.Companion.Creature.attacking())
 
         /** Target blocking creature */
-        val BlockingCreature = TargetFilter(GameObjectFilter.Creature.blocking())
+        val BlockingCreature = TargetFilter(GameObjectFilter.Companion.Creature.blocking())
 
         /** Target attacking or blocking creature */
-        val AttackingOrBlockingCreature = TargetFilter(GameObjectFilter.Creature.attackingOrBlocking())
+        val AttackingOrBlockingCreature = TargetFilter(GameObjectFilter.Companion.Creature.attackingOrBlocking())
 
         // =============================================================================
         // Pre-built Permanent Targets (Battlefield)
         // =============================================================================
 
         /** Target any permanent */
-        val Permanent = TargetFilter(GameObjectFilter.Permanent)
+        val Permanent = TargetFilter(GameObjectFilter.Companion.Permanent)
 
         /** Target nonland permanent */
-        val NonlandPermanent = TargetFilter(GameObjectFilter.NonlandPermanent)
+        val NonlandPermanent = TargetFilter(GameObjectFilter.Companion.NonlandPermanent)
 
         /** Target permanent you control */
-        val PermanentYouControl = TargetFilter(GameObjectFilter.Permanent.youControl())
+        val PermanentYouControl = TargetFilter(GameObjectFilter.Companion.Permanent.youControl())
 
         /** Target nonland permanent an opponent controls */
-        val NonlandPermanentOpponentControls = TargetFilter(GameObjectFilter.NonlandPermanent.opponentControls())
+        val NonlandPermanentOpponentControls = TargetFilter(GameObjectFilter.Companion.NonlandPermanent.opponentControls())
 
         /** Target artifact */
-        val Artifact = TargetFilter(GameObjectFilter.Artifact)
+        val Artifact = TargetFilter(GameObjectFilter.Companion.Artifact)
 
         /** Target enchantment */
-        val Enchantment = TargetFilter(GameObjectFilter.Enchantment)
+        val Enchantment = TargetFilter(GameObjectFilter.Companion.Enchantment)
 
         /** Target land */
-        val Land = TargetFilter(GameObjectFilter.Land)
+        val Land = TargetFilter(GameObjectFilter.Companion.Land)
 
         /** Target planeswalker */
-        val Planeswalker = TargetFilter(GameObjectFilter.Planeswalker)
+        val Planeswalker = TargetFilter(GameObjectFilter.Companion.Planeswalker)
 
         // =============================================================================
         // Pre-built Graveyard Targets
         // =============================================================================
 
         /** Target any card in a graveyard */
-        val CardInGraveyard = TargetFilter(GameObjectFilter.Any, zone = Zone.GRAVEYARD)
+        val CardInGraveyard = TargetFilter(GameObjectFilter.Companion.Any, zone = Zone.GRAVEYARD)
 
         /** Target creature card in a graveyard */
-        val CreatureInGraveyard = TargetFilter(GameObjectFilter.Creature, zone = Zone.GRAVEYARD)
+        val CreatureInGraveyard = TargetFilter(GameObjectFilter.Companion.Creature, zone = Zone.GRAVEYARD)
 
         /** Target creature card in your graveyard */
-        val CreatureInYourGraveyard = TargetFilter(GameObjectFilter.Creature.ownedByYou(), zone = Zone.GRAVEYARD)
+        val CreatureInYourGraveyard = TargetFilter(GameObjectFilter.Companion.Creature.ownedByYou(), zone = Zone.GRAVEYARD)
 
         /** Target instant or sorcery card in a graveyard */
-        val InstantOrSorceryInGraveyard = TargetFilter(GameObjectFilter.InstantOrSorcery, zone = Zone.GRAVEYARD)
+        val InstantOrSorceryInGraveyard = TargetFilter(GameObjectFilter.Companion.InstantOrSorcery, zone = Zone.GRAVEYARD)
 
         // =============================================================================
         // Pre-built Stack Targets
         // =============================================================================
 
         /** Target any spell on the stack */
-        val SpellOnStack = TargetFilter(GameObjectFilter.Any, zone = Zone.STACK)
+        val SpellOnStack = TargetFilter(GameObjectFilter.Companion.Any, zone = Zone.STACK)
 
         /** Target creature spell on the stack */
-        val CreatureSpellOnStack = TargetFilter(GameObjectFilter.Creature, zone = Zone.STACK)
+        val CreatureSpellOnStack = TargetFilter(GameObjectFilter.Companion.Creature, zone = Zone.STACK)
 
         /** Target noncreature spell on the stack */
-        val NoncreatureSpellOnStack = TargetFilter(GameObjectFilter.Noncreature, zone = Zone.STACK)
+        val NoncreatureSpellOnStack = TargetFilter(GameObjectFilter.Companion.Noncreature, zone = Zone.STACK)
 
         /** Target instant or sorcery spell on the stack */
-        val InstantOrSorcerySpellOnStack = TargetFilter(GameObjectFilter.InstantOrSorcery, zone = Zone.STACK)
+        val InstantOrSorcerySpellOnStack = TargetFilter(GameObjectFilter.Companion.InstantOrSorcery, zone = Zone.STACK)
 
         // =============================================================================
         // Permanent Targeting
         // =============================================================================
 
         /** Target permanent an opponent controls */
-        val PermanentOpponentControls = TargetFilter(GameObjectFilter.Permanent.opponentControls())
+        val PermanentOpponentControls = TargetFilter(GameObjectFilter.Companion.Permanent.opponentControls())
 
         /** Target creature or land permanent */
-        val CreatureOrLandPermanent = TargetFilter(GameObjectFilter.CreatureOrLand)
+        val CreatureOrLandPermanent = TargetFilter(GameObjectFilter.Companion.CreatureOrLand)
 
         /** Target noncreature permanent */
-        val NoncreaturePermanent = TargetFilter(GameObjectFilter.NoncreaturePermanent)
+        val NoncreaturePermanent = TargetFilter(GameObjectFilter.Companion.NoncreaturePermanent)
 
         // =============================================================================
         // Spell Targeting (additional)
         // =============================================================================
 
         /** Target sorcery spell on the stack */
-        val SorcerySpellOnStack = TargetFilter(GameObjectFilter.Sorcery, zone = Zone.STACK)
+        val SorcerySpellOnStack = TargetFilter(GameObjectFilter.Companion.Sorcery, zone = Zone.STACK)
 
         /** Target creature or sorcery spell on the stack */
-        val CreatureOrSorcerySpellOnStack = TargetFilter(GameObjectFilter.CreatureOrSorcery, zone = Zone.STACK)
+        val CreatureOrSorcerySpellOnStack = TargetFilter(GameObjectFilter.Companion.CreatureOrSorcery, zone = Zone.STACK)
 
         /** Target instant spell on the stack */
-        val InstantSpellOnStack = TargetFilter(GameObjectFilter.Instant, zone = Zone.STACK)
+        val InstantSpellOnStack = TargetFilter(GameObjectFilter.Companion.Instant, zone = Zone.STACK)
     }
 
     // =============================================================================

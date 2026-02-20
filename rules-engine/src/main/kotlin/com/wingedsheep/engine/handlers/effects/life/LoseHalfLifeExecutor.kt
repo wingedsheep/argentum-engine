@@ -8,7 +8,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolvePlayerTarget
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
-import com.wingedsheep.sdk.scripting.LoseHalfLifeEffect
+import com.wingedsheep.sdk.scripting.effects.LoseHalfLifeEffect
 import kotlin.reflect.KClass
 
 /**

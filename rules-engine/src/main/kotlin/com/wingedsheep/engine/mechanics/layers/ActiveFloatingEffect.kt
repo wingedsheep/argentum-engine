@@ -3,7 +3,7 @@ package com.wingedsheep.engine.mechanics.layers
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
-import com.wingedsheep.sdk.scripting.Effect
+import com.wingedsheep.sdk.scripting.effects.Effect
 import kotlinx.serialization.Serializable
 
 /**

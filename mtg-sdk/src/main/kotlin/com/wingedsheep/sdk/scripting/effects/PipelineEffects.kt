@@ -1,7 +1,11 @@
-package com.wingedsheep.sdk.scripting
+package com.wingedsheep.sdk.scripting.effects
 
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.targeting.TargetRequirement
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.ZonePlacement
+import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -36,7 +40,7 @@ sealed interface CardSource {
     data class FromZone(
         val zone: Zone,
         val player: Player = Player.You,
-        val filter: GameObjectFilter = GameObjectFilter.Any
+        val filter: GameObjectFilter = GameObjectFilter.Companion.Any
     ) : CardSource {
         override val description: String = "${filter.description} cards in ${player.possessive} ${zone.displayName}"
     }
@@ -57,7 +61,7 @@ sealed interface CardSource {
     @Serializable
     data class ControlledPermanents(
         val player: Player = Player.You,
-        val filter: GameObjectFilter = GameObjectFilter.Any
+        val filter: GameObjectFilter = GameObjectFilter.Companion.Any
     ) : CardSource {
         override val description: String = "permanents ${player.possessive} control"
     }
@@ -218,7 +222,7 @@ data class SelectFromCollectionEffect(
     val from: String,
     val selection: SelectionMode,
     val chooser: Chooser = Chooser.Controller,
-    val filter: GameObjectFilter = GameObjectFilter.Any,
+    val filter: GameObjectFilter = GameObjectFilter.Companion.Any,
     val storeSelected: String,
     val storeRemainder: String? = null,
     /**
@@ -338,7 +342,7 @@ data object ChooseCreatureTypeEffect : Effect {
  * Unlike cast-time targeting (TargetRequirement on spells/abilities), this step
  * selects targets at resolution time as part of a pipeline. The selected target
  * entity IDs are stored in [storedCollections][storeAs] for use by subsequent
- * pipeline effects via [EffectTarget.PipelineTarget].
+ * pipeline effects via [com.wingedsheep.sdk.scripting.targets.EffectTarget.PipelineTarget].
  *
  * **Important:** This is for non-targeting choices ("choose a creature") or for
  * targets that depend on earlier pipeline results. Do NOT use this for cards whose

@@ -4,7 +4,7 @@ import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.CounterSpellEffect
+import com.wingedsheep.sdk.scripting.effects.CounterSpellEffect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 
 /**

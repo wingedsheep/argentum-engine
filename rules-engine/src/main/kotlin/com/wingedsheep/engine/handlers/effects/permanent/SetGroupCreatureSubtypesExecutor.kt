@@ -1,7 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.permanent
 
 import com.wingedsheep.engine.core.ExecutionResult
-import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -14,7 +13,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.SetGroupCreatureSubtypesEffect
+import com.wingedsheep.sdk.scripting.effects.SetGroupCreatureSubtypesEffect
 import kotlin.reflect.KClass
 
 /**

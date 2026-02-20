@@ -2,8 +2,8 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.CantBlockTargetCreaturesEffect
-import com.wingedsheep.sdk.targeting.TargetCreature
+import com.wingedsheep.sdk.scripting.effects.CantBlockTargetCreaturesEffect
+import com.wingedsheep.sdk.scripting.targets.TargetCreature
 
 /**
  * Wave of Indifference

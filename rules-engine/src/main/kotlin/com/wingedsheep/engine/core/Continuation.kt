@@ -7,13 +7,14 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.scripting.Duration
-import com.wingedsheep.sdk.scripting.Effect
+import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.GroupFilter
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.PayCost
-import com.wingedsheep.sdk.scripting.SearchDestination
-import com.wingedsheep.sdk.scripting.TargetFilter
-import com.wingedsheep.sdk.targeting.TargetRequirement
+import com.wingedsheep.sdk.scripting.effects.SearchDestination
+import com.wingedsheep.sdk.scripting.effects.Mode
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import kotlinx.serialization.Serializable
 
 /**
@@ -695,7 +696,7 @@ data class ModalContinuation(
     val controllerId: EntityId,
     val sourceId: EntityId?,
     val sourceName: String?,
-    val modes: List<@Serializable com.wingedsheep.sdk.scripting.Mode>,
+    val modes: List<@Serializable Mode>,
     val xValue: Int? = null,
     val opponentId: EntityId? = null
 ) : ContinuationFrame
@@ -1526,7 +1527,7 @@ data class DrawReplacementActivationContinuation(
     val drawCount: Int,
     val isDrawStep: Boolean,
     val drawnCardsSoFar: List<EntityId> = emptyList(),
-    val targetRequirements: List<com.wingedsheep.sdk.targeting.TargetRequirement> = emptyList(),
+    val targetRequirements: List<com.wingedsheep.sdk.scripting.targets.TargetRequirement> = emptyList(),
     val declinedSourceIds: List<EntityId> = emptyList()
 ) : ContinuationFrame
 

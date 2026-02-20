@@ -2,6 +2,7 @@ package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.scripting.conditions.Condition
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

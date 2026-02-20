@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Woodcloaker
@@ -36,6 +36,6 @@ val Woodcloaker = card("Woodcloaker") {
         collectorNumber = "134"
         artist = "Thomas M. Baxa"
         flavorText = "The Mirari's mutating effects touched every living thing on Otaria."
-        imageUri = "https://cards.scryfall.io/large/front/0/8/08edd742-4837-4635-b32c-2e80933df878.jpg?1562527975"
+        imageUri = "https://cards.scryfall.io/large/front/4/a/4aa85e09-a1cd-473d-98cd-c6a7c7aff949.jpg?1562528540"
     }
 }

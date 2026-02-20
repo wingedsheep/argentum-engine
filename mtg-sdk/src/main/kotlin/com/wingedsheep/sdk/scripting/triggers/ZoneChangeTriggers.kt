@@ -1,4 +1,4 @@
-package com.wingedsheep.sdk.scripting
+package com.wingedsheep.sdk.scripting.triggers
 
 import com.wingedsheep.sdk.core.Subtype
 import kotlinx.serialization.SerialName

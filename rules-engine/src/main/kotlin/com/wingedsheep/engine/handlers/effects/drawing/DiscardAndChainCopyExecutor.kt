@@ -11,8 +11,8 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.DiscardAndChainCopyEffect
-import com.wingedsheep.sdk.targeting.TargetPlayer
+import com.wingedsheep.sdk.scripting.effects.DiscardAndChainCopyEffect
+import com.wingedsheep.sdk.scripting.targets.TargetPlayer
 import java.util.UUID
 import kotlin.reflect.KClass
 

@@ -1,4 +1,4 @@
-package com.wingedsheep.sdk.scripting
+package com.wingedsheep.sdk.scripting.predicates
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword

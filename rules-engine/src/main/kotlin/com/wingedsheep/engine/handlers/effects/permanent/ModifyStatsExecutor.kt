@@ -14,7 +14,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.ModifyStatsEffect
+import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import kotlin.reflect.KClass
 
 /**

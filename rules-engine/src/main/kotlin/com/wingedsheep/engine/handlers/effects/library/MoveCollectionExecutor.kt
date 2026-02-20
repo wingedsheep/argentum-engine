@@ -16,12 +16,12 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.CardDestination
-import com.wingedsheep.sdk.scripting.CardOrder
-import com.wingedsheep.sdk.scripting.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.MoveType
-import com.wingedsheep.sdk.scripting.Player
-import com.wingedsheep.sdk.scripting.ZonePlacement
+import com.wingedsheep.sdk.scripting.effects.CardDestination
+import com.wingedsheep.sdk.scripting.effects.CardOrder
+import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.MoveType
+import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import java.util.UUID
 import kotlin.reflect.KClass
 

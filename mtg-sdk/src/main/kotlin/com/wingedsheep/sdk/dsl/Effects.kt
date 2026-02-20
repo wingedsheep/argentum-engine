@@ -6,7 +6,45 @@ import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.*
-import com.wingedsheep.sdk.targeting.TargetRequirement
+import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
+import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
+import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
+import com.wingedsheep.sdk.scripting.effects.AddDynamicColorManaEffect
+import com.wingedsheep.sdk.scripting.effects.AddDynamicColorlessManaEffect
+import com.wingedsheep.sdk.scripting.effects.AddManaEffect
+import com.wingedsheep.sdk.scripting.effects.AnimateLandEffect
+import com.wingedsheep.sdk.scripting.effects.ChooseColorAndGrantProtectionToGroupEffect
+import com.wingedsheep.sdk.scripting.effects.ChooseColorAndGrantProtectionToTargetEffect
+import com.wingedsheep.sdk.scripting.effects.ChooseCreatureTypeGainControlEffect
+import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
+import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
+import com.wingedsheep.sdk.scripting.effects.DynamicModifyStatsEffect
+import com.wingedsheep.sdk.scripting.effects.EachOpponentDiscardsEffect
+import com.wingedsheep.sdk.scripting.effects.EachPlayerReturnsPermanentToHandEffect
+import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.FightEffect
+import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
+import com.wingedsheep.sdk.scripting.effects.ForceSacrificeEffect
+import com.wingedsheep.sdk.scripting.effects.GainControlByMostOfSubtypeEffect
+import com.wingedsheep.sdk.scripting.effects.GainControlEffect
+import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
+import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
+import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
+import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
+import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
+import com.wingedsheep.sdk.scripting.effects.ReadTheRunesEffect
+import com.wingedsheep.sdk.scripting.effects.RemoveFromCombatEffect
+import com.wingedsheep.sdk.scripting.effects.ReplaceNextDrawWithEffect
+import com.wingedsheep.sdk.scripting.effects.SearchDestination
+import com.wingedsheep.sdk.scripting.effects.SelectTargetEffect
+import com.wingedsheep.sdk.scripting.effects.SeparatePermanentsIntoPilesEffect
+import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 
 /**
  * Facade object providing convenient factory methods for creating Effects.

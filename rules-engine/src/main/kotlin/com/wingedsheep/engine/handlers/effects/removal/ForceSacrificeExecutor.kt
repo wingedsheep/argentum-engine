@@ -13,7 +13,7 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.ForceSacrificeEffect
+import com.wingedsheep.sdk.scripting.effects.ForceSacrificeEffect
 import kotlin.reflect.KClass
 
 /**

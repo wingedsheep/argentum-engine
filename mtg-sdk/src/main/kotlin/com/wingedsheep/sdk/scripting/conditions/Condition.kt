@@ -1,4 +1,4 @@
-package com.wingedsheep.sdk.scripting
+package com.wingedsheep.sdk.scripting.conditions
 
 import kotlinx.serialization.Serializable
 

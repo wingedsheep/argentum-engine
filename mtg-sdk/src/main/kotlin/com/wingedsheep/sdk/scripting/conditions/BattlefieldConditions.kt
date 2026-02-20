@@ -1,7 +1,8 @@
-package com.wingedsheep.sdk.scripting
+package com.wingedsheep.sdk.scripting.conditions
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

@@ -18,7 +18,7 @@ import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.EntersWithCreatureTypeChoice
-import com.wingedsheep.sdk.scripting.PreventNextDamageFromChosenCreatureTypeEffect
+import com.wingedsheep.sdk.scripting.effects.PreventNextDamageFromChosenCreatureTypeEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import java.util.UUID

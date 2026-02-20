@@ -1,6 +1,7 @@
-package com.wingedsheep.sdk.scripting
+package com.wingedsheep.sdk.scripting.costs
 
 import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -37,7 +38,7 @@ sealed interface PayCost {
     @SerialName("Discard")
     @Serializable
     data class Discard(
-        val filter: GameObjectFilter = GameObjectFilter.Any,
+        val filter: GameObjectFilter = GameObjectFilter.Companion.Any,
         val count: Int = 1,
         val random: Boolean = false
     ) : PayCost {
@@ -62,7 +63,7 @@ sealed interface PayCost {
     @SerialName("Sacrifice")
     @Serializable
     data class Sacrifice(
-        val filter: GameObjectFilter = GameObjectFilter.Any,
+        val filter: GameObjectFilter = GameObjectFilter.Companion.Any,
         val count: Int = 1
     ) : PayCost {
         override val description: String = buildString {

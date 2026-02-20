@@ -4,10 +4,10 @@ import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.scripting.Player
-import com.wingedsheep.sdk.scripting.LoseLifeEffect
-import com.wingedsheep.sdk.scripting.OnOtherCreatureWithSubtypeDies
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
+import com.wingedsheep.sdk.scripting.triggers.OnOtherCreatureWithSubtypeDies
 
 /**
  * Vengeful Dead

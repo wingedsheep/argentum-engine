@@ -9,7 +9,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
-import com.wingedsheep.sdk.scripting.TurnFaceUpEffect
+import com.wingedsheep.sdk.scripting.effects.TurnFaceUpEffect
 import kotlin.reflect.KClass
 
 /**

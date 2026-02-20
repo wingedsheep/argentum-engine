@@ -10,7 +10,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolvePlayerTargets
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
-import com.wingedsheep.sdk.scripting.LoseLifeEffect
+import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import kotlin.reflect.KClass
 
 /**

@@ -15,7 +15,7 @@ import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.ChooseCreatureTypeModifyStatsEffect
+import com.wingedsheep.sdk.scripting.effects.ChooseCreatureTypeModifyStatsEffect
 import com.wingedsheep.sdk.scripting.Duration
 import java.util.UUID
 import kotlin.reflect.KClass

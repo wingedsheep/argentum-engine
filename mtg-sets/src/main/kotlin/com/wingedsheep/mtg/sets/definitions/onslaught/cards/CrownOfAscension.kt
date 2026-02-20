@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GrantKeyword
-import com.wingedsheep.sdk.scripting.GrantToEnchantedCreatureTypeGroupEffect
+import com.wingedsheep.sdk.scripting.effects.GrantToEnchantedCreatureTypeGroupEffect
 
 /**
  * Crown of Ascension

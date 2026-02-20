@@ -22,6 +22,9 @@ import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
+import com.wingedsheep.sdk.scripting.conditions.CardsInGraveyardAtLeast
+import com.wingedsheep.sdk.scripting.conditions.Condition
+import com.wingedsheep.sdk.scripting.conditions.CreatureCardsInGraveyardAtLeast
 
 /**
  * Transforms internal game state into client-facing DTOs.
@@ -899,11 +902,11 @@ class ClientStateTransformer(
      */
     private fun evaluateConditionBadge(
         state: GameState,
-        condition: com.wingedsheep.sdk.scripting.Condition,
+        condition: Condition,
         controllerId: EntityId
     ): ClientCardEffect? {
         return when (condition) {
-            is com.wingedsheep.sdk.scripting.CreatureCardsInGraveyardAtLeast -> {
+            is CreatureCardsInGraveyardAtLeast -> {
                 val graveyardZone = ZoneKey(controllerId, Zone.GRAVEYARD)
                 val count = state.getZone(graveyardZone).count { entityId ->
                     state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.isCreature == true
@@ -916,7 +919,7 @@ class ClientStateTransformer(
                     icon = if (met) "condition-met" else "condition-unmet"
                 )
             }
-            is com.wingedsheep.sdk.scripting.CardsInGraveyardAtLeast -> {
+            is CardsInGraveyardAtLeast -> {
                 val graveyardZone = ZoneKey(controllerId, Zone.GRAVEYARD)
                 val count = state.getZone(graveyardZone).size
                 val met = count >= condition.count

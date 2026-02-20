@@ -4,7 +4,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.SacrificeEffect
+import com.wingedsheep.sdk.scripting.effects.SacrificeEffect
 
 /**
  * Accursed Centaur

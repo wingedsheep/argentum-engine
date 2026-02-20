@@ -1,9 +1,54 @@
 package com.wingedsheep.sdk.serialization
 
-import com.wingedsheep.sdk.core.CardType
-import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.scripting.*
+import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
+import com.wingedsheep.sdk.scripting.effects.AddMinusCountersEffect
+import com.wingedsheep.sdk.scripting.effects.AnyPlayerMayPayEffect
+import com.wingedsheep.sdk.scripting.effects.BecomeCreatureTypeEffect
+import com.wingedsheep.sdk.scripting.effects.BlightEffect
+import com.wingedsheep.sdk.scripting.effects.CantBeRegeneratedEffect
+import com.wingedsheep.sdk.scripting.effects.ChangeCreatureTypeTextEffect
+import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
+import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
+import com.wingedsheep.sdk.scripting.effects.DestroyAtEndOfCombatEffect
+import com.wingedsheep.sdk.scripting.effects.DynamicModifyStatsEffect
+import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.ExileAndReplaceWithTokenEffect
+import com.wingedsheep.sdk.scripting.effects.ExileUntilLeavesEffect
+import com.wingedsheep.sdk.scripting.effects.FlipCoinEffect
+import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
+import com.wingedsheep.sdk.scripting.effects.ForEachTargetEffect
+import com.wingedsheep.sdk.scripting.effects.ForceSacrificeEffect
+import com.wingedsheep.sdk.scripting.effects.GainControlByMostOfSubtypeEffect
+import com.wingedsheep.sdk.scripting.effects.GainControlEffect
+import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
+import com.wingedsheep.sdk.scripting.effects.GrantTriggeredAbilityUntilEndOfTurnEffect
+import com.wingedsheep.sdk.scripting.effects.LookAtFaceDownCreatureEffect
+import com.wingedsheep.sdk.scripting.effects.LoseAllCreatureTypesEffect
+import com.wingedsheep.sdk.scripting.effects.MarkExileOnDeathEffect
+import com.wingedsheep.sdk.scripting.effects.MayEffect
+import com.wingedsheep.sdk.scripting.effects.MayPayManaEffect
+import com.wingedsheep.sdk.scripting.effects.ModalEffect
+import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
+import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
+import com.wingedsheep.sdk.scripting.effects.MustBeBlockedEffect
+import com.wingedsheep.sdk.scripting.effects.OptionalCostEffect
+import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
+import com.wingedsheep.sdk.scripting.effects.PreventNextDamageEffect
+import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
+import com.wingedsheep.sdk.scripting.effects.RegenerateEffect
+import com.wingedsheep.sdk.scripting.effects.RemoveCountersEffect
+import com.wingedsheep.sdk.scripting.effects.RemoveFromCombatEffect
+import com.wingedsheep.sdk.scripting.effects.StoreCountEffect
+import com.wingedsheep.sdk.scripting.effects.StoreResultEffect
+import com.wingedsheep.sdk.scripting.effects.TapCreatureForEffectEffect
+import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
+import com.wingedsheep.sdk.scripting.effects.TransformAllCreaturesEffect
+import com.wingedsheep.sdk.scripting.effects.TransformEffect
+import com.wingedsheep.sdk.scripting.effects.TurnFaceDownEffect
+import com.wingedsheep.sdk.scripting.effects.TurnFaceUpEffect
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Post-deserialization validation for CardDefinition objects.

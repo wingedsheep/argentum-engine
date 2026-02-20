@@ -14,7 +14,7 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.ChooseCreatureTypeGainControlEffect
+import com.wingedsheep.sdk.scripting.effects.ChooseCreatureTypeGainControlEffect
 import com.wingedsheep.sdk.scripting.Duration
 import java.util.UUID
 import kotlin.reflect.KClass

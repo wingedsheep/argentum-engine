@@ -16,7 +16,7 @@ import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.GrantToEnchantedCreatureTypeGroupEffect
+import com.wingedsheep.sdk.scripting.effects.GrantToEnchantedCreatureTypeGroupEffect
 import kotlin.reflect.KClass
 
 /**

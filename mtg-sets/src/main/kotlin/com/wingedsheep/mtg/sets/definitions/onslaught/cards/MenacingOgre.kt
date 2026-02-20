@@ -3,8 +3,8 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.OnEnterBattlefield
-import com.wingedsheep.sdk.scripting.SecretBidEffect
+import com.wingedsheep.sdk.scripting.triggers.OnEnterBattlefield
+import com.wingedsheep.sdk.scripting.effects.SecretBidEffect
 
 /**
  * Menacing Ogre

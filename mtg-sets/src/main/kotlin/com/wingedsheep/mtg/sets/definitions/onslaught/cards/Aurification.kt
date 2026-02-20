@@ -1,18 +1,17 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AddCountersEffect
+import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.AddCreatureTypeByCounter
-import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GrantKeywordByCounter
-import com.wingedsheep.sdk.scripting.OnCreatureDealsDamageToYou
-import com.wingedsheep.sdk.scripting.ForEachInGroupEffect
-import com.wingedsheep.sdk.scripting.GroupFilter
-import com.wingedsheep.sdk.scripting.OnLeavesBattlefield
-import com.wingedsheep.sdk.scripting.RemoveCountersEffect
+import com.wingedsheep.sdk.scripting.triggers.OnCreatureDealsDamageToYou
+import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.scripting.triggers.OnLeavesBattlefield
+import com.wingedsheep.sdk.scripting.effects.RemoveCountersEffect
 
 /**
  * Aurification

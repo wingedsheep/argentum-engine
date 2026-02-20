@@ -5,10 +5,9 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
-import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.YouWereAttackedThisStep
+import com.wingedsheep.sdk.scripting.conditions.YouWereAttackedThisStep
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe

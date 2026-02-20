@@ -4,7 +4,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.OnEnterBattlefield
+import com.wingedsheep.sdk.scripting.triggers.OnEnterBattlefield
 
 /**
  * Owl Familiar

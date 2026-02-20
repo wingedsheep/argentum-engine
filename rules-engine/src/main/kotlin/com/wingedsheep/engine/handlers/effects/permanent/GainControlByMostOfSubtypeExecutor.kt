@@ -14,7 +14,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
-import com.wingedsheep.sdk.scripting.GainControlByMostOfSubtypeEffect
+import com.wingedsheep.sdk.scripting.effects.GainControlByMostOfSubtypeEffect
 import kotlin.reflect.KClass
 
 /**

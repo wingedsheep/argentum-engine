@@ -1,5 +1,9 @@
-package com.wingedsheep.sdk.scripting
+package com.wingedsheep.sdk.scripting.effects
 
+import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -19,7 +23,7 @@ import kotlinx.serialization.Serializable
 @SerialName("ChooseColorAndGrantProtectionToGroup")
 @Serializable
 data class ChooseColorAndGrantProtectionToGroupEffect(
-    val filter: GroupFilter = GroupFilter(GameObjectFilter.Creature.youControl()),
+    val filter: GroupFilter = GroupFilter(GameObjectFilter.Companion.Creature.youControl()),
     val duration: Duration = Duration.EndOfTurn
 ) : Effect {
     override val description: String = buildString {

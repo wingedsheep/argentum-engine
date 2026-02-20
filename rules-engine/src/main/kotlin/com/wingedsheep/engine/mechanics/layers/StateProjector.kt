@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.CharacteristicValue
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import kotlinx.serialization.Serializable
 
 /**
@@ -156,7 +157,7 @@ class StateProjector(
                 val baseStats = cardComponent.baseStats ?: continue
                 val textReplacement = state.getEntity(entityId)?.get<TextReplacementComponent>()
 
-                fun resolveDynamicAmount(source: com.wingedsheep.sdk.scripting.DynamicAmount): Int {
+                fun resolveDynamicAmount(source: DynamicAmount): Int {
                     val effective = if (textReplacement != null) {
                         SubtypeReplacer.replaceDynamicAmount(source, textReplacement)
                     } else {

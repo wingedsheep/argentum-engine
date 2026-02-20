@@ -8,7 +8,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.dealDamageToTarget
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolvePlayerTargets
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.sdk.scripting.DealDamageToPlayersEffect
+import com.wingedsheep.sdk.scripting.effects.DealDamageToPlayersEffect
 import kotlin.reflect.KClass
 
 /**

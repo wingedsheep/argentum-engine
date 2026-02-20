@@ -43,8 +43,8 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.CastRestriction
-import com.wingedsheep.sdk.scripting.ChooseCreatureTypeModifyStatsEffect
-import com.wingedsheep.sdk.scripting.DividedDamageEffect
+import com.wingedsheep.sdk.scripting.effects.ChooseCreatureTypeModifyStatsEffect
+import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.toEntityId
@@ -746,7 +746,7 @@ class CastSpellHandler(
         currentState: GameState,
         action: CastSpell,
         sacrificedPermanentIds: List<EntityId>,
-        spellTargetRequirements: List<com.wingedsheep.sdk.targeting.TargetRequirement>,
+        spellTargetRequirements: List<com.wingedsheep.sdk.scripting.targets.TargetRequirement>,
         priorEvents: List<GameEvent>
     ): ExecutionResult {
         val allCreatureTypes = com.wingedsheep.sdk.core.Subtype.ALL_CREATURE_TYPES
@@ -803,7 +803,7 @@ class CastSpellHandler(
         action: CastSpell,
         source: com.wingedsheep.sdk.model.CastTimeCreatureTypeSource,
         sacrificedPermanentIds: List<EntityId>,
-        spellTargetRequirements: List<com.wingedsheep.sdk.targeting.TargetRequirement>,
+        spellTargetRequirements: List<com.wingedsheep.sdk.scripting.targets.TargetRequirement>,
         priorEvents: List<GameEvent>
     ): ExecutionResult? {
         // Determine which zone to scan based on source

@@ -2,7 +2,7 @@ package com.wingedsheep.engine.event
 
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.Effect
+import com.wingedsheep.sdk.scripting.effects.Effect
 import kotlinx.serialization.Serializable
 
 /**

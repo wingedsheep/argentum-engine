@@ -5,7 +5,6 @@ import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.LoyaltyChangedEvent
 import com.wingedsheep.engine.core.ManaAddedEvent
-import com.wingedsheep.engine.core.ManaSpentEvent
 import com.wingedsheep.engine.core.TappedEvent
 import com.wingedsheep.engine.core.TurnManager
 import com.wingedsheep.engine.event.TriggerDetector
@@ -38,9 +37,9 @@ import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.ActivationRestriction
 import com.wingedsheep.sdk.scripting.TimingRule
-import com.wingedsheep.sdk.scripting.AddAnyColorManaEffect
-import com.wingedsheep.sdk.scripting.AddColorlessManaEffect
-import com.wingedsheep.sdk.scripting.AddManaEffect
+import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
+import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
+import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.AdditionalManaOnTap
 import com.wingedsheep.engine.handlers.CostPaymentChoices
 import com.wingedsheep.engine.state.components.identity.OwnerComponent

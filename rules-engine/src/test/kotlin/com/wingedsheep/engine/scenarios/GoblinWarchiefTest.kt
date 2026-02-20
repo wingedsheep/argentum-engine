@@ -12,7 +12,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantKeywordToCreatureGroup
-import com.wingedsheep.sdk.scripting.GroupFilter
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.ReduceSpellCostBySubtype
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe

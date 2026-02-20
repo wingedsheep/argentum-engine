@@ -7,7 +7,7 @@ import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ActivationRestriction
-import com.wingedsheep.sdk.scripting.SearchDestination
+import com.wingedsheep.sdk.scripting.effects.SearchDestination
 
 /**
  * Weathered Wayfarer

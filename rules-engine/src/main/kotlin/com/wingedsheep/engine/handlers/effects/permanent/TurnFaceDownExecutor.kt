@@ -8,7 +8,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolveTarget
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
-import com.wingedsheep.sdk.scripting.TurnFaceDownEffect
+import com.wingedsheep.sdk.scripting.effects.TurnFaceDownEffect
 import kotlin.reflect.KClass
 
 /**

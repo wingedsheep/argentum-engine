@@ -1,6 +1,9 @@
-package com.wingedsheep.sdk.scripting
+package com.wingedsheep.sdk.scripting.targets
 
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

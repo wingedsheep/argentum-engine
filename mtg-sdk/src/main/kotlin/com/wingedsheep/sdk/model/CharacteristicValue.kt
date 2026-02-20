@@ -1,6 +1,6 @@
 package com.wingedsheep.sdk.model
 
-import com.wingedsheep.sdk.scripting.DynamicAmount
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.serialization.CharacteristicValueSerializer
 import kotlinx.serialization.Serializable
 

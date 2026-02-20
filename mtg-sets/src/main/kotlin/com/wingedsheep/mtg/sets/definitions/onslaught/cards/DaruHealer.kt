@@ -3,10 +3,10 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.scripting.PreventNextDamageEffect
-import com.wingedsheep.sdk.scripting.DynamicAmount
-import com.wingedsheep.sdk.targeting.AnyTarget
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.effects.PreventNextDamageEffect
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.scripting.targets.AnyTarget
 
 /**
  * Daru Healer

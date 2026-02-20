@@ -1,5 +1,6 @@
-package com.wingedsheep.sdk.scripting
+package com.wingedsheep.sdk.scripting.conditions
 
+import com.wingedsheep.sdk.scripting.conditions.Condition
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

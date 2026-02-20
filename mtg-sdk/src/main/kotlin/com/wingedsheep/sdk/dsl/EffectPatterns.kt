@@ -3,6 +3,39 @@ package com.wingedsheep.sdk.dsl
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.*
+import com.wingedsheep.sdk.scripting.effects.CardDestination
+import com.wingedsheep.sdk.scripting.effects.CardOrder
+import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.ChooseCreatureTypeEffect
+import com.wingedsheep.sdk.scripting.effects.Chooser
+import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
+import com.wingedsheep.sdk.scripting.effects.CreateDynamicTokensEffect
+import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
+import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
+import com.wingedsheep.sdk.scripting.effects.DynamicModifyStatsEffect
+import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.ForEachPlayerEffect
+import com.wingedsheep.sdk.scripting.effects.ForEachTargetEffect
+import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
+import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
+import com.wingedsheep.sdk.scripting.effects.MoveType
+import com.wingedsheep.sdk.scripting.effects.OptionalCostEffect
+import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
+import com.wingedsheep.sdk.scripting.effects.RevealUntilEffect
+import com.wingedsheep.sdk.scripting.effects.SacrificeEffect
+import com.wingedsheep.sdk.scripting.effects.SearchDestination
+import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.SelectionMode
+import com.wingedsheep.sdk.scripting.effects.ShuffleLibraryEffect
+import com.wingedsheep.sdk.scripting.effects.StoreCountEffect
+import com.wingedsheep.sdk.scripting.effects.StoreResultEffect
+import com.wingedsheep.sdk.scripting.effects.ZonePlacement
+import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.scripting.values.EffectVariable
 
 /**
  * Helper object for creating common effect patterns.
@@ -548,26 +581,32 @@ object EffectPatterns {
         val effects = mutableListOf<Effect>()
 
         // Gather matching cards from library
-        effects.add(GatherCardsEffect(
-            source = CardSource.FromZone(Zone.LIBRARY, Player.You, filter),
-            storeAs = "searchable"
-        ))
+        effects.add(
+            GatherCardsEffect(
+                source = CardSource.FromZone(Zone.LIBRARY, Player.You, filter),
+                storeAs = "searchable"
+            )
+        )
 
         // Player selects up to `count`
-        effects.add(SelectFromCollectionEffect(
-            from = "searchable",
-            selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(count)),
-            storeSelected = "found"
-        ))
+        effects.add(
+            SelectFromCollectionEffect(
+                from = "searchable",
+                selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(count)),
+                storeSelected = "found"
+            )
+        )
 
         // For TOP_OF_LIBRARY: shuffle first, then put on top
         if (destination == SearchDestination.TOP_OF_LIBRARY) {
             if (shuffleAfter) effects.add(ShuffleLibraryEffect())
-            effects.add(MoveCollectionEffect(
-                from = "found",
-                destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Top),
-                revealed = reveal
-            ))
+            effects.add(
+                MoveCollectionEffect(
+                    from = "found",
+                    destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Top),
+                    revealed = reveal
+                )
+            )
         } else {
             // Move to destination
             val (zone, placement) = when (destination) {
@@ -577,11 +616,13 @@ object EffectPatterns {
                 SearchDestination.GRAVEYARD -> Zone.GRAVEYARD to ZonePlacement.Default
                 else -> error("unreachable")
             }
-            effects.add(MoveCollectionEffect(
-                from = "found",
-                destination = CardDestination.ToZone(zone, placement = placement),
-                revealed = reveal
-            ))
+            effects.add(
+                MoveCollectionEffect(
+                    from = "found",
+                    destination = CardDestination.ToZone(zone, placement = placement),
+                    revealed = reveal
+                )
+            )
             if (shuffleAfter) effects.add(ShuffleLibraryEffect())
         }
 
@@ -715,7 +756,7 @@ object EffectPatterns {
             MoveCollectionEffect(
                 from = "allRevealed",
                 destination = CardDestination.ToZone(
-                    com.wingedsheep.sdk.core.Zone.LIBRARY,
+                    Zone.LIBRARY,
                     placement = ZonePlacement.Bottom
                 ),
                 order = CardOrder.ControllerChooses
@@ -744,7 +785,7 @@ object EffectPatterns {
             MoveCollectionEffect(
                 from = "allRevealed",
                 destination = CardDestination.ToZone(
-                    com.wingedsheep.sdk.core.Zone.LIBRARY,
+                    Zone.LIBRARY,
                     placement = ZonePlacement.Bottom
                 ),
                 order = CardOrder.ControllerChooses
@@ -806,7 +847,7 @@ object EffectPatterns {
             // Step 3: Put the matched creature onto the battlefield
             MoveCollectionEffect(
                 from = "found",
-                destination = CardDestination.ToZone(com.wingedsheep.sdk.core.Zone.BATTLEFIELD)
+                destination = CardDestination.ToZone(Zone.BATTLEFIELD)
             ),
             // Step 4: Shuffle the rest back into the library
             ShuffleLibraryEffect()

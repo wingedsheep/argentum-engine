@@ -2,20 +2,19 @@ package com.wingedsheep.sdk.dsl
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.TargetFilter
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.targeting.AnyTarget
-import com.wingedsheep.sdk.targeting.TargetCreature
-import com.wingedsheep.sdk.targeting.TargetCreatureOrPlaneswalker
-import com.wingedsheep.sdk.targeting.TargetObject
-import com.wingedsheep.sdk.targeting.TargetCreatureOrPlayer
-import com.wingedsheep.sdk.targeting.TargetOpponent
-import com.wingedsheep.sdk.targeting.TargetPermanent
-import com.wingedsheep.sdk.targeting.TargetPlayer
-import com.wingedsheep.sdk.targeting.TargetRequirement
-import com.wingedsheep.sdk.targeting.TargetSpell
+import com.wingedsheep.sdk.scripting.targets.AnyTarget
+import com.wingedsheep.sdk.scripting.targets.TargetCreature
+import com.wingedsheep.sdk.scripting.targets.TargetCreatureOrPlaneswalker
+import com.wingedsheep.sdk.scripting.targets.TargetObject
+import com.wingedsheep.sdk.scripting.targets.TargetCreatureOrPlayer
+import com.wingedsheep.sdk.scripting.targets.TargetOpponent
+import com.wingedsheep.sdk.scripting.targets.TargetPermanent
+import com.wingedsheep.sdk.scripting.targets.TargetPlayer
+import com.wingedsheep.sdk.scripting.targets.TargetRequirement
+import com.wingedsheep.sdk.scripting.targets.TargetSpell
 
 /**
  * Facade object providing convenient access to TargetRequirement types.

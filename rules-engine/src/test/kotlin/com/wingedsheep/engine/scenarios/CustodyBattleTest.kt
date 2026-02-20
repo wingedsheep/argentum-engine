@@ -12,18 +12,17 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.GiveControlToTargetPlayerEffect
-import com.wingedsheep.sdk.scripting.OnEnchantedCreatureControllerUpkeep
+import com.wingedsheep.sdk.scripting.effects.GiveControlToTargetPlayerEffect
+import com.wingedsheep.sdk.scripting.triggers.OnEnchantedCreatureControllerUpkeep
 import com.wingedsheep.sdk.scripting.PayCost
-import com.wingedsheep.sdk.scripting.PayOrSufferEffect
+import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 import com.wingedsheep.sdk.scripting.TriggeredAbility
-import com.wingedsheep.sdk.targeting.TargetCreature
-import com.wingedsheep.sdk.targeting.TargetOpponent
+import com.wingedsheep.sdk.scripting.targets.TargetCreature
+import com.wingedsheep.sdk.scripting.targets.TargetOpponent
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**

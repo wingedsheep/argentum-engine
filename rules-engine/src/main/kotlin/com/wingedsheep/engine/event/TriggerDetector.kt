@@ -29,6 +29,39 @@ import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.*
+import com.wingedsheep.sdk.scripting.triggers.OnAttack
+import com.wingedsheep.sdk.scripting.triggers.OnBecomesBlocked
+import com.wingedsheep.sdk.scripting.triggers.OnBecomesTapped
+import com.wingedsheep.sdk.scripting.triggers.OnBecomesUntapped
+import com.wingedsheep.sdk.scripting.triggers.OnBeginCombat
+import com.wingedsheep.sdk.scripting.triggers.OnBlock
+import com.wingedsheep.sdk.scripting.triggers.OnCreatureDealsDamageToYou
+import com.wingedsheep.sdk.scripting.triggers.OnCreatureWithSubtypeDealsCombatDamageToPlayer
+import com.wingedsheep.sdk.scripting.triggers.OnCreatureWithSubtypeEnters
+import com.wingedsheep.sdk.scripting.triggers.OnCycle
+import com.wingedsheep.sdk.scripting.triggers.OnDamageReceived
+import com.wingedsheep.sdk.scripting.triggers.OnDamagedByCreature
+import com.wingedsheep.sdk.scripting.triggers.OnDamagedBySpell
+import com.wingedsheep.sdk.scripting.triggers.OnDealsDamage
+import com.wingedsheep.sdk.scripting.triggers.OnDeath
+import com.wingedsheep.sdk.scripting.triggers.OnDraw
+import com.wingedsheep.sdk.scripting.triggers.OnEnchantedCreatureControllerUpkeep
+import com.wingedsheep.sdk.scripting.triggers.OnEndStep
+import com.wingedsheep.sdk.scripting.triggers.OnEnterBattlefield
+import com.wingedsheep.sdk.scripting.triggers.OnFirstMainPhase
+import com.wingedsheep.sdk.scripting.triggers.OnGainControlOfSelf
+import com.wingedsheep.sdk.scripting.triggers.OnLeavesBattlefield
+import com.wingedsheep.sdk.scripting.triggers.OnLifeGain
+import com.wingedsheep.sdk.scripting.triggers.OnOtherCreatureEnters
+import com.wingedsheep.sdk.scripting.triggers.OnOtherCreatureWithSubtypeDies
+import com.wingedsheep.sdk.scripting.triggers.OnOtherCreatureWithSubtypeEnters
+import com.wingedsheep.sdk.scripting.triggers.OnSpellCast
+import com.wingedsheep.sdk.scripting.triggers.OnTransform
+import com.wingedsheep.sdk.scripting.triggers.OnTurnFaceUp
+import com.wingedsheep.sdk.scripting.triggers.OnUpkeep
+import com.wingedsheep.sdk.scripting.triggers.OnYouAttack
+import com.wingedsheep.sdk.scripting.triggers.SpellTypeFilter
+import com.wingedsheep.sdk.scripting.triggers.Trigger
 
 /**
  * Detects triggered abilities that should fire based on game events.

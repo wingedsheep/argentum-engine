@@ -13,10 +13,10 @@ import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.CardPredicate
-import com.wingedsheep.sdk.scripting.ControllerPredicate
+import com.wingedsheep.sdk.scripting.predicates.CardPredicate
+import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.StatePredicate
+import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 
 /**
  * Evaluates the new unified predicates and filters against game state.

@@ -2,9 +2,9 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DamageAndChainCopyEffect
-import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.targeting.AnyTarget
+import com.wingedsheep.sdk.scripting.effects.DamageAndChainCopyEffect
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.targets.AnyTarget
 
 /**
  * Chain of Plasma

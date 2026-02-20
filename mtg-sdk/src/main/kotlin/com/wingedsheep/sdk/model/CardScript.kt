@@ -1,7 +1,8 @@
 package com.wingedsheep.sdk.model
 
 import com.wingedsheep.sdk.scripting.*
-import com.wingedsheep.sdk.targeting.TargetRequirement
+import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import kotlinx.serialization.Serializable
 
 // Type alias for clarity - replacement effects are in the scripting package

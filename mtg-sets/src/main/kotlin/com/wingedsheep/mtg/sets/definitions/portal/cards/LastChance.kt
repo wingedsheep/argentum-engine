@@ -2,7 +2,7 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.TakeExtraTurnEffect
+import com.wingedsheep.sdk.scripting.effects.TakeExtraTurnEffect
 
 /**
  * Last Chance

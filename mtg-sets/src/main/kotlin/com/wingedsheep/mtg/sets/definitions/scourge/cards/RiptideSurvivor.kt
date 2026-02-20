@@ -4,7 +4,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Riptide Survivor
@@ -34,6 +34,6 @@ val RiptideSurvivor = card("Riptide Survivor") {
         collectorNumber = "45"
         artist = "Glen Angus"
         flavorText = "Rootwater showed him wonders that air dwellers could scarcely comprehend."
-        imageUri = "https://cards.scryfall.io/large/front/5/1/5190be4e-4bbb-4424-8ffa-81a89ceb67a5.jpg?1562529959"
+        imageUri = "https://cards.scryfall.io/large/front/7/5/7515187f-4821-400d-b78f-cec173df6b84.jpg?1562530669"
     }
 }

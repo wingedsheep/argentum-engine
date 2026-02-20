@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.scripting.effects.PatriarchsBiddingEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -61,7 +62,7 @@ class PatriarchsBiddingTest : FunSpec({
         manaCost = ManaCost.parse("{3}{B}{B}"),
         oracleText = "Each player chooses a creature type. Each player returns all creature cards of a type chosen this way from their graveyard to the battlefield.",
         script = com.wingedsheep.sdk.model.CardScript.spell(
-            effect = com.wingedsheep.sdk.scripting.PatriarchsBiddingEffect
+            effect = PatriarchsBiddingEffect
         )
     )
 

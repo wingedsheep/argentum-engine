@@ -15,7 +15,7 @@ import com.wingedsheep.sdk.core.TypeLine
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.CreateTokenEffect
+import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import kotlin.reflect.KClass
 
 /**

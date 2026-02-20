@@ -3,7 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.ChooseCreatureTypeUntapEffect
+import com.wingedsheep.sdk.scripting.effects.ChooseCreatureTypeUntapEffect
 
 /**
  * Riptide Chronologist

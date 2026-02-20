@@ -3,8 +3,8 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.PreventDamageFromAttackingCreaturesThisTurnEffect
-import com.wingedsheep.sdk.scripting.YouWereAttackedThisStep
+import com.wingedsheep.sdk.scripting.effects.PreventDamageFromAttackingCreaturesThisTurnEffect
+import com.wingedsheep.sdk.scripting.conditions.YouWereAttackedThisStep
 
 /**
  * Deep Wood

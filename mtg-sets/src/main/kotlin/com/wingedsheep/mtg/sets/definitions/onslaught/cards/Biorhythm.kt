@@ -3,7 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.SetLifeTotalForEachPlayerEffect
+import com.wingedsheep.sdk.scripting.effects.SetLifeTotalForEachPlayerEffect
 
 /**
  * Biorhythm

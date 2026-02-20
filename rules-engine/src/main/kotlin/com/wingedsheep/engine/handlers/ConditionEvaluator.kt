@@ -11,6 +11,47 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.*
+import com.wingedsheep.sdk.scripting.conditions.APlayerControlsMostOfSubtype
+import com.wingedsheep.sdk.scripting.conditions.AllConditions
+import com.wingedsheep.sdk.scripting.conditions.AnyCondition
+import com.wingedsheep.sdk.scripting.conditions.CardsInGraveyardAtLeast
+import com.wingedsheep.sdk.scripting.conditions.CardsInHandAtLeast
+import com.wingedsheep.sdk.scripting.conditions.CardsInHandAtMost
+import com.wingedsheep.sdk.scripting.conditions.Condition
+import com.wingedsheep.sdk.scripting.conditions.ControlArtifact
+import com.wingedsheep.sdk.scripting.conditions.ControlCreature
+import com.wingedsheep.sdk.scripting.conditions.ControlCreatureOfType
+import com.wingedsheep.sdk.scripting.conditions.ControlCreatureWithKeyword
+import com.wingedsheep.sdk.scripting.conditions.ControlCreaturesAtLeast
+import com.wingedsheep.sdk.scripting.conditions.ControlEnchantment
+import com.wingedsheep.sdk.scripting.conditions.CreatureCardsInGraveyardAtLeast
+import com.wingedsheep.sdk.scripting.conditions.EmptyHand
+import com.wingedsheep.sdk.scripting.conditions.EnchantedCreatureHasSubtype
+import com.wingedsheep.sdk.scripting.conditions.GraveyardContainsSubtype
+import com.wingedsheep.sdk.scripting.conditions.IsNotYourTurn
+import com.wingedsheep.sdk.scripting.conditions.IsYourTurn
+import com.wingedsheep.sdk.scripting.conditions.LessLifeThanOpponent
+import com.wingedsheep.sdk.scripting.conditions.LifeTotalAtLeast
+import com.wingedsheep.sdk.scripting.conditions.LifeTotalAtMost
+import com.wingedsheep.sdk.scripting.conditions.MoreLifeThanOpponent
+import com.wingedsheep.sdk.scripting.conditions.NotCondition
+import com.wingedsheep.sdk.scripting.conditions.OpponentControlsCreature
+import com.wingedsheep.sdk.scripting.conditions.OpponentControlsMoreCreatures
+import com.wingedsheep.sdk.scripting.conditions.OpponentControlsMoreLands
+import com.wingedsheep.sdk.scripting.conditions.OpponentSpellOnStack
+import com.wingedsheep.sdk.scripting.conditions.SourceEnteredThisTurn
+import com.wingedsheep.sdk.scripting.conditions.SourceHasDealtCombatDamageToPlayer
+import com.wingedsheep.sdk.scripting.conditions.SourceHasDealtDamage
+import com.wingedsheep.sdk.scripting.conditions.SourceHasSubtype
+import com.wingedsheep.sdk.scripting.conditions.SourceIsAttacking
+import com.wingedsheep.sdk.scripting.conditions.SourceIsBlocking
+import com.wingedsheep.sdk.scripting.conditions.SourceIsTapped
+import com.wingedsheep.sdk.scripting.conditions.SourceIsUntapped
+import com.wingedsheep.sdk.scripting.conditions.TargetPowerAtMost
+import com.wingedsheep.sdk.scripting.conditions.TargetSpellManaValueAtMost
+import com.wingedsheep.sdk.scripting.conditions.YouAttackedThisTurn
+import com.wingedsheep.sdk.scripting.conditions.YouWereAttackedThisStep
+import com.wingedsheep.sdk.scripting.conditions.YouWereDealtCombatDamageThisTurn
 
 /**
  * Evaluates conditions from the SDK against the game state.

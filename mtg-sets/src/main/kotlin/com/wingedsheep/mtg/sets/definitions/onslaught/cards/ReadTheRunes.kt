@@ -2,7 +2,7 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.ReadTheRunesEffect
+import com.wingedsheep.sdk.scripting.effects.ReadTheRunesEffect
 
 /**
  * Read the Runes

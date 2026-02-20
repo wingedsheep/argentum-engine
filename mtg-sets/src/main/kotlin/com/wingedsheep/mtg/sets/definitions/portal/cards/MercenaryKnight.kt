@@ -3,10 +3,10 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.OnEnterBattlefield
-import com.wingedsheep.sdk.scripting.PayCost
-import com.wingedsheep.sdk.scripting.PayOrSufferEffect
-import com.wingedsheep.sdk.scripting.SacrificeSelfEffect
+import com.wingedsheep.sdk.scripting.triggers.OnEnterBattlefield
+import com.wingedsheep.sdk.scripting.costs.PayCost
+import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
+import com.wingedsheep.sdk.scripting.effects.SacrificeSelfEffect
 
 /**
  * Mercenary Knight

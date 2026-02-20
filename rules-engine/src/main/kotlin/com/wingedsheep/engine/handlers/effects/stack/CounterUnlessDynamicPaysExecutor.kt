@@ -13,7 +13,7 @@ import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.ManaSymbol
-import com.wingedsheep.sdk.scripting.CounterUnlessDynamicPaysEffect
+import com.wingedsheep.sdk.scripting.effects.CounterUnlessDynamicPaysEffect
 import kotlin.reflect.KClass
 
 /**

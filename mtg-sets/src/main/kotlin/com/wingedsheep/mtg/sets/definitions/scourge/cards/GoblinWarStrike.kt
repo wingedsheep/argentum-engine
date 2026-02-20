@@ -4,9 +4,11 @@ import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DealDamageEffect
-import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.targeting.TargetPlayer
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
+import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.targets.TargetPlayer
 
 /**
  * Goblin War Strike
@@ -24,8 +26,8 @@ val GoblinWarStrike = card("Goblin War Strike") {
         target = TargetPlayer()
         effect = DealDamageEffect(
             amount = DynamicAmounts.battlefield(
-                com.wingedsheep.sdk.scripting.Player.You,
-                com.wingedsheep.sdk.scripting.GameObjectFilter.Creature.withSubtype(Subtype.GOBLIN)
+                Player.You,
+                GameObjectFilter.Creature.withSubtype(Subtype.GOBLIN)
             ).count(),
             target = EffectTarget.ContextTarget(0)
         )

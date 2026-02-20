@@ -8,7 +8,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.dealDamageToT
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolveTarget
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.sdk.scripting.FightEffect
+import com.wingedsheep.sdk.scripting.effects.FightEffect
 import kotlin.reflect.KClass
 
 /**

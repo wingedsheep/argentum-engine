@@ -6,7 +6,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.scripting.ChooseCreatureTypeUntapEffect
+import com.wingedsheep.sdk.scripting.effects.ChooseCreatureTypeUntapEffect
 import java.util.UUID
 import kotlin.reflect.KClass
 

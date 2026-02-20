@@ -6,7 +6,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.player.SkipUntapComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
-import com.wingedsheep.sdk.scripting.SkipUntapEffect
+import com.wingedsheep.sdk.scripting.effects.SkipUntapEffect
 import kotlin.reflect.KClass
 
 /**

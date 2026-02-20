@@ -1,5 +1,6 @@
-package com.wingedsheep.sdk.scripting
+package com.wingedsheep.sdk.scripting.effects
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -11,7 +12,7 @@ import kotlinx.serialization.Serializable
  * Apply an effect to every entity matching a group filter.
  *
  * The inner [effect] is executed once per matched entity.
- * Within the inner effect, [EffectTarget.Self] resolves to the
+ * Within the inner effect, [com.wingedsheep.sdk.scripting.targets.EffectTarget.Self] resolves to the
  * current iteration entity rather than the source permanent.
  *
  * @property filter Which entities are affected

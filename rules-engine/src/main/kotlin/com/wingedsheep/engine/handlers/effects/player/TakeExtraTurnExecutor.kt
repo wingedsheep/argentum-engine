@@ -6,7 +6,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.player.LoseAtEndStepComponent
 import com.wingedsheep.engine.state.components.player.SkipNextTurnComponent
-import com.wingedsheep.sdk.scripting.TakeExtraTurnEffect
+import com.wingedsheep.sdk.scripting.effects.TakeExtraTurnEffect
 import kotlin.reflect.KClass
 
 /**

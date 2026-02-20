@@ -5,7 +5,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.player.AdditionalCombatPhasesComponent
-import com.wingedsheep.sdk.scripting.AddCombatPhaseEffect
+import com.wingedsheep.sdk.scripting.effects.AddCombatPhaseEffect
 import kotlin.reflect.KClass
 
 /**

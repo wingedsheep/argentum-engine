@@ -11,11 +11,13 @@ import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.Aggregation
-import com.wingedsheep.sdk.scripting.CardNumericProperty
-import com.wingedsheep.sdk.scripting.DynamicAmount
+import com.wingedsheep.sdk.scripting.values.Aggregation
+import com.wingedsheep.sdk.scripting.values.CardNumericProperty
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.Player
+import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
+import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import kotlin.math.max
 import kotlin.math.min
 
@@ -329,7 +331,7 @@ class DynamicAmountEvaluator(
                 context.targets.getOrNull(targetIndex)
                     ?.let { target ->
                         when (target) {
-                            is com.wingedsheep.sdk.scripting.EffectTarget.ContextTarget -> {
+                            is EffectTarget.ContextTarget -> {
                                 // Recursive resolution not supported, return empty
                                 emptyList()
                             }
@@ -381,13 +383,13 @@ class DynamicAmountEvaluator(
         }
     }
 
-    private fun resolveCounterType(filter: com.wingedsheep.sdk.scripting.CounterTypeFilter): CounterType {
+    private fun resolveCounterType(filter: CounterTypeFilter): CounterType {
         return when (filter) {
-            is com.wingedsheep.sdk.scripting.CounterTypeFilter.Any -> CounterType.PLUS_ONE_PLUS_ONE
-            is com.wingedsheep.sdk.scripting.CounterTypeFilter.PlusOnePlusOne -> CounterType.PLUS_ONE_PLUS_ONE
-            is com.wingedsheep.sdk.scripting.CounterTypeFilter.MinusOneMinusOne -> CounterType.MINUS_ONE_MINUS_ONE
-            is com.wingedsheep.sdk.scripting.CounterTypeFilter.Loyalty -> CounterType.LOYALTY
-            is com.wingedsheep.sdk.scripting.CounterTypeFilter.Named -> {
+            is CounterTypeFilter.Any -> CounterType.PLUS_ONE_PLUS_ONE
+            is CounterTypeFilter.PlusOnePlusOne -> CounterType.PLUS_ONE_PLUS_ONE
+            is CounterTypeFilter.MinusOneMinusOne -> CounterType.MINUS_ONE_MINUS_ONE
+            is CounterTypeFilter.Loyalty -> CounterType.LOYALTY
+            is CounterTypeFilter.Named -> {
                 try {
                     CounterType.valueOf(filter.name.uppercase().replace(' ', '_'))
                 } catch (_: IllegalArgumentException) {

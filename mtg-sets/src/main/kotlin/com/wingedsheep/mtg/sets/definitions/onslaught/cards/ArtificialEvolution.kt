@@ -2,9 +2,9 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.ChangeCreatureTypeTextEffect
-import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.targeting.TargetSpellOrPermanent
+import com.wingedsheep.sdk.scripting.effects.ChangeCreatureTypeTextEffect
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.targets.TargetSpellOrPermanent
 
 /**
  * Artificial Evolution

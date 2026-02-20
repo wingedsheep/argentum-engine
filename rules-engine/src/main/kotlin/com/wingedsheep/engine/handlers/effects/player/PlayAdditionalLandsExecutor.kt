@@ -5,7 +5,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
-import com.wingedsheep.sdk.scripting.PlayAdditionalLandsEffect
+import com.wingedsheep.sdk.scripting.effects.PlayAdditionalLandsEffect
 import kotlin.reflect.KClass
 
 /**

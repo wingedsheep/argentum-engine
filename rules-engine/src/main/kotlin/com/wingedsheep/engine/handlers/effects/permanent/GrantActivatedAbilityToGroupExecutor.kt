@@ -9,7 +9,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
-import com.wingedsheep.sdk.scripting.GrantActivatedAbilityToGroupEffect
+import com.wingedsheep.sdk.scripting.effects.GrantActivatedAbilityToGroupEffect
 import kotlin.reflect.KClass
 
 /**

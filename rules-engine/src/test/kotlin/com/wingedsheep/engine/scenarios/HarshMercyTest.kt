@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.scripting.effects.HarshMercyEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -53,7 +54,7 @@ class HarshMercyTest : FunSpec({
         manaCost = ManaCost.parse("{2}{W}"),
         oracleText = "Each player chooses a creature type. Destroy all creatures that aren't of a type chosen this way. They can't be regenerated.",
         script = com.wingedsheep.sdk.model.CardScript.spell(
-            effect = com.wingedsheep.sdk.scripting.HarshMercyEffect
+            effect = HarshMercyEffect
         )
     )
 

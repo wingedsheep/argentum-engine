@@ -1,11 +1,31 @@
 package com.wingedsheep.engine.mechanics.text
 
 import com.wingedsheep.engine.mechanics.layers.AffectsFilter
-import com.wingedsheep.engine.state.components.identity.TextReplacementCategory
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
-import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.*
-import com.wingedsheep.sdk.targeting.*
+import com.wingedsheep.sdk.scripting.conditions.APlayerControlsMostOfSubtype
+import com.wingedsheep.sdk.scripting.conditions.Condition
+import com.wingedsheep.sdk.scripting.conditions.ControlCreatureOfType
+import com.wingedsheep.sdk.scripting.conditions.GraveyardContainsSubtype
+import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
+import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
+import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
+import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
+import com.wingedsheep.sdk.scripting.effects.GainControlByMostOfSubtypeEffect
+import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
+import com.wingedsheep.sdk.scripting.effects.MayEffect
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.predicates.CardPredicate
+import com.wingedsheep.sdk.scripting.triggers.OnCreatureWithSubtypeDealsCombatDamageToPlayer
+import com.wingedsheep.sdk.scripting.triggers.OnCreatureWithSubtypeEnters
+import com.wingedsheep.sdk.scripting.triggers.OnOtherCreatureWithSubtypeDies
+import com.wingedsheep.sdk.scripting.triggers.OnOtherCreatureWithSubtypeEnters
+import com.wingedsheep.sdk.scripting.triggers.Trigger
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.scripting.targets.*
 
 /**
  * Central utility for transforming creature type references in triggers, effects,

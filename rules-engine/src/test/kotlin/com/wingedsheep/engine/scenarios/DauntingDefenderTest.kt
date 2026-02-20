@@ -14,7 +14,7 @@ import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.GameEvent
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.PreventDamage
-import com.wingedsheep.sdk.scripting.RecipientFilter
+import com.wingedsheep.sdk.scripting.events.RecipientFilter
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 

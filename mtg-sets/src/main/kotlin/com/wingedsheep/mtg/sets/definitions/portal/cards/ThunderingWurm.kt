@@ -4,9 +4,9 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.PayCost
-import com.wingedsheep.sdk.scripting.PayOrSufferEffect
-import com.wingedsheep.sdk.scripting.SacrificeSelfEffect
+import com.wingedsheep.sdk.scripting.costs.PayCost
+import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
+import com.wingedsheep.sdk.scripting.effects.SacrificeSelfEffect
 
 /**
  * Thundering Wurm

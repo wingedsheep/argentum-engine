@@ -5,8 +5,8 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.sdk.dsl.EffectPatterns
-import com.wingedsheep.sdk.scripting.EachPlayerReturnsPermanentToHandEffect
-import com.wingedsheep.sdk.scripting.Effect
+import com.wingedsheep.sdk.scripting.effects.EachPlayerReturnsPermanentToHandEffect
+import com.wingedsheep.sdk.scripting.effects.Effect
 import kotlin.reflect.KClass
 
 /**

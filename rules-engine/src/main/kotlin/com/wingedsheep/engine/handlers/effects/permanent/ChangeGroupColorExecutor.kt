@@ -13,7 +13,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.ChangeGroupColorEffect
+import com.wingedsheep.sdk.scripting.effects.ChangeGroupColorEffect
 import kotlin.reflect.KClass
 
 /**

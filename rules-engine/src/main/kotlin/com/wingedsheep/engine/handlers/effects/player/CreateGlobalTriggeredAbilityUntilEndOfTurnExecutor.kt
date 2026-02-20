@@ -5,7 +5,7 @@ import com.wingedsheep.engine.event.GlobalGrantedTriggeredAbility
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.sdk.scripting.CreateGlobalTriggeredAbilityUntilEndOfTurnEffect
+import com.wingedsheep.sdk.scripting.effects.CreateGlobalTriggeredAbilityUntilEndOfTurnEffect
 import com.wingedsheep.sdk.scripting.Duration
 import kotlin.reflect.KClass
 

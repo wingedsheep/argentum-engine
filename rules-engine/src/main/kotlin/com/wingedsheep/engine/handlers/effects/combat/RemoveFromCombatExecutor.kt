@@ -6,7 +6,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolveTarget
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.combat.*
-import com.wingedsheep.sdk.scripting.RemoveFromCombatEffect
+import com.wingedsheep.sdk.scripting.effects.RemoveFromCombatEffect
 import kotlin.reflect.KClass
 
 /**

@@ -14,9 +14,9 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.DamageType
+import com.wingedsheep.sdk.scripting.events.DamageType
 import com.wingedsheep.sdk.scripting.PreventDamage
-import com.wingedsheep.sdk.scripting.RecipientFilter
+import com.wingedsheep.sdk.scripting.events.RecipientFilter
 
 /**
  * Calculates combat damage assignments according to MTG rules (CR 510).

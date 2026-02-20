@@ -11,7 +11,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
-import com.wingedsheep.sdk.scripting.ReplaceNextDrawWithEffect
+import com.wingedsheep.sdk.scripting.effects.ReplaceNextDrawWithEffect
 import kotlin.reflect.KClass
 
 /**

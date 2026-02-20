@@ -1,6 +1,10 @@
-package com.wingedsheep.sdk.scripting
+package com.wingedsheep.sdk.scripting.values
 
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.conditions.Condition
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -274,7 +278,7 @@ sealed interface DynamicAmount {
     data class Count(
         val player: Player,
         val zone: Zone,
-        val filter: GameObjectFilter = GameObjectFilter.Any
+        val filter: GameObjectFilter = GameObjectFilter.Companion.Any
     ) : DynamicAmount {
         override val description: String = buildString {
             append("the number of ")
@@ -338,7 +342,7 @@ sealed interface DynamicAmount {
     @Serializable
     data class AggregateBattlefield(
         val player: Player,
-        val filter: GameObjectFilter = GameObjectFilter.Any,
+        val filter: GameObjectFilter = GameObjectFilter.Companion.Any,
         val aggregation: Aggregation = Aggregation.COUNT,
         val property: CardNumericProperty? = null
     ) : DynamicAmount {

@@ -4,8 +4,8 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.CreateDynamicTokensEffect
-import com.wingedsheep.sdk.scripting.DynamicAmount
+import com.wingedsheep.sdk.scripting.effects.CreateDynamicTokensEffect
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Broodhatch Nantuko

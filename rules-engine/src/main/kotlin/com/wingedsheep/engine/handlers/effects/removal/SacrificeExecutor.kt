@@ -13,7 +13,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.SacrificeEffect
+import com.wingedsheep.sdk.scripting.effects.SacrificeEffect
 import kotlin.reflect.KClass
 
 /**

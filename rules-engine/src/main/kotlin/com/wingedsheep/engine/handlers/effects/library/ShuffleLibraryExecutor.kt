@@ -8,7 +8,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolvePlayer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.scripting.ShuffleLibraryEffect
+import com.wingedsheep.sdk.scripting.effects.ShuffleLibraryEffect
 import kotlin.reflect.KClass
 
 /**

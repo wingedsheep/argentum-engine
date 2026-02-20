@@ -6,7 +6,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolvePlayerTarget
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.combat.MustAttackPlayerComponent
-import com.wingedsheep.sdk.scripting.TauntEffect
+import com.wingedsheep.sdk.scripting.effects.TauntEffect
 import kotlin.reflect.KClass
 
 /**

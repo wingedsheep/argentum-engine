@@ -8,10 +8,10 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.ActivatedAbility
-import com.wingedsheep.sdk.scripting.EffectTarget
-import com.wingedsheep.sdk.scripting.GrantActivatedAbilityUntilEndOfTurnEffect
-import com.wingedsheep.sdk.scripting.GrantKeywordUntilEndOfTurnEffect
-import com.wingedsheep.sdk.scripting.RegenerateEffect
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.effects.GrantActivatedAbilityUntilEndOfTurnEffect
+import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
+import com.wingedsheep.sdk.scripting.effects.RegenerateEffect
 
 /**
  * Run Wild

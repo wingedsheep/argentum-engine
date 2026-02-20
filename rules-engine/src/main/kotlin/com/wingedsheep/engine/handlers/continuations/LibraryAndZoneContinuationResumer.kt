@@ -7,7 +7,8 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.scripting.SearchDestination
+import com.wingedsheep.sdk.scripting.effects.SearchDestination
+import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 
 class LibraryAndZoneContinuationResumer(
     private val ctx: ContinuationContext
@@ -110,7 +111,7 @@ class LibraryAndZoneContinuationResumer(
 
         // Place cards in library in the chosen order
         val currentLibrary = newState.getZone(libraryZone)
-        newState = if (continuation.placement == com.wingedsheep.sdk.scripting.ZonePlacement.Bottom) {
+        newState = if (continuation.placement == ZonePlacement.Bottom) {
             // Bottom: append ordered cards at the end
             newState.copy(
                 zones = newState.zones + (libraryZone to currentLibrary + orderedCards)

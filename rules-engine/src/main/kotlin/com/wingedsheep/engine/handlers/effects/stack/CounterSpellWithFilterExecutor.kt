@@ -8,7 +8,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
-import com.wingedsheep.sdk.scripting.CounterSpellWithFilterEffect
+import com.wingedsheep.sdk.scripting.effects.CounterSpellWithFilterEffect
 import kotlin.reflect.KClass
 
 /**

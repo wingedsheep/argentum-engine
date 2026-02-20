@@ -8,7 +8,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.destroyPerman
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.sdk.scripting.DestroyAllSharingTypeWithSacrificedEffect
+import com.wingedsheep.sdk.scripting.effects.DestroyAllSharingTypeWithSacrificedEffect
 import kotlin.reflect.KClass
 
 /**

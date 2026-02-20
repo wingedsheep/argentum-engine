@@ -7,7 +7,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.Effect
+import com.wingedsheep.sdk.scripting.effects.Effect
 
 /**
  * Consumes a unified draw-replacement shield ([SerializableModification.ReplaceDrawWithEffect])

@@ -6,7 +6,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.player.SkipCombatPhasesComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
-import com.wingedsheep.sdk.scripting.SkipCombatPhasesEffect
+import com.wingedsheep.sdk.scripting.effects.SkipCombatPhasesEffect
 import kotlin.reflect.KClass
 
 /**

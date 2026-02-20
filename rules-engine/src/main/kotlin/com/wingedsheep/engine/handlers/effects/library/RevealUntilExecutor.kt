@@ -13,8 +13,8 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.Player
-import com.wingedsheep.sdk.scripting.RevealUntilEffect
+import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.effects.RevealUntilEffect
 import kotlin.reflect.KClass
 
 /**

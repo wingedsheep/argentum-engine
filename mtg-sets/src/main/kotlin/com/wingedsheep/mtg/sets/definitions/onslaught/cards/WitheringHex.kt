@@ -3,10 +3,10 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AddCountersEffect
-import com.wingedsheep.sdk.scripting.EffectTarget
+import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.ModifyStatsByCounterOnSource
-import com.wingedsheep.sdk.scripting.OnCycle
+import com.wingedsheep.sdk.scripting.triggers.OnCycle
 
 /**
  * Withering Hex

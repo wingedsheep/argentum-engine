@@ -1,6 +1,7 @@
-package com.wingedsheep.sdk.scripting
+package com.wingedsheep.sdk.scripting.events
 
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

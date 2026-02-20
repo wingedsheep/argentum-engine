@@ -9,12 +9,14 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.PayCost
-import com.wingedsheep.sdk.scripting.PayOrSufferEffect
+import com.wingedsheep.sdk.scripting.costs.PayCost
+import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
+import com.wingedsheep.sdk.scripting.effects.SacrificeEffect
+import com.wingedsheep.sdk.scripting.effects.SacrificeSelfEffect
 import java.util.UUID
 import kotlin.reflect.KClass
 
@@ -34,7 +36,7 @@ import kotlin.reflect.KClass
  */
 class PayOrSufferExecutor(
     private val decisionHandler: DecisionHandler = DecisionHandler(),
-    private val executeEffect: ((GameState, com.wingedsheep.sdk.scripting.Effect, EffectContext) -> ExecutionResult)? = null
+    private val executeEffect: ((GameState, Effect, EffectContext) -> ExecutionResult)? = null
 ) : EffectExecutor<PayOrSufferEffect> {
 
     override val effectType: KClass<PayOrSufferEffect> = PayOrSufferEffect::class
@@ -366,7 +368,7 @@ class PayOrSufferExecutor(
      */
     private fun executeSufferEffect(
         state: GameState,
-        sufferEffect: com.wingedsheep.sdk.scripting.Effect,
+        sufferEffect: Effect,
         context: EffectContext
     ): ExecutionResult {
         // Use injected executor if available, otherwise handle common cases
@@ -376,13 +378,13 @@ class PayOrSufferExecutor(
 
         // Fallback: Handle the most common suffer effects directly
         return when (sufferEffect) {
-            is com.wingedsheep.sdk.scripting.SacrificeSelfEffect -> {
+            is SacrificeSelfEffect -> {
                 // Handle "sacrifice this" - the most common suffer effect
                 val sourceId = context.sourceId ?: return ExecutionResult.success(state)
                 val controllerId = context.controllerId
                 sacrificePermanent(state, controllerId, sourceId)
             }
-            is com.wingedsheep.sdk.scripting.SacrificeEffect -> {
+            is SacrificeEffect -> {
                 // Handle "sacrifice this" when using SacrificeEffect
                 // For PayOrSufferEffect, we assume it means sacrifice self
                 val sourceId = context.sourceId ?: return ExecutionResult.success(state)
@@ -435,7 +437,7 @@ class PayOrSufferExecutor(
     /**
      * Build prompt for discard cost.
      */
-    private fun buildDiscardPrompt(cost: PayCost.Discard, sourceName: String, sufferEffect: com.wingedsheep.sdk.scripting.Effect): String {
+    private fun buildDiscardPrompt(cost: PayCost.Discard, sourceName: String, sufferEffect: Effect): String {
         val desc = cost.filter.description
         val typeText = if (cost.count == 1) {
             val article = if (desc == "card") "a" else if (desc.first().lowercaseChar() in "aeiou") "an" else "a"
@@ -450,7 +452,7 @@ class PayOrSufferExecutor(
     /**
      * Build prompt for sacrifice cost.
      */
-    private fun buildSacrificePrompt(cost: PayCost.Sacrifice, sourceName: String, sufferEffect: com.wingedsheep.sdk.scripting.Effect): String {
+    private fun buildSacrificePrompt(cost: PayCost.Sacrifice, sourceName: String, sufferEffect: Effect): String {
         val desc = cost.filter.description
         val typeText = if (cost.count == 1) {
             "${if (desc.first().lowercaseChar() in "aeiou") "an" else "a"} $desc"
@@ -464,10 +466,10 @@ class PayOrSufferExecutor(
     /**
      * Describe the consequence of not paying the cost.
      */
-    private fun describeConsequence(sufferEffect: com.wingedsheep.sdk.scripting.Effect, sourceName: String): String {
+    private fun describeConsequence(sufferEffect: Effect, sourceName: String): String {
         return when (sufferEffect) {
-            is com.wingedsheep.sdk.scripting.SacrificeSelfEffect,
-            is com.wingedsheep.sdk.scripting.SacrificeEffect -> "sacrifice $sourceName"
+            is SacrificeSelfEffect,
+            is SacrificeEffect -> "sacrifice $sourceName"
             else -> sufferEffect.description
         }
     }

@@ -5,9 +5,9 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.Effect
-import com.wingedsheep.sdk.scripting.ForEachPlayerEffect
-import com.wingedsheep.sdk.scripting.Player
+import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.ForEachPlayerEffect
+import com.wingedsheep.sdk.scripting.references.Player
 import kotlin.reflect.KClass
 
 /**

@@ -11,8 +11,8 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.AnyPlayerMayPayEffect
-import com.wingedsheep.sdk.scripting.PayCost
+import com.wingedsheep.sdk.scripting.effects.AnyPlayerMayPayEffect
+import com.wingedsheep.sdk.scripting.costs.PayCost
 import kotlin.reflect.KClass
 
 /**

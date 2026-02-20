@@ -7,8 +7,12 @@ import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.*
 import com.wingedsheep.sdk.model.*
 import com.wingedsheep.sdk.scripting.*
-import com.wingedsheep.sdk.targeting.TargetPermanent
-import com.wingedsheep.sdk.targeting.TargetSpell
+import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
+import com.wingedsheep.sdk.scripting.effects.PreventAllDamageDealtByTargetEffect
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.targets.TargetPermanent
+import com.wingedsheep.sdk.scripting.targets.TargetSpell
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -68,7 +72,7 @@ class ShieldmageElderTest : FunSpec({
         oracleText = "Lightning Bolt deals 3 damage to any target.",
         script = CardScript.spell(
             effect = DealDamageEffect(3, EffectTarget.ContextTarget(0)),
-            com.wingedsheep.sdk.targeting.AnyTarget()
+            com.wingedsheep.sdk.scripting.targets.AnyTarget()
         )
     )
 
