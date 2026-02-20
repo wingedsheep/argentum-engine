@@ -34,6 +34,7 @@ object ScourgeSet {
         ElvishAberration,
         FierceEmpath,
         Kurgadon,
+        TitanicBulvox,
         TreetopScout,
         WirewoodGuardian,
         Woodcloaker,

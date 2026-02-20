@@ -3,7 +3,7 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 40 / 143
+**Implemented:** 41 / 143
 
 | Color | Count |
 |-------|-------|
@@ -141,7 +141,7 @@
 - [ ] Temporal Fissure
 - [ ] Tendrils of Agony
 - [ ] Thundercloud Elemental
-- [ ] Titanic Bulvox
+- [x] Titanic Bulvox
 - [ ] Torrent of Fire
 - [ ] Trap Digger
 - [x] Treetop Scout
