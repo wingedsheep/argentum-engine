@@ -45,6 +45,7 @@ object ScourgeSet {
         BreakAsunder,
 
         // Blue creatures
+        AphettoRunecaster,
         CoastWatcher,
         RiptideSurvivor,
         ScornfulEgotist,

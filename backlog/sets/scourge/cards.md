@@ -3,7 +3,7 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 36 / 143
+**Implemented:** 37 / 143
 
 | Color | Count |
 |-------|-------|
@@ -22,7 +22,7 @@
 - [ ] Alpha Status
 - [ ] Ambush Commander
 - [ ] Ancient Ooze
-- [ ] Aphetto Runecaster
+- [x] Aphetto Runecaster
 - [x] Ark of Blight
 - [ ] Astral Steel
 - [ ] Aven Farseer
