@@ -215,14 +215,15 @@ export function GameCard({
     const action = a.action
     return (action.type === 'PlayLand' && action.cardId === card.id) ||
            (action.type === 'CastSpell' && action.cardId === card.id) ||
-           (action.type === 'CycleCard' && action.cardId === card.id)
+           (action.type === 'CycleCard' && action.cardId === card.id) ||
+           (action.type === 'TypecycleCard' && action.cardId === card.id)
   })
   const playableAction = playableActions[0]
   // Show modal if multiple legal actions OR if card has multiple potential options (e.g., morph + normal cast)
   const hasMultiplePotentialOptions = hasMultipleCastingOptions(playableActions)
   // Also show modal for cycling lands where play land is unavailable (so player sees grayed-out "Play land")
   const isCyclingLandWithoutPlayLand = card.cardTypes.includes('LAND') &&
-    playableActions.length === 1 && playableActions[0]?.action.type === 'CycleCard'
+    playableActions.length === 1 && (playableActions[0]?.action.type === 'CycleCard' || playableActions[0]?.action.type === 'TypecycleCard')
   const shouldShowCastModal = playableActions.length > 1 || (hasMultiplePotentialOptions && playableActions.length > 0) || isCyclingLandWithoutPlayLand
   const canDragToPlay = inHand && playableAction && !isInCombatMode
 
