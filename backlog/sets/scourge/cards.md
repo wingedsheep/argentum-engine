@@ -2,7 +2,7 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 30 / 143
+**Implemented:** 31 / 143
 
 | Color | Count |
 |-------|-------|
@@ -61,7 +61,7 @@
 - [ ] Dragon Scales
 - [ ] Dragon Shadow
 - [ ] Dragonspeaker Shaman
-- [ ] Dragonstalker
+- [x] Dragonstalker
 - [ ] Dragonstorm
 - [ ] Dragon Tyrant
 - [ ] Dragon Wings
