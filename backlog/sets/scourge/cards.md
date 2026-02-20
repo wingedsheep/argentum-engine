@@ -1,8 +1,9 @@
+    
 # Scourge (SCG) - Card Checklist
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 32 / 143
+**Implemented:** 33 / 143
 
 | Color | Count |
 |-------|-------|
@@ -101,7 +102,7 @@
 - [ ] Metamorphose
 - [ ] Mind's Desire
 - [ ] Mischievous Quanar
-- [ ] Misguided Rage
+- [x] Misguided Rage
 - [ ] Mistform Warchief
 - [ ] Nefashu
 - [x] Noble Templar

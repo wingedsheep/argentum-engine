@@ -65,6 +65,7 @@ object ScourgeSet {
 
         // Red sorceries
         GoblinWarStrike,
+        MisguidedRage,
 
         // Red instants
         Carbonize,
