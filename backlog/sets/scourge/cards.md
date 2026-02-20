@@ -2,12 +2,12 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 26 / 143
+**Implemented:** 27 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 4 |
-| Blue | 4 |
+| Blue | 5 |
 | Black | 5 |
 | Red | 6 |
 | Green | 5 |
@@ -124,7 +124,7 @@
 - [x] Rush of Knowledge
 - [ ] Scattershot
 - [x] Scornful Egotist
-- [ ] Shoreline Ranger
+- [x] Shoreline Ranger
 - [x] Siege-Gang Commander
 - [x] Silver Knight
 - [ ] Skirk Volcanist

@@ -45,6 +45,7 @@ object ScourgeSet {
         // Blue creatures
         CoastWatcher,
         ScornfulEgotist,
+        ShorelineRanger,
 
         // Blue instants
         DispersalShield,
