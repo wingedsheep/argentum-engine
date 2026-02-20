@@ -1182,23 +1182,20 @@ class LegalActionsCalculator(
         sourceId: EntityId? = null
     ): List<EntityId> {
         return when (requirement) {
-            is TargetCreature -> findValidCreatureTargets(state, playerId, requirement.filter, sourceId)
             is TargetPlayer -> state.turnOrder.filter { state.hasEntity(it) && !playerHasShroud(state, it) }
             is TargetOpponent -> state.turnOrder.filter { it != playerId && state.hasEntity(it) && !playerHasShroud(state, it) }
             is AnyTarget -> {
                 // Any target = creatures + planeswalkers + players
-                val creatures = findValidCreatureTargets(state, playerId, TargetFilter.Creature, sourceId)
+                val creatures = findValidPermanentTargets(state, playerId, TargetFilter.Creature, sourceId)
                 val players = state.turnOrder.filter { state.hasEntity(it) && !playerHasShroud(state, it) }
                 creatures + players
             }
             is TargetCreatureOrPlayer -> {
-                val creatures = findValidCreatureTargets(state, playerId, TargetFilter.Creature, sourceId)
+                val creatures = findValidPermanentTargets(state, playerId, TargetFilter.Creature, sourceId)
                 val players = state.turnOrder.filter { state.hasEntity(it) && !playerHasShroud(state, it) }
                 creatures + players
             }
-            is TargetPermanent -> findValidPermanentTargets(state, playerId, requirement.filter, sourceId)
             is TargetObject -> findValidObjectTargets(state, playerId, requirement.filter, sourceId)
-            is TargetSpell -> findValidSpellTargets(state, playerId, requirement.filter)
             is TargetSpellOrPermanent -> {
                 val permanents = findValidPermanentTargets(state, playerId, TargetFilter.Permanent, sourceId)
                 val spells = findValidSpellTargets(state, playerId, TargetFilter.SpellOnStack)
@@ -1217,32 +1214,6 @@ class LegalActionsCalculator(
         val hasExactlyOneChoice = validTargets.size == 1
 
         return isPlayerTarget && requiresExactlyOne && hasExactlyOneChoice
-    }
-
-    private fun findValidCreatureTargets(
-        state: GameState,
-        playerId: EntityId,
-        filter: TargetFilter,
-        sourceId: EntityId? = null
-    ): List<EntityId> {
-        val projected = stateProjector.project(state)
-        val battlefield = state.getBattlefield()
-        val context = PredicateContext(controllerId = playerId, sourceId = sourceId)
-        return battlefield.filter { entityId ->
-            val entityController = state.getEntity(entityId)?.get<ControllerComponent>()?.playerId
-
-            // Check hexproof - can't be targeted by opponents
-            if (projected.hasKeyword(entityId, Keyword.HEXPROOF) && entityController != playerId) {
-                return@filter false
-            }
-            // Check shroud - can't be targeted by anyone
-            if (projected.hasKeyword(entityId, Keyword.SHROUD)) {
-                return@filter false
-            }
-
-            // Use projected state for correct face-down creature handling
-            predicateEvaluator.matchesWithProjection(state, projected, entityId, filter.baseFilter, context)
-        }
     }
 
     private fun findValidPermanentTargets(

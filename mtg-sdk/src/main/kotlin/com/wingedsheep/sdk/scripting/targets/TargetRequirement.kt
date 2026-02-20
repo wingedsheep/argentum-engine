@@ -62,65 +62,33 @@ data class TargetOpponent(
 }
 
 // =============================================================================
-// Creature Targeting
+// Creature Targeting (factory function — returns TargetObject)
 // =============================================================================
 
 /**
  * Target creature (any creature on the battlefield).
- *
- * @param count Maximum number of targets
- * @param minCount Minimum number of targets (for "one or two" style targeting)
- * @param optional If true, allows 0 targets ("up to X" style targeting)
- * @param filter Restrictions on which creatures can be targeted
+ * Factory function that returns a TargetObject with appropriate defaults.
  */
-@SerialName("TargetCreature")
-@Serializable
-data class TargetCreature(
-    override val count: Int = 1,
-    override val minCount: Int = count,
-    override val optional: Boolean = false,
-    val filter: TargetFilter = TargetFilter.Creature
-) : TargetRequirement {
-    override val description: String = buildString {
-        if (optional) {
-            append("up to ")
-        } else if (minCount < count) {
-            append("$minCount to ")
-        }
-        val filterDesc = filter.description.takeIf { filter != TargetFilter.Creature }
-        if (filterDesc != null && filterDesc.isNotEmpty()) {
-            append(filterDesc)
-            append(" ")
-        }
-        append("target ")
-        append(if (count == 1) "creature" else "$count creatures")
-    }
-}
+fun TargetCreature(
+    count: Int = 1,
+    minCount: Int = count,
+    optional: Boolean = false,
+    filter: TargetFilter = TargetFilter.Creature
+): TargetObject = TargetObject(count = count, minCount = minCount, optional = optional, filter = filter)
 
 // =============================================================================
-// Permanent Targeting
+// Permanent Targeting (factory function — returns TargetObject)
 // =============================================================================
 
 /**
  * Target permanent (any permanent on the battlefield).
+ * Factory function that returns a TargetObject with appropriate defaults.
  */
-@SerialName("TargetPermanent")
-@Serializable
-data class TargetPermanent(
-    override val count: Int = 1,
-    override val optional: Boolean = false,
-    val filter: TargetFilter = TargetFilter.Permanent
-) : TargetRequirement {
-    override val description: String = buildString {
-        if (optional) append("up to ")
-        append("target ")
-        if (filter != TargetFilter.Permanent) {
-            append(filter.description)
-            append(" ")
-        }
-        append(if (count == 1) "permanent" else "$count permanents")
-    }
-}
+fun TargetPermanent(
+    count: Int = 1,
+    optional: Boolean = false,
+    filter: TargetFilter = TargetFilter.Permanent
+): TargetObject = TargetObject(count = count, optional = optional, filter = filter)
 
 // =============================================================================
 // Combined Targeting
@@ -186,28 +154,18 @@ data class TargetSpellOrPermanent(
 // =============================================================================
 
 // =============================================================================
-// Spell Targeting (on stack)
+// Spell Targeting (factory function — returns TargetObject)
 // =============================================================================
 
 /**
  * Target spell on the stack.
+ * Factory function that returns a TargetObject with appropriate defaults.
  */
-@SerialName("TargetSpell")
-@Serializable
-data class TargetSpell(
-    override val count: Int = 1,
-    override val optional: Boolean = false,
-    val filter: TargetFilter = TargetFilter.SpellOnStack
-) : TargetRequirement {
-    override val description: String = buildString {
-        append("target ")
-        if (filter != TargetFilter.SpellOnStack) {
-            append(filter.baseFilter.description)
-            append(" ")
-        }
-        append("spell")
-    }
-}
+fun TargetSpell(
+    count: Int = 1,
+    optional: Boolean = false,
+    filter: TargetFilter = TargetFilter.SpellOnStack
+): TargetObject = TargetObject(count = count, optional = optional, filter = filter)
 
 // =============================================================================
 // Generic Object Targeting
@@ -226,13 +184,18 @@ data class TargetSpell(
 @Serializable
 data class TargetObject(
     override val count: Int = 1,
+    override val minCount: Int = count,
     override val optional: Boolean = false,
     val filter: TargetFilter
 ) : TargetRequirement {
     override val description: String = buildString {
-        if (optional) append("up to ")
+        if (optional) {
+            append("up to ")
+        } else if (minCount < count) {
+            append("$minCount to ")
+        }
         append("target ")
-        append(filter.description)
+        append(if (count == 1) filter.description else "$count ${filter.description}s")
     }
 }
 

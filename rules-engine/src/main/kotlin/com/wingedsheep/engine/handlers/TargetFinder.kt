@@ -44,15 +44,12 @@ class TargetFinder(
         ignoreTargetingRestrictions: Boolean = false
     ): List<EntityId> {
         return when (requirement) {
-            is TargetCreature -> findCreatureTargets(state, requirement, controllerId, sourceId, ignoreTargetingRestrictions)
             is TargetPlayer -> findPlayerTargets(state, requirement, controllerId)
             is TargetOpponent -> findOpponentTargets(state, controllerId)
-            is TargetPermanent -> findPermanentTargets(state, requirement, controllerId, sourceId, ignoreTargetingRestrictions)
             is AnyTarget -> findAnyTargets(state, controllerId, sourceId)
             is TargetCreatureOrPlayer -> findCreatureOrPlayerTargets(state, controllerId, sourceId)
             is TargetCreatureOrPlaneswalker -> findCreatureOrPlaneswalkerTargets(state, controllerId, sourceId)
-            is TargetSpell -> findSpellTargets(state, requirement, controllerId)
-            is TargetObject -> findObjectTargets(state, requirement, controllerId, sourceId)
+            is TargetObject -> findObjectTargets(state, requirement, controllerId, sourceId, ignoreTargetingRestrictions)
             is TargetSpellOrPermanent -> findSpellOrPermanentTargets(state, controllerId, sourceId)
             is TargetOther -> {
                 // For TargetOther, find targets for the base requirement but exclude the source
@@ -60,43 +57,6 @@ class TargetFinder(
                 val excludeId = requirement.excludeSourceId ?: sourceId
                 if (excludeId != null) baseTargets.filter { it != excludeId } else baseTargets
             }
-        }
-    }
-
-    private fun findCreatureTargets(
-        state: GameState,
-        requirement: TargetCreature,
-        controllerId: EntityId,
-        sourceId: EntityId?,
-        ignoreTargetingRestrictions: Boolean = false
-    ): List<EntityId> {
-        val projected = stateProjector.project(state)
-        val battlefield = state.getBattlefield()
-        val filter = requirement.filter
-
-        return battlefield.filter { entityId ->
-            val container = state.getEntity(entityId) ?: return@filter false
-            container.get<CardComponent>() ?: return@filter false
-            val entityController = container.get<ControllerComponent>()?.playerId
-
-            // Must be a creature - use projected state for face-down creatures (Rule 707.2)
-            if (!projected.hasType(entityId, "CREATURE")) return@filter false
-
-            if (!ignoreTargetingRestrictions) {
-                // Check hexproof - can't be targeted by opponents
-                if (projected.hasKeyword(entityId, Keyword.HEXPROOF) && entityController != controllerId) {
-                    return@filter false
-                }
-
-                // Check shroud - can't be targeted by anyone
-                if (projected.hasKeyword(entityId, Keyword.SHROUD)) {
-                    return@filter false
-                }
-            }
-
-            // Use unified filter with projected state
-            val predicateContext = PredicateContext(controllerId = controllerId, sourceId = sourceId)
-            predicateEvaluator.matchesWithProjection(state, projected, entityId, filter.baseFilter, predicateContext)
         }
     }
 
@@ -116,7 +76,7 @@ class TargetFinder(
 
     private fun findPermanentTargets(
         state: GameState,
-        requirement: TargetPermanent,
+        requirement: TargetObject,
         controllerId: EntityId,
         sourceId: EntityId?,
         ignoreTargetingRestrictions: Boolean = false
@@ -194,7 +154,7 @@ class TargetFinder(
         targets.addAll(state.turnOrder.filter { state.hasEntity(it) && !playerHasShroud(state, it) })
 
         // Add all creatures
-        targets.addAll(findCreatureTargets(state, TargetCreature(), controllerId, sourceId))
+        targets.addAll(findPermanentTargets(state, TargetCreature(), controllerId, sourceId))
 
         return targets
     }
@@ -254,7 +214,7 @@ class TargetFinder(
 
     private fun findSpellTargets(
         state: GameState,
-        requirement: TargetSpell,
+        requirement: TargetObject,
         controllerId: EntityId
     ): List<EntityId> {
         val filter = requirement.filter
@@ -271,22 +231,14 @@ class TargetFinder(
         state: GameState,
         requirement: TargetObject,
         controllerId: EntityId,
-        sourceId: EntityId?
+        sourceId: EntityId?,
+        ignoreTargetingRestrictions: Boolean = false
     ): List<EntityId> {
         val filter = requirement.filter
         return when (filter.zone) {
-            Zone.BATTLEFIELD -> findPermanentTargets(
-                state,
-                TargetPermanent(count = requirement.count, optional = requirement.optional, filter = filter),
-                controllerId,
-                sourceId
-            )
+            Zone.BATTLEFIELD -> findPermanentTargets(state, requirement, controllerId, sourceId, ignoreTargetingRestrictions)
             Zone.GRAVEYARD -> findGraveyardTargets(state, filter, controllerId)
-            Zone.STACK -> findSpellTargets(
-                state,
-                TargetSpell(count = requirement.count, optional = requirement.optional, filter = filter),
-                controllerId
-            )
+            Zone.STACK -> findSpellTargets(state, requirement, controllerId)
             else -> findCardTargetsInZone(state, filter, controllerId)
         }
     }

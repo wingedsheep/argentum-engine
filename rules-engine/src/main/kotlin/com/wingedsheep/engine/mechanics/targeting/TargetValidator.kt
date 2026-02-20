@@ -91,14 +91,11 @@ class TargetValidator {
         sourceId: EntityId? = null
     ): String? {
         val error = when (requirement) {
-            is TargetCreature -> validateCreatureTarget(state, target, requirement.filter, casterId, sourceId)
-            is TargetPermanent -> validatePermanentTarget(state, target, requirement.filter, casterId, sourceId)
             is TargetPlayer -> validatePlayerTarget(state, target)
             is TargetOpponent -> validateOpponentTarget(state, target, casterId)
             is AnyTarget -> validateAnyTarget(state, target)
             is TargetCreatureOrPlayer -> validateCreatureOrPlayerTarget(state, target)
             is TargetCreatureOrPlaneswalker -> validateCreatureOrPlaneswalkerTarget(state, target)
-            is TargetSpell -> validateSpellTarget(state, target, requirement.filter, casterId)
             is TargetSpellOrPermanent -> validateSpellOrPermanentTarget(state, target, casterId)
             is TargetObject -> validateObjectTarget(state, target, requirement.filter, casterId, sourceId)
             is TargetOther -> validateSingleTarget(state, target, requirement.baseRequirement, casterId, sourceColors, sourceSubtypes, sourceId)
@@ -142,43 +139,6 @@ class TargetValidator {
                 val cardName = state.getEntity(entityId)?.get<CardComponent>()?.name ?: "target"
                 return "$cardName has protection from ${subtype.lowercase()}s"
             }
-        }
-        return null
-    }
-
-    private fun validateCreatureTarget(
-        state: GameState,
-        target: ChosenTarget,
-        filter: TargetFilter,
-        casterId: EntityId,
-        sourceId: EntityId? = null
-    ): String? {
-        if (target !is ChosenTarget.Permanent) {
-            return "Target must be a permanent"
-        }
-
-        val container = state.getEntity(target.entityId)
-            ?: return "Target not found"
-
-        val cardComponent = container.get<CardComponent>()
-            ?: return "Target is not a card"
-
-        // Face-down permanents are always creatures (Rule 707.2)
-        if (!cardComponent.typeLine.isCreature && !container.has<FaceDownComponent>()) {
-            return "Target must be a creature"
-        }
-
-        // Check if target is on the battlefield
-        if (target.entityId !in state.getBattlefield()) {
-            return "Target must be on the battlefield"
-        }
-
-        // Use unified filter with projection (face-down creatures have CMC 0 per Rule 707.2)
-        val projected = stateProjector.project(state)
-        val predicateContext = PredicateContext(controllerId = casterId, sourceId = sourceId)
-        val matches = predicateEvaluator.matchesWithProjection(state, projected, target.entityId, filter.baseFilter, predicateContext)
-        if (!matches) {
-            return "Target does not match filter: ${filter.description}"
         }
         return null
     }

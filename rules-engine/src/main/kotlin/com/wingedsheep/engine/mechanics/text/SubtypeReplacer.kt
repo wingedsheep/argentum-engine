@@ -264,19 +264,7 @@ object SubtypeReplacer {
      */
     fun replaceTargetRequirement(requirement: TargetRequirement, component: TextReplacementComponent): TargetRequirement {
         return when (requirement) {
-            is TargetCreature -> {
-                val newFilter = replaceTargetFilter(requirement.filter, component)
-                if (newFilter === requirement.filter) requirement else requirement.copy(filter = newFilter)
-            }
-            is TargetPermanent -> {
-                val newFilter = replaceTargetFilter(requirement.filter, component)
-                if (newFilter === requirement.filter) requirement else requirement.copy(filter = newFilter)
-            }
             is TargetObject -> {
-                val newFilter = replaceTargetFilter(requirement.filter, component)
-                if (newFilter === requirement.filter) requirement else requirement.copy(filter = newFilter)
-            }
-            is TargetSpell -> {
                 val newFilter = replaceTargetFilter(requirement.filter, component)
                 if (newFilter === requirement.filter) requirement else requirement.copy(filter = newFilter)
             }

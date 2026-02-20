@@ -1003,10 +1003,7 @@ class StackResolver(
      */
     private fun extractTargetFilter(requirement: TargetRequirement?): TargetFilter? {
         return when (requirement) {
-            is TargetCreature -> requirement.filter
-            is TargetPermanent -> requirement.filter
             is TargetObject -> requirement.filter
-            is TargetSpell -> requirement.filter
             else -> null
         }
     }
