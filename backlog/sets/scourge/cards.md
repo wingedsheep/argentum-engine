@@ -2,11 +2,11 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 27 / 143
+**Implemented:** 28 / 143
 
 | Color | Count |
 |-------|-------|
-| White | 4 |
+| White | 5 |
 | Blue | 5 |
 | Black | 5 |
 | Red | 6 |
@@ -104,7 +104,7 @@
 - [ ] Misguided Rage
 - [ ] Mistform Warchief
 - [ ] Nefashu
-- [ ] Noble Templar
+- [x] Noble Templar
 - [ ] One with Nature
 - [ ] Parallel Thoughts
 - [ ] Pemmin's Aura

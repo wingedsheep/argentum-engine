@@ -71,6 +71,7 @@ object ScourgeSet {
         // White creatures
         AvenLiberator,
         DaruWarchief,
+        NobleTemplar,
         SilverKnight,
 
         // White instants
