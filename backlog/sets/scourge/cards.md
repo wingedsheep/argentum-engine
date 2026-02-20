@@ -2,15 +2,15 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 24 / 143
+**Implemented:** 26 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 4 |
 | Blue | 4 |
 | Black | 5 |
-| Red | 5 |
-| Green | 4 |
+| Red | 6 |
+| Green | 5 |
 | Multicolor | 1 |
 | Colorless | 1 |
 
@@ -36,7 +36,7 @@
 - [ ] Call to the Grave
 - [x] Carbonize
 - [x] Carrion Feeder
-- [ ] Chartooth Cougar
+- [x] Chartooth Cougar
 - [ ] Chill Haunting
 - [ ] Claws of Wirewood
 - [ ] Clutch of Undeath
@@ -66,7 +66,7 @@
 - [ ] Dragon Tyrant
 - [ ] Dragon Wings
 - [ ] Edgewalker
-- [ ] Elvish Aberration
+- [x] Elvish Aberration
 - [ ] Enrage
 - [ ] Eternal Dragon
 - [ ] Exiled Doomsayer

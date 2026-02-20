@@ -31,6 +31,7 @@ object ScourgeSet {
         CarrionFeeder,
 
         // Green creatures
+        ElvishAberration,
         FierceEmpath,
         Kurgadon,
         TreetopScout,
