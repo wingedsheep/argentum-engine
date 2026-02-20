@@ -3,7 +3,7 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 34 / 143
+**Implemented:** 35 / 143
 
 | Color | Count |
 |-------|-------|
@@ -129,7 +129,7 @@
 - [x] Siege-Gang Commander
 - [x] Silver Knight
 - [ ] Skirk Volcanist
-- [ ] Skulltap
+- [x] Skulltap
 - [ ] Sliver Overlord
 - [ ] Soul Collector
 - [x] Spark Spray

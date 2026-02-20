@@ -91,6 +91,7 @@ object ScourgeSet {
         ZombieCutthroat,
 
         // Black sorceries
+        Skulltap,
         Unburden,
     )
 }
