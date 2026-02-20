@@ -1,0 +1,27 @@
+{
+    "name": "Skulltap",
+    "manaCost": "{1}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "As an additional cost to cast this spell, sacrifice a creature.\nDraw two cards.",
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "Fixed",
+                "amount": 2
+            }
+        },
+        "additionalCosts": [
+            {
+                "type": "SacrificePermanent",
+                "filter": "creature"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "73",
+        "artist": "Carl Critchlow",
+        "flavorText": "\"I can teach you much about the secrets of the grave—but first you must see one from the inside.\"",
+        "imageUri": "https://cards.scryfall.io/large/front/4/8/48a90779-008e-401f-9877-be0a935d2ccd.jpg?1562528514"
+    }
+}

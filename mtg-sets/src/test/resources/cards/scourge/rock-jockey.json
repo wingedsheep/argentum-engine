@@ -1,0 +1,37 @@
+{
+    "name": "Rock Jockey",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Goblin",
+    "oracleText": "You can't cast this spell if you've played a land this turn.\nYou can't play lands if you cast this spell this turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_12",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": "PreventLandPlaysThisTurn"
+            }
+        ],
+        "castRestrictions": [
+            {
+                "type": "CastOnlyIfCondition",
+                "condition": {
+                    "type": "Not",
+                    "condition": "PlayedLandThisTurn"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "artist": "Brian Snõddy",
+        "flavorText": "\"Everybody out of my way!\"",
+        "imageUri": "https://cards.scryfall.io/large/front/8/f/8f836e90-3255-48bd-a174-6a127528551e.jpg?1562532100"
+    }
+}

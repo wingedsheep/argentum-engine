@@ -1,0 +1,47 @@
+{
+    "name": "Woodcloaker",
+    "manaCost": "{5}{G}",
+    "typeLine": "Creature — Elf",
+    "oracleText": "Morph {2}{G}{G}\nWhen Woodcloaker is turned face up, target creature gains trample until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywordAbilities": [
+        {
+            "type": "Morph",
+            "morphCost": {
+                "type": "PayMana",
+                "cost": "{2}{G}{G}"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_8",
+                "trigger": "TurnFaceUpEvent",
+                "effect": {
+                    "type": "GrantKeywordUntilEndOfTurn",
+                    "keyword": "TRAMPLE",
+                    "target": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "134",
+        "artist": "Thomas M. Baxa",
+        "flavorText": "The Mirari's mutating effects touched every living thing on Otaria.",
+        "imageUri": "https://cards.scryfall.io/large/front/4/a/4aa85e09-a1cd-473d-98cd-c6a7c7aff949.jpg?1562528540"
+    }
+}

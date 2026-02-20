@@ -17,7 +17,10 @@
                 },
                 "effect": {
                     "type": "CreateToken",
-                    "count": 3,
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
                     "power": 1,
                     "toughness": 1,
                     "colors": [

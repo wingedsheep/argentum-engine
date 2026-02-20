@@ -1,0 +1,25 @@
+{
+    "name": "Misguided Rage",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player sacrifices a permanent.",
+    "script": {
+        "spellEffect": {
+            "type": "ForceSacrifice",
+            "filter": "permanent",
+            "target": {
+                "type": "ContextTarget",
+                "index": 0
+            }
+        },
+        "targetRequirements": [
+            "TargetPlayer"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "artist": "Pete Venters",
+        "flavorText": "\"If you don't have a target, you can always hit yourself.\"\n—Goblin military manual",
+        "imageUri": "https://cards.scryfall.io/large/front/7/4/74b5e00a-fef0-4711-9112-2fd067321890.jpg?1562530657"
+    }
+}

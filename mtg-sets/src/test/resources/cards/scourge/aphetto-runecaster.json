@@ -1,0 +1,36 @@
+{
+    "name": "Aphetto Runecaster",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Whenever a permanent is turned face up, you may draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_9",
+                "trigger": "TurnFaceUpEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "May",
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "rarity": "UNCOMMON",
+        "artist": "Eric Peterson",
+        "flavorText": "Unraveling the mysteries of a morph is its own reward.",
+        "imageUri": "https://cards.scryfall.io/large/front/a/9/a926db3e-1a73-4e0c-beda-7ccf439da48a.jpg?1562533279"
+    }
+}

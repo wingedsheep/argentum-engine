@@ -24,8 +24,14 @@
                 },
                 "effect": {
                     "type": "ModifyStats",
-                    "powerModifier": 1,
-                    "toughnessModifier": 0,
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
                     "target": "Self"
                 }
             }

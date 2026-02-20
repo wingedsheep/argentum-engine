@@ -1,0 +1,40 @@
+{
+    "name": "Aven Farseer",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Bird Soldier",
+    "oracleText": "Flying\nWhenever a permanent is turned face up, Aven Farseer gets +2/+2 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_16",
+                "trigger": "TurnFaceUpEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "artist": "Matthew D. Wilson",
+        "flavorText": "Those trained in the ways of the morph serve as the Order's spies and scouts.",
+        "imageUri": "https://cards.scryfall.io/large/front/4/7/47854e89-4d22-4eb6-a77d-6f04407bd2e5.jpg?1562528498"
+    }
+}

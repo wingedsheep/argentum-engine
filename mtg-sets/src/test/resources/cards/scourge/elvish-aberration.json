@@ -22,7 +22,10 @@
                 "effect": {
                     "type": "AddMana",
                     "color": "GREEN",
-                    "amount": 3
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
                 },
                 "isManaAbility": true
             }

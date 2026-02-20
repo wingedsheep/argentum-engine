@@ -1,0 +1,26 @@
+{
+    "name": "Dragonstalker",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Bird Soldier",
+    "oracleText": "Flying\nProtection from Dragons",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "ProtectionFromCreatureSubtype",
+            "subtype": "Dragon"
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "7",
+        "rarity": "UNCOMMON",
+        "artist": "Daren Bader",
+        "flavorText": "It hunts the hunters of the skies.",
+        "imageUri": "https://cards.scryfall.io/large/front/5/8/58017ff1-74d2-4be2-976a-8dff53e16150.jpg?1562529448"
+    }
+}

@@ -1,0 +1,26 @@
+{
+    "name": "Putrid Raptor",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Creature — Zombie Dinosaur Beast",
+    "oracleText": "Morph—Discard a Zombie card.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywordAbilities": [
+        {
+            "type": "Morph",
+            "morphCost": {
+                "type": "Discard",
+                "filter": "creature Zombie"
+            }
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "UNCOMMON",
+        "artist": "Pete Venters",
+        "flavorText": "In a world of magic and monsters, no creature truly dies.",
+        "imageUri": "https://cards.scryfall.io/large/front/9/1/9127942b-d73d-42a9-9f97-6a39fa798a8b.jpg?1562532123"
+    }
+}

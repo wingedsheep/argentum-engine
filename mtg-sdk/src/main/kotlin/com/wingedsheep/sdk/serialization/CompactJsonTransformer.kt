@@ -17,6 +17,16 @@ import kotlinx.serialization.json.*
 object CompactJsonTransformer {
 
     /**
+     * Keys whose values are exclusively DynamicAmount sealed types.
+     * Integer primitives in these positions are expanded to `{"type": "Fixed", "amount": n}`
+     * during loading (backward compatibility for pre-DynamicAmount JSON files).
+     * Note: "amount" is NOT included because it is `Int` in many effects.
+     */
+    private val DYNAMIC_AMOUNT_INTEGER_KEYS = setOf(
+        "powerModifier", "toughnessModifier", "dynamicPower", "dynamicToughness",
+    )
+
+    /**
      * Keys whose values are single polymorphic sealed-type objects.
      * Strings in these positions are expanded to `{"type": "..."}` during loading.
      */
@@ -113,6 +123,12 @@ object CompactJsonTransformer {
                     key in POLYMORPHIC_OBJECT_KEYS && value is JsonPrimitive && value.isString
                         && !value.content.contains("{") ->
                         buildJsonObject { put("type", value.content) }
+
+                    // Integer under a DynamicAmount key → expand to {"type": "Fixed", "amount": n}
+                    // (backward compatibility for pre-DynamicAmount JSON files)
+                    key in DYNAMIC_AMOUNT_INTEGER_KEYS && value is JsonPrimitive
+                        && !value.isString && value.intOrNull != null ->
+                        buildJsonObject { put("type", "Fixed"); put("amount", value.int) }
 
                     // Array under a polymorphic array key → expand string elements
                     key in POLYMORPHIC_ARRAY_KEYS && value is JsonArray ->
