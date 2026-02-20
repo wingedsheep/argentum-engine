@@ -37,6 +37,9 @@ object CompactJsonTransformer {
         "source", "selection",
         // Player references (sealed interface, e.g., in AggregateBattlefield)
         "player",
+        // DynamicAmount fields (sealed interface used for numeric expressions)
+        "amount", "count", "amountSource", "powerModifier", "toughnessModifier",
+        "perPlayerAmount", "dynamicPower", "dynamicToughness",
         // Dynamic amount modifiers (sealed interface DynamicAmount)
         "powerModifier", "toughnessModifier",
     )

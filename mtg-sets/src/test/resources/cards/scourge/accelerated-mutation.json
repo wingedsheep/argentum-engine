@@ -5,7 +5,7 @@
     "oracleText": "Target creature gets +X/+X until end of turn, where X is the highest mana value among permanents you control.",
     "script": {
         "spellEffect": {
-            "type": "DynamicModifyStats",
+            "type": "ModifyStats",
             "powerModifier": {
                 "type": "AggregateBattlefield",
                 "player": "You",

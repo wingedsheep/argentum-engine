@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.token
 
 import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.ComponentContainer
@@ -20,9 +21,13 @@ import kotlin.reflect.KClass
 
 /**
  * Executor for CreateTokenEffect.
- * "Create a 1/1 white Soldier creature token"
+ * "Create a 1/1 white Soldier creature token" or "Create X 1/1 green Insect creature tokens"
+ *
+ * Supports both fixed and dynamic counts via [DynamicAmountEvaluator].
  */
-class CreateTokenExecutor : EffectExecutor<CreateTokenEffect> {
+class CreateTokenExecutor(
+    private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator()
+) : EffectExecutor<CreateTokenEffect> {
 
     override val effectType: KClass<CreateTokenEffect> = CreateTokenEffect::class
 
@@ -31,10 +36,13 @@ class CreateTokenExecutor : EffectExecutor<CreateTokenEffect> {
         effect: CreateTokenEffect,
         context: EffectContext
     ): ExecutionResult {
+        val count = amountEvaluator.evaluate(state, effect.count, context)
+        if (count <= 0) return ExecutionResult.success(state)
+
         var newState = state
         val createdTokens = mutableListOf<EntityId>()
 
-        repeat(effect.count) {
+        repeat(count) {
             val tokenId = EntityId.generate()
             createdTokens.add(tokenId)
 

@@ -11,10 +11,8 @@ class ManaExecutors(
     private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator()
 ) : ExecutorModule {
     override fun executors(): List<EffectExecutor<*>> = listOf(
-        AddManaExecutor(),
-        AddColorlessManaExecutor(),
-        AddAnyColorManaExecutor(),
-        AddDynamicColorManaExecutor(amountEvaluator),
-        AddDynamicColorlessManaExecutor(amountEvaluator)
+        AddManaExecutor(amountEvaluator),
+        AddColorlessManaExecutor(amountEvaluator),
+        AddAnyColorManaExecutor(amountEvaluator)
     )
 }

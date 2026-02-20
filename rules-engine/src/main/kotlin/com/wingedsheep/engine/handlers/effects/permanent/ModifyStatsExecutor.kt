@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers.effects.permanent
 
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.StatsModifiedEvent
+import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolveTarget
@@ -20,8 +21,12 @@ import kotlin.reflect.KClass
 /**
  * Executor for ModifyStatsEffect.
  * "Target creature gets +X/+Y until end of turn"
+ *
+ * Supports both fixed and dynamic amounts via [DynamicAmountEvaluator].
  */
-class ModifyStatsExecutor : EffectExecutor<ModifyStatsEffect> {
+class ModifyStatsExecutor(
+    private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator()
+) : EffectExecutor<ModifyStatsEffect> {
 
     override val effectType: KClass<ModifyStatsEffect> = ModifyStatsEffect::class
 
@@ -44,6 +49,9 @@ class ModifyStatsExecutor : EffectExecutor<ModifyStatsEffect> {
             return ExecutionResult.error(state, "Target is not a creature")
         }
 
+        val powerMod = amountEvaluator.evaluate(state, effect.powerModifier, context)
+        val toughnessMod = amountEvaluator.evaluate(state, effect.toughnessModifier, context)
+
         // Create a floating effect for the stat modification
         val floatingEffect = ActiveFloatingEffect(
             id = EntityId.generate(),
@@ -51,8 +59,8 @@ class ModifyStatsExecutor : EffectExecutor<ModifyStatsEffect> {
                 layer = Layer.POWER_TOUGHNESS,
                 sublayer = Sublayer.MODIFICATIONS,
                 modification = SerializableModification.ModifyPowerToughness(
-                    powerMod = effect.powerModifier,
-                    toughnessMod = effect.toughnessModifier
+                    powerMod = powerMod,
+                    toughnessMod = toughnessMod
                 ),
                 affectedEntities = setOf(targetId)
             ),
@@ -74,8 +82,8 @@ class ModifyStatsExecutor : EffectExecutor<ModifyStatsEffect> {
             StatsModifiedEvent(
                 targetId = targetId,
                 targetName = cardComponent.name,
-                powerChange = effect.powerModifier,
-                toughnessChange = effect.toughnessModifier,
+                powerChange = powerMod,
+                toughnessChange = toughnessMod,
                 sourceName = sourceName
             )
         )

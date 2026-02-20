@@ -15,8 +15,7 @@ class PermanentExecutors(
     override fun executors(): List<EffectExecutor<*>> = listOf(
         TapUntapExecutor(),
         TapTargetCreaturesExecutor(),
-        ModifyStatsExecutor(),
-        DynamicModifyStatsExecutor(amountEvaluator),
+        ModifyStatsExecutor(amountEvaluator),
         GrantKeywordUntilEndOfTurnExecutor(),
         AddCountersExecutor(),
         RemoveCountersExecutor(),
