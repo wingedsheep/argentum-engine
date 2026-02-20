@@ -5,13 +5,10 @@ import com.wingedsheep.engine.mechanics.mana.CostCalculator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.GlorySeeker
+import com.wingedsheep.mtg.sets.definitions.scourge.cards.DaruWarchief
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
-import com.wingedsheep.sdk.scripting.ModifyStatsForCreatureGroup
-import com.wingedsheep.sdk.scripting.ReduceSpellCostBySubtype
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -25,32 +22,6 @@ import io.kotest.matchers.shouldBe
  * Soldier creatures you control get +1/+2.
  */
 class DaruWarchiefTest : FunSpec({
-
-    val DaruWarchief = card("Daru Warchief") {
-        manaCost = "{2}{W}{W}"
-        typeLine = "Creature — Human Soldier"
-        power = 1
-        toughness = 1
-
-        staticAbility {
-            ability = ReduceSpellCostBySubtype(subtype = "Soldier", amount = 1)
-        }
-
-        staticAbility {
-            ability = ModifyStatsForCreatureGroup(
-                powerBonus = 1,
-                toughnessBonus = 2,
-                filter = GroupFilter(GameObjectFilter.Creature.withSubtype("Soldier"))
-            )
-        }
-    }
-
-    val GlorySeeker = card("Glory Seeker") {
-        manaCost = "{1}{W}"
-        typeLine = "Creature — Human Soldier"
-        power = 2
-        toughness = 2
-    }
 
     val projector = StateProjector()
 
@@ -189,7 +160,7 @@ class DaruWarchiefTest : FunSpec({
         val warchief2 = driver.putCreatureOnBattlefield(activePlayer, "Daru Warchief")
         val soldier = driver.putCreatureOnBattlefield(activePlayer, "Glory Seeker")
 
-        // Stats: each Warchief gives +1/+2 to all Soldiers
+        // Stats: each Warchief gives +1/+2 to all Soldiers you control
         val projected = projector.project(driver.state)
         projected.getPower(soldier) shouldBe 4    // 2 + 1 + 1
         projected.getToughness(soldier) shouldBe 6  // 2 + 2 + 2

@@ -5,13 +5,11 @@ import com.wingedsheep.engine.mechanics.mana.CostCalculator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.scourge.cards.CarrionFeeder
+import com.wingedsheep.mtg.sets.definitions.scourge.cards.UndeadWarchief
+import com.wingedsheep.mtg.sets.definitions.scourge.cards.VengefulDead
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
-import com.wingedsheep.sdk.scripting.ModifyStatsForCreatureGroup
-import com.wingedsheep.sdk.scripting.ReduceSpellCostBySubtype
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -25,39 +23,6 @@ import io.kotest.matchers.shouldBe
  * Zombie creatures you control get +2/+1.
  */
 class UndeadWarchiefTest : FunSpec({
-
-    val UndeadWarchief = card("Undead Warchief") {
-        manaCost = "{2}{B}{B}"
-        typeLine = "Creature — Zombie"
-        power = 1
-        toughness = 1
-
-        staticAbility {
-            ability = ReduceSpellCostBySubtype(subtype = "Zombie", amount = 1)
-        }
-
-        staticAbility {
-            ability = ModifyStatsForCreatureGroup(
-                powerBonus = 2,
-                toughnessBonus = 1,
-                filter = GroupFilter(GameObjectFilter.Creature.withSubtype("Zombie"))
-            )
-        }
-    }
-
-    val CarrionFeeder = card("Carrion Feeder") {
-        manaCost = "{B}"
-        typeLine = "Creature — Zombie"
-        power = 1
-        toughness = 1
-    }
-
-    val VengefulDead = card("Vengeful Dead") {
-        manaCost = "{3}{B}"
-        typeLine = "Creature — Zombie"
-        power = 3
-        toughness = 2
-    }
 
     val projector = StateProjector()
 
@@ -200,7 +165,7 @@ class UndeadWarchiefTest : FunSpec({
         val warchief2 = driver.putCreatureOnBattlefield(activePlayer, "Undead Warchief")
         val zombie = driver.putCreatureOnBattlefield(activePlayer, "Carrion Feeder")
 
-        // Stats: each Warchief gives +2/+1 to all Zombies
+        // Stats: each Warchief gives +2/+1 to all Zombies you control
         val projected = projector.project(driver.state)
         projected.getPower(zombie) shouldBe 5    // 1 + 2 + 2
         projected.getToughness(zombie) shouldBe 3  // 1 + 1 + 1

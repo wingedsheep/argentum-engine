@@ -33,7 +33,7 @@ val DaruWarchief = card("Daru Warchief") {
         ability = ModifyStatsForCreatureGroup(
             powerBonus = 1,
             toughnessBonus = 2,
-            filter = GroupFilter(GameObjectFilter.Creature.withSubtype("Soldier"))
+            filter = GroupFilter(GameObjectFilter.Creature.withSubtype("Soldier").youControl())
         )
     }
 

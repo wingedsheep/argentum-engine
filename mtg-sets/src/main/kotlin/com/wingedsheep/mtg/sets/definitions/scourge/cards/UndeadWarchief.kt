@@ -33,7 +33,7 @@ val UndeadWarchief = card("Undead Warchief") {
         ability = ModifyStatsForCreatureGroup(
             powerBonus = 2,
             toughnessBonus = 1,
-            filter = GroupFilter(GameObjectFilter.Creature.withSubtype("Zombie"))
+            filter = GroupFilter(GameObjectFilter.Creature.withSubtype("Zombie").youControl())
         )
     }
 
