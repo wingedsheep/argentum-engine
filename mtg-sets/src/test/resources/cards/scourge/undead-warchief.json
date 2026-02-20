@@ -19,7 +19,7 @@
                 "powerBonus": 2,
                 "toughnessBonus": 1,
                 "filter": {
-                    "baseFilter": "creature Zombie"
+                    "baseFilter": "creature Zombie ctrl:you"
                 }
             }
         ]

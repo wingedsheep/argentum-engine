@@ -49,7 +49,7 @@ class BroodhatchNantukoScenarioTest : ScenarioTestBase() {
 
                 // Verify no tokens initially
                 withClue("Should have no Insect tokens initially") {
-                    game.countTokens(1, "Insect") shouldBe 0
+                    game.countTokens(1, "Insect Token") shouldBe 0
                 }
 
                 // Opponent casts Shock targeting Broodhatch Nantuko
@@ -65,7 +65,7 @@ class BroodhatchNantukoScenarioTest : ScenarioTestBase() {
 
                 // Should create 2 Insect tokens (Shock deals 2 damage)
                 withClue("Should have 2 Insect tokens after taking 2 damage") {
-                    game.countTokens(1, "Insect") shouldBe 2
+                    game.countTokens(1, "Insect Token") shouldBe 2
                 }
             }
 
@@ -95,7 +95,7 @@ class BroodhatchNantukoScenarioTest : ScenarioTestBase() {
 
                 // Tokens should still have been created
                 withClue("Should still have 2 Insect tokens even though Nantuko died") {
-                    game.countTokens(1, "Insect") shouldBe 2
+                    game.countTokens(1, "Insect Token") shouldBe 2
                 }
             }
         }
@@ -115,7 +115,7 @@ class BroodhatchNantukoScenarioTest : ScenarioTestBase() {
 
                 // Verify no tokens initially
                 withClue("Should have no Insect tokens initially") {
-                    game.countTokens(1, "Insect") shouldBe 0
+                    game.countTokens(1, "Insect Token") shouldBe 0
                 }
 
                 // Advance to declare attackers
@@ -141,7 +141,7 @@ class BroodhatchNantukoScenarioTest : ScenarioTestBase() {
 
                 // Should have created 2 Insect tokens (Glory Seeker deals 2 damage)
                 withClue("Should have 2 Insect tokens from combat damage trigger") {
-                    game.countTokens(1, "Insect") shouldBe 2
+                    game.countTokens(1, "Insect Token") shouldBe 2
                 }
             }
 
@@ -158,7 +158,7 @@ class BroodhatchNantukoScenarioTest : ScenarioTestBase() {
                     .build()
 
                 withClue("Should have no Insect tokens initially") {
-                    game.countTokens(1, "Insect") shouldBe 0
+                    game.countTokens(1, "Insect Token") shouldBe 0
                 }
 
                 game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
@@ -179,7 +179,7 @@ class BroodhatchNantukoScenarioTest : ScenarioTestBase() {
                 }
 
                 withClue("Should have 3 Insect tokens from combat damage trigger") {
-                    game.countTokens(1, "Insect") shouldBe 3
+                    game.countTokens(1, "Insect Token") shouldBe 3
                 }
             }
         }

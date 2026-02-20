@@ -531,7 +531,7 @@ class WordsOfWarTest : FunSpec({
 
     fun GameTestDriver.countBears(playerId: com.wingedsheep.sdk.model.EntityId): Int {
         return getCreatures(playerId).count { entityId ->
-            state.getEntity(entityId)?.get<CardComponent>()?.name == "Bear"
+            state.getEntity(entityId)?.get<CardComponent>()?.name == "Bear Token"
         }
     }
 

@@ -19,7 +19,7 @@
                 "powerBonus": 1,
                 "toughnessBonus": 2,
                 "filter": {
-                    "baseFilter": "creature Soldier"
+                    "baseFilter": "creature Soldier ctrl:you"
                 }
             }
         ]

@@ -67,7 +67,7 @@ class WordsOfWildingTest : FunSpec({
 
     fun GameTestDriver.countBears(playerId: com.wingedsheep.sdk.model.EntityId): Int {
         return getCreatures(playerId).count { entityId ->
-            state.getEntity(entityId)?.get<CardComponent>()?.name == "Bear"
+            state.getEntity(entityId)?.get<CardComponent>()?.name == "Bear Token"
         }
     }
 
@@ -112,7 +112,7 @@ class WordsOfWildingTest : FunSpec({
         driver.getHandSize(activePlayer) shouldBe initialHandSize + 1
 
         // Should have a Bear token on the battlefield
-        val bear = driver.findPermanent(activePlayer, "Bear")
+        val bear = driver.findPermanent(activePlayer, "Bear Token")
         bear shouldNotBe null
         val bearCard = driver.state.getEntity(bear!!)!!.get<CardComponent>()!!
         bearCard.baseStats shouldBe com.wingedsheep.sdk.model.CreatureStats(2, 2)
